@@ -63,6 +63,32 @@ describe("getDefaultValues", () => {
     expect(getDefaultValues(flat).items[0].unit_name).toBe("KG");
   });
 
+  // ทรงที่ stock-ins/{id} คืนมาจริงหลัง gateway ติด @CollapseRefs — header ยุบเป็น
+  // ก้อน และก้อน adjustment_type ไม่มี name มาด้วย (ต่างจาก endpoint list)
+  it("อ่าน header ที่ยุบเป็น object แล้ว (endpoint รายละเอียด)", () => {
+    const collapsed = {
+      ...adjustment,
+      adjustment_type_id: undefined,
+      location_id: undefined,
+      adjustment_type: {
+        id: "c0fa2904-e708-4d28-84fe-f0dda8686f0f",
+        code: "TEST-STOCK_IN",
+      },
+      location: {
+        id: "47414c16-9d52-4b16-8428-4a4c4e89986e",
+        name: "Movement Test WH",
+        code: "TEST-MOVE",
+      },
+    } as unknown as InventoryAdjustment;
+
+    const values = getDefaultValues(collapsed);
+
+    expect(values.adjustment_type_id).toBe(
+      "c0fa2904-e708-4d28-84fe-f0dda8686f0f",
+    );
+    expect(values.location_id).toBe("47414c16-9d52-4b16-8428-4a4c4e89986e");
+  });
+
   it("ที่เหลือ map ครบตาม response", () => {
     const values = getDefaultValues(adjustment);
 
