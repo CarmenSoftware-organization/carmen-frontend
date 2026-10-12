@@ -5,8 +5,8 @@ import { renderForm } from "@/lib/test-utils/form-characterization";
 import type { PrFormValues } from "./pr-form-schema";
 
 /**
- * PR แสดง on hand ณ วันที่ขอ (PR Date) — กล่อง on hand ในช่องสินค้า แถวสรุปใต้บรรทัด
- * และรายการรายคลัง ใช้วันเดียวกันหมด ตัวเลขจึงตรงกัน
+ * PR แสดง on hand ณ ปัจจุบัน — กล่อง on hand ในช่องสินค้า แถวสรุปใต้บรรทัด และรายการรายคลัง
+ * ไม่ส่งวันที่ของใบ (PR Date) ไปแม้จะกรอกไว้แล้ว
  */
 
 const PR_DATE = "2026-10-05";
@@ -58,20 +58,13 @@ beforeEach(() => {
   inventoryCalls.length = 0;
 });
 
-describe("PR — stock as of the PR date", () => {
-  it("sends the PR date to the on-hand box and the row under the line", async () => {
+describe("PR — stock as of now", () => {
+  it("sends no date to the on-hand box, the row under the line or the per-location list", async () => {
     renderForm(<Harness prDate={PR_DATE} />);
 
     await waitFor(() => expect(boxProps.length).toBeGreaterThan(0));
-    expect(boxProps.at(-1)).toEqual(expect.objectContaining({ atDate: PR_DATE }));
-    expect(inventoryCalls.at(-1)).toEqual(["BU-1", "loc-1", "prod-1", PR_DATE]);
-  });
-
-  it("sends no date while the PR date is still empty", async () => {
-    renderForm(<Harness prDate="" />);
-
-    await waitFor(() => expect(boxProps.length).toBeGreaterThan(0));
     expect(boxProps.at(-1)?.atDate).toBeUndefined();
-    expect(inventoryCalls.at(-1)?.[3]).toBeUndefined();
+    expect(inventoryCalls.at(-1)).toEqual(["BU-1", "loc-1", "prod-1"]);
+    expect(onHandProps.every((props) => props.atDate === undefined)).toBe(true);
   });
 });

@@ -74,12 +74,13 @@ const ProductCell = memo(function ProductCell({
   const [onOrderOpen, setOnOrderOpen] = useState(false);
 
   // ยอดคงเหลือ/กำลังสั่ง — hover แล้วยิง API เหมือนหน้า PR (กด label ใน tooltip
-  // เปิด dialog รายละเอียดต่อได้) SR ไม่มีคลังรายแถว ยอดจึงอ้างคลังต้นทางของใบ
+  // เปิด dialog รายละเอียดต่อได้) SR ไม่มีคลังรายแถว ยอดจึงอ้างคลังปลายทาง (to) ของใบ
+  // ผู้ขอเบิกดูว่าคลังตัวเองเหลือเท่าไร
   const inventory = (
     <>
       <InventoryDialog
         buCode={buCode}
-        locationId={fromLocationId}
+        locationId={toLocationId}
         productId={productId}
         productName={productName}
         productLocalName={productLocalName}

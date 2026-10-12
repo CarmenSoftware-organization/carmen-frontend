@@ -158,8 +158,7 @@ export const InventoryDialogCell = memo(function InventoryDialogCell({
     useWatch({ control, name: `items.${index}.product_local_name` }) ?? "";
   const unitName =
     useWatch({ control, name: `items.${index}.requested_unit_name` }) ?? "";
-  // on hand ณ วันที่ขอ (PR Date) ไม่ใช่ยอดวันนี้ — ใบเก่าที่เปิดดูทีหลังจึงเห็นยอดที่ใช้ตอนขอ
-  const prDate = useWatch({ control, name: "pr_date" }) || undefined;
+  // on hand ณ ปัจจุบัน ไม่ส่งวันที่ของใบไป
 
   return (
     <InventoryDialog
@@ -173,7 +172,6 @@ export const InventoryDialogCell = memo(function InventoryDialogCell({
       className={productId ? "text-primary" : "text-muted-foreground"}
       onOnHandClick={onOnHandClick}
       onOnOrderClick={onOnOrderClick}
-      atDate={prDate}
     />
   );
 });

@@ -5,8 +5,8 @@ import { renderForm } from "@/lib/test-utils/form-characterization";
 import type { PoFormValues } from "../po-form-schema";
 
 /**
- * PO แสดง on hand ณ วันที่สั่ง (Order Date) — ทั้งกล่อง on hand และรายการรายคลัง
- * ใบเก่าที่เปิดดูทีหลังจึงเห็นยอดที่ใช้ตอนสั่ง ไม่ใช่ยอดวันนี้
+ * PO แสดง on hand ณ ปัจจุบัน — ทั้งกล่อง on hand และรายการรายคลัง
+ * ไม่ส่งวันที่สั่ง (Order Date) ไปแม้จะกรอกไว้แล้ว
  */
 
 const ORDER_DATE = "2026-10-04T17:00:00.000Z";
@@ -45,19 +45,12 @@ beforeEach(() => {
   onHandProps.length = 0;
 });
 
-describe("PoInventoryDialog — stock as of the order date", () => {
-  it("sends the order date to the on-hand box and the per-location list", async () => {
+describe("PoInventoryDialog — stock as of now", () => {
+  it("sends no date to the on-hand box or the per-location list", async () => {
     renderForm(<Harness orderDate={ORDER_DATE} />);
 
     await waitFor(() => expect(onHandProps.length).toBeGreaterThan(0));
-    expect(boxProps.at(-1)).toEqual(expect.objectContaining({ atDate: ORDER_DATE }));
-    expect(onHandProps.at(-1)).toEqual(expect.objectContaining({ atDate: ORDER_DATE }));
-  });
-
-  it("sends no date while the order date is still empty", async () => {
-    renderForm(<Harness orderDate="" />);
-
-    await waitFor(() => expect(boxProps.length).toBeGreaterThan(0));
     expect(boxProps.at(-1)?.atDate).toBeUndefined();
+    expect(onHandProps.at(-1)?.atDate).toBeUndefined();
   });
 });
