@@ -2438,6 +2438,7 @@
       "statusEnabled": "Enabled",
       "statusDisabled": "Disabled",
       "expiredBadge": "Expired",
+      "expiredUnreadable": "The contract for this interface has expired, so its settings can't be shown. They will be back once it is renewed.",
       "enabledCount": "{enabled} of {total} enabled",
       "notConfigured": "No endpoint set",
       "updated": "Updated",

@@ -27,18 +27,18 @@ const BRAND_KEYS = INTERFACE_CATEGORIES.flatMap((c) =>
  *
  * 404 = ยังไม่เคยตั้งค่า ไม่ใช่ข้อผิดพลาด — คืนเป็น "ไม่มีแถว" เหมือนที่ list เคยทำ
  *
- * **ยิงเฉพาะ brand ที่ BU มีสิทธิ์ (entitlement ≠ `none`)** — backend ตอบ 403 ให้ brand ที่ BU
- * ไม่ได้ซื้อ ถ้ายิงครบทุกคีย์ หน้าทั้งหน้าจะกลายเป็น error และ `PermissionDeniedDialog` เด้ง
- * ทั้งที่ brand พวกนั้นถูก `interfaceGroups` ซ่อนอยู่แล้ว · รอ license ก่อนเสมอ เพราะระหว่างนั้น
- * ทุก brand ตัดสินเป็น `none`
+ * **ยิงเฉพาะ brand ที่ backend ยอมให้อ่าน (`canReadConfig`)** — backend ตอบ 403 ให้ brand ที่ BU
+ * ไม่ได้ซื้อ และ brand ที่คีย์อยู่แค่ใน `expired_features` ถ้ายิงไปหน้าทั้งหน้าจะกลายเป็น error
+ * และ `PermissionDeniedDialog` เด้ง · รอ license ก่อนเสมอ เพราะระหว่างนั้นทุก brand ตัดสินเป็น `none`
  */
 export function useInterfaceConfigs() {
   const buCode = useBuCode();
   const queryClient = useQueryClient();
-  const { isEntitled, isLoading: isLicenseLoading } = useInterfaceEntitlement();
+  const { canReadConfig, isLoading: isLicenseLoading } =
+    useInterfaceEntitlement();
   const configKeys = isLicenseLoading
     ? []
-    : BRAND_KEYS.filter((b) => isEntitled(b.categoryKey, b.brandKey)).map(
+    : BRAND_KEYS.filter((b) => canReadConfig(b.categoryKey, b.brandKey)).map(
         (b) => b.configKey,
       );
   const results = useQueries({

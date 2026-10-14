@@ -1,7 +1,16 @@
 import { Suspense } from "react";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { useTranslations } from "use-intl";
-import { CalendarX } from "lucide-react";
+import { ArrowLeft, CalendarX } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { ErrorState } from "@/components/ui/error-state";
 import { FormPageSkeleton } from "@/components/loader/form-page-skeleton";
 import { useInterfaceEntitlement } from "@/hooks/use-interface-entitlement";
@@ -22,7 +31,7 @@ import { findCategory, findBrand } from "./interface-registry";
 export function Component() {
   const t = useTranslations("systemAdmin.interface");
   const { category, brand } = useParams<{ category: string; brand: string }>();
-  const { entitlementOf } = useInterfaceEntitlement();
+  const { entitlementOf, canReadConfig } = useInterfaceEntitlement();
 
   const categoryDef = findCategory(category);
   const brandDef = findBrand(category, brand);
@@ -37,10 +46,15 @@ export function Component() {
     );
   }
 
+  // คีย์อยู่แค่ใน `expired_features` — backend ตอบ 403 ให้ GET จึงห้าม mount ฟอร์ม
+  // (ฟอร์มยิง GET เองทันที) แสดงคำอธิบายแทน
+  const readable = canReadConfig(categoryDef.key, brandDef.key);
+
   const Form = brandDef.form ?? categoryDef.form;
   return (
     <>
-      {entitlement === "expired" && (
+      {/* อ่านไม่ได้ = ไม่มีอะไรให้ "อ่านอย่างเดียว" — Empty ด้านล่างอธิบายแทน */}
+      {entitlement === "expired" && readable && (
         // จงใจไม่ใช้ `LicenseExpiredBanner` ตรง ๆ — ตัวนั้น `return null` เมื่อสวิตช์
         // `LICENSE_ENFORCEMENT` ปิด แต่การล็อก interface ไม่ขึ้นกับสวิตช์นั้น
         // คำอธิบายต้องมองเห็นได้ทุกที่ที่การล็อกมองเห็นได้
@@ -52,9 +66,30 @@ export function Component() {
           <span className="text-muted-foreground">{t("expiredNotice")}</span>
         </div>
       )}
-      <Suspense fallback={<FormPageSkeleton />}>
-        <Form />
-      </Suspense>
+      {readable ? (
+        <Suspense fallback={<FormPageSkeleton />}>
+          <Form />
+        </Suspense>
+      ) : (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <CalendarX />
+            </EmptyMedia>
+            <EmptyTitle>
+              {t(`${categoryDef.key}.brand.${brandDef.key}`)}
+            </EmptyTitle>
+            <EmptyDescription>{t("expiredUnreadable")}</EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/system-admin/interface">
+                <ArrowLeft /> {t("title")}
+              </Link>
+            </Button>
+          </EmptyContent>
+        </Empty>
+      )}
     </>
   );
 }
