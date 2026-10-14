@@ -2438,6 +2438,10 @@
       "statusEnabled": "Enabled",
       "statusDisabled": "Disabled",
       "expiredBadge": "Expired",
+      "enabledCount": "{enabled} of {total} enabled",
+      "notConfigured": "No endpoint set",
+      "updated": "Updated",
+      "target": "Endpoint",
       "expiredNotice": "The contract granting this interface has expired — read-only until it is renewed",
       "frequencyOption": {
         "manual": "Manual",
