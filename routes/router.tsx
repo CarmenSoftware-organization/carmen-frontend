@@ -122,6 +122,15 @@ export const router = createBrowserRouter([
                 lazy: () => import("./config/dimension/dimension.route"),
               },
               {
+                path: "cost-center-group",
+                lazy: () =>
+                  import("./config/cost-center-group/cost-center-group.route"),
+              },
+              {
+                path: "cost-center",
+                lazy: () => import("./config/cost-center/cost-center.route"),
+              },
+              {
                 path: "bank-account",
                 lazy: () => import("./config/bank-account/bank-account.route"),
               },

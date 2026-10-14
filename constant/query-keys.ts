@@ -22,6 +22,7 @@ export const QUERY_KEYS = {
   CREDIT_NOTE_STOCK_MOVEMENTS: "credit-note-stock-movements",
   CHART_OF_ACCOUNTS: "chart-of-accounts",
   COST_CENTERS: "cost-centers",
+  COST_CENTER_GROUPS: "cost-center-groups",
   CREDIT_TERMS: "credit-terms",
   CUISINES: "cuisines",
   CURRENCIES: "currencies",
