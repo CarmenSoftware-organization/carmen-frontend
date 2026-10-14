@@ -172,7 +172,6 @@ export default function CoamComponent() {
       count={totalRecords}
       actions={
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-          ```tsx
           {selectedIds.length > 0 && (
             <>
               <Button
@@ -280,7 +279,11 @@ export default function CoamComponent() {
         recordCount={totalRecords}
         isLoading={isLoading}
         emptyMessage={<EmptyComponent />}
-        tableLayout={{ headerSticky: true, columnsResizable: true }}
+        tableLayout={{
+          headerSticky: true,
+          columnsResizable: true,
+          checkbox: true,
+        }}
       >
         <DataGridContainer
           className={cn(
@@ -302,7 +305,6 @@ export default function CoamComponent() {
         onClose={() => setBatchOpen(false)}
         onDone={batchDone}
       />
-      ```
       <CoamGenerateDialog
         key={`${tab}-${generateSeq}`}
         open={generateOpen}
