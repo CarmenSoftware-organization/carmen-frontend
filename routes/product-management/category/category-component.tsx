@@ -28,7 +28,11 @@ import { NODE_TYPE, type CategoryNode } from "@/types/category";
 import { useCategoryTree } from "./use-category-tree";
 import { useCategoryDialog } from "./use-category-dialog";
 import { CategoryDialog } from "./category-dialog";
-import type { CategoryFormValues } from "./category-form-schema";
+import {
+  buildAccountCodesPayload,
+  type CategoryFormValues,
+} from "./category-form-schema";
+import { useNodeAccountCodes } from "./use-node-account-codes";
 import TreeContent from "./tree-content";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { DocumentListActions } from "@/components/share/document-list-actions";
@@ -129,15 +133,55 @@ export default function CategoryComponent() {
   const {
     open: dialogOpen,
     mode: dialogMode,
-    selectedNode,
-    parentNode,
+    selectedNode: listSelectedNode,
+    parentNode: listParentNode,
     handleOpenChange,
     handleEdit,
     handleAdd,
   } = useCategoryDialog({ categoryData, onSubmit: () => {} });
 
-  const handleFormSubmit = (data: CategoryFormValues) => {
+  // account_codes มาจาก GET รายตัวเท่านั้น (list ไม่ส่ง) — โหลดของ node ที่แก้
+  // และของบรรพบุรุษ (ใช้ทำ placeholder "สืบทอดจาก…") แล้วเติมกลับเข้า node
+  const grandParentNode =
+    listParentNode?.type === NODE_TYPE.SUBCATEGORY
+      ? categoryData.find((c) => c.id === listParentNode.product_category_id)
+      : undefined;
+  const selectedCodes = useNodeAccountCodes(
+    dialogOpen && dialogMode === "edit" ? listSelectedNode : undefined,
+  );
+  const parentCodes = useNodeAccountCodes(
+    dialogOpen ? listParentNode : undefined,
+  );
+  const grandParentCodes = useNodeAccountCodes(
+    dialogOpen ? grandParentNode : undefined,
+  );
+  const withCodes = (
+    node: CategoryNode | undefined,
+    codes: CategoryNode["account_codes"],
+  ): CategoryNode | undefined =>
+    node && codes ? { ...node, account_codes: codes } : node;
+  const selectedNode = withCodes(listSelectedNode, selectedCodes.codes);
+  const parentNode = withCodes(listParentNode, parentCodes.codes);
+  const ancestors = [
+    parentNode,
+    withCodes(grandParentNode, grandParentCodes.codes),
+  ].filter((n): n is CategoryNode => !!n);
+  // โหมด edit ที่โหลด account_codes ของตัวเองไม่สำเร็จ → ห้ามส่ง account_codes
+  // (เทียบกับ [] จะกลายเป็น add ซ้ำชนิดเดิม)
+  const accountCodesUnavailable =
+    dialogMode === "edit" && !!listSelectedNode && !selectedCodes.codes;
+
+  const handleFormSubmit = (formData: CategoryFormValues) => {
     const isEdit = dialogMode === "edit";
+    const { inventory_account_code, direct_account_code, ...rest } = formData;
+    const account_codes =
+      isEdit && accountCodesUnavailable
+        ? undefined
+        : buildAccountCodesPayload(
+            isEdit ? (selectedNode?.account_codes ?? []) : [],
+            { inventory: inventory_account_code, direct: direct_account_code },
+          );
+    const data = { ...rest, ...(account_codes ? { account_codes } : {}) };
     const ok = () => handleOpenChange(false);
     const opts = (label: string) => ({
       onSuccess: () => {
@@ -300,6 +344,9 @@ export default function CategoryComponent() {
         mode={dialogMode}
         selectedNode={selectedNode}
         parentNode={parentNode}
+        ancestors={ancestors}
+        accountCodesLoading={dialogMode === "edit" && selectedCodes.isLoading}
+        accountCodesUnavailable={accountCodesUnavailable}
         onSubmit={handleFormSubmit}
         isPending={isMutating}
       />

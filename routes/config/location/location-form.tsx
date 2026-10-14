@@ -26,12 +26,14 @@ import { Textarea } from "@/components/ui/textarea";
 import type { TransferItem } from "@/components/ui/transfer";
 import { TreeProductLookup } from "@/components/share/tree-product-lookup";
 import { UserTable } from "@/components/ui/user-table";
+import { LookupCostCenter } from "@/components/lookup/lookup-cost-center";
 import { LookupDeliveryPoint } from "@/components/lookup/lookup-delivery-point";
 import {
   useCreateLocation,
   useDeleteLocation,
   useUpdateLocation,
 } from "@/hooks/use-location";
+import { useCostCenterById } from "@/hooks/use-cost-center";
 import { useUser, useUserAll } from "@/hooks/use-user";
 import { useProductAll } from "@/hooks/use-product";
 import { useEntitiesByIds } from "@/hooks/use-entities-by-ids";
@@ -103,6 +105,12 @@ export function LocationForm({ location }: LocationFormProps) {
     },
   });
   const { form, isView, isAdd, isEdit, isDisabled } = f;
+  const { data: costCenter } = useCostCenterById(
+    location?.cost_center_id ?? undefined,
+  );
+  const costCenterLabel = costCenter
+    ? `${costCenter.code} · ${costCenter.name}`
+    : "—";
 
   // ทะเบียนทั้งก้อนใช้แค่ Transfer / ต้นไม้ตอนแก้ไขหรือเพิ่ม — หน้าดูใช้ข้อมูลใน payload
   // ของ location และดึงอีเมลเฉพาะผู้ใช้ของ location นี้ตาม id
@@ -188,6 +196,7 @@ export function LocationForm({ location }: LocationFormProps) {
             delivery_point_name: values.delivery_point_name,
           }
         : {}),
+      cost_center_id: values.cost_center_id ?? null,
       users: values.users,
       products: values.products,
     };
@@ -398,6 +407,28 @@ export function LocationForm({ location }: LocationFormProps) {
                       defaultLabel={location?.delivery_point?.name}
                       disabled={isDisabled}
                       error={form.formState.errors.delivery_point_id?.message}
+                    />
+                  )}
+                />
+              )}
+            </Field>
+
+            <Field className="sm:col-span-2">
+              <FieldLabel>{tfl("costCenter")}</FieldLabel>
+              {isView ? (
+                <FieldPlainText>
+                  {location?.cost_center_id ? costCenterLabel : "—"}
+                </FieldPlainText>
+              ) : (
+                <Controller
+                  control={form.control}
+                  name="cost_center_id"
+                  render={({ field }) => (
+                    <LookupCostCenter
+                      value={field.value ?? null}
+                      onValueChange={(id) => field.onChange(id)}
+                      disabled={isDisabled}
+                      allowDeselect
                     />
                   )}
                 />

@@ -41,8 +41,9 @@ function leaves(mods: ModuleDto[] = moduleList): ModuleDto[] {
  * **ชื่อคีย์จาก catalog ตรง ๆ เท่านั้น** ไม่มีการเดา: ตัวที่ catalog ไม่มีคีย์ระดับ resource
  * (`/procurement/approval`) ผูกคีย์ระดับ module ตามกติกาเดิมของ `/config/shelf` →
  * `"configuration"` ส่วน `/config/chart-of-account-mapping` ได้คีย์ระดับ resource ของ
- * ตัวเองแล้ว (`configuration.chart_of_account_mapping` มาจาก `LICENSE_ONLY_RESOURCES`
- * ของ backend — ขายได้ทั้งที่ยังไม่มี endpoint)
+ * ตัวเองแล้ว (`configuration.chart_of_account_mapping` — คีย์ปกติของ catalog ที่มาจาก
+ * permission seed และผูก route `app:account-mapping` ใน permission.route-map ของ backend
+ * ไม่ได้มาจาก `LICENSE_ONLY_RESOURCES` แล้ว)
  *
  * เพิ่มรายการใหม่ได้ แต่ต้องเขียนเหตุผลว่าทำไม catalog ถึงไม่มีคีย์ให้ผูก และต้องรู้ว่า
  * มันปลดล็อกหัวข้อโมดูลทั้งก้อนไปด้วย

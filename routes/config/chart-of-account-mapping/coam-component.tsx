@@ -1,165 +1,277 @@
-import { useMemo, useState } from "react";
+"use no memo";
+import { useEffect, useState } from "react";
 import { useTranslations } from "use-intl";
-import { Download, Link2, Pencil, ScanLine, Upload } from "lucide-react";
+import { CheckCheck, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 import {
   DataGrid,
   DataGridContainer,
+  DataGridScrollArea,
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ListPageShell } from "@/components/share/list-page-shell";
+import { ErrorState } from "@/components/ui/error-state";
 import EmptyComponent from "@/components/empty-component";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Field, FieldLabel, FieldPlainText } from "@/components/ui/field";
-import SearchInput from "@/components/search-input";
-import type { AccountMappingRow } from "@/types/chart-of-account-mapping";
-import { COAM_MOCK_ROWS } from "./coam-mock";
+import { ListPageShell } from "@/components/share/list-page-shell";
+import { listGridMaxH } from "@/components/share/list-grid-max-h";
+import { ListToolbar } from "@/components/list-filter/list-toolbar";
+import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
+import { useDataGridState } from "@/hooks/use-data-grid-state";
+import { useListFilters } from "@/hooks/use-list-filters";
+import { setURLParams, useURL } from "@/hooks/use-url";
+import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
+import { cn } from "@/lib/utils";
+import type {
+  AccountMappingRow,
+  MappingStatus,
+  MappingType,
+} from "@/types/chart-of-account-mapping";
+import {
+  EMPTY_COUNTS,
+  useAccountMappingList,
+  useReviewAccountMapping,
+  type AccountMappingListParams,
+} from "./use-account-mapping";
 import { useCoamTable } from "./use-coam-table";
+import { CoamEditSheet } from "./coam-edit-sheet";
+import { CoamGenerateDialog } from "./coam-generate-dialog";
+import {
+  TAB_SCOPED_FILTER_KEYS,
+  coamFilterFields,
+  filtersToParams,
+} from "./coam-filter-fields";
 
-const matches = (row: AccountMappingRow, term: string) => {
-  const haystack = [
-    row.business_unit,
-    row.store_location.code,
-    row.store_location.name,
-    row.category.code,
-    row.category.name,
-    row.sub_category.code,
-    row.sub_category.name,
-    row.item_group.code,
-    row.item_group.name,
-    row.department.code,
-    row.department.name,
-    row.account_code.code,
-    row.account_code.name,
-    row.mapping_type,
-  ]
-    .join(" ")
-    .toLowerCase();
-  return haystack.includes(term);
-};
-
-function AmTable({ rows, onView }: { readonly rows: AccountMappingRow[]; readonly onView: (row: AccountMappingRow) => void }) {
-  "use no memo";
-  const table = useCoamTable({ data: rows, onView });
-
-  return (
-    <DataGrid
-      table={table}
-      recordCount={rows.length}
-      emptyMessage={<EmptyComponent />}
-      tableLayout={{
-        headerSticky: true,
-        // คอลัมน์เยอะ — ให้ตารางกว้างตาม size ที่ประกาศไว้แล้วเลื่อนแนวนอนเอา
-        // ไม่ใช่บีบทุกช่องให้พอดีจอจนอ่านไม่ออก (เหมือน list ของ PR/PO)
-        columnsResizable: true,
-      }}
-    >
-      <DataGridContainer scroll>
-        <DataGridTable />
-      </DataGridContainer>
-    </DataGrid>
-  );
-}
+const STATUS_CHIPS: { value: MappingStatus; labelKey: string }[] = [
+  { value: "incomplete", labelKey: "statusIncomplete" },
+  { value: "unreviewed", labelKey: "statusUnreviewed" },
+  { value: "overridden", labelKey: "statusOverridden" },
+  { value: "default", labelKey: "statusDefault" },
+];
 
 export default function CoamComponent() {
   "use no memo";
   const t = useTranslations("config.chartOfAccountMapping");
-  const tc = useTranslations("common");
-  const tfl = useTranslations("field");
-  const [detail, setDetail] = useState<AccountMappingRow | null>(null);
-  const [search, setSearch] = useState("");
-  const [tab, setTab] = useState<"AP" | "GL">("AP");
+  const [tabParam] = useURL("tab");
+  const tab: MappingType = tabParam === "GL" ? "GL" : "AP";
+  const [editing, setEditing] = useState<AccountMappingRow | null>(null);
+  const [generateOpen, setGenerateOpen] = useState(false);
+  // dialog seed mode/type จาก props ครั้งเดียวตอน mount — เปลี่ยน key ทุกครั้งที่เปิด
+  // ให้ mount ใหม่ (type ตามแท็บปัจจุบัน, mode กลับเป็นค่าเริ่ม) แต่ยังคง animation ตอนปิด
+  const [generateSeq, setGenerateSeq] = useState(0);
+  const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
 
-  const rows = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return COAM_MOCK_ROWS;
-    return COAM_MOCK_ROWS.filter((row) => matches(row, term));
-  }, [search]);
+  const { params, tableConfig, search, setSearch } = useDataGridState({
+    defaultPerpage: 20,
+  });
+  // reference คงที่ต่อแท็บ (module-level) — useListFilters ต้องการ fields ที่ไม่เปลี่ยนทุก render
+  const fields = coamFilterFields(tab);
+  const lf = useListFilters({
+    pageKey: LIST_PAGE_KEYS.CHART_OF_ACCOUNT_MAPPING,
+    fields,
+  });
 
-  // แยกไว้ก่อน render ทั้งสองชุด เพื่อให้ตัวเลขบนหัวแท็บตรงกับที่อยู่ในตารางเสมอ
-  // แม้ตอนกำลังค้นหา (คนจะได้รู้ว่าอีกแท็บมีผลลัพธ์รออยู่ไหม โดยไม่ต้องกดสลับไปดู)
-  const apRows = useMemo(
-    () => rows.filter((row) => row.mapping_type === "AP"),
-    [rows],
-  );
-  const glRows = useMemo(
-    () => rows.filter((row) => row.mapping_type === "GL"),
-    [rows],
-  );
+  const query: AccountMappingListParams = {
+    mapping_type: tab,
+    page: Number(params.page) || 1,
+    perpage: Number(params.perpage) || 20,
+    search: params.search || undefined,
+    ...filtersToParams(lf.values, tab),
+  };
+  const { data, isLoading, error, refetch } = useAccountMappingList(query);
+  const review = useReviewAccountMapping();
+
+  const rows = data?.data ?? [];
+  const totalRecords = data?.paginate.total ?? 0;
+  const counts = data?.counts ?? EMPTY_COUNTS;
+
+  const table = useCoamTable({
+    data: rows,
+    totalRecords,
+    params,
+    tableConfig,
+    tab,
+    onOpen: setEditing,
+  });
+  // เลือกแถวข้ามหน้าไม่ได้ — ล้างทุกครั้งที่ขอบเขตของรายการเปลี่ยน
+  // เพื่อไม่ให้ "ยืนยันว่าตรวจแล้ว" ทิ้งแถวที่เลือกไว้นอกหน้าไปเงียบ ๆ
+  const scopeKey = JSON.stringify([
+    tab,
+    query.page,
+    query.perpage,
+    query.search,
+    lf.values,
+  ]);
+  useEffect(() => {
+    table.resetRowSelection();
+  }, [scopeKey, table]);
+  const selectedIds = table
+    .getSelectedRowModel()
+    .rows.map((r) => r.original.id);
+
+  const switchTab = (next: string) => {
+    if (next === tab) return;
+    table.resetRowSelection();
+    // movement / adjustment type ของอีกแท็บใช้ไม่ได้ — ล้างทิ้งพร้อมกลับหน้า 1
+    setURLParams({
+      tab: next === "GL" ? "GL" : "",
+      ...Object.fromEntries(TAB_SCOPED_FILTER_KEYS.map((k) => [k, ""])),
+      page: "",
+    });
+  };
+
+  const toggleStatus = (value: MappingStatus) =>
+    lf.setValue("status", query.status === value ? "" : value);
+
+  const markReviewed = () =>
+    review.mutate(
+      { ids: selectedIds },
+      {
+        onSuccess: (res) => {
+          toast.success(
+            t("markReviewedDone", {
+              count: res?.updated ?? selectedIds.length,
+            }),
+          );
+          table.resetRowSelection();
+        },
+      },
+    );
+
+  if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
 
   return (
     <ListPageShell
       title={t("title")}
       description={t("desc")}
-      toolbar={
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="w-full sm:w-auto sm:flex-initial">
-            <SearchInput defaultValue={search} onSearch={setSearch} />
-          </div>
+      count={totalRecords}
+      actions={
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          {selectedIds.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={markReviewed}
+              disabled={review.isPending}
+            >
+              <CheckCheck aria-hidden="true" />
+              {t("markReviewed")}
+              <span className="tabular-nums">({selectedIds.length})</span>
+            </Button>
+          )}
+          <Button
+            size="sm"
+            onClick={() => {
+              setGenerateSeq((n) => n + 1);
+              setGenerateOpen(true);
+            }}
+          >
+            <Sparkles aria-hidden="true" />
+            {t("generate")}
+          </Button>
         </div>
       }
-      actions={
-        // ยังไม่ผูก handler — วาง UI ไว้ก่อนตามที่ตกลง กดแล้วยังไม่มีอะไรเกิดขึ้น
-        <div className="flex w-full items-center gap-2 sm:w-auto">
-          <Button type="button" size="sm" variant="outline">
-            <Upload />
-            {t("import")}
-          </Button>
-          <Button type="button" size="sm" variant="outline">
-            <Download />
-            {t("export")}
-          </Button>
-          <Button type="button" size="sm" variant="outline">
-            <ScanLine />
-            {t("scanForNewCode")}
-          </Button>
-          <Button type="button" size="sm" variant="outline">
-            <Link2 />
-            {t("bulkMap")}
-          </Button>
-          <Button type="button" size="sm">
-            <Pencil />
-            {tc("edit")}
-          </Button>
+      toolbar={
+        <div className="flex flex-col gap-2">
+          <Tabs value={tab} onValueChange={switchTab}>
+            <TabsList variant="line">
+              {(["AP", "GL"] as const).map((v) => (
+                <TabsTrigger key={v} value={v}>
+                  {t(v === "AP" ? "tabAp" : "tabGl")}
+                  {tab === v && data && counts.incomplete > 0 ? (
+                    <Badge
+                      size="xs"
+                      variant="warning-light"
+                      aria-label={t("incompleteCount", {
+                        count: counts.incomplete,
+                      })}
+                    >
+                      {counts.incomplete}
+                    </Badge>
+                  ) : null}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+          <div
+            role="group"
+            aria-label={t("statusFilterAria")}
+            className="flex flex-wrap items-center gap-1.5"
+          >
+            {STATUS_CHIPS.map((chip) => {
+              const active = query.status === chip.value;
+              return (
+                <Button
+                  key={chip.value}
+                  type="button"
+                  size="xs"
+                  variant={active ? "secondary" : "outline"}
+                  aria-pressed={active}
+                  onClick={() => toggleStatus(chip.value)}
+                >
+                  {t(chip.labelKey)}
+                  <span
+                    className={cn(
+                      "tabular-nums",
+                      chip.value === "incomplete" && counts.incomplete > 0
+                        ? "text-warning-ink"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {counts[chip.value]}
+                  </span>
+                </Button>
+              );
+            })}
+          </div>
+          <ListToolbar
+            search={search}
+            onSearch={setSearch}
+            lf={lf}
+            fields={fields}
+            onSaveViewClick={() => setSaveViewDialogOpen(true)}
+            table={table}
+          />
         </div>
       }
     >
-      <Tabs value={tab} onValueChange={(v) => setTab(v as "AP" | "GL")}>
-        <TabsList variant="line">
-          <TabsTrigger value="AP">
-            {t("tabAp")}
-            <span className="text-muted-foreground ms-1.5 tabular-nums">
-              {apRows.length}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger value="GL">
-            {t("tabGl")}
-            <span className="text-muted-foreground ms-1.5 tabular-nums">
-              {glRows.length}
-            </span>
-          </TabsTrigger>
-        </TabsList>
+      <DataGrid
+        table={table}
+        recordCount={totalRecords}
+        isLoading={isLoading}
+        emptyMessage={<EmptyComponent />}
+        tableLayout={{ headerSticky: true, columnsResizable: true }}
+      >
+        <DataGridContainer
+          className={cn(
+            "flex flex-col",
+            listGridMaxH(lf.activeFilters.length > 0),
+          )}
+        >
+          <DataGridScrollArea>
+            <DataGridTable />
+          </DataGridScrollArea>
+          <DataGridPagination sizes={[10, 20, 50, 100]} />
+        </DataGridContainer>
+      </DataGrid>
 
-        <TabsContent value="AP">
-          <AmTable rows={apRows} onView={setDetail} />
-        </TabsContent>
-        <TabsContent value="GL">
-          <AmTable rows={glRows} onView={setDetail} />
-        </TabsContent>
-      </Tabs>
-      <Dialog open={!!detail} onOpenChange={(open) => !open && setDetail(null)}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>{t("title")} — {tc("view")}</DialogTitle><DialogDescription>{t("desc")}</DialogDescription></DialogHeader>
-          {detail && <div className="grid gap-4 sm:grid-cols-2">
-            {(["store_location", "category", "sub_category", "item_group", "department", "account_code"] as const).map((key, index) => (
-              <Field key={key}><FieldLabel>{tfl(["location", "category", "subCategory", "itemGroup", "department", "accountCode"][index])}</FieldLabel><FieldPlainText>{[detail[key].code, detail[key].name].filter(Boolean).join(" — ") || "—"}</FieldPlainText></Field>
-            ))}
-            <Field><FieldLabel>{t("mapped")}</FieldLabel><FieldPlainText>{detail.is_mapped ? t("mapped") : t("notMapped")}</FieldPlainText></Field>
-          </div>}
-          <DialogFooter><Button variant="outline" onClick={() => setDetail(null)}>{tc("close")}</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CoamEditSheet row={editing} onClose={() => setEditing(null)} />
+      <CoamGenerateDialog
+        key={`${tab}-${generateSeq}`}
+        open={generateOpen}
+        onOpenChange={setGenerateOpen}
+        defaultType={tab}
+      />
+
+      <SaveViewDialog
+        open={saveViewDialogOpen}
+        onOpenChange={setSaveViewDialogOpen}
+        canManageBu={lf.view.canManageBu}
+        existingNames={lf.view.existingNames}
+        onSave={lf.view.saveOrUpdate}
+      />
     </ListPageShell>
   );
 }

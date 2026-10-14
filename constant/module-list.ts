@@ -658,9 +658,7 @@ export const moduleList: ModuleDto[] = [
         icon: BookText,
       },
       {
-        // คีย์นี้มาจาก `LICENSE_ONLY_RESOURCES` ของ backend (ไม่มี endpoint รองรับ
-        // เพราะหน้า list ยังอ่าน mock) การล็อกจึงเกิดที่ FE จาก `license.features`
-        // ไม่ใช่ที่ `LicenseInterceptor`
+        // คีย์ license นี้ผูกกับ endpoint จริงแล้ว (api/:bu_code/account-mapping) — LicenseInterceptor + permission configuration.chart_of_account_mapping
         name: "chartOfAccountMapping",
         path: "/config/chart-of-account-mapping",
         licenseFeature: "configuration.chart_of_account_mapping",

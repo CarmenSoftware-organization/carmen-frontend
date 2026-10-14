@@ -10,6 +10,28 @@ type NodeType = (typeof NODE_TYPE)[keyof typeof NODE_TYPE];
 
 export type CategoryType = "category" | "subcategory" | "itemgroup";
 
+/**
+ * แถว mapping บัญชีของ node นี้เอง (ไม่รวมที่สืบทอดจากชั้นบน)
+ * backend ส่งมาเฉพาะ GET รายตัว (findOne) — GET list ไม่มีฟิลด์นี้
+ */
+export interface AccountCodeEntry {
+  id: string;
+  account_type: string;
+  account_code: string;
+  account_name: string | null;
+}
+
+/** payload เขียน account_codes — create รับแค่ add, update รับ add/update/remove */
+export interface AccountCodesPayload {
+  add?: {
+    account_type: "inventory" | "direct";
+    account_code: string;
+    account_name?: string | null;
+  }[];
+  update?: { id: string; account_code: string; account_name?: string | null }[];
+  remove?: { id: string }[];
+}
+
 export interface CategoryNode {
   id: string;
   code: string;
@@ -30,6 +52,7 @@ export interface CategoryNode {
   itemCount?: number;
   cascade_deviation: boolean;
   doc_version?: number;
+  account_codes?: AccountCodeEntry[];
 }
 
 export interface CategoryDto {
@@ -46,6 +69,7 @@ export interface CategoryDto {
   tax_profile_name?: string;
   tax_rate?: number;
   doc_version?: number;
+  account_codes?: AccountCodeEntry[];
 }
 
 export interface SubCategoryDto {
@@ -68,6 +92,7 @@ export interface SubCategoryDto {
   tax_rate?: number;
   cascade_deviation: boolean;
   doc_version?: number;
+  account_codes?: AccountCodeEntry[];
 }
 
 export interface ItemGroupDto {
@@ -88,6 +113,7 @@ export interface ItemGroupDto {
   sub_category?: { id: string; code: string; name: string };
   category?: { id: string; code: string; name: string };
   doc_version?: number;
+  account_codes?: AccountCodeEntry[];
 }
 
 export interface CreateCategoryDto {
@@ -103,6 +129,7 @@ export interface CreateCategoryDto {
   tax_profile_name?: string;
   tax_rate?: number;
   doc_version?: number;
+  account_codes?: AccountCodesPayload;
 }
 
 export interface CreateSubCategoryDto {
@@ -119,6 +146,7 @@ export interface CreateSubCategoryDto {
   tax_profile_name?: string;
   tax_rate?: number;
   doc_version?: number;
+  account_codes?: AccountCodesPayload;
 }
 
 export interface CreateItemGroupDto {
@@ -135,4 +163,5 @@ export interface CreateItemGroupDto {
   tax_profile_name?: string;
   tax_rate?: number;
   doc_version?: number;
+  account_codes?: AccountCodesPayload;
 }

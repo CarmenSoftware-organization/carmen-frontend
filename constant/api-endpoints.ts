@@ -29,6 +29,8 @@ const atDateQuery = (atDate?: string) =>
   atDate ? `?at_date=${encodeURIComponent(atDate)}` : "";
 
 export const API_ENDPOINTS = {
+  ACCOUNT_MAPPING: (buCode: string) =>
+    `/api/proxy/api/${buCode}/account-mapping`,
   ACTIVITY_LOGS: (buCode: string) => `/api/proxy/api/${buCode}/activity-logs`,
   ACTIVITY_LOGS_BY_RECORD: (buCode: string, entityId: string) =>
     `/api/proxy/api/${buCode}/activity-logs/record/${entityId}`,

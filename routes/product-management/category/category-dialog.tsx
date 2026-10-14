@@ -1,5 +1,5 @@
 import { useTranslations } from "use-intl";
-import { FolderTree } from "lucide-react";
+import { FolderTree, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,12 @@ interface CategoryDialogProps {
   readonly mode: FormMode;
   readonly selectedNode?: CategoryNode;
   readonly parentNode?: CategoryNode;
+  /** บรรพบุรุษเรียงจากใกล้สุด (พ่อ → ปู่) ที่เติม account_codes แล้ว */
+  readonly ancestors?: CategoryNode[];
+  /** โหมด edit: ยังโหลด account_codes ของ node นี้ไม่เสร็จ → รอก่อน mount ฟอร์ม */
+  readonly accountCodesLoading?: boolean;
+  /** โหมด edit: โหลด account_codes ไม่สำเร็จ → ปิดช่องบัญชี */
+  readonly accountCodesUnavailable?: boolean;
   readonly onSubmit: (data: CategoryFormValues) => void;
   readonly isPending?: boolean;
 }
@@ -47,11 +53,15 @@ export function CategoryDialog({
   mode,
   selectedNode,
   parentNode,
+  ancestors,
+  accountCodesLoading,
+  accountCodesUnavailable,
   onSubmit,
   isPending,
 }: CategoryDialogProps) {
   const t = useTranslations("productManagement.category");
   const tf = useTranslations("form");
+  const tc = useTranslations("common");
 
   const TYPE_LABELS: Record<CategoryType, string> = {
     category: t("nodeCategory"),
@@ -81,13 +91,21 @@ export function CategoryDialog({
           </div>
         </DialogHeader>
 
-        {open && (
+        {open && accountCodesLoading && (
+          <div className="text-muted-foreground flex min-h-0 flex-1 items-center justify-center gap-2 border-t px-5 py-8 text-xs">
+            <Loader2 className="size-4 animate-spin" />
+            {tc("loading")}
+          </div>
+        )}
+        {open && !accountCodesLoading && (
           <div className="min-h-0 flex-1 overflow-y-auto border-t px-5 py-4">
             <CategoryForm
               type={categoryType}
               mode={mode}
               selectedNode={selectedNode}
               parentNode={parentNode}
+              ancestors={ancestors}
+              accountCodesUnavailable={accountCodesUnavailable}
               onSubmit={onSubmit}
               onCancel={() => onOpenChange(false)}
               isPending={isPending}

@@ -1,172 +1,184 @@
-import type { ColumnDef } from "@tanstack/react-table";
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
+"use no memo";
+import { useMemo } from "react";
+import {
+  type ColumnDef,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
-import { Check, Pencil, X } from "lucide-react";
-import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
+import { CellAction } from "@/components/ui/cell-action";
 import {
   columnSkeletons,
-  customActionColumn,
+  indexColumn,
+  selectColumn,
 } from "@/components/ui/data-grid/columns";
-import { CellAction } from "@/components/ui/cell-action";
-import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { formatDate } from "@/lib/date-utils";
-import { useProfile } from "@/hooks/use-profile";
-import type { AccountMappingRow, CodeName } from "@/types/chart-of-account-mapping";
+import type { useDataGridState } from "@/hooks/use-data-grid-state";
+import type { ParamsDto } from "@/types/params";
+import type {
+  AccountMappingRow,
+  MappingType,
+  Ref,
+} from "@/types/chart-of-account-mapping";
+import { AccountCell, CostCenterCell, StatusCell } from "./coam-cells";
 
-const codeNameCell = (value: CodeName) =>
-  value.code || value.name ? (
-    <NameWithSubtext primary={value.code} secondary={value.name} />
+const MOVEMENT_KEY = {
+  grn: "movementGrn",
+  cn: "movementCn",
+  adjustment: "movementAdjustment",
+  sr_in: "movementSrIn",
+  sr_out: "movementSrOut",
+} as const;
+
+const LOCATION_TYPE_KEY = {
+  inventory: "typeInventory",
+  direct: "typeDirect",
+  consignment: "typeConsignment",
+} as const;
+
+const refCell = (v: Ref | null) =>
+  v ? (
+    <NameWithSubtext primary={v.code} secondary={v.name} />
   ) : (
     <span className="text-muted-foreground">—</span>
   );
 
 interface UseCoamTableOptions {
   data: AccountMappingRow[];
-  onView: (row: AccountMappingRow) => void;
+  totalRecords: number;
+  params: ParamsDto;
+  tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
+  tab: MappingType;
+  onOpen: (row: AccountMappingRow) => void;
 }
 
 /**
- * ตารางผังการผูกบัญชี — View รายแถว; Edit ปิดไว้จนพร้อมใช้งาน
+ * ตารางผังการผูกบัญชี (server pagination) — คอลัมน์ adjustment type มีเฉพาะแท็บ GL
  *
- * ใช้ `useReactTable` ตรง ๆ ไม่ผ่าน `useConfigTable` เพราะตัวนั้นผูกกับ row action
- * และ permission ของ config CRUD ซึ่งหน้านี้ยังไม่มี
- *
- * @param options - data ของตาราง
- * @returns TanStack table instance
+ * ประกอบ `useReactTable` เองแทน `useConfigTable` เพราะต้องการ `getRowId` = id
+ * ของแถว (การเลือกแถวเพื่อ "ยืนยันว่าตรวจแล้ว" ต้องไม่ติดไปกับ index ของหน้าถัดไป)
+ * และหน้านี้ไม่มี delete / status column
  */
-export function useCoamTable({ data, onView }: UseCoamTableOptions) {
+export function useCoamTable({
+  data,
+  totalRecords,
+  params,
+  tableConfig,
+  tab,
+  onOpen,
+}: UseCoamTableOptions) {
   "use no memo";
-  const tfl = useTranslations("field");
-  const tc = useTranslations("common");
   const t = useTranslations("config.chartOfAccountMapping");
-  const { dateTimeFormat } = useProfile();
+  const tl = useTranslations("config.location");
+  const tfl = useTranslations("field");
+  const { page, perpage } = params;
 
-  const columns: ColumnDef<AccountMappingRow>[] = [
-    {
-      id: "index",
-      header: "#",
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">{row.index + 1}</span>
-      ),
-      enableSorting: false,
-      size: 55,
-      meta: { headerClassName: "text-center", cellClassName: "text-center" },
-    },
-    {
-      id: "store_location",
-      header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("location")} />
-      ),
-      cell: ({ row }) => <CellAction onClick={() => onView(row.original)}>{codeNameCell(row.original.store_location)}</CellAction>,
-      size: 160,
-      meta: { headerTitle: tfl("location"), skeleton: columnSkeletons.text },
-    },
-    {
-      id: "category",
-      header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("category")} />
-      ),
-      cell: ({ row }) => codeNameCell(row.original.category),
-      size: 150,
-      meta: { headerTitle: tfl("category"), skeleton: columnSkeletons.text },
-    },
-    {
-      id: "sub_category",
-      header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("subCategory")} />
-      ),
-      cell: ({ row }) => codeNameCell(row.original.sub_category),
-      size: 150,
-      meta: { headerTitle: tfl("subCategory"), skeleton: columnSkeletons.text },
-    },
-    {
-      id: "item_group",
-      header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("itemGroup")} />
-      ),
-      cell: ({ row }) => codeNameCell(row.original.item_group),
-      size: 150,
-      meta: { headerTitle: tfl("itemGroup"), skeleton: columnSkeletons.text },
-    },
-    {
-      id: "department",
-      header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("department")} />
-      ),
-      cell: ({ row }) => codeNameCell(row.original.department),
-      size: 160,
-      meta: { headerTitle: tfl("department"), skeleton: columnSkeletons.text },
-    },
-    {
-      id: "account_code",
-      header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("accountCode")} />
-      ),
-      cell: ({ row }) => codeNameCell(row.original.account_code),
-      size: 200,
-      meta: { headerTitle: tfl("accountCode"), skeleton: columnSkeletons.text },
-    },
-    {
-      accessorKey: "is_mapped",
-      header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={t("mapped")}
-          className="justify-center"
-        />
-      ),
-      // ผูกแล้ว/ยังไม่ผูก อ่านจากรูปทรงได้โดยไม่ต้องพึ่งสี — ชุดเดียวกับสถานะเอกสาร
-      cell: ({ row }) =>
-        row.original.is_mapped ? (
-          <Check
-            className="mx-auto size-3.5"
-            style={{ color: "var(--status-approved)" }}
-            aria-label={t("mapped")}
-          />
-        ) : (
-          <X
-            className="mx-auto size-3.5"
-            style={{ color: "var(--status-rejected)" }}
-            aria-label={t("notMapped")}
-          />
+  const columns = useMemo<ColumnDef<AccountMappingRow>[]>(
+    () => [
+      selectColumn<AccountMappingRow>(),
+      indexColumn<AccountMappingRow>({ page, perpage }),
+      {
+        id: "location",
+        header: tfl("location"),
+        cell: ({ row }) => (
+          <CellAction onClick={() => onOpen(row.original)}>
+            {refCell(row.original.location)}
+          </CellAction>
         ),
-      size: 100,
-      meta: {
-        headerTitle: t("mapped"),
-        cellClassName: "text-center",
-        headerClassName: "text-center",
-        skeleton: columnSkeletons.textShort,
+        size: 180,
+        meta: { headerTitle: tfl("location"), skeleton: columnSkeletons.text },
       },
-    },
-    {
-      accessorKey: "last_scanned_at",
-      header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={t("lastScannedAt")} />
-      ),
-      cell: ({ row }) =>
-        row.original.last_scanned_at ? (
-          <span className="tabular-nums">
-            {formatDate(row.original.last_scanned_at, dateTimeFormat)}
-          </span>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        ),
-      size: 160,
-      meta: { headerTitle: t("lastScannedAt"), skeleton: columnSkeletons.text },
-    },
-    customActionColumn<AccountMappingRow>(({ row }) => (
-      <DataGridRowActions activity={{ id: row.original.id, disabled: true, disabledTitle: "Activity is unavailable for mock data" }}>
-        <DropdownMenuItem disabled><Pencil className="size-3" />{tc("edit")}</DropdownMenuItem>
-      </DataGridRowActions>
-    )),
-  ];
+      {
+        id: "location_type",
+        header: t("locationType"),
+        cell: ({ row }) =>
+          tl(LOCATION_TYPE_KEY[row.original.location.location_type]),
+        size: 110,
+        meta: {
+          headerTitle: t("locationType"),
+          skeleton: columnSkeletons.textShort,
+        },
+      },
+      {
+        id: "category",
+        header: tfl("category"),
+        cell: ({ row }) => refCell(row.original.category),
+        size: 150,
+        meta: { headerTitle: tfl("category"), skeleton: columnSkeletons.text },
+      },
+      {
+        id: "sub_category",
+        header: tfl("subCategory"),
+        cell: ({ row }) => refCell(row.original.sub_category),
+        size: 150,
+        meta: {
+          headerTitle: tfl("subCategory"),
+          skeleton: columnSkeletons.text,
+        },
+      },
+      {
+        id: "item_group",
+        header: tfl("itemGroup"),
+        cell: ({ row }) => refCell(row.original.item_group),
+        size: 160,
+        meta: { headerTitle: tfl("itemGroup"), skeleton: columnSkeletons.text },
+      },
+      {
+        id: "movement",
+        header: t("movement"),
+        cell: ({ row }) => t(MOVEMENT_KEY[row.original.movement]),
+        size: 140,
+        meta: {
+          headerTitle: t("movement"),
+          skeleton: columnSkeletons.textShort,
+        },
+      },
+      ...(tab === "GL"
+        ? [
+            {
+              id: "adjustment_type",
+              header: t("adjustmentType"),
+              cell: ({ row }) => refCell(row.original.adjustment_type),
+              size: 160,
+              meta: {
+                headerTitle: t("adjustmentType"),
+                skeleton: columnSkeletons.text,
+              },
+            } satisfies ColumnDef<AccountMappingRow>,
+          ]
+        : []),
+      {
+        id: "account",
+        header: t("account"),
+        cell: ({ row }) => <AccountCell row={row.original} />,
+        size: 240,
+        meta: { headerTitle: t("account"), skeleton: columnSkeletons.text },
+      },
+      {
+        id: "cost_center",
+        header: t("costCenter"),
+        cell: ({ row }) => <CostCenterCell row={row.original} />,
+        size: 200,
+        meta: { headerTitle: t("costCenter"), skeleton: columnSkeletons.text },
+      },
+      {
+        id: "status",
+        header: t("status"),
+        cell: ({ row }) => <StatusCell row={row.original} />,
+        size: 150,
+        meta: { headerTitle: t("status"), skeleton: columnSkeletons.badge },
+      },
+    ],
+    [t, tl, tfl, tab, onOpen, page, perpage],
+  );
 
   return useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id,
+    enableSorting: false,
+    ...tableConfig,
+    pageCount: Math.ceil(totalRecords / (Number(perpage) || 1)),
   });
 }

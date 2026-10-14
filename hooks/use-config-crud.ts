@@ -68,7 +68,10 @@ export function createConfigCrud<T, TCreate>({
     params?: Omit<ParamsDto, "page" | "perpage">,
     options?: Omit<UseQueryOptions<T[]>, "queryKey" | "queryFn">,
   ) => UseQueryResult<T[]>;
-  useById: (id: string | undefined) => UseQueryResult<T>;
+  useById: (
+    id: string | undefined,
+    options?: Pick<UseQueryOptions<T>, "staleTime" | "refetchOnMount">,
+  ) => UseQueryResult<T>;
   useCreate: () => UseMutationResult<unknown, Error, TCreate>;
   useUpdate: () => UseMutationResult<
     unknown,
@@ -148,13 +151,17 @@ export function createConfigCrud<T, TCreate>({
    * enabled เป็น false เมื่อ id หรือ buCode ยังไม่พร้อม
    *
    * @param id - id ของ entity
+   * @param options - ทับ cache profile เฉพาะจุดเรียก (เช่น staleTime: 0 เมื่อต้องการค่าสดทุกครั้งที่เปิด)
    * @returns UseQueryResult ของ entity
    * @example
    * ```ts
    * const { data } = useCurrencyById(params.id);
    * ```
    */
-  function useById(id: string | undefined) {
+  function useById(
+    id: string | undefined,
+    options?: Pick<UseQueryOptions<T>, "staleTime" | "refetchOnMount">,
+  ) {
     const buCode = useBuCode();
 
     return useQuery<T>({
@@ -162,6 +169,7 @@ export function createConfigCrud<T, TCreate>({
       queryFn: () => api.getById(buCode!, id!),
       enabled: !!buCode && !!id,
       ...cacheProfile,
+      ...options,
     });
   }
 

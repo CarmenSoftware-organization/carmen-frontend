@@ -10,6 +10,7 @@ export const LIST_PAGE_KEYS = {
   CERTIFICATION: "certification",
   CREDIT_NOTE_REASON: "credit_note_reason",
   CHART_OF_ACCOUNT: "chart_of_account",
+  CHART_OF_ACCOUNT_MAPPING: "chart_of_account_mapping",
   CREDIT_TERM: "credit_term",
   CURRENCY: "currency",
   DELIVERY_POINT: "delivery_point",
