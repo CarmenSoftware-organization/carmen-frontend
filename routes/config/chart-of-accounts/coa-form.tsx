@@ -26,6 +26,7 @@ import { SettingSection } from "@/components/ui/setting-section";
 import { StatusSwitch } from "@/components/ui/status-switch";
 import { Switch } from "@/components/ui/switch";
 import { FormToolbar } from "@/components/share/form-toolbar";
+import { FormPageShell } from "@/components/share/form-page-shell";
 import { useEntityForm } from "@/hooks/use-entity-form";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useGlAccountGroups } from "../shared/use-gl-account-groups";
@@ -351,23 +352,25 @@ export function CoaForm({
         : [];
 
   return (
-    <div className="mx-auto w-full max-w-5xl p-[max(1rem,env(safe-area-inset-bottom))]">
-      <FormToolbar
-        entity={account?.description_1 || t("entity")}
-        mode={f.mode}
-        formId={FORM_ID}
-        isPending={save.isPending}
-        onBack={f.handleBack}
-        onCancel={f.handleCancel}
-        onEdit={f.handleEdit}
-        onDelete={account ? () => setDeleteOpen(true) : undefined}
-        deleteIsPending={remove.isPending}
-        badges={account && <Badge variant="secondary" size="sm" className="font-mono">{account.code}</Badge>}
-      />
-
+    <FormPageShell
+      header={
+        <FormToolbar
+          entity={account?.description_1 || t("entity")}
+          mode={f.mode}
+          formId={FORM_ID}
+          isPending={save.isPending}
+          onBack={f.handleBack}
+          onCancel={f.handleCancel}
+          onEdit={f.handleEdit}
+          onDelete={account ? () => setDeleteOpen(true) : undefined}
+          deleteIsPending={remove.isPending}
+          badges={account && <Badge variant="secondary" size="sm" className="font-mono">{account.code}</Badge>}
+        />
+      }
+    >
       <form
         id={FORM_ID}
-        className="mt-6 space-y-6"
+        className="space-y-6"
         onSubmit={form.handleSubmit(onSubmit, () => scrollToFirstInvalidField())}
       >
         {/* SECTION 1: ข้อมูลพื้นฐานรหัสบัญชี (Basic Account Information) */}
@@ -1023,6 +1026,6 @@ export function CoaForm({
         currentGroupId={selectedGroupId}
         onSelect={handleTreeSelect}
       />
-    </div>
+    </FormPageShell>
   );
 }
