@@ -20,6 +20,7 @@ export function createLocationSchema(tv: TranslationFn, tf: TranslationFn) {
       .string()
       .min(1, tv("required", { field: tf("deliveryPoint") })),
     delivery_point_name: z.string(),
+    cost_center_id: z.string().uuid().nullable().optional(),
     users: transferPayloadSchema,
     products: transferPayloadSchema,
   });
@@ -40,6 +41,7 @@ export const EMPTY_FORM: LocationFormValues = {
   is_active: true,
   delivery_point_id: "",
   delivery_point_name: "",
+  cost_center_id: null,
   users: { ...emptyTransfer },
   products: { ...emptyTransfer },
 };
@@ -55,6 +57,7 @@ export function getDefaultValues(location?: Location): LocationFormValues {
     is_active: location.is_active,
     delivery_point_id: location.delivery_point?.id ?? "",
     delivery_point_name: location.delivery_point?.name ?? "",
+    cost_center_id: location.cost_center_id ?? null,
     users: { ...emptyTransfer },
     products: { ...emptyTransfer },
   };

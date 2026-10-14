@@ -58,6 +58,7 @@ export interface Location {
   user_location: UserLocation[];
   product_location: ProductLocation[];
   delivery_point: DeliveryPoint | null;
+  cost_center_id?: string | null;
   audit?: Audit;
 }
 
@@ -71,6 +72,7 @@ export interface CreateLocationDto {
   is_active: boolean;
   delivery_point_id?: string;
   delivery_point_name?: string;
+  cost_center_id?: string | null;
   users: TransferPayload;
   products: TransferPayload;
 }
