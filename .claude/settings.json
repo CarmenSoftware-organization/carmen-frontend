@@ -71,8 +71,20 @@
     "allow": [
       "Bash(graft:*)",
       "Bash(npx graft:*)",
-      "Bash(graft-dev:*)",
-      "Bash(node dist/cli.js:*)"
+      "Bash(graft-dev:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~*)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)",
+      "Bash(chmod -R 777 *)",
+      "Read(.env)",
+      "Read(.env.local)",
+      "Read(.env.*.local)",
+      "Bash(ssh *)",
+      "Bash(scp *)",
+      "Write(/dev/*)"
     ]
   }
 }

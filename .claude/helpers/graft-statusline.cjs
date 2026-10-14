@@ -61,7 +61,7 @@ function entry(name) {
   const gr = globalRoot();
   const global = gr && path.join(gr, '@nanonets', 'graft', 'dist', 'claude');
   if (global && fs.existsSync(path.join(global, name))) return path.join(global, name);
-  return path.join(dir, 'dist', 'claude', name); // last-ditch; import will no-op if absent
+  return null; // graft not installed anywhere known — never import from the repo's own dist/
 }
 
-import(pathToFileURL(entry("statusline.js")).href).then((m) => m.main()).catch(() => { /* graft unavailable — no-op */ });
+Promise.resolve(entry("statusline.js")).then((e) => { if (!e) throw new Error("graft unavailable"); return import(pathToFileURL(e).href); }).then((m) => m.main()).catch(() => { /* graft unavailable — no-op */ });
