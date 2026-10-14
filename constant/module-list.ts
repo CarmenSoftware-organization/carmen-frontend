@@ -558,24 +558,6 @@ export const moduleList: ModuleDto[] = [
     icon: Settings2,
     subModules: [
       {
-        name: "accountGrouping",
-        path: "/config/account-grouping",
-        licenseFeature: "configuration.chart_of_accounts", // จัดกลุ่มผังบัญชี — ใช้คีย์เดียวกับหน้า chart-of-accounts
-        icon: FolderTree,
-      },
-      {
-        name: "jvPrefix",
-        path: "/config/jv-prefix",
-        licenseFeature: "accounting.config.gl", // config:prefix-jv
-        icon: Bookmark,
-      },
-      {
-        name: "dimension",
-        path: "/config/dimension",
-        licenseFeature: "configuration.dimension",
-        icon: Layers,
-      },
-      {
         name: "costCenterGroup",
         path: "/config/cost-center-group",
         licenseFeature: "configuration.cost_center_group",
@@ -588,6 +570,37 @@ export const moduleList: ModuleDto[] = [
         licenseFeature: "configuration.cost_center",
         icon: Crosshair,
         permission: PERMISSIONS.configuration.cost_center.view,
+      },
+      {
+        name: "accountGrouping",
+        path: "/config/account-grouping",
+        licenseFeature: "configuration.chart_of_accounts", // จัดกลุ่มผังบัญชี — ใช้คีย์เดียวกับหน้า chart-of-accounts
+        icon: FolderTree,
+      },
+      {
+        name: "chartOfAccounts",
+        path: "/config/chart-of-accounts",
+        licenseFeature: "configuration.chart_of_accounts", // config:chart-of-accounts
+        icon: BookText,
+      },
+      {
+        // คีย์ license นี้ผูกกับ endpoint จริงแล้ว (api/:bu_code/account-mapping) — LicenseInterceptor + permission configuration.chart_of_account_mapping
+        name: "chartOfAccountMapping",
+        path: "/config/chart-of-account-mapping",
+        licenseFeature: "configuration.chart_of_account_mapping",
+        icon: Link2,
+      },
+      {
+        name: "jvPrefix",
+        path: "/config/jv-prefix",
+        licenseFeature: "accounting.config.gl", // config:prefix-jv
+        icon: Bookmark,
+      },
+      {
+        name: "dimension",
+        path: "/config/dimension",
+        licenseFeature: "configuration.dimension",
+        icon: Layers,
       },
       {
         name: "bankAccount",
@@ -624,19 +637,6 @@ export const moduleList: ModuleDto[] = [
         path: "/config/asset-category",
         licenseFeature: "accounting.config.asset",
         icon: Building2,
-      },
-      {
-        name: "chartOfAccounts",
-        path: "/config/chart-of-accounts",
-        licenseFeature: "configuration.chart_of_accounts", // config:chart-of-accounts
-        icon: BookText,
-      },
-      {
-        // คีย์ license นี้ผูกกับ endpoint จริงแล้ว (api/:bu_code/account-mapping) — LicenseInterceptor + permission configuration.chart_of_account_mapping
-        name: "chartOfAccountMapping",
-        path: "/config/chart-of-account-mapping",
-        licenseFeature: "configuration.chart_of_account_mapping",
-        icon: Link2,
       },
       {
         name: "titleMaster",
