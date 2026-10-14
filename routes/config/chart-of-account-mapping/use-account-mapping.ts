@@ -19,7 +19,8 @@ import type {
 
 /**
  * query param ของ `GET /api/:bu_code/account-mapping` — backend รับเป็น key แยก
- * (ไม่ใช่ clause ใน `filter=`) และรับค่าเดียวต่อ key
+ * (ไม่ใช่ clause ใน `filter=`) — key ของ entity (location / category / sub-category /
+ * item group / adjustment type) รับหลาย id คั่นด้วย `,` ส่วน key อื่นรับค่าเดียว
  */
 export interface AccountMappingListParams {
   mapping_type: MappingType;

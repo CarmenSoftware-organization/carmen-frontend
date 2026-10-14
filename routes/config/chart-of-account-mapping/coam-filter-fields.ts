@@ -26,7 +26,7 @@ import type { AccountMappingListParams } from "./use-account-mapping";
  *
  * ตัวเลือกค่าเดียว (status / location_type / movement) ใช้ control "status"
  * ซึ่งเลือกได้ทีละค่าอยู่แล้ว ส่วน entity เลือกได้หลายค่าโดยธรรมชาติของ control
- * → ส่งแค่ค่าแรก (backend รับค่าเดียว)
+ * → ส่งทุก id คั่นด้วย `,` (backend รับหลาย id ต่อ key แบบ OR) chip จึงตรงกับผลจริง
  *
  * ไม่กรอง is_active (`serverFilter: null`) — แถว mapping อาจอ้างของที่ถูกปิดไปแล้ว
  */
@@ -160,13 +160,25 @@ export function coamFilterFields(tab: MappingType): FilterFieldDef[] {
 }
 
 /** key ที่มีเฉพาะแท็บ GL หรือค่าที่ต่างกันระหว่างแท็บ — ล้างทิ้งตอนสลับแท็บ */
-export const TAB_SCOPED_FILTER_KEYS = ["movement", "adjustment_type_id"] as const;
+export const TAB_SCOPED_FILTER_KEYS = [
+  "movement",
+  "adjustment_type_id",
+] as const;
 
 const first = (v: string | undefined) =>
   v
     ?.split(",")
     .map((s) => s.trim())
     .find(Boolean) || undefined;
+
+/** id ทั้งหมดของ entity filter คั่นด้วย `,` — backend รับได้สูงสุด 100 id ต่อ key */
+const ids = (v: string | undefined) => {
+  const list = v
+    ?.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return list?.length ? list.join(",") : undefined;
+};
 
 const pick = <T extends string>(
   v: string | undefined,
@@ -200,12 +212,12 @@ export function filtersToParams(
   return {
     status: pick(values.status, STATUSES),
     location_type: pick(values.location_type, ["inventory", "direct"] as const),
-    location_id: first(values.location_id),
-    category_id: first(values.category_id),
-    sub_category_id: first(values.sub_category_id),
-    product_item_group_id: first(values.product_item_group_id),
+    location_id: ids(values.location_id),
+    category_id: ids(values.category_id),
+    sub_category_id: ids(values.sub_category_id),
+    product_item_group_id: ids(values.product_item_group_id),
     movement: pick(values.movement, MOVEMENTS[tab]),
     adjustment_type_id:
-      tab === "GL" ? first(values.adjustment_type_id) : undefined,
+      tab === "GL" ? ids(values.adjustment_type_id) : undefined,
   };
 }

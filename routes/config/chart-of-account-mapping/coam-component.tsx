@@ -58,6 +58,9 @@ export default function CoamComponent() {
   const tab: MappingType = tabParam === "GL" ? "GL" : "AP";
   const [editing, setEditing] = useState<AccountMappingRow | null>(null);
   const [generateOpen, setGenerateOpen] = useState(false);
+  // dialog seed mode/type จาก props ครั้งเดียวตอน mount — เปลี่ยน key ทุกครั้งที่เปิด
+  // ให้ mount ใหม่ (type ตามแท็บปัจจุบัน, mode กลับเป็นค่าเริ่ม) แต่ยังคง animation ตอนปิด
+  const [generateSeq, setGenerateSeq] = useState(0);
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
 
   const { params, tableConfig, search, setSearch } = useDataGridState({
@@ -128,7 +131,9 @@ export default function CoamComponent() {
       {
         onSuccess: (res) => {
           toast.success(
-            t("markReviewedDone", { count: res?.updated ?? selectedIds.length }),
+            t("markReviewedDone", {
+              count: res?.updated ?? selectedIds.length,
+            }),
           );
           table.resetRowSelection();
         },
@@ -156,7 +161,13 @@ export default function CoamComponent() {
               <span className="tabular-nums">({selectedIds.length})</span>
             </Button>
           )}
-          <Button size="sm" onClick={() => setGenerateOpen(true)}>
+          <Button
+            size="sm"
+            onClick={() => {
+              setGenerateSeq((n) => n + 1);
+              setGenerateOpen(true);
+            }}
+          >
             <Sparkles aria-hidden="true" />
             {t("generate")}
           </Button>
@@ -248,6 +259,7 @@ export default function CoamComponent() {
 
       <CoamEditSheet row={editing} onClose={() => setEditing(null)} />
       <CoamGenerateDialog
+        key={`${tab}-${generateSeq}`}
         open={generateOpen}
         onOpenChange={setGenerateOpen}
         defaultType={tab}
