@@ -26,6 +26,7 @@ export function LookupCurrencyIso({
 
   return (
     <LookupCombobox
+      resizeKey="currency-iso"
       size={size}
       value={value}
       onValueChange={(id) => onValueChange(id)}

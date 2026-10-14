@@ -38,6 +38,7 @@ export function LookupCostCenterGroup({
 
   return (
     <LookupCombobox<CostCenterGroup>
+      resizeKey="cost-center-group"
       value={value ?? ""}
       onValueChange={(id) => onValueChange(id || null)}
       items={items}

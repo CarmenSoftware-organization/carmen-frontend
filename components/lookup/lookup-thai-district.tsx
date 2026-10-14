@@ -40,6 +40,7 @@ export function LookupThaiDistrict({
 
   return (
     <LookupCombobox<ThaiDistrict>
+      resizeKey="thai-district"
       size={size}
       value={value.toString()}
       onValueChange={handleChange}

@@ -50,6 +50,7 @@ export function LookupEcoLabel({
 
   return (
     <LookupCombobox
+      resizeKey="eco-label"
       allowDeselect={false}
       modal={modal}
       value={value}

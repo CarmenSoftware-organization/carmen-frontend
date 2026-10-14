@@ -69,6 +69,7 @@ export function LookupEquipmentCategory({
 
   return (
     <LookupCombobox
+      resizeKey="equipment-category"
       size={size}
       value={value}
       onValueChange={(id) => onValueChange(id)}

@@ -38,6 +38,7 @@ export function LookupExtraCost({
 
   return (
     <LookupCombobox
+      resizeKey="extra-cost"
       allowDeselect={false}
       size={size}
       value={value}

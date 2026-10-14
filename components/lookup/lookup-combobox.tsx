@@ -26,6 +26,7 @@ import {
 import { VirtualCommandList } from "@/components/ui/virtual-command-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmptyComponent from "@/components/empty-component";
+import { useLookupResize } from "./use-lookup-resize";
 
 /**
  * หน่วงก่อนส่งคำค้นให้ server — สั้นกว่านี้ยิงทุกตัวอักษร ยาวกว่านี้ (เคยคุยกันที่ 2 วิ)
@@ -114,6 +115,11 @@ interface LookupComboboxProps<T> {
   readonly allowDeselect?: boolean;
   readonly estimateSize?: number;
   readonly maxHeight?: number;
+  /**
+   * คีย์สำหรับจำขนาด popup ที่ผู้ใช้ลากไว้ (localStorage) — ตั้งตามชนิด lookup
+   * เช่น `"product"` ไม่ใช่ตามหน้า ไม่ส่ง = ยังลากปรับได้แต่ปิดแล้วกลับขนาดเดิม
+   */
+  readonly resizeKey?: string;
 }
 
 export function LookupCombobox<T>({
@@ -157,11 +163,22 @@ export function LookupCombobox<T>({
   allowDeselect = true,
   estimateSize,
   maxHeight,
+  resizeKey,
 }: LookupComboboxProps<T>) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(
     defaultOpen ?? false,
   );
   const open = controlledOpen ?? uncontrolledOpen;
+  const {
+    size: resizedSize,
+    contentRef,
+    triggerRef,
+    autoAlign,
+    onOpened,
+    onPointerDown: onResizeStart,
+    reset: resetSize,
+    onClose: onResizeClose,
+  } = useLookupResize(resizeKey, maxHeight ?? 300);
   const [search, setSearch] = useState("");
 
   const t = useTranslations("lookup");
@@ -231,7 +248,10 @@ export function LookupCombobox<T>({
       open={open}
       onOpenChange={(o) => {
         setUncontrolledOpen(o);
-        if (!o) setSearch("");
+        if (!o) {
+          setSearch("");
+          onResizeClose();
+        }
         onOpenChange?.(o);
       }}
       modal={modal}
@@ -241,6 +261,7 @@ export function LookupCombobox<T>({
           <TooltipTrigger asChild>
             <PopoverTrigger asChild>
               <Button
+                ref={triggerRef}
                 variant="outline"
                 aria-expanded={open}
                 aria-invalid={!!error}
@@ -302,8 +323,24 @@ export function LookupCombobox<T>({
       </TooltipProvider>
 
       <PopoverContent
-        className={cn(popoverWidth, "p-0", popoverClassName)}
-        align={popoverAlign}
+        ref={contentRef}
+        className={cn(
+          popoverWidth,
+          "group/lookup relative p-0",
+          // ขนาดที่จำไว้อาจใหญ่กว่าจอปัจจุบัน — ให้รายการหดตามพื้นที่ที่เหลือ
+          resizedSize &&
+            "flex max-h-(--radix-popover-content-available-height) flex-col",
+          popoverClassName,
+        )}
+        style={
+          resizedSize
+            ? {
+                width: `clamp(var(--radix-popover-trigger-width), ${resizedSize.width}px, var(--radix-popover-content-available-width))`,
+              }
+            : undefined
+        }
+        align={popoverAlign ?? autoAlign}
+        onOpenAutoFocus={onOpened}
         onCloseAutoFocus={(e) => {
           const next = nextFocusRef?.current;
           if (!next) return;
@@ -346,7 +383,7 @@ export function LookupCombobox<T>({
                 hasMore={hasMore}
                 isLoadingMore={isLoadingMore}
                 estimateSize={estimateSize}
-                maxHeight={maxHeight}
+                maxHeight={resizedSize?.height ?? maxHeight}
                 emptyMessage={
                   <EmptyComponent
                     icon={emptyIcon}
@@ -361,7 +398,8 @@ export function LookupCombobox<T>({
                     aria-pressed={value === getId(item)}
                     data-value={searchFn(item)}
                     className={cn(
-                      "relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-xs outline-hidden select-none",
+                      // text-left: <button> จัดกลางเป็น default — renderItem ที่ห่อข้อความด้วย div จะลอยกลางแถว
+                      "relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-left text-xs outline-hidden select-none",
                       "hover:bg-accent hover:text-accent-foreground",
                       "focus:bg-accent focus:text-accent-foreground focus:outline-none",
                     )}
@@ -404,6 +442,29 @@ export function LookupCombobox<T>({
             </>
           )}
         </Command>
+        {/* ที่จับปรับขนาด — ย้ายมุมตามทิศที่ Radix วาง popup (ดู useLookupResize) */}
+        <div
+          aria-hidden="true"
+          title={t("resizeHint")}
+          onPointerDown={onResizeStart}
+          onDoubleClick={resetSize}
+          className={cn(
+            "text-muted-foreground/60 hover:text-muted-foreground absolute z-10 flex size-4 touch-none items-end justify-end p-0.5 select-none",
+            "right-0 bottom-0 cursor-nwse-resize",
+            "group-data-[align=end]/lookup:right-auto group-data-[align=end]/lookup:left-0 group-data-[align=end]/lookup:scale-x-[-1] group-data-[align=end]/lookup:cursor-nesw-resize",
+            "group-data-[side=top]/lookup:top-0 group-data-[side=top]/lookup:bottom-auto group-data-[side=top]/lookup:scale-y-[-1] group-data-[side=top]/lookup:cursor-nesw-resize",
+            "group-data-[side=top]/lookup:group-data-[align=end]/lookup:cursor-nwse-resize",
+          )}
+        >
+          <svg viewBox="0 0 8 8" className="size-2" fill="none">
+            <path
+              d="M7 1 1 7M7 4 4 7"
+              stroke="currentColor"
+              strokeWidth="1"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
       </PopoverContent>
     </Popover>
   );

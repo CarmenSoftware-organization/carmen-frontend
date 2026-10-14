@@ -50,6 +50,7 @@ export function LookupCertification({
 
   return (
     <LookupCombobox
+      resizeKey="certification"
       allowDeselect={false}
       modal={modal}
       value={value}

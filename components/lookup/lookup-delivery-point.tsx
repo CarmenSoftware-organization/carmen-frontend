@@ -52,6 +52,7 @@ export function LookupDeliveryPoint({
 
   return (
     <LookupCombobox
+      resizeKey="delivery-point"
       size={size}
       value={value}
       onValueChange={(id, item) => {

@@ -104,13 +104,12 @@ export function LookupLocationPairProduct({
     // แถวเป็นของตาราง product_location — ดึงตาม `product_id` (`id` ได้ 0 แถว)
     selectedIds: value ? [value] : [],
     idFilterKey: "product_id",
-    filter: excludedSet
-      ? (p) => !excludedSet.has(p.product_id)
-      : undefined,
+    filter: excludedSet ? (p) => !excludedSet.has(p.product_id) : undefined,
   });
 
   return (
     <LookupCombobox
+      resizeKey="location-pair-product"
       size={size}
       value={value}
       onValueChange={onValueChange}

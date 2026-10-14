@@ -42,6 +42,7 @@ export function LookupTaxProfile({
 
   return (
     <LookupCombobox
+      resizeKey="tax-profile"
       allowDeselect={false}
       size={size}
       value={value}

@@ -40,6 +40,7 @@ export function LookupShelf({
 
   return (
     <LookupCombobox
+      resizeKey="shelf"
       allowDeselect={false}
       size="sm"
       value={value}

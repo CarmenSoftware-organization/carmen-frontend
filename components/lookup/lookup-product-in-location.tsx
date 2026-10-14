@@ -78,6 +78,7 @@ export function LookupProductInLocation({
 
   return (
     <LookupCombobox
+      resizeKey="product-in-location"
       size={size}
       defaultOpen={defaultOpen}
       open={open}

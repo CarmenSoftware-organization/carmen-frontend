@@ -310,6 +310,11 @@ export interface LookupChartOfAccountProps {
   readonly error?: string;
   readonly readOnly?: boolean;
   readonly activeOnly?: boolean;
+  /**
+   * default `true` — ผู้เรียกเกือบทั้งหมดอยู่ใน Sheet/Dialog ซึ่งล็อกการเลื่อนนอกกล่อง
+   * ของมัน แต่ popover ถูก portal ออกไปที่ body → ถ้าไม่ modal รายการจะเลื่อนไม่ได้
+   */
+  readonly modal?: boolean;
 }
 
 export function LookupChartOfAccount({
@@ -323,6 +328,7 @@ export function LookupChartOfAccount({
   error,
   readOnly,
   activeOnly = true,
+  modal = true,
 }: LookupChartOfAccountProps) {
   const tl = useTranslations("lookup");
   const [hasOpened, setHasOpened] = useState(false);
@@ -355,6 +361,7 @@ export function LookupChartOfAccount({
 
   return (
     <LookupCombobox
+      resizeKey="chart-of-account"
       size={size}
       value={value}
       onValueChange={(code, item) => onValueChange(code, item)}
@@ -375,9 +382,12 @@ export function LookupChartOfAccount({
               {acc.description_1}
             </span>
           </div>
-          <Badge variant="outline" size="xs" className="shrink-0 uppercase">
-            {acc.category}
-          </Badge>
+          {/* ข้อมูลจริงจาก API มักไม่มี category — Badge ว่างจะกลายเป็นวงกลมเปล่าท้ายแถว */}
+          {acc.category && (
+            <Badge variant="outline" size="xs" className="shrink-0 uppercase">
+              {acc.category}
+            </Badge>
+          )}
         </div>
       )}
       placeholder={resolvedPlaceholder}
@@ -387,6 +397,7 @@ export function LookupChartOfAccount({
       isLoading={isLoading}
       className={className}
       error={error}
+      modal={modal}
     />
   );
 }

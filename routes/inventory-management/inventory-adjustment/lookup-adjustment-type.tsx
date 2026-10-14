@@ -48,6 +48,7 @@ export function LookupAdjustmentType({
 
   return (
     <LookupCombobox
+      resizeKey="adjustment-type"
       allowDeselect={false}
       value={value}
       onValueChange={(id) => onValueChange(id)}
