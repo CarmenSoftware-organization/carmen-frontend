@@ -38,6 +38,9 @@ export function useReportTable({
       },
       {
         accessorKey: "ReportName",
+        // DataGridTable แปลง size เป็น % ของผลรวม — ไม่ตั้ง = 150 เท่า Type แล้ว
+        // คอลัมน์ # (50) กินไป ~14% ของตาราง
+        size: 800,
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title={tfl("name")} />
         ),
@@ -69,6 +72,7 @@ export function useReportTable({
       },
       {
         accessorKey: "ReportGroup",
+        size: 160,
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title={tfl("type")} />
         ),
