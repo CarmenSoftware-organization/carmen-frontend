@@ -81,9 +81,12 @@ UI:
 - `packages/error-catalog/src/catalog.ts`: `COST_CENTER_IN_USE`, `makeId(MODULE.COST_CENTER, 4)`, http 409,
   EN "Cost center is still referenced by locations or account mappings",
   TH "ศูนย์ต้นทุนยังถูกใช้โดยสถานที่หรือการผูกบัญชี"
-- `apps/micro-business/src/master/cost-center/cost-center.service.ts` `delete()`: ก่อน transaction นับ
-  `tb_location` และ `tb_account_mapping` ที่ `cost_center_id = id` และ `deleted_at: null` → ถ้ารวม > 0 คืน
-  `Result.errorFromCatalog(COST_CENTER_IN_USE, { locations, account_mappings })` — แบบเดียวกับ group
+- `apps/micro-business/src/master/cost-center/cost-center.service.ts` `delete()` → `countReferences()` นับแถวที่ยังอ้างถึง
+  (ขยายหลัง final review — user อนุมัติ 2026-10-15): `tb_location`, `tb_account_mapping`, `tb_gl_jv_detail`,
+  `tb_gl_jv_template_detail`, `tb_gl_budget_detail`, `tb_gl_balance`, `tb_ap_payment_expense`,
+  `tb_ap_invoice_detail` (dr/cr/vat), `tb_ar_invoice_detail` (dr/cr/vat/tax2) — กรอง `deleted_at: null` เมื่อตารางมีคอลัมน์นี้;
+  ไม่นับ `tb_cost_center_account` (allow-list ของตัวเองที่ลบไปพร้อมกัน) → รวม > 0 คืน
+  `COST_CENTER_IN_USE` พร้อม `{ locations, account_mappings, accounting_records }`
 - gateway ไม่แก้ (ส่ง http status ตาม catalog อยู่แล้ว) — ยืนยันด้วย curl
 
 ## Rollout
