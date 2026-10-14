@@ -376,6 +376,9 @@ export const API_ENDPOINTS = {
   PROFILE_SIGNATURE: "/api/proxy/api/user/profile/signature",
   PROFILE_CHANGE_PASSWORD: "/api/proxy/api/auth/change-password",
   PROFILE_UPDATE: "/api/proxy/api/user/profile",
+  MCP_TOKENS: "/api/proxy/api/user/mcp-tokens",
+  MCP_TOKEN_REVOKE: (id: string, docVersion: number) =>
+    `/api/proxy/api/user/mcp-tokens/${toSafePathSegment(id)}?doc_version=${docVersion}`,
   PURCHASE_ORDER: (buCode: string) =>
     `/api/proxy/api/${buCode}/purchase-orders`,
   PURCHASE_ORDER_COMMENT: (buCode: string, poId?: string) =>
