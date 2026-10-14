@@ -1,7 +1,1645 @@
 {
-  "current": "2.5.0",
-  "generated_at": "2026-10-07T11:15:02.652Z",
+  "current": "2.5.12",
+  "generated_at": "2026-10-14T23:44:29.832Z",
   "versions": [
+    {
+      "version": "2.5.12",
+      "build": "2.5.12-build.20261014.e192e282",
+      "date": "2026-10-14",
+      "commit": "e192e282",
+      "changes": {
+        "added": [
+          {
+            "scope": "report",
+            "summary": "แสดงคำอธิบายรายงานใต้ชื่อในโหมด list",
+            "hash": "bbdfa238",
+            "author": "Thammanoon Semapru",
+            "pr": 284
+          },
+          {
+            "scope": "lookup",
+            "summary": "ลากปรับขนาด popup ของ lookup ได้ และแก้ lookup ผังบัญชีเลื่อนไม่ได้ในชีต",
+            "hash": "1c537623",
+            "author": "Thammanoon Semapru",
+            "pr": 283
+          },
+          {
+            "scope": "config",
+            "summary": "แก้ account / cost center หลายแถวพร้อมกันในผังการผูกบัญชี",
+            "hash": "b3533663",
+            "author": "Thammanoon Semapru",
+            "pr": 282
+          },
+          {
+            "scope": "config",
+            "summary": "hook และข้อความสำหรับแก้หลายแถวในผังการผูกบัญชี",
+            "hash": "e2e8cbe2",
+            "author": "Thammanoon Semapru",
+            "pr": 282
+          },
+          {
+            "scope": "config",
+            "summary": "ป้ายเตือนในผังการผูกบัญชีเป็นข้อความสั้นที่ลิงก์ไปแก้ที่ต้นทาง",
+            "hash": "9669995d",
+            "author": "Thammanoon Semapru",
+            "pr": 282
+          },
+          {
+            "scope": "config",
+            "summary": "เรียงตารางผังการผูกบัญชีด้วยการคลิกหัวคอลัมน์ และย้าย cost center ไว้ก่อน account",
+            "hash": "ddd98635",
+            "author": "Thammanoon Semapru",
+            "pr": 282
+          },
+          {
+            "scope": "config",
+            "summary": "หน้า Cost Center และ Cost Center Group (list + dialog เพิ่ม/แก้/ลบ)",
+            "hash": "daf00525",
+            "author": "Thammanoon Semapru",
+            "pr": 281
+          },
+          {
+            "scope": "interface",
+            "summary": "หน้า list เปลี่ยนการ์ดเป็นแถวการเชื่อมต่อ — จุดสถานะสี success, ปลายทาง (endpoint/api_server), แก้ไขล่าสุดโดยใคร, ตัวนับเปิดใช้ต่อหมวด, ป้ายหมดอายุเป็นสี warning",
+            "hash": "840479df",
+            "author": "Thammanoon Semapru",
+            "pr": 276
+          },
+          {
+            "scope": "category",
+            "summary": "ตั้ง Inventory/Direct account ที่ category / sub-cat / item group (สืบทอดลงล่าง)",
+            "hash": "8fa29263",
+            "author": "Thammanoon Semapru",
+            "pr": 272
+          },
+          {
+            "scope": "location",
+            "summary": "ผูก cost center ที่ location (ค่าเริ่มต้นของ account mapping)",
+            "hash": "f8010eaf",
+            "author": "Thammanoon Semapru",
+            "pr": 272
+          },
+          {
+            "scope": "coam",
+            "summary": "sheet แก้ทับ/คืนค่า default (409/422) + dialog สร้างแถว 2 โหมด",
+            "hash": "26993e51",
+            "author": "Thammanoon Semapru",
+            "pr": 272
+          },
+          {
+            "scope": "coam",
+            "summary": "หน้า Chart of Account Mapping อ่าน API จริง — แท็บ AP/GL, ตัวกรอง, status chips, แบ่งหน้า 10–100",
+            "hash": "8ea98c28",
+            "author": "Thammanoon Semapru",
+            "pr": 272
+          },
+          {
+            "scope": "lookup",
+            "summary": "LookupCostCenter สำหรับ location และ account mapping",
+            "hash": "08927c1a",
+            "author": "Thammanoon Semapru",
+            "pr": 272
+          },
+          {
+            "scope": "app-status",
+            "summary": "หน้าเต็มจอปิดปรับปรุง/ปิดใช้งาน และแถบอ่านอย่างเดียว/ผู้ได้รับยกเว้นใน root-layout",
+            "hash": "091f9dca",
+            "author": "Thammanoon Semapru",
+            "pr": 265
+          },
+          {
+            "scope": "app-status",
+            "summary": "เพิ่ม useAppStatus poll สถานะแอปทุก 60 วินาที และโหลด query ใหม่เมื่อเลิกบล็อก",
+            "hash": "9bcd4c5f",
+            "author": "Thammanoon Semapru",
+            "pr": 265
+          },
+          {
+            "scope": "app-status",
+            "summary": "เพิ่ม store สถานะแอปและให้ http-client รายงาน 503/403 ของสถานะแอป ไม่เด้ง PermissionDeniedDialog",
+            "hash": "e3086d1a",
+            "author": "Thammanoon Semapru",
+            "pr": 265
+          },
+          {
+            "scope": "app-status",
+            "summary": "รู้จักรหัส APP_MAINTENANCE/APP_READ_ONLY/APP_DISABLED, ไม่ retry 503 ของสถานะแอป และหน้า login บอกเมื่อแอปถูกปิด",
+            "hash": "beb45f89",
+            "author": "Thammanoon Semapru",
+            "pr": 265
+          },
+          {
+            "scope": "report",
+            "summary": "schedule form takes the Label attribute on Dialog controls",
+            "hash": "e3cd69c8",
+            "author": "Thammanoon Semapru",
+            "pr": 264
+          },
+          {
+            "scope": "report",
+            "summary": "run dialog reads Label attribute on controls and shows <Group Label> headings",
+            "hash": "32fe211c",
+            "author": "Thammanoon Semapru",
+            "pr": 264
+          },
+          {
+            "scope": "report",
+            "summary": "support <Group> layout boxes in report dialogs",
+            "hash": "54c0d027",
+            "author": "Thammanoon Semapru",
+            "pr": 262
+          },
+          {
+            "scope": "report",
+            "summary": "lay the run dialog out in Cols columns",
+            "hash": "1a9f2ff8",
+            "author": "Thammanoon Semapru",
+            "pr": 262
+          },
+          {
+            "scope": "report",
+            "summary": "parse Dialog Cols and ColSpan",
+            "hash": "d517dab9",
+            "author": "Thammanoon Semapru",
+            "pr": 262
+          },
+          {
+            "scope": "report",
+            "summary": "flag schedules whose report is unavailable + clear viewer message",
+            "hash": "b09d207a",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "dashboard",
+            "summary": "ตั้งชื่อ widget แยกภาษา EN/TH ใน dialog ตั้งค่า",
+            "hash": "c4b953ef",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "dashboard",
+            "summary": "แสดง title widget ตามภาษา และเลิกบันทึกชื่อ dataset เป็น title ตอนสร้าง",
+            "hash": "79e1c8aa",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "dashboard",
+            "summary": "helper เลือก title widget ตามภาษา + คำแปลชื่อ dataset 94 ตัว",
+            "hash": "afcf28b2",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "add license gating skill and update Claude documentation",
+            "hash": "7ea703ed",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "inventory",
+            "summary": "on hand ณ วันที่เอกสาร (PR/PO) + ยอดรายคลังใน SI/SO + SI/SO ลงวันที่เกินวันนี้ไม่ได้",
+            "hash": "90018c6d",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "useLookupResource รับ generic และ serverFilter · ตรวจฟิลด์เพิ่มจาก backend ก่อนใช้",
+            "hash": "1f7736ce",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "errors",
+            "summary": "แปลข้อความ FIFO ห้ามลงวันที่ใบรับก่อนใบรับล่าสุด (GRN / Stock In)",
+            "hash": "35408558",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "หน่วงค้นหา 400ms พร้อม spinner และโหลดหน้าถัดไปล่วงหน้า 5 แถว",
+            "hash": "a9907a7d",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "เพิ่ม useLookupResource เรียก Lookup API ของ backend แบบแบ่งหน้า + ดึงค่าที่เลือกด้วย ids",
+            "hash": "eea10fcd",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "version",
+            "summary": "แสดงเวอร์ชันแอป + API รูปแบบ \"App v… <commit> · API v…\" ทุกหน้า",
+            "hash": "deab5b68",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "ใบจ่ายออกดูสต๊อกและราคา ณ วันที่ของใบ + คู่ From–To ของพารามิเตอร์รายงานอยู่แถวเดียวและเติมค่าให้กัน",
+            "hash": "6e1ee12a",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "auth",
+            "summary": "ตัดข้อความใต้ปุ่ม Google ออก เหลือแค่ปุ่ม disabled",
+            "hash": "d386ce77",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "auth",
+            "summary": "แสดงปุ่ม Google เป็น disabled พร้อมข้อความเมื่อยังไม่เปิด แทนการซ่อน",
+            "hash": "ac227a1c",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "auth",
+            "summary": "แสดงปุ่ม Google เฉพาะเมื่อ gateway เปิดสวิตช์ google_sign_in.app และแปล error google_disabled",
+            "hash": "9fe8e8ca",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "report",
+            "summary": "จำค่าพารามิเตอร์ที่เรียกดูรายงานล่าสุด 30 นาที + แปลรหัส error ของพอ ณ วันที่เอกสาร",
+            "hash": "4e618801",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "report",
+            "summary": "ค้นตัวเลือกของรายงานฝั่ง server ตอนพิมพ์ในช่องเลือก",
+            "hash": "7dfe05d1",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "dashboard",
+            "summary": "โหลดข้อมูล widget ผ่านคิวทีละ 3 ใบ ใบบนขึ้นก่อนแทนการยิงพร้อมกันทั้งหน้า",
+            "hash": "9acb2b9b",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "dashboard",
+            "summary": "แสดง BU widget บนหน้า dashboard หลักและต่อท้ายทุกหน้า module dashboard",
+            "hash": "09bcd7af",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "dashboard",
+            "summary": "เพิ่มส่วน BU widget ที่ทุกคนใน BU เห็นและแก้ได้ตามสิทธิ์",
+            "hash": "cb98a8b7",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "dashboard",
+            "summary": "เพิ่ม endpoint, สิทธิ์ และ hook ของ BU dashboard widget",
+            "hash": "778295b4",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "version",
+            "summary": "เพิ่มเลข patch อัตโนมัติทุกครั้งที่ build และแสดงเวลา build ที่ footer/หน้า login",
+            "hash": "88d3de2b",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "version",
+            "summary": "แสดง commit/เวลา build ของ FE ที่ footer และเวอร์ชันแอปที่หน้า login",
+            "hash": "ddef87f2",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "auth",
+            "summary": "เพิ่มการเข้าสู่ระบบด้วย Google ที่หน้า login และหน้าคำเชิญ พร้อมกัน token หลุดเข้า telemetry",
+            "hash": "4b215378",
+            "author": "PhiranatCsb",
+            "pr": null
+          },
+          {
+            "scope": "theme",
+            "summary": "mirror light/dark choice to a parent-domain cookie for the Keycloak login page",
+            "hash": "7524ae7b",
+            "author": "PhiranatCsb",
+            "pr": null
+          },
+          {
+            "scope": "sso",
+            "summary": "Move Google OAuth to Keycloak",
+            "hash": "19e11f31",
+            "author": "PhiranatCsb",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "sso",
+            "hash": "ed6341f1",
+            "author": "PhiranatCsb",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "Google OAuth",
+            "hash": "94b87931",
+            "author": "PhiranatCsb",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "FormToolbar รับ ribbon ส่งต่อ DocFormHeader (สำหรับหัว PR)",
+            "hash": "c37515a9",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "DocPageSkeleton สำหรับหน้าเอกสาร + แก้ comment ribbon ของ DocFormHeader",
+            "hash": "f65d2cd7",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "FormToolbar เป็นชุดปุ่มมาตรฐาน — รับ title/badges/leading/submitLabel, Edit primary, gate เฉพาะ key ใน catalog",
+            "hash": "34fc6ba1",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "FormPageShell โครงหน้า form เดียวกัน + FormPageSkeleton",
+            "hash": "89879ceb",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "permissions",
+            "summary": "PERMISSION_KEYS + isKnownPermission กันการ gate ด้วย key ที่ไม่มีใน catalog",
+            "hash": "cbeef7b8",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "เพิ่ม ListPageShell โครงหน้า list กลาง + listGridMaxH",
+            "hash": "97331e72",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "fetchAllPages วนหน้าละ 100 แทน perpage=-1, useListAll ใน createConfigCrud และ useLookupPagination คืน total/error/refetch",
+            "hash": "fffd2a59",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "PagedChecklist checklist เลือกหลายค่าโหลดทีละหน้า + loadMore ไม่ข้ามหน้าใต้ StrictMode + VirtualCommandList วัดความสูงแถวจริง",
+            "hash": "cb400503",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "adjustment type eco label และ certificate ในฟอร์มเป็น combobox แบบ lazy load ค่าที่ปิดใช้งานแล้วยังขึ้นชื่อ",
+            "hash": "eca83903",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list-filter",
+            "summary": "ตัวกรองแผนกผู้ใช้ คลัง SR ผู้ใช้ใน log และเลขที่ใบแจ้งหนี้ GRN โหลดทีละหน้า เลิกดึงทะเบียนทั้งก้อน",
+            "hash": "ee1735e9",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list-filter",
+            "summary": "ตัวกรองหมวด/ประเภท/template/สกุลเงินของหน้า list สินค้า ผู้ขาย สูตร อุปกรณ์ IA RFP price list ใช้ entity และชื่อในตารางดึงตาม id",
+            "hash": "87aeb9e1",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "lookup ที่ผูก parent ดึงค่าที่เลือกตาม id เมื่อ endpoint รองรับ + แก้ dropdown งวดตรวจนับที่ว่างเสมอ",
+            "hash": "1ac0f190",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "lookup ทะเบียน config 10 ตัวส่ง selectedIds ชื่อค่าที่เลือกขึ้นทันทีโดยไม่ต้องเปิด popover และกรอง active ที่ server",
+            "hash": "92b28f9f",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list-filter",
+            "summary": "control entity ตัวกรองเลือกหลายค่าจากทะเบียนแบบทั่วไป ย้ายผู้ขาย/แผนก/ผู้ขอมาใช้ แล้วลบ control เฉพาะทาง",
+            "hash": "0cc1cee9",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list-filter",
+            "summary": "chip แผนก/ผู้ขอ/ผู้ขาย ดึงชื่อเฉพาะ id ที่เลือก เลิกลากทะเบียนทั้ง BU",
+            "hash": "f997d6a1",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "filter",
+            "summary": "ตัวกรอง vendor/แผนก/ผู้ขอ ค้นที่ server + โหลดทีละหน้า รวมเป็น EntityMultiFilter",
+            "hash": "1f33a4d5",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "category/sub-category/item group/department/noti template/user เลิกดึง perpage=-1",
+            "hash": "ec683391",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "currency/credit term/tax/CN reason/extra cost/shelf เปลี่ยนเป็น combobox แบบ lazy load",
+            "hash": "2adae37c",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "useLookupPagination ดึงค่าที่เลือกไว้ตาม id ได้ + serverFilter",
+            "hash": "91986170",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "product",
+            "summary": "ใส่รหัสสินค้าไว้ต้นแถบตัวตนใต้ชื่อ",
+            "hash": "78626ad8",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "product",
+            "summary": "โหมดดูอ่านชัดขึ้น หัวหน้ามีแถบตัวตนสินค้า รหัสในตารางไม่เป็นลิงก์",
+            "hash": "a35f4464",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list-card",
+            "summary": "ปุ่มลบบนการ์ดเป็นไอคอนสีจาง แดงเฉพาะตอนชี้",
+            "hash": "66ae17f3",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "grn",
+            "summary": "หน้ารายการใบรับสินค้ามีคอลัมน์และตัวกรองวันที่ใบแจ้งหนี้",
+            "hash": "a125a2cb",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "grn",
+            "summary": "ใบ committed แก้ได้เฉพาะหัวใบ ②–⑦ และปุ่ม Save คงสถานะเดิม",
+            "hash": "1dbe9c09",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "grn",
+            "summary": "ใบ committed มีปุ่มแก้ไข เว้นแต่ถูกดึงเข้า AP Invoice แล้ว (ปุ่มกดไม่ได้ + บอกเลข AP)",
+            "hash": "0ff38ea6",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "company-profile",
+            "summary": "ปรับโหมดดูให้อ่านง่าย + ตัวอย่างสดของรูปแบบวันที่/ตัวเลข",
+            "hash": "2b878d00",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "inventory-period",
+            "summary": "toast แสดงข้อความ error จาก backend",
+            "hash": "6e09a459",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "inventory-period",
+            "summary": "แถบปีบัญชีบอกรอบปัจจุบันและรอบค้างปิด",
+            "hash": "54d095d1",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "inventory-adjustment",
+            "summary": "เพิ่มตัวกรองประเภทการปรับปรุง (adjustment type)",
+            "hash": "0ef5dc79",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "profile",
+            "summary": "เตือนเมื่อ BU ไม่มี default currency ที่ใช้ได้",
+            "hash": "827cd967",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "company-profile",
+            "summary": "รองรับวิธีคิดต้นทุน average_per_location",
+            "hash": "83bb0624",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "profile",
+            "summary": "MCP tokens section in profile settings",
+            "hash": "b06fee3f",
+            "author": "CarmenSoftware-dev",
+            "pr": 270
+          },
+          {
+            "scope": null,
+            "summary": "implement DisplayTemplate component and update CoamComponent layout",
+            "hash": "bdb5a1b9",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "enhance UI components and functionality across various pages",
+            "hash": "66b661c9",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "Implement Chart of Accounts editor with create and edit functionality",
+            "hash": "ce0c6301",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "add accounts payable UI components and hooks",
+            "hash": "bbdbf253",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": "accounting",
+            "summary": "enhance journal voucher functionality and add GL period checks",
+            "hash": "49843855",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "add GL period, JV prefix, payment type, WHT form, and WHT service type management pages",
+            "hash": "b2dbbc6e",
+            "author": "llHorizonll",
+            "pr": null
+          }
+        ],
+        "fixed": [
+          {
+            "scope": "guards",
+            "summary": "แก้เทสต์ guard 3 ตัวที่แดงบน main จนตัด release ไม่ได้",
+            "hash": "a417d483",
+            "author": "Thammanoon Semapru",
+            "pr": 288
+          },
+          {
+            "scope": "config",
+            "summary": "ย้ายเมนู cost center / ผังบัญชี ขึ้นบนสุดของ Config",
+            "hash": "4392e98e",
+            "author": "Thammanoon Semapru",
+            "pr": 287
+          },
+          {
+            "scope": "data-grid",
+            "summary": "คอลัมน์ # และ checkbox กว้างคงที่เป็น px ไม่ร่วมแบ่งเปอร์เซ็นต์",
+            "hash": "309e0530",
+            "author": "Thammanoon Semapru",
+            "pr": 286
+          },
+          {
+            "scope": "report",
+            "summary": "คอลัมน์ # ในหน้ารายการรายงานกว้างเกินไป",
+            "hash": "f71968fa",
+            "author": "Thammanoon Semapru",
+            "pr": 285
+          },
+          {
+            "scope": "config",
+            "summary": "ล้าง sort ตอนสลับแท็บ, ไม่ส่ง sort ที่ backend ไม่รับ, plural ภาษาอังกฤษ และ snapshot แถวตอนเปิด sheet แก้หลายแถว",
+            "hash": "072aacf2",
+            "author": "Thammanoon Semapru",
+            "pr": 282
+          },
+          {
+            "scope": "config",
+            "summary": "แสดงคอลัมน์ checkbox ในผังการผูกบัญชีและลบบรรทัด markdown ที่หลุดเข้า JSX",
+            "hash": "856a97e4",
+            "author": "Thammanoon Semapru",
+            "pr": 282
+          },
+          {
+            "scope": "config",
+            "summary": "ข้อความลบ cost center ไม่ได้ครอบคลุมรายการบัญชีที่อ้างถึง",
+            "hash": "e2f804d4",
+            "author": "Thammanoon Semapru",
+            "pr": 281
+          },
+          {
+            "scope": "config",
+            "summary": "ข้อความ error เฉพาะเรื่องของ cost center (ลบไม่ได้เพราะยังถูกใช้ / รหัสซ้ำ) และซ่อนคำแนะนำสร้างกลุ่มเมื่อเลือกกลุ่มไว้แล้ว",
+            "hash": "2b6fa1dd",
+            "author": "Thammanoon Semapru",
+            "pr": 281
+          },
+          {
+            "scope": "license",
+            "summary": "ใบ INF หมดอายุไม่ล็อกหน้า Interface ทั้งหน้าว่า \"ไม่ได้ซื้อ\" — เพิ่ม isExpired + viewableWhenExpired; หน้าอื่นที่หมดอายุขึ้นข้อความหมดอายุแทน",
+            "hash": "87a67e55",
+            "author": "Thammanoon Semapru",
+            "pr": 279
+          },
+          {
+            "scope": "breadcrumb",
+            "summary": "หน้า interface detail ขึ้นชื่อ category/brand จากคำแปล แทน Dashboard/Carmen_gl — ชั้น category ไม่มี route จึงเป็นข้อความ ไม่ใช่ลิงก์",
+            "hash": "54cb648e",
+            "author": "Thammanoon Semapru",
+            "pr": 278
+          },
+          {
+            "scope": "interface",
+            "summary": "brand ที่คีย์อยู่แค่ใน expired_features ไม่ยิง GET config — backend ตอบ 403 ทำหน้า list/detail พัง; detail แสดงคำอธิบายแทนฟอร์ม",
+            "hash": "08e827ce",
+            "author": "Thammanoon Semapru",
+            "pr": 277
+          },
+          {
+            "scope": "interface",
+            "summary": "หน้า list ยิง config เฉพาะ brand ที่ BU มีสิทธิ์ — brand ที่ไม่ได้ซื้อตอบ 403 ทำทั้งหน้าพัง + เด้ง Permission Denied",
+            "hash": "c70d9ebc",
+            "author": "Thammanoon Semapru",
+            "pr": 275
+          },
+          {
+            "scope": "category",
+            "summary": "breadcrumb ชนชื่อ segment (ขึ้น Recipe Category), ป้าย Not Sold Directly ไม่ใช้สีแดง, รหัสใน tree ตรงแนว, ช่องชื่อเต็มแถว, ตัวพิมพ์ป้าย Inventory/Direct Account",
+            "hash": "2ab1d472",
+            "author": "Thammanoon Semapru",
+            "pr": 274
+          },
+          {
+            "scope": "location",
+            "summary": "เมนู config ซ้ำ 8 รายการ, ไอคอนตรวจนับไม่ตรงหัวคอลัมน์, เพิ่มคอลัมน์ cost center, จัดฟอร์มให้จุดส่งกับ cost center อยู่แถวเดียว, แปลหัวตารางผู้ใช้",
+            "hash": "102351ed",
+            "author": "Thammanoon Semapru",
+            "pr": 273
+          },
+          {
+            "scope": "coam",
+            "summary": "ส่งตัวกรอง entity ครบทุก id, dialog generate รีเซ็ตตามแท็บทุกครั้งที่เปิด, โหลด account_codes ของ node ใหม่ทุกครั้ง",
+            "hash": "864a4f90",
+            "author": "Thammanoon Semapru",
+            "pr": 272
+          },
+          {
+            "scope": "lookup",
+            "summary": "LookupCostCenter ดึงชื่อตาม id เมื่อค่าที่เลือกไม่อยู่ในรายการ",
+            "hash": "31e1ab77",
+            "author": "Thammanoon Semapru",
+            "pr": 272
+          },
+          {
+            "scope": "on-hand",
+            "summary": "กล่อง on hand ใน PR/PO แสดงยอดปัจจุบัน และกล่องใน SR ใช้คลังปลายทาง",
+            "hash": "8b6d7675",
+            "author": "Khafang",
+            "pr": 269
+          },
+          {
+            "scope": "i18n",
+            "summary": "app-status and license banners format dates in the app locale",
+            "hash": "127c3bb2",
+            "author": "Thammanoon Semapru",
+            "pr": 268
+          },
+          {
+            "scope": "dashboard",
+            "summary": "keep status group card header controls inside the card on narrow screens",
+            "hash": "4050fa6b",
+            "author": "Thammanoon Semapru",
+            "pr": 267
+          },
+          {
+            "scope": "app-status",
+            "summary": "probe ซ้ำทันทีเมื่อผลถูกทิ้งเพราะมีรายงานบล็อกระหว่างทาง ข้อความแอดมินไม่หายนาน 60 วินาที",
+            "hash": "e6e43b85",
+            "author": "Thammanoon Semapru",
+            "pr": 266
+          },
+          {
+            "scope": "app-status",
+            "summary": "แก้ตามผลรีวิวทั้งกิ่ง — ข้อความแอดมินเชื่อ probe อย่างเดียว, refresh ล้มชั่วคราวไม่ล้าง session, toast สถานะแอปผ่านระบบแปล",
+            "hash": "8ee743d7",
+            "author": "Thammanoon Semapru",
+            "pr": 265
+          },
+          {
+            "scope": "app-status",
+            "summary": "refresh token แล้ว probe ซ้ำครั้งเดียวเมื่อถูกบล็อก เพื่อไม่ล็อกผู้ใช้ที่ได้รับยกเว้น",
+            "hash": "2a0be301",
+            "author": "Thammanoon Semapru",
+            "pr": 265
+          },
+          {
+            "scope": "dashboard",
+            "summary": "ส่ง title คู่กับ title_i18n เผื่อ backend รุ่นเก่า",
+            "hash": "3f63738e",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "แก้อัตราแลกเปลี่ยน/currency/tax profile/credit term/location แล้วล้าง cache ของ Lookup API ด้วย — ไม่งั้นฟอร์มได้เรตเก่าภายใน 1 นาที",
+            "hash": "05dce9ce",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "คง lookup สินค้าไว้กับ list เดิม — registry ของ backend กรอง active ด้วย is_active ที่ไม่มีใครเขียน สินค้าที่ปิดจะโผล่",
+            "hash": "4a82d634",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "inventory-adjustment",
+            "summary": "เตือนจำนวนเกินยอดตัดได้เป็นไอคอน (i) แทนข้อความใต้ช่อง",
+            "hash": "6246934c",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "report",
+            "summary": "ดึงตัวเลือกใหม่ทุกครั้งที่กดเปิดช่องเลือกใน dialog รายงาน",
+            "hash": "b984a4af",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "store-requisition",
+            "summary": "แสดงสถานะรายบรรทัดเป็นจุดสีแบบเดียวกับ PR/PO",
+            "hash": "c2a2fb5f",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "store-requisition",
+            "summary": "ถามวันที่ในกล่องส่งใบ เหลือกล่องเดียวแทนสองกล่องซ้อน",
+            "hash": "7bca06a0",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "report",
+            "summary": "ดึงตัวเลือก filter ของรายงานใหม่ทุกครั้งที่เปิด dialog",
+            "hash": "ceb77dbb",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "dashboard",
+            "summary": "ใช้ dataset id document.* ใน map ไอคอนของหน้า procurement/inventory ให้ตรงกับ template ที่ย้ายแล้ว",
+            "hash": "f0324b27",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "dashboard",
+            "summary": "โหลด BU widget section แบบ lazy ที่ module dashboard และไม่เว้นช่องว่างเมื่อซ่อน",
+            "hash": "5d54e8e9",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "version",
+            "summary": "แสดงเวลา build เป็นรูปแบบ yyMMdd-HHmmss ทั้ง footer, tooltip และหน้า login",
+            "hash": "12548150",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "i18n",
+            "summary": "เพิ่มคำแปล error catalog ของ GRN แก้หลังบันทึก/ยืนยัน และ SR จ่ายเกินจำนวนอนุมัติ (backend v4.0.0)",
+            "hash": "5cf136b9",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "notification",
+            "summary": "ไม่ refresh ซ้ำเมื่อมี token ใหม่แล้ว, รอ token แทนการหยุดถาวร, เลิก refresh หลังโดน 4401 ครบกำหนด",
+            "hash": "a18f3992",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "notification",
+            "summary": "ส่ง access token เป็นข้อความ auth แรกของ /ws และ refresh เมื่อโดนปิด 4401",
+            "hash": "512c5280",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "credit-note",
+            "summary": "dialog เลือกรายการล็อกสินค้าที่ใบลดหนี้อื่นคืนไปแล้ว + คำแปลรหัสใหม่จากหลังบ้าน",
+            "hash": "fa18ba25",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "stock-out",
+            "summary": "ใบจ่ายออกร่างโชว์ต้นทุนประมาณ และแก้จำนวนแล้วกด Save ได้",
+            "hash": "2f1a04bf",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "forms",
+            "summary": "ส่งบรรทัดที่ลบด้วยคีย์ที่หลังบ้านรับจริง — CN, PR template, price list, product, RFP",
+            "hash": "48edc588",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "i18n",
+            "summary": "เติมคีย์แปลที่โค้ดใช้แต่ภาษาหนึ่งไม่มี",
+            "hash": "2107d23a",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "dropdown กว้างเท่าช่อง และ label ไม่ทับแถวถัดไป",
+            "hash": "e26d90de",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "role",
+            "summary": "หน้า role แสดงสิทธิ์ตาม is_granted ไม่ใช่ catalog ทั้งก้อน",
+            "hash": "93785c34",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "permission",
+            "summary": "แก้คอมเมนต์ที่บอกผิดว่าคีย์ระดับ module ไม่มีอยู่ + คืนคีย์ใน PERMISSIONS",
+            "hash": "92e41eb9",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "permission",
+            "summary": "เมนู 11 หน้าคุมด้วย permission ระดับ resource แทนระดับ module",
+            "hash": "75f6ddba",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "errors",
+            "summary": "409 ที่มีรหัส catalog ไม่ใช่ \"มีคนแก้ใบนี้\" — บอกให้รีเฟรชแล้วลองใหม่ผิดทั้งเหตุและทางแก้",
+            "hash": "10921d9a",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "sr",
+            "summary": "ใบ SR ที่จ่ายแล้วแสดงต้นทุนที่ลงบัญชีจริง ไม่ใช่ราคาประมาณที่คิดใหม่ทุกครั้งที่เปิด",
+            "hash": "e9f39013",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "auth",
+            "summary": "centralize silent-SSO guard, fix StrictMode double-fire, allow reload to retry",
+            "hash": "19770f78",
+            "author": "PhiranatCsb",
+            "pr": null
+          },
+          {
+            "scope": "auth",
+            "summary": "try silent SSO check on /login too, not just protected routes",
+            "hash": "3c435727",
+            "author": "PhiranatCsb",
+            "pr": null
+          },
+          {
+            "scope": "ui",
+            "summary": "แถวยอดรวมใน SummaryFooterBar ตัดบรรทัดแทนการล้นจอ",
+            "hash": "87ed773e",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "ปุ่ม Save ของ PO/PR/SR ตอนสร้างใบใหม่ขึ้น Saving… ตามป้าย แทน Creating…",
+            "hash": "6d84b156",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "Back ของหน้า review pc/sc ใช้ toList() ให้ filter ของหน้า list กลับมา แทน path เปล่า",
+            "hash": "e7cca13c",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "ลบ tc/tf ที่ไม่ได้ใช้ใน wf-new-form หลังย้ายมา FormToolbar",
+            "hash": "624b57a6",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "บล็อก sticky ของ ListPageShell ใส่พื้นหลัง ไม่ให้แถวเลื่อนทะลุหัวบนมือถือ",
+            "hash": "0ad5d856",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "AP payment ปิดแท็ก ListPageShell ให้ถูก (commit ก่อนหน้า parse ไม่ผ่าน)",
+            "hash": "0784cd13",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "forms",
+            "summary": "บันทึกร่าง SR/PR/PO ไม่ติด 400 เมื่อแก้จำนวนแล้วโฟกัสหลุด",
+            "hash": "c2914147",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "sr",
+            "summary": "ซ่อนปุ่ม Submit เมื่อผู้ใช้เป็น view_only ของใบนั้น",
+            "hash": "03025a2b",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "sr",
+            "summary": "ลบใบเบิกที่พ้น draft แสดงเหตุผลจริง และปิดปุ่มลบตั้งแต่ต้น",
+            "hash": "aaedf17d",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "bu-switch",
+            "summary": "สลับ BU บนหน้า dashboard ไม่ยิง widget ของ BU เก่าซ้ำ",
+            "hash": "97ca257e",
+            "author": "Thitiphong Srisavat",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "final review — role matrix ดึงผ่าน fetchAllPages, useEntitiesByIds จำกัด 100 id, useLookupPagination กัน NaN ของ paginate",
+            "hash": "e9ba7c01",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "หยุดแบ่งหน้าเมื่อ error ไม่ให้ auto-load ข้ามหน้าที่พัง",
+            "hash": "6fabe68b",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "useLookupPagination จำ pages/total ล่าสุด ปุ่มโหลดเพิ่มและยอดรวมไม่หายระหว่าง fetch หน้าถัดไป",
+            "hash": "71fe2d86",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "PagedChecklist ไม่ปักค่าที่เลือกไว้ตอนค้นหา, การ์ด role กด Enter ได้ใน cmdk และค้นไม่พบแยกข้อความจากทะเบียนว่าง",
+            "hash": "e11cd2c2",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "รายการว่างหรือสั้นเกินเลื่อนโหลดหน้าถัดไปเอง และกันแถวงวดนับสต็อกที่ไม่มี relation",
+            "hash": "1492a7e9",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "cn",
+            "summary": "สกุลเงินของใบลดหนี้อ่านจาก GRN ได้ทั้งรูป object และรูปแบน — สร้าง CN จากหน้าจอได้อีกครั้ง",
+            "hash": "e2012dc3",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "lookup ที่เคยเป็น Select ไม่ล้างค่าเมื่อคลิกตัวที่เลือกซ้ำ + ข้อความว่าง/กำลังโหลดของ filter เป็นภาษาไทย",
+            "hash": "5e062267",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "เลือก \"—\" ใน shelf แล้วปิด popover",
+            "hash": "c8943a04",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "getId ของ location-pair-product, dedupe ข้าม key ว่าง, และ hook ที่ไม่รับ enabled",
+            "hash": "64784bd7",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "grn,po",
+            "summary": "ชื่อหน่วย GRN และคลังใน wizard PO จาก price list หายเมื่อหาในรายการไม่เจอ",
+            "hash": "364bb78d",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "ค่าที่บันทึกไว้แต่ถูกปิดใช้งานแล้วขึ้นว่างตอนแก้ไข (IA / eco label / certificate / noti template)",
+            "hash": "6425c649",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "user",
+            "summary": "กำหนด role ให้ user เห็นแค่ 10 role แรก",
+            "hash": "79f824a6",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "po",
+            "summary": "PO จาก price list ได้ exchange_rate 1 เมื่อสกุลเงินอยู่หลัง 30 ตัวแรก",
+            "hash": "80b3955b",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "vendor",
+            "summary": "เปิดที่อยู่ไทยแล้วตำบลถูกล้างเป็นค่าว่าง กด Save แล้วหาย",
+            "hash": "a14a97ba",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "dropdown อ้างอิงขึ้นว่างเมื่อค่าที่บันทึกถูกปิดใช้งานหรืออยู่หลัง 30 ตัวแรก",
+            "hash": "56bc6d7e",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "LookupProductUnit ไม่เขียนทับหน่วยที่บันทึกไว้ด้วยหน่วยแรกอีก",
+            "hash": "82590c27",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "lookup ของ recipe/equipment/หมวดแม่ ขึ้น placeholder ทั้งที่มีค่า",
+            "hash": "ff90c17f",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "rfp",
+            "summary": "ช่อง template ขึ้น placeholder เมื่อ template อยู่หลังหน้าแรก",
+            "hash": "1daf2af8",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "cn",
+            "summary": "ช่อง GRN ขึ้น Select GRN ทั้งที่ใบผูก GRN ไว้แล้ว",
+            "hash": "5e3b98b7",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "sr",
+            "summary": "คลังต้นทาง/ปลายทางขึ้น Select Location ทั้งที่บันทึกไว้แล้ว",
+            "hash": "fd387c51",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "price-list",
+            "summary": "ช่องสินค้าโหมดแก้ไขขึ้น placeholder เมื่อสินค้าอยู่หลังหน้าแรก",
+            "hash": "e117487a",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "workflow",
+            "summary": "เงื่อนไข routing ตามแผนกเห็นแค่ 10 แผนกแรก",
+            "hash": "b0972b71",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "ค่าที่บันทึกไว้ขึ้น placeholder เมื่อไม่อยู่ในหน้าแรกของรายการ",
+            "hash": "c2291c6a",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "product",
+            "summary": "ช่องหน่วยนับโหมดแก้ไขขึ้น Select Unit ทั้งที่มีค่า",
+            "hash": "ce9034cb",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "grn",
+            "summary": "ใบ committed ตรวจ/ส่งเฉพาะหัวใบ, แถวที่ไม่ได้แก้ไม่ถูกส่งเป็น update, ซ่อน Delete ใบ saved",
+            "hash": "3a8ae3f4",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "grn",
+            "summary": "ใบ saved กดแก้ไขได้ ยกเว้นผู้ขายกับวันที่รับ",
+            "hash": "aad1136b",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "accounting",
+            "summary": "แก้ lint/เทสต์ที่ติดมาจาก dev2 และเพิ่ม route account-grouping",
+            "hash": "a8652ef9",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "accounting",
+            "summary": "ผูก license feature ให้เมนูบัญชีและ config ใหม่จาก dev2",
+            "hash": "28c87fd4",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "config",
+            "summary": "แก้ permission key ที่ไม่มีอยู่จริงใน 5 หน้า config",
+            "hash": "86c05b22",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "inventory-period",
+            "summary": "เลิกเขียนตัวอย่างคลาส Tailwind ในคอมเมนต์",
+            "hash": "3b20840c",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          }
+        ],
+        "changed": [
+          {
+            "scope": "lookup",
+            "summary": "ย้าย lookup คลัง (ทั้ง BU และของ user) ไปใช้ Lookup API พร้อม location_type และจุดส่งของ",
+            "hash": "2910aec3",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "ย้าย lookup สินค้า/หมวดย่อย/เทมเพลตแจ้งเตือนไปใช้ Lookup API — backend กรองสถานะสินค้าด้วย product_status_type แล้ว",
+            "hash": "7e36cf0b",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "ย้าย lookup tax profile/currency/credit term/recipe category ไปใช้ Lookup API พร้อมฟิลด์เพิ่ม",
+            "hash": "c80f15e8",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "ย้าย lookup vendor/product/category ไปใช้ Lookup API และให้ผู้เรียกรับ name ที่เป็น null ได้",
+            "hash": "37c68716",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "ย้าย lookup 9 ตัวที่ใช้แค่ id/ชื่อ ไปใช้ Lookup API",
+            "hash": "473fea30",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "dashboard",
+            "summary": "ย้ายชิ้นส่วน widget ที่ใช้ร่วมไป components/dashboard-widget และเพิ่มโหมดอ่านอย่างเดียว",
+            "hash": "5d271cb9",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "auth",
+            "summary": "rename google-callback route to auth-callback (/login/callback) and condense comments",
+            "hash": "15d433da",
+            "author": "PhiranatCsb",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "purchase-request — หัวใช้ FormToolbar (ribbon + ปุ่มจาก PrFormActions), ฟอร์มเข้า FormPageShell (footer slot), DocPageSkeleton",
+            "hash": "089cf3aa",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "store-requisition — หัวใช้ FormToolbar (Save ไม่มีแผนกผ่าน submitSlot), ฟอร์มเข้า FormPageShell (footer slot), DocPageSkeleton",
+            "hash": "77445ddb",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "purchase-order — หัวใช้ FormToolbar (Close/Send email เป็น children), ฟอร์มเข้า FormPageShell (footer slot), DocPageSkeleton",
+            "hash": "9b5b8dd0",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "goods-receive-note — หัวใช้ FormToolbar (Save draft/AP-lock ผ่าน submitSlot/writeDisabledReason), ฟอร์มเข้า FormPageShell, DocPageSkeleton",
+            "hash": "bbfeadd2",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "credit-note — หัวใช้ FormToolbar, ฟอร์มเข้า FormPageShell (footer slot), DocPageSkeleton",
+            "hash": "2e0c8a38",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "ปุ่มย้อนกลับของ wizard 4 หน้า + sc-form ใช้ BackButton, review pc/sc กลับหน้า list แทน history",
+            "hash": "4de8c346",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "interface detail ใช้ FormToolbar (หมดอายุ = writeDisabledReason) + FormPageShell",
+            "hash": "a89c45d5",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "company-profile/default-setting ใช้ FormToolbar (ไม่มีปุ่มย้อนกลับ) + FormPageShell",
+            "hash": "8535ef23",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "user edit ใช้ FormToolbar (avatar เป็น leading) + FormPageShell แทนหัวที่ก๊อป DocFormHeader",
+            "hash": "7c9bc0ae",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "notification-template ใช้ FormToolbar + FormPageShell แทนหัว ChevronLeft ที่เขียนเอง",
+            "hash": "52240ba9",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "period-end review เข้า FormPageShell (DocFormHeader ตรง ไม่ใช่ฟอร์ม)",
+            "hash": "1fa150c5",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "inventory-adjustment — IaFormHero ใช้ FormToolbar, ia-form เข้า FormPageShell พร้อม footer slot",
+            "hash": "81909806",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "workflow detail — WfHeader ใช้ FormToolbar, wf-detail เข้า FormPageShell แบบ wide",
+            "hash": "ff2ad306",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "role — RoleHero ใช้ FormToolbar (Print เป็นปุ่มเพิ่ม), role-form เข้า FormPageShell",
+            "hash": "47410b9e",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "product — PdFormToolbar ใช้ FormToolbar (แก้ชื่อชนกับของกลาง), pd-form เข้า FormPageShell แบบ wide",
+            "hash": "f6acf106",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "operation-plan toolbar 4 ตัวใช้ FormToolbar, ฟอร์ม 8 หน้าเข้า FormPageShell",
+            "hash": "c8b2a807",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "workflow/new ใช้ FormToolbar + FormPageShell",
+            "hash": "0eac61a6",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "vendor-management 4 ฟอร์มใช้ FormToolbar + FormPageShell แทนหัวและปุ่มที่เขียนเอง",
+            "hash": "6acabeb0",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "department/location/PR template/physical-count ใช้ FormPageShell + FormPageSkeleton",
+            "hash": "e4936464",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "form",
+            "summary": "DocFormHeader — onBack เป็น optional, ตัด workflowStep ที่ไม่มีผู้เรียก",
+            "hash": "11f6377d",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "physical-count/spot-check/transaction ใช้ ListPageShell เลิก full-bleed",
+            "hash": "b8e2c4e0",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "AP payment/JV/AR invoice ใช้ ListPageShell (คงข้อความอังกฤษและ filter เดิม)",
+            "hash": "f6cea057",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "IA/product/category/accounting-document/AP invoice ใช้ ListPageShell",
+            "hash": "6e318502",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "email-profile/email-template/interface ใช้ ListPageShell + ย้าย body ออกจาก .route.tsx",
+            "hash": "633570ee",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "4 หน้า DisplayTemplate ย้ายมา ListPageShell",
+            "hash": "ccfb1076",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "history/schedules/notification-template/dashboard-dataset ใช้ ListPageShell",
+            "hash": "7e71ee51",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "exchange-rate/report list ใช้ ListPageShell + DisplayModeToggle",
+            "hash": "14ae705c",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "inventory-period/running-code/role/workflow ใช้ ListPageShell",
+            "hash": "c3fe01ea",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "5 หน้า operation-plan ใช้ ListPageShell + ตัดปุ่ม Export/Print ที่ยังไม่ทำงาน",
+            "hash": "9d83ba6d",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "activity-log/document/user-activity/user ใช้ ListPageShell",
+            "hash": "ec51e8ed",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "Stock replenishment ใช้ ListPageShell แทน DisplayTemplate",
+            "hash": "43a2209e",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "Approval/Wastage ใช้ ListPageShell แทน DisplayTemplate",
+            "hash": "c94cf5dc",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "RFP ใช้ ListPageShell + DisplayModeToggle (คง toolbar ที่มี chip คำค้น)",
+            "hash": "b2d299ec",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "SR ใช้ ListPageShell + ListToolbar ให้โครงเดียวกับ PO/PR",
+            "hash": "29b5e916",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "PR template ใช้ ListPageShell + DocumentListActions แทนปุ่มที่เขียนซ้ำ",
+            "hash": "e745b23a",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "CN/GRN/PR/PO/PLT/PL/Vendor ใช้ ListPageShell",
+            "hash": "2f77b773",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "config-list",
+            "summary": "ให้ ConfigListTemplate ใช้ ListPageShell + DisplayModeToggle",
+            "hash": "d50b2bde",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "list",
+            "summary": "สกัดปุ่มสลับ list/grid เป็น DisplayModeToggle ตัวเดียว",
+            "hash": "2e27b7db",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "bu-switch",
+            "summary": "สลับ BU ไม่ดึงซ้ำ — listener ข้าม tab เหลือจุดเดียว, ตัด optimistic, refetch profile ทางเดียว",
+            "hash": "b27b9a10",
+            "author": "Thitiphong Srisavat",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "department/plt หน้าดูไม่ดึงผู้ใช้/สินค้าทั้งทะเบียน โหลดเฉพาะตอนแก้ไข และลบ useAllUsers/useAllProducts",
+            "hash": "29570cf8",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "location",
+            "summary": "หน้าดูไม่ดึงผู้ใช้/สินค้าทั้งทะเบียน ใช้ local_name/หน่วยจาก payload และอีเมลตาม id · Transfer/ต้นไม้โหลดเฉพาะตอนแก้ไข",
+            "hash": "a93716ed",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "spot-check",
+            "summary": "ประวัติกรอง/ค้น/เรียงที่ server และโหลดทีละหน้า เลิกดึงทั้งก้อน · ตัวกรอง status เหลือแค่ค่าที่ backend รับ",
+            "hash": "5c789932",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "ทะเบียนที่ต้องได้ครบ (permission, หมวดหมู่, งวดบัญชี, สกุลเงิน, คลังของผู้ใช้, report form, workflow) ดึงผ่าน useListAll แทน perpage=-1",
+            "hash": "0bac08d4",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "system-admin",
+            "summary": "role ของผู้ใช้โหลดทีละหน้าผ่าน PagedChecklist ใน RolesSection เลิกดึง role ทั้งก้อน",
+            "hash": "447217d0",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "workflow",
+            "summary": "เงื่อนไขแผนกของ routing ใช้ PagedChecklist โหลดทีละหน้า เลือกแผนกที่ 31+ ได้ และลบ DepartmentCheckboxList",
+            "hash": "56362c10",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "report",
+            "summary": "ผู้รับรายงานของ schedule ใช้ PagedChecklist ค้นที่ server โหลดทีละหน้า เลิกดึงผู้ใช้ทั้งทะเบียน",
+            "hash": "7e5fb05a",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "procurement",
+            "summary": "สกุลเงินและคลังในฟอร์ม CN GRN PO PR ดึงตาม id แทน perpage=-1 และกันติ๊กแถวสกุลต่างประเทศก่อนเรตมาถึง",
+            "hash": "3828f982",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "lookup",
+            "summary": "ชื่อหน่วย eco label certificate และหมวดแม่ของสูตรดึงเฉพาะ id ที่อยู่บนหน้า เลิกลากทะเบียนทั้งก้อน",
+            "hash": "c932931d",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "company-profile",
+            "summary": "ลบ perpage_format ที่ไม่มีโค้ดไหนอ่านออกจากหน้าและ type",
+            "hash": "ca482157",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          }
+        ]
+      }
+    },
     {
       "version": "2.5.0",
       "build": "2.5.0-build.20261007.b4b1bd5f",
