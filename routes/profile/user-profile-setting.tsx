@@ -45,6 +45,7 @@ import {
 import ChangePasswordDialog from "@/components/share/change-password-dialog";
 import { AvatarCropDialog } from "./avatar-crop-dialog";
 import { SignatureDialog } from "./signature-dialog";
+import { McpTokensSection } from "./mcp-tokens-section";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import {
   IMAGE_MAX_BYTES,
@@ -520,6 +521,8 @@ export default function UserProfileSetting() {
           </div>
         </section>
       </div>
+
+      <McpTokensSection />
 
       <ChangePasswordDialog
         open={passwordOpen}

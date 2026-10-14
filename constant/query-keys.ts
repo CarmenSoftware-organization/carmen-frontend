@@ -31,6 +31,7 @@ export const QUERY_KEYS = {
   DASHBOARD_WIDGETS: "dashboard-widgets",
   DASHBOARD_WIDGET_CONFIGS: "dashboard-widget-configs",
   DASHBOARD_DATASET_DATA: "dashboard-dataset-data",
+  MCP_TOKENS: "mcp-tokens",
   MY_DASHBOARD_WIDGETS: "my-dashboard-widgets",
   MY_DASHBOARD_WIDGET_DATA: "my-dashboard-widget-data",
   RECIPE_CATEGORIES: "recipe-categories",
