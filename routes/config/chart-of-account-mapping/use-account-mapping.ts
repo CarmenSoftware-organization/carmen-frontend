@@ -35,6 +35,8 @@ export interface AccountMappingListParams {
   movement?: MappingMovement;
   adjustment_type_id?: string;
   status?: MappingStatus;
+  /** `<column id>:asc|desc` — backend รับเฉพาะคอลัมน์ใน whitelist (ไม่รวม status) */
+  sort?: string;
 }
 
 export const EMPTY_COUNTS: MappingCounts = {

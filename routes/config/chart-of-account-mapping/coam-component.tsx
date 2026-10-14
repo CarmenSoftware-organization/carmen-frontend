@@ -78,6 +78,7 @@ export default function CoamComponent() {
     page: Number(params.page) || 1,
     perpage: Number(params.perpage) || 20,
     search: params.search || undefined,
+    sort: params.sort,
     ...filtersToParams(lf.values, tab),
   };
   const { data, isLoading, error, refetch } = useAccountMappingList(query);
@@ -102,6 +103,7 @@ export default function CoamComponent() {
     query.page,
     query.perpage,
     query.search,
+    query.sort,
     lf.values,
   ]);
   useEffect(() => {

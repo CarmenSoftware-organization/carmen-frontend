@@ -106,6 +106,33 @@ function CoamEditSheetBody({
         </SheetHeader>
         <div className="flex flex-col gap-6 px-4">
           <Field>
+            <FieldLabel>{t("costCenter")}</FieldLabel>
+            <LookupCostCenter
+              value={shownCc}
+              onValueChange={(id) => setCostCenter(id)}
+              modal
+              allowDeselect
+            />
+            <p className="text-muted-foreground text-xs">
+              {!ccOverridden && row.cost_center.id
+                ? t("defaultValue", {
+                    value: `${row.cost_center.code ?? ""} ${row.cost_center.name ?? ""}`,
+                  })
+                : !ccOverridden
+                  ? t("noDefault")
+                  : null}
+            </p>
+            {(ccOverridden || costCenter) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCostCenter(null)}
+              >
+                {t("resetToDefault")}
+              </Button>
+            )}
+          </Field>
+          <Field>
             <FieldLabel>{t("account")}</FieldLabel>
             <LookupChartOfAccount
               value={shownAccount ?? ""}
@@ -140,33 +167,6 @@ function CoamEditSheetBody({
                 </Button>
               )}
             </div>
-          </Field>
-          <Field>
-            <FieldLabel>{t("costCenter")}</FieldLabel>
-            <LookupCostCenter
-              value={shownCc}
-              onValueChange={(id) => setCostCenter(id)}
-              modal
-              allowDeselect
-            />
-            <p className="text-muted-foreground text-xs">
-              {!ccOverridden && row.cost_center.id
-                ? t("defaultValue", {
-                    value: `${row.cost_center.code ?? ""} ${row.cost_center.name ?? ""}`,
-                  })
-                : !ccOverridden
-                  ? t("noDefault")
-                  : null}
-            </p>
-            {(ccOverridden || costCenter) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setCostCenter(null)}
-              >
-                {t("resetToDefault")}
-              </Button>
-            )}
           </Field>
         </div>
         <SheetFooter>
