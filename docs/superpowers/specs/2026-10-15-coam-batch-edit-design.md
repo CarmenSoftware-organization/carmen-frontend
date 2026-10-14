@@ -48,7 +48,7 @@
 {
   "updated":   [{ "id": "<uuid>", "doc_version": 4 }],
   "conflicts": ["<uuid>"],   // doc_version ไม่ตรง — มีคนแก้ไปก่อน
-  "not_found": ["<uuid>"]    // ถูกลบ / ไม่มีในแท็บนี้แล้ว
+  "not_found": ["<uuid>"]    // ถูกลบไปแล้ว (หาด้วย id อย่างเดียว ไม่ผูกกับแท็บ AP/GL)
 }
 ```
 
@@ -106,7 +106,7 @@
   - toast: ทั้งหมดสำเร็จ → "บันทึก N แถว"; มีชน → "บันทึก X แถว · Y แถวถูกแก้ไปก่อน ตรวจแล้วลองอีกครั้ง"
     (warning); `not_found` แจ้งรวมใน toast เดียวกัน
   - ปิด sheet เมื่อไม่มีแถวค้าง; มีแถวค้าง → ปิด sheet แต่คงการเลือกไว้
-- 422 → แสดงใต้ช่องที่ผิดใน sheet เหมือน `coam-edit-sheet.tsx` ไม่ปิด sheet
+- 422 → `errorToast(err)` (ข้อความจาก error catalog) เหมือน `coam-edit-sheet.tsx` และไม่ปิด sheet ให้แก้ค่าแล้วกดใหม่ได้
 - i18n `messages/{en,th}.json` ใต้ `config.chartOfAccountMapping` (ห้ามมี `{{` `}}` ในข้อความ)
 
 ## Deploy
