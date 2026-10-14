@@ -111,7 +111,7 @@ export function TreeNode({
         >
           <Badge
             variant={"secondary"}
-            className="text-micro-legal h-5 shrink-0"
+            className="text-micro-legal h-5 min-w-7 shrink-0 justify-center tabular-nums"
           >
             {highlight(node.code)}
           </Badge>

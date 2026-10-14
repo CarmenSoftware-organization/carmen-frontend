@@ -99,9 +99,8 @@ export function CategoryForm({
       tax_rate: selectedNode?.tax_rate ?? parentNode?.tax_rate ?? 0,
       // ค่าของ node นี้เอง (ไม่เติมจากชั้นบน — ค่าว่าง = สืบทอด แสดงเป็น placeholder)
       inventory_account_code:
-        selectedNode?.account_codes?.find(
-          (a) => a.account_type === "inventory",
-        )?.account_code ?? null,
+        selectedNode?.account_codes?.find((a) => a.account_type === "inventory")
+          ?.account_code ?? null,
       direct_account_code:
         selectedNode?.account_codes?.find((a) => a.account_type === "direct")
           ?.account_code ?? null,
@@ -194,7 +193,7 @@ export function CategoryForm({
         )}
 
         {/* Code + Name + Tax Profile row */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[6.25rem_1fr_1fr]">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[6.25rem_1fr]">
           <Field>
             <FieldLabel htmlFor="code">{tfl("code")}</FieldLabel>
             <FieldInput
@@ -344,6 +343,7 @@ export function CategoryForm({
                 label={tp("usedInRecipe")}
                 activeText={tp("usedInRecipe")}
                 inactiveText={tp("notUsedInRecipe")}
+                inactiveTone="neutral"
                 description={tp("usedInRecipeDesc")}
               />
             )}
@@ -360,6 +360,7 @@ export function CategoryForm({
                 label={tp("soldDirectly")}
                 activeText={tp("soldDirectly")}
                 inactiveText={tp("notSoldDirectly")}
+                inactiveTone="neutral"
                 description={tp("soldDirectlyDesc")}
               />
             )}

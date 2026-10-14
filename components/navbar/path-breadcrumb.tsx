@@ -27,10 +27,15 @@ function isIdSegment(segment: string) {
   return false;
 }
 
+// หาจาก path เต็มก่อน แล้วค่อยถอยไปใช้ segment ท้าย — segment ซ้ำกันได้ข้ามโมดูล
+// (`/product-management/category` กับ `/operation-plan/category`) ถ้าใช้ segment
+// อย่างเดียว ตัวที่ลงทะเบียนทีหลังจะทับ หน้า Category สินค้าเลยขึ้น "Recipe Category"
+const PATH_TO_KEY: Record<string, string> = {};
 const SEGMENT_TO_KEY: Record<string, string> = {};
 function addModuleSegments(modules: typeof moduleList) {
   for (const mod of modules) {
     const segment = mod.path.split("/").pop()!;
+    PATH_TO_KEY[mod.path] = mod.name;
     SEGMENT_TO_KEY[segment] = mod.name;
     if (mod.subModules) {
       addModuleSegments(mod.subModules);
@@ -123,6 +128,7 @@ export default function PathBreadcrumb() {
         {crumbs.map(({ segment, href, keyOverride }, index) => {
           const key =
             keyOverride ??
+            PATH_TO_KEY[href] ??
             SEGMENT_TO_KEY[segment] ??
             EXTRA_SEGMENT_KEY[segment];
           const label = key
