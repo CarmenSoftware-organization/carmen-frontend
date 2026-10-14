@@ -48,9 +48,11 @@ const ALLOWED: Record<string, number> = {
   "routes/inventory-management/period-end/pe-review.tsx": 1, // DFH ตรงใน FormPageShell — ไม่ใช่ฟอร์ม ไม่มีชุด Edit/Save
   // ลิงก์มีป้าย "← Purchase Orders" บนหน้าสำเร็จ ไม่ใช่ปุ่ม back แบบไอคอน — BackButton จะทำป้ายหาย
   "routes/procurement/purchase-order/from-pr/step-result.tsx": 1,
+  // ลิงก์มีป้าย "← Interfaces" ในหน้าว่างของ brand ที่หมดอายุจนอ่าน config ไม่ได้ ไม่ใช่ปุ่ม back ของฟอร์ม
+  "routes/system-admin/interface/interface-detail.route.tsx": 1,
   // ── ชั่วคราว — accounting รอ spec accounting i18n (documents spec §0/§8)
-  "routes/accounting/accounts-payable/ap-invoice-detail.tsx": 1,
-  "routes/accounting/accounts-payable/ap-payment-detail.tsx": 1,
+  "routes/accounting/accounts-payable/invoice/ap-invoice-detail.tsx": 1,
+  "routes/accounting/accounts-payable/payment/ap-payment-detail.tsx": 1,
   "routes/accounting/accounts-receivable/ar-invoice-detail.tsx": 1,
   "routes/accounting/documents/accounting-document-detail.tsx": 1,
   // ── orphan: ไม่ได้ลงทะเบียนใน router (spec §8 — ลบหรือลงทะเบียนเป็นการตัดสินใจแยก)

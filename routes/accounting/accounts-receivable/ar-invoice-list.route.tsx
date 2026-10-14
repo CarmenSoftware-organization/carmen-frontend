@@ -11,7 +11,7 @@ import EmptyComponent from "@/components/empty-component";
 import SearchInput from "@/components/search-input";
 import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
 import { StatusFilter } from "@/components/ui/status-filter";
-import { DocumentListHeader } from "@/components/share/document-list-header";
+import { ListPageShell } from "@/components/share/list-page-shell";
 import { ListCard, ListCardRow } from "@/components/share/list-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -203,13 +203,11 @@ export function Component() {
   });
 
   return (
-    <div className="space-y-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <DocumentListHeader
-          title="AR Document Directory"
-          description="Invoices, Credit/Debit Notes, Deposits & Receipts"
-          count={rows.length}
-        />
+    <ListPageShell
+      title="AR Document Directory"
+      description="Invoices, Credit/Debit Notes, Deposits & Receipts"
+      count={rows.length}
+      actions={
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button size="sm">
@@ -237,59 +235,62 @@ export function Component() {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex w-full flex-1 flex-wrap items-center gap-2 sm:w-auto">
-          <div className="w-full sm:w-auto sm:flex-initial">
-            <SearchInput
-              defaultValue={search}
-              onSearch={setSearch}
-              onInputChange={setSearch}
+      }
+      toolbar={
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex w-full flex-1 flex-wrap items-center gap-2 sm:w-auto">
+            <div className="w-full sm:w-auto sm:flex-initial">
+              <SearchInput
+                defaultValue={search}
+                onSearch={setSearch}
+                onInputChange={setSearch}
+              />
+            </div>
+            <span className="bg-border hidden h-4 w-px sm:block" />
+            <StatusFilter
+              value={status}
+              onChange={setStatus}
+              placeholder="Status"
+              defaultLabel="All Statuses"
+              options={Object.keys(statusTone).map((value) => ({
+                value,
+                label: value,
+              }))}
+              className="w-36 text-xs"
+            />
+            <StatusFilter
+              value={docTypeFilter}
+              onChange={setDocTypeFilter}
+              placeholder="Document Type"
+              defaultLabel="All Types"
+              options={Object.keys(docTypeTone).map((value) => ({
+                value,
+                label: value,
+              }))}
+              className="w-36 text-xs"
             />
           </div>
-          <span className="bg-border hidden h-4 w-px sm:block" />
-          <StatusFilter
-            value={status}
-            onChange={setStatus}
-            placeholder="Status"
-            defaultLabel="All Statuses"
-            options={Object.keys(statusTone).map((value) => ({
-              value,
-              label: value,
-            }))}
-            className="w-36 text-xs"
-          />
-          <StatusFilter
-            value={docTypeFilter}
-            onChange={setDocTypeFilter}
-            placeholder="Document Type"
-            defaultLabel="All Types"
-            options={Object.keys(docTypeTone).map((value) => ({
-              value,
-              label: value,
-            }))}
-            className="w-36 text-xs"
-          />
+          <div className="hidden items-center gap-2 sm:flex">
+            <DataGridSortMenu table={table} />
+            {displayMode === "list" && (
+              <DataGridColumnVisibility
+                table={table}
+                trigger={
+                  <Button
+                    size="icon-sm"
+                    variant="outline"
+                    aria-label="Toggle columns"
+                  >
+                    <Columns3 className="size-4" />
+                  </Button>
+                }
+              />
+            )}
+            <DisplayModeToggle value={displayMode} onChange={setDisplayMode} />
+          </div>
         </div>
-        <div className="hidden items-center gap-2 sm:flex">
-          <DataGridSortMenu table={table} />
-          {displayMode === "list" && (
-            <DataGridColumnVisibility
-              table={table}
-              trigger={
-                <Button
-                  size="icon-sm"
-                  variant="outline"
-                  aria-label="Toggle columns"
-                >
-                  <Columns3 className="size-4" />
-                </Button>
-              }
-            />
-          )}
-          <DisplayModeToggle value={displayMode} onChange={setDisplayMode} />
-        </div>
-      </div>
+      }
+    >
       {isMobile || displayMode === "grid" ? (
         rows.length ? (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -334,6 +335,6 @@ export function Component() {
           </DataGridContainer>
         </DataGrid>
       )}
-    </div>
+    </ListPageShell>
   );
 }

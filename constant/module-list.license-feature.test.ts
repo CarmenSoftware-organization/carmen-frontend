@@ -48,57 +48,7 @@ function leaves(mods: ModuleDto[] = moduleList): ModuleDto[] {
  * เพิ่มรายการใหม่ได้ แต่ต้องเขียนเหตุผลว่าทำไม catalog ถึงไม่มีคีย์ให้ผูก และต้องรู้ว่า
  * มันปลดล็อกหัวข้อโมดูลทั้งก้อนไปด้วย
  */
-const UNMAPPED_ON_PURPOSE: ReadonlyArray<{ path: string; why: string }> = [
-  // /accounting/* ทั้งกลุ่ม: ยังเป็นหน้า mock ไม่เรียก API สักตัว และ catalog ของ
-  // backend ไม่มี module `accounting` เลย → อยู่นอกขอบเขต license ทั้งหมด
-  { path: "/accounting", why: "accounting ยังไม่มีใน catalog" },
-  { path: "/accounting/journal-voucher", why: "accounting ยังไม่มีใน catalog" },
-  {
-    path: "/accounting/template-voucher",
-    why: "accounting ยังไม่มีใน catalog",
-  },
-  {
-    path: "/accounting/recurring-voucher",
-    why: "accounting ยังไม่มีใน catalog",
-  },
-  {
-    path: "/accounting/allocation-voucher",
-    why: "accounting ยังไม่มีใน catalog",
-  },
-  {
-    path: "/accounting/accounts-payable",
-    why: "accounting ยังไม่มีใน catalog",
-  },
-  {
-    path: "/accounting/accounts-payable/invoice",
-    why: "accounting ยังไม่มีใน catalog",
-  },
-  {
-    path: "/accounting/accounts-payable/payment",
-    why: "accounting ยังไม่มีใน catalog",
-  },
-  {
-    path: "/accounting/accounts-receivable/invoice",
-    why: "accounting ยังไม่มีใน catalog",
-  },
-  {
-    path: "/accounting/accounts-receivable/receipt",
-    why: "accounting ยังไม่มีใน catalog",
-  },
-  {
-    path: "/accounting/accounts-receivable",
-    why: "accounting ยังไม่มีใน catalog",
-  },
-  { path: "/accounting/asset", why: "accounting ยังไม่มีใน catalog" },
-  {
-    path: "/accounting/asset/register",
-    why: "accounting ยังไม่มีใน catalog",
-  },
-  {
-    path: "/accounting/asset/disposal",
-    why: "accounting ยังไม่มีใน catalog",
-  },
-];
+const UNMAPPED_ON_PURPOSE: ReadonlyArray<{ path: string; why: string }> = [];
 
 const unmappedPaths = new Set(UNMAPPED_ON_PURPOSE.map((e) => e.path));
 
