@@ -43,6 +43,8 @@ export function useCreateMcpToken() {
       return json.data;
     },
     // 409 (ครบ 10 ใบ) ต้องขึ้นข้อความจาก API ไม่ใช่ข้อความ 409 ทั่วไปของ api-error-handler
+    // response มีโทเค็นดิบ — ห้ามค้างใน MutationCache
+    gcTime: 0,
     meta: { preferServerMessage: true },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mcpTokensQueryKey });

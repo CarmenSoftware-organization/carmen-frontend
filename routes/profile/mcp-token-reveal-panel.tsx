@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "use-intl";
 import { Check, Copy, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
@@ -18,13 +18,19 @@ interface McpTokenRevealPanelProps {
 export function McpTokenRevealPanel({ created, onDone }: McpTokenRevealPanelProps) {
   const t = useTranslations("profile.mcpTokens");
   const [copied, setCopied] = useState<CopyTarget | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const snippet = buildMcpConfigSnippet(getRuntimeConfig().BACKEND_URL, created.token);
+
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
 
   const copy = async (target: CopyTarget, text: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(target);
-      setTimeout(() => setCopied((c) => (c === target ? null : c)), 1500);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setCopied((c) => (c === target ? null : c)), 1500);
     } catch {
       // clipboard ถูกบล็อก (เช่น http ไม่ใช่ https) — ให้ผู้ใช้เลือกข้อความเอง
       toast.error(t("copyFailed"));

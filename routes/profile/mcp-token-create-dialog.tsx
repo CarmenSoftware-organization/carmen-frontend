@@ -51,6 +51,7 @@ export function McpTokenCreateDialog({ open, onOpenChange }: McpTokenCreateDialo
     if (createToken.isPending) return;
     if (!next) {
       setCreated(null);
+      createToken.reset();
       form.reset(EMPTY_MCP_TOKEN_FORM);
     }
     onOpenChange(next);
@@ -85,7 +86,7 @@ export function McpTokenCreateDialog({ open, onOpenChange }: McpTokenCreateDialo
             </DialogDescription>
           </div>
 
-          {created ? (
+          {open && created ? (
             <McpTokenRevealPanel created={created} onDone={() => handleOpenChange(false)} />
           ) : (
             <form id="mcp-token-create-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
