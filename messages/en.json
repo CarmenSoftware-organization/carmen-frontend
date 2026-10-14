@@ -4864,7 +4864,7 @@
       "revealWarning": "This token is shown only once. Copy it now — after you close this window it cannot be displayed again.",
       "tokenLabel": "Token",
       "snippetTitle": "Claude Code config",
-      "snippetHint": "Paste into .mcp.json in your project (or ~/.claude.json), then run: claude mcp list",
+      "snippetHint": "Paste into ~/.claude.json (user scope — never commit a token to a project .mcp.json; if you must, use \"${CARMEN_MCP_TOKEN}\" env expansion), then run: claude mcp list",
       "copy": "Copy",
       "copied": "Copied",
       "copyFailed": "Could not copy — select the text and copy it manually",

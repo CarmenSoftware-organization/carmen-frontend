@@ -46,7 +46,7 @@ export function useCreateMcpToken() {
     // response มีโทเค็นดิบ — ห้ามค้างใน MutationCache
     gcTime: 0,
     meta: { preferServerMessage: true },
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: mcpTokensQueryKey });
     },
   });

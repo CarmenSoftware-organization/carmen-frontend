@@ -4864,7 +4864,7 @@
       "revealWarning": "โทเค็นนี้แสดงครั้งเดียว คัดลอกตอนนี้ — ปิดหน้าต่างแล้วจะดูซ้ำไม่ได้",
       "tokenLabel": "โทเค็น",
       "snippetTitle": "config สำหรับ Claude Code",
-      "snippetHint": "วางใน .mcp.json ของโปรเจกต์ (หรือ ~/.claude.json) แล้วรัน: claude mcp list",
+      "snippetHint": "วางใน ~/.claude.json (ระดับผู้ใช้ — อย่า commit โทเค็นลง .mcp.json ของโปรเจกต์ ถ้าจำเป็นให้ใช้ \"${CARMEN_MCP_TOKEN}\" แทน) แล้วรัน: claude mcp list",
       "copy": "คัดลอก",
       "copied": "คัดลอกแล้ว",
       "copyFailed": "คัดลอกไม่ได้ — เลือกข้อความแล้วคัดลอกเอง",

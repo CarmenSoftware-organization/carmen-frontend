@@ -5,6 +5,7 @@ import { Ban, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ErrorState } from "@/components/ui/error-state";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import type { McpToken, McpTokenStatus } from "@/types/mcp-token";
@@ -20,6 +21,7 @@ const STATUS_VARIANT: Record<McpTokenStatus, "success-light" | "warning-light" |
 /** section "MCP tokens" ของหน้า profile/setting — markup ตาม section ลายเซ็นในหน้าเดียวกัน */
 export function McpTokensSection() {
   const t = useTranslations("profile.mcpTokens");
+  const tc = useTranslations("common");
   const { dateTimeFormat } = useProfile();
   const tokens = useMcpTokens();
   const revoke = useRevokeMcpToken();
@@ -48,7 +50,7 @@ export function McpTokensSection() {
     );
   };
 
-  const fmt = (iso: string | null) => (iso ? formatDate(iso, dateTimeFormat) : t("never"));
+  const fmt = (iso: string | null, emptyLabel: string) => (iso ? formatDate(iso, dateTimeFormat) : emptyLabel);
 
   return (
     <div className="grid grid-cols-1 items-start gap-6 border-t pt-8 md:grid-cols-[220px_1fr] lg:gap-8">
@@ -63,7 +65,11 @@ export function McpTokensSection() {
             {t("create")}
           </Button>
         </div>
-        {rows.length === 0 ? (
+        {tokens.isPending ? (
+          <div className="text-muted-foreground px-4 py-8 text-center text-sm">{tc("loading")}</div>
+        ) : tokens.isError ? (
+          <ErrorState error={tokens.error} onRetry={() => tokens.refetch()} />
+        ) : rows.length === 0 ? (
           <div className="text-muted-foreground px-4 py-8 text-center text-sm">
             <p className="font-medium">{t("empty")}</p>
             <p className="mt-1 text-xs">{t("emptyHint")}</p>
@@ -90,9 +96,9 @@ export function McpTokensSection() {
                     <tr key={row.id} className={muted ? "text-muted-foreground" : undefined}>
                       <td className="p-2 font-medium">{row.name}</td>
                       <td className="p-2 font-mono">{row.token_prefix}…</td>
-                      <td className="p-2">{fmt(row.created_at)}</td>
-                      <td className="p-2">{fmt(row.expires_at)}</td>
-                      <td className="p-2">{fmt(row.last_used_at)}</td>
+                      <td className="p-2">{fmt(row.created_at, "—")}</td>
+                      <td className="p-2">{fmt(row.expires_at, "—")}</td>
+                      <td className="p-2">{fmt(row.last_used_at, t("never"))}</td>
                       <td className="p-2">
                         <Badge variant={STATUS_VARIANT[status]} size="xs">{statusLabel[status]}</Badge>
                       </td>
