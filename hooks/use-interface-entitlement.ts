@@ -64,8 +64,9 @@ export function interfaceEntitlement(
  * ครบทุกแบรนด์ ซึ่งกลับด้านจากพฤติกรรมเดิมและเป็นการหลุดสิทธิ์ ไม่ใช่การผ่อนปรน
  * **ห้าม "แก้ให้สม่ำเสมอ" โดยเอาไปเดินผ่าน `enforced`**
  *
- * @returns `entitlementOf(category, brand)`, `isEntitled(category, brand)` (= ไม่ใช่ `none`)
- *   และ `isLoading` — ระหว่างที่ license ยังไม่มา ทุก brand จะตัดสินเป็น `none` ชั่วคราว
+ * @returns `entitlementOf(category, brand)`, `isEntitled(category, brand)` (= ไม่ใช่ `none`),
+ *   `canReadConfig(category, brand)` และ `isLoading` — ระหว่างที่ license ยังไม่มา ทุก brand
+ *   จะตัดสินเป็น `none` ชั่วคราว
  */
 export function useInterfaceEntitlement() {
   const { defaultBu } = useProfile();
@@ -92,8 +93,25 @@ export function useInterfaceEntitlement() {
     return base;
   };
 
+  /**
+   * backend ยอมให้ GET config ของ brand นี้ไหม — ต้องมีสายคีย์ครบใน `features` เท่านั้น
+   * (ตรงกับ `evaluateLicense` ฝั่ง gateway ที่ **ไม่อ่าน** `expired_features`)
+   *
+   * `expired` มีสองแบบที่ backend ปฏิบัติต่างกัน: สัญญาทั้งใบหมดอายุแต่คีย์ยังอยู่ใน `features`
+   * → อ่านได้ (เขียนไม่ได้) · คีย์อยู่แค่ใน `expired_features` (ใบ INF หมด/สัญญาหลักไม่ active)
+   * → GET ตอบ 403 ห้ามยิง ไม่งั้นหน้าพังและ `PermissionDeniedDialog` เด้ง
+   */
+  const canReadConfig = (categoryKey: string, brandKey: string): boolean =>
+    interfaceEntitlement(
+      license?.features,
+      undefined,
+      categoryKey,
+      brandKey,
+    ) === "entitled";
+
   return {
     entitlementOf,
+    canReadConfig,
     isLoading: isPending,
     isEntitled: (categoryKey: string, brandKey: string) =>
       entitlementOf(categoryKey, brandKey) !== "none",

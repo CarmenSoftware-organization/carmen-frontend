@@ -25,6 +25,8 @@ export type BrandStatus = {
   readonly brand: BrandDef;
   readonly enabled: boolean;
   readonly entitlement: InterfaceEntitlement;
+  /** `false` = backend ไม่ให้อ่าน config (คีย์อยู่แค่ใน `expired_features`) สถานะจริงจึงไม่รู้ */
+  readonly readable: boolean;
   /** ปลายทางที่ตั้งไว้ — `null` = ยังไม่ระบุ */
   readonly target: string | null;
   readonly updated: AuditEntry | undefined;
@@ -57,6 +59,7 @@ export function connectionTarget(
  * @param categories - รายการ category จาก registry
  * @param configs - app config ทั้งหมดของ BU ปัจจุบัน (มี key อื่นปนมาด้วย)
  * @param entitlementOf - ตัวตัดสินจาก `useInterfaceEntitlement`
+ * @param canReadConfig - brand ที่ backend ให้อ่าน config ได้ (ค่าเริ่มต้น = ทุก brand)
  * @returns กลุ่มต่อ category (เฉพาะที่มี brand เห็นได้) เรียงตาม registry
  */
 export function interfaceGroups(
@@ -66,6 +69,8 @@ export function interfaceGroups(
     categoryKey: string,
     brandKey: string,
   ) => InterfaceEntitlement,
+  canReadConfig: (categoryKey: string, brandKey: string) => boolean = () =>
+    true,
 ): readonly CategoryGroup[] {
   const byKey = new Map(configs.map((c) => [c.key, c]));
   return categories
@@ -77,6 +82,7 @@ export function interfaceGroups(
           return {
             brand,
             entitlement: entitlementOf(category.key, brand.key),
+            readable: canReadConfig(category.key, brand.key),
             enabled: row?.value?.enabled === true,
             target: connectionTarget(row?.value),
             updated: row?.audit?.updated ?? row?.audit?.created,
@@ -108,13 +114,14 @@ function StatusDot({ enabled }: { readonly enabled: boolean }) {
 export default function InterfaceList() {
   const t = useTranslations("systemAdmin.interface");
   const { dateTimeFormat } = useProfile();
-  const { entitlementOf } = useInterfaceEntitlement();
+  const { entitlementOf, canReadConfig } = useInterfaceEntitlement();
   const { data, isLoading, isError, refetch } = useInterfaceConfigs();
 
   const groups = interfaceGroups(
     INTERFACE_CATEGORIES,
     data ?? [],
     entitlementOf,
+    canReadConfig,
   );
 
   return (
@@ -163,7 +170,14 @@ export default function InterfaceList() {
                 </div>
                 <ul className="bg-card divide-y overflow-hidden rounded-lg border">
                   {brands.map(
-                    ({ brand, enabled, entitlement, target, updated }) => (
+                    ({
+                      brand,
+                      enabled,
+                      entitlement,
+                      readable,
+                      target,
+                      updated,
+                    }) => (
                       <li key={brand.key}>
                         <Link
                           to={`/system-admin/interface/${category.key}/${brand.key}`}
@@ -184,18 +198,22 @@ export default function InterfaceList() {
                                 </Badge>
                               )}
                             </span>
-                            <span
-                              className={cn(
-                                "text-xs",
-                                enabled
-                                  ? "text-success-ink"
-                                  : "text-muted-foreground",
-                              )}
-                            >
-                              {enabled
-                                ? t("statusEnabled")
-                                : t("statusDisabled")}
-                            </span>
+                            {/* อ่าน config ไม่ได้ = ไม่รู้สถานะจริง ป้าย "หมดอายุ" บอกพอแล้ว
+                                อย่าเดาว่า Disabled */}
+                            {readable && (
+                              <span
+                                className={cn(
+                                  "text-xs",
+                                  enabled
+                                    ? "text-success-ink"
+                                    : "text-muted-foreground",
+                                )}
+                              >
+                                {enabled
+                                  ? t("statusEnabled")
+                                  : t("statusDisabled")}
+                              </span>
+                            )}
                           </span>
                           <span
                             className={cn(
@@ -207,7 +225,7 @@ export default function InterfaceList() {
                             title={target ?? undefined}
                           >
                             <span className="sr-only">{t("target")}: </span>
-                            {target ?? t("notConfigured")}
+                            {readable ? (target ?? t("notConfigured")) : "—"}
                           </span>
                           <span className="hidden min-w-0 sm:block">
                             <span className="sr-only">{t("updated")}: </span>
