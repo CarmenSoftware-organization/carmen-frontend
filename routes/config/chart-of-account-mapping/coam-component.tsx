@@ -1,5 +1,5 @@
 "use no memo";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "use-intl";
 import { CheckCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -36,6 +36,8 @@ import {
   type AccountMappingListParams,
 } from "./use-account-mapping";
 import { useCoamTable } from "./use-coam-table";
+import { CoamEditSheet } from "./coam-edit-sheet";
+import { CoamGenerateDialog } from "./coam-generate-dialog";
 import {
   TAB_SCOPED_FILTER_KEYS,
   coamFilterFields,
@@ -54,9 +56,8 @@ export default function CoamComponent() {
   const t = useTranslations("config.chartOfAccountMapping");
   const [tabParam] = useURL("tab");
   const tab: MappingType = tabParam === "GL" ? "GL" : "AP";
-  // Task F4 จะ mount sheet แก้ไข / dialog generate ที่ใช้ state สองตัวนี้
-  const [, setEditing] = useState<AccountMappingRow | null>(null);
-  const [, setGenerateOpen] = useState(false);
+  const [editing, setEditing] = useState<AccountMappingRow | null>(null);
+  const [generateOpen, setGenerateOpen] = useState(false);
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
 
   const { params, tableConfig, search, setSearch } = useDataGridState({
@@ -91,6 +92,18 @@ export default function CoamComponent() {
     tab,
     onOpen: setEditing,
   });
+  // เลือกแถวข้ามหน้าไม่ได้ — ล้างทุกครั้งที่ขอบเขตของรายการเปลี่ยน
+  // เพื่อไม่ให้ "ยืนยันว่าตรวจแล้ว" ทิ้งแถวที่เลือกไว้นอกหน้าไปเงียบ ๆ
+  const scopeKey = JSON.stringify([
+    tab,
+    query.page,
+    query.perpage,
+    query.search,
+    lf.values,
+  ]);
+  useEffect(() => {
+    table.resetRowSelection();
+  }, [scopeKey, table]);
   const selectedIds = table
     .getSelectedRowModel()
     .rows.map((r) => r.original.id);
@@ -233,8 +246,12 @@ export default function CoamComponent() {
         </DataGridContainer>
       </DataGrid>
 
-      {/* Task F4: <CoamEditSheet row={editing} onClose={() => setEditing(null)} />
-          และ <CoamGenerateDialog open={generateOpen} onOpenChange={setGenerateOpen} tab={tab} /> */}
+      <CoamEditSheet row={editing} onClose={() => setEditing(null)} />
+      <CoamGenerateDialog
+        open={generateOpen}
+        onOpenChange={setGenerateOpen}
+        defaultType={tab}
+      />
 
       <SaveViewDialog
         open={saveViewDialogOpen}

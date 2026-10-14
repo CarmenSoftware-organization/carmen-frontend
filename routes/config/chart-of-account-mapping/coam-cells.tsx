@@ -110,11 +110,12 @@ export function CostCenterCell({ row }: { readonly row: AccountMappingRow }) {
 
 /**
  * สถานะของแถวตามกติกาเดียวกับตัวกรอง `status` ฝั่ง backend —
- * มี issue = ยังไม่ครบ · ไม่งั้นแก้ทับ/ค่าเริ่มต้น และติดป้าย "ยังไม่ตรวจ" เพิ่มเมื่อ `!is_reviewed`
+ * ไม่มีบัญชีหรือ cost center = ยังไม่ครบ · ไม่งั้นแก้ทับ/ค่าเริ่มต้น และติดป้าย "ยังไม่ตรวจ" เพิ่มเมื่อ `!is_reviewed`
  */
 export function StatusCell({ row }: { readonly row: AccountMappingRow }) {
   const t = useTranslations("config.chartOfAccountMapping");
-  const incomplete = !!row.account.issue || !!row.cost_center.issue;
+  // ตรงกับตัวกรอง incomplete ฝั่ง backend — account_not_in_coa (มี code) ไม่นับ
+  const incomplete = row.account.code === null || row.cost_center.id === null;
   const overridden =
     row.account.source === "override" || row.cost_center.source === "override";
   return (
