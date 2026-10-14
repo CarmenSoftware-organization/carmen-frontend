@@ -387,7 +387,7 @@ export function LocationForm({ location }: LocationFormProps) {
               )}
             </Field>
 
-            <Field className="sm:col-span-2">
+            <Field>
               <FieldLabel required>{tfl("deliveryPoint")}</FieldLabel>
               {isView ? (
                 <FieldPlainText>
@@ -413,7 +413,7 @@ export function LocationForm({ location }: LocationFormProps) {
               )}
             </Field>
 
-            <Field className="sm:col-span-2">
+            <Field>
               <FieldLabel>{tfl("costCenter")}</FieldLabel>
               {isView ? (
                 <FieldPlainText>
