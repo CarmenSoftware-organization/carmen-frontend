@@ -60,6 +60,17 @@ const EXTRA_SEGMENT_KEY: Record<string, string> = {
 };
 
 /**
+ * หน้า config ของ interface — `/system-admin/interface/:category/:brand`
+ *
+ * สอง segment ท้ายเป็น key ของ registry (`accounting`, `carmen_gl`) ไม่ใช่ชื่อโมดูล:
+ * `accounting` ไปชนโมดูล Accounting ใน `SEGMENT_TO_KEY` ส่วน `carmen_gl` ตก fallback กลายเป็น
+ * "Carmen_gl" (`\b\w` ไม่ตัดที่ `_`) · ชั้น category ไม่มี route ของตัวเอง จึงกดไม่ได้
+ * ชื่อดึงจาก `systemAdmin.interface` ชุดเดียวกับที่หน้า list ใช้ — import registry ตรง ๆ ไม่ได้
+ * เพราะ `components/` ห้าม import จาก `routes/`
+ */
+const INTERFACE_BASE = "/system-admin/interface";
+
+/**
  * Breadcrumb ของหน้าปัจจุบัน
  *
  * สร้าง breadcrumb จาก `useLocation().pathname` โดยกรอง id segment ออกผ่าน
@@ -79,6 +90,18 @@ const EXTRA_SEGMENT_KEY: Record<string, string> = {
 export default function PathBreadcrumb() {
   const pathname = useLocation().pathname;
   const t = useTranslations("modules");
+  const tInterface = useTranslations("systemAdmin.interface");
+
+  /** ชื่อของชั้น interface category/brand — `undefined` = ไม่ใช่ชั้นนั้น หรือ key ไม่รู้จัก */
+  const interfaceLabel = (href: string): string | undefined => {
+    if (!href.startsWith(INTERFACE_BASE + "/")) return undefined;
+    const [category, brand, ...rest] = href
+      .slice(INTERFACE_BASE.length + 1)
+      .split("/");
+    if (rest.length > 0) return undefined;
+    const key = brand ? `${category}.brand.${brand}` : `${category}.title`;
+    return tInterface.has(key) ? tInterface(key) : undefined;
+  };
 
   const rawSegments = pathname.split("/").filter(Boolean);
   // href ประกอบจาก segment ดิบ ไม่ใช่ segment ที่กรอง id ออกแล้ว — ไม่งั้นชั้นที่
@@ -91,6 +114,9 @@ export default function PathBreadcrumb() {
     segment: string;
     href: string;
     keyOverride?: string;
+    labelOverride?: string;
+    /** ชั้นที่ไม่มี route ของตัวเอง — แสดงเป็นข้อความ ไม่ใช่ลิงก์ */
+    unroutable?: boolean;
   }> = [];
   for (let index = 0; index < rawSegments.length; index += 1) {
     const segment = rawSegments[index];
@@ -107,9 +133,15 @@ export default function PathBreadcrumb() {
       continue;
     }
 
+    const labelOverride = interfaceLabel(href);
     crumbs.push({
       segment,
       href,
+      labelOverride,
+      unroutable:
+        labelOverride !== undefined &&
+        href.split("/").length === INTERFACE_BASE.split("/").length + 1 &&
+        index < rawSegments.length - 1,
       keyOverride:
         accountingSection && href === accountingSection.path
           ? accountingSection.name
@@ -125,44 +157,55 @@ export default function PathBreadcrumb() {
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        {crumbs.map(({ segment, href, keyOverride }, index) => {
-          const key =
-            keyOverride ??
-            PATH_TO_KEY[href] ??
-            SEGMENT_TO_KEY[segment] ??
-            EXTRA_SEGMENT_KEY[segment];
-          const label = key
-            ? t(key)
-            : segment
-                .replaceAll("-", " ")
-                .replaceAll(/\b\w/g, (c) => c.toUpperCase());
+        {crumbs.map(
+          (
+            { segment, href, keyOverride, labelOverride, unroutable },
+            index,
+          ) => {
+            const key =
+              keyOverride ??
+              PATH_TO_KEY[href] ??
+              SEGMENT_TO_KEY[segment] ??
+              EXTRA_SEGMENT_KEY[segment];
+            const label = labelOverride
+              ? labelOverride
+              : key
+                ? t(key)
+                : segment
+                    .replaceAll("-", " ")
+                    .replaceAll(/\b\w/g, (c) => c.toUpperCase());
 
-          const isCurrentPage = index === crumbs.length - 1 && !onDetailPage;
-          // จอแคบเก็บสองชั้นท้ายไว้ — ชั้นก่อนสุดท้ายคือทางกลับหน้ารายการ
-          // ถ้าซ่อนหมดเหลือคำเดียวก็กดอะไรไม่ได้เลยบนมือถือ
-          const hiddenOnMobile = index < crumbs.length - 2;
+            const isCurrentPage = index === crumbs.length - 1 && !onDetailPage;
+            // จอแคบเก็บสองชั้นท้ายไว้ — ชั้นก่อนสุดท้ายคือทางกลับหน้ารายการ
+            // ถ้าซ่อนหมดเหลือคำเดียวก็กดอะไรไม่ได้เลยบนมือถือ
+            const hiddenOnMobile = index < crumbs.length - 2;
 
-          return (
-            <Fragment key={href}>
-              {index > 0 && (
-                <BreadcrumbSeparator
-                  className={index < crumbs.length - 1 ? "hidden md:block" : ""}
-                />
-              )}
-              <BreadcrumbItem
-                className={hiddenOnMobile ? "hidden md:block" : ""}
-              >
-                {isCurrentPage ? (
-                  <BreadcrumbPage>{label}</BreadcrumbPage>
-                ) : (
-                  <BreadcrumbLink asChild>
-                    <Link to={href}>{label}</Link>
-                  </BreadcrumbLink>
+            return (
+              <Fragment key={href}>
+                {index > 0 && (
+                  <BreadcrumbSeparator
+                    className={
+                      index < crumbs.length - 1 ? "hidden md:block" : ""
+                    }
+                  />
                 )}
-              </BreadcrumbItem>
-            </Fragment>
-          );
-        })}
+                <BreadcrumbItem
+                  className={hiddenOnMobile ? "hidden md:block" : ""}
+                >
+                  {isCurrentPage ? (
+                    <BreadcrumbPage>{label}</BreadcrumbPage>
+                  ) : unroutable ? (
+                    <span className="text-muted-foreground">{label}</span>
+                  ) : (
+                    <BreadcrumbLink asChild>
+                      <Link to={href}>{label}</Link>
+                    </BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+              </Fragment>
+            );
+          },
+        )}
       </BreadcrumbList>
     </Breadcrumb>
   );
