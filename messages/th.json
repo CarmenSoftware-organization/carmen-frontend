@@ -2438,6 +2438,10 @@
       "statusEnabled": "เปิดใช้งาน",
       "statusDisabled": "ปิดใช้งาน",
       "expiredBadge": "หมดอายุ",
+      "enabledCount": "เปิดใช้ {enabled} จาก {total}",
+      "notConfigured": "ยังไม่ระบุปลายทาง",
+      "updated": "แก้ไขล่าสุด",
+      "target": "ปลายทาง",
       "expiredNotice": "สัญญาที่ให้สิทธิ์ interface นี้หมดอายุแล้ว — ดูข้อมูลได้แต่แก้ไขไม่ได้",
       "frequencyOption": {
         "manual": "ด้วยตนเอง",
