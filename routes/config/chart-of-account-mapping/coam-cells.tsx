@@ -1,7 +1,13 @@
+import { TriangleAlert } from "lucide-react";
 import { Link } from "react-router";
 import { useTranslations } from "use-intl";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type {
   AccountIssue,
   AccountMappingRow,
@@ -23,6 +29,14 @@ const ISSUE_KEY = {
   missing_direct_account: "issueMissingDirectAccount",
   account_not_in_coa: "issueAccountNotInCoa",
   missing_cost_center: "issueMissingCostCenter",
+} as const;
+
+/** ป้ายสั้นในตาราง — ประโยคเต็ม (ISSUE_KEY) ย้ายไปอยู่ใน tooltip */
+const ISSUE_SHORT_KEY = {
+  missing_inventory_account: "issueShortNoAccount",
+  missing_direct_account: "issueShortNoAccount",
+  account_not_in_coa: "issueShortNotInCoa",
+  missing_cost_center: "issueShortNoCostCenter",
 } as const;
 
 export type MappingSource = AccountSource | CostCenterSource;
@@ -74,21 +88,62 @@ export function SourceBadge({
   );
 }
 
-/** ข้อความเตือนเมื่อ resolve ไม่ได้ — สี warning ต้องใช้ `-ink` ให้ผ่าน WCAG AA */
-export function IssueText({ issue }: { readonly issue: MappingIssue }) {
+/**
+ * หน้าที่ต้องไปแก้เพื่อให้ issue หาย — แก้ที่ต้นทางแล้วทุกแถวที่ใช้ค่าเริ่มต้นตามไปเอง
+ * (ไม่ใช่ override ทีละแถว) · หน้า category รับ `?search=` แล้วกางต้นไม้ถึง item group นั้น
+ */
+function issueHref(issue: MappingIssue, row: AccountMappingRow): string {
+  switch (issue) {
+    case "missing_cost_center":
+      return `/config/location/${row.location.id}`;
+    case "account_not_in_coa":
+      return "/config/chart-of-accounts";
+    case "missing_inventory_account":
+    case "missing_direct_account":
+      return `/product-management/category?search=${encodeURIComponent(row.item_group.code)}`;
+  }
+}
+
+/**
+ * ป้ายเตือนสั้น ๆ เมื่อ resolve ไม่ได้ — ลิงก์ไปหน้าต้นทางที่ต้องแก้ ประโยคเต็มอยู่ใน tooltip
+ * สี warning ต้องใช้ `-ink` ให้ผ่าน WCAG AA
+ */
+export function IssueText({
+  issue,
+  row,
+}: {
+  readonly issue: MappingIssue;
+  readonly row: AccountMappingRow;
+}) {
   const t = useTranslations("config.chartOfAccountMapping");
-  return <span className="text-warning-ink text-xs">{t(ISSUE_KEY[issue])}</span>;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Link
+          to={issueHref(issue, row)}
+          className="text-warning-ink inline-flex w-fit items-center gap-1 text-xs hover:underline"
+        >
+          <TriangleAlert className="size-3.5 shrink-0" aria-hidden />
+          {t(ISSUE_SHORT_KEY[issue])}
+        </Link>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs">
+        <p>{t(ISSUE_KEY[issue])}</p>
+        <p className="text-muted-foreground">{t("issueFixHint")}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
 }
 
 /** รหัสบัญชีที่ resolve แล้ว + ที่มา หรือข้อความ issue ถ้าหาไม่เจอ */
 export function AccountCell({ row }: { readonly row: AccountMappingRow }) {
   const a = row.account;
-  if (!a.code) return a.issue ? <IssueText issue={a.issue} /> : null;
+  if (!a.code) return a.issue ? <IssueText issue={a.issue} row={row} /> : null;
   return (
     <div className="flex flex-col gap-1">
       <NameWithSubtext primary={a.code} secondary={a.name ?? undefined} />
       {a.issue ? (
-        <IssueText issue={a.issue} />
+        <IssueText issue={a.issue} row={row} />
       ) : (
         <SourceBadge source={a.source} href={sourceHref(a.source, row)} />
       )}
@@ -99,10 +154,13 @@ export function AccountCell({ row }: { readonly row: AccountMappingRow }) {
 /** cost center ที่ resolve แล้ว + ที่มา หรือข้อความ issue ถ้า location ไม่มี */
 export function CostCenterCell({ row }: { readonly row: AccountMappingRow }) {
   const c = row.cost_center;
-  if (!c.id) return c.issue ? <IssueText issue={c.issue} /> : null;
+  if (!c.id) return c.issue ? <IssueText issue={c.issue} row={row} /> : null;
   return (
     <div className="flex flex-col gap-1">
-      <NameWithSubtext primary={c.code ?? c.id} secondary={c.name ?? undefined} />
+      <NameWithSubtext
+        primary={c.code ?? c.id}
+        secondary={c.name ?? undefined}
+      />
       <SourceBadge source={c.source} href={sourceHref(c.source, row)} />
     </div>
   );
@@ -125,7 +183,10 @@ export function StatusCell({ row }: { readonly row: AccountMappingRow }) {
           {t("statusIncomplete")}
         </Badge>
       ) : (
-        <Badge size="xs" variant={overridden ? "primary-light" : "invert-light"}>
+        <Badge
+          size="xs"
+          variant={overridden ? "primary-light" : "invert-light"}
+        >
           {t(overridden ? "statusOverridden" : "statusDefault")}
         </Badge>
       )}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router";
 import { ChevronDown, ChevronUp, FolderTree } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
@@ -49,7 +50,10 @@ export default function CategoryComponent() {
     [NODE_TYPE.ITEM_GROUP]: t("nodeItemGroup"),
   };
 
-  const [search, setSearch] = useState("");
+  // `?search=` ตั้งค่าเริ่มต้นของช่องค้นหา — หน้า chart of account mapping ลิงก์มาพร้อมรหัส item group
+  // ที่ยังไม่มีบัญชี ให้ต้นไม้กางไปถึงโหนดนั้นเลย (อ่านครั้งเดียวตอน mount ไม่ sync กลับ URL)
+  const [searchParams] = useSearchParams();
+  const [search, setSearch] = useState(() => searchParams.get("search") ?? "");
   const [deleteTarget, setDeleteTarget] = useState<CategoryNode | null>(null);
 
   // Data
