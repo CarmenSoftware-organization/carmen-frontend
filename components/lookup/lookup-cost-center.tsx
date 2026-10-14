@@ -18,7 +18,8 @@ interface LookupCostCenterProps {
  * Lookup เลือก cost center (GL master) — ใช้ใน location form และ sheet แก้ account mapping
  *
  * Lazy: ยิงรายการเมื่อเปิด popover หรือมีค่าอยู่แล้ว; แสดงเฉพาะที่ active
- * ค่าที่เลือกไว้แต่ inactive/อยู่เกิน 100 แรก ให้ส่ง `defaultLabel` เพื่อแสดงชื่อบนปุ่ม
+ * ค่าที่เลือกไว้แต่ inactive/อยู่เกิน 100 แรก ดึงชื่อตาม id ให้เอง — `defaultLabel` ไม่บังคับ
+ * (ส่งมาเมื่อผู้เรียกมีชื่ออยู่แล้ว จะได้ข้ามการยิง GET ตาม id)
  */
 export function LookupCostCenter({
   value,

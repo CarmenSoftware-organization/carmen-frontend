@@ -1652,7 +1652,7 @@
       "movement": "ประเภทรายการ",
       "adjustmentType": "ประเภทการปรับปรุง",
       "account": "รหัสบัญชี",
-      "costCenter": "Cost center",
+      "costCenter": "ศูนย์ต้นทุน",
       "status": "สถานะ",
       "movementGrn": "รับสินค้า",
       "movementCn": "ใบลดหนี้",
