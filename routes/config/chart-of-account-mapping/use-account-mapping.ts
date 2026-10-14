@@ -136,6 +136,37 @@ export function useReviewAccountMapping() {
   );
 }
 
+export interface BatchUpdateAccountMappingVariables {
+  items: { id: string; doc_version: number }[];
+  /** `null` = คืนค่าเริ่มต้น · ไม่ส่ง = ไม่แตะ */
+  account_code?: string | null;
+  cost_center_id?: string | null;
+}
+
+export interface BatchUpdateAccountMappingResult {
+  updated: { id: string; doc_version: number }[];
+  /** doc_version ไม่ตรง — มีคนแก้ไปก่อน */
+  conflicts: string[];
+  /** ถูกลบไปแล้ว */
+  not_found: string[];
+}
+
+/** POST batch-update — บันทึกเท่าที่ได้; 422 (ค่าเป้าหมายใช้ไม่ได้) ให้ sheet แสดงเอง */
+export function useBatchUpdateAccountMapping() {
+  return useAccountMappingMutation<
+    BatchUpdateAccountMappingVariables,
+    BatchUpdateAccountMappingResult
+  >(
+    (body, buCode) =>
+      httpClient.post(
+        `${API_ENDPOINTS.ACCOUNT_MAPPING(buCode)}/batch-update`,
+        body,
+      ),
+    "Failed to batch update account mapping",
+    { skipGlobalErrorToast: true },
+  );
+}
+
 export interface GenerateAccountMappingResult {
   created: Record<MappingType, number>;
   existing: Record<MappingType, number>;

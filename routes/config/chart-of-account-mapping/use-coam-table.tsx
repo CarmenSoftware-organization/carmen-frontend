@@ -23,7 +23,7 @@ import type {
 } from "@/types/chart-of-account-mapping";
 import { AccountCell, CostCenterCell, StatusCell } from "./coam-cells";
 
-const MOVEMENT_KEY = {
+export const MOVEMENT_KEY = {
   grn: "movementGrn",
   cn: "movementCn",
   adjustment: "movementAdjustment",

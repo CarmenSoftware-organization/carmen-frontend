@@ -1719,6 +1719,13 @@
       "defaultValue": "ค่าเริ่มต้น: {value}",
       "noDefault": "ไม่มีค่าเริ่มต้น",
       "conflict": "แถวนี้ถูกแก้โดยคนอื่น โหลดค่าล่าสุดให้แล้ว",
+      "editSelected": "แก้",
+      "batchEditTitle": "แก้ {count} แถว",
+      "batchEditDesc": "Location: {locations} · Movement: {movements}",
+      "modeKeep": "ไม่เปลี่ยน",
+      "modeSet": "ตั้งเป็น",
+      "batchEditDone": "บันทึก {count} แถวแล้ว",
+      "batchEditPartial": "บันทึก {saved} แถว · {failed} แถวถูกแก้โดยคนอื่นหรือถูกลบไปแล้ว ยังติ๊กค้างไว้ให้ ตรวจแล้วลองอีกครั้ง",
       "incompleteCount": "ยังไม่ครบ {count} แถว",
       "statusFilterAria": "กรองตามสถานะ"
     },
