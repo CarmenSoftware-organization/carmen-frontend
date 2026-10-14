@@ -19,6 +19,7 @@ import {
   DataGridTableHeadRow,
   DataGridTableHeadRowCell,
   DataGridTableHeadRowCellResize,
+  headerWidthPercent,
 } from "@/components/ui/data-grid/data-grid-table";
 import {
   closestCenter,
@@ -187,9 +188,9 @@ function DataGridTableDndRows<TData>({
         <DataGridTableBase>
           <DataGridTableHead>
             {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>) => {
-              const totalWidth = headerGroup.headers.reduce(
-                (sum, h) => sum + h.getSize(),
-                0,
+              const widthPercentOf = headerWidthPercent(
+                headerGroup.headers,
+                props.tableClassNames?.base,
               );
 
               return (
@@ -204,11 +205,7 @@ function DataGridTableDndRows<TData>({
                       <DataGridTableHeadRowCell
                         header={header}
                         key={header.id}
-                        widthPercent={
-                          totalWidth > 0
-                            ? (header.getSize() / totalWidth) * 100
-                            : undefined
-                        }
+                        widthPercent={widthPercentOf(header)}
                       >
                         {header.isPlaceholder
                           ? null

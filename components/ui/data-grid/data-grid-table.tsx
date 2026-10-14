@@ -39,6 +39,40 @@ const bodyCellSpacingVariants = cva("", {
   },
 });
 
+/**
+ * คอลัมน์ที่กว้างคงที่เป็น px เสมอ ไม่ร่วมแบ่งเปอร์เซ็นต์
+ *
+ * ปกติ size ทุกคอลัมน์ถูกแปลงเป็น % ของผลรวม — ตารางที่มีไม่กี่คอลัมน์จึงให้ `#`
+ * (size 60) กินไปถึง ~16% (188px ที่จอ 1440) คอลัมน์ที่เหลือยังเป็น % ที่รวมกันได้
+ * 100% แล้ว table-fixed ย่อให้พอดีพื้นที่หลังหัก px (ตรวจใน Chrome แล้ว) — อย่าเปลี่ยน
+ * เป็น `calc(% - px)` เพราะ Chrome มองเป็น auto แล้วแบ่งทุกคอลัมน์เท่ากัน
+ *
+ * ยกเว้นตารางที่กว้างตามเนื้อหา (`w-max` / `min-w-max` / `w-fit` ที่ base เช่น SR list):
+ * % รวม 100 + px ทำให้ max-content เป็นอนันต์ (ตารางกว้าง 16,777,216px) — ตารางพวกนี้
+ * ใช้แบบเดิม (% ของผลรวมทุกคอลัมน์ รวม `#`) และ `#` ก็ไม่กว้างเกินอยู่แล้วเพราะ
+ * ตารางกว้างเท่าผลรวม size
+ */
+const FIXED_PX_COLUMN_IDS = new Set(["index", "select"]);
+const CONTENT_SIZED_TABLE = /(^|\s)(min-)?w-(max|fit)(\s|$)/;
+
+/** ฟังก์ชันคืน % ของหัวคอลัมน์ — `undefined` = ใช้ px จาก size */
+function headerWidthPercent<TData>(
+  headers: Header<TData, unknown>[],
+  tableBaseClassName?: string,
+) {
+  const isFixed = (h: Header<TData, unknown>) =>
+    !CONTENT_SIZED_TABLE.test(tableBaseClassName ?? "") &&
+    FIXED_PX_COLUMN_IDS.has(h.column.id);
+  const flexTotal = headers.reduce(
+    (sum, h) => (isFixed(h) ? sum : sum + h.getSize()),
+    0,
+  );
+  return (header: Header<TData, unknown>) =>
+    flexTotal > 0 && !isFixed(header)
+      ? (header.getSize() / flexTotal) * 100
+      : undefined;
+}
+
 function getPinningStyles<TData>(column: Column<TData>): CSSProperties {
   const isPinned = column.getIsPinned();
 
@@ -208,7 +242,6 @@ function DataGridTableHeadRowCellResize<TData>({
     />
   );
 }
-
 
 function DataGridTableBody({ children }: { children: ReactNode }) {
   const { props } = useDataGrid();
@@ -548,7 +581,7 @@ function DataGridTableBodyRowCell<TData>({
         // ขอบกล่องตรงกับจุดเริ่มข้อความพอดี ส่วนสระหน้าไทย (ไ โ ใ) มี left side
         // bearing ยื่นซ้ายเกิน advance width หัวสระเลยโดนเฉือนทุกเซลล์ที่ขึ้นต้น
         // ด้วยสระพวกนี้ · padding ของ `<td>` ช่วยไม่ได้ เพราะ clip เกิดที่ div นี้
-        <div className="line-clamp-2 ps-px -ms-px [&>*]:max-w-full [&>*:not([data-slot])]:ps-px [&>*:not([data-slot])]:-ms-px [&>*:not([data-slot])]:line-clamp-2">
+        <div className="-ms-px line-clamp-2 ps-px [&>*]:max-w-full [&>*:not([data-slot])]:-ms-px [&>*:not([data-slot])]:line-clamp-2 [&>*:not([data-slot])]:ps-px">
           {children}
         </div>
       ) : (
@@ -649,9 +682,9 @@ function DataGridTable<TData>() {
           const visibleHeaders = headerGroup.headers.filter((header) =>
             isColumnVisible(header.column.id),
           );
-          const totalWidth = visibleHeaders.reduce(
-            (sum, h) => sum + h.getSize(),
-            0,
+          const widthPercentOf = headerWidthPercent(
+            visibleHeaders,
+            props.tableClassNames?.base,
           );
 
           return (
@@ -666,11 +699,7 @@ function DataGridTable<TData>() {
                   <DataGridTableHeadRowCell
                     header={header}
                     key={header.id}
-                    widthPercent={
-                      totalWidth > 0
-                        ? (header.getSize() / totalWidth) * 100
-                        : undefined
-                    }
+                    widthPercent={widthPercentOf(header)}
                   >
                     {header.isPlaceholder
                       ? null
@@ -775,4 +804,5 @@ export {
   DataGridTableLoader,
   DataGridTableRowSelect,
   DataGridTableRowSelectAll,
+  headerWidthPercent,
 };
