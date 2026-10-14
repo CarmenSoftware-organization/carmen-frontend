@@ -41,17 +41,29 @@ export function useReportTable({
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title={tfl("name")} />
         ),
+        // คำอธิบายอยู่ใต้ชื่อในช่องเดียวกัน (เหมือนการ์ดโหมด grid) — แยกคอลัมน์แล้ว
+        // ตาต้องกระโดดข้ามช่อง Name ที่กว้างเกินชื่อไปมาก
         cell: ({ row }) => (
-          <button
-            type="button"
-            className="text-primary text-left text-xs font-semibold hover:underline focus-visible:outline-none"
-            onClick={(e) => {
-              (e.currentTarget as HTMLButtonElement).blur();
-              onSelect?.(row.original);
-            }}
-          >
-            {row.original.ReportName}
-          </button>
+          <div className="flex min-w-0 flex-col gap-0.5 py-0.5">
+            <button
+              type="button"
+              className="text-primary self-start text-left text-xs font-semibold hover:underline focus-visible:outline-none"
+              onClick={(e) => {
+                (e.currentTarget as HTMLButtonElement).blur();
+                onSelect?.(row.original);
+              }}
+            >
+              {row.original.ReportName}
+            </button>
+            {row.original.Description && (
+              <p
+                className="text-muted-foreground line-clamp-2 text-xs leading-relaxed whitespace-normal"
+                title={row.original.Description}
+              >
+                {row.original.Description}
+              </p>
+            )}
+          </div>
         ),
         meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
       },
