@@ -121,6 +121,8 @@ const LIVE_RESOURCES: Record<string, string[]> = {
     "app_config",
     "business_type",
     "chart_of_accounts",
+    "cost_center",
+    "cost_center_group",
     "credit_note_reason",
     "credit_term",
     "currency",

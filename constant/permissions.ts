@@ -30,6 +30,8 @@ export const PERMISSIONS = {
     view: "configuration.view",
     adjustment_type: crud("configuration.adjustment_type"),
     business_type: crud("configuration.business_type"),
+    cost_center: crud("configuration.cost_center"),
+    cost_center_group: crud("configuration.cost_center_group"),
     credit_note_reason: crud("configuration.credit_note_reason"),
     credit_term: crud("configuration.credit_term"),
     currency: crud("configuration.currency"),

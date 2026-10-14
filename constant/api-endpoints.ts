@@ -129,14 +129,12 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/config/${buCode}/extra-cost-types`,
   GOODS_RECEIVE_NOTE: (buCode: string) =>
     `/api/proxy/api/${buCode}/good-received-notes`,
-  JOURNAL_VOUCHERS: (buCode: string) =>
-    `/api/proxy/api/${buCode}/gl-jv`,
+  JOURNAL_VOUCHERS: (buCode: string) => `/api/proxy/api/${buCode}/gl-jv`,
   JOURNAL_VOUCHER: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/gl-jv/${toSafePathSegment(id)}`,
   JOURNAL_VOUCHER_ACTION: (buCode: string, id: string, action: string) =>
     `/api/proxy/api/${buCode}/gl-jv/${toSafePathSegment(id)}/${toSafePathSegment(action)}`,
-  GL_JV_LIST: (buCode: string) =>
-    `/api/proxy/api/${buCode}/gl-jv`,
+  GL_JV_LIST: (buCode: string) => `/api/proxy/api/${buCode}/gl-jv`,
   GL_JV_DETAIL: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/gl-jv/${toSafePathSegment(id)}`,
   GL_JV_SUBMIT: (buCode: string, id: string) =>
@@ -155,12 +153,13 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/gl-jv-templates`,
   GL_BANK_ACCOUNTS: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/bank-accounts`,
-  GL_PERIODS: (buCode: string) =>
-    `/api/proxy/api/config/${buCode}/gl-periods`,
+  GL_PERIODS: (buCode: string) => `/api/proxy/api/config/${buCode}/gl-periods`,
   GL_JV_PREFIXES: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/gl-jv-prefixes`,
   GL_COST_CENTERS: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/cost-centers`,
+  GL_COST_CENTER_GROUPS: (buCode: string) =>
+    `/api/proxy/api/config/${buCode}/cost-center-groups`,
   GL_DIMENSIONS: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/gl-dimensions`,
   GL_ACCOUNT_DIMENSION_RULES: (buCode: string) =>

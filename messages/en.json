@@ -972,7 +972,11 @@
       "GRN_SAVED_HEADER_ONLY": "A saved goods receive note only allows post type, credit term, invoice no./date, due date, note and description to change — anything that moves stock is fixed once saved. Not allowed: {fields}",
       "GRN_COMMITTED_HEADER_ONLY": "A committed goods receive note only allows post type, credit term, invoice no./date, due date, note and description to change. Not allowed: {fields}",
       "GRN_STATUS_CHANGE_NOT_ALLOWED": "A goods receive note changes status only through its own buttons (Save, Commit, Void), not by editing it ({from} → {to}). Refresh to see its current status.",
-      "RFP_VENDOR_REMOVE_ID_REQUIRED": "This vendor could not be removed because its line was not identified. Refresh the page and try again."
+      "RFP_VENDOR_REMOVE_ID_REQUIRED": "This vendor could not be removed because its line was not identified. Refresh the page and try again.",
+      "COST_CENTER_GROUP_IN_USE": "This group still has cost centers — move or delete them first, or set the group inactive.",
+      "COST_CENTER_GROUP_DUPLICATE_CODE": "This cost center group code is already in use.",
+      "COST_CENTER_IN_USE": "This cost center is still used by a location, an account mapping or accounting records — set it inactive instead.",
+      "COST_CENTER_DUPLICATE_CODE": "This cost center code is already in use."
     }
   },
   "validation": {
@@ -1148,6 +1152,7 @@
     "dataset": "Data Set",
     "title": "Title",
     "costCenter": "Cost center",
+    "costCenterGroup": "Cost center group",
     "deliveryPoint": "Delivery Point",
     "itemGroup": "Item Group",
     "category": "Category",
@@ -1494,6 +1499,28 @@
       "namePlaceholder": "e.g. Net 30",
       "valuePlaceholder": "e.g. 30",
       "daysUnit": "days"
+    },
+    "costCenterGroup": {
+      "entity": "Cost Center Group",
+      "title": "Cost Center Group",
+      "desc": "Group cost centers for reporting — every cost center belongs to one group.",
+      "add": "Add Cost Center Group",
+      "deleteTitle": "Delete Cost Center Group",
+      "deleteConfirm": "Are you sure you want to delete cost center group \"{name}\"? This action cannot be undone.",
+      "codePlaceholder": "e.g. ADM",
+      "namePlaceholder": "e.g. Administration"
+    },
+    "costCenter": {
+      "entity": "Cost Center",
+      "title": "Cost Center",
+      "desc": "Departments or units that costs are charged to — set a default per location.",
+      "add": "Add Cost Center",
+      "deleteTitle": "Delete Cost Center",
+      "deleteConfirm": "Are you sure you want to delete cost center \"{name}\"? This action cannot be undone.",
+      "codePlaceholder": "e.g. 101",
+      "namePlaceholder": "e.g. Front Office",
+      "noGroupHint": "No active cost center group — create or activate one first.",
+      "createGroupLink": "Go to Cost Center Group"
     },
     "creditNoteReason": {
       "entity": "Credit Note Reason",
@@ -1978,6 +2005,8 @@
         "chart_of_accounts": "Chart of Accounts",
         "config_email": "Email Settings",
         "cost": "Inventory Cost",
+        "cost_center": "Cost Center",
+        "cost_center_group": "Cost Center Group",
         "credit_note": "Credit Note",
         "credit_note_reason": "Credit Note Reason",
         "credit_term": "Credit Term",
@@ -5192,6 +5221,8 @@
     "deliveryPoint": "Delivery Point",
     "department": "Department",
     "dimension": "Dimension",
+    "costCenterGroup": "Cost Center Group",
+    "costCenter": "Cost Center",
     "exchangeRate": "Exchange Rate",
     "creditTerm": "Credit Term",
     "extraCost": "Extra Cost Type",
