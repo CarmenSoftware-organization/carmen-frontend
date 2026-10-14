@@ -972,7 +972,11 @@
       "GRN_SAVED_HEADER_ONLY": "A saved goods receive note only allows post type, credit term, invoice no./date, due date, note and description to change — anything that moves stock is fixed once saved. Not allowed: {fields}",
       "GRN_COMMITTED_HEADER_ONLY": "A committed goods receive note only allows post type, credit term, invoice no./date, due date, note and description to change. Not allowed: {fields}",
       "GRN_STATUS_CHANGE_NOT_ALLOWED": "A goods receive note changes status only through its own buttons (Save, Commit, Void), not by editing it ({from} → {to}). Refresh to see its current status.",
-      "RFP_VENDOR_REMOVE_ID_REQUIRED": "This vendor could not be removed because its line was not identified. Refresh the page and try again."
+      "RFP_VENDOR_REMOVE_ID_REQUIRED": "This vendor could not be removed because its line was not identified. Refresh the page and try again.",
+      "COST_CENTER_GROUP_IN_USE": "This group still has cost centers — move or delete them first, or set the group inactive.",
+      "COST_CENTER_GROUP_DUPLICATE_CODE": "This cost center group code is already in use.",
+      "COST_CENTER_IN_USE": "This cost center is still used by a location or an account mapping — remove it there first, or set it inactive.",
+      "COST_CENTER_DUPLICATE_CODE": "This cost center code is already in use."
     }
   },
   "validation": {
@@ -1515,7 +1519,7 @@
       "deleteConfirm": "Are you sure you want to delete cost center \"{name}\"? This action cannot be undone.",
       "codePlaceholder": "e.g. 101",
       "namePlaceholder": "e.g. Front Office",
-      "noGroupHint": "No cost center group yet — create one first.",
+      "noGroupHint": "No active cost center group — create or activate one first.",
       "createGroupLink": "Go to Cost Center Group"
     },
     "creditNoteReason": {

@@ -122,7 +122,7 @@ export function CostCenterDialog({
                 />
               )}
             />
-            {noGroup && !disabled && (
+            {noGroup && !disabled && !form.watch("cost_center_group_id") && (
               <FieldDescription>
                 {t("noGroupHint")}{" "}
                 <Link to="/config/cost-center-group" className="underline">
