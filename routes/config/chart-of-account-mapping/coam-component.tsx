@@ -53,6 +53,19 @@ const STATUS_CHIPS: { value: MappingStatus; labelKey: string }[] = [
   { value: "default", labelKey: "statusDefault" },
 ];
 
+// ต้องตรงกับ whitelist ฝั่ง backend ACCOUNT_MAPPING_SORT_KEYS — นอกนั้น backend ตอบ 400
+const SORTABLE_COLUMNS = new Set([
+  "location",
+  "location_type",
+  "category",
+  "sub_category",
+  "item_group",
+  "movement",
+  "adjustment_type",
+  "cost_center",
+  "account",
+]);
+
 export default function CoamComponent() {
   "use no memo";
   const t = useTranslations("config.chartOfAccountMapping");
@@ -66,6 +79,8 @@ export default function CoamComponent() {
   const [batchOpen, setBatchOpen] = useState(false);
   // mount sheet ใหม่ทุกครั้งที่เปิด ให้ทุกช่องเริ่มที่ "ไม่เปลี่ยน"
   const [batchSeq, setBatchSeq] = useState(0);
+  // snapshot แถวตอนเปิด sheet — refetch เบื้องหลังต้องไม่เปลี่ยน doc_version ใต้มือผู้ใช้
+  const [batchRows, setBatchRows] = useState<AccountMappingRow[]>([]);
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
 
   const { params, tableConfig, search, setSearch } = useDataGridState({
@@ -83,7 +98,9 @@ export default function CoamComponent() {
     page: Number(params.page) || 1,
     perpage: Number(params.perpage) || 20,
     search: params.search || undefined,
-    sort: params.sort,
+    sort: SORTABLE_COLUMNS.has((params.sort ?? "").split(":")[0])
+      ? params.sort
+      : undefined,
     ...filtersToParams(lf.values, tab),
   };
   const { data, isLoading, error, refetch } = useAccountMappingList(query);
@@ -125,6 +142,7 @@ export default function CoamComponent() {
       tab: next === "GL" ? "GL" : "",
       ...Object.fromEntries(TAB_SCOPED_FILTER_KEYS.map((k) => [k, ""])),
       page: "",
+      sort: "",
     });
   };
 
@@ -178,6 +196,7 @@ export default function CoamComponent() {
                 size="sm"
                 variant="outline"
                 onClick={() => {
+                  setBatchRows(selectedRows);
                   setBatchSeq((n) => n + 1);
                   setBatchOpen(true);
                 }}
@@ -300,7 +319,7 @@ export default function CoamComponent() {
       <CoamEditSheet row={editing} onClose={() => setEditing(null)} />
       <CoamBatchEditSheet
         key={batchSeq}
-        rows={selectedRows}
+        rows={batchRows}
         open={batchOpen}
         onClose={() => setBatchOpen(false)}
         onDone={batchDone}
