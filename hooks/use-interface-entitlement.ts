@@ -64,11 +64,12 @@ export function interfaceEntitlement(
  * ครบทุกแบรนด์ ซึ่งกลับด้านจากพฤติกรรมเดิมและเป็นการหลุดสิทธิ์ ไม่ใช่การผ่อนปรน
  * **ห้าม "แก้ให้สม่ำเสมอ" โดยเอาไปเดินผ่าน `enforced`**
  *
- * @returns `entitlementOf(category, brand)` และ `isEntitled(category, brand)` (= ไม่ใช่ `none`)
+ * @returns `entitlementOf(category, brand)`, `isEntitled(category, brand)` (= ไม่ใช่ `none`)
+ *   และ `isLoading` — ระหว่างที่ license ยังไม่มา ทุก brand จะตัดสินเป็น `none` ชั่วคราว
  */
 export function useInterfaceEntitlement() {
   const { defaultBu } = useProfile();
-  const { data } = useLicenseQuery();
+  const { data, isPending } = useLicenseQuery();
   const license = defaultBu ? data?.business_unit[defaultBu.id] : undefined;
 
   const entitlementOf = (
@@ -93,6 +94,7 @@ export function useInterfaceEntitlement() {
 
   return {
     entitlementOf,
+    isLoading: isPending,
     isEntitled: (categoryKey: string, brandKey: string) =>
       entitlementOf(categoryKey, brandKey) !== "none",
   };
