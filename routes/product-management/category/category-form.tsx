@@ -14,9 +14,14 @@ import {
 } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { LookupTaxProfile } from "@/components/lookup/lookup-tax-profile";
+import { LookupChartOfAccount } from "@/components/lookup/lookup-chart-of-account";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
-import type { CategoryNode, CategoryType } from "@/types/category";
+import {
+  NODE_TYPE,
+  type CategoryNode,
+  type CategoryType,
+} from "@/types/category";
 import type { FormMode } from "@/types/form";
 import {
   createCategorySchema,
@@ -29,6 +34,10 @@ interface CategoryFormProps {
   readonly mode: FormMode;
   readonly selectedNode?: CategoryNode;
   readonly parentNode?: CategoryNode;
+  /** บรรพบุรุษเรียงจากใกล้สุด (พ่อ → ปู่) ใช้หา placeholder ค่าที่สืบทอด */
+  readonly ancestors?: CategoryNode[];
+  /** โหลด account_codes ของ node นี้ไม่สำเร็จ → ปิดช่องบัญชี */
+  readonly accountCodesUnavailable?: boolean;
   readonly onSubmit: (data: CategoryFormValues) => void;
   readonly onCancel: () => void;
   readonly isPending?: boolean;
@@ -39,6 +48,8 @@ export function CategoryForm({
   mode,
   selectedNode,
   parentNode,
+  ancestors = [],
+  accountCodesUnavailable,
   onSubmit,
   onCancel,
   isPending,
@@ -86,6 +97,14 @@ export function CategoryForm({
       tax_profile_id:
         selectedNode?.tax_profile_id ?? parentNode?.tax_profile_id ?? "",
       tax_rate: selectedNode?.tax_rate ?? parentNode?.tax_rate ?? 0,
+      // ค่าของ node นี้เอง (ไม่เติมจากชั้นบน — ค่าว่าง = สืบทอด แสดงเป็น placeholder)
+      inventory_account_code:
+        selectedNode?.account_codes?.find(
+          (a) => a.account_type === "inventory",
+        )?.account_code ?? null,
+      direct_account_code:
+        selectedNode?.account_codes?.find((a) => a.account_type === "direct")
+          ?.account_code ?? null,
     };
     if (type === "subcategory")
       base.product_category_id =
@@ -123,6 +142,29 @@ export function CategoryForm({
     }
     onSubmit(payload);
   };
+
+  const LEVEL_LABELS: Record<CategoryNode["type"], string> = {
+    [NODE_TYPE.CATEGORY]: t("nodeCategory"),
+    [NODE_TYPE.SUBCATEGORY]: t("nodeSubcategory"),
+    [NODE_TYPE.ITEM_GROUP]: t("nodeItemGroup"),
+  };
+  /** เดินขึ้นจากพ่อ → ปู่ หาบัญชีชนิดนี้ตัวแรกที่ตั้งไว้ */
+  const inheritedPlaceholder = (
+    accountType: "inventory" | "direct",
+  ): string | undefined => {
+    for (const node of ancestors) {
+      const hit = node.account_codes?.find(
+        (a) => a.account_type === accountType,
+      );
+      if (hit)
+        return t("inheritedFrom", {
+          level: LEVEL_LABELS[node.type],
+          code: hit.account_code,
+        });
+    }
+    return undefined;
+  };
+  const accountDisabled = isPending || accountCodesUnavailable;
 
   const PARENT_LABELS: Record<CategoryType, string> = {
     category: "",
@@ -203,6 +245,42 @@ export function CategoryForm({
             </FieldError>
           )}
         </Field>
+
+        {/* Inventory / Direct account — ว่าง = สืบทอดจากชั้นบน */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field>
+            <FieldLabel>{t("inventoryAccount")}</FieldLabel>
+            <Controller
+              control={form.control}
+              name="inventory_account_code"
+              render={({ field }) => (
+                <LookupChartOfAccount
+                  value={field.value ?? ""}
+                  onValueChange={(code) => field.onChange(code || null)}
+                  placeholder={inheritedPlaceholder("inventory")}
+                  disabled={accountDisabled}
+                  className="w-full"
+                />
+              )}
+            />
+          </Field>
+          <Field>
+            <FieldLabel>{t("directAccount")}</FieldLabel>
+            <Controller
+              control={form.control}
+              name="direct_account_code"
+              render={({ field }) => (
+                <LookupChartOfAccount
+                  value={field.value ?? ""}
+                  onValueChange={(code) => field.onChange(code || null)}
+                  placeholder={inheritedPlaceholder("direct")}
+                  disabled={accountDisabled}
+                  className="w-full"
+                />
+              )}
+            />
+          </Field>
+        </div>
 
         {/* Deviation limits */}
         <div className="grid grid-cols-2 gap-3">

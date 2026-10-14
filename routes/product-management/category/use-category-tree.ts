@@ -57,6 +57,7 @@ export function useCategoryTree({
           tax_rate: Number(ig.tax_rate ?? 0),
           cascade_deviation: ig.cascade_deviation,
           doc_version: ig.doc_version,
+          account_codes: ig.account_codes ?? [],
         }))
         .sort(byCode);
     };
@@ -85,6 +86,7 @@ export function useCategoryTree({
           tax_rate: Number(sub.tax_rate ?? 0),
           cascade_deviation: sub.cascade_deviation,
           doc_version: sub.doc_version,
+          account_codes: sub.account_codes ?? [],
         }))
         .sort(byCode);
     };
@@ -107,6 +109,7 @@ export function useCategoryTree({
         tax_rate: Number(cat.tax_rate ?? 0),
         cascade_deviation: false,
         doc_version: cat.doc_version,
+        account_codes: cat.account_codes ?? [],
       }))
       .sort(byCode);
   })();

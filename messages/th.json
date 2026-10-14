@@ -3689,7 +3689,10 @@
       "nodeItemGroup": "กลุ่มสินค้า",
       "addChild": "เพิ่มรายการย่อย",
       "confirmChanges": "ยืนยันการเปลี่ยนแปลง",
-      "confirmFlagsChange": "การเปลี่ยน \"สูตรอาหาร\" หรือ \"ขายโดยตรง\" อาจกระทบรายการย่อย ต้องการดำเนินการต่อหรือไม่?"
+      "confirmFlagsChange": "การเปลี่ยน \"สูตรอาหาร\" หรือ \"ขายโดยตรง\" อาจกระทบรายการย่อย ต้องการดำเนินการต่อหรือไม่?",
+      "inventoryAccount": "บัญชี Inventory",
+      "directAccount": "บัญชี Direct",
+      "inheritedFrom": "สืบทอดจาก {level}: {code}"
     },
     "product": {
       "entity": "สินค้า",

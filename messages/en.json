@@ -3689,7 +3689,10 @@
       "nodeItemGroup": "Item Group",
       "addChild": "Add child",
       "confirmChanges": "Confirm Changes",
-      "confirmFlagsChange": "Changing \"Recipe\" or \"Sold Directly\" flags may affect child items. Continue?"
+      "confirmFlagsChange": "Changing \"Recipe\" or \"Sold Directly\" flags may affect child items. Continue?",
+      "inventoryAccount": "Inventory account",
+      "directAccount": "Direct account",
+      "inheritedFrom": "Inherited from {level}: {code}"
     },
     "product": {
       "entity": "Product",
