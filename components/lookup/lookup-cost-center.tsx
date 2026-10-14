@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { LookupCombobox } from "@/components/lookup/lookup-combobox";
-import { useCostCenter } from "@/hooks/use-cost-center";
+import { useCostCenter, useCostCenterById } from "@/hooks/use-cost-center";
 import type { CostCenter } from "@/types/cost-center";
 
 interface LookupCostCenterProps {
@@ -41,12 +41,18 @@ export function LookupCostCenter({
     { enabled: open || !!value },
   );
   const items = data?.data ?? [];
+  // ค่าที่บันทึกไว้อาจ inactive หรืออยู่เกิน 100 แรก → ดึงตาม id เพื่อทำ label
+  // (ไม่ดึงถ้ามี defaultLabel จากผู้เรียก หรือหาเจอในรายการแล้ว)
+  const missing =
+    !!value && !defaultLabel && !isLoading && !items.some((c) => c.id === value);
+  const { data: selected } = useCostCenterById(missing ? value : undefined);
 
   return (
     <LookupCombobox<CostCenter>
       value={value ?? ""}
       onValueChange={(id, item) => onValueChange(id || null, item)}
       items={items}
+      selectedItems={selected ? [selected] : undefined}
       getId={(c) => c.id}
       getLabel={(c) => `${c.code} · ${c.name}`}
       getSearchValue={(c) => `${c.code} ${c.name}`}
