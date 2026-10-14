@@ -1,4 +1,5 @@
 export const QUERY_KEYS = {
+  ACCOUNT_MAPPING: "account-mapping",
   ACTIVITY_LOGS: "activity-logs",
   ACTIVITY_LOGS_BY_RECORD: "activity-logs-by-record",
   ACTIVITY_LOG_DETAIL: "activity-log-detail",
