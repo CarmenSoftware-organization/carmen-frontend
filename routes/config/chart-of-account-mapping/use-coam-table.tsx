@@ -8,6 +8,7 @@ import {
 import { useTranslations } from "use-intl";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
 import { CellAction } from "@/components/ui/cell-action";
+import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import {
   columnSkeletons,
   indexColumn,
@@ -22,7 +23,7 @@ import type {
 } from "@/types/chart-of-account-mapping";
 import { AccountCell, CostCenterCell, StatusCell } from "./coam-cells";
 
-const MOVEMENT_KEY = {
+export const MOVEMENT_KEY = {
   grn: "movementGrn",
   cn: "movementCn",
   adjustment: "movementAdjustment",
@@ -79,7 +80,10 @@ export function useCoamTable({
       indexColumn<AccountMappingRow>({ page, perpage }),
       {
         id: "location",
-        header: tfl("location"),
+        accessorFn: (r) => r.location.code,
+        header: ({ column }) => (
+          <DataGridColumnHeader column={column} title={tfl("location")} />
+        ),
         cell: ({ row }) => (
           <CellAction onClick={() => onOpen(row.original)}>
             {refCell(row.original.location)}
@@ -90,7 +94,10 @@ export function useCoamTable({
       },
       {
         id: "location_type",
-        header: t("locationType"),
+        accessorFn: (r) => r.location.location_type,
+        header: ({ column }) => (
+          <DataGridColumnHeader column={column} title={t("locationType")} />
+        ),
         cell: ({ row }) =>
           tl(LOCATION_TYPE_KEY[row.original.location.location_type]),
         size: 110,
@@ -101,14 +108,20 @@ export function useCoamTable({
       },
       {
         id: "category",
-        header: tfl("category"),
+        accessorFn: (r) => r.category.code,
+        header: ({ column }) => (
+          <DataGridColumnHeader column={column} title={tfl("category")} />
+        ),
         cell: ({ row }) => refCell(row.original.category),
         size: 150,
         meta: { headerTitle: tfl("category"), skeleton: columnSkeletons.text },
       },
       {
         id: "sub_category",
-        header: tfl("subCategory"),
+        accessorFn: (r) => r.sub_category.code,
+        header: ({ column }) => (
+          <DataGridColumnHeader column={column} title={tfl("subCategory")} />
+        ),
         cell: ({ row }) => refCell(row.original.sub_category),
         size: 150,
         meta: {
@@ -118,14 +131,20 @@ export function useCoamTable({
       },
       {
         id: "item_group",
-        header: tfl("itemGroup"),
+        accessorFn: (r) => r.item_group.code,
+        header: ({ column }) => (
+          <DataGridColumnHeader column={column} title={tfl("itemGroup")} />
+        ),
         cell: ({ row }) => refCell(row.original.item_group),
         size: 160,
         meta: { headerTitle: tfl("itemGroup"), skeleton: columnSkeletons.text },
       },
       {
         id: "movement",
-        header: t("movement"),
+        accessorFn: (r) => r.movement,
+        header: ({ column }) => (
+          <DataGridColumnHeader column={column} title={t("movement")} />
+        ),
         cell: ({ row }) => t(MOVEMENT_KEY[row.original.movement]),
         size: 140,
         meta: {
@@ -137,7 +156,13 @@ export function useCoamTable({
         ? [
             {
               id: "adjustment_type",
-              header: t("adjustmentType"),
+              accessorFn: (r) => r.adjustment_type?.code,
+              header: ({ column }) => (
+                <DataGridColumnHeader
+                  column={column}
+                  title={t("adjustmentType")}
+                />
+              ),
               cell: ({ row }) => refCell(row.original.adjustment_type),
               size: 160,
               meta: {
@@ -148,21 +173,28 @@ export function useCoamTable({
           ]
         : []),
       {
-        id: "account",
-        header: t("account"),
-        cell: ({ row }) => <AccountCell row={row.original} />,
-        size: 240,
-        meta: { headerTitle: t("account"), skeleton: columnSkeletons.text },
-      },
-      {
         id: "cost_center",
-        header: t("costCenter"),
+        accessorFn: (r) => r.cost_center.code,
+        header: ({ column }) => (
+          <DataGridColumnHeader column={column} title={t("costCenter")} />
+        ),
         cell: ({ row }) => <CostCenterCell row={row.original} />,
         size: 200,
         meta: { headerTitle: t("costCenter"), skeleton: columnSkeletons.text },
       },
       {
+        id: "account",
+        accessorFn: (r) => r.account.code,
+        header: ({ column }) => (
+          <DataGridColumnHeader column={column} title={t("account")} />
+        ),
+        cell: ({ row }) => <AccountCell row={row.original} />,
+        size: 240,
+        meta: { headerTitle: t("account"), skeleton: columnSkeletons.text },
+      },
+      {
         id: "status",
+        enableSorting: false,
         header: t("status"),
         cell: ({ row }) => <StatusCell row={row.original} />,
         size: 150,
@@ -177,7 +209,6 @@ export function useCoamTable({
     columns,
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id,
-    enableSorting: false,
     ...tableConfig,
     pageCount: Math.ceil(totalRecords / (Number(perpage) || 1)),
   });

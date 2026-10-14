@@ -1,7 +1,7 @@
 "use no memo";
 import { useEffect, useState } from "react";
 import { useTranslations } from "use-intl";
-import { CheckCheck, Sparkles } from "lucide-react";
+import { CheckCheck, Pencil, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import {
   DataGrid,
@@ -38,6 +38,8 @@ import {
 import { useCoamTable } from "./use-coam-table";
 import { CoamEditSheet } from "./coam-edit-sheet";
 import { CoamGenerateDialog } from "./coam-generate-dialog";
+import { CoamBatchEditSheet } from "./coam-batch-edit-sheet";
+import type { BatchUpdateAccountMappingResult } from "./use-account-mapping";
 import {
   TAB_SCOPED_FILTER_KEYS,
   coamFilterFields,
@@ -51,6 +53,19 @@ const STATUS_CHIPS: { value: MappingStatus; labelKey: string }[] = [
   { value: "default", labelKey: "statusDefault" },
 ];
 
+// ต้องตรงกับ whitelist ฝั่ง backend ACCOUNT_MAPPING_SORT_KEYS — นอกนั้น backend ตอบ 400
+const SORTABLE_COLUMNS = new Set([
+  "location",
+  "location_type",
+  "category",
+  "sub_category",
+  "item_group",
+  "movement",
+  "adjustment_type",
+  "cost_center",
+  "account",
+]);
+
 export default function CoamComponent() {
   "use no memo";
   const t = useTranslations("config.chartOfAccountMapping");
@@ -61,6 +76,11 @@ export default function CoamComponent() {
   // dialog seed mode/type จาก props ครั้งเดียวตอน mount — เปลี่ยน key ทุกครั้งที่เปิด
   // ให้ mount ใหม่ (type ตามแท็บปัจจุบัน, mode กลับเป็นค่าเริ่ม) แต่ยังคง animation ตอนปิด
   const [generateSeq, setGenerateSeq] = useState(0);
+  const [batchOpen, setBatchOpen] = useState(false);
+  // mount sheet ใหม่ทุกครั้งที่เปิด ให้ทุกช่องเริ่มที่ "ไม่เปลี่ยน"
+  const [batchSeq, setBatchSeq] = useState(0);
+  // snapshot แถวตอนเปิด sheet — refetch เบื้องหลังต้องไม่เปลี่ยน doc_version ใต้มือผู้ใช้
+  const [batchRows, setBatchRows] = useState<AccountMappingRow[]>([]);
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
 
   const { params, tableConfig, search, setSearch } = useDataGridState({
@@ -78,6 +98,9 @@ export default function CoamComponent() {
     page: Number(params.page) || 1,
     perpage: Number(params.perpage) || 20,
     search: params.search || undefined,
+    sort: SORTABLE_COLUMNS.has((params.sort ?? "").split(":")[0])
+      ? params.sort
+      : undefined,
     ...filtersToParams(lf.values, tab),
   };
   const { data, isLoading, error, refetch } = useAccountMappingList(query);
@@ -102,14 +125,14 @@ export default function CoamComponent() {
     query.page,
     query.perpage,
     query.search,
+    query.sort,
     lf.values,
   ]);
   useEffect(() => {
     table.resetRowSelection();
   }, [scopeKey, table]);
-  const selectedIds = table
-    .getSelectedRowModel()
-    .rows.map((r) => r.original.id);
+  const selectedRows = table.getSelectedRowModel().rows.map((r) => r.original);
+  const selectedIds = selectedRows.map((r) => r.id);
 
   const switchTab = (next: string) => {
     if (next === tab) return;
@@ -119,6 +142,7 @@ export default function CoamComponent() {
       tab: next === "GL" ? "GL" : "",
       ...Object.fromEntries(TAB_SCOPED_FILTER_KEYS.map((k) => [k, ""])),
       page: "",
+      sort: "",
     });
   };
 
@@ -140,6 +164,23 @@ export default function CoamComponent() {
       },
     );
 
+  // แถวที่บันทึกไม่ได้ยังติ๊กค้างไว้ให้ลองใหม่ — refetch ไม่เปลี่ยน scopeKey จึงไม่ถูกล้าง
+  const batchDone = (res: BatchUpdateAccountMappingResult) => {
+    const failed = [...res.conflicts, ...res.not_found];
+    table.setRowSelection(Object.fromEntries(failed.map((id) => [id, true])));
+    setBatchOpen(false);
+    if (failed.length === 0) {
+      toast.success(t("batchEditDone", { count: res.updated.length }));
+    } else {
+      toast.warning(
+        t("batchEditPartial", {
+          saved: res.updated.length,
+          failed: failed.length,
+        }),
+      );
+    }
+  };
+
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
 
   return (
@@ -150,16 +191,31 @@ export default function CoamComponent() {
       actions={
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           {selectedIds.length > 0 && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={markReviewed}
-              disabled={review.isPending}
-            >
-              <CheckCheck aria-hidden="true" />
-              {t("markReviewed")}
-              <span className="tabular-nums">({selectedIds.length})</span>
-            </Button>
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setBatchRows(selectedRows);
+                  setBatchSeq((n) => n + 1);
+                  setBatchOpen(true);
+                }}
+              >
+                <Pencil aria-hidden="true" />
+                {t("editSelected")}
+                <span className="tabular-nums">({selectedIds.length})</span>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={markReviewed}
+                disabled={review.isPending}
+              >
+                <CheckCheck aria-hidden="true" />
+                {t("markReviewed")}
+                <span className="tabular-nums">({selectedIds.length})</span>
+              </Button>
+            </>
           )}
           <Button
             size="sm"
@@ -242,7 +298,11 @@ export default function CoamComponent() {
         recordCount={totalRecords}
         isLoading={isLoading}
         emptyMessage={<EmptyComponent />}
-        tableLayout={{ headerSticky: true, columnsResizable: true }}
+        tableLayout={{
+          headerSticky: true,
+          columnsResizable: true,
+          checkbox: true,
+        }}
       >
         <DataGridContainer
           className={cn(
@@ -256,15 +316,20 @@ export default function CoamComponent() {
           <DataGridPagination sizes={[10, 20, 50, 100]} />
         </DataGridContainer>
       </DataGrid>
-
       <CoamEditSheet row={editing} onClose={() => setEditing(null)} />
+      <CoamBatchEditSheet
+        key={batchSeq}
+        rows={batchRows}
+        open={batchOpen}
+        onClose={() => setBatchOpen(false)}
+        onDone={batchDone}
+      />
       <CoamGenerateDialog
         key={`${tab}-${generateSeq}`}
         open={generateOpen}
         onOpenChange={setGenerateOpen}
         defaultType={tab}
       />
-
       <SaveViewDialog
         open={saveViewDialogOpen}
         onOpenChange={setSaveViewDialogOpen}
