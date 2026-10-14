@@ -5353,6 +5353,7 @@
     "goToAccessiblePage": "Go to an available page",
     "licenseTitle": "Feature Not Licensed",
     "licenseDescription": "This feature is not included in your organization's subscription. Contact your administrator or sales representative to enable it.",
+    "licenseExpiredDescription": "This feature's license has expired. Contact your administrator or sales representative to renew it.",
     "expiredTitle": "Subscription Expired",
     "expiredDescription": "Your subscription has expired or been suspended. You can still view data, but editing is disabled. Contact your administrator to renew.",
     "seatTitle": "Seat Limit Exceeded",

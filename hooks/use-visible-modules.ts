@@ -1,5 +1,9 @@
 import { useCan } from "@/hooks/use-can";
-import { useLicense, licenseFeatureOf } from "@/hooks/use-license";
+import {
+  isModuleLocked,
+  licenseFeatureOf,
+  useLicense,
+} from "@/hooks/use-license";
 import { moduleList, type ModuleDto } from "@/constant/module-list";
 import type { Permission } from "@/constant/permissions";
 
@@ -18,12 +22,13 @@ export function annotate(
   can: (permission: Permission) => boolean,
   isLicensed: (featureKey: string) => boolean,
   isHidden: (featureKey: string) => boolean = () => false,
+  isExpired: (featureKey: string) => boolean = () => false,
 ): ModuleWithAccess[] {
   const out: ModuleWithAccess[] = [];
   for (const mod of modules) {
     const { subModules, ...rest } = mod;
     if (subModules && subModules.length > 0) {
-      const subs = annotate(subModules, can, isLicensed, isHidden);
+      const subs = annotate(subModules, can, isLicensed, isHidden, isExpired);
       // ลูกถูกซ่อนหมด → หัวข้อกลุ่มไม่มีอะไรให้พาไป ซ่อนทั้งก้อน (กติกาเดียวกับ denied/locked
       // ที่ parent เป็น true เมื่อลูกเป็น true หมด)
       if (subs.length === 0) continue;
@@ -44,7 +49,7 @@ export function annotate(
       ...rest,
       subModules: undefined,
       denied: !!mod.permission && !can(mod.permission),
-      locked: !!feature && !isLicensed(feature),
+      locked: isModuleLocked(mod, isLicensed, isExpired),
     });
   }
   return out;
@@ -65,12 +70,13 @@ export function markAll(
   modules: ModuleDto[],
   isLicensed: (featureKey: string) => boolean,
   isHidden: (featureKey: string) => boolean = () => false,
+  isExpired: (featureKey: string) => boolean = () => false,
 ): ModuleWithAccess[] {
   const out: ModuleWithAccess[] = [];
   for (const mod of modules) {
     const { subModules, ...rest } = mod;
     if (subModules && subModules.length > 0) {
-      const subs = markAll(subModules, isLicensed, isHidden);
+      const subs = markAll(subModules, isLicensed, isHidden, isExpired);
       if (subs.length === 0) continue;
       out.push({
         ...rest,
@@ -86,7 +92,7 @@ export function markAll(
       ...rest,
       subModules: undefined,
       denied: false,
-      locked: !!feature && !isLicensed(feature),
+      locked: isModuleLocked(mod, isLicensed, isExpired),
     });
   }
   return out;
@@ -118,7 +124,7 @@ export function useVisibleModules(
   modules: ModuleDto[] = moduleList,
 ): ModuleWithAccess[] {
   const { can, isAdmin } = useCan();
-  const { isLicensed, isHidden } = useLicense();
-  if (isAdmin) return markAll(modules, isLicensed, isHidden);
-  return annotate(modules, can, isLicensed, isHidden);
+  const { isLicensed, isHidden, isExpired } = useLicense();
+  if (isAdmin) return markAll(modules, isLicensed, isHidden, isExpired);
+  return annotate(modules, can, isLicensed, isHidden, isExpired);
 }

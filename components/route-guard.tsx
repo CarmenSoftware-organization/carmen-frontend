@@ -7,7 +7,11 @@ import { EyeBrow } from "@/components/ui/eye-brow";
 import { findRouteLeaf } from "@/constant/module-list";
 import { useCan } from "@/hooks/use-can";
 import { useLandingPath } from "@/hooks/use-landing-path";
-import { licenseFeatureOf, useLicense } from "@/hooks/use-license";
+import {
+  isModuleLocked,
+  licenseFeatureOf,
+  useLicense,
+} from "@/hooks/use-license";
 import type { DeniedReason } from "@/components/permission-denied-dialog";
 
 interface RouteGuardProps {
@@ -28,6 +32,8 @@ interface RouteGuardProps {
  *   สวิตช์ `LICENSE_ENFORCEMENT` ต่างจาก `isLicensed` (ดู hooks/use-license.ts)
  * - `useLicense().isLicensed()` จัดการสวิตช์ `LICENSE_ENFORCEMENT` (shadow mode)
  *   กับ state `"unresolved"` ให้แล้วภายใน — ทั้งสองกรณีไม่ล็อกหน้า ไม่ต้องเช็คซ้ำที่นี่
+ * - feature ที่ **หมดอายุ** (อยู่ใน `expired_features`) ล็อกด้วยข้อความ "หมดอายุ" ไม่ใช่
+ *   "ไม่ได้ซื้อ" · leaf ที่ตั้ง `viewableWhenExpired` ผ่านไปได้เลย (หน้าอธิบายเอง)
  * - สัญญาหมดอายุ/ถูกระงับ (`expired`/`inactive`) **ไม่บล็อกที่นี่** — ยังอ่านได้
  *   ตามสเปก §3.2 การบล็อกอยู่ที่ปุ่มเขียนกับที่ backend เท่านั้น
  * - ถ้า license ผ่านแต่ไม่มี permission (และไม่ใช่ admin) → แสดง AccessDeniedBlock
@@ -38,7 +44,7 @@ interface RouteGuardProps {
 export function RouteGuard({ children }: RouteGuardProps) {
   const pathname = useLocation().pathname;
   const { can, isAdmin } = useCan();
-  const { isLicensed, isHidden } = useLicense();
+  const { isLicensed, isHidden, isExpired } = useLicense();
   const t = useTranslations("permissionDenied");
   // ต้องเรียกก่อน early return ทุกอัน — hook เรียกแบบมีเงื่อนไขไม่ได้
   const landing = useLandingPath();
@@ -57,12 +63,15 @@ export function RouteGuard({ children }: RouteGuardProps) {
     return <Navigate to={landing} replace />;
   }
 
-  const locked = !!feature && !isLicensed(feature);
+  const locked = !!leaf && isModuleLocked(leaf, isLicensed, isExpired);
   if (locked) {
+    const expired = !!feature && isExpired(feature);
     return (
       <AccessDeniedBlock
-        reason="license"
-        description={t("licenseDescription")}
+        reason={expired ? "expired" : "license"}
+        description={
+          expired ? t("licenseExpiredDescription") : t("licenseDescription")
+        }
         fallbackTo={landing}
       />
     );
