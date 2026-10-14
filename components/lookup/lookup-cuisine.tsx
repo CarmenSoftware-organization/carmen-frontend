@@ -50,6 +50,7 @@ export function LookupCuisine({
 
   return (
     <LookupCombobox
+      resizeKey="cuisine"
       size={size}
       value={value}
       onValueChange={(id) => onValueChange(id)}

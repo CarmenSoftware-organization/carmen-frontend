@@ -49,6 +49,7 @@ export function LookupCurrency({
 
   return (
     <LookupCombobox
+      resizeKey="currency"
       allowDeselect={false}
       size={size}
       value={value}

@@ -72,6 +72,7 @@ export function LookupRecipeCategory({
 
   return (
     <LookupCombobox
+      resizeKey="recipe-category"
       size={size}
       value={value}
       onValueChange={(id, item) => {

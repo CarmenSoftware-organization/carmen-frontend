@@ -60,6 +60,7 @@ export function LookupPhysicalCountPeriod({
 
   return (
     <LookupCombobox
+      resizeKey="physical-count-period"
       size={size}
       value={value}
       onValueChange={(id, item) => {

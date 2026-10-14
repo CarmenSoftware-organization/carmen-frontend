@@ -39,6 +39,7 @@ export function LookupCategory({
 
   return (
     <LookupCombobox
+      resizeKey="category"
       value={value}
       onValueChange={onValueChange}
       onOpenChange={(open) => {

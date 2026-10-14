@@ -134,6 +134,7 @@ function LookupUserLocationInner({
 
   return (
     <LookupCombobox
+      resizeKey="user-location"
       size={size}
       value={value}
       onValueChange={(id, item) => {

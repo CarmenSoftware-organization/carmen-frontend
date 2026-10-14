@@ -40,6 +40,7 @@ export function LookupCnReason({
 
   return (
     <LookupCombobox
+      resizeKey="cn-reason"
       allowDeselect={false}
       size={size}
       value={value}

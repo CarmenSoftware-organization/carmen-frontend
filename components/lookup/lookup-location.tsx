@@ -86,6 +86,7 @@ export function LookupLocation({
 
   return (
     <LookupCombobox
+      resizeKey="location"
       value={value}
       onValueChange={(id, item) => {
         onValueChange(id);

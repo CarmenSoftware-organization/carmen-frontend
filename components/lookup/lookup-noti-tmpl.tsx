@@ -42,6 +42,7 @@ export function LookupNotificationTemplate({
 
   return (
     <LookupCombobox
+      resizeKey="noti-tmpl"
       size={size}
       value={value}
       onValueChange={onValueChange}

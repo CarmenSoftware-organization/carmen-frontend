@@ -55,6 +55,7 @@ export function LookupVendor({
 
   return (
     <LookupCombobox
+      resizeKey="vendor"
       size={size}
       value={value}
       onValueChange={(id, item) => {

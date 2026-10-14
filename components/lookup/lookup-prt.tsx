@@ -50,6 +50,7 @@ export function LookupPrt({
 
   return (
     <LookupCombobox
+      resizeKey="prt"
       size={size}
       value={value}
       onValueChange={(id, item) => onValueChange(id, item)}

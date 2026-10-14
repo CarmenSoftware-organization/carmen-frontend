@@ -65,6 +65,7 @@ export function LookupGrnByVendorForCn({
 
   return (
     <LookupCombobox
+      resizeKey="grn-by-vendor-for-cn"
       size={size}
       value={value}
       onValueChange={(id, item) => {

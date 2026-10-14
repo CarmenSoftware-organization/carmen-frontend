@@ -71,6 +71,7 @@ export function LookupUser({
 
   return (
     <LookupCombobox
+      resizeKey="user"
       size={size}
       value={value}
       onValueChange={(id, user) => {

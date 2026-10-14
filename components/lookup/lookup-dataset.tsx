@@ -74,6 +74,7 @@ export function LookupDataset({
 
   return (
     <LookupCombobox<DashboardDataset>
+      resizeKey="dataset"
       size={size}
       value={value}
       onValueChange={(id, item) => {

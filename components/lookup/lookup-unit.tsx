@@ -82,6 +82,7 @@ export function LookupUnit({
   return (
     <>
       <LookupCombobox
+        resizeKey="unit"
         value={value}
         onValueChange={(id) => onValueChange(id)}
         onOpenChange={(open) => {

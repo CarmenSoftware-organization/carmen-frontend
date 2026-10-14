@@ -54,6 +54,7 @@ export function LookupItemGroup({
 
   return (
     <LookupCombobox
+      resizeKey="item-group"
       value={value}
       onValueChange={onValueChange}
       onOpenChange={(open) => {

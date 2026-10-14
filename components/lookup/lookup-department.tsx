@@ -66,6 +66,7 @@ export function LookupDepartment({
 
   return (
     <LookupCombobox
+      resizeKey="department"
       size={size}
       value={value}
       onValueChange={(id) => onValueChange(id)}

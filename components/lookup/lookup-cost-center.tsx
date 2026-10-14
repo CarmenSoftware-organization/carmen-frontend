@@ -45,11 +45,15 @@ export function LookupCostCenter({
   // ค่าที่บันทึกไว้อาจ inactive หรืออยู่เกิน 100 แรก → ดึงตาม id เพื่อทำ label
   // (ไม่ดึงถ้ามี defaultLabel จากผู้เรียก หรือหาเจอในรายการแล้ว)
   const missing =
-    !!value && !defaultLabel && !isLoading && !items.some((c) => c.id === value);
+    !!value &&
+    !defaultLabel &&
+    !isLoading &&
+    !items.some((c) => c.id === value);
   const { data: selected } = useCostCenterById(missing ? value : undefined);
 
   return (
     <LookupCombobox<CostCenter>
+      resizeKey="cost-center"
       value={value ?? ""}
       onValueChange={(id, item) => onValueChange(id || null, item)}
       items={items}

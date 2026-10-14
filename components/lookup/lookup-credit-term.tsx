@@ -41,6 +41,7 @@ export function LookupCreditTerm({
 
   return (
     <LookupCombobox
+      resizeKey="credit-term"
       allowDeselect={false}
       size={size}
       value={value}

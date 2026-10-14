@@ -1323,6 +1323,7 @@
     "businessUnit": "หน่วยธุรกิจ"
   },
   "lookup": {
+    "resizeHint": "ลากเพื่อปรับขนาด · ดับเบิลคลิกเพื่อคืนขนาดเดิม",
     "select": "เลือก{entity}",
     "search": "ค้นหา{entity}...",
     "selectPlaceholder": "เลือก...",

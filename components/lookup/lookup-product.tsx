@@ -78,6 +78,7 @@ export function LookupProduct({
 
   return (
     <LookupCombobox
+      resizeKey="product"
       size={size}
       value={value}
       onValueChange={onValueChange}

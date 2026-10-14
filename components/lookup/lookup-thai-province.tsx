@@ -36,6 +36,7 @@ export function LookupThaiProvince({
 
   return (
     <LookupCombobox<ThaiProvince>
+      resizeKey="thai-province"
       size={size}
       value={value.toString()}
       onValueChange={handleChange}
