@@ -12,6 +12,12 @@ interface StatusSwitchProps {
   readonly inactiveText?: string;
   readonly id?: string;
   readonly hideBadge?: boolean;
+  /**
+   * สีป้ายตอนปิด — `destructive` (ค่าเดิม) เหมาะกับสถานะที่ปิดแล้วมีผล เช่น
+   * record ถูกปิดใช้งาน ส่วน flag ที่ "ไม่" เป็นเรื่องปกติ (ไม่ขายตรง) ใช้ `neutral`
+   * ไม่งั้นป้ายแดงอ่านเหมือนมีอะไรผิด
+   */
+  readonly inactiveTone?: "destructive" | "neutral";
 }
 
 function StatusSwitch({
@@ -24,6 +30,7 @@ function StatusSwitch({
   inactiveText,
   id,
   hideBadge = false,
+  inactiveTone = "destructive",
 }: StatusSwitchProps) {
   const tfl = useTranslations("field");
 
@@ -53,7 +60,13 @@ function StatusSwitch({
       </div>
       {!hideBadge && (
         <Badge
-          variant={checked ? "success" : "destructive"}
+          variant={
+            checked
+              ? "success"
+              : inactiveTone === "neutral"
+                ? "secondary"
+                : "destructive"
+          }
           className="px-2 py-0.5 text-xs"
         >
           {checked ? resolvedActiveText : resolvedInactiveText}
