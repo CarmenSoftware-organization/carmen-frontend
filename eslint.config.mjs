@@ -58,7 +58,7 @@ const NO_FEATURE_IMPORTS = {
 };
 
 export default tseslint.config(
-  { ignores: ["dist", "node_modules", "public", ".remember"] },
+  { ignores: ["dist", "node_modules", "public", "**/.remember", ".superpowers"] },
   {
     files: ["**/*.{ts,tsx}"],
     extends: [
