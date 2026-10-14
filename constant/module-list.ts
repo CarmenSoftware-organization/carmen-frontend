@@ -604,54 +604,6 @@ export const moduleList: ModuleDto[] = [
         icon: Building2,
       },
       {
-        name: "jvPrefix",
-        path: "/config/jv-prefix",
-        licenseFeature: "accounting.config.gl", // config:prefix-jv
-        icon: Bookmark,
-      },
-      {
-        name: "dimension",
-        path: "/config/dimension",
-        licenseFeature: "configuration.dimension",
-        icon: Layers,
-      },
-      {
-        name: "bankAccount",
-        path: "/config/bank-account",
-        licenseFeature: "accounting.config.gl",
-        icon: Landmark,
-      },
-      {
-        name: "glPeriod",
-        path: "/config/gl-period",
-        licenseFeature: "accounting.config.gl",
-        icon: Calendar,
-      },
-      {
-        name: "paymentType",
-        path: "/config/payment-type",
-        licenseFeature: "accounting.config.ap",
-        icon: CreditCard,
-      },
-      {
-        name: "whtServiceType",
-        path: "/config/wht-service-type",
-        licenseFeature: "accounting.config.ap",
-        icon: Percent,
-      },
-      {
-        name: "whtForm",
-        path: "/config/wht-form",
-        licenseFeature: "accounting.config.ap",
-        icon: FileSpreadsheet,
-      },
-      {
-        name: "assetCategory",
-        path: "/config/asset-category",
-        licenseFeature: "accounting.config.asset",
-        icon: Building2,
-      },
-      {
         name: "chartOfAccounts",
         path: "/config/chart-of-accounts",
         licenseFeature: "configuration.chart_of_accounts", // config:chart-of-accounts

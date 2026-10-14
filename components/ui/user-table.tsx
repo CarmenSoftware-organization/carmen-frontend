@@ -32,6 +32,7 @@ interface UserTableProps {
 export function UserTable({ users, className }: UserTableProps) {
   "use no memo";
   const t = useTranslations("common");
+  const tfl = useTranslations("field");
   const [search, setSearch] = useState("");
 
   const filteredUsers = useMemo(() => {
@@ -60,7 +61,7 @@ export function UserTable({ users, className }: UserTableProps) {
       },
       {
         id: "name",
-        header: "Name",
+        header: tfl("name"),
         cell: ({ row }) => (
           <HighlightText
             text={`${row.original.firstname} ${row.original.lastname}`}
@@ -70,7 +71,7 @@ export function UserTable({ users, className }: UserTableProps) {
       },
       {
         accessorKey: "email",
-        header: "Email",
+        header: tfl("email"),
         cell: ({ row }) => (
           <span className="text-muted-foreground">
             <HighlightText text={row.original.email} query={search} />
@@ -79,7 +80,7 @@ export function UserTable({ users, className }: UserTableProps) {
       },
       {
         accessorKey: "telephone",
-        header: "Telephone",
+        header: tfl("phone"),
         cell: ({ row }) => (
           <span className="text-muted-foreground">
             <HighlightText text={row.original.telephone} query={search} />
@@ -87,7 +88,7 @@ export function UserTable({ users, className }: UserTableProps) {
         ),
       },
     ],
-    [search],
+    [search, tfl],
   );
 
   const table = useReactTable({

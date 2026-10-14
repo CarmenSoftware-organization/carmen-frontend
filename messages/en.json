@@ -1390,6 +1390,7 @@
     },
     "location": {
       "entity": "Store Location",
+      "costCenterUnassigned": "Not assigned",
       "title": "Store Location",
       "desc": "Every place that holds stock — main store, kitchen store, minibar. Counts and requisitions run per location.",
       "add": "Add Store Location",

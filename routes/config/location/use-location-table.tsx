@@ -14,6 +14,7 @@ import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
 import { LocationTypeLabel } from "@/components/share/location-type-label";
+import { useCostCenter } from "@/hooks/use-cost-center";
 
 interface UseLocationTableOptions {
   data: Location[];
@@ -33,7 +34,14 @@ export function useLocationTable({
   onDelete,
 }: UseLocationTableOptions) {
   const tfl = useTranslations("field");
+  const tl = useTranslations("config.location");
   const { dateTimeFormat } = useProfile();
+  // cost center ของ location เป็นค่า default ของหน้า Chart of Account Mapping —
+  // โชว์ในตารางเพื่อให้เห็นว่าคลังไหนยังไม่ผูกโดยไม่ต้องเปิดทีละคลัง
+  const { data: costCenters } = useCostCenter({ perpage: 100 });
+  const costCenterById = new Map(
+    (costCenters?.data ?? []).map((c) => [c.id, c] as const),
+  );
   const columns: ColumnDef<Location>[] = [
     {
       accessorKey: "code",
@@ -58,6 +66,7 @@ export function useLocationTable({
           {row.original.name || "..."}
         </CellAction>
       ),
+      size: 240,
       meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
     },
 
@@ -83,19 +92,24 @@ export function useLocationTable({
     {
       id: "physical_count_type",
       header: tfl("physicalCount"),
-      cell: ({ row }) =>
-        row.original.physical_count_type === "yes" ? (
-          <CircleCheck
-            className="text-positive-ink mx-auto size-4"
-            aria-label="Yes"
-          />
-        ) : (
-          <CircleX
-            className="text-muted-foreground/50 mx-auto size-4"
-            aria-label="No"
-          />
-        ),
-      size: 150,
+      // data-slot: DataGridTable ใส่ line-clamp-2 (display:-webkit-box) ให้ลูกทุกตัวที่ไม่มี
+      // data-slot ซึ่งทับ flex/mx-auto — ไอคอนเลยไปชิดซ้ายของคอลัมน์
+      cell: ({ row }) => (
+        <div data-slot="cell-icon" className="flex justify-center">
+          {row.original.physical_count_type === "yes" ? (
+            <CircleCheck
+              className="text-positive-ink size-4"
+              aria-label="Yes"
+            />
+          ) : (
+            <CircleX
+              className="text-muted-foreground/50 size-4"
+              aria-label="No"
+            />
+          )}
+        </div>
+      ),
+      size: 110,
       meta: {
         headerTitle: tfl("physicalCount"),
         cellClassName: "text-center",
@@ -112,6 +126,27 @@ export function useLocationTable({
       size: 150,
       meta: {
         headerTitle: tfl("deliveryPoint"),
+        skeleton: columnSkeletons.text,
+      },
+    },
+    {
+      id: "cost_center",
+      header: tfl("costCenter"),
+      cell: ({ row }) => {
+        const id = row.original.cost_center_id;
+        if (!id) {
+          return (
+            <span className="text-warning-ink">
+              {tl("costCenterUnassigned")}
+            </span>
+          );
+        }
+        const cc = costCenterById.get(id);
+        return <span>{cc ? `${cc.code} · ${cc.name}` : "—"}</span>;
+      },
+      size: 180,
+      meta: {
+        headerTitle: tfl("costCenter"),
         skeleton: columnSkeletons.text,
       },
     },
