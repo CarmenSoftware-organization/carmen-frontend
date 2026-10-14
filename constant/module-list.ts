@@ -100,6 +100,12 @@ export interface ModuleDto {
    * แปลว่า key ที่ได้ไม่มีใน catalog — แก้ที่นี่ ห้ามแก้ fixture
    */
   licenseFeature?: string;
+  /**
+   * เปิดหน้านี้ได้แม้ license feature **หมดอายุ** (อยู่ใน `expired_features`) — ไม่เคยซื้อ
+   * ยังล็อกตามปกติ ใช้กับหน้าที่อธิบายสถานะหมดอายุเองได้ (เช่น interface ที่ขึ้นป้ายรายแบรนด์)
+   * backend ยังตอบ 403 ให้ทุกการอ่านข้อมูลของ feature นั้น หน้าจึงต้องไม่ยิงเอง
+   */
+  viewableWhenExpired?: boolean;
 }
 
 export function getModule(path: string): ModuleDto {
@@ -795,6 +801,9 @@ export const moduleList: ModuleDto[] = [
         // (`tb_business_unit_interface_license`) ไม่ใช่กลุ่มของสัญญา ดู spec
         // docs/superpowers/specs/2026-09-20-app-config-license-split-design.md
         licenseFeature: "interface",
+        // ใบ INF หมดอายุ → หน้า list ขึ้นป้าย "หมดอายุ" รายแบรนด์ และไม่ยิง config ที่ 403
+        // (`canReadConfig` ใน use-interface-entitlement.ts) แทนการล็อกทั้งหน้าว่า "ไม่ได้ซื้อ"
+        viewableWhenExpired: true,
         // **ไม่มี `permission` โดยตั้งใจ** — backend ไม่มี resource `interface` ใน
         // permission catalog เลย (เป็น `LICENSE_ONLY_RESOURCES`) หน้านี้คุมด้วยใบ INF
         // อย่างเดียว การใส่คีย์ที่ไม่มีอยู่จริงกลับเข้ามาเท่ากับปิดหน้านี้ถาวรสำหรับ non-admin

@@ -41,6 +41,22 @@ export function licenseFeatureOf(mod: ModuleDto): string | undefined {
   return mod.permission ? featureKeyOf(mod.permission) : undefined;
 }
 
+/**
+ * leaf นี้ถูกล็อกด้วย license ไหม — จุดเดียวที่ RouteGuard กับเมนูใช้ร่วมกัน
+ *
+ * leaf ที่ตั้ง `viewableWhenExpired` ไม่ล็อกเมื่อ feature แค่ **หมดอายุ** (`isExpired`)
+ * ส่วนที่ไม่เคยซื้อยังล็อกตามปกติ
+ */
+export function isModuleLocked(
+  mod: ModuleDto,
+  isLicensed: (featureKey: string) => boolean,
+  isExpired: (featureKey: string) => boolean = () => false,
+): boolean {
+  const feature = licenseFeatureOf(mod);
+  if (!feature || isLicensed(feature)) return false;
+  return !(mod.viewableWhenExpired && isExpired(feature));
+}
+
 export interface LicenseInfo {
   hasLicenseData: boolean;
   /**
@@ -75,6 +91,14 @@ export interface LicenseInfo {
    * ยัง fail-open อยู่: ไม่มี `hidden_features` (gateway เก่า) → ไม่ซ่อนอะไรเลย
    */
   isHidden: (featureKey: string) => boolean;
+  /**
+   * feature นี้ **เคยซื้อแต่หมดอายุ** — ไม่ผ่าน `isLicensed` แต่สายคีย์ (feature + module)
+   * ครบเมื่อรวม `expired_features` เข้าไป (เช่นใบ INF หมดอายุ)
+   *
+   * ใช้แยกข้อความ "หมดอายุ ต่ออายุ" ออกจาก "ไม่ได้ซื้อ" และให้ leaf ที่ตั้ง
+   * `viewableWhenExpired` เปิดได้ · `false` เสมอเมื่อ `isLicensed` เป็น true
+   */
+  isExpired: (featureKey: string) => boolean;
   seat: BusinessUnitSeat | undefined;
   /**
    * ที่นั่งที่ใช้อยู่เกิน cap ของ cluster จริง (`used > cap`) — เลียนแบบ `evaluateSeat` ฝั่ง
@@ -137,24 +161,31 @@ export function resolveLicense(
   // ปิดพฤติกรรมล็อกทั้งหมดเมื่อสวิตช์ปิด (shadow mode) หรือ backend ยังตัดสินไม่ได้
   const bypass = !enforced || state === "unresolved";
 
+  // backend ต้องเจอทั้ง match.feature และ match.module ใน features[] จึงจะผ่าน
+  // (license.evaluator.ts ขั้นที่ 4) — module คือส่วนหน้าจุด**แรก** ไม่ใช่จุดสุดท้าย
+  // ตามที่ license-route-resolver.ts:69-70 ตัด
+  const chainIn = (keys: readonly string[], featureKey: string) => {
+    const dot = featureKey.indexOf(".");
+    const moduleKey = dot === -1 ? featureKey : featureKey.slice(0, dot);
+    return keys.includes(featureKey) && keys.includes(moduleKey);
+  };
+  const isLicensed = (featureKey: string) =>
+    bypass || license == null || chainIn(license.features, featureKey);
+
   return {
     hasLicenseData,
     enforced,
     state,
     endDate,
     canWrite: bypass || state === "active",
-    isLicensed: (featureKey: string) => {
-      if (bypass || license == null) return true;
-      // backend ต้องเจอทั้ง match.feature และ match.module ใน features[] จึงจะผ่าน
-      // (license.evaluator.ts ขั้นที่ 4) — module คือส่วนหน้าจุด**แรก** ไม่ใช่จุดสุดท้าย
-      // ตามที่ license-route-resolver.ts:69-70 ตัด
-      const dot = featureKey.indexOf(".");
-      const moduleKey = dot === -1 ? featureKey : featureKey.slice(0, dot);
-      return (
-        license.features.includes(featureKey) &&
-        license.features.includes(moduleKey)
-      );
-    },
+    isLicensed,
+    isExpired: (featureKey: string) =>
+      license != null &&
+      !isLicensed(featureKey) &&
+      chainIn(
+        [...license.features, ...(license.expired_features ?? [])],
+        featureKey,
+      ),
     // ไม่แตะ `bypass` โดยตั้งใจ — ดูเหตุผลเต็มที่ doc ของ isHidden ใน LicenseInfo
     isHidden: (featureKey: string) =>
       (license?.hidden_features ?? []).includes(featureKey),
