@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Pencil, Send, Star, Trash2 } from "lucide-react";
+import { Link2, Loader2, Pencil, Send, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { ListPageShell } from "@/components/share/list-page-shell";
@@ -14,7 +14,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { EmailProfile } from "@/types/email-profile";
+import {
+  authTypeOf,
+  isOAuthConnected,
+  type EmailProfile,
+} from "@/types/email-profile";
+import { EmailProfileOAuthDialog } from "./email-profile-oauth-dialog";
 import { EmailProfileDialog } from "./email-profile-dialog";
 import { EmailProfileTestDialog } from "./email-profile-test-dialog";
 import { useEmailProfiles } from "@/hooks/use-email-profiles";
@@ -43,6 +48,7 @@ export default function EmailProfileComponent() {
   const [deleteTarget, setDeleteTarget] = useState<EmailProfile | null>(null);
   const [testingId, setTestingId] = useState<string | null>(null);
   const [testTarget, setTestTarget] = useState<EmailProfile | null>(null);
+  const [connectTarget, setConnectTarget] = useState<EmailProfile | null>(null);
 
   const openAdd = () => {
     setEditingProfile(null);
@@ -215,6 +221,19 @@ export default function EmailProfileComponent() {
                             {t("defaultBadge")}
                           </Badge>
                         )}
+                        {authTypeOf(profile) !== "password" && (
+                          <Badge variant="secondary" size="xs">
+                            {authTypeOf(profile) === "oauth2_app"
+                              ? t("badgeMicrosoft365")
+                              : t("badgeMicrosoft")}
+                          </Badge>
+                        )}
+                        {authTypeOf(profile) === "oauth2_delegated" &&
+                          !isOAuthConnected(profile) && (
+                            <Badge variant="warning-light" size="xs">
+                              {t("badgeNotConnected")}
+                            </Badge>
+                          )}
                       </div>
                     </td>
                     <td className="text-muted-foreground px-3 py-2">
@@ -240,6 +259,18 @@ export default function EmailProfileComponent() {
                           >
                             <Star className="size-3" aria-hidden="true" />
                             {t("setDefault")}
+                          </Button>
+                        )}
+                        {authTypeOf(profile) === "oauth2_delegated" && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => setConnectTarget(profile)}
+                          >
+                            <Link2 className="size-3" aria-hidden="true" />
+                            {isOAuthConnected(profile)
+                              ? t("reconnect")
+                              : t("connect")}
                           </Button>
                         )}
                         <Button
@@ -323,6 +354,14 @@ export default function EmailProfileComponent() {
           profile={testTarget}
           onSend={handleTestSend}
           isSending={isTesting}
+        />
+      )}
+
+      {/* mount เฉพาะตอนเปิด — ปิด = unmount = poll หยุดทันที */}
+      {connectTarget && (
+        <EmailProfileOAuthDialog
+          profile={connectTarget}
+          onOpenChange={(open) => !open && setConnectTarget(null)}
         />
       )}
 
