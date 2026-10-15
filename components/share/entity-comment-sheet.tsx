@@ -32,7 +32,7 @@ export function EntityCommentSheet({
   onOpenChange,
 }: EntityCommentSheetProps) {
   const { data: profile, dateFormat } = useProfile();
-  const attachmentPolicy = useAttachmentPolicy();
+  const attachmentPolicy = useAttachmentPolicy(open);
 
   const {
     comments,

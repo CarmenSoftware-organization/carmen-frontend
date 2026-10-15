@@ -28,35 +28,35 @@
 
 ## การตัดสินใจหลัก
 
-| เรื่อง | เลือก | เหตุผล |
-|---|---|---|
-| ใครตั้ง | carmen-platform เท่านั้น | ทีม Carmen คุมพื้นที่เก็บไฟล์และความเสี่ยงของชนิดไฟล์ |
-| ที่เก็บ | entry ใน `tb_business_unit.config` (platform DB) | ที่เก็บค่าต่อ BU ที่มีอยู่แล้ว ไม่ต้อง migration · gateway อ่านตรงผ่าน `PRISMA_SYSTEM` ได้ |
-| รูปค่า | **รหัสกลุ่ม** ไม่ใช่ MIME ดิบ | คนตั้งคิดเป็น "เปิด Excel" · เพิ่ม MIME ให้กลุ่มทีหลังได้โดยไม่แก้ข้อมูลทุก BU |
-| ชนิดที่เลือกได้ | รายการตายตัวในโค้ด (รูป, PDF, Excel, Word, CSV, Text) | ไม่มีทางเปิด svg/html/exe ที่ฝัง script ได้ |
-| ขนาด | เพดาน 25MB · ค่าเริ่มต้น 10MB | BU ที่ไม่ตั้ง = พฤติกรรมเดิมเป๊ะ deploy แล้วไม่มีอะไรเปลี่ยน |
-| ทางเลือกที่ตัดทิ้ง | ตารางใหม่ (งานมากขึ้น ต้อง migration + CRUD) · `tb_application_config` (admin BU เขียนได้ ขัดกับ "platform เท่านั้น") | |
+| เรื่อง             | เลือก                                                                                                                 | เหตุผล                                                                                     |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| ใครตั้ง            | carmen-platform เท่านั้น                                                                                              | ทีม Carmen คุมพื้นที่เก็บไฟล์และความเสี่ยงของชนิดไฟล์                                      |
+| ที่เก็บ            | entry ใน `tb_business_unit.config` (platform DB)                                                                      | ที่เก็บค่าต่อ BU ที่มีอยู่แล้ว ไม่ต้อง migration · gateway อ่านตรงผ่าน `PRISMA_SYSTEM` ได้ |
+| รูปค่า             | **รหัสกลุ่ม** ไม่ใช่ MIME ดิบ                                                                                         | คนตั้งคิดเป็น "เปิด Excel" · เพิ่ม MIME ให้กลุ่มทีหลังได้โดยไม่แก้ข้อมูลทุก BU             |
+| ชนิดที่เลือกได้    | รายการตายตัวในโค้ด (รูป, PDF, Excel, Word, CSV, Text)                                                                 | ไม่มีทางเปิด svg/html/exe ที่ฝัง script ได้                                                |
+| ขนาด               | เพดาน 25MB · ค่าเริ่มต้น 10MB                                                                                         | BU ที่ไม่ตั้ง = พฤติกรรมเดิมเป๊ะ deploy แล้วไม่มีอะไรเปลี่ยน                               |
+| ทางเลือกที่ตัดทิ้ง | ตารางใหม่ (งานมากขึ้น ต้อง migration + CRUD) · `tb_application_config` (admin BU เขียนได้ ขัดกับ "platform เท่านั้น") |                                                                                            |
 
 ## 1. รูปแบบข้อมูล
 
 entry ใน `tb_business_unit.config` (array ของ `{ key, label, datatype, value }` แบบเดิม):
 
-| key | value | ไม่มี entry |
-|---|---|---|
+| key                        | value                                             | ไม่มี entry       |
+| -------------------------- | ------------------------------------------------- | ----------------- |
 | `attachment.allowed_types` | array ของรหัสกลุ่ม เช่น `["image","pdf","excel"]` | `["image","pdf"]` |
-| `attachment.max_size_mb` | จำนวนเต็ม 1–25 | `10` |
+| `attachment.max_size_mb`   | จำนวนเต็ม 1–25                                    | `10`              |
 
 รายการกลุ่ม — single source อยู่ใน gateway `src/common/attachment-policy/attachment-policy.ts` (ผู้ใช้ทั้งสองฝั่ง —
 ตัวตรวจไฟล์และ validation ตอน platform เขียน — อยู่ใน gateway · ไม่ใส่ `packages/` เพราะต้อง build dist เพิ่มโดยไม่มีผู้ใช้อื่น):
 
-| กลุ่ม | MIME | นามสกุล |
-|---|---|---|
-| `image` | `image/jpeg` `image/png` `image/webp` `image/gif` | .jpg .jpeg .png .webp .gif |
-| `pdf` | `application/pdf` | .pdf |
-| `excel` | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` `application/vnd.ms-excel` | .xlsx .xls |
-| `word` | `application/vnd.openxmlformats-officedocument.wordprocessingml.document` `application/msword` | .docx .doc |
-| `csv` | `text/csv` (+ `application/vnd.ms-excel` ที่ Windows ส่งมากับ .csv) | .csv |
-| `text` | `text/plain` | .txt |
+| กลุ่ม   | MIME                                                                                           | นามสกุล                    |
+| ------- | ---------------------------------------------------------------------------------------------- | -------------------------- |
+| `image` | `image/jpeg` `image/png` `image/webp` `image/gif`                                              | .jpg .jpeg .png .webp .gif |
+| `pdf`   | `application/pdf`                                                                              | .pdf                       |
+| `excel` | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` `application/vnd.ms-excel` | .xlsx .xls                 |
+| `word`  | `application/vnd.openxmlformats-officedocument.wordprocessingml.document` `application/msword` | .docx .doc                 |
+| `csv`   | `text/csv` (+ `application/vnd.ms-excel` ที่ Windows ส่งมากับ .csv)                            | .csv                       |
+| `text`  | `text/plain`                                                                                   | .txt                       |
 
 **กติกาตอนอ่าน (resolve):** ค่าผิดรูป/นอกช่วงไม่ทำให้พัง — ขนาดถูก clamp เข้า 1–25 (ไม่ใช่ตัวเลข =
 ค่าเริ่มต้น) · กลุ่มที่ไม่รู้จักถูกทิ้ง · array ว่างหลังกรอง = ค่าเริ่มต้น (กันการตั้งพลาดจนแนบอะไรไม่ได้เลย)
@@ -86,11 +86,11 @@ entry ใน `tb_business_unit.config` (array ของ `{ key, label, datatype,
 
 ### 2.3 รหัส error (error catalog แบบ #835)
 
-| รหัส | เมื่อ | params |
-|---|---|---|
-| `ATTACHMENT_TYPE_NOT_ALLOWED` | ชนิดไม่อยู่ในนโยบายของ BU | `{ name, allowed }` |
-| `ATTACHMENT_TOO_LARGE` | ใหญ่กว่า `max_size_mb` ของ BU หรือโดน multer `LIMIT_FILE_SIZE` | `{ name, max_mb }` |
-| `ATTACHMENT_POLICY_INVALID` | platform เขียน `attachment.*` ที่ผิดรูป (§2.6) | `{ key, max_mb }` |
+| รหัส                          | เมื่อ                                                          | params              |
+| ----------------------------- | -------------------------------------------------------------- | ------------------- |
+| `ATTACHMENT_TYPE_NOT_ALLOWED` | ชนิดไม่อยู่ในนโยบายของ BU                                      | `{ name, allowed }` |
+| `ATTACHMENT_TOO_LARGE`        | ใหญ่กว่า `max_size_mb` ของ BU หรือโดน multer `LIMIT_FILE_SIZE` | `{ name, max_mb }`  |
+| `ATTACHMENT_POLICY_INVALID`   | platform เขียน `attachment.*` ที่ผิดรูป (§2.6)                 | `{ key, max_mb }`   |
 
 โยนเป็น `BadRequestException({ code, ...params })` — exception filter ของ gateway ดึงรหัสจาก body ไป render
 ข้อความ catalog ตาม `Accept-Language` และส่ง `error.code` / `error.id` ให้ FE (ยังเป็น `BadRequestException`
@@ -123,7 +123,7 @@ endpoint สร้าง/แก้ BU ของ platform (`platform/platform_bus
 
 ## 3. carmen-platform
 
-- component ใหม่ `AttachmentPolicyFields` — checkbox ต่อกลุ่ม (รูป/PDF/Excel/Word/CSV/Text) +
+- component ใหม่ `AttachmentPolicySection` — checkbox ต่อกลุ่ม (รูป/PDF/Excel/Word/CSV/Text) +
   ช่องตัวเลข "ขนาดสูงสุด (MB)" 1–25 + ข้อความบอกค่าเริ่มต้นเมื่อยังไม่ตั้ง
 - ใช้ใน `src/pages/BusinessUnitEdit.tsx` เท่านั้น — `clusterAdmin/BusinessUnitForm.tsx` ไม่แสดง (หน้านั้นถือว่าค่า
   ระดับ platform เป็นของอ่านอย่างเดียวอยู่แล้ว เช่น calculation method และส่ง config เดิมกลับไปทั้งก้อนจึงไม่ลบค่า)
