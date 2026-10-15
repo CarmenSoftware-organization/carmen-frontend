@@ -1192,7 +1192,6 @@
     "reorderQty": "Reorder",
     "subCategory": "Sub Category",
     "fromTo": "From → To",
-    "workflowStage": "Workflow Name",
     "currentStage": "Current Stage",
     "localName": "Local Name",
     "barcode": "Barcode",

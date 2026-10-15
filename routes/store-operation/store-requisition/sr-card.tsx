@@ -62,7 +62,7 @@ export default function SrCard({ item, onEdit, onDelete }: SrCardProps) {
         {item.department_name}
       </ListCardRow>
       {item.workflow_name && (
-        <ListCardRow label={tfl("workflowStage")}>
+        <ListCardRow label={tfl("workflow")}>
           {item.workflow_name}
         </ListCardRow>
       )}

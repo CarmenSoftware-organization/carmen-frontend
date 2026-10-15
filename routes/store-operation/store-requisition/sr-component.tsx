@@ -333,7 +333,7 @@ export default function StoreRequisitionComponent() {
             width: 14,
           },
           {
-            header: tfl("workflowStage"),
+            header: tfl("workflow"),
             value: (r) => r.workflow_name ?? "",
             width: 18,
           },
