@@ -38,6 +38,8 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/activity-logs/${id}/detail`,
   ADJUSTMENT_TYPES: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/adjustment-types`,
+  ATTACHMENT_POLICY: (buCode: string) =>
+    `/api/proxy/api/${buCode}/attachment-policy`,
   ANALYTICS_EVENTS: "/api/proxy/api/analytics-events",
   APPLICATION_ROLES: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/application-roles`,

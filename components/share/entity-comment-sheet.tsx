@@ -1,4 +1,5 @@
 import { useProfile } from "@/hooks/use-profile";
+import { useAttachmentPolicy } from "@/hooks/use-attachment-policy";
 import { CommentSheet } from "@/components/ui/comment-sheet";
 import type { createCommentCrud } from "@/hooks/use-comment-crud";
 
@@ -31,6 +32,7 @@ export function EntityCommentSheet({
   onOpenChange,
 }: EntityCommentSheetProps) {
   const { data: profile, dateFormat } = useProfile();
+  const attachmentPolicy = useAttachmentPolicy();
 
   const {
     comments,
@@ -57,6 +59,7 @@ export function EntityCommentSheet({
       currentUserId={profile?.id}
       dateFormat={dateFormat}
       directFileUpload
+      attachmentPolicy={attachmentPolicy}
       onSubmit={async (data) => {
         if (!entityId) return;
         await createComment.mutateAsync({
