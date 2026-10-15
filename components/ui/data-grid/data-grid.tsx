@@ -1,4 +1,12 @@
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import {
+  createContext,
+  ReactNode,
+  RefObject,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { Row, RowData, Table } from "@tanstack/react-table";
 
 import { cn } from "@/lib/utils";
@@ -201,6 +209,48 @@ function DataGrid<TData extends object>({
   );
 }
 
+/**
+ * ตั้ง `data-overflow-x` บนกล่องเลื่อนเมื่อเนื้อหากว้างเกินกล่อง (มีแถบเลื่อนแนวนอน)
+ *
+ * เขียน attribute ลง DOM ตรง ๆ ไม่ผ่าน state — สถานะนี้ใช้แค่เลือก padding ใน CSS
+ * ถ้าเป็น state ทุกครั้งที่สลับจะพาทั้งตารางข้างใน re-render ไปด้วยโดยไม่จำเป็น
+ *
+ * ต้อง observe ลูกด้วย ไม่ใช่แค่ตัวกล่อง: ตอนข้อมูลโหลดเสร็จหรือคอลัมน์เปลี่ยน
+ * ตารางกว้างขึ้นโดยที่กล่องขนาดเท่าเดิม ResizeObserver บนกล่องจะไม่ยิง
+ * MutationObserver คอย observe ลูกตัวใหม่เมื่อ skeleton ถูกแทนด้วยตารางจริง
+ *
+ * @param ref - ref ของกล่องที่ `overflow-auto`
+ */
+function useOverflowXAttribute(ref: RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+
+    const update = () =>
+      el.toggleAttribute("data-overflow-x", el.scrollWidth > el.clientWidth);
+
+    const resize = new ResizeObserver(update);
+    const observeAll = () => {
+      resize.disconnect();
+      resize.observe(el);
+      for (const child of el.children) resize.observe(child);
+    };
+    const mutation = new MutationObserver(() => {
+      observeAll();
+      update();
+    });
+
+    observeAll();
+    mutation.observe(el, { childList: true });
+    update();
+
+    return () => {
+      resize.disconnect();
+      mutation.disconnect();
+    };
+  }, [ref]);
+}
+
 function DataGridContainer({
   children,
   className,
@@ -212,8 +262,11 @@ function DataGridContainer({
   readonly border?: boolean;
   readonly scroll?: boolean;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useOverflowXAttribute(ref);
   return (
     <div
+      ref={ref}
       data-slot="data-grid"
       className={cn(
         "w-full overflow-auto",
@@ -231,13 +284,15 @@ function DataGridContainer({
  * สไตล์ของกล่องที่เลื่อนเองได้ในตาราง
  *
  * - แถบบางและจาง — แถบเลื่อนเป็นของประกอบ ไม่ใช่ของที่ต้องมอง
- * - `pb-3` เว้นที่ใต้แถวสุดท้าย ไม่ให้แถบเลื่อนแนวนอนทับแถวนั้น
+ * - `pb-3` เว้นที่ใต้แถวสุดท้าย ไม่ให้แถบเลื่อนแนวนอนทับแถวนั้น — **เฉพาะตอนที่
+ *   ตารางล้นแนวนอนจริง** (`data-overflow-x` จาก `useOverflowXAttribute`) เดิมใส่
+ *   ตลอด ตารางที่ไม่มีแถบเลื่อนเลยจึงมีช่องว่าง 12px ค้างอยู่ระหว่างแถวสุดท้ายกับ footer
  *
  * เดิมสตริงนี้ถูกก็อปไว้ 5 ที่และหลุดอีก 33 ที่ ทำให้หน้า list ส่วนใหญ่แถวสุดท้าย
  * โดนแถบทับ แต่มีอยู่หน้าเดียวที่ไม่โดน โดยไม่มีเหตุผลอะไรรองรับ
  */
 const SCROLLER =
-  "[scrollbar-width:thin] [scrollbar-color:var(--scrollbar-thumb)_transparent] pb-3";
+  "[scrollbar-width:thin] [scrollbar-color:var(--scrollbar-thumb)_transparent] data-[overflow-x]:pb-3";
 
 /**
  * กล่องเลื่อนของตารางในหน้า list — ตัวที่เลื่อนจริง ส่วน `DataGridContainer`
@@ -257,8 +312,10 @@ function DataGridScrollArea({
   readonly children: ReactNode;
   readonly className?: string;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useOverflowXAttribute(ref);
   return (
-    <div className={cn("flex-1 overflow-auto", SCROLLER, className)}>
+    <div ref={ref} className={cn("flex-1 overflow-auto", SCROLLER, className)}>
       {children}
     </div>
   );
