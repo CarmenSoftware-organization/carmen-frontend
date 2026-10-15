@@ -3231,7 +3231,11 @@
       },
       "review": {
         "title": "Physical Count Review"
-      }
+      },
+      "sheetItem": "Item",
+      "sheetCount": "Count",
+      "sheetUnit": "Unit",
+      "sheetEnterNext": "next item"
     },
     "entryDialogs": {
       "importInvalidFile": "Invalid file format",
@@ -3388,7 +3392,11 @@
       "resetSuccess": "Spot check reset successfully",
       "resetting": "Resetting...",
       "addNotes": "Add notes",
-      "evidenceCount": "{count, plural, =1 {# image} other {# images}}"
+      "evidenceCount": "{count, plural, =1 {# image} other {# images}}",
+      "sheetItem": "Item",
+      "sheetCount": "Count",
+      "sheetUnit": "Unit",
+      "sheetEnterNext": "next item"
     },
     "periodEnd": {
       "entity": "Period End",

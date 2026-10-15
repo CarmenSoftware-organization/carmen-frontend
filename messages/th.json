@@ -3231,7 +3231,11 @@
       },
       "review": {
         "title": "ทบทวนการนับสินค้าจริง"
-      }
+      },
+      "sheetItem": "รายการ",
+      "sheetCount": "จำนวนนับ",
+      "sheetUnit": "หน่วย",
+      "sheetEnterNext": "ไปรายการถัดไป"
     },
     "entryDialogs": {
       "importInvalidFile": "ไฟล์ไม่ถูกต้อง",
@@ -3388,7 +3392,11 @@
       "resetSuccess": "รีเซ็ตการสุ่มตรวจเรียบร้อย",
       "resetting": "กำลังรีเซ็ต...",
       "addNotes": "เพิ่มหมายเหตุ",
-      "evidenceCount": "{count} รูป"
+      "evidenceCount": "{count} รูป",
+      "sheetItem": "รายการ",
+      "sheetCount": "จำนวนนับ",
+      "sheetUnit": "หน่วย",
+      "sheetEnterNext": "ไปรายการถัดไป"
     },
     "periodEnd": {
       "entity": "ปิดงวด",

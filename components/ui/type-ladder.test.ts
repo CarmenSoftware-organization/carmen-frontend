@@ -199,7 +199,6 @@ const ALLOWED_SUB_10PX: Record<string, number> = {
   "components/share/tree-product-lookup.tsx": 1, // leaf count chip
   "routes/inventory-management/shared/entry-notes-dialog.tsx": 1, // file size
   "routes/inventory-management/shared/filter-pill.tsx": 1, // filter count chip
-  "routes/inventory-management/shared/inv-shared.tsx": 1, // "01" index bubble on ProductAvatar
   "routes/inventory-management/spot-check/sc-product-panel.tsx": 1, // String(length)
   "routes/operation-plan/recipe/recipe-name-field.tsx": 1, // character counter
   "routes/report/report-landing.tsx": 1, // "07:30" schedule time

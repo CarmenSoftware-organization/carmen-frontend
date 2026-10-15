@@ -32,6 +32,8 @@ import { EntryItemRow } from "../shared/entry-item-row";
 import { ScEntryHeader } from "./sc-entry-header";
 import { ScEntryNotesDialog } from "./sc-entry-notes-dialog";
 import { EntryToolbar } from "../shared/entry-toolbar";
+import { EntrySheetHeader } from "../shared/entry-sheet-header";
+import { useEntryAdvance } from "../shared/use-entry-advance";
 
 interface ScEntryComponentProps {
   readonly spotCheckId: string;
@@ -39,8 +41,7 @@ interface ScEntryComponentProps {
 
 type CountFilter = "all" | "counted" | "uncounted";
 
-const ROW_ESTIMATE = 132; // px ของการ์ด + gap (~120-140)
-const ROW_GAP = 8; // gap-2
+const ROW_ESTIMATE = 53; // px ของแถวใบนับหนึ่งแถว (รวม border-b) — มีโน้ตจะสูงขึ้น วัดจริงด้วย measureElement
 
 export function ScEntryComponent({ spotCheckId }: ScEntryComponentProps) {
   const t = useTranslations("inventoryManagement.spotCheck");
@@ -123,10 +124,15 @@ export function ScEntryComponent({ spotCheckId }: ScEntryComponentProps) {
   const rowVirtualizer = useVirtualizer({
     count: filtered.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => ROW_ESTIMATE + ROW_GAP,
+    estimateSize: () => ROW_ESTIMATE,
     overscan: 6,
     getItemKey: (i) => filtered[i]?.id ?? i,
   });
+  const handleAdvance = useEntryAdvance(filtered, rowVirtualizer, scrollRef);
+  // เปลี่ยนตัวกรอง/คำค้น → กลับไปบนสุด ไม่งั้นรายการใหม่ค้างอยู่ที่ระยะเลื่อนเดิม (กลางรายการ)
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 });
+  }, [deferredFilter, deferredSearch]);
   const virtualItems = rowVirtualizer.getVirtualItems();
 
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
@@ -345,7 +351,7 @@ export function ScEntryComponent({ spotCheckId }: ScEntryComponentProps) {
         />
 
         {/* ── Virtualized item list ─────────── */}
-        <div className="min-h-0 flex-1">
+        <div className="mb-3 min-h-0 flex-1">
           {isLoading && <ItemListSkeleton count={5} />}
           {!isLoading && filtered.length === 0 && totalItems > 0 && (
             <div className="border-border/40 bg-card flex items-center justify-center gap-2 rounded-xl border border-dashed py-8">
@@ -364,64 +370,67 @@ export function ScEntryComponent({ spotCheckId }: ScEntryComponentProps) {
             </div>
           )}
           {!isLoading && filtered.length > 0 && (
-            <div
-              ref={scrollRef}
-              className="contain:strict relative h-full overflow-auto"
-            >
+            <div className="bg-card flex h-full flex-col overflow-hidden rounded-xl border">
+              <EntrySheetHeader translationNamespace="inventoryManagement.spotCheck" />
               <div
-                style={{
-                  height: rowVirtualizer.getTotalSize(),
-                  position: "relative",
-                }}
+                ref={scrollRef}
+                className="contain:strict relative min-h-0 flex-1 overflow-auto"
               >
-                {virtualItems.map((vi) => {
-                  const item = filtered[vi.index];
-                  const eff =
-                    item.id in counts ? counts[item.id] : item.actual_qty;
-                  const unitName =
-                    unitNameById.get(item.inventory_unit_id) ?? "";
-                  return (
-                    <div
-                      key={vi.key}
-                      data-index={vi.index}
-                      ref={rowVirtualizer.measureElement}
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        transform: `translateY(${vi.start}px)`,
-                        paddingBottom: ROW_GAP,
-                      }}
-                    >
-                      <EntryItemRow
-                        id={item.id}
-                        index={vi.index}
-                        sequenceNo={item.sequence_no}
-                        productId={item.product_id}
-                        productName={item.product_name}
-                        productCode={item.product_code}
-                        productLocalName={item.product_local_name}
-                        productSku={item.product_sku}
-                        inventoryUnitName={unitName}
-                        committedQty={eff}
-                        isCounted={isCountedFn(item)}
-                        onCommit={handleCommitCount}
-                        onOpenCalc={handleOpenCalc}
-                        commitOnChange
-                        NotesDialog={ScEntryNotesDialog}
-                        translationNamespace="inventoryManagement.spotCheck"
-                      />
-                    </div>
-                  );
-                })}
+                <div
+                  style={{
+                    height: rowVirtualizer.getTotalSize(),
+                    position: "relative",
+                  }}
+                >
+                  {virtualItems.map((vi) => {
+                    const item = filtered[vi.index];
+                    const eff =
+                      item.id in counts ? counts[item.id] : item.actual_qty;
+                    const unitName =
+                      unitNameById.get(item.inventory_unit_id) ?? "";
+                    return (
+                      <div
+                        key={vi.key}
+                        data-index={vi.index}
+                        ref={rowVirtualizer.measureElement}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          transform: `translateY(${vi.start}px)`,
+                        }}
+                      >
+                        <EntryItemRow
+                          id={item.id}
+                          index={vi.index}
+                          sequenceNo={item.sequence_no}
+                          productId={item.product_id}
+                          productName={item.product_name}
+                          productCode={item.product_code}
+                          productLocalName={item.product_local_name}
+                          productSku={item.product_sku}
+                          inventoryUnitName={unitName}
+                          committedQty={eff}
+                          isCounted={isCountedFn(item)}
+                          onCommit={handleCommitCount}
+                          onOpenCalc={handleOpenCalc}
+                          onAdvance={handleAdvance}
+                          commitOnChange
+                          NotesDialog={ScEntryNotesDialog}
+                          translationNamespace="inventoryManagement.spotCheck"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
         </div>
 
         {/* ── Bottom action bar ─────────── */}
-        <div className="border-border/60 bg-card/80 border-t p-4 backdrop-blur-xl">
+        <div className="border-border/60 bg-card/80 -mx-4 border-t px-4 py-3 backdrop-blur-xl">
           <TooltipProvider delayDuration={100}>
             <div className="flex flex-wrap items-center justify-end gap-2">
               {totalItems > 0 && uncountedCount === 0 ? (
