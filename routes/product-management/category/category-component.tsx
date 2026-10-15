@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
-import { ChevronDown, ChevronUp, FolderTree } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
@@ -96,14 +96,13 @@ export default function CategoryComponent() {
     });
 
   // Search
-  const nodeMatches = (node: CategoryNode, q: string): boolean => {
-    const self =
-      node.code.toLowerCase().includes(q) ||
-      node.name.toLowerCase().includes(q) ||
-      (node.description?.toLowerCase().includes(q) ?? false);
-    if (self) return true;
-    return node.children?.some((c) => nodeMatches(c, q)) ?? false;
-  };
+  const selfMatches = (node: CategoryNode, q: string): boolean =>
+    node.code.toLowerCase().includes(q) ||
+    node.name.toLowerCase().includes(q) ||
+    (node.description?.toLowerCase().includes(q) ?? false);
+  const nodeMatches = (node: CategoryNode, q: string): boolean =>
+    selfMatches(node, q) ||
+    (node.children?.some((c) => nodeMatches(c, q)) ?? false);
 
   const filteredData = (() => {
     if (!search) return categoryData;
@@ -111,18 +110,20 @@ export default function CategoryComponent() {
     return categoryData.filter((cat) => nodeMatches(cat, q));
   })();
 
-  const searchExpanded = (() => {
-    if (!search) return {};
-    const q = search.toLowerCase();
+  const { searchExpanded, matchCount } = (() => {
     const result: Record<string, boolean> = {};
+    if (!search) return { searchExpanded: result, matchCount: 0 };
+    const q = search.toLowerCase();
+    let count = 0;
     const walk = (nodes: CategoryNode[]) => {
       for (const node of nodes) {
+        if (selfMatches(node, q)) count++;
         if (nodeMatches(node, q)) result[node.id] = true;
         if (node.children?.length) walk(node.children);
       }
     };
     walk(filteredData);
-    return result;
+    return { searchExpanded: result, matchCount: count };
   })();
 
   // Stats
@@ -293,30 +294,42 @@ export default function CategoryComponent() {
         </div>
       }
     >
-      {/* Summary bar */}
-      {!isLoading && (
-        <div className="text-muted-foreground flex items-center gap-3 px-1 py-1 text-xs">
-          <span className="text-foreground/70 font-semibold">
-            {t("nItems", { count: stats.total })}
-          </span>
-          <span className="text-border">|</span>
-          <span>{t("nCategories", { count: stats.cats })}</span>
-          <span className="text-border">|</span>
-          <span>{t("nSubcategories", { count: stats.subs })}</span>
-          <span className="text-border">|</span>
-          <span>{t("nItemGroups", { count: stats.igs })}</span>
-        </div>
-      )}
-
       {/* Tree */}
       <div className="bg-card rounded-md border">
-        {/* Header row */}
-        <div className="bg-muted/40 text-muted-foreground text-micro-legal flex h-9 items-center justify-between border-b px-2 font-semibold tracking-wider uppercase">
-          <div className="flex items-center">
-            <FolderTree className="mr-1.5 h-3 w-3" />
-            {t("categoryTree")}
+        {/* Header row — สถิติทั้งต้นไม้ หรือจำนวนที่ค้นเจอระหว่างค้นหา */}
+        <div className="text-muted-foreground flex h-9 items-center justify-between gap-2 border-b px-3 text-xs">
+          <div className="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap tabular-nums">
+            {isLoading ? null : search ? (
+              <span className="text-foreground/80 font-semibold">
+                {t("nMatches", { count: matchCount })}
+              </span>
+            ) : (
+              <>
+                <span className="text-foreground/80 font-semibold">
+                  {t("nItems", { count: stats.total })}
+                </span>
+                <span className="text-border hidden sm:inline" aria-hidden>
+                  ·
+                </span>
+                <span className="hidden sm:inline">
+                  {t("nCategories", { count: stats.cats })}
+                </span>
+                <span className="text-border hidden sm:inline" aria-hidden>
+                  ·
+                </span>
+                <span className="hidden sm:inline">
+                  {t("nSubcategories", { count: stats.subs })}
+                </span>
+                <span className="text-border hidden sm:inline" aria-hidden>
+                  ·
+                </span>
+                <span className="hidden sm:inline">
+                  {t("nItemGroups", { count: stats.igs })}
+                </span>
+              </>
+            )}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <Button onClick={expandAll} size="xs" variant="ghost">
               <ChevronDown className="h-3 w-3" />
               {t("expand")}
@@ -328,7 +341,9 @@ export default function CategoryComponent() {
           </div>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-21rem-3rem)] sm:h-[calc(100vh-11rem-3rem)]">
+        {/* Radix ห่อ viewport ด้วย display:table ซึ่งกว้างตามเนื้อหา ทำให้แถวล้นออกนอก
+            viewport และปุ่มลบท้ายแถวโดนตัด — บังคับเป็น block ให้แถวกว้างเท่ากล่อง */}
+        <ScrollArea className="h-[calc(100vh-21rem-1.5rem)] sm:h-[calc(100vh-11rem-1.5rem)] [&_[data-slot=scroll-area-viewport]>div]:block!">
           <TreeContent
             isLoading={isLoading}
             filteredData={filteredData}
