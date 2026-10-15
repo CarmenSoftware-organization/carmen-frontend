@@ -47,12 +47,54 @@ export function usePriceListTemplateTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("name")} />
       ),
-      cell: ({ row }) => (
-        <CellAction onClick={() => onEdit(row.original)}>
-          {row.getValue("name") || "..."}
-        </CellAction>
-      ),
+      // คำอธิบายซ้อนใต้ชื่อเฉพาะใบที่กรอก — template ชื่อสั้นคล้ายกันหลายใบ
+      // คำอธิบายคือสิ่งที่แยกว่าใบไหนส่งให้ใคร
+      cell: ({ row }) => {
+        const description = row.original.description?.trim();
+        return (
+          <div className="min-w-0">
+            <CellAction
+              onClick={() => onEdit(row.original)}
+              className="block truncate"
+            >
+              {row.getValue("name") || "..."}
+            </CellAction>
+            {description && (
+              <span
+                className="text-muted-foreground block truncate text-xs"
+                title={description}
+              >
+                {description}
+              </span>
+            )}
+          </div>
+        );
+      },
+      size: 360,
       meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
+    },
+    {
+      // จำนวนสินค้าในแม่แบบ — ใบที่ยังว่างส่งขอราคาไม่ได้ จึงต้องเห็นจากหน้ารายการ
+      // ไม่เรียงลำดับเพราะ backend ไม่มีคอลัมน์นับ
+      id: "product_count",
+      accessorFn: (row) => row.products?.length ?? 0,
+      header: () => <span className="block text-right">{tfl("products")}</span>,
+      cell: ({ row }) => {
+        const count = row.original.products?.length ?? 0;
+        if (count === 0) {
+          return <span className="text-warning-ink">{t("noProducts")}</span>;
+        }
+        return (
+          <span className="tabular-nums">{t("productsCount", { count })}</span>
+        );
+      },
+      size: 130,
+      enableSorting: false,
+      meta: {
+        headerTitle: tfl("products"),
+        cellClassName: "text-right whitespace-nowrap",
+        skeleton: columnSkeletons.textShort,
+      },
     },
     {
       id: "currency_code",
@@ -64,6 +106,7 @@ export function usePriceListTemplateTable({
           className="justify-center"
         />
       ),
+      size: 100,
       meta: {
         headerTitle: tfl("currency"),
         cellClassName: "text-center",
@@ -74,14 +117,24 @@ export function usePriceListTemplateTable({
     {
       accessorKey: "validity_period",
       header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("validityPeriod")} />
+        <DataGridColumnHeader
+          column={column}
+          title={tfl("validityPeriod")}
+          className="justify-end"
+        />
       ),
       cell: ({ row }) => {
         const val = row.getValue<number | null>("validity_period");
-        return val === null ? "—" : t("validityDays", { count: val });
+        return val === null ? (
+          <span className="text-muted-foreground">—</span>
+        ) : (
+          t("validityDays", { count: val })
+        );
       },
+      size: 140,
       meta: {
         headerTitle: tfl("validityPeriod"),
+        cellClassName: "text-right whitespace-nowrap tabular-nums",
         skeleton: columnSkeletons.textShort,
       },
     },
