@@ -97,6 +97,25 @@ export function useStoreRequisitionTable({
       size: 105,
     },
     {
+      accessorKey: "workflow_name",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={tfl("workflow")} />
+      ),
+      cell: ({ row }) => (
+        <span
+          className="block truncate"
+          title={row.original.workflow_name ?? undefined}
+        >
+          {row.original.workflow_name}
+        </span>
+      ),
+      size: 100,
+      meta: {
+        headerTitle: tfl("workflow"),
+        skeleton: columnSkeletons.text,
+      },
+    },
+    {
       // id เป็นชื่อคอลัมน์จริงใน DB เพื่อให้ sort ฝั่ง server ได้ (เรียง From → To = เรียงต้นทาง)
       id: "from_location_name",
       accessorFn: (row) =>
@@ -180,25 +199,6 @@ export function useStoreRequisitionTable({
         skeleton: columnSkeletons.badge,
       },
       size: 140,
-    },
-    {
-      accessorKey: "workflow_name",
-      header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("workflowStage")} />
-      ),
-      cell: ({ row }) => (
-        <span
-          className="block truncate"
-          title={row.original.workflow_name ?? undefined}
-        >
-          {row.original.workflow_name}
-        </span>
-      ),
-      size: 100,
-      meta: {
-        headerTitle: tfl("workflowStage"),
-        skeleton: columnSkeletons.text,
-      },
     },
     ...auditColumns<StoreRequisition>(tfl, dateTimeFormat),
   ];
