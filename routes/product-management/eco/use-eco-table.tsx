@@ -31,20 +31,19 @@ export function useEcoLabelTable({
   onDelete,
 }: UseEcoLabelTableOptions) {
   const tfl = useTranslations("field");
-  const t = useTranslations("productManagement.eco");
   const { dateTimeFormat } = useProfile();
   const columns: ColumnDef<EcoLabel>[] = [
     {
       accessorKey: "code",
       header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={t("iso")} />
+        <DataGridColumnHeader column={column} title={tfl("code")} />
       ),
       cell: ({ row }) => (
         <CellAction onClick={() => onEdit(row.original)}>
           <span className="text-xs">{row.getValue("code")}</span>
         </CellAction>
       ),
-      meta: { headerTitle: t("iso"), skeleton: columnSkeletons.text },
+      meta: { headerTitle: tfl("code"), skeleton: columnSkeletons.text },
     },
     {
       accessorKey: "name",
@@ -53,6 +52,25 @@ export function useEcoLabelTable({
       ),
       cell: ({ row }) => <span>{row.getValue("name") || "..."}</span>,
       meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
+    },
+    {
+      accessorKey: "description",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={tfl("description")} />
+      ),
+      cell: ({ row }) => (
+        <span
+          className="text-muted-foreground block max-w-96 truncate"
+          title={row.original.description ?? undefined}
+        >
+          {row.original.description}
+        </span>
+      ),
+      enableSorting: false,
+      meta: {
+        headerTitle: tfl("description"),
+        skeleton: columnSkeletons.text,
+      },
     },
     statusColumn<EcoLabel>(),
     ...auditColumns<EcoLabel>(tfl, dateTimeFormat),

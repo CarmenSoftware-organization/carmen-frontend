@@ -3706,7 +3706,6 @@
     "eco": {
       "entity": "Eco Certification",
       "title": "Eco Certification",
-      "iso": "ISO",
       "desc": "Green certifications a product can carry — organic, fair-trade, carbon-neutral.",
       "add": "Add Eco Certification",
       "edit": "Edit Eco Certification",

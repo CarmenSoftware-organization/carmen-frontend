@@ -72,7 +72,7 @@ export function EcoLabelDialog({
         <>
           <Field>
             <FieldLabel htmlFor="eco-label-code" required>
-              {t("iso")}
+              {tfl("code")}
             </FieldLabel>
             <FieldInput
               id="eco-label-code"
