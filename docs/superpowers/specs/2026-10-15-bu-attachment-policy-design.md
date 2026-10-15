@@ -46,7 +46,8 @@ entry ใน `tb_business_unit.config` (array ของ `{ key, label, datatype,
 | `attachment.allowed_types` | array ของรหัสกลุ่ม เช่น `["image","pdf","excel"]` | `["image","pdf"]` |
 | `attachment.max_size_mb` | จำนวนเต็ม 1–25 | `10` |
 
-รายการกลุ่ม — single source อยู่ใน `packages/` ของ BE (ทั้ง gateway และ validation ฝั่ง platform ใช้ร่วม):
+รายการกลุ่ม — single source อยู่ใน gateway `src/common/attachment-policy/attachment-policy.ts` (ผู้ใช้ทั้งสองฝั่ง —
+ตัวตรวจไฟล์และ validation ตอน platform เขียน — อยู่ใน gateway · ไม่ใส่ `packages/` เพราะต้อง build dist เพิ่มโดยไม่มีผู้ใช้อื่น):
 
 | กลุ่ม | MIME | นามสกุล |
 |---|---|---|
@@ -89,6 +90,12 @@ entry ใน `tb_business_unit.config` (array ของ `{ key, label, datatype,
 |---|---|---|
 | `ATTACHMENT_TYPE_NOT_ALLOWED` | ชนิดไม่อยู่ในนโยบายของ BU | `{ name, allowed }` |
 | `ATTACHMENT_TOO_LARGE` | ใหญ่กว่า `max_size_mb` ของ BU หรือโดน multer `LIMIT_FILE_SIZE` | `{ name, max_mb }` |
+| `ATTACHMENT_POLICY_INVALID` | platform เขียน `attachment.*` ที่ผิดรูป (§2.6) | `{ key, max_mb }` |
+
+โยนเป็น `BadRequestException({ code, ...params })` — exception filter ของ gateway ดึงรหัสจาก body ไป render
+ข้อความ catalog ตาม `Accept-Language` และส่ง `error.code` / `error.id` ให้ FE (ยังเป็น `BadRequestException`
+เทสต์ controller เดิมที่คาด `BadRequestException` จึงผ่าน) · ข้อความ catalog ไม่อ้าง `{name}` เพราะกรณีโดน
+multer ตัดไม่รู้ชื่อไฟล์
 
 ต้องดัก `LIMIT_FILE_SIZE` ของ multer ให้ออกเป็นรหัสที่สอง (ไม่งั้นได้ 413/500 ไร้รหัส)
 
@@ -100,9 +107,14 @@ entry ใน `tb_business_unit.config` (array ของ `{ key, label, datatype,
 
 ### 2.5 ปิดช่องเขียนจากฝั่ง BU
 
-`PATCH api/business-units` (`user-business-units.service.ts` → `stripNonUserWritableFields`) ทิ้ง entry
-ของ `data.config` ที่ key ขึ้นต้น `attachment.` **แบบเงียบ** — ค่าเดิมคงอยู่เพราะ `mergeConfigByKey` ทับ
-เฉพาะ key ที่ส่งมา · ไม่ตอบ 400 เพราะหน้า Default Setting ของ inventory ส่ง config ทั้งก้อนกลับตอนบันทึก
+`user-business-units.service.ts` มีสองเส้นที่เขียน `config`:
+
+- `PATCH` (`patchCurrentBusinessUnit`) — ทิ้ง entry `attachment.*` ที่ส่งมาก่อน `mergeConfigByKey` ค่าเดิมคงอยู่
+  เพราะ merge ทับเฉพาะ key ที่ส่งมา
+- `PUT` (`updateCurrentBusinessUnit`) — **แทน config ทั้งก้อน** ทิ้งอย่างเดียวจะลบค่าที่ platform ตั้งไว้ จึงต้อง
+  อ่าน config ปัจจุบัน (`BusinessUnits.findOneForMember` แบบเดียวกับ PATCH) แล้วต่อ entry `attachment.*` เดิมกลับเข้าไป
+
+ทั้งสองเส้นทำ**แบบเงียบ** ไม่ตอบ 400 เพราะหน้า Default Setting ของ inventory ส่ง config ทั้งก้อนกลับตอนบันทึก
 
 ### 2.6 ตรวจตอนเขียนฝั่ง platform
 
@@ -113,7 +125,8 @@ endpoint สร้าง/แก้ BU ของ platform (`platform/platform_bus
 
 - component ใหม่ `AttachmentPolicyFields` — checkbox ต่อกลุ่ม (รูป/PDF/Excel/Word/CSV/Text) +
   ช่องตัวเลข "ขนาดสูงสุด (MB)" 1–25 + ข้อความบอกค่าเริ่มต้นเมื่อยังไม่ตั้ง
-- ใช้ใน `src/pages/BusinessUnitEdit.tsx` และ `src/pages/clusterAdmin/BusinessUnitForm.tsx`
+- ใช้ใน `src/pages/BusinessUnitEdit.tsx` เท่านั้น — `clusterAdmin/BusinessUnitForm.tsx` ไม่แสดง (หน้านั้นถือว่าค่า
+  ระดับ platform เป็นของอ่านอย่างเดียวอยู่แล้ว เช่น calculation method และส่ง config เดิมกลับไปทั้งก้อนจึงไม่ลบค่า)
 - ซ่อน key `attachment.*` จากตัวแก้ config key/value ทั่วไป — แก้ได้ที่เดียว · บันทึกเป็น entry ใน `config`
 - "คืนค่าเริ่มต้น" = ลบสอง entry ทิ้ง (ไม่เขียนค่า default ลงไป เพื่อให้ตามค่าเริ่มต้นของระบบที่อาจเปลี่ยนทีหลัง)
 
@@ -125,8 +138,12 @@ endpoint สร้าง/แก้ BU ของ platform (`platform/platform_bus
   ทั้งการกรองตอนเลือกและ `accept` · ข้อความเตือนบอกชนิด/ขนาดของ BU จริง
 - `routes/inventory-management/shared/entry-notes-dialog.tsx` — ใช้ hook เดียวกัน (เพดาน 3MB ที่ไม่ตรงหายไป)
 - ระหว่างโหลด / ดึงไม่สำเร็จ = ค่าเริ่มต้นเดียวกับ BE (รูป + PDF, 10MB) ไม่บล็อกการใช้งาน — BE คือด่านจริง
-- `messages/{en,th}.json` → `errors.byCode.ATTACHMENT_TYPE_NOT_ALLOWED` / `ATTACHMENT_TOO_LARGE`
-  (ใช้ ICU argument `{name}` ได้ แต่ห้ามมี `{{ }}` ในไฟล์แปล — ทำหน้าพังทั้งหน้า)
+- ไม่ต้องเพิ่ม `errors.byCode.*` — error ของ BE มี `error.id` (catalogId) และข้อความที่ render ตามภาษาแล้ว
+  `getUserErrorMessage` ใช้ข้อความนั้นเมื่อไม่มี `byCode` ของเรา
+- ข้อความเตือนฝั่ง client (`commentSheet.fileNotAllowed/fileTooLarge`,
+  `inventoryManagement.entryDialogs.evidenceTooLarge`) ใช้ ICU argument `{types}` / `{max}` แทนค่าคงที่
+  (ห้ามมี `{{ }}` ในไฟล์แปล — ทำหน้าพังทั้งหน้า)
+- notes dialog เป็น UI รูปหลักฐาน (thumbnail) จึงรับเฉพาะ MIME `image/*` ที่อยู่ในนโยบาย + ขนาดตามนโยบาย
 
 ## 5. ลำดับ deploy / rollback
 
