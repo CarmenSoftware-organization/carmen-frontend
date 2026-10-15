@@ -76,8 +76,9 @@ export function AdjItemFields({
         wide
         frameless
         title={tfl("items")}
-        description={t("noItemsDesc")}
         count={itemFields.length}
+        // "เพิ่มรายการ…" เป็นคำชวนทำ — ใบที่อ่านอย่างเดียวไม่มีอะไรให้เพิ่ม
+        description={disabled ? undefined : t("noItemsDesc")}
         action={
           !disabled ? (
             <Button type="button" size="sm" onClick={handleAddItem}>
