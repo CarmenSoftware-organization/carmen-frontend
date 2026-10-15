@@ -21,7 +21,10 @@ export default function VendorCard({
 }: VendorCardProps) {
   const tfl = useTranslations("field");
 
-  const primaryContact = item.tb_vendor_contact?.find((c) => c.is_primary);
+  // list API ส่งผู้ติดต่อมาที่ `contacts` (serializer เปลี่ยนชื่อจาก tb_vendor_contact)
+  // อ่านแต่ชื่อเก่าอย่างเดียว การ์ดเลยไม่เคยแสดงผู้ติดต่อ
+  const contacts = item.contacts ?? item.tb_vendor_contact ?? [];
+  const primaryContact = contacts.find((c) => c.is_primary) ?? contacts[0];
 
   return (
     <ListCard
