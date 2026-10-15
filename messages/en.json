@@ -2588,6 +2588,27 @@
       "hideSecret": "Hide"
     },
     "emailProfile": {
+      "badgeMicrosoft": "Microsoft",
+      "badgeMicrosoft365": "Microsoft 365",
+      "badgeNotConnected": "Not connected",
+      "connect": "Connect",
+      "reconnect": "Reconnect",
+      "oauth": {
+        "title": "Connect Microsoft account",
+        "desc": "Sign in as {mailbox} to allow Carmen to send email from it.",
+        "starting": "Requesting a sign-in code…",
+        "step1": "Open the Microsoft sign-in page.",
+        "step2": "Enter the code below.",
+        "step3": "Sign in as {mailbox} and accept the permission.",
+        "copy": "Copy code",
+        "openMicrosoft": "Open Microsoft sign-in",
+        "waiting": "Waiting for you to finish signing in…",
+        "connected": "Connected as {account}. You can send a test email now.",
+        "expired": "The code expired. Try again.",
+        "denied": "Permission was declined on the Microsoft page.",
+        "failed": "Microsoft sign-in failed.",
+        "retry": "Try again"
+      },
       "title": "Email Profiles",
       "desc": "Sender profiles used to email purchase orders and other documents to vendors.",
       "entity": "Email profile",

@@ -2588,6 +2588,27 @@
       "hideSecret": "ซ่อน"
     },
     "emailProfile": {
+      "badgeMicrosoft": "Microsoft",
+      "badgeMicrosoft365": "Microsoft 365",
+      "badgeNotConnected": "ยังไม่เชื่อมต่อ",
+      "connect": "เชื่อมต่อ",
+      "reconnect": "เชื่อมต่อใหม่",
+      "oauth": {
+        "title": "เชื่อมต่อบัญชี Microsoft",
+        "desc": "ล็อกอินด้วย {mailbox} เพื่ออนุญาตให้ Carmen ส่งอีเมลจากบัญชีนี้",
+        "starting": "กำลังขอรหัสสำหรับล็อกอิน…",
+        "step1": "เปิดหน้าล็อกอินของ Microsoft",
+        "step2": "กรอกรหัสด้านล่าง",
+        "step3": "ล็อกอินด้วย {mailbox} แล้วกดยอมรับสิทธิ์",
+        "copy": "คัดลอกรหัส",
+        "openMicrosoft": "เปิดหน้าล็อกอิน Microsoft",
+        "waiting": "รอให้ล็อกอินให้เสร็จ…",
+        "connected": "เชื่อมต่อแล้วกับ {account} ลองกดส่งอีเมลทดสอบได้เลย",
+        "expired": "รหัสหมดอายุแล้ว กรุณาลองใหม่",
+        "denied": "ไม่ได้กดยอมรับสิทธิ์ในหน้า Microsoft",
+        "failed": "เชื่อมต่อบัญชี Microsoft ไม่สำเร็จ",
+        "retry": "ลองใหม่"
+      },
       "title": "โปรไฟล์อีเมล",
       "desc": "โปรไฟล์ผู้ส่งที่ใช้ส่งใบสั่งซื้อและเอกสารอื่น ๆ ให้ผู้ขายทางอีเมล",
       "entity": "โปรไฟล์อีเมล",
