@@ -96,8 +96,10 @@ export function SideMain() {
       <Link
         to={sidebarModule.path}
         aria-label={t(sidebarModule.name)}
+        // shrink-0: SidebarContent เป็น flex-col + overflow-auto — เมนูยาวเกินจอ
+        // (เช่น Config) หัวโมดูลจะถูกบีบเหลือ ~12px แล้ว overflow-hidden ตัดไอคอน/ชื่อ
         className={cn(
-          "relative mx-2 mt-2 mb-1 flex cursor-pointer items-center gap-2 overflow-hidden rounded-lg px-2 py-1.5",
+          "relative mx-2 mt-2 mb-1 flex shrink-0 cursor-pointer items-center gap-2 overflow-hidden rounded-lg px-2 py-1.5",
           "focus-visible:ring-primary/40 transition-colors outline-none focus-visible:ring-2",
           "group-data-[collapsible=icon]:mx-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0",
         )}
