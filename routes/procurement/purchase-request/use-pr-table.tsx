@@ -156,7 +156,7 @@ export function usePrTable({
         headerTitle: tfl("workflow"),
         skeleton: columnSkeletons.text,
       },
-      size: 110,
+      size: 100,
     },
     {
       accessorKey: "pr_status",
@@ -203,14 +203,14 @@ export function usePrTable({
         </span>
       ),
       meta: { headerTitle: tfl("requester"), skeleton: columnSkeletons.text },
-      size: 120,
+      size: 110,
     },
     {
       accessorKey: "department_name",
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("department")} />
       ),
-      size: 140,
+      size: 125,
       cell: ({ row }) => (
         <span
           className="block truncate"
