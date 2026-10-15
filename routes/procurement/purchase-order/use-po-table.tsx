@@ -152,6 +152,31 @@ export function usePoTable({
       },
     },
     {
+      // ซ่อนเป็น default — วันที่ส่งโชว์เป็นบรรทัดรองใต้วันที่สั่งแล้ว แต่ต้องยังเรียง
+      // ตามวันที่ส่งได้: เมนูเรียง (⇅) ของ toolbar อ่านจาก getAllColumns() ซึ่งรวม
+      // คอลัมน์ที่ซ่อนอยู่ (ท่าเดียวกับ created_at/updated_at) และเปิดเป็นคอลัมน์
+      // จากเมนู Columns ได้ถ้าต้องการ
+      accessorKey: "delivery_date",
+      header: ({ column }) => (
+        <DataGridColumnHeader
+          column={column}
+          title={tfl("deliveryDate")}
+          className="justify-center"
+        />
+      ),
+      size: 100,
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap">
+          {formatDate(row.getValue("delivery_date"), dateFormat)}
+        </span>
+      ),
+      meta: {
+        headerTitle: tfl("deliveryDate"),
+        skeleton: columnSkeletons.text,
+        cellClassName: "text-center",
+      },
+    },
+    {
       accessorKey: "po_status",
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("status")} />
@@ -224,7 +249,11 @@ export function usePoTable({
     onDelete,
     hideStatus: true,
     initialState: {
-      columnVisibility: { created_at: false, updated_at: false },
+      columnVisibility: {
+        delivery_date: false,
+        created_at: false,
+        updated_at: false,
+      },
     },
     activity: { id: (r) => r.id, label: (r) => r.po_no },
   });
