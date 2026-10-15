@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useURL } from "@/hooks/use-url";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
@@ -58,16 +57,17 @@ export default function ReportComponent() {
   const t = useTranslations("report");
   const isMobile = useIsMobile();
   const buCode = useBuCode();
-  const [search, setSearch] = useURL("search");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
   const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
-  const { params, tableConfig } = useDataGridState({ defaultPerpage: 10 });
+  // setSearch จาก useDataGridState ล้างเลขหน้าด้วย ค้นจากหน้า 2+ แล้วยังได้หน้าแรกของผลค้น
+  const { params, tableConfig, search, setSearch } = useDataGridState({
+    defaultPerpage: 10,
+  });
 
   // Server-side pagination — ส่ง page/perpage/search ไป BE
-  const queryParams = { ...params, search: search || undefined };
-  const templatesQuery = useReportTemplates(queryParams);
+  const templatesQuery = useReportTemplates(params);
   const runReport = useRunReportMutation();
 
   const reports = useMemo(
