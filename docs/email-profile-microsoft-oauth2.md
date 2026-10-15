@@ -32,7 +32,8 @@
 
 1. **App registrations** → **New registration** เลือก *Accounts in this organizational directory only*
 2. คัดลอก **Directory (tenant) ID** และ **Application (client) ID** จากหน้า Overview
-3. **Certificates & secrets** → **New client secret** คัดลอกค่า secret ทันที (ดูซ้ำไม่ได้)
+3. **Certificates & secrets** → **New client secret** คัดลอกค่าในคอลัมน์ **Value** ทันที
+   (ดูซ้ำไม่ได้ — **ไม่ใช่** คอลัมน์ Secret ID ซึ่งเป็นแค่รหัสอ้างอิง ใช้แทน secret ไม่ได้)
    และบันทึกวันหมดอายุไว้ ต้องมาเปลี่ยนใน Carmen ก่อนหมดอายุ ไม่งั้นส่งเมลไม่ได้
 4. **API permissions** → **Add a permission** → **APIs my organization uses** → **Office 365 Exchange Online**
    → **Application permissions** → `SMTP.SendAsApp` → กด **Grant admin consent**
@@ -46,7 +47,11 @@
    ```
 
    ⚠️ ObjectId ต้องมาจาก **Enterprise applications** ไม่ใช่ App registrations (เป็นคนละค่ากัน
-   และเป็นจุดที่ตั้งผิดบ่อยที่สุด)
+   และเป็นจุดที่ตั้งผิดบ่อยที่สุด) — Enterprise application ของแอปจะโผล่หลังกด Grant admin
+   consent ในข้อ 4 แล้ว อ่าน **Object ID** ได้ที่ **Enterprise applications** → (ชื่อแอป) → **Overview**
+
+   สิทธิ์ที่เพิ่งให้ (admin consent / `Add-MailboxPermission`) อาจใช้เวลาหลายนาทีกว่าจะมีผล
+   ถ้าทดสอบส่งทันทีแล้วไม่ผ่าน ให้รอสักครู่แล้วลองใหม่
 6. ใน Carmen: เลือกวิธียืนยันตัวตน "Microsoft 365 (องค์กร)" กรอก **Directory (tenant) ID**,
    **Application (client) ID**, **Client secret** และ Mailbox → บันทึก → กดปุ่มทดสอบ (ส่ง)
 
@@ -55,6 +60,7 @@
 | อาการ | สาเหตุ / วิธีแก้ |
 |---|---|
 | `AADSTS7000218` | ยังไม่เปิด **Allow public client flows** (ข้อ 1.3) |
+| `AADSTS7000215` | client secret ไม่ถูกต้อง — ส่วนใหญ่เพราะคัดลอก **Secret ID** มาแทน **Value** หรือ secret หมดอายุแล้ว ให้สร้าง secret ใหม่ (ข้อ 2.3) แล้วกรอกใหม่ใน Carmen |
 | `AADSTS50020` / `AADSTS9002331` | **Supported account types** ไม่ตรงกับชนิดบัญชีที่ล็อกอิน (Hotmail ต้อง Personal Microsoft accounts) |
 | `535 5.7.3 Authentication unsuccessful` | SMTP AUTH ของ mailbox ถูกปิด หรือยังไม่ได้รัน `New-ServicePrincipal` / `Add-MailboxPermission` (ข้อ 2.5) |
 | "must reconnect its Microsoft account" | refresh token หมดอายุ (ไม่ได้ส่งเมล 90 วัน, เปลี่ยนรหัสผ่าน หรือถอนสิทธิ์) กด **เชื่อมต่อใหม่** |

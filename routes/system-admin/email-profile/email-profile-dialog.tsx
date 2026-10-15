@@ -93,6 +93,11 @@ export function EmailProfileDialog({
   isSaving,
 }: EmailProfileDialogProps) {
   const isEdit = !!profile;
+  /**
+   * มีรหัสผ่านเก็บไว้จริงเฉพาะเมื่อโปรไฟล์**เดิม** (prop) เป็นแบบรหัสผ่าน — โปรไฟล์ Microsoft
+   * ที่สลับกลับมาเป็นรหัสผ่านไม่มีของเดิมให้ "ใช้ต่อ" (ส่ง mask ไป backend จะ 500)
+   */
+  const hasStoredPassword = !!profile && authTypeOf(profile) === "password";
   const t = useTranslations("systemAdmin.emailProfile");
   const tc = useTranslations("common");
   const tf = useTranslations("form");
@@ -368,7 +373,7 @@ export function EmailProfileDialog({
                           autoComplete="new-password"
                           disabled={isSaving}
                         />
-                        {isEdit && (
+                        {hasStoredPassword && (
                           <Button
                             type="button"
                             variant="ghost"
