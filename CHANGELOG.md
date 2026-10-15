@@ -4,6 +4,62 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.5.14] - 2026-10-15
+
+### Added
+- **form:** ผูก error ข้อมูลซ้ำให้ขึ้นใต้ช่องอีก 24 รหัส / 27 ฟอร์ม (#316) — Thammanoon Semapru `da9d4c40`
+- **form:** error ที่ backend ตีกลับขึ้นใต้ช่องที่เป็นต้นเหตุแทน toast (#316) — Thammanoon Semapru `b71f86ea`
+- **errors:** ส่ง Accept-Language ตามภาษาแอป และใช้ข้อความ catalog ที่ gateway แปลแล้วแทนข้อความกลาง (#316) — Thammanoon Semapru `bafe9802`
+- **vendor:** เพิ่มคะแนนผู้ขาย เลขประจำตัวผู้เสียภาษี และเลขที่สาขา (#315) — Thammanoon Semapru `250904a6`
+- **certification:** แสดงคำอธิบายและจำนวนผู้ขายที่ถือใบรับรองในหน้า list (#314) — Thammanoon Semapru `5a86f5fa`
+- **request-price-list:** แสดงจำนวนผู้ขายที่ตอบกลับและสถานะรอบรับราคาในหน้า list (#313) — Thammanoon Semapru `56a2e714`
+- **purchase-order:** เพิ่มคอลัมน์ Workflow ใน PO list (#312) — Thammanoon Semapru `66325404`
+- **store-requisition:** เปลี่ยน Workflow Name เป็น Workflow ในการ์ดและ Excel export (#312) — Thammanoon Semapru `1211496f`
+- **store-requisition:** ย้ายคอลัมน์ Workflow ไปก่อน From → To และเปลี่ยนชื่อหัวคอลัมน์จาก Workflow Name เป็น Workflow (#312) — Thammanoon Semapru `06f709f0`
+- **purchase-order:** คืนการเรียงตามวันที่ส่งผ่านคอลัมน์ Delivery Date ที่ซ่อนไว้ (#312) — Thammanoon Semapru `dd9ec15e`
+- **store-requisition:** บีบตาราง SR list ให้พอดีจอ + ป้ายส่งกลับพร้อม tooltip เหตุผล (#312) — Thammanoon Semapru `fd182b75`
+- **purchase-order:** บีบตาราง PO list ให้พอดีจอ + ป้ายส่งกลับพร้อม tooltip เหตุผล (#312) — Thammanoon Semapru `f263f44a`
+- **purchase-request:** ป้ายส่งกลับต่อท้ายเลขที่ PR พร้อม tooltip เหตุผลการตีกลับ (#311) — Thammanoon Semapru `cce98c5f`
+- **purchase-request:** บีบตาราง PR list ให้พอดีจอ — รวม Stage เข้า Status, ย้าย Send Back ไปใต้เลขที่ (#311) — Thammanoon Semapru `81e45212`
+- **approval:** ปรับหน้ารออนุมัติเป็นคิวงาน — คอลัมน์ใหม่ อายุคิว และตัวกรองใบที่ถูกตีกลับ (#309) — Thammanoon Semapru `6a4c2769`
+- **notifications:** ปรับหน้า /notifications เป็น inbox แบบแบนตาม design system (#306) — Thammanoon Semapru `a0cc2967`
+- **email-profile:** dialog เชื่อมต่อบัญชี Hotmail ด้วย device code และสถานะการเชื่อมต่อในรายการ (#305) — Thammanoon Semapru `ef8f94f8`
+- **email-profile:** ฟอร์มเลือกวิธียืนยันตัวตน รหัสผ่าน / Hotmail / Microsoft 365 (#305) — Thammanoon Semapru `f9cc9dfc`
+- **email-profile:** type/schema ของโปรไฟล์รองรับ OAuth2 ของ Microsoft และ hook เชื่อมต่อบัญชี (#305) — Thammanoon Semapru `a5ced50a`
+- **price-list-template:** ตารางแม่แบบแสดงจำนวนสินค้า + กำหนดความกว้างคอลัมน์ (#304) — Thammanoon Semapru `9ede13a3`
+- **price-list:** ช่วงราคาบอกว่ายังใช้ได้ไหมเทียบกับวันนี้ (#303) — Thammanoon Semapru `8ea131ff`
+- **config,accounting:** หน้า mock ใช้โครงเดียวกับ config มาตรฐาน + ป้าย MOCK (#292) — Thammanoon Semapru `ef6f058a`
+- **config:** ปรับหน้า Title Master ให้หน้าตาเหมือนหน้า config มาตรฐาน (#291) — Thammanoon Semapru `9ab0f93b`
+- **config:** จัดเมนู Config — เส้นคั่นก่อน JV Prefix และย้าย Shelf ไปใต้ Store Location (#290) — Thammanoon Semapru `f7e80c17`
+
+### Fixed
+- **errors:** ข้อความของรหัสซ้ำที่เพิ่มรอบสอง (unique constraint กลาง, price line ซ้ำในคำขอ, ประเภทที่อยู่ลูกค้าซ้ำ) (#316) — Thammanoon Semapru `aa2e55e0`
+- **errors:** ข้อความเฉพาะเรื่องให้ error "มีอยู่แล้ว" และเลิกเดาว่า 409 คือมีคนแก้เอกสาร (#316) — Thammanoon Semapru `e4035fba`
+- **report:** ค้นหาในหน้า report list จากหน้า 2+ แล้วไม่เจอ — ล้างเลขหน้าตอนค้น (#317) — Khafang `e76637ce`
+- **purchase-request:** มุมมอง My pending ล้นแนวนอน 26px หลังขยายคอลัมน์ PR No. (#312) — Thammanoon Semapru `488438ae`
+- **data-grid:** ไม่นับล้น 1px จาก sub-pixel เป็นตารางล้นแนวนอน (#311) — Thammanoon Semapru `15820c6a`
+- **data-grid:** เว้นที่ใต้แถวสุดท้ายเฉพาะตอนตารางล้นแนวนอน (#310) — Thammanoon Semapru `6ff6c94c`
+- **data-grid:** ไฮไลต์แถวย่อยเป็นก้อนเดียวกับแถวแม่ (footer/expanded) (#308) — Thammanoon Semapru `e3bd5163`
+- **data-grid:** ปรับแถบสลับสีแถว — คืน hover, แยกสีแถวที่เลือก, คอลัมน์ปักหมุดใช้สีตามแถว (#307) — Thammanoon Semapru `51d1f9b3`
+- **email-profile:** ซ่อนปุ่ม "ใช้รหัสผ่านเดิม" เมื่อโปรไฟล์เดิมไม่ใช่แบบรหัสผ่าน และเพิ่มรายละเอียดคู่มือ Microsoft 365 (#305) — Thammanoon Semapru `b1ad97c5`
+- **email-profile:** dialog เชื่อมต่อใช้ตัวแปร cancelled ต่อ effect กัน StrictMode ยิง start ซ้อน และปิด toast ซ้ำของ start/poll (#305) — Thammanoon Semapru `7bb2d439`
+- **data-grid:** เมนูคอลัมน์/เรียงลำดับแสดง "Status" แทน is_active (#302) — Thammanoon Semapru `774530c3`
+- **vendor:** ตารางผู้ขายเพิ่มคอลัมน์ผู้ติดต่อ + Credit Term · การ์ดแสดงผู้ติดต่อได้จริง (#301) — Thammanoon Semapru `3efbb017`
+- **cn:** ตารางใบลดหนี้พอดีจอ 1366 — แถวเดียวทุกแถว ยอดศูนย์จางลง (#300) — Thammanoon Semapru `f008c21c`
+- **grn:** ตารางใบรับสินค้าพอดีจอ 1366 — รวมเลขและวันที่ใบแจ้งหนี้เป็นคอลัมน์เดียว (#299) — Thammanoon Semapru `7f09412e`
+- **eco:** เปลี่ยนป้าย ISO เป็น Code + เพิ่มคอลัมน์คำอธิบายในตารางและไฟล์ export (#298) — Thammanoon Semapru `a3263494`
+- **product:** ตารางสินค้าพอดีจอ 1366 — รวมชื่อไทยและหมวดเป็นคอลัมน์เดียว (#297) — Thammanoon Semapru `be760e58`
+- **category:** ปุ่มลบในต้นไม้หมวดหมู่โดนตัด + ปรับลำดับชั้นให้อ่านง่าย (#296) — Thammanoon Semapru `28a066b0`
+- **config:** ชื่อเมนูและหัวหน้า Config เป็นพหูพจน์ทั้งหมด (#295) — Thammanoon Semapru `30195921`
+- **config:** ปรับชื่อเมนู Chart of Accounts Mapping / Account Code Group (#294) — Thammanoon Semapru `0ebfdbed`
+- **sidebar:** หัวโมดูลถูกบีบจนไอคอน/ชื่อขาดเมื่อเมนูยาวเกินจอ (#293) — Thammanoon Semapru `8a01ea40`
+- **coa:** รองรับบัญชีที่ category เป็น null (บัญชีก่อน migration gl_core_master) (#289) — Thammanoon Semapru `38f5f59f`
+
+### Changed
+- **send-back:** แยก tooltip เหตุผลการตีกลับเป็น SendBackHint กลาง (#312) — Thammanoon Semapru `a771ce88`
+- **approval:** ย้ายโฟลเดอร์เป็น routes/procurement/my-approval ให้ตรงกับ path (#309) — Thammanoon Semapru `ab6b4d1c`
+- **approval:** เปลี่ยน path เป็น /procurement/my-approval (#309) — Thammanoon Semapru `f9a02a82`
+
 ## [2.5.12] - 2026-10-14
 
 ### Added

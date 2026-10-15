@@ -1,7 +1,357 @@
 {
-  "current": "2.5.12",
-  "generated_at": "2026-10-14T23:44:29.832Z",
+  "current": "2.5.14",
+  "generated_at": "2026-10-15T11:10:04.879Z",
   "versions": [
+    {
+      "version": "2.5.14",
+      "build": "2.5.14-build.20261015.6e4f2e20",
+      "date": "2026-10-15",
+      "commit": "6e4f2e20",
+      "changes": {
+        "added": [
+          {
+            "scope": "form",
+            "summary": "ผูก error ข้อมูลซ้ำให้ขึ้นใต้ช่องอีก 24 รหัส / 27 ฟอร์ม",
+            "hash": "da9d4c40",
+            "author": "Thammanoon Semapru",
+            "pr": 316
+          },
+          {
+            "scope": "form",
+            "summary": "error ที่ backend ตีกลับขึ้นใต้ช่องที่เป็นต้นเหตุแทน toast",
+            "hash": "b71f86ea",
+            "author": "Thammanoon Semapru",
+            "pr": 316
+          },
+          {
+            "scope": "errors",
+            "summary": "ส่ง Accept-Language ตามภาษาแอป และใช้ข้อความ catalog ที่ gateway แปลแล้วแทนข้อความกลาง",
+            "hash": "bafe9802",
+            "author": "Thammanoon Semapru",
+            "pr": 316
+          },
+          {
+            "scope": "vendor",
+            "summary": "เพิ่มคะแนนผู้ขาย เลขประจำตัวผู้เสียภาษี และเลขที่สาขา",
+            "hash": "250904a6",
+            "author": "Thammanoon Semapru",
+            "pr": 315
+          },
+          {
+            "scope": "certification",
+            "summary": "แสดงคำอธิบายและจำนวนผู้ขายที่ถือใบรับรองในหน้า list",
+            "hash": "5a86f5fa",
+            "author": "Thammanoon Semapru",
+            "pr": 314
+          },
+          {
+            "scope": "request-price-list",
+            "summary": "แสดงจำนวนผู้ขายที่ตอบกลับและสถานะรอบรับราคาในหน้า list",
+            "hash": "56a2e714",
+            "author": "Thammanoon Semapru",
+            "pr": 313
+          },
+          {
+            "scope": "purchase-order",
+            "summary": "เพิ่มคอลัมน์ Workflow ใน PO list",
+            "hash": "66325404",
+            "author": "Thammanoon Semapru",
+            "pr": 312
+          },
+          {
+            "scope": "store-requisition",
+            "summary": "เปลี่ยน Workflow Name เป็น Workflow ในการ์ดและ Excel export",
+            "hash": "1211496f",
+            "author": "Thammanoon Semapru",
+            "pr": 312
+          },
+          {
+            "scope": "store-requisition",
+            "summary": "ย้ายคอลัมน์ Workflow ไปก่อน From → To และเปลี่ยนชื่อหัวคอลัมน์จาก Workflow Name เป็น Workflow",
+            "hash": "06f709f0",
+            "author": "Thammanoon Semapru",
+            "pr": 312
+          },
+          {
+            "scope": "purchase-order",
+            "summary": "คืนการเรียงตามวันที่ส่งผ่านคอลัมน์ Delivery Date ที่ซ่อนไว้",
+            "hash": "dd9ec15e",
+            "author": "Thammanoon Semapru",
+            "pr": 312
+          },
+          {
+            "scope": "store-requisition",
+            "summary": "บีบตาราง SR list ให้พอดีจอ + ป้ายส่งกลับพร้อม tooltip เหตุผล",
+            "hash": "fd182b75",
+            "author": "Thammanoon Semapru",
+            "pr": 312
+          },
+          {
+            "scope": "purchase-order",
+            "summary": "บีบตาราง PO list ให้พอดีจอ + ป้ายส่งกลับพร้อม tooltip เหตุผล",
+            "hash": "f263f44a",
+            "author": "Thammanoon Semapru",
+            "pr": 312
+          },
+          {
+            "scope": "purchase-request",
+            "summary": "ป้ายส่งกลับต่อท้ายเลขที่ PR พร้อม tooltip เหตุผลการตีกลับ",
+            "hash": "cce98c5f",
+            "author": "Thammanoon Semapru",
+            "pr": 311
+          },
+          {
+            "scope": "purchase-request",
+            "summary": "บีบตาราง PR list ให้พอดีจอ — รวม Stage เข้า Status, ย้าย Send Back ไปใต้เลขที่",
+            "hash": "81e45212",
+            "author": "Thammanoon Semapru",
+            "pr": 311
+          },
+          {
+            "scope": "approval",
+            "summary": "ปรับหน้ารออนุมัติเป็นคิวงาน — คอลัมน์ใหม่ อายุคิว และตัวกรองใบที่ถูกตีกลับ",
+            "hash": "6a4c2769",
+            "author": "Thammanoon Semapru",
+            "pr": 309
+          },
+          {
+            "scope": "notifications",
+            "summary": "ปรับหน้า /notifications เป็น inbox แบบแบนตาม design system",
+            "hash": "a0cc2967",
+            "author": "Thammanoon Semapru",
+            "pr": 306
+          },
+          {
+            "scope": "email-profile",
+            "summary": "dialog เชื่อมต่อบัญชี Hotmail ด้วย device code และสถานะการเชื่อมต่อในรายการ",
+            "hash": "ef8f94f8",
+            "author": "Thammanoon Semapru",
+            "pr": 305
+          },
+          {
+            "scope": "email-profile",
+            "summary": "ฟอร์มเลือกวิธียืนยันตัวตน รหัสผ่าน / Hotmail / Microsoft 365",
+            "hash": "f9cc9dfc",
+            "author": "Thammanoon Semapru",
+            "pr": 305
+          },
+          {
+            "scope": "email-profile",
+            "summary": "type/schema ของโปรไฟล์รองรับ OAuth2 ของ Microsoft และ hook เชื่อมต่อบัญชี",
+            "hash": "a5ced50a",
+            "author": "Thammanoon Semapru",
+            "pr": 305
+          },
+          {
+            "scope": "price-list-template",
+            "summary": "ตารางแม่แบบแสดงจำนวนสินค้า + กำหนดความกว้างคอลัมน์",
+            "hash": "9ede13a3",
+            "author": "Thammanoon Semapru",
+            "pr": 304
+          },
+          {
+            "scope": "price-list",
+            "summary": "ช่วงราคาบอกว่ายังใช้ได้ไหมเทียบกับวันนี้",
+            "hash": "8ea131ff",
+            "author": "Thammanoon Semapru",
+            "pr": 303
+          },
+          {
+            "scope": "config,accounting",
+            "summary": "หน้า mock ใช้โครงเดียวกับ config มาตรฐาน + ป้าย MOCK",
+            "hash": "ef6f058a",
+            "author": "Thammanoon Semapru",
+            "pr": 292
+          },
+          {
+            "scope": "config",
+            "summary": "ปรับหน้า Title Master ให้หน้าตาเหมือนหน้า config มาตรฐาน",
+            "hash": "9ab0f93b",
+            "author": "Thammanoon Semapru",
+            "pr": 291
+          },
+          {
+            "scope": "config",
+            "summary": "จัดเมนู Config — เส้นคั่นก่อน JV Prefix และย้าย Shelf ไปใต้ Store Location",
+            "hash": "f7e80c17",
+            "author": "Thammanoon Semapru",
+            "pr": 290
+          }
+        ],
+        "fixed": [
+          {
+            "scope": "errors",
+            "summary": "ข้อความของรหัสซ้ำที่เพิ่มรอบสอง (unique constraint กลาง, price line ซ้ำในคำขอ, ประเภทที่อยู่ลูกค้าซ้ำ)",
+            "hash": "aa2e55e0",
+            "author": "Thammanoon Semapru",
+            "pr": 316
+          },
+          {
+            "scope": "errors",
+            "summary": "ข้อความเฉพาะเรื่องให้ error \"มีอยู่แล้ว\" และเลิกเดาว่า 409 คือมีคนแก้เอกสาร",
+            "hash": "e4035fba",
+            "author": "Thammanoon Semapru",
+            "pr": 316
+          },
+          {
+            "scope": "report",
+            "summary": "ค้นหาในหน้า report list จากหน้า 2+ แล้วไม่เจอ — ล้างเลขหน้าตอนค้น",
+            "hash": "e76637ce",
+            "author": "Khafang",
+            "pr": 317
+          },
+          {
+            "scope": "purchase-request",
+            "summary": "มุมมอง My pending ล้นแนวนอน 26px หลังขยายคอลัมน์ PR No.",
+            "hash": "488438ae",
+            "author": "Thammanoon Semapru",
+            "pr": 312
+          },
+          {
+            "scope": "data-grid",
+            "summary": "ไม่นับล้น 1px จาก sub-pixel เป็นตารางล้นแนวนอน",
+            "hash": "15820c6a",
+            "author": "Thammanoon Semapru",
+            "pr": 311
+          },
+          {
+            "scope": "data-grid",
+            "summary": "เว้นที่ใต้แถวสุดท้ายเฉพาะตอนตารางล้นแนวนอน",
+            "hash": "6ff6c94c",
+            "author": "Thammanoon Semapru",
+            "pr": 310
+          },
+          {
+            "scope": "data-grid",
+            "summary": "ไฮไลต์แถวย่อยเป็นก้อนเดียวกับแถวแม่ (footer/expanded)",
+            "hash": "e3bd5163",
+            "author": "Thammanoon Semapru",
+            "pr": 308
+          },
+          {
+            "scope": "data-grid",
+            "summary": "ปรับแถบสลับสีแถว — คืน hover, แยกสีแถวที่เลือก, คอลัมน์ปักหมุดใช้สีตามแถว",
+            "hash": "51d1f9b3",
+            "author": "Thammanoon Semapru",
+            "pr": 307
+          },
+          {
+            "scope": "email-profile",
+            "summary": "ซ่อนปุ่ม \"ใช้รหัสผ่านเดิม\" เมื่อโปรไฟล์เดิมไม่ใช่แบบรหัสผ่าน และเพิ่มรายละเอียดคู่มือ Microsoft 365",
+            "hash": "b1ad97c5",
+            "author": "Thammanoon Semapru",
+            "pr": 305
+          },
+          {
+            "scope": "email-profile",
+            "summary": "dialog เชื่อมต่อใช้ตัวแปร cancelled ต่อ effect กัน StrictMode ยิง start ซ้อน และปิด toast ซ้ำของ start/poll",
+            "hash": "7bb2d439",
+            "author": "Thammanoon Semapru",
+            "pr": 305
+          },
+          {
+            "scope": "data-grid",
+            "summary": "เมนูคอลัมน์/เรียงลำดับแสดง \"Status\" แทน is_active",
+            "hash": "774530c3",
+            "author": "Thammanoon Semapru",
+            "pr": 302
+          },
+          {
+            "scope": "vendor",
+            "summary": "ตารางผู้ขายเพิ่มคอลัมน์ผู้ติดต่อ + Credit Term · การ์ดแสดงผู้ติดต่อได้จริง",
+            "hash": "3efbb017",
+            "author": "Thammanoon Semapru",
+            "pr": 301
+          },
+          {
+            "scope": "cn",
+            "summary": "ตารางใบลดหนี้พอดีจอ 1366 — แถวเดียวทุกแถว ยอดศูนย์จางลง",
+            "hash": "f008c21c",
+            "author": "Thammanoon Semapru",
+            "pr": 300
+          },
+          {
+            "scope": "grn",
+            "summary": "ตารางใบรับสินค้าพอดีจอ 1366 — รวมเลขและวันที่ใบแจ้งหนี้เป็นคอลัมน์เดียว",
+            "hash": "7f09412e",
+            "author": "Thammanoon Semapru",
+            "pr": 299
+          },
+          {
+            "scope": "eco",
+            "summary": "เปลี่ยนป้าย ISO เป็น Code + เพิ่มคอลัมน์คำอธิบายในตารางและไฟล์ export",
+            "hash": "a3263494",
+            "author": "Thammanoon Semapru",
+            "pr": 298
+          },
+          {
+            "scope": "product",
+            "summary": "ตารางสินค้าพอดีจอ 1366 — รวมชื่อไทยและหมวดเป็นคอลัมน์เดียว",
+            "hash": "be760e58",
+            "author": "Thammanoon Semapru",
+            "pr": 297
+          },
+          {
+            "scope": "category",
+            "summary": "ปุ่มลบในต้นไม้หมวดหมู่โดนตัด + ปรับลำดับชั้นให้อ่านง่าย",
+            "hash": "28a066b0",
+            "author": "Thammanoon Semapru",
+            "pr": 296
+          },
+          {
+            "scope": "config",
+            "summary": "ชื่อเมนูและหัวหน้า Config เป็นพหูพจน์ทั้งหมด",
+            "hash": "30195921",
+            "author": "Thammanoon Semapru",
+            "pr": 295
+          },
+          {
+            "scope": "config",
+            "summary": "ปรับชื่อเมนู Chart of Accounts Mapping / Account Code Group",
+            "hash": "0ebfdbed",
+            "author": "Thammanoon Semapru",
+            "pr": 294
+          },
+          {
+            "scope": "sidebar",
+            "summary": "หัวโมดูลถูกบีบจนไอคอน/ชื่อขาดเมื่อเมนูยาวเกินจอ",
+            "hash": "8a01ea40",
+            "author": "Thammanoon Semapru",
+            "pr": 293
+          },
+          {
+            "scope": "coa",
+            "summary": "รองรับบัญชีที่ category เป็น null (บัญชีก่อน migration gl_core_master)",
+            "hash": "38f5f59f",
+            "author": "Thammanoon Semapru",
+            "pr": 289
+          }
+        ],
+        "changed": [
+          {
+            "scope": "send-back",
+            "summary": "แยก tooltip เหตุผลการตีกลับเป็น SendBackHint กลาง",
+            "hash": "a771ce88",
+            "author": "Thammanoon Semapru",
+            "pr": 312
+          },
+          {
+            "scope": "approval",
+            "summary": "ย้ายโฟลเดอร์เป็น routes/procurement/my-approval ให้ตรงกับ path",
+            "hash": "ab6b4d1c",
+            "author": "Thammanoon Semapru",
+            "pr": 309
+          },
+          {
+            "scope": "approval",
+            "summary": "เปลี่ยน path เป็น /procurement/my-approval",
+            "hash": "f9a02a82",
+            "author": "Thammanoon Semapru",
+            "pr": 309
+          }
+        ]
+      }
+    },
     {
       "version": "2.5.12",
       "build": "2.5.12-build.20261014.e192e282",
