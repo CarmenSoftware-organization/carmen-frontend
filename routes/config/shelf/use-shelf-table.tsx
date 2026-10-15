@@ -71,7 +71,7 @@ export function useShelfTable({
       enableSorting: false,
       meta: { headerTitle: tfl("description"), skeleton: columnSkeletons.text },
     },
-    statusColumn<Shelf>(),
+    statusColumn<Shelf>(tfl),
     ...auditColumns<Shelf>(tfl, dateTimeFormat),
   ];
 

@@ -91,7 +91,7 @@ export function useAdjustmentTypeTable({
         skeleton: columnSkeletons.badge,
       },
     },
-    statusColumn<AdjustmentType>(),
+    statusColumn<AdjustmentType>(tfl),
     ...auditColumns<AdjustmentType>(tfl, dateTimeFormat),
   ];
 

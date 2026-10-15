@@ -43,7 +43,7 @@ export function useEquipmentCategoryTable({
       meta: { headerTitle: tfl("name") },
     },
     // Status ก่อน created/updated (hideStatus:true กัน useConfigTable inject ซ้ำ)
-    statusColumn<EquipmentCategory>(),
+    statusColumn<EquipmentCategory>(tfl),
     ...auditColumns<EquipmentCategory>(tfl, dateTimeFormat),
   ];
 

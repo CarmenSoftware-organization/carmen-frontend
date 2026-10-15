@@ -88,7 +88,7 @@ export function usePrtTable({
       },
     },
     // status column แทรกเองก่อน created/updated (useConfigTable ส่ง hideStatus)
-    statusColumn<PurchaseRequestTemplate>(),
+    statusColumn<PurchaseRequestTemplate>(tfl),
     ...auditColumns<PurchaseRequestTemplate>(tfl, dateTimeFormat),
   ];
 

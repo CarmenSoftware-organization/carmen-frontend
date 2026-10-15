@@ -58,7 +58,7 @@ export function useCuisineTable({
       meta: { headerTitle: tfl("region") },
     },
     // Status ก่อน created/updated (hideStatus:true กัน useConfigTable inject ซ้ำ)
-    statusColumn<Cuisine>(),
+    statusColumn<Cuisine>(tfl),
     ...auditColumns<Cuisine>(tfl, dateTimeFormat),
   ];
 

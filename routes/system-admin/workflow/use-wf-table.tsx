@@ -136,7 +136,7 @@ export function useWfTable({
       size: 160,
     },
 
-    statusColumn<WorkflowDto>(),
+    statusColumn<WorkflowDto>(tfl),
     customActionColumn<WorkflowDto>(({ row }) => (
       <WfRowActions
         workflow={row.original}

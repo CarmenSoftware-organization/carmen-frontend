@@ -77,7 +77,7 @@ export function useUnitTable({
         skeleton: columnSkeletons.textShort,
       },
     },
-    statusColumn<Unit>(),
+    statusColumn<Unit>(tfl),
     ...auditColumns<Unit>(tfl, dateTimeFormat),
   ];
 

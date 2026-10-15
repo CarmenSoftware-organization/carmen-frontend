@@ -89,7 +89,7 @@ export function useVendorTable({
       },
     },
     // status column แทรกเองก่อน created/updated (useConfigTable ส่ง hideStatus)
-    statusColumn<Vendor>(),
+    statusColumn<Vendor>(tfl),
     ...auditColumns<Vendor>(tfl, dateTimeFormat),
   ];
 

@@ -60,7 +60,7 @@ export function useCostCenterGroupTable({
       ),
       meta: { headerTitle: tfl("description"), skeleton: columnSkeletons.text },
     },
-    statusColumn<CostCenterGroup>(),
+    statusColumn<CostCenterGroup>(tfl),
     ...auditColumns<CostCenterGroup>(tfl, dateTimeFormat),
   ];
 

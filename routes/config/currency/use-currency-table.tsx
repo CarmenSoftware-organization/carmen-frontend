@@ -96,7 +96,7 @@ export function useCurrencyTable({
         skeleton: columnSkeletons.textShort,
       },
     },
-    statusColumn<Currency>(),
+    statusColumn<Currency>(tfl),
     ...auditColumns<Currency>(tfl, dateTimeFormat),
   ];
 

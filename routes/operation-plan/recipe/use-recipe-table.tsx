@@ -119,7 +119,7 @@ export function useRecipeTable({
       },
     },
     // Status ก่อน created/updated (hideStatus:true กัน useConfigTable inject ซ้ำ)
-    statusColumn<Recipe>(),
+    statusColumn<Recipe>(tfl),
     ...auditColumns<Recipe>(tfl, dateTimeFormat),
   ];
 

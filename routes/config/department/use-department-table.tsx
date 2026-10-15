@@ -84,7 +84,7 @@ export function useDepartmentTable({
         skeleton: columnSkeletons.textShort,
       },
     },
-    statusColumn<Department>(),
+    statusColumn<Department>(tfl),
     ...auditColumns<Department>(tfl, dateTimeFormat),
   ];
 

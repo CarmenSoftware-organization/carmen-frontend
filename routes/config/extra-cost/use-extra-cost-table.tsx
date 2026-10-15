@@ -45,7 +45,7 @@ export function useExtraCostTable({
       ),
       meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
     },
-    statusColumn<ExtraCost>(),
+    statusColumn<ExtraCost>(tfl),
     ...auditColumns<ExtraCost>(tfl, dateTimeFormat),
   ];
 

@@ -71,7 +71,11 @@ function StatusColumnHeader<T>({ column }: { column: Column<T, unknown> }) {
   );
 }
 
-export function statusColumn<T>(): ColumnDef<T> {
+type FieldTranslator = (key: "created" | "updated" | "status") => string;
+
+// tfl ใช้แค่ตั้ง headerTitle — เมนูเลือกคอลัมน์/เรียงลำดับอ่านจาก meta ไม่ได้อ่าน header
+// ไม่ส่งมาเมื่อไรเมนูจะโชว์ id ดิบ `is_active`
+export function statusColumn<T>(tfl: FieldTranslator): ColumnDef<T> {
   return {
     accessorKey: "is_active",
     header: ({ column }) => <StatusColumnHeader<T> column={column} />,
@@ -82,6 +86,7 @@ export function statusColumn<T>(): ColumnDef<T> {
     meta: {
       cellClassName: "text-center",
       headerClassName: "text-center",
+      headerTitle: tfl("status"),
       skeleton: columnSkeletons.badge,
     },
   };
@@ -141,8 +146,6 @@ export function actionColumn<T>(
 interface RowWithAudit {
   audit?: { created?: AuditEntry; updated?: AuditEntry };
 }
-
-type FieldTranslator = (key: "created" | "updated") => string;
 
 export function auditColumns<T extends RowWithAudit>(
   tfl: FieldTranslator,

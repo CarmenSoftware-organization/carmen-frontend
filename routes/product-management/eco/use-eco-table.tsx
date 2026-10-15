@@ -72,7 +72,7 @@ export function useEcoLabelTable({
         skeleton: columnSkeletons.text,
       },
     },
-    statusColumn<EcoLabel>(),
+    statusColumn<EcoLabel>(tfl),
     ...auditColumns<EcoLabel>(tfl, dateTimeFormat),
   ];
 

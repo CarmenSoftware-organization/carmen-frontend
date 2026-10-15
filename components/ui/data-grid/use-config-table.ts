@@ -1,3 +1,4 @@
+import { useTranslations } from "use-intl";
 import {
   type ColumnDef,
   type InitialTableState,
@@ -80,13 +81,16 @@ export function useConfigTable<T>({
   // ของกลางตัวเดียวกับปุ่มลบบนการ์ด (`ListCard`) และตารางที่ประกอบ column เอง —
   // แถวกับการ์ดของหน้าเดียวกันจะได้ไม่คุมสิทธิ์คนละแบบ
   const deleteGate = useDeleteGate(permissionPrefix);
+  const tfl = useTranslations("field");
 
   const allColumns: ColumnDef<T>[] = [
     selectColumn<T>(),
     indexColumn<T>(params),
     ...columns,
-    ...(hideStatus ? [] : [statusColumn<T>()]),
-    ...(onDelete ? [actionColumn<T>(onDelete, { ...deleteGate, activity })] : []),
+    ...(hideStatus ? [] : [statusColumn<T>(tfl)]),
+    ...(onDelete
+      ? [actionColumn<T>(onDelete, { ...deleteGate, activity })]
+      : []),
   ];
 
   return useReactTable({

@@ -150,7 +150,7 @@ export function useLocationTable({
         skeleton: columnSkeletons.text,
       },
     },
-    statusColumn<Location>(),
+    statusColumn<Location>(tfl),
     ...auditColumns<Location>(tfl, dateTimeFormat),
   ];
 

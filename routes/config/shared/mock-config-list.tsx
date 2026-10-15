@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
+import { useTranslations } from "use-intl";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   getCoreRowModel,
@@ -92,6 +93,7 @@ export function MockConfigList<T extends MockConfigRow>({
   "use no memo";
 
   const isMobile = useIsMobile();
+  const tfl = useTranslations("field");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
@@ -129,7 +131,7 @@ export function MockConfigList<T extends MockConfigRow>({
         },
       },
       ...columns,
-      statusColumn<T>(),
+      statusColumn<T>(tfl),
       {
         id: "action",
         header: () => "",
@@ -145,7 +147,7 @@ export function MockConfigList<T extends MockConfigRow>({
         },
       },
     ],
-    [columns, onDelete],
+    [columns, onDelete, tfl],
   );
 
   const table = useReactTable({
