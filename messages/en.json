@@ -2869,6 +2869,7 @@
       "entity": "Price List",
       "title": "Price List",
       "generalDesc": "Vendor, currency, effective period, description and status.",
+      "generalDescView": "Vendor, currency, effective period and description.",
       "desc": "Prices each vendor has quoted, and how long each price holds.",
       "add": "Add Price List",
       "edit": "Edit Price List",

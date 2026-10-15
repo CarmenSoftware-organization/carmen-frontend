@@ -13,11 +13,10 @@ import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { LookupCurrency } from "@/components/lookup/lookup-currency";
 import { LookupVendor } from "@/components/lookup/lookup-vendor";
 import { PRICE_LIST_STATUS_OPTIONS } from "@/constant/price-list";
-import { formatDate } from "@/lib/date-utils";
-import { useProfile } from "@/hooks/use-profile";
 import { SettingSection } from "@/components/ui/setting-section";
 import type { PriceList } from "@/types/price-list";
 import type { PriceListFormValues } from "./pl-form-schema";
+import { PlPeriodCell } from "./pl-period-cell";
 
 type PlStatus = "draft" | "submitted" | "active" | "inactive";
 
@@ -44,29 +43,33 @@ export function PLGeneralCard({
   t,
   ts,
 }: PLGeneralCardProps) {
-  const { dateFormat } = useProfile();
-
   return (
-    <SettingSection first title={tfl("general")} description={t("generalDesc")}>
-      {/* Name */}
-      <Field className="sm:col-span-2">
-        <FieldLabel htmlFor="pl-name">
-          {tfl("name")}
-          {!isView && <span className="text-destructive"> *</span>}
-        </FieldLabel>
-        {isView ? (
-          <FieldPlainText>{form.getValues("name")}</FieldPlainText>
-        ) : (
-          <FieldInput
-            id="pl-name"
-            placeholder={t("namePlaceholder")}
-            disabled={isDisabled}
-            error={form.formState.errors.name?.message}
-            maxLength={100}
-            {...form.register("name")}
-          />
-        )}
-      </Field>
+    <SettingSection
+      first
+      title={tfl("general")}
+      description={t(isView ? "generalDescView" : "generalDesc")}
+    >
+      {/* Name — โหมดดูไม่แสดง แถบหัวมีชื่อเป็นตัวเอกอยู่แล้ว (ท่าเดียวกับหน้าผู้ขาย) */}
+      {!isView && (
+        <Field className="sm:col-span-2">
+          <FieldLabel htmlFor="pl-name">
+            {tfl("name")}
+            {!isView && <span className="text-destructive"> *</span>}
+          </FieldLabel>
+          {isView ? (
+            <FieldPlainText>{form.getValues("name")}</FieldPlainText>
+          ) : (
+            <FieldInput
+              id="pl-name"
+              placeholder={t("namePlaceholder")}
+              disabled={isDisabled}
+              error={form.formState.errors.name?.message}
+              maxLength={100}
+              {...form.register("name")}
+            />
+          )}
+        </Field>
+      )}
 
       {/* Vendor */}
       <Field>
@@ -119,56 +122,63 @@ export function PLGeneralCard({
         )}
       </Field>
 
-      {/* Effective from */}
-      <Field>
-        <FieldLabel required>{tfl("effectiveFrom")}</FieldLabel>
-        {isView ? (
-          <FieldPlainText>
-            {watchedFrom ? formatDate(watchedFrom, dateFormat) : ""}
-          </FieldPlainText>
-        ) : (
-          <Controller
-            control={form.control}
-            name="effective_from_date"
-            render={({ field }) => (
-              <FieldDatePicker
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isDisabled}
-                className="w-full"
-                placeholder={tfl("pickDate")}
-                error={form.formState.errors.effective_from_date?.message}
-              />
-            )}
-          />
-        )}
-      </Field>
+      {/* Effective period — โหมดดูรวมเป็นช่องเดียวพร้อมบรรทัดบอกว่ายังใช้ได้อยู่ไหม
+          (สถานะ ACTIVE ไม่ได้แปลว่าช่วงราคายังไม่หมด — ตัวเดียวกับคอลัมน์ในหน้า list) */}
+      {isView ? (
+        <Field className="sm:col-span-2">
+          <FieldLabel>{tfl("effectivePeriod")}</FieldLabel>
+          {watchedFrom && watchedTo ? (
+            // ห่อด้วย FieldPlainText ให้ Field จับเป็นโหมดดู (label เงียบ, ขนาดตัวอักษร
+            // ชุดเดียวกับช่องอื่น) — flex-col เพราะมีบรรทัดสถานะช่วงอยู่ใต้วันที่
+            <FieldPlainText className="flex-col items-start justify-center">
+              <PlPeriodCell period={`${watchedFrom} - ${watchedTo}`} />
+            </FieldPlainText>
+          ) : (
+            <FieldPlainText />
+          )}
+        </Field>
+      ) : (
+        <>
+          {/* Effective from */}
+          <Field>
+            <FieldLabel required>{tfl("effectiveFrom")}</FieldLabel>
+            <Controller
+              control={form.control}
+              name="effective_from_date"
+              render={({ field }) => (
+                <FieldDatePicker
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isDisabled}
+                  className="w-full"
+                  placeholder={tfl("pickDate")}
+                  error={form.formState.errors.effective_from_date?.message}
+                />
+              )}
+            />
+          </Field>
 
-      {/* Effective to */}
-      <Field>
-        <FieldLabel required>{tfl("effectiveTo")}</FieldLabel>
-        {isView ? (
-          <FieldPlainText>
-            {watchedTo ? formatDate(watchedTo, dateFormat) : ""}
-          </FieldPlainText>
-        ) : (
-          <Controller
-            control={form.control}
-            name="effective_to_date"
-            render={({ field }) => (
-              <FieldDatePicker
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isDisabled}
-                className="w-full"
-                placeholder={tfl("pickDate")}
-                fromDate={watchedFrom ? new Date(watchedFrom) : undefined}
-                error={form.formState.errors.effective_to_date?.message}
-              />
-            )}
-          />
-        )}
-      </Field>
+          {/* Effective to */}
+          <Field>
+            <FieldLabel required>{tfl("effectiveTo")}</FieldLabel>
+            <Controller
+              control={form.control}
+              name="effective_to_date"
+              render={({ field }) => (
+                <FieldDatePicker
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isDisabled}
+                  className="w-full"
+                  placeholder={tfl("pickDate")}
+                  fromDate={watchedFrom ? new Date(watchedFrom) : undefined}
+                  error={form.formState.errors.effective_to_date?.message}
+                />
+              )}
+            />
+          </Field>
+        </>
+      )}
 
       {/* Description */}
       <Field className="sm:col-span-2">
@@ -189,18 +199,10 @@ export function PLGeneralCard({
         )}
       </Field>
 
-      {/* Status */}
-      <Field>
-        <FieldLabel>{tfl("status")}</FieldLabel>
-        {isView ? (
-          <div>
-            <StatusIconLabel
-              status={form.getValues("status")}
-              label={ts(form.getValues("status") as PlStatus)}
-              className="uppercase"
-            />
-          </div>
-        ) : (
+      {/* Status — โหมดดูไม่แสดง แถบหัวมีสถานะอยู่แล้ว */}
+      {!isView && (
+        <Field>
+          <FieldLabel>{tfl("status")}</FieldLabel>
           <Controller
             control={form.control}
             name="status"
@@ -229,8 +231,8 @@ export function PLGeneralCard({
               </FieldSelect>
             )}
           />
-        )}
-      </Field>
+        </Field>
+      )}
     </SettingSection>
   );
 }
