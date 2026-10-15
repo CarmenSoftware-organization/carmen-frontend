@@ -4195,7 +4195,9 @@
       },
       "asOfDate": "ณ วันที่ {date}",
       "availableToIssue": "ตัดได้",
-      "availableToIssueHint": "น้อยกว่ายอดคงเหลือ เพราะเอกสารที่ลงวันที่หลังวันนี้นับของส่วนหนึ่งไว้แล้ว"
+      "availableToIssueHint": "น้อยกว่ายอดคงเหลือ เพราะเอกสารที่ลงวันที่หลังวันนี้นับของส่วนหนึ่งไว้แล้ว",
+      "sentBackBy": "ส่งกลับโดย {name}",
+      "sentBackNoReason": "ไม่ได้ระบุเหตุผล"
     },
     "purchaseRequestTemplate": {
       "entity": "แม่แบบใบขอซื้อ",

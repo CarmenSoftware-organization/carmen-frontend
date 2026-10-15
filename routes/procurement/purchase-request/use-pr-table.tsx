@@ -27,7 +27,7 @@ import {
   customActionColumn,
   indexColumn,
 } from "@/components/ui/data-grid/columns";
-import { SendBackStatus } from "@/components/share/sendback-status";
+import { PrSendBackHint } from "./pr-send-back-hint";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -103,18 +103,23 @@ export function usePrTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("prNo")} />
       ),
-      // ป้าย "ส่งกลับ" อยู่ใต้เลขที่แทนคอลัมน์ของตัวเอง — ใบที่ถูกตีกลับมีไม่กี่ใบ
-      // คอลัมน์แยกจึงว่างเกือบทุกแถวแต่กินที่ 110px (ท่าเดียวกับหน้า My Approval)
-      // data-slot ให้ rowClamp ของ DataGrid ข้ามกล่องนี้ ไม่งั้นสองบรรทัดถูกบีบรวม
+      // ป้าย "ส่งกลับ" ต่อท้ายเลขที่แทนคอลัมน์ของตัวเอง — ใบที่ถูกตีกลับมีไม่กี่ใบ
+      // คอลัมน์แยกจึงว่างเกือบทุกแถวแต่กินที่ 110px · hover ป้ายเพื่อดูเหตุผล
+      // data-slot ให้ rowClamp ของ DataGrid ข้ามกล่องนี้ ไม่งั้นลูกถูกแปลงเป็น -webkit-box
       cell: ({ row }) => (
-        <div data-slot="cell-stack" className="flex flex-col items-start gap-1">
+        <div data-slot="cell-stack" className="flex items-center gap-2">
           <CellAction onClick={() => onEdit(row.original)}>
             {row.original.pr_no}
           </CellAction>
-          <SendBackStatus lastAction={row.original.last_action} />
+          <PrSendBackHint
+            prId={row.original.id}
+            lastAction={row.original.last_action}
+          />
         </div>
       ),
-      size: 130,
+      // 210 = เลขที่ยาว (PR20260400051) + ป้าย SEND BACK ไม่ถูกตัดที่ 1366px
+      // (200 ขาดไป 2px — เซลล์มี padding 12px สองข้าง)
+      size: 210,
       meta: { headerTitle: tfl("prNo"), skeleton: columnSkeletons.text },
     },
     {
