@@ -18,19 +18,32 @@ interface Envelope<T> {
  */
 export function useEmailProfileOAuth() {
   const queryClient = useQueryClient();
-  const start = useApiMutation<{ profile_id: string }, Envelope<DeviceLoginStart>>({
+  const start = useApiMutation<
+    { profile_id: string },
+    Envelope<DeviceLoginStart>
+  >({
     mutationFn: (body, buCode) =>
-      httpClient.post(API_ENDPOINTS.APP_CONFIG_EMAIL_PROFILE_OAUTH_START(buCode), body),
+      httpClient.post(
+        API_ENDPOINTS.APP_CONFIG_EMAIL_PROFILE_OAUTH_START(buCode),
+        body,
+      ),
     errorMessage: "Could not start Microsoft sign-in",
   });
-  const poll = useApiMutation<{ profile_id: string; handle: string }, Envelope<DeviceLoginPoll>>({
+  const poll = useApiMutation<
+    { profile_id: string; handle: string },
+    Envelope<DeviceLoginPoll>
+  >({
     mutationFn: (body, buCode) =>
-      httpClient.post(API_ENDPOINTS.APP_CONFIG_EMAIL_PROFILE_OAUTH_POLL(buCode), body),
+      httpClient.post(
+        API_ENDPOINTS.APP_CONFIG_EMAIL_PROFILE_OAUTH_POLL(buCode),
+        body,
+      ),
     errorMessage: "Microsoft sign-in check failed",
   });
 
   return {
-    start: async (profileId: string) => (await start.mutateAsync({ profile_id: profileId })).data,
+    start: async (profileId: string) =>
+      (await start.mutateAsync({ profile_id: profileId })).data,
     poll: async (profileId: string, handle: string) =>
       (await poll.mutateAsync({ profile_id: profileId, handle })).data,
     /** key shape เดียวกับ `invalidateKeys` ของ useApiMutation (prefix `[key]` ไม่ต่อ buCode) */

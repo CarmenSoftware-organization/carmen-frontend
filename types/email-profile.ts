@@ -1,4 +1,5 @@
-export type EmailProfileAuthType = "password" | "oauth2_delegated" | "oauth2_app";
+export type EmailProfileAuthType =
+  "password" | "oauth2_delegated" | "oauth2_app";
 
 /** App registration ใน Microsoft Entra ของลูกค้า — `refresh_token` / `connected_*` backend เขียนเอง */
 export interface EmailProfileOAuth {
@@ -63,7 +64,8 @@ export interface DeviceLoginStart {
 }
 
 export interface DeviceLoginPoll {
-  status: "pending" | "slow_down" | "connected" | "expired" | "denied" | "error";
+  status:
+    "pending" | "slow_down" | "connected" | "expired" | "denied" | "error";
   account?: string;
   message?: string;
 }

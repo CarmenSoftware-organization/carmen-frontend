@@ -15,13 +15,39 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
-import { SECRET_MASK, type EmailProfile } from "@/types/email-profile";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  SECRET_MASK,
+  MICROSOFT_PRESETS,
+  authTypeOf,
+  isOAuthConnected,
+  type EmailProfile,
+  type EmailProfileAuthType,
+} from "@/types/email-profile";
 import {
   emailProfileSchema,
   fromEmailProfileFormValues,
   toEmailProfileFormValues,
   type EmailProfileFormValues,
 } from "./email-profile-schema";
+
+const OAUTH_GUIDE_URL =
+  "https://github.com/CarmenSoftware-organization/carmen-inventory-frontend-react/blob/main/docs/email-profile-microsoft-oauth2.md";
+
+/** โปรไฟล์เดิมเป็น Microsoft 365 และมี client secret เก็บไว้แล้วหรือไม่ */
+function hasStoredSecret(profile?: EmailProfile | null): boolean {
+  return (
+    !!profile &&
+    authTypeOf(profile) === "oauth2_app" &&
+    !!profile.smtp.oauth?.client_secret
+  );
+}
 
 interface EmailProfileDialogProps {
   readonly open: boolean;
@@ -78,6 +104,10 @@ export function EmailProfileDialog({
    * โปรไฟล์ใหม่ไม่มีของเดิมให้ใช้ จึงเปิดช่องกรอกไว้ตั้งแต่แรกเสมอ
    */
   const [changingPassword, setChangingPassword] = useState(!isEdit);
+  /** เหมือน `changingPassword` แต่สำหรับ client secret ของ Microsoft 365 */
+  const [changingSecret, setChangingSecret] = useState(
+    !hasStoredSecret(profile),
+  );
 
   const form = useForm<EmailProfileFormValues>({
     resolver: zodResolver(
@@ -90,6 +120,7 @@ export function EmailProfileDialog({
     if (open) {
       form.reset(toEmailProfileFormValues(profile ?? undefined));
       setChangingPassword(!profile);
+      setChangingSecret(!hasStoredSecret(profile));
     }
   }, [open, profile, form]);
 
@@ -103,6 +134,49 @@ export function EmailProfileDialog({
   const enabled = form.watch("enabled");
   const smtpHost = form.watch("smtp_host");
   const secure = form.watch("smtp_secure");
+
+  const authType = form.watch("smtp_auth_type");
+  const isOAuth = authType !== "password";
+
+  const changeAuthType = (next: EmailProfileAuthType) => {
+    form.setValue("smtp_auth_type", next, { shouldDirty: true });
+    form.clearErrors();
+    if (next === "password") {
+      // โปรไฟล์เดิมที่ไม่ใช่ password ไม่มีรหัสผ่านเก็บไว้ให้ใช้ — บังคับให้กรอกใหม่
+      if (profile && authTypeOf(profile) !== "password") {
+        form.setValue("smtp_password", "", { shouldDirty: true });
+        setChangingPassword(true);
+      }
+      return;
+    }
+    if (next === "oauth2_app" && !hasStoredSecret(profile)) {
+      form.setValue("oauth_client_secret", "", { shouldDirty: true });
+      setChangingSecret(true);
+    }
+    // เติม preset เฉพาะช่องที่ยังว่าง — ไม่เขียนทับค่าที่ผู้ใช้กรอกไว้
+    const preset = MICROSOFT_PRESETS[next];
+    if (!form.getValues("smtp_host").trim()) {
+      form.setValue("smtp_host", preset.host, { shouldDirty: true });
+      form.setValue("smtp_port", preset.port, { shouldDirty: true });
+      form.setValue("smtp_secure", false, { shouldDirty: true });
+    }
+    if (!form.getValues("smtp_username").trim()) {
+      form.setValue("smtp_username", form.getValues("from_email"), {
+        shouldDirty: true,
+      });
+    }
+  };
+
+  const startChangingSecret = () => {
+    form.setValue("oauth_client_secret", "", { shouldDirty: true });
+    setChangingSecret(true);
+  };
+
+  const cancelChangingSecret = () => {
+    form.setValue("oauth_client_secret", SECRET_MASK, { shouldDirty: false });
+    form.clearErrors("oauth_client_secret");
+    setChangingSecret(false);
+  };
 
   const startChangingPassword = () => {
     // ล้าง mask ออกก่อน ไม่งั้นผู้ใช้จะเห็นจุดไข่ปลาที่ไม่ใช่รหัสผ่านจริงค้างในช่อง
@@ -191,6 +265,46 @@ export function EmailProfileDialog({
 
             <section className="space-y-3">
               <SectionLabel>{t("dialog.smtpSection")}</SectionLabel>
+              <Field>
+                <FieldLabel htmlFor="ep-auth-type">
+                  {t("dialog.authType")}
+                </FieldLabel>
+                <Select
+                  value={authType}
+                  onValueChange={(v) =>
+                    changeAuthType(v as EmailProfileAuthType)
+                  }
+                  disabled={isSaving}
+                >
+                  <SelectTrigger id="ep-auth-type" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="password">
+                      {t("dialog.authPassword")}
+                    </SelectItem>
+                    <SelectItem value="oauth2_delegated">
+                      {t("dialog.authMicrosoftPersonal")}
+                    </SelectItem>
+                    <SelectItem value="oauth2_app">
+                      {t("dialog.authMicrosoft365")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {isOAuth && (
+                  <p className="text-muted-foreground text-micro">
+                    {t("dialog.oauthGuideHint")}{" "}
+                    <a
+                      href={OAUTH_GUIDE_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline"
+                    >
+                      {t("dialog.oauthGuideLink")}
+                    </a>
+                  </p>
+                )}
+              </Field>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field data-invalid={!!form.formState.errors.smtp_host}>
                   <FieldLabel htmlFor="ep-host" required>
@@ -225,7 +339,7 @@ export function EmailProfileDialog({
 
                 <Field data-invalid={!!form.formState.errors.smtp_username}>
                   <FieldLabel htmlFor="ep-username" required>
-                    {tfl("username")}
+                    {isOAuth ? t("dialog.mailbox") : tfl("username")}
                   </FieldLabel>
                   <Input
                     id="ep-username"
@@ -237,52 +351,158 @@ export function EmailProfileDialog({
                   </FieldError>
                 </Field>
 
-                <Field data-invalid={!!form.formState.errors.smtp_password}>
-                  <FieldLabel htmlFor="ep-password" required={changingPassword}>
-                    {t("dialog.password")}
-                  </FieldLabel>
-                  {changingPassword ? (
-                    <>
-                      <Input
-                        id="ep-password"
-                        {...form.register("smtp_password")}
-                        type="password"
-                        autoComplete="new-password"
-                        disabled={isSaving}
-                      />
-                      {isEdit && (
+                {authType === "password" && (
+                  <Field data-invalid={!!form.formState.errors.smtp_password}>
+                    <FieldLabel
+                      htmlFor="ep-password"
+                      required={changingPassword}
+                    >
+                      {t("dialog.password")}
+                    </FieldLabel>
+                    {changingPassword ? (
+                      <>
+                        <Input
+                          id="ep-password"
+                          {...form.register("smtp_password")}
+                          type="password"
+                          autoComplete="new-password"
+                          disabled={isSaving}
+                        />
+                        {isEdit && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="xs"
+                            className="self-start px-0"
+                            onClick={cancelChangingPassword}
+                            disabled={isSaving}
+                          >
+                            {t("dialog.keepPassword")}
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <div className="flex h-9 items-center gap-2">
+                        <span className="text-muted-foreground text-xs">
+                          {t("dialog.passwordIsSet")}
+                        </span>
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="outline"
                           size="xs"
-                          className="self-start px-0"
-                          onClick={cancelChangingPassword}
+                          onClick={startChangingPassword}
                           disabled={isSaving}
                         >
-                          {t("dialog.keepPassword")}
+                          {t("dialog.changePassword")}
                         </Button>
-                      )}
-                    </>
-                  ) : (
-                    <div className="flex h-9 items-center gap-2">
-                      <span className="text-muted-foreground text-xs">
-                        {t("dialog.passwordIsSet")}
-                      </span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="xs"
-                        onClick={startChangingPassword}
+                      </div>
+                    )}
+                    <FieldError>
+                      {form.formState.errors.smtp_password?.message}
+                    </FieldError>
+                  </Field>
+                )}
+
+                {isOAuth && (
+                  <Field data-invalid={!!form.formState.errors.oauth_client_id}>
+                    <FieldLabel htmlFor="ep-oauth-client-id" required>
+                      {t("dialog.clientId")}
+                    </FieldLabel>
+                    <Input
+                      id="ep-oauth-client-id"
+                      {...form.register("oauth_client_id")}
+                      disabled={isSaving}
+                    />
+                    <FieldError>
+                      {form.formState.errors.oauth_client_id?.message}
+                    </FieldError>
+                    {authType === "oauth2_delegated" && (
+                      <p className="text-muted-foreground text-xs">
+                        {profile && isOAuthConnected(profile)
+                          ? t("dialog.oauthConnected", {
+                              account:
+                                profile.smtp.oauth?.connected_account ?? "",
+                            })
+                          : isEdit
+                            ? t("dialog.oauthNotConnected")
+                            : t("dialog.oauthConnectAfterSave")}
+                      </p>
+                    )}
+                  </Field>
+                )}
+
+                {authType === "oauth2_app" && (
+                  <>
+                    <Field
+                      data-invalid={!!form.formState.errors.oauth_tenant_id}
+                    >
+                      <FieldLabel htmlFor="ep-oauth-tenant-id" required>
+                        {t("dialog.tenantId")}
+                      </FieldLabel>
+                      <Input
+                        id="ep-oauth-tenant-id"
+                        {...form.register("oauth_tenant_id")}
+                        placeholder="00000000-0000-0000-0000-000000000000"
                         disabled={isSaving}
+                      />
+                      <FieldError>
+                        {form.formState.errors.oauth_tenant_id?.message}
+                      </FieldError>
+                    </Field>
+
+                    <Field
+                      data-invalid={!!form.formState.errors.oauth_client_secret}
+                    >
+                      <FieldLabel
+                        htmlFor="ep-oauth-client-secret"
+                        required={changingSecret}
                       >
-                        {t("dialog.changePassword")}
-                      </Button>
-                    </div>
-                  )}
-                  <FieldError>
-                    {form.formState.errors.smtp_password?.message}
-                  </FieldError>
-                </Field>
+                        {t("dialog.clientSecret")}
+                      </FieldLabel>
+                      {changingSecret ? (
+                        <>
+                          <Input
+                            id="ep-oauth-client-secret"
+                            {...form.register("oauth_client_secret")}
+                            type="password"
+                            autoComplete="new-password"
+                            disabled={isSaving}
+                          />
+                          {hasStoredSecret(profile) && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="xs"
+                              className="self-start px-0"
+                              onClick={cancelChangingSecret}
+                              disabled={isSaving}
+                            >
+                              {t("dialog.keepSecret")}
+                            </Button>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex h-9 items-center gap-2">
+                          <span className="text-muted-foreground text-xs">
+                            {t("dialog.secretIsSet")}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="xs"
+                            onClick={startChangingSecret}
+                            disabled={isSaving}
+                          >
+                            {t("dialog.changeSecret")}
+                          </Button>
+                        </div>
+                      )}
+                      <FieldError>
+                        {form.formState.errors.oauth_client_secret?.message}
+                      </FieldError>
+                    </Field>
+                  </>
+                )}
               </div>
 
               <Field>
