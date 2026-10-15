@@ -47,6 +47,7 @@ export function TaxProfileDialog({
       translationNamespace="config.taxProfile"
       useCreate={useCreateTaxProfile}
       useUpdate={useUpdateTaxProfile}
+      serverFieldErrors={{ TAX_PROFILE_NAME_ALREADY_EXISTS: "name" }}
       buildSchema={createTaxProfileSchema}
       toFormValues={(e) =>
         e

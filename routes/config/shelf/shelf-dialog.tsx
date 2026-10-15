@@ -41,6 +41,7 @@ export function ShelfDialog({
       translationNamespace="config.shelf"
       useCreate={useCreateShelf}
       useUpdate={useUpdateShelf}
+      serverFieldErrors={{ SHELF_ALREADY_EXISTS: ["code", "name"] }}
       buildSchema={createShelfSchema}
       toFormValues={(e) => getDefaultValues(e ?? undefined)}
       toPayload={(v) => ({

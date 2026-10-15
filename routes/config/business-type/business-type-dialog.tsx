@@ -47,6 +47,7 @@ export function BusinessTypeDialog({
       translationNamespace="config.businessType"
       useCreate={useCreateBusinessType}
       useUpdate={useUpdateBusinessType}
+      serverFieldErrors={{ VENDOR_BUSINESS_TYPE_ALREADY_EXISTS: "name" }}
       buildSchema={createBusinessTypeSchema}
       toFormValues={(e) =>
         e ? { name: e.name, is_active: e.is_active } : EMPTY_FORM

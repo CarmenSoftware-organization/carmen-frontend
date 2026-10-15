@@ -4,9 +4,14 @@ import { useTranslations } from "use-intl";
 import { getUserErrorMessage } from "@/lib/error-message";
 import { registerFieldErrorClaim } from "@/lib/server-field-errors";
 
-/** รหัส catalog ของ backend → ช่องในฟอร์มที่เป็นต้นเหตุ */
+/**
+ * รหัส catalog ของ backend → ช่องในฟอร์มที่เป็นต้นเหตุ
+ *
+ * ใส่หลายช่องได้เมื่อ backend เช็กซ้ำแบบ "รหัส **หรือ** ชื่อ" แล้วไม่บอกว่าชนตัวไหน —
+ * ขึ้นแดงทุกช่องที่อาจเป็นต้นเหตุ ดีกว่าเดาช่องเดียวแล้วผิด
+ */
 export type ServerFieldErrorMap<TValues extends FieldValues> = Readonly<
-  Partial<Record<string, Path<TValues>>>
+  Partial<Record<string, Path<TValues> | readonly Path<TValues>[]>>
 >;
 
 /**
@@ -41,15 +46,16 @@ export function useServerFieldErrors<TValues extends FieldValues>(
     if (!enabled) return;
     return registerFieldErrorClaim((error) => {
       const { form, map, tErr, tField } = latest.current;
-      const field = error.appCode ? map?.[error.appCode] : undefined;
-      if (!field || document.getElementsByName(field).length === 0) {
-        return false;
+      const target = error.appCode ? map?.[error.appCode] : undefined;
+      const fields = (
+        Array.isArray(target) ? target : target ? [target] : []
+      ).filter((field) => document.getElementsByName(field).length > 0);
+      if (fields.length === 0) return false;
+      const message = getUserErrorMessage(error, tErr, tField);
+      for (const field of fields) {
+        form.setError(field, { type: "server", message });
       }
-      form.setError(field, {
-        type: "server",
-        message: getUserErrorMessage(error, tErr, tField),
-      });
-      form.setFocus(field);
+      form.setFocus(fields[0]);
       return true;
     });
   }, [enabled]);

@@ -30,6 +30,7 @@ import {
   EMPTY_FORM,
   type RecipeEquipmentCategoryFormValues,
 } from "./recipe-equipment-category-form-schema";
+import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 
 interface RecipeEquipmentCategoryDialogProps {
   readonly open: boolean;
@@ -59,6 +60,9 @@ export function RecipeEquipmentCategoryDialog({
       schema,
     ) as Resolver<RecipeEquipmentCategoryFormValues>,
     defaultValues: EMPTY_FORM,
+  });
+  useServerFieldErrors(form, {
+    RECIPE_EQUIPMENT_CATEGORY_ALREADY_EXISTS: "name",
   });
 
   useEffect(() => {

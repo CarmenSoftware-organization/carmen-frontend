@@ -28,6 +28,7 @@ import {
   stripAutoCode,
   type CategoryFormValues,
 } from "./category-form-schema";
+import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 
 interface CategoryFormProps {
   readonly type: CategoryType;
@@ -119,6 +120,11 @@ export function CategoryForm({
       createCategorySchema(tv, tfl),
     ) as Resolver<CategoryFormValues>,
     defaultValues,
+  });
+  useServerFieldErrors(form, {
+    PRODUCT_CATEGORY_ALREADY_EXISTS: ["code", "name"],
+    PRODUCT_SUB_CATEGORY_ALREADY_EXISTS: ["code", "name"],
+    PRODUCT_ITEM_GROUP_ALREADY_EXISTS: ["code", "name"],
   });
 
   // หมายเหตุ: ไม่มี useEffect(form.reset(defaultValues)) โดยเจตนา — CategoryForm ถูก

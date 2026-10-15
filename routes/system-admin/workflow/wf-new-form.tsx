@@ -33,6 +33,7 @@ import {
   EMPTY_FORM,
   type WorkflowFormValues,
 } from "./wf-form-schema";
+import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 
 interface WorkflowNewFormProps {
   /** ชนิดใบที่มาจากหน้ารายการ — ล็อกไว้ให้แก้ไม่ได้ เพราะหน้าที่กดมาเป็นของชนิดนั้น */
@@ -58,6 +59,7 @@ export default function WorkflowNewForm({
       ? { ...EMPTY_FORM, workflow_type: lockedType }
       : EMPTY_FORM,
   });
+  useServerFieldErrors(form, { WORKFLOW_ALREADY_EXISTS: "name" });
 
   const discard = useDiscardConfirm({
     isDirty: form.formState.isDirty,

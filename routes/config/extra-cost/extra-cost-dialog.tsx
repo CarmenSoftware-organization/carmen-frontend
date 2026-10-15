@@ -40,6 +40,7 @@ export function ExtraCostDialog({
       translationNamespace="config.extraCost"
       useCreate={useCreateExtraCost}
       useUpdate={useUpdateExtraCost}
+      serverFieldErrors={{ EXTRA_COST_TYPE_ALREADY_EXISTS: "name" }}
       buildSchema={createExtraCostSchema}
       toFormValues={(e) =>
         e ? { name: e.name, is_active: e.is_active } : EMPTY_FORM

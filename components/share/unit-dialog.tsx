@@ -69,6 +69,7 @@ export function UnitDialog({
       translationNamespace="config.unit"
       useCreate={useCreateUnit}
       useUpdate={useUpdateUnit}
+      serverFieldErrors={{ UNIT_ALREADY_EXISTS: "name" }}
       buildSchema={createUnitSchema}
       stopPropagationOnSubmit
       onCreated={(res) => {

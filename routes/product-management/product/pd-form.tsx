@@ -318,6 +318,7 @@ export function ProductForm({ product }: ProductFormProps) {
   const defaultValues = getDefaultValues(product);
   const f = useEntityForm<ProductFormValues>({
     entity: product,
+    serverFieldErrors: { PRODUCT_ALREADY_EXISTS: ["code", "name"] },
     resolver: zodResolver(
       createProductSchema(tv, tfl),
     ) as Resolver<ProductFormValues>,

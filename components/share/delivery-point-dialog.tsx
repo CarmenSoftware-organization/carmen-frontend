@@ -57,6 +57,7 @@ export function DeliveryPointDialog({
       translationNamespace="config.deliveryPoint"
       useCreate={useCreateDeliveryPoint}
       useUpdate={useUpdateDeliveryPoint}
+      serverFieldErrors={{ DELIVERY_POINT_ALREADY_EXISTS: "name" }}
       buildSchema={createDeliveryPointSchema}
       toFormValues={(e) =>
         e

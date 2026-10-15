@@ -41,6 +41,7 @@ export function CreditNoteReasonDialog({
       translationNamespace="config.creditNoteReason"
       useCreate={useCreateCnReasonConfig}
       useUpdate={useUpdateCnReasonConfig}
+      serverFieldErrors={{ CREDIT_NOTE_REASON_ALREADY_EXISTS: "name" }}
       buildSchema={createCnReasonSchema}
       toFormValues={(e) =>
         e

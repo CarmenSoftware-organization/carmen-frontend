@@ -59,6 +59,7 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
   const equipmentSchema = createEquipmentSchema(tv, tfl);
   const f = useEntityForm<EquipmentFormValues>({
     entity: equipment,
+    serverFieldErrors: { RECIPE_EQUIPMENT_ALREADY_EXISTS: "code" },
     resolver: zodResolver(equipmentSchema) as Resolver<EquipmentFormValues>,
     defaultValues: getDefaultValues(equipment),
     listPath: LIST_PATH,

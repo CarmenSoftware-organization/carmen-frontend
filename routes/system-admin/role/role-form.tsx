@@ -51,6 +51,7 @@ export function RoleForm({ role }: RoleFormProps) {
 
   const f = useEntityForm<RoleFormValues>({
     entity: role,
+    serverFieldErrors: { ROLE_NAME_ALREADY_EXISTS: "application_role_name" },
     resolver: zodResolver(roleSchema) as Resolver<RoleFormValues>,
     defaultValues,
     listPath: LIST_PATH,
