@@ -2840,7 +2840,11 @@
         "removeItemTitle": "Remove Product",
         "removeItemConfirm": "Are you sure you want to remove this product?"
       },
-      "notFound": "Price list not found"
+      "notFound": "Price list not found",
+      "periodExpired": "Expired",
+      "periodEndsToday": "Ends today",
+      "periodDaysLeft": "{count, plural, one {# day left} other {# days left}}",
+      "periodStartsIn": "{count, plural, one {Starts in # day} other {Starts in # days}}"
     },
     "priceListTemplate": {
       "entity": "Price List Template",

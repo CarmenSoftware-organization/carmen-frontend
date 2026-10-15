@@ -13,10 +13,10 @@ import {
 } from "@/components/ui/data-grid/columns";
 import { useDeleteGate } from "@/hooks/use-delete-gate";
 import { useProfile } from "@/hooks/use-profile";
-import { formatDate } from "@/lib/date-utils";
 import type { PriceList } from "@/types/price-list";
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
+import { PlPeriodCell } from "./pl-period-cell";
 
 interface UsePriceListTableOptions {
   priceLists: PriceList[];
@@ -36,19 +36,10 @@ export function usePriceListTable({
   onDelete,
 }: UsePriceListTableOptions) {
   "use no memo";
-  const { dateFormat, dateTimeFormat } = useProfile();
+  const { dateTimeFormat } = useProfile();
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
   const deleteGate = useDeleteGate();
-
-  const formatPeriod = (period: string): string => {
-    const parts = period.split(" - ");
-    if (parts.length !== 2) return period;
-    const from = formatDate(parts[0], dateFormat);
-    const to = formatDate(parts[1], dateFormat);
-    if (!from && !to) return "—";
-    return `${from} - ${to}`;
-  };
 
   const dataColumns: ColumnDef<PriceList>[] = [
     {
@@ -60,7 +51,10 @@ export function usePriceListTable({
         <DataGridColumnHeader column={column} title={tfl("no")} />
       ),
       cell: ({ row }) => (
-        <CellAction onClick={() => onEdit(row.original)}>
+        <CellAction
+          onClick={() => onEdit(row.original)}
+          className="whitespace-nowrap"
+        >
           {row.original.no}
         </CellAction>
       ),
@@ -72,6 +66,11 @@ export function usePriceListTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("name")} />
       ),
+      cell: ({ row }) => (
+        <span className="block truncate" title={row.original.name || undefined}>
+          {row.original.name}
+        </span>
+      ),
       meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
       size: 240,
     },
@@ -81,6 +80,15 @@ export function usePriceListTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("vendor")} />
       ),
+      cell: ({ row }) => {
+        const name = row.original.vendor?.name;
+        if (!name) return <span className="text-muted-foreground">—</span>;
+        return (
+          <span className="block truncate" title={name}>
+            {name}
+          </span>
+        );
+      },
       meta: { headerTitle: tfl("vendor"), skeleton: columnSkeletons.text },
       size: 240,
     },
@@ -91,7 +99,9 @@ export function usePriceListTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("effectivePeriod")} />
       ),
-      cell: ({ row }) => formatPeriod(row.getValue("effective_from_date")),
+      cell: ({ row }) => (
+        <PlPeriodCell period={row.getValue("effective_from_date")} />
+      ),
       meta: {
         headerTitle: tfl("effectivePeriod"),
         skeleton: columnSkeletons.text,

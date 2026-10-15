@@ -2840,7 +2840,11 @@
         "removeItemTitle": "ลบสินค้า",
         "removeItemConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?"
       },
-      "notFound": "ไม่พบรายการราคา"
+      "notFound": "ไม่พบรายการราคา",
+      "periodExpired": "หมดอายุแล้ว",
+      "periodEndsToday": "หมดวันนี้",
+      "periodDaysLeft": "เหลือ {count} วัน",
+      "periodStartsIn": "เริ่มในอีก {count} วัน"
     },
     "priceListTemplate": {
       "entity": "แม่แบบรายการราคา",
