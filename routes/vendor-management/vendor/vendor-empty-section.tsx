@@ -14,11 +14,27 @@ export function VendorEmptySection({
   icon: Icon,
   title,
   description,
+  compact,
 }: {
   readonly icon: LucideIcon;
   readonly title: string;
   readonly description: string;
+  /**
+   * โหมดดู — เหลือบรรทัดเดียว (ไอคอน + หัวข้อ) ไม่มีกรอบ
+   *
+   * คำอธิบายในกล่องเป็นคำชวนให้ "เพิ่ม" ซึ่งโหมดดูกดเพิ่มไม่ได้อยู่แล้ว และกล่อง
+   * ประสูง ~100px สามสี่กล่องเรียงกันดันข้อมูลจริง (ใบรับรอง) ตกจอแรก
+   */
+  readonly compact?: boolean;
 }) {
+  if (compact) {
+    return (
+      <div className="text-muted-foreground flex min-h-8 items-center gap-2 text-xs">
+        <Icon className="size-3.5 shrink-0" aria-hidden />
+        <span>{title}</span>
+      </div>
+    );
+  }
   return (
     <div className="border-border/60 bg-muted/20 rounded-xl border border-dashed p-6 text-center">
       <div className="bg-muted text-muted-foreground/70 mx-auto mb-2 flex size-9 items-center justify-center rounded-xl">

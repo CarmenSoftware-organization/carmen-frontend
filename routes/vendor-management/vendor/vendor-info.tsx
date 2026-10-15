@@ -62,6 +62,7 @@ export function VendorInfo({
       <div className="sm:col-span-2">
         {infoFields.length === 0 ? (
           <VendorEmptySection
+            compact={isView}
             icon={Info}
             title={t("info.noInfo")}
             description={t("info.noInfoDesc")}

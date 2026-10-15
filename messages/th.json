@@ -2758,6 +2758,7 @@
       "entity": "ผู้ขาย",
       "title": "ผู้ขาย",
       "generalDesc": "รหัส ชื่อ ประเภทธุรกิจ และสถานะของผู้ขาย",
+      "generalDescView": "ประเภทธุรกิจ ข้อมูลภาษี คะแนน และคำอธิบายของผู้ขาย",
       "rating": "คะแนนผู้ขาย",
       "notRated": "ยังไม่ประเมิน",
       "ratingValue": "{value} จาก 5",
@@ -2860,6 +2861,8 @@
         "primary": "หลัก"
       },
       "notFound": "ไม่พบผู้ขาย",
+      "certExpiresIn": "{count, plural, =0 {หมดอายุวันนี้} other {เหลือ # วัน}}",
+      "certExpired": "หมดอายุแล้ว",
       "noCertificatesDesc": "ยังไม่ได้บันทึกใบรับรองของผู้ขายรายนี้"
     },
     "priceList": {

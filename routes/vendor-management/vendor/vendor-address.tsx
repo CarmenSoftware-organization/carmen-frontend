@@ -85,6 +85,7 @@ export function VendorAddress({
       <div className="sm:col-span-2">
         {addressFields.length === 0 ? (
           <VendorEmptySection
+            compact={isView}
             icon={MapPin}
             title={t("address.noAddresses")}
             description={t("address.noAddressesDesc")}
