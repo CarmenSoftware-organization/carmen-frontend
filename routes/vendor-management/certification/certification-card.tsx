@@ -6,6 +6,7 @@ import {
   ListCardActiveRow,
 } from "@/components/share/list-card";
 import type { Certification } from "@/types/certification";
+import { CertificationHoldings } from "./certification-holdings";
 
 interface Props {
   readonly item: Certification;
@@ -15,6 +16,7 @@ interface Props {
 
 export default function CertificationCard({ item, onEdit, onDelete }: Props) {
   const tfl = useTranslations("field");
+  const t = useTranslations("vendorManagement.certification");
 
   return (
     <ListCard
@@ -27,6 +29,9 @@ export default function CertificationCard({ item, onEdit, onDelete }: Props) {
       {item.description && (
         <ListCardRow label={tfl("description")}>{item.description}</ListCardRow>
       )}
+      <ListCardRow label={t("vendorsHolding")}>
+        <CertificationHoldings item={item} />
+      </ListCardRow>
       <ListCardAuditRows audit={item.audit} />
     </ListCard>
   );

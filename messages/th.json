@@ -2725,7 +2725,13 @@
       "deleteTitle": "ลบใบรับรอง",
       "deleteConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบใบรับรอง \"{name}\"? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
       "codePlaceholder": "เช่น ISO-9001",
-      "namePlaceholder": "เช่น ISO 9001 Quality Management"
+      "namePlaceholder": "เช่น ISO 9001 Quality Management",
+      "vendorsHolding": "ผู้ขายที่ถือใบ",
+      "expiringCount": "ใกล้หมด {count}",
+      "expiredCount": "หมดอายุ {count}",
+      "expiringSoonCol": "ใกล้หมดอายุ (30 วัน)",
+      "expiredCol": "หมดอายุแล้ว",
+      "noHolders": "ยังไม่มี"
     },
     "dashboard": {
       "title": "ภาพรวมผู้ขาย",

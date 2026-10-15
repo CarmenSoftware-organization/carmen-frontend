@@ -21,6 +21,7 @@ const CertificationDialog = lazy(() =>
 export default function CertificationComponent() {
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
+  const t = useTranslations("vendorManagement.certification");
   return (
     <ConfigListTemplate<Certification>
       translationNamespace="vendorManagement.certification"
@@ -34,6 +35,26 @@ export default function CertificationComponent() {
       exportColumns={[
         { header: tfl("code"), value: (r) => r.code, width: 16 },
         { header: tfl("name"), value: (r) => r.name, width: 28 },
+        {
+          header: tfl("description"),
+          value: (r) => r.description ?? "",
+          width: 36,
+        },
+        {
+          header: t("vendorsHolding"),
+          value: (r) => r.vendor_count ?? "",
+          width: 12,
+        },
+        {
+          header: t("expiringSoonCol"),
+          value: (r) => r.expiring_count ?? "",
+          width: 14,
+        },
+        {
+          header: t("expiredCol"),
+          value: (r) => r.expired_count ?? "",
+          width: 12,
+        },
         {
           header: tfl("status"),
           value: (r) => (r.is_active ? ts("active") : ts("inactive")),
