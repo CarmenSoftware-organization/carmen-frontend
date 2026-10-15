@@ -78,7 +78,7 @@ describe("AdjItemFields — stock-out cost is an estimate", () => {
       <Harness type="stock-out" docStatus="draft" disabled item={row(0, 0)} />,
     );
 
-    await waitFor(() => expect(screen.getByText("125.00")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("\u2212125.00")).toBeTruthy());
     expect(formRef?.formState.isDirty).toBe(false);
   });
 
@@ -98,8 +98,8 @@ describe("AdjItemFields — stock-out cost is an estimate", () => {
       <Harness type="stock-out" docStatus="completed" disabled item={row(62.14, 124.28)} />,
     );
 
-    expect(await screen.findByText("124.28")).toBeTruthy();
-    expect(screen.queryByText("125.00")).toBeNull();
+    expect(await screen.findByText("\u2212124.28")).toBeTruthy();
+    expect(screen.queryByText("\u2212125.00")).toBeNull();
   });
 });
 
@@ -109,7 +109,7 @@ describe("AdjItemFields — stock-in cost is typed by the user", () => {
       <Harness type="stock-in" docStatus="draft" disabled={false} item={row(300, 600)} />,
     );
 
-    expect(await screen.findByText("600.00")).toBeTruthy();
+    expect(await screen.findByText("+600.00")).toBeTruthy();
     expect(formRef?.getValues("items.0.cost_per_unit")).toBe(300);
   });
 });

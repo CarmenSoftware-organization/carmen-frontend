@@ -51,123 +51,150 @@ export function DocumentInfo({
   // label ใน view mode ไม่ต้องใส่ text-muted-foreground/font-normal เอง — Field
   // หุบให้อัตโนมัติเมื่อลูกเป็น FieldPlainText
   return (
-    <SettingSection first title={t("docInfo")} description={t("docInfoDesc")}>
-      <Field>
-        <FieldLabel required={!isView}>{tfl("date")}</FieldLabel>
-        {isView ? (
-          <PlainDateValue control={form.control} dateFormat={dateFormat} />
-        ) : (
-          <Controller
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FieldDatePicker
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isDisabled}
-                placeholder={tc("selectDate")}
-                className="w-full text-xs"
-                fromDate={
-                  currentPeriodStart ? new Date(currentPeriodStart) : undefined
-                }
-                // ไม่เกินวันนี้ และไม่เกินท้ายงวด — ใบรับ/จ่ายลงวันที่อนาคตไม่ได้
-                toDate={latestIssuableDate(currentPeriodEnd)}
-                error={form.formState.errors.date?.message}
-              />
-            )}
-          />
-        )}
-      </Field>
-
-      <Field>
-        <FieldLabel required={!isView}>{tfl("reason")}</FieldLabel>
-        {isView ? (
-          <PlainReasonValue
-            control={form.control}
-            fallback={
-              // ก้อนของ endpoint รายละเอียดมีแค่ id+code (ไม่มี name) ต่างจาก list
-              inventoryAdjustment?.adjustment_type?.name ??
-              inventoryAdjustment?.adjustment_type?.code ??
-              inventoryAdjustment?.adjustment_type_name
-            }
-          />
-        ) : (
-          <Controller
-            control={form.control}
-            name="adjustment_type_id"
-            render={({ field }) => (
-              <LookupAdjustmentType
-                value={field.value ?? ""}
-                onValueChange={field.onChange}
-                kind={adjustmentKind}
-                disabled={isDisabled}
-                className="w-full text-xs"
-                error={form.formState.errors.adjustment_type_id?.message}
-              />
-            )}
-          />
-        )}
-      </Field>
-
-      <Field className="sm:col-span-2">
-        <FieldLabel required={!isView}>{tfl("location")}</FieldLabel>
-        {isView ? (
-          <FieldPlainText>
-            {inventoryAdjustment?.location?.name ??
-              inventoryAdjustment?.location_name}
-          </FieldPlainText>
-        ) : (
-          <Controller
-            control={form.control}
-            name="location_id"
-            render={({ field }) => (
-              <LookupUserLocation
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isDisabled}
-                className="text-xs"
-                locationTypes={[
-                  INVENTORY_TYPE.INVENTORY,
-                  INVENTORY_TYPE.CONSIGNMENT,
-                ]}
-                defaultLabel={
-                  inventoryAdjustment?.location?.name ??
-                  inventoryAdjustment?.location_name
-                }
-                error={form.formState.errors.location_id?.message}
-                lazy
-              />
-            )}
-          />
-        )}
-      </Field>
-
-      <Field className="sm:col-span-2">
-        <FieldLabel htmlFor="inv-adj-description">
-          {tfl("description")}
-        </FieldLabel>
-        {isView ? (
-          <PlainDescriptionValue control={form.control} />
-        ) : (
-          <>
-            <Textarea
-              id="inv-adj-description"
-              placeholder={tfl("optional")}
-              className="text-xs"
-              disabled={isDisabled}
-              maxLength={256}
-              aria-invalid={!!form.formState.errors.description}
-              {...form.register("description")}
+    <SettingSection
+      first
+      title={t("docInfo")}
+      description={t("docInfoDesc")}
+      plain={isView}
+    >
+      {/* โหมดดู: 4 ช่องอ่านอย่างเดียวจบในแถวเดียวบนจอกว้าง (หน้า wide การ์ดยาวพอ ~200px/ช่อง)
+          ลงมา 2 คอลัมน์บนจอแคบ · โหมดแก้ไขใช้ grid 2 คอลัมน์ของ SettingSection ตามเดิม
+          เพราะ lookup/textarea ต้องการความกว้าง */}
+      <DocInfoGrid isView={isView}>
+        <Field>
+          <FieldLabel required={!isView}>{tfl("date")}</FieldLabel>
+          {isView ? (
+            <PlainDateValue control={form.control} dateFormat={dateFormat} />
+          ) : (
+            <Controller
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FieldDatePicker
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isDisabled}
+                  placeholder={tc("selectDate")}
+                  className="w-full text-xs"
+                  fromDate={
+                    currentPeriodStart
+                      ? new Date(currentPeriodStart)
+                      : undefined
+                  }
+                  // ไม่เกินวันนี้ และไม่เกินท้ายงวด — ใบรับ/จ่ายลงวันที่อนาคตไม่ได้
+                  toDate={latestIssuableDate(currentPeriodEnd)}
+                  error={form.formState.errors.date?.message}
+                />
+              )}
             />
-            {form.formState.errors.description?.message && (
-              <FieldError>
-                {form.formState.errors.description.message}
-              </FieldError>
-            )}
-          </>
-        )}
-      </Field>
+          )}
+        </Field>
+
+        <Field>
+          <FieldLabel required={!isView}>{tfl("reason")}</FieldLabel>
+          {isView ? (
+            <PlainReasonValue
+              control={form.control}
+              fallback={
+                // ก้อนของ endpoint รายละเอียดมีแค่ id+code (ไม่มี name) ต่างจาก list
+                inventoryAdjustment?.adjustment_type?.name ??
+                inventoryAdjustment?.adjustment_type?.code ??
+                inventoryAdjustment?.adjustment_type_name
+              }
+            />
+          ) : (
+            <Controller
+              control={form.control}
+              name="adjustment_type_id"
+              render={({ field }) => (
+                <LookupAdjustmentType
+                  value={field.value ?? ""}
+                  onValueChange={field.onChange}
+                  kind={adjustmentKind}
+                  disabled={isDisabled}
+                  className="w-full text-xs"
+                  error={form.formState.errors.adjustment_type_id?.message}
+                />
+              )}
+            />
+          )}
+        </Field>
+
+        {/* โหมดดู: Location ครึ่งแถวคู่กับ Description — ข้อมูลอ่านอย่างเดียว 4 ช่องจบใน 2 แถว
+          ไม่ต้องกินเต็มแถว · โหมดแก้ไขยังเต็มแถวเพราะ lookup ต้องการความกว้าง */}
+        <Field className={isView ? "min-w-0" : "sm:col-span-2"}>
+          <FieldLabel required={!isView}>{tfl("location")}</FieldLabel>
+          {isView ? (
+            <FieldPlainText>
+              {inventoryAdjustment?.location?.name ??
+                inventoryAdjustment?.location_name}
+            </FieldPlainText>
+          ) : (
+            <Controller
+              control={form.control}
+              name="location_id"
+              render={({ field }) => (
+                <LookupUserLocation
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isDisabled}
+                  className="text-xs"
+                  locationTypes={[
+                    INVENTORY_TYPE.INVENTORY,
+                    INVENTORY_TYPE.CONSIGNMENT,
+                  ]}
+                  defaultLabel={
+                    inventoryAdjustment?.location?.name ??
+                    inventoryAdjustment?.location_name
+                  }
+                  error={form.formState.errors.location_id?.message}
+                  lazy
+                />
+              )}
+            />
+          )}
+        </Field>
+
+        <Field className={isView ? "min-w-0" : "sm:col-span-2"}>
+          <FieldLabel htmlFor="inv-adj-description">
+            {tfl("description")}
+          </FieldLabel>
+          {isView ? (
+            <PlainDescriptionValue control={form.control} />
+          ) : (
+            <>
+              <Textarea
+                id="inv-adj-description"
+                placeholder={tfl("optional")}
+                className="text-xs"
+                disabled={isDisabled}
+                maxLength={256}
+                aria-invalid={!!form.formState.errors.description}
+                {...form.register("description")}
+              />
+              {form.formState.errors.description?.message && (
+                <FieldError>
+                  {form.formState.errors.description.message}
+                </FieldError>
+              )}
+            </>
+          )}
+        </Field>
+      </DocInfoGrid>
     </SettingSection>
+  );
+}
+
+function DocInfoGrid({
+  isView,
+  children,
+}: {
+  readonly isView: boolean;
+  readonly children: React.ReactNode;
+}) {
+  if (!isView) return <>{children}</>;
+  return (
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">{children}</div>
   );
 }
 
@@ -210,7 +237,7 @@ function PlainDescriptionValue({
   return (
     <FieldPlainText>
       {description ? (
-        <span className="whitespace-pre-wrap">{description}</span>
+        <span className="break-words whitespace-pre-wrap">{description}</span>
       ) : (
         ""
       )}

@@ -335,7 +335,9 @@ export function InventoryAdjustmentForm({
 
   return (
     // footer = แถบสรุป (mt-auto) — FormPageShell ยืดเต็มจอให้มันติดก้นจอเมื่อเนื้อสั้น
+    // เต็มจอแบบเดียวกับ PO/PR/SR/GRN/CN — ตารางรายการได้ความกว้างเต็มที่
     <FormPageShell
+      width="wide"
       header={
         <IaFormHero
           adjustmentType={adjustmentType}
@@ -356,6 +358,7 @@ export function InventoryAdjustmentForm({
       footer={
         <AdjSummaryFooter
           form={form}
+          adjustmentType={adjustmentType}
           formatter={formatter}
           t={t}
           canVoid={isEdit && !!inventoryAdjustment && !isReadOnly}
