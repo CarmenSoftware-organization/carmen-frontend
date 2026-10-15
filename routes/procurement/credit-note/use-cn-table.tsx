@@ -9,6 +9,7 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { formatCurrency } from "@/lib/currency-utils";
+import { cn } from "@/lib/utils";
 import {
   auditColumns,
   columnSkeletons,
@@ -43,17 +44,29 @@ export function useCnTable({
         <DataGridColumnHeader column={column} title={tfl("cnNo")} />
       ),
       cell: ({ row }) => (
-        <CellAction onClick={() => onEdit(row.original)}>
+        <CellAction
+          onClick={() => onEdit(row.original)}
+          className="whitespace-nowrap"
+        >
           {row.original.cn_no}
         </CellAction>
       ),
-      size: 140,
+      size: 130,
       meta: { headerTitle: tfl("cnNo"), skeleton: columnSkeletons.text },
     },
     {
       accessorKey: "vendor_name",
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("vendor")} />
+      ),
+      // ตัดคำพร้อม title แทนการขึ้นบรรทัดใหม่ — แถวสูงไม่เท่ากันทำให้กวาดตาลงยาก
+      cell: ({ row }) => (
+        <span
+          className="block truncate"
+          title={row.original.vendor_name || undefined}
+        >
+          {row.original.vendor_name}
+        </span>
       ),
       size: 200,
       meta: { headerTitle: tfl("vendor"), skeleton: columnSkeletons.text },
@@ -75,10 +88,12 @@ export function useCnTable({
             status={type}
             label={config?.label ?? type}
             // ชนิดใบไม่มีสี — สีสงวนไว้ให้สถานะซึ่งเป็นสิ่งที่คนกวาดตาหาจริง ๆ
-            className="text-muted-foreground flex w-full justify-center"
+            className="text-muted-foreground flex w-full justify-center whitespace-nowrap"
           />
         );
       },
+      // พอสำหรับ "AMT DISCOUNT" ซึ่งยาวกว่า QTY RETURN
+      size: 135,
       meta: {
         headerTitle: tfl("type"),
         skeleton: columnSkeletons.text,
@@ -92,9 +107,12 @@ export function useCnTable({
       id: "created_by",
       accessorFn: (row) => row.audit?.created?.name ?? "",
       header: tfl("createdBy"),
-      size: 170,
+      size: 150,
       cell: ({ row }) => (
-        <span className="text-muted-foreground">
+        <span
+          className="text-muted-foreground block truncate"
+          title={row.original.audit?.created?.name || undefined}
+        >
           {row.original.audit?.created?.name || "—"}
         </span>
       ),
@@ -114,10 +132,11 @@ export function useCnTable({
         />
       ),
       cell: ({ row }) => formatDate(row.original.cn_date, dateFormat),
+      size: 115,
       meta: {
         headerTitle: tfl("docDate"),
         skeleton: columnSkeletons.text,
-        cellClassName: "text-center",
+        cellClassName: "text-center whitespace-nowrap tabular-nums",
       },
     },
     {
@@ -142,6 +161,8 @@ export function useCnTable({
           />
         );
       },
+      // กว้างพอให้ COMPLETED ไม่ถูกตัด
+      size: 135,
       meta: {
         headerTitle: tfl("status"),
         skeleton: columnSkeletons.text,
@@ -162,8 +183,15 @@ export function useCnTable({
         const amount = row.original.total_amount;
         const currency = row.original.currency_code;
         if (amount == null) return <span></span>;
+        // ยอดศูนย์ (มักเป็นใบคืนของที่ยังไม่คิดมูลค่า) จางลง ให้ยอดที่มีเงินจริงเด่นขึ้นมา
+        const isZero = Number(amount) === 0;
         return (
-          <span className="font-medium tabular-nums">
+          <span
+            className={cn(
+              "font-medium whitespace-nowrap tabular-nums",
+              isZero && "text-muted-foreground font-normal",
+            )}
+          >
             {formatCurrency(amount)}
             {currency && (
               <span className="text-muted-foreground ms-1 text-xs font-normal">
@@ -178,6 +206,7 @@ export function useCnTable({
         skeleton: columnSkeletons.text,
         cellClassName: "text-right",
       },
+      size: 135,
     },
     ...auditColumns<CreditNote>(tfl, dateTimeFormat),
   ];
