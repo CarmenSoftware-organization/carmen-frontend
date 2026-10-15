@@ -8,7 +8,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-
 :root {
   --radius: 0.625rem;
   /* Light mode — neutral surfaces, Carmen blue accent kept (Supabase-style) */
@@ -42,42 +41,52 @@
   --sidebar-primary-foreground: oklch(0.99 0 0);
   --sidebar-accent: oklch(0.93 0 0);
   --sidebar-accent-foreground: oklch(0.22 0 0);
-  --sidebar-border: oklch(0.90 0 0);
+  --sidebar-border: oklch(0.9 0 0);
   --sidebar-ring: oklch(0.4714 0.1794 258.7);
   /* semantic */
   --success: oklch(0.7515 0.1117 188.43);
-  --success-foreground: oklch(0.30 0.08 188.43);
+  --success-foreground: oklch(0.3 0.08 188.43);
   --info: oklch(0.55 0.135 230);
   --info-foreground: oklch(0.32 0.09 230);
   --warning: oklch(0.78 0.15 75);
-  --warning-foreground: oklch(0.30 0.06 75);
-  --invert: oklch(0.20 0 0);
+  --warning-foreground: oklch(0.3 0.06 75);
+  --invert: oklch(0.2 0 0);
   --invert-foreground: oklch(0.98 0 0);
   /* shadow — neutral */
   --shadow-2xs: 0 0.0625rem 0.125rem 0rem oklch(0.25 0 0 / 0.04);
   --shadow-xs: 0 0.0625rem 0.1875rem 0rem oklch(0.25 0 0 / 0.06);
-  --shadow-sm: 0 0.0625rem 0.25rem 0rem oklch(0.25 0 0 / 0.07), 0 0.0625rem 0.125rem -0.0625rem oklch(0.25 0 0 / 0.04);
-  --shadow: 0 0.125rem 0.375rem 0rem oklch(0.25 0 0 / 0.07), 0 0.0625rem 0.1875rem -0.0625rem oklch(0.25 0 0 / 0.04);
-  --shadow-md: 0 0.25rem 0.5rem -0.0625rem oklch(0.25 0 0 / 0.09), 0 0.125rem 0.25rem -0.125rem oklch(0.25 0 0 / 0.05);
-  --shadow-lg: 0 0.5rem 0.875rem -0.1875rem oklch(0.25 0 0 / 0.09), 0 0.25rem 0.375rem -0.25rem oklch(0.25 0 0 / 0.05);
-  --shadow-xl: 0 1rem 1.5rem -0.25rem oklch(0.25 0 0 / 0.09), 0 0.5rem 0.625rem -0.375rem oklch(0.25 0 0 / 0.04);
+  --shadow-sm:
+    0 0.0625rem 0.25rem 0rem oklch(0.25 0 0 / 0.07),
+    0 0.0625rem 0.125rem -0.0625rem oklch(0.25 0 0 / 0.04);
+  --shadow:
+    0 0.125rem 0.375rem 0rem oklch(0.25 0 0 / 0.07),
+    0 0.0625rem 0.1875rem -0.0625rem oklch(0.25 0 0 / 0.04);
+  --shadow-md:
+    0 0.25rem 0.5rem -0.0625rem oklch(0.25 0 0 / 0.09),
+    0 0.125rem 0.25rem -0.125rem oklch(0.25 0 0 / 0.05);
+  --shadow-lg:
+    0 0.5rem 0.875rem -0.1875rem oklch(0.25 0 0 / 0.09),
+    0 0.25rem 0.375rem -0.25rem oklch(0.25 0 0 / 0.05);
+  --shadow-xl:
+    0 1rem 1.5rem -0.25rem oklch(0.25 0 0 / 0.09),
+    0 0.5rem 0.625rem -0.375rem oklch(0.25 0 0 / 0.04);
   --shadow-2xl: 0 1.5rem 3rem -0.5rem oklch(0.25 0 0 / 0.18);
   --spacing: 0.25rem;
 
   /* ── Tier 1 ── */
   --neutral: oklch(0.96 0 0);
-  --neutral-foreground: oklch(0.30 0 0);
+  --neutral-foreground: oklch(0.3 0 0);
   --surface-1: oklch(0.99 0 0);
   --surface-2: oklch(0.97 0 0);
   --hover: oklch(0.16 0 0 / 0.05);
-  --active: oklch(0.16 0 0 / 0.10);
+  --active: oklch(0.16 0 0 / 0.1);
 
   /* ── Tier 2 ── */
   --positive: oklch(0.62 0.18 145);
-  --positive-foreground: oklch(0.25 0.10 145);
-  --negative: oklch(0.62 0.20 24.11);
-  --negative-foreground: oklch(0.25 0.10 24.11);
-  --chart-6: oklch(0.60 0.18 348.79);
+  --positive-foreground: oklch(0.25 0.1 145);
+  --negative: oklch(0.62 0.2 24.11);
+  --negative-foreground: oklch(0.25 0.1 24.11);
+  --chart-6: oklch(0.6 0.18 348.79);
   --chart-7: oklch(0.62 0.18 145);
   --chart-8: oklch(0.65 0.16 75);
   --brand: oklch(0.4714 0.1794 258.7);
@@ -127,7 +136,7 @@
 
 .dark {
   /* Supabase-style dark — neutral graphite surfaces, Carmen blue accent kept */
-  --background: oklch(0.20 0 0);
+  --background: oklch(0.2 0 0);
   --foreground: oklch(0.93 0 0);
   --card: oklch(0.24 0 0);
   --card-foreground: oklch(0.93 0 0);
@@ -143,7 +152,7 @@
   --accent-foreground: oklch(0.93 0 0);
   --destructive: oklch(0.666 0.2013 24.11);
   --destructive-foreground: oklch(0.18 0.03 24.11);
-  --border: oklch(0.30 0 0);
+  --border: oklch(0.3 0 0);
   --input: oklch(0.28 0 0);
   --ring: oklch(0.66 0.1706 253.27);
   --chart-1: oklch(0.5852 0.1706 253.27);
@@ -163,24 +172,34 @@
   --success: oklch(0.7515 0.1117 188.43);
   --success-foreground: oklch(0.82 0.08 188.43);
   --info: oklch(0.66 0.13 230);
-  --info-foreground: oklch(0.80 0.11 230);
+  --info-foreground: oklch(0.8 0.11 230);
   --warning: oklch(0.82 0.13 75);
-  --warning-foreground: oklch(0.80 0.14 75);
-  --invert: oklch(0.40 0 0);
+  --warning-foreground: oklch(0.8 0.14 75);
+  --invert: oklch(0.4 0 0);
   --invert-foreground: oklch(0.98 0 0);
   /* shadow — neutral black (Supabase) */
   --shadow-2xs: 0 0.0625rem 0.125rem 0rem oklch(0 0 0 / 0.25);
-  --shadow-xs: 0 0.0625rem 0.1875rem 0rem oklch(0 0 0 / 0.30);
-  --shadow-sm: 0 0.0625rem 0.25rem 0rem oklch(0 0 0 / 0.32), 0 0.0625rem 0.125rem -0.0625rem oklch(0 0 0 / 0.20);
-  --shadow: 0 0.125rem 0.375rem 0rem oklch(0 0 0 / 0.32), 0 0.0625rem 0.1875rem -0.0625rem oklch(0 0 0 / 0.20);
-  --shadow-md: 0 0.25rem 0.5rem -0.0625rem oklch(0 0 0 / 0.36), 0 0.125rem 0.25rem -0.125rem oklch(0 0 0 / 0.22);
-  --shadow-lg: 0 0.5rem 0.875rem -0.1875rem oklch(0 0 0 / 0.36), 0 0.25rem 0.375rem -0.25rem oklch(0 0 0 / 0.22);
-  --shadow-xl: 0 1rem 1.5rem -0.25rem oklch(0 0 0 / 0.36), 0 0.5rem 0.625rem -0.375rem oklch(0 0 0 / 0.18);
+  --shadow-xs: 0 0.0625rem 0.1875rem 0rem oklch(0 0 0 / 0.3);
+  --shadow-sm:
+    0 0.0625rem 0.25rem 0rem oklch(0 0 0 / 0.32),
+    0 0.0625rem 0.125rem -0.0625rem oklch(0 0 0 / 0.2);
+  --shadow:
+    0 0.125rem 0.375rem 0rem oklch(0 0 0 / 0.32),
+    0 0.0625rem 0.1875rem -0.0625rem oklch(0 0 0 / 0.2);
+  --shadow-md:
+    0 0.25rem 0.5rem -0.0625rem oklch(0 0 0 / 0.36),
+    0 0.125rem 0.25rem -0.125rem oklch(0 0 0 / 0.22);
+  --shadow-lg:
+    0 0.5rem 0.875rem -0.1875rem oklch(0 0 0 / 0.36),
+    0 0.25rem 0.375rem -0.25rem oklch(0 0 0 / 0.22);
+  --shadow-xl:
+    0 1rem 1.5rem -0.25rem oklch(0 0 0 / 0.36),
+    0 0.5rem 0.625rem -0.375rem oklch(0 0 0 / 0.18);
   --shadow-2xl: 0 1.5rem 3rem -0.5rem oklch(0 0 0 / 0.45);
 
   /* ── Tier 1 ── */
   --neutral: oklch(0.28 0 0);
-  --neutral-foreground: oklch(0.90 0 0);
+  --neutral-foreground: oklch(0.9 0 0);
   --surface-1: oklch(0.22 0 0);
   --surface-2: oklch(0.26 0 0);
   --hover: oklch(0.93 0 0 / 0.06);
@@ -188,9 +207,9 @@
 
   /* ── Tier 2 ── */
   --positive: oklch(0.76 0.16 145);
-  --positive-foreground: oklch(0.92 0.10 145);
+  --positive-foreground: oklch(0.92 0.1 145);
   --negative: oklch(0.76 0.18 24.11);
-  --negative-foreground: oklch(0.92 0.10 24.11);
+  --negative-foreground: oklch(0.92 0.1 24.11);
   --chart-6: oklch(0.74 0.16 348.79);
   --chart-7: oklch(0.76 0.16 145);
   --chart-8: oklch(0.78 0.14 75);
@@ -203,14 +222,14 @@
   --border-strong: oklch(0.44 0 0);
   --border-subtle: oklch(0.26 0 0);
   --disabled: oklch(0.26 0 0);
-  --disabled-foreground: oklch(0.50 0 0);
+  --disabled-foreground: oklch(0.5 0 0);
   --scrollbar-thumb: oklch(0.44 0 0 / 0.35);
   --selected: oklch(0.5852 0.1706 253.27 / 0.16);
   --row-stripe: oklch(0.275 0 0);
   --row-hover: oklch(0.31 0 0);
   --overlay: oklch(0 0 0 / 0.7);
   /* search-match highlight — was bg-yellow-800/40 inline in tree-node.tsx */
-  --highlight: oklch(0.45 0.10 100 / 0.4);
+  --highlight: oklch(0.45 0.1 100 / 0.4);
   --highlight-foreground: oklch(0.92 0.09 100);
 
   /* ── Status inks ── see the light-mode block for why these exist.
@@ -311,8 +330,10 @@
      face available. Without these the Thai UI renders in whatever the OS picks
      first — Thonburi on macOS, Leelawadee UI on Windows, Noto on Android —
      three different faces with three different vertical metrics. */
-  --font-sans: -apple-system, BlinkMacSystemFont, system-ui, "Inter", "Segoe UI", Roboto,
-    "Sarabun", "Noto Sans Thai", "IBM Plex Sans Thai", "Leelawadee UI", "Thonburi", sans-serif;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, system-ui, "Inter", "Segoe UI", Roboto,
+    "Sarabun", "Noto Sans Thai", "IBM Plex Sans Thai", "Leelawadee UI",
+    "Thonburi", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /* ── Dense-ERP type ladder — implements the `typography` block of docs/DESIGN.md ──
@@ -335,17 +356,17 @@
      call-site that did not already say font-semibold (32 of 102 in the app), and
      Tailwind's own text-* utilities never do this. Weight/tracking/case stay
      explicit at the call-site; the token only guarantees the step is on-ladder. */
-  --text-micro-floor: 0.5rem;         /* 8px — tightest micro-grid cells only */
+  --text-micro-floor: 0.5rem; /* 8px — tightest micro-grid cells only */
   --text-micro-floor--line-height: 1.2;
-  --text-micro-eyebrow: 0.5625rem;    /* 9px — uppercase badge/chip eyebrows */
+  --text-micro-eyebrow: 0.5625rem; /* 9px — uppercase badge/chip eyebrows */
   --text-micro-eyebrow--line-height: 1.2;
-  --text-micro-legal: 0.625rem;       /* 10px — inline meta, timestamps, captions */
+  --text-micro-legal: 0.625rem; /* 10px — inline meta, timestamps, captions */
   --text-micro-legal--line-height: 1.35;
   --text-micro-legal--letter-spacing: -0.08px;
-  --text-micro: 0.6875rem;            /* 11px — count chips, tabular numbers */
+  --text-micro: 0.6875rem; /* 11px — count chips, tabular numbers */
   --text-micro--line-height: 1.35;
   --text-micro--letter-spacing: -0.075px;
-  --text-fine-print: 0.75rem;         /* 12px — dense body; same size as text-xs */
+  --text-fine-print: 0.75rem; /* 12px — dense body; same size as text-xs */
   --text-fine-print--line-height: 1.4;
   --text-fine-print--letter-spacing: -0.12px;
   /* radius */
@@ -440,8 +461,15 @@
   }
 
   /* ── Interactive transitions ── */
-  button, a, [role="button"] {
-    transition: background-color 0.2s ease, color 0.15s ease, box-shadow 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+  button,
+  a,
+  [role="button"] {
+    transition:
+      background-color 0.2s ease,
+      color 0.15s ease,
+      box-shadow 0.2s ease,
+      transform 0.15s ease,
+      opacity 0.2s ease;
   }
 
   /* Table row hover */
@@ -450,35 +478,64 @@
   }
 
   /* Input focus */
-  input, textarea, select, [data-slot="combobox-trigger"] {
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  input,
+  textarea,
+  select,
+  [data-slot="combobox-trigger"] {
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
   }
 
   /* Card / panel hover */
-  [data-slot="data-grid"], [data-slot="card"] {
-    transition: box-shadow 0.25s ease, border-color 0.2s ease;
+  [data-slot="data-grid"],
+  [data-slot="card"] {
+    transition:
+      box-shadow 0.25s ease,
+      border-color 0.2s ease;
   }
 }
 
 /* ── Keyframe animations ── */
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(0.5rem); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-0.375rem); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.375rem);
+  }
 }
 
 @keyframes pulse-soft {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .animate-fade-in-up {
@@ -486,8 +543,14 @@
 }
 
 @keyframes fade-in-left {
-  from { opacity: 0; transform: translateX(1rem); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .animate-fade-in-left {
@@ -570,6 +633,39 @@
   background: var(--background);
 }
 
+/* DataGrid: แถวย่อย (หมายเหตุ footer / แถวที่กางออก) เป็นส่วนหนึ่งของรายการเดียวกับแถวแม่
+   ชี้ตรงไหนของรายการก็ไฮไลต์ทั้งก้อน และแถวย่อยของแถวที่ถูกเลือกได้สีเลือกตาม
+   ลำดับใน DOM คือ data-row → footer? → expanded? จึงต้องมองไกลสุดสองแถว
+
+   ทั้งหมดอยู่นอก @layer จึงชนะ utility ของ Tailwind (bg-row-stripe ฯลฯ) และห่อด้วย
+   :where() ให้ specificity เป็น 0 ทุกตัว — ลำดับในไฟล์ตัดสินแทน: selected มาหลัง hover
+   จึงชนะ เหมือน `data-[state=selected]:` ชนะ `hover:` บนแถวแม่
+   ตั้ง --row-tint ด้วย ให้ cell ที่ปักหมุดได้สีตาม (ดู PINNED_BODY_CELL) */
+:where([data-slot="data-grid-table"] > tbody)
+  > :where(
+    tr[data-row-child]:hover,
+    tr[data-slot="data-row"]:hover + tr[data-row-child],
+    tr[data-slot="data-row"]:hover + tr[data-row-child] + tr[data-row-child],
+    tr[data-row-child]:hover + tr[data-row-child],
+    tr[data-slot="data-row"]:has(+ tr[data-row-child]:hover),
+    tr[data-slot="data-row"]:has(
+        + tr[data-row-child] + tr[data-row-child]:hover
+      ),
+    tr[data-row-child]:has(+ tr[data-row-child]:hover)
+  ) {
+  --row-tint: var(--row-hover);
+  background-color: var(--row-hover);
+}
+:where([data-slot="data-grid-table"] > tbody)
+  > :where(
+    tr[data-state="selected"],
+    tr[data-state="selected"] + tr[data-row-child],
+    tr[data-state="selected"] + tr[data-row-child] + tr[data-row-child]
+  ) {
+  --row-tint: var(--selected);
+  background-color: var(--selected);
+}
+
 /* Badge inside DataGrid table: compact size.
    8px is the sanctioned micro-grid floor from docs/DESIGN.md (`micro-eyebrow`
    "compresses to 8px in the tightest micro-grid cells") — now referenced as a
@@ -581,7 +677,8 @@
    แก้ prop `size` ที่คอมโพเนนต์จึงไม่มีผลอะไรเลยในตาราง (มีผลแต่ใน card view)
    โดยไม่มีอะไรฟ้อง — ชิปสถานะจึงขอออกจากกฎนี้ แล้วไปคุมขนาดที่คอมโพเนนต์ตัวเอง */
 /* Accounting config chips opt into the component size rather than the micro-grid floor. */
-[data-slot="data-grid-table"] [data-slot="badge"]:not([data-status-chip]):not([data-standard-chip]) {
+[data-slot="data-grid-table"]
+  [data-slot="badge"]:not([data-status-chip]):not([data-standard-chip]) {
   font-size: var(--text-micro-floor);
   line-height: 1;
   height: 0.875rem;
