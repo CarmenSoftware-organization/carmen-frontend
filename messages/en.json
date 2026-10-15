@@ -2725,7 +2725,13 @@
       "deleteTitle": "Delete Certification",
       "deleteConfirm": "Are you sure you want to delete certification \"{name}\"? This action cannot be undone.",
       "codePlaceholder": "e.g. ISO-9001",
-      "namePlaceholder": "e.g. ISO 9001 Quality Management"
+      "namePlaceholder": "e.g. ISO 9001 Quality Management",
+      "vendorsHolding": "Vendors holding",
+      "expiringCount": "{count} expiring",
+      "expiredCount": "{count} expired",
+      "expiringSoonCol": "Expiring (30 days)",
+      "expiredCol": "Expired",
+      "noHolders": "None"
     },
     "title": "Vendor Management",
     "dashboard": {

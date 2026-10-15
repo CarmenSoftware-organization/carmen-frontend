@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/data-grid/columns";
 import { useProfile } from "@/hooks/use-profile";
 import type { Certification } from "@/types/certification";
+import { CertificationHoldings } from "./certification-holdings";
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 
@@ -31,6 +32,7 @@ export function useCertificationTable({
   onDelete,
 }: UseCertificationTableOptions) {
   const tfl = useTranslations("field");
+  const t = useTranslations("vendorManagement.certification");
   const { dateTimeFormat } = useProfile();
   const columns: ColumnDef<Certification>[] = [
     {
@@ -40,7 +42,7 @@ export function useCertificationTable({
       ),
       cell: ({ row }) => (
         <CellAction onClick={() => onEdit(row.original)}>
-          <span className="text-xs">{row.getValue("code")}</span>
+          {row.getValue("code")}
         </CellAction>
       ),
       meta: { headerTitle: tfl("code"), skeleton: columnSkeletons.text },
@@ -52,6 +54,36 @@ export function useCertificationTable({
       ),
       cell: ({ row }) => <span>{row.getValue("name") || "..."}</span>,
       meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
+    },
+    {
+      accessorKey: "description",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={tfl("description")} />
+      ),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">
+          {row.original.description || "—"}
+        </span>
+      ),
+      enableSorting: false,
+      meta: {
+        headerTitle: tfl("description"),
+        skeleton: columnSkeletons.text,
+      },
+    },
+    {
+      // นับฝั่ง server ต่อหน้า ไม่ใช่คอลัมน์ใน DB จึงเรียงไม่ได้
+      id: "vendor_count",
+      accessorFn: (row) => row.vendor_count,
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={t("vendorsHolding")} />
+      ),
+      cell: ({ row }) => <CertificationHoldings item={row.original} />,
+      enableSorting: false,
+      meta: {
+        headerTitle: t("vendorsHolding"),
+        skeleton: columnSkeletons.textShort,
+      },
     },
     statusColumn<Certification>(tfl),
     ...auditColumns<Certification>(tfl, dateTimeFormat),
