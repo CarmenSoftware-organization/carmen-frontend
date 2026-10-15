@@ -41,6 +41,9 @@ export interface Vendor {
   // ยืนยันจาก live list+detail: tax_profile เป็น {id,name} เหมือนกันทั้งคู่
   // (ของเดิมไม่เคยประกาศ tax_profile_id/tax_profile_name แบบ flat ใน type นี้เลย)
   tax_profile: EntityRef | null;
+  // list ส่งแบบ flat (VendorListItemResponseSchema) — detail ไม่ได้ใช้สองตัวนี้
+  credit_term_name?: string | null;
+  credit_term_days?: number | null;
   contacts?: VendorContact[];
   tb_vendor_contact?: VendorContact[];
   audit?: Audit;
