@@ -12,8 +12,8 @@ import { formatCurrency } from "@/lib/currency-utils";
 import {
   auditColumns,
   columnSkeletons,
-  sendbackColumn,
 } from "@/components/ui/data-grid/columns";
+import { PoSendBackHint } from "./po-send-back-hint";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { PO_STATUS_CONFIG, PO_TYPE_CONFIG } from "@/constant/purchase-order";
 
@@ -35,7 +35,7 @@ export function usePoTable({
   onDelete,
 }: UsePoTableOptions) {
   const tfl = useTranslations("field");
-  const tc = useTranslations("common");
+  const t = useTranslations("procurement.purchaseOrder");
   const { dateFormat, dateTimeFormat } = useProfile();
 
   const columns: ColumnDef<PurchaseOrder>[] = [
@@ -44,53 +44,52 @@ export function usePoTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("poNo")} />
       ),
-      cell: ({ row }) => (
-        <CellAction onClick={() => onEdit(row.original)}>
-          {row.getValue("po_no")}
-        </CellAction>
-      ),
-      size: 140,
+      // ป้าย "ส่งกลับ" ต่อท้ายเลขที่แทนคอลัมน์ของตัวเอง (ท่าเดียวกับ PR list) —
+      // hover ป้ายเพื่อดูเหตุผล · ชนิดใบเป็นบรรทัดรอง แทนคอลัมน์ Type ที่กินที่
+      // 100px เพื่อให้ตารางพอดีจอ 1366px · ชนิดใบไม่มีสี สีสงวนไว้ให้สถานะ
+      // data-slot ให้ rowClamp ของ DataGrid ข้ามกล่องนี้
+      cell: ({ row }) => {
+        const type = row.original.po_type ?? PO_TYPE.MANUAL;
+        const typeConfig =
+          PO_TYPE_CONFIG[type] ?? PO_TYPE_CONFIG[PO_TYPE.MANUAL];
+        return (
+          <div data-slot="cell-stack" className="flex flex-col items-start">
+            <div className="flex items-center gap-1.5">
+              <CellAction onClick={() => onEdit(row.original)}>
+                {row.getValue("po_no")}
+              </CellAction>
+              <PoSendBackHint
+                poId={row.original.id}
+                lastAction={row.original.last_action}
+              />
+            </div>
+            <span className="text-muted-foreground text-xs">
+              {typeConfig.label}
+            </span>
+          </div>
+        );
+      },
+      // 225 = เลขที่ยาว (108px) + ป้าย SEND BACK (85px) + padding เซลล์ 24px
+      // ไม่ถูกตัดที่ 1366px — ตารางนี้ไม่ถูกยืดเหมือน PR list size จึงต้องพอเอง
+      size: 225,
       meta: { headerTitle: tfl("poNo"), skeleton: columnSkeletons.text },
     },
-    sendbackColumn<PurchaseOrder>(tc("sendBack")),
     {
       id: "vendor_name",
       accessorFn: (row) => row.vendor?.name,
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("vendor")} />
       ),
-      size: 200,
-      meta: { headerTitle: tfl("vendor"), skeleton: columnSkeletons.text },
-    },
-    {
-      id: "po_type",
-      accessorFn: (row) => row.po_type,
-      header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("poType")}
-          className="justify-center"
-        />
+      cell: ({ row }) => (
+        <span
+          className="block truncate"
+          title={row.original.vendor?.name ?? undefined}
+        >
+          {row.original.vendor?.name}
+        </span>
       ),
-      cell: ({ row }) => {
-        const type = row.original.po_type ?? PO_TYPE.MANUAL;
-        const config = PO_TYPE_CONFIG[type] ?? PO_TYPE_CONFIG[PO_TYPE.MANUAL];
-        return (
-          <StatusIconLabel
-            status={type}
-            label={config.label}
-            // ชนิดใบไม่มีสี — สีสงวนไว้ให้สถานะซึ่งเป็นสิ่งที่คนกวาดตาหาจริง ๆ
-            className="text-muted-foreground flex w-full justify-center"
-          />
-        );
-      },
       size: 160,
-      meta: {
-        headerTitle: tfl("poType"),
-        skeleton: columnSkeletons.text,
-        cellClassName: "text-center",
-        headerClassName: "text-center",
-      },
+      meta: { headerTitle: tfl("vendor"), skeleton: columnSkeletons.text },
     },
     {
       // คนที่เปิดใบสั่งซื้อใบนี้ — ใบเดียวกันคนละคนสั่งคนละเงื่อนไข ต้องรู้ว่าจะไป
@@ -100,10 +99,13 @@ export function usePoTable({
       // · ไม่เรียงลำดับเพราะ audit เป็น object ซ้อน backend เรียงให้ไม่ได้
       id: "created_by",
       accessorFn: (row) => row.audit?.created?.name ?? "",
-      size: 180,
+      size: 110,
       header: tfl("buyer"),
       cell: ({ row }) => (
-        <span className="text-muted-foreground">
+        <span
+          className="text-muted-foreground block truncate"
+          title={row.original.audit?.created?.name ?? undefined}
+        >
           {row.original.audit?.created?.name || "—"}
         </span>
       ),
@@ -122,8 +124,27 @@ export function usePoTable({
           className="justify-center"
         />
       ),
-      size: 100,
-      cell: ({ row }) => formatDate(row.getValue("order_date"), dateFormat),
+      // 140 ให้บรรทัดรอง "Delivery 2026-04-09" ไม่ถูกตัด
+      size: 140,
+      // วันที่ส่งเป็นบรรทัดรองแทนคอลัมน์แยก ให้ตารางพอดีจอ 1366px
+      cell: ({ row }) => {
+        const { delivery_date } = row.original;
+        return (
+          <div data-slot="cell-stack" className="flex flex-col">
+            <span>{formatDate(row.getValue("order_date"), dateFormat)}</span>
+            {delivery_date && (
+              <span
+                className="text-muted-foreground text-xs"
+                title={tfl("deliveryDate")}
+              >
+                {t("deliveryOn", {
+                  date: formatDate(delivery_date, dateFormat),
+                })}
+              </span>
+            )}
+          </div>
+        );
+      },
       meta: {
         headerTitle: tfl("orderDate"),
         skeleton: columnSkeletons.text,
@@ -131,50 +152,33 @@ export function usePoTable({
       },
     },
     {
-      accessorKey: "delivery_date",
-      header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("deliveryDate")}
-          className="justify-center"
-        />
-      ),
-      size: 100,
-      cell: ({ row }) => formatDate(row.getValue("delivery_date"), dateFormat),
-      meta: {
-        headerTitle: tfl("deliveryDate"),
-        skeleton: columnSkeletons.text,
-        cellClassName: "text-center",
-      },
-    },
-    {
       accessorKey: "po_status",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("status")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
-      size: 120,
+      size: 140,
+      // ชื่อ stage เป็นบรรทัดรองของสถานะ (ท่าเดียวกับ PR list)
       cell: ({ row }) => {
-        const status = row.original.po_status;
+        const { po_status: status, workflow_current_stage: stage } =
+          row.original;
         const config = PO_STATUS_CONFIG[status];
         return (
-          <StatusIconLabel
-            status={status}
-            label={config?.label ?? status}
-            // คอลัมน์นี้จัดกลาง — label เป็น inline-flex ซึ่ง `text-center`
-            // ของเซลล์เอื้อมไม่ถึงเมื่ออยู่ในกล่อง clamp ของ DataGrid
-            className="flex w-full justify-center"
-          />
+          <div data-slot="cell-stack" className="flex min-w-0 flex-col">
+            <StatusIconLabel status={status} label={config?.label ?? status} />
+            {stage && (
+              <span
+                className="text-muted-foreground truncate text-xs"
+                title={stage}
+              >
+                {stage}
+              </span>
+            )}
+          </div>
         );
       },
       meta: {
         headerTitle: tfl("status"),
         skeleton: columnSkeletons.text,
-        cellClassName: "text-center",
-        headerClassName: "text-center",
       },
     },
     {
@@ -191,7 +195,7 @@ export function usePoTable({
         const currency = row.original.currency?.code;
         if (amount == null) return <span></span>;
         return (
-          <span className="font-medium tabular-nums">
+          <span className="font-medium whitespace-nowrap tabular-nums">
             {formatCurrency(amount)}
             {currency && (
               <span className="text-muted-foreground ms-1 text-xs font-normal">
@@ -201,6 +205,7 @@ export function usePoTable({
           </span>
         );
       },
+      size: 130,
       meta: {
         headerTitle: tfl("totalAmount"),
         skeleton: columnSkeletons.text,
