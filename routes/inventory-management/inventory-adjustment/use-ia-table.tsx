@@ -24,7 +24,9 @@ import {
   IA_TYPE_CONFIG,
   IA_TYPE_ICON,
   IA_TYPE_ICON_COLOR,
+  IA_TYPE_SIGN,
 } from "@/constant/inventory-adjustment";
+import { cn } from "@/lib/utils";
 
 interface UseInventoryAdjustmentTableOptions {
   items: InventoryAdjustment[];
@@ -59,6 +61,7 @@ export function useInventoryAdjustmentTable({
           {row.original.si_no ?? row.original.so_no}
         </CellAction>
       ),
+      size: 160,
       meta: {
         headerTitle: tfl("adjustment"),
         skeleton: columnSkeletons.text,
@@ -79,6 +82,7 @@ export function useInventoryAdjustmentTable({
           row.original.si_date ?? row.original.so_date ?? "",
           dateFormat,
         ),
+      size: 110,
       meta: {
         headerTitle: tfl("date"),
         skeleton: columnSkeletons.text,
@@ -93,14 +97,17 @@ export function useInventoryAdjustmentTable({
         const config = IA_TYPE_CONFIG[type];
         const Icon = IA_TYPE_ICON[type];
         return (
-          <Badge size="sm" className={config?.className}>
+          // data-standard-chip: ขอออกจากกฎย่อ badge ในตารางเหลือ 8px (globals.css)
+          // ทิศทางคือข้อมูลหลักของแถว ต้องอ่านออกที่ขนาดปกติ
+          <Badge data-standard-chip="" size="sm" className={config?.className}>
             {Icon && (
               <Icon className={IA_TYPE_ICON_COLOR[type]} aria-hidden="true" />
             )}
-            {config?.label ?? type}
+            {type === "stock-in" ? tfl("stockIn") : tfl("stockOut")}
           </Badge>
         );
       },
+      size: 130,
       meta: {
         headerTitle: tfl("type"),
         skeleton: columnSkeletons.badge,
@@ -114,6 +121,7 @@ export function useInventoryAdjustmentTable({
         <DataGridColumnHeader column={column} title={tfl("location")} />
       ),
       enableSorting: false,
+      size: 130,
       meta: { headerTitle: tfl("location"), skeleton: columnSkeletons.text },
     },
     {
@@ -122,16 +130,18 @@ export function useInventoryAdjustmentTable({
         <DataGridColumnHeader column={column} title={tfl("reason")} />
       ),
       enableSorting: false,
+      size: 180,
       meta: { headerTitle: tfl("reason"), skeleton: columnSkeletons.text },
     },
     {
       accessorKey: "item_count",
       header: tfl("items"),
+      size: 70,
       meta: {
         headerTitle: tfl("items"),
         skeleton: columnSkeletons.text,
-        cellClassName: "text-center",
-        headerClassName: "text-center",
+        cellClassName: "text-right tabular-nums",
+        headerClassName: "text-right",
       },
     },
     {
@@ -149,6 +159,7 @@ export function useInventoryAdjustmentTable({
           />
         );
       },
+      size: 120,
       meta: {
         headerTitle: tfl("status"),
         skeleton: columnSkeletons.badge,
@@ -159,16 +170,29 @@ export function useInventoryAdjustmentTable({
     {
       accessorKey: "base_total_cost",
       header: tfl("total"),
-      cell: ({ row }) => (
-        <p className="font-medium">
-          {formatAmount(row.original.base_total_cost, amountFormat)}
-          {defaultCurrencyCode && (
-            <span className="text-muted-foreground ms-1 text-xs font-normal">
-              {defaultCurrencyCode}
-            </span>
-          )}
-        </p>
-      ),
+      cell: ({ row }) => {
+        // ทิศทางอยู่ที่ตัวเลขเอง (+ เข้า / − ออก) ไม่ต้องเหลือบกลับไปดูคอลัมน์ Type
+        // ยอด 0 (ร่างที่ยังไม่มีต้นทุน) ไม่ใส่เครื่องหมาย ไม่ลงสี
+        const type = getAdjustmentType(row.original);
+        const total = Number(row.original.base_total_cost) || 0;
+        return (
+          <p
+            className={cn(
+              "font-medium tabular-nums",
+              total !== 0 && IA_TYPE_ICON_COLOR[type],
+            )}
+          >
+            {total !== 0 && IA_TYPE_SIGN[type]}
+            {formatAmount(row.original.base_total_cost, amountFormat)}
+            {defaultCurrencyCode && (
+              <span className="text-muted-foreground ms-1 text-xs font-normal">
+                {defaultCurrencyCode}
+              </span>
+            )}
+          </p>
+        );
+      },
+      size: 140,
       meta: {
         headerTitle: tfl("total"),
         skeleton: columnSkeletons.text,

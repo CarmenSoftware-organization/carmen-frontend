@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { PrintDocumentButton } from "@/components/print-document-button";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { Badge } from "@/components/ui/badge";
 import {
   IA_STATUS_CONFIG,
+  IA_TYPE_CONFIG,
   IA_TYPE_ICON,
 } from "@/constant/inventory-adjustment";
 import type {
@@ -69,9 +71,13 @@ export function IaFormHero({
 
   // เบากว่าในตาราง: ตัวเอกของแถบนี้คือเลขที่ใบ สถานะเป็นข้อมูลประกอบ เหลือสีไว้ที่
   // ไอคอนจุดเดียวซึ่งเป็นสัญญาณที่ต้องเห็นจริง ๆ (ทรงเดียวกับ PR/PO/GRN/CN/SR)
+  // ป้ายทิศ (รับเข้า/จ่ายออก) นำหน้า — เลขที่ SI/SO บอกทิศได้เฉพาะคนที่จำ prefix ได้
   const badges =
     statusConfig && inventoryAdjustment ? (
       <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3">
+        <Badge size="sm" className={IA_TYPE_CONFIG[adjustmentType]?.className}>
+          {typeLabel}
+        </Badge>
         <StatusIconLabel
           status={inventoryAdjustment.doc_status}
           label={statusConfig.label}

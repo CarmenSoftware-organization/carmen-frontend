@@ -11,7 +11,8 @@ import { formatDate } from "@/lib/date-utils";
 import { formatAmount } from "@/lib/currency-utils";
 import {
   IA_STATUS_CONFIG,
-  IA_TYPE_CONFIG,
+  IA_TYPE_ICON_COLOR,
+  IA_TYPE_SIGN,
 } from "@/constant/inventory-adjustment";
 import {
   getAdjustmentType,
@@ -34,14 +35,14 @@ export default function IaCard({ item, onEdit, onDelete }: IaCardProps) {
   const docDate = isStockIn ? item.si_date : item.so_date;
   const statusConfig =
     IA_STATUS_CONFIG[item.doc_status] ?? IA_STATUS_CONFIG.draft;
-  const typeConfig = IA_TYPE_CONFIG[typeKey];
   const itemCount =
     item.item_count ??
     (isStockIn ? item.stock_in_detail : item.stock_out_detail)?.length ??
     0;
 
-  // สีของ type ปรากฏครั้งเดียวต่อการ์ด — ที่ label type ตัวเดียว
-  const accentText = isStockIn ? "text-success-ink" : "text-destructive";
+  // หมึกตามทิศ ใช้ชุดเดียวกับตาราง: ป้าย type + ยอดรวมที่มีเครื่องหมาย (ยอด 0 ไม่ลงสี)
+  const accentText = IA_TYPE_ICON_COLOR[typeKey];
+  const total = Number(item.base_total_cost) || 0;
 
   return (
     <ListCard
@@ -57,13 +58,11 @@ export default function IaCard({ item, onEdit, onDelete }: IaCardProps) {
           </span>
         </ListCardRow>
       )}
-      {typeConfig?.label && (
-        <ListCardRow label={tfl("type")}>
-          <span className={cn("font-semibold uppercase", accentText)}>
-            {typeConfig.label}
-          </span>
-        </ListCardRow>
-      )}
+      <ListCardRow label={tfl("type")}>
+        <span className={cn("font-semibold", accentText)}>
+          {isStockIn ? tfl("stockIn") : tfl("stockOut")}
+        </span>
+      </ListCardRow>
       {item.adjustment_type_name && (
         <ListCardRow label={tfl("reason")}>
           {item.adjustment_type_name}
@@ -76,7 +75,13 @@ export default function IaCard({ item, onEdit, onDelete }: IaCardProps) {
         <span className="tabular-nums">{itemCount}</span>
       </ListCardRow>
       <ListCardRow label={tfl("total")}>
-        <span className="font-semibold tabular-nums">
+        <span
+          className={cn(
+            "font-semibold tabular-nums",
+            total !== 0 && accentText,
+          )}
+        >
+          {total !== 0 && IA_TYPE_SIGN[typeKey]}
           {formatAmount(item.base_total_cost, amountFormat)}
           {defaultCurrencyCode && (
             <span className="text-muted-foreground ml-1 font-normal">
