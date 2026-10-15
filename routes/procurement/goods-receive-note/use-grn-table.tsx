@@ -41,7 +41,10 @@ export function useGrnTable({
         <DataGridColumnHeader column={column} title={tfl("grnNo")} />
       ),
       cell: ({ row }) => (
-        <CellAction onClick={() => onEdit(row.original)}>
+        <CellAction
+          onClick={() => onEdit(row.original)}
+          className="whitespace-nowrap"
+        >
           {row.original.grn_no}
         </CellAction>
       ),
@@ -53,7 +56,7 @@ export function useGrnTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("vendor")} />
       ),
-      size: 240,
+      size: 165,
       meta: { headerTitle: tfl("vendor") },
     },
     {
@@ -66,9 +69,10 @@ export function useGrnTable({
         />
       ),
       cell: ({ row }) => formatDate(row.getValue("grn_date"), dateFormat),
+      size: 125,
       meta: {
         headerTitle: tfl("grnDate"),
-        cellClassName: "text-center",
+        cellClassName: "text-center whitespace-nowrap tabular-nums",
       },
     },
     {
@@ -76,7 +80,27 @@ export function useGrnTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("invoiceNo")} />
       ),
-      size: 150,
+      // วันที่ใบแจ้งหนี้ซ้อนใต้เลขในเซลล์เดียว — สองค่านี้คือหลักฐานชิ้นเดียวกันจากผู้ขาย
+      // คนเทียบกับกระดาษพร้อมกันอยู่แล้ว และคืนที่ให้ GRN No./Status ไม่ถูกบีบจนตัดคำที่
+      // 1366 (คอลัมน์ invoice_date ยังอยู่ แค่ซ่อนเป็นค่าเริ่มต้น สำหรับคนที่อยากเรียง)
+      cell: ({ row }) => {
+        const invoiceNo = row.original.invoice_no;
+        const invoiceDate = formatDate(row.original.invoice_date, dateFormat);
+        if (!invoiceNo && !invoiceDate) return null;
+        return (
+          <div className="min-w-0">
+            <span className="block truncate" title={invoiceNo || undefined}>
+              {invoiceNo || "—"}
+            </span>
+            {invoiceDate && (
+              <span className="text-muted-foreground block text-xs tabular-nums">
+                {invoiceDate}
+              </span>
+            )}
+          </div>
+        );
+      },
+      size: 190,
       meta: { headerTitle: tfl("invoiceNo") },
     },
     {
@@ -120,7 +144,8 @@ export function useGrnTable({
           />
         );
       },
-      size: 160,
+      // กว้างพอให้ COMMITTED ไม่ถูกตัด — สถานะเป็นสิ่งเดียวในแถวที่คนกวาดตาหา
+      size: 140,
       meta: {
         headerTitle: tfl("status"),
         cellClassName: "text-center",
@@ -146,7 +171,8 @@ export function useGrnTable({
           />
         );
       },
-      size: 160,
+      // พอสำหรับ "Purchase Order" ซึ่งยาวกว่า Manual
+      size: 130,
       meta: {
         headerTitle: tfl("type"),
         cellClassName: "text-center",
@@ -158,10 +184,13 @@ export function useGrnTable({
       // ไม่เรียงลำดับเพราะ audit เป็น object ซ้อน backend เรียงให้ไม่ได้
       id: "created_by",
       accessorFn: (row) => row.audit?.created?.name ?? "",
-      size: 160,
+      size: 115,
       header: tfl("receivedBy"),
       cell: ({ row }) => (
-        <span className="text-muted-foreground">
+        <span
+          className="text-muted-foreground block truncate"
+          title={row.original.audit?.created?.name || undefined}
+        >
           {row.original.audit?.created?.name || "—"}
         </span>
       ),
@@ -196,7 +225,7 @@ export function useGrnTable({
         headerTitle: tfl("totalAmount"),
         cellClassName: "text-right",
       },
-      size: 200,
+      size: 135,
     },
 
     ...auditColumns<GoodsReceiveNote>(tfl, dateTimeFormat),
@@ -211,7 +240,11 @@ export function useGrnTable({
     onDelete,
     hideStatus: true,
     initialState: {
-      columnVisibility: { created_at: false, updated_at: false },
+      columnVisibility: {
+        invoice_date: false,
+        created_at: false,
+        updated_at: false,
+      },
     },
     activity: { id: (r) => r.id, label: (r) => r.grn_no },
   });
