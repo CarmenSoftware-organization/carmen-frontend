@@ -14,6 +14,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useAttachmentPolicy } from "@/hooks/use-attachment-policy";
+import { maxBytesOf, typesLabel } from "@/lib/attachment-policy";
 
 export interface SavedEvidenceImage {
   id: string;
@@ -58,9 +60,6 @@ interface EvidenceImage {
   size: number;
 }
 
-const MAX_BYTES = 3 * 1024 * 1024; // 3 MB
-const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
-
 const formatBytes = (bytes: number) => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
@@ -79,6 +78,17 @@ export function EntryNotesDialog({
 }: EntryNotesDialogProps) {
   const t = useTranslations("inventoryManagement.entryDialogs");
   const tc = useTranslations("common");
+  const policy = useAttachmentPolicy(open);
+  // UI นี้แสดง thumbnail — รับแค่รูปที่นโยบายของ BU เปิดไว้ ขนาดตามนโยบาย (เดิมตายตัว 3MB)
+  const imageMimes = policy.mime_types.filter((m) => m.startsWith("image/"));
+  const imagesAllowed = imageMimes.length > 0;
+  const imageTypes = typesLabel({
+    ...policy,
+    extensions: policy.extensions.filter((e) =>
+      /^\.(jpe?g|png|webp|gif|bmp|heic|heif|avif)$/i.test(e),
+    ),
+  });
+  const maxBytes = maxBytesOf(policy);
   const [note, setNote] = useState(defaultNote);
   const [images, setImages] = useState<EvidenceImage[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -104,16 +114,18 @@ export function EntryNotesDialog({
     if (!fileList || fileList.length === 0) return;
     const accepted: EvidenceImage[] = [];
     for (const file of Array.from(fileList)) {
-      if (!file.type.startsWith("image/")) {
+      if (!imageMimes.includes(file.type.toLowerCase())) {
         toast.warning(t("evidenceNotImage", { name: file.name }));
         continue;
       }
-      if (file.size > MAX_BYTES) {
-        toast.warning(t("evidenceTooLarge", { name: file.name }));
+      if (file.size > maxBytes) {
+        toast.warning(
+          t("evidenceTooLarge", { name: file.name, max: policy.max_size_mb }),
+        );
         continue;
       }
       accepted.push({
-        id: `${file.name}-${file.size}-${file.lastModified}-${Math.random()}`,
+        id: `${file.name}-${file.size}-${file.lastModified}-${crypto.randomUUID()}`,
         file,
         url: URL.createObjectURL(file),
         size: file.size,
@@ -228,7 +240,7 @@ export function EntryNotesDialog({
             <input
               ref={inputRef}
               type="file"
-              accept={ACCEPT}
+              accept={imageMimes.join(",")}
               multiple
               className="hidden"
               onChange={handleFileChange}
@@ -238,13 +250,14 @@ export function EntryNotesDialog({
             {/* Dropzone */}
             <button
               type="button"
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
+              disabled={!imagesAllowed}
+              onDrop={imagesAllowed ? handleDrop : undefined}
+              onDragOver={imagesAllowed ? handleDragOver : undefined}
+              onDragLeave={imagesAllowed ? handleDragLeave : undefined}
               onClick={() => inputRef.current?.click()}
               aria-label={t("evidenceHint")}
               className={cn(
-                "flex w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed py-5 transition-colors",
+                "flex w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed py-5 transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                 isDragging
                   ? "border-primary bg-primary/15"
                   : "border-primary/30 bg-primary/5 hover:border-primary hover:bg-primary/10",
@@ -252,11 +265,18 @@ export function EntryNotesDialog({
             >
               <ImagePlus className="text-primary size-5" aria-hidden="true" />
               <span className="text-foreground/80 text-micro font-semibold">
-                {t("evidenceHint")}
+                {imagesAllowed
+                  ? t("evidenceHint")
+                  : t("evidenceImagesNotAllowed")}
               </span>
-              <span className="text-muted-foreground text-micro-legal">
-                {t("evidenceMaxSize")}
-              </span>
+              {imagesAllowed && (
+                <span className="text-muted-foreground text-micro-legal">
+                  {t("evidenceMaxSize", {
+                    max: policy.max_size_mb,
+                    types: imageTypes,
+                  })}
+                </span>
+              )}
             </button>
 
             {/* Preview grid */}

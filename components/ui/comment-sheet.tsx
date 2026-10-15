@@ -30,6 +30,14 @@ import {
 } from "@/components/ui/image-lightbox";
 import { formatDate } from "@/lib/date-utils";
 import EmptyComponent from "@/components/empty-component";
+import {
+  DEFAULT_ATTACHMENT_POLICY,
+  acceptFor,
+  isFileAllowed,
+  maxBytesOf,
+  typesLabel,
+  type AttachmentPolicy,
+} from "@/lib/attachment-policy";
 import { safeImageSrc, safeNavigationHref, sanitizeUrl } from "@/lib/utils";
 
 export interface CommentAttachment {
@@ -85,21 +93,9 @@ interface CommentSheetProps {
   readonly isDeleting: boolean;
   readonly onUploadFile?: (file: File) => Promise<CommentAttachment>;
   readonly directFileUpload?: boolean;
+  /** นโยบายไฟล์แนบของ BU — ไม่ส่ง = ค่าเริ่มต้น */
+  readonly attachmentPolicy?: AttachmentPolicy;
 }
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-// ต้องตรงกับ ALLOWED_MIME_TYPES ของ comment controller ทุกตัวใน backend-gateway
-// (jpeg/png/webp/gif/pdf) — เดิมรายการนี้มี text/plain กับ text/csv ที่ backend ไม่รับ
-// ไฟล์เลยผ่านด่านนี้ไปโดน 400 ไม่มีรหัส แล้ว toast ขึ้น "กรอกไม่ถูกต้อง" ที่ไม่บอกอะไร
-const ALLOWED_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/gif",
-  "image/webp",
-  "application/pdf",
-]);
-/** ตัวกรองของ file picker — ชุดเดียวกับ ALLOWED_TYPES (`image/*` จะเปิดให้เลือก heic/svg ที่ไม่รับ) */
-const ACCEPT = [...ALLOWED_TYPES].join(",");
 
 const getFullName = (c: CommentItem) => c.audit?.created?.name ?? "";
 
@@ -307,6 +303,7 @@ export function CommentSheet({
   isDeleting,
   onUploadFile,
   directFileUpload,
+  attachmentPolicy = DEFAULT_ATTACHMENT_POLICY,
 }: CommentSheetProps) {
   const t = useTranslations("commentSheet");
   const tc = useTranslations("common");
@@ -347,10 +344,20 @@ export function CommentSheet({
 
     const validFiles: File[] = [];
     for (const file of Array.from(files)) {
-      if (!ALLOWED_TYPES.has(file.type)) {
-        toast.warning(t("fileNotAllowed", { name: file.name }));
-      } else if (file.size > MAX_FILE_SIZE) {
-        toast.warning(t("fileTooLarge", { name: file.name }));
+      if (!isFileAllowed(file, attachmentPolicy)) {
+        toast.warning(
+          t("fileNotAllowed", {
+            name: file.name,
+            types: typesLabel(attachmentPolicy),
+          }),
+        );
+      } else if (file.size > maxBytesOf(attachmentPolicy)) {
+        toast.warning(
+          t("fileTooLarge", {
+            name: file.name,
+            max: attachmentPolicy.max_size_mb,
+          }),
+        );
       } else {
         validFiles.push(file);
       }
@@ -768,7 +775,7 @@ export function CommentSheet({
             ref={fileInputRef}
             type="file"
             multiple
-            accept={ACCEPT}
+            accept={acceptFor(attachmentPolicy)}
             className="hidden"
             onChange={handleFileSelect}
           />

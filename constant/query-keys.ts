@@ -8,6 +8,7 @@ export const QUERY_KEYS = {
   NOTIFICATION_TEMPLATES: "notification-templates",
   USER_ACTIVITY: "user-activity",
   ADJUSTMENT_TYPES: "adjustment-types",
+  ATTACHMENT_POLICY: "attachment-policy",
   APPROVAL_PENDING: "approval-pending",
   APPROVAL_PENDING_SUMMARY: "approval-pending-summary",
   APPLICATION_ROLES: "application-roles",
