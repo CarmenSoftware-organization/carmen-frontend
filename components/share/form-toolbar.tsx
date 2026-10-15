@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslations } from "use-intl";
-import { History, Pencil, Save, Trash2, X } from "lucide-react";
+import { History, MessageSquare, Pencil, Save, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { openActivity } from "@/components/share/activity-sheet-host";
 import { DocFormHeader } from "@/components/share/doc-form-header";
@@ -56,6 +56,8 @@ interface FormToolbarProps {
   readonly flush?: boolean;
   /** เปิดปุ่ม Activity — ไม่ส่ง = ไม่มีปุ่ม (เช่นโหมด add ที่ยังไม่มี id) */
   readonly activity?: { id: string; label?: string };
+  /** เปิดปุ่ม Comment — ไม่ส่ง = ไม่มีปุ่ม (เช่นโหมด add ที่ยังไม่มี id) */
+  readonly onComment?: () => void;
   /** แถวช่องข้อมูลใต้หัว ส่งต่อ `DocFormHeader.ribbon` (PR — ช่อง workflow/description) */
   readonly ribbon?: ReactNode;
 }
@@ -92,6 +94,7 @@ export function FormToolbar({
   permissionPrefix,
   flush = true,
   activity,
+  onComment,
   ribbon,
 }: FormToolbarProps) {
   const tc = useTranslations("common");
@@ -228,7 +231,13 @@ export function FormToolbar({
         </Button>
       )}
       {/* ประวัติเป็นการ "ดู" อยู่ท้ายกลุ่มถัดจากปุ่มที่เปลี่ยนข้อมูล — ลำดับเดียว
-          กับทุกหน้าเอกสารในแอป: Edit · Delete · Activity · Print */}
+          กับทุกหน้าเอกสารในแอป: Edit · Delete · Comment · Activity · Print */}
+      {onComment && (
+        <Button type="button" variant="outline" size="sm" onClick={onComment}>
+          <MessageSquare />
+          {tc("comment")}
+        </Button>
+      )}
       {activity && (
         <Button
           type="button"
