@@ -41,6 +41,7 @@ import { DataGridSortMenu } from "@/components/ui/data-grid/data-grid-sort-menu"
 import { CardSkeletonGrid } from "@/components/loader/card-skeleton";
 import { useRequestPriceListTable } from "./use-rfp-table";
 import RfpCard from "./rfp-card";
+import { countSubmitted } from "./rfp-window";
 import { useListFilters } from "@/hooks/use-list-filters";
 import { ViewSelector } from "@/components/list-filter/view-selector";
 import { ListFilter } from "@/components/list-filter/list-filter";
@@ -154,6 +155,11 @@ export default function RequestPriceListComponent() {
           {
             header: tfl("vendorCount"),
             value: (r) => r.vendor_count ?? 0,
+            width: 12,
+          },
+          {
+            header: tfl("submittedCount"),
+            value: (r) => countSubmitted(r.vendors),
             width: 12,
           },
           {

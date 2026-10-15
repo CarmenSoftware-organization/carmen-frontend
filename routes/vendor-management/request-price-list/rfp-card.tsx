@@ -1,6 +1,4 @@
-import { Users } from "lucide-react";
 import { useTranslations } from "use-intl";
-import { Badge } from "@/components/ui/badge";
 import {
   ListCard,
   ListCardAuditRows,
@@ -9,6 +7,7 @@ import {
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import type { RequestPriceList } from "@/types/request-price-list";
+import { RfpResponses, RfpWindowBadge } from "./rfp-list-cells";
 
 interface RfpCardProps {
   readonly item: RequestPriceList;
@@ -30,12 +29,7 @@ export default function RfpCard({ item, onEdit, onDelete }: RfpCardProps) {
   return (
     <ListCard
       title={item.name || "..."}
-      badge={
-        <Badge variant="secondary" size="xs" className="gap-1">
-          <Users aria-hidden="true" />
-          <span className="tabular-nums">{item.vendor_count}</span>
-        </Badge>
-      }
+      badge={<RfpWindowBadge item={item} />}
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}
     >
@@ -49,8 +43,8 @@ export default function RfpCard({ item, onEdit, onDelete }: RfpCardProps) {
           <span className="tabular-nums">{period}</span>
         </ListCardRow>
       )}
-      <ListCardRow label={tfl("vendorCount")}>
-        <span className="tabular-nums">{item.vendor_count}</span>
+      <ListCardRow label={tfl("responses")}>
+        <RfpResponses item={item} />
       </ListCardRow>
       <ListCardAuditRows audit={item.audit} />
     </ListCard>

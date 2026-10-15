@@ -1322,7 +1322,9 @@
     "overrideHintTax": "ติ๊กเพื่อกรอกยอดภาษีเอง แทนการคิดจากอัตราภาษี",
     "order": "สั่ง",
     "sequence": "ลำดับ",
-    "businessUnit": "หน่วยธุรกิจ"
+    "businessUnit": "หน่วยธุรกิจ",
+    "responses": "การตอบกลับ",
+    "submittedCount": "ตอบกลับแล้ว"
   },
   "lookup": {
     "resizeHint": "ลากเพื่อปรับขนาด · ดับเบิลคลิกเพื่อคืนขนาดเดิม",
@@ -3038,6 +3040,14 @@
         "sendPartial": "ส่งแล้ว แต่ที่อยู่เหล่านี้ถูกปฏิเสธ: {emails}",
         "unsavedRfp": "บันทึกคำขอก่อน จึงจะส่งให้ผู้ขายได้",
         "subjectBodyRequired": "หัวเรื่องและเนื้อความต้องไม่ว่าง"
+      },
+      "responsesOf": "{submitted} / {total}",
+      "responsesAria": "ผู้ขายตอบกลับ {submitted} จาก {total} ราย",
+      "window": {
+        "upcoming": "ยังไม่เปิดรับ",
+        "closed": "ปิดรับแล้ว",
+        "closesToday": "ปิดรับวันนี้",
+        "daysLeft": "เหลือ {count} วัน"
       }
     }
   },
