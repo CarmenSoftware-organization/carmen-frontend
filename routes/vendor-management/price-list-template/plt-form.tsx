@@ -110,6 +110,7 @@ export function PriceListTemplateForm({
 
   return (
     <FormPageShell
+      width="wide"
       header={
         <FormToolbar
           mode={mode}
@@ -151,18 +152,16 @@ export function PriceListTemplateForm({
         <SettingSection
           first
           title={tfl("general")}
-          description={t("generalDesc")}
+          description={t(isView ? "generalDescView" : "generalDesc")}
         >
           <div className="grid grid-cols-2 gap-4 sm:col-span-2">
-            {/* Name */}
-            <Field>
-              <FieldLabel htmlFor="plt-name">
-                {tfl("name")}
-                {!isView && <span className="text-destructive"> *</span>}
-              </FieldLabel>
-              {isView ? (
-                <FieldPlainText>{form.getValues("name")}</FieldPlainText>
-              ) : (
+            {/* Name — โหมดดูไม่แสดง แถบหัวมีชื่อเป็นตัวเอกอยู่แล้ว (ท่าเดียวกับหน้า price list) */}
+            {!isView && (
+              <Field>
+                <FieldLabel htmlFor="plt-name">
+                  {tfl("name")}
+                  <span className="text-destructive"> *</span>
+                </FieldLabel>
                 <FieldInput
                   id="plt-name"
                   placeholder={t("namePlaceholder")}
@@ -171,8 +170,8 @@ export function PriceListTemplateForm({
                   maxLength={100}
                   {...form.register("name")}
                 />
-              )}
-            </Field>
+              </Field>
+            )}
 
             {/* Currency */}
             <Field>
@@ -200,35 +199,39 @@ export function PriceListTemplateForm({
                 />
               )}
             </Field>
+
+            {/* Validity period — โหมดดูเหลือแค่ค่าสั้น ๆ จึงนั่งข้างสกุลเงินในแถวเดียวกัน */}
+            {isView && (
+              <Field>
+                <FieldLabel>{tfl("validityPeriod")}</FieldLabel>
+                <FieldPlainText>
+                  {watchedValidity
+                    ? t("daysSuffix", { count: watchedValidity })
+                    : null}
+                </FieldPlainText>
+              </Field>
+            )}
           </div>
 
-          {/* Validity period */}
-          <Field className="sm:col-span-2">
-            <FieldLabel>{tfl("validityPeriod")}</FieldLabel>
-            {isView ? (
-              <FieldPlainText>
-                {watchedValidity
-                  ? t("daysSuffix", { count: watchedValidity })
-                  : null}
-              </FieldPlainText>
-            ) : (
-              <>
-                <FieldDescription>{stepperLabels.hint}</FieldDescription>
-                <Controller
-                  control={form.control}
-                  name="validity_period"
-                  render={({ field }) => (
-                    <PltValidityStepper
-                      value={field.value}
-                      onChange={field.onChange}
-                      disabled={isDisabled}
-                      labels={stepperLabels}
-                    />
-                  )}
-                />
-              </>
-            )}
-          </Field>
+          {/* Validity period — โหมดแก้ใช้ stepper เต็มแถว */}
+          {!isView && (
+            <Field className="sm:col-span-2">
+              <FieldLabel>{tfl("validityPeriod")}</FieldLabel>
+              <FieldDescription>{stepperLabels.hint}</FieldDescription>
+              <Controller
+                control={form.control}
+                name="validity_period"
+                render={({ field }) => (
+                  <PltValidityStepper
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isDisabled}
+                    labels={stepperLabels}
+                  />
+                )}
+              />
+            </Field>
+          )}
 
           {/* Description */}
           <Field className="sm:col-span-2">
@@ -249,18 +252,10 @@ export function PriceListTemplateForm({
             )}
           </Field>
 
-          {/* Status */}
-          <Field className="sm:col-span-2">
-            <FieldLabel>{tfl("status")}</FieldLabel>
-            {isView ? (
-              <div>
-                <StatusIconLabel
-                  status={watchedStatus}
-                  label={tsStatus(watchedStatus)}
-                  className="uppercase"
-                />
-              </div>
-            ) : (
+          {/* Status — โหมดดูไม่แสดง แถบหัวมีสถานะอยู่แล้ว */}
+          {!isView && (
+            <Field className="sm:col-span-2">
+              <FieldLabel>{tfl("status")}</FieldLabel>
               <Controller
                 control={form.control}
                 name="status"
@@ -288,20 +283,28 @@ export function PriceListTemplateForm({
                   </FieldSelect>
                 )}
               />
-            )}
-          </Field>
+            </Field>
+          )}
         </SettingSection>
 
         {/* Vendor instructions */}
         <SettingSection
           title={t("vendorInstructionTitle")}
-          description={t("vendorInstructionHelp")}
+          description={t(
+            isView ? "vendorInstructionHelpView" : "vendorInstructionHelp",
+          )}
         >
           <Field className="sm:col-span-2">
-            <FieldLabel>{t("vendorInstructionTitle")}</FieldLabel>
+            {/* โหมดดู label ซ้ำกับหัว section ทั้งคำ — ตัดทิ้ง เหลือแค่ข้อความ */}
+            {!isView && <FieldLabel>{t("vendorInstructionTitle")}</FieldLabel>}
             {isView ? (
               <FieldPlainText className="whitespace-pre-wrap">
-                {priceListTemplate?.vendor_instructions}
+                {/* ไม่มี label แล้ว "—" ลอย ๆ อ่านไม่ออกว่าหมายถึงอะไร — บอกเป็นคำ */}
+                {priceListTemplate?.vendor_instructions || (
+                  <span className="text-muted-foreground font-normal">
+                    {t("vendorInstructionEmpty")}
+                  </span>
+                )}
               </FieldPlainText>
             ) : (
               <Textarea
