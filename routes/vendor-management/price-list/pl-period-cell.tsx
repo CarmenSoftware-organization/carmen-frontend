@@ -78,7 +78,13 @@ export function PlPeriodCell({
         <span
           className={cn(
             "block text-xs whitespace-nowrap",
-            endingSoon ? "text-warning-ink" : "text-muted-foreground",
+            // หมดช่วงแล้วเป็นแดง — ใบ ACTIVE ที่ราคาหมดอายุคือสิ่งที่ฝ่ายจัดซื้อต้องเห็นก่อน
+            // ออก PO (ท่าเดียวกับใบรับรองหมดอายุในหน้าผู้ขาย)
+            expired
+              ? "text-destructive font-medium"
+              : endingSoon
+                ? "text-warning-ink"
+                : "text-muted-foreground",
           )}
         >
           {note}
