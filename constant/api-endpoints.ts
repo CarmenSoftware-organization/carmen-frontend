@@ -52,6 +52,10 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/config/${buCode}/app-config/test-email`,
   APP_CONFIG_TEST_EMAIL_PROFILE: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/app-config/test-email-profile`,
+  APP_CONFIG_EMAIL_PROFILE_OAUTH_START: (buCode: string) =>
+    `/api/proxy/api/config/${buCode}/app-config/email-profile/oauth/start`,
+  APP_CONFIG_EMAIL_PROFILE_OAUTH_POLL: (buCode: string) =>
+    `/api/proxy/api/config/${buCode}/app-config/email-profile/oauth/poll`,
   APP_USER_CONFIG_BY_KEY: (buCode: string, key: string) =>
     `/api/proxy/api/config/${buCode}/app-user-config/${key}`,
   EMAIL_SENDERS: (buCode: string) => `/api/proxy/api/${buCode}/email-senders`,
