@@ -11,6 +11,8 @@ interface ScDocStatusRowProps {
   readonly docStatus: SpotCheckStatus;
   readonly method: SpotCheckMethod;
   readonly size?: "sm" | "md";
+  /** เลขเอกสารบรรทัดบน ป้ายบรรทัดล่าง — สำหรับคอลัมน์แคบในแถวรายการ */
+  readonly stacked?: boolean;
 }
 
 export function ScDocStatusRow({
@@ -18,6 +20,7 @@ export function ScDocStatusRow({
   docStatus,
   method,
   size = "md",
+  stacked = false,
 }: ScDocStatusRowProps) {
   const t = useTranslations("inventoryManagement.spotCheck");
   const ts = useTranslations("status");
@@ -30,8 +33,15 @@ export function ScDocStatusRow({
   const isSm = size === "sm";
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2">
-      <div className="flex min-w-0 items-center gap-1.5">
+    <div
+      className={cn(
+        "flex",
+        stacked
+          ? "flex-col items-start gap-1"
+          : "flex-wrap items-center justify-between gap-2",
+      )}
+    >
+      <div className="flex max-w-full min-w-0 items-center gap-1.5">
         <Receipt
           className={cn(
             "text-primary/80 shrink-0",
@@ -48,7 +58,12 @@ export function ScDocStatusRow({
           {docNo}
         </span>
       </div>
-      <div className="flex shrink-0 items-center gap-1">
+      <div
+        className={cn(
+          "flex items-center gap-1",
+          stacked ? "flex-wrap" : "shrink-0",
+        )}
+      >
         <Badge
           variant={status.variant}
           size="xs"

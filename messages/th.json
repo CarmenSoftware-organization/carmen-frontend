@@ -3177,7 +3177,6 @@
       "percentComplete": "{percent}% เสร็จแล้ว",
       "sku": "SKU: {code}",
       "setEmptyToZero": "ตั้งค่าที่ว่างเป็นศูนย์ ({count} รายการ)",
-      "heroFooter": "ปิดงวด · ข้อมูลสต๊อกที่แม่นยำสำหรับรอบถัดไป",
       "checkProgress": "ความคืบหน้าการนับ",
       "noLocationsInStatus": "ไม่มีคลังในสถานะนี้",
       "quickGuideTitle": "คู่มือใช้งาน",

@@ -40,13 +40,12 @@ import { ListPageShell } from "@/components/share/list-page-shell";
 import {
   InvSearchBar,
   InvStatusSectionsList,
-  KpiTile,
-  StatusHero,
+  StatusStrip,
+  StripMetric,
   type InvStatusSection,
   type SectionTone,
 } from "../shared/inv-shared";
-import { AnimationStyles, Reveal } from "@/components/share/reveal";
-import { PcLocationCard } from "../shared/pc-location-card";
+import { PcLocationRow } from "../shared/pc-location-row";
 
 type StatusKey = PhysicalCountStatus;
 
@@ -58,7 +57,7 @@ const formatPeriodTitle = (periodCode: string): string => {
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 };
 
-interface PeriodSelectorCardProps {
+interface PeriodHeaderProps {
   readonly title: string;
   readonly endDate: string;
   readonly hasPeriod: boolean;
@@ -68,7 +67,7 @@ interface PeriodSelectorCardProps {
   readonly onPeriodChange: (id: string) => void;
 }
 
-function PeriodSelectorCard({
+function PeriodHeader({
   title,
   endDate,
   hasPeriod,
@@ -76,7 +75,7 @@ function PeriodSelectorCard({
   isPreviousPeriod,
   previousPeriodId,
   onPeriodChange,
-}: PeriodSelectorCardProps) {
+}: PeriodHeaderProps) {
   const t = useTranslations("inventoryManagement.physicalCount");
   const tfl = useTranslations("field");
 
@@ -95,11 +94,11 @@ function PeriodSelectorCard({
   const emptyText = isLoading ? "" : t("noPeriod");
 
   return (
-    <div className="border-border/60 bg-card hover:border-primary/40 mt-4 flex flex-col gap-3 rounded-xl border p-3 transition-all sm:flex-row sm:items-center sm:justify-between">
+    <>
       {hasPeriod ? (
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <h2 className="text-foreground text-sm font-semibold tracking-tight">
+            <h2 className="text-foreground text-base font-semibold tracking-tight">
               {title}
             </h2>
             {periodBadge}
@@ -122,13 +121,14 @@ function PeriodSelectorCard({
           onValueChange={onPeriodChange}
         />
       </div>
-    </div>
+    </>
   );
 }
 
 export default function PcComponent() {
   const t = useTranslations("inventoryManagement.physicalCount");
   const tc = useTranslations("common");
+  const tfl = useTranslations("field");
   const { dateFormat } = useLocale();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -168,6 +168,12 @@ export default function PcComponent() {
     if (l.physical_count_status === "in_progress") inProgress.push(l);
     else if (l.physical_count_status === "completed") complete.push(l);
     else notStarted.push(l);
+  }
+  let itemsTotal = 0;
+  let itemsCounted = 0;
+  for (const l of locations) {
+    itemsTotal += l.product_total ?? 0;
+    itemsCounted += l.product_counted ?? 0;
   }
   const counts = {
     all: locations.length,
@@ -256,109 +262,82 @@ export default function PcComponent() {
       description={t("desc")}
       count={locations.length}
     >
-      <AnimationStyles />
-      <section className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_22rem]">
-        <div>
-          <Reveal delay={60}>
-            <PeriodSelectorCard
-              title={periodTitle}
-              endDate={periodEndDate}
-              hasPeriod={!!period}
-              isLoading={isLoading}
-              isPreviousPeriod={isPreviousPeriod}
-              previousPeriodId={previousPeriodId}
-              onPeriodChange={setPreviousPeriodId}
-            />
-          </Reveal>
-
-          {period && (
-            <Reveal delay={120}>
-              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <KpiTile
-                  icon={ClipboardCheck}
-                  label={t("tabAll")}
-                  value={counts.all}
-                  active={activeFilter === "all"}
-                  onClick={() => setActiveFilter("all")}
-                />
-                <KpiTile
-                  icon={PauseCircle}
-                  label={t("tabInProgress")}
-                  value={counts.inProgress}
-                  tone="warning"
-                  active={activeFilter === "in_progress"}
-                  onClick={() => setActiveFilter("in_progress")}
-                />
-                <KpiTile
-                  icon={ClipboardCheck}
-                  label={t("tabNotStarted")}
-                  value={counts.notStarted}
-                  tone="info"
-                  active={activeFilter === "not_started"}
-                  onClick={() => setActiveFilter("not_started")}
-                />
-                <KpiTile
-                  icon={CheckCircle2}
-                  label={t("tabComplete")}
-                  value={counts.complete}
-                  tone="success"
-                  active={activeFilter === "completed"}
-                  onClick={() => setActiveFilter("completed")}
-                />
-              </div>
-            </Reveal>
-          )}
-
-          {period && (
-            <Reveal delay={180}>
-              <InvSearchBar
-                search={search}
-                onSearch={setSearch}
-                extras={
-                  <label className="border-border/40 bg-card hover:border-foreground/40 flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold select-none">
-                    <Checkbox
-                      checked={includeNotCount}
-                      onCheckedChange={(v) => setIncludeNotCount(v === true)}
-                    />
-                    {t("includeNotCount")}
-                  </label>
-                }
-              />
-            </Reveal>
-          )}
-        </div>
-
-        <Reveal delay={140}>
-          <StatusHero
-            total={counts.all}
-            done={counts.complete}
-            active={counts.inProgress}
-            labels={{
-              progressTitle: t("checkProgress"),
-              done: t("tabComplete"),
-              active: t("tabInProgress"),
-              pending: t("tabNotStarted"),
-              heroFooter: t("heroFooter"),
-            }}
+      <StatusStrip<StatusKey>
+        allLabel={t("tabAll")}
+        active={activeFilter}
+        onSelect={setActiveFilter}
+        segments={[
+          {
+            key: "in_progress",
+            label: t("tabInProgress"),
+            value: counts.inProgress,
+            tone: "warning",
+          },
+          {
+            key: "not_started",
+            label: t("tabNotStarted"),
+            value: counts.notStarted,
+            tone: "info",
+          },
+          {
+            key: "completed",
+            label: t("tabComplete"),
+            value: counts.complete,
+            tone: "success",
+          },
+        ]}
+        header={
+          <PeriodHeader
+            title={periodTitle}
+            endDate={periodEndDate}
+            hasPeriod={!!period}
+            isLoading={isLoading}
+            isPreviousPeriod={isPreviousPeriod}
+            previousPeriodId={previousPeriodId}
+            onPeriodChange={setPreviousPeriodId}
           />
-        </Reveal>
-      </section>
+        }
+        metric={
+          period && (
+            <StripMetric
+              label={t("checkProgress")}
+              done={itemsCounted}
+              total={itemsTotal}
+              unit={tfl("items").toLowerCase()}
+            />
+          )
+        }
+      />
+
+      {period && (
+        <InvSearchBar
+          search={search}
+          onSearch={setSearch}
+          extras={
+            <label className="border-border/40 bg-card hover:border-foreground/40 flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold select-none">
+              <Checkbox
+                checked={includeNotCount}
+                onCheckedChange={(v) => setIncludeNotCount(v === true)}
+              />
+              {t("includeNotCount")}
+            </label>
+          }
+        />
+      )}
 
       {period && (
         <InvStatusSectionsList<PhysicalCountLocation>
           sections={sections}
           emptyTitle={t("noLocationsInStatus")}
-          renderItem={(item, i) => (
-            <PcLocationCard
+          renderItem={(item) => (
+            <PcLocationRow
               item={item}
-              index={i}
               onAction={handleAction}
               pending={pendingLocationId === item.id}
             />
           )}
           getItemKey={(item) => item.id}
           isLoading={isLoading}
-          skeletonWithProgress
         />
       )}
 

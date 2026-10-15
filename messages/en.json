@@ -3177,7 +3177,6 @@
       "percentComplete": "{percent}% Complete",
       "sku": "SKU: {code}",
       "setEmptyToZero": "Set empty to zero ({count} items)",
-      "heroFooter": "Period close · accurate stock for the next cycle",
       "checkProgress": "Count progress",
       "noLocationsInStatus": "No locations in this status",
       "quickGuideTitle": "Quick Guide",
