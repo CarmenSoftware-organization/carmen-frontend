@@ -132,9 +132,10 @@ POST …/email-profile/oauth/poll {profile_id, handle}
 
 ### 2d. เขียนกลับแบบเจาะจุด
 
-ใช้ทั้งตอน `connected` (2a) และตอน refresh token หมุน (2b): ใน transaction ให้อ่านแถว `email_profiles`
-แบบ `FOR UPDATE` หาโปรไฟล์ตาม `id` แล้วแก้เฉพาะ `smtp.oauth.{refresh_token, connected_account, connected_at}`
-ก่อนเขียนกลับ วิธีนี้ไม่ทับการแก้ฟิลด์อื่นที่ผู้ดูแลเพิ่งบันทึก และถ้าโปรไฟล์ถูกลบไปแล้ว ให้ข้ามโดยไม่ error
+ใช้ทั้งตอน `connected` (2a) และตอน refresh token หมุน (2b): อ่านแถว `email_profiles`
+หาโปรไฟล์ตาม `id` แล้วแก้เฉพาะ `smtp.oauth.{refresh_token, connected_account, connected_at}`
+จากนั้นเขียนกลับแบบ compare-and-swap บน `updated_at` (ถ้าแถวถูกแก้ระหว่างนั้นให้อ่านใหม่แล้วลองอีก
+สูงสุด 3 ครั้ง) ไม่ใช้ `FOR UPDATE` เพราะ Prisma ทำไม่ได้ถ้าไม่ใช้ raw SQL และ CAS ให้ผลเดียวกัน วิธีนี้ไม่ทับการแก้ฟิลด์อื่นที่ผู้ดูแลเพิ่งบันทึก และถ้าโปรไฟล์ถูกลบไปแล้ว ให้ข้ามโดยไม่ error
 
 ## ส่วนที่ 3 — UI, endpoint, deploy
 
@@ -147,8 +148,9 @@ POST …/email-profile/oauth/poll {profile_id, handle}
   - select **วิธียืนยันตัวตน** (รหัสผ่าน / Microsoft — Hotmail, Outlook.com / Microsoft 365 — องค์กร)
   - เปลี่ยนวิธีแล้ว: ถ้า host ยังว่าง ให้เติม preset host / port / `secure:false` ให้ แต่ไม่เขียนทับค่าที่กรอกไว้แล้ว
   - Hotmail: ช่อง `client_id` (ซ่อน `tenant_id` และตั้งเป็น `consumers`) + กล่องสถานะ
-    "เชื่อมต่อแล้วกับ … เมื่อ …" / "ยังไม่เชื่อมต่อ" + ปุ่ม **เชื่อมต่อ / เชื่อมต่อใหม่** ซึ่ง disable
-    ในโปรไฟล์ที่ยังไม่บันทึก หรือตอนฟอร์ม dirty พร้อมข้อความ "บันทึกก่อนจึงเชื่อมต่อได้"
+    "เชื่อมต่อแล้วกับ … เมื่อ …" / "ยังไม่เชื่อมต่อ" (แสดงสถานะอย่างเดียว) ปุ่ม
+    **เชื่อมต่อ / เชื่อมต่อใหม่** อยู่ที่แถวของโปรไฟล์ในหน้า list ไม่ได้อยู่ใน dialog แก้ไข เพราะต้อง
+    บันทึกก่อนอยู่แล้ว และไม่ต้องจัดการสถานะ dirty
   - M365: `tenant_id`, `client_id`, `client_secret`
   - ลิงก์ไปคู่มือการตั้ง App ใน Azure (3d)
 - ไฟล์ใหม่ `email-profile-oauth-dialog.tsx`: แสดง `user_code` ตัวใหญ่ + ปุ่มคัดลอก + ลิงก์
@@ -164,14 +166,15 @@ POST …/email-profile/oauth/poll {profile_id, handle}
 - `POST /api/config/:bu_code/app-config/email-profile/oauth/start` body `{ profile_id }`
 - `POST /api/config/:bu_code/app-config/email-profile/oauth/poll` body `{ profile_id, handle }`
 - RPC contract ใหม่ใน `packages/rpc-contract/src/contracts/business.ts` ใช้แบบเดียวกับ `appConfigTestEmailProfile`
-- สิทธิ์ใช้แบบเดียวกับการแก้ `email_profiles` / `test-email-profile` และต้องเติมทุกที่ที่
-  `test-email-profile` ถูกลงทะเบียนไว้ ได้แก่ api_name allowlist, `permission.route-map.ts`, license route resolver
-  ⚠️ **api_name ที่ยังไม่อยู่ใน allowlist = user 401 แล้วเด้งออกหน้า login** ต้องเติมก่อน deploy
+- สิทธิ์ใช้แบบเดียวกับการแก้ `email_profiles` / `test-email-profile` เติมใน `permission.route-map.ts`
+  และ license route resolver controller นี้ไม่มี `AppIdGuard` จึง**ไม่ต้องเติม api_name allowlist**
+  แต่ต้องเพิ่ม license override `config:app-config/email-profile` → `configuration.email_profile`
+  (ไม่งั้น route จะตกไปใช้ feature `configuration.app_config`)
 
 ### 3c. ลำดับ deploy
 
 1. **micro-notification** — schema รับทั้งสองแบบ ผู้เรียกเดิมไม่กระทบ
-2. **backend-v2** (micro-business + gateway) + allowlist api_name ใหม่
+2. **backend-v2** (micro-business + gateway)
 3. **FE**
 
 FE ห้ามขึ้นก่อน BE เพราะ BE รุ่นเก่าจะ 400 หรือตัดฟิลด์ `oauth` ทิ้งตอนบันทึก ไม่ต้อง rollback
