@@ -41,6 +41,7 @@ import {
   type RfpFormValues,
 } from "./rfp-form-schema";
 import { RfpVendorFields } from "./rfp-vendor-fields";
+import { RfpWindowBadge } from "./rfp-list-cells";
 
 const FORM_ID = "rfp-form";
 
@@ -199,17 +200,15 @@ export function RequestPriceListForm({
         <SettingSection
           first
           title={tfl("general")}
-          description={t("generalDesc")}
+          description={t(isView ? "generalDescView" : "generalDesc")}
         >
-          {/* Name */}
-          <Field>
-            <FieldLabel htmlFor="rfp-name">
-              {tfl("name")}
-              {!isView && <span className="text-destructive"> *</span>}
-            </FieldLabel>
-            {isView ? (
-              <FieldPlainText>{form.getValues("name")}</FieldPlainText>
-            ) : (
+          {/* Name — โหมดดูไม่แสดง แถบหัวมีชื่อเป็นตัวเอกอยู่แล้ว (ท่าเดียวกับหน้า price list) */}
+          {!isView && (
+            <Field>
+              <FieldLabel htmlFor="rfp-name">
+                {tfl("name")}
+                <span className="text-destructive"> *</span>
+              </FieldLabel>
               <FieldInput
                 id="rfp-name"
                 placeholder={t("namePlaceholder")}
@@ -218,8 +217,8 @@ export function RequestPriceListForm({
                 maxLength={100}
                 {...form.register("name")}
               />
-            )}
-          </Field>
+            </Field>
+          )}
 
           {/* Template */}
           <Field>
@@ -255,75 +254,90 @@ export function RequestPriceListForm({
             )}
           </Field>
 
-          {/* Start date */}
-          <Field>
-            <FieldLabel>{tfl("startDate")}</FieldLabel>
-            {isView ? (
-              <FieldPlainText>
-                {startDate ? formatDate(startDate, dateFormat) : ""}
-              </FieldPlainText>
-            ) : (
-              <Controller
-                control={form.control}
-                name="start_date"
-                render={({ field }) => (
-                  <FieldDatePicker
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={isDisabled}
-                    className="w-full"
-                    placeholder={tfl("pickDate")}
-                    fromDate={today}
-                    error={form.formState.errors.start_date?.message}
-                  />
-                )}
-              />
-            )}
-          </Field>
-
-          {/* End date */}
-          <Field>
-            <FieldLabel>{tfl("endDate")}</FieldLabel>
-            {isView ? (
-              <FieldPlainText>
-                {endDate ? formatDate(endDate, dateFormat) : ""}
-              </FieldPlainText>
-            ) : (
-              <Controller
-                control={form.control}
-                name="end_date"
-                render={({ field }) => (
-                  <FieldDatePicker
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={isDisabled}
-                    className="w-full"
-                    placeholder={tfl("pickDate")}
-                    fromDate={startDate ? new Date(startDate) : today}
-                    error={form.formState.errors.end_date?.message}
-                  />
-                )}
-              />
-            )}
-          </Field>
+          {/* Request period — โหมดดูรวมเป็นช่องเดียวพร้อม badge บอกว่ารอบรับราคายังเปิดอยู่ไหม
+              (ตัวเดียวกับคอลัมน์ในหน้า list) นั่งข้าง Template ในแถวเดียวกัน */}
+          {isView ? (
+            <Field>
+              <FieldLabel>{t("requestPeriod")}</FieldLabel>
+              {startDate && endDate && requestPriceList ? (
+                <FieldPlainText className="flex-col items-start gap-1">
+                  <span className="tabular-nums">
+                    {formatDate(startDate, dateFormat)} -{" "}
+                    {formatDate(endDate, dateFormat)}
+                  </span>
+                  <RfpWindowBadge item={requestPriceList} />
+                </FieldPlainText>
+              ) : (
+                <FieldPlainText />
+              )}
+            </Field>
+          ) : (
+            <>
+              <Field>
+                <FieldLabel>{tfl("startDate")}</FieldLabel>
+                <Controller
+                  control={form.control}
+                  name="start_date"
+                  render={({ field }) => (
+                    <FieldDatePicker
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isDisabled}
+                      className="w-full"
+                      placeholder={tfl("pickDate")}
+                      fromDate={today}
+                      error={form.formState.errors.start_date?.message}
+                    />
+                  )}
+                />
+              </Field>
+              <Field>
+                <FieldLabel>{tfl("endDate")}</FieldLabel>
+                <Controller
+                  control={form.control}
+                  name="end_date"
+                  render={({ field }) => (
+                    <FieldDatePicker
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isDisabled}
+                      className="w-full"
+                      placeholder={tfl("pickDate")}
+                      fromDate={startDate ? new Date(startDate) : today}
+                      error={form.formState.errors.end_date?.message}
+                    />
+                  )}
+                />
+              </Field>
+            </>
+          )}
         </SettingSection>
 
         <RfpVendorFields
           form={form}
           requestPriceList={requestPriceList}
           isDisabled={isDisabled}
+          isView={isView}
         />
 
         {/* Custom message */}
         <SettingSection
           title={t("customMessageTitle")}
-          description={t("customMessageHelp")}
+          description={t(
+            isView ? "customMessageHelpView" : "customMessageHelp",
+          )}
         >
           <Field className="sm:col-span-2">
-            <FieldLabel>{t("customMessageTitle")}</FieldLabel>
+            {/* โหมดดู label ซ้ำกับหัว section ทั้งคำ — ตัดทิ้ง เหลือแค่ข้อความ */}
+            {!isView && <FieldLabel>{t("customMessageTitle")}</FieldLabel>}
             {isView ? (
               <FieldPlainText className="whitespace-pre-wrap">
-                {requestPriceList?.custom_message}
+                {/* ไม่มี label แล้ว "—" ลอย ๆ อ่านไม่ออกว่าหมายถึงอะไร — บอกเป็นคำ */}
+                {requestPriceList?.custom_message || (
+                  <span className="text-muted-foreground font-normal">
+                    {t("customMessageEmpty")}
+                  </span>
+                )}
               </FieldPlainText>
             ) : (
               <Input
