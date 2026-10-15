@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { SettingSection } from "@/components/ui/setting-section";
+import { countSubmitted } from "./rfp-window";
 import { EmptyProducts } from "../price-list/pl-empty-states";
 import type { Vendor } from "@/types/vendor";
 import type {
@@ -45,12 +46,14 @@ interface RfpVendorFieldsProps {
   readonly form: UseFormReturn<RfpFormValues>;
   readonly requestPriceList?: RequestPriceList;
   readonly isDisabled: boolean;
+  readonly isView: boolean;
 }
 
 export function RfpVendorFields({
   form,
   requestPriceList,
   isDisabled,
+  isView,
 }: RfpVendorFieldsProps) {
   const t = useTranslations("vendorManagement.requestPriceList");
   const tfl = useTranslations("field");
@@ -233,7 +236,15 @@ export function RfpVendorFields({
       wide
       frameless
       title={t("vendors.title")}
-      description={t("vendors.noVendorsDesc")}
+      // โหมดดูไม่มีปุ่มเพิ่ม — คำชวน "Add vendors…" จึงเปลี่ยนเป็นยอดผู้ขายที่ส่งราคามาแล้ว
+      description={
+        isView
+          ? t("vendors.submittedView", {
+              submitted: countSubmitted(requestPriceList?.vendors),
+              total: vendorRows.length,
+            })
+          : t("vendors.noVendorsDesc")
+      }
       count={vendorRows.length}
       action={
         !isDisabled ? (
