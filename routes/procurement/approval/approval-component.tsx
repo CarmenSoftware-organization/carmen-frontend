@@ -5,6 +5,7 @@ import {
   FileText,
   ShoppingCart,
   PackageOpen,
+  Undo2,
   type LucideIcon,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +22,7 @@ import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
+import { SENDBACK_FILTER_CLAUSE } from "@/constant/last-action";
 
 const APPROVAL_FILTER_FIELDS: FilterFieldDef[] = [
   {
@@ -35,32 +37,40 @@ const APPROVAL_FILTER_FIELDS: FilterFieldDef[] = [
 
 export default function ApprovalComponent() {
   const t = useTranslations("procurement.approval");
+  const tc = useTranslations("common");
   const { dateFormat } = useProfile();
 
   const SUMMARY_CARDS: {
     key: keyof ApprovalPendingSummary;
     label: string;
     icon: LucideIcon;
-    color: string;
+    // class เต็มเป็น string คงที่ — Tailwind สแกนเจอเฉพาะ class ที่เขียนครบในซอร์ส
+    // เดิมประกอบเป็น `bg-${color}/10` ทำให้ PR / SR ไม่มีสีเลย
+    iconClassName: string;
   }[] = [
     {
       key: "total",
       label: t("totalPending"),
       icon: ClipboardList,
-      color: "primary",
+      iconClassName: "bg-primary/10 text-primary",
     },
-    { key: "pr", label: t("purchaseRequest"), icon: FileText, color: "info" },
+    {
+      key: "pr",
+      label: t("purchaseRequest"),
+      icon: FileText,
+      iconClassName: "bg-info/10 text-info-ink",
+    },
     {
       key: "po",
       label: t("purchaseOrder"),
       icon: ShoppingCart,
-      color: "warning",
+      iconClassName: "bg-warning/10 text-warning-ink",
     },
     {
       key: "sr",
       label: t("storeRequisition"),
       icon: PackageOpen,
-      color: "secondary",
+      iconClassName: "bg-success/10 text-success-ink",
     },
   ];
 
@@ -73,10 +83,24 @@ export default function ApprovalComponent() {
       defaultSort: "doc_date:asc",
     });
 
+  // filter ประกอบจากสองส่วนที่เลือกได้อิสระต่อกัน — ประเภทเอกสาร กับ "เฉพาะใบที่ถูก
+  // ตีกลับ" · backend รวม clause ที่คั่นด้วย ";" เป็น AND
   const activeType = filter?.match(/doc_type:(\w+)/)?.[1] ?? "total";
+  const sendBackOnly = !!filter?.includes(SENDBACK_FILTER_CLAUSE);
+
+  const applyFilter = (type: string, sendBack: boolean) => {
+    setFilter(
+      [
+        type === "total" ? "" : `doc_type:${type}`,
+        sendBack ? SENDBACK_FILTER_CLAUSE : "",
+      ]
+        .filter(Boolean)
+        .join(";"),
+    );
+  };
 
   const handleCardClick = (key: keyof ApprovalPendingSummary) => {
-    setFilter(key === "total" ? "" : `doc_type:${key}`);
+    applyFilter(key, sendBackOnly);
   };
 
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
@@ -89,6 +113,15 @@ export default function ApprovalComponent() {
   const { data, isLoading, error, refetch } = useApprovalPending(params);
   const { data: summary, isLoading: summaryLoading } =
     useApprovalPendingSummary();
+  // endpoint สรุปนับแค่ตามประเภท — จำนวนใบที่ถูกตีกลับจึงอ่านจาก paginate.total
+  // ของรายการที่กรองแล้ว (perpage 1 พอ ไม่ได้ใช้แถว) · อยู่ใต้ query key เดียวกับ
+  // รายการ จึงถูก invalidate พร้อมกันเมื่ออนุมัติหรือตีกลับ
+  const { data: sendBackData } = useApprovalPending({
+    page: 1,
+    perpage: 1,
+    filter: SENDBACK_FILTER_CLAUSE,
+  });
+  const sendBackCount = sendBackData?.paginate.total ?? 0;
 
   const items = data?.data ?? [];
   // จำนวนจริงของรายการที่เข้าเงื่อนไข มาจาก backend ที่กรองและแบ่งหน้าให้แล้ว
@@ -113,50 +146,85 @@ export default function ApprovalComponent() {
         />
       }
     >
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* แถบกรองตามประเภท — ตัวเลขคือจำนวนที่รอ คลิกเพื่อกรองตาราง */}
+      <div className="flex flex-wrap gap-2" role="group">
         {SUMMARY_CARDS.map((card) => {
           const Icon = card.icon;
-          return summaryLoading ? (
-            <div
-              key={card.key}
-              className="bg-card flex items-center gap-3 rounded-lg border p-3"
-            >
-              <Skeleton className="size-9 rounded-lg" />
-              <div className="space-y-1.5">
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-5 w-8" />
-              </div>
-            </div>
-          ) : (
+          if (summaryLoading) {
+            return <Skeleton key={card.key} className="h-9 w-40 rounded-md" />;
+          }
+          const active = activeType === card.key;
+          return (
             <button
               type="button"
               key={card.key}
               className={cn(
-                "bg-card flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-left transition-colors",
-                activeType === card.key
-                  ? "ring-primary border-primary ring-2"
+                "bg-card flex h-9 cursor-pointer items-center gap-2 rounded-md border pr-3 pl-1.5 text-left transition-colors",
+                active
+                  ? "border-primary ring-primary ring-1"
                   : "hover:bg-accent",
               )}
               onClick={() => handleCardClick(card.key)}
-              aria-pressed={activeType === card.key}
+              aria-pressed={active}
             >
-              <div
-                className={`flex size-9 items-center justify-center rounded-lg bg-${card.color}/10`}
+              <span
+                className={cn(
+                  "flex size-6 items-center justify-center rounded",
+                  card.iconClassName,
+                )}
               >
-                <Icon className={`size-4 text-${card.color}`} />
-              </div>
-              <div>
-                <p className="text-muted-foreground text-xs leading-none">
-                  {card.label}
-                </p>
-                <p className="text-lg leading-tight font-semibold tabular-nums">
-                  {summary?.[card.key] ?? 0}
-                </p>
-              </div>
+                <Icon className="size-3.5" />
+              </span>
+              <span
+                className={cn(
+                  "text-xs",
+                  active ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {card.label}
+              </span>
+              <span className="text-sm font-semibold tabular-nums">
+                {summary?.[card.key] ?? 0}
+              </span>
             </button>
           );
         })}
+
+        <span aria-hidden className="bg-border mx-1 h-6 w-px self-center" />
+
+        {/* ใบที่ถูกตีกลับมาหาฉัน — ใช้ร่วมกับตัวกรองประเภทได้ (เช่น PO ที่ถูกตีกลับ)
+            ไฮไลต์ตัวเลขเมื่อมีค้าง เพราะเป็นงานที่ต้องรีบแก้ก่อนใบใหม่ */}
+        <button
+          type="button"
+          className={cn(
+            "bg-card flex h-9 cursor-pointer items-center gap-2 rounded-md border pr-3 pl-1.5 text-left transition-colors",
+            sendBackOnly
+              ? "border-primary ring-primary ring-1"
+              : "hover:bg-accent",
+          )}
+          onClick={() => applyFilter(activeType, !sendBackOnly)}
+          aria-pressed={sendBackOnly}
+        >
+          <span className="flex size-6 items-center justify-center rounded bg-[var(--status-review)]">
+            <Undo2 className="size-3.5 text-[var(--status-review-fg)]" />
+          </span>
+          <span
+            className={cn(
+              "text-xs",
+              sendBackOnly ? "text-foreground" : "text-muted-foreground",
+            )}
+          >
+            {tc("sendBack")}
+          </span>
+          <span
+            className={cn(
+              "text-sm font-semibold tabular-nums",
+              sendBackCount > 0 && "text-destructive",
+            )}
+          >
+            {sendBackCount}
+          </span>
+        </button>
       </div>
 
       <ApprovalQueueList

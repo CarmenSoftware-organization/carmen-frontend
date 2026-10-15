@@ -4619,7 +4619,10 @@
       "po": "PO",
       "sr": "SR",
       "noPendingApprovals": "No pending approvals",
-      "noPendingApprovalsDesc": "You have no documents waiting for your approval at the moment."
+      "noPendingApprovalsDesc": "You have no documents waiting for your approval at the moment.",
+      "details": "Details",
+      "waiting": "Waiting",
+      "daysWaiting": "{count, plural, =0 {Today} one {# day} other {# days}}"
     }
   },
   "dashboard": {

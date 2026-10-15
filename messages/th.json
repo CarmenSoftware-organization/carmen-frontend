@@ -4619,7 +4619,10 @@
       "po": "PO",
       "sr": "SR",
       "noPendingApprovals": "ไม่มีรายการรออนุมัติ",
-      "noPendingApprovalsDesc": "คุณไม่มีเอกสารรออนุมัติในขณะนี้"
+      "noPendingApprovalsDesc": "คุณไม่มีเอกสารรออนุมัติในขณะนี้",
+      "details": "รายละเอียด",
+      "waiting": "รอมาแล้ว",
+      "daysWaiting": "{count, plural, =0 {วันนี้} other {# วัน}}"
     }
   },
   "dashboard": {
