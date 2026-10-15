@@ -1322,7 +1322,9 @@
     "overrideHintTax": "Tick to enter the tax amount yourself instead of calculating from the tax rate",
     "order": "Order",
     "sequence": "Sequence",
-    "businessUnit": "Business Unit"
+    "businessUnit": "Business Unit",
+    "responses": "Responses",
+    "submittedCount": "Submitted"
   },
   "lookup": {
     "resizeHint": "Drag to resize · double-click to reset",
@@ -3038,6 +3040,14 @@
         "sendPartial": "Sent, but these addresses were rejected: {emails}",
         "unsavedRfp": "Save the request first, then send it to vendors",
         "subjectBodyRequired": "Subject and message cannot be empty"
+      },
+      "responsesOf": "{submitted} / {total}",
+      "responsesAria": "{submitted} of {total} vendors responded",
+      "window": {
+        "upcoming": "Upcoming",
+        "closed": "Closed",
+        "closesToday": "Closes today",
+        "daysLeft": "{count, plural, =1 {# day left} other {# days left}}"
       }
     }
   },

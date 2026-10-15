@@ -10,6 +10,7 @@ import {
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import type { RequestPriceList } from "@/types/request-price-list";
+import { RfpResponses, RfpWindowBadge } from "./rfp-list-cells";
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 
@@ -61,6 +62,9 @@ export function useRequestPriceListTable({
         <DataGridColumnHeader column={column} title={tfl("template")} />
       ),
       enableSorting: false,
+      cell: ({ getValue }) => (
+        <span className="text-muted-foreground">{getValue<string>()}</span>
+      ),
       meta: { headerTitle: tfl("template"), skeleton: columnSkeletons.text },
     },
     {
@@ -70,27 +74,34 @@ export function useRequestPriceListTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("effectivePeriod")} />
       ),
+      cell: ({ row, getValue }) => (
+        <div
+          data-slot="cell-stack"
+          className="flex flex-col items-start gap-0.5"
+        >
+          <span className="tabular-nums">{getValue<string>()}</span>
+          <RfpWindowBadge item={row.original} />
+        </div>
+      ),
       meta: {
         headerTitle: tfl("effectivePeriod"),
         skeleton: columnSkeletons.text,
       },
     },
     {
-      accessorKey: "vendor_count",
+      // id คงเดิม (vendor_count) ไม่ให้ค่าซ่อน/แสดงคอลัมน์ที่ผู้ใช้เคยตั้งไว้หลุด
+      id: "vendor_count",
+      accessorFn: (row) => row.vendor_count,
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("vendorCount")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("responses")} />
       ),
+      cell: ({ row }) => <RfpResponses item={row.original} />,
       enableSorting: false,
       meta: {
-        headerTitle: tfl("vendorCount"),
+        headerTitle: tfl("responses"),
         skeleton: columnSkeletons.textShort,
-        cellClassName: "text-center",
       },
-      size: 70,
+      size: 120,
     },
     ...auditColumns<RequestPriceList>(tfl, dateTimeFormat),
   ];
