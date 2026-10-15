@@ -148,6 +148,12 @@ export function getUserErrorMessage(
     // `errors.byCode.<CODE>` ใน messages/{en,th}.json อย่างเดียว ไม่มีตารางให้ลืมซิงก์
     const byCode = `byCode.${err.appCode}`;
     if (t.has?.(byCode)) return t(byCode, err.appParams);
+    // ยังไม่มีข้อความของเรา — ข้อความของรหัส catalog ทีม backend เขียนเองทั้งสองภาษา
+    // และ gateway แปลตาม `Accept-Language` ที่ http-client ส่งไปแล้ว จึงตรงเรื่องกว่า
+    // ข้อความกลางที่เดาจาก HTTP status เสมอ ("ไม่มีหน่วยนับนี้แล้ว" vs "ขัดกับข้อมูลในระบบ")
+    const fromCatalog =
+      err.catalogId === undefined ? undefined : shortServerMessage(err);
+    if (fromCatalog) return fromCatalog;
   }
 
   if (
@@ -192,6 +198,11 @@ const MAX_SERVER_MESSAGE_LENGTH = 160;
  */
 export function getDisplayableServerMessage(err: unknown): string | undefined {
   if (!(err instanceof ApiError) || err.appCode) return undefined;
+  return shortServerMessage(err);
+}
+
+/** ข้อความ 4xx จาก backend ที่เป็นประโยคบรรทัดเดียวสั้น ๆ — ไม่ใช่ trace/SQL */
+function shortServerMessage(err: ApiError): string | undefined {
   const msg = err.userFacingServerMessage?.trim();
   if (!msg || msg.length > MAX_SERVER_MESSAGE_LENGTH || /[\r\n]/.test(msg)) {
     return undefined;

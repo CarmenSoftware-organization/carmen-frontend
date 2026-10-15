@@ -9,6 +9,7 @@ import { appStatusStore } from "@/lib/app-status-store";
 import { refreshTokens } from "@/lib/auth/auth-api";
 import { tokenStore } from "@/lib/auth/token-store";
 import { getRuntimeConfig } from "@/lib/runtime-config";
+import { DEFAULT_LOCALE } from "@/i18n/config";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -111,11 +112,23 @@ const resolveUrl = (url: string): string => {
   throw new ApiError(ERROR_CODES.VALIDATION_ERROR, "Invalid request URL", 400);
 };
 
+/**
+ * ภาษาบนจอตอนนี้ — `I18nProvider` ตั้งไว้ที่ `<html lang>` ทุกครั้งที่สลับภาษา
+ *
+ * ส่งเป็น `Accept-Language` ให้ gateway แปลข้อความของ error catalog เป็นภาษาเดียวกับจอ
+ * (ไม่ส่ง = ได้ภาษาอังกฤษ หรือภาษาของ browser ซึ่งไม่ตรงกับที่ผู้ใช้เลือกในแอป) ·
+ * เป็น CORS-safelisted header จึงไม่ทำให้เกิด preflight เพิ่ม ต่างจาก `x-lang`
+ */
+const currentLocale = (): string =>
+  (typeof document !== "undefined" && document.documentElement.lang) ||
+  DEFAULT_LOCALE;
+
 const buildAuthHeaders = (): Record<string, string> => {
   const { X_APP_ID } = getRuntimeConfig();
   const token = tokenStore.get();
   return {
     "x-app-id": X_APP_ID,
+    "Accept-Language": currentLocale(),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
