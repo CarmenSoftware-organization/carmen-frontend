@@ -1,4 +1,3 @@
-
 import {
   BarChart,
   Box,
@@ -1722,6 +1721,44 @@ export const SubTiles: Record<string, TileRenderer> = {
         style={{ stroke: palette.accent }}
         strokeWidth="1.7"
         strokeLinecap="round"
+      />
+    </>
+  ),
+  // คำนำหน้าชื่อ (Mr./Mrs./Dr.) — ป้ายชื่อ: คนด้านซ้าย + แถบคำนำหน้าสี accent
+  titleMaster: ({ palette }) => (
+    <>
+      <TileBase palette={palette} />
+      <rect x="7" y="11" width="26" height="19" rx="2" fill="currentColor" />
+      <circle cx="14" cy="18" r="3" style={{ fill: palette.base }} />
+      <path
+        d="M 9.5 26.5 Q 9.5 22 14 22 Q 18.5 22 18.5 26.5 Z"
+        style={{ fill: palette.base }}
+      />
+      <rect
+        x="21"
+        y="15.5"
+        width="8"
+        height="3"
+        rx="1.5"
+        style={{ fill: palette.accent }}
+      />
+      <rect
+        x="21"
+        y="21"
+        width="9"
+        height="1.4"
+        rx="0.7"
+        style={{ fill: palette.base }}
+        opacity="0.5"
+      />
+      <rect
+        x="21"
+        y="24.5"
+        width="6"
+        height="1.4"
+        rx="0.7"
+        style={{ fill: palette.base }}
+        opacity="0.35"
       />
     </>
   ),

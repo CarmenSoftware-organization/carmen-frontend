@@ -1,54 +1,75 @@
-import { StatusBadge } from "@/components/ui/status-badge";
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { Plus, RefreshCw } from "lucide-react";
+import {
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { Columns3, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import SearchInput from "@/components/search-input";
 import EmptyComponent from "@/components/empty-component";
 import { ListPageShell } from "@/components/share/list-page-shell";
+import { listGridMaxH } from "@/components/share/list-grid-max-h";
+import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
+import { DocumentListActions } from "@/components/share/document-list-actions";
 import {
   ListCard,
   ListCardActiveRow,
   ListCardRow,
 } from "@/components/share/list-card";
 import { Button } from "@/components/ui/button";
-import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
 import { CellAction } from "@/components/ui/cell-action";
 import {
   DataGrid,
   DataGridContainer,
+  DataGridScrollArea,
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
+import { DataGridColumnVisibility } from "@/components/ui/data-grid/data-grid-column-visibility";
+import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
+import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
+import { DataGridSortMenu } from "@/components/ui/data-grid/data-grid-sort-menu";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
-import { DeleteDialog } from "@/components/ui/delete-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Field, FieldInput, FieldLabel } from "@/components/ui/field";
+  columnSkeletons,
+  selectColumn,
+  statusColumn,
+} from "@/components/ui/data-grid/columns";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Field,
+  FieldGroup,
+  FieldInput,
+  FieldLabel,
+} from "@/components/ui/field";
 import { StatusFilter } from "@/components/ui/status-filter";
 import { StatusSwitch } from "@/components/ui/status-switch";
 import { WarningDialog } from "@/components/ui/warning-dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { buildXlsxFileName, downloadXlsx } from "@/lib/xlsx-utils";
 import {
   type TitleMaster,
   useAccountingMasterMock,
 } from "../accounting-master-mock";
 
 export default function TitleMasterPage() {
+  // ตารางนี้แบ่งหน้า/เรียงฝั่ง client ผ่าน state ของ TanStack — กันคอมไพเลอร์แช่ JSX
+  // ของหน้าไว้ที่หน้าแรก (ดู routes/CLAUDE.md)
+  "use no memo";
+
   const store = useAccountingMasterMock();
   const isMobile = useIsMobile();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [detailOnly, setDetailOnly] = useState(false);
+  const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
   const [editing, setEditing] = useState<TitleMaster | null | undefined>();
   const [deleting, setDeleting] = useState<TitleMaster | null>(null);
   const [warning, setWarning] = useState("");
+  const isGridMode = isMobile || displayMode === "grid";
+
   const rows = useMemo(
     () =>
       store.titles.filter((item) => {
@@ -64,64 +85,122 @@ export default function TitleMasterPage() {
 
   const columns = useMemo<ColumnDef<TitleMaster>[]>(
     () => [
+      selectColumn<TitleMaster>(),
+      {
+        id: "index",
+        header: "#",
+        cell: ({ row, table }) => {
+          const { pageIndex, pageSize } = table.getState().pagination;
+          const position = table
+            .getRowModel()
+            .rows.findIndex((r) => r.id === row.id);
+          return pageIndex * pageSize + position + 1;
+        },
+        enableSorting: false,
+        enableHiding: false,
+        size: 60,
+        meta: {
+          headerClassName: "text-center",
+          cellClassName: "text-center",
+          skeleton: columnSkeletons.checkbox,
+        },
+      },
       {
         accessorKey: "code",
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title="Title Code" />
         ),
         cell: ({ row }) => (
-          <CellAction onClick={() => { setDetailOnly(true); setEditing(row.original); }}>
+          <CellAction onClick={() => setEditing(row.original)}>
             {row.original.code}
           </CellAction>
         ),
+        meta: { headerTitle: "Title Code", skeleton: columnSkeletons.text },
       },
       {
         accessorKey: "description",
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title="Description" />
         ),
-        cell: ({ row }) => (
-          <CellAction onClick={() => { setDetailOnly(true); setEditing(row.original); }}>
-            {row.original.description}
-          </CellAction>
-        ),
+        meta: { headerTitle: "Description", skeleton: columnSkeletons.text },
       },
       {
         accessorKey: "reference_count",
-        header: "Linked records",
+        header: ({ column }) => (
+          <DataGridColumnHeader
+            column={column}
+            title="Linked records"
+            className="justify-end"
+          />
+        ),
         cell: ({ row }) => (
           <span className="tabular-nums">{row.original.reference_count}</span>
         ),
-        meta: { headerClassName: "text-right", cellClassName: "text-right" },
+        size: 140,
+        meta: {
+          headerTitle: "Linked records",
+          headerClassName: "text-right",
+          cellClassName: "text-right",
+          skeleton: columnSkeletons.number,
+        },
       },
+      statusColumn<TitleMaster>(),
       {
-        accessorKey: "is_active",
-        header: "Status",
+        id: "action",
+        header: () => "",
         cell: ({ row }) => (
-          <StatusBadge active={row.original.is_active} />
-        ),
-      },
-      {
-        id: "actions",
-        header: "",
-        cell: ({ row }) => (
-          <DataGridRowActions
-            activity={{ id: row.original.id, disabled: true, disabledTitle: "Activity is unavailable for mock data" }}
-
-            onEdit={() => { setDetailOnly(false); setEditing(row.original); }}
-            onDelete={() => setDeleting(row.original)}
-          />
+          <DataGridRowActions onDelete={() => setDeleting(row.original)} />
         ),
         enableSorting: false,
+        size: 60,
+        meta: {
+          headerClassName: "text-right print:hidden",
+          cellClassName: "text-right print:hidden",
+          skeleton: null,
+        },
       },
     ],
     [],
   );
+
   const table = useReactTable({
     data: rows,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      sorting: [{ id: "code", desc: false }],
+      pagination: { pageIndex: 0, pageSize: 10 },
+    },
+    autoResetPageIndex: true,
   });
+
+  const handleExport = () => {
+    if (rows.length === 0) {
+      toast.warning("No data to export");
+      return;
+    }
+    void downloadXlsx({
+      rows,
+      columns: [
+        { header: "Title Code", value: (r) => r.code, width: 14 },
+        { header: "Description", value: (r) => r.description, width: 32 },
+        {
+          header: "Linked records",
+          value: (r) => r.reference_count,
+          width: 14,
+        },
+        {
+          header: "Status",
+          value: (r) => (r.is_active ? "Active" : "Inactive"),
+          width: 10,
+        },
+      ],
+      sheetName: "Title Master",
+      fileName: buildXlsxFileName("title-master"),
+    }).then(() => toast.success(`Exported ${rows.length} rows`));
+  };
 
   const remove = () => {
     if (!deleting) return;
@@ -141,83 +220,96 @@ export default function TitleMasterPage() {
     <ListPageShell
       title="Title Master"
       description="Honorifics used by customer, guest and accounting profiles"
+      actions={
+        <DocumentListActions
+          onAdd={() => setEditing(null)}
+          addLabel="Add Title"
+          onExport={handleExport}
+        />
+      }
       toolbar={
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="min-w-52 flex-1 sm:flex-initial">
-            <SearchInput
-              defaultValue={search}
-              onSearch={setSearch}
-              onInputChange={setSearch}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex w-full flex-1 items-center gap-2 sm:w-auto">
+            <div className="flex-1 sm:flex-initial">
+              <SearchInput defaultValue={search} onSearch={setSearch} />
+            </div>
+            <span className="bg-border hidden h-4 w-px sm:block" />
+            <StatusFilter
+              value={status}
+              onChange={setStatus}
+              placeholder="Status"
+              defaultLabel="All statuses"
+              options={[
+                { value: "active", label: "Active" },
+                { value: "inactive", label: "Inactive" },
+              ]}
+              className="w-36"
             />
           </div>
-          <StatusFilter
-            value={status}
-            onChange={setStatus}
-            placeholder="Status"
-            defaultLabel="All statuses"
-            options={[
-              { value: "active", label: "Active" },
-              { value: "inactive", label: "Inactive" },
-            ]}
-            className="w-36"
-          />
-        </div>
-      }
-      actions={
-        <div className="flex w-full items-center gap-2 sm:w-auto">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label="Refresh mock data"
-            onClick={() => location.reload()}
-          >
-            <RefreshCw className="size-4" />
-          </Button>
-          <Button size="sm" onClick={() => setEditing(null)}>
-            <Plus className="size-4" /> Add Title
-          </Button>
+          <div className="hidden shrink-0 items-center gap-2 sm:flex">
+            <DataGridSortMenu table={table} />
+            {!isGridMode && (
+              <DataGridColumnVisibility
+                table={table}
+                trigger={
+                  <Button
+                    size="icon-sm"
+                    variant="outline"
+                    aria-label="Toggle columns"
+                  >
+                    <Columns3 className="size-4" />
+                  </Button>
+                }
+              />
+            )}
+            <DisplayModeToggle value={displayMode} onChange={setDisplayMode} />
+          </div>
         </div>
       }
     >
-      {isMobile ? (
-        <div className="grid gap-3">
-          {rows.map((item) => (
-            <ListCard
-              key={item.id}
-              title={item.code}
-              onOpen={() => { setDetailOnly(true); setEditing(item); }}
-              onDelete={() => setDeleting(item)}
-            >
-              <ListCardRow label="Description">{item.description}</ListCardRow>
-              <ListCardRow label="Linked">{item.reference_count}</ListCardRow>
-              <ListCardActiveRow active={item.is_active} />
-            </ListCard>
-          ))}
-          {rows.length === 0 && <EmptyComponent />}
-        </div>
+      {isGridMode ? (
+        rows.length === 0 ? (
+          <EmptyComponent />
+        ) : (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            {table.getSortedRowModel().rows.map(({ original: item }) => (
+              <ListCard
+                key={item.id}
+                title={item.code}
+                onOpen={() => setEditing(item)}
+                onDelete={() => setDeleting(item)}
+              >
+                <ListCardRow label="Description">
+                  {item.description}
+                </ListCardRow>
+                <ListCardRow label="Linked">{item.reference_count}</ListCardRow>
+                <ListCardActiveRow active={item.is_active} />
+              </ListCard>
+            ))}
+          </div>
+        )
       ) : (
         <DataGrid
           table={table}
           recordCount={rows.length}
           emptyMessage={<EmptyComponent />}
-          tableLayout={{ width: "auto", headerSticky: true }}
-          tableClassNames={{ bodyRow: "h-10" }}
+          tableLayout={{ headerSticky: true }}
         >
-          <DataGridContainer
-            scroll
-            // สูตรเฉพาะ: ตารางนี้ไม่มี pagination bar (scroll ล้วน) จึงไม่ใช้ listGridMaxH
-            className="max-h-[calc(100vh-13rem)]"
-          >
-            <DataGridTable />
+          <DataGridContainer className={`flex flex-col ${listGridMaxH(false)}`}>
+            <DataGridScrollArea>
+              <DataGridTable />
+            </DataGridScrollArea>
+            <DataGridPagination />
           </DataGridContainer>
         </DataGrid>
       )}
       <TitleDialog
-        readOnly={detailOnly}
         key={editing?.id ?? "new"}
         open={editing !== undefined}
         item={editing ?? null}
-        onOpenChange={(open) => { if (!open) { setEditing(undefined); setDetailOnly(false); } }}
+        onOpenChange={(open) => {
+          if (!open) setEditing(undefined);
+        }}
         onSave={(values) => {
           try {
             store.saveTitle(values, editing?.id);
@@ -251,15 +343,14 @@ export default function TitleMasterPage() {
   );
 }
 
+/** หน้าตาเดียวกับ `ConfigEntityDialog` — ใช้ตัวนั้นตรง ๆ ไม่ได้เพราะผูกกับ mutation hook ของ API */
 function TitleDialog({
   open,
-  readOnly = false,
   item,
   onOpenChange,
   onSave,
 }: {
   open: boolean;
-  readOnly?: boolean;
   item: TitleMaster | null;
   onOpenChange: (open: boolean) => void;
   onSave: (value: {
@@ -271,56 +362,93 @@ function TitleDialog({
   const [code, setCode] = useState(item?.code ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
   const [active, setActive] = useState(item?.is_active ?? true);
+  const canSubmit = !!code.trim() && !!description.trim();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{readOnly ? "Title Detail" : item ? "Edit Title" : "Add Title"}</DialogTitle>
-          <DialogDescription>
-            Code is locked after the title is created.
-          </DialogDescription>
-        </DialogHeader>
-        <fieldset disabled={readOnly} className="grid gap-4 py-2">
-          <Field>
-            <FieldLabel htmlFor="title-code" required>
-              Title Code
-            </FieldLabel>
-            <FieldInput
-              id="title-code"
-              value={code}
-              disabled={!!item}
-              maxLength={15}
-              onChange={(event) => setCode(event.target.value.toUpperCase())}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="title-description" required>
-              Description
-            </FieldLabel>
-            <FieldInput
-              id="title-description"
-              value={description}
-              maxLength={50}
-              onChange={(event) => setDescription(event.target.value)}
-            />
-          </Field>
-          <StatusSwitch
-            id="title-active"
-            checked={active}
-            onCheckedChange={setActive}
-          />
-        </fieldset>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {readOnly ? "Close" : "Cancel"}
-          </Button>
-          {!readOnly && <Button
-            disabled={!code.trim() || !description.trim()}
-            onClick={() => onSave({ code, description, is_active: active })}
+      <DialogContent
+        className="overflow-hidden border-0 bg-transparent p-0 shadow-2xl sm:max-w-[425px]"
+        showCloseButton={false}
+      >
+        <div className="border-border/60 bg-popover/80 relative overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-3xl">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (canSubmit) onSave({ code, description, is_active: active });
+            }}
+            className="relative flex flex-col"
           >
-            {item ? "Save" : "Create"}
-          </Button>}
-        </DialogFooter>
+            <div className="border-border/40 bg-background/40 border-b px-6 py-6">
+              <div className="flex items-center gap-4">
+                <div className="text-primary bg-primary/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-sm">
+                  <UserRound className="h-6 w-6" />
+                </div>
+                <div className="flex flex-col">
+                  <DialogTitle className="text-foreground text-xl font-bold tracking-tight">
+                    {item ? "Edit Title" : "Add Title"}
+                  </DialogTitle>
+                  <p className="text-muted-foreground text-xs">
+                    Code is locked after the title is created.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-6">
+              <FieldGroup className="gap-5">
+                <Field>
+                  <FieldLabel htmlFor="title-code" required>
+                    Title Code
+                  </FieldLabel>
+                  <FieldInput
+                    id="title-code"
+                    className="h-8"
+                    value={code}
+                    disabled={!!item}
+                    maxLength={15}
+                    onChange={(event) =>
+                      setCode(event.target.value.toUpperCase())
+                    }
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="title-description" required>
+                    Description
+                  </FieldLabel>
+                  <FieldInput
+                    id="title-description"
+                    className="h-8"
+                    value={description}
+                    maxLength={50}
+                    onChange={(event) => setDescription(event.target.value)}
+                  />
+                </Field>
+                <StatusSwitch
+                  id="title-active"
+                  checked={active}
+                  onCheckedChange={setActive}
+                />
+              </FieldGroup>
+            </div>
+
+            <div className="border-border/40 bg-background/40 flex justify-end gap-3 border-t px-6 py-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={!canSubmit}
+                className="bg-primary/90 hover:bg-primary text-primary-foreground rounded-xl font-bold shadow-lg backdrop-blur-md transition-all"
+              >
+                {item ? "Save" : "Create"}
+              </Button>
+            </div>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
