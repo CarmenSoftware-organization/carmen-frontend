@@ -25,10 +25,7 @@ import {
 import { Braces, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import {
-  useCreateRunningCode,
-  useUpdateRunningCode,
-} from "./use-running-code";
+import { useCreateRunningCode, useUpdateRunningCode } from "./use-running-code";
 import type { RunningCode } from "@/types/running-code";
 import { RunningCodeConfigFields } from "./running-code-config-fields";
 import { parseConfig } from "./running-code-config";
@@ -37,6 +34,7 @@ import {
   type RunningCodeFormValues,
   getDefaultValues,
 } from "./running-code-form-schema";
+import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 
 interface RunningCodeDialogProps {
   readonly open: boolean;
@@ -65,6 +63,7 @@ export function RunningCodeDialog({
     resolver: zodResolver(runningCodeSchema) as Resolver<RunningCodeFormValues>,
     defaultValues: getDefaultValues(),
   });
+  useServerFieldErrors(form, { RUNNING_CODE_ALREADY_EXISTS: "type" });
 
   // ประกาศหลัง `form` — ของเดิมอยู่เหนือ useForm แล้วรอดเพราะเป็น closure ที่เรียก
   // ตอนคลิก ถ้ามีใครย้ายไปเรียกตอน render เมื่อไหร่จะ throw TDZ ทันที

@@ -94,6 +94,7 @@ export function LocationForm({ location }: LocationFormProps) {
   const locationSchema = createLocationSchema(tv, tfl);
   const f = useEntityForm<LocationFormValues>({
     entity: location,
+    serverFieldErrors: { LOCATION_ALREADY_EXISTS: "name" },
     resolver: zodResolver(locationSchema) as Resolver<LocationFormValues>,
     defaultValues: getDefaultValues(location),
     listPath: LIST_PATH,

@@ -57,6 +57,7 @@ export function VendorForm({ vendor }: VendorFormProps) {
   const defaultValues = getDefaultValues(vendor);
   const f = useEntityForm<VendorFormValues>({
     entity: vendor,
+    serverFieldErrors: { VENDOR_CODE_ALREADY_EXISTS: "code" },
     resolver: zodResolver(
       createVendorSchema(tv, tfl),
     ) as Resolver<VendorFormValues>,

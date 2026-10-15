@@ -9,6 +9,10 @@ import {
 import { useListReturn } from "@/hooks/use-list-return";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
+import {
+  useServerFieldErrors,
+  type ServerFieldErrorMap,
+} from "@/hooks/use-server-field-errors";
 import type { FormMode } from "@/types/form";
 
 interface UseEntityFormOptions<TValues extends FieldValues> {
@@ -19,6 +23,8 @@ interface UseEntityFormOptions<TValues extends FieldValues> {
   isPending: boolean;
   extraDirty?: boolean;
   onResetExtra?: () => void;
+  /** รหัส catalog → ช่องที่ต้องขึ้น error แทน toast (ดู `useServerFieldErrors`) */
+  serverFieldErrors?: ServerFieldErrorMap<TValues>;
 }
 
 /**
@@ -52,6 +58,7 @@ export function useEntityForm<TValues extends FieldValues>({
   isPending,
   extraDirty = false,
   onResetExtra,
+  serverFieldErrors,
 }: UseEntityFormOptions<TValues>) {
   const { toList, returnState } = useListReturn(listPath);
   const [mode, setMode] = useState<FormMode>(entity ? "view" : "add");
@@ -60,6 +67,7 @@ export function useEntityForm<TValues extends FieldValues>({
   const isAdd = mode === "add";
 
   const form = useForm<TValues>({ resolver, defaultValues });
+  useServerFieldErrors(form, serverFieldErrors);
 
   // guard สองตัวต้องอ่าน dirty ค่าเดียวกัน ไม่งั้นปุ่ม Back ถามแต่เมนู sidebar เงียบ
   const isFormDirty = form.formState.isDirty || extraDirty;

@@ -61,6 +61,7 @@ export function NotificationTemplateForm({
   const isPending = createMut.isPending || updateMut.isPending;
   const f = useEntityForm<NotificationTemplateFormValues>({
     entity: template,
+    serverFieldErrors: { NOTIFICATION_TEMPLATE_ALREADY_EXISTS: "name" },
     resolver: zodResolver(
       notificationTemplateSchema,
     ) as Resolver<NotificationTemplateFormValues>,

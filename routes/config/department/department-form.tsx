@@ -74,6 +74,7 @@ export function DepartmentForm({ department }: DepartmentFormProps) {
 
   const f = useEntityForm<DepartmentFormValues>({
     entity: department,
+    serverFieldErrors: { DEPARTMENT_ALREADY_EXISTS: "code" },
     resolver: zodResolver(
       createDepartmentSchema(tv, tfl),
     ) as Resolver<DepartmentFormValues>,
