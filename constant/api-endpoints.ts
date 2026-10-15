@@ -532,6 +532,10 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/config/${buCode}/vendor-certificates`,
   VENDOR_CERTIFICATES_BY_VENDOR: (buCode: string, vendorId: string) =>
     `/api/proxy/api/config/${buCode}/vendor-certificates/vendor/${vendorId}`,
+  VENDOR_COMMENT: (buCode: string, vendorId?: string) =>
+    vendorId
+      ? `/api/proxy/api/config/${buCode}/vendor-comments/${vendorId}`
+      : `/api/proxy/api/config/${buCode}/vendor-comments`,
   WORKFLOWS: (buCode: string) => `/api/proxy/api/config/${buCode}/workflows`,
   WORKFLOWS_BY_DOC_TYPE: (buCode: string, slug: string) =>
     `/api/proxy/api/config/${buCode}/workflows/${slug}`,

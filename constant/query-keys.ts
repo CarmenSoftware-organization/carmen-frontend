@@ -140,6 +140,7 @@ export const QUERY_KEYS = {
   USER_LOCATIONS: "user-locations",
   USERS: "users",
   VENDORS: "vendors",
+  VENDOR_COMMENTS: "vendor-comments",
   WASTAGE_REPORTS: "wastage-reports",
   APP_CONFIGS: "app-configs",
   APP_USER_CONFIGS: "app-user-configs",

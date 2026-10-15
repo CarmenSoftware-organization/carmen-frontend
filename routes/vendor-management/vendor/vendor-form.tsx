@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useFieldArray, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
@@ -31,6 +31,13 @@ import { VendorGeneral } from "./vendor-general";
 import { VendorInfo } from "./vendor-info";
 import { VendorAddress } from "./vendor-address";
 import { VendorContact } from "./vendor-contact";
+import { vendorCommentCrud } from "./use-vendor-comments";
+
+const EntityCommentSheet = lazy(() =>
+  import("@/components/share/entity-comment-sheet").then((mod) => ({
+    default: mod.EntityCommentSheet,
+  })),
+);
 
 const FORM_ID = "vendor-form";
 
@@ -52,6 +59,7 @@ export function VendorForm({ vendor }: VendorFormProps) {
   const updateVendor = useUpdateVendor();
   const deleteVendor = useDeleteVendor();
   const [showDelete, setShowDelete] = useState(false);
+  const [showComment, setShowComment] = useState(false);
   const isPending = createVendor.isPending || updateVendor.isPending;
 
   const defaultValues = getDefaultValues(vendor);
@@ -228,6 +236,7 @@ export function VendorForm({ vendor }: VendorFormProps) {
           onDelete={vendor ? () => setShowDelete(true) : undefined}
           deleteIsPending={deleteVendor.isPending}
           activity={vendor && { id: vendor.id, label: vendor.code }}
+          onComment={vendor ? () => setShowComment(true) : undefined}
           badges={
             <>
               {watchedCode && (
@@ -290,6 +299,17 @@ export function VendorForm({ vendor }: VendorFormProps) {
         onCancel={f.navGuard.cancel}
         variant="warning"
       />
+
+      {vendor && (
+        <Suspense fallback={null}>
+          <EntityCommentSheet
+            crud={vendorCommentCrud}
+            entityId={vendor.id}
+            open={showComment}
+            onOpenChange={setShowComment}
+          />
+        </Suspense>
+      )}
 
       {vendor && (
         <DeleteDialog
