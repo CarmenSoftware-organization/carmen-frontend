@@ -5,9 +5,8 @@ import {
   ListCardAuditRows,
   ListCardRow,
 } from "@/components/share/list-card";
-import { useProfile } from "@/hooks/use-profile";
-import { formatDate } from "@/lib/date-utils";
 import type { PriceList } from "@/types/price-list";
+import { PlPeriodCell } from "./pl-period-cell";
 
 interface PriceListCardProps {
   readonly item: PriceList;
@@ -22,16 +21,6 @@ export default function PriceListCard({
 }: PriceListCardProps) {
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
-  const { dateFormat } = useProfile();
-
-  const formatPeriod = (period: string): string => {
-    const parts = period.split(" - ");
-    if (parts.length !== 2) return period;
-    const from = formatDate(parts[0], dateFormat);
-    const to = formatDate(parts[1], dateFormat);
-    if (!from && !to) return "—";
-    return `${from} - ${to}`;
-  };
 
   return (
     <ListCard
@@ -54,9 +43,7 @@ export default function PriceListCard({
       )}
       {item.effectivePeriod && (
         <ListCardRow label={tfl("effectivePeriod")}>
-          <span className="tabular-nums">
-            {formatPeriod(item.effectivePeriod)}
-          </span>
+          <PlPeriodCell period={item.effectivePeriod} className="text-right" />
         </ListCardRow>
       )}
       <ListCardAuditRows audit={item.audit} />
