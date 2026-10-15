@@ -351,7 +351,8 @@ export function LookupChartOfAccount({
 
     return list.filter((acc) => {
       if (activeOnly && !acc.is_active) return false;
-      if (categories && !categories.includes(acc.category)) return false;
+      if (categories && (!acc.category || !categories.includes(acc.category)))
+        return false;
       return true;
     });
   }, [data?.data, category, activeOnly]);

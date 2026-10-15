@@ -65,7 +65,10 @@ export default function CoaComponent() {
           },
           {
             header: tfl("category"),
-            value: (r) => t(`accountCategory.${r.category}`),
+            value: (r) =>
+              r.category
+                ? t(`accountCategory.${r.category}`)
+                : t("labels.categoryUnset"),
             width: 18,
           },
           {

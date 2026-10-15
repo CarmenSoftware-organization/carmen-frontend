@@ -1634,6 +1634,8 @@
         "inactiveOnly": "Inactive Only",
         "allStatuses": "All Statuses",
         "allCategories": "All Categories",
+        "selectCategory": "Select category",
+        "categoryUnset": "Not set",
         "allTypes": "All Types"
       },
       "kpi": {
