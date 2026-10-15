@@ -18,8 +18,8 @@ interface EntityCommentSheetProps {
  * เดิมแต่ละโมดูลมีไฟล์ของตัวเองไฟล์ละ ~60 บรรทัดที่ต่างกันแค่ชื่อ hook ที่เรียก
  * กับชื่อ prop id — เวลาแก้พฤติกรรมของแผง comment ต้องไล่แก้ห้าที่แล้วมักลืมสักที่
  *
- * ดึง comment เฉพาะตอนเปิดจริง (`open ? entityId : undefined`) — เอกสารหนึ่งใบมี
- * comment ไม่กี่อัน แต่คนส่วนใหญ่เปิดใบมาแล้วไม่กดดู ไม่ต้องจ่ายค่า request
+ * ดึง comment เฉพาะตอนเปิดจริง (`open ? entityId : undefined`) — คนส่วนใหญ่เปิดใบมา
+ * แล้วไม่กดดู ไม่ต้องจ่ายค่า request · เปิดแล้วโหลดทีละหน้า (ใหม่ → เก่า) ตอนเลื่อนถึงท้าย
  *
  * @example
  * <EntityCommentSheet crud={prCommentCrud} entityId={prId} open={open} onOpenChange={setOpen} />
@@ -32,9 +32,14 @@ export function EntityCommentSheet({
 }: EntityCommentSheetProps) {
   const { data: profile, dateFormat } = useProfile();
 
-  const { data: comments = [], isLoading } = crud.useComments(
-    open ? entityId : undefined,
-  );
+  const {
+    comments,
+    total,
+    isLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = crud.useComments(open ? entityId : undefined);
   const createComment = crud.useCreate();
   const updateComment = crud.useUpdate();
   const deleteComment = crud.useDelete();
@@ -45,6 +50,10 @@ export function EntityCommentSheet({
       onOpenChange={onOpenChange}
       comments={comments}
       isLoading={isLoading}
+      total={total}
+      hasMore={hasNextPage}
+      isFetchingMore={isFetchingNextPage}
+      onLoadMore={fetchNextPage}
       currentUserId={profile?.id}
       dateFormat={dateFormat}
       directFileUpload

@@ -33,7 +33,7 @@ vi.mock("@/components/permission-denied-dialog", () => ({
 }));
 vi.mock("../shared/use-purchase-order", async (orig) => ({
   ...(await orig<typeof import("../shared/use-purchase-order")>()),
-  usePurchaseOrderComments: () => ({ data: [] }),
+  usePurchaseOrderComments: () => ({ comments: [], total: 0 }),
 }));
 
 const { PoHeader } = await import("./po-header");

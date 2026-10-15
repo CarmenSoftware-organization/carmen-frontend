@@ -36,7 +36,7 @@ vi.mock("@/components/permission-denied-dialog", () => ({
 }));
 vi.mock("./use-purchase-request", async (orig) => ({
   ...(await orig<typeof import("./use-purchase-request")>()),
-  usePurchaseRequestComments: () => ({ data: [] }),
+  usePurchaseRequestComments: () => ({ comments: [], total: 0 }),
 }));
 vi.mock("@/hooks/use-workflow", async (orig) => ({
   ...(await orig<typeof import("@/hooks/use-workflow")>()),

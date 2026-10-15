@@ -37,7 +37,7 @@ export function CnHeader({
 }: CnHeaderProps) {
   const t = useTranslations("procurement.creditNote");
   const tfl = useTranslations("field");
-  const { data: comments } = useCreditNoteComments(creditNote?.id);
+  const { total: commentCount } = useCreditNoteComments(creditNote?.id);
 
   const isView = mode === "view";
 
@@ -98,7 +98,7 @@ export function CnHeader({
       {creditNote && (
         <DocActionsMenu
           onComment={onShowComment}
-          commentCount={comments?.length}
+          commentCount={commentCount}
           activity={{ id: creditNote.id, label: creditNote.cn_no }}
           print={
             isView && creditNote.id

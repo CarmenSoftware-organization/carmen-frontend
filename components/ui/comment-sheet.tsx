@@ -61,6 +61,12 @@ interface CommentSheetProps {
   readonly onOpenChange: (open: boolean) => void;
   readonly comments: CommentItem[];
   readonly isLoading: boolean;
+  /** จำนวนทั้งหมดตาม backend สำหรับหัวแผง — ไม่ส่ง = ใช้ `comments.length` */
+  readonly total?: number;
+  /** มีหน้าถัดไปให้โหลด — sentinel ท้ายรายการจะเรียก `onLoadMore` เมื่อเลื่อนถึง */
+  readonly hasMore?: boolean;
+  readonly isFetchingMore?: boolean;
+  readonly onLoadMore?: () => void;
   readonly currentUserId?: string;
   readonly dateFormat: string;
   readonly onSubmit: (data: {
@@ -249,11 +255,48 @@ function SkeletonRow() {
   );
 }
 
+/**
+ * จุดท้ายรายการที่เรียก `onLoadMore` เมื่อเลื่อนเข้าใกล้ (เผื่อ 200px)
+ *
+ * ไม่ใช้ `useInViewport` เพราะตัวนั้นปิด observer หลังติดครั้งแรก — ที่นี่ผู้เรียก mount
+ * ตัวนี้ใหม่ทุกครั้งที่โหลดหน้าถัดไปเสร็จ ถ้ายังอยู่ในจอ (รายการสั้นกว่าจอ) ก็ยิงต่อทันที
+ * จนเต็มจอหรือหมดหน้า · ไม่มี IntersectionObserver (jsdom) = ไม่ยิง
+ */
+function LoadMoreSentinel({ onLoadMore }: { onLoadMore: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const callbackRef = useRef(onLoadMore);
+  useEffect(() => {
+    callbackRef.current = onLoadMore;
+  });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          observer.disconnect();
+          callbackRef.current();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return <div ref={ref} aria-hidden="true" className="h-px" />;
+}
+
 export function CommentSheet({
   open,
   onOpenChange,
   comments,
   isLoading,
+  total,
+  hasMore = false,
+  isFetchingMore = false,
+  onLoadMore,
   currentUserId,
   dateFormat,
   onSubmit,
@@ -426,7 +469,7 @@ export function CommentSheet({
             <MessageCircle className="text-primary size-4.5" />
             <div className="min-w-0 flex-1">
               <SheetTitle className="text-base">
-                {t("title", { count: comments.length })}
+                {t("title", { count: total ?? comments.length })}
               </SheetTitle>
             </div>
           </div>
@@ -435,7 +478,7 @@ export function CommentSheet({
         <ScrollArea
           className="animate-fade-in-left min-h-0 flex-1 [animation-delay:75ms]"
           aria-live="polite"
-          aria-busy={isLoading}
+          aria-busy={isLoading || isFetchingMore}
         >
           {isLoading && (
             <div className="divide-y" aria-label={tc("loading")}>
@@ -620,6 +663,10 @@ export function CommentSheet({
                   )}
                 </div>
               ))}
+              {isFetchingMore && <SkeletonRow />}
+              {hasMore && !isFetchingMore && onLoadMore && (
+                <LoadMoreSentinel onLoadMore={onLoadMore} />
+              )}
             </div>
           )}
         </ScrollArea>
