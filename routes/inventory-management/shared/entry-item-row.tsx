@@ -1,11 +1,14 @@
 import { memo, useState, type ComponentType } from "react";
-import { Calculator, ImageIcon, MessageSquarePlus, Pencil } from "lucide-react";
+import {
+  Calculator,
+  ImageIcon,
+  MessageSquarePlus,
+  MessageSquareText,
+} from "lucide-react";
 import { useTranslations } from "use-intl";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { STATUS_DOT_CHIP } from "@/constant/status-config";
-import { ProductAvatar } from "./inv-shared";
+import { cn } from "@/lib/utils";
 import type { SavedNotePayload } from "./entry-notes-dialog";
 interface NotesDialogComponentProps {
   readonly open: boolean;
@@ -30,6 +33,8 @@ export interface EntryItemRowProps {
     name: string;
     unit: string;
   }) => void;
+  /** Enter ในช่องนับ → ไปช่องของรายการถัดไป (ไม่ส่ง = Enter แค่ blur) */
+  readonly onAdvance?: (id: string) => void;
   readonly sequenceNo?: number;
   readonly productCode?: string;
   readonly productLocalName?: string;
@@ -37,6 +42,18 @@ export interface EntryItemRowProps {
   readonly NotesDialog: ComponentType<NotesDialogComponentProps>;
   readonly translationNamespace: string;
 }
+
+/**
+ * ความกว้างคอลัมน์ใช้ร่วมกับ EntrySheetHeader — แก้ที่เดียวให้หัวตรงกับแถว
+ * จอแคบ (<sm) แถวตัดเป็นสองบรรทัด: ชื่อเต็มบรรทัดบน · โน้ต/ช่องนับ/หน่วยบรรทัดล่าง
+ */
+export const ENTRY_COL = {
+  seq: "hidden w-8 shrink-0 text-right sm:block",
+  name: "min-w-0 basis-full sm:basis-0 sm:flex-1",
+  notes: "w-8 shrink-0",
+  qty: "min-w-0 flex-1 sm:w-40 sm:flex-none",
+  unit: "w-12 shrink-0 sm:w-14",
+} as const;
 
 export const EntryItemRow = memo(function EntryItemRow({
   id,
@@ -49,6 +66,7 @@ export const EntryItemRow = memo(function EntryItemRow({
   isCounted,
   onCommit,
   onOpenCalc,
+  onAdvance,
   sequenceNo,
   productCode,
   productLocalName,
@@ -80,177 +98,160 @@ export const EntryItemRow = memo(function EntryItemRow({
     if (value !== committedQty) onCommit(id, value);
   };
 
-  const detailedHeader = sequenceNo !== undefined;
-  const showLocalName =
+  // บรรทัดรอง: code · SKU · ชื่อท้องถิ่น — ตัดตัวที่ซ้ำกันทิ้ง
+  const metaParts = [
+    productCode,
+    productSku && productSku !== productCode
+      ? t("sku", { code: productSku })
+      : null,
     productLocalName && productLocalName !== productName
       ? productLocalName
-      : null;
-  const showSkuLine = detailedHeader
-    ? productSku && productSku !== productCode
-    : true;
+      : null,
+  ].filter(Boolean);
+
+  const hasNote =
+    !!savedNote && (savedNote.note.length > 0 || savedNote.images.length > 0);
 
   return (
-    <div className="border-border/60 bg-card hover:border-primary/40 relative space-y-2 rounded-xl border p-3 transition-colors">
-      <div className="flex items-start gap-3">
-        <ProductAvatar
-          letter={productName?.[0]?.toUpperCase() ?? "?"}
-          index={index}
-        />
-
-        <div className="min-w-0 flex-1 space-y-0.5">
-          {detailedHeader ? (
-            <>
-              <div className="flex flex-wrap items-baseline gap-1.5">
-                <span className="text-muted-foreground/80 text-micro-legal font-semibold tabular-nums">
-                  #{String(sequenceNo).padStart(2, "0")}
-                </span>
-                <h3 className="text-foreground text-sm leading-tight font-semibold tracking-tight">
-                  {productName}
-                </h3>
-                {productCode && (
-                  <span className="text-muted-foreground text-micro-legal tracking-wide uppercase">
-                    {productCode}
-                  </span>
-                )}
-              </div>
-              {showLocalName && (
-                <p className="text-muted-foreground text-micro leading-snug">
-                  {showLocalName}
-                </p>
-              )}
-              {showSkuLine && (
-                <p className="text-muted-foreground/80 text-micro-legal tracking-wide uppercase">
-                  {t("sku", { code: productSku })}
-                </p>
-              )}
-            </>
-          ) : (
-            <>
-              <h3 className="text-foreground text-sm leading-tight font-semibold tracking-tight">
-                {productName}
-              </h3>
-              <p className="text-muted-foreground text-micro-legal tracking-wide uppercase">
-                {t("sku", { code: productSku })}
-              </p>
-            </>
-          )}
-        </div>
-
-        {isCounted && (
-          <Badge size="xs" className={`${STATUS_DOT_CHIP} before:bg-success`}>
-            {t("counted")}
-          </Badge>
+    <div
+      className={cn(
+        "hover:bg-muted/40 focus-within:bg-primary/5 relative flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b py-2 pr-3 pl-4 transition-colors sm:flex-nowrap",
+      )}
+    >
+      {/* แถบซ้าย = นับแล้ว — สีเดียวกับแถบสรุปและหน้า list */}
+      <span
+        className={cn(
+          "absolute inset-y-0 left-0 w-1 transition-colors",
+          isCounted ? "bg-success" : "bg-transparent",
         )}
-      </div>
+        aria-hidden="true"
+      />
 
-      <div className="border-border/40 flex items-center gap-2 border-t pt-2">
-        <span className="text-muted-foreground text-micro-legal font-semibold tracking-wider uppercase">
-          {t("actualCount")}
-        </span>
-        <div className="ml-auto flex">
-          <Input
-            type="number"
-            inputMode="decimal"
-            min={0}
-            step="any"
-            value={draft}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => {
-              setIsFocused(false);
-              commit();
-            }}
-            onChange={(e) => {
-              const newDraft = e.target.value;
-              setDraft(newDraft);
-              if (commitOnChange) {
-                const value = parseValue(newDraft);
-                if (value !== committedQty) onCommit(id, value);
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-            }}
-            className="border-border/40 focus-visible:border-primary bg-card h-8 w-32 rounded-l-lg rounded-r-none border pr-2 text-right text-sm tabular-nums shadow-none focus-visible:ring-0"
-          />
-          <Button
-            variant="outline"
-            size="icon-sm"
-            className="border-border/40 hover:bg-card bg-card h-8 w-8 rounded-l-none border border-l-0"
-            onClick={() =>
-              onOpenCalc({
-                id,
-                productId,
-                name: productName,
-                unit: inventoryUnitName,
-              })
-            }
-            aria-label={t("calculator")}
-          >
-            <Calculator className="size-3.5" />
-          </Button>
-        </div>
-        {inventoryUnitName && (
-          <span className="text-muted-foreground text-micro">
-            {inventoryUnitName}
-          </span>
+      <span
+        className={cn(
+          ENTRY_COL.seq,
+          "text-muted-foreground text-micro tabular-nums",
         )}
-      </div>
-
-      <button
-        type="button"
-        className="text-primary hover:text-primary/80 text-micro inline-flex cursor-pointer items-center gap-1 font-semibold transition-colors"
-        onClick={() => setNotesOpen(true)}
       >
-        <MessageSquarePlus className="size-2.5" aria-hidden="true" />
-        {t("addNotes")}
-      </button>
+        {sequenceNo ?? index + 1}
+      </span>
 
-      {/* Saved note preview */}
-      {savedNote &&
-        (savedNote.note.length > 0 || savedNote.images.length > 0) && (
-          <div className="border-primary/30 bg-primary/5 relative space-y-1.5 rounded-lg border border-dashed p-2">
+      <div className={ENTRY_COL.name}>
+        <p className="text-foreground truncate text-sm leading-snug font-medium">
+          {productName}
+          {isCounted && <span className="sr-only"> — {t("counted")}</span>}
+        </p>
+        {metaParts.length > 0 && (
+          <p className="text-muted-foreground text-micro-legal truncate tracking-wide uppercase">
+            {metaParts.join(" · ")}
+          </p>
+        )}
+        {hasNote && (
+          <button
+            type="button"
+            onClick={() => setNotesOpen(true)}
+            className="text-primary text-micro mt-0.5 flex max-w-full items-center gap-1 text-left hover:underline"
+          >
             {savedNote.note.length > 0 && (
-              <p className="text-foreground/80 text-micro leading-relaxed whitespace-pre-wrap">
-                {savedNote.note}
-              </p>
+              <span className="truncate">{savedNote.note}</span>
             )}
             {savedNote.images.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5">
-                {savedNote.images.slice(0, 4).map((img) => (
-                  <div
-                    key={img.id}
-                    className="border-border/60 relative size-10 overflow-hidden rounded-md border"
-                  >
-                    <img
-                      src={img.url}
-                      alt={img.name}
-                      className="absolute inset-0 size-full object-cover"
-                    />
-                  </div>
-                ))}
-                {savedNote.images.length > 4 && (
-                  <div className="border-border/60 bg-muted/60 text-muted-foreground text-micro-legal flex size-10 items-center justify-center rounded-md border font-semibold tabular-nums">
-                    +{savedNote.images.length - 4}
-                  </div>
-                )}
-                <span className="text-muted-foreground text-micro-eyebrow inline-flex items-center gap-1 font-semibold tracking-widest uppercase">
-                  <ImageIcon className="size-2.5" aria-hidden="true" />
-                  {t("evidenceCount", { count: savedNote.images.length })}
-                </span>
-              </div>
+              <span className="inline-flex shrink-0 items-center gap-0.5 font-medium">
+                <ImageIcon className="size-3" aria-hidden="true" />
+                {t("evidenceCount", { count: savedNote.images.length })}
+              </span>
             )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              onClick={() => setNotesOpen(true)}
-              aria-label={t("addNotes")}
-              className="text-muted-foreground hover:text-primary absolute top-1 right-1 size-5 rounded-full"
-            >
-              <Pencil className="size-3" />
-            </Button>
-          </div>
+          </button>
         )}
+      </div>
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        onClick={() => setNotesOpen(true)}
+        aria-label={t("addNotes")}
+        title={t("addNotes")}
+        className={cn(
+          ENTRY_COL.notes,
+          hasNote ? "text-primary" : "text-muted-foreground",
+        )}
+      >
+        {hasNote ? (
+          <MessageSquareText className="size-4" />
+        ) : (
+          <MessageSquarePlus className="size-4" />
+        )}
+      </Button>
+
+      <div className={cn(ENTRY_COL.qty, "flex")}>
+        <Input
+          type="number"
+          inputMode="decimal"
+          enterKeyHint={onAdvance ? "next" : "done"}
+          min={0}
+          step="any"
+          value={draft}
+          data-entry-id={id}
+          aria-label={`${productName}${inventoryUnitName ? ` (${inventoryUnitName})` : ""}`}
+          onFocus={(e) => {
+            setIsFocused(true);
+            e.target.select();
+          }}
+          onBlur={() => {
+            setIsFocused(false);
+            commit();
+          }}
+          onChange={(e) => {
+            const newDraft = e.target.value;
+            setDraft(newDraft);
+            if (commitOnChange) {
+              const value = parseValue(newDraft);
+              if (value !== committedQty) onCommit(id, value);
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter") return;
+            e.preventDefault();
+            if (onAdvance) onAdvance(id);
+            else (e.target as HTMLInputElement).blur();
+          }}
+          className={cn(
+            "bg-card h-8 min-w-0 flex-1 rounded-l-md rounded-r-none border pr-2 text-right text-sm tabular-nums shadow-none focus-visible:ring-0",
+            isCounted
+              ? "border-success/50 focus-visible:border-primary"
+              : "border-border focus-visible:border-primary",
+          )}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon-sm"
+          className="bg-card h-8 w-8 shrink-0 rounded-l-none border-l-0"
+          onClick={() =>
+            onOpenCalc({
+              id,
+              productId,
+              name: productName,
+              unit: inventoryUnitName,
+            })
+          }
+          aria-label={t("calculator")}
+          title={t("calculator")}
+        >
+          <Calculator className="size-3.5" />
+        </Button>
+      </div>
+
+      <span
+        className={cn(
+          ENTRY_COL.unit,
+          "text-muted-foreground text-micro truncate uppercase",
+        )}
+        title={inventoryUnitName}
+      >
+        {inventoryUnitName}
+      </span>
 
       <NotesDialog
         open={notesOpen}

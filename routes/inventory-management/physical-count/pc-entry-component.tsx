@@ -31,6 +31,8 @@ import { EntryItemRow } from "../shared/entry-item-row";
 import { PcEntryHeader } from "./pc-entry-header";
 import { PcEntryNotesDialog } from "./pc-entry-notes-dialog";
 import { EntryToolbar } from "../shared/entry-toolbar";
+import { EntrySheetHeader } from "../shared/entry-sheet-header";
+import { useEntryAdvance } from "../shared/use-entry-advance";
 
 interface PcEntryComponentProps {
   readonly physicalCountId: string;
@@ -38,8 +40,7 @@ interface PcEntryComponentProps {
 
 type CountFilter = "all" | "counted" | "uncounted";
 
-const ROW_ESTIMATE = 156; // px ของการ์ดหนึ่งใบ + gap (อิงจริง ~140-160)
-const ROW_GAP = 8; // gap-2
+const ROW_ESTIMATE = 53; // px ของแถวใบนับหนึ่งแถว (รวม border-b) — มีโน้ตจะสูงขึ้น วัดจริงด้วย measureElement
 
 export function PcEntryComponent({ physicalCountId }: PcEntryComponentProps) {
   const t = useTranslations("inventoryManagement.physicalCount");
@@ -79,6 +80,9 @@ export function PcEntryComponent({ physicalCountId }: PcEntryComponentProps) {
     const handle = setTimeout(() => setSearch(searchInput), 200);
     return () => clearTimeout(handle);
   }, [searchInput]);
+
+  // ลำดับในใบนับ (1-based) คงที่ไม่ว่ากรองอะไร — PC ไม่มี sequence_no จาก backend
+  const seqById = new Map(details.map((d, i) => [d.id, i + 1]));
 
   // Pre-build lowercased search index — แค่ครั้งเดียวต่อ details
   const searchIndex = details.map((d) =>
@@ -285,10 +289,15 @@ export function PcEntryComponent({ physicalCountId }: PcEntryComponentProps) {
   const rowVirtualizer = useVirtualizer({
     count: filtered.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => ROW_ESTIMATE + ROW_GAP,
+    estimateSize: () => ROW_ESTIMATE,
     overscan: 6,
     getItemKey: (i) => filtered[i]?.id ?? i,
   });
+  const handleAdvance = useEntryAdvance(filtered, rowVirtualizer, scrollRef);
+  // เปลี่ยนตัวกรอง/คำค้น → กลับไปบนสุด ไม่งั้นรายการใหม่ค้างอยู่ที่ระยะเลื่อนเดิม (กลางรายการ)
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 });
+  }, [deferredFilter, deferredSearch]);
 
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
 
@@ -297,14 +306,9 @@ export function PcEntryComponent({ physicalCountId }: PcEntryComponentProps) {
   const virtualItems = rowVirtualizer.getVirtualItems();
 
   return (
-    <div className="relative isolate -mx-3 -my-3">
+    <div className="relative isolate -mx-3 -my-3 h-[calc(100%+1.5rem)]">
       <AnimationStyles />
-      <div
-        className="relative flex min-h-[calc(100vh-4rem-3rem)] flex-col px-4 pt-4 lg:px-4"
-        style={{
-          paddingBottom: "max(7rem, calc(env(safe-area-inset-bottom) + 6rem))",
-        }}
-      >
+      <div className="relative flex h-full flex-col px-4 pt-4 lg:px-4">
         <PcEntryHeader
           locationName={locationName}
           locationCode={locationCode}
@@ -353,8 +357,8 @@ export function PcEntryComponent({ physicalCountId }: PcEntryComponentProps) {
           exportDisabled={details.length === 0}
         />
 
-        {/* ── Product cards (virtualized) ─────────── */}
-        <div className="flex-1">
+        {/* ── ใบนับ (virtualized) ─────────── */}
+        <div className="mb-3 min-h-0 flex-1">
           {isLoading && <ItemListSkeleton count={5} />}
           {!isLoading && filtered.length === 0 && totalItems > 0 && (
             <div className="border-border/40 bg-card flex items-center justify-center gap-2 rounded-xl border border-dashed py-8">
@@ -365,57 +369,61 @@ export function PcEntryComponent({ physicalCountId }: PcEntryComponentProps) {
             </div>
           )}
           {!isLoading && filtered.length > 0 && (
-            <div
-              ref={scrollRef}
-              className="contain:strict relative h-[calc(100dvh-22rem)] overflow-auto"
-            >
+            <div className="bg-card flex h-full flex-col overflow-hidden rounded-xl border">
+              <EntrySheetHeader translationNamespace="inventoryManagement.physicalCount" />
               <div
-                style={{
-                  height: rowVirtualizer.getTotalSize(),
-                  position: "relative",
-                }}
+                ref={scrollRef}
+                className="contain:strict relative min-h-0 flex-1 overflow-auto"
               >
-                {virtualItems.map((vi) => {
-                  const item = filtered[vi.index];
-                  const eff =
-                    item.id in counts ? counts[item.id] : item.actual_qty;
-                  return (
-                    <div
-                      key={vi.key}
-                      data-index={vi.index}
-                      ref={rowVirtualizer.measureElement}
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        transform: `translateY(${vi.start}px)`,
-                        paddingBottom: ROW_GAP,
-                      }}
-                    >
-                      <EntryItemRow
-                        id={item.id}
-                        index={vi.index}
-                        productId={item.product_id}
-                        productName={item.product_name}
-                        productSku={item.product_sku}
-                        inventoryUnitName={item.inventory_unit_name}
-                        committedQty={eff}
-                        isCounted={eff != null}
-                        onCommit={handleCommitCount}
-                        onOpenCalc={handleOpenCalc}
-                        NotesDialog={PcEntryNotesDialog}
-                        translationNamespace="inventoryManagement.physicalCount"
-                      />
-                    </div>
-                  );
-                })}
+                <div
+                  style={{
+                    height: rowVirtualizer.getTotalSize(),
+                    position: "relative",
+                  }}
+                >
+                  {virtualItems.map((vi) => {
+                    const item = filtered[vi.index];
+                    const eff =
+                      item.id in counts ? counts[item.id] : item.actual_qty;
+                    return (
+                      <div
+                        key={vi.key}
+                        data-index={vi.index}
+                        ref={rowVirtualizer.measureElement}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          transform: `translateY(${vi.start}px)`,
+                        }}
+                      >
+                        <EntryItemRow
+                          id={item.id}
+                          index={vi.index}
+                          sequenceNo={seqById.get(item.id)}
+                          productId={item.product_id}
+                          productName={item.product_name}
+                          productSku={item.product_sku}
+                          inventoryUnitName={item.inventory_unit_name}
+                          committedQty={eff}
+                          isCounted={eff != null}
+                          onCommit={handleCommitCount}
+                          onOpenCalc={handleOpenCalc}
+                          onAdvance={handleAdvance}
+                          NotesDialog={PcEntryNotesDialog}
+                          translationNamespace="inventoryManagement.physicalCount"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        <div className="border-border/60 bg-card/80 fixed inset-x-0 bottom-0 z-30 border-t px-4 py-3 backdrop-blur-xl">
+        <div className="border-border/60 bg-card/80 -mx-4 border-t px-4 py-3 backdrop-blur-xl">
           <TooltipProvider delayDuration={100}>
             <div className="flex flex-wrap items-center justify-end gap-2">
               {uncountedCount === 0 ? (

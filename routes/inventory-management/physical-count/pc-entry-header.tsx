@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { STATUS_DOT_CHIP } from "@/constant/status-config";
 import { Progress } from "@/components/ui/progress";
 import { BackButton } from "@/components/share/back-button";
+import { useProfile } from "@/hooks/use-profile";
+import { formatDate } from "@/lib/date-utils";
 
 interface PcEntryHeaderProps {
   readonly locationName: string;
@@ -28,7 +30,9 @@ export function PcEntryHeader({
   lastSaved,
 }: PcEntryHeaderProps) {
   const t = useTranslations("inventoryManagement.physicalCount");
+  const ts = useTranslations("status");
   const { toList } = useListReturn("/inventory-management/physical-count");
+  const { dateFormat } = useProfile();
 
   return (
     <div className="border-border/60 bg-card mb-3 rounded-xl border p-3">
@@ -42,7 +46,7 @@ export function PcEntryHeader({
                 {locationName || "—"}
               </h1>
               <Badge size="xs" className={`${STATUS_DOT_CHIP} before:bg-info`}>
-                {status ?? t("tabInProgress")}
+                {status && ts.has(status) ? ts(status) : t("tabInProgress")}
               </Badge>
             </div>
 
@@ -51,7 +55,7 @@ export function PcEntryHeader({
               {startCountingAt && (
                 <span className="flex items-center gap-1">
                   <Calendar className="size-2.5" aria-hidden="true" />
-                  {new Date(startCountingAt).toLocaleDateString()}
+                  {formatDate(startCountingAt, dateFormat)}
                 </span>
               )}
               <span className="flex items-center gap-1">

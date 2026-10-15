@@ -253,49 +253,6 @@ export function ItemListSkeleton({ count = 5 }: { readonly count?: number }) {
   );
 }
 
-export function ProductAvatar({
-  letter,
-  index,
-}: {
-  readonly letter: string;
-  readonly index?: number;
-}) {
-  return (
-    <div className="relative shrink-0">
-      <div
-        className="relative size-9 overflow-hidden rounded-lg shadow-[inset_0_0_0_0.0625rem_color-mix(in_oklch,var(--success),black_30%)]"
-        style={{
-          background:
-            "linear-gradient(135deg, color-mix(in oklch, var(--success), black 45%) 0%, color-mix(in oklch, var(--success), black 65%) 100%)",
-        }}
-      >
-        <svg
-          viewBox="0 0 40 40"
-          className="absolute inset-0 size-full opacity-20"
-          aria-hidden="true"
-        >
-          <circle cx="32" cy="8" r="14" fill="#fff" />
-          <circle cx="6" cy="34" r="10" fill="#000" />
-        </svg>
-        <div
-          className="absolute inset-0 flex items-center justify-center font-serif text-base font-semibold"
-          style={{
-            color: "color-mix(in oklch, var(--success), white 70%)",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          {letter}
-        </div>
-      </div>
-      {typeof index === "number" && (
-        <div className="bg-foreground text-background text-micro-eyebrow absolute -top-1 -left-1 flex size-4 items-center justify-center rounded-full font-semibold">
-          {String(index + 1).padStart(2, "0")}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export function InvSearchBar({
   search,
   onSearch,
