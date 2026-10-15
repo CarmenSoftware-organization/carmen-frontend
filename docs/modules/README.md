@@ -50,7 +50,7 @@ Purchasing — purchase requests, purchase orders (incl. the from-price-list wiz
 
 | URL | File |
 |---|---|
-| `/procurement/my-approval` | `routes/procurement/approval/approval.route.tsx` |
+| `/procurement/my-approval` | `routes/procurement/my-approval/my-approval.route.tsx` |
 | `/procurement/credit-note/:id` | `routes/procurement/credit-note/credit-note-edit.route.tsx` |
 | `/procurement/credit-note/new` | `routes/procurement/credit-note/credit-note-new.route.tsx` |
 | `/procurement/credit-note` | `routes/procurement/credit-note/credit-note.route.tsx` |

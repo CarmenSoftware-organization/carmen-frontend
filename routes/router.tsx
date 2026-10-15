@@ -350,7 +350,8 @@ export const router = createBrowserRouter([
               },
               {
                 path: "my-approval",
-                lazy: () => import("./procurement/approval/approval.route"),
+                lazy: () =>
+                  import("./procurement/my-approval/my-approval.route"),
               },
               // path เดิมก่อนเปลี่ยนชื่อหน้า — คง redirect ไว้ให้ bookmark เก่าไม่ 404
               // ถอดออกได้หลังปล่อยไปแล้วหนึ่งรอบ release

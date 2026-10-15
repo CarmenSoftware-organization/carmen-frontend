@@ -60,7 +60,7 @@ describe("firstAccessiblePath", () => {
   it("ลงไปหาในลูกของกลุ่ม และคืนลูกตัวแรกที่เข้าได้", () => {
     const path = firstAccessiblePath([
       group("/procurement", [
-        leaf("/procurement/approval", { locked: true }),
+        leaf("/procurement/my-approval", { locked: true }),
         leaf("/procurement/purchase-order"),
       ]),
     ]);
@@ -70,7 +70,7 @@ describe("firstAccessiblePath", () => {
   it("ข้ามทั้งกลุ่มเมื่อลูกเข้าไม่ได้สักตัว และไม่คืน path ของตัวกลุ่มเอง", () => {
     const path = firstAccessiblePath([
       group("/procurement", [
-        leaf("/procurement/approval", { locked: true }),
+        leaf("/procurement/my-approval", { locked: true }),
         leaf("/procurement/purchase-order", { denied: true }),
       ]),
       leaf("/report"),
@@ -80,16 +80,16 @@ describe("firstAccessiblePath", () => {
 
   it("เดินตามลำดับ sidebar แบบ depth-first — ลูกของกลุ่มแรกมาก่อนโมดูลถัดไป", () => {
     const path = firstAccessiblePath([
-      group("/procurement", [leaf("/procurement/approval")]),
+      group("/procurement", [leaf("/procurement/my-approval")]),
       leaf("/report"),
     ]);
-    expect(path).toBe("/procurement/approval");
+    expect(path).toBe("/procurement/my-approval");
   });
 
   it("คืน fallback เมื่อไม่มีอะไรเข้าได้เลย", () => {
     const path = firstAccessiblePath([
       leaf("/dashboard", { locked: true }),
-      group("/procurement", [leaf("/procurement/approval", { locked: true })]),
+      group("/procurement", [leaf("/procurement/my-approval", { locked: true })]),
     ]);
     expect(path).toBe(LANDING_FALLBACK_PATH);
   });
