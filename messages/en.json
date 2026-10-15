@@ -2742,6 +2742,7 @@
       "deleteConfirm": "Are you sure you want to delete certification \"{name}\"? This action cannot be undone.",
       "codePlaceholder": "e.g. ISO-9001",
       "namePlaceholder": "e.g. ISO 9001 Quality Management",
+      "validOfTotal": "{valid}/{total} valid",
       "vendorsHolding": "Vendors holding",
       "expiringCount": "{count} expiring",
       "expiredCount": "{count} expired",

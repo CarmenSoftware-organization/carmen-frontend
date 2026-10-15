@@ -85,6 +85,12 @@ export interface ConfigListTemplateProps<TEntity extends { id: string }> {
   exportSheetName?: string;
   defaultSort?: string;
   permissionPrefix?: string;
+  /**
+   * ให้ตารางแบ่งความกว้างตาม `size` ของแต่ละคอลัมน์ (DataGrid `width: "fixed"`)
+   * แทนการแบ่งเท่ากันทุกคอลัมน์ — opt-in เพราะคอลัมน์ที่ไม่ได้ตั้ง `size` จะได้
+   * 150 ของ TanStack ทันที หน้าที่เปิดต้องตั้ง `size` ให้ครบทุกคอลัมน์ของตัวเอง
+   */
+  fixedColumnWidths?: boolean;
 
   pageKey: ListPageKey;
   filterFields: FilterFieldDef[];

@@ -37,6 +37,7 @@ export function useCertificationTable({
   const columns: ColumnDef<Certification>[] = [
     {
       accessorKey: "code",
+      size: 120,
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("code")} />
       ),
@@ -49,6 +50,7 @@ export function useCertificationTable({
     },
     {
       accessorKey: "name",
+      size: 240,
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("name")} />
       ),
@@ -57,6 +59,7 @@ export function useCertificationTable({
     },
     {
       accessorKey: "description",
+      size: 320,
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("description")} />
       ),
@@ -74,6 +77,7 @@ export function useCertificationTable({
     {
       // นับฝั่ง server ต่อหน้า ไม่ใช่คอลัมน์ใน DB จึงเรียงไม่ได้
       id: "vendor_count",
+      size: 200,
       accessorFn: (row) => row.vendor_count,
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={t("vendorsHolding")} />

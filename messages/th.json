@@ -2742,6 +2742,7 @@
       "deleteConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบใบรับรอง \"{name}\"? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
       "codePlaceholder": "เช่น ISO-9001",
       "namePlaceholder": "เช่น ISO 9001 Quality Management",
+      "validOfTotal": "ใช้ได้ {valid}/{total}",
       "vendorsHolding": "ผู้ขายที่ถือใบ",
       "expiringCount": "ใกล้หมด {count}",
       "expiredCount": "หมดอายุ {count}",

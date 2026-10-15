@@ -12,7 +12,13 @@ import { type LucideIcon } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
 import type { TranslationFn } from "@/lib/i18n-schema";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
@@ -176,69 +182,49 @@ export function ConfigEntityDialog<
 
   return (
     <Dialog open={open} onOpenChange={isPending ? undefined : onOpenChange}>
-      <DialogContent
-        className={cn(
-          "overflow-hidden border-0 bg-transparent p-0 shadow-2xl sm:max-w-[425px]",
-          contentClassName,
-        )}
-        showCloseButton={false}
-      >
-        <div className="border-border/60 bg-popover/80 relative overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-3xl">
-          <form
-            onSubmit={
-              stopPropagationOnSubmit
-                ? (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    form.handleSubmit(onSubmit)(e);
-                  }
-                : form.handleSubmit(onSubmit)
-            }
-            className="relative flex flex-col"
-          >
-            <div className="border-border/40 bg-background/40 border-b px-6 py-6">
-              <div className="flex items-center gap-4">
-                <div className="text-primary bg-primary/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-sm">
-                  <Icon className="h-6 w-6" />
-                </div>
-                <div className="flex flex-col">
-                  <DialogTitle className="text-foreground text-xl font-bold tracking-tight">
-                    {isEdit
-                      ? tf("editTitle", { entity: t("entity") })
-                      : tf("addTitle", { entity: t("entity") })}
-                  </DialogTitle>
-                </div>
-              </div>
-            </div>
+      <DialogContent className={cn("sm:max-w-md", contentClassName)}>
+        <form
+          onSubmit={
+            stopPropagationOnSubmit
+              ? (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  form.handleSubmit(onSubmit)(e);
+                }
+              : form.handleSubmit(onSubmit)
+          }
+          className="grid gap-4"
+        >
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Icon aria-hidden className="text-primary size-4 shrink-0" />
+              {isEdit
+                ? tf("editTitle", { entity: t("entity") })
+                : tf("addTitle", { entity: t("entity") })}
+            </DialogTitle>
+          </DialogHeader>
 
-            <div className="px-6 py-6">
-              <FieldGroup className="gap-5">
-                {children({ form, disabled: isPending || !!readOnly })}
-              </FieldGroup>
-            </div>
+          <FieldGroup className="gap-4">
+            {children({ form, disabled: isPending || !!readOnly })}
+          </FieldGroup>
 
-            <div className="border-border/40 bg-background/40 flex justify-end gap-3 border-t px-6 py-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isPending}
-                className="rounded-xl"
-              >
-                {readOnly ? tc("close") : tc("cancel")}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+              disabled={isPending}
+            >
+              {readOnly ? tc("close") : tc("cancel")}
+            </Button>
+            {!readOnly && (
+              <Button type="submit" size="sm" disabled={isPending}>
+                {submitLabel}
               </Button>
-              {!readOnly && (
-                <Button
-                  type="submit"
-                  disabled={isPending}
-                  className="bg-primary/90 hover:bg-primary text-primary-foreground rounded-xl font-bold shadow-lg backdrop-blur-md transition-all"
-                >
-                  {submitLabel}
-                </Button>
-              )}
-            </div>
-          </form>
-        </div>
+            )}
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
