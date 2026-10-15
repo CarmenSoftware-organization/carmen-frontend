@@ -223,6 +223,7 @@ export function VendorForm({ vendor }: VendorFormProps) {
 
   return (
     <FormPageShell
+      width="wide"
       header={
         <FormToolbar
           mode={f.mode}
