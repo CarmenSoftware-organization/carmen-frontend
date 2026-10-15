@@ -82,16 +82,18 @@ interface CommentSheetProps {
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-// Backend อนุญาตเฉพาะ image + pdf + plain text — office types (xlsx/docx/pptx) ถูก reject
+// ต้องตรงกับ ALLOWED_MIME_TYPES ของ comment controller ทุกตัวใน backend-gateway
+// (jpeg/png/webp/gif/pdf) — เดิมรายการนี้มี text/plain กับ text/csv ที่ backend ไม่รับ
+// ไฟล์เลยผ่านด่านนี้ไปโดน 400 ไม่มีรหัส แล้ว toast ขึ้น "กรอกไม่ถูกต้อง" ที่ไม่บอกอะไร
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
   "image/png",
   "image/gif",
   "image/webp",
   "application/pdf",
-  "text/plain",
-  "text/csv",
 ]);
+/** ตัวกรองของ file picker — ชุดเดียวกับ ALLOWED_TYPES (`image/*` จะเปิดให้เลือก heic/svg ที่ไม่รับ) */
+const ACCEPT = [...ALLOWED_TYPES].join(",");
 
 const getFullName = (c: CommentItem) => c.audit?.created?.name ?? "";
 
@@ -719,7 +721,7 @@ export function CommentSheet({
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/*,.pdf,.txt,.csv"
+            accept={ACCEPT}
             className="hidden"
             onChange={handleFileSelect}
           />

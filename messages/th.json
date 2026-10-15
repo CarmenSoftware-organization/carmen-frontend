@@ -5455,7 +5455,7 @@
     "updated": "แก้ไขความคิดเห็นแล้ว",
     "deleted": "ลบความคิดเห็นแล้ว",
     "uploadFailed": "ไม่สามารถอัปโหลดไฟล์ได้",
-    "fileNotAllowed": "\"{name}\" — อนุญาตเฉพาะรูปภาพและเอกสาร",
+    "fileNotAllowed": "\"{name}\" — แนบได้เฉพาะรูป JPG, PNG, WEBP, GIF และไฟล์ PDF",
     "fileTooLarge": "\"{name}\" มีขนาดเกิน 10 MB",
     "uploadCountFailed": "อัปโหลดไฟล์ไม่สำเร็จ {count} ไฟล์",
     "saveComment": "บันทึกความคิดเห็น",

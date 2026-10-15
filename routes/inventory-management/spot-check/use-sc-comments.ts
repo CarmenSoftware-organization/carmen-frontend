@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { httpClient } from "@/lib/http-client";
+import { fetchAllComments } from "@/hooks/use-comment-crud";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { QUERY_KEYS } from "@/constant/query-keys";
 import type { CommentItem } from "@/components/ui/comment-sheet";
@@ -15,12 +16,9 @@ export function useSpotCheckDetailComments(detailId: string | undefined) {
     queryFn: async () => {
       if (!buCode || !detailId)
         throw new Error("Missing buCode or spot check detail id");
-      const res = await httpClient.get(
+      return fetchAllComments(
         API_ENDPOINTS.SPOT_CHECK_DETAIL_COMMENT(buCode, detailId),
       );
-      if (!res.ok) throw new Error("Failed to fetch comments");
-      const json = await res.json();
-      return json.data ?? [];
     },
     enabled: !!buCode && !!detailId,
   });
