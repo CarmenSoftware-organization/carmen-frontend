@@ -61,6 +61,32 @@ export function TreeNode({
     );
   };
 
+  // ลำดับชั้นอ่านจากน้ำหนักตัวอักษร ไม่ใช่สี: category หนักสุด → item group เบาสุด
+  // รหัสกว้างคงที่ต่อระดับ ชื่อพี่น้องจึงเรียงตรงแนวเดียวกันแม้รหัสยาวไม่เท่ากัน
+  const LEVEL_STYLE = {
+    [NODE_TYPE.CATEGORY]: {
+      row: "h-8 bg-muted/40",
+      code: "min-w-6 text-foreground font-semibold",
+      name: "text-sm font-semibold",
+    },
+    [NODE_TYPE.SUBCATEGORY]: {
+      row: "h-7",
+      code: "min-w-9 text-muted-foreground font-medium",
+      name: "text-xs font-medium",
+    },
+    [NODE_TYPE.ITEM_GROUP]: {
+      row: "h-7",
+      code: "min-w-10 text-muted-foreground",
+      name: "text-xs text-foreground/90",
+    },
+  }[node.type];
+
+  const childCount = node.children?.length ?? 0;
+  const childLabel =
+    node.type === NODE_TYPE.CATEGORY
+      ? t("nSubcategories", { count: childCount })
+      : t("nItemGroups", { count: childCount });
+
   const iconCls = "h-3 w-3 text-muted-foreground/60 shrink-0";
 
   const getNodeIcon = () => {
@@ -76,7 +102,8 @@ export function TreeNode({
       {/* Tree line connector */}
       <div
         className={cn(
-          "group/node hover:bg-accent/50 hover:border-border/30 flex h-7 items-center border-b border-transparent transition-colors",
+          "group/node hover:bg-accent/50 focus-within:bg-accent/50 flex items-center transition-colors",
+          LEVEL_STYLE.row,
         )}
         style={{ paddingLeft: `${level * 20 + 4}px` }}
       >
@@ -109,14 +136,13 @@ export function TreeNode({
           className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
           onClick={() => toggleExpand(node.id)}
         >
-          <Badge
-            variant={"secondary"}
-            className="text-micro-legal h-5 min-w-7 shrink-0 justify-center tabular-nums"
+          <span
+            className={cn("text-micro shrink-0 tabular-nums", LEVEL_STYLE.code)}
           >
             {highlight(node.code)}
-          </Badge>
+          </span>
 
-          <span className="truncate text-xs font-semibold">
+          <span className={cn("truncate", LEVEL_STYLE.name)}>
             {highlight(node.name)}
           </span>
 
@@ -127,19 +153,27 @@ export function TreeNode({
           )}
         </button>
 
-        {/* Status indicator */}
-        {!node.is_active && (
-          <Badge
-            variant="secondary"
-            size="xs"
-            className="text-micro-legal mr-1 shrink-0"
-          >
-            {ts("inactive")}
-          </Badge>
-        )}
+        {/* Meta: สถานะ + จำนวนลูก ชิดขวาก่อนปุ่ม — ตาไม่ต้องข้ามที่ว่างทั้งแถว */}
+        <div className="ml-2 flex shrink-0 items-center gap-2">
+          {!node.is_active && (
+            <Badge
+              variant="secondary"
+              size="xs"
+              className="text-micro-legal shrink-0"
+            >
+              {ts("inactive")}
+            </Badge>
+          )}
+          {node.type !== NODE_TYPE.ITEM_GROUP && (
+            <span className="text-muted-foreground/70 text-micro-legal hidden tabular-nums sm:inline">
+              {childLabel}
+            </span>
+          )}
+        </div>
 
-        {/* Actions - visible on hover */}
-        <div className="ml-auto hidden items-center pr-2 group-hover/node:flex">
+        {/* Actions — กว้างคงที่ (ช่องว่างไว้ตอนซ่อน) แถว meta จึงไม่ขยับตอน hover;
+            โผล่ตอน hover/โฟกัสคีย์บอร์ด และขึ้นตลอดบนจอสัมผัส */}
+        <div className="invisible flex w-23 shrink-0 items-center justify-end pr-2 group-focus-within/node:visible group-hover/node:visible pointer-coarse:visible">
           {node.type !== NODE_TYPE.ITEM_GROUP && (
             <button
               type="button"
