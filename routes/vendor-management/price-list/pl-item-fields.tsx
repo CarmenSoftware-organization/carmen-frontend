@@ -55,7 +55,8 @@ export function PlItemFields({
         wide
         frameless
         title={t("detail.title")}
-        description={t("detail.noItemsDesc")}
+        // "เพิ่มสินค้า…" เป็นคำชวนของโหมดแก้ไข — โหมดดูไม่มีปุ่มให้กด จึงไม่แสดง
+        description={isView ? undefined : t("detail.noItemsDesc")}
         count={detailFields.length}
         action={
           !isDisabled ? (
