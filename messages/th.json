@@ -1575,7 +1575,7 @@
         "dimensionsDesc": "เลือก Dimension ที่อนุญาต พร้อมกำหนด Sub-Codes และ Default Code (สูงสุด 1 Code)",
         "attributes": "5. คุณลักษณะอ้างอิงเพิ่มเติม (Attribute Tags)",
         "attributesDesc": "รูปแบบ Key-Value Pair (สำหรับผูก Tag อ้างอิงภายนอก เช่น PMS/POS/หมวดภาษี)",
-        "grouping": "ระดับหมวดบัญชีคุม (Account Code Grouping Path) *",
+        "grouping": "ระดับหมวดบัญชีคุม (Account Code Group Path) *",
         "groupingDesc": "บังคับเลือกโครงสร้างต้นไม้ผังบัญชีคุม (Level 1 ถึง Level 4) ก่อนบันทึกข้อมูล"
       },
       "rules": {
@@ -1588,7 +1588,7 @@
         "readOnly": "อ่านอย่างเดียว",
         "natureAutoDesc": "ด้านบัญชีกำหนดอัตโนมัติตามหมวดบัญชี (ห้ามแก้ไข)",
         "groupingMandatory": "Mandatory: กรุณาเลือกระดับหมวดบัญชีคุมก่อนบันทึก",
-        "groupingRequiredAlert": "กรุณาเลือกระดับหมวดบัญชีคุม (Account Code Grouping Path) ก่อนบันทึก!",
+        "groupingRequiredAlert": "กรุณาเลือกระดับหมวดบัญชีคุม (Account Code Group Path) ก่อนบันทึก!",
         "duplicateCodeAlert": "รหัสบัญชีนี้มีอยู่ในระบบแล้ว!",
         "selectCategoryAlert": "กรุณาเลือกหมวดบัญชี (Category)!",
         "selectTypeAlert": "กรุณาเลือกประเภทบัญชี (Type)!",
@@ -1733,7 +1733,7 @@
       "statusFilterAria": "กรองตามสถานะ"
     },
     "accountGrouping": {
-      "title": "การจัดกลุ่มรหัสบัญชี (Account Code Grouping)",
+      "title": "กลุ่มรหัสบัญชี (Account Code Group)",
       "desc": "กำหนดโครงสร้างผังบัญชีแบบลำดับชั้นสูงสุด 4 ระดับ (Tree Hierarchy)",
       "add": "เพิ่มกลุ่มบัญชี",
       "searchPlaceholder": "ค้นหารหัสกลุ่ม, ชื่อกลุ่ม หรือรหัสบัญชี...",
@@ -5347,7 +5347,7 @@
     "notifications": "การแจ้งเตือน",
     "fromPriceList": "สร้างจากรายการราคา",
     "chartOfAccounts": "ผังบัญชี",
-    "accountGrouping": "การจัดกลุ่มรหัสบัญชี",
+    "accountGrouping": "กลุ่มรหัสบัญชี",
     "titleMaster": "คำนำหน้าชื่อ",
     "chartOfAccountMapping": "การผูกบัญชี",
     "jvPrefix": "คำนำหน้าใบสำคัญรายวัน",
