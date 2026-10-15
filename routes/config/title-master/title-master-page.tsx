@@ -73,10 +73,10 @@ export default function TitleMasterPage() {
 
   return (
     <MockConfigList
-      title="Title Master"
+      title="Name Titles"
       description="Honorifics used by customer, guest and accounting profiles"
       addLabel="Add Title"
-      exportName="Title Master"
+      exportName="Name Titles"
       items={store.titles}
       columns={columns}
       exportColumns={[
