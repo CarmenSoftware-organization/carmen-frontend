@@ -1,6 +1,6 @@
 import { useTranslations } from "use-intl";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
+import { StatusDotBadge } from "@/components/ui/status-dot-badge";
 
 interface StatusSwitchProps {
   readonly checked: boolean;
@@ -13,7 +13,7 @@ interface StatusSwitchProps {
   readonly id?: string;
   readonly hideBadge?: boolean;
   /**
-   * สีป้ายตอนปิด — `destructive` (ค่าเดิม) เหมาะกับสถานะที่ปิดแล้วมีผล เช่น
+   * สีจุดของป้ายตอนปิด — `destructive` (ค่าเดิม) เหมาะกับสถานะที่ปิดแล้วมีผล เช่น
    * record ถูกปิดใช้งาน ส่วน flag ที่ "ไม่" เป็นเรื่องปกติ (ไม่ขายตรง) ใช้ `neutral`
    * ไม่งั้นป้ายแดงอ่านเหมือนมีอะไรผิด
    */
@@ -59,18 +59,9 @@ function StatusSwitch({
         />
       </div>
       {!hideBadge && (
-        <Badge
-          variant={
-            checked
-              ? "success"
-              : inactiveTone === "neutral"
-                ? "secondary"
-                : "destructive"
-          }
-          className="px-2 py-0.5 text-xs"
-        >
+        <StatusDotBadge tone={checked ? "success" : inactiveTone}>
           {checked ? resolvedActiveText : resolvedInactiveText}
-        </Badge>
+        </StatusDotBadge>
       )}
     </div>
   );
