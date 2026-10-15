@@ -293,7 +293,7 @@ export const moduleList: ModuleDto[] = [
         // มีคีย์ระดับ resource อยู่ ต้องผูกคีย์นั้น ไม่งั้นเมนูเปิดได้แต่ API ตอบ 403
         // (เคยเกิดกับ /config/shelf ที่เคยถูกยกเป็นตัวอย่างตรงนี้)
         name: "myApproval",
-        path: "/procurement/approval",
+        path: "/procurement/my-approval",
         licenseFeature: "procurement",
         icon: FileCheck,
       },

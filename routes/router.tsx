@@ -349,8 +349,15 @@ export const router = createBrowserRouter([
                   import("./procurement/purchase-request/purchase-request-edit.route"),
               },
               {
+                path: "my-approval",
+                lazy: () =>
+                  import("./procurement/my-approval/my-approval.route"),
+              },
+              // path เดิมก่อนเปลี่ยนชื่อหน้า — คง redirect ไว้ให้ bookmark เก่าไม่ 404
+              // ถอดออกได้หลังปล่อยไปแล้วหนึ่งรอบ release
+              {
                 path: "approval",
-                lazy: () => import("./procurement/approval/approval.route"),
+                element: <Navigate to="/procurement/my-approval" replace />,
               },
             ],
           },
