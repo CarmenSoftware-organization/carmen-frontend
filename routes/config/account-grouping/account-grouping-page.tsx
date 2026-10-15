@@ -260,7 +260,8 @@ export default function AccountGroupingPage() {
         code: account.code,
         description_1: account.description_1,
         description_2: account.description_2 ?? null,
-        category: account.category,
+        // dialog ให้เลือกเฉพาะบัญชีหมวดเดียวกับกลุ่มอยู่แล้ว — ?? กันแค่ type ของบัญชีเก่าที่ยัง null
+        category: account.category ?? selectedNode.category,
         nature: account.nature,
         type: account.type,
         is_active: account.is_active,
@@ -289,6 +290,12 @@ export default function AccountGroupingPage() {
   // Submit Unassign Account
   const handleUnassignAccount = async (account: ChartOfAccount) => {
     if (isMutating) return;
+    // บัญชีเก่าที่ category ยัง null — backend ปฏิเสธการแก้จนกว่าจะระบุหมวด ไม่เดาหมวดให้เงียบ ๆ
+    const category = account.category;
+    if (!category) {
+      toast.error(`Account [${account.code}] has no category — set it on the account first`);
+      return;
+    }
     setIsMutating(true);
     try {
       await updateAccount.mutateAsync({
@@ -297,7 +304,7 @@ export default function AccountGroupingPage() {
         code: account.code,
         description_1: account.description_1,
         description_2: account.description_2 ?? null,
-        category: account.category,
+        category,
         nature: account.nature,
         type: account.type,
         is_active: account.is_active,

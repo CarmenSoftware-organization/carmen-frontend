@@ -31,7 +31,11 @@ export default function CoaCard({ item, onEdit, onDelete }: Props) {
         </ListCardRow>
       )}
       <ListCardRow label={tfl("category")}>
-        {t(`accountCategory.${item.category}`)}
+        {item.category ? (
+          t(`accountCategory.${item.category}`)
+        ) : (
+          <span className="text-warning-ink">{t("labels.categoryUnset")}</span>
+        )}
       </ListCardRow>
       <ListCardRow label={tfl("nature")}>
         <span className="inline-flex items-center gap-1.5">

@@ -1634,6 +1634,8 @@
         "inactiveOnly": "ปิดใช้งานเท่านั้น (Inactive Only)",
         "allStatuses": "-- ทุกสถานะ (All Statuses) --",
         "allCategories": "-- ทุกหมวดบัญชี (All Categories) --",
+        "selectCategory": "เลือกหมวดบัญชี",
+        "categoryUnset": "ยังไม่ระบุ",
         "allTypes": "-- ทุกประเภท (All Types) --"
       },
       "kpi": {

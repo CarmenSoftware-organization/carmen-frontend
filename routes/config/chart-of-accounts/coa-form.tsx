@@ -265,6 +265,9 @@ export function CoaForm({
 
   const isExisting = Boolean(account && account.code);
   const isUsed = Boolean(account?.is_used);
+  // บัญชีเก่าที่ category ยังเป็น null ต้องเลือกได้แม้ถูกใช้แล้ว — backend ไม่ยอมบันทึก
+  // ถ้า category เดิมเป็น null และไม่ส่งมา ล็อกไว้ = บัญชีนั้นแก้ไม่ได้อีกเลย
+  const categoryLocked = isUsed && account?.category != null;
 
   const computeAncestry = (target: AccountGroupMaster): GroupingPathNode[] => {
     const path: GroupingPathNode[] = [];
@@ -431,7 +434,7 @@ export function CoaForm({
           <Field>
             <div className="flex h-5 items-center justify-between">
               <FieldLabel required>{tfl("category")}</FieldLabel>
-              {isUsed && (
+              {categoryLocked && (
                 <span className="text-micro text-amber-600 dark:text-amber-400">
                   {t("rules.fieldLockedUsed")}
                 </span>
@@ -449,9 +452,9 @@ export function CoaForm({
                     form.setValue("account_group_id", "", { shouldDirty: true });
                     form.setValue("grouping_path", [], { shouldDirty: true });
                   }}
-                  disabled={f.isDisabled || isUsed}
+                  disabled={f.isDisabled || categoryLocked}
                   error={form.formState.errors.category?.message}
-                  placeholder={t("labels.allCategories")}
+                  placeholder={t("labels.selectCategory")}
                 >
                   <SelectContent>
                     {ACCOUNT_CATEGORIES.map((val) => (
