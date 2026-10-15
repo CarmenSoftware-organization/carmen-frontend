@@ -346,6 +346,7 @@ function ApInvoiceEditor({
       )}
       <DocFormHeader
         title={loaded?.ap_no ?? "New AP Invoice"}
+        mock
         subtitle="Standard supplier invoice"
         backLabel="Back to AP Invoice Directory"
         onBack={() => navigate("/accounting/accounts-payable/invoice")}

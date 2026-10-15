@@ -1,6 +1,10 @@
+import { MockBadge } from "@/components/ui/mock-badge";
+
 interface DisplayTemplateProps {
   readonly title: string;
   readonly description?: string;
+  /** หน้านี้ยังเป็นข้อมูลตัวอย่าง → แสดงป้าย MOCK ข้างชื่อ */
+  readonly mock?: boolean;
   readonly toolbar?: React.ReactNode;
   readonly actions?: React.ReactNode;
   readonly filterBar?: React.ReactNode;
@@ -10,6 +14,7 @@ interface DisplayTemplateProps {
 export default function DisplayTemplate({
   title,
   description,
+  mock = false,
   toolbar,
   actions,
   filterBar,
@@ -20,6 +25,7 @@ export default function DisplayTemplate({
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
+          {mock && <MockBadge />}
         </div>
         {description && (
           <p className="text-muted-foreground text-sm">{description}</p>

@@ -1,31 +1,12 @@
-import { StatusBadge } from "@/components/ui/status-badge";
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { CreditCard, Plus } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import { toast } from "sonner";
-import SearchInput from "@/components/search-input";
-import EmptyComponent from "@/components/empty-component";
-import DisplayTemplate from "@/components/display-template";
+import { ListCardRow } from "@/components/share/list-card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
-import { CellAction } from "@/components/ui/cell-action";
-import {
-  DataGrid,
-  DataGridContainer,
-} from "@/components/ui/data-grid/data-grid";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
+import { columnSkeletons } from "@/components/ui/data-grid/columns";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Field,
   FieldInput,
@@ -38,6 +19,9 @@ import {
   type PaymentTypeMaster,
   useAccountingMasterMock,
 } from "../accounting-master-mock";
+import { MockConfigList } from "../shared/mock-config-list";
+import { mockCodeColumn } from "../shared/mock-code-column";
+import { MockEntityDialog } from "../shared/mock-entity-dialog";
 
 const PAYMENT_METHODS = [
   { value: "transfer", label: "Bank Transfer (โอนเงินผ่านธนาคาร)" },
@@ -49,44 +33,23 @@ const PAYMENT_METHODS = [
 
 export default function PaymentTypePage() {
   const store = useAccountingMasterMock();
-  const [search, setSearch] = useState("");
-  const [detailOnly, setDetailOnly] = useState(false);
-  const [editing, setEditing] = useState<PaymentTypeMaster | null | undefined>();
+  const [editing, setEditing] = useState<
+    PaymentTypeMaster | null | undefined
+  >();
   const [deleting, setDeleting] = useState<PaymentTypeMaster | null>(null);
-
-  const rows = useMemo(
-    () =>
-      store.paymentTypes.filter((item) =>
-        `${item.code} ${item.description} ${item.description_local ?? ""} ${item.payment_method}`
-          .toLowerCase()
-          .includes(search.toLowerCase()),
-      ),
-    [search, store.paymentTypes],
-  );
 
   const columns = useMemo<ColumnDef<PaymentTypeMaster>[]>(
     () => [
-      {
-        accessorKey: "code",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Payment Type Code" />
-        ),
-        cell: ({ row }) => (
-          <CellAction onClick={() => { setDetailOnly(true); setEditing(row.original); }}>
-            <span className="font-mono font-semibold">{row.original.code}</span>
-          </CellAction>
-        ),
-      },
+      mockCodeColumn<PaymentTypeMaster>("Payment Type Code", setEditing),
       {
         accessorKey: "description",
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title="Description (EN)" />
         ),
-        cell: ({ row }) => (
-          <CellAction onClick={() => { setDetailOnly(true); setEditing(row.original); }}>
-            {row.original.description}
-          </CellAction>
-        ),
+        meta: {
+          headerTitle: "Description (EN)",
+          skeleton: columnSkeletons.text,
+        },
       },
       {
         accessorKey: "description_local",
@@ -98,87 +61,78 @@ export default function PaymentTypePage() {
             {row.original.description_local || "—"}
           </span>
         ),
+        meta: {
+          headerTitle: "Description (TH)",
+          skeleton: columnSkeletons.text,
+        },
       },
       {
         accessorKey: "payment_method",
-        header: "Method",
+        header: ({ column }) => (
+          <DataGridColumnHeader column={column} title="Method" />
+        ),
         cell: ({ row }) => (
-          <Badge data-standard-chip="" variant="outline" size="sm" className="uppercase font-mono">
+          <Badge
+            data-standard-chip=""
+            variant="outline"
+            size="sm"
+            className="font-mono uppercase"
+          >
             {row.original.payment_method}
           </Badge>
         ),
-      },
-      {
-        accessorKey: "is_active",
-        header: "Status",
-        cell: ({ row }) => (
-          <StatusBadge active={row.original.is_active} />
-        ),
-      },
-      {
-        id: "actions",
-        header: "",
-        cell: ({ row }) => (
-          <DataGridRowActions
-            activity={{ id: row.original.id, disabled: true, disabledTitle: "Activity is unavailable for mock data" }}
-
-            onEdit={() => { setDetailOnly(false); setEditing(row.original); }}
-            onDelete={() => setDeleting(row.original)}
-          />
-        ),
-        enableSorting: false,
+        size: 140,
+        meta: { headerTitle: "Method", skeleton: columnSkeletons.textShort },
       },
     ],
     [],
   );
 
-  const table = useReactTable({
-    data: rows,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
   return (
-    <DisplayTemplate
+    <MockConfigList
       title="Payment Types"
-      description="Methods and payment options used for Accounts Payable and Accounts Receivable"
-      toolbar={
-        <SearchInput
-          defaultValue={search}
-          onSearch={setSearch}
-          onInputChange={setSearch}
-        />
+      description="Payment instruments that categorize AP Payment Vouchers and AR Receipts"
+      addLabel="Add Payment Type"
+      exportName="Payment Types"
+      items={store.paymentTypes}
+      searchText={(item) =>
+        `${item.code} ${item.description} ${item.description_local ?? ""} ${item.payment_method}`
       }
-      actions={
-        <Button size="sm" onClick={() => setEditing(null)}>
-          <Plus className="size-4" /> Add Payment Type
-        </Button>
-      }
+      columns={columns}
+      exportColumns={[
+        { header: "Payment Type Code", value: (r) => r.code, width: 18 },
+        { header: "Description (EN)", value: (r) => r.description, width: 28 },
+        {
+          header: "Description (TH)",
+          value: (r) => r.description_local ?? "",
+          width: 28,
+        },
+        { header: "Method", value: (r) => r.payment_method, width: 14 },
+        {
+          header: "Status",
+          value: (r) => (r.is_active ? "Active" : "Inactive"),
+          width: 10,
+        },
+      ]}
+      renderCardRows={(item) => (
+        <>
+          <ListCardRow label="Description">{item.description}</ListCardRow>
+          <ListCardRow label="Method">
+            <span className="font-mono uppercase">{item.payment_method}</span>
+          </ListCardRow>
+        </>
+      )}
+      onAdd={() => setEditing(null)}
+      onEdit={setEditing}
+      onDelete={setDeleting}
     >
-      <div className="bg-muted/30 flex items-center gap-2 rounded-md px-3 py-2 text-xs">
-        <CreditCard className="text-primary size-4" />
-        <span className="font-medium">Settlement integration:</span>
-        <span className="text-muted-foreground">
-          Payment types categorize AP Payment Vouchers and AR Receipts according to payment instruments.
-        </span>
-      </div>
-      <DataGrid
-        table={table}
-        recordCount={rows.length}
-        emptyMessage={<EmptyComponent />}
-        tableLayout={{ width: "auto", headerSticky: true }}
-        tableClassNames={{ bodyRow: "h-10" }}
-      >
-        <DataGridContainer scroll className="max-h-[calc(100vh-14rem)]">
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
       <PaymentTypeDialog
-        readOnly={detailOnly}
         key={editing?.id ?? "new"}
         open={editing !== undefined}
         item={editing ?? null}
-        onOpenChange={(open) => { if (!open) { setEditing(undefined); setDetailOnly(false); } }}
+        onOpenChange={(open) => {
+          if (!open) setEditing(undefined);
+        }}
         onSave={(value) => {
           store.savePaymentType(value, editing?.id);
           toast.success(
@@ -192,7 +146,9 @@ export default function PaymentTypePage() {
         onOpenChange={(open) => !open && setDeleting(null)}
         title="Delete payment type?"
         description={
-          deleting ? `Delete ${deleting.code} — ${deleting.description}?` : undefined
+          deleting
+            ? `Delete ${deleting.code} — ${deleting.description}?`
+            : undefined
         }
         onConfirm={() => {
           if (!deleting) return;
@@ -201,108 +157,105 @@ export default function PaymentTypePage() {
           setDeleting(null);
         }}
       />
-    </DisplayTemplate>
+    </MockConfigList>
   );
 }
 
 function PaymentTypeDialog({
   open,
-  readOnly = false,
   item,
   onOpenChange,
   onSave,
 }: {
   open: boolean;
-  readOnly?: boolean;
   item: PaymentTypeMaster | null;
   onOpenChange: (open: boolean) => void;
   onSave: (value: Omit<PaymentTypeMaster, "id" | "doc_version">) => void;
 }) {
   const [code, setCode] = useState(item?.code ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
-  const [descriptionLocal, setDescriptionLocal] = useState(item?.description_local ?? "");
-  const [paymentMethod, setPaymentMethod] = useState(item?.payment_method ?? "transfer");
+  const [descriptionLocal, setDescriptionLocal] = useState(
+    item?.description_local ?? "",
+  );
+  const [paymentMethod, setPaymentMethod] = useState(
+    item?.payment_method ?? "transfer",
+  );
   const [active, setActive] = useState(item?.is_active ?? true);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{readOnly ? "Payment Type Detail" : item ? "Edit Payment Type" : "Add Payment Type"}</DialogTitle>
-          <DialogDescription>
-            Defines the payment instrument for financial transactions.
-          </DialogDescription>
-        </DialogHeader>
-        <fieldset disabled={readOnly} className="grid gap-4 py-2">
-          <Field>
-            <FieldLabel htmlFor="pm-code" required>Payment Type Code</FieldLabel>
-            <FieldInput
-              id="pm-code"
-              value={code}
-              disabled={!!item}
-              maxLength={20}
-              placeholder="e.g. TRANSFER, CHEQUE, CASH"
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="pm-desc" required>Description (EN)</FieldLabel>
-            <FieldInput
-              id="pm-desc"
-              value={description}
-              maxLength={100}
-              placeholder="e.g. Bank Transfer"
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="pm-desc-local">Description (TH)</FieldLabel>
-            <FieldInput
-              id="pm-desc-local"
-              value={descriptionLocal}
-              maxLength={100}
-              placeholder="e.g. โอนเงินผ่านธนาคาร"
-              onChange={(e) => setDescriptionLocal(e.target.value)}
-            />
-          </Field>
-          <Field>
-            <FieldLabel required>Payment Method</FieldLabel>
-            <FieldSelect value={paymentMethod} onValueChange={setPaymentMethod}>
-              <SelectContent>
-                {PAYMENT_METHODS.map((m) => (
-                  <SelectItem key={m.value} value={m.value}>
-                    {m.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </FieldSelect>
-          </Field>
-          <StatusSwitch
-            id="payment-type-active"
-            checked={active}
-            onCheckedChange={setActive}
-          />
-        </fieldset>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {readOnly ? "Close" : "Cancel"}
-          </Button>
-          {!readOnly && <Button
-            disabled={!code.trim() || !description.trim()}
-            onClick={() =>
-              onSave({
-                code,
-                description,
-                description_local: descriptionLocal || null,
-                payment_method: paymentMethod,
-                is_active: active,
-              })
-            }
-          >
-            {item ? "Save" : "Create"}
-          </Button>}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <MockEntityDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      icon={CreditCard}
+      title={item ? "Edit Payment Type" : "Add Payment Type"}
+      subtitle="Defines the payment instrument for financial transactions."
+      isEdit={!!item}
+      canSubmit={!!code.trim() && !!description.trim()}
+      onSubmit={() =>
+        onSave({
+          code,
+          description,
+          description_local: descriptionLocal || null,
+          payment_method: paymentMethod,
+          is_active: active,
+        })
+      }
+    >
+      <Field>
+        <FieldLabel htmlFor="pm-code" required>
+          Payment Type Code
+        </FieldLabel>
+        <FieldInput
+          id="pm-code"
+          className="h-8"
+          value={code}
+          disabled={!!item}
+          maxLength={20}
+          placeholder="e.g. TRANSFER, CHEQUE, CASH"
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+        />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="pm-desc" required>
+          Description (EN)
+        </FieldLabel>
+        <FieldInput
+          id="pm-desc"
+          className="h-8"
+          value={description}
+          maxLength={100}
+          placeholder="e.g. Bank Transfer"
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="pm-desc-local">Description (TH)</FieldLabel>
+        <FieldInput
+          id="pm-desc-local"
+          className="h-8"
+          value={descriptionLocal}
+          maxLength={100}
+          placeholder="e.g. โอนเงินผ่านธนาคาร"
+          onChange={(e) => setDescriptionLocal(e.target.value)}
+        />
+      </Field>
+      <Field>
+        <FieldLabel required>Payment Method</FieldLabel>
+        <FieldSelect value={paymentMethod} onValueChange={setPaymentMethod}>
+          <SelectContent>
+            {PAYMENT_METHODS.map((m) => (
+              <SelectItem key={m.value} value={m.value}>
+                {m.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </FieldSelect>
+      </Field>
+      <StatusSwitch
+        id="payment-type-active"
+        checked={active}
+        onCheckedChange={setActive}
+      />
+    </MockEntityDialog>
   );
 }

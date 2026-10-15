@@ -13,6 +13,7 @@ export default function AccountingDashboard() {
       : "generalLedger";
   return (
     <AccountingDashboardPage
+      mock
       snapshot={getAccountingDashboardSnapshot(module)}
     />
   );

@@ -232,6 +232,7 @@ export default function ApInvoiceList() {
   return (
     <ListPageShell
       title="AP Invoice Directory"
+      mock
       description="Supplier invoices, matching and open liabilities"
       actions={
         <div className="flex gap-2">

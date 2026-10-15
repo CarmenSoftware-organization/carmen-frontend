@@ -1,160 +1,108 @@
-import { StatusBadge } from "@/components/ui/status-badge";
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { Percent, Plus } from "lucide-react";
+import { Percent } from "lucide-react";
 import { toast } from "sonner";
-import SearchInput from "@/components/search-input";
-import EmptyComponent from "@/components/empty-component";
-import DisplayTemplate from "@/components/display-template";
-import { Button } from "@/components/ui/button";
-import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
-import { CellAction } from "@/components/ui/cell-action";
-import {
-  DataGrid,
-  DataGridContainer,
-} from "@/components/ui/data-grid/data-grid";
+import { ListCardRow } from "@/components/share/list-card";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
+import { columnSkeletons } from "@/components/ui/data-grid/columns";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Field,
-  FieldInput,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldInput, FieldLabel } from "@/components/ui/field";
 import { StatusSwitch } from "@/components/ui/status-switch";
 import {
   type WhtServiceTypeMaster,
   useAccountingMasterMock,
 } from "../accounting-master-mock";
+import { MockConfigList } from "../shared/mock-config-list";
+import { mockCodeColumn } from "../shared/mock-code-column";
+import { MockEntityDialog } from "../shared/mock-entity-dialog";
 
 export default function WhtServiceTypePage() {
   const store = useAccountingMasterMock();
-  const [search, setSearch] = useState("");
-  const [detailOnly, setDetailOnly] = useState(false);
-  const [editing, setEditing] = useState<WhtServiceTypeMaster | null | undefined>();
+  const [editing, setEditing] = useState<
+    WhtServiceTypeMaster | null | undefined
+  >();
   const [deleting, setDeleting] = useState<WhtServiceTypeMaster | null>(null);
-
-  const rows = useMemo(
-    () =>
-      store.whtServiceTypes.filter((item) =>
-        `${item.code} ${item.description} ${item.default_rate}`
-          .toLowerCase()
-          .includes(search.toLowerCase()),
-      ),
-    [search, store.whtServiceTypes],
-  );
 
   const columns = useMemo<ColumnDef<WhtServiceTypeMaster>[]>(
     () => [
-      {
-        accessorKey: "code",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Service Type Code" />
-        ),
-        cell: ({ row }) => (
-          <CellAction onClick={() => { setDetailOnly(true); setEditing(row.original); }}>
-            <span className="font-mono font-semibold">{row.original.code}</span>
-          </CellAction>
-        ),
-      },
+      mockCodeColumn<WhtServiceTypeMaster>("Service Type Code", setEditing),
       {
         accessorKey: "description",
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title="Service Description" />
         ),
-        cell: ({ row }) => (
-          <CellAction onClick={() => { setDetailOnly(true); setEditing(row.original); }}>
-            {row.original.description}
-          </CellAction>
-        ),
+        meta: {
+          headerTitle: "Service Description",
+          skeleton: columnSkeletons.text,
+        },
       },
       {
-        accessorKey: "default_rate",
-        header: "Default Rate",
+        id: "default_rate",
+        accessorFn: (row) => Number(row.default_rate),
+        header: ({ column }) => (
+          <DataGridColumnHeader
+            column={column}
+            title="Default Rate"
+            className="justify-end"
+          />
+        ),
         cell: ({ row }) => (
           <span className="tabular-nums">{row.original.default_rate}%</span>
         ),
-      },
-      {
-        accessorKey: "is_active",
-        header: "Status",
-        cell: ({ row }) => (
-          <StatusBadge active={row.original.is_active} />
-        ),
-      },
-      {
-        id: "actions",
-        header: "",
-        cell: ({ row }) => (
-          <DataGridRowActions
-            activity={{ id: row.original.id, disabled: true, disabledTitle: "Activity is unavailable for mock data" }}
-
-            onEdit={() => { setDetailOnly(false); setEditing(row.original); }}
-            onDelete={() => setDeleting(row.original)}
-          />
-        ),
-        enableSorting: false,
+        size: 130,
+        meta: {
+          headerTitle: "Default Rate",
+          headerClassName: "text-right",
+          cellClassName: "text-right",
+          skeleton: columnSkeletons.number,
+        },
       },
     ],
     [],
   );
 
-  const table = useReactTable({
-    data: rows,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
   return (
-    <DisplayTemplate
+    <MockConfigList
       title="WHT Service Types"
-      description="Withholding tax service classifications and statutory deduction rates"
-      toolbar={
-        <SearchInput
-          defaultValue={search}
-          onSearch={setSearch}
-          onInputChange={setSearch}
-        />
+      description="Withholding tax service classifications and default rates for AP Payment Vouchers and WHT Certificates"
+      addLabel="Add Service Type"
+      exportName="WHT Service Types"
+      items={store.whtServiceTypes}
+      searchText={(item) =>
+        `${item.code} ${item.description} ${item.default_rate}`
       }
-      actions={
-        <Button size="sm" onClick={() => setEditing(null)}>
-          <Plus className="size-4" /> Add Service Type
-        </Button>
-      }
+      columns={columns}
+      exportColumns={[
+        { header: "Service Type Code", value: (r) => r.code, width: 18 },
+        {
+          header: "Service Description",
+          value: (r) => r.description,
+          width: 36,
+        },
+        { header: "Default Rate (%)", value: (r) => r.default_rate, width: 14 },
+        {
+          header: "Status",
+          value: (r) => (r.is_active ? "Active" : "Inactive"),
+          width: 10,
+        },
+      ]}
+      renderCardRows={(item) => (
+        <>
+          <ListCardRow label="Description">{item.description}</ListCardRow>
+          <ListCardRow label="Rate">{item.default_rate}%</ListCardRow>
+        </>
+      )}
+      onAdd={() => setEditing(null)}
+      onEdit={setEditing}
+      onDelete={setDeleting}
     >
-      <div className="bg-muted/30 flex items-center gap-2 rounded-md px-3 py-2 text-xs">
-        <Percent className="text-primary size-4" />
-        <span className="font-medium">Tax calculation:</span>
-        <span className="text-muted-foreground">
-          Service types automatically populate the withholding tax rate and description in AP Payment Vouchers and WHT Certificates.
-        </span>
-      </div>
-      <DataGrid
-        table={table}
-        recordCount={rows.length}
-        emptyMessage={<EmptyComponent />}
-        tableLayout={{ width: "auto", headerSticky: true }}
-        tableClassNames={{ bodyRow: "h-10" }}
-      >
-        <DataGridContainer scroll className="max-h-[calc(100vh-14rem)]">
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
       <WhtServiceTypeDialog
-        readOnly={detailOnly}
         key={editing?.id ?? "new"}
         open={editing !== undefined}
         item={editing ?? null}
-        onOpenChange={(open) => { if (!open) { setEditing(undefined); setDetailOnly(false); } }}
+        onOpenChange={(open) => {
+          if (!open) setEditing(undefined);
+        }}
         onSave={(value) => {
           store.saveWhtServiceType(value, editing?.id);
           toast.success(
@@ -168,7 +116,9 @@ export default function WhtServiceTypePage() {
         onOpenChange={(open) => !open && setDeleting(null)}
         title="Delete WHT service type?"
         description={
-          deleting ? `Delete ${deleting.code} — ${deleting.description}?` : undefined
+          deleting
+            ? `Delete ${deleting.code} — ${deleting.description}?`
+            : undefined
         }
         onConfirm={() => {
           if (!deleting) return;
@@ -177,19 +127,17 @@ export default function WhtServiceTypePage() {
           setDeleting(null);
         }}
       />
-    </DisplayTemplate>
+    </MockConfigList>
   );
 }
 
 function WhtServiceTypeDialog({
   open,
-  readOnly = false,
   item,
   onOpenChange,
   onSave,
 }: {
   open: boolean;
-  readOnly?: boolean;
   item: WhtServiceTypeMaster | null;
   onOpenChange: (open: boolean) => void;
   onSave: (value: Omit<WhtServiceTypeMaster, "id" | "doc_version">) => void;
@@ -200,70 +148,67 @@ function WhtServiceTypeDialog({
   const [active, setActive] = useState(item?.is_active ?? true);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{readOnly ? "WHT Service Type Detail" : item ? "Edit WHT Service Type" : "Add WHT Service Type"}</DialogTitle>
-          <DialogDescription>
-            Withholding tax rate category for vendor payment deductions.
-          </DialogDescription>
-        </DialogHeader>
-        <fieldset disabled={readOnly} className="grid gap-4 py-2">
-          <Field>
-            <FieldLabel htmlFor="wht-code" required>Service Type Code</FieldLabel>
-            <FieldInput
-              id="wht-code"
-              value={code}
-              disabled={!!item}
-              maxLength={20}
-              placeholder="e.g. WHT-SVC, WHT-RENT"
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="wht-desc" required>Description</FieldLabel>
-            <FieldInput
-              id="wht-desc"
-              value={description}
-              maxLength={100}
-              placeholder="e.g. Service Fee (ค่าจ้างทำของ/บริการ)"
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="wht-rate" required>Default Tax Rate (%)</FieldLabel>
-            <FieldInput
-              id="wht-rate"
-              value={defaultRate}
-              placeholder="e.g. 1.00, 2.00, 3.00, 5.00"
-              onChange={(e) => setDefaultRate(e.target.value)}
-            />
-          </Field>
-          <StatusSwitch
-            id="wht-service-type-active"
-            checked={active}
-            onCheckedChange={setActive}
-          />
-        </fieldset>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {readOnly ? "Close" : "Cancel"}
-          </Button>
-          {!readOnly && <Button
-            disabled={!code.trim() || !description.trim() || !defaultRate.trim()}
-            onClick={() =>
-              onSave({
-                code,
-                description,
-                default_rate: defaultRate,
-                is_active: active,
-              })
-            }
-          >
-            {item ? "Save" : "Create"}
-          </Button>}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <MockEntityDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      icon={Percent}
+      title={item ? "Edit WHT Service Type" : "Add WHT Service Type"}
+      subtitle="Withholding tax rate category for vendor payment deductions."
+      isEdit={!!item}
+      canSubmit={!!code.trim() && !!description.trim() && !!defaultRate.trim()}
+      onSubmit={() =>
+        onSave({
+          code,
+          description,
+          default_rate: defaultRate,
+          is_active: active,
+        })
+      }
+    >
+      <Field>
+        <FieldLabel htmlFor="wht-code" required>
+          Service Type Code
+        </FieldLabel>
+        <FieldInput
+          id="wht-code"
+          className="h-8"
+          value={code}
+          disabled={!!item}
+          maxLength={20}
+          placeholder="e.g. WHT-SVC, WHT-RENT"
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+        />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="wht-desc" required>
+          Description
+        </FieldLabel>
+        <FieldInput
+          id="wht-desc"
+          className="h-8"
+          value={description}
+          maxLength={100}
+          placeholder="e.g. Service Fee (ค่าจ้างทำของ/บริการ)"
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="wht-rate" required>
+          Default Tax Rate (%)
+        </FieldLabel>
+        <FieldInput
+          id="wht-rate"
+          className="h-8"
+          value={defaultRate}
+          placeholder="e.g. 1.00, 2.00, 3.00, 5.00"
+          onChange={(e) => setDefaultRate(e.target.value)}
+        />
+      </Field>
+      <StatusSwitch
+        id="wht-service-type-active"
+        checked={active}
+        onCheckedChange={setActive}
+      />
+    </MockEntityDialog>
   );
 }

@@ -108,6 +108,7 @@ export function AccountingDashboardPage({
   onRefresh,
   asOf: controlledAsOf,
   onAsOfChange,
+  mock = false,
 }: {
   readonly snapshot: AccountingDashboardSnapshot;
   readonly isLoading?: boolean;
@@ -115,6 +116,8 @@ export function AccountingDashboardPage({
   readonly onRefresh?: () => void;
   readonly asOf?: string;
   readonly onAsOfChange?: (value: string) => void;
+  /** snapshot มาจาก dashboard-mock-data → แสดงป้าย MOCK */
+  readonly mock?: boolean;
 }) {
   const locale = useLocale();
   const isThai = locale.startsWith("th");
@@ -189,6 +192,7 @@ export function AccountingDashboardPage({
         <DocumentListHeader
           title={localize(snapshot.title)}
           description={localize(snapshot.description)}
+          mock={mock}
         />
         <div className="flex flex-wrap items-end gap-2">
           {previewEnabled && (
