@@ -14,7 +14,6 @@ const EcoLabelDialog = lazy(() =>
 );
 
 export default function EcoComponent() {
-  const t = useTranslations("productManagement.eco");
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
   return (
@@ -28,8 +27,13 @@ export default function EcoComponent() {
       filterFields={ECO_FILTER_FIELDS}
       defaultSort="code:asc"
       exportColumns={[
-        { header: t("iso"), value: (r) => r.code, width: 16 },
+        { header: tfl("code"), value: (r) => r.code, width: 16 },
         { header: tfl("name"), value: (r) => r.name, width: 28 },
+        {
+          header: tfl("description"),
+          value: (r) => r.description ?? "",
+          width: 40,
+        },
         {
           header: tfl("status"),
           value: (r) => (r.is_active ? ts("active") : ts("inactive")),
