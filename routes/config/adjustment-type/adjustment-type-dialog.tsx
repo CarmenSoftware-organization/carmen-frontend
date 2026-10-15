@@ -62,6 +62,7 @@ export function AdjustmentTypeDialog({
       translationNamespace="config.adjustmentType"
       useCreate={useCreateAdjustmentType}
       useUpdate={useUpdateAdjustmentType}
+      serverFieldErrors={{ ADJUSTMENT_TYPE_ALREADY_EXISTS: "code" }}
       buildSchema={() => adjustmentTypeSchema}
       toFormValues={(e) =>
         e

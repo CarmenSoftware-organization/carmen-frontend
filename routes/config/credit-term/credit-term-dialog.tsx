@@ -49,6 +49,7 @@ export function CreditTermDialog({
       translationNamespace="config.creditTerm"
       useCreate={useCreateCreditTerm}
       useUpdate={useUpdateCreditTerm}
+      serverFieldErrors={{ CREDIT_TERM_ALREADY_EXISTS: "name" }}
       buildSchema={createCreditTermSchema}
       toFormValues={(e) =>
         e

@@ -16,6 +16,10 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
+import {
+  useServerFieldErrors,
+  type ServerFieldErrorMap,
+} from "@/hooks/use-server-field-errors";
 
 interface MutationLike<TVars> {
   mutate: (
@@ -55,6 +59,8 @@ export interface ConfigEntityDialogProps<
   readonly contentClassName?: string;
   readonly onCreated?: (result: unknown) => void;
   readonly stopPropagationOnSubmit?: boolean;
+  /** รหัส catalog → ช่องที่ต้องขึ้น error แทน toast (ดู `useServerFieldErrors`) */
+  readonly serverFieldErrors?: ServerFieldErrorMap<TFormValues>;
   readonly children: (ctx: {
     form: UseFormReturn<TFormValues>;
     disabled: boolean;
@@ -106,6 +112,7 @@ export function ConfigEntityDialog<
   contentClassName,
   onCreated,
   stopPropagationOnSubmit,
+  serverFieldErrors,
   children,
 }: ConfigEntityDialogProps<TEntity, TFormValues, TPayload>) {
   const isEdit = !!entity;
@@ -127,6 +134,7 @@ export function ConfigEntityDialog<
     ) as Resolver<TFormValues>,
     defaultValues: toFormValues(null) as DefaultValues<TFormValues>,
   });
+  useServerFieldErrors(form, serverFieldErrors);
 
   useEffect(() => {
     if (open) form.reset(toFormValues(entity) as DefaultValues<TFormValues>);

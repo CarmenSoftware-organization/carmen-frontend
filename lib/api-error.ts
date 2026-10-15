@@ -68,6 +68,13 @@ export class ApiError extends Error {
    */
   public readonly appParams?: Readonly<Record<string, string | number>>;
 
+  /**
+   * เลข id ของรหัสใน catalog (`body.error.id`) — gateway ใส่ให้เฉพาะรหัสที่หาเจอใน catalog
+   * ตอนเดียวกับที่แปล `message` ตามภาษาของ request ดังนั้นมีค่า = `serverMessage` คือ
+   * ข้อความที่ทีมเขียนไว้ใน catalog ไม่ใช่ข้อความดิบที่ส่งต่อมาจาก service
+   */
+  public readonly catalogId?: number;
+
   constructor(
     public readonly code: ErrorCode,
     message: string,
@@ -78,6 +85,7 @@ export class ApiError extends Error {
     appCode?: string,
     fieldErrors?: readonly string[],
     appParams?: Readonly<Record<string, string | number>>,
+    catalogId?: number,
   ) {
     super(message);
     this.name = "ApiError";
@@ -85,6 +93,7 @@ export class ApiError extends Error {
     this.appCode = appCode;
     this.fieldErrors = fieldErrors;
     this.appParams = appParams;
+    this.catalogId = catalogId;
   }
 
   /**
@@ -133,6 +142,7 @@ export class ApiError extends Error {
       appCode,
       fieldErrors,
       appParams,
+      catalogId,
     } = await readErrorBody(res);
     // sanitize คืน fallback เมื่อ message ใช้ไม่ได้ — เทียบเพื่อไม่ให้ fallback
     // (ข้อความของ dev) กลายเป็น serverMessage ที่เอาไปโชว์ user
@@ -149,6 +159,7 @@ export class ApiError extends Error {
       appCode,
       fieldErrors,
       appParams,
+      catalogId,
     );
   }
 }
@@ -307,6 +318,7 @@ const readErrorBody = async (
   appCode?: string;
   fieldErrors?: readonly string[];
   appParams?: Readonly<Record<string, string | number>>;
+  catalogId?: number;
 }> => {
   try {
     const body = await res.clone().json();
@@ -331,6 +343,8 @@ const readErrorBody = async (
             .filter((f: string | undefined): f is string => !!f)
         : undefined,
       appParams: readParams(body?.params),
+      catalogId:
+        typeof body?.error?.id === "number" ? body.error.id : undefined,
     };
   } catch {
     return { message: undefined, data: undefined };

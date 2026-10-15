@@ -180,6 +180,7 @@ export function CoaForm({
 
   const f = useEntityForm<CoaFormValues>({
     entity: account,
+    serverFieldErrors: { CHART_OF_ACCOUNTS_DUPLICATE_CODE: "code" },
     resolver: zodResolver(createCoaSchema(tv, tfl)) as Resolver<CoaFormValues>,
     defaultValues: account
       ? {

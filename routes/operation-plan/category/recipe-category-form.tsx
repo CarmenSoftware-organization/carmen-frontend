@@ -44,6 +44,7 @@ export function RecipeCategoryForm({ category }: RecipeCategoryFormProps) {
 
   const f = useEntityForm<RecipeCategoryFormValues>({
     entity: category,
+    serverFieldErrors: { RECIPE_CATEGORY_CODE_ALREADY_EXISTS: "code" },
     resolver: zodResolver(
       recipeCategorySchema,
     ) as Resolver<RecipeCategoryFormValues>,

@@ -53,6 +53,7 @@ export function CostCenterDialog({
       translationNamespace="config.costCenter"
       useCreate={useCreateCostCenter}
       useUpdate={useUpdateCostCenter}
+      serverFieldErrors={{ COST_CENTER_DUPLICATE_CODE: "code" }}
       buildSchema={createCostCenterSchema}
       toFormValues={(e) => ({
         code: e?.code ?? "",

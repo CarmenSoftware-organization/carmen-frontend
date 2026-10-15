@@ -33,6 +33,7 @@ import WfValidationPanel from "./wf-validation-panel";
 import { validateWorkflow } from "./wf-validate";
 import WfInsights from "./wf-insights";
 import WfDiagram from "./wf-diagram";
+import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 
 interface WfDetailProps {
   readonly workflow: Workflow;
@@ -67,6 +68,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
     resolver: zodResolver(wfFormSchema) as Resolver<WorkflowCreateModel>,
     defaultValues: getWorkflowFormDefaults(workflow),
   });
+  useServerFieldErrors(form, { WORKFLOW_ALREADY_EXISTS: "name" });
 
   const isDirty = form.formState.isDirty;
   const guardEnabled = isEditing && isDirty;

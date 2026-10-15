@@ -1,11 +1,8 @@
 import { useEffect } from "react";
 import { useErrorToastWithOptions } from "@/hooks/use-error-toast";
-import {
-  APP_STATUS_ERROR_CODES,
-  ApiError,
-  ERROR_CODES,
-} from "@/lib/api-error";
+import { APP_STATUS_ERROR_CODES, ApiError, ERROR_CODES } from "@/lib/api-error";
 import { setApiErrorHandler } from "@/lib/api-error-handler";
+import { claimFieldError } from "@/lib/server-field-errors";
 
 export function ApiErrorToaster() {
   const errorToast = useErrorToastWithOptions();
@@ -15,6 +12,8 @@ export function ApiErrorToaster() {
       // 401/403 มี UI ของตัวเองอยู่แล้ว (redirect ไป login / PermissionDeniedDialog)
       // — toast ซ้ำจะกลายเป็นเสียงรบกวนที่ user ทำอะไรกับมันไม่ได้
       if (error instanceof ApiError && isHandledElsewhere(error)) return;
+      // ฟอร์มที่จองรหัสนี้ไว้แสดงใต้ช่องแล้ว (`useServerFieldErrors`) — toast ซ้ำไม่ช่วยอะไร
+      if (claimFieldError(error)) return;
       errorToast(error, options);
     });
     return () => setApiErrorHandler(null);

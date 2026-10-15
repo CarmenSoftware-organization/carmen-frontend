@@ -32,6 +32,7 @@ import {
   mapToPayload,
   type EquipmentCategoryFormValues,
 } from "./equipment-category-form-schema";
+import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 
 interface EquipmentCategoryDialogProps {
   readonly open: boolean;
@@ -59,6 +60,9 @@ export function EquipmentCategoryDialog({
   const form = useForm<EquipmentCategoryFormValues>({
     resolver: zodResolver(schema) as Resolver<EquipmentCategoryFormValues>,
     defaultValues: EMPTY_FORM,
+  });
+  useServerFieldErrors(form, {
+    RECIPE_EQUIPMENT_CATEGORY_ALREADY_EXISTS: "name",
   });
 
   useEffect(() => {

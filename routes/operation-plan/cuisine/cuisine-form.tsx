@@ -41,6 +41,7 @@ export function CuisineForm({ cuisine }: CuisineFormProps) {
 
   const f = useEntityForm<CuisineFormValues>({
     entity: cuisine,
+    serverFieldErrors: { RECIPE_CUISINE_ALREADY_EXISTS: "name" },
     resolver: zodResolver(cuisineSchema) as Resolver<CuisineFormValues>,
     defaultValues: getDefaultValues(cuisine),
     listPath: LIST_PATH,

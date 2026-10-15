@@ -61,6 +61,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
 
   const f = useEntityForm<RecipeFormValues>({
     entity: recipe,
+    serverFieldErrors: { RECIPE_ALREADY_EXISTS: "code" },
     resolver: zodResolver(recipeSchema) as Resolver<RecipeFormValues>,
     defaultValues,
     listPath: LIST_PATH,

@@ -34,6 +34,7 @@ import { PltValidityStepper } from "./plt-validity-stepper";
 import { PltItemFields } from "./plt-item-fields";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
+import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 import { usePltFormActions } from "./use-plt-form-actions";
 import { useStepperLabels } from "./plt-form-labels";
 
@@ -64,6 +65,9 @@ export function PriceListTemplateForm({
   const form = useForm<PltFormValues>({
     resolver: zodResolver(createPltSchema(tv, tfl)) as Resolver<PltFormValues>,
     defaultValues,
+  });
+  useServerFieldErrors(form, {
+    PRICE_LIST_TEMPLATE_NAME_ALREADY_EXISTS: "name",
   });
 
   // หลัง save (edit) → mutation invalidate → byId refetch → priceListTemplate มา

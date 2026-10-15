@@ -48,6 +48,7 @@ export function CostCenterGroupDialog({
       translationNamespace="config.costCenterGroup"
       useCreate={useCreateCostCenterGroup}
       useUpdate={useUpdateCostCenterGroup}
+      serverFieldErrors={{ COST_CENTER_GROUP_DUPLICATE_CODE: "code" }}
       buildSchema={createCostCenterGroupSchema}
       toFormValues={(e) => ({
         code: e?.code ?? "",

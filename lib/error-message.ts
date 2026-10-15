@@ -80,20 +80,33 @@ function fieldLabels(
   return [...seen];
 }
 
+/**
+ * ข้อความของ `OptimisticLockError` ฝั่ง backend ("Record was modified by another request
+ * (model=…, expected doc_version=N)") — ตัวเดียวที่แปลว่า "มีคนแก้ใบนี้" จริง
+ */
+const DOC_VERSION_CONFLICT = /doc_version|modified by another request/i;
+
 function fallbackKey(
   code: ErrorCode,
   statusCode?: number,
   appCode?: string,
+  serverMessage?: string,
 ): string {
   // 400 ทั่วไปไม่ได้แปลว่า "กรอกไม่ครบ" เสมอไป กรอกครบแต่ค่าผิดก็ 400 —
   // บอกให้ตรวจฟอร์มอีกรอบตรงกว่า ส่วนโค้ดที่บอกชัดว่าขาด field ค่อยใช้ missingField
   if (code === ERROR_CODES.MISSING_REQUIRED_FIELD) return "missingField";
-  // 409 ที่ไม่มีรหัส catalog คือ doc_version ชนกันจริง (OptimisticLockError →
-  // TryCatch ของ backend คืน 409 เปล่า ๆ) ส่วน 409 ที่มีรหัสคือกฎธุรกิจปฏิเสธ —
-  // ซ้ำ ถูกใช้อยู่ หรือของที่รับเข้าถูกเบิกไปแล้ว — "มีคนแก้ใบนี้ รีเฟรชแล้วลองใหม่"
-  // ผิดทั้งเหตุและทางแก้ ผู้ใช้จะรีเฟรชแล้วกดซ้ำไปเรื่อย ๆ โดยไม่มีวันผ่าน
-  // (void GRN ที่ของถูกเบิกไปแล้ว: GRN_RECEIPT_ALREADY_CONSUMED)
-  if (statusCode === 409) return appCode ? "conflictsWithData" : "documentChanged";
+  // 409 มีสองความหมาย: doc_version ชนกัน (OptimisticLockError → TryCatch ของ backend
+  // คืน 409 ไม่มีรหัส) กับกฎธุรกิจปฏิเสธ — ซ้ำ ถูกใช้อยู่ หรือของที่รับเข้าถูกเบิกไปแล้ว
+  // "มีคนแก้ใบนี้ รีเฟรชแล้วลองใหม่" กับเคสหลังผิดทั้งเหตุและทางแก้ ผู้ใช้จะรีเฟรชแล้ว
+  // กดซ้ำไปเรื่อย ๆ โดยไม่มีวันผ่าน (void GRN ที่ของถูกเบิกไปแล้ว · สร้าง vendor รหัสซ้ำ
+  // ที่ backend ยังไม่ติดรหัส) — จึงเชื่อ "มีคนแก้" เฉพาะเมื่อข้อความบอกว่าเป็น
+  // doc_version จริง หรือไม่มีข้อความให้ตัดสินเลย
+  if (statusCode === 409) {
+    if (appCode) return "conflictsWithData";
+    return !serverMessage || DOC_VERSION_CONFLICT.test(serverMessage)
+      ? "documentChanged"
+      : "conflictsWithData";
+  }
   return "invalidForm";
 }
 
@@ -135,6 +148,12 @@ export function getUserErrorMessage(
     // `errors.byCode.<CODE>` ใน messages/{en,th}.json อย่างเดียว ไม่มีตารางให้ลืมซิงก์
     const byCode = `byCode.${err.appCode}`;
     if (t.has?.(byCode)) return t(byCode, err.appParams);
+    // ยังไม่มีข้อความของเรา — ข้อความของรหัส catalog ทีม backend เขียนเองทั้งสองภาษา
+    // และ gateway แปลตาม `Accept-Language` ที่ http-client ส่งไปแล้ว จึงตรงเรื่องกว่า
+    // ข้อความกลางที่เดาจาก HTTP status เสมอ ("ไม่มีหน่วยนับนี้แล้ว" vs "ขัดกับข้อมูลในระบบ")
+    const fromCatalog =
+      err.catalogId === undefined ? undefined : shortServerMessage(err);
+    if (fromCatalog) return fromCatalog;
   }
 
   if (
@@ -153,7 +172,9 @@ export function getUserErrorMessage(
         return t("checkFields", { fields: labels.join(", ") });
       }
     }
-    return t(fallbackKey(err.code, err.statusCode, err.appCode));
+    return t(
+      fallbackKey(err.code, err.statusCode, err.appCode, err.serverMessage),
+    );
   }
 
   const key = CODE_TO_KEY[err.code];
@@ -177,6 +198,11 @@ const MAX_SERVER_MESSAGE_LENGTH = 160;
  */
 export function getDisplayableServerMessage(err: unknown): string | undefined {
   if (!(err instanceof ApiError) || err.appCode) return undefined;
+  return shortServerMessage(err);
+}
+
+/** ข้อความ 4xx จาก backend ที่เป็นประโยคบรรทัดเดียวสั้น ๆ — ไม่ใช่ trace/SQL */
+function shortServerMessage(err: ApiError): string | undefined {
   const msg = err.userFacingServerMessage?.trim();
   if (!msg || msg.length > MAX_SERVER_MESSAGE_LENGTH || /[\r\n]/.test(msg)) {
     return undefined;

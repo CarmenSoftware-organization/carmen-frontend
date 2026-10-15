@@ -36,6 +36,7 @@ import {
   toEmailProfileFormValues,
   type EmailProfileFormValues,
 } from "./email-profile-schema";
+import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 
 const OAUTH_GUIDE_URL =
   "https://github.com/CarmenSoftware-organization/carmen-inventory-frontend-react/blob/main/docs/email-profile-microsoft-oauth2.md";
@@ -120,6 +121,7 @@ export function EmailProfileDialog({
     ) as Resolver<EmailProfileFormValues>,
     defaultValues: toEmailProfileFormValues(),
   });
+  useServerFieldErrors(form, { EMAIL_SENDER_PROFILE_NAME_EXISTS: "name" });
 
   useEffect(() => {
     if (open) {

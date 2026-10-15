@@ -53,6 +53,9 @@ export function CertificationDialog({
       translationNamespace="vendorManagement.certification"
       useCreate={useCreateCertification}
       useUpdate={useUpdateCertification}
+      serverFieldErrors={{
+        VENDOR_MASTER_CERTIFICATE_ALREADY_EXISTS: ["code", "name"],
+      }}
       buildSchema={createCertificationSchema}
       toFormValues={(e) => getDefaultValues(e ?? undefined)}
       toPayload={(v) => ({

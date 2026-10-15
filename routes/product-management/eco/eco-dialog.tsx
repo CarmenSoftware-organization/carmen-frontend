@@ -50,6 +50,9 @@ export function EcoLabelDialog({
       translationNamespace="productManagement.eco"
       useCreate={useCreateEcoLabel}
       useUpdate={useUpdateEcoLabel}
+      serverFieldErrors={{
+        PRODUCT_MASTER_ECO_LABEL_ALREADY_EXISTS: ["code", "name"],
+      }}
       buildSchema={createEcoLabelSchema}
       toFormValues={(e) => getDefaultValues(e ?? undefined)}
       toPayload={(v) => {
