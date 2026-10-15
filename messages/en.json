@@ -2758,6 +2758,7 @@
       "entity": "Vendor",
       "title": "Vendor",
       "generalDesc": "Vendor code, name, business type and status.",
+      "generalDescView": "Business type, tax details, rating and description.",
       "rating": "Rating",
       "notRated": "Not rated",
       "ratingValue": "{value} out of 5",

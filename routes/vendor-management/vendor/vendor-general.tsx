@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LookupBuType } from "@/components/lookup/lookup-bu-type";
 import { StatusSwitch } from "@/components/ui/status-switch";
 import { SettingSection } from "@/components/ui/setting-section";
+import { cn } from "@/lib/utils";
 import type { VendorFormValues } from "./vendor-form-schema";
 import { VendorRatingInput, VendorRatingStars } from "./vendor-rating";
 
@@ -27,7 +28,12 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
   const rating = form.getValues("rating");
 
   return (
-    <SettingSection first title={tfl("general")} description={t("generalDesc")}>
+    <SettingSection
+      first
+      title={tfl("general")}
+      // โหมดดูไม่มีรหัส/ชื่อ/สถานะในการ์ดแล้ว คำอธิบายเดิมจะพูดถึงของที่ไม่อยู่บนจอ
+      description={t(isView ? "generalDescView" : "generalDesc")}
+    >
       {/* Name / Code / Status ไม่แสดงในโหมดดู — แถบหัว (FormToolbar) มีครบทั้งสามค่าแล้ว
           การ์ดนี้เคยซ้ำของบนหัวเกือบครึ่งการ์ด */}
       {/* Name */}
@@ -75,7 +81,8 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
       )}
 
       {/* Rating — ครึ่งขวาข้าง Code (Code ยาวสุด 10 ตัว ครึ่งแถวพอ) */}
-      <Field>
+      {/* โหมดดูไม่มี Code มาคู่ — ให้เต็มแถวแทนที่จะเหลือครึ่งขวาว่าง */}
+      <Field className={cn(isView && "sm:col-span-2")}>
         <FieldLabel htmlFor="vendor-rating">{t("rating")}</FieldLabel>
         {isView ? (
           <FieldPlainText>
