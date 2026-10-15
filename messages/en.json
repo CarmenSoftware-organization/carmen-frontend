@@ -5889,7 +5889,17 @@
     "loadMore": "Load more",
     "markAllRead": "Mark all as read",
     "emptyUnreadTitle": "You're all caught up",
-    "emptyUnreadDesc": "You have no unread notifications."
+    "emptyUnreadDesc": "You have no unread notifications.",
+    "select": "Select",
+    "cancel": "Cancel",
+    "selectedCount": "{count} selected",
+    "markSelectedRead": "Mark as read",
+    "markRead": "Mark as read",
+    "viewAll": "View all notifications",
+    "groupToday": "Today",
+    "groupYesterday": "Yesterday",
+    "groupThisWeek": "This week",
+    "groupEarlier": "Earlier"
   },
   "period": {
     "outsideOpenPeriod": "This document is dated outside the open period ({from} – {to}). Pick the date it should carry.",

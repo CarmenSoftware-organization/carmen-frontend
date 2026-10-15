@@ -5889,7 +5889,17 @@
     "loadMore": "โหลดเพิ่ม",
     "markAllRead": "ทำเครื่องหมายว่าอ่านทั้งหมด",
     "emptyUnreadTitle": "อ่านครบแล้ว",
-    "emptyUnreadDesc": "ไม่มีการแจ้งเตือนที่ยังไม่ได้อ่าน"
+    "emptyUnreadDesc": "ไม่มีการแจ้งเตือนที่ยังไม่ได้อ่าน",
+    "select": "เลือก",
+    "cancel": "ยกเลิก",
+    "selectedCount": "เลือก {count} รายการ",
+    "markSelectedRead": "ทำเครื่องหมายว่าอ่านแล้ว",
+    "markRead": "ทำเครื่องหมายว่าอ่านแล้ว",
+    "viewAll": "ดูการแจ้งเตือนทั้งหมด",
+    "groupToday": "วันนี้",
+    "groupYesterday": "เมื่อวาน",
+    "groupThisWeek": "สัปดาห์นี้",
+    "groupEarlier": "ก่อนหน้านี้"
   },
   "period": {
     "outsideOpenPeriod": "วันที่บนเอกสารอยู่นอกงวดที่เปิดอยู่ ({from} – {to}) เลือกว่าจะลงวันที่ไหน",
