@@ -13,6 +13,7 @@ import { useProfile } from "@/hooks/use-profile";
 import type { Vendor } from "@/types/vendor";
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
+import { VendorRatingStars } from "./vendor-rating";
 
 // list API ส่ง `contacts` — `tb_vendor_contact` เป็นชื่อเก่า เก็บ fallback ไว้
 function primaryContactOf(vendor: Vendor) {
@@ -38,6 +39,7 @@ export function useVendorTable({
   onDelete,
 }: UseVendorTableOptions) {
   const tfl = useTranslations("field");
+  const t = useTranslations("vendorManagement.vendor");
   const { dateTimeFormat } = useProfile();
 
   const columns: ColumnDef<Vendor>[] = [
@@ -154,6 +156,21 @@ export function useVendorTable({
       size: 130,
       enableSorting: false,
       meta: { headerTitle: tfl("creditTerm"), skeleton: columnSkeletons.text },
+    },
+    {
+      // เรียงฝั่ง server ได้ (tb_vendor.rating เป็น scalar) — null = ยังไม่ประเมิน
+      accessorKey: "rating",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={t("rating")} />
+      ),
+      cell: ({ row }) =>
+        row.original.rating == null ? (
+          <span className="text-muted-foreground">—</span>
+        ) : (
+          <VendorRatingStars value={row.original.rating} className="text-xs" />
+        ),
+      size: 120,
+      meta: { headerTitle: t("rating"), skeleton: columnSkeletons.textShort },
     },
     // status column แทรกเองก่อน created/updated (useConfigTable ส่ง hideStatus)
     statusColumn<Vendor>(tfl),

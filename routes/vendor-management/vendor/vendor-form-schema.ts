@@ -60,6 +60,11 @@ export function createVendorSchema(tv: TranslationFn, tf: TranslationFn) {
       .max(100),
     description: z.string().max(256),
     is_active: z.boolean(),
+    // ไม่บังคับรูปแบบ — vendor ต่างประเทศไม่มีเลข 13 หลัก / เลขสาขาแบบไทย
+    tax_no: z.string().max(20),
+    branch_no: z.string().max(10),
+    // 1..5 กรอกเอง, null = ยังไม่ประเมิน (CHECK vendor_rating_chk ฝั่ง DB)
+    rating: z.number().int().min(1).max(5).nullable(),
     business_types: z.array(z.object({ id: z.string(), name: z.string() })),
     info: z.preprocess(
       (val) => (Array.isArray(val) ? val : []),
@@ -106,6 +111,9 @@ export const EMPTY_FORM: VendorFormValues = {
   name: "",
   description: "",
   is_active: true,
+  tax_no: "",
+  branch_no: "",
+  rating: null,
   business_types: [],
   info: [],
   vendor_address: [],
@@ -179,6 +187,9 @@ export function getDefaultValues(vendor?: VendorDetail): VendorFormValues {
       name: vendor.name,
       description: vendor.description ?? "",
       is_active: vendor.is_active,
+      tax_no: vendor.tax_no ?? "",
+      branch_no: vendor.branch_no ?? "",
+      rating: vendor.rating ?? null,
       business_types:
         vendor.business_type?.map((bt) => ({
           id: bt.id,

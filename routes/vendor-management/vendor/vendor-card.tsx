@@ -6,6 +6,7 @@ import {
   ListCardRow,
   ListCardActiveRow,
 } from "@/components/share/list-card";
+import { VendorRatingStars } from "./vendor-rating";
 import type { Vendor } from "@/types/vendor";
 
 interface VendorCardProps {
@@ -20,6 +21,7 @@ export default function VendorCard({
   onDelete,
 }: VendorCardProps) {
   const tfl = useTranslations("field");
+  const t = useTranslations("vendorManagement.vendor");
 
   // list API ส่งผู้ติดต่อมาที่ `contacts` (serializer เปลี่ยนชื่อจาก tb_vendor_contact)
   // อ่านแต่ชื่อเก่าอย่างเดียว การ์ดเลยไม่เคยแสดงผู้ติดต่อ
@@ -34,6 +36,11 @@ export default function VendorCard({
     >
       <ListCardActiveRow active={item.is_active} />
       <ListCardRow label={tfl("code")}>{item.code}</ListCardRow>
+      {item.rating != null && (
+        <ListCardRow label={t("rating")}>
+          <VendorRatingStars value={item.rating} />
+        </ListCardRow>
+      )}
       {item.business_type?.length > 0 && (
         <ListCardRow label={tfl("businessType")}>
           <span className="flex flex-wrap justify-end gap-1">
