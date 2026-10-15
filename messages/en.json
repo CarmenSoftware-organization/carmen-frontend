@@ -1575,7 +1575,7 @@
         "dimensionsDesc": "Select allowed dimensions and configure sub-codes & 1 default code",
         "attributes": "5. Attribute Tags (External ERP Reference)",
         "attributesDesc": "Key-Value Pair Format (External reference for PMS/POS/Tax mapping)",
-        "grouping": "Account Code Grouping Path *",
+        "grouping": "Account Code Group Path *",
         "groupingDesc": "Mandatory: Select a node in the account group hierarchy (Level 1-4)"
       },
       "rules": {
@@ -1588,7 +1588,7 @@
         "readOnly": "Read-only",
         "natureAutoDesc": "Nature is auto-defaulted from Category (Read-only)",
         "groupingMandatory": "Mandatory: Please select an Account Grouping Path before saving.",
-        "groupingRequiredAlert": "Account Code Grouping Path is required before saving!",
+        "groupingRequiredAlert": "Account Code Group Path is required before saving!",
         "duplicateCodeAlert": "Account code already exists!",
         "selectCategoryAlert": "Please select Account Category!",
         "selectTypeAlert": "Please select Account Type!",
@@ -1675,7 +1675,7 @@
       }
     },
     "chartOfAccountMapping": {
-      "title": "Chart of Account Mapping",
+      "title": "Chart of Accounts Mapping",
       "desc": "Account code and cost center posted for each location × item group × movement",
       "tabAp": "Post to AP",
       "tabGl": "Post to GL",
@@ -1733,7 +1733,7 @@
       "statusFilterAria": "Filter by status"
     },
     "accountGrouping": {
-      "title": "Account Code Grouping",
+      "title": "Account Code Group",
       "desc": "Configure financial statement tree structure (Max 4 Levels Hierarchy)",
       "add": "Add Group",
       "searchPlaceholder": "Search group code, name, or account code...",
@@ -5347,9 +5347,9 @@
     "notifications": "Notifications",
     "fromPriceList": "From price list",
     "chartOfAccounts": "Chart of Accounts",
-    "accountGrouping": "Account Code Grouping",
+    "accountGrouping": "Account Code Group",
     "titleMaster": "Title Master",
-    "chartOfAccountMapping": "Chart of Account Mapping",
+    "chartOfAccountMapping": "Chart of Accounts Mapping",
     "jvPrefix": "Journal Voucher Prefixes",
     "bankAccount": "Bank Accounts",
     "glPeriod": "GL Periods",
