@@ -277,8 +277,10 @@ function DataGridTableBody({ children }: { children: ReactNode }) {
  * บนแถวแถบ และ `hover:bg-transparent` บนแถวเว้น (ซึ่ง twMerge ทับ
  * `hover:bg-muted/40` ของแถวทิ้ง) ผลคือทุกตาราง stripped ชี้แถวไหนก็ไม่ขึ้นอะไรเลย
  *
- * ฟังก์ชันนี้คืนแค่สีพื้นของแถบ — hover ใส่ที่แถวข้อมูลเท่านั้น (`rowHoverClass`)
- * แถว footer/expanded ที่ยืมสีแถวแม่ไม่ควรติดไฮไลต์แยกเป็นชิ้น ๆ
+ * ฟังก์ชันนี้คืนแค่สีพื้นของแถบ — hover/selected ของแถวข้อมูลอยู่ใน `rowHoverClass`
+ * ส่วนแถวย่อย (footer/expanded ที่ติด `data-row-child`) ไฮไลต์เป็นก้อนเดียวกับแถวแม่
+ * ด้วยกฎ CSS ใน styles/globals.css (ค้น `data-row-child`) — ทำใน className ไม่ได้
+ * เพราะต้องมองข้ามแถวพี่น้อง (`+` / `:has(+ …)`)
  */
 function stripeClass(index: number, stripped?: boolean) {
   // `DataGrid` เติม default ให้แล้ว (เปิด) — ตารางไหนไม่เอาส่ง `stripped: false`
@@ -391,6 +393,7 @@ function DataGridTableBodyRow<TData>({
     <tr
       ref={dndRef}
       style={{ ...(dndStyle ? dndStyle : null) }}
+      data-slot="data-row"
       data-state={
         table.options.enableRowSelection && row.getIsSelected()
           ? "selected"
@@ -446,6 +449,7 @@ function DataGridTableBodyRowExpandded<TData>({ row }: { row: Row<TData> }) {
 
   return (
     <tr
+      data-row-child=""
       className={cn(
         props.tableLayout?.rowBorder && "[&:not(:last-child)>td]:border-b",
         // สีเดียวกับแถวแม่ — แถวที่กางออกคือรายละเอียดของรายการเดียวกัน
@@ -485,6 +489,7 @@ function DataGridTableBodyRowFooter<TData>({ row }: { row: Row<TData> }) {
   return (
     <tr
       data-slot="footer-row"
+      data-row-child=""
       className={cn(
         // แถวสุดท้ายไม่ต้องมีเส้นปิดท้าย เหมือนแถวข้อมูลปกติ — กล่องตารางมีขอบ
         // ของตัวเองอยู่แล้ว เส้นซ้ำเข้าไปอีกชั้นจะกลายเป็นเส้นคู่ห่างกันเท่ากับ
