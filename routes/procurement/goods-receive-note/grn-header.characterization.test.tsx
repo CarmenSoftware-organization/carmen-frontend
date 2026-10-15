@@ -34,7 +34,7 @@ vi.mock("@/components/permission-denied-dialog", () => ({
 }));
 vi.mock("@/hooks/use-goods-receive-note", async (orig) => ({
   ...(await orig<typeof import("@/hooks/use-goods-receive-note")>()),
-  useGoodsReceiveNoteComments: () => ({ data: [] }),
+  useGoodsReceiveNoteComments: () => ({ comments: [], total: 0 }),
 }));
 
 const { GrnHeader } = await import("./grn-header");

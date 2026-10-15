@@ -83,7 +83,7 @@ export function PrHeader({
       returnState,
     );
   };
-  const { data: comments } = usePurchaseRequestComments(
+  const { total: commentCount } = usePurchaseRequestComments(
     purchaseRequest ? prId : undefined,
   );
   const isView = mode === "view";
@@ -251,7 +251,7 @@ export function PrHeader({
         <DocActionsMenu
           onDuplicate={isView && prId ? handleDuplicate : undefined}
           onComment={onComment}
-          commentCount={comments?.length}
+          commentCount={commentCount}
           activity={prId ? { id: prId, label: prNo } : undefined}
           print={
             isView && prId

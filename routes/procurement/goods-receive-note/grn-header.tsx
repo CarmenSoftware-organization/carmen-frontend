@@ -48,7 +48,9 @@ export function GrnHeader({
   const t = useTranslations("procurement.goodsReceiveNote");
   const tc = useTranslations("common");
   const tfl = useTranslations("field");
-  const { data: comments } = useGoodsReceiveNoteComments(goodsReceiveNote?.id);
+  const { total: commentCount } = useGoodsReceiveNoteComments(
+    goodsReceiveNote?.id,
+  );
 
   const isView = mode === "view";
   const isEdit = mode === "edit";
@@ -181,7 +183,7 @@ export function GrnHeader({
       {goodsReceiveNote && (
         <DocActionsMenu
           onComment={onShowComment}
-          commentCount={comments?.length}
+          commentCount={commentCount}
           activity={{
             id: goodsReceiveNote.id,
             label: goodsReceiveNote.grn_no,

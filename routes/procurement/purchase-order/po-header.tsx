@@ -64,7 +64,7 @@ export function PoHeader({
   const tc = useTranslations("common");
   const tfl = useTranslations("field");
   const tf = useTranslations("form");
-  const { data: comments } = usePurchaseOrderComments(purchaseOrder?.id);
+  const { total: commentCount } = usePurchaseOrderComments(purchaseOrder?.id);
   const [showSendEmail, setShowSendEmail] = useState(false);
 
   const isView = mode === "view";
@@ -213,7 +213,7 @@ export function PoHeader({
             )}
             <DocActionsMenu
               onComment={onShowComment}
-              commentCount={comments?.length}
+              commentCount={commentCount}
               activity={{ id: purchaseOrder.id, label: purchaseOrder.po_no }}
               print={
                 isView

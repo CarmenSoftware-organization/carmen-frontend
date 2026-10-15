@@ -34,7 +34,7 @@ vi.mock("@/components/permission-denied-dialog", () => ({
 }));
 vi.mock("./use-credit-note", async (orig) => ({
   ...(await orig<typeof import("./use-credit-note")>()),
-  useCreditNoteComments: () => ({ data: [] }),
+  useCreditNoteComments: () => ({ comments: [], total: 0 }),
 }));
 
 const { CnHeader } = await import("./cn-header");

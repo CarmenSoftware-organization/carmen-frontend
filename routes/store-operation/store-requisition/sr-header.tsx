@@ -76,7 +76,9 @@ export function SrHeader({
   const ts = useTranslations("status");
   const tfl = useTranslations("field");
   const tf = useTranslations("form");
-  const { data: comments } = useStoreRequisitionComments(storeRequisition?.id);
+  const { total: commentCount } = useStoreRequisitionComments(
+    storeRequisition?.id,
+  );
 
   const isView = mode === "view";
   const isAdd = mode === "add";
@@ -277,7 +279,7 @@ export function SrHeader({
           <DocActionsMenu
             onDuplicate={isView ? handleDuplicate : undefined}
             onComment={onComment}
-            commentCount={comments?.length}
+            commentCount={commentCount}
             activity={{
               id: storeRequisition.id,
               label: storeRequisition.sr_no,
