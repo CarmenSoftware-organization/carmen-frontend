@@ -4195,7 +4195,9 @@
       },
       "asOfDate": "As of {date}",
       "availableToIssue": "Can issue",
-      "availableToIssueHint": "Less than on hand: documents dated after this day already count on part of this stock."
+      "availableToIssueHint": "Less than on hand: documents dated after this day already count on part of this stock.",
+      "sentBackBy": "Sent back by {name}",
+      "sentBackNoReason": "No reason given"
     },
     "purchaseRequestTemplate": {
       "entity": "Purchase Request Template",

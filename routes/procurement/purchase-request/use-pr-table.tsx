@@ -26,8 +26,8 @@ import {
   columnSkeletons,
   customActionColumn,
   indexColumn,
-  sendbackColumn,
 } from "@/components/ui/data-grid/columns";
+import { PrSendBackHint } from "./pr-send-back-hint";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -103,15 +103,25 @@ export function usePrTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("prNo")} />
       ),
+      // ป้าย "ส่งกลับ" ต่อท้ายเลขที่แทนคอลัมน์ของตัวเอง — ใบที่ถูกตีกลับมีไม่กี่ใบ
+      // คอลัมน์แยกจึงว่างเกือบทุกแถวแต่กินที่ 110px · hover ป้ายเพื่อดูเหตุผล
+      // data-slot ให้ rowClamp ของ DataGrid ข้ามกล่องนี้ ไม่งั้นลูกถูกแปลงเป็น -webkit-box
       cell: ({ row }) => (
-        <CellAction onClick={() => onEdit(row.original)}>
-          {row.original.pr_no}
-        </CellAction>
+        <div data-slot="cell-stack" className="flex items-center gap-2">
+          <CellAction onClick={() => onEdit(row.original)}>
+            {row.original.pr_no}
+          </CellAction>
+          <PrSendBackHint
+            prId={row.original.id}
+            lastAction={row.original.last_action}
+          />
+        </div>
       ),
-      size: 130,
+      // 210 = เลขที่ยาว (PR20260400051) + ป้าย SEND BACK ไม่ถูกตัดที่ 1366px
+      // (200 ขาดไป 2px — เซลล์มี padding 12px สองข้าง)
+      size: 210,
       meta: { headerTitle: tfl("prNo"), skeleton: columnSkeletons.text },
     },
-    sendbackColumn<PurchaseRequest>(tc("sendBack")),
     {
       accessorKey: "pr_date",
       header: ({ column }) => (
@@ -149,49 +159,35 @@ export function usePrTable({
       size: 110,
     },
     {
-      accessorKey: "workflow_current_stage",
-      header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("stage")}
-          className="justify-center"
-        />
-      ),
-      meta: {
-        headerTitle: tfl("stage"),
-        cellClassName: "text-center",
-        headerClassName: "text-center",
-        skeleton: columnSkeletons.text,
-      },
-      size: 120,
-    },
-    {
       accessorKey: "pr_status",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("status")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
+      // ชื่อ stage เป็นบรรทัดรองของสถานะ แทนคอลัมน์ Stage แยก — สองคอลัมน์นั้นพูด
+      // เรื่องเดียวกันซ้ำ (Create Request คู่ DRAFT, Completed คู่ COMPLETED)
       cell: ({ row }): React.ReactNode => {
-        const status = row.original.pr_status;
+        const { pr_status: status, workflow_current_stage: stage } =
+          row.original;
         const config = PR_STATUS_CONFIG[status] ?? PR_STATUS_CONFIG.draft;
         return (
-          <StatusIconLabel
-            status={status}
-            label={config.label}
-            className="flex justify-center"
-          />
+          <div data-slot="cell-stack" className="flex min-w-0 flex-col">
+            <StatusIconLabel status={status} label={config.label} />
+            {stage && (
+              <span
+                className="text-muted-foreground truncate text-xs"
+                title={stage}
+              >
+                {stage}
+              </span>
+            )}
+          </div>
         );
       },
       meta: {
         headerTitle: tfl("status"),
-        cellClassName: "text-center",
-        headerClassName: "text-center",
         skeleton: columnSkeletons.badge,
       },
-      size: 120,
+      size: 140,
     },
     {
       accessorKey: "requestor_name",
@@ -200,7 +196,7 @@ export function usePrTable({
       ),
       cell: ({ row }) => (
         <span
-          className="wrap-break-word whitespace-normal"
+          className="block truncate"
           title={row.original.requestor_name ?? undefined}
         >
           {row.original.requestor_name}
@@ -217,7 +213,7 @@ export function usePrTable({
       size: 140,
       cell: ({ row }) => (
         <span
-          className="wrap-break-word whitespace-normal"
+          className="block truncate"
           title={row.original.department_name ?? undefined}
         >
           {row.original.department_name}
@@ -238,7 +234,7 @@ export function usePrTable({
         const amount = row.original.base_total_amount;
         if (amount == null) return <span></span>;
         return (
-          <p className="font-medium">
+          <p className="font-medium whitespace-nowrap tabular-nums">
             {formatAmount(amount, amountFormat)}
             <span className="text-muted-foreground ms-1 text-xs font-normal">
               {defaultCurrencyCode}
@@ -252,7 +248,7 @@ export function usePrTable({
         cellClassName: "text-right",
         headerClassName: "text-right",
       },
-      size: 80,
+      size: 120,
     },
     ...auditColumns<PurchaseRequest>(tfl, dateTimeFormat),
   ];
