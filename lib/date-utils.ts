@@ -46,7 +46,13 @@ const FULL_MONTHS = [
  * formatDate("2026-04-09T09:30:00Z", "MM/DD/YYYY hh:mm A"); // "04/09/2026 09:30 AM"
  * ```
  */
-export function formatDate(iso: string, dateFormat: string): string {
+export function formatDate(
+  iso: string | null | undefined,
+  dateFormat: string,
+): string {
+  // `new Date(null)` คือ epoch 0 ไม่ใช่ Invalid Date — ช่องวันที่ที่ backend ส่ง null
+  // มาเคยขึ้นเป็น 1970-01-01 (เช่น invoice_date ของ GRN) จึงต้องดักก่อน parse
+  if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
 
