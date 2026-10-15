@@ -8,8 +8,8 @@ import {
   columnSkeletons,
   indexColumn,
   selectColumn,
-  sendbackColumn,
 } from "@/components/ui/data-grid/columns";
+import { SrSendBackHint } from "./sr-send-back-hint";
 import { useDeleteGate } from "@/hooks/use-delete-gate";
 import { useTranslations } from "use-intl";
 import { useProfile } from "@/hooks/use-profile";
@@ -53,52 +53,48 @@ export function useStoreRequisitionTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("srNo")} />
       ),
-      cell: ({ row }) => (
-        <CellAction onClick={() => onEdit(row.original)}>
-          {row.getValue("sr_no")}
-        </CellAction>
-      ),
-      meta: { headerTitle: tfl("srNo"), skeleton: columnSkeletons.text },
-      size: 80,
-    },
-    sendbackColumn<StoreRequisition>(tc("sendBack")),
-    {
-      accessorKey: "sr_type",
-      header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("type")}
-          className="justify-center"
-        />
-      ),
+      // ป้าย "ส่งกลับ" ต่อท้ายเลขที่แทนคอลัมน์ของตัวเอง (ท่าเดียวกับ PR/PO list) —
+      // hover ป้ายเพื่อดูเหตุผล · ชนิดใบเป็นบรรทัดรองแทนคอลัมน์ Type ให้ตาราง
+      // พอดีจอ 1366px · ชนิดใบไม่มีสี สีสงวนไว้ให้สถานะ
+      // data-slot ให้ rowClamp ของ DataGrid ข้ามกล่องนี้
       cell: ({ row }) => {
-        const type = row.getValue("sr_type") as StoreRequisitionType;
-        if (!type) return null;
+        const type = row.original.sr_type as StoreRequisitionType | null;
         return (
-          <StatusIconLabel
-            status={type}
-            label={type}
-            // ชนิดใบไม่มีสี — สีสงวนไว้ให้สถานะซึ่งเป็นสิ่งที่คนกวาดตาหาจริง ๆ
-            className="text-muted-foreground flex w-full justify-center uppercase"
-          />
+          <div data-slot="cell-stack" className="flex flex-col items-start">
+            <div className="flex items-center gap-1.5">
+              <CellAction onClick={() => onEdit(row.original)}>
+                {row.getValue("sr_no")}
+              </CellAction>
+              <SrSendBackHint
+                srId={row.original.id}
+                lastAction={row.original.last_action}
+              />
+            </div>
+            {type && (
+              <span className="text-muted-foreground text-xs uppercase">
+                {type}
+              </span>
+            )}
+          </div>
         );
       },
-      meta: {
-        headerTitle: tfl("type"),
-        skeleton: columnSkeletons.badge,
-        cellClassName: "text-center",
-        headerClassName: "text-center",
-      },
-      size: 80,
+      meta: { headerTitle: tfl("srNo"), skeleton: columnSkeletons.text },
+      // เลขที่ยาว + ป้าย SEND BACK ไม่ถูกตัดที่ 1366px (ค่าเดียวกับ PO list)
+      size: 225,
     },
     {
       accessorKey: "sr_date",
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("date")} />
       ),
-      cell: ({ row }) => formatDate(row.getValue("sr_date"), dateFormat),
+      // nowrap — คอลัมน์แคบแล้ววันที่ตัดบรรทัดตรงขีด (2026-04- / 28)
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap">
+          {formatDate(row.getValue("sr_date"), dateFormat)}
+        </span>
+      ),
       meta: { headerTitle: tfl("date"), skeleton: columnSkeletons.text },
-      size: 75,
+      size: 105,
     },
     {
       // id เป็นชื่อคอลัมน์จริงใน DB เพื่อให้ sort ฝั่ง server ได้ (เรียง From → To = เรียงต้นทาง)
@@ -108,88 +104,100 @@ export function useStoreRequisitionTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("fromTo")} />
       ),
+      cell: ({ getValue }) => (
+        <span className="block truncate" title={getValue<string>()}>
+          {getValue<string>()}
+        </span>
+      ),
       meta: { headerTitle: tfl("fromTo"), skeleton: columnSkeletons.text },
-      size: 120,
+      size: 170,
     },
     {
       accessorKey: "requestor_name",
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("requester")} />
       ),
+      cell: ({ row }) => (
+        <span
+          className="block truncate"
+          title={row.original.requestor_name ?? undefined}
+        >
+          {row.original.requestor_name}
+        </span>
+      ),
       meta: { headerTitle: tfl("requester"), skeleton: columnSkeletons.text },
-      size: 100,
+      size: 120,
     },
     {
       accessorKey: "department_name",
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("department")} />
       ),
-      size: 100,
+      cell: ({ row }) => (
+        <span
+          className="block truncate"
+          title={row.original.department_name ?? undefined}
+        >
+          {row.original.department_name}
+        </span>
+      ),
+      size: 130,
       meta: { headerTitle: tfl("department"), skeleton: columnSkeletons.text },
     },
     {
       accessorKey: "doc_status",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("status")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
+      // ชื่อ stage เป็นบรรทัดรองของสถานะ แทนคอลัมน์ Current Stage แยก
+      // (ท่าเดียวกับ PR/PO list)
       cell: ({ row }) => {
         const status = row.getValue("doc_status") as StoreRequisitionStatus;
+        const stage = row.original.workflow_current_stage;
         return (
-          <StatusIconLabel
-            status={status}
-            label={ts(status)}
-            // uppercase ด้วย CSS ไม่ใช่ .toUpperCase() — ค่าที่ export/คัดลอก
-            // ยังเป็นข้อความเดิม และภาษาไทยที่ไม่มีตัวพิมพ์ใหญ่ก็ไม่โดนแตะ
-            // (ต่างจากโมดูลอื่นที่ label uppercase มาจาก createStatusConfig แล้ว)
-            //
-            // คอลัมน์นี้จัดกลาง — label เป็น inline-flex ซึ่ง `text-center`
-            // ของเซลล์เอื้อมไม่ถึงเมื่ออยู่ในกล่อง clamp ของ DataGrid
-            className="flex w-full justify-center uppercase"
-          />
+          <div data-slot="cell-stack" className="flex min-w-0 flex-col">
+            <StatusIconLabel
+              status={status}
+              label={ts(status)}
+              // uppercase ด้วย CSS ไม่ใช่ .toUpperCase() — ค่าที่ export/คัดลอก
+              // ยังเป็นข้อความเดิม และภาษาไทยที่ไม่มีตัวพิมพ์ใหญ่ก็ไม่โดนแตะ
+              // (ต่างจากโมดูลอื่นที่ label uppercase มาจาก createStatusConfig แล้ว)
+              className="uppercase"
+            />
+            {stage && (
+              <span
+                className="text-muted-foreground truncate text-xs"
+                title={stage}
+              >
+                {stage}
+              </span>
+            )}
+          </div>
         );
       },
       meta: {
         headerTitle: tfl("status"),
         skeleton: columnSkeletons.badge,
-        cellClassName: "text-center",
-        headerClassName: "text-center",
       },
-      size: 80,
+      size: 140,
     },
     {
       accessorKey: "workflow_name",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("workflowStage")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("workflowStage")} />
       ),
-      size: 80,
+      cell: ({ row }) => (
+        <span
+          className="block truncate"
+          title={row.original.workflow_name ?? undefined}
+        >
+          {row.original.workflow_name}
+        </span>
+      ),
+      size: 100,
       meta: {
         headerTitle: tfl("workflowStage"),
         skeleton: columnSkeletons.text,
-        cellClassName: "text-center",
-      },
-    },
-    {
-      accessorKey: "workflow_current_stage",
-      header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("currentStage")}
-          className="justify-center"
-        />
-      ),
-      size: 80,
-      meta: {
-        headerTitle: tfl("currentStage"),
-        skeleton: columnSkeletons.text,
-        cellClassName: "text-center",
       },
     },
     ...auditColumns<StoreRequisition>(tfl, dateTimeFormat),

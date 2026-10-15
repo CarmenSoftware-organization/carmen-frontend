@@ -418,10 +418,10 @@ export default function StoreRequisitionComponent() {
           recordCount={totalRecords}
           isLoading={isLoading}
           tableLayout={{ headerSticky: true }}
-          // 11 คอลัมน์ ยัดให้พอดีจอทำให้ทุกช่องถูกบีบจนอ่านไม่ออก — min-w-max
-          // ให้ตารางกว้างเท่าผลรวม size ของคอลัมน์ที่เปิดอยู่ แล้วเลื่อนแนวนอนเอา
-          // (ผูกกับ column visibility เอง ไม่ต้องฮาร์ดโค้ดตัวเลข)
-          tableClassNames={{ base: "min-w-max" }}
+          // เดิมตั้ง `min-w-max` เพราะ 11 คอลัมน์ยัดให้พอดีจอไม่ได้ — ตอนนี้ Send Back,
+          // Type และ Current Stage ย้ายไปเป็นบรรทัดรองแล้ว เหลือ 8 คอลัมน์ที่พอดีจอ
+          // 1366px แบบเดียวกับ PR/PO list · min-w-max ทำให้ตารางกว้างตามข้อความยาว
+          // สุดในแต่ละช่อง `truncate` จึงไม่มีผล
           emptyMessage={<EmptyComponent />}
         >
           <DataGridContainer
