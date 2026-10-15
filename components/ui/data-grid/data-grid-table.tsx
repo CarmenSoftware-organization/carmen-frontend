@@ -262,27 +262,47 @@ function DataGridTableBody({ children }: { children: ReactNode }) {
 }
 
 /**
- * สีสลับแถวคิดจาก **ลำดับของข้อมูล** ไม่ใช่ `:nth-child(odd)` ของ DOM
+ * สีสลับแถวคิดจาก **ลำดับของข้อมูล** ไม่ใช่ `:nth-child` ของ DOM
  *
  * ตารางที่มี footer row (หมายเหตุรายแถว) แทรกระหว่างแถวข้อมูล ทำให้ลำดับใน DOM
  * เป็น data-footer-data-footer… แถวข้อมูลจึงตกอยู่ตำแหน่งคี่หมดทุกแถว = ไม่สลับสี
  * เลยสักแถว · คิดจาก `row.index` แล้ว footer หยิบสีของแถวแม่ไปใช้ได้ด้วย แถวข้อมูล
  * กับแถวย่อยของมันจึงเป็นก้อนสีเดียวกัน
  *
- * ใช้ token `--accent` ไม่ใช่ `--muted` — บนพื้น card ของโหมดมืด สี muted ห่างจาก
- * card แค่ขั้นเดียว มองแทบไม่ออก ส่วน accent เป็น "พื้นผิวที่สว่างที่สุดของโหมดมืด /
- * เข้มที่สุดของโหมดสว่าง" (ดู docs/DESIGN.md) จึงห่างพอในทั้งสองธีม
+ * แถบตกที่แถวที่ 2, 4, 6… — แถวแรกต่อจากหัวตารางเป็นพื้นเรียบ หัวตารางกับแถวแรก
+ * จึงไม่กลืนกันเป็นแถบสีเดียว
  *
- * โหมดสว่างลดความทึบเหลือ 65% — พื้น card เป็นขาวล้วน แถบ accent เต็มค่าเลยหนัก
- * เกินไปจนแย่งความสนใจไปจากตัวข้อมูล ส่วนโหมดมืดใช้เต็มค่าเพราะพื้นเข้มกลืนอยู่แล้ว
+ * สีมาจาก token `--row-stripe` / `--row-hover` (styles/globals.css) ซึ่งทึบทั้งคู่
+ * และ hover เข้มกว่าแถบเสมอ — เดิมใช้ `bg-accent/65` คู่กับ `hover:bg-accent/65`
+ * บนแถวแถบ และ `hover:bg-transparent` บนแถวเว้น (ซึ่ง twMerge ทับ
+ * `hover:bg-muted/40` ของแถวทิ้ง) ผลคือทุกตาราง stripped ชี้แถวไหนก็ไม่ขึ้นอะไรเลย
+ *
+ * ฟังก์ชันนี้คืนแค่สีพื้นของแถบ — hover ใส่ที่แถวข้อมูลเท่านั้น (`rowHoverClass`)
+ * แถว footer/expanded ที่ยืมสีแถวแม่ไม่ควรติดไฮไลต์แยกเป็นชิ้น ๆ
  */
 function stripeClass(index: number, stripped?: boolean) {
   // `DataGrid` เติม default ให้แล้ว (เปิด) — ตารางไหนไม่เอาส่ง `stripped: false`
   if (!stripped) return undefined;
-  return index % 2 === 0
-    ? "bg-accent/65 hover:bg-accent/65 dark:bg-accent dark:hover:bg-accent"
-    : "hover:bg-transparent";
+  return index % 2 === 1
+    ? "bg-row-stripe [--row-tint:var(--row-stripe)]"
+    : undefined;
 }
+
+const rowHoverClass =
+  "hover:bg-row-hover hover:[--row-tint:var(--row-hover)] data-[state=selected]:bg-selected data-[state=selected]:[--row-tint:var(--selected)] transition-colors duration-150";
+
+/**
+ * cell ที่ปักหมุดลอยทับ cell ที่เลื่อนผ่านใต้มัน จึงต้องมีพื้นทึบของตัวเอง — แต่พื้น
+ * ของ `<td>` บังพื้นของ `<tr>` ทำให้แถบ zebra / hover / selected ขาดตรงคอลัมน์ที่
+ * ปักหมุด (เดิมเป็น `bg-background/90` เทาเรียบทุกแถว)
+ *
+ * แก้ด้วยสองชั้น: `bg-card` ทึบเป็นฐาน (สีเดียวกับพื้น `DataGridContainer`) แล้ววาง
+ * `--row-tint` ที่แถวตั้งไว้ทับเป็น background-image — แถวไหนไม่มีสีก็โปร่ง เห็นแค่ฐาน
+ * ใช้ image แทน color เพราะ `--selected` เป็นสีโปร่ง ถ้าใส่เป็น background-color
+ * ตรง ๆ ข้อมูลที่เลื่อนอยู่ใต้ cell จะทะลุขึ้นมา
+ */
+const PINNED_BODY_CELL =
+  "data-pinned:bg-card data-pinned:bg-[image:linear-gradient(var(--row-tint,transparent),var(--row-tint,transparent))]";
 
 function DataGridTableBodyRowSkeleton({ children }: { children: ReactNode }) {
   "use no memo"; // TanStack table is stable-ref but mutable; opt out of React Compiler
@@ -291,14 +311,14 @@ function DataGridTableBodyRowSkeleton({ children }: { children: ReactNode }) {
   return (
     <tr
       className={cn(
-        "hover:bg-muted/40 data-[state=selected]:bg-primary/5 transition-colors duration-150",
+        rowHoverClass,
         props.onRowClick && "cursor-pointer",
         !props.tableLayout?.stripped &&
           props.tableLayout?.rowBorder &&
           "[&:not(:last-child)>td]:border-border/50 [&:not(:last-child)>td]:border-b",
         props.tableLayout?.cellBorder && "*:last:border-e-0",
         props.tableLayout?.stripped !== false &&
-          "odd:bg-accent/65 dark:odd:bg-accent hover:bg-transparent",
+          "even:bg-row-stripe even:[--row-tint:var(--row-stripe)]",
         table.options.enableRowSelection && "*:first:relative",
         props.tableClassNames?.bodyRow,
       )}
@@ -338,7 +358,10 @@ function DataGridTableBodyRowSkeletonCell<TData>({
         column.columnDef.meta?.cellClassName,
         props.tableLayout?.columnsPinnable &&
           column.getCanPin() &&
-          '[&[data-pinned][data-last-col]]:border-border data-pinned:bg-background/90 data-pinned:backdrop-blur-xs" [&[data-pinned=left][data-last-col=left]]:border-e! [&[data-pinned=right][data-last-col=right]]:border-s!',
+          cn(
+            "[&[data-pinned][data-last-col]]:border-border [&[data-pinned=left][data-last-col=left]]:border-e! [&[data-pinned=right][data-last-col=right]]:border-s!",
+            PINNED_BODY_CELL,
+          ),
         column.getIndex() === 0 ||
           column.getIndex() === table.getVisibleFlatColumns().length - 1
           ? props.tableClassNames?.edgeCell
@@ -387,7 +410,7 @@ function DataGridTableBodyRow<TData>({
           : undefined
       }
       className={cn(
-        "hover:bg-muted/40 data-[state=selected]:bg-primary/5 transition-colors duration-150",
+        rowHoverClass,
         props.onRowClick &&
           "focus-visible:ring-ring/50 cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset",
         !props.tableLayout?.stripped &&
@@ -550,7 +573,10 @@ function DataGridTableBodyRowCell<TData>({
         cell.column.columnDef.meta?.cellClassName,
         props.tableLayout?.columnsPinnable &&
           column.getCanPin() &&
-          '[&[data-pinned][data-last-col]]:border-border data-pinned:bg-background/90 data-pinned:backdrop-blur-xs" [&[data-pinned=left][data-last-col=left]]:border-e! [&[data-pinned=right][data-last-col=right]]:border-s!',
+          cn(
+            "[&[data-pinned][data-last-col]]:border-border [&[data-pinned=left][data-last-col=left]]:border-e! [&[data-pinned=right][data-last-col=right]]:border-s!",
+            PINNED_BODY_CELL,
+          ),
         column.getIndex() === 0 ||
           column.getIndex() === row.getVisibleCells().length - 1
           ? props.tableClassNames?.edgeCell

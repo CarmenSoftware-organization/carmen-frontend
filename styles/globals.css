@@ -93,6 +93,12 @@
   /* แถบเลื่อนเป็นของประกอบ ไม่ใช่ของที่ต้องมอง — จางไว้ พอเห็นว่ามีให้ลาก */
   --scrollbar-thumb: oklch(0.82 0 0 / 0.35);
   --selected: oklch(0.4714 0.1794 258.7 / 0.08);
+  /* แถวตาราง (DataGrid) — ทึบทั้งคู่ ไม่ใช้ alpha: แถบ zebra ต้องอ่านค่าเดียวกันบนทุกพื้น
+     และ hover ต้องเข้มกว่าแถบ ไม่งั้นแถวที่ถูกแถบแล้วชี้ไม่ขึ้นอะไร · hover เป็นเทาล้วน
+     จงใจไม่อมน้ำเงิน — น้ำเงินในตารางสงวนไว้ให้ `--selected` เคยลองอมน้ำเงินแล้ว แถวที่ชี้
+     กับแถวที่เลือกสีแทบเท่ากัน ผู้ใช้แยกไม่ออกว่าเลือกแถวไหนไว้ */
+  --row-stripe: oklch(0.968 0 0);
+  --row-hover: oklch(0.94 0 0);
   --overlay: oklch(0.16 0 0 / 0.5);
   /* search-match highlight — was bg-yellow-200/80 inline in tree-node.tsx */
   --highlight: oklch(0.92 0.13 100 / 0.8);
@@ -200,6 +206,8 @@
   --disabled-foreground: oklch(0.50 0 0);
   --scrollbar-thumb: oklch(0.44 0 0 / 0.35);
   --selected: oklch(0.5852 0.1706 253.27 / 0.16);
+  --row-stripe: oklch(0.275 0 0);
+  --row-hover: oklch(0.31 0 0);
   --overlay: oklch(0 0 0 / 0.7);
   /* search-match highlight — was bg-yellow-800/40 inline in tree-node.tsx */
   --highlight: oklch(0.45 0.10 100 / 0.4);
@@ -284,6 +292,8 @@
   --color-disabled-foreground: var(--disabled-foreground);
   --color-scrollbar-thumb: var(--scrollbar-thumb);
   --color-selected: var(--selected);
+  --color-row-stripe: var(--row-stripe);
+  --color-row-hover: var(--row-hover);
   --color-overlay: var(--overlay);
   --color-highlight: var(--highlight);
   --color-highlight-foreground: var(--highlight-foreground);
