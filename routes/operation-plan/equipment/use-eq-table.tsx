@@ -97,7 +97,7 @@ export function useEquipmentTable({
       meta: { headerTitle: tfl("capacity") },
     },
     // Status ก่อน created/updated (hideStatus:true กัน useConfigTable inject ซ้ำ)
-    statusColumn<Equipment>(),
+    statusColumn<Equipment>(tfl),
     ...auditColumns<Equipment>(tfl, dateTimeFormat),
   ];
 

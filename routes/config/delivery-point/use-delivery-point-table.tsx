@@ -45,7 +45,7 @@ export function useDeliveryPointTable({
       ),
       meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
     },
-    statusColumn<DeliveryPoint>(),
+    statusColumn<DeliveryPoint>(tfl),
     ...auditColumns<DeliveryPoint>(tfl, dateTimeFormat),
   ];
 

@@ -45,7 +45,7 @@ export function useBusinessTypeTable({
       ),
       meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
     },
-    statusColumn<BusinessType>(),
+    statusColumn<BusinessType>(tfl),
     ...auditColumns<BusinessType>(tfl, dateTimeFormat),
   ];
 

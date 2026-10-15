@@ -156,7 +156,7 @@ export function useVendorTable({
       meta: { headerTitle: tfl("creditTerm"), skeleton: columnSkeletons.text },
     },
     // status column แทรกเองก่อน created/updated (useConfigTable ส่ง hideStatus)
-    statusColumn<Vendor>(),
+    statusColumn<Vendor>(tfl),
     ...auditColumns<Vendor>(tfl, dateTimeFormat),
   ];
 

@@ -53,7 +53,7 @@ export function useCertificationTable({
       cell: ({ row }) => <span>{row.getValue("name") || "..."}</span>,
       meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
     },
-    statusColumn<Certification>(),
+    statusColumn<Certification>(tfl),
     ...auditColumns<Certification>(tfl, dateTimeFormat),
   ];
 

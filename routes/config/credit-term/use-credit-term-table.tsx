@@ -68,7 +68,7 @@ export function useCreditTermTable({
       ),
       meta: { headerTitle: tfl("description"), skeleton: columnSkeletons.text },
     },
-    statusColumn<CreditTerm>(),
+    statusColumn<CreditTerm>(tfl),
     ...auditColumns<CreditTerm>(tfl, dateTimeFormat),
   ];
 

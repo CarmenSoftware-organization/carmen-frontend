@@ -63,7 +63,7 @@ export function useTaxProfileTable({
         skeleton: columnSkeletons.textShort,
       },
     },
-    statusColumn<TaxProfile>(),
+    statusColumn<TaxProfile>(tfl),
     ...auditColumns<TaxProfile>(tfl, dateTimeFormat),
   ];
 

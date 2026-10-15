@@ -75,7 +75,7 @@ export function useCostCenterTable({
       ),
       meta: { headerTitle: tfl("description"), skeleton: columnSkeletons.text },
     },
-    statusColumn<CostCenter>(),
+    statusColumn<CostCenter>(tfl),
     ...auditColumns<CostCenter>(tfl, dateTimeFormat),
   ];
 

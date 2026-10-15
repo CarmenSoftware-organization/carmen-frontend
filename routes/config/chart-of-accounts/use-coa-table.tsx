@@ -135,7 +135,7 @@ export function useCoaTable({
         skeleton: columnSkeletons.textShort,
       },
     },
-    statusColumn<ChartOfAccount>(),
+    statusColumn<ChartOfAccount>(tfl),
     ...auditColumns<ChartOfAccount>(tfl, dateTimeFormat),
     customActionColumn<ChartOfAccount>(({ row }) => (
       <DataGridRowActions
