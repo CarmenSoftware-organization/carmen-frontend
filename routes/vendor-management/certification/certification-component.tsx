@@ -32,6 +32,7 @@ export default function CertificationComponent() {
       pageKey={LIST_PAGE_KEYS.CERTIFICATION}
       filterFields={CERTIFICATION_FILTER_FIELDS}
       defaultSort="code:asc"
+      fixedColumnWidths
       exportColumns={[
         { header: tfl("code"), value: (r) => r.code, width: 16 },
         { header: tfl("name"), value: (r) => r.name, width: 28 },

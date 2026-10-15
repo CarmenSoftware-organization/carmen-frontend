@@ -180,6 +180,7 @@ export function ConfigListTemplate<TEntity extends { id: string }>({
   permissionPrefix,
   pageKey,
   filterFields,
+  fixedColumnWidths,
 }: Readonly<ConfigListTemplateProps<TEntity>>) {
   const navigate = useNavigate();
   const [deleteTarget, setDeleteTarget] = useState<TEntity | null>(null);
@@ -411,7 +412,10 @@ export function ConfigListTemplate<TEntity extends { id: string }>({
           table={table}
           recordCount={totalRecords}
           isLoading={isLoading}
-          tableLayout={{ headerSticky: true }}
+          tableLayout={{
+            headerSticky: true,
+            ...(fixedColumnWidths && { width: "fixed" }),
+          }}
         >
           <DataGridContainer
             className={cn(
