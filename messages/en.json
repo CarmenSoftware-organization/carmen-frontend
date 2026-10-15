@@ -1215,6 +1215,7 @@
     "difficulty": "Difficulty",
     "parent": "Parent",
     "parentCategory": "Parent Category",
+    "categoryPath": "Category path",
     "level": "Level",
     "tags": "Tags",
     "internalNote": "Internal Note",
@@ -3746,7 +3747,7 @@
     "product": {
       "entity": "Product",
       "title": "Products",
-      "desc": "Everything you buy, store, and count — with its units, price, and where it is kept.",
+      "desc": "Everything you buy, store, and count — with its units, categories, and where it is kept.",
       "add": "Add Product",
       "edit": "Edit Product",
       "deleteTitle": "Delete Product",
