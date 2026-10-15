@@ -28,6 +28,7 @@ export function useEmailProfileOAuth() {
         body,
       ),
     errorMessage: "Could not start Microsoft sign-in",
+    meta: { skipGlobalErrorToast: true },
   });
   const poll = useApiMutation<
     { profile_id: string; handle: string },
@@ -39,6 +40,7 @@ export function useEmailProfileOAuth() {
         body,
       ),
     errorMessage: "Microsoft sign-in check failed",
+    meta: { skipGlobalErrorToast: true },
   });
 
   return {

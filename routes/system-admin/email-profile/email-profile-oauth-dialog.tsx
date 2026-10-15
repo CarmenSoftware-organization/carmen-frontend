@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Copy, ExternalLink, Loader2 } from "lucide-react";
 import { useTranslations } from "use-intl";
 import {
@@ -39,10 +39,9 @@ export function EmailProfileOAuthDialog({
   const [phase, setPhase] = useState<Phase>({ kind: "starting" });
   const [copied, setCopied] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const alive = useRef(true);
 
   useEffect(() => {
-    alive.current = true;
+    let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     const run = async () => {
@@ -50,25 +49,25 @@ export function EmailProfileOAuthDialog({
       try {
         session = await start(profile.id);
       } catch (e) {
-        if (alive.current)
+        if (!cancelled)
           setPhase({
             kind: "failed",
             message: e instanceof Error ? e.message : String(e),
           });
         return;
       }
-      if (!alive.current) return;
+      if (cancelled) return;
       setPhase({ kind: "waiting", start: session });
       const deadline = Date.now() + session.expires_in * 1000;
       let interval = session.interval;
 
       const tick = async () => {
-        if (!alive.current) return;
+        if (cancelled) return;
         if (Date.now() > deadline)
           return setPhase({ kind: "failed", message: t("expired") });
         try {
           const res = await poll(profile.id, session.handle);
-          if (!alive.current) return;
+          if (cancelled) return;
           switch (res.status) {
             case "pending":
               break;
@@ -92,7 +91,7 @@ export function EmailProfileOAuthDialog({
               });
           }
         } catch (e) {
-          if (alive.current)
+          if (!cancelled)
             setPhase({
               kind: "failed",
               message: e instanceof Error ? e.message : String(e),
@@ -106,7 +105,7 @@ export function EmailProfileOAuthDialog({
 
     void run();
     return () => {
-      alive.current = false;
+      cancelled = true;
       if (timer) clearTimeout(timer);
     };
     // attempt เปลี่ยน = ผู้ใช้กด "ลองใหม่" → เริ่ม session ใหม่
