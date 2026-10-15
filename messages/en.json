@@ -619,7 +619,9 @@
     "createDocument": "Create document",
     "createEntity": "Create {entity}",
     "formatJson": "Format",
-    "workflowHistoryHint": "See who has handled this document"
+    "workflowHistoryHint": "See who has handled this document",
+    "sentBackBy": "Sent back by {name}",
+    "sentBackNoReason": "No reason given"
   },
   "pagination": {
     "label": "Pagination",
@@ -1190,7 +1192,6 @@
     "reorderQty": "Reorder",
     "subCategory": "Sub Category",
     "fromTo": "From → To",
-    "workflowStage": "Workflow Name",
     "currentStage": "Current Stage",
     "localName": "Local Name",
     "barcode": "Barcode",
@@ -4195,9 +4196,7 @@
       },
       "asOfDate": "As of {date}",
       "availableToIssue": "Can issue",
-      "availableToIssueHint": "Less than on hand: documents dated after this day already count on part of this stock.",
-      "sentBackBy": "Sent back by {name}",
-      "sentBackNoReason": "No reason given"
+      "availableToIssueHint": "Less than on hand: documents dated after this day already count on part of this stock."
     },
     "purchaseRequestTemplate": {
       "entity": "Purchase Request Template",
@@ -4404,7 +4403,8 @@
       "noPrSource": "No source purchase request",
       "grnSource": "Goods receive notes",
       "grnCount": "{count} GRNs",
-      "grnLabel": "Open the goods receive notes for this line ({count})"
+      "grnLabel": "Open the goods receive notes for this line ({count})",
+      "deliveryOn": "Delivery {date}"
     },
     "creditNote": {
       "tabItems": "Items",

@@ -619,7 +619,9 @@
     "createDocument": "สร้างเอกสาร",
     "createEntity": "สร้าง{entity}",
     "formatJson": "จัดรูปแบบ",
-    "workflowHistoryHint": "ดูว่าใบนี้ผ่านมือใครมาบ้าง"
+    "workflowHistoryHint": "ดูว่าใบนี้ผ่านมือใครมาบ้าง",
+    "sentBackBy": "ส่งกลับโดย {name}",
+    "sentBackNoReason": "ไม่ได้ระบุเหตุผล"
   },
   "pagination": {
     "label": "การแบ่งหน้า",
@@ -1190,7 +1192,6 @@
     "reorderQty": "จุดสั่งซื้อ",
     "subCategory": "หมวดย่อย",
     "fromTo": "จาก → ไป",
-    "workflowStage": "ชื่อเวิร์กโฟลว์",
     "currentStage": "ขั้นตอนปัจจุบัน",
     "localName": "ชื่อท้องถิ่น",
     "barcode": "บาร์โค้ด",
@@ -4195,9 +4196,7 @@
       },
       "asOfDate": "ณ วันที่ {date}",
       "availableToIssue": "ตัดได้",
-      "availableToIssueHint": "น้อยกว่ายอดคงเหลือ เพราะเอกสารที่ลงวันที่หลังวันนี้นับของส่วนหนึ่งไว้แล้ว",
-      "sentBackBy": "ส่งกลับโดย {name}",
-      "sentBackNoReason": "ไม่ได้ระบุเหตุผล"
+      "availableToIssueHint": "น้อยกว่ายอดคงเหลือ เพราะเอกสารที่ลงวันที่หลังวันนี้นับของส่วนหนึ่งไว้แล้ว"
     },
     "purchaseRequestTemplate": {
       "entity": "แม่แบบใบขอซื้อ",
@@ -4404,7 +4403,8 @@
       "noPrSource": "ยังไม่มีใบขอซื้อต้นทาง",
       "grnSource": "ใบรับสินค้า",
       "grnCount": "{count} ใบ",
-      "grnLabel": "เปิดใบรับสินค้าของรายการนี้ ({count} ใบ)"
+      "grnLabel": "เปิดใบรับสินค้าของรายการนี้ ({count} ใบ)",
+      "deliveryOn": "ส่ง {date}"
     },
     "creditNote": {
       "tabItems": "รายการ",
