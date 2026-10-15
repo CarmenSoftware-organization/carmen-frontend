@@ -978,7 +978,20 @@
       "COST_CENTER_GROUP_IN_USE": "This group still has cost centers — move or delete them first, or set the group inactive.",
       "COST_CENTER_GROUP_DUPLICATE_CODE": "This cost center group code is already in use.",
       "COST_CENTER_IN_USE": "This cost center is still used by a location, an account mapping or accounting records — set it inactive instead.",
-      "COST_CENTER_DUPLICATE_CODE": "This cost center code is already in use."
+      "COST_CENTER_DUPLICATE_CODE": "This cost center code is already in use.",
+      "VENDOR_CODE_ALREADY_EXISTS": "Another vendor already uses this code. Pick a different code, or search for that vendor and edit it instead.",
+      "DEPARTMENT_ALREADY_EXISTS": "Another department already uses this code. Pick a different code.",
+      "LOCATION_ALREADY_EXISTS": "Another location already uses this name. Pick a different name, or edit the existing location.",
+      "EXCHANGE_RATE_ALREADY_EXISTS": "This currency already has an exchange rate on that date. Edit the existing rate instead of adding another.",
+      "PRICE_LIST_LINE_ALREADY_EXISTS": "This product is already on the price list with the same unit and MOQ. Change the unit or MOQ, or edit the existing line.",
+      "PRICE_LIST_TEMPLATE_NAME_ALREADY_EXISTS": "Another price list template already uses this name. Pick a different name.",
+      "NOTIFICATION_TEMPLATE_ALREADY_EXISTS": "A notification template named \"{name}\" already exists for the {channel} channel. Pick a different name.",
+      "PHYSICAL_COUNT_PERIOD_ALREADY_EXISTS": "This period already has a physical count. Open the existing one instead of creating another.",
+      "RUNNING_CODE_ALREADY_EXISTS": "Document numbering for this type is already set up. Edit the existing setting instead.",
+      "PERIOD_ALREADY_EXISTS": "This period already exists.",
+      "PERIOD_FISCAL_COMBINATION_EXISTS": "A period for this fiscal year and month already exists.",
+      "PLATFORM_ROLE_NAME_ALREADY_EXISTS": "Another role already uses this name. Pick a different name.",
+      "USER_USERNAME_OR_EMAIL_EXISTS": "Another user already has this username or email. Use a different one."
     }
   },
   "validation": {
