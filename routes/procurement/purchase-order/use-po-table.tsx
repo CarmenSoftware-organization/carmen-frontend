@@ -88,7 +88,7 @@ export function usePoTable({
           {row.original.vendor?.name}
         </span>
       ),
-      size: 160,
+      size: 120,
       meta: { headerTitle: tfl("vendor"), skeleton: columnSkeletons.text },
     },
     {
@@ -99,7 +99,7 @@ export function usePoTable({
       // · ไม่เรียงลำดับเพราะ audit เป็น object ซ้อน backend เรียงให้ไม่ได้
       id: "created_by",
       accessorFn: (row) => row.audit?.created?.name ?? "",
-      size: 110,
+      size: 90,
       header: tfl("buyer"),
       cell: ({ row }) => (
         <span
@@ -152,6 +152,23 @@ export function usePoTable({
       },
     },
     {
+      // ตำแหน่งเดียวกับ PR/SR list (หลังวันที่ ก่อนสถานะ)
+      accessorKey: "workflow_name",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={tfl("workflow")} />
+      ),
+      cell: ({ row }) => (
+        <span
+          className="block truncate"
+          title={row.original.workflow_name ?? undefined}
+        >
+          {row.original.workflow_name}
+        </span>
+      ),
+      size: 90,
+      meta: { headerTitle: tfl("workflow"), skeleton: columnSkeletons.text },
+    },
+    {
       // ซ่อนเป็น default — วันที่ส่งโชว์เป็นบรรทัดรองใต้วันที่สั่งแล้ว แต่ต้องยังเรียง
       // ตามวันที่ส่งได้: เมนูเรียง (⇅) ของ toolbar อ่านจาก getAllColumns() ซึ่งรวม
       // คอลัมน์ที่ซ่อนอยู่ (ท่าเดียวกับ created_at/updated_at) และเปิดเป็นคอลัมน์
@@ -181,7 +198,7 @@ export function usePoTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
-      size: 140,
+      size: 130,
       // ชื่อ stage เป็นบรรทัดรองของสถานะ (ท่าเดียวกับ PR list)
       cell: ({ row }) => {
         const { po_status: status, workflow_current_stage: stage } =
@@ -230,7 +247,7 @@ export function usePoTable({
           </span>
         );
       },
-      size: 130,
+      size: 115,
       meta: {
         headerTitle: tfl("totalAmount"),
         skeleton: columnSkeletons.text,
