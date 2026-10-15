@@ -226,8 +226,13 @@ function useOverflowXAttribute(ref: RefObject<HTMLDivElement | null>) {
     const el = ref.current;
     if (!el || typeof ResizeObserver === "undefined") return;
 
+    // เผื่อ 1px — scrollWidth/clientWidth ปัดเป็นจำนวนเต็มคนละทาง ตารางที่พอดีกล่อง
+    // จึงอ่านได้ว่าล้น 1px จาก sub-pixel (เจอที่หน้า PR list 1085 vs 1084)
     const update = () =>
-      el.toggleAttribute("data-overflow-x", el.scrollWidth > el.clientWidth);
+      el.toggleAttribute(
+        "data-overflow-x",
+        el.scrollWidth - el.clientWidth > 1,
+      );
 
     const resize = new ResizeObserver(update);
     const observeAll = () => {
