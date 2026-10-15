@@ -28,6 +28,10 @@ import { NameWithSubtext } from "@/components/share/name-with-sub-text";
 import { useProfile } from "@/hooks/use-profile";
 import { useProductCostByLocationQty } from "@/hooks/use-product-cost";
 import { useProductInventory } from "@/hooks/use-product-inventory";
+import {
+  IA_TYPE_ICON_COLOR,
+  IA_TYPE_SIGN,
+} from "@/constant/inventory-adjustment";
 import { cn } from "@/lib/utils";
 import type { InventoryAdjustmentType } from "@/types/inventory-adjustment";
 import type { AdjFormValues } from "./ia-form-schema";
@@ -164,15 +168,25 @@ const QtyOnDateWarning = memo(function QtyOnDateWarning({
 const TotalCostCell = memo(function TotalCostCell({
   control,
   index,
+  adjustmentType,
 }: {
   control: Control<AdjFormValues>;
   index: number;
+  adjustmentType: InventoryAdjustmentType;
 }) {
   "use no memo";
-  const total = useWatch({ control, name: `items.${index}.total_cost` });
+  const total = Number(
+    useWatch({ control, name: `items.${index}.total_cost` }) ?? 0,
+  );
+  // ทิศทางอยู่ที่ตัวเลขชุดเดียวกับ list และยอดรวมท้ายใบ · ยอด 0 ไม่ใส่เครื่องหมาย ไม่ลงสี
   return (
-    <span className="block text-right text-xs tabular-nums">
-      {(total ?? 0).toFixed(2)}
+    <span
+      className={cn(
+        "block text-right text-xs tabular-nums",
+        total !== 0 && IA_TYPE_ICON_COLOR[adjustmentType],
+      )}
+    >
+      {`${total === 0 ? "" : IA_TYPE_SIGN[adjustmentType]}${total.toFixed(2)}`}
     </span>
   );
 });
@@ -309,8 +323,10 @@ const ProductCell = memo(function ProductCell({
     useWatch({ control, name: `items.${index}.product_local_name` }) ?? "";
   if (disabled) {
     return (
-      <div className="flex items-center justify-between gap-1.5 text-xs">
-        <div className="min-w-0 flex-1">
+      // ปุ่ม on-hand ชิดท้ายชื่อ ไม่ดันไปขอบคอลัมน์ — คอลัมน์ยืดตามจอ ไอคอนจึงเคยลอยกลางตาราง
+      // จนดูเหมือนเป็นคอลัมน์ของตัวเอง
+      <div className="flex items-center gap-1.5 text-xs">
+        <div className="min-w-0">
           {/* ชื่อสินค้า + ชื่อท้องถิ่นบรรทัดล่าง ใช้ primitive ตัวเดียวกับ PO/SR */}
           <NameWithSubtext
             primary={productName || "—"}
@@ -576,7 +592,11 @@ export function useAdjItemTable({
         accessorKey: "total_cost",
         header: tfl("totalCost"),
         cell: ({ row }) => (
-          <TotalCostCell control={form.control} index={row.index} />
+          <TotalCostCell
+            control={form.control}
+            index={row.index}
+            adjustmentType={adjustmentType}
+          />
         ),
         size: 100,
         meta: { headerClassName: "text-right" },
@@ -605,8 +625,10 @@ export function useAdjItemTable({
       },
     };
 
+    // ใบจ่ายออกกรอกต้นทุนเองไม่ได้ (มาจากต้นทุนเฉลี่ย) จึงซ่อนช่องตอนแก้ไข
+    // แต่ตอนดูต้องเห็นว่ายอดรวมคิดจากต้นทุนต่อหน่วยเท่าไร
     const visibleDataColumns =
-      adjustmentType === "stock-out"
+      adjustmentType === "stock-out" && !disabled
         ? dataColumns.filter((c) => c.id !== "cost_per_unit")
         : dataColumns;
 

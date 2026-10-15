@@ -4,10 +4,16 @@ import { Ban, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { useProfile } from "@/hooks/use-profile";
+import {
+  IA_TYPE_ICON_COLOR,
+  IA_TYPE_SIGN,
+} from "@/constant/inventory-adjustment";
+import type { InventoryAdjustmentType } from "@/types/inventory-adjustment";
 import type { AdjFormValues } from "./ia-form-schema";
 
 interface AdjSummaryFooterProps {
   readonly form: ReturnType<typeof useForm<AdjFormValues>>;
+  readonly adjustmentType: InventoryAdjustmentType;
   readonly formatter: ReturnType<typeof useFormatter>;
   readonly t: ReturnType<typeof useTranslations>;
   readonly canVoid: boolean;
@@ -32,6 +38,7 @@ interface AdjSummaryFooterProps {
  */
 export function AdjSummaryFooter({
   form,
+  adjustmentType,
   formatter,
   t,
   canVoid,
@@ -64,10 +71,13 @@ export function AdjSummaryFooter({
         {
           key: "grandTotal",
           label: t("grandTotal"),
-          value: formatter.number(grandTotal, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }),
+          // ทิศทางอยู่ที่ตัวเลข (+ เข้า / − ออก) ชุดเดียวกับหน้า list · ยอด 0 ไม่ใส่เครื่องหมาย
+          value: `${grandTotal === 0 ? "" : IA_TYPE_SIGN[adjustmentType]}${formatter.number(
+            grandTotal,
+            { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+          )}`,
+          valueClassName:
+            grandTotal === 0 ? undefined : IA_TYPE_ICON_COLOR[adjustmentType],
           emphasis: true,
           suffix: defaultCurrencyCode,
         },
