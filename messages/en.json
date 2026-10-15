@@ -5455,7 +5455,7 @@
     "updated": "Comment updated",
     "deleted": "Comment deleted",
     "uploadFailed": "Failed to upload file",
-    "fileNotAllowed": "\"{name}\" — only images and documents are allowed",
+    "fileNotAllowed": "\"{name}\" — only JPG, PNG, WEBP, GIF images and PDF files are allowed",
     "fileTooLarge": "\"{name}\" exceeds 10 MB limit",
     "uploadCountFailed": "{count} file(s) failed to upload",
     "saveComment": "Save comment",

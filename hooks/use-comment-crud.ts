@@ -3,11 +3,29 @@ import { useBuCode } from "@/hooks/use-bu-code";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { httpClient } from "@/lib/http-client";
 import { ApiError, ERROR_CODES } from "@/lib/api-error";
+import { buildUrl } from "@/lib/build-query-string";
+import { fetchAllPages } from "@/lib/fetch-all-pages";
 import type { CacheProfile } from "@/lib/cache-config";
 import type {
   CommentAttachment,
   CommentItem,
 } from "@/components/ui/comment-sheet";
+
+/**
+ * ดึง comment ของเอกสารหนึ่งใบให้ครบทุกหน้า
+ *
+ * endpoint comment ทุกตัวแบ่งหน้า (ไม่ส่ง perpage = 10) แต่แผง comment แสดงเป็นรายการ
+ * เดียวไม่มีปุ่มหน้าถัดไป — อ่านแค่ `json.data` ของหน้าแรก = เอกสารที่มี comment เกิน 10
+ * อันจะเห็นแค่ 10 อันล่าสุดโดยไม่มีอะไรบอกว่าขาด · `perpage=-1` โดน gateway ตอบ 400
+ * จึงต้องวนหน้า (ทีละ 100 — ใบปกติจบในหน้าเดียว)
+ */
+export function fetchAllComments(url: string): Promise<CommentItem[]> {
+  return fetchAllPages<CommentItem>(async (page, perpage) => {
+    const res = await httpClient.get(buildUrl(url, { page, perpage }));
+    if (!res.ok) throw await ApiError.from(res, "Failed to fetch comments");
+    return res.json();
+  });
+}
 
 interface CommentCrudOptions {
   queryKey: string;
@@ -37,10 +55,7 @@ export function createCommentCrud({
             ERROR_CODES.VALIDATION_ERROR,
             `Missing buCode or ${label} id`,
           );
-        const res = await httpClient.get(commentEndpoint(buCode, entityId));
-        if (!res.ok) throw await ApiError.from(res, "Failed to fetch comments");
-        const json = await res.json();
-        return json.data ?? [];
+        return fetchAllComments(commentEndpoint(buCode, entityId));
       },
       ...cacheProfile,
       enabled: !!buCode && !!entityId,
