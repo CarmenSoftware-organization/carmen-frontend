@@ -39,7 +39,7 @@ import type { ReviewTransactionKey } from "@/types/period-end";
 import { formatLocalizedDate } from "@/lib/date-utils";
 import type { PhysicalCountLocation } from "@/types/physical-count";
 import { PeDocumentsDialog } from "./pe-documents-dialog";
-import { PcLocationCard } from "../shared/pc-location-card";
+import { PcLocationRow } from "../shared/pc-location-row";
 import { useOpenPhysicalCount } from "../shared/use-open-physical-count";
 
 interface ModuleConfig {
@@ -340,22 +340,16 @@ export default function PeReview() {
                     variant="auto"
                     className="h-1.5"
                   />
-                  <div className="space-y-2">
-                    {locations.map((item, index) => (
-                      <div
+                  <div className="bg-card divide-y overflow-hidden rounded-xl border">
+                    {locations.map((item) => (
+                      <PcLocationRow
                         key={item.id}
-                        className="animate-fade-in-up"
-                        style={{ animationDelay: `${index * 40}ms` }}
-                      >
-                        <PcLocationCard
-                          item={item}
-                          index={index}
-                          onAction={handleLocationAction}
-                          disabled={!isCounting}
-                          disabledReason={t("notCountingYet")}
-                          pending={pendingLocationId === item.id}
-                        />
-                      </div>
+                        item={item}
+                        onAction={handleLocationAction}
+                        disabled={!isCounting}
+                        disabledReason={t("notCountingYet")}
+                        pending={pendingLocationId === item.id}
+                      />
                     ))}
                   </div>
                 </div>

@@ -31,14 +31,13 @@ import { ListPageShell } from "@/components/share/list-page-shell";
 import {
   InvSearchBar,
   InvStatusSectionsList,
-  KpiTile,
-  StatusHero,
+  StatusStrip,
+  StripMetric,
   type InvStatusSection,
   type SectionTone,
 } from "../shared/inv-shared";
 import { ScHistoryCard } from "./sc-history-card";
-import { ScLocationCard } from "./sc-location-card";
-import { AnimationStyles, Reveal } from "@/components/share/reveal";
+import { ScLocationRow } from "./sc-location-row";
 
 type StatusKey = "resume" | "not_started";
 type ViewMode = "locations" | "history";
@@ -83,7 +82,6 @@ export default function ScComponent() {
       .join(",") || undefined;
   const {
     items: historyItems,
-    total: historyTotal,
     isLoading: isLoadingHistory,
     isLoadingMore: isLoadingMoreHistory,
     hasMore: hasMoreHistory,
@@ -107,6 +105,12 @@ export default function ScComponent() {
     } else {
       resume.push(l);
     }
+  }
+  let itemsTotal = 0;
+  let itemsCounted = 0;
+  for (const l of resume) {
+    itemsTotal += l.latest_spot_check?.size ?? 0;
+    itemsCounted += l.latest_spot_check?.counted ?? 0;
   }
   const counts = {
     all: locations.length,
@@ -199,98 +203,76 @@ export default function ScComponent() {
       count={locations.length}
       actions={<ViewToggle view={view} setView={setView} t={t} />}
     >
-      <AnimationStyles />
-      <section className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_22rem]">
-        <div>
-          {isLocationsView && (
-            <Reveal delay={80}>
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                <KpiTile
-                  icon={ClipboardCheck}
-                  label={t("tabAll")}
-                  value={counts.all}
-                  active={activeFilter === "all"}
-                  onClick={() => setActiveFilter("all")}
-                />
-                <KpiTile
-                  icon={PauseCircle}
-                  label={t("tabResume")}
-                  value={counts.resume}
-                  tone="warning"
-                  active={activeFilter === "resume"}
-                  onClick={() => setActiveFilter("resume")}
-                />
-                <KpiTile
-                  icon={ClipboardCheck}
-                  label={t("tabNotStarted")}
-                  value={counts.notStarted}
-                  tone="info"
-                  active={activeFilter === "not_started"}
-                  onClick={() => setActiveFilter("not_started")}
-                />
-              </div>
-            </Reveal>
-          )}
-
-          <Reveal delay={160}>
-            <InvSearchBar
-              search={search}
-              onSearch={setSearch}
-              extras={
-                isLocationsView ? (
-                  <label className="border-border/40 bg-card hover:border-foreground/40 flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold select-none">
-                    <Checkbox
-                      checked={includeNotCount}
-                      onCheckedChange={(v) => setIncludeNotCount(v === true)}
-                    />
-                    {t("includeNotCount")}
-                  </label>
-                ) : (
-                  <HistoryFilters
-                    locationValue={historyLocation}
-                    onLocationChange={setHistoryLocation}
-                    statusValue={historyStatus}
-                    onStatusChange={setHistoryStatus}
-                    statusOptions={statusOptions}
-                    methodValue={historyMethod}
-                    onMethodChange={setHistoryMethod}
-                    methodOptions={methodOptions}
-                    labels={{
-                      location: tfl("location"),
-                      status: tfl("status"),
-                      method: tfl("method"),
-                    }}
-                  />
-                )
-              }
+      {isLocationsView && (
+        <StatusStrip<StatusKey>
+          allLabel={t("tabAll")}
+          active={activeFilter}
+          onSelect={setActiveFilter}
+          segments={[
+            {
+              key: "resume",
+              label: t("tabResume"),
+              value: counts.resume,
+              tone: "warning",
+            },
+            {
+              key: "not_started",
+              label: t("tabNotStarted"),
+              value: counts.notStarted,
+              tone: "info",
+            },
+          ]}
+          metric={
+            <StripMetric
+              label={t("checkProgress")}
+              done={itemsCounted}
+              total={itemsTotal}
+              unit={tfl("items").toLowerCase()}
             />
-          </Reveal>
-        </div>
+          }
+        />
+      )}
 
-        <Reveal delay={120}>
-          <StatusHero
-            total={isLocationsView ? counts.all : historyTotal}
-            done={0}
-            active={isLocationsView ? counts.resume : 0}
-            labels={{
-              progressTitle: t("checkProgress"),
-              done: t("tabCompleted"),
-              active: isLocationsView ? t("tabResume") : t("viewHistory"),
-              pending: t("tabNotStarted"),
-              heroFooter: t("heroFooter"),
-            }}
-          />
-        </Reveal>
-      </section>
+      <InvSearchBar
+        search={search}
+        onSearch={setSearch}
+        extras={
+          isLocationsView ? (
+            <label className="border-border/40 bg-card hover:border-foreground/40 flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold select-none">
+              <Checkbox
+                checked={includeNotCount}
+                onCheckedChange={(v) => setIncludeNotCount(v === true)}
+              />
+              {t("includeNotCount")}
+            </label>
+          ) : (
+            <HistoryFilters
+              locationValue={historyLocation}
+              onLocationChange={setHistoryLocation}
+              statusValue={historyStatus}
+              onStatusChange={setHistoryStatus}
+              statusOptions={statusOptions}
+              methodValue={historyMethod}
+              onMethodChange={setHistoryMethod}
+              methodOptions={methodOptions}
+              labels={{
+                location: tfl("location"),
+                status: tfl("status"),
+                method: tfl("method"),
+              }}
+            />
+          )
+        }
+      />
 
       {isLocationsView && (
         <InvStatusSectionsList<SpotCheckLocation>
           sections={sections}
           emptyTitle={t("noLocationsInStatus")}
-          renderItem={(item, i) => (
-            <ScLocationCard
+          renderItem={(item, tone) => (
+            <ScLocationRow
               item={item}
-              index={i}
+              tone={tone}
               onStart={handleStart}
               onResume={handleResume}
             />
@@ -311,6 +293,7 @@ export default function ScComponent() {
             getItemKey={(sc) => sc.id}
             isLoading={isLoadingHistory}
             showGlobalEmpty={false}
+            layout="cards"
           />
           {hasMoreHistory && (
             <div className="mt-4 flex justify-center">

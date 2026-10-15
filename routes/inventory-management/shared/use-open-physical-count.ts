@@ -26,7 +26,7 @@ interface UseOpenPhysicalCountResult {
  * @example
  * ```tsx
  * const { open, pendingLocationId } = useOpenPhysicalCount();
- * <PcLocationCard
+ * <PcLocationRow
  *   item={item}
  *   pending={pendingLocationId === item.id}
  *   onAction={(i) => open(i, period.id)}
