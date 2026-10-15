@@ -81,23 +81,34 @@ export function useProductTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("name")} />
       ),
+      // ชื่อไทยซ้อนใต้ชื่อในเซลล์เดียว — เดิมเป็นคอลัมน์แยกที่จอกว้างถูกยืดห่างกัน
+      // จนต้องกวาดตาข้ามจอเพื่อจับคู่ชื่อสองภาษา (คอลัมน์ local_name ยังอยู่ แค่ซ่อน
+      // ไว้เป็นค่าเริ่มต้น สำหรับคนที่อยากเรียงตามชื่อไทย)
       cell: ({ row }) => {
         const name = row.original.name || "...";
+        const localName = row.original.local_name;
         return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <CellAction
-                onClick={() => onEdit(row.original)}
-                className="block w-full truncate"
-              >
-                {name}
-              </CellAction>
-            </TooltipTrigger>
-            <TooltipContent>{name}</TooltipContent>
-          </Tooltip>
+          <div className="min-w-0">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <CellAction
+                  onClick={() => onEdit(row.original)}
+                  className="block w-full truncate"
+                >
+                  {name}
+                </CellAction>
+              </TooltipTrigger>
+              <TooltipContent>{name}</TooltipContent>
+            </Tooltip>
+            {localName && (
+              <span className="text-muted-foreground block truncate text-xs">
+                {localName}
+              </span>
+            )}
+          </div>
         );
       },
-      size: 350,
+      size: 380,
       meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.textShort },
     },
     {
@@ -115,7 +126,47 @@ export function useProductTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("unit")} />
       ),
-      meta: { headerTitle: tfl("unit"), skeleton: columnSkeletons.text },
+      size: 70,
+      meta: { headerTitle: tfl("unit"), skeleton: columnSkeletons.textShort },
+    },
+    {
+      // หมวดสามระดับรวมเป็นเส้นทางเดียว รูปเดียวกับการ์ด (pd-card) — Item Group
+      // เจาะจงที่สุดจึงเป็นตัวเข้ม ระดับบนจาง · สามคอลัมน์เดิมยังเปิดได้จากเมนูคอลัมน์
+      id: "category_path",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={tfl("category")} />
+      ),
+      cell: ({ row }) => {
+        const path = [
+          row.original.product_category?.name,
+          row.original.product_sub_category?.name,
+          row.original.product_item_group?.name,
+        ].filter((n): n is string => Boolean(n));
+        if (path.length === 0) return null;
+        const leaf = path.at(-1);
+        const parents = path.slice(0, -1);
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="block truncate">
+                {parents.length > 0 && (
+                  <span className="text-muted-foreground">
+                    {parents.join(" › ")} ›{" "}
+                  </span>
+                )}
+                {leaf}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{path.join(" › ")}</TooltipContent>
+          </Tooltip>
+        );
+      },
+      enableSorting: false,
+      size: 260,
+      meta: {
+        headerTitle: tfl("categoryPath"),
+        skeleton: columnSkeletons.text,
+      },
     },
     {
       id: "product_category_name",
@@ -194,7 +245,14 @@ export function useProductTable({
     columns: allColumns,
     getCoreRowModel: getCoreRowModel(),
     initialState: {
-      columnVisibility: { created_at: false, updated_at: false },
+      columnVisibility: {
+        local_name: false,
+        product_category_name: false,
+        product_sub_category_name: false,
+        product_item_group_name: false,
+        created_at: false,
+        updated_at: false,
+      },
     },
     ...tableConfig,
     pageCount: Math.ceil(totalRecords / (Number(params.perpage) || 10)),

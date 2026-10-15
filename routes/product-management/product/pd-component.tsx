@@ -290,7 +290,9 @@ export default function ProductComponent() {
             )}
           >
             <div className="flex-1 overflow-auto">
-              <div className="min-w-300">
+              {/* 960px: หลังรวมชื่อไทย/หมวดเข้าคอลัมน์เดียว ตารางพอดีจอ 1366 (พื้นที่
+                  ~1080px) — เดิม 1200px ดัน Status กับปุ่ม ⋯ ตกขอบขวา */}
+              <div className="min-w-240">
                 <DataGridTable />
               </div>
             </div>
