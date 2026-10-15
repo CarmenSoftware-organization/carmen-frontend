@@ -238,6 +238,7 @@ export default function ArInvoiceDetail() {
     <div className="flex w-full min-w-0 grow shrink-0 flex-col gap-4 text-xs">
       <DocFormHeader
         title={invoice.docNo}
+        mock
         subtitle={`${AR_DOC_TYPE_LABELS[invoice.docType ?? "ARIV"].description} · City Ledger`}
         backLabel="Back to AR Invoice Directory"
         onBack={() => navigate(AR_INVOICE_PATH)}

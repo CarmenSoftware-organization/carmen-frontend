@@ -9,6 +9,8 @@ interface ListPageShellProps {
   readonly title: string;
   readonly description: string;
   readonly count?: number;
+  /** หน้านี้ยังเป็นข้อมูลตัวอย่าง → แสดงป้าย MOCK ข้างชื่อ */
+  readonly mock?: boolean;
   /** ปกติคือ <DocumentListActions …> — ไม่ส่ง = ไม่มีปุ่มฝั่งขวาของหัว */
   readonly actions?: ReactNode;
   /** ปกติคือ <ListToolbar …> — accounting ส่ง toolbar ของตัวเอง */
@@ -30,6 +32,7 @@ export function ListPageShell({
   title,
   description,
   count,
+  mock = false,
   actions,
   toolbar,
   pullRefresh,
@@ -75,6 +78,7 @@ export function ListPageShell({
             title={title}
             description={description}
             count={count}
+            mock={mock}
           />
           {actions}
         </div>

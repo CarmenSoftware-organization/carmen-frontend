@@ -142,6 +142,7 @@ export default function AssetCategoryPage() {
   return (
     <DisplayTemplate
       title="Asset Categories"
+      mock
       description="Fixed asset categories, standard useful life years, and GL depreciation account legs"
       toolbar={
         <SearchInput

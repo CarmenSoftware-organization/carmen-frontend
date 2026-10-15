@@ -179,6 +179,8 @@ export default function AccountingDocumentList() {
   return (
     <ListPageShell
       title={t(`${config.kind}.title`)}
+      // ทุกชนิดมาจาก documentsFor() (ข้อมูลปลอม) — JV มีหน้า list ของตัวเองที่อ่าน API จริง
+      mock={config.kind !== "journalVoucher"}
       description={t(`${config.kind}.description`)}
       count={documents.length}
       actions={

@@ -349,6 +349,7 @@ function ApPaymentEditor({
     <div className="flex w-full min-w-0 shrink-0 grow flex-col gap-5">
       <DocFormHeader
         title={loaded?.pv_no ?? "New Payment Voucher"}
+        mock
         subtitle={approvalContext ? "Approval review" : "Supplier disbursement"}
         backLabel="Back to AP Payment Directory"
         onBack={() => navigate("/accounting/accounts-payable/payment")}

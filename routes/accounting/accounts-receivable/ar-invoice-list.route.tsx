@@ -205,6 +205,7 @@ export function Component() {
   return (
     <ListPageShell
       title="AR Document Directory"
+      mock
       description="Invoices, Credit/Debit Notes, Deposits & Receipts"
       count={rows.length}
       actions={

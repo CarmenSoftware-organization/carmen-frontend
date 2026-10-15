@@ -4,6 +4,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { recordRecentDocument } from "@/hooks/use-recent-documents";
 import { cn } from "@/lib/utils";
 import { BackButton } from "@/components/share/back-button";
+import { MockBadge } from "@/components/ui/mock-badge";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -21,6 +22,8 @@ interface DocFormHeaderProps {
   /** ไม่ส่ง = ไม่มีปุ่มย้อนกลับ (หน้า settings ที่เป็น leaf ของเมนู ไม่มี list ให้กลับ) */
   readonly onBack?: () => void;
   readonly badges?: ReactNode;
+  /** หน้านี้ยังเป็นข้อมูลตัวอย่าง → แสดงป้าย MOCK ข้างชื่อ */
+  readonly mock?: boolean;
   readonly actions?: ReactNode;
   readonly ribbon?: ReactNode;
   readonly leading?: ReactNode;
@@ -34,6 +37,7 @@ export function DocFormHeader({
   backLabel,
   onBack,
   badges,
+  mock = false,
   actions,
   ribbon,
   leading,
@@ -89,6 +93,7 @@ export function DocFormHeader({
             >
               {title}
             </h1>
+            {mock && <MockBadge />}
             {badges}
           </div>
           {/* shrink-0 กันปุ่มถูกบีบจนตกบรรทัด — ให้ title เป็นฝ่ายย่อแทน */}

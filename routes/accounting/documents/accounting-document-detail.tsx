@@ -983,6 +983,8 @@ export default function AccountingDocumentDetail() {
       {usesVoucherDetailPattern ? (
         <DocFormHeader
           title={number}
+          // JV อ่าน API จริง (useJournalVoucher) — ชนิดอื่นยังเป็น documentsFor()
+          mock={!isJournalVoucher}
           backLabel={t("back")}
           onBack={() => navigate(config.path)}
           actions={

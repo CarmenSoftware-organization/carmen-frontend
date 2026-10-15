@@ -1762,4 +1762,84 @@ export const SubTiles: Record<string, TileRenderer> = {
       />
     </>
   ),
+  // ประเภทการชำระเงิน — บัตร: แถบแม่เหล็ก + ชิปสี accent
+  paymentType: ({ palette }) => (
+    <>
+      <TileBase palette={palette} />
+      <rect x="7" y="12" width="26" height="17" rx="2" fill="currentColor" />
+      <rect
+        x="7"
+        y="15.5"
+        width="26"
+        height="3"
+        style={{ fill: palette.shadow }}
+      />
+      <rect
+        x="10"
+        y="21.5"
+        width="5"
+        height="4"
+        rx="0.8"
+        style={{ fill: palette.accent }}
+      />
+      <rect
+        x="18"
+        y="23"
+        width="11"
+        height="1.4"
+        rx="0.7"
+        style={{ fill: palette.base }}
+        opacity="0.5"
+      />
+    </>
+  ),
+  // ประเภทบริการหัก ณ ที่จ่าย — ใบงาน + เครื่องหมาย % สี accent
+  whtServiceType: ({ palette }) => (
+    <>
+      <TileBase palette={palette} />
+      <Paper palette={palette} />
+      <Lines palette={palette} y={14} lengths={[12, 8]} />
+      <circle cx="24" cy="26" r="5" style={{ fill: palette.accent }} />
+      <path
+        d="M 21.8 28.2 L 26.2 23.8"
+        style={{ stroke: palette.shadow }}
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+      <circle cx="22.2" cy="24.2" r="0.9" style={{ fill: palette.shadow }} />
+      <circle cx="25.8" cy="27.8" r="0.9" style={{ fill: palette.shadow }} />
+    </>
+  ),
+  // แบบ ภ.ง.ด. — ฟอร์มมีตารางช่องกรอก + แถบหัวสี accent
+  whtForm: ({ palette }) => (
+    <>
+      <TileBase palette={palette} />
+      <Paper palette={palette} />
+      <rect
+        x="13"
+        y="12"
+        width="14"
+        height="3"
+        rx="0.8"
+        style={{ fill: palette.accent }}
+      />
+      <rect
+        x="13"
+        y="18"
+        width="14"
+        height="9"
+        rx="0.8"
+        fill="none"
+        style={{ stroke: palette.base }}
+        strokeWidth="1.1"
+        opacity="0.6"
+      />
+      <path
+        d="M 13 22.5 H 27 M 20 18 V 27"
+        style={{ stroke: palette.base }}
+        strokeWidth="1.1"
+        opacity="0.6"
+      />
+    </>
+  ),
 };

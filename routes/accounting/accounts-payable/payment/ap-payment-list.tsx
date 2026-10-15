@@ -200,6 +200,7 @@ export default function ApPaymentList() {
   return (
     <ListPageShell
       title="Payment Voucher Directory"
+      mock
       description="Supplier payment workflow and execution"
       actions={
         <DocumentListActions

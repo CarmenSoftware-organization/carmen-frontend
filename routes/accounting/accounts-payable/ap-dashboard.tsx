@@ -11,6 +11,7 @@ export default function ApDashboard() {
   const query = useApDashboard(asOf, monthStart(asOf), asOf);
   return (
     <AccountingDashboardPage
+      mock
       snapshot={buildApDashboardSnapshot(query.data)}
       asOf={asOf}
       onAsOfChange={setAsOf}
