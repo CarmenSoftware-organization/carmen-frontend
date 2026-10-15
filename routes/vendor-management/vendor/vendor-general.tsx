@@ -9,7 +9,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { LookupBuType } from "@/components/lookup/lookup-bu-type";
 import { StatusSwitch } from "@/components/ui/status-switch";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { SettingSection } from "@/components/ui/setting-section";
 import type { VendorFormValues } from "./vendor-form-schema";
 import { VendorRatingInput, VendorRatingStars } from "./vendor-rating";
@@ -29,45 +28,51 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
 
   return (
     <SettingSection first title={tfl("general")} description={t("generalDesc")}>
+      {/* Name / Code / Status ไม่แสดงในโหมดดู — แถบหัว (FormToolbar) มีครบทั้งสามค่าแล้ว
+          การ์ดนี้เคยซ้ำของบนหัวเกือบครึ่งการ์ด */}
       {/* Name */}
-      <Field className="sm:col-span-2">
-        <FieldLabel htmlFor="vendor-name">
-          {tfl("name")}
-          {!isView && <span className="text-destructive"> *</span>}
-        </FieldLabel>
-        {isView ? (
-          <FieldPlainText>{form.getValues("name")}</FieldPlainText>
-        ) : (
-          <FieldInput
-            id="vendor-name"
-            placeholder={t("namePlaceholder")}
-            disabled={isDisabled}
-            error={form.formState.errors.name?.message}
-            maxLength={100}
-            {...form.register("name")}
-          />
-        )}
-      </Field>
+      {!isView && (
+        <Field className="sm:col-span-2">
+          <FieldLabel htmlFor="vendor-name">
+            {tfl("name")}
+            {!isView && <span className="text-destructive"> *</span>}
+          </FieldLabel>
+          {isView ? (
+            <FieldPlainText>{form.getValues("name")}</FieldPlainText>
+          ) : (
+            <FieldInput
+              id="vendor-name"
+              placeholder={t("namePlaceholder")}
+              disabled={isDisabled}
+              error={form.formState.errors.name?.message}
+              maxLength={100}
+              {...form.register("name")}
+            />
+          )}
+        </Field>
+      )}
 
       {/* Code */}
-      <Field>
-        <FieldLabel htmlFor="vendor-code">
-          {tfl("code")}
-          {!isView && <span className="text-destructive"> *</span>}
-        </FieldLabel>
-        {isView ? (
-          <FieldPlainText>{form.getValues("code")}</FieldPlainText>
-        ) : (
-          <FieldInput
-            id="vendor-code"
-            placeholder={t("codePlaceholder")}
-            disabled={isDisabled}
-            error={form.formState.errors.code?.message}
-            maxLength={10}
-            {...form.register("code")}
-          />
-        )}
-      </Field>
+      {!isView && (
+        <Field>
+          <FieldLabel htmlFor="vendor-code">
+            {tfl("code")}
+            {!isView && <span className="text-destructive"> *</span>}
+          </FieldLabel>
+          {isView ? (
+            <FieldPlainText>{form.getValues("code")}</FieldPlainText>
+          ) : (
+            <FieldInput
+              id="vendor-code"
+              placeholder={t("codePlaceholder")}
+              disabled={isDisabled}
+              error={form.formState.errors.code?.message}
+              maxLength={10}
+              {...form.register("code")}
+            />
+          )}
+        </Field>
+      )}
 
       {/* Rating — ครึ่งขวาข้าง Code (Code ยาวสุด 10 ตัว ครึ่งแถวพอ) */}
       <Field>
@@ -173,7 +178,7 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
         </FieldLabel>
         {isView ? (
           <FieldPlainText className="whitespace-pre-wrap">
-            {form.getValues("description")}
+            {form.getValues("description")?.trim() || null}
           </FieldPlainText>
         ) : (
           <Textarea
@@ -188,16 +193,10 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
         )}
       </Field>
 
-      {/* Status */}
-      <Field className="sm:col-span-2">
-        <FieldLabel>{tfl("status")}</FieldLabel>
-        {isView ? (
-          // ครอบด้วย FieldPlainText เพื่อให้ badge นับเป็น "ค่าโหมด view" เหมือน
-          // field อื่นในหน้าเดียวกัน — label เงียบลงและระยะ label→ค่าเท่ากันทั้ง section
-          <FieldPlainText>
-            <StatusBadge active={form.getValues("is_active")} />
-          </FieldPlainText>
-        ) : (
+      {/* Status — โหมดดูมี badge บนแถบหัวแล้ว */}
+      {!isView && (
+        <Field className="sm:col-span-2">
+          <FieldLabel>{tfl("status")}</FieldLabel>
           <Controller
             control={form.control}
             name="is_active"
@@ -210,8 +209,8 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
               />
             )}
           />
-        )}
-      </Field>
+        </Field>
+      )}
     </SettingSection>
   );
 }

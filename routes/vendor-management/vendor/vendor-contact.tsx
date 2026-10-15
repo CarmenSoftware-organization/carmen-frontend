@@ -76,6 +76,7 @@ export function VendorContact({
       <div className="sm:col-span-2">
         {contactFields.length === 0 ? (
           <VendorEmptySection
+            compact={isView}
             icon={User}
             title={t("contact.noContacts")}
             description={t("contact.noContactsDesc")}

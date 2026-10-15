@@ -2860,6 +2860,8 @@
         "primary": "หลัก"
       },
       "notFound": "ไม่พบผู้ขาย",
+      "certExpiresIn": "{count, plural, =0 {หมดอายุวันนี้} other {เหลือ # วัน}}",
+      "certExpired": "หมดอายุแล้ว",
       "noCertificatesDesc": "ยังไม่ได้บันทึกใบรับรองของผู้ขายรายนี้"
     },
     "priceList": {

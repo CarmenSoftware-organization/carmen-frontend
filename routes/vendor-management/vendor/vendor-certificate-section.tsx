@@ -29,6 +29,26 @@ import type { VendorCertificate } from "@/types/vendor-certificate";
 import { VendorCertificateDialog } from "./vendor-certificate-dialog";
 import { VendorEmptySection } from "./vendor-empty-section";
 
+/** ใบรับรองที่เหลืออายุไม่เกินนี้ (วัน) ขึ้นคำเตือนใต้วันหมดอายุ */
+const EXPIRY_WARN_DAYS = 60;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * จำนวนวันปฏิทินจากวันนี้ถึงวันหมดอายุ (0 = หมดวันนี้, ติดลบ = หมดแล้ว)
+ * นับตามเวลาเครื่องให้ตรงกับวันที่ที่ formatDate แสดงในคอลัมน์เดียวกัน
+ */
+function daysUntil(iso: string, now: Date = new Date()): number | null {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const end = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const today = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).getTime();
+  return Math.round((end - today) / DAY_MS);
+}
+
 interface VendorCertificateSectionProps {
   readonly vendorId: string;
   readonly readOnly?: boolean;
@@ -136,10 +156,28 @@ export function VendorCertificateSection({
         id: "expiry_date",
         header: tfl("expiryDate"),
         size: 120,
-        cell: ({ row }) =>
-          row.original.expiry_date
-            ? formatDate(row.original.expiry_date, dateFormat)
-            : "—",
+        cell: ({ row }) => {
+          const expiry = row.original.expiry_date;
+          if (!expiry) return "—";
+          const days = daysUntil(expiry);
+          // เงียบไว้เมื่อยังไกล — บอกเฉพาะใบที่ใกล้หมด/หมดแล้ว ซึ่งฝ่ายจัดซื้อต้องรู้ก่อนออก PO
+          const hint =
+            days === null || days > EXPIRY_WARN_DAYS ? null : days < 0 ? (
+              <span className="text-destructive">{t("certExpired")}</span>
+            ) : (
+              <span className="text-warning-ink">
+                {t("certExpiresIn", { count: days })}
+              </span>
+            );
+          return (
+            // data-slot กัน DataGrid ใส่ line-clamp ให้ลูกของเซลล์ (มันจับ
+            // `:not([data-slot])` แล้วเปลี่ยน display ทับ flex-col จนสองบรรทัดชนกัน)
+            <div data-slot="cert-expiry" className="flex flex-col">
+              <span>{formatDate(expiry, dateFormat)}</span>
+              {hint && <span className="text-micro font-medium">{hint}</span>}
+            </div>
+          );
+        },
         meta: { cellClassName: "tabular-nums" },
       },
       {
@@ -190,7 +228,7 @@ export function VendorCertificateSection({
             } as ColumnDef<VendorCertificate>,
           ]),
     ],
-    [readOnly, dateFormat, tfl, tc, masterMap],
+    [readOnly, dateFormat, t, tfl, tc, masterMap],
   );
 
   const table = useReactTable({
@@ -227,6 +265,7 @@ export function VendorCertificateSection({
         isLoading={isLoading}
         emptyMessage={
           <VendorEmptySection
+            compact={readOnly}
             icon={Award}
             title={t("noCertificates")}
             description={t("noCertificatesDesc")}

@@ -2860,6 +2860,8 @@
         "primary": "primary"
       },
       "notFound": "Vendor not found",
+      "certExpiresIn": "{count, plural, =0 {Expires today} =1 {# day left} other {# days left}}",
+      "certExpired": "Expired",
       "noCertificatesDesc": "No certificates recorded for this vendor yet."
     },
     "priceList": {
