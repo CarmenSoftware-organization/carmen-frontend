@@ -595,6 +595,7 @@ export const moduleList: ModuleDto[] = [
         path: "/config/jv-prefix",
         licenseFeature: "accounting.config.gl", // config:prefix-jv
         icon: Bookmark,
+        separatorBefore: true,
       },
       {
         name: "dimension",
@@ -652,6 +653,13 @@ export const moduleList: ModuleDto[] = [
         permission: PERMISSIONS.configuration.location.view,
       },
       {
+        name: "shelf",
+        path: "/config/shelf",
+        licenseFeature: "configuration.location_shelf",
+        icon: Rows3,
+        permission: PERMISSIONS.configuration.location_shelf.view,
+      },
+      {
         name: "department",
         path: "/config/department",
         icon: Warehouse,
@@ -669,13 +677,6 @@ export const moduleList: ModuleDto[] = [
         licenseFeature: "configuration.unit", // config:units
         icon: Scale,
         permission: PERMISSIONS.configuration.unit.view,
-      },
-      {
-        name: "shelf",
-        path: "/config/shelf",
-        licenseFeature: "configuration.location_shelf",
-        icon: Rows3,
-        permission: PERMISSIONS.configuration.location_shelf.view,
       },
       {
         name: "adjustmentType",
