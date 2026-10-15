@@ -13,7 +13,7 @@ export function PltEditContent({ id }: { id: string }) {
     refetch,
   } = usePriceListTemplateById(id);
 
-  if (isLoading) return <FormPageSkeleton />;
+  if (isLoading) return <FormPageSkeleton width="wide" />;
   if (error || !priceListTemplate)
     return (
       <ErrorState

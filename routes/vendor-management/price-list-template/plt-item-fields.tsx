@@ -136,7 +136,7 @@ export function PltItemFields({
         wide
         frameless
         title={t("productsTitle")}
-        description={t("detail.noItemsDesc")}
+        description={isView ? undefined : t("detail.noItemsDesc")}
         count={detailFields.length}
       >
         {isView ? (
