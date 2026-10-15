@@ -41,6 +41,9 @@ export interface Vendor {
   // ยืนยันจาก live list+detail: tax_profile เป็น {id,name} เหมือนกันทั้งคู่
   // (ของเดิมไม่เคยประกาศ tax_profile_id/tax_profile_name แบบ flat ใน type นี้เลย)
   tax_profile: EntityRef | null;
+  tax_no?: string | null;
+  branch_no?: string | null;
+  rating?: number | null;
   // list ส่งแบบ flat (VendorListItemResponseSchema) — detail ไม่ได้ใช้สองตัวนี้
   credit_term_name?: string | null;
   credit_term_days?: number | null;
@@ -67,6 +70,9 @@ export interface CreateVendorDto {
   code: string;
   description: string;
   is_active: boolean;
+  tax_no: string | null;
+  branch_no: string | null;
+  rating: number | null;
   business_type: { id: string; name: string }[];
   info: VendorInfoItem[];
   vendor_address: {

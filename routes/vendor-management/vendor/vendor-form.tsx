@@ -140,6 +140,10 @@ export function VendorForm({ vendor }: VendorFormProps) {
       name: values.name,
       description: values.description,
       is_active: values.is_active,
+      // ช่องว่าง = ไม่มีค่า — ส่ง null ไม่ใช่ "" ให้ DB เก็บเป็น NULL
+      tax_no: values.tax_no.trim() || null,
+      branch_no: values.branch_no.trim() || null,
+      rating: values.rating,
       business_type: values.business_types,
       info: (values.info ?? []).map(({ label, value, data_type }) => ({
         label,

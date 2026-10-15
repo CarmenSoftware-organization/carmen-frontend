@@ -121,6 +121,11 @@ export default function VendorComponent() {
             width: 32,
           },
           {
+            header: t("rating"),
+            value: (r) => r.rating ?? null,
+            width: 10,
+          },
+          {
             header: tfl("status"),
             value: (r) => (r.is_active ? ts("active") : ts("inactive")),
             width: 10,

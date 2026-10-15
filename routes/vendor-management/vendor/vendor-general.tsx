@@ -12,6 +12,7 @@ import { StatusSwitch } from "@/components/ui/status-switch";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { SettingSection } from "@/components/ui/setting-section";
 import type { VendorFormValues } from "./vendor-form-schema";
+import { VendorRatingInput, VendorRatingStars } from "./vendor-rating";
 
 interface VendorGeneralProps {
   readonly form: ReturnType<typeof useForm<VendorFormValues>>;
@@ -24,6 +25,7 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
   const isView = isDisabled && !form.formState.isSubmitting;
 
   const businessTypes = form.getValues("business_types");
+  const rating = form.getValues("rating");
 
   return (
     <SettingSection first title={tfl("general")} description={t("generalDesc")}>
@@ -67,6 +69,35 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
         )}
       </Field>
 
+      {/* Rating — ครึ่งขวาข้าง Code (Code ยาวสุด 10 ตัว ครึ่งแถวพอ) */}
+      <Field>
+        <FieldLabel htmlFor="vendor-rating">{t("rating")}</FieldLabel>
+        {isView ? (
+          <FieldPlainText>
+            {rating == null ? (
+              <span className="text-muted-foreground font-normal">
+                {t("notRated")}
+              </span>
+            ) : (
+              <VendorRatingStars value={rating} />
+            )}
+          </FieldPlainText>
+        ) : (
+          <Controller
+            control={form.control}
+            name="rating"
+            render={({ field }) => (
+              <VendorRatingInput
+                id="vendor-rating"
+                value={field.value}
+                onChange={field.onChange}
+                disabled={isDisabled}
+              />
+            )}
+          />
+        )}
+      </Field>
+
       {/* Business type — เต็มแถว ไม่แชร์กับ Code
           ชื่อประเภทธุรกิจยาวได้ถึง 40 ตัวอักษร ("Furniture, Fixtures & Equipment
           (FF&E)") และเลือกได้หลายอัน ขณะที่ Code ยาวสุด 10 ตัว การจับคู่กันในแถว
@@ -90,6 +121,47 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
                 disabled={isDisabled}
               />
             )}
+          />
+        )}
+      </Field>
+
+      {/* Tax ID + Branch No. — คู่กันในแถวเดียว ใบกำกับภาษีอ้างถึงทั้งสองค่าพร้อมกัน */}
+      <Field>
+        <FieldLabel htmlFor="vendor-tax-no">{t("taxNo")}</FieldLabel>
+        {isView ? (
+          <FieldPlainText className="tabular-nums">
+            {form.getValues("tax_no") || null}
+          </FieldPlainText>
+        ) : (
+          <FieldInput
+            id="vendor-tax-no"
+            placeholder={t("taxNoPlaceholder")}
+            disabled={isDisabled}
+            error={form.formState.errors.tax_no?.message}
+            maxLength={20}
+            autoComplete="off"
+            className="tabular-nums"
+            {...form.register("tax_no")}
+          />
+        )}
+      </Field>
+
+      <Field>
+        <FieldLabel htmlFor="vendor-branch-no">{t("branchNo")}</FieldLabel>
+        {isView ? (
+          <FieldPlainText className="tabular-nums">
+            {form.getValues("branch_no") || null}
+          </FieldPlainText>
+        ) : (
+          <FieldInput
+            id="vendor-branch-no"
+            placeholder={t("branchNoPlaceholder")}
+            disabled={isDisabled}
+            error={form.formState.errors.branch_no?.message}
+            maxLength={10}
+            autoComplete="off"
+            className="tabular-nums"
+            {...form.register("branch_no")}
           />
         )}
       </Field>
