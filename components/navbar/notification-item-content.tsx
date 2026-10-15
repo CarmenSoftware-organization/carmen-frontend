@@ -19,6 +19,8 @@ interface NotificationItemContentProps {
   readonly unreadLabel: string;
   readonly commentLabel: string;
   readonly clampMessage?: boolean;
+  /** หน้า /notifications วาด unread rail ที่ขอบแถวเอง จึงปิดจุดตรงนี้ */
+  readonly showUnreadDot?: boolean;
 }
 
 export function NotificationItemContent({
@@ -28,6 +30,7 @@ export function NotificationItemContent({
   unreadLabel,
   commentLabel,
   clampMessage = false,
+  showUnreadDot = true,
 }: NotificationItemContentProps) {
   const time = notification.created_at
     ? formatRelativeTime(notification.created_at, locale)
@@ -45,6 +48,17 @@ export function NotificationItemContent({
     ? NOTIFICATION_TILE[notification.doc_type]
     : undefined;
   const isComment = notification.event === "comment";
+  const timeLabel = time && (
+    <span
+      title={fullTime || undefined}
+      className={cn(
+        "text-muted-foreground text-micro shrink-0 cursor-default whitespace-nowrap tabular-nums",
+        clampMessage && "ms-auto",
+      )}
+    >
+      {time}
+    </span>
+  );
 
   let FallbackIcon = Bell;
   const fallbackBg = "bg-primary text-primary-foreground";
@@ -65,14 +79,16 @@ export function NotificationItemContent({
   return (
     <>
       {/* Unread rail — blue dot to the left of the icon (iOS style) with glow */}
-      <span
-        className="flex w-2 shrink-0 items-center justify-center"
-        aria-hidden="true"
-      >
-        {isUnread && (
-          <span className="bg-primary ring-primary/10 size-2 rounded-full shadow-[0_0_8px_var(--primary)] ring-4" />
-        )}
-      </span>
+      {showUnreadDot && (
+        <span
+          className="flex w-2 shrink-0 items-center justify-center"
+          aria-hidden="true"
+        >
+          {isUnread && (
+            <span className="bg-primary ring-primary/10 size-2 rounded-full shadow-[0_0_8px_var(--primary)] ring-4" />
+          )}
+        </span>
+      )}
 
       {/* Leading app tile — squircle ชุดเดียวกับ sidebar/dashboard
           doc_type ที่ไม่ใช่เอกสาร (system/business_unit) ตกมาที่กระดิ่ง
@@ -106,12 +122,21 @@ export function NotificationItemContent({
       {/* Content + inset bottom border (removed for card layout) */}
       <div className="min-w-0 flex-1">
         {/* Top line: type + title (left) · time (right) */}
+        {/* หน้า /notifications (clampMessage) ให้ชื่อเรื่องขึ้นได้ 2 บรรทัด และให้
+            ป้าย BU + เวลา wrap ลงบรรทัดถัดไปได้ — จอแคบ + เวลาภาษาไทยยาว ๆ
+            เคยเหลือที่ให้ชื่อเรื่องแค่คำเดียว */}
         <div className="flex items-center gap-2">
           {isUnread && <span className="sr-only">{unreadLabel}</span>}
-          <div className="flex min-w-0 flex-1 items-center gap-2 truncate">
+          <div
+            className={cn(
+              "flex min-w-0 flex-1 items-center gap-2",
+              clampMessage ? "flex-wrap gap-y-0.5" : "truncate",
+            )}
+          >
             <p
               className={cn(
-                "group-hover:text-primary truncate text-sm leading-tight transition-colors duration-300",
+                "group-hover:text-primary text-sm leading-tight transition-colors duration-300",
+                clampMessage ? "line-clamp-2 break-words" : "truncate",
                 isUnread
                   ? "text-foreground font-semibold"
                   : "text-foreground/80 font-medium",
@@ -124,15 +149,9 @@ export function NotificationItemContent({
                 {notification.metadata.bu_code as string}
               </span>
             ) : null}
+            {clampMessage && timeLabel}
           </div>
-          {time && (
-            <span
-              title={fullTime || undefined}
-              className="text-muted-foreground text-micro shrink-0 cursor-default whitespace-nowrap tabular-nums"
-            >
-              {time}
-            </span>
-          )}
+          {!clampMessage && timeLabel}
         </div>
 
         {/* Message */}
