@@ -2531,7 +2531,7 @@
           "partialSaveFailed": "Interface settings were saved, but the default accounts were not. Please try again.",
           "apiAccess": {
             "title": "API access",
-            "desc": "Credentials external systems use to send inventory postings into this business unit.",
+            "desc": "Credentials external systems use to read and export inventory postings (with account codes) out of this business unit.",
             "noKey": "This business unit has no API key yet.",
             "create": "Create key",
             "creating": "Creating...",
