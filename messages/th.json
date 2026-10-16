@@ -2628,7 +2628,7 @@
             "keep": "เก็บไว้",
             "delete": "ลบออก"
           },
-          "authorizeTokenHint": "ต้องใส่ scheme นำหน้าด้วย เช่น “direct <token>” — ค่านี้ถูกส่งเป็น Authorization header ตรง ๆ ทั้งก้อน — ไม่แตะช่องนี้ = ใช้ค่าเดิมที่บันทึกไว้"
+          "authorizeTokenHint": "ต้องใส่ scheme นำหน้าด้วย เช่น “direct YOUR_TOKEN” — ค่านี้ถูกส่งเป็น Authorization header ตรง ๆ ทั้งก้อน — ไม่แตะช่องนี้ = ใช้ค่าเดิมที่บันทึกไว้"
         }
       },
       "pos": {

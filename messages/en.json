@@ -2628,7 +2628,7 @@
             "keep": "Keep them",
             "delete": "Delete them"
           },
-          "authorizeTokenHint": "Include the scheme prefix, e.g. “direct <token>” — the value is sent as the Authorization header verbatim. Leave untouched to keep the stored key."
+          "authorizeTokenHint": "Include the scheme prefix, e.g. “direct YOUR_TOKEN” — the value is sent as the Authorization header verbatim. Leave untouched to keep the stored key."
         }
       },
       "pos": {
