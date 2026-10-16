@@ -1630,6 +1630,7 @@
         "currentParentGroup": "กลุ่มบัญชีคุมปัจจุบัน (Current Parent Group)",
         "selectGroup": "เลือกระดับบัญชีคุม",
         "changeGroup": "เปลี่ยนระดับบัญชีคุม",
+        "parentGroupNotSelectable": "กลุ่มแม่ — เลือกกลุ่มย่อยที่อยู่ข้างใต้แทน",
         "noGroupingSelected": "ยังไม่ได้เลือกระดับหมวดบัญชีคุม กด \"เลือกระดับบัญชีคุม\" ด้านบนหากต้องการกำหนด (ไม่บังคับ)",
         "addTag": "เพิ่ม Tag",
         "tagKey": "ชื่อคีย์ (Tag Key)",

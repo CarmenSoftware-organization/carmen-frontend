@@ -25,6 +25,8 @@ interface CoaTreeSelectorModalProps {
   readonly onOpenChange: (open: boolean) => void;
   readonly category?: AccountCategory | "";
   readonly groups: AccountGroupMaster[];
+  /** โหนดที่มีกลุ่มลูก — backend ผูกบัญชีได้เฉพาะ leaf จึงกดเลือกไม่ได้ */
+  readonly nonLeafIds: ReadonlySet<string>;
   readonly currentGroupId?: string;
   readonly onSelect: (
     path: GroupingPathNode[],
@@ -37,6 +39,7 @@ export function CoaTreeSelectorModal({
   onOpenChange,
   category,
   groups,
+  nonLeafIds,
   currentGroupId,
   onSelect,
 }: CoaTreeSelectorModalProps) {
@@ -77,7 +80,7 @@ export function CoaTreeSelectorModal({
 
   const handleConfirm = () => {
     const targetGroup = groupMap.get(selectedId);
-    if (!targetGroup) return;
+    if (!targetGroup || nonLeafIds.has(targetGroup.id)) return;
     const path = computePath(targetGroup);
     onSelect(path, targetGroup);
     onOpenChange(false);
@@ -111,7 +114,8 @@ export function CoaTreeSelectorModal({
             </p>
           ) : (
             filteredGroups.map((group) => {
-              const isSelected = selectedId === group.id;
+              const isSelectable = !nonLeafIds.has(group.id);
+              const isSelected = isSelectable && selectedId === group.id;
               const path = computePath(group);
               const paddingLeftClass =
                 group.level === 1
@@ -125,11 +129,15 @@ export function CoaTreeSelectorModal({
               return (
                 <div
                   key={group.id}
-                  onClick={() => setSelectedId(group.id)}
-                  className={`flex cursor-pointer items-center justify-between rounded-lg border p-2.5 transition-colors ${paddingLeftClass} ${
-                    isSelected
-                      ? "border-primary/50 bg-primary/10"
-                      : "border-border/60 bg-card hover:bg-secondary/40"
+                  onClick={isSelectable ? () => setSelectedId(group.id) : undefined}
+                  aria-disabled={!isSelectable}
+                  title={isSelectable ? undefined : t("labels.parentGroupNotSelectable")}
+                  className={`flex items-center justify-between rounded-lg border p-2.5 transition-colors ${paddingLeftClass} ${
+                    !isSelectable
+                      ? "cursor-default border-transparent bg-muted/40 text-muted-foreground"
+                      : isSelected
+                        ? "cursor-pointer border-primary/50 bg-primary/10"
+                        : "cursor-pointer border-border/60 bg-card hover:bg-secondary/40"
                   }`}
                 >
                   <div className="min-w-0 flex-1 space-y-1">
@@ -189,7 +197,7 @@ export function CoaTreeSelectorModal({
           <Button
             type="button"
             size="sm"
-            disabled={!selectedId}
+            disabled={!selectedId || nonLeafIds.has(selectedId)}
             onClick={handleConfirm}
           >
             {tc("save")}
