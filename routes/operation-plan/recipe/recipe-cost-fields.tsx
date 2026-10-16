@@ -186,7 +186,9 @@ export function RecipeCostFields({
                 className="pr-6 text-right text-sm tabular-nums"
                 error={errors.target_food_cost_percentage?.message}
                 errorIconAlign="left"
-                {...form.register("target_food_cost_percentage")}
+                {...form.register("target_food_cost_percentage", {
+                  deps: ["max_food_cost_percentage"],
+                })}
               />
               <span className="text-muted-foreground text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
                 %

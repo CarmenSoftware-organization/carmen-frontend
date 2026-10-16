@@ -79,7 +79,9 @@ export function useRecipeCostCalc(
       ? round2(perPortion(ing) / (pct / 100))
       : null;
   const suggestedPrice = priceAtFoodCost(targetPct);
-  const minPrice = priceAtFoodCost(maxPct);
+  // เพดานต่ำกว่าเป้าคือค่าที่ schema ปัดตก — ไม่โชว์ราคาขั้นต่ำที่สูงกว่าราคาที่เป้า
+  const minPrice =
+    targetPct > 0 && maxPct < targetPct ? null : priceAtFoodCost(maxPct);
   const markup =
     sell > 0 && costPerPortion > 0 ? round2(sell / costPerPortion) : null;
   const belowMinPrice = minPrice != null && sell > 0 && sell < minPrice;
