@@ -558,18 +558,18 @@ export const moduleList: ModuleDto[] = [
     icon: Settings2,
     subModules: [
       {
-        name: "costCenterGroup",
-        path: "/config/cost-center-group",
-        licenseFeature: "configuration.cost_center_group",
-        icon: Group,
-        permission: PERMISSIONS.configuration.cost_center_group.view,
-      },
-      {
         name: "costCenter",
         path: "/config/cost-center",
         licenseFeature: "configuration.cost_center",
         icon: Crosshair,
         permission: PERMISSIONS.configuration.cost_center.view,
+      },
+      {
+        name: "costCenterGroup",
+        path: "/config/cost-center-group",
+        licenseFeature: "configuration.cost_center_group",
+        icon: Group,
+        permission: PERMISSIONS.configuration.cost_center_group.view,
       },
       {
         name: "accountGrouping",
