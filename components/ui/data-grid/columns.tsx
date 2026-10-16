@@ -97,6 +97,14 @@ export interface ActionColumnActivity<T> {
   label?: (row: T) => string | undefined;
 }
 
+/**
+ * เมนู Edit ในแถว (อยู่บนสุดของเมนู ⋯) — ไม่ส่ง = ไม่มีเมนูนี้ ตารางเดิมจึงเหมือนเดิมทุกตัว
+ * ผู้เรียกคุมสิทธิ์เอง (ไม่มีสิทธิ์ = ไม่ส่ง) · สัญญาหมดอายุปิดเมนูให้ผ่าน `writeDisabled`
+ */
+export interface ActionColumnEdit<T> {
+  onClick: (item: T) => void;
+}
+
 export function actionColumn<T>(
   onDelete: (item: T) => void,
   options?: {
@@ -107,6 +115,7 @@ export function actionColumn<T>(
     /** คืนเหตุผลเมื่อแถวนี้ลบไม่ได้ (ปุ่มลบปิด + title) · คืน undefined = ลบได้ */
     deleteDisabledTitle?: (item: T) => string | undefined;
     activity?: ActionColumnActivity<T>;
+    edit?: ActionColumnEdit<T>;
   },
 ): ColumnDef<T> {
   return {
@@ -114,8 +123,10 @@ export function actionColumn<T>(
     header: () => "",
     cell: ({ row }) => {
       const activityId = options?.activity?.id(row.original);
+      const edit = options?.edit;
       return (
         <DataGridRowActions
+          onEdit={edit ? () => edit.onClick(row.original) : undefined}
           onDelete={() => onDelete(row.original)}
           deleteDenied={options?.deleteDenied}
           deletePermission={options?.deletePermission}

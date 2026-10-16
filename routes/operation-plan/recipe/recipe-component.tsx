@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { listReturnState } from "@/hooks/use-list-return";
+import { useCan } from "@/hooks/use-can";
+import { PERMISSIONS } from "@/constant/permissions";
 import { useTranslations } from "use-intl";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -62,6 +64,9 @@ export default function RecipeComponent() {
   const ts = useTranslations("status");
   const tt = useTranslations("toast");
   const navigate = useNavigate();
+  const { can, canWrite } = useCan();
+  const canEditRecipe =
+    canWrite && can(PERMISSIONS.operation_plan.recipe.update);
   const [deleteTarget, setDeleteTarget] = useState<Recipe | null>(null);
   const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
@@ -201,6 +206,15 @@ export default function RecipeComponent() {
     onEdit: (recipe) =>
       navigate(`/operation-plan/recipe/${recipe.id}`, listReturnState()),
     onDelete: setDeleteTarget,
+    // ชื่อ/รหัสในแถวเปิดหน้าโหมดทำอาหาร — เมนู Edit พาไปหน้าแก้ตรง ๆ (สิทธิ์เดียวกับ
+    // ปุ่มแก้ในหน้าโหมดทำอาหาร: ไม่มีสิทธิ์หรือสัญญาหมดอายุ = ไม่มีเมนู)
+    onEditRecipe: canEditRecipe
+      ? (recipe) =>
+          navigate(
+            `/operation-plan/recipe/${recipe.id}/edit`,
+            listReturnState(),
+          )
+      : undefined,
   });
 
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
