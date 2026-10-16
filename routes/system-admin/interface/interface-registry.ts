@@ -50,7 +50,13 @@ export const INTERFACE_CATEGORIES: readonly InterfaceCategoryDef[] = [
         // Carmen 4 legacy — field set ต่างจาก accounting ทั่วไป (ดู spec 2026-07-22)
         form: lazy(() => import("./carmen-gl-interface-form")),
       },
-      ...brands("accounting", ["blueledgers", "external"]),
+      ...brands("accounting", ["blueledgers"]),
+      {
+        key: "external",
+        configKey: "interface_accounting_external",
+        // ฟอร์มเดิมของ accounting + บัญชีตั้งต้น gl_setting (ช่วง 2 จะเพิ่ม API Access)
+        form: lazy(() => import("./external-interface-form")),
+      },
     ],
     form: lazy(() => import("./accounting-interface-form")),
   },

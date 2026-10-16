@@ -2522,6 +2522,14 @@
       },
       "accounting": {
         "title": "Accounting Interface",
+        "external": {
+          "glDefaults": "Default accounts",
+          "glDefaultsDesc": "Used for AP postings when the account mapping does not name an account itself.",
+          "apControlAccount": "Default AP control account",
+          "inputVatAccount": "Input VAT account",
+          "glLoadError": "Could not load the default accounts.",
+          "retry": "Retry"
+        },
         "desc": "How inventory activity reaches your general ledger and payables.",
         "connection": "Connection",
         "connectionDesc": "Which accounting system receives the postings.",
