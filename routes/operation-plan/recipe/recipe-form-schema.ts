@@ -3,6 +3,7 @@ import type { TranslationFn } from "@/lib/i18n-schema";
 import type { Recipe } from "@/types/recipe";
 import { ALLERGEN_OPTIONS } from "@/constant/recipe";
 import { arrayToText } from "@/lib/form-helpers";
+import { activeSteps, stepToDraft } from "./recipe-steps-sync";
 
 export { textToArray, textToObject } from "@/lib/form-helpers";
 
@@ -43,6 +44,31 @@ export const mergeAllergens = (allergens: {
 
 // ── Schema ──
 
+const nullableNumber = z.preprocess(
+  (v) => (v === "" || v === undefined || Number.isNaN(v) ? null : v),
+  z.coerce.number().nullable(),
+);
+
+function createStepSchema(tv: TranslationFn, tf: TranslationFn) {
+  return z.object({
+    step_id: z.string().nullable(),
+    doc_version: z.number().nullable(),
+    title: z.string().max(500),
+    description: z
+      .string()
+      .trim()
+      .min(1, tv("required", { field: tf("description") })),
+    duration: nullableNumber.pipe(z.number().int().min(0).nullable()),
+    temperature: nullableNumber,
+    temperature_unit: z.enum(["c", "f"]),
+    equipment: z.array(
+      z.object({ id: z.string().nullable(), name: z.string() }),
+    ),
+    chef_notes: z.string().max(1000),
+    safety_warnings: z.string().max(1000),
+  });
+}
+
 export function createRecipeSchema(tv: TranslationFn, tf: TranslationFn) {
   return z
     .object({
@@ -81,6 +107,7 @@ export function createRecipeSchema(tv: TranslationFn, tf: TranslationFn) {
       target_food_cost_percentage: z.coerce.number().nullable(),
       max_food_cost_percentage: z.coerce.number().min(0).max(100).nullable(),
       plating_instructions: z.string().max(2000),
+      preparation_steps: z.array(createStepSchema(tv, tf)),
       storage_instructions: z.string().max(2000),
       labor_cost_percentage: z.coerce.number().nullable(),
       overhead_percentage: z.coerce.number().nullable(),
@@ -139,6 +166,7 @@ export const EMPTY_FORM: RecipeFormValues = {
   target_food_cost_percentage: null,
   max_food_cost_percentage: null,
   plating_instructions: "",
+  preparation_steps: [],
   storage_instructions: "",
   labor_cost_percentage: null,
   overhead_percentage: null,
@@ -180,6 +208,7 @@ export function getDefaultValues(recipe?: Recipe): RecipeFormValues {
     target_food_cost_percentage: recipe.target_food_cost_percentage,
     max_food_cost_percentage: recipe.max_food_cost_percentage ?? null,
     plating_instructions: recipe.plating_instructions ?? "",
+    preparation_steps: activeSteps(recipe.preparation_steps).map(stepToDraft),
     storage_instructions: recipe.storage_instructions ?? "",
     labor_cost_percentage: recipe.labor_cost_percentage,
     overhead_percentage: recipe.overhead_percentage,

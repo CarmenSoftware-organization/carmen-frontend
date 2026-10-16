@@ -22,6 +22,31 @@ export type RecipeGalleryManifestItem =
     }
   | { file_index: number; is_primary?: boolean; alt_text?: string | null };
 
+/** อุปกรณ์ที่ผูกกับขั้นตอน — เก็บชื่อไว้ด้วยเพื่อให้แสดงได้แม้อุปกรณ์ถูกลบจาก master */
+export interface RecipeEquipmentRef {
+  id: string | null;
+  name: string;
+}
+
+/** แถวของ tb_recipe_preparation_step ตามที่ recipe detail คืนมา */
+export interface RecipePreparationStep {
+  id: string;
+  doc_version: number;
+  sequence_no: number;
+  title: string | null;
+  description: string;
+  duration: number | null;
+  /** Decimal — backend คืนเป็น string */
+  temperature: string | number | null;
+  temperature_unit: "c" | "f" | null;
+  /** JSON อิสระ — ของใหม่เป็น RecipeEquipmentRef[] ของเก่าอาจเป็น string[] */
+  equipment: unknown;
+  chef_notes: string | null;
+  safety_warnings: string | null;
+  /** recipe detail ฝั่ง backend เคยคืนขั้นที่ลบแล้วปนมา — กรองทิ้งด้วย activeSteps() */
+  deleted_at?: string | null;
+}
+
 interface RecipeCategoryRef {
   id: string;
   name: string;
@@ -87,7 +112,7 @@ export interface Recipe {
   cuisine: RecipeCuisineRef;
   // Element shapes returned empty by the API — left untyped until real data is available
   ingredients: unknown[];
-  preparation_steps: unknown[];
+  preparation_steps: RecipePreparationStep[];
   yield_variants: unknown[];
   images: RecipeImage[];
   /** มีเฉพาะใน response ของ list (detail ส่ง `images` ทั้งชุดแทน) */

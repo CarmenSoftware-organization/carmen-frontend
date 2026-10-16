@@ -21,6 +21,7 @@ export interface LookupItem {
 export type LookupResource =
   | "unit"
   | "recipe_cuisine"
+  | "recipe_equipment"
   | "recipe_equipment_category"
   | "extra_cost_type"
   | "location_shelf"

@@ -23,6 +23,9 @@ import {
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useRecipeCostCalc } from "./use-recipe-cost-calc";
 import { RecipeNotesFields } from "./recipe-notes-fields";
+import { RecipeStepsFields } from "./recipe-steps-fields";
+import { useSyncRecipeSteps } from "./use-recipe-steps-sync";
+import { activeSteps } from "./recipe-steps-sync";
 import { useRecipeGallery } from "./use-recipe-gallery";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { RecipeToolbar } from "./recipe-toolbar";
@@ -62,7 +65,9 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
   const [showDelete, setShowDelete] = useState(false);
   const [showComment, setShowComment] = useState(false);
   const [ingredients, setIngredients] = useState<RecipeIngredient[]>([]);
-  const isPending = createRecipe.isPending || updateRecipe.isPending;
+  const syncSteps = useSyncRecipeSteps();
+  const isPending =
+    createRecipe.isPending || updateRecipe.isPending || syncSteps.isPending;
 
   const defaultValues = getDefaultValues(recipe);
 
@@ -79,6 +84,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
     // รูปใน gallery ที่ยังไม่ได้อัปโหลดก็นับเป็นของที่จะหาย
     extraDirty: gallery.isDirty,
     onResetExtra: gallery.reset,
+    initialMode: "edit",
   });
   const { form, isEdit, isDisabled } = f;
 
@@ -94,6 +100,10 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
     } = gallery.buildPayload();
 
     if (isEdit && recipe) {
+      // ปิด guard ตั้งแต่ก่อนยิง — save มีสองจังหวะ (หัวสูตร → ขั้นตอน) ระหว่างนั้น
+      // recipe ถูก refetch แล้วสถานะ dirty พลิก guard ปิดตัวเองแล้วสั่ง history.back()
+      // ทับการ navigate กลับ list ของเรา (เด้งกลับมา /edit) · ปิดเองก่อน back() จะจบไปนานแล้ว
+      f.setIsSubmitting(true);
       // Send the full gallery manifest only when it changed (full-sync);
       // omitting it keeps the existing images untouched.
       updateRecipe.mutate(
@@ -106,9 +116,38 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
         },
         {
           onSuccess: () => {
-            toast.success(tt("updateSuccess", { entity: t("entity") }));
-            f.backToList();
+            syncSteps.mutate(
+              {
+                recipeId: recipe.id,
+                original: activeSteps(recipe.preparation_steps),
+                drafts: values.preparation_steps,
+                // POST ทั้งก้อนสำเร็จแล้ว — ผูก id ให้ขั้นใหม่ในฟอร์มทันที ถ้าจังหวะ
+                // ถัดไปล้ม กด Save ซ้ำจะ PATCH ไม่ POST ซ้ำ (ไม่รีเซ็ตทั้งรายการ
+                // เพื่อไม่ทิ้งสิ่งที่ผู้ใช้พิมพ์ไว้)
+                onAdded: (ids) => {
+                  let k = 0;
+                  values.preparation_steps.forEach((d, i) => {
+                    if (!d.step_id && ids[k]) {
+                      form.setValue(`preparation_steps.${i}.step_id`, ids[k++]);
+                    }
+                  });
+                },
+              },
+              {
+                onSuccess: () => {
+                  toast.success(tt("updateSuccess", { entity: t("entity") }));
+                  f.backToList();
+                },
+                onError: (err) => {
+                  f.setIsSubmitting(false);
+                  toast.error(t("stepsSaveFailed"), {
+                    description: err.message,
+                  });
+                },
+              },
+            );
           },
+          onError: () => f.setIsSubmitting(false),
         },
       );
     } else {
@@ -180,6 +219,11 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
           ingredients={ingredients}
           onChange={setIngredients}
           isDisabled={isDisabled}
+        />
+        <RecipeStepsFields
+          form={form}
+          isDisabled={isDisabled}
+          isNew={!recipe}
         />
         <RecipeComplianceFields form={form} isDisabled={isDisabled} />
         <RecipeNotesFields form={form} isDisabled={isDisabled} />

@@ -25,6 +25,11 @@ interface UseEntityFormOptions<TValues extends FieldValues> {
   onResetExtra?: () => void;
   /** รหัส catalog → ช่องที่ต้องขึ้น error แทน toast (ดู `useServerFieldErrors`) */
   serverFieldErrors?: ServerFieldErrorMap<TValues>;
+  /**
+   * โหมดตอนเปิดหน้าเมื่อมี entity — ค่าเริ่ม "view" · หน้าที่ URL บอกว่ามาแก้
+   * (เช่น `/recipe/:id/edit`) ส่ง "edit" เพื่อไม่ต้องกด Edit ซ้ำอีกที
+   */
+  initialMode?: "view" | "edit";
 }
 
 /**
@@ -59,9 +64,10 @@ export function useEntityForm<TValues extends FieldValues>({
   extraDirty = false,
   onResetExtra,
   serverFieldErrors,
+  initialMode = "view",
 }: UseEntityFormOptions<TValues>) {
   const { toList, returnState } = useListReturn(listPath);
-  const [mode, setMode] = useState<FormMode>(entity ? "view" : "add");
+  const [mode, setMode] = useState<FormMode>(entity ? initialMode : "add");
   const isView = mode === "view";
   const isEdit = mode === "edit";
   const isAdd = mode === "add";

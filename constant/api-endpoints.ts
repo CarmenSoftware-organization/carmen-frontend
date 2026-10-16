@@ -432,6 +432,8 @@ export const API_ENDPOINTS = {
   PURCHASE_REQUEST_WORKFLOW_STAGES: (buCode: string) =>
     `/api/proxy/api/${buCode}/purchase-requests/workflow-stages`,
   RECIPES: (buCode: string) => `/api/proxy/api/config/${buCode}/recipes`,
+  RECIPE_PREPARATION_STEPS: (buCode: string, recipeId: string) =>
+    `/api/proxy/api/config/${buCode}/recipes/${recipeId}/preparation-steps`,
   RECIPE_COMMENT: (buCode: string, recipeId?: string) =>
     recipeId
       ? `/api/proxy/api/config/${buCode}/recipe-comments/${recipeId}`

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { act, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import en from "@/messages/en.json";
 import type { Recipe } from "@/types/recipe";
 import {
@@ -14,6 +13,7 @@ const navigate = vi.fn();
 const createMut = fakeMutation({ data: { id: "rec-new" } });
 const updateMut = fakeMutation();
 const deleteMut = fakeMutation();
+const syncStepsMut = fakeMutation();
 
 vi.mock("react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("react-router")>()),
@@ -24,6 +24,10 @@ vi.mock("./use-recipe", () => ({
   useCreateRecipe: () => createMut,
   useUpdateRecipe: () => updateMut,
   useDeleteRecipe: () => deleteMut,
+}));
+// หลังหัวสูตรบันทึกสำเร็จ ฟอร์มจะ sync ขั้นตอนทำต่อ แล้วค่อยกลับหน้ารายการ
+vi.mock("./use-recipe-steps-sync", () => ({
+  useSyncRecipeSteps: () => syncStepsMut,
 }));
 vi.mock("./use-recipe-gallery", () => ({
   useRecipeGallery: () => ({
@@ -101,8 +105,12 @@ beforeEach(() => {
  * — ไม่ได้บอกว่าถูก บอกว่าตอนนี้เป็นแบบนี้ ถ้า refactor แล้วเปลี่ยน ต้องเป็นเพราะตั้งใจ
  */
 describe("RecipeForm — characterization", () => {
+  // ฟอร์มสูตรอยู่ที่ /:id/edit แล้ว (หน้า /:id เป็นโหมดทำอาหาร) จึงเปิดมาในโหมดแก้ไขเลย
+  // ไม่มีปุ่ม Edit ให้กด — ตั้งใจเปลี่ยน ไม่ใช่ regression
   async function enterEditMode() {
-    await userEvent.click(screen.getByRole("button", { name: en.common.edit }));
+    expect(
+      screen.queryByRole("button", { name: en.common.edit }),
+    ).not.toBeInTheDocument();
   }
 
   it("[update] เซฟแล้วเด้งกลับหน้ารายการ", async () => {
