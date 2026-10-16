@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyRound, RefreshCw } from "lucide-react";
+import { Eye, KeyRound, RefreshCw } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -15,6 +15,7 @@ import {
 import { ErrorState } from "@/components/ui/error-state";
 import { SettingSection } from "@/components/ui/setting-section";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusDotBadge } from "@/components/ui/status-dot-badge";
 import { Switch } from "@/components/ui/switch";
 import { PERMISSIONS } from "@/constant/permissions";
 import { useCan } from "@/hooks/use-can";
@@ -36,18 +37,33 @@ type SecretDialog = {
   readonly secret: string;
 };
 
-function Row({
+/** ปุ่ม copy ที่อยู่ในกรอบของ `CredentialField` แล้ว — ไม่ต้องมีกรอบซ้อนอีกชั้น */
+const COPY_IN_FIELD = "border-transparent bg-transparent";
+
+/**
+ * ช่องค่าที่ผู้ใช้หยิบไป copy — กรอบ monospace สูงเท่ากันทุกแถว ปุ่มอยู่ท้ายช่อง
+ *
+ * label วางเหนือกรอบ (ไม่ใช่ซ้าย) ให้ค่ายาวอย่าง Base URL ได้เต็มความกว้าง ปุ่มจึงไม่หล่นบรรทัด
+ */
+function CredentialField({
   label,
-  children,
+  value,
+  actions,
 }: {
   readonly label: string;
-  readonly children: React.ReactNode;
+  readonly value: React.ReactNode;
+  readonly actions?: React.ReactNode;
 }) {
   return (
-    <div className="grid gap-1 sm:grid-cols-[10rem_1fr] sm:items-center sm:gap-3">
+    <div className="space-y-1.5">
       <span className="text-muted-foreground text-xs font-medium">{label}</span>
-      <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm">
-        {children}
+      <div className="bg-muted/40 flex min-h-9 items-center gap-2 rounded-md border py-1 pr-1.5 pl-3">
+        <code className="min-w-0 flex-1 font-mono text-xs break-all">
+          {value}
+        </code>
+        {actions && (
+          <div className="flex shrink-0 items-center gap-1">{actions}</div>
+        )}
       </div>
     </div>
   );
@@ -175,79 +191,115 @@ export function ExternalApiAccessSection() {
     );
   } else {
     body = (
-      <div className="space-y-4">
-        <Row label={t("baseUrl")}>
-          <code className="text-xs break-all">{baseUrl}</code>
-          <CopyButton
-            value={baseUrl}
-            label={t("copyBaseUrl")}
-            successMessage={t("copied")}
-          />
-        </Row>
-        <Row label={t("clientId")}>
-          <code className="text-xs break-all">{info.client_id}</code>
-          {info.client_id && (
-            <CopyButton
-              value={info.client_id}
-              label={t("copyClientId")}
-              successMessage={t("copied")}
-            />
-          )}
-        </Row>
-        <Row label={t("secret")}>
-          <code className="text-xs">{`••••••••${info.secret_last4 ?? ""}`}</code>
+      <div className="space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <StatusDotBadge tone={info.is_active ? "success" : "neutral"}>
+            {info.is_active ? t("active") : t("inactive")}
+          </StatusDotBadge>
           {canEdit && (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onView}
-                disabled={busy}
-              >
-                {t("view")}
-              </Button>
-            </>
-          )}
-        </Row>
-        <Row label={t("createdBy")}>
-          {info.created_by_name || dash}
-          {info.created_at && (
-            <span className="text-muted-foreground text-xs">
-              {formatDate(info.created_at, dateFormat)}
-            </span>
-          )}
-        </Row>
-        <Row label={t("lastUsed")}>
-          {info.last_used_at
-            ? formatDate(info.last_used_at, dateFormat)
-            : t("never")}
-        </Row>
-        <Row label={t("status")}>
-          {canEdit ? (
-            <label className="flex items-center gap-2">
+            <label className="text-muted-foreground flex items-center gap-2 text-xs">
+              {t("status")}
               <Switch
                 checked={!!info.is_active}
                 disabled={busy}
                 onCheckedChange={(v) => setActive.mutate(v)}
               />
-              <span>{info.is_active ? t("active") : t("inactive")}</span>
             </label>
-          ) : (
-            <span>{info.is_active ? t("active") : t("inactive")}</span>
           )}
-        </Row>
+        </div>
+
+        {/* Base URL เต็มแถว, Client ID กับ Secret คู่กันเมื่อ "การ์ด" กว้างพอ — วัดที่ container
+            ไม่ใช่ viewport เพราะการ์ดอยู่คอลัมน์ขวา 2/3 ความกว้างของ viewport บอกอะไรไม่ได้ */}
+        <div className="@container">
+          <div className="grid gap-4 @lg:grid-cols-2">
+            <div className="@lg:col-span-2">
+              <CredentialField
+                label={t("baseUrl")}
+                value={baseUrl}
+                actions={
+                  <CopyButton
+                    value={baseUrl}
+                    label={t("copyBaseUrl")}
+                    successMessage={t("copied")}
+                    className={COPY_IN_FIELD}
+                  />
+                }
+              />
+            </div>
+            <CredentialField
+              label={t("clientId")}
+              value={info.client_id || dash}
+              actions={
+                info.client_id && (
+                  <CopyButton
+                    value={info.client_id}
+                    label={t("copyClientId")}
+                    successMessage={t("copied")}
+                    className={COPY_IN_FIELD}
+                  />
+                )
+              }
+            />
+            <CredentialField
+              label={t("secret")}
+              value={`••••••••${info.secret_last4 ?? ""}`}
+              actions={
+                canEdit && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    onClick={onView}
+                    disabled={busy}
+                  >
+                    <Eye aria-hidden="true" />
+                    {t("view")}
+                  </Button>
+                )
+              }
+            />
+          </div>
+        </div>
+
+        <p className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 text-xs">
+          <span>
+            {t("createdBy")}{" "}
+            <span className="text-foreground">
+              {info.created_by_name || "—"}
+            </span>
+            {info.created_at && (
+              <span className="whitespace-nowrap">
+                {` · ${formatDate(info.created_at, dateFormat)}`}
+              </span>
+            )}
+          </span>
+          <span>
+            {t("lastUsed")}{" "}
+            <span className="text-foreground whitespace-nowrap">
+              {info.last_used_at
+                ? formatDate(info.last_used_at, dateFormat)
+                : t("never")}
+            </span>
+          </span>
+        </p>
+
         {canEdit && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={busy}
-            onClick={() => setConfirmRegen(true)}
-          >
-            <RefreshCw aria-hidden="true" />
-            {t("regenerate")}
-          </Button>
+          <div className="border-destructive/30 bg-destructive/5 flex flex-wrap items-center justify-between gap-3 rounded-md border px-3 py-2.5">
+            <p className="text-muted-foreground min-w-0 flex-1 basis-56 text-xs">
+              {t("regenerateDesc")}
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:text-destructive border-destructive/40"
+              disabled={busy}
+              onClick={() => setConfirmRegen(true)}
+            >
+              <RefreshCw aria-hidden="true" />
+              {t("regenerate")}
+            </Button>
+          </div>
         )}
       </div>
     );
@@ -290,26 +342,36 @@ export function ExternalApiAccessSection() {
               {lastKind === "revealed" ? t("secretLogged") : t("newSecretDesc")}
             </DialogDescription>
           </DialogHeader>
-          {secretDialog?.clientId && (
-            <Row label={t("clientId")}>
-              <code className="text-xs break-all">{secretDialog.clientId}</code>
-              <CopyButton
+          <div className="space-y-4">
+            {secretDialog?.clientId && (
+              <CredentialField
+                label={t("clientId")}
                 value={secretDialog.clientId}
-                label={t("copyClientId")}
-                successMessage={t("copied")}
-              />
-            </Row>
-          )}
-          <Row label={t("secret")}>
-            <code className="text-xs break-all">{secretDialog?.secret}</code>
-            {secretDialog && (
-              <CopyButton
-                value={secretDialog.secret}
-                label={t("copySecret")}
-                successMessage={t("secretCopied")}
+                actions={
+                  <CopyButton
+                    value={secretDialog.clientId}
+                    label={t("copyClientId")}
+                    successMessage={t("copied")}
+                    className={COPY_IN_FIELD}
+                  />
+                }
               />
             )}
-          </Row>
+            <CredentialField
+              label={t("secret")}
+              value={secretDialog?.secret}
+              actions={
+                secretDialog && (
+                  <CopyButton
+                    value={secretDialog.secret}
+                    label={t("copySecret")}
+                    successMessage={t("secretCopied")}
+                    className={COPY_IN_FIELD}
+                  />
+                )
+              }
+            />
+          </div>
           <DialogFooter>
             <Button type="button" onClick={closeSecretDialog}>
               {t("done")}

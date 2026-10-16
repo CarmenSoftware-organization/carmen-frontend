@@ -7,6 +7,8 @@ import { useTranslations } from "use-intl";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useInterfaceConfig } from "./use-interface-config";
 import { ErrorState } from "@/components/ui/error-state";
+import { PERMISSIONS } from "@/constant/permissions";
+import { useCan } from "@/hooks/use-can";
 import { ExternalApiAccessSection } from "./external-api-access-section";
 import { ExternalApiDocsSection } from "./external-api-docs-section";
 import { InterfacePageLayout } from "./interface-page-layout";
@@ -27,6 +29,31 @@ import {
 const CONFIG_KEY = "interface_accounting_external";
 
 /**
+ * เส้นแบ่งโซน "มีผลทันที" — ส่วน API ด้านล่างไม่อยู่ในรอบ Edit/Save ของฟอร์มด้านบน
+ * แต่ใช้ SettingSection หน้าตาเดียวกัน ไม่มีเส้นนี้ผู้ใช้จะคิดว่าต้องกด Edit ก่อน
+ * หรือสลับสถานะ key แล้วรอกด Save
+ */
+function LiveZoneDivider({
+  title,
+  hint,
+}: {
+  readonly title: string;
+  readonly hint: string;
+}) {
+  // grid เดียวกับ SettingSection (md:grid-cols-3) — ข้อความอยู่คอลัมน์ซ้ายตรงกับหัว section
+  // เส้นอยู่คอลัมน์ขวาตรงกับการ์ด จอแคบซ้อนกันเหลือแค่ข้อความ + เส้นใต้
+  return (
+    <div className="mt-12 grid items-center gap-x-10 gap-y-3 md:grid-cols-3">
+      <div className="min-w-0 md:col-span-1">
+        <p className="text-sm font-semibold">{title}</p>
+        <p className="text-muted-foreground text-xs">{hint}</p>
+      </div>
+      <div aria-hidden="true" className="bg-border h-px md:col-span-2" />
+    </div>
+  );
+}
+
+/**
  * หน้า config ของ Accounting brand `external` — ฟิลด์ทั้งหมดเหมือนฟอร์ม accounting ทั่วไป
  * (config `interface_accounting_external`) บวกส่วนบัญชีตั้งต้น (`gl_setting`)
  *
@@ -40,6 +67,8 @@ export default function ExternalInterfaceForm() {
   const ta = useTranslations("systemAdmin.interface.accounting");
   const te = useTranslations("systemAdmin.interface.accounting.external");
   const navigate = useNavigate();
+  const { can } = useCan();
+  const showApiZone = can(PERMISSIONS.system_admin.bu_api_key.view);
   const glRef = useRef<GlDefaultsHandle>(null);
   const [glDirty, setGlDirty] = useState(false);
   const [glBusy, setGlBusy] = useState(false);
@@ -93,6 +122,7 @@ export default function ExternalInterfaceForm() {
     <InterfacePageLayout
       title={ta("brand.external")}
       description={ta("desc")}
+      width="wide"
       onSave={submit}
       onCancel={() => {
         form.reset(value ? toFormValues(value) : EMPTY_ACCOUNTING);
@@ -112,6 +142,9 @@ export default function ExternalInterfaceForm() {
       }
       afterForm={
         <>
+          {showApiZone && (
+            <LiveZoneDivider title={te("liveZone")} hint={te("liveZoneHint")} />
+          )}
           <ExternalApiAccessSection />
           <ExternalApiDocsSection />
         </>

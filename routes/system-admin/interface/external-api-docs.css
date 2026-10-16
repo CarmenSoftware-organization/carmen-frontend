@@ -59,3 +59,63 @@
   padding: 0 0 1rem;
   margin: 0;
 }
+
+/*
+ * หัวของ spec (ชื่อ API + ป้าย v1 / OAS 3.0) ซ้ำกับหัว section "API documentation" ของหน้า
+ * และป้ายสีเขียวของ swagger-ui ไม่อยู่ใน palette ของแอป — ซ่อนเฉพาะ hgroup เก็บคำอธิบายไว้
+ * (มีวิธียืนยันตัวตนและกติกา Dr/Cr ที่ integrator ต้องอ่าน)
+ */
+.external-api-docs .swagger-ui .info hgroup.main {
+  display: none;
+}
+
+/*
+ * markdown ของ swagger-ui ตั้ง sans-serif / monospace เปล่า ๆ ไว้เอง (ไม่ตาม .swagger-ui)
+ * ข้อความใช้ฟอนต์แอป โค้ดใช้ --font-mono ตัวเดียวกับช่องข้อมูลรับรองใน API access
+ */
+.external-api-docs .swagger-ui .renderedMarkdown p,
+.external-api-docs .swagger-ui .renderedMarkdown li,
+.external-api-docs .swagger-ui .renderedMarkdown h1,
+.external-api-docs .swagger-ui .renderedMarkdown h2,
+.external-api-docs .swagger-ui .renderedMarkdown h3,
+.external-api-docs .swagger-ui .renderedMarkdown h4 {
+  font-family: inherit;
+}
+
+.external-api-docs .swagger-ui .renderedMarkdown code,
+.external-api-docs .swagger-ui .renderedMarkdown pre,
+.external-api-docs .swagger-ui .opblock-summary-path,
+.external-api-docs .swagger-ui .model {
+  font-family: var(--font-mono);
+}
+
+/*
+ * หน้าเป็น wide — ย่อหน้าคำอธิบายยืดได้เกิน 150 ตัวอักษรต่อบรรทัดบนจอใหญ่ จำกัดไว้ที่ช่วงอ่านสบาย
+ * เฉพาะ prose (คำอธิบาย spec / คำอธิบาย endpoint) รายการ endpoint และ schema ยังกว้างเต็มกล่อง
+ */
+.external-api-docs .swagger-ui .info .description,
+.external-api-docs .swagger-ui .opblock-description-wrapper .renderedMarkdown {
+  max-width: 75ch;
+}
+
+/*
+ * หัวข้อย่อยใน markdown (1. Get an API key …) ขนาดเท่าหัว "Quick start" ด้านบน (text-sm)
+ * แทน 17px ของ swagger-ui ที่ใหญ่กว่าหัว section ของแอปเอง — หนา 600 ไม่ใช่ 500 เพราะอยู่กลาง
+ * ย่อหน้าขนาดเดียวกัน 500 แยกจากเนื้อความไม่ออก
+ */
+.external-api-docs .swagger-ui .renderedMarkdown h1,
+.external-api-docs .swagger-ui .renderedMarkdown h2,
+.external-api-docs .swagger-ui .renderedMarkdown h3,
+.external-api-docs .swagger-ui .renderedMarkdown h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 1.25rem 0 0.5rem;
+  color: inherit;
+}
+
+/* ชื่อกลุ่ม endpoint (24px) ใหญ่กว่าหัว section ของหน้า — ลดให้เป็นหัวระดับเดียวกับ SettingSection */
+.external-api-docs .swagger-ui .opblock-tag {
+  font-size: 1rem;
+  font-weight: 600;
+}
