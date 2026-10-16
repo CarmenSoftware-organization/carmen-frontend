@@ -24,7 +24,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useGridPagination } from "@/hooks/use-grid-pagination";
 import type { Recipe } from "@/types/recipe";
 import { CardSkeletonGrid } from "@/components/loader/card-skeleton";
-import { RECIPE_DIFFICULTY_OPTIONS } from "@/constant/recipe";
+import {
+  RECIPE_DIFFICULTY_OPTIONS,
+  RECIPE_STATUS_OPTIONS,
+} from "@/constant/recipe";
+import { recipeStatusKey } from "./recipe-list-cells";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import EmptyComponent from "@/components/empty-component";
@@ -75,6 +79,15 @@ export default function RecipeComponent() {
     [],
   );
 
+  const lifecycleFilterOptions = useMemo(
+    () =>
+      RECIPE_STATUS_OPTIONS.map((o) => ({
+        label: ts(recipeStatusKey(o.value)),
+        value: `status|string:${o.value}`,
+      })),
+    [ts],
+  );
+
   const STATUS_OPTIONS = useMemo(
     () => [
       { label: ts("active"), value: "is_active|bool:true" },
@@ -96,6 +109,20 @@ export default function RecipeComponent() {
             value={value}
             onChange={onChange}
             options={STATUS_OPTIONS}
+            className="w-full"
+          />
+        ),
+      },
+      {
+        key: "lifecycle",
+        control: "custom",
+        labelKey: "operationPlan.recipe.lifecycle",
+        render: (value, onChange) => (
+          <MultiSelectFilter
+            value={value}
+            onChange={onChange}
+            placeholder={t("lifecycle")}
+            options={lifecycleFilterOptions}
             className="w-full"
           />
         ),
@@ -129,7 +156,7 @@ export default function RecipeComponent() {
         section: "listView.sectionCategory",
       },
     ],
-    [STATUS_OPTIONS, difficultyFilterOptions, tfl],
+    [STATUS_OPTIONS, difficultyFilterOptions, lifecycleFilterOptions, t, tfl],
   );
 
   const lf = useListFilters({

@@ -6,6 +6,13 @@ export interface RecipeImage {
   url: string;
 }
 
+/** รูปหลักที่ endpoint รายการแนบมาให้ต่อแถว (url เป็น presigned — หมดอายุได้) */
+export interface RecipePrimaryImage {
+  id: string;
+  alt_text: string | null;
+  url: string | null;
+}
+
 export type RecipeGalleryManifestItem =
   | {
       id: string;
@@ -80,6 +87,8 @@ export interface Recipe {
   preparation_steps: unknown[];
   yield_variants: unknown[];
   images: RecipeImage[];
+  /** มีเฉพาะใน response ของ list (detail ส่ง `images` ทั้งชุดแทน) */
+  primary_image?: RecipePrimaryImage | null;
   audit: RecipeAudit;
 }
 
