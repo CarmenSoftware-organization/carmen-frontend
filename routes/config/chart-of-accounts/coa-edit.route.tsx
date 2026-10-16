@@ -26,7 +26,7 @@ export function Component() {
     retry: false,
   });
 
-  if (query.isLoading) return <FormSkeleton />;
+  if (query.isLoading || rules.isLoading) return <FormSkeleton />;
   if (query.error || !query.data) {
     return (
       <ErrorState

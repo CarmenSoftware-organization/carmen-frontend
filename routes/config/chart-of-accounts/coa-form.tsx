@@ -1,8 +1,10 @@
-import { coaRulesKey, saveCoaRules, type CoaDimensionRule, type DimensionRequirement } from "./coa-dimension-rules";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useGlDimensions } from "@/hooks/use-gl-dimensions";
+import { coaRulesKey, saveCoaRules, type CoaDimensionRule } from "./coa-dimension-rules";
 import { useRef, useState, useMemo, useEffect } from "react";
 import { Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
@@ -20,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { Field, FieldInput, FieldLabel, FieldSelect } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { SelectContent, SelectItem } from "@/components/ui/select";
 import { SettingSection } from "@/components/ui/setting-section";
 import { StatusSwitch } from "@/components/ui/status-switch";
 import { Switch } from "@/components/ui/switch";
@@ -29,13 +31,11 @@ import { FormPageShell } from "@/components/share/form-page-shell";
 import { useEntityForm } from "@/hooks/use-entity-form";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useGlAccountGroups } from "../shared/use-gl-account-groups";
-import { API_ENDPOINTS } from "@/constant/api-endpoints";
-import { httpClient } from "@/lib/http-client";
 import { ApiError, isAppStatusErrorCode } from "@/lib/api-error";
 import { useErrorToast } from "@/hooks/use-error-toast";
 import { cn } from "@/lib/utils";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
-import type { DimensionMaster, AccountGroupMaster } from "@/types/accounting-master";
+import type { AccountGroupMaster } from "@/types/accounting-master";
 import {
   ACCOUNT_CATEGORIES,
   ACCOUNT_NATURE,
@@ -167,16 +167,7 @@ export function CoaForm({
         : toast.error(error.message),
   });
 
-  const dimensionQuery = useQuery({
-    queryKey: ["accounting-master", "dimensions", buCode],
-    enabled: !!buCode,
-    queryFn: async (): Promise<DimensionMaster[]> => {
-      const res = await httpClient.get(API_ENDPOINTS.GL_DIMENSIONS(buCode!));
-      if (!res.ok) throw await ApiError.from(res, "Unable to load dimensions");
-      const json = await res.json();
-      return Array.isArray(json) ? json : (json.data ?? []);
-    },
-  });
+  const dimensionQuery = useGlDimensions();
 
   const f = useEntityForm<CoaFormValues>({
     entity: account,
@@ -194,9 +185,9 @@ export function CoaForm({
           req_dept: Boolean(account.department_required || (Array.isArray(account.allowed_departments) && account.allowed_departments.length > 0)),
           allowed_departments: normalizeArray(account.allowed_departments),
           // backend ไม่เก็บสถานะสวิตช์ — มีกฎอยู่ = เปิด
-          req_dim: (rules ?? []).length > 0,
+          req_dim: (rules ?? []).some((rule) => rule.requirement !== "prohibited"),
           allowed_dimensions: normalizeArray(account.allowed_dimensions),
-          dimension_rules: Object.fromEntries((rules ?? []).map((rule) => [rule.gl_dimension_id, rule.requirement])),
+          dimension_rules: Object.fromEntries((rules ?? []).filter((rule) => rule.requirement !== "prohibited").map((rule) => [rule.gl_dimension_id, rule.requirement])),
           attributes: normalizeAttributes(account.attributes),
           grouping_path: Array.isArray(account.grouping_path) ? account.grouping_path : [],
           is_active: account.is_active ?? true,
@@ -758,25 +749,6 @@ export function CoaForm({
         <SettingSection
           title={t("sections.dimensions")}
           description={t("sections.dimensionsDesc")}
-          action={
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground">
-                {reqDim ? t("labels.statusOn") : t("labels.statusOff")}
-              </span>
-              <Controller
-                control={form.control}
-                name="req_dim"
-                render={({ field }) => (
-                  <Switch
-                    id="coa-req-dim-switch"
-                    checked={Boolean(field.value)}
-                    disabled={f.isDisabled}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-            </div>
-          }
           plain
         >
           <div className="rounded-lg border border-border bg-card p-4 space-y-3">
@@ -799,6 +771,7 @@ export function CoaForm({
                 name="req_dim"
                 render={({ field }) => (
                   <Switch
+                    aria-label={t("labels.requireDimension")}
                     checked={Boolean(field.value)}
                     disabled={f.isDisabled}
                     onCheckedChange={field.onChange}
@@ -827,34 +800,21 @@ export function CoaForm({
                           key={dim.id}
                           className="rounded-lg border border-border bg-secondary/20 p-3 space-y-2"
                         >
-                          <div className="flex items-center justify-between">
-                            <span className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400">
-                              {dim.code}
-                            </span>
-                            <span className="text-xs font-medium text-foreground truncate max-w-[140px]">
-                              {dim.name}
-                            </span>
-                          </div>
-                          <Select
-                            value={field.value?.[dim.id] ?? "default"}
-                            disabled={f.isDisabled || dimensionQuery.isLoading || dimensionQuery.isError}
-                            onValueChange={(val) => {
-                              const next = { ...(field.value ?? {}) };
-                              if (val === "default") delete next[dim.id];
-                              else next[dim.id] = val as DimensionRequirement;
-                              field.onChange(next);
-                            }}
-                          >
-                            <SelectTrigger size="sm" className="w-full">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="default">Default (no rule)</SelectItem>
-                              <SelectItem value="mandatory">Mandatory</SelectItem>
-                              <SelectItem value="optional">Optional</SelectItem>
-                              <SelectItem value="prohibited">Prohibited</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <label className="flex items-center gap-2 text-xs">
+                            <Checkbox
+                              aria-label={`${dim.code} — ${dim.name}`}
+                              checked={!!field.value?.[dim.id] && field.value[dim.id] !== "prohibited"}
+                              disabled={f.isDisabled || dimensionQuery.isLoading || dimensionQuery.isError}
+                              onCheckedChange={(checked) => {
+                                const next = { ...(field.value ?? {}) };
+                                if (checked) next[dim.id] = "mandatory";
+                                else delete next[dim.id];
+                                field.onChange(next);
+                              }}
+                            />
+                            <span className="font-mono font-semibold">{dim.code}</span>
+                            <span>{dim.name}</span>
+                          </label>
                         </div>
                       ))}
                       {!dimensionQuery.isLoading && !dimensionQuery.isError && dimensions.length === 0 && (

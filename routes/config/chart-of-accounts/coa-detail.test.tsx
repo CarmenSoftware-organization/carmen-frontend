@@ -1,5 +1,6 @@
+import { CoaForm } from "./coa-form";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { IntlProvider } from "use-intl";
@@ -19,6 +20,10 @@ vi.mock("@/hooks/use-bu-code", () => ({
 
 vi.mock("../shared/use-gl-account-groups", () => ({
   useGlAccountGroups: () => ({ data: [], isLoading: false }),
+}));
+
+vi.mock("@/hooks/use-gl-dimensions", () => ({
+  useGlDimensions: () => ({ data: [{ id: "project", code: "project", name: "Project", is_active: true }], isLoading: false, isError: false }),
 }));
 
 const mockTargetAccount: ChartOfAccount = {
@@ -81,8 +86,29 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
 
     // ตรวจสอบว่าหน้า Detail เรนเดอร์ฟอร์มขึ้นมา ไม่ใช่ ErrorState
     expect(screen.queryByText(/Something went wrong/i)).toBeNull();
-    expect(screen.getByDisplayValue("111000")).toBeDefined();
+    expect(await screen.findByDisplayValue("111000")).toBeDefined();
     expect(screen.getByDisplayValue("Main Operating Cash")).toBeDefined();
     expect(screen.getByText("CASH_MAIN")).toBeDefined();
   });
+  it("selects dimensions with checkboxes without requirement status choices", () => {
+    renderWithProviders(<CoaForm account={mockTargetAccount} rules={[]} initialEdit />, "/config/chart-of-accounts/account");
+    fireEvent.click(screen.getByRole("switch", { name: /Require Dimension/i }));
+    const checkbox = screen.getByRole("checkbox", { name: "project — Project" });
+    expect(checkbox).not.toBeChecked();
+    fireEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
+    expect(screen.queryByText("Default (no rule)")).toBeNull();
+    expect(screen.queryByText("Mandatory")).toBeNull();
+  });
+
+  it("waits for saved rules before initializing the dimension checkboxes", async () => {
+    let finish!: (rules: dimensionRulesModule.CoaDimensionRule[]) => void;
+    vi.spyOn(useCoaModule, "useChartOfAccountById").mockReturnValue({ data: mockTargetAccount, isLoading: false, error: null } as unknown as ReturnType<typeof useCoaModule.useChartOfAccountById>);
+    vi.spyOn(dimensionRulesModule, "readCoaRules").mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+    renderWithProviders(<CoaEditRoute />, "/config/chart-of-accounts/account");
+    expect(screen.queryByDisplayValue("111000")).toBeNull();
+    await act(async () => { finish([{ id: "rule", chart_of_accounts_id: mockTargetAccount.id, gl_dimension_id: "project", requirement: "mandatory", doc_version: 1 }]); });
+    expect(await screen.findByRole("checkbox", { name: "project — Project" })).toBeChecked();
+  });
+
 });
