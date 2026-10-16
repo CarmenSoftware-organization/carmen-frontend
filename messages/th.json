@@ -3880,7 +3880,23 @@
       "removeEquipment": "เอา {name} ออก",
       "stepsAfterSave": "บันทึกสูตรก่อน แล้วค่อยเพิ่มขั้นตอน",
       "stepsSaveFailed": "บันทึกสูตรแล้ว แต่ขั้นตอนบันทึกไม่ครบ ระบบโหลดขั้นตอนใหม่ให้แล้ว ตรวจแล้วกดบันทึกอีกครั้ง",
-      "noSteps": "ยังไม่มีขั้นตอน"
+      "noSteps": "ยังไม่มีขั้นตอน",
+      "backToRecipes": "รายการสูตร",
+      "cookYield": "ได้ {qty} {unit}",
+      "cookTotalTime": "รวม {min} นาที",
+      "editRecipe": "แก้ไขสูตร",
+      "cookNoSteps": "สูตรนี้ยังไม่มีขั้นตอนทำ",
+      "cookNextUp": "ถัดไป",
+      "cookPrev": "ก่อนหน้า",
+      "cookNext": "ขั้นถัดไป",
+      "cookAllSteps": "ขั้นตอนทั้งหมด",
+      "cookPlating": "การจัดจาน",
+      "cookStorage": "การเก็บรักษา",
+      "cookAllergens": "สารก่อภูมิแพ้",
+      "cookStepOf": "ขั้นที่ {n} / {total}",
+      "cookSafety": "คำเตือนความปลอดภัย",
+      "cookChefNotes": "หมายเหตุเชฟ",
+      "cookMinutes": "{min} นาที"
     }
   },
   "productManagement": {

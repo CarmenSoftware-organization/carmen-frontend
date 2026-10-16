@@ -1,6 +1,23 @@
-import { RecipeEditContent } from "./recipe-edit-content";
+import { useTranslations } from "use-intl";
+import { ErrorState } from "@/components/ui/error-state";
+import { FormPageSkeleton } from "@/components/loader/form-page-skeleton";
+import { useRecipeById } from "./use-recipe";
+import { RecipeCookView } from "./recipe-cook-view";
 
-// ชั่วคราว — Task 5 แทนด้วยโหมดทำอาหาร
 export function RecipeCookContent({ id }: { id: string }) {
-  return <RecipeEditContent id={id} />;
+  const t = useTranslations("operationPlan.recipe");
+  const { data: recipe, isLoading, error, refetch } = useRecipeById(id);
+
+  if (isLoading) return <FormPageSkeleton />;
+  if (error || !recipe)
+    return (
+      <ErrorState
+        error={error}
+        notFoundMessage={t("notFound")}
+        onRetry={() => refetch()}
+        backTo="/operation-plan/recipe"
+      />
+    );
+
+  return <RecipeCookView recipe={recipe} />;
 }

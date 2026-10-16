@@ -3880,7 +3880,23 @@
       "removeEquipment": "Remove {name}",
       "stepsAfterSave": "Save the recipe first, then add its steps.",
       "stepsSaveFailed": "The recipe was saved but some steps weren't. The steps have been reloaded — check them and save again.",
-      "noSteps": "No steps yet."
+      "noSteps": "No steps yet.",
+      "backToRecipes": "Recipes",
+      "cookYield": "Makes {qty} {unit}",
+      "cookTotalTime": "{min} min total",
+      "editRecipe": "Edit recipe",
+      "cookNoSteps": "This recipe has no preparation steps yet.",
+      "cookNextUp": "Next",
+      "cookPrev": "Previous",
+      "cookNext": "Next step",
+      "cookAllSteps": "All steps",
+      "cookPlating": "Plating",
+      "cookStorage": "Storage",
+      "cookAllergens": "Allergens",
+      "cookStepOf": "Step {n} of {total}",
+      "cookSafety": "Safety warning",
+      "cookChefNotes": "Chef's note",
+      "cookMinutes": "{min} min"
     }
   },
   "productManagement": {
