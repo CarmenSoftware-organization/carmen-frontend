@@ -73,6 +73,16 @@ function useSecretMutation<TVariables = void>(
       if (!res.ok)
         throw await ApiError.from(res, opts.errorMessage, cleanServerMessage);
       const json = await res.json();
+      if (json?.success === false) {
+        throw new ApiError(
+          "VALIDATION_ERROR",
+          cleanServerMessage(json.message, opts.errorMessage),
+          json.status,
+        );
+      }
+      if (json?.data == null) {
+        throw new ApiError("INTERNAL_ERROR", opts.errorMessage);
+      }
       return json.data;
     },
     onSuccess: () => {
