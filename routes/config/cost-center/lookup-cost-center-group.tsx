@@ -8,17 +8,19 @@ interface LookupCostCenterGroupProps {
   readonly onValueChange: (id: string | null) => void;
   /** ชื่อ group เดิมจาก list response — กันช่องว่างเมื่อ group ถูกปิดใช้ */
   readonly defaultLabel?: string;
+  readonly placeholder?: string;
   readonly disabled?: boolean;
   readonly error?: string;
   /** แจ้งผู้เรียกว่าไม่มี group active เลย (โหลดเสร็จแล้ว) — ต้องเป็นฟังก์ชันอ้างอิงคงที่ */
   readonly onEmptyChange?: (empty: boolean) => void;
 }
 
-/** เลือกกลุ่มศูนย์ต้นทุน (เฉพาะที่ active) — ใช้ใน dialog ของหน้า cost center เท่านั้น */
+/** เลือกกลุ่มศูนย์ต้นทุน (เฉพาะที่ active, คลิกแถวที่เลือกซ้ำเพื่อล้าง) — ใช้ใน dialog ของหน้า cost center เท่านั้น */
 export function LookupCostCenterGroup({
   value,
   onValueChange,
   defaultLabel,
+  placeholder,
   disabled,
   error,
   onEmptyChange,
@@ -46,6 +48,7 @@ export function LookupCostCenterGroup({
       getLabel={(g) => `${g.code} · ${g.name}`}
       getSearchValue={(g) => `${g.code} ${g.name}`}
       defaultLabel={defaultLabel}
+      placeholder={placeholder}
       isLoading={isLoading}
       onSearchChange={setSearch}
       serverSideSearch

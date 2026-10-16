@@ -66,7 +66,7 @@ export function CostCenterDialog({
       toPayload={(v) => ({
         code: v.code.trim(),
         name: v.name.trim(),
-        cost_center_group_id: v.cost_center_group_id,
+        cost_center_group_id: v.cost_center_group_id || null,
         description: v.description?.trim() || null,
         note: v.note?.trim() || null,
         is_active: v.is_active,
@@ -106,7 +106,7 @@ export function CostCenterDialog({
           </div>
 
           <Field>
-            <FieldLabel htmlFor="cc-group" required>
+            <FieldLabel htmlFor="cc-group">
               {tfl("costCenterGroup")}
             </FieldLabel>
             <Controller
@@ -117,6 +117,7 @@ export function CostCenterDialog({
                   value={field.value || null}
                   onValueChange={(id) => field.onChange(id ?? "")}
                   defaultLabel={groupLabel}
+                  placeholder={tfl("optional")}
                   disabled={disabled}
                   error={fieldState.error?.message}
                   onEmptyChange={setNoGroup}
