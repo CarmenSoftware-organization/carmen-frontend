@@ -365,6 +365,7 @@ export function CoaForm({
           badges={account && <Badge variant="secondary" size="sm" className="font-mono">{account.code}</Badge>}
         />
       }
+      width="wide"
     >
       <form
         id={FORM_ID}
