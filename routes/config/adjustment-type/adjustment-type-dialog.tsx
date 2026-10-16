@@ -38,7 +38,7 @@ type AdjustmentTypePayload = {
   description: string;
   note: string;
   is_active: boolean;
-  chart_of_accounts_id: string | null;
+  chart_of_accounts_id?: string | null;
 };
 
 export function AdjustmentTypeDialog({
@@ -64,7 +64,10 @@ export function AdjustmentTypeDialog({
       translationNamespace="config.adjustmentType"
       useCreate={useCreateAdjustmentType}
       useUpdate={useUpdateAdjustmentType}
-      serverFieldErrors={{ ADJUSTMENT_TYPE_ALREADY_EXISTS: "code" }}
+      serverFieldErrors={{
+        ADJUSTMENT_TYPE_ALREADY_EXISTS: "code",
+        GL_ACCOUNT_NOT_POSTABLE: "chart_of_accounts_id",
+      }}
       buildSchema={() => adjustmentTypeSchema}
       toFormValues={(e) =>
         e
@@ -87,14 +90,21 @@ export function AdjustmentTypeDialog({
               chart_of_accounts_id: null,
             }
       }
-      toPayload={(v) => ({
+      toPayload={(v, original) => ({
         code: v.code,
         name: v.name,
         type: v.type,
         description: v.description ?? "",
         note: v.note ?? "",
         is_active: v.is_active,
-        chart_of_accounts_id: v.chart_of_accounts_id ?? null,
+        // ส่งเฉพาะตอนเปลี่ยน (หรือสร้างใหม่ที่เลือกแล้ว) — ไม่งั้นแก้ฟิลด์อื่นแล้วโดน
+        // GL_ACCOUNT_NOT_POSTABLE เมื่อบัญชีเดิมถูกปิด/กลายเป็น header
+        ...((original
+          ? (v.chart_of_accounts_id ?? null) !==
+            (original.chart_of_accounts_id ?? null)
+          : v.chart_of_accounts_id != null) && {
+          chart_of_accounts_id: v.chart_of_accounts_id ?? null,
+        }),
       })}
     >
       {({ form, disabled }) => (

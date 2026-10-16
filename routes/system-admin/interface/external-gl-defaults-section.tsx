@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState,
   type Ref,
 } from "react";
@@ -111,11 +112,16 @@ export function ExternalGlDefaultsSection() {
     onBusyChange?.(busy);
   }, [busy, onBusyChange]);
 
+  // refetch ถือใน ref — effect ไม่ต้องพึ่งว่า identity ของมันนิ่งหรือไม่
+  const refetchRef = useRef(refetch);
+  useEffect(() => {
+    refetchRef.current = refetch;
+  });
   const onLoadErrorChange = binding?.onLoadErrorChange;
   useEffect(() => {
-    onLoadErrorChange?.(isError ? refetch : null);
+    onLoadErrorChange?.(isError ? () => void refetchRef.current() : null);
     return () => onLoadErrorChange?.(null);
-  }, [isError, refetch, onLoadErrorChange]);
+  }, [isError, onLoadErrorChange]);
 
   /**
    * อ่านค่าล่าสุดจาก server ก่อน merge เสมอ — cache ของ React Query อยู่ได้ถึง 30 นาที

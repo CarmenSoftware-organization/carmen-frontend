@@ -75,7 +75,7 @@ export interface CreateVendorDto {
   tax_no: string | null;
   branch_no: string | null;
   rating: number | null;
-  ap_chart_of_accounts_id: string | null;
+  ap_chart_of_accounts_id?: string | null;
   business_type: { id: string; name: string }[];
   info: VendorInfoItem[];
   vendor_address: {

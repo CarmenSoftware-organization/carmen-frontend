@@ -65,7 +65,10 @@ export function VendorForm({ vendor }: VendorFormProps) {
   const defaultValues = getDefaultValues(vendor);
   const f = useEntityForm<VendorFormValues>({
     entity: vendor,
-    serverFieldErrors: { VENDOR_CODE_ALREADY_EXISTS: "code" },
+    serverFieldErrors: {
+      VENDOR_CODE_ALREADY_EXISTS: "code",
+      GL_ACCOUNT_NOT_POSTABLE: "ap_chart_of_accounts_id",
+    },
     resolver: zodResolver(
       createVendorSchema(tv, tfl),
     ) as Resolver<VendorFormValues>,
@@ -153,8 +156,6 @@ export function VendorForm({ vendor }: VendorFormProps) {
       tax_no: values.tax_no.trim() || null,
       branch_no: values.branch_no.trim() || null,
       rating: values.rating,
-      // null = ล้างบัญชี (backend: null = clear, omit = ไม่เปลี่ยน)
-      ap_chart_of_accounts_id: values.ap_chart_of_accounts_id,
       business_type: values.business_types,
       info: (values.info ?? []).map(({ label, value, data_type }) => ({
         label,
@@ -178,6 +179,16 @@ export function VendorForm({ vendor }: VendorFormProps) {
         "vendor_contact_id",
       ) as CreateVendorDto["vendor_contact"],
     };
+
+    // null = ล้างบัญชี (backend: null = clear, omit = ไม่เปลี่ยน) — ส่งเฉพาะตอนแก้
+    // (หรือสร้างใหม่ที่เลือกแล้ว) กันโดน GL_ACCOUNT_NOT_POSTABLE เมื่อบัญชีเดิมถูกปิด
+    if (
+      isEdit
+        ? dirtyFields.ap_chart_of_accounts_id
+        : values.ap_chart_of_accounts_id != null
+    ) {
+      payload.ap_chart_of_accounts_id = values.ap_chart_of_accounts_id;
+    }
 
     if (isEdit && vendor) {
       updateVendor.mutate(

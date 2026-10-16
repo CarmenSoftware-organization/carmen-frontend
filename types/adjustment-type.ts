@@ -39,7 +39,7 @@ export interface CreateAdjustmentTypeDto {
   description: string;
   note: string;
   is_active: boolean;
-  chart_of_accounts_id: string | null;
+  chart_of_accounts_id?: string | null;
   // Optimistic-concurrency token; required by the backend on update (PUT).
   doc_version?: number;
 }
