@@ -11,7 +11,6 @@ import {
   ChevronRight,
   Plus,
   X,
-  AlertCircle,
   Building2,
   Layers,
   Tag,
@@ -321,11 +320,6 @@ export function CoaForm({
   };
 
   const onSubmit = (values: CoaFormValues) => {
-    if (!values.account_group_id && (!values.grouping_path || values.grouping_path.length === 0)) {
-      toast.error(t("rules.groupingRequiredAlert"));
-      return;
-    }
-
     if (!values.is_active && account?.current_balance != null && Number(account.current_balance) !== 0) {
       toast.error(
         t("rules.cannotDeactivateNonZero", {
@@ -561,22 +555,7 @@ export function CoaForm({
           }
           plain
         >
-          <div
-            className={cn(
-              "rounded-xl border bg-card p-5 shadow-sm space-y-4 transition-all",
-              !selectedGroupId ? "border-amber-500/60 ring-2 ring-amber-500/20" : "border-border",
-            )}
-          >
-            {/* Warning if no group selected */}
-            {!selectedGroupId && (
-              <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-400">
-                <AlertCircle className="size-4 shrink-0" />
-                <span>
-                  <strong className="font-semibold">Mandatory:</strong> {t("rules.groupingMandatory")}
-                </span>
-              </div>
-            )}
-
+          <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
             {/* Target Account Code Card */}
             <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-0.5">
               <div className="text-micro font-semibold text-muted-foreground uppercase tracking-wider">

@@ -1597,8 +1597,8 @@
         "dimensionsDesc": "Select allowed dimensions and configure sub-codes & 1 default code",
         "attributes": "5. Attribute Tags (External ERP Reference)",
         "attributesDesc": "Key-Value Pair Format (External reference for PMS/POS/Tax mapping)",
-        "grouping": "Account Code Group Path *",
-        "groupingDesc": "Mandatory: Select a node in the account group hierarchy (Level 1-4)"
+        "grouping": "Account Code Group Path",
+        "groupingDesc": "Optional: Select a node in the account group hierarchy (Level 1-4)"
       },
       "rules": {
         "activeStatusTitle": "Account Active Status",
@@ -1609,8 +1609,6 @@
         "natureAutoLabel": "Auto Defaulted from Category",
         "readOnly": "Read-only",
         "natureAutoDesc": "Nature is auto-defaulted from Category (Read-only)",
-        "groupingMandatory": "Mandatory: Please select an Account Grouping Path before saving.",
-        "groupingRequiredAlert": "Account Code Group Path is required before saving!",
         "duplicateCodeAlert": "Account code already exists!",
         "selectCategoryAlert": "Please select Account Category!",
         "selectTypeAlert": "Please select Account Type!",
@@ -1630,9 +1628,9 @@
         "hierarchicalPath": "Hierarchical Grouping Path:",
         "levelBreakdown": "Level Hierarchy Breakdown:",
         "currentParentGroup": "Current Parent Group",
-        "selectGroup": "Select Group *",
+        "selectGroup": "Select Group",
         "changeGroup": "Change Group",
-        "noGroupingSelected": "No grouping path selected yet. Click \"Select Group *\" above.",
+        "noGroupingSelected": "No grouping path selected. Click \"Select Group\" above to assign one (optional).",
         "addTag": "Add Tag",
         "tagKey": "Tag Key",
         "tagValue": "Tag Value",
