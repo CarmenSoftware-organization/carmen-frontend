@@ -208,54 +208,57 @@ export function ExternalApiAccessSection() {
           )}
         </div>
 
-        {/* section เป็น wide — Base URL เต็มแถว, Client ID กับ Secret คู่กันเมื่อจอกว้างพอ */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
+        {/* Base URL เต็มแถว, Client ID กับ Secret คู่กันเมื่อ "การ์ด" กว้างพอ — วัดที่ container
+            ไม่ใช่ viewport เพราะการ์ดอยู่คอลัมน์ขวา 2/3 ความกว้างของ viewport บอกอะไรไม่ได้ */}
+        <div className="@container">
+          <div className="grid gap-4 @lg:grid-cols-2">
+            <div className="@lg:col-span-2">
+              <CredentialField
+                label={t("baseUrl")}
+                value={baseUrl}
+                actions={
+                  <CopyButton
+                    value={baseUrl}
+                    label={t("copyBaseUrl")}
+                    successMessage={t("copied")}
+                    className={COPY_IN_FIELD}
+                  />
+                }
+              />
+            </div>
             <CredentialField
-              label={t("baseUrl")}
-              value={baseUrl}
+              label={t("clientId")}
+              value={info.client_id || dash}
               actions={
-                <CopyButton
-                  value={baseUrl}
-                  label={t("copyBaseUrl")}
-                  successMessage={t("copied")}
-                  className={COPY_IN_FIELD}
-                />
+                info.client_id && (
+                  <CopyButton
+                    value={info.client_id}
+                    label={t("copyClientId")}
+                    successMessage={t("copied")}
+                    className={COPY_IN_FIELD}
+                  />
+                )
+              }
+            />
+            <CredentialField
+              label={t("secret")}
+              value={`••••••••${info.secret_last4 ?? ""}`}
+              actions={
+                canEdit && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    onClick={onView}
+                    disabled={busy}
+                  >
+                    <Eye aria-hidden="true" />
+                    {t("view")}
+                  </Button>
+                )
               }
             />
           </div>
-          <CredentialField
-            label={t("clientId")}
-            value={info.client_id || dash}
-            actions={
-              info.client_id && (
-                <CopyButton
-                  value={info.client_id}
-                  label={t("copyClientId")}
-                  successMessage={t("copied")}
-                  className={COPY_IN_FIELD}
-                />
-              )
-            }
-          />
-          <CredentialField
-            label={t("secret")}
-            value={`••••••••${info.secret_last4 ?? ""}`}
-            actions={
-              canEdit && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="xs"
-                  onClick={onView}
-                  disabled={busy}
-                >
-                  <Eye aria-hidden="true" />
-                  {t("view")}
-                </Button>
-              )
-            }
-          />
         </div>
 
         <p className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 text-xs">
@@ -304,13 +307,7 @@ export function ExternalApiAccessSection() {
 
   return (
     <div className="mt-8">
-      <SettingSection
-        title={t("title")}
-        description={t("desc")}
-        plain
-        first
-        wide
-      >
+      <SettingSection title={t("title")} description={t("desc")} plain first>
         <div className="space-y-4">
           {licenseExpired && (
             <p className="text-warning-ink text-xs">{t("licenseExpired")}</p>

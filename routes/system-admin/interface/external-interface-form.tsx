@@ -40,13 +40,15 @@ function LiveZoneDivider({
   readonly title: string;
   readonly hint: string;
 }) {
+  // grid เดียวกับ SettingSection (md:grid-cols-3) — ข้อความอยู่คอลัมน์ซ้ายตรงกับหัว section
+  // เส้นอยู่คอลัมน์ขวาตรงกับการ์ด จอแคบซ้อนกันเหลือแค่ข้อความ + เส้นใต้
   return (
-    <div className="mt-12 flex items-center gap-3">
-      <div className="min-w-0">
+    <div className="mt-12 grid items-center gap-x-10 gap-y-3 md:grid-cols-3">
+      <div className="min-w-0 md:col-span-1">
         <p className="text-sm font-semibold">{title}</p>
         <p className="text-muted-foreground text-xs">{hint}</p>
       </div>
-      <div aria-hidden="true" className="bg-border h-px min-w-8 flex-1" />
+      <div aria-hidden="true" className="bg-border h-px md:col-span-2" />
     </div>
   );
 }

@@ -73,13 +73,7 @@ export function ExternalApiDocsSection() {
 
   return (
     <div className="mt-8">
-      <SettingSection
-        title={t("title")}
-        description={t("desc")}
-        plain
-        first
-        wide
-      >
+      <SettingSection title={t("title")} description={t("desc")} plain first>
         <Collapsible open={open} onOpenChange={setOpen}>
           <CollapsibleTrigger asChild>
             <Button type="button" variant="outline" size="sm">
