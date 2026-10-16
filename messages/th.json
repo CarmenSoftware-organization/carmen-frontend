@@ -3862,7 +3862,25 @@
       "platingInstructions": "วิธีจัดจาน",
       "platingInstructionsDesc": "ภาชนะ การตกแต่ง และการจัดวาง",
       "storageInstructions": "การเก็บรักษา",
-      "storageInstructionsDesc": "อุณหภูมิ อายุการเก็บ และวิธีเก็บ/อุ่นซ้ำ"
+      "storageInstructionsDesc": "อุณหภูมิ อายุการเก็บ และวิธีเก็บ/อุ่นซ้ำ",
+      "stepsSection": "ขั้นตอนทำ",
+      "stepsSectionDesc": "วิธีทำทีละขั้นที่ครัวทำตาม — โหมดทำอาหารแสดงทีละขั้น",
+      "stepTitle": "ชื่อขั้น (ไม่บังคับ)",
+      "stepDescription": "วิธีทำ",
+      "stepDuration": "เวลา (นาที)",
+      "stepTemperature": "อุณหภูมิ",
+      "stepTemperatureUnit": "หน่วยอุณหภูมิ",
+      "stepEquipment": "อุปกรณ์",
+      "stepChefNotes": "หมายเหตุเชฟ",
+      "stepSafety": "คำเตือนความปลอดภัย",
+      "addStep": "เพิ่มขั้นตอน",
+      "moveUp": "เลื่อนขึ้น",
+      "moveDown": "เลื่อนลง",
+      "removeStep": "ลบขั้นตอน",
+      "removeEquipment": "เอา {name} ออก",
+      "stepsAfterSave": "บันทึกสูตรก่อน แล้วค่อยเพิ่มขั้นตอน",
+      "stepsSaveFailed": "บันทึกสูตรแล้ว แต่ขั้นตอนบันทึกไม่ครบ ระบบโหลดขั้นตอนใหม่ให้แล้ว ตรวจแล้วกดบันทึกอีกครั้ง",
+      "noSteps": "ยังไม่มีขั้นตอน"
     }
   },
   "productManagement": {

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "use-intl";
@@ -23,6 +23,9 @@ import {
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useRecipeCostCalc } from "./use-recipe-cost-calc";
 import { RecipeNotesFields } from "./recipe-notes-fields";
+import { RecipeStepsFields } from "./recipe-steps-fields";
+import { useSyncRecipeSteps } from "./use-recipe-steps-sync";
+import { stepToDraft } from "./recipe-steps-sync";
 import { useRecipeGallery } from "./use-recipe-gallery";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { RecipeToolbar } from "./recipe-toolbar";
@@ -62,7 +65,9 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
   const [showDelete, setShowDelete] = useState(false);
   const [showComment, setShowComment] = useState(false);
   const [ingredients, setIngredients] = useState<RecipeIngredient[]>([]);
-  const isPending = createRecipe.isPending || updateRecipe.isPending;
+  const syncSteps = useSyncRecipeSteps();
+  const isPending =
+    createRecipe.isPending || updateRecipe.isPending || syncSteps.isPending;
 
   const defaultValues = getDefaultValues(recipe);
 
@@ -84,6 +89,19 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
   const { form, isEdit, isDisabled } = f;
 
   const computed = useRecipeCostCalc(form);
+
+  // หลัง sync ขั้นตอน (สำเร็จหรือล้มกลางทาง) recipe ถูก refetch — id/doc_version
+  // ของขั้นที่เขียนไปแล้วเปลี่ยน ต้องรีเซ็ตรายการในฟอร์มตาม ไม่งั้นกด Save ซ้ำ
+  // แล้วขั้นที่เพิ่มไปแล้วถูก POST ซ้ำ หรือ PATCH ด้วย doc_version เก่า
+  const savedSteps = recipe?.preparation_steps;
+  useEffect(() => {
+    if (!savedSteps) return;
+    form.resetField("preparation_steps", {
+      defaultValue: [...savedSteps]
+        .sort((a, b) => a.sequence_no - b.sequence_no)
+        .map(stepToDraft),
+    });
+  }, [savedSteps, form]);
 
   const onSubmit = (values: RecipeFormValues) => {
     const payload = buildRecipePayload(values);
@@ -107,8 +125,20 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
         },
         {
           onSuccess: () => {
-            toast.success(tt("updateSuccess", { entity: t("entity") }));
-            f.backToList();
+            syncSteps.mutate(
+              {
+                recipeId: recipe.id,
+                original: recipe.preparation_steps ?? [],
+                drafts: values.preparation_steps,
+              },
+              {
+                onSuccess: () => {
+                  toast.success(tt("updateSuccess", { entity: t("entity") }));
+                  f.backToList();
+                },
+                onError: () => toast.error(t("stepsSaveFailed")),
+              },
+            );
           },
         },
       );
@@ -181,6 +211,11 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
           ingredients={ingredients}
           onChange={setIngredients}
           isDisabled={isDisabled}
+        />
+        <RecipeStepsFields
+          form={form}
+          isDisabled={isDisabled}
+          isNew={!recipe}
         />
         <RecipeComplianceFields form={form} isDisabled={isDisabled} />
         <RecipeNotesFields form={form} isDisabled={isDisabled} />

@@ -3862,7 +3862,25 @@
       "platingInstructions": "Plating Instructions",
       "platingInstructionsDesc": "Plate, garnish, and presentation",
       "storageInstructions": "Storage Instructions",
-      "storageInstructionsDesc": "Temperature, shelf life, and how to hold or reheat"
+      "storageInstructionsDesc": "Temperature, shelf life, and how to hold or reheat",
+      "stepsSection": "Preparation Steps",
+      "stepsSectionDesc": "Step-by-step method the kitchen follows — shown one step at a time in cook mode.",
+      "stepTitle": "Step title (optional)",
+      "stepDescription": "Instructions",
+      "stepDuration": "Time (min)",
+      "stepTemperature": "Temperature",
+      "stepTemperatureUnit": "Temperature unit",
+      "stepEquipment": "Equipment",
+      "stepChefNotes": "Chef's notes",
+      "stepSafety": "Safety warning",
+      "addStep": "Add step",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "removeStep": "Remove step",
+      "removeEquipment": "Remove {name}",
+      "stepsAfterSave": "Save the recipe first, then add its steps.",
+      "stepsSaveFailed": "The recipe was saved but some steps weren't. The steps have been reloaded — check them and save again.",
+      "noSteps": "No steps yet."
     }
   },
   "productManagement": {

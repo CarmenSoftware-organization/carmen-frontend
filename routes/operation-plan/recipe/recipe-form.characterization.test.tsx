@@ -13,6 +13,7 @@ const navigate = vi.fn();
 const createMut = fakeMutation({ data: { id: "rec-new" } });
 const updateMut = fakeMutation();
 const deleteMut = fakeMutation();
+const syncStepsMut = fakeMutation();
 
 vi.mock("react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("react-router")>()),
@@ -23,6 +24,10 @@ vi.mock("./use-recipe", () => ({
   useCreateRecipe: () => createMut,
   useUpdateRecipe: () => updateMut,
   useDeleteRecipe: () => deleteMut,
+}));
+// หลังหัวสูตรบันทึกสำเร็จ ฟอร์มจะ sync ขั้นตอนทำต่อ แล้วค่อยกลับหน้ารายการ
+vi.mock("./use-recipe-steps-sync", () => ({
+  useSyncRecipeSteps: () => syncStepsMut,
 }));
 vi.mock("./use-recipe-gallery", () => ({
   useRecipeGallery: () => ({
