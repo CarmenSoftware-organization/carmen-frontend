@@ -2560,6 +2560,19 @@
             "done": "Done",
             "licenseExpired": "Your license is expired or inactive. API key details are read-only.",
             "unavailable": "API key details are unavailable for this business unit's current license."
+          },
+          "apiDocs": {
+            "title": "API documentation",
+            "desc": "How external systems call this business unit's inbound API. Reference only — no request is sent from this page.",
+            "show": "Show API documentation",
+            "hide": "Hide API documentation",
+            "loadError": "Couldn't load the API documentation.",
+            "quickStart": "Quick start",
+            "quickStartDesc": "Set the CARMEN_CLIENT_SECRET environment variable to the secret from API access before running. Never put the secret itself into a script or URL.",
+            "quickStartNoKey": "This business unit has no API key yet. Create one in API access, then replace YOUR_CLIENT_ID and set CARMEN_CLIENT_SECRET.",
+            "copyCurl": "Copy command",
+            "copied": "Copied",
+            "download": "Download openapi.json"
           }
         },
         "desc": "How inventory activity reaches your general ledger and payables.",

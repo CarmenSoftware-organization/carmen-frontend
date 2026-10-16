@@ -1,0 +1,44 @@
+/*
+ * ปรับ Swagger UI ในหน้า External → API documentation — ทุก selector อยู่ใต้ .external-api-docs
+ * (CSS ของ swagger-ui เองก็อยู่ใต้ .swagger-ui ทั้งหมด และไม่อยู่ใน @layer จึงชนะ preflight
+ * ของ Tailwind ภายในกล่องนี้ แต่ไม่รั่วออกไปข้างนอก)
+ */
+
+/* ปิด Try it out แล้ว ปุ่ม Authorize / แม่กุญแจรายเส้นมีไว้กรอก secret อย่างเดียว — ซ่อน */
+.external-api-docs .swagger-ui .scheme-container .auth-wrapper,
+.external-api-docs .swagger-ui .authorization__btn {
+  display: none;
+}
+
+/* ตัวหนังสือตามแอป แทน sans-serif ของ swagger-ui */
+.external-api-docs .swagger-ui,
+.external-api-docs .swagger-ui .info .title,
+.external-api-docs .swagger-ui .opblock-tag,
+.external-api-docs .swagger-ui .opblock .opblock-summary-description,
+.external-api-docs .swagger-ui .markdown p,
+.external-api-docs .swagger-ui .markdown li,
+.external-api-docs .swagger-ui table thead tr td,
+.external-api-docs .swagger-ui table thead tr th,
+.external-api-docs .swagger-ui .parameter__name,
+.external-api-docs .swagger-ui .response-col_status,
+.external-api-docs .swagger-ui .tab li,
+.external-api-docs .swagger-ui .btn,
+.external-api-docs .swagger-ui section.models h4 {
+  font-family: inherit;
+}
+
+/* ส่วนหัวของ swagger-ui เว้นที่เผื่อเป็นหน้าเดี่ยว — ในกล่องนี้ไม่ต้องห่างขนาดนั้น */
+.external-api-docs .swagger-ui .info {
+  margin: 0 0 1.5rem;
+}
+
+.external-api-docs .swagger-ui .wrapper {
+  padding: 0;
+  max-width: none;
+}
+
+.external-api-docs .swagger-ui .scheme-container {
+  box-shadow: none;
+  padding: 0 0 1rem;
+  margin: 0;
+}

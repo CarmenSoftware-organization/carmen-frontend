@@ -49,3 +49,16 @@ Per-BU config for connections to external systems — **Accounting**, **POS**, *
   ของ component แล้วทิ้งเมื่อปิด ห้ามใส่ใน `queryClient` / localStorage / log
 - รูปแบบ response, กติกา Dr/Cr และขั้นตอน deploy อยู่ที่ BE: `docs/external-api/inventory-postings.md`
   (รีโป `carmen-turborepo-backend-v2`) · ลำดับ deploy: BE (micro-business ต้องตั้ง env `SECRET_ENCRYPTION_KEY` ไม่งั้น create/regenerate/reveal ตอบ 500) + allowlist `buApiKey.*` ก่อน FE
+
+## API documentation (Swagger UI ของ API ขาเข้า)
+
+ส่วนใต้ API Access — `external-api-docs-section.tsx` (สิทธิ์/ใบ INF กติกาเดียวกับ API Access, ปิดไว้ก่อน)
+lazy-import `external-api-docs.tsx` ซึ่งเป็น chunk เดียวที่ลาก `swagger-ui-dist` (~1.5 MB, React 18
+ของมันเอง) + CSS + `external-api-openapi.json` มา
+
+- **`external-api-openapi.json` เป็นสำเนา** ของ BE `docs/external-api/openapi.json` — อัปเดตด้วย
+  `bun run swagger:export-external` ที่ `carmen-turborepo-backend-v2` แล้ว copy มาทับ (ไม่มีอะไรซิงก์ให้)
+- path ใน spec มี `/api/ext/v1` อยู่แล้ว → server ต้องเป็น**ราก** host (`externalApiRoot`) ไม่ใช่ base URL
+- Try it out ปิด (`supportedSubmitMethods: []`) และซ่อน Authorize — ไม่ให้วาง secret ในเบราว์เซอร์;
+  ตัวอย่าง curl ใช้ `$CARMEN_CLIENT_SECRET` เสมอ ห้ามเติม secret จริง
+- ผ่าน CSP production เดิมได้โดยไม่ต้องแก้ (ไม่มี eval, CSS อยู่ใต้ `.swagger-ui` ทั้งหมด)

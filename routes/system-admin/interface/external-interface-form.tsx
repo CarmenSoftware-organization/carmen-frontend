@@ -8,6 +8,7 @@ import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useInterfaceConfig } from "./use-interface-config";
 import { ErrorState } from "@/components/ui/error-state";
 import { ExternalApiAccessSection } from "./external-api-access-section";
+import { ExternalApiDocsSection } from "./external-api-docs-section";
 import { InterfacePageLayout } from "./interface-page-layout";
 import {
   AccountingFields,
@@ -109,7 +110,12 @@ export default function ExternalInterfaceForm() {
           <ErrorState message={te("glLoadError")} onRetry={glRetry} />
         ) : undefined
       }
-      afterForm={<ExternalApiAccessSection />}
+      afterForm={
+        <>
+          <ExternalApiAccessSection />
+          <ExternalApiDocsSection />
+        </>
+      }
     >
       <AccountingFields form={form} />
 
