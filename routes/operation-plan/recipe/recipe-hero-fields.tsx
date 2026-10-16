@@ -4,6 +4,7 @@ import { Check, Truck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EyeBrow } from "@/components/ui/eye-brow";
 import { formatCurrency } from "@/lib/currency-utils";
+import { useUnitById } from "@/hooks/use-unit";
 import { RecipeNameField } from "./recipe-name-field";
 import { RecipeImageGallery } from "./recipe-image-gallery";
 import { RecipeDifficultyPips } from "./recipe-difficulty-pips";
@@ -42,7 +43,20 @@ export function RecipeHeroFields({
   const cookTime = useWatch({ control: form.control, name: "cook_time" });
   const baseYield = useWatch({ control: form.control, name: "base_yield" });
 
+  const yieldUnitId = useWatch({
+    control: form.control,
+    name: "base_yield_unit",
+  });
+  const target = useWatch({
+    control: form.control,
+    name: "target_food_cost_percentage",
+  });
+  const { data: yieldUnit } = useUnitById(yieldUnitId || undefined);
+
   const totalTime = (Number(prepTime) || 0) + (Number(cookTime) || 0);
+  const targetPct = Number(target) || 0;
+  const foodPct = computed.actualFoodCostPct;
+  const overTarget = foodPct != null && targetPct > 0 && foodPct > targetPct;
 
   return (
     <section className="grid gap-4 md:grid-cols-[18rem_minmax(0,1fr)] lg:grid-cols-[22rem_minmax(0,1fr)]">
@@ -168,19 +182,30 @@ export function RecipeHeroFields({
           {description || tfl("description")}
         </p>
 
-        {/* Quick stats */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <QuickStat label={t("prep")} value={`${prepTime || 0}m`} />
-          <QuickStat label={t("cook")} value={`${cookTime || 0}m`} />
-          <QuickStat label={t("yield")} value={`${baseYield || 0}`} />
+        {/* Quick stats — ตัวเลขชุดเดียวกับคอลัมน์หน้ารายการ: เวลา · ผลผลิต ·
+            ต้นทุนต่อเสิร์ฟ · food cost เทียบเป้า (ช่องกรอกจริงอยู่ใน section ข้างล่าง) */}
+        <div className="grid grid-cols-2 gap-3 border-t pt-3 md:grid-cols-4">
           <QuickStat
             label={t("total")}
-            value={`${totalTime}m`}
+            value={`${totalTime} ${t("minShort")}`}
+            sub={`${t("prep")} ${prepTime || 0} · ${t("cook")} ${cookTime || 0}`}
+          />
+          <QuickStat
+            label={t("yield")}
+            value={`${baseYield || 0}`}
+            sub={yieldUnit?.name}
+          />
+          <QuickStat
+            label={t("costPerPortion")}
+            value={`฿${formatCurrency(computed.costPerPortion)}`}
+          />
+          <QuickStat
+            label={t("foodCost")}
+            value={foodPct != null ? `${foodPct.toFixed(1)}%` : "—"}
             sub={
-              computed.costPerPortion > 0
-                ? `฿${formatCurrency(computed.costPerPortion)}`
-                : undefined
+              targetPct > 0 ? `${t("targetFoodCost")} ${targetPct}%` : undefined
             }
+            tone={overTarget ? "destructive" : undefined}
           />
         </div>
       </div>
@@ -192,19 +217,26 @@ function QuickStat({
   label,
   value,
   sub,
+  tone,
 }: {
   readonly label: string;
   readonly value: string;
   readonly sub?: React.ReactNode;
+  readonly tone?: "destructive";
 }) {
   return (
-    <div>
-      <EyeBrow>{label}</EyeBrow>
-      <div className="text-foreground mt-0.5 text-lg font-semibold tracking-tight tabular-nums">
+    <div className="min-w-0">
+      <EyeBrow className="truncate">{label}</EyeBrow>
+      <div
+        className={cn(
+          "mt-0.5 text-lg font-semibold tracking-tight tabular-nums",
+          tone === "destructive" ? "text-destructive" : "text-foreground",
+        )}
+      >
         {value}
       </div>
       {sub && (
-        <div className="text-muted-foreground text-micro tabular-nums">
+        <div className="text-muted-foreground text-micro truncate tabular-nums">
           {sub}
         </div>
       )}

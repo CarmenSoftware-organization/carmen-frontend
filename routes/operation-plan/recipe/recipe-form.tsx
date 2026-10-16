@@ -131,6 +131,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
 
   return (
     <FormPageShell
+      width="wide"
       header={
         <RecipeToolbar
           form={form}
