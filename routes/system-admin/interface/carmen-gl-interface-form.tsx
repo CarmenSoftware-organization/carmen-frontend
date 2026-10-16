@@ -120,6 +120,7 @@ export default function CarmenGlInterfaceForm() {
     <InterfacePageLayout
       title={ta(`brand.${brand}`)}
       description={tc("desc")}
+      width="wide"
       onSave={submit}
       // คืนค่าที่บันทึกไว้ ไม่ใช่ค่า default — ยกเลิกแล้วต้องได้ของเดิมกลับมา
       onCancel={() => form.reset(value ? toFormValues(value) : EMPTY_CARMEN_GL)}
