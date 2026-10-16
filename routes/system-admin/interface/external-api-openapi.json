@@ -1,10 +1,10 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/api/ext/v1/inventory-postings": {
+    "/api/ext/v1/ap-invoices": {
       "get": {
-        "description": "Returns final (and stock-moving voided) GRN / CN / SR / SI / SO documents of the API key's business unit as Dr/Cr posting lines, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no posting line (e.g. only consignment lines) is not returned. Amounts are base currency, 2-decimal strings; `balanced` is reported, never forced. Lines with `unmapped: true` carry the correct amount but need their account fixed in the GL / AP mapping in Carmen.",
-        "operationId": "InventoryPostingController_list",
+        "description": "Returns final (and voided) GRN invoices and CN credit notes of the API key's business unit as vendor-invoice records with one line per received / returned item, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no line (e.g. only consignment lines) is not returned. A document is in exactly one endpoint: GRN / CN here, SR / SI / SO in `/gl-journals`. CN amounts are positive; reverse them on your side by `doc_type`. Each line carries three accounts named by role (inventory = `debit_*`, payable = `ap_*`, input VAT = `tax_*`), not by side. Line `description` is the product name. `tax_type` is `add` when the line base tax is not 0, else `none` (`included` is reserved and never emitted). The tax account / cost center are set only on taxed lines and the tax cost center equals `debit_cost_center_code`. `qty`, `price`, `tax_rate` and `exchange_rate` are decimal strings without trailing-zero padding (e.g. `\"10\"`, `\"7\"`); money fields are 2-decimal strings. Lines with `unmapped: true` carry the correct amount but need an account fixed in the GL / AP mapping in Carmen; `issues` lists `{ account: \"debit\" | \"ap\" | \"tax\" | null, code }`. Each field description names its Carmen 4 column where there is one.",
+        "operationId": "ApInvoiceController_list",
         "parameters": [
           {
             "name": "date_from",
@@ -46,7 +46,7 @@
             "name": "doc_types",
             "required": false,
             "in": "query",
-            "description": "Comma-separated list of GRN, CN, SR, SI, SO (case-insensitive). Omit for all types.",
+            "description": "Comma-separated list of GRN, CN (case-insensitive). Omit for all types of this endpoint. A type of the other endpoint is a 400.",
             "schema": {
               "type": "string",
               "example": "GRN,CN"
@@ -80,7 +80,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Posting documents retrieved successfully",
+            "description": "AP invoices retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -93,7 +93,7 @@
                         "data": {
                           "type": "array",
                           "items": {
-                            "$ref": "#/components/schemas/PostingDocumentSwaggerDto"
+                            "$ref": "#/components/schemas/ApInvoiceSwaggerDto"
                           }
                         },
                         "paginate": {
@@ -105,8 +105,8 @@
                 },
                 "examples": {
                   "page": {
-                    "summary": "One page: GRN, GRN with unmapped AP, SI, SR",
-                    "description": "Amounts are base currency, 2 decimal strings. The second GRN has an AP line with `unmapped: true` / `issue: \"missing_ap_account\"`: the amount is correct, the AP account mapping for that vendor must be fixed in Carmen.",
+                    "summary": "One page: a GRN (taxed + untaxed line) and a CN with ref_grn",
+                    "description": "Money fields are 2-decimal strings; `qty`, `price`, `tax_rate`, `exchange_rate` are decimal strings without trailing zeros. The CN amounts are positive: reverse them by `doc_type`. The untaxed line has `tax_type: \"none\"` and no tax account / cost center.",
                     "value": {
                       "data": [
                         {
@@ -116,199 +116,142 @@
                           "doc_date": "2026-10-03",
                           "status": "final",
                           "updated_at": "2026-10-03T09:41:27.512Z",
-                          "currency_code": "THB",
-                          "exchange_rate": "1.000000",
                           "vendor": {
                             "id": "b2a4c6d8-1e3f-4a5b-8c7d-9e0f1a2b3c4d",
                             "code": "V-0042",
-                            "name": "Fresh Farm Supply Co., Ltd."
+                            "name": "Fresh Farm Supply Co., Ltd.",
+                            "tax_no": "0105550012345",
+                            "branch_no": "00000"
                           },
-                          "adjustment_type": null,
-                          "balanced": true,
+                          "invoice_no": "INV-88120",
+                          "invoice_date": "2026-10-02",
+                          "tax_invoice_no": "INV-88120",
+                          "tax_invoice_date": "2026-10-02",
+                          "due_date": "2026-11-02",
+                          "credit_term_days": 30,
+                          "description": "Weekly fresh produce",
+                          "currency_code": "THB",
+                          "exchange_rate": "1",
+                          "ref_grn": null,
+                          "credit_note_type": null,
+                          "net_amount": "1500.00",
+                          "tax_amount": "70.00",
+                          "total_amount": "1570.00",
+                          "base_net_amount": "1500.00",
+                          "base_tax_amount": "70.00",
+                          "base_total_amount": "1570.00",
+                          "unmapped": false,
                           "lines": [
                             {
-                              "side": "Dr",
-                              "role": "inventory",
-                              "account_code": "1150-01",
-                              "cost_center_code": "CC-KIT",
-                              "amount": "1000.00",
-                              "location_code": "MAIN-STORE",
+                              "description": "Fresh Chicken Breast",
                               "product_code": "FD-1001",
-                              "item_group_code": "FOOD",
-                              "unmapped": false,
-                              "issue": null
-                            },
-                            {
-                              "side": "Dr",
-                              "role": "inventory",
-                              "account_code": "1150-02",
-                              "cost_center_code": "CC-FB",
-                              "amount": "500.00",
                               "location_code": "MAIN-STORE",
+                              "item_group_code": "FOOD",
+                              "qty": "10",
+                              "unit_code": "KG",
+                              "price": "100",
+                              "net_amount": "1000.00",
+                              "base_net_amount": "1000.00",
+                              "tax_type": "add",
+                              "tax_rate": "7",
+                              "tax_amount": "70.00",
+                              "base_tax_amount": "70.00",
+                              "total_amount": "1070.00",
+                              "debit_account_code": "1150-01",
+                              "debit_cost_center_code": "CC-KIT",
+                              "ap_account_code": "2110-00",
+                              "ap_cost_center_code": "CC-KIT",
+                              "tax_account_code": "1160-00",
+                              "tax_cost_center_code": "CC-KIT",
+                              "unmapped": false,
+                              "issues": []
+                            },
+                            {
+                              "description": "Mineral Water 600ml",
                               "product_code": "BV-2003",
+                              "location_code": "MAIN-STORE",
                               "item_group_code": "BEVERAGE",
+                              "qty": "5",
+                              "unit_code": "CASE",
+                              "price": "100",
+                              "net_amount": "500.00",
+                              "base_net_amount": "500.00",
+                              "tax_type": "none",
+                              "tax_rate": "0",
+                              "tax_amount": "0.00",
+                              "base_tax_amount": "0.00",
+                              "total_amount": "500.00",
+                              "debit_account_code": "1150-02",
+                              "debit_cost_center_code": "CC-FB",
+                              "ap_account_code": "2110-00",
+                              "ap_cost_center_code": "CC-FB",
+                              "tax_account_code": null,
+                              "tax_cost_center_code": null,
                               "unmapped": false,
-                              "issue": null
-                            },
-                            {
-                              "side": "Dr",
-                              "role": "input_vat",
-                              "account_code": "1160-00",
-                              "cost_center_code": null,
-                              "amount": "105.00",
-                              "location_code": null,
-                              "product_code": null,
-                              "item_group_code": null,
-                              "unmapped": false,
-                              "issue": null
-                            },
-                            {
-                              "side": "Cr",
-                              "role": "ap",
-                              "account_code": "2110-00",
-                              "cost_center_code": "CC-KIT",
-                              "amount": "1605.00",
-                              "location_code": null,
-                              "product_code": null,
-                              "item_group_code": null,
-                              "unmapped": false,
-                              "issue": null
+                              "issues": []
                             }
                           ]
                         },
                         {
                           "id": "0d9e8f7a-6b5c-4d3e-9f2a-1b0c9d8e7f60",
-                          "doc_type": "GRN",
-                          "doc_no": "GRN261000013",
-                          "doc_date": "2026-10-04",
+                          "doc_type": "CN",
+                          "doc_no": "CN261000003",
+                          "doc_date": "2026-10-06",
                           "status": "final",
-                          "updated_at": "2026-10-04T14:05:11.020Z",
-                          "currency_code": "THB",
-                          "exchange_rate": "1.000000",
+                          "updated_at": "2026-10-06T10:12:03.140Z",
                           "vendor": {
-                            "id": "c3d5e7f9-2a4b-4c6d-8e0f-1a3b5c7d9e1f",
-                            "code": "V-0107",
-                            "name": "New Vendor Trading"
+                            "id": "b2a4c6d8-1e3f-4a5b-8c7d-9e0f1a2b3c4d",
+                            "code": "V-0042",
+                            "name": "Fresh Farm Supply Co., Ltd.",
+                            "tax_no": "0105550012345",
+                            "branch_no": "00000"
                           },
-                          "adjustment_type": null,
-                          "balanced": true,
-                          "lines": [
-                            {
-                              "side": "Dr",
-                              "role": "inventory",
-                              "account_code": "1150-01",
-                              "cost_center_code": "CC-KIT",
-                              "amount": "200.00",
-                              "location_code": "MAIN-STORE",
-                              "product_code": "FD-1005",
-                              "item_group_code": "FOOD",
-                              "unmapped": false,
-                              "issue": null
-                            },
-                            {
-                              "side": "Dr",
-                              "role": "input_vat",
-                              "account_code": "1160-00",
-                              "cost_center_code": null,
-                              "amount": "14.00",
-                              "location_code": null,
-                              "product_code": null,
-                              "item_group_code": null,
-                              "unmapped": false,
-                              "issue": null
-                            },
-                            {
-                              "side": "Cr",
-                              "role": "ap",
-                              "account_code": null,
-                              "cost_center_code": null,
-                              "amount": "214.00",
-                              "location_code": null,
-                              "product_code": null,
-                              "item_group_code": null,
-                              "unmapped": true,
-                              "issue": "missing_ap_account"
-                            }
-                          ]
-                        },
-                        {
-                          "id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
-                          "doc_type": "SI",
-                          "doc_no": "SI261000004",
-                          "doc_date": "2026-10-08",
-                          "status": "final",
-                          "updated_at": "2026-10-08T11:20:45.300Z",
+                          "invoice_no": "CN-88120-1",
+                          "invoice_date": "2026-10-06",
+                          "tax_invoice_no": "CN-88120-1",
+                          "tax_invoice_date": "2026-10-06",
+                          "due_date": null,
+                          "credit_term_days": null,
+                          "description": "Return of damaged chicken",
                           "currency_code": "THB",
-                          "exchange_rate": "1.000000",
-                          "vendor": null,
-                          "adjustment_type": {
-                            "code": "ADJ-IN",
-                            "type": "stock_in"
+                          "exchange_rate": "1",
+                          "ref_grn": {
+                            "id": "6f1c2a5e-8d4b-4a51-9c0e-2b7d3f9a1c01",
+                            "no": "GRN261000012",
+                            "date": "2026-10-03"
                           },
-                          "balanced": true,
+                          "credit_note_type": "quantity_return",
+                          "net_amount": "200.00",
+                          "tax_amount": "14.00",
+                          "total_amount": "214.00",
+                          "base_net_amount": "200.00",
+                          "base_tax_amount": "14.00",
+                          "base_total_amount": "214.00",
+                          "unmapped": false,
                           "lines": [
                             {
-                              "side": "Dr",
-                              "role": "inventory",
-                              "account_code": "1150-01",
-                              "cost_center_code": "CC-KIT",
-                              "amount": "300.00",
-                              "location_code": "MAIN-STORE",
+                              "description": "Fresh Chicken Breast",
                               "product_code": "FD-1001",
-                              "item_group_code": "FOOD",
-                              "unmapped": false,
-                              "issue": null
-                            },
-                            {
-                              "side": "Cr",
-                              "role": "adjustment",
-                              "account_code": "5190-00",
-                              "cost_center_code": "CC-KIT",
-                              "amount": "300.00",
                               "location_code": "MAIN-STORE",
-                              "product_code": "FD-1001",
                               "item_group_code": "FOOD",
+                              "qty": "2",
+                              "unit_code": "KG",
+                              "price": "100",
+                              "net_amount": "200.00",
+                              "base_net_amount": "200.00",
+                              "tax_type": "add",
+                              "tax_rate": "7",
+                              "tax_amount": "14.00",
+                              "base_tax_amount": "14.00",
+                              "total_amount": "214.00",
+                              "debit_account_code": "1150-01",
+                              "debit_cost_center_code": "CC-KIT",
+                              "ap_account_code": "2110-00",
+                              "ap_cost_center_code": "CC-KIT",
+                              "tax_account_code": "1160-00",
+                              "tax_cost_center_code": "CC-KIT",
                               "unmapped": false,
-                              "issue": null
-                            }
-                          ]
-                        },
-                        {
-                          "id": "3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f",
-                          "doc_type": "SR",
-                          "doc_no": "SR261000021",
-                          "doc_date": "2026-10-10",
-                          "status": "final",
-                          "updated_at": "2026-10-10T16:02:09.871Z",
-                          "currency_code": "THB",
-                          "exchange_rate": "1.000000",
-                          "vendor": null,
-                          "adjustment_type": null,
-                          "balanced": true,
-                          "lines": [
-                            {
-                              "side": "Dr",
-                              "role": "sr_in",
-                              "account_code": "5110-01",
-                              "cost_center_code": "CC-FB",
-                              "amount": "240.00",
-                              "location_code": "BAR",
-                              "product_code": "BV-2003",
-                              "item_group_code": "BEVERAGE",
-                              "unmapped": false,
-                              "issue": null
-                            },
-                            {
-                              "side": "Cr",
-                              "role": "sr_out",
-                              "account_code": "1150-02",
-                              "cost_center_code": "CC-FB",
-                              "amount": "240.00",
-                              "location_code": "MAIN-STORE",
-                              "product_code": "BV-2003",
-                              "item_group_code": "BEVERAGE",
-                              "unmapped": false,
-                              "issue": null
+                              "issues": []
                             }
                           ]
                         }
@@ -318,7 +261,7 @@
                       "message": "Success",
                       "timestamp": "2026-10-16T08:00:00.000Z",
                       "paginate": {
-                        "total": 4,
+                        "total": 2,
                         "page": 1,
                         "perpage": 50,
                         "pages": 1
@@ -370,7 +313,7 @@
                     },
                     "path": {
                       "type": "string",
-                      "example": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                      "example": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31"
                     },
                     "error": {
                       "type": "object",
@@ -398,7 +341,7 @@
                       "status": 400,
                       "message": "Invalid query parameters",
                       "timestamp": "2026-10-16T08:00:00.000Z",
-                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "path": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31",
                       "error": {
                         "errors": [
                           {
@@ -429,7 +372,7 @@
                       "status": 400,
                       "message": "Invalid query parameters",
                       "timestamp": "2026-10-16T08:00:00.000Z",
-                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "path": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31",
                       "error": {
                         "errors": [
                           {
@@ -472,7 +415,7 @@
                     },
                     "path": {
                       "type": "string",
-                      "example": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                      "example": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31"
                     },
                     "error": {
                       "type": "object",
@@ -500,7 +443,7 @@
                       "status": 401,
                       "message": "Invalid API credentials",
                       "timestamp": "2026-10-16T08:00:00.000Z",
-                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "path": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31",
                       "error": {
                         "message": "Unauthorized"
                       }
@@ -535,7 +478,7 @@
                     },
                     "path": {
                       "type": "string",
-                      "example": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                      "example": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31"
                     },
                     "error": {
                       "type": "object",
@@ -563,7 +506,7 @@
                       "status": 403,
                       "message": "This API is not enabled",
                       "timestamp": "2026-10-16T08:00:00.000Z",
-                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "path": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31",
                       "error": {
                         "message": "Forbidden"
                       }
@@ -576,7 +519,7 @@
                       "status": 403,
                       "message": "The External interface is not enabled for this business unit",
                       "timestamp": "2026-10-16T08:00:00.000Z",
-                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "path": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31",
                       "error": {
                         "message": "Forbidden"
                       }
@@ -589,7 +532,7 @@
                       "status": 403,
                       "message": "The External interface license has expired for this business unit",
                       "timestamp": "2026-10-16T08:00:00.000Z",
-                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "path": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31",
                       "error": {
                         "message": "Forbidden"
                       }
@@ -624,7 +567,7 @@
                     },
                     "path": {
                       "type": "string",
-                      "example": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                      "example": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31"
                     },
                     "error": {
                       "type": "object",
@@ -652,7 +595,7 @@
                       "status": 429,
                       "message": "Too many requests for this API key",
                       "timestamp": "2026-10-16T08:00:00.000Z",
-                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                      "path": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31"
                     }
                   },
                   "perIp": {
@@ -662,7 +605,7 @@
                       "status": 429,
                       "message": "ThrottlerException: Too Many Requests",
                       "timestamp": "2026-10-16T08:00:00.000Z",
-                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                      "path": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31"
                     }
                   }
                 }
@@ -694,7 +637,7 @@
                     },
                     "path": {
                       "type": "string",
-                      "example": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                      "example": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31"
                     },
                     "error": {
                       "type": "object",
@@ -722,7 +665,7 @@
                       "status": 503,
                       "message": "External API is temporarily unavailable",
                       "timestamp": "2026-10-16T08:00:00.000Z",
-                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "path": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31",
                       "error": {
                         "message": "Service Unavailable"
                       }
@@ -735,7 +678,7 @@
                       "status": 503,
                       "message": "Could not verify the External interface license",
                       "timestamp": "2026-10-16T08:00:00.000Z",
-                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "path": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31",
                       "error": {
                         "message": "Service Unavailable"
                       }
@@ -746,9 +689,607 @@
             }
           }
         },
-        "summary": "Export inventory Dr/Cr posting documents",
+        "summary": "Export AP invoices (GRN / CN)",
         "tags": [
-          "External API: Inventory Postings"
+          "External API: AP Invoices"
+        ],
+        "security": [
+          {
+            "x-client-id": [],
+            "x-client-secret": []
+          }
+        ]
+      }
+    },
+    "/api/ext/v1/gl-journals": {
+      "get": {
+        "description": "Returns final (and stock-moving voided) SR / SI / SO documents of the API key's business unit as one balanced Dr/Cr journal per document, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no posting line is not returned. A document is in exactly one endpoint: SR / SI / SO here, GRN / CN in `/ap-invoices`. Amounts are base currency, 2-decimal strings; `balanced` is reported, never forced; `exchange_rate` is a decimal string without trailing-zero padding. Line `description` is the product name. Lines with `unmapped: true` carry the correct amount but need their account fixed in the GL mapping in Carmen. Each field description names its Carmen 4 column where there is one.",
+        "operationId": "GlJournalController_list",
+        "parameters": [
+          {
+            "name": "date_from",
+            "required": true,
+            "in": "query",
+            "description": "Start of the range, `YYYY-MM-DD`, inclusive, in the business unit timezone. Must not be after `date_to`.",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-10-01"
+            }
+          },
+          {
+            "name": "date_to",
+            "required": true,
+            "in": "query",
+            "description": "End of the range, `YYYY-MM-DD`, inclusive. The range may span at most 366 days (inclusive).",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-10-31"
+            }
+          },
+          {
+            "name": "date_field",
+            "required": false,
+            "in": "query",
+            "description": "Which date the range filters on: `document` = document date (default), `updated` = last update time. Use `updated` for incremental sync.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "document",
+                "updated"
+              ],
+              "default": "document"
+            }
+          },
+          {
+            "name": "doc_types",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated list of SR, SI, SO (case-insensitive). Omit for all types of this endpoint. A type of the other endpoint is a 400.",
+            "schema": {
+              "type": "string",
+              "example": "SR,SI"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number, 1-based (default 1).",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "example": 1
+            }
+          },
+          {
+            "name": "perpage",
+            "required": false,
+            "in": "query",
+            "description": "Documents per page, 1 to 200 (default 50). Larger is a 400.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "example": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "GL journals retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/StdResponseMetaDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/GlJournalSwaggerDto"
+                          }
+                        },
+                        "paginate": {
+                          "$ref": "#/components/schemas/StdPaginateDto"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "examples": {
+                  "page": {
+                    "summary": "One page: a stock-in (SI) journal",
+                    "description": "Amounts are base currency, 2-decimal strings. `balanced` is true when total Dr equals total Cr. A line with `unmapped: true` / an `issue` code has the right amount but needs its account fixed in the GL mapping in Carmen.",
+                    "value": {
+                      "data": [
+                        {
+                          "id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+                          "doc_type": "SI",
+                          "doc_no": "SI261000004",
+                          "doc_date": "2026-10-08",
+                          "status": "final",
+                          "updated_at": "2026-10-08T11:20:45.300Z",
+                          "description": "Stock in - cycle count variance",
+                          "currency_code": "THB",
+                          "exchange_rate": "1",
+                          "adjustment_type": {
+                            "code": "ADJ-IN",
+                            "type": "stock_in"
+                          },
+                          "balanced": true,
+                          "lines": [
+                            {
+                              "side": "Dr",
+                              "role": "inventory",
+                              "account_code": "1150-01",
+                              "cost_center_code": "CC-KIT",
+                              "amount": "300.00",
+                              "location_code": "MAIN-STORE",
+                              "product_code": "FD-1001",
+                              "item_group_code": "FOOD",
+                              "unmapped": false,
+                              "issue": null,
+                              "description": "Fresh Chicken Breast"
+                            },
+                            {
+                              "side": "Cr",
+                              "role": "adjustment",
+                              "account_code": "5190-00",
+                              "cost_center_code": "CC-KIT",
+                              "amount": "300.00",
+                              "location_code": "MAIN-STORE",
+                              "product_code": "FD-1001",
+                              "item_group_code": "FOOD",
+                              "unmapped": false,
+                              "issue": null,
+                              "description": "Fresh Chicken Breast"
+                            }
+                          ]
+                        }
+                      ],
+                      "status": 200,
+                      "success": true,
+                      "message": "Success",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "paginate": {
+                        "total": 1,
+                        "page": 1,
+                        "perpage": 50,
+                        "pages": 1
+                      }
+                    }
+                  },
+                  "empty": {
+                    "summary": "No documents in range",
+                    "value": {
+                      "data": [],
+                      "status": 200,
+                      "success": true,
+                      "message": "Success",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "paginate": {
+                        "total": 0,
+                        "page": 1,
+                        "perpage": 50,
+                        "pages": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters (`error.errors` lists the issues)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid API credentials"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31"
+                    },
+                    "error": {
+                      "type": "object",
+                      "description": "HTTP reason phrase (`message`) and, for 400, the validation `errors`",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Unauthorized"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "invalidQuery": {
+                    "summary": "perpage over 200 and date_from after date_to",
+                    "value": {
+                      "success": false,
+                      "status": 400,
+                      "message": "Invalid query parameters",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/gl-journals?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "errors": [
+                          {
+                            "origin": "number",
+                            "code": "too_big",
+                            "maximum": 200,
+                            "inclusive": true,
+                            "path": [
+                              "perpage"
+                            ],
+                            "message": "Too big: expected number to be <=200"
+                          },
+                          {
+                            "code": "custom",
+                            "path": [
+                              "date_from"
+                            ],
+                            "message": "date_from must not be after date_to"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "rangeTooWide": {
+                    "summary": "Range longer than 366 days",
+                    "value": {
+                      "success": false,
+                      "status": 400,
+                      "message": "Invalid query parameters",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/gl-journals?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "errors": [
+                          {
+                            "code": "custom",
+                            "path": [
+                              "date_to"
+                            ],
+                            "message": "date range must not exceed 366 days"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API credentials (one uniform body for every cause)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid API credentials"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31"
+                    },
+                    "error": {
+                      "type": "object",
+                      "description": "HTTP reason phrase (`message`) and, for 400, the validation `errors`",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Unauthorized"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "invalidCredentials": {
+                    "summary": "Missing header, unknown client id, wrong secret, inactive key or inactive BU (same body for all)",
+                    "value": {
+                      "success": false,
+                      "status": 401,
+                      "message": "Invalid API credentials",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/gl-journals?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "message": "Unauthorized"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "API not enabled, or External interface license missing or expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid API credentials"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31"
+                    },
+                    "error": {
+                      "type": "object",
+                      "description": "HTTP reason phrase (`message`) and, for 400, the validation `errors`",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Unauthorized"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "notAllowlisted": {
+                    "summary": "API not enabled for external access (or method is not GET, e.g. HEAD)",
+                    "value": {
+                      "success": false,
+                      "status": 403,
+                      "message": "This API is not enabled",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/gl-journals?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "message": "Forbidden"
+                      }
+                    }
+                  },
+                  "noLicense": {
+                    "summary": "Business unit has no External interface license",
+                    "value": {
+                      "success": false,
+                      "status": 403,
+                      "message": "The External interface is not enabled for this business unit",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/gl-journals?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "message": "Forbidden"
+                      }
+                    }
+                  },
+                  "licenseExpired": {
+                    "summary": "External interface license has expired",
+                    "value": {
+                      "success": false,
+                      "status": 403,
+                      "message": "The External interface license has expired for this business unit",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/gl-journals?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "message": "Forbidden"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (per API key or per source IP). Back off and retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid API credentials"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31"
+                    },
+                    "error": {
+                      "type": "object",
+                      "description": "HTTP reason phrase (`message`) and, for 400, the validation `errors`",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Unauthorized"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "perKey": {
+                    "summary": "More than 300 requests per minute for this API key",
+                    "value": {
+                      "success": false,
+                      "status": 429,
+                      "message": "Too many requests for this API key",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/gl-journals?date_from=2026-10-01&date_to=2026-10-31"
+                    }
+                  },
+                  "perIp": {
+                    "summary": "Global per-source-IP limit",
+                    "value": {
+                      "success": false,
+                      "status": 429,
+                      "message": "ThrottlerException: Too Many Requests",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/gl-journals?date_from=2026-10-01&date_to=2026-10-31"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Temporarily unavailable. Retry later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid API credentials"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/ext/v1/ap-invoices?date_from=2026-10-01&date_to=2026-10-31"
+                    },
+                    "error": {
+                      "type": "object",
+                      "description": "HTTP reason phrase (`message`) and, for 400, the validation `errors`",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Unauthorized"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "allowlistNotLoaded": {
+                    "summary": "Allowlist not loaded yet — retry later",
+                    "value": {
+                      "success": false,
+                      "status": 503,
+                      "message": "External API is temporarily unavailable",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/gl-journals?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "message": "Service Unavailable"
+                      }
+                    }
+                  },
+                  "licenseUnresolved": {
+                    "summary": "License could not be resolved — retry later",
+                    "value": {
+                      "success": false,
+                      "status": 503,
+                      "message": "Could not verify the External interface license",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/gl-journals?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "message": "Service Unavailable"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Export GL journals (SR / SI / SO)",
+        "tags": [
+          "External API: GL Journals"
         ],
         "security": [
           {
@@ -761,14 +1302,18 @@
   },
   "info": {
     "title": "Carmen External API",
-    "description": "Read-only API for external systems (for example a customer's accounting system) to pull data out\nof **Carmen**. Each request is authenticated with a **per-business-unit API key**, not a user login,\nand only ever sees the data of the business unit (BU) the key belongs to.\n\nCurrently available: **inventory postings** — committed inventory documents (GRN, CN, SR, SI, SO)\nexported as Dr/Cr posting lines with the GL / AP accounts mapped in Carmen.\n\n## 1. Get an API key\n\nAn administrator of the BU (with the `system_admin.bu_api_key` permission) opens\n**Interface → Accounting → External → API Access** in Carmen and creates the key. The page shows\nthe **client id**, the **secret** (reveal on demand) and the base URL to call.\n\n- One key per business unit. The BU needs the External interface license.\n- **Regenerate** issues a new secret and the old secret stops working **immediately**.\n- Keep the secret in an environment variable or secret store. Never commit it or put it in a URL.\n\n## 2. Base URL\n\n```\n<your Carmen API host>/api/ext/v1\n```\n\nThe host differs per environment; use the URL shown on the API Access page.\n\n## 3. Authentication\n\nSend both headers on every request (no `Authorization` header is needed):\n\n| Header | Value |\n| --- | --- |\n| `x-client-id` | Client id of the key |\n| `x-client-secret` | Secret of the key |\n\nIn this page, click **Authorize** and fill in both values to try the endpoint.\n\n## 4. Quick start\n\n```bash\nexport CARMEN_API=\"https://<your Carmen API host>\"\nexport CARMEN_CLIENT_ID=\"<client id>\"\nexport CARMEN_CLIENT_SECRET=\"<secret>\"\n\ncurl -sS -G \"$CARMEN_API/api/ext/v1/inventory-postings\" \\\n  -H \"x-client-id: $CARMEN_CLIENT_ID\" \\\n  -H \"x-client-secret: $CARMEN_CLIENT_SECRET\" \\\n  --data-urlencode \"date_from=2026-10-01\" \\\n  --data-urlencode \"date_to=2026-10-31\" \\\n  --data-urlencode \"doc_types=GRN,CN\" \\\n  --data-urlencode \"perpage=50\"\n```\n\n## 5. Pagination\n\nResponses carry `paginate: { total, page, perpage, pages }`. Request `page=1,2,…` until\n`page >= pages`. `perpage` is 1–200 (default 50). Documents are ordered by document date,\ndocument no, doc type and id, across all requested types.\n\n## 6. Incremental sync (recommended)\n\nDocuments can be edited or voided after you first read them, so do not rely on the document date alone:\n\n1. First run: `date_field=document` over the periods you need; page through all results.\n2. Each later run: `date_field=updated`, `date_from` = the day of your last successful sync\n   (one day earlier for safety), `date_to` = today.\n3. Upsert by `(doc_type, id)` — the latest version wins — and replace all lines of the document,\n   since line grouping and mapping can change.\n4. A range spans at most 366 days (inclusive).\n\n## 7. Errors\n\nAll errors share one body: `{ success: false, status, message, timestamp, path, error? }`.\n\n| Status | Meaning |\n| --- | --- |\n| 400 | Invalid query parameters; `error.errors` lists the issues. |\n| 401 | `Invalid API credentials` — missing header, unknown client id, wrong secret, inactive key or BU. Same body for every cause. |\n| 403 | The API is not enabled (or the method is not GET — HEAD is rejected too), or the BU's External interface license is missing or expired. |\n| 429 | Rate limit exceeded. Back off and retry. |\n| 503 | Temporarily unavailable (allowlist not loaded, or the license could not be verified). Retry later. |\n\n## 8. Rate limits\n\n- **300 requests per minute per API key** (fixed one-minute window).\n  Requests rejected with 403 or 429 still count.\n- A global **per-source-IP** limit (300 per minute by default) also applies, so several keys polled\n  from the same IP can be throttled before reaching their per-key limit.",
+    "description": "Read-only API for external systems (for example a customer's accounting system) to pull data out\nof **Carmen**. Each request is authenticated with a **per-business-unit API key**, not a user login,\nand only ever sees the data of the business unit (BU) the key belongs to.\n\nCurrently available:\n\n- **AP invoices** (`GET /api/ext/v1/ap-invoices`) — committed GRN (vendor invoices) and CN\n  (credit notes) with one line per item and the inventory, payable and input-VAT accounts mapped\n  in Carmen.\n- **GL journals** (`GET /api/ext/v1/gl-journals`) — committed SR, SI and SO as balanced Dr/Cr\n  journals with the GL accounts mapped in Carmen.\n\n**A document is in exactly one endpoint** (GRN / CN in AP invoices, SR / SI / SO in GL journals), so\nimporting both never double-posts: an AP invoice already produces its own GL entry in your\naccounting system.\n\n## 1. Get an API key\n\nAn administrator of the BU (with the `system_admin.bu_api_key` permission) opens\n**Interface → Accounting → External → API Access** in Carmen and creates the key. The page shows\nthe **client id**, the **secret** (reveal on demand) and the base URL to call.\n\n- One key per business unit. The BU needs the External interface license.\n- **Regenerate** issues a new secret and the old secret stops working **immediately**.\n- Keep the secret in an environment variable or secret store. Never commit it or put it in a URL.\n\n## 2. Base URL\n\n```\n<your Carmen API host>/api/ext/v1\n```\n\nThe host differs per environment; use the URL shown on the API Access page.\n\n## 3. Authentication\n\nSend both headers on every request (no `Authorization` header is needed):\n\n| Header | Value |\n| --- | --- |\n| `x-client-id` | Client id of the key |\n| `x-client-secret` | Secret of the key |\n\nIn this page, click **Authorize** and fill in both values to try the endpoint.\n\n## 4. Quick start\n\n```bash\nexport CARMEN_API=\"https://<your Carmen API host>\"\nexport CARMEN_CLIENT_ID=\"<client id>\"\nexport CARMEN_CLIENT_SECRET=\"<secret>\"\n\ncurl -sS -G \"$CARMEN_API/api/ext/v1/ap-invoices\" \\\n  -H \"x-client-id: $CARMEN_CLIENT_ID\" \\\n  -H \"x-client-secret: $CARMEN_CLIENT_SECRET\" \\\n  --data-urlencode \"date_from=2026-10-01\" \\\n  --data-urlencode \"date_to=2026-10-31\" \\\n  --data-urlencode \"doc_types=GRN,CN\" \\\n  --data-urlencode \"perpage=50\"\n```\n\n## 5. Pagination\n\nResponses carry `paginate: { total, page, perpage, pages }`. Request `page=1,2,…` until\n`page >= pages`. `perpage` is 1–200 (default 50). Documents are ordered by document date,\ndocument no, doc type and id, across all requested types. Both endpoints take the same query\n(`date_from`, `date_to`, `date_field`, `doc_types`, `page`, `perpage`); a `doc_types` value that\nbelongs to the other endpoint is a 400.\n\n## 6. Incremental sync (recommended)\n\nDocuments can be edited or voided after you first read them, so do not rely on the document date alone:\n\n1. First run: `date_field=document` over the periods you need; page through all results.\n2. Each later run: `date_field=updated`, `date_from` = the day of your last successful sync\n   (one day earlier for safety), `date_to` = today.\n3. Upsert by `(doc_type, id)` — the latest version wins — and replace all lines of the document,\n   since line grouping and mapping can change.\n4. A range spans at most 366 days (inclusive).\n\n## 7. Errors\n\nAll errors share one body: `{ success: false, status, message, timestamp, path, error? }`.\n\n| Status | Meaning |\n| --- | --- |\n| 400 | Invalid query parameters; `error.errors` lists the issues. |\n| 401 | `Invalid API credentials` — missing header, unknown client id, wrong secret, inactive key or BU. Same body for every cause. |\n| 403 | The API is not enabled (or the method is not GET — HEAD is rejected too), or the BU's External interface license is missing or expired. |\n| 429 | Rate limit exceeded. Back off and retry. |\n| 503 | Temporarily unavailable (allowlist not loaded, or the license could not be verified). Retry later. |\n\n## 8. Rate limits\n\n- **300 requests per minute per API key** (fixed one-minute window).\n  Requests rejected with 403 or 429 still count.\n- A global **per-source-IP** limit (300 per minute by default) also applies, so several keys polled\n  from the same IP can be throttled before reaching their per-key limit.",
     "version": "v1",
     "contact": {}
   },
   "tags": [
     {
-      "name": "External API: Inventory Postings",
-      "description": "Inventory documents as Dr/Cr posting lines for an accounting system"
+      "name": "External API: AP Invoices",
+      "description": "GRN / CN as vendor invoices and credit notes for an accounting system"
+    },
+    {
+      "name": "External API: GL Journals",
+      "description": "SR / SI / SO as balanced Dr/Cr journals for an accounting system"
     }
   ],
   "servers": [
@@ -847,7 +1392,470 @@
           "pages"
         ]
       },
-      "PostingLineSwaggerDto": {
+      "ApVendorSwaggerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "b2a4c6d8-1e3f-4a5b-8c7d-9e0f1a2b3c4d"
+          },
+          "code": {
+            "type": "string",
+            "description": "Vendor code (Carmen 4: VnCode)",
+            "example": "V-0042"
+          },
+          "name": {
+            "type": "string",
+            "example": "Fresh Farm Supply Co., Ltd."
+          },
+          "tax_no": {
+            "type": "string",
+            "nullable": true,
+            "description": "Tax id (Carmen 4: TaxId)",
+            "example": "0105550012345"
+          },
+          "branch_no": {
+            "type": "string",
+            "nullable": true,
+            "description": "Branch no (Carmen 4: BranchNo)",
+            "example": "00000"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "tax_no",
+          "branch_no"
+        ]
+      },
+      "ApRefGrnSwaggerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "6f1c2a5e-8d4b-4a51-9c0e-2b7d3f9a1c01"
+          },
+          "no": {
+            "type": "string",
+            "nullable": true,
+            "example": "GRN261000012"
+          },
+          "date": {
+            "type": "string",
+            "nullable": true,
+            "description": "YYYY-MM-DD",
+            "example": "2026-10-03"
+          }
+        },
+        "required": [
+          "id",
+          "no",
+          "date"
+        ]
+      },
+      "ApIssueSwaggerDto": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "debit",
+              "ap",
+              "tax"
+            ],
+            "description": "Which account of the line the issue belongs to; null when it is not tied to one account (e.g. missing_location, cost_not_found)",
+            "example": "ap"
+          },
+          "code": {
+            "type": "string",
+            "description": "Reason code, e.g. missing_location, missing_product, missing_item_group, missing_input_vat_account, cost_not_found, mapping_target_not_found, missing_inventory_account, missing_ap_account, missing_cost_center, account_not_in_coa. Treat an unknown code as \"unmapped, needs review\".",
+            "example": "missing_ap_account"
+          }
+        },
+        "required": [
+          "account",
+          "code"
+        ]
+      },
+      "ApInvoiceLineSwaggerDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Product name (Carmen 4: InvdDesc)",
+            "example": "Fresh Chicken Breast"
+          },
+          "product_code": {
+            "type": "string",
+            "nullable": true,
+            "example": "FD-1001"
+          },
+          "location_code": {
+            "type": "string",
+            "nullable": true,
+            "example": "MAIN-STORE"
+          },
+          "item_group_code": {
+            "type": "string",
+            "nullable": true,
+            "example": "FOOD"
+          },
+          "qty": {
+            "type": "string",
+            "description": "Received (GRN) / returned (CN) quantity. Decimal string without trailing-zero padding (Carmen 4: InvdQty)",
+            "example": "10"
+          },
+          "unit_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Unit (Carmen 4: UnitCode)",
+            "example": "KG"
+          },
+          "price": {
+            "type": "string",
+            "description": "Unit price in the document currency. Decimal string without trailing-zero padding (Carmen 4: InvdPrice)",
+            "example": "100"
+          },
+          "net_amount": {
+            "type": "string",
+            "description": "Amount before tax, document currency, 2 decimals (Carmen 4: NetAmt)",
+            "example": "1000.00"
+          },
+          "base_net_amount": {
+            "type": "string",
+            "description": "Amount before tax, base currency, 2 decimals (Carmen 4: NetBaseAmt / InvdAbfTax)",
+            "example": "1000.00"
+          },
+          "tax_type": {
+            "type": "string",
+            "enum": [
+              "none",
+              "add",
+              "included"
+            ],
+            "description": "`add` when the line base tax is not 0, else `none`. `included` is reserved and never emitted (Carmen 4: InvdTaxT1, N / A / I)",
+            "example": "add"
+          },
+          "tax_rate": {
+            "type": "string",
+            "description": "Tax rate in percent. Decimal string without trailing-zero padding (Carmen 4: InvdTaxR1)",
+            "example": "7"
+          },
+          "tax_amount": {
+            "type": "string",
+            "description": "Tax, document currency, 2 decimals (Carmen 4: InvdTaxC1 — C = document currency)",
+            "example": "70.00"
+          },
+          "base_tax_amount": {
+            "type": "string",
+            "description": "Tax, base currency, 2 decimals (Carmen 4: InvdTaxA1 — A = base currency)",
+            "example": "70.00"
+          },
+          "total_amount": {
+            "type": "string",
+            "description": "net_amount + tax_amount, document currency, 2 decimals (Carmen 4: TotalPrice)",
+            "example": "1070.00"
+          },
+          "debit_account_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Inventory account — the debit side of a GRN, the credit side of a CN (Carmen 4: InvdBTaxDr)",
+            "example": "1150-01"
+          },
+          "debit_cost_center_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cost center of the inventory account (Carmen 4: DeptCode)",
+            "example": "CC-KIT"
+          },
+          "ap_account_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Payable (AP) account — the credit side of a GRN, the debit side of a CN (Carmen 4: InvdBTaxCr1)",
+            "example": "2110-00"
+          },
+          "ap_cost_center_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cost center of the payable account (Carmen 4: InvdBTaxCr1DeptCode)",
+            "example": "CC-KIT"
+          },
+          "tax_account_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Input VAT account of the business unit. Only on taxed lines; null when the line has no tax (Carmen 4: InvdT1Dr)",
+            "example": "1160-00"
+          },
+          "tax_cost_center_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cost center of the input VAT account — equal to debit_cost_center_code. Only on taxed lines (Carmen 4: InvdT1DrDeptCode)",
+            "example": "CC-KIT"
+          },
+          "unmapped": {
+            "type": "boolean",
+            "description": "true when an account of the line could not be resolved or an issue is set. The amounts are still correct; the account needs fixing in the GL / AP mapping",
+            "example": false
+          },
+          "issues": {
+            "description": "Empty when the line is fully mapped",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApIssueSwaggerDto"
+            }
+          }
+        },
+        "required": [
+          "description",
+          "product_code",
+          "location_code",
+          "item_group_code",
+          "qty",
+          "unit_code",
+          "price",
+          "net_amount",
+          "base_net_amount",
+          "tax_type",
+          "tax_rate",
+          "tax_amount",
+          "base_tax_amount",
+          "total_amount",
+          "debit_account_code",
+          "debit_cost_center_code",
+          "ap_account_code",
+          "ap_cost_center_code",
+          "tax_account_code",
+          "tax_cost_center_code",
+          "unmapped",
+          "issues"
+        ]
+      },
+      "ApInvoiceSwaggerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Document id. Your own key is (doc_type, id)",
+            "example": "6f1c2a5e-8d4b-4a51-9c0e-2b7d3f9a1c01"
+          },
+          "doc_type": {
+            "type": "string",
+            "enum": [
+              "GRN",
+              "CN"
+            ],
+            "description": "GRN = vendor invoice; CN = credit note (amounts positive — reverse by doc_type)",
+            "example": "GRN"
+          },
+          "doc_no": {
+            "type": "string",
+            "nullable": true,
+            "example": "GRN261000012"
+          },
+          "doc_date": {
+            "type": "string",
+            "nullable": true,
+            "description": "YYYY-MM-DD in the business unit timezone",
+            "example": "2026-10-03"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "final",
+              "voided"
+            ],
+            "description": "voided keeps the original amounts — reverse on your side",
+            "example": "final"
+          },
+          "updated_at": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601 timestamp of the last update; filter on it with date_field=updated",
+            "example": "2026-10-03T09:41:27.512Z"
+          },
+          "vendor": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApVendorSwaggerDto"
+              }
+            ]
+          },
+          "invoice_no": {
+            "type": "string",
+            "nullable": true,
+            "description": "Vendor invoice no (Carmen 4: InvhInvNo)",
+            "example": "INV-88120"
+          },
+          "invoice_date": {
+            "type": "string",
+            "nullable": true,
+            "description": "YYYY-MM-DD (Carmen 4: InvhInvDate)",
+            "example": "2026-10-02"
+          },
+          "tax_invoice_no": {
+            "type": "string",
+            "nullable": true,
+            "description": "Tax invoice no. GRN: same as invoice_no (a GRN has no separate tax invoice field); CN: its own tax invoice no (Carmen 4: InvhTInvNo)",
+            "example": "INV-88120"
+          },
+          "tax_invoice_date": {
+            "type": "string",
+            "nullable": true,
+            "description": "YYYY-MM-DD, same rule as tax_invoice_no (Carmen 4: InvhTInvDt)",
+            "example": "2026-10-02"
+          },
+          "due_date": {
+            "type": "string",
+            "nullable": true,
+            "description": "GRN only, YYYY-MM-DD; null on a CN (Carmen 4: InvhDueDate)",
+            "example": "2026-11-02"
+          },
+          "credit_term_days": {
+            "type": "integer",
+            "nullable": true,
+            "description": "GRN only; null on a CN (Carmen 4: InvhCredit)",
+            "example": 30
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Document description (Carmen 4: InvhDesc)",
+            "example": "Weekly fresh produce"
+          },
+          "currency_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Document currency (Carmen 4: CurCode)",
+            "example": "THB"
+          },
+          "exchange_rate": {
+            "type": "string",
+            "description": "Rate to base currency. Decimal string without trailing-zero padding (Carmen 4: CurRate)",
+            "example": "1"
+          },
+          "ref_grn": {
+            "nullable": true,
+            "description": "CN only: the GRN it credits; null on a GRN or a CN without a GRN (Carmen 4: InvhRef)",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApRefGrnSwaggerDto"
+              }
+            ]
+          },
+          "credit_note_type": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "quantity_return",
+              "amount_discount"
+            ],
+            "description": "CN only; null on a GRN",
+            "example": null
+          },
+          "net_amount": {
+            "type": "string",
+            "description": "Sum of line net_amount, document currency, 2 decimals",
+            "example": "1500.00"
+          },
+          "tax_amount": {
+            "type": "string",
+            "description": "Sum of line tax_amount, document currency, 2 decimals",
+            "example": "70.00"
+          },
+          "total_amount": {
+            "type": "string",
+            "description": "net_amount + tax_amount, document currency, 2 decimals (Carmen 4: InvhTotalAmt)",
+            "example": "1570.00"
+          },
+          "base_net_amount": {
+            "type": "string",
+            "description": "Sum of line base_net_amount, base currency, 2 decimals",
+            "example": "1500.00"
+          },
+          "base_tax_amount": {
+            "type": "string",
+            "description": "Sum of line base_tax_amount, base currency, 2 decimals",
+            "example": "70.00"
+          },
+          "base_total_amount": {
+            "type": "string",
+            "description": "base_net_amount + base_tax_amount, base currency, 2 decimals",
+            "example": "1570.00"
+          },
+          "unmapped": {
+            "type": "boolean",
+            "description": "true when any line is unmapped",
+            "example": false
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApInvoiceLineSwaggerDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "doc_type",
+          "doc_no",
+          "doc_date",
+          "status",
+          "updated_at",
+          "vendor",
+          "invoice_no",
+          "invoice_date",
+          "tax_invoice_no",
+          "tax_invoice_date",
+          "due_date",
+          "credit_term_days",
+          "description",
+          "currency_code",
+          "exchange_rate",
+          "ref_grn",
+          "credit_note_type",
+          "net_amount",
+          "tax_amount",
+          "total_amount",
+          "base_net_amount",
+          "base_tax_amount",
+          "base_total_amount",
+          "unmapped",
+          "lines"
+        ]
+      },
+      "GlAdjustmentTypeSwaggerDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "ADJ-IN"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "stock_in",
+              "stock_out",
+              "eop_in",
+              "eop_out"
+            ],
+            "example": "stock_in"
+          }
+        },
+        "required": [
+          "code",
+          "type"
+        ]
+      },
+      "GlJournalLineSwaggerDto": {
         "type": "object",
         "properties": {
           "side": {
@@ -856,6 +1864,7 @@
               "Dr",
               "Cr"
             ],
+            "description": "Debit or credit (Carmen 4: TransDrCr, D / C)",
             "example": "Dr"
           },
           "role": {
@@ -863,58 +1872,61 @@
             "enum": [
               "inventory",
               "ap",
-              "input_vat",
               "adjustment",
               "sr_in",
               "sr_out"
             ],
+            "description": "What the line posts: inventory / adjustment (SI, SO) or sr_in / sr_out (SR)",
             "example": "inventory"
           },
           "account_code": {
             "type": "string",
             "nullable": true,
-            "description": "GL account resolved from the GL / AP mapping; null when it could not be resolved",
+            "description": "GL account resolved from the GL mapping; null when it could not be resolved (Carmen 4: AccCode)",
             "example": "1150-01"
           },
           "cost_center_code": {
             "type": "string",
             "nullable": true,
-            "description": "Resolved cost center",
+            "description": "Resolved cost center (Carmen 4: DeptCode)",
             "example": "CC-KIT"
           },
           "amount": {
             "type": "string",
-            "description": "Non-negative decimal string, base currency, 2 decimals. `0.00` when issue is `cost_not_found`",
-            "example": "1000.00"
+            "description": "Non-negative decimal string, base currency, 2 decimals. `0.00` when issue is `cost_not_found` (Carmen 4: JvdBAmt; JvdAmt is the same since GL documents are in base currency)",
+            "example": "300.00"
           },
           "location_code": {
             "type": "string",
             "nullable": true,
-            "description": "Null for ap and input_vat",
             "example": "MAIN-STORE"
           },
           "product_code": {
             "type": "string",
             "nullable": true,
-            "description": "Null for ap and input_vat",
             "example": "FD-1001"
           },
           "item_group_code": {
             "type": "string",
             "nullable": true,
-            "description": "Null for ap and input_vat",
             "example": "FOOD"
           },
           "unmapped": {
             "type": "boolean",
-            "description": "true when account_code is null or issue is set. The amount is still correct; the account needs fixing in the GL / AP mapping",
+            "description": "true when account_code is null or issue is set. The amount is still correct; the account needs fixing in the GL mapping",
             "example": false
           },
           "issue": {
             "type": "string",
             "nullable": true,
-            "description": "Reason code when the line is unmapped, e.g. missing_location, missing_product, missing_item_group, missing_input_vat_account, missing_adjustment_type, cost_not_found, mapping_target_not_found, missing_inventory_account, missing_ap_account, missing_adjustment_account, missing_cost_center, missing_direct_account, account_not_in_coa. Treat an unknown code as \"unmapped, needs review\".",
+            "description": "Reason code when the line is unmapped, e.g. missing_location, missing_product, missing_item_group, missing_adjustment_type, cost_not_found, mapping_target_not_found, missing_inventory_account, missing_adjustment_account, missing_cost_center, missing_direct_account, account_not_in_coa. Treat an unknown code as \"unmapped, needs review\".",
             "example": null
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Product name; null for a line without a product",
+            "example": "Fresh Chicken Breast"
           }
         },
         "required": [
@@ -927,38 +1939,38 @@
           "product_code",
           "item_group_code",
           "unmapped",
-          "issue"
+          "issue",
+          "description"
         ]
       },
-      "PostingDocumentSwaggerDto": {
+      "GlJournalSwaggerDto": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid",
-            "example": "6f1c2a5e-8d4b-4a51-9c0e-2b7d3f9a1c01"
+            "description": "Document id. Your own key is (doc_type, id)",
+            "example": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d"
           },
           "doc_type": {
             "type": "string",
             "enum": [
-              "GRN",
-              "CN",
               "SR",
               "SI",
               "SO"
             ],
-            "example": "GRN"
+            "example": "SI"
           },
           "doc_no": {
             "type": "string",
             "nullable": true,
-            "example": "GRN261000012"
+            "example": "SI261000004"
           },
           "doc_date": {
             "type": "string",
             "nullable": true,
-            "description": "YYYY-MM-DD in the business unit timezone",
-            "example": "2026-10-01"
+            "description": "YYYY-MM-DD in the business unit timezone (Carmen 4: JvhDate)",
+            "example": "2026-10-08"
           },
           "status": {
             "type": "string",
@@ -973,57 +1985,34 @@
             "type": "string",
             "nullable": true,
             "description": "ISO 8601 timestamp of the last update; filter on it with date_field=updated",
-            "example": "2026-10-03T09:41:27.512Z"
+            "example": "2026-10-08T11:20:45.300Z"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Header description of the document (Carmen 4: JvhDesc)",
+            "example": "Stock in - cycle count variance"
           },
           "currency_code": {
             "type": "string",
             "nullable": true,
-            "description": "Document currency (SR/SI/SO use the BU base currency). Reference only",
+            "description": "Business unit base currency; GL documents are in base currency. Reference only",
             "example": "THB"
           },
           "exchange_rate": {
             "type": "string",
-            "description": "Rate to base currency, decimal string. Reference only",
-            "example": "1.000000"
-          },
-          "vendor": {
-            "type": "object",
-            "nullable": true,
-            "description": "Vendor of a GRN / CN; null otherwise",
-            "properties": {
-              "id": {
-                "type": "string",
-                "format": "uuid"
-              },
-              "code": {
-                "type": "string",
-                "example": "V-0042"
-              },
-              "name": {
-                "type": "string",
-                "example": "Fresh Farm Supply Co., Ltd."
-              }
-            }
+            "description": "Rate to base currency. Decimal string without trailing-zero padding. Reference only",
+            "example": "1"
           },
           "adjustment_type": {
-            "type": "object",
             "nullable": true,
             "description": "Adjustment type of an SI / SO; null otherwise",
-            "properties": {
-              "code": {
-                "type": "string",
-                "example": "ADJ-IN"
-              },
-              "type": {
-                "type": "string",
-                "enum": [
-                  "stock_in",
-                  "stock_out",
-                  "eop_in",
-                  "eop_out"
-                ]
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GlAdjustmentTypeSwaggerDto"
               }
-            }
+            ]
           },
           "balanced": {
             "type": "boolean",
@@ -1033,7 +2022,7 @@
           "lines": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/PostingLineSwaggerDto"
+              "$ref": "#/components/schemas/GlJournalLineSwaggerDto"
             }
           }
         },
@@ -1044,9 +2033,9 @@
           "doc_date",
           "status",
           "updated_at",
+          "description",
           "currency_code",
           "exchange_rate",
-          "vendor",
           "adjustment_type",
           "balanced",
           "lines"

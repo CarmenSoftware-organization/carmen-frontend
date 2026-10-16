@@ -47,7 +47,7 @@ Per-BU config for connections to external systems — **Accounting**, **POS**, *
   (backend ตอบ 403 ทั้ง reveal / regenerate / toggle)
 - **secret ห้ามเข้า React Query cache** — GET ไม่คืน secret; reveal เป็น mutation ที่ถือค่าไว้ใน state ชั่วคราว
   ของ component แล้วทิ้งเมื่อปิด ห้ามใส่ใน `queryClient` / localStorage / log
-- รูปแบบ response, กติกา Dr/Cr และขั้นตอน deploy อยู่ที่ BE: `docs/external-api/inventory-postings.md`
+- รูปแบบ response, กติกา Dr/Cr และขั้นตอน deploy อยู่ที่ BE: `docs/external-api/accounting-export.md`
   (รีโป `carmen-turborepo-backend-v2`) · ลำดับ deploy: BE (micro-business ต้องตั้ง env `SECRET_ENCRYPTION_KEY` ไม่งั้น create/regenerate/reveal ตอบ 500) + allowlist `buApiKey.*` ก่อน FE
 
 ## API documentation (Swagger UI ของ API ขาเข้า)

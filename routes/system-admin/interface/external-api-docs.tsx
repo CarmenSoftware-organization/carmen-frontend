@@ -19,7 +19,7 @@ import openapi from "./external-api-openapi.json";
 const AUTHORIZE_HINT =
   "In this page, click **Authorize** and fill in both values to try the endpoint.";
 
-/** path แรกของ spec (`/api/ext/v1/inventory-postings`) — ใช้ประกอบตัวอย่าง curl */
+/** path แรกของ spec (ต้องเป็น `/api/ext/v1/ap-invoices` — ลำดับ path ใน openapi.json กำหนดตัวอย่าง curl) — ใช้ประกอบตัวอย่าง curl */
 const FIRST_PATH = Object.keys(openapi.paths)[0];
 
 /**
