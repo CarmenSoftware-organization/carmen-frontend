@@ -24,7 +24,10 @@ import {
 } from "@/components/ui/select";
 import { SettingSection } from "@/components/ui/setting-section";
 import { LookupRecipeEquipment } from "@/components/lookup/lookup-recipe-equipment";
-import type { RecipeFormValues } from "./recipe-form-schema";
+import {
+  nullableNumberInput,
+  type RecipeFormValues,
+} from "./recipe-form-schema";
 import type { StepDraft } from "./recipe-steps-sync";
 
 interface RecipeStepsFieldsProps {
@@ -159,7 +162,10 @@ export function RecipeStepsFields({
                       disabled={isDisabled}
                       className="tabular-nums"
                       error={stepErrors?.duration?.message}
-                      {...form.register(`preparation_steps.${i}.duration`)}
+                      {...form.register(
+                        `preparation_steps.${i}.duration`,
+                        nullableNumberInput,
+                      )}
                     />
                   </Field>
                   <Field>
@@ -175,7 +181,10 @@ export function RecipeStepsFields({
                         disabled={isDisabled}
                         className="min-w-0 flex-1 tabular-nums"
                         error={stepErrors?.temperature?.message}
-                        {...form.register(`preparation_steps.${i}.temperature`)}
+                        {...form.register(
+                          `preparation_steps.${i}.temperature`,
+                          nullableNumberInput,
+                        )}
                       />
                       <Controller
                         control={form.control}

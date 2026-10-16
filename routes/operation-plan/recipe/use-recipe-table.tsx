@@ -27,6 +27,8 @@ interface UseRecipeTableOptions {
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onEdit: (recipe: Recipe) => void;
   onDelete: (recipe: Recipe) => void;
+  /** เมนู Edit ในแถว — ไม่ส่ง (ไม่มีสิทธิ์แก้) = ไม่มีเมนู */
+  onEditRecipe?: (recipe: Recipe) => void;
 }
 
 export function useRecipeTable({
@@ -38,6 +40,7 @@ export function useRecipeTable({
   tableConfig,
   onEdit,
   onDelete,
+  onEditRecipe,
 }: UseRecipeTableOptions) {
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
@@ -256,5 +259,6 @@ export function useRecipeTable({
       },
     },
     activity: { id: (r) => r.id, label: (r) => r.code },
+    edit: onEditRecipe ? { onClick: onEditRecipe } : undefined,
   });
 }

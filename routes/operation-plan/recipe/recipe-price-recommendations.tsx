@@ -28,14 +28,18 @@ export function RecipePriceRecommendations({
     name: ["target_food_cost_percentage", "max_food_cost_percentage"],
   });
 
-  if (computed.suggestedPrice == null) return null;
-
+  // การ์ดขึ้นเมื่อมีราคาอย่างน้อยหนึ่งแถว — ตั้งแค่เพดาน (ไม่มีเป้า) ก็ยังเห็นราคาขั้นต่ำ
+  // และคำเตือนขายต่ำกว่าขั้นต่ำ · กฎ "เพดาน < เป้า ไม่โชว์ขั้นต่ำ" อยู่ใน computeRecipeCost
   const rows = [
-    {
-      key: "target",
-      label: t("priceAtTarget", { pct: formatPct(Number(target) || 0) }),
-      price: computed.suggestedPrice,
-    },
+    ...(computed.suggestedPrice != null
+      ? [
+          {
+            key: "target",
+            label: t("priceAtTarget", { pct: formatPct(Number(target) || 0) }),
+            price: computed.suggestedPrice,
+          },
+        ]
+      : []),
     ...(computed.minPrice != null
       ? [
           {
@@ -46,6 +50,8 @@ export function RecipePriceRecommendations({
         ]
       : []),
   ];
+
+  if (rows.length === 0) return null;
 
   const apply = (price: number) =>
     form.setValue("selling_price", price, {

@@ -1,4 +1,9 @@
-import { Controller, useWatch, type UseFormReturn } from "react-hook-form";
+import {
+  Controller,
+  useFormState,
+  useWatch,
+  type UseFormReturn,
+} from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { Check, Truck } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -36,6 +41,7 @@ export function RecipeHeroFields({
   const t = useTranslations("operationPlan.recipe");
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
+  const { errors } = useFormState({ control: form.control, name: "name" });
 
   const description = useWatch({ control: form.control, name: "description" });
   const difficulty = useWatch({ control: form.control, name: "difficulty" });
@@ -160,7 +166,7 @@ export function RecipeHeroFields({
               onChange={field.onChange}
               placeholder={t("namePlaceholder")}
               disabled={isDisabled}
-              error={form.formState.errors.name?.message}
+              error={errors.name?.message}
               labels={{
                 nameLabel: t("nameLabel"),
                 tapToEdit: t("tapToEdit"),

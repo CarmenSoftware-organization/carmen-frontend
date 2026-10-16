@@ -1,4 +1,28 @@
+import { ApiError } from "@/lib/api-error";
 import type { RecipeEquipmentRef, RecipePreparationStep } from "@/types/recipe";
+
+/**
+ * PUT order ตอบ 400 = ชุด id ที่ส่งไปไม่ตรงกับขั้นที่ยัง active บน server — มีคนอื่น
+ * เพิ่ม/ลบขั้นตอนของสูตรนี้ระหว่างที่เราแก้ · แยกชนิดไว้ให้ฟอร์มแสดงข้อความเจาะจง
+ * แทนข้อความกลาง (onSettled ยัง refetch ตามเดิม กด Save ซ้ำจะ diff กับของล่าสุด)
+ */
+export class StepsChangedElsewhereError extends ApiError {
+  constructor(cause: ApiError) {
+    super(
+      cause.code,
+      cause.message,
+      cause.statusCode,
+      false,
+      cause.details,
+      cause.serverMessage,
+      cause.appCode,
+      cause.fieldErrors,
+      cause.appParams,
+      cause.catalogId,
+    );
+    this.name = "StepsChangedElsewhereError";
+  }
+}
 
 /** ค่าของขั้นตอนหนึ่งในฟอร์ม (item ของ useFieldArray) */
 export interface StepDraft {

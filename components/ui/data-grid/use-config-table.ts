@@ -14,6 +14,7 @@ import {
   statusColumn,
   actionColumn,
   type ActionColumnActivity,
+  type ActionColumnEdit,
 } from "./columns";
 
 interface UseConfigTableOptions<T> {
@@ -34,6 +35,8 @@ interface UseConfigTableOptions<T> {
    * เช่น certification / eco / equipment / recipe / period
    */
   activity?: ActionColumnActivity<T>;
+  /** เมนู Edit ในแถว (บนสุดของเมนู ⋯) — ไม่ส่ง = ไม่มีเมนู · ผู้เรียกคุมสิทธิ์เอง */
+  edit?: ActionColumnEdit<T>;
 }
 
 /**
@@ -72,6 +75,7 @@ export function useConfigTable<T>({
   permissionPrefix,
   initialState,
   activity,
+  edit,
 }: UseConfigTableOptions<T>) {
   // "use no memo" opts out of React Compiler's automatic memoization.
   // TanStack Table creates new column/row objects each render; memoizing them
@@ -89,7 +93,7 @@ export function useConfigTable<T>({
     ...columns,
     ...(hideStatus ? [] : [statusColumn<T>(tfl)]),
     ...(onDelete
-      ? [actionColumn<T>(onDelete, { ...deleteGate, activity })]
+      ? [actionColumn<T>(onDelete, { ...deleteGate, activity, edit })]
       : []),
   ];
 

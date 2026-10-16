@@ -1,5 +1,6 @@
 import {
   Controller,
+  useFormState,
   type Control,
   type FieldPath,
   type UseFormReturn,
@@ -43,7 +44,8 @@ export function RecipeGeneralFields({
   );
   const t = useTranslations("operationPlan.recipe");
   const tfl = useTranslations("field");
-  const errors = form.formState.errors;
+  // subscribe เอง — อ่าน form.formState.errors ตรง ๆ ไม่ re-render เมื่อ error เปลี่ยน
+  const { errors } = useFormState({ control: form.control });
 
   return (
     <SettingSection

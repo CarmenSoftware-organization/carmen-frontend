@@ -28,7 +28,7 @@ import { computeRecipeCost, useRecipeCostCalc } from "./use-recipe-cost-calc";
 import { RecipeNotesFields } from "./recipe-notes-fields";
 import { RecipeStepsFields } from "./recipe-steps-fields";
 import { useSyncRecipeSteps } from "./use-recipe-steps-sync";
-import { activeSteps } from "./recipe-steps-sync";
+import { activeSteps, StepsChangedElsewhereError } from "./recipe-steps-sync";
 import { useRecipeGallery } from "./use-recipe-gallery";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { RecipeToolbar } from "./recipe-toolbar";
@@ -159,6 +159,10 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
                   },
                   onError: (err) => {
                     f.setIsSubmitting(false);
+                    if (err instanceof StepsChangedElsewhereError) {
+                      toast.error(t("stepsChangedElsewhere"));
+                      return;
+                    }
                     toast.error(t("stepsSaveFailed"), {
                       description: err.message,
                     });
