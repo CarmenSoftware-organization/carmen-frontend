@@ -66,13 +66,31 @@ export function useRecipeCostCalc(
   );
 
   useEffect(() => {
-    form.setValue("cost_per_portion", computed.costPerPortion);
-    form.setValue("gross_margin", computed.grossMargin);
-    form.setValue("gross_margin_percentage", computed.grossMarginPct);
-    form.setValue("actual_food_cost_percentage", computed.actualFoodCostPct);
-    form.setValue("labor_cost_percentage", computed.laborCostPct);
-    form.setValue("overhead_percentage", computed.overheadPct);
-    form.setValue("suggested_price", computed.suggestedPrice);
+    // ฟิลด์เหล่านี้คำนวณล้วน ๆ — เขียนเป็น defaultValue ด้วย (resetField) ไม่ใช่ setValue
+    // ไม่งั้นค่าที่คำนวณใหม่ต่างจากที่ DB เก็บไว้แค่เศษปัด ก็ทำให้ฟอร์ม dirty
+    // ทั้งที่ผู้ใช้แก้แล้วเปลี่ยนกลับเป็นค่าเดิม · เช็กก่อน reset กัน re-render วน
+    const sync = (
+      name:
+        | "cost_per_portion"
+        | "gross_margin"
+        | "gross_margin_percentage"
+        | "actual_food_cost_percentage"
+        | "labor_cost_percentage"
+        | "overhead_percentage"
+        | "suggested_price",
+      value: number | null,
+    ) => {
+      if (!Object.is(form.getValues(name), value)) {
+        form.resetField(name, { defaultValue: value });
+      }
+    };
+    sync("cost_per_portion", computed.costPerPortion);
+    sync("gross_margin", computed.grossMargin);
+    sync("gross_margin_percentage", computed.grossMarginPct);
+    sync("actual_food_cost_percentage", computed.actualFoodCostPct);
+    sync("labor_cost_percentage", computed.laborCostPct);
+    sync("overhead_percentage", computed.overheadPct);
+    sync("suggested_price", computed.suggestedPrice);
   }, [computed, form]);
 
   return { ...computed, minPrice, markup, belowMinPrice, profitAt };
