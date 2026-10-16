@@ -257,6 +257,10 @@ export function CoaForm({
     (g) => g.category === category && (g.is_active || g.id === (account?.account_group?.id ?? account?.account_group_id)),
   );
   const groupMap = useMemo(() => new Map((allGroups ?? []).map((g) => [g.id, g])), [allGroups]);
+  const nonLeafIds = useMemo(
+    () => new Set((allGroups ?? []).flatMap((g) => (g.parent_id ? [g.parent_id] : []))),
+    [allGroups],
+  );
   const currentGroup = selectedGroupId ? groupMap.get(selectedGroupId) : null;
 
   const dimensions = (dimensionQuery.data ?? []).filter(
@@ -1007,6 +1011,7 @@ export function CoaForm({
         onOpenChange={setTreeModalOpen}
         category={category}
         groups={groups}
+        nonLeafIds={nonLeafIds}
         currentGroupId={selectedGroupId}
         onSelect={handleTreeSelect}
       />

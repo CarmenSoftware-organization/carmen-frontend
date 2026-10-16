@@ -1630,6 +1630,7 @@
         "currentParentGroup": "Current Parent Group",
         "selectGroup": "Select Group",
         "changeGroup": "Change Group",
+        "parentGroupNotSelectable": "Parent group — select one of its sub-groups",
         "noGroupingSelected": "No grouping path selected. Click \"Select Group\" above to assign one (optional).",
         "addTag": "Add Tag",
         "tagKey": "Tag Key",
