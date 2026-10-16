@@ -6,7 +6,11 @@ import { SettingSection } from "@/components/ui/setting-section";
 import { EyeBrow } from "@/components/ui/eye-brow";
 import { formatCurrency } from "@/lib/currency-utils";
 import { useUnitById } from "@/hooks/use-unit";
-import type { RecipeFormValues } from "./recipe-form-schema";
+import {
+  nullableNumberInput,
+  numberInput,
+  type RecipeFormValues,
+} from "./recipe-form-schema";
 import type { RecipeComputed, RecipeCostCalc } from "./use-recipe-cost-calc";
 import { RecipePriceRecommendations } from "./recipe-price-recommendations";
 
@@ -140,7 +144,7 @@ export function RecipeCostFields({
                 className="text-right text-xs tabular-nums"
                 error={errors[line.key]?.message}
                 errorIconAlign="left"
-                {...form.register(line.key)}
+                {...form.register(line.key, numberInput)}
               />
             )}
           </div>
@@ -180,7 +184,7 @@ export function RecipeCostFields({
               placeholder="0.00"
               error={errors.selling_price?.message}
               errorIconAlign="left"
-              {...form.register("selling_price")}
+              {...form.register("selling_price", nullableNumberInput)}
             />
           </div>
         </div>
@@ -206,6 +210,7 @@ export function RecipeCostFields({
                 error={errors.target_food_cost_percentage?.message}
                 errorIconAlign="left"
                 {...form.register("target_food_cost_percentage", {
+                  ...nullableNumberInput,
                   deps: ["max_food_cost_percentage"],
                 })}
               />
@@ -231,7 +236,10 @@ export function RecipeCostFields({
                 className="pr-6 text-right text-sm tabular-nums"
                 error={errors.max_food_cost_percentage?.message}
                 errorIconAlign="left"
-                {...form.register("max_food_cost_percentage")}
+                {...form.register(
+                  "max_food_cost_percentage",
+                  nullableNumberInput,
+                )}
               />
               <span className="text-muted-foreground text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
                 %
@@ -289,7 +297,7 @@ export function RecipeCostFields({
               className="pr-14 text-right text-xs tabular-nums"
               error={errors.carbon_footprint?.message}
               errorIconAlign="left"
-              {...form.register("carbon_footprint")}
+              {...form.register("carbon_footprint", nullableNumberInput)}
             />
             <span className="text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
               {t("kgCo2e")}

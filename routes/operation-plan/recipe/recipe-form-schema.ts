@@ -166,6 +166,26 @@ export function createRecipeSchema(tv: TranslationFn, tf: TranslationFn) {
 
 export type RecipeFormValues = z.infer<ReturnType<typeof createRecipeSchema>>;
 
+// ── Number inputs (register options) ──
+
+/**
+ * `<input type="number">` ส่งค่าเป็น string เสมอ ขณะที่ค่าตั้งต้นเป็น number —
+ * RHF เทียบ dirty ด้วย deepEqual กับ defaultValues ("12" ≠ 12) แก้ตัวเลขแล้วแก้กลับ
+ * ฟอร์มจึงค้าง dirty · แปลงเป็น number ตั้งแต่ตอนลงทะเบียนให้ชนิดตรงกับค่าตั้งต้น
+ * (schema ยัง coerce/preprocess ซ้ำได้ตามเดิม ข้อความ validation ไม่เปลี่ยน)
+ */
+const toNumber = (v: unknown): number =>
+  typeof v === "number" ? v : Number(v);
+
+/** ช่องตัวเลขที่ห้ามว่าง — ช่องว่างกลายเป็น 0 เหมือนที่ z.coerce ทำอยู่เดิม */
+export const numberInput = { setValueAs: toNumber } as const;
+
+/** ช่องตัวเลขที่ว่างได้ — ช่องว่างคืน null ตรงกับค่าตั้งต้น (ไม่ใช่ 0) */
+export const nullableNumberInput = {
+  setValueAs: (v: unknown): number | null =>
+    v === "" || v == null ? null : toNumber(v),
+} as const;
+
 // ── Default Values ──
 
 export const EMPTY_FORM: RecipeFormValues = {

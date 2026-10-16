@@ -36,7 +36,7 @@ import type {
   Recipe,
   RecipeIngredientLine,
 } from "@/types/recipe";
-import type { RecipeFormValues } from "./recipe-form-schema";
+import { numberInput, type RecipeFormValues } from "./recipe-form-schema";
 import type { RecipeCostCalc } from "./use-recipe-cost-calc";
 import {
   activeIngredients,
@@ -487,7 +487,7 @@ function IngredientRow({
           className="text-right tabular-nums"
           error={rowErrors?.qty?.message}
           errorIconAlign="left"
-          {...form.register(`ingredients.${i}.qty`)}
+          {...form.register(`ingredients.${i}.qty`, numberInput)}
         />
 
         <div className="relative">
@@ -504,7 +504,10 @@ function IngredientRow({
             className="pr-6 text-right tabular-nums"
             error={rowErrors?.wastage_percentage?.message}
             errorIconAlign="left"
-            {...form.register(`ingredients.${i}.wastage_percentage`)}
+            {...form.register(
+              `ingredients.${i}.wastage_percentage`,
+              numberInput,
+            )}
           />
           <span className="text-muted-foreground text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
             %
