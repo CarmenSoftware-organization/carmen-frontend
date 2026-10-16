@@ -53,6 +53,7 @@ export function InterfacePageLayout({
   errorMessage,
   saveLabel,
   onCancel,
+  notice,
   children,
 }: {
   readonly title: string;
@@ -66,6 +67,8 @@ export function InterfacePageLayout({
   readonly errorMessage: string;
   readonly onCancel: () => void;
   readonly saveLabel: string;
+  /** แถบแจ้งเตือนเหนือฟอร์ม อยู่นอก fieldset จึงกดปุ่มข้างในได้แม้เป็นโหมดอ่าน */
+  readonly notice?: React.ReactNode;
   readonly children: React.ReactNode;
 }) {
   const t = useTranslations("systemAdmin.interface");
@@ -124,6 +127,8 @@ export function InterfacePageLayout({
           <SettingSectionSkeleton fields={["half", "half", "full"]} />
         </div>
       )}
+
+      {!isError && !isLoading && notice}
 
       {!isError && !isLoading && (
         <form id="interface-config-form" onSubmit={guardedSave}>

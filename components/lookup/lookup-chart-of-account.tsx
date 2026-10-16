@@ -315,6 +315,10 @@ export interface LookupChartOfAccountProps {
    * ของมัน แต่ popover ถูก portal ออกไปที่ body → ถ้าไม่ modal รายการจะเลื่อนไม่ได้
    */
   readonly modal?: boolean;
+  /** รายการที่ผู้เรียกรู้จักอยู่แล้ว — ให้ combobox แสดงป้ายของค่าที่เลือกได้แม้อยู่นอก 100 แถวแรก */
+  readonly selectedItems?: ChartOfAccount[];
+  /** default `true` — ปิดเมื่อ value เป็น uuid จริง (ข้อมูลตัวอย่างใช้ id ที่ไม่ใช่ uuid) */
+  readonly demoFallback?: boolean;
 }
 
 export function LookupChartOfAccount({
@@ -329,6 +333,8 @@ export function LookupChartOfAccount({
   readOnly,
   activeOnly = true,
   modal = true,
+  selectedItems,
+  demoFallback = true,
 }: LookupChartOfAccountProps) {
   const tl = useTranslations("lookup");
   const [hasOpened, setHasOpened] = useState(false);
@@ -337,11 +343,14 @@ export function LookupChartOfAccount({
     { enabled: hasOpened || !!value },
   );
 
+  const rows = data?.data;
   const accounts = useMemo(() => {
     const list =
-      data?.data && data.data.length > 0
-        ? data.data
-        : DEFAULT_CHART_OF_ACCOUNTS;
+      rows && rows.length > 0
+        ? rows
+        : demoFallback
+          ? DEFAULT_CHART_OF_ACCOUNTS
+          : [];
 
     const categories = category
       ? Array.isArray(category)
@@ -355,7 +364,7 @@ export function LookupChartOfAccount({
         return false;
       return true;
     });
-  }, [data?.data, category, activeOnly]);
+  }, [rows, category, activeOnly, demoFallback]);
 
   const resolvedPlaceholder =
     placeholder ?? tl("select", { entity: "GL Account" });
@@ -370,6 +379,7 @@ export function LookupChartOfAccount({
         if (open) setHasOpened(true);
       }}
       items={accounts}
+      selectedItems={selectedItems}
       getId={(acc) => acc.code}
       getLabel={(acc) => `${acc.code} - ${acc.description_1}`}
       getSearchValue={(acc) =>

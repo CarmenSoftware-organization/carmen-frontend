@@ -21,6 +21,9 @@ const SOURCE_KEY = {
   item_group: "sourceItemGroup",
   sub_category: "sourceSubCategory",
   category: "sourceCategory",
+  vendor: "sourceVendor",
+  bu_default: "sourceBuDefault",
+  adjustment_type: "sourceAdjustmentType",
   location: "sourceLocation",
 } as const;
 
@@ -28,6 +31,8 @@ const ISSUE_KEY = {
   missing_inventory_account: "issueMissingInventoryAccount",
   missing_direct_account: "issueMissingDirectAccount",
   account_not_in_coa: "issueAccountNotInCoa",
+  missing_ap_account: "issueMissingApAccount",
+  missing_adjustment_account: "issueMissingAdjustmentAccount",
   missing_cost_center: "issueMissingCostCenter",
 } as const;
 
@@ -36,6 +41,8 @@ const ISSUE_SHORT_KEY = {
   missing_inventory_account: "issueShortNoAccount",
   missing_direct_account: "issueShortNoAccount",
   account_not_in_coa: "issueShortNotInCoa",
+  missing_ap_account: "issueShortNoAccount",
+  missing_adjustment_account: "issueShortNoAccount",
   missing_cost_center: "issueShortNoCostCenter",
 } as const;
 
@@ -54,6 +61,11 @@ function sourceHref(
       return "/product-management/category";
     case "location":
       return `/config/location/${row.location.id}`;
+    case "bu_default":
+      return "/system-admin/interface/accounting/external";
+    case "adjustment_type":
+      return "/config/adjustment-type";
+    // vendor: แถว list ไม่มี vendor จึงไม่มีปลายทางให้ลิงก์
     default:
       return undefined;
   }
@@ -98,6 +110,10 @@ function issueHref(issue: MappingIssue, row: AccountMappingRow): string {
       return `/config/location/${row.location.id}`;
     case "account_not_in_coa":
       return "/config/chart-of-accounts";
+    case "missing_ap_account":
+      return "/system-admin/interface/accounting/external";
+    case "missing_adjustment_account":
+      return "/config/adjustment-type";
     case "missing_inventory_account":
     case "missing_direct_account":
       return `/product-management/category?search=${encodeURIComponent(row.item_group.code)}`;

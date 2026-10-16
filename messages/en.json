@@ -1510,6 +1510,7 @@
       "deleteConfirm": "Are you sure you want to delete adjustment type \"{name}\"? This action cannot be undone.",
       "codePlaceholder": "e.g. TRFOT",
       "namePlaceholder": "e.g. Transfer Out",
+      "account": "Account",
       "notFound": "Adjustment type not found"
     },
     "creditTerm": {
@@ -1720,9 +1721,14 @@
       "sourceSubCategory": "Default · sub-category",
       "sourceCategory": "Default · category",
       "sourceLocation": "Default · location",
+      "sourceVendor": "Default · vendor",
+      "sourceBuDefault": "Default · BU setting",
+      "sourceAdjustmentType": "Default · adjustment type",
       "issueMissingInventoryAccount": "No inventory account on item group / sub-category / category",
       "issueMissingDirectAccount": "No direct account on item group / sub-category / category",
       "issueAccountNotInCoa": "Account code is not in the chart of accounts",
+      "issueMissingApAccount": "No default AP account set for this business unit",
+      "issueMissingAdjustmentAccount": "Adjustment type has no account",
       "issueMissingCostCenter": "Location has no cost center",
       "issueShortNoAccount": "No account",
       "issueShortNoCostCenter": "No cost center",
@@ -2516,6 +2522,14 @@
       },
       "accounting": {
         "title": "Accounting Interface",
+        "external": {
+          "glDefaults": "Default accounts",
+          "glDefaultsDesc": "Used for AP postings when the account mapping does not name an account itself.",
+          "apControlAccount": "Default AP control account",
+          "inputVatAccount": "Input VAT account",
+          "glLoadError": "Could not load the default accounts.",
+          "partialSaveFailed": "Interface settings were saved, but the default accounts were not. Please try again."
+        },
         "desc": "How inventory activity reaches your general ledger and payables.",
         "connection": "Connection",
         "connectionDesc": "Which accounting system receives the postings.",
@@ -2763,6 +2777,7 @@
       "generalDescView": "Business type, tax details, rating and description.",
       "rating": "Rating",
       "notRated": "Not rated",
+      "apAccount": "Accounts payable account",
       "ratingValue": "{value} out of 5",
       "clearRating": "Clear rating",
       "taxNo": "Tax ID",

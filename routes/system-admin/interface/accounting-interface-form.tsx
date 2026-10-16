@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, type Resolver, type UseFormReturn } from "react-hook-form";
 import { useNavigate, useParams } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -52,61 +52,21 @@ const FORMATS = accountingSchema.shape.export_format.options;
 const FREQUENCIES = accountingSchema.shape.posting_frequency.options;
 
 /**
- * หน้า config ของ Accounting brand เดียว — ตั้งค่าการส่งข้อมูลไป GL/AP
+ * ฟิลด์ทั้งสาม section (Connection / Vendor fallbacks / Posting) ของฟอร์ม accounting —
+ * แยกออกมาให้ฟอร์ม brand `external` ใช้ซ้ำโดยไม่ต้อง copy
  *
- * brand (Carmen GL / BlueLedgers / External) มาจาก route param — เก็บใน key
- * `interface_accounting_<brand>` ไม่ใช่ field ในฟอร์ม
- *
- * `default_account_code` / `default_department_code` / `default_invoice_value` เป็นค่า
- * fallback ที่ระบบใช้เมื่อ vendor ไม่ได้ตั้งค่าไว้ (ดู kb-carmen changelog sep2024)
- *
- * @returns React element ของหน้า accounting interface
+ * @param props.form - `useForm` ของฟอร์มแม่ (ถือ state เอง component นี้ไม่ถือ)
+ * @returns React element ของ SettingSection สามอัน
  */
-export default function AccountingInterfaceForm() {
+export function AccountingFields({
+  form,
+}: {
+  readonly form: UseFormReturn<AccountingFormValues>;
+}) {
   const t = useTranslations("systemAdmin.interface");
   const ta = useTranslations("systemAdmin.interface.accounting");
-  const { brand } = useParams<{ brand: string }>();
-  const navigate = useNavigate();
-  const { value, isLoading, isError, refetch, save, isSaving } =
-    useInterfaceConfig(`interface_accounting_${brand}`);
-
-  const form = useForm<AccountingFormValues>({
-    resolver: zodResolver(accountingSchema) as Resolver<AccountingFormValues>,
-    defaultValues: EMPTY_ACCOUNTING,
-  });
-
-  useEffect(() => {
-    if (value) form.reset(toFormValues(value));
-  }, [value, form]);
-
-  const submit = form.handleSubmit(
-    (values) =>
-      save(toApiValue(values), {
-        onSuccess: () => {
-          toast.success(t("saved"));
-          // กลับหน้ารายการ interface — guard ของหน้านี้ดักเฉพาะคลิกลิงก์กับปุ่ม back
-          // ไม่ดัก navigate() จากโค้ด จึงไม่ต้อง reset form ก่อน
-          navigate("/system-admin/interface");
-        },
-      }),
-    () => scrollToFirstInvalidField(),
-  );
-
   return (
-    <InterfacePageLayout
-      title={ta(`brand.${brand}`)}
-      description={ta("desc")}
-      onSave={submit}
-      // คืนค่าที่บันทึกไว้ ไม่ใช่ค่า default — ยกเลิกแล้วต้องได้ของเดิมกลับมา
-      onCancel={() => form.reset(value ? toFormValues(value) : EMPTY_ACCOUNTING)}
-      isSaving={isSaving}
-      isLoading={isLoading}
-      isError={isError}
-      isDirty={form.formState.isDirty}
-      onRetry={refetch}
-      errorMessage={t("loadError")}
-      saveLabel={t("save")}
-    >
+    <>
       <SettingSection
         first
         title={ta("connection")}
@@ -167,6 +127,69 @@ export default function AccountingInterfaceForm() {
           }
         />
       </SettingSection>
+    </>
+  );
+}
+
+/**
+ * หน้า config ของ Accounting brand เดียว — ตั้งค่าการส่งข้อมูลไป GL/AP
+ *
+ * brand (Carmen GL / BlueLedgers / External) มาจาก route param — เก็บใน key
+ * `interface_accounting_<brand>` ไม่ใช่ field ในฟอร์ม
+ *
+ * `default_account_code` / `default_department_code` / `default_invoice_value` เป็นค่า
+ * fallback ที่ระบบใช้เมื่อ vendor ไม่ได้ตั้งค่าไว้ (ดู kb-carmen changelog sep2024)
+ *
+ * @returns React element ของหน้า accounting interface
+ */
+export default function AccountingInterfaceForm() {
+  const t = useTranslations("systemAdmin.interface");
+  const ta = useTranslations("systemAdmin.interface.accounting");
+  const { brand } = useParams<{ brand: string }>();
+  const navigate = useNavigate();
+  const { value, isLoading, isError, refetch, save, isSaving } =
+    useInterfaceConfig(`interface_accounting_${brand}`);
+
+  const form = useForm<AccountingFormValues>({
+    resolver: zodResolver(accountingSchema) as Resolver<AccountingFormValues>,
+    defaultValues: EMPTY_ACCOUNTING,
+  });
+
+  useEffect(() => {
+    if (value) form.reset(toFormValues(value));
+  }, [value, form]);
+
+  const submit = form.handleSubmit(
+    (values) =>
+      save(toApiValue(values), {
+        onSuccess: () => {
+          toast.success(t("saved"));
+          // กลับหน้ารายการ interface — guard ของหน้านี้ดักเฉพาะคลิกลิงก์กับปุ่ม back
+          // ไม่ดัก navigate() จากโค้ด จึงไม่ต้อง reset form ก่อน
+          navigate("/system-admin/interface");
+        },
+      }),
+    () => scrollToFirstInvalidField(),
+  );
+
+  return (
+    <InterfacePageLayout
+      title={ta(`brand.${brand}`)}
+      description={ta("desc")}
+      onSave={submit}
+      // คืนค่าที่บันทึกไว้ ไม่ใช่ค่า default — ยกเลิกแล้วต้องได้ของเดิมกลับมา
+      onCancel={() =>
+        form.reset(value ? toFormValues(value) : EMPTY_ACCOUNTING)
+      }
+      isSaving={isSaving}
+      isLoading={isLoading}
+      isError={isError}
+      isDirty={form.formState.isDirty}
+      onRetry={refetch}
+      errorMessage={t("loadError")}
+      saveLabel={t("save")}
+    >
+      <AccountingFields form={form} />
     </InterfacePageLayout>
   );
 }

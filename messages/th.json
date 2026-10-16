@@ -1510,6 +1510,7 @@
       "deleteConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบประเภทการปรับปรุง \"{name}\"? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
       "codePlaceholder": "เช่น TRFOT",
       "namePlaceholder": "เช่น โอนออก",
+      "account": "บัญชี",
       "notFound": "ไม่พบประเภทการปรับปรุง"
     },
     "creditTerm": {
@@ -1720,9 +1721,14 @@
       "sourceSubCategory": "ค่าเริ่มต้น · sub-category",
       "sourceCategory": "ค่าเริ่มต้น · category",
       "sourceLocation": "ค่าเริ่มต้น · location",
+      "sourceVendor": "ค่าเริ่มต้น · vendor",
+      "sourceBuDefault": "ค่าเริ่มต้น · ตั้งค่า BU",
+      "sourceAdjustmentType": "ค่าเริ่มต้น · ประเภทการปรับปรุง",
       "issueMissingInventoryAccount": "item group / sub-category / category ยังไม่มี inventory account",
       "issueMissingDirectAccount": "item group / sub-category / category ยังไม่มี direct account",
       "issueAccountNotInCoa": "รหัสบัญชีนี้ไม่มีในผังบัญชี",
+      "issueMissingApAccount": "BU นี้ยังไม่ได้ตั้งบัญชี AP เริ่มต้น",
+      "issueMissingAdjustmentAccount": "ประเภทการปรับปรุงยังไม่มีบัญชี",
       "issueMissingCostCenter": "location ยังไม่ได้ผูก cost center",
       "issueShortNoAccount": "ยังไม่มีบัญชี",
       "issueShortNoCostCenter": "ยังไม่มี cost center",
@@ -2516,6 +2522,14 @@
       },
       "accounting": {
         "title": "การเชื่อมต่อระบบบัญชี",
+        "external": {
+          "glDefaults": "บัญชีตั้งต้น",
+          "glDefaultsDesc": "ใช้ตอนลงบัญชีเจ้าหนี้เมื่อผังการผูกบัญชียังไม่ได้ระบุบัญชีเอง",
+          "apControlAccount": "บัญชีเจ้าหนี้ตั้งต้น",
+          "inputVatAccount": "บัญชีภาษีซื้อ",
+          "glLoadError": "โหลดบัญชีตั้งต้นไม่สำเร็จ",
+          "partialSaveFailed": "บันทึกการตั้งค่า interface แล้ว แต่บันทึกบัญชีตั้งต้นไม่สำเร็จ กรุณาลองอีกครั้ง"
+        },
         "desc": "การส่งข้อมูลความเคลื่อนไหวของสินค้าคงคลังไปยังบัญชีแยกประเภทและเจ้าหนี้",
         "connection": "การเชื่อมต่อ",
         "connectionDesc": "ระบบบัญชีที่จะรับข้อมูล",
@@ -2763,6 +2777,7 @@
       "generalDescView": "ประเภทธุรกิจ ข้อมูลภาษี คะแนน และคำอธิบายของผู้ขาย",
       "rating": "คะแนนผู้ขาย",
       "notRated": "ยังไม่ประเมิน",
+      "apAccount": "บัญชีเจ้าหนี้",
       "ratingValue": "{value} จาก 5",
       "clearRating": "ล้างคะแนน",
       "taxNo": "เลขประจำตัวผู้เสียภาษี",

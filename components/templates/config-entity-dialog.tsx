@@ -60,7 +60,7 @@ export interface ConfigEntityDialogProps<
     tfl: TranslationFn,
   ) => ZodType<TFormValues>;
   readonly toFormValues: (entity?: TEntity | null) => TFormValues;
-  readonly toPayload: (values: TFormValues) => TPayload;
+  readonly toPayload: (values: TFormValues, entity: TEntity | null) => TPayload;
 
   readonly contentClassName?: string;
   readonly onCreated?: (result: unknown) => void;
@@ -149,7 +149,7 @@ export function ConfigEntityDialog<
   }, [open, entity, form]);
 
   const onSubmit = (values: TFormValues) => {
-    const payload = toPayload(values);
+    const payload = toPayload(values, isEdit ? (entity ?? null) : null);
 
     if (isEdit && entity) {
       update.mutate(

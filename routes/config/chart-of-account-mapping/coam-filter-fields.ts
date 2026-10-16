@@ -139,6 +139,8 @@ const GL_FIELDS: FilterFieldDef[] = [
     control: "status",
     labelKey: `${NS}.movement`,
     options: [
+      { labelKey: `${NS}.movementGrn`, value: "grn" },
+      { labelKey: `${NS}.movementCn`, value: "cn" },
       { labelKey: `${NS}.movementAdjustment`, value: "adjustment" },
       { labelKey: `${NS}.movementSrIn`, value: "sr_in" },
       { labelKey: `${NS}.movementSrOut`, value: "sr_out" },
@@ -198,7 +200,7 @@ const STATUSES: readonly MappingStatus[] = [
 ];
 const MOVEMENTS: Record<MappingType, readonly MappingMovement[]> = {
   AP: ["grn", "cn"],
-  GL: ["adjustment", "sr_in", "sr_out"],
+  GL: ["grn", "cn", "adjustment", "sr_in", "sr_out"],
 };
 
 /**

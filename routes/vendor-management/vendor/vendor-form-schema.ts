@@ -65,6 +65,8 @@ export function createVendorSchema(tv: TranslationFn, tf: TranslationFn) {
     branch_no: z.string().max(10),
     // 1..5 กรอกเอง, null = ยังไม่ประเมิน (CHECK vendor_rating_chk ฝั่ง DB)
     rating: z.number().int().min(1).max(5).nullable(),
+    // uuid บัญชีเจ้าหนี้ default — null = ไม่ตั้ง
+    ap_chart_of_accounts_id: z.string().nullable(),
     business_types: z.array(z.object({ id: z.string(), name: z.string() })),
     info: z.preprocess(
       (val) => (Array.isArray(val) ? val : []),
@@ -114,6 +116,7 @@ export const EMPTY_FORM: VendorFormValues = {
   tax_no: "",
   branch_no: "",
   rating: null,
+  ap_chart_of_accounts_id: null,
   business_types: [],
   info: [],
   vendor_address: [],
@@ -190,6 +193,7 @@ export function getDefaultValues(vendor?: VendorDetail): VendorFormValues {
       tax_no: vendor.tax_no ?? "",
       branch_no: vendor.branch_no ?? "",
       rating: vendor.rating ?? null,
+      ap_chart_of_accounts_id: vendor.ap_chart_of_accounts_id ?? null,
       business_types:
         vendor.business_type?.map((bt) => ({
           id: bt.id,
