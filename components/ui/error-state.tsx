@@ -1,16 +1,13 @@
-import { useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
-  Check,
-  Copy,
   LayoutDashboard,
   RefreshCw,
 } from "lucide-react";
 import { Link } from "react-router";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { CopyButton } from "@/components/ui/copy-button";
 import { ApiError } from "@/lib/api-error";
 import { getErrorId, getUserErrorMessage } from "@/lib/error-message";
 
@@ -58,7 +55,6 @@ export function ErrorState({
   errorId,
 }: ErrorStateProps) {
   const t = useTranslations("errors");
-  const [copied, setCopied] = useState(false);
 
   // useQuery คืน `error: null` ตอนไม่พัง — ไม่ใช่ undefined
   const hasError = error !== null && error !== undefined;
@@ -85,18 +81,6 @@ export function ErrorState({
         : undefined);
   const shownErrorId = errorId ?? serverFaultId(error);
 
-  const handleCopy = async () => {
-    if (!shownErrorId) return;
-    try {
-      await navigator.clipboard.writeText(shownErrorId);
-      setCopied(true);
-      toast.success(t("errorIdCopied"));
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // clipboard อาจถูกบล็อก — ไม่ทำอะไร
-    }
-  };
-
   return (
     <div
       role="alert"
@@ -113,23 +97,17 @@ export function ErrorState({
       </div>
 
       {shownErrorId && (
-        <button
-          type="button"
-          onClick={handleCopy}
-          aria-label={t("copyErrorId")}
-          className="border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground text-micro inline-flex items-center gap-1.5 rounded-md border px-2 py-1 transition-colors"
+        <CopyButton
+          value={shownErrorId}
+          label={t("copyErrorId")}
+          successMessage={t("errorIdCopied")}
         >
           <span className="font-semibold tracking-widest uppercase">
             {t("errorId")}
           </span>
           <span>·</span>
           <span>{shownErrorId}</span>
-          {copied ? (
-            <Check className="text-success-ink size-3" aria-hidden="true" />
-          ) : (
-            <Copy className="size-3" aria-hidden="true" />
-          )}
-        </button>
+        </CopyButton>
       )}
 
       <div className="flex flex-wrap items-center justify-center gap-2">

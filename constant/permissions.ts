@@ -147,6 +147,11 @@ export const PERMISSIONS = {
       view: "system_admin.config_email.view",
       update: "system_admin.config_email.update",
     },
+    /** API key ขาเข้าของ BU (หน้า Interface → Accounting → External) — GET = view, ที่เหลือรวม reveal = update */
+    bu_api_key: {
+      view: "system_admin.bu_api_key.view",
+      update: "system_admin.bu_api_key.update",
+    },
     role: crud("system_admin.role"),
     user: crud("system_admin.user"),
     running_code: crud("system_admin.running_code"),

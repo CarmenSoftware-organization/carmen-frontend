@@ -54,6 +54,7 @@ export function InterfacePageLayout({
   saveLabel,
   onCancel,
   notice,
+  afterForm,
   children,
 }: {
   readonly title: string;
@@ -69,6 +70,8 @@ export function InterfacePageLayout({
   readonly saveLabel: string;
   /** แถบแจ้งเตือนเหนือฟอร์ม อยู่นอก fieldset จึงกดปุ่มข้างในได้แม้เป็นโหมดอ่าน */
   readonly notice?: React.ReactNode;
+  /** ส่วนใต้ฟอร์มที่ทำงานทันทีด้วยตัวเอง (ไม่ผ่านปุ่ม Save) — อยู่นอก fieldset/form */
+  readonly afterForm?: React.ReactNode;
   readonly children: React.ReactNode;
 }) {
   const t = useTranslations("systemAdmin.interface");
@@ -139,6 +142,8 @@ export function InterfacePageLayout({
           </fieldset>
         </form>
       )}
+
+      {!isError && !isLoading && afterForm}
 
       <DiscardDialog
         open={navGuard.isOpen}
