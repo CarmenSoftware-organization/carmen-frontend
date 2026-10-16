@@ -1,15 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useTranslations } from "use-intl";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  Pencil,
-} from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/share/back-button";
 import { EyeBrow } from "@/components/ui/eye-brow";
 import { useCan } from "@/hooks/use-can";
 import { useListReturn } from "@/hooks/use-list-return";
@@ -82,32 +77,26 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
     <div className="mx-auto w-full max-w-6xl px-4 py-4 md:px-6">
       {/* หัว — ชื่อ + ข้อมูลที่ครัวต้องรู้ก่อนลงมือ */}
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b pb-4">
-        <div className="min-w-0">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mb-1 -ml-2"
-            onClick={() => toList()}
-          >
-            <ArrowLeft />
-            {t("backToRecipes")}
-          </Button>
-          <h1 className="text-foreground text-2xl font-semibold tracking-tight break-words">
-            {recipe.name}
-          </h1>
-          <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-            <span className="tabular-nums">{recipe.code}</span>
-            {recipe.base_yield > 0 && (
-              <span>
-                {t("cookYield", {
-                  qty: recipe.base_yield,
-                  unit: yieldUnit?.name ?? "",
-                })}
-              </span>
-            )}
-            {totalTime > 0 && (
-              <span>{t("cookTotalTime", { min: totalTime })}</span>
-            )}
+        <div className="flex min-w-0 items-start gap-2">
+          <BackButton onClick={() => toList()} label={t("backToRecipes")} />
+          <div className="min-w-0">
+            <h1 className="text-foreground text-2xl font-semibold tracking-tight break-words">
+              {recipe.name}
+            </h1>
+            <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              <span className="tabular-nums">{recipe.code}</span>
+              {recipe.base_yield > 0 && (
+                <span>
+                  {t("cookYield", {
+                    qty: recipe.base_yield,
+                    unit: yieldUnit?.name ?? "",
+                  })}
+                </span>
+              )}
+              {totalTime > 0 && (
+                <span>{t("cookTotalTime", { min: totalTime })}</span>
+              )}
+            </div>
           </div>
         </div>
         {canEdit && editLink}

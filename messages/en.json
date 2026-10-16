@@ -3881,7 +3881,7 @@
       "stepsAfterSave": "Save the recipe first, then add its steps.",
       "stepsSaveFailed": "The recipe was saved, but some steps weren't. Your edits are still here — check them and save again.",
       "noSteps": "No steps yet.",
-      "backToRecipes": "Recipes",
+      "backToRecipes": "Back to recipes",
       "cookYield": "Makes {qty} {unit}",
       "cookTotalTime": "{min} min total",
       "editRecipe": "Edit recipe",
