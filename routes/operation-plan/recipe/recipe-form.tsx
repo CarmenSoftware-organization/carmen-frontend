@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "use-intl";
@@ -33,6 +33,14 @@ import {
 } from "./recipe-ingredients-fields";
 import { RecipeCostFields } from "./recipe-cost-fields";
 import { RecipeComplianceFields } from "./recipe-compliance-fields";
+import { recipeCommentCrud } from "./use-recipe-comments";
+
+// sheet comment โหลดเมื่อกดเปิดครั้งแรก ไม่ต้องติดมากับหน้าฟอร์ม
+const EntityCommentSheet = lazy(() =>
+  import("@/components/share/entity-comment-sheet").then((m) => ({
+    default: m.EntityCommentSheet,
+  })),
+);
 
 export type { RecipeComputed } from "./use-recipe-cost-calc";
 
@@ -51,6 +59,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
   const updateRecipe = useUpdateRecipe();
   const deleteRecipe = useDeleteRecipe();
   const [showDelete, setShowDelete] = useState(false);
+  const [showComment, setShowComment] = useState(false);
   const [ingredients, setIngredients] = useState<RecipeIngredient[]>([]);
   const isPending = createRecipe.isPending || updateRecipe.isPending;
 
@@ -142,6 +151,8 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
           onEdit={f.handleEdit}
           onCancel={f.handleCancel}
           onDelete={recipe ? () => setShowDelete(true) : undefined}
+          activity={recipe && { id: recipe.id, label: recipe.code }}
+          onComment={recipe ? () => setShowComment(true) : undefined}
         />
       }
     >
@@ -188,6 +199,17 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
           isPending={deleteRecipe.isPending}
           onConfirm={handleDelete}
         />
+      )}
+
+      {recipe && (
+        <Suspense fallback={null}>
+          <EntityCommentSheet
+            crud={recipeCommentCrud}
+            entityId={recipe.id}
+            open={showComment}
+            onOpenChange={setShowComment}
+          />
+        </Suspense>
       )}
 
       <DiscardDialog {...f.discard.dialogProps} variant="warning" />

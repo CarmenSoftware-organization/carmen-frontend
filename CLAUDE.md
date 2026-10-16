@@ -82,7 +82,7 @@ bun test:run         # Single run    bun test:run path # Single file
 `activity-sheet-host.tsx` ที่ mount ครั้งเดียวใน `routes/root-layout.tsx` —
 **อย่าถือ state หรือ render sheet เองในหน้าใหม่**
 
-จุดเข้าถึงทั้งสามทาง · ทะเบียน entity ที่ backend บันทึกจริง (7 list ที่ไม่เปิด) ·
+จุดเข้าถึงทั้งสามทาง · ทะเบียน entity ที่ backend บันทึกจริง (6 list ที่ไม่เปิด) ·
 สัญญา `ACTION_TITLE_KEY` ↔ enum ฝั่ง DB → skill `activity-sheet`
 
 ## Interfaces config (`/system-admin/interface`)

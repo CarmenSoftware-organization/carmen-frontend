@@ -23,6 +23,10 @@ interface RecipeToolbarProps {
   readonly onEdit: () => void;
   readonly onCancel: () => void;
   readonly onDelete?: () => void;
+  /** ปุ่มประวัติการแก้ไข — ส่งเฉพาะสูตรที่บันทึกแล้ว */
+  readonly activity?: { id: string; label?: string };
+  /** เปิด sheet comment + ไฟล์แนบ — ส่งเฉพาะสูตรที่บันทึกแล้ว */
+  readonly onComment?: () => void;
 }
 
 export function RecipeToolbar({
@@ -34,6 +38,8 @@ export function RecipeToolbar({
   onEdit,
   onCancel,
   onDelete,
+  activity,
+  onComment,
 }: RecipeToolbarProps) {
   const ts = useTranslations("status");
   const tr = useTranslations("operationPlan.recipe");
@@ -107,6 +113,8 @@ export function RecipeToolbar({
       onEdit={onEdit}
       onDelete={onDelete}
       deleteIsPending={isDeleting}
+      activity={activity}
+      onComment={onComment}
     />
   );
 }
