@@ -22,6 +22,7 @@ import {
 } from "./recipe-form-schema";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useRecipeCostCalc } from "./use-recipe-cost-calc";
+import { RecipeNotesFields } from "./recipe-notes-fields";
 import { useRecipeGallery } from "./use-recipe-gallery";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { RecipeToolbar } from "./recipe-toolbar";
@@ -181,6 +182,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
           isDisabled={isDisabled}
         />
         <RecipeComplianceFields form={form} isDisabled={isDisabled} />
+        <RecipeNotesFields form={form} isDisabled={isDisabled} />
         <RecipeCostFields
           form={form}
           isDisabled={isDisabled}
@@ -251,6 +253,9 @@ function buildRecipePayload(values: RecipeFormValues) {
     gross_margin_percentage: values.gross_margin_percentage,
     actual_food_cost_percentage: values.actual_food_cost_percentage,
     target_food_cost_percentage: values.target_food_cost_percentage,
+    max_food_cost_percentage: values.max_food_cost_percentage || null,
+    plating_instructions: values.plating_instructions || null,
+    storage_instructions: values.storage_instructions || null,
     labor_cost_percentage: values.labor_cost_percentage,
     overhead_percentage: values.overhead_percentage,
     allergens: mergeAllergens(values.allergens),

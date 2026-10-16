@@ -44,52 +44,70 @@ export const mergeAllergens = (allergens: {
 // ── Schema ──
 
 export function createRecipeSchema(tv: TranslationFn, tf: TranslationFn) {
-  return z.object({
-    code: z.string().min(1, tv("required", { field: tf("code") })),
-    name: z.string().min(1, tv("required", { field: tf("name") })),
-    description: z.string(),
-    note: z.string(),
-    status: z.string().min(1, tv("required", { field: tf("status") })),
-    difficulty: z.string().min(1, tv("required", { field: tf("difficulty") })),
-    cuisine_id: z
-      .string()
-      .nullable()
-      .refine((v) => !!v, tv("required", { field: tf("cuisine") })),
-    category_id: z
-      .string()
-      .nullable()
-      .refine((v) => !!v, tv("required", { field: tf("category") })),
-    prep_time: z.coerce.number().min(0),
-    cook_time: z.coerce.number().min(0),
-    base_yield: z.coerce.number().min(0),
-    base_yield_unit: z
-      .string()
-      .nullable()
-      .refine((v) => !!v, tv("required", { field: tf("unit") })),
-    total_ingredient_cost: z.coerce.number().min(0),
-    labor_cost: z.coerce.number().min(0),
-    overhead_cost: z.coerce.number().min(0),
-    cost_per_portion: z.coerce.number().min(0),
-    selling_price: z.coerce.number().nullable(),
-    suggested_price: z.coerce.number().nullable(),
-    gross_margin: z.coerce.number().nullable(),
-    gross_margin_percentage: z.coerce.number().nullable(),
-    actual_food_cost_percentage: z.coerce.number().nullable(),
-    target_food_cost_percentage: z.coerce.number().nullable(),
-    labor_cost_percentage: z.coerce.number().nullable(),
-    overhead_percentage: z.coerce.number().nullable(),
-    allergens: z.object({
-      standard: z.array(z.string()),
-      custom: z.string(),
-    }),
-    tags: z.string(),
-    carbon_footprint: z.coerce.number().nullable(),
-    deduct_from_stock: z.boolean(),
-    default_variant_id: z.string().nullable(),
-    info: z.string(),
-    dimension: z.string(),
-    is_active: z.boolean(),
-  });
+  return z
+    .object({
+      code: z.string().min(1, tv("required", { field: tf("code") })),
+      name: z.string().min(1, tv("required", { field: tf("name") })),
+      description: z.string(),
+      note: z.string(),
+      status: z.string().min(1, tv("required", { field: tf("status") })),
+      difficulty: z
+        .string()
+        .min(1, tv("required", { field: tf("difficulty") })),
+      cuisine_id: z
+        .string()
+        .nullable()
+        .refine((v) => !!v, tv("required", { field: tf("cuisine") })),
+      category_id: z
+        .string()
+        .nullable()
+        .refine((v) => !!v, tv("required", { field: tf("category") })),
+      prep_time: z.coerce.number().min(0),
+      cook_time: z.coerce.number().min(0),
+      base_yield: z.coerce.number().min(0),
+      base_yield_unit: z
+        .string()
+        .nullable()
+        .refine((v) => !!v, tv("required", { field: tf("unit") })),
+      total_ingredient_cost: z.coerce.number().min(0),
+      labor_cost: z.coerce.number().min(0),
+      overhead_cost: z.coerce.number().min(0),
+      cost_per_portion: z.coerce.number().min(0),
+      selling_price: z.coerce.number().nullable(),
+      suggested_price: z.coerce.number().nullable(),
+      gross_margin: z.coerce.number().nullable(),
+      gross_margin_percentage: z.coerce.number().nullable(),
+      actual_food_cost_percentage: z.coerce.number().nullable(),
+      target_food_cost_percentage: z.coerce.number().nullable(),
+      max_food_cost_percentage: z.coerce.number().min(0).max(100).nullable(),
+      plating_instructions: z.string().max(2000),
+      storage_instructions: z.string().max(2000),
+      labor_cost_percentage: z.coerce.number().nullable(),
+      overhead_percentage: z.coerce.number().nullable(),
+      allergens: z.object({
+        standard: z.array(z.string()),
+        custom: z.string(),
+      }),
+      tags: z.string(),
+      carbon_footprint: z.coerce.number().nullable(),
+      deduct_from_stock: z.boolean(),
+      default_variant_id: z.string().nullable(),
+      info: z.string(),
+      dimension: z.string(),
+      is_active: z.boolean(),
+    })
+    .superRefine((v, ctx) => {
+      // เพดานต่ำกว่าเป้า = ราคาขั้นต่ำสูงกว่าราคาที่เป้า ซึ่งกลับหัวกลับหาง
+      const target = Number(v.target_food_cost_percentage) || 0;
+      const max = Number(v.max_food_cost_percentage) || 0;
+      if (target > 0 && max > 0 && max < target) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["max_food_cost_percentage"],
+          message: tv("maxFoodCostBelowTarget"),
+        });
+      }
+    });
 }
 
 export type RecipeFormValues = z.infer<ReturnType<typeof createRecipeSchema>>;
@@ -119,6 +137,9 @@ export const EMPTY_FORM: RecipeFormValues = {
   gross_margin_percentage: null,
   actual_food_cost_percentage: null,
   target_food_cost_percentage: null,
+  max_food_cost_percentage: null,
+  plating_instructions: "",
+  storage_instructions: "",
   labor_cost_percentage: null,
   overhead_percentage: null,
   allergens: { standard: [], custom: "" },
@@ -157,6 +178,9 @@ export function getDefaultValues(recipe?: Recipe): RecipeFormValues {
     gross_margin_percentage: recipe.gross_margin_percentage,
     actual_food_cost_percentage: recipe.actual_food_cost_percentage,
     target_food_cost_percentage: recipe.target_food_cost_percentage,
+    max_food_cost_percentage: recipe.max_food_cost_percentage ?? null,
+    plating_instructions: recipe.plating_instructions ?? "",
+    storage_instructions: recipe.storage_instructions ?? "",
     labor_cost_percentage: recipe.labor_cost_percentage,
     overhead_percentage: recipe.overhead_percentage,
     allergens: splitAllergens(recipe.allergens),
