@@ -3461,12 +3461,50 @@
       },
       "status": {
         "open": "เปิด",
-        "closed": "ปิดแล้ว"
+        "closed": "ปิดแล้ว",
+        "locked": "ล็อกแล้ว"
       },
       "documents": "เอกสาร",
       "documentsSummary": "เสร็จ {complete} · ค้าง {incomplete} · รวม {total}",
       "noDocuments": "ไม่มีเอกสารในงวดนี้",
-      "openDocumentsLabel": "เปิดรายการเอกสาร {module}"
+      "openDocumentsLabel": "เปิดรายการเอกสาร {module}",
+      "historyCount": "{count} งวด",
+      "historyColumns": {
+        "range": "ช่วงวันที่",
+        "updated": "แก้ไขล่าสุด"
+      },
+      "track": {
+        "title": "ขั้นตอนปิดงวดนี้",
+        "documents": {
+          "title": "เคลียร์เอกสารที่ขยับสต๊อก",
+          "blocked": "ยังมีเอกสารขยับสต๊อกค้าง {count} ใบ",
+          "ready": "ไม่มีเอกสารที่ขยับสต๊อกค้างแล้ว",
+          "done": "เคลียร์แล้วก่อนเริ่มนับ"
+        },
+        "counting": {
+          "title": "นับให้ครบทุกสถานที่",
+          "notStarted": "เริ่มเมื่อเปิดรอบตรวจนับ",
+          "progress": "นับเสร็จ {completed} จาก {total} สถานที่",
+          "done": "นับครบทั้ง {total} สถานที่",
+          "closed": "นับเสร็จแล้ว"
+        },
+        "close": {
+          "title": "ปิดงวด",
+          "waiting": "เหลือเอกสาร {docs} ใบ · สถานที่ {locations} แห่ง",
+          "ready": "พร้อมปิดงวด",
+          "done": "ปิดแล้ว"
+        }
+      },
+      "reviewList": {
+        "blocksClosing": "กันการปิดงวด",
+        "reference": "ดูประกอบ — ไม่กันการปิดงวด",
+        "pendingCount": "ค้าง {count} ใบ",
+        "openCount": "ยังเปิดอยู่ {count} ใบ",
+        "noDocs": "ไม่มีเอกสาร",
+        "blockersTotal": "มีเอกสาร {count} ใบที่กันการปิดงวด",
+        "noBlockers": "ไม่มีเอกสารที่กันการปิดงวดแล้ว",
+        "openNotBlocking": "เปิดอยู่ {count} ใบ · ไม่กัน"
+      }
     },
     "transaction": {
       "entity": "รายการเคลื่อนไหว",

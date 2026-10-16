@@ -1,9 +1,8 @@
 import {
+  ArrowRight,
   CalendarClock,
-  CalendarDays,
   CalendarRange,
   PlayCircle,
-  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -11,25 +10,17 @@ import { useLocale, useTranslations } from "use-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import {
   usePeriodEndCurrent,
+  usePeriodEndReview,
   useStartPeriodCounting,
 } from "./use-period-end";
 import { usePhysicalCountPeriodCurrent } from "@/hooks/use-physical-count-period";
 import { ApiError } from "@/lib/api-error";
-import { cn } from "@/lib/utils";
 import PeHistory from "./pe-history";
+import { PeCloseTrack } from "./pe-close-track";
 import { PeStartBlockedDialog } from "./pe-start-blocked-dialog";
 import { formatLocalizedDate } from "@/lib/date-utils";
 import type { StartCountingBlockers } from "@/types/period-end";
@@ -48,6 +39,7 @@ export default function PeComponent() {
   const t = useTranslations("inventoryManagement.periodEnd");
   const { data, isLoading, isError } = usePeriodEndCurrent();
   const { data: countingRound } = usePhysicalCountPeriodCurrent();
+  const { data: review, isLoading: isReviewLoading } = usePeriodEndReview();
   const startCounting = useStartPeriodCounting();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [blockers, setBlockers] = useState<StartCountingBlockers | null>(null);
@@ -69,7 +61,10 @@ export default function PeComponent() {
         setConfirmOpen(false);
         // 422 พก `{ counts, total, documents }` มาใน error body ให้ลิสต์เอกสารที่ค้างได้
         // ส่วน error อื่นตกไปที่ toast ตามปกติ (5xx จะได้ undefined โดยตั้งใจ ไม่ให้ internal หลุด)
-        if (error instanceof ApiError && isStartCountingBlockers(error.details)) {
+        if (
+          error instanceof ApiError &&
+          isStartCountingBlockers(error.details)
+        ) {
           setBlockers(error.details);
           return;
         }
@@ -82,100 +77,97 @@ export default function PeComponent() {
   };
 
   return (
-    <div className="animate-fade-in-up space-y-5 p-3 md:p-4">
+    <div className="animate-fade-in-up space-y-6 p-3 md:p-4">
       <section className="flex items-center gap-3">
         <span
           aria-hidden="true"
           className="bg-primary/10 text-primary inline-flex size-9 items-center justify-center rounded-xl"
-          style={{ color: "var(--primary)" }}
         >
           <CalendarRange className="size-5" />
         </span>
         <div>
           <h1 className="text-foreground text-xl font-semibold tracking-tight">
-            {t("current")}
+            {t("title")}
           </h1>
-          <p className="text-muted-foreground text-sm">{t("currentDesc")}</p>
+          <p className="text-muted-foreground text-sm">{t("desc")}</p>
         </div>
       </section>
 
-      {isLoading && (
-        <div className="space-y-3">
-          <Skeleton className="h-48 w-full rounded-xl" />
-          <Skeleton className="h-24 w-full rounded-xl" />
+      {isLoading && <Skeleton className="h-52 w-full rounded-xl" />}
+
+      {!isLoading && (isError || !data) && (
+        <div
+          aria-live="polite"
+          className="text-muted-foreground flex items-center gap-2 rounded-xl border border-dashed p-4 text-sm"
+        >
+          <CalendarClock className="size-4" aria-hidden="true" />
+          {t("noCurrent")}
         </div>
       )}
 
-      {!isLoading && (isError || !data) && (
-        <Card aria-live="polite" className="border-dashed">
-          <CardContent className="text-muted-foreground flex items-center gap-2 text-sm">
-            <CalendarClock className="size-4" aria-hidden="true" />
-            {t("noCurrent")}
-          </CardContent>
-        </Card>
-      )}
-
       {!isLoading && data && (
-        <Card
-          className="border-l-4"
-          style={{ borderLeftColor: "var(--primary)" }}
+        <section
+          aria-labelledby="pe-current-period"
+          className="bg-card overflow-hidden rounded-xl border"
         >
-          <CardHeader>
-            <CardDescription className="text-micro font-semibold tracking-[0.18em] uppercase">
-              {t("fields.period")}
-            </CardDescription>
-            <CardTitle className="text-3xl tracking-tight md:text-4xl">
-              {data.period}
-            </CardTitle>
-            <CardDescription className="flex items-center gap-2">
-              <Sparkles
-                className="text-muted-foreground/70 size-3.5"
-                aria-hidden="true"
-              />
-              <span>
-                {t("fields.fiscalYear")} {data.fiscal_year} ·{" "}
-                {t("fields.fiscalMonth")} {data.fiscal_month}
-              </span>
-            </CardDescription>
-            <CardAction>
-              <StatusIconLabel
-                status={statusKey}
-                label={t(`status.${statusKey}`)}
-              />
-            </CardAction>
-          </CardHeader>
-
-          <CardContent className="grid grid-cols-2 gap-3 text-sm">
-            <RangeField
-              icon={<CalendarDays className="size-3.5" />}
-              label={t("fields.startAt")}
-              value={formatLocalizedDate(data.start_at, locale)}
-            />
-            <RangeField
-              icon={<CalendarClock className="size-3.5" />}
-              label={t("fields.endAt")}
-              value={formatLocalizedDate(data.end_at, locale)}
-            />
-            {data.note && (
-              <div className="col-span-2">
-                <RangeField label={t("fields.note")} value={data.note} />
+          <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4 p-4 md:p-5">
+            <div className="min-w-0 space-y-1">
+              <p className="text-muted-foreground text-micro font-semibold tracking-[0.18em] uppercase">
+                {t("current")}
+              </p>
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <h2
+                  id="pe-current-period"
+                  className="text-foreground text-3xl font-semibold tracking-tight tabular-nums"
+                >
+                  {data.period}
+                </h2>
+                <StatusIconLabel
+                  status={statusKey}
+                  label={t(`status.${statusKey}`)}
+                />
               </div>
-            )}
-          </CardContent>
-
-          <CardFooter className="justify-end border-t">
+              <p className="text-muted-foreground text-sm tabular-nums">
+                {formatLocalizedDate(data.start_at, locale)} –{" "}
+                {formatLocalizedDate(data.end_at, locale)}
+                <span aria-hidden="true"> · </span>
+                {t("fields.fiscalYear")} {data.fiscal_year}
+                <span aria-hidden="true"> · </span>
+                {t("fields.fiscalMonth")} {data.fiscal_month}
+              </p>
+              {data.note && (
+                <p className="text-foreground max-w-prose pt-1 text-sm">
+                  {data.note}
+                </p>
+              )}
+            </div>
             <Button
-              size="sm"
               onClick={() =>
                 isCounting ? navigate(reviewPath) : setConfirmOpen(true)
               }
-              disabled={statusKey === "closed" || startCounting.isPending}
+              disabled={statusKey !== "open" || startCounting.isPending}
             >
-              <PlayCircle aria-hidden="true" />
+              {isCounting ? (
+                <ArrowRight aria-hidden="true" />
+              ) : (
+                <PlayCircle aria-hidden="true" />
+              )}
               {isCounting ? t("continueCounting") : t("startClose")}
             </Button>
-          </CardFooter>
-        </Card>
+          </div>
+
+          {/* รางสามขั้นอ่านจาก review — ถ้าโหลดไม่ได้ก็แค่ไม่แสดง ไม่บังปุ่มด้านบน */}
+          {review && (
+            <div className="bg-muted/30 border-t px-4 py-4 md:px-5">
+              <PeCloseTrack review={review} />
+            </div>
+          )}
+          {!review && isReviewLoading && (
+            <div className="border-t px-4 py-4 md:px-5">
+              <Skeleton className="h-12 w-full rounded-lg" />
+            </div>
+          )}
+        </section>
       )}
 
       <PeHistory />
@@ -195,30 +187,6 @@ export default function PeComponent() {
         onOpenChange={(open) => !open && setBlockers(null)}
         blockers={blockers}
       />
-    </div>
-  );
-}
-
-interface RangeFieldProps {
-  readonly icon?: React.ReactNode;
-  readonly label: string;
-  readonly value: string | undefined | null;
-}
-
-function RangeField({ icon, label, value }: RangeFieldProps) {
-  return (
-    <div className="border-border/60 bg-card rounded-lg border p-3">
-      <p
-        className={cn(
-          "text-muted-foreground text-micro flex items-center gap-1.5 font-semibold tracking-wide uppercase",
-        )}
-      >
-        {icon}
-        {label}
-      </p>
-      <p className="text-foreground mt-1 text-sm font-semibold">
-        {value ?? "—"}
-      </p>
     </div>
   );
 }

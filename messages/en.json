@@ -3461,12 +3461,50 @@
       },
       "status": {
         "open": "Open",
-        "closed": "Closed"
+        "closed": "Closed",
+        "locked": "Locked"
       },
       "documents": "Documents",
       "documentsSummary": "{complete} complete · {incomplete} incomplete · {total} total",
       "noDocuments": "No documents in this period.",
-      "openDocumentsLabel": "Open {module} documents"
+      "openDocumentsLabel": "Open {module} documents",
+      "historyCount": "{count} period(s)",
+      "historyColumns": {
+        "range": "Date range",
+        "updated": "Last updated"
+      },
+      "track": {
+        "title": "Steps to close this period",
+        "documents": {
+          "title": "Clear stock documents",
+          "blocked": "{count} document(s) still move stock",
+          "ready": "Nothing left that moves stock",
+          "done": "Cleared before counting started"
+        },
+        "counting": {
+          "title": "Count every location",
+          "notStarted": "Starts once counting begins",
+          "progress": "{completed} of {total} locations counted",
+          "done": "All {total} locations counted",
+          "closed": "Counted"
+        },
+        "close": {
+          "title": "Close the period",
+          "waiting": "{docs} document(s) · {locations} location(s) left",
+          "ready": "Ready to close",
+          "done": "Closed"
+        }
+      },
+      "reviewList": {
+        "blocksClosing": "Blocks closing",
+        "reference": "For reference — does not block closing",
+        "pendingCount": "{count} pending",
+        "openCount": "{count} still open",
+        "noDocs": "No documents",
+        "blockersTotal": "{count} document(s) block closing",
+        "noBlockers": "Nothing here blocks closing",
+        "openNotBlocking": "{count} open · not blocking"
+      }
     },
     "transaction": {
       "entity": "Transaction",
