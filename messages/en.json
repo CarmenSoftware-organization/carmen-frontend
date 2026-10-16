@@ -3841,7 +3841,13 @@
       "marginsDesc": "Selling price and profit — set a price that hits your target margin.",
       "otherMetricsDesc": "Extra numbers that help you judge how worthwhile the recipe is.",
       "pricingDesc": "The cost of one portion and the price you sell it at.",
-      "lifecycle": "Lifecycle"
+      "lifecycle": "Lifecycle",
+      "costing": "Costing",
+      "costingDesc": "Batch cost ÷ yield = cost per portion, then the price you sell it at and how food cost sits against target.",
+      "batchCost": "Batch cost",
+      "noPriceYet": "Set a selling price to see food cost and gross margin.",
+      "noTargetYet": "No target set — enter a target food cost to compare.",
+      "withinTargetMessage": "Within the {pct}% target"
     }
   },
   "productManagement": {
