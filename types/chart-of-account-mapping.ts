@@ -17,12 +17,21 @@ export type MappingStatus =
   | "unreviewed";
 export type Ref = { id: string; code: string; name: string };
 
-export type AccountSource = "override" | "item_group" | "sub_category" | "category";
+export type AccountSource =
+  | "override"
+  | "item_group"
+  | "sub_category"
+  | "category"
+  | "vendor"
+  | "bu_default"
+  | "adjustment_type";
 export type CostCenterSource = "override" | "location";
 export type AccountIssue =
   | "missing_inventory_account"
   | "missing_direct_account"
-  | "account_not_in_coa";
+  | "account_not_in_coa"
+  | "missing_ap_account"
+  | "missing_adjustment_account";
 export type CostCenterIssue = "missing_cost_center";
 
 export interface AccountMappingRow {
