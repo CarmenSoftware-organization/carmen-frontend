@@ -11,9 +11,8 @@ export function createCostCenterSchema(tv: TranslationFn, tf: TranslationFn) {
       .string()
       .trim()
       .min(1, tv("required", { field: tf("name") })),
-    cost_center_group_id: z
-      .string()
-      .min(1, tv("required", { field: tf("costCenterGroup") })),
+    // ไม่บังคับ — "" = ไม่ระบุกลุ่ม (ส่งเป็น null)
+    cost_center_group_id: z.string(),
     description: z.string().optional(),
     note: z.string().optional(),
     is_active: z.boolean(),

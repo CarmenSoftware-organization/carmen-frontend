@@ -1542,7 +1542,7 @@
       "deleteConfirm": "Are you sure you want to delete cost center \"{name}\"? This action cannot be undone.",
       "codePlaceholder": "e.g. 101",
       "namePlaceholder": "e.g. Front Office",
-      "noGroupHint": "No active cost center group — create or activate one first.",
+      "noGroupHint": "No active cost center group yet — you can save without one.",
       "createGroupLink": "Go to Cost Center Group"
     },
     "creditNoteReason": {
