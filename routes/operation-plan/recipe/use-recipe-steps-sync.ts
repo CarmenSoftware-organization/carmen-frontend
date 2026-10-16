@@ -9,6 +9,7 @@ import {
   diffSteps,
   draftToItem,
   isEmptyDiff,
+  StepsChangedElsewhereError,
   type StepDraft,
 } from "./recipe-steps-sync";
 
@@ -80,10 +81,17 @@ export function useSyncRecipeSteps() {
       if (diff.needsReorder) {
         let next = 0;
         const step_ids = drafts.map((d) => d.step_id ?? addedIds[next++]);
-        await ensureOk(
-          await httpClient.put(`${base}/order`, { step_ids }),
-          "Failed to reorder preparation steps",
-        );
+        try {
+          await ensureOk(
+            await httpClient.put(`${base}/order`, { step_ids }),
+            "Failed to reorder preparation steps",
+          );
+        } catch (err) {
+          if (err instanceof ApiError && err.statusCode === 400) {
+            throw new StepsChangedElsewhereError(err);
+          }
+          throw err;
+        }
       }
     },
     // ทั้งสำเร็จและล้มต้องดึงใหม่ — id/doc_version ของขั้นที่เขียนไปแล้วเปลี่ยน

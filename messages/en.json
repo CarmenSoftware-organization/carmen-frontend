@@ -3876,6 +3876,7 @@
       "removeEquipment": "Remove {name}",
       "stepsAfterSave": "Save the recipe first, then add its steps.",
       "stepsSaveFailed": "The recipe was saved, but some steps weren't. Your edits are still here — check them and save again.",
+      "stepsChangedElsewhere": "The steps were changed by someone else and have been reloaded. Check them and save again.",
       "noSteps": "No steps yet.",
       "backToRecipes": "Back to recipes",
       "cookYield": "Makes {qty} {unit}",
