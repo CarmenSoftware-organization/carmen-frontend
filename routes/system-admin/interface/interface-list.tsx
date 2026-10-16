@@ -23,7 +23,8 @@ import {
 
 export type BrandStatus = {
   readonly brand: BrandDef;
-  readonly enabled: boolean;
+  /** `null` = brand ไม่มีสวิตช์เปิด/ปิด (`noConnection`) */
+  readonly enabled: boolean | null;
   readonly entitlement: InterfaceEntitlement;
   /** `false` = backend ไม่ให้อ่าน config (คีย์อยู่แค่ใน `expired_features`) สถานะจริงจึงไม่รู้ */
   readonly readable: boolean;
@@ -83,8 +84,8 @@ export function interfaceGroups(
             brand,
             entitlement: entitlementOf(category.key, brand.key),
             readable: canReadConfig(category.key, brand.key),
-            enabled: row?.value?.enabled === true,
-            target: connectionTarget(row?.value),
+            enabled: brand.noConnection ? null : row?.value?.enabled === true,
+            target: brand.noConnection ? null : connectionTarget(row?.value),
             updated: row?.audit?.updated ?? row?.audit?.created,
           };
         })
@@ -97,15 +98,15 @@ export function interfaceGroups(
 const ROW_GRID =
   "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-3 sm:grid-cols-[auto_minmax(0,14rem)_minmax(0,1fr)_10rem_auto] sm:gap-x-4";
 
-function StatusDot({ enabled }: { readonly enabled: boolean }) {
+function StatusDot({ enabled }: { readonly enabled: boolean | null }) {
+  // null = ไม่มีสถานะ — เว้นช่องไว้ให้ชื่อ brand ยังตรงแนวกับแถวอื่น
   return (
     <span
       aria-hidden="true"
       className={cn(
         "size-2 shrink-0 rounded-full",
-        enabled
-          ? "bg-success ring-success/20 ring-4"
-          : "border-muted-foreground/50 border",
+        enabled === true && "bg-success ring-success/20 ring-4",
+        enabled === false && "border-muted-foreground/50 border",
       )}
     />
   );
@@ -150,7 +151,9 @@ export default function InterfaceList() {
         <div className="space-y-6">
           {groups.map(({ category, brands }) => {
             const Icon = category.icon;
-            const enabledCount = brands.filter((b) => b.enabled).length;
+            // brand ที่ไม่มีสวิตช์ (enabled = null) ไม่นับทั้งตัวตั้งและตัวหาร
+            const switchable = brands.filter((b) => b.enabled !== null);
+            const enabledCount = switchable.filter((b) => b.enabled).length;
             const headingId = `interface-${category.key}`;
             return (
               <section key={category.key} aria-labelledby={headingId}>
@@ -164,7 +167,7 @@ export default function InterfaceList() {
                   <span className="text-muted-foreground ml-auto text-xs tabular-nums">
                     {t("enabledCount", {
                       enabled: enabledCount,
-                      total: brands.length,
+                      total: switchable.length,
                     })}
                   </span>
                 </div>
@@ -209,9 +212,11 @@ export default function InterfaceList() {
                                     : "text-muted-foreground",
                                 )}
                               >
-                                {enabled
-                                  ? t("statusEnabled")
-                                  : t("statusDisabled")}
+                                {enabled === null
+                                  ? "—"
+                                  : enabled
+                                    ? t("statusEnabled")
+                                    : t("statusDisabled")}
                               </span>
                             )}
                           </span>
@@ -225,7 +230,9 @@ export default function InterfaceList() {
                             title={target ?? undefined}
                           >
                             <span className="sr-only">{t("target")}: </span>
-                            {readable ? (target ?? t("notConfigured")) : "—"}
+                            {readable && !brand.noConnection
+                              ? (target ?? t("notConfigured"))
+                              : "—"}
                           </span>
                           <span className="hidden min-w-0 sm:block">
                             <span className="sr-only">{t("updated")}: </span>

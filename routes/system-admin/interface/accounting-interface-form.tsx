@@ -56,37 +56,47 @@ const FREQUENCIES = accountingSchema.shape.posting_frequency.options;
  * แยกออกมาให้ฟอร์ม brand `external` ใช้ซ้ำโดยไม่ต้อง copy
  *
  * @param props.form - `useForm` ของฟอร์มแม่ (ถือ state เอง component นี้ไม่ถือ)
- * @returns React element ของ SettingSection สามอัน
+ * @param props.hideConnection - ซ่อน section Connection (brand `external` — ระบบภายนอกดึงเอง
+ *   ไม่มีปลายทางให้ส่ง) · ค่า `enabled`/`endpoint` เดิมยังอยู่ใน form จึงถูกส่งกลับตอน Save ไม่หาย
+ * @returns React element ของ SettingSection สามอัน (หรือสองอันเมื่อซ่อน Connection)
  */
 export function AccountingFields({
   form,
+  hideConnection = false,
 }: {
   readonly form: UseFormReturn<AccountingFormValues>;
+  readonly hideConnection?: boolean;
 }) {
   const t = useTranslations("systemAdmin.interface");
   const ta = useTranslations("systemAdmin.interface.accounting");
   return (
     <>
-      <SettingSection
-        first
-        title={ta("connection")}
-        description={ta("connectionDesc")}
-      >
-        <ToggleField
-          label={t("enabled")}
-          checked={form.watch("enabled")}
-          onChange={(v) => form.setValue("enabled", v, { shouldDirty: true })}
-        />
-        <TextField
-          label={t("endpoint")}
-          field={form.register("endpoint")}
-          error={form.formState.errors.endpoint?.message}
-          placeholder="https://gl.example.com"
-          className="sm:col-span-2"
-        />
-      </SettingSection>
+      {!hideConnection && (
+        <SettingSection
+          first
+          title={ta("connection")}
+          description={ta("connectionDesc")}
+        >
+          <ToggleField
+            label={t("enabled")}
+            checked={form.watch("enabled")}
+            onChange={(v) => form.setValue("enabled", v, { shouldDirty: true })}
+          />
+          <TextField
+            label={t("endpoint")}
+            field={form.register("endpoint")}
+            error={form.formState.errors.endpoint?.message}
+            placeholder="https://gl.example.com"
+            className="sm:col-span-2"
+          />
+        </SettingSection>
+      )}
 
-      <SettingSection title={ta("defaults")} description={ta("defaultsDesc")}>
+      <SettingSection
+        first={hideConnection}
+        title={ta("defaults")}
+        description={ta("defaultsDesc")}
+      >
         <TextField
           label={ta("defaultAccountCode")}
           field={form.register("default_account_code")}

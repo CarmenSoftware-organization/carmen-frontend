@@ -6,6 +6,11 @@ export type BrandDef = {
   readonly key: string;
   readonly configKey: string;
   readonly form?: LazyExoticComponent<ComponentType>;
+  /**
+   * `true` = brand นี้ไม่มีสวิตช์เปิด/ปิดและปลายทาง (ระบบภายนอกดึงเองผ่าน API key)
+   * หน้า list จึงแสดง "—" แทนสถานะ/ปลายทาง แทนที่จะค้างค่าเก่าที่แก้ไม่ได้แล้ว
+   */
+  readonly noConnection?: boolean;
 };
 
 export type InterfaceCategoryDef = {
@@ -54,8 +59,9 @@ export const INTERFACE_CATEGORIES: readonly InterfaceCategoryDef[] = [
       {
         key: "external",
         configKey: "interface_accounting_external",
-        // ฟอร์มเดิมของ accounting + บัญชีตั้งต้น gl_setting (ช่วง 2 จะเพิ่ม API Access)
+        // ฟอร์ม accounting (ไม่มี section Connection) + บัญชีตั้งต้น gl_setting + API Access
         form: lazy(() => import("./external-interface-form")),
+        noConnection: true,
       },
     ],
     form: lazy(() => import("./accounting-interface-form")),
