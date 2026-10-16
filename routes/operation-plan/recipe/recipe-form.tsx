@@ -189,9 +189,12 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
           onSuccess: (res) => {
             // บันทึกแล้ว — กด Save ซ้ำ (หัวล้ม) ต้องคงราคาที่เพิ่งบันทึก ไม่คำนวณใหม่อีกรอบ
             form.setValue("recalculate_ingredients", false);
-            // ไม่มีวัตถุดิบเหลือ = ยอดวัตถุดิบกลับเป็นช่องกรอกมือ ใช้ค่าที่ผู้ใช้เห็น
+            // ยังมีวัตถุดิบ หรือเพิ่งลบวัตถุดิบที่เคยบันทึกไว้จนหมด = ยอดมาจาก server
+            // (ลบหมดได้ 0 — ไม่งั้นยอดของบรรทัดที่ลบไปแล้วค้างอยู่ในช่อง แล้วถูกเขียนกลับ)
+            // สูตรที่ไม่เคยมีวัตถุดิบเลย = ช่องกรอกมือ ใช้ค่าที่ผู้ใช้เห็น
+            const hadSavedIngredients = (recipe.ingredients?.length ?? 0) > 0;
             const total =
-              values.ingredients.length > 0
+              values.ingredients.length > 0 || hadSavedIngredients
                 ? res.total_ingredient_cost
                 : values.total_ingredient_cost;
             form.setValue("total_ingredient_cost", total);

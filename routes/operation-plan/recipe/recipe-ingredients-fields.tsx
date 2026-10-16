@@ -355,12 +355,15 @@ function IngredientRow({
 
   return (
     <div className="rounded-md border p-3">
-      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_6rem_5rem_7rem_auto] sm:items-start">
-        <div className="min-w-0">
+      {/* สินค้าเต็มแถวบน — การ์ดในฟอร์มแคบ ถ้าอยู่แถวเดียวกับหน่วย/จำนวน ชื่อสินค้าเหลือ ~120px */}
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_6rem_5rem_7rem_auto] sm:items-start">
+        <div className="min-w-0 sm:col-span-full">
           <LookupProduct
             value={productId}
             defaultLabel={productLabel || undefined}
             size="sm"
+            // ปุ่ม combobox กว้างตามชื่อสินค้า (shrink-0) — ชื่อยาวล้นทับช่องหน่วย
+            className="w-full min-w-0"
             disabled={isDisabled}
             placeholder={t("ingredientName")}
             error={rowErrors?.product_id?.message}
