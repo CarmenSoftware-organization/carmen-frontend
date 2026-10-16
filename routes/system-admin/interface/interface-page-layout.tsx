@@ -55,6 +55,7 @@ export function InterfacePageLayout({
   onCancel,
   notice,
   afterForm,
+  width,
   children,
 }: {
   readonly title: string;
@@ -72,6 +73,8 @@ export function InterfacePageLayout({
   readonly notice?: React.ReactNode;
   /** ส่วนใต้ฟอร์มที่ทำงานทันทีด้วยตัวเอง (ไม่ผ่านปุ่ม Save) — อยู่นอก fieldset/form */
   readonly afterForm?: React.ReactNode;
+  /** ความกว้างหน้า — ส่งต่อให้ `FormPageShell` (ค่าเริ่มต้น max-w-4xl) */
+  readonly width?: "default" | "wide";
   readonly children: React.ReactNode;
 }) {
   const t = useTranslations("systemAdmin.interface");
@@ -102,6 +105,7 @@ export function InterfacePageLayout({
 
   return (
     <FormPageShell
+      width={width}
       header={
         <FormToolbar
           mode={isEditing ? "edit" : "view"}
