@@ -1597,8 +1597,8 @@
         "dimensionsDesc": "เลือก Dimension ที่อนุญาต พร้อมกำหนด Sub-Codes และ Default Code (สูงสุด 1 Code)",
         "attributes": "5. คุณลักษณะอ้างอิงเพิ่มเติม (Attribute Tags)",
         "attributesDesc": "รูปแบบ Key-Value Pair (สำหรับผูก Tag อ้างอิงภายนอก เช่น PMS/POS/หมวดภาษี)",
-        "grouping": "ระดับหมวดบัญชีคุม (Account Code Group Path) *",
-        "groupingDesc": "บังคับเลือกโครงสร้างต้นไม้ผังบัญชีคุม (Level 1 ถึง Level 4) ก่อนบันทึกข้อมูล"
+        "grouping": "ระดับหมวดบัญชีคุม (Account Code Group Path)",
+        "groupingDesc": "เลือกโครงสร้างต้นไม้ผังบัญชีคุม (Level 1 ถึง Level 4) หรือเว้นว่างไว้ได้"
       },
       "rules": {
         "activeStatusTitle": "สถานะใช้งานบัญชี (Active Status)",
@@ -1609,8 +1609,6 @@
         "natureAutoLabel": "กำหนดตามหมวดบัญชีอัตโนมัติ",
         "readOnly": "อ่านอย่างเดียว",
         "natureAutoDesc": "ด้านบัญชีกำหนดอัตโนมัติตามหมวดบัญชี (ห้ามแก้ไข)",
-        "groupingMandatory": "Mandatory: กรุณาเลือกระดับหมวดบัญชีคุมก่อนบันทึก",
-        "groupingRequiredAlert": "กรุณาเลือกระดับหมวดบัญชีคุม (Account Code Group Path) ก่อนบันทึก!",
         "duplicateCodeAlert": "รหัสบัญชีนี้มีอยู่ในระบบแล้ว!",
         "selectCategoryAlert": "กรุณาเลือกหมวดบัญชี (Category)!",
         "selectTypeAlert": "กรุณาเลือกประเภทบัญชี (Type)!",
@@ -1630,9 +1628,9 @@
         "hierarchicalPath": "Hierarchical Grouping Path:",
         "levelBreakdown": "Level Hierarchy Breakdown:",
         "currentParentGroup": "กลุ่มบัญชีคุมปัจจุบัน (Current Parent Group)",
-        "selectGroup": "เลือกระดับบัญชีคุม *",
+        "selectGroup": "เลือกระดับบัญชีคุม",
         "changeGroup": "เปลี่ยนระดับบัญชีคุม",
-        "noGroupingSelected": "ยังไม่ได้เลือกระดับหมวดบัญชีคุม กรุณากด \"เลือกระดับบัญชีคุม *\" ด้านบน",
+        "noGroupingSelected": "ยังไม่ได้เลือกระดับหมวดบัญชีคุม กด \"เลือกระดับบัญชีคุม\" ด้านบนหากต้องการกำหนด (ไม่บังคับ)",
         "addTag": "เพิ่ม Tag",
         "tagKey": "ชื่อคีย์ (Tag Key)",
         "tagValue": "ค่าที่กำหนด (Tag Value)",
