@@ -208,19 +208,22 @@ export function ExternalApiAccessSection() {
           )}
         </div>
 
-        <div className="space-y-4">
-          <CredentialField
-            label={t("baseUrl")}
-            value={baseUrl}
-            actions={
-              <CopyButton
-                value={baseUrl}
-                label={t("copyBaseUrl")}
-                successMessage={t("copied")}
-                className={COPY_IN_FIELD}
-              />
-            }
-          />
+        {/* section เป็น wide — Base URL เต็มแถว, Client ID กับ Secret คู่กันเมื่อจอกว้างพอ */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <CredentialField
+              label={t("baseUrl")}
+              value={baseUrl}
+              actions={
+                <CopyButton
+                  value={baseUrl}
+                  label={t("copyBaseUrl")}
+                  successMessage={t("copied")}
+                  className={COPY_IN_FIELD}
+                />
+              }
+            />
+          </div>
           <CredentialField
             label={t("clientId")}
             value={info.client_id || dash}
@@ -301,7 +304,13 @@ export function ExternalApiAccessSection() {
 
   return (
     <div className="mt-8">
-      <SettingSection title={t("title")} description={t("desc")} plain first>
+      <SettingSection
+        title={t("title")}
+        description={t("desc")}
+        plain
+        first
+        wide
+      >
         <div className="space-y-4">
           {licenseExpired && (
             <p className="text-warning-ink text-xs">{t("licenseExpired")}</p>
