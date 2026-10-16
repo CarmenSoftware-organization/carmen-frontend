@@ -1648,7 +1648,7 @@
         "deptReq": "Dept Req.",
         "dimReq": "Dim Req.",
         "deptDisabledNote": "Department requirement is disabled (All departments allowed)",
-        "dimDisabledNote": "Dimension requirement is disabled",
+        "dimDisabledNote": "Dimension requirement is off — saving removes any dimension rules on this account",
         "statusOn": "ON",
         "statusOff": "OFF",
         "activeOnly": "Active Only",

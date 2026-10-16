@@ -1648,7 +1648,7 @@
         "deptReq": "Dept Req.",
         "dimReq": "Dim Req.",
         "deptDisabledNote": "ไม่ได้เปิดใช้งานการบังคับระบุแผนก (อนุญาตทุกแผนก)",
-        "dimDisabledNote": "ไม่ได้เปิดใช้งานการบังคับระบุ Dimension",
+        "dimDisabledNote": "ปิดการบังคับระบุ Dimension อยู่ — เมื่อบันทึก กฎ Dimension ของบัญชีนี้จะถูกลบทั้งหมด",
         "statusOn": "เปิด (ON)",
         "statusOff": "ปิด (OFF)",
         "activeOnly": "ใช้งานเท่านั้น (Active Only)",
