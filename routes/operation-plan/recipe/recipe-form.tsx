@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "use-intl";
@@ -25,7 +25,7 @@ import { useRecipeCostCalc } from "./use-recipe-cost-calc";
 import { RecipeNotesFields } from "./recipe-notes-fields";
 import { RecipeStepsFields } from "./recipe-steps-fields";
 import { useSyncRecipeSteps } from "./use-recipe-steps-sync";
-import { activeSteps, stepToDraft } from "./recipe-steps-sync";
+import { activeSteps } from "./recipe-steps-sync";
 import { useRecipeGallery } from "./use-recipe-gallery";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { RecipeToolbar } from "./recipe-toolbar";
@@ -90,17 +90,6 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
 
   const computed = useRecipeCostCalc(form);
 
-  // หลัง sync ขั้นตอน (สำเร็จหรือล้มกลางทาง) recipe ถูก refetch — id/doc_version
-  // ของขั้นที่เขียนไปแล้วเปลี่ยน ต้องรีเซ็ตรายการในฟอร์มตาม ไม่งั้นกด Save ซ้ำ
-  // แล้วขั้นที่เพิ่มไปแล้วถูก POST ซ้ำ หรือ PATCH ด้วย doc_version เก่า
-  const savedSteps = recipe?.preparation_steps;
-  useEffect(() => {
-    if (!savedSteps) return;
-    form.resetField("preparation_steps", {
-      defaultValue: activeSteps(savedSteps).map(stepToDraft),
-    });
-  }, [savedSteps, form]);
-
   const onSubmit = (values: RecipeFormValues) => {
     const payload = buildRecipePayload(values);
     const {
@@ -132,15 +121,28 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
                 recipeId: recipe.id,
                 original: activeSteps(recipe.preparation_steps),
                 drafts: values.preparation_steps,
+                // POST ทั้งก้อนสำเร็จแล้ว — ผูก id ให้ขั้นใหม่ในฟอร์มทันที ถ้าจังหวะ
+                // ถัดไปล้ม กด Save ซ้ำจะ PATCH ไม่ POST ซ้ำ (ไม่รีเซ็ตทั้งรายการ
+                // เพื่อไม่ทิ้งสิ่งที่ผู้ใช้พิมพ์ไว้)
+                onAdded: (ids) => {
+                  let k = 0;
+                  values.preparation_steps.forEach((d, i) => {
+                    if (!d.step_id && ids[k]) {
+                      form.setValue(`preparation_steps.${i}.step_id`, ids[k++]);
+                    }
+                  });
+                },
               },
               {
                 onSuccess: () => {
                   toast.success(tt("updateSuccess", { entity: t("entity") }));
                   f.backToList();
                 },
-                onError: () => {
+                onError: (err) => {
                   f.setIsSubmitting(false);
-                  toast.error(t("stepsSaveFailed"));
+                  toast.error(t("stepsSaveFailed"), {
+                    description: err.message,
+                  });
                 },
               },
             );

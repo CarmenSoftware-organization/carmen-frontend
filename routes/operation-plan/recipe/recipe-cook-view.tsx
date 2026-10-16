@@ -32,7 +32,7 @@ const ALLERGEN_LABEL = new Map<string, string>(
  */
 export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
   const t = useTranslations("operationPlan.recipe");
-  const { can } = useCan();
+  const { can, canWrite } = useCan();
   const { toList, returnState } = useListReturn(LIST_PATH);
   const { data: yieldUnit } = useUnitById(recipe.base_yield_unit || undefined);
   useWakeLock(true);
@@ -40,9 +40,8 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
   const steps = activeSteps(recipe.preparation_steps);
   const [index, setIndex] = useState(0);
   const total = steps.length;
-  const current = steps[Math.min(index, Math.max(total - 1, 0))];
-  const next = steps[index + 1];
-  const canEdit = can(PERMISSIONS.operation_plan.recipe.update);
+  // สัญญาหมดอายุ = เข้าฟอร์มได้แต่ Save ไม่ได้ อย่าชวนกดตั้งแต่หน้านี้
+  const canEdit = canWrite && can(PERMISSIONS.operation_plan.recipe.update);
   const editLink = (
     <Button asChild variant="outline" size="sm">
       <Link to={`${LIST_PATH}/${recipe.id}/edit`} state={returnState}>
@@ -52,15 +51,29 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
     </Button>
   );
 
+  // refetch อาจได้ขั้นน้อยลง — ให้ index อยู่ในช่วงเสมอ (ไม่งั้นป้าย "ขั้นที่ 5 / 3")
+  const step = total === 0 ? 0 : Math.min(index, total - 1);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLElement && e.target.isContentEditable) return;
-      if (e.key === "ArrowRight") setIndex((i) => Math.min(i + 1, total - 1));
-      if (e.key === "ArrowLeft") setIndex((i) => Math.max(i - 1, 0));
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      const el = e.target;
+      if (
+        el instanceof HTMLElement &&
+        (el.isContentEditable || el.closest("input, textarea, select"))
+      )
+        return;
+      if (total === 0) return;
+      if (e.key === "ArrowRight")
+        setIndex((i) => Math.min(Math.min(i, total - 1) + 1, total - 1));
+      if (e.key === "ArrowLeft")
+        setIndex((i) => Math.max(Math.min(i, total - 1) - 1, 0));
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [total]);
+  const current = steps[step];
+  const next = steps[step + 1];
 
   const totalTime = (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0);
   const allergens = recipe.allergens ?? [];
@@ -110,12 +123,12 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
             </div>
           ) : (
             <>
-              <CookStep step={current} n={index + 1} total={total} />
+              <CookStep step={current} n={step + 1} total={total} />
 
               {next && (
                 <button
                   type="button"
-                  onClick={() => setIndex(index + 1)}
+                  onClick={() => setIndex(step + 1)}
                   className="text-muted-foreground hover:bg-muted mt-3 w-full rounded-lg border p-3 text-left text-sm transition-colors"
                 >
                   <span className="text-micro font-semibold tracking-wider uppercase">
@@ -132,8 +145,8 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                   type="button"
                   variant="outline"
                   className="h-12 text-base"
-                  disabled={index === 0}
-                  onClick={() => setIndex(index - 1)}
+                  disabled={step === 0}
+                  onClick={() => setIndex(step - 1)}
                 >
                   <ChevronLeft />
                   {t("cookPrev")}
@@ -141,8 +154,8 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                 <Button
                   type="button"
                   className="h-12 text-base"
-                  disabled={index >= total - 1}
-                  onClick={() => setIndex(index + 1)}
+                  disabled={step >= total - 1}
+                  onClick={() => setIndex(step + 1)}
                 >
                   {t("cookNext")}
                   <ChevronRight />
@@ -154,11 +167,11 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                   <li key={s.id}>
                     <button
                       type="button"
-                      aria-current={i === index ? "step" : undefined}
+                      aria-current={i === step ? "step" : undefined}
                       onClick={() => setIndex(i)}
                       className={cn(
                         "flex min-h-11 w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
-                        i === index
+                        i === step
                           ? "bg-muted text-foreground font-semibold"
                           : "text-muted-foreground hover:bg-muted/60",
                       )}

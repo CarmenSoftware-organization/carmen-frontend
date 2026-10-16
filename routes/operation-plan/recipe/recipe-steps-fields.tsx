@@ -219,6 +219,7 @@ export function RecipeStepsFields({
                               {!isDisabled && (
                                 <button
                                   type="button"
+                                  className="hover:bg-foreground/10 focus-visible:ring-ring -mr-1 inline-flex size-5 items-center justify-center rounded-sm outline-none focus-visible:ring-2"
                                   aria-label={t("removeEquipment", {
                                     name: item.name,
                                   })}
@@ -242,15 +243,14 @@ export function RecipeStepsFields({
                                   eq.value.flatMap((e) => (e.id ? [e.id] : [])),
                                 )
                               }
-                              onSelect={(picked) =>
+                              onSelect={(picked) => {
+                                const name = picked.name ?? picked.code;
+                                if (!name) return;
                                 eq.onChange([
                                   ...eq.value,
-                                  {
-                                    id: picked.id,
-                                    name: picked.name ?? picked.code ?? "",
-                                  },
-                                ])
-                              }
+                                  { id: picked.id, name },
+                                ]);
+                              }}
                             />
                           )}
                           {isDisabled && eq.value.length === 0 && (

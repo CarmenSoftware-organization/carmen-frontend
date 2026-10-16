@@ -76,7 +76,7 @@ export function draftToItem(d: StepDraft): Record<string, unknown> {
   const temperature = toNum(d.temperature);
   return {
     title: text(d.title),
-    description: d.description,
+    description: d.description.trim(),
     duration: toNum(d.duration),
     temperature,
     temperature_unit: temperature == null ? null : d.temperature_unit,

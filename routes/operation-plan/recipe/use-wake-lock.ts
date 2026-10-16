@@ -10,9 +10,13 @@ export function useWakeLock(enabled: boolean): void {
   useEffect(() => {
     if (!enabled || !("wakeLock" in navigator)) return;
     let sentinel: WakeLockSentinel | null = null;
+    let pending = false;
     let cancelled = false;
 
     const request = async () => {
+      // ขอซ้อนกันได้ถ้า visibilitychange มาระหว่างรอ — lock ตัวแรกจะหลุดมือแล้วค้าง
+      if (pending || (sentinel && !sentinel.released)) return;
+      pending = true;
       try {
         const lock = await navigator.wakeLock.request("screen");
         if (cancelled) {
@@ -22,6 +26,8 @@ export function useWakeLock(enabled: boolean): void {
         sentinel = lock;
       } catch {
         // ไม่ได้ lock ก็ใช้หน้าได้ตามปกติ
+      } finally {
+        pending = false;
       }
     };
     const onVisible = () => {

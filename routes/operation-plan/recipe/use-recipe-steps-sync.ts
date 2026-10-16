@@ -16,6 +16,8 @@ interface SyncVars {
   recipeId: string;
   original: RecipePreparationStep[];
   drafts: StepDraft[];
+  /** id ของขั้นที่ POST สำเร็จ ตามลำดับ draft ใหม่ — ให้ฟอร์มผูกไว้กัน POST ซ้ำ */
+  onAdded?: (ids: string[]) => void;
 }
 
 /**
@@ -23,14 +25,15 @@ interface SyncVars {
  *
  * ยิงทีละคำขอตามลำดับ (ไม่ Promise.all) เพราะ reorder ต้องรู้ id ของขั้นที่เพิ่งเพิ่ม
  * และต้องส่ง id ครบทุกขั้นที่ยังอยู่ · ไม่ atomic — ล้มกลางทาง ของที่เขียนไปแล้วคงอยู่
- * ผู้เรียกต้อง refetch แล้ว reset ฟอร์มจากข้อมูลใหม่ก่อนให้กด Save ซ้ำ
+ * ล้มกลางทาง: ผู้เรียกผูก id ของขั้นที่ POST แล้วผ่าน `onAdded` ส่วน original/doc_version
+ * มาจาก recipe ที่ refetch ใน onSettled — กด Save ซ้ำแล้ว diff เหลือแค่ส่วนที่ยังไม่ได้เขียน
  */
 export function useSyncRecipeSteps() {
   const buCode = useBuCode();
   const queryClient = useQueryClient();
 
   return useMutation<void, ApiError, SyncVars>({
-    mutationFn: async ({ recipeId, original, drafts }) => {
+    mutationFn: async ({ recipeId, original, drafts, onAdded }) => {
       if (!buCode)
         throw new ApiError("MISSING_REQUIRED_FIELD", "Missing buCode");
       const diff = diffSteps(original, drafts);
@@ -65,6 +68,13 @@ export function useSyncRecipeSteps() {
         );
         const json = (await res.json()) as { data?: { id: string }[] };
         addedIds = (json.data ?? []).map((r) => r.id);
+        if (addedIds.length !== diff.toAdd.length) {
+          throw new ApiError(
+            "INTERNAL_ERROR",
+            "Add preparation steps returned an unexpected number of rows",
+          );
+        }
+        onAdded?.(addedIds);
       }
 
       if (diff.needsReorder) {
@@ -77,8 +87,9 @@ export function useSyncRecipeSteps() {
       }
     },
     // ทั้งสำเร็จและล้มต้องดึงใหม่ — id/doc_version ของขั้นที่เขียนไปแล้วเปลี่ยน
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.RECIPES] });
-    },
+    // return promise ไว้ให้ mutation ยัง pending จน refetch จบ (ปุ่ม Save ปิดอยู่)
+    // ไม่งั้นกด Save ซ้ำทันทีจะ diff กับ original เก่าแล้ว PATCH ด้วย doc_version เก่า
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.RECIPES] }),
   });
 }
