@@ -572,16 +572,16 @@ export const moduleList: ModuleDto[] = [
         permission: PERMISSIONS.configuration.cost_center_group.view,
       },
       {
-        name: "accountGrouping",
-        path: "/config/account-grouping",
-        licenseFeature: "configuration.chart_of_accounts", // จัดกลุ่มผังบัญชี — ใช้คีย์เดียวกับหน้า chart-of-accounts
-        icon: FolderTree,
-      },
-      {
         name: "chartOfAccounts",
         path: "/config/chart-of-accounts",
         licenseFeature: "configuration.chart_of_accounts", // config:chart-of-accounts
         icon: BookText,
+      },
+      {
+        name: "accountGrouping",
+        path: "/config/account-grouping",
+        licenseFeature: "configuration.chart_of_accounts", // จัดกลุ่มผังบัญชี — ใช้คีย์เดียวกับหน้า chart-of-accounts
+        icon: FolderTree,
       },
       {
         // คีย์ license นี้ผูกกับ endpoint จริงแล้ว (api/:bu_code/account-mapping) — LicenseInterceptor + permission configuration.chart_of_account_mapping
