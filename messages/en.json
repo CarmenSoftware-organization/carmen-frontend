@@ -2534,7 +2534,7 @@
           "liveZoneHint": "Takes effect immediately — not part of Edit and Save above.",
           "apiAccess": {
             "title": "API access",
-            "desc": "Credentials external systems use to read and export inventory postings (with account codes) out of this business unit.",
+            "desc": "Credentials external systems use to read and export AP invoices and GL journals (with account codes) out of this business unit.",
             "noKey": "This business unit has no API key yet.",
             "create": "Create key",
             "creating": "Creating...",
