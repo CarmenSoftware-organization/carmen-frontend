@@ -337,6 +337,7 @@ export function LookupChartOfAccount({
   demoFallback = true,
 }: LookupChartOfAccountProps) {
   const tl = useTranslations("lookup");
+  const tfl = useTranslations("field");
   const [hasOpened, setHasOpened] = useState(false);
   const { data, isLoading } = useChartOfAccount(
     { perpage: 100 },
@@ -367,7 +368,7 @@ export function LookupChartOfAccount({
   }, [rows, category, activeOnly, demoFallback]);
 
   const resolvedPlaceholder =
-    placeholder ?? tl("select", { entity: "GL Account" });
+    placeholder ?? tl("select", { entity: tfl("glAccount") });
 
   return (
     <LookupCombobox
@@ -402,7 +403,7 @@ export function LookupChartOfAccount({
         </div>
       )}
       placeholder={resolvedPlaceholder}
-      searchPlaceholder="Search GL account code or name..."
+      searchPlaceholder={tl("search", { entity: tfl("glAccount") })}
       disabled={disabled}
       readOnly={readOnly}
       isLoading={isLoading}
