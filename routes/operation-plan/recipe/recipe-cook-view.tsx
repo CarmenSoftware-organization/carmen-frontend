@@ -4,6 +4,7 @@ import { useTranslations } from "use-intl";
 import { AlertTriangle, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { BackButton } from "@/components/share/back-button";
 import { EyeBrow } from "@/components/ui/eye-brow";
 import { useCan } from "@/hooks/use-can";
@@ -14,6 +15,7 @@ import { ALLERGEN_OPTIONS } from "@/constant/recipe";
 import { cn } from "@/lib/utils";
 import type { Recipe, RecipePreparationStep } from "@/types/recipe";
 import { activeSteps, normalizeEquipment } from "./recipe-steps-sync";
+import { activeIngredients, formatQty } from "./recipe-ingredients-cost";
 import { useWakeLock } from "./use-wake-lock";
 
 const LIST_PATH = "/operation-plan/recipe";
@@ -72,6 +74,16 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
 
   const totalTime = (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0);
   const allergens = recipe.allergens ?? [];
+  const ingredients = activeIngredients(recipe.ingredients);
+  // ติ๊กแล้วเก็บแค่ในหน้านี้ — รีเฟรชแล้วเริ่มใหม่ (ครัวเช็กของต่อรอบที่ทำ)
+  const [checked, setChecked] = useState<ReadonlySet<string>>(() => new Set());
+  const toggle = (id: string, on: boolean) =>
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-4 md:px-6">
@@ -184,8 +196,60 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
           )}
         </section>
 
-        {/* ข้าง — จัดจาน · เก็บรักษา · allergens (วัตถุดิบมาในช่วงถัดไป) */}
+        {/* ข้าง — เช็กลิสต์วัตถุดิบ · จัดจาน · เก็บรักษา · allergens (ไม่มีตัวเลขเงิน) */}
         <aside className="space-y-5 md:border-l md:pl-6">
+          {ingredients.length > 0 && (
+            <div>
+              <EyeBrow className="mb-1.5">{t("cookIngredients")}</EyeBrow>
+              <ul className="space-y-0.5">
+                {ingredients.map((line) => {
+                  const id = `cook-ingredient-${line.id}`;
+                  const isChecked = checked.has(line.id);
+                  return (
+                    <li key={line.id}>
+                      <label
+                        htmlFor={id}
+                        className="hover:bg-muted/60 flex min-h-11 cursor-pointer items-start gap-3 rounded-md px-2 py-2"
+                      >
+                        <Checkbox
+                          id={id}
+                          checked={isChecked}
+                          onCheckedChange={(v) => toggle(line.id, v === true)}
+                          className="mt-0.5 size-5"
+                        />
+                        <span
+                          className={cn(
+                            "min-w-0 flex-1 text-sm",
+                            isChecked && "text-muted-foreground line-through",
+                          )}
+                        >
+                          <span className="flex flex-wrap items-baseline justify-between gap-x-2">
+                            <span
+                              className={cn(
+                                "font-medium break-words",
+                                !isChecked && "text-foreground",
+                              )}
+                            >
+                              {line.product?.name ?? line.product?.code ?? "—"}
+                            </span>
+                            <span className="shrink-0 tabular-nums">
+                              {formatQty(line.qty)}{" "}
+                              {line.ingredient_unit?.name ?? ""}
+                            </span>
+                          </span>
+                          {line.note && (
+                            <span className="text-muted-foreground mt-0.5 block text-xs">
+                              {line.note}
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
           {recipe.plating_instructions && (
             <div>
               <EyeBrow className="mb-1.5">{t("cookPlating")}</EyeBrow>

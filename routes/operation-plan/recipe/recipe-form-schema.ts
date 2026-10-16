@@ -4,6 +4,10 @@ import type { Recipe } from "@/types/recipe";
 import { ALLERGEN_OPTIONS } from "@/constant/recipe";
 import { arrayToText } from "@/lib/form-helpers";
 import { activeSteps, stepToDraft } from "./recipe-steps-sync";
+import {
+  activeIngredients,
+  ingredientToDraft,
+} from "./recipe-ingredients-cost";
 
 export { textToArray, textToObject } from "@/lib/form-helpers";
 
@@ -69,6 +73,26 @@ function createStepSchema(tv: TranslationFn, tf: TranslationFn) {
   });
 }
 
+function createIngredientSchema(tv: TranslationFn, tf: TranslationFn) {
+  return z.object({
+    line_id: z.string().nullable(),
+    product_id: z.string().min(1, tv("required", { field: tf("product") })),
+    product_label: z.string(),
+    qty: z.coerce.number().gt(0, tv("positive", { field: tf("qty") })),
+    ingredient_unit_id: z
+      .string()
+      .min(1, tv("required", { field: tf("unit") })),
+    wastage_percentage: z.preprocess(
+      (v) => (v === "" || v === undefined || Number.isNaN(v) ? 0 : v),
+      z.coerce
+        .number()
+        .min(0, tv("minZero", { field: "%" }))
+        .max(100, tv("maxNumber", { field: "%", max: 100 })),
+    ),
+    note: z.string().max(500, tv("maxLength", { field: tf("note"), max: 500 })),
+  });
+}
+
 export function createRecipeSchema(tv: TranslationFn, tf: TranslationFn) {
   return z
     .object({
@@ -108,6 +132,9 @@ export function createRecipeSchema(tv: TranslationFn, tf: TranslationFn) {
       max_food_cost_percentage: z.coerce.number().min(0).max(100).nullable(),
       plating_instructions: z.string().max(2000),
       preparation_steps: z.array(createStepSchema(tv, tf)),
+      ingredients: z.array(createIngredientSchema(tv, tf)),
+      /** ผู้ใช้กด "ใช้ต้นทุนใหม่" แล้ว — PUT วัตถุดิบด้วย recalculate: true (ไม่ส่งไปกับหัวสูตร) */
+      recalculate_ingredients: z.boolean(),
       storage_instructions: z.string().max(2000),
       labor_cost_percentage: z.coerce.number().nullable(),
       overhead_percentage: z.coerce.number().nullable(),
@@ -167,6 +194,8 @@ export const EMPTY_FORM: RecipeFormValues = {
   max_food_cost_percentage: null,
   plating_instructions: "",
   preparation_steps: [],
+  ingredients: [],
+  recalculate_ingredients: false,
   storage_instructions: "",
   labor_cost_percentage: null,
   overhead_percentage: null,
@@ -209,6 +238,8 @@ export function getDefaultValues(recipe?: Recipe): RecipeFormValues {
     max_food_cost_percentage: recipe.max_food_cost_percentage ?? null,
     plating_instructions: recipe.plating_instructions ?? "",
     preparation_steps: activeSteps(recipe.preparation_steps).map(stepToDraft),
+    ingredients: activeIngredients(recipe.ingredients).map(ingredientToDraft),
+    recalculate_ingredients: false,
     storage_instructions: recipe.storage_instructions ?? "",
     labor_cost_percentage: recipe.labor_cost_percentage,
     overhead_percentage: recipe.overhead_percentage,

@@ -47,6 +47,63 @@ export interface RecipePreparationStep {
   deleted_at?: string | null;
 }
 
+/** แหล่งที่มาของต้นทุนต่อหน่วย — server เลือกตามลำดับ fallback (snapshot = คงราคาที่บันทึกไว้) */
+export type IngredientCostSource =
+  | "average"
+  | "last_average"
+  | "standard"
+  | "none"
+  | "snapshot";
+
+/**
+ * บรรทัดวัตถุดิบพร้อมต้นทุนที่ server คำนวณ — รูปเดียวกันทั้ง recipe detail,
+ * ผลของ preview และผลของ PUT (preview ไม่มี `id`)
+ *
+ * ตัวเลขทุกตัวเป็น Decimal ฝั่ง DB — อ่านผ่าน `Number()` เสมอ เผื่อ serializer คืนเป็น string
+ */
+export interface IngredientCostLine {
+  id?: string;
+  sequence_no: number;
+  product_id: string;
+  product: { id: string; code: string; name: string } | null;
+  qty: number;
+  ingredient_unit_id: string;
+  ingredient_unit: { id: string; name: string } | null;
+  inventory_qty: number;
+  inventory_unit_id: string;
+  /** หน่วย inventory ต่อ 1 หน่วยสูตร */
+  conversion_factor: number;
+  /** ต่อหน่วย inventory */
+  cost_per_unit: number;
+  wastage_percentage: number;
+  net_cost: number;
+  wastage_cost: number;
+  line_cost: number;
+  cost_source?: IngredientCostSource;
+  note: string | null;
+}
+
+/** แถวของ tb_recipe_ingredient ตามที่ recipe detail คืนมา */
+export interface RecipeIngredientLine extends IngredientCostLine {
+  id: string;
+  /** กันไว้แบบเดียวกับขั้นตอน — detail อาจคืนแถวที่ลบแล้วปนมา */
+  deleted_at?: string | null;
+}
+
+/** หนึ่งบรรทัดใน body ของ preview / PUT — ไม่มีตัวเลขต้นทุน (server คำนวณเอง) */
+export interface IngredientInput {
+  product_id: string;
+  qty: number;
+  ingredient_unit_id: string;
+  wastage_percentage?: number;
+  note?: string | null;
+}
+
+export interface IngredientCostResult {
+  items: IngredientCostLine[];
+  total_ingredient_cost: number;
+}
+
 interface RecipeCategoryRef {
   id: string;
   name: string;
@@ -110,9 +167,9 @@ export interface Recipe {
   archived_at: string | null;
   category: RecipeCategoryRef;
   cuisine: RecipeCuisineRef;
-  // Element shapes returned empty by the API — left untyped until real data is available
-  ingredients: unknown[];
+  ingredients: RecipeIngredientLine[];
   preparation_steps: RecipePreparationStep[];
+  // Element shape returned empty by the API — left untyped until real data is available
   yield_variants: unknown[];
   images: RecipeImage[];
   /** มีเฉพาะใน response ของ list (detail ส่ง `images` ทั้งชุดแทน) */

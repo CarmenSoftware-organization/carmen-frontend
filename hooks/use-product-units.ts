@@ -62,6 +62,46 @@ export function useProductAvailableUnits(productId: string | undefined) {
 }
 
 /**
+ * Hook ดึงหน่วยสูตร (ingredient units) ของสินค้า — ใช้เลือกหน่วยของวัตถุดิบในสูตรอาหาร
+ * แถวแรกคือหน่วย inventory (`conversion` 1) ที่เหลือมาจาก unit conversion ประเภท ingredient
+ * `conversion` = จำนวนหน่วยสูตรต่อ 1 หน่วย inventory
+ * @param productId - รหัสสินค้า
+ * @returns React Query ของรายการ ProductUnit
+ * @example
+ * const { data: units = [] } = useProductIngredientUnits(productId);
+ */
+export function useProductIngredientUnits(productId: string | undefined) {
+  const buCode = useBuCode();
+  return useQuery(productIngredientUnitsQuery(buCode, productId));
+}
+
+/**
+ * query options ของหน่วยวัตถุดิบต่อสินค้า — key/fn เดียวกับ `useProductIngredientUnits`
+ * (cache ร่วมกัน) ใช้กับ `useQueries` เมื่อต้องอ่านหลายสินค้าพร้อมกัน
+ * @param buCode - รหัส BU (ยังไม่มี = ไม่ fetch)
+ * @param productId - รหัสสินค้า (ยังไม่มี = ไม่ fetch)
+ * @returns options สำหรับ useQuery / useQueries
+ */
+export function productIngredientUnitsQuery(
+  buCode: string | null | undefined,
+  productId: string | undefined,
+) {
+  return {
+    queryKey: [QUERY_KEYS.PRODUCT_UNITS, buCode, productId, "ingredient"],
+    queryFn: async (): Promise<ProductUnit[]> => {
+      const res = await httpClient.get(
+        API_ENDPOINTS.PRODUCT_INGREDIENT_UNITS(buCode!, productId!),
+      );
+      if (!res.ok) throw new Error("Failed to fetch ingredient units");
+      const json = await res.json();
+      return json.data ?? [];
+    },
+    enabled: !!buCode && !!productId,
+    ...CACHE_STATIC,
+  };
+}
+
+/**
  * Hook อ่านจำนวนทศนิยมที่หน่วยหนึ่งของสินค้ารับได้ — ใช้คุมช่องกรอกจำนวน
  *
  * ค่าจริงมาจาก master data ที่ `/api/{bu}/units/order/product/{id}` ตอบมาให้เอง
