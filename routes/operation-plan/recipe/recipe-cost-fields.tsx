@@ -1,4 +1,4 @@
-import { useWatch, type UseFormReturn } from "react-hook-form";
+import { useFormState, useWatch, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { cn } from "@/lib/utils";
 import { FieldInput } from "@/components/ui/field";
@@ -47,7 +47,10 @@ export function RecipeCostFields({
   computed,
 }: RecipeCostFieldsProps) {
   const t = useTranslations("operationPlan.recipe");
-  const errors = form.formState.errors;
+  // ต้อง subscribe เอง — อ่าน form.formState.errors ตรง ๆ จะ render ใหม่เฉพาะตอน
+  // ค่าที่ useWatch เฝ้าเปลี่ยน error จาก superRefine ของช่องเพดานเลยไม่เคยขึ้น
+  // และ error ของช่องที่แก้ถูกแล้วค้างอยู่
+  const { errors } = useFormState({ control: form.control });
 
   const [ingredient, labor, overhead, baseYield, yieldUnitId, target, sell] =
     useWatch({
