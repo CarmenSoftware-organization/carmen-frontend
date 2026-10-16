@@ -378,6 +378,8 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/units/available/product/${productId}`,
   PRODUCT_UNITS_FOR_ORDER: (buCode: string, productId: string) =>
     `/api/proxy/api/${buCode}/units/order/product/${productId}`,
+  PRODUCT_INGREDIENT_UNITS: (buCode: string, productId: string) =>
+    `/api/proxy/api/${buCode}/units/ingredient/product/${productId}`,
   PROFILE: "/api/proxy/api/user/profile",
   PROFILE_AVATAR: "/api/proxy/api/user/profile/avatar",
   PROFILE_SIGNATURE: "/api/proxy/api/user/profile/signature",
@@ -434,6 +436,8 @@ export const API_ENDPOINTS = {
   RECIPES: (buCode: string) => `/api/proxy/api/config/${buCode}/recipes`,
   RECIPE_PREPARATION_STEPS: (buCode: string, recipeId: string) =>
     `/api/proxy/api/config/${buCode}/recipes/${recipeId}/preparation-steps`,
+  RECIPE_INGREDIENTS: (buCode: string, recipeId: string) =>
+    `/api/proxy/api/config/${buCode}/recipes/${recipeId}/ingredients`,
   RECIPE_COMMENT: (buCode: string, recipeId?: string) =>
     recipeId
       ? `/api/proxy/api/config/${buCode}/recipe-comments/${recipeId}`
