@@ -150,7 +150,8 @@ export function CoaForm({
       }
       persisted.current = record;
       try {
-        await saveCoaRules(buCode, record.id, values.dimension_rules);
+        // สวิตช์ปิด = ไม่มีกฎ dimension เลย — ลบกฎที่มีอยู่ทิ้ง (เก็บค่าในฟอร์มไว้เผื่อเปิดกลับก่อนบันทึก)
+        await saveCoaRules(buCode, record.id, values.req_dim ? values.dimension_rules : {});
       } catch (error) {
         throw new Error(
           `Account saved, but dimension rules were not fully saved. Retry Save. ${error instanceof Error ? error.message : ""}`,
@@ -192,7 +193,8 @@ export function CoaForm({
           account_group_id: account.account_group?.id ?? account.account_group_id ?? "",
           req_dept: Boolean(account.department_required || (Array.isArray(account.allowed_departments) && account.allowed_departments.length > 0)),
           allowed_departments: normalizeArray(account.allowed_departments),
-          req_dim: Boolean(account.dimension_required || (Array.isArray(account.allowed_dimensions) && account.allowed_dimensions.length > 0)),
+          // backend ไม่เก็บสถานะสวิตช์ — มีกฎอยู่ = เปิด
+          req_dim: (rules ?? []).length > 0,
           allowed_dimensions: normalizeArray(account.allowed_dimensions),
           dimension_rules: Object.fromEntries((rules ?? []).map((rule) => [rule.gl_dimension_id, rule.requirement])),
           attributes: normalizeAttributes(account.attributes),
