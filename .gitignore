@@ -18,3 +18,5 @@ docs/investor/deck/*.html
 
 # ขยะที่ Finder หว่านไว้ทุกโฟลเดอร์ที่เคยเปิดดู
 .DS_Store
+
+.superpowers/

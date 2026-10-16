@@ -1039,7 +1039,8 @@
     "fileUnsupportedFormat": "อัปโหลดได้เฉพาะไฟล์ {formats}",
     "fileTooLarge": "ไฟล์ {size} ใหญ่กว่าที่รับได้ {max}",
     "filesRejected": "ข้ามไป {count} ไฟล์ — {first}",
-    "maxCnAmount": "ลดหนี้ได้ไม่เกินยอดสุทธิที่รับมา"
+    "maxCnAmount": "ลดหนี้ได้ไม่เกินยอดสุทธิที่รับมา",
+    "maxFoodCostBelowTarget": "เพดานต้นทุนอาหารต้องไม่ต่ำกว่าเป้า"
   },
   "field": {
     "field": "ฟิลด์",
@@ -3818,7 +3819,6 @@
       "totalRecipeCost": "ต้นทุนรวมของสูตร",
       "margins": "อัตรากำไร",
       "otherMetrics": "ตัวชี้วัดอื่น",
-      "suggestedAtTarget": "แนะนำ {price} @ เป้าหมาย {pct}%",
       "onTargetMessage": "อยู่ในเป้า · อัตรากำไรดีที่ {pct}%",
       "aboveTargetMessage": "เกินเป้าหมาย {pts} จุด",
       "atTargetCap": "ถึงเพดานเป้าหมาย",
@@ -3847,7 +3847,21 @@
       "batchCost": "ต้นทุนทั้งชุด",
       "noPriceYet": "ตั้งราคาขายก่อน จึงจะเห็น food cost และกำไรขั้นต้น",
       "noTargetYet": "ยังไม่ได้ตั้งเป้า — ใส่ต้นทุนอาหารเป้าหมายเพื่อเทียบ",
-      "withinTargetMessage": "อยู่ในเป้า {pct}%"
+      "withinTargetMessage": "อยู่ในเป้า {pct}%",
+      "maxFoodCost": "เพดานต้นทุนอาหาร",
+      "priceRecommendations": "ราคาแนะนำ",
+      "priceAtTarget": "ราคาที่เป้า ({pct}%)",
+      "priceAtMin": "ราคาขั้นต่ำ (เพดาน {pct}%)",
+      "profitPerPortion": "กำไร / จาน",
+      "useThisPrice": "ใช้ราคานี้",
+      "markup": "Markup",
+      "belowMinPrice": "ต่ำกว่าราคาขั้นต่ำ {price} — ต้นทุนอาหารเกินเพดาน",
+      "notesSection": "การจัดจานและการเก็บรักษา",
+      "notesSectionDesc": "วิธีจัดจานและวิธีเก็บ — แสดงให้ครัวเห็น",
+      "platingInstructions": "วิธีจัดจาน",
+      "platingInstructionsDesc": "ภาชนะ การตกแต่ง และการจัดวาง",
+      "storageInstructions": "การเก็บรักษา",
+      "storageInstructionsDesc": "อุณหภูมิ อายุการเก็บ และวิธีเก็บ/อุ่นซ้ำ"
     }
   },
   "productManagement": {

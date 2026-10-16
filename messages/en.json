@@ -1039,7 +1039,8 @@
     "fileUnsupportedFormat": "only {formats} files are allowed",
     "fileTooLarge": "{size} is over the {max} limit",
     "filesRejected": "{count} files skipped — {first}",
-    "maxCnAmount": "Cannot credit more than the net amount received"
+    "maxCnAmount": "Cannot credit more than the net amount received",
+    "maxFoodCostBelowTarget": "Max food cost must be at least the target"
   },
   "field": {
     "field": "Field",
@@ -3818,7 +3819,6 @@
       "totalRecipeCost": "Total recipe cost",
       "margins": "Margins",
       "otherMetrics": "Other metrics",
-      "suggestedAtTarget": "Suggested {price} @ {pct}% target",
       "onTargetMessage": "On target · margin healthy at {pct}%",
       "aboveTargetMessage": "Above target by {pts} pts",
       "atTargetCap": "At target cap",
@@ -3847,7 +3847,21 @@
       "batchCost": "Batch cost",
       "noPriceYet": "Set a selling price to see food cost and gross margin.",
       "noTargetYet": "No target set — enter a target food cost to compare.",
-      "withinTargetMessage": "Within the {pct}% target"
+      "withinTargetMessage": "Within the {pct}% target",
+      "maxFoodCost": "Max Food Cost",
+      "priceRecommendations": "Price Recommendations",
+      "priceAtTarget": "Price at target ({pct}%)",
+      "priceAtMin": "Minimum price ({pct}% cap)",
+      "profitPerPortion": "Profit / portion",
+      "useThisPrice": "Use this price",
+      "markup": "Markup",
+      "belowMinPrice": "Below the minimum price of {price} — food cost is over the cap",
+      "notesSection": "Plating & Storage",
+      "notesSectionDesc": "How to plate the dish and how to keep it — shown to the kitchen.",
+      "platingInstructions": "Plating Instructions",
+      "platingInstructionsDesc": "Plate, garnish, and presentation",
+      "storageInstructions": "Storage Instructions",
+      "storageInstructionsDesc": "Temperature, shelf life, and how to hold or reheat"
     }
   },
   "productManagement": {

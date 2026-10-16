@@ -68,6 +68,9 @@ export interface Recipe {
   suggested_price: number | null;
   selling_price: number | null;
   target_food_cost_percentage: number | null;
+  max_food_cost_percentage: number | null;
+  plating_instructions: string | null;
+  storage_instructions: string | null;
   actual_food_cost_percentage: number | null;
   gross_margin: number | null;
   gross_margin_percentage: number | null;
@@ -116,6 +119,9 @@ export interface CreateRecipeDto {
   gross_margin_percentage: number | null;
   actual_food_cost_percentage: number | null;
   target_food_cost_percentage: number | null;
+  max_food_cost_percentage: number | null;
+  plating_instructions: string | null;
+  storage_instructions: string | null;
   labor_cost_percentage: number | null;
   overhead_percentage: number | null;
   allergens: string[];

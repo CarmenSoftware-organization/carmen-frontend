@@ -1,6 +1,5 @@
-import { useWatch, type UseFormReturn } from "react-hook-form";
+import { useFormState, useWatch, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
-import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FieldInput } from "@/components/ui/field";
 import { SettingSection } from "@/components/ui/setting-section";
@@ -8,12 +7,13 @@ import { EyeBrow } from "@/components/ui/eye-brow";
 import { formatCurrency } from "@/lib/currency-utils";
 import { useUnitById } from "@/hooks/use-unit";
 import type { RecipeFormValues } from "./recipe-form-schema";
-import type { RecipeComputed } from "./use-recipe-cost-calc";
+import type { RecipeComputed, RecipeCostCalc } from "./use-recipe-cost-calc";
+import { RecipePriceRecommendations } from "./recipe-price-recommendations";
 
 interface RecipeCostFieldsProps {
   readonly form: UseFormReturn<RecipeFormValues>;
   readonly isDisabled: boolean;
-  readonly computed: RecipeComputed;
+  readonly computed: RecipeCostCalc;
 }
 
 type CostKey = "total_ingredient_cost" | "labor_cost" | "overhead_cost";
@@ -47,7 +47,10 @@ export function RecipeCostFields({
   computed,
 }: RecipeCostFieldsProps) {
   const t = useTranslations("operationPlan.recipe");
-  const errors = form.formState.errors;
+  // ต้อง subscribe เอง — อ่าน form.formState.errors ตรง ๆ จะ render ใหม่เฉพาะตอน
+  // ค่าที่ useWatch เฝ้าเปลี่ยน error จาก superRefine ของช่องเพดานเลยไม่เคยขึ้น
+  // และ error ของช่องที่แก้ถูกแล้วค้างอยู่
+  const { errors } = useFormState({ control: form.control });
 
   const [ingredient, labor, overhead, baseYield, yieldUnitId, target, sell] =
     useWatch({
@@ -76,15 +79,6 @@ export function RecipeCostFields({
   const yld = Number(baseYield) || 0;
   const targetPct = Number(target) || 0;
   const hasPrice = (Number(sell) || 0) > 0;
-  const suggested = computed.suggestedPrice;
-
-  const applySuggested = () => {
-    if (suggested == null) return;
-    form.setValue("selling_price", suggested, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-  };
 
   return (
     <SettingSection plain title={t("costing")} description={t("costingDesc")}>
@@ -173,49 +167,69 @@ export function RecipeCostFields({
               {...form.register("selling_price")}
             />
           </div>
-          {suggested != null && suggested > 0 && (
-            <button
-              type="button"
-              onClick={applySuggested}
-              disabled={isDisabled}
-              className="bg-muted text-muted-foreground hover:text-foreground text-micro mt-2 inline-flex items-center gap-1.5 rounded-full px-2 py-1 font-semibold transition-colors disabled:pointer-events-none"
-            >
-              <Sparkles className="size-2.5" aria-hidden="true" />
-              {t("suggestedAtTarget", {
-                price: `฿${formatCurrency(suggested)}`,
-                pct: formatPct(targetPct),
-              })}
-            </button>
-          )}
         </div>
 
-        <div>
-          <EyeBrow className="mb-1">
-            <label htmlFor="recipe-target-food-cost">
-              {t("targetFoodCost")}
-            </label>
-          </EyeBrow>
-          <div className="relative w-32">
-            <FieldInput
-              id="recipe-target-food-cost"
-              type="number"
-              inputMode="decimal"
-              step="0.1"
-              min={0}
-              max={100}
-              disabled={isDisabled}
-              size="sm"
-              className="pr-6 text-right text-sm tabular-nums"
-              error={errors.target_food_cost_percentage?.message}
-              errorIconAlign="left"
-              {...form.register("target_food_cost_percentage")}
-            />
-            <span className="text-muted-foreground text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
-              %
-            </span>
+        <div className="flex flex-wrap gap-4">
+          <div>
+            <EyeBrow className="mb-1">
+              <label htmlFor="recipe-target-food-cost">
+                {t("targetFoodCost")}
+              </label>
+            </EyeBrow>
+            <div className="relative w-32">
+              <FieldInput
+                id="recipe-target-food-cost"
+                type="number"
+                inputMode="decimal"
+                step="0.1"
+                min={0}
+                max={100}
+                disabled={isDisabled}
+                size="sm"
+                className="pr-6 text-right text-sm tabular-nums"
+                error={errors.target_food_cost_percentage?.message}
+                errorIconAlign="left"
+                {...form.register("target_food_cost_percentage", {
+                  deps: ["max_food_cost_percentage"],
+                })}
+              />
+              <span className="text-muted-foreground text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
+                %
+              </span>
+            </div>
+          </div>
+          <div>
+            <EyeBrow className="mb-1">
+              <label htmlFor="recipe-max-food-cost">{t("maxFoodCost")}</label>
+            </EyeBrow>
+            <div className="relative w-32">
+              <FieldInput
+                id="recipe-max-food-cost"
+                type="number"
+                inputMode="decimal"
+                step="0.1"
+                min={0}
+                max={100}
+                disabled={isDisabled}
+                size="sm"
+                className="pr-6 text-right text-sm tabular-nums"
+                error={errors.max_food_cost_percentage?.message}
+                errorIconAlign="left"
+                {...form.register("max_food_cost_percentage")}
+              />
+              <span className="text-muted-foreground text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
+                %
+              </span>
+            </div>
           </div>
         </div>
       </div>
+
+      <RecipePriceRecommendations
+        form={form}
+        computed={computed}
+        isDisabled={isDisabled}
+      />
 
       {/* 4 · ผลลัพธ์ — food cost เทียบเป้า + กำไรขั้นต้น */}
       <div className="mt-4 border-t pt-4">
