@@ -122,7 +122,6 @@ export default function ExternalInterfaceForm() {
     <InterfacePageLayout
       title={ta("brand.external")}
       description={ta("desc")}
-      width="wide"
       onSave={submit}
       onCancel={() => {
         form.reset(value ? toFormValues(value) : EMPTY_ACCOUNTING);
