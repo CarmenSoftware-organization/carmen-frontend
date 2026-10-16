@@ -121,9 +121,11 @@ inline script ใน `index.html`** แก้สคริปต์นั้น�
 - ห้ามประกาศ `--spacing-md` (รวมถึง sm/lg/xl/2xl) — Tailwind v4 ใช้คีย์ร่วมกับสเกล container แล้ว `max-w-md` ทั้งแอปจะยุบ
 - ขนาดตัวอักษรดิบนอก ladder เป็นบั๊ก design system — `components/ui/type-ladder.test.ts` แดงทันที
 
-**dark mode ทั้งแอปยังไม่มีสวิตช์จริง** — CSS ครบทั้งชุดแต่ไม่มีโค้ดไหนตั้งคลาส `.dark`
-ที่ `<html>` เลย ปุ่มสลับธีมในหน้า `/design-system` จึงผูกคลาสไว้ที่ container ของหน้าเอง
-(`&:is(.dark *)` ต้องการแค่ ancestor) ใช้ดูงานได้ แต่ไม่ใช่การเปิด dark mode ให้ผู้ใช้
+**dark mode เปิดให้ผู้ใช้จริงแล้ว** — `ThemeProvider` ของ next-themes (`components/providers.tsx`,
+`attribute="class"`, ค่าเริ่มต้น `system`) ตั้งคลาส `.dark` ที่ `<html>` ตามที่ผู้ใช้เลือกใน
+`ThemeSwitch` (เมนูโปรไฟล์) หรือตามธีมของ OS UI ใหม่ทุกชิ้นต้องอ่านออกทั้งสองธีม — ของ third-party
+ที่ออกแบบมาบนพื้นขาว (เช่น Swagger UI ในหน้า External) ให้วางบนพื้นสว่างเสมอ ปุ่มสลับธีมในหน้า
+`/design-system` ยังผูกคลาสไว้ที่ container ของหน้าเอง (`&:is(.dark *)` ต้องการแค่ ancestor) ใช้ดูงานได้โดยไม่กระทบทั้งแอป
 
 ## Known open items
 
