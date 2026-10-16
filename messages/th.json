@@ -1341,7 +1341,8 @@
     "sequence": "ลำดับ",
     "businessUnit": "หน่วยธุรกิจ",
     "responses": "การตอบกลับ",
-    "submittedCount": "ตอบกลับแล้ว"
+    "submittedCount": "ตอบกลับแล้ว",
+    "equipment": "อุปกรณ์"
   },
   "lookup": {
     "resizeHint": "ลากเพื่อปรับขนาด · ดับเบิลคลิกเพื่อคืนขนาดเดิม",

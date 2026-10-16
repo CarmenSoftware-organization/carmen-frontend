@@ -1341,7 +1341,8 @@
     "sequence": "Sequence",
     "businessUnit": "Business Unit",
     "responses": "Responses",
-    "submittedCount": "Submitted"
+    "submittedCount": "Submitted",
+    "equipment": "Equipment"
   },
   "lookup": {
     "resizeHint": "Drag to resize · double-click to reset",
