@@ -2558,7 +2558,8 @@
             "secretTitle": "API secret",
             "secretLogged": "Each time the secret is viewed it is recorded in the audit log.",
             "done": "Done",
-            "licenseExpired": "The External interface license has expired. API key details are read-only."
+            "licenseExpired": "Your license is expired or inactive. API key details are read-only.",
+            "unavailable": "API key details are unavailable for this business unit's current license."
           }
         },
         "desc": "How inventory activity reaches your general ledger and payables.",

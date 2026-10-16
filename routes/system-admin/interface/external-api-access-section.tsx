@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { KeyRound, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { CopyButton, copyToClipboard } from "@/components/ui/copy-button";
+import { CopyButton } from "@/components/ui/copy-button";
 import {
   Dialog,
   DialogContent,
@@ -75,11 +74,21 @@ export function ExternalApiAccessSection() {
     "systemAdmin.interface.accounting.external.apiAccess",
   );
   const { can, canWrite } = useCan();
-  const { entitlementOf, canReadConfig } = useInterfaceEntitlement();
+  const {
+    entitlementOf,
+    canReadConfig,
+    isLoading: licenseLoading,
+  } = useInterfaceEntitlement();
   const { dateFormat } = useLocale();
 
   const [secretDialog, setSecretDialog] = useState<SecretDialog | null>(null);
   const [confirmRegen, setConfirmRegen] = useState(false);
+  // เก็บ kind ล่าสุดไว้ให้หัว dialog ไม่เปลี่ยนตอน animation ปิด (state ถูกเคลียร์ทันที)
+  const [lastKind, setLastKind] = useState<SecretDialog["kind"]>("revealed");
+  const showSecret = (d: SecretDialog) => {
+    setLastKind(d.kind);
+    setSecretDialog(d);
+  };
 
   const canView = can(PERMISSIONS.system_admin.bu_api_key.view);
   const licenseExpired =
@@ -87,7 +96,8 @@ export function ExternalApiAccessSection() {
   const canEdit =
     can(PERMISSIONS.system_admin.bu_api_key.update) && !licenseExpired;
 
-  const query = useBuApiKey(canView && canReadConfig("accounting", "external"));
+  const readable = canReadConfig("accounting", "external");
+  const query = useBuApiKey(canView && readable);
   const create = useCreateBuApiKey();
   const regenerate = useRegenerateBuApiKey();
   const reveal = useRevealBuApiKey();
@@ -97,7 +107,8 @@ export function ExternalApiAccessSection() {
 
   const info = query.data;
   const baseUrl =
-    info?.base_url ?? `${getRuntimeConfig().BACKEND_URL}${FALLBACK_API_PATH}`;
+    info?.base_url ??
+    `${getRuntimeConfig().BACKEND_URL || window.location.origin}${FALLBACK_API_PATH}`;
 
   const closeSecretDialog = () => {
     setSecretDialog(null);
@@ -110,7 +121,7 @@ export function ExternalApiAccessSection() {
   const onCreate = () =>
     create.mutate(undefined, {
       onSuccess: (r) =>
-        setSecretDialog({
+        showSecret({
           kind: "created",
           clientId: r.client_id,
           secret: r.secret,
@@ -121,7 +132,7 @@ export function ExternalApiAccessSection() {
     regenerate.mutate(undefined, {
       onSuccess: (r) => {
         setConfirmRegen(false);
-        setSecretDialog({
+        showSecret({
           kind: "regenerated",
           clientId: r.client_id,
           secret: r.secret,
@@ -132,25 +143,25 @@ export function ExternalApiAccessSection() {
   const onView = () =>
     reveal.mutate(undefined, {
       onSuccess: (r) => {
-        setSecretDialog({ kind: "revealed", secret: r.secret });
+        showSecret({ kind: "revealed", secret: r.secret });
         reveal.reset();
       },
     });
 
-  // Copy secret = reveal แล้วเขียนลง clipboard เลย ไม่แสดง และไม่เก็บไว้
-  const onCopySecret = () =>
-    reveal.mutate(undefined, {
-      onSuccess: async (r) => {
-        if (await copyToClipboard(r.secret)) toast.success(t("secretCopied"));
-        reveal.reset();
-      },
-    });
+  const busy =
+    create.isPending ||
+    regenerate.isPending ||
+    reveal.isPending ||
+    setActive.isPending;
 
   const dash = <span className="text-muted-foreground">—</span>;
 
   let body: React.ReactNode;
-  if (query.isPending && query.fetchStatus !== "idle") {
+  if (licenseLoading || (query.isPending && query.fetchStatus !== "idle")) {
     body = <Skeleton className="h-24 w-full" />;
+  } else if (!readable) {
+    // query ถูกปิด (ใบ INF อ่านไม่ได้) — ห้ามบอกว่า "ยังไม่มี key" เพราะเราไม่รู้
+    body = <p className="text-muted-foreground text-sm">{t("unavailable")}</p>;
   } else if (query.isError) {
     body = (
       <ErrorState error={query.error} onRetry={() => void query.refetch()} />
@@ -160,12 +171,7 @@ export function ExternalApiAccessSection() {
       <div className="space-y-3">
         <p className="text-muted-foreground text-sm">{t("noKey")}</p>
         {canEdit && (
-          <Button
-            type="button"
-            size="sm"
-            onClick={onCreate}
-            disabled={create.isPending}
-          >
+          <Button type="button" size="sm" onClick={onCreate} disabled={busy}>
             <KeyRound aria-hidden="true" />
             {create.isPending ? t("creating") : t("create")}
           </Button>
@@ -202,18 +208,9 @@ export function ExternalApiAccessSection() {
                 variant="outline"
                 size="sm"
                 onClick={onView}
-                disabled={reveal.isPending}
+                disabled={busy}
               >
                 {t("view")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onCopySecret}
-                disabled={reveal.isPending}
-              >
-                {t("copySecret")}
               </Button>
             </>
           )}
@@ -236,7 +233,7 @@ export function ExternalApiAccessSection() {
             <label className="flex items-center gap-2">
               <Switch
                 checked={!!info.is_active}
-                disabled={setActive.isPending}
+                disabled={busy}
                 onCheckedChange={(v) => setActive.mutate(v)}
               />
               <span>{info.is_active ? t("active") : t("inactive")}</span>
@@ -250,6 +247,7 @@ export function ExternalApiAccessSection() {
             type="button"
             variant="outline"
             size="sm"
+            disabled={busy}
             onClick={() => setConfirmRegen(true)}
           >
             <RefreshCw aria-hidden="true" />
@@ -291,14 +289,10 @@ export function ExternalApiAccessSection() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {secretDialog?.kind === "revealed"
-                ? t("secretTitle")
-                : t("newSecretTitle")}
+              {lastKind === "revealed" ? t("secretTitle") : t("newSecretTitle")}
             </DialogTitle>
             <DialogDescription>
-              {secretDialog?.kind === "revealed"
-                ? t("secretLogged")
-                : t("newSecretDesc")}
+              {lastKind === "revealed" ? t("secretLogged") : t("newSecretDesc")}
             </DialogDescription>
           </DialogHeader>
           {secretDialog?.clientId && (

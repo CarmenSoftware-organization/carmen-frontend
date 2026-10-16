@@ -5,7 +5,7 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 import { useBuCode } from "@/hooks/use-bu-code";
-import { useApiMutation } from "@/hooks/use-api-mutation";
+import { cleanServerMessage, useApiMutation } from "@/hooks/use-api-mutation";
 import { httpClient } from "@/lib/http-client";
 import { ApiError } from "@/lib/api-error";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
@@ -70,7 +70,8 @@ function useSecretMutation<TVariables = void>(
       if (!buCode)
         throw new ApiError("MISSING_REQUIRED_FIELD", "Missing buCode");
       const res = await call(buCode, variables);
-      if (!res.ok) throw await ApiError.from(res, opts.errorMessage);
+      if (!res.ok)
+        throw await ApiError.from(res, opts.errorMessage, cleanServerMessage);
       const json = await res.json();
       return json.data;
     },
