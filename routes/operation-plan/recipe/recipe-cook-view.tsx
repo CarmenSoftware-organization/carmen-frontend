@@ -18,7 +18,7 @@ import { PERMISSIONS } from "@/constant/permissions";
 import { ALLERGEN_OPTIONS } from "@/constant/recipe";
 import { cn } from "@/lib/utils";
 import type { Recipe, RecipePreparationStep } from "@/types/recipe";
-import { normalizeEquipment } from "./recipe-steps-sync";
+import { activeSteps, normalizeEquipment } from "./recipe-steps-sync";
 import { useWakeLock } from "./use-wake-lock";
 
 const LIST_PATH = "/operation-plan/recipe";
@@ -37,9 +37,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
   const { data: yieldUnit } = useUnitById(recipe.base_yield_unit || undefined);
   useWakeLock(true);
 
-  const steps = [...(recipe.preparation_steps ?? [])].sort(
-    (a, b) => a.sequence_no - b.sequence_no,
-  );
+  const steps = activeSteps(recipe.preparation_steps);
   const [index, setIndex] = useState(0);
   const total = steps.length;
   const current = steps[Math.min(index, Math.max(total - 1, 0))];

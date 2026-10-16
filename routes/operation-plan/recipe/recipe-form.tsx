@@ -25,7 +25,7 @@ import { useRecipeCostCalc } from "./use-recipe-cost-calc";
 import { RecipeNotesFields } from "./recipe-notes-fields";
 import { RecipeStepsFields } from "./recipe-steps-fields";
 import { useSyncRecipeSteps } from "./use-recipe-steps-sync";
-import { stepToDraft } from "./recipe-steps-sync";
+import { activeSteps, stepToDraft } from "./recipe-steps-sync";
 import { useRecipeGallery } from "./use-recipe-gallery";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { RecipeToolbar } from "./recipe-toolbar";
@@ -97,9 +97,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
   useEffect(() => {
     if (!savedSteps) return;
     form.resetField("preparation_steps", {
-      defaultValue: [...savedSteps]
-        .sort((a, b) => a.sequence_no - b.sequence_no)
-        .map(stepToDraft),
+      defaultValue: activeSteps(savedSteps).map(stepToDraft),
     });
   }, [savedSteps, form]);
 
@@ -113,6 +111,10 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
     } = gallery.buildPayload();
 
     if (isEdit && recipe) {
+      // ปิด guard ตั้งแต่ก่อนยิง — save มีสองจังหวะ (หัวสูตร → ขั้นตอน) ระหว่างนั้น
+      // recipe ถูก refetch แล้วสถานะ dirty พลิก guard ปิดตัวเองแล้วสั่ง history.back()
+      // ทับการ navigate กลับ list ของเรา (เด้งกลับมา /edit) · ปิดเองก่อน back() จะจบไปนานแล้ว
+      f.setIsSubmitting(true);
       // Send the full gallery manifest only when it changed (full-sync);
       // omitting it keeps the existing images untouched.
       updateRecipe.mutate(
@@ -128,7 +130,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
             syncSteps.mutate(
               {
                 recipeId: recipe.id,
-                original: recipe.preparation_steps ?? [],
+                original: activeSteps(recipe.preparation_steps),
                 drafts: values.preparation_steps,
               },
               {
@@ -136,10 +138,14 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
                   toast.success(tt("updateSuccess", { entity: t("entity") }));
                   f.backToList();
                 },
-                onError: () => toast.error(t("stepsSaveFailed")),
+                onError: () => {
+                  f.setIsSubmitting(false);
+                  toast.error(t("stepsSaveFailed"));
+                },
               },
             );
           },
+          onError: () => f.setIsSubmitting(false),
         },
       );
     } else {

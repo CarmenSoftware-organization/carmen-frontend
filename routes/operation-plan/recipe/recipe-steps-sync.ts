@@ -42,6 +42,19 @@ const toNum = (v: unknown): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
+/**
+ * ขั้นที่ยังใช้งาน เรียงตามลำดับ — recipe detail (findOne) ไม่ได้กรอง deleted_at
+ * ของขั้นตอน (แก้ฝั่ง backend แล้วแต่ FE อาจขึ้นก่อน) ทุกจุดที่อ่าน
+ * `recipe.preparation_steps` ต้องผ่านตัวนี้
+ */
+export function activeSteps(
+  steps: RecipePreparationStep[] | null | undefined,
+): RecipePreparationStep[] {
+  return (steps ?? [])
+    .filter((s) => !s.deleted_at)
+    .sort((a, b) => a.sequence_no - b.sequence_no);
+}
+
 export function stepToDraft(s: RecipePreparationStep): StepDraft {
   return {
     step_id: s.id,

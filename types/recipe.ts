@@ -43,6 +43,8 @@ export interface RecipePreparationStep {
   equipment: unknown;
   chef_notes: string | null;
   safety_warnings: string | null;
+  /** recipe detail ฝั่ง backend เคยคืนขั้นที่ลบแล้วปนมา — กรองทิ้งด้วย activeSteps() */
+  deleted_at?: string | null;
 }
 
 interface RecipeCategoryRef {

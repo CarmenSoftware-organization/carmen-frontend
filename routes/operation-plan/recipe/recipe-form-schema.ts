@@ -3,7 +3,7 @@ import type { TranslationFn } from "@/lib/i18n-schema";
 import type { Recipe } from "@/types/recipe";
 import { ALLERGEN_OPTIONS } from "@/constant/recipe";
 import { arrayToText } from "@/lib/form-helpers";
-import { stepToDraft } from "./recipe-steps-sync";
+import { activeSteps, stepToDraft } from "./recipe-steps-sync";
 
 export { textToArray, textToObject } from "@/lib/form-helpers";
 
@@ -208,9 +208,7 @@ export function getDefaultValues(recipe?: Recipe): RecipeFormValues {
     target_food_cost_percentage: recipe.target_food_cost_percentage,
     max_food_cost_percentage: recipe.max_food_cost_percentage ?? null,
     plating_instructions: recipe.plating_instructions ?? "",
-    preparation_steps: [...(recipe.preparation_steps ?? [])]
-      .sort((a, b) => a.sequence_no - b.sequence_no)
-      .map(stepToDraft),
+    preparation_steps: activeSteps(recipe.preparation_steps).map(stepToDraft),
     storage_instructions: recipe.storage_instructions ?? "",
     labor_cost_percentage: recipe.labor_cost_percentage,
     overhead_percentage: recipe.overhead_percentage,
