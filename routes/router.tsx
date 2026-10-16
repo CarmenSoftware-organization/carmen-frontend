@@ -603,6 +603,10 @@ export const router = createBrowserRouter([
               },
               {
                 path: "recipe/:id",
+                lazy: () => import("./operation-plan/recipe/recipe-cook.route"),
+              },
+              {
+                path: "recipe/:id/edit",
                 lazy: () => import("./operation-plan/recipe/recipe-edit.route"),
               },
               {

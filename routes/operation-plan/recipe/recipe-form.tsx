@@ -79,6 +79,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
     // รูปใน gallery ที่ยังไม่ได้อัปโหลดก็นับเป็นของที่จะหาย
     extraDirty: gallery.isDirty,
     onResetExtra: gallery.reset,
+    initialMode: "edit",
   });
   const { form, isEdit, isDisabled } = f;
 
