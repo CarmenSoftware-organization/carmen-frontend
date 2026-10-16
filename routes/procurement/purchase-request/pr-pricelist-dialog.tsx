@@ -30,6 +30,7 @@ import { formatCurrency } from "@/lib/currency-utils";
 import { formatDate } from "@/lib/date-utils";
 import { LastPriceChip } from "@/components/share/last-price-chip";
 import type { LastPrice } from "@/types/last-price";
+import { resolveApprovedQty } from "./pr-form-schema";
 
 export interface PricelistEntry {
   vendor_id: string;
@@ -230,9 +231,14 @@ export function PrPricelistDialog({
           unit_id: unitId,
           at_date: atDate,
           currency_id: currencyId,
-          // ราคาขึ้นกับจำนวนที่สั่ง (ขั้นบันได MOQ) — 0 ถูก buildQueryString
-          // ตัดทิ้งเองเมื่อยังไม่ได้กรอกจำนวน backend จะได้ตกไปที่ขั้นต่ำสุด
-          qty: requestedQty || "",
+          // ราคาขึ้นกับจำนวนที่สั่ง (ขั้นบันได MOQ) — ใช้จำนวนเดียวกับที่คิดยอด
+          // (approved ก่อน ไม่มีค่อย requested) ไม่งั้นจะเลือก tier ที่จำนวน approve
+          // ไปไม่ถึง; 0 ถูก buildQueryString ตัดทิ้ง backend จะถือว่าไม่ระบุจำนวน
+          qty:
+            resolveApprovedQty({
+              approved_qty: approvedQty,
+              requested_qty: requestedQty,
+            }) || "",
         });
         // no-store — ราคาเปลี่ยนได้ระหว่างวัน ห้ามกินของที่ browser cache ไว้
         const res = await httpClient.get(url, { cache: "no-store" });
@@ -249,7 +255,17 @@ export function PrPricelistDialog({
     };
 
     fetchPriceLists();
-  }, [open, productId, unitId, currencyId, atDate, requestedQty, buCode, t]);
+  }, [
+    open,
+    productId,
+    unitId,
+    currencyId,
+    atDate,
+    requestedQty,
+    approvedQty,
+    buCode,
+    t,
+  ]);
 
   const handleSelect = (entry: PricelistEntry) => {
     if (readOnly) return;
