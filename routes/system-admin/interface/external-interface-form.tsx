@@ -149,7 +149,7 @@ export default function ExternalInterfaceForm() {
         </>
       }
     >
-      <AccountingFields form={form} />
+      <AccountingFields form={form} hideConnection />
 
       <GlDefaultsHandleProvider value={glBinding}>
         <ExternalGlDefaultsSection />
