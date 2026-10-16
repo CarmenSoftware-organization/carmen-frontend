@@ -1,4 +1,9 @@
-import { Controller, useWatch, type UseFormReturn } from "react-hook-form";
+import {
+  Controller,
+  useFormState,
+  useWatch,
+  type UseFormReturn,
+} from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { Check, Sparkles } from "lucide-react";
 import {
@@ -32,6 +37,10 @@ export function RecipeComplianceFields({
   isDisabled,
 }: RecipeComplianceFieldsProps) {
   const t = useTranslations("operationPlan.recipe");
+  const { errors } = useFormState({
+    control: form.control,
+    name: "allergens.custom",
+  });
 
   const standardAllergens = useWatch({
     control: form.control,
@@ -146,7 +155,7 @@ export function RecipeComplianceFields({
               size="sm"
               disabled={isDisabled}
               maxLength={256}
-              error={form.formState.errors.allergens?.custom?.message}
+              error={errors.allergens?.custom?.message}
               {...form.register("allergens.custom")}
             />
             <FieldDescription>{t("otherAllergensDesc")}</FieldDescription>
