@@ -10,6 +10,38 @@ import { httpClient } from "@/lib/http-client";
 import { ApiError } from "@/lib/api-error";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { QUERY_KEYS } from "@/constant/query-keys";
+import { getRuntimeConfig } from "@/lib/runtime-config";
+
+/** path ของ API ขาเข้า — backend ต่อท้ายรากสาธารณะด้วยค่านี้เป็น `base_url` เสมอ */
+export const EXTERNAL_API_PATH = "/api/ext/v1";
+
+/**
+ * base URL ของ API ขาเข้าที่โชว์ให้ผู้ใช้ — `base_url` จาก backend ก่อน ไม่งั้นถอยไป
+ * `BACKEND_URL` (หรือ origin ของหน้าเมื่อ dev ใช้ proxy) + `/api/ext/v1`
+ *
+ * @param info - ผล GET ของกุญแจ (undefined = ยังไม่โหลด/ไม่ได้ยิง)
+ * @returns base URL ที่ลงท้ายด้วย `/api/ext/v1`
+ */
+export function externalApiBaseUrl(info: BuApiKeyInfo | undefined): string {
+  return (
+    info?.base_url ??
+    `${getRuntimeConfig().BACKEND_URL || window.location.origin}${EXTERNAL_API_PATH}`
+  );
+}
+
+/**
+ * รากของ host (ตัด `/api/ext/v1` ท้าย base URL ออก) — path ใน openapi.json มี
+ * `/api/ext/v1` อยู่แล้ว ถ้าใช้ base URL เป็น server ตรง ๆ URL จะซ้อนสองชั้น
+ *
+ * @param baseUrl - ผลของ `externalApiBaseUrl`
+ * @returns รากไม่มี `/` ท้าย
+ */
+export function externalApiRoot(baseUrl: string): string {
+  const trimmed = baseUrl.replace(/\/+$/, "");
+  return trimmed.endsWith(EXTERNAL_API_PATH)
+    ? trimmed.slice(0, -EXTERNAL_API_PATH.length)
+    : trimmed;
+}
 
 /** สรุปกุญแจ API ขาเข้าของ BU — ไม่มี secret */
 export interface BuApiKeyInfo {

@@ -1,0 +1,1057 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/ext/v1/inventory-postings": {
+      "get": {
+        "description": "Returns final (and stock-moving voided) GRN / CN / SR / SI / SO documents of the API key's business unit as Dr/Cr posting lines, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no posting line (e.g. only consignment lines) is not returned. Amounts are base currency, 2-decimal strings; `balanced` is reported, never forced. Lines with `unmapped: true` carry the correct amount but need their account fixed in the GL / AP mapping in Carmen.",
+        "operationId": "InventoryPostingController_list",
+        "parameters": [
+          {
+            "name": "date_from",
+            "required": true,
+            "in": "query",
+            "description": "Start of the range, `YYYY-MM-DD`, inclusive, in the business unit timezone. Must not be after `date_to`.",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-10-01"
+            }
+          },
+          {
+            "name": "date_to",
+            "required": true,
+            "in": "query",
+            "description": "End of the range, `YYYY-MM-DD`, inclusive. The range may span at most 366 days (inclusive).",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-10-31"
+            }
+          },
+          {
+            "name": "date_field",
+            "required": false,
+            "in": "query",
+            "description": "Which date the range filters on: `document` = document date (default), `updated` = last update time. Use `updated` for incremental sync.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "document",
+                "updated"
+              ],
+              "default": "document"
+            }
+          },
+          {
+            "name": "doc_types",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated list of GRN, CN, SR, SI, SO (case-insensitive). Omit for all types.",
+            "schema": {
+              "type": "string",
+              "example": "GRN,CN"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number, 1-based (default 1).",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "example": 1
+            }
+          },
+          {
+            "name": "perpage",
+            "required": false,
+            "in": "query",
+            "description": "Documents per page, 1 to 200 (default 50). Larger is a 400.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "example": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Posting documents retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/StdResponseMetaDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/PostingDocumentSwaggerDto"
+                          }
+                        },
+                        "paginate": {
+                          "$ref": "#/components/schemas/StdPaginateDto"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "examples": {
+                  "page": {
+                    "summary": "One page: GRN, GRN with unmapped AP, SI, SR",
+                    "description": "Amounts are base currency, 2 decimal strings. The second GRN has an AP line with `unmapped: true` / `issue: \"missing_ap_account\"`: the amount is correct, the AP account mapping for that vendor must be fixed in Carmen.",
+                    "value": {
+                      "data": [
+                        {
+                          "id": "6f1c2a5e-8d4b-4a51-9c0e-2b7d3f9a1c01",
+                          "doc_type": "GRN",
+                          "doc_no": "GRN261000012",
+                          "doc_date": "2026-10-03",
+                          "status": "final",
+                          "updated_at": "2026-10-03T09:41:27.512Z",
+                          "currency_code": "THB",
+                          "exchange_rate": "1.000000",
+                          "vendor": {
+                            "id": "b2a4c6d8-1e3f-4a5b-8c7d-9e0f1a2b3c4d",
+                            "code": "V-0042",
+                            "name": "Fresh Farm Supply Co., Ltd."
+                          },
+                          "adjustment_type": null,
+                          "balanced": true,
+                          "lines": [
+                            {
+                              "side": "Dr",
+                              "role": "inventory",
+                              "account_code": "1150-01",
+                              "cost_center_code": "CC-KIT",
+                              "amount": "1000.00",
+                              "location_code": "MAIN-STORE",
+                              "product_code": "FD-1001",
+                              "item_group_code": "FOOD",
+                              "unmapped": false,
+                              "issue": null
+                            },
+                            {
+                              "side": "Dr",
+                              "role": "inventory",
+                              "account_code": "1150-02",
+                              "cost_center_code": "CC-FB",
+                              "amount": "500.00",
+                              "location_code": "MAIN-STORE",
+                              "product_code": "BV-2003",
+                              "item_group_code": "BEVERAGE",
+                              "unmapped": false,
+                              "issue": null
+                            },
+                            {
+                              "side": "Dr",
+                              "role": "input_vat",
+                              "account_code": "1160-00",
+                              "cost_center_code": null,
+                              "amount": "105.00",
+                              "location_code": null,
+                              "product_code": null,
+                              "item_group_code": null,
+                              "unmapped": false,
+                              "issue": null
+                            },
+                            {
+                              "side": "Cr",
+                              "role": "ap",
+                              "account_code": "2110-00",
+                              "cost_center_code": "CC-KIT",
+                              "amount": "1605.00",
+                              "location_code": null,
+                              "product_code": null,
+                              "item_group_code": null,
+                              "unmapped": false,
+                              "issue": null
+                            }
+                          ]
+                        },
+                        {
+                          "id": "0d9e8f7a-6b5c-4d3e-9f2a-1b0c9d8e7f60",
+                          "doc_type": "GRN",
+                          "doc_no": "GRN261000013",
+                          "doc_date": "2026-10-04",
+                          "status": "final",
+                          "updated_at": "2026-10-04T14:05:11.020Z",
+                          "currency_code": "THB",
+                          "exchange_rate": "1.000000",
+                          "vendor": {
+                            "id": "c3d5e7f9-2a4b-4c6d-8e0f-1a3b5c7d9e1f",
+                            "code": "V-0107",
+                            "name": "New Vendor Trading"
+                          },
+                          "adjustment_type": null,
+                          "balanced": true,
+                          "lines": [
+                            {
+                              "side": "Dr",
+                              "role": "inventory",
+                              "account_code": "1150-01",
+                              "cost_center_code": "CC-KIT",
+                              "amount": "200.00",
+                              "location_code": "MAIN-STORE",
+                              "product_code": "FD-1005",
+                              "item_group_code": "FOOD",
+                              "unmapped": false,
+                              "issue": null
+                            },
+                            {
+                              "side": "Dr",
+                              "role": "input_vat",
+                              "account_code": "1160-00",
+                              "cost_center_code": null,
+                              "amount": "14.00",
+                              "location_code": null,
+                              "product_code": null,
+                              "item_group_code": null,
+                              "unmapped": false,
+                              "issue": null
+                            },
+                            {
+                              "side": "Cr",
+                              "role": "ap",
+                              "account_code": null,
+                              "cost_center_code": null,
+                              "amount": "214.00",
+                              "location_code": null,
+                              "product_code": null,
+                              "item_group_code": null,
+                              "unmapped": true,
+                              "issue": "missing_ap_account"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+                          "doc_type": "SI",
+                          "doc_no": "SI261000004",
+                          "doc_date": "2026-10-08",
+                          "status": "final",
+                          "updated_at": "2026-10-08T11:20:45.300Z",
+                          "currency_code": "THB",
+                          "exchange_rate": "1.000000",
+                          "vendor": null,
+                          "adjustment_type": {
+                            "code": "ADJ-IN",
+                            "type": "stock_in"
+                          },
+                          "balanced": true,
+                          "lines": [
+                            {
+                              "side": "Dr",
+                              "role": "inventory",
+                              "account_code": "1150-01",
+                              "cost_center_code": "CC-KIT",
+                              "amount": "300.00",
+                              "location_code": "MAIN-STORE",
+                              "product_code": "FD-1001",
+                              "item_group_code": "FOOD",
+                              "unmapped": false,
+                              "issue": null
+                            },
+                            {
+                              "side": "Cr",
+                              "role": "adjustment",
+                              "account_code": "5190-00",
+                              "cost_center_code": "CC-KIT",
+                              "amount": "300.00",
+                              "location_code": "MAIN-STORE",
+                              "product_code": "FD-1001",
+                              "item_group_code": "FOOD",
+                              "unmapped": false,
+                              "issue": null
+                            }
+                          ]
+                        },
+                        {
+                          "id": "3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f",
+                          "doc_type": "SR",
+                          "doc_no": "SR261000021",
+                          "doc_date": "2026-10-10",
+                          "status": "final",
+                          "updated_at": "2026-10-10T16:02:09.871Z",
+                          "currency_code": "THB",
+                          "exchange_rate": "1.000000",
+                          "vendor": null,
+                          "adjustment_type": null,
+                          "balanced": true,
+                          "lines": [
+                            {
+                              "side": "Dr",
+                              "role": "sr_in",
+                              "account_code": "5110-01",
+                              "cost_center_code": "CC-FB",
+                              "amount": "240.00",
+                              "location_code": "BAR",
+                              "product_code": "BV-2003",
+                              "item_group_code": "BEVERAGE",
+                              "unmapped": false,
+                              "issue": null
+                            },
+                            {
+                              "side": "Cr",
+                              "role": "sr_out",
+                              "account_code": "1150-02",
+                              "cost_center_code": "CC-FB",
+                              "amount": "240.00",
+                              "location_code": "MAIN-STORE",
+                              "product_code": "BV-2003",
+                              "item_group_code": "BEVERAGE",
+                              "unmapped": false,
+                              "issue": null
+                            }
+                          ]
+                        }
+                      ],
+                      "status": 200,
+                      "success": true,
+                      "message": "Success",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "paginate": {
+                        "total": 4,
+                        "page": 1,
+                        "perpage": 50,
+                        "pages": 1
+                      }
+                    }
+                  },
+                  "empty": {
+                    "summary": "No documents in range",
+                    "value": {
+                      "data": [],
+                      "status": 200,
+                      "success": true,
+                      "message": "Success",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "paginate": {
+                        "total": 0,
+                        "page": 1,
+                        "perpage": 50,
+                        "pages": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters (`error.errors` lists the issues)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid API credentials"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                    },
+                    "error": {
+                      "type": "object",
+                      "description": "HTTP reason phrase (`message`) and, for 400, the validation `errors`",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Unauthorized"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "invalidQuery": {
+                    "summary": "perpage over 200 and date_from after date_to",
+                    "value": {
+                      "success": false,
+                      "status": 400,
+                      "message": "Invalid query parameters",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "errors": [
+                          {
+                            "origin": "number",
+                            "code": "too_big",
+                            "maximum": 200,
+                            "inclusive": true,
+                            "path": [
+                              "perpage"
+                            ],
+                            "message": "Too big: expected number to be <=200"
+                          },
+                          {
+                            "code": "custom",
+                            "path": [
+                              "date_from"
+                            ],
+                            "message": "date_from must not be after date_to"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "rangeTooWide": {
+                    "summary": "Range longer than 366 days",
+                    "value": {
+                      "success": false,
+                      "status": 400,
+                      "message": "Invalid query parameters",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "errors": [
+                          {
+                            "code": "custom",
+                            "path": [
+                              "date_to"
+                            ],
+                            "message": "date range must not exceed 366 days"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API credentials (one uniform body for every cause)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid API credentials"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                    },
+                    "error": {
+                      "type": "object",
+                      "description": "HTTP reason phrase (`message`) and, for 400, the validation `errors`",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Unauthorized"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "invalidCredentials": {
+                    "summary": "Missing header, unknown client id, wrong secret, inactive key or inactive BU (same body for all)",
+                    "value": {
+                      "success": false,
+                      "status": 401,
+                      "message": "Invalid API credentials",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "message": "Unauthorized"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "API not enabled, or External interface license missing or expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid API credentials"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                    },
+                    "error": {
+                      "type": "object",
+                      "description": "HTTP reason phrase (`message`) and, for 400, the validation `errors`",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Unauthorized"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "notAllowlisted": {
+                    "summary": "API not enabled for external access (or method is not GET, e.g. HEAD)",
+                    "value": {
+                      "success": false,
+                      "status": 403,
+                      "message": "This API is not enabled",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "message": "Forbidden"
+                      }
+                    }
+                  },
+                  "noLicense": {
+                    "summary": "Business unit has no External interface license",
+                    "value": {
+                      "success": false,
+                      "status": 403,
+                      "message": "The External interface is not enabled for this business unit",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "message": "Forbidden"
+                      }
+                    }
+                  },
+                  "licenseExpired": {
+                    "summary": "External interface license has expired",
+                    "value": {
+                      "success": false,
+                      "status": 403,
+                      "message": "The External interface license has expired for this business unit",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "message": "Forbidden"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (per API key or per source IP). Back off and retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid API credentials"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                    },
+                    "error": {
+                      "type": "object",
+                      "description": "HTTP reason phrase (`message`) and, for 400, the validation `errors`",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Unauthorized"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "perKey": {
+                    "summary": "More than 300 requests per minute for this API key",
+                    "value": {
+                      "success": false,
+                      "status": 429,
+                      "message": "Too many requests for this API key",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                    }
+                  },
+                  "perIp": {
+                    "summary": "Global per-source-IP limit",
+                    "value": {
+                      "success": false,
+                      "status": 429,
+                      "message": "ThrottlerException: Too Many Requests",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Temporarily unavailable. Retry later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 401
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid API credentials"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "path": {
+                      "type": "string",
+                      "example": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31"
+                    },
+                    "error": {
+                      "type": "object",
+                      "description": "HTTP reason phrase (`message`) and, for 400, the validation `errors`",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Unauthorized"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "allowlistNotLoaded": {
+                    "summary": "Allowlist not loaded yet — retry later",
+                    "value": {
+                      "success": false,
+                      "status": 503,
+                      "message": "External API is temporarily unavailable",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "message": "Service Unavailable"
+                      }
+                    }
+                  },
+                  "licenseUnresolved": {
+                    "summary": "License could not be resolved — retry later",
+                    "value": {
+                      "success": false,
+                      "status": 503,
+                      "message": "Could not verify the External interface license",
+                      "timestamp": "2026-10-16T08:00:00.000Z",
+                      "path": "/api/ext/v1/inventory-postings?date_from=2026-10-01&date_to=2026-10-31",
+                      "error": {
+                        "message": "Service Unavailable"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Export inventory Dr/Cr posting documents",
+        "tags": [
+          "External API: Inventory Postings"
+        ],
+        "security": [
+          {
+            "x-client-id": [],
+            "x-client-secret": []
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Carmen External API",
+    "description": "Read-only API for external systems (for example a customer's accounting system) to pull data out\nof **Carmen**. Each request is authenticated with a **per-business-unit API key**, not a user login,\nand only ever sees the data of the business unit (BU) the key belongs to.\n\nCurrently available: **inventory postings** — committed inventory documents (GRN, CN, SR, SI, SO)\nexported as Dr/Cr posting lines with the GL / AP accounts mapped in Carmen.\n\n## 1. Get an API key\n\nAn administrator of the BU (with the `system_admin.bu_api_key` permission) opens\n**Interface → Accounting → External → API Access** in Carmen and creates the key. The page shows\nthe **client id**, the **secret** (reveal on demand) and the base URL to call.\n\n- One key per business unit. The BU needs the External interface license.\n- **Regenerate** issues a new secret and the old secret stops working **immediately**.\n- Keep the secret in an environment variable or secret store. Never commit it or put it in a URL.\n\n## 2. Base URL\n\n```\n<your Carmen API host>/api/ext/v1\n```\n\nThe host differs per environment; use the URL shown on the API Access page.\n\n## 3. Authentication\n\nSend both headers on every request (no `Authorization` header is needed):\n\n| Header | Value |\n| --- | --- |\n| `x-client-id` | Client id of the key |\n| `x-client-secret` | Secret of the key |\n\nIn this page, click **Authorize** and fill in both values to try the endpoint.\n\n## 4. Quick start\n\n```bash\nexport CARMEN_API=\"https://<your Carmen API host>\"\nexport CARMEN_CLIENT_ID=\"<client id>\"\nexport CARMEN_CLIENT_SECRET=\"<secret>\"\n\ncurl -sS -G \"$CARMEN_API/api/ext/v1/inventory-postings\" \\\n  -H \"x-client-id: $CARMEN_CLIENT_ID\" \\\n  -H \"x-client-secret: $CARMEN_CLIENT_SECRET\" \\\n  --data-urlencode \"date_from=2026-10-01\" \\\n  --data-urlencode \"date_to=2026-10-31\" \\\n  --data-urlencode \"doc_types=GRN,CN\" \\\n  --data-urlencode \"perpage=50\"\n```\n\n## 5. Pagination\n\nResponses carry `paginate: { total, page, perpage, pages }`. Request `page=1,2,…` until\n`page >= pages`. `perpage` is 1–200 (default 50). Documents are ordered by document date,\ndocument no, doc type and id, across all requested types.\n\n## 6. Incremental sync (recommended)\n\nDocuments can be edited or voided after you first read them, so do not rely on the document date alone:\n\n1. First run: `date_field=document` over the periods you need; page through all results.\n2. Each later run: `date_field=updated`, `date_from` = the day of your last successful sync\n   (one day earlier for safety), `date_to` = today.\n3. Upsert by `(doc_type, id)` — the latest version wins — and replace all lines of the document,\n   since line grouping and mapping can change.\n4. A range spans at most 366 days (inclusive).\n\n## 7. Errors\n\nAll errors share one body: `{ success: false, status, message, timestamp, path, error? }`.\n\n| Status | Meaning |\n| --- | --- |\n| 400 | Invalid query parameters; `error.errors` lists the issues. |\n| 401 | `Invalid API credentials` — missing header, unknown client id, wrong secret, inactive key or BU. Same body for every cause. |\n| 403 | The API is not enabled (or the method is not GET — HEAD is rejected too), or the BU's External interface license is missing or expired. |\n| 429 | Rate limit exceeded. Back off and retry. |\n| 503 | Temporarily unavailable (allowlist not loaded, or the license could not be verified). Retry later. |\n\n## 8. Rate limits\n\n- **300 requests per minute per API key** (fixed one-minute window).\n  Requests rejected with 403 or 429 still count.\n- A global **per-source-IP** limit (300 per minute by default) also applies, so several keys polled\n  from the same IP can be throttled before reaching their per-key limit.",
+    "version": "v1",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "External API: Inventory Postings",
+      "description": "Inventory documents as Dr/Cr posting lines for an accounting system"
+    }
+  ],
+  "servers": [
+    {
+      "url": "/",
+      "description": "This server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "x-client-id": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-client-id",
+        "description": "Client id of the business unit API key"
+      },
+      "x-client-secret": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-client-secret",
+        "description": "Secret of the business unit API key"
+      }
+    },
+    "schemas": {
+      "StdResponseMetaDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "example": 200
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Success"
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2026-06-10T08:00:00.000Z"
+          }
+        },
+        "required": [
+          "status",
+          "success",
+          "message",
+          "timestamp"
+        ]
+      },
+      "StdPaginateDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "example": 100
+          },
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "perpage": {
+            "type": "number",
+            "example": 10
+          },
+          "pages": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": [
+          "total",
+          "page",
+          "perpage",
+          "pages"
+        ]
+      },
+      "PostingLineSwaggerDto": {
+        "type": "object",
+        "properties": {
+          "side": {
+            "type": "string",
+            "enum": [
+              "Dr",
+              "Cr"
+            ],
+            "example": "Dr"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "inventory",
+              "ap",
+              "input_vat",
+              "adjustment",
+              "sr_in",
+              "sr_out"
+            ],
+            "example": "inventory"
+          },
+          "account_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "GL account resolved from the GL / AP mapping; null when it could not be resolved",
+            "example": "1150-01"
+          },
+          "cost_center_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Resolved cost center",
+            "example": "CC-KIT"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Non-negative decimal string, base currency, 2 decimals. `0.00` when issue is `cost_not_found`",
+            "example": "1000.00"
+          },
+          "location_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null for ap and input_vat",
+            "example": "MAIN-STORE"
+          },
+          "product_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null for ap and input_vat",
+            "example": "FD-1001"
+          },
+          "item_group_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null for ap and input_vat",
+            "example": "FOOD"
+          },
+          "unmapped": {
+            "type": "boolean",
+            "description": "true when account_code is null or issue is set. The amount is still correct; the account needs fixing in the GL / AP mapping",
+            "example": false
+          },
+          "issue": {
+            "type": "string",
+            "nullable": true,
+            "description": "Reason code when the line is unmapped, e.g. missing_location, missing_product, missing_item_group, missing_input_vat_account, missing_adjustment_type, cost_not_found, mapping_target_not_found, missing_inventory_account, missing_ap_account, missing_adjustment_account, missing_cost_center, missing_direct_account, account_not_in_coa. Treat an unknown code as \"unmapped, needs review\".",
+            "example": null
+          }
+        },
+        "required": [
+          "side",
+          "role",
+          "account_code",
+          "cost_center_code",
+          "amount",
+          "location_code",
+          "product_code",
+          "item_group_code",
+          "unmapped",
+          "issue"
+        ]
+      },
+      "PostingDocumentSwaggerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "6f1c2a5e-8d4b-4a51-9c0e-2b7d3f9a1c01"
+          },
+          "doc_type": {
+            "type": "string",
+            "enum": [
+              "GRN",
+              "CN",
+              "SR",
+              "SI",
+              "SO"
+            ],
+            "example": "GRN"
+          },
+          "doc_no": {
+            "type": "string",
+            "nullable": true,
+            "example": "GRN261000012"
+          },
+          "doc_date": {
+            "type": "string",
+            "nullable": true,
+            "description": "YYYY-MM-DD in the business unit timezone",
+            "example": "2026-10-01"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "final",
+              "voided"
+            ],
+            "description": "voided only for SI/SO voided after completion; keeps the original amounts — reverse on your side",
+            "example": "final"
+          },
+          "updated_at": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601 timestamp of the last update; filter on it with date_field=updated",
+            "example": "2026-10-03T09:41:27.512Z"
+          },
+          "currency_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Document currency (SR/SI/SO use the BU base currency). Reference only",
+            "example": "THB"
+          },
+          "exchange_rate": {
+            "type": "string",
+            "description": "Rate to base currency, decimal string. Reference only",
+            "example": "1.000000"
+          },
+          "vendor": {
+            "type": "object",
+            "nullable": true,
+            "description": "Vendor of a GRN / CN; null otherwise",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "code": {
+                "type": "string",
+                "example": "V-0042"
+              },
+              "name": {
+                "type": "string",
+                "example": "Fresh Farm Supply Co., Ltd."
+              }
+            }
+          },
+          "adjustment_type": {
+            "type": "object",
+            "nullable": true,
+            "description": "Adjustment type of an SI / SO; null otherwise",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "ADJ-IN"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "stock_in",
+                  "stock_out",
+                  "eop_in",
+                  "eop_out"
+                ]
+              }
+            }
+          },
+          "balanced": {
+            "type": "boolean",
+            "description": "true when total Dr equals total Cr. Amounts are never adjusted to force a balance (SR FIFO rounding or a dropped consignment side can make it false)",
+            "example": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PostingLineSwaggerDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "doc_type",
+          "doc_no",
+          "doc_date",
+          "status",
+          "updated_at",
+          "currency_code",
+          "exchange_rate",
+          "vendor",
+          "adjustment_type",
+          "balanced",
+          "lines"
+        ]
+      }
+    }
+  }
+}

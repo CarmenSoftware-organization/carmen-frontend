@@ -21,17 +21,14 @@ import { useCan } from "@/hooks/use-can";
 import { useInterfaceEntitlement } from "@/hooks/use-interface-entitlement";
 import { useLocale } from "@/hooks/use-locale";
 import { formatDate } from "@/lib/date-utils";
-import { getRuntimeConfig } from "@/lib/runtime-config";
 import {
+  externalApiBaseUrl,
   useBuApiKey,
   useCreateBuApiKey,
   useRegenerateBuApiKey,
   useRevealBuApiKey,
   useSetBuApiKeyActive,
 } from "./use-bu-api-key";
-
-/** path ของ API ขาเข้าเมื่อ backend ไม่ส่ง `base_url` มา */
-const FALLBACK_API_PATH = "/api/ext/v1";
 
 type SecretDialog = {
   readonly kind: "created" | "regenerated" | "revealed";
@@ -106,9 +103,7 @@ export function ExternalApiAccessSection() {
   if (!canView) return null;
 
   const info = query.data;
-  const baseUrl =
-    info?.base_url ??
-    `${getRuntimeConfig().BACKEND_URL || window.location.origin}${FALLBACK_API_PATH}`;
+  const baseUrl = externalApiBaseUrl(info);
 
   const closeSecretDialog = () => {
     setSecretDialog(null);
