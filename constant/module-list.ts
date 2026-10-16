@@ -558,13 +558,6 @@ export const moduleList: ModuleDto[] = [
     icon: Settings2,
     subModules: [
       {
-        name: "costCenterGroup",
-        path: "/config/cost-center-group",
-        licenseFeature: "configuration.cost_center_group",
-        icon: Group,
-        permission: PERMISSIONS.configuration.cost_center_group.view,
-      },
-      {
         name: "costCenter",
         path: "/config/cost-center",
         licenseFeature: "configuration.cost_center",
@@ -572,16 +565,23 @@ export const moduleList: ModuleDto[] = [
         permission: PERMISSIONS.configuration.cost_center.view,
       },
       {
-        name: "accountGrouping",
-        path: "/config/account-grouping",
-        licenseFeature: "configuration.chart_of_accounts", // จัดกลุ่มผังบัญชี — ใช้คีย์เดียวกับหน้า chart-of-accounts
-        icon: FolderTree,
+        name: "costCenterGroup",
+        path: "/config/cost-center-group",
+        licenseFeature: "configuration.cost_center_group",
+        icon: Group,
+        permission: PERMISSIONS.configuration.cost_center_group.view,
       },
       {
         name: "chartOfAccounts",
         path: "/config/chart-of-accounts",
         licenseFeature: "configuration.chart_of_accounts", // config:chart-of-accounts
         icon: BookText,
+      },
+      {
+        name: "accountGrouping",
+        path: "/config/account-grouping",
+        licenseFeature: "configuration.chart_of_accounts", // จัดกลุ่มผังบัญชี — ใช้คีย์เดียวกับหน้า chart-of-accounts
+        icon: FolderTree,
       },
       {
         // คีย์ license นี้ผูกกับ endpoint จริงแล้ว (api/:bu_code/account-mapping) — LicenseInterceptor + permission configuration.chart_of_account_mapping
