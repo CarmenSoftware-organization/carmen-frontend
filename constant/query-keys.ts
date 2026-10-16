@@ -145,6 +145,7 @@ export const QUERY_KEYS = {
   VENDOR_COMMENTS: "vendor-comments",
   WASTAGE_REPORTS: "wastage-reports",
   APP_CONFIGS: "app-configs",
+  BU_API_KEY: "bu-api-key",
   APP_USER_CONFIGS: "app-user-configs",
   EMAIL_SENDERS: "email-senders",
   EMAIL_MESSAGES: "email-messages",
