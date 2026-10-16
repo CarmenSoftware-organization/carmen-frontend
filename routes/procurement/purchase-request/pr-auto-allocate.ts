@@ -85,6 +85,10 @@ export async function runPrAutoAllocate(
         unit_id: item.requested_unit_id,
         at_date: formatDate(item.delivery_date, "yyyy-MM-dd"),
         currency_id: item.currency_id,
+        // ราคาขึ้นกับจำนวนที่สั่ง (ขั้นบันได MOQ) — ไม่ส่งจำนวนไป backend จะเลือก
+        // tier ที่ถูกสุดแม้จำนวนยังไม่ถึงขั้นต่ำ ใช้ตัวเดียวกับที่ applyDerivedAmounts
+        // คิดยอด; 0 → "" ให้ backend ถือว่าไม่ระบุ (ดู pr-pricelist-dialog)
+        qty: resolveApprovedQty(item) || "",
       });
 
       const res = await httpClient.get(url);
