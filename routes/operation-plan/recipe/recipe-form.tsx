@@ -174,7 +174,17 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       const savedLines = activeIngredients(recipe.ingredients);
       const recalculate = values.recalculate_ingredients;
       if (!recalculate && !ingredientsChanged(values.ingredients, savedLines)) {
-        saveHeader(payload, recipe.doc_version);
+        // วัตถุดิบไม่เปลี่ยน — ยอดที่ server บันทึกไว้คือของจริง ยอดบนจอเป็นผลรวมฝั่ง client
+        // (อาจคลาดเศษ) ห้ามเขียนทับ · สูตรที่ไม่มีวัตถุดิบ = ช่องกรอกมือ ส่งค่าที่ผู้ใช้เห็น
+        saveHeader(
+          savedLines.length > 0
+            ? withIngredientTotal(
+                payload,
+                Number(recipe.total_ingredient_cost) || 0,
+              )
+            : payload,
+          recipe.doc_version,
+        );
         return;
       }
 
@@ -192,7 +202,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
             // ยังมีวัตถุดิบ หรือเพิ่งลบวัตถุดิบที่เคยบันทึกไว้จนหมด = ยอดมาจาก server
             // (ลบหมดได้ 0 — ไม่งั้นยอดของบรรทัดที่ลบไปแล้วค้างอยู่ในช่อง แล้วถูกเขียนกลับ)
             // สูตรที่ไม่เคยมีวัตถุดิบเลย = ช่องกรอกมือ ใช้ค่าที่ผู้ใช้เห็น
-            const hadSavedIngredients = (recipe.ingredients?.length ?? 0) > 0;
+            const hadSavedIngredients = savedLines.length > 0;
             const total =
               values.ingredients.length > 0 || hadSavedIngredients
                 ? res.total_ingredient_cost

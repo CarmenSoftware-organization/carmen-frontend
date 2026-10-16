@@ -3903,6 +3903,7 @@
       "costSourceNone": "No cost",
       "costPending": "Calculating…",
       "costPreviewFailed": "Couldn't get the cost",
+      "retryCost": "Try again",
       "recalculate": "Recalculate",
       "recalcTitle": "Recalculate ingredient costs",
       "recalcDesc": "Current costs from inventory compared with the costs on this recipe. Nothing changes until you apply and then Save.",

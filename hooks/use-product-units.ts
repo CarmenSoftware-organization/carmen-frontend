@@ -72,10 +72,23 @@ export function useProductAvailableUnits(productId: string | undefined) {
  */
 export function useProductIngredientUnits(productId: string | undefined) {
   const buCode = useBuCode();
+  return useQuery(productIngredientUnitsQuery(buCode, productId));
+}
 
-  return useQuery<ProductUnit[]>({
+/**
+ * query options ของหน่วยวัตถุดิบต่อสินค้า — key/fn เดียวกับ `useProductIngredientUnits`
+ * (cache ร่วมกัน) ใช้กับ `useQueries` เมื่อต้องอ่านหลายสินค้าพร้อมกัน
+ * @param buCode - รหัส BU (ยังไม่มี = ไม่ fetch)
+ * @param productId - รหัสสินค้า (ยังไม่มี = ไม่ fetch)
+ * @returns options สำหรับ useQuery / useQueries
+ */
+export function productIngredientUnitsQuery(
+  buCode: string | null | undefined,
+  productId: string | undefined,
+) {
+  return {
     queryKey: [QUERY_KEYS.PRODUCT_UNITS, buCode, productId, "ingredient"],
-    queryFn: async () => {
+    queryFn: async (): Promise<ProductUnit[]> => {
       const res = await httpClient.get(
         API_ENDPOINTS.PRODUCT_INGREDIENT_UNITS(buCode!, productId!),
       );
@@ -85,7 +98,7 @@ export function useProductIngredientUnits(productId: string | undefined) {
     },
     enabled: !!buCode && !!productId,
     ...CACHE_STATIC,
-  });
+  };
 }
 
 /**

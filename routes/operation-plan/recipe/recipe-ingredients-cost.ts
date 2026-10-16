@@ -32,12 +32,17 @@ export const EMPTY_INGREDIENT: IngredientDraft = {
 export interface UnitCost {
   /** ต่อหน่วย inventory */
   cost_per_unit: number;
-  /** หน่วย inventory ต่อ 1 หน่วยสูตร */
+  /** หน่วย inventory ต่อ 1 หน่วยสูตร — ค่าที่ server ปัด 5 ตำแหน่งแล้ว ใช้เป็นตัวสำรองเท่านั้น */
   conversion_factor: number;
   cost_source: IngredientCostSource;
+  /**
+   * แถวที่บันทึกไว้: inventory_qty / qty ของแถวนั้น — ตัวสำรองเมื่อยังไม่รู้อัตราส่วนแปลงหน่วย
+   * แบบไม่ปัด (qty เดิม = ได้ inventory_qty เดิมเป๊ะ)
+   */
+  saved_inventory_per_qty?: number;
 }
 
-/** ผลของ preview ต่อคู่ (สินค้า, หน่วย) — error เก็บไว้ด้วยเพื่อไม่ยิงซ้ำวนไป */
+/** ผลของ preview ต่อคู่ (สินค้า, หน่วย) — error เก็บไว้กันยิงซ้ำวนไป (ลบออกเมื่อกดลองใหม่) */
 export type PairCost =
   | ({ ok: true; unit_name: string | null } & UnitCost)
   | { ok: false; message: string };
@@ -103,14 +108,59 @@ export function unitCostOf(
   };
 }
 
-/** สูตรเดียวกับสัญญา API: inventory_qty × cost_per_unit × (1 + % เสีย) */
+/** หน่วยสูตรต่อ 1 หน่วย inventory (ค่า `conversion` ของ ingredient-units) ต่อ pairKey */
+export type UnitRatios = ReadonlyMap<string, number>;
+
+/** ปัด half-up ที่ 5 ตำแหน่ง — สเกลคอลัมน์ Decimal(20, 5) แบบเดียวกับ server */
+export function round5(n: number): number {
+  if (!Number.isFinite(n)) return 0;
+  const sign = n < 0 ? -1 : 1;
+  // toPrecision(15) ล้างเศษ float ก่อนปัด — 1.000005 * 1e5 = 100000.49999999999 ต้องปัดขึ้น
+  const shifted = Number((Math.abs(n) * 1e5).toPrecision(15));
+  return (sign * Math.round(shifted)) / 1e5;
+}
+
+/**
+ * inventory_qty ของบรรทัด — ลำดับเดียวกับ server: qty (ปัด) ÷ อัตราส่วนแบบไม่ปัด แล้วค่อยปัด
+ *
+ * `ratio` (หน่วยสูตรต่อ 1 หน่วย inventory จาก ingredient-units) ใช้ได้เมื่อ 1/ratio ปัดแล้วตรงกับ
+ * conversion_factor ที่ server ส่งมา — ไม่ตรง (เช่น from_unit_qty ≠ 1 หรือ endpoint หน่วยเลือกแถว
+ * conversion คนละแถว) ถือว่าเชื่อไม่ได้ · ไม่มี ratio → แถวที่บันทึกไว้ใช้ inventory_qty/qty เดิม ·
+ * สุดท้ายใช้ factor ที่ปัดแล้ว (อาจคลาดหลักที่ 5 จาก server)
+ */
+export function inventoryQtyOf(
+  qty: number,
+  unit: UnitCost,
+  ratio?: number,
+): number {
+  const q = round5(Number(qty) || 0);
+  if (
+    ratio !== undefined &&
+    Number.isFinite(ratio) &&
+    ratio > 0 &&
+    round5(1 / ratio) === round5(unit.conversion_factor)
+  ) {
+    return round5(q / ratio);
+  }
+  if (unit.saved_inventory_per_qty !== undefined) {
+    return round5(q * unit.saved_inventory_per_qty);
+  }
+  return round5(q * unit.conversion_factor);
+}
+
+/**
+ * สูตรเดียวกับ server: net = round5(inventory_qty × cost_per_unit) ·
+ * wastage = round5(net × % เสีย / 100) · line = net + wastage
+ */
 export function computeLineCost(
   qty: number,
   wastagePct: number,
   unit: UnitCost,
+  ratio?: number,
 ): number {
-  const net = (Number(qty) || 0) * unit.conversion_factor * unit.cost_per_unit;
-  return net + (net * (Number(wastagePct) || 0)) / 100;
+  const net = round5(inventoryQtyOf(qty, unit, ratio) * unit.cost_per_unit);
+  const wastage = round5((net * round5(Number(wastagePct) || 0)) / 100);
+  return round5(net + wastage);
 }
 
 /**
@@ -125,6 +175,7 @@ export function resolveRowCosts(
   saved: RecipeIngredientLine[],
   current: ReadonlyMap<string, PairCost>,
   recalculate: boolean,
+  ratios: UnitRatios = new Map(),
 ): RowCost[] {
   const used = new Set<number>();
   return drafts.map((d): RowCost => {
@@ -139,7 +190,14 @@ export function resolveRowCosts(
       );
       if (idx >= 0) {
         used.add(idx);
-        unit = unitCostOf(saved[idx], "snapshot");
+        const s = saved[idx];
+        const savedQty = Number(s.qty) || 0;
+        unit = {
+          ...unitCostOf(s, "snapshot"),
+          ...(savedQty > 0
+            ? { saved_inventory_per_qty: (Number(s.inventory_qty) || 0) / savedQty }
+            : {}),
+        };
       }
     }
     if (!unit) {
@@ -151,7 +209,12 @@ export function resolveRowCosts(
     return {
       state: "ok",
       unit,
-      line_cost: computeLineCost(d.qty, d.wastage_percentage, unit),
+      line_cost: computeLineCost(
+        d.qty,
+        d.wastage_percentage,
+        unit,
+        ratios.get(pairKey(d.product_id, d.ingredient_unit_id)),
+      ),
     };
   });
 }

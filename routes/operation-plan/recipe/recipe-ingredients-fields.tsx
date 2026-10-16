@@ -7,7 +7,8 @@ import {
   type UseFormReturn,
 } from "react-hook-form";
 import { useTranslations } from "use-intl";
-import { Calculator, Plus, Trash2 } from "lucide-react";
+import { useQueries } from "@tanstack/react-query";
+import { Calculator, Plus, RotateCw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FieldError, FieldInput } from "@/components/ui/field";
@@ -22,7 +23,11 @@ import { SettingSection } from "@/components/ui/setting-section";
 import { EyeBrow } from "@/components/ui/eye-brow";
 import EmptyComponent from "@/components/empty-component";
 import { LookupProduct } from "@/components/lookup/lookup-product";
-import { useProductIngredientUnits } from "@/hooks/use-product-units";
+import {
+  productIngredientUnitsQuery,
+  useProductIngredientUnits,
+} from "@/hooks/use-product-units";
+import { useBuCode } from "@/hooks/use-bu-code";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { formatCurrency } from "@/lib/currency-utils";
 import type {
@@ -42,6 +47,7 @@ import {
   pairKey,
   pendingPairs,
   resolveRowCosts,
+  round5,
   type IngredientDraft,
   type PairCost,
   type RowCost,
@@ -106,19 +112,54 @@ export function RecipeIngredientsFields({
   const [current, setCurrent] = useState<ReadonlyMap<string, PairCost>>(
     () => new Map(),
   );
-  const rows = resolveRowCosts(drafts, saved, current, recalculate);
-  const total = rows.reduce(
-    (s, r) => (r.state === "ok" ? s + r.line_cost : s),
-    0,
+
+  // อัตราส่วนแปลงหน่วยแบบไม่ปัดจาก ingredient-units (cache เดียวกับ select หน่วยของแถว) —
+  // ให้ inventory_qty บนจอคิดแบบเดียวกับ server ไม่ใช่จาก conversion_factor ที่ปัด 5 ตำแหน่งแล้ว
+  const buCode = useBuCode();
+  const productIds = [
+    ...new Set(drafts.map((d) => d.product_id).filter(Boolean)),
+  ];
+  const unitQueries = useQueries({
+    queries: productIds.map((id) => productIngredientUnitsQuery(buCode, id)),
+  });
+  const ratios = new Map<string, number>();
+  productIds.forEach((pid, idx) => {
+    for (const u of unitQueries[idx]?.data ?? []) {
+      ratios.set(pairKey(pid, u.id), Number(u.conversion));
+    }
+  });
+
+  const rows = resolveRowCosts(drafts, saved, current, recalculate, ratios);
+  const total = round5(
+    rows.reduce((s, r) => (r.state === "ok" ? s + r.line_cost : s), 0),
   );
 
-  // ยอดรวมบรรทัด = Ingredient Cost ใน Costing · ไม่มีแถว = ไม่แตะ (สูตรเก่าที่กรอกมือไว้)
+  // ยอดรวมบรรทัด = Ingredient Cost ใน Costing
+  // · มีแถว → ยอดรวมบรรทัด
+  // · ลบจนหมดและสูตรเคยบันทึกวัตถุดิบไว้ → 0 (ตรงกับที่ server จะตั้งตอน PUT items ว่าง)
+  // · ลบจนหมดและสูตรไม่เคยมีวัตถุดิบ → คืนค่าที่กรอกมือไว้ก่อนเพิ่มแถวแรก
+  // ไม่ส่ง shouldDirty — ความ dirty มาจากรายการวัตถุดิบเอง เพิ่มแล้วลบจนหมด = กลับเป็นค่าเดิม
+  const hadSavedIngredients = saved.length > 0;
+  const manualTotalRef = useRef<number>(
+    Number(recipe?.total_ingredient_cost) || 0,
+  );
+  const prevCountRef = useRef(drafts.length);
   useEffect(() => {
-    if (drafts.length === 0) return;
+    const prevCount = prevCountRef.current;
+    prevCountRef.current = drafts.length;
     const cur = Number(form.getValues("total_ingredient_cost")) || 0;
-    if (Math.abs(cur - total) > EPSILON)
-      form.setValue("total_ingredient_cost", total);
-  }, [drafts.length, total, form]);
+    let target: number | null = null;
+    if (drafts.length > 0) {
+      if (prevCount === 0 && !hadSavedIngredients) manualTotalRef.current = cur;
+      target = total;
+    } else if (hadSavedIngredients) {
+      target = 0;
+    } else if (prevCount > 0) {
+      target = manualTotalRef.current;
+    }
+    if (target !== null && Math.abs(cur - target) > EPSILON)
+      form.setValue("total_ingredient_cost", target);
+  }, [drafts.length, total, hadSavedIngredients, form]);
 
   // ถามต้นทุนปัจจุบันเฉพาะคู่ที่ยังไม่รู้ — debounce กันยิงระหว่างเลือกหลายแถวติดกัน
   const { mutateAsync: previewCosts } = usePreviewIngredientCosts();
@@ -129,39 +170,55 @@ export function RecipeIngredientsFields({
   const inFlight = useRef(new Set<string>());
   const recipeId = recipe?.id;
   const fallbackError = t("costPreviewFailed");
+  const requestPair = (key: string) => {
+    if (!recipeId || inFlight.current.has(key)) return;
+    inFlight.current.add(key);
+    const [product_id, ingredient_unit_id] = key.split("|");
+    previewCosts({
+      recipeId,
+      items: [
+        { product_id, ingredient_unit_id, qty: 1, wastage_percentage: 0 },
+      ],
+    })
+      .then((res) => {
+        const hit = pairCostsFrom(res.items).find(([k]) => k === key);
+        setCurrent((prev) =>
+          new Map(prev).set(
+            key,
+            hit ? hit[1] : { ok: false, message: fallbackError },
+          ),
+        );
+      })
+      .catch((err: Error) => {
+        setCurrent((prev) =>
+          new Map(prev).set(key, {
+            ok: false,
+            message: err.message || fallbackError,
+          }),
+        );
+      })
+      .finally(() => inFlight.current.delete(key));
+  };
   useEffect(() => {
     if (!recipeId || !debouncedNeedKey) return;
     // ยิงทีละคู่ — คู่ที่หน่วยไม่มี conversion ได้ 400 ต้องไม่พาคู่อื่นล้มไปด้วย
+    // เฉพาะคู่ที่ยังรออยู่จริงตอนนี้ (needKey) — ค่า debounce อาจค้างคู่ที่ได้ผลไปแล้ว เช่นจากปุ่มลองใหม่
+    const stillNeeded = new Set(needKey.split(","));
     for (const key of debouncedNeedKey.split(",")) {
-      if (inFlight.current.has(key)) continue;
-      inFlight.current.add(key);
-      const [product_id, ingredient_unit_id] = key.split("|");
-      previewCosts({
-        recipeId,
-        items: [
-          { product_id, ingredient_unit_id, qty: 1, wastage_percentage: 0 },
-        ],
-      })
-        .then((res) => {
-          const hit = pairCostsFrom(res.items).find(([k]) => k === key);
-          setCurrent((prev) =>
-            new Map(prev).set(
-              key,
-              hit ? hit[1] : { ok: false, message: fallbackError },
-            ),
-          );
-        })
-        .catch((err: Error) => {
-          setCurrent((prev) =>
-            new Map(prev).set(key, {
-              ok: false,
-              message: err.message || fallbackError,
-            }),
-          );
-        })
-        .finally(() => inFlight.current.delete(key));
+      if (stillNeeded.has(key)) requestPair(key);
     }
-  }, [debouncedNeedKey, recipeId, previewCosts, fallbackError]);
+    // requestPair อ่านแค่ recipeId/previewCosts/fallbackError ที่อยู่ใน deps แล้ว
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedNeedKey, needKey, recipeId, previewCosts, fallbackError]);
+  // ต้นทุนที่ถามไม่สำเร็จไม่จำถาวร — ลบผลเดิมแล้วถามใหม่ทันที (เน็ตหลุด/server ล่มชั่วคราว)
+  const retryPair = (key: string) => {
+    setCurrent((prev) => {
+      const next = new Map(prev);
+      next.delete(key);
+      return next;
+    });
+    requestPair(key);
+  };
 
   // คำนวณใหม่ — ต้นทุนปัจจุบันทั้งรายการ เทียบกับบนจอก่อนตัดสินใจ
   const recalc = usePreviewIngredientCosts();
@@ -256,6 +313,11 @@ export function RecipeIngredientsFields({
               saved={saved}
               isDisabled={isDisabled}
               onRemove={() => remove(i)}
+              onRetryCost={() => {
+                const d = drafts[i];
+                if (d?.product_id && d.ingredient_unit_id)
+                  retryPair(pairKey(d.product_id, d.ingredient_unit_id));
+              }}
             />
           ))}
 
@@ -304,6 +366,7 @@ function IngredientRow({
   saved,
   isDisabled,
   onRemove,
+  onRetryCost,
 }: {
   readonly form: UseFormReturn<RecipeFormValues>;
   readonly index: number;
@@ -311,6 +374,7 @@ function IngredientRow({
   readonly saved: RecipeIngredientLine[];
   readonly isDisabled: boolean;
   readonly onRemove: () => void;
+  readonly onRetryCost: () => void;
 }) {
   const t = useTranslations("operationPlan.recipe");
   const tfl = useTranslations("field");
@@ -448,7 +512,7 @@ function IngredientRow({
         </div>
 
         <div className="flex min-h-8 flex-col items-end justify-center text-right">
-          <LineCostValue cost={cost} />
+          <LineCostValue cost={cost} onRetry={onRetryCost} />
           {badge && (
             <Badge variant={badge.variant} size="xs" className="mt-0.5">
               {t(badge.key)}
@@ -484,7 +548,13 @@ function IngredientRow({
   );
 }
 
-function LineCostValue({ cost }: { readonly cost: RowCost }) {
+function LineCostValue({
+  cost,
+  onRetry,
+}: {
+  readonly cost: RowCost;
+  readonly onRetry: () => void;
+}) {
   const t = useTranslations("operationPlan.recipe");
   switch (cost.state) {
     case "ok":
@@ -504,8 +574,20 @@ function LineCostValue({ cost }: { readonly cost: RowCost }) {
       );
     case "error":
       return (
-        <span className="text-destructive text-xs" role="alert">
-          {cost.message}
+        <span className="flex flex-col items-end gap-0.5">
+          <span className="text-destructive text-xs" role="alert">
+            {cost.message}
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            onClick={onRetry}
+            className="gap-1"
+          >
+            <RotateCw className="size-3" aria-hidden="true" />
+            {t("retryCost")}
+          </Button>
         </span>
       );
     default:
