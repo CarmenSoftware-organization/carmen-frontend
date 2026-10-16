@@ -1510,6 +1510,7 @@
       "deleteConfirm": "Are you sure you want to delete adjustment type \"{name}\"? This action cannot be undone.",
       "codePlaceholder": "e.g. TRFOT",
       "namePlaceholder": "e.g. Transfer Out",
+      "account": "Account",
       "notFound": "Adjustment type not found"
     },
     "creditTerm": {
@@ -2768,6 +2769,7 @@
       "generalDescView": "Business type, tax details, rating and description.",
       "rating": "Rating",
       "notRated": "Not rated",
+      "apAccount": "Accounts payable account",
       "ratingValue": "{value} out of 5",
       "clearRating": "Clear rating",
       "taxNo": "Tax ID",

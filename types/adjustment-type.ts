@@ -20,6 +20,8 @@ export const adjustmentTypeSchema = z.object({
   description: z.string(),
   note: z.string(),
   is_active: z.boolean(),
+  // uuid ของ tb_chart_of_accounts — null = ไม่ผูกบัญชี
+  chart_of_accounts_id: z.string().nullable(),
 });
 
 export type AdjustmentTypeFormValues = z.infer<typeof adjustmentTypeSchema>;
@@ -37,6 +39,7 @@ export interface CreateAdjustmentTypeDto {
   description: string;
   note: string;
   is_active: boolean;
+  chart_of_accounts_id: string | null;
   // Optimistic-concurrency token; required by the backend on update (PUT).
   doc_version?: number;
 }

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { SelectContent, SelectItem } from "@/components/ui/select";
+import { LookupChartOfAccountById } from "@/components/lookup/lookup-chart-of-account-by-id";
 import { ConfigEntityDialog } from "@/components/templates/config-entity-dialog";
 import {
   useCreateAdjustmentType,
@@ -37,6 +38,7 @@ type AdjustmentTypePayload = {
   description: string;
   note: string;
   is_active: boolean;
+  chart_of_accounts_id: string | null;
 };
 
 export function AdjustmentTypeDialog({
@@ -73,6 +75,7 @@ export function AdjustmentTypeDialog({
               description: e.description,
               note: e.note,
               is_active: e.is_active,
+              chart_of_accounts_id: e.chart_of_accounts_id ?? null,
             }
           : {
               code: "",
@@ -81,6 +84,7 @@ export function AdjustmentTypeDialog({
               description: "",
               note: "",
               is_active: true,
+              chart_of_accounts_id: null,
             }
       }
       toPayload={(v) => ({
@@ -90,6 +94,7 @@ export function AdjustmentTypeDialog({
         description: v.description ?? "",
         note: v.note ?? "",
         is_active: v.is_active,
+        chart_of_accounts_id: v.chart_of_accounts_id ?? null,
       })}
     >
       {({ form, disabled }) => (
@@ -146,6 +151,22 @@ export function AdjustmentTypeDialog({
                     ))}
                   </SelectContent>
                 </FieldSelect>
+              )}
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel>{t("account")}</FieldLabel>
+            <Controller
+              control={form.control}
+              name="chart_of_accounts_id"
+              render={({ field }) => (
+                <LookupChartOfAccountById
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={disabled}
+                  size="sm"
+                />
               )}
             />
           </Field>

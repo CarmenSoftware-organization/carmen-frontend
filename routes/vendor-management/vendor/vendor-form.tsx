@@ -153,6 +153,8 @@ export function VendorForm({ vendor }: VendorFormProps) {
       tax_no: values.tax_no.trim() || null,
       branch_no: values.branch_no.trim() || null,
       rating: values.rating,
+      // null = ล้างบัญชี (backend: null = clear, omit = ไม่เปลี่ยน)
+      ap_chart_of_accounts_id: values.ap_chart_of_accounts_id,
       business_type: values.business_types,
       info: (values.info ?? []).map(({ label, value, data_type }) => ({
         label,

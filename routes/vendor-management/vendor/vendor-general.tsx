@@ -7,9 +7,11 @@ import {
   FieldPlainText,
 } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
+import { LookupChartOfAccountById } from "@/components/lookup/lookup-chart-of-account-by-id";
 import { LookupBuType } from "@/components/lookup/lookup-bu-type";
 import { StatusSwitch } from "@/components/ui/status-switch";
 import { SettingSection } from "@/components/ui/setting-section";
+import { useChartOfAccountById } from "@/hooks/use-chart-of-account";
 import { cn } from "@/lib/utils";
 import type { VendorFormValues } from "./vendor-form-schema";
 import { VendorRatingInput, VendorRatingStars } from "./vendor-rating";
@@ -178,6 +180,26 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
         )}
       </Field>
 
+      {/* บัญชีเจ้าหนี้ default — เปิดใบ AP จาก vendor นี้จะดึงบัญชีนี้ไปใช้ */}
+      <Field className="sm:col-span-2">
+        <FieldLabel>{t("apAccount")}</FieldLabel>
+        <Controller
+          control={form.control}
+          name="ap_chart_of_accounts_id"
+          render={({ field }) =>
+            isView ? (
+              <VendorApAccountText id={field.value} />
+            ) : (
+              <LookupChartOfAccountById
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isDisabled}
+              />
+            )
+          }
+        />
+      </Field>
+
       {/* Description */}
       <Field className="sm:col-span-2">
         <FieldLabel htmlFor="vendor-description">
@@ -219,5 +241,17 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
         </Field>
       )}
     </SettingSection>
+  );
+}
+
+/** โหมดดู — แปลง uuid → "code - ชื่อ" ด้วยการดึงแถวเดียว (response ของ vendor ไม่มี code) */
+function VendorApAccountText({ id }: { readonly id: string | null }) {
+  const { data: account } = useChartOfAccountById(id || undefined);
+  return (
+    <FieldPlainText>
+      {account && account.id === id
+        ? `${account.code} - ${account.description_1}`
+        : null}
+    </FieldPlainText>
   );
 }
