@@ -2528,7 +2528,7 @@
           "apControlAccount": "Default AP control account",
           "inputVatAccount": "Input VAT account",
           "glLoadError": "Could not load the default accounts.",
-          "retry": "Retry"
+          "partialSaveFailed": "Interface settings were saved, but the default accounts were not. Please try again."
         },
         "desc": "How inventory activity reaches your general ledger and payables.",
         "connection": "Connection",

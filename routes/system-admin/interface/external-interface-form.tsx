@@ -4,12 +4,12 @@ import { useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import { SettingSection } from "@/components/ui/setting-section";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useInterfaceConfig } from "./use-interface-config";
+import { ErrorState } from "@/components/ui/error-state";
 import { InterfacePageLayout } from "./interface-page-layout";
-import { TextField, EnumField, ToggleField } from "./interface-fields";
 import {
+  AccountingFields,
   accountingSchema,
   EMPTY_ACCOUNTING,
   toFormValues,
@@ -23,8 +23,6 @@ import {
 } from "./external-gl-defaults-section";
 
 const CONFIG_KEY = "interface_accounting_external";
-const FORMATS = accountingSchema.shape.export_format.options;
-const FREQUENCIES = accountingSchema.shape.posting_frequency.options;
 
 /**
  * หน้า config ของ Accounting brand `external` — ฟิลด์ทั้งหมดเหมือนฟอร์ม accounting ทั่วไป
@@ -38,11 +36,21 @@ const FREQUENCIES = accountingSchema.shape.posting_frequency.options;
 export default function ExternalInterfaceForm() {
   const t = useTranslations("systemAdmin.interface");
   const ta = useTranslations("systemAdmin.interface.accounting");
+  const te = useTranslations("systemAdmin.interface.accounting.external");
   const navigate = useNavigate();
   const glRef = useRef<GlDefaultsHandle>(null);
   const [glDirty, setGlDirty] = useState(false);
+  const [glBusy, setGlBusy] = useState(false);
+  // ปุ่ม retry ของ gl_setting ต้องอยู่นอก <fieldset disabled> ของ layout ไม่งั้นกดไม่ได้ในโหมดอ่าน
+  const [glRetry, setGlRetry] = useState<(() => void) | null>(null);
   const glBinding = useMemo(
-    () => ({ handleRef: glRef, onDirtyChange: setGlDirty }),
+    () => ({
+      handleRef: glRef,
+      onDirtyChange: setGlDirty,
+      onBusyChange: setGlBusy,
+      onLoadErrorChange: (retry: (() => void) | null) =>
+        setGlRetry(() => retry),
+    }),
     [],
   );
   const { value, isLoading, isError, refetch, save, isSaving } =
@@ -63,16 +71,21 @@ export default function ExternalInterfaceForm() {
     navigate("/system-admin/interface");
   };
 
-  const submit = form.handleSubmit(
-    (values) =>
-      save(toApiValue(values), {
-        onSuccess: () => {
-          if (glRef.current) glRef.current.save(done);
-          else done();
-        },
-      }),
-    () => scrollToFirstInvalidField(),
-  );
+  // ห่อเป็น handler เพราะข้างในอ่าน glRef — เรียกตอน render ไม่ได้ (react-hooks/refs)
+  const submit = (e?: React.BaseSyntheticEvent) =>
+    form.handleSubmit(
+      (values) =>
+        save(toApiValue(values), {
+          onSuccess: () => {
+            if (glRef.current) {
+              glRef.current.save(done, () =>
+                toast.error(te("partialSaveFailed")),
+              );
+            } else done();
+          },
+        }),
+      () => scrollToFirstInvalidField(),
+    )(e);
 
   return (
     <InterfacePageLayout
@@ -83,74 +96,20 @@ export default function ExternalInterfaceForm() {
         form.reset(value ? toFormValues(value) : EMPTY_ACCOUNTING);
         glRef.current?.reset();
       }}
-      isSaving={isSaving}
+      isSaving={isSaving || glBusy}
       isLoading={isLoading}
       isError={isError}
       isDirty={form.formState.isDirty || glDirty}
       onRetry={refetch}
       errorMessage={t("loadError")}
       saveLabel={t("save")}
+      notice={
+        glRetry ? (
+          <ErrorState message={te("glLoadError")} onRetry={glRetry} />
+        ) : undefined
+      }
     >
-      <SettingSection
-        first
-        title={ta("connection")}
-        description={ta("connectionDesc")}
-      >
-        <ToggleField
-          label={t("enabled")}
-          checked={form.watch("enabled")}
-          onChange={(v) => form.setValue("enabled", v, { shouldDirty: true })}
-        />
-        <TextField
-          label={t("endpoint")}
-          field={form.register("endpoint")}
-          error={form.formState.errors.endpoint?.message}
-          placeholder="https://gl.example.com"
-          className="sm:col-span-2"
-        />
-      </SettingSection>
-
-      <SettingSection title={ta("defaults")} description={ta("defaultsDesc")}>
-        <TextField
-          label={ta("defaultAccountCode")}
-          field={form.register("default_account_code")}
-          error={form.formState.errors.default_account_code?.message}
-          placeholder="1000"
-        />
-        <TextField
-          label={ta("defaultDepartmentCode")}
-          field={form.register("default_department_code")}
-          error={form.formState.errors.default_department_code?.message}
-          placeholder="D1"
-        />
-        <TextField
-          label={ta("defaultInvoiceValue")}
-          field={form.register("default_invoice_value")}
-          error={form.formState.errors.default_invoice_value?.message}
-          placeholder="0"
-        />
-      </SettingSection>
-
-      <SettingSection title={ta("posting")} description={ta("postingDesc")}>
-        <EnumField
-          label={ta("exportFormat")}
-          value={form.watch("export_format")}
-          options={FORMATS}
-          optionLabel={(f) => ta(`formatOption.${f}`)}
-          onChange={(v) =>
-            form.setValue("export_format", v, { shouldDirty: true })
-          }
-        />
-        <EnumField
-          label={ta("postingFrequency")}
-          value={form.watch("posting_frequency")}
-          options={FREQUENCIES}
-          optionLabel={(f) => t(`frequencyOption.${f}`)}
-          onChange={(v) =>
-            form.setValue("posting_frequency", v, { shouldDirty: true })
-          }
-        />
-      </SettingSection>
+      <AccountingFields form={form} />
 
       <GlDefaultsHandleProvider value={glBinding}>
         <ExternalGlDefaultsSection />
