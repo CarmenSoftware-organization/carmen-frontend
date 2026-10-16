@@ -10,13 +10,13 @@ description: ใช้เมื่อเพิ่มหรือแก้จุ�
 ครั้งเดียวใน `routes/root-layout.tsx` (กลไก CustomEvent ชุดเดียวกับ
 `dispatchPermissionDenied`) **อย่าถือ state หรือ render sheet เองในหน้าใหม่**
 
-จุดเข้าถึงมีสามทาง: ปุ่มในหัวหน้า (20 หน้า) · เมนู ⋯ ในแถว list ผ่าน option
-`activity: { id, label }` ของ `useConfigTable` / `actionColumn` (31 list) · ปุ่มไอคอนใน
+จุดเข้าถึงมีสามทาง: ปุ่มในหัวหน้า (21 หน้า) · เมนู ⋯ ในแถว list ผ่าน option
+`activity: { id, label }` ของ `useConfigTable` / `actionColumn` (32 list) · ปุ่มไอคอนใน
 `tree-node.tsx` ของหมวดสินค้า
 
 เปิดเฉพาะ entity ที่ backend บันทึกให้จริง — ทะเบียนอยู่ที่
 `carmen-turborepo-backend-v2/apps/micro-business/src/common/activity/activity-registry.ts`
-ตอนนี้ **ไม่เปิด** 7 list ที่ไม่มีในทะเบียน (certification · eco · equipment · recipe ·
+ตอนนี้ **ไม่เปิด** 6 list ที่ไม่มีในทะเบียน (certification · eco · equipment ·
 period · activity-log · user-activity) เปิดไปจะได้เมนูที่กดแล้วว่างเปล่า
 
 หัวข้อของแต่ละ action อยู่ใน `ACTION_TITLE_KEY` ของ activity-sheet ซึ่งต้องเป็นสับเซตของ

@@ -255,5 +255,6 @@ export function useRecipeTable({
         base_yield: false,
       },
     },
+    activity: { id: (r) => r.id, label: (r) => r.code },
   });
 }
