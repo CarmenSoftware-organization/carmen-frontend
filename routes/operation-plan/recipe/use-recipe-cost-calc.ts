@@ -48,13 +48,58 @@ export function useRecipeCostCalc(
     ],
   });
 
-  const ing = Number(ingredientCost) || 0;
-  const lab = Number(laborCost) || 0;
-  const ovh = Number(overheadCost) || 0;
-  const yld = Number(baseYield) || 0;
-  const sell = Number(sellingPrice) || 0;
-  const targetPct = Number(targetFoodCostPct) || 0;
-  const maxPct = Number(maxFoodCostPct) || 0;
+  const { minPrice, markup, belowMinPrice, ...computed } = computeRecipeCost({
+    ingredientCost,
+    laborCost,
+    overheadCost,
+    baseYield,
+    sellingPrice,
+    targetFoodCostPct,
+    maxFoodCostPct,
+  });
+  const { costPerPortion } = computed;
+
+  const profitAt = useCallback(
+    (price: number | null) =>
+      price == null ? null : round2(price - costPerPortion),
+    [costPerPortion],
+  );
+
+  useEffect(() => {
+    form.setValue("cost_per_portion", computed.costPerPortion);
+    form.setValue("gross_margin", computed.grossMargin);
+    form.setValue("gross_margin_percentage", computed.grossMarginPct);
+    form.setValue("actual_food_cost_percentage", computed.actualFoodCostPct);
+    form.setValue("labor_cost_percentage", computed.laborCostPct);
+    form.setValue("overhead_percentage", computed.overheadPct);
+    form.setValue("suggested_price", computed.suggestedPrice);
+  }, [computed, form]);
+
+  return { ...computed, minPrice, markup, belowMinPrice, profitAt };
+}
+
+type CostInput = number | string | null | undefined;
+
+/**
+ * สมการต้นทุน/ราคาของสูตรแบบ pure — hook ใช้กับค่าในฟอร์ม ส่วนการบันทึกใช้ซ้ำกับ
+ * total_ingredient_cost ที่ server คืนมาหลังบันทึกวัตถุดิบ (ตัวเลขหัวสูตรตรงกับบรรทัดเสมอ)
+ */
+export function computeRecipeCost(input: {
+  ingredientCost: CostInput;
+  laborCost: CostInput;
+  overheadCost: CostInput;
+  baseYield: CostInput;
+  sellingPrice: CostInput;
+  targetFoodCostPct: CostInput;
+  maxFoodCostPct: CostInput;
+}): RecipeComputed {
+  const ing = Number(input.ingredientCost) || 0;
+  const lab = Number(input.laborCost) || 0;
+  const ovh = Number(input.overheadCost) || 0;
+  const yld = Number(input.baseYield) || 0;
+  const sell = Number(input.sellingPrice) || 0;
+  const targetPct = Number(input.targetFoodCostPct) || 0;
+  const maxPct = Number(input.maxFoodCostPct) || 0;
 
   // ต้นทุนทุกตัวที่กรอกเป็นของ "ทั้งชุด" (base_yield จาน) ส่วนราคาขายเป็น "ต่อจาน"
   // อัตราส่วนเทียบราคาขายจึงต้องหารด้วย yield ก่อนเสมอ — เดิมเอายอดทั้งชุดไปหาร
@@ -86,7 +131,7 @@ export function useRecipeCostCalc(
     sell > 0 && costPerPortion > 0 ? round2(sell / costPerPortion) : null;
   const belowMinPrice = minPrice != null && sell > 0 && sell < minPrice;
 
-  const computed = {
+  return {
     costPerPortion,
     grossMargin,
     grossMarginPct,
@@ -94,23 +139,8 @@ export function useRecipeCostCalc(
     laborCostPct,
     overheadPct,
     suggestedPrice,
+    minPrice,
+    markup,
+    belowMinPrice,
   };
-
-  const profitAt = useCallback(
-    (price: number | null) =>
-      price == null ? null : round2(price - costPerPortion),
-    [costPerPortion],
-  );
-
-  useEffect(() => {
-    form.setValue("cost_per_portion", computed.costPerPortion);
-    form.setValue("gross_margin", computed.grossMargin);
-    form.setValue("gross_margin_percentage", computed.grossMarginPct);
-    form.setValue("actual_food_cost_percentage", computed.actualFoodCostPct);
-    form.setValue("labor_cost_percentage", computed.laborCostPct);
-    form.setValue("overhead_percentage", computed.overheadPct);
-    form.setValue("suggested_price", computed.suggestedPrice);
-  }, [computed, form]);
-
-  return { ...computed, minPrice, markup, belowMinPrice, profitAt };
 }

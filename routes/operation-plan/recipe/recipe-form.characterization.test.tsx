@@ -14,6 +14,14 @@ const createMut = fakeMutation({ data: { id: "rec-new" } });
 const updateMut = fakeMutation();
 const deleteMut = fakeMutation();
 const syncStepsMut = fakeMutation();
+const replaceIngredientsMut = fakeMutation({
+  items: [],
+  total_ingredient_cost: 0,
+});
+const previewIngredientsMut = fakeMutation({
+  items: [],
+  total_ingredient_cost: 0,
+});
 
 vi.mock("react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("react-router")>()),
@@ -28,6 +36,14 @@ vi.mock("./use-recipe", () => ({
 // หลังหัวสูตรบันทึกสำเร็จ ฟอร์มจะ sync ขั้นตอนทำต่อ แล้วค่อยกลับหน้ารายการ
 vi.mock("./use-recipe-steps-sync", () => ({
   useSyncRecipeSteps: () => syncStepsMut,
+}));
+// วัตถุดิบบันทึกก่อนหัวสูตร (เฉพาะเมื่อเปลี่ยน) — fixture ไม่มีวัตถุดิบ จึงไม่ถูกเรียก
+vi.mock("./use-recipe-ingredients", () => ({
+  useReplaceIngredients: () => replaceIngredientsMut,
+  usePreviewIngredientCosts: () => ({
+    ...previewIngredientsMut,
+    reset: vi.fn(),
+  }),
 }));
 vi.mock("./use-recipe-gallery", () => ({
   useRecipeGallery: () => ({

@@ -65,6 +65,12 @@ export function RecipeCostFields({
         "selling_price",
       ],
     });
+  // มีวัตถุดิบ = ยอดวัตถุดิบมาจากบรรทัด (server คำนวณ) แก้มือไม่ได้ · ไม่มี = กรอกมือเหมือนเดิม
+  const ingredientLines = useWatch({
+    control: form.control,
+    name: "ingredients",
+  });
+  const ingredientLocked = (ingredientLines?.length ?? 0) > 0;
   // หน่วยเก็บเป็น id เปล่า — query เดียวกับช่อง Yield Unit ใน Recipe Details (cache ร่วม)
   const { data: yieldUnit } = useUnitById(yieldUnitId || undefined);
 
@@ -115,18 +121,28 @@ export function RecipeCostFields({
             <span className="text-muted-foreground text-micro text-right tabular-nums">
               {share(amounts[line.key]).toFixed(0)}%
             </span>
-            <FieldInput
-              id={`recipe-${line.key}`}
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              disabled={isDisabled}
-              size="sm"
-              className="text-right text-xs tabular-nums"
-              error={errors[line.key]?.message}
-              errorIconAlign="left"
-              {...form.register(line.key)}
-            />
+            {line.key === "total_ingredient_cost" && ingredientLocked ? (
+              <output
+                id={`recipe-${line.key}`}
+                title={t("ingredientCostFromLines")}
+                className="bg-muted text-foreground flex h-8 items-center justify-end rounded-md px-3 text-xs tabular-nums"
+              >
+                ฿{formatCurrency(amounts.total_ingredient_cost)}
+              </output>
+            ) : (
+              <FieldInput
+                id={`recipe-${line.key}`}
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                disabled={isDisabled}
+                size="sm"
+                className="text-right text-xs tabular-nums"
+                error={errors[line.key]?.message}
+                errorIconAlign="left"
+                {...form.register(line.key)}
+              />
+            )}
           </div>
         ))}
       </div>
