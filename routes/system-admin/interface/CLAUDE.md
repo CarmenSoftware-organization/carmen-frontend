@@ -34,3 +34,18 @@ Per-BU config for connections to external systems — **Accounting**, **POS**, *
   in reality). The *single-key* GET's `json.data` IS the row. Any hook that still reads the
   list must unwrap `.items`. A test mocking a bare `{ data: [...] }` passes while the real page
   crashes — verify list features in a real browser.
+
+## API Access (กุญแจ API ขาเข้าต่อ BU)
+
+ส่วน API Access ในแบรนด์ External เป็น **ขาเข้า** — ระบบภายนอกใช้ `x-client-id` / `x-client-secret`
+เรียก Carmen (`/api/ext/v1/...`) ไม่เหมือน secret ของแบรนด์อื่นที่เป็น **ขาออก** (Carmen เอาไปเรียกระบบเขา
+และเก็บใน `tb_application_config` แบบ encrypt+mask)
+
+- สิทธิ์คือ `system_admin.bu_api_key` (view/update) ไม่ใช่สิทธิ์ของหน้า Interface — ปุ่มสร้าง / สร้างใหม่ /
+  เปิดใช้ปิดใช้ / ดู secret ต้องมี `update`
+- **ดู secret (reveal) ถือเป็น update** และถูกบันทึกลง activity log ทุกครั้ง · ใบอนุญาต INF หมดอายุ = ซ่อนปุ่มดู
+  (backend ตอบ 403 ทั้ง reveal / regenerate / toggle)
+- **secret ห้ามเข้า React Query cache** — GET ไม่คืน secret; reveal เป็น mutation ที่ถือค่าไว้ใน state ชั่วคราว
+  ของ component แล้วทิ้งเมื่อปิด ห้ามใส่ใน `queryClient` / localStorage / log
+- รูปแบบ response, กติกา Dr/Cr และขั้นตอน deploy อยู่ที่ BE: `docs/external-api/inventory-postings.md`
+  (รีโป `carmen-turborepo-backend-v2`) · ลำดับ deploy: BE + allowlist `buApiKey.*` ก่อน FE
