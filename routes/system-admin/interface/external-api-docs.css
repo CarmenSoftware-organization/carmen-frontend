@@ -4,6 +4,23 @@
  * ของ Tailwind ภายในกล่องนี้ แต่ไม่รั่วออกไปข้างนอก)
  */
 
+/*
+ * กระดาษสีขาวทั้งในธีมสว่างและมืด — swagger-ui มีแต่ธีมสว่าง (สีตัวอักษรเทาเข้มตายตัว)
+ * วางบนพื้นมืดของแอปแล้วอ่านไม่ออก จึงให้กล่องนี้เป็นพื้นสว่างเสมอ แทนการไล่ override
+ * สีทุกจุดของ swagger-ui (dark mode ของมันเองผูกกับ html.dark-mode ซึ่งแอปไม่ได้ใช้)
+ * ค่าขาวนี้คือพื้นที่ swagger-ui ออกแบบมาให้ใช้ ไม่ใช่สีของ design system
+ * color-scheme: light ให้ select / scrollbar ของเบราว์เซอร์เป็นแบบสว่างตามไปด้วย
+ */
+.external-api-docs {
+  color-scheme: light;
+  background: #ffffff;
+  color: #3b4151;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 0.375rem);
+  padding: 1rem;
+  overflow-x: auto;
+}
+
 /* ปิด Try it out แล้ว ปุ่ม Authorize / แม่กุญแจรายเส้นมีไว้กรอก secret อย่างเดียว — ซ่อน */
 .external-api-docs .swagger-ui .scheme-container .auth-wrapper,
 .external-api-docs .swagger-ui .authorization__btn {
