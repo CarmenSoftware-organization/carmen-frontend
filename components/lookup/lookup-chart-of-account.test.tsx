@@ -37,6 +37,7 @@ describe("LookupChartOfAccount", () => {
       />,
     );
 
-    expect(screen.getByText("Select GL Account")).toBeInTheDocument();
+    // mock คืนชื่อคีย์ — entity ต้องมาจาก field.glAccount ไม่ใช่คำอังกฤษ hardcode
+    expect(screen.getByText("Select glAccount")).toBeInTheDocument();
   });
 });
