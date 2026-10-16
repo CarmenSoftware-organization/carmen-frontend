@@ -4,7 +4,7 @@
     "/api/ext/v1/ap-invoices": {
       "get": {
         "description": "Returns final (and voided) GRN invoices and CN credit notes of the API key's business unit as vendor-invoice records with one line per received / returned item, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no line (e.g. only consignment lines) is not returned. A document is in exactly one endpoint: GRN / CN here, SR / SI / SO in `/gl-journals`. CN amounts are positive; reverse them on your side by `doc_type`. Each line carries three accounts named by role (inventory = `debit_*`, payable = `ap_*`, input VAT = `tax_*`), not by side. Line `description` is the product name. `tax_type` is `add` when the line base tax is not 0, else `none` (`included` is reserved and never emitted). The tax account / cost center are set only on taxed lines and the tax cost center equals `debit_cost_center_code`. `qty`, `price`, `tax_rate` and `exchange_rate` are decimal strings without trailing-zero padding (e.g. `\"10\"`, `\"7\"`); money fields are 2-decimal strings. Lines with `unmapped: true` carry the correct amount but need an account fixed in the GL / AP mapping in Carmen; `issues` lists `{ account: \"debit\" | \"ap\" | \"tax\" | null, code }`. Each field description names its Carmen 4 column where there is one.",
-        "operationId": "ApInvoiceController_list",
+        "operationId": "ApInvoiceExportController_list",
         "parameters": [
           {
             "name": "date_from",
@@ -703,7 +703,7 @@
     },
     "/api/ext/v1/gl-journals": {
       "get": {
-        "description": "Returns final (and stock-moving voided) SR / SI / SO documents of the API key's business unit as one balanced Dr/Cr journal per document, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no posting line is not returned. A document is in exactly one endpoint: SR / SI / SO here, GRN / CN in `/ap-invoices`. Amounts are base currency, 2-decimal strings; `balanced` is reported, never forced; `exchange_rate` is a decimal string without trailing-zero padding. Line `description` is the product name. Lines with `unmapped: true` carry the correct amount but need their account fixed in the GL mapping in Carmen. Each field description names its Carmen 4 column where there is one.",
+        "description": "Returns final (and stock-moving voided) SR / SI / SO documents of the API key's business unit as one balanced Dr/Cr journal per document, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and documents that post nothing to stock are excluded (consignment-only SI / SO, SR without a stock movement), so every returned journal has at least one line. A document is in exactly one endpoint: SR / SI / SO here, GRN / CN in `/ap-invoices`. Amounts are base currency, 2-decimal strings; `balanced` is reported, never forced; `exchange_rate` is a decimal string without trailing-zero padding. Line `description` is the product name. Lines with `unmapped: true` carry the correct amount but need their account fixed in the GL mapping in Carmen. Each field description names its Carmen 4 column where there is one.",
         "operationId": "GlJournalController_list",
         "parameters": [
           {
@@ -1472,7 +1472,7 @@
           },
           "code": {
             "type": "string",
-            "description": "Reason code, e.g. missing_location, missing_product, missing_item_group, missing_input_vat_account, cost_not_found, mapping_target_not_found, missing_inventory_account, missing_ap_account, missing_cost_center, account_not_in_coa. Treat an unknown code as \"unmapped, needs review\".",
+            "description": "Reason code, e.g. missing_location, missing_product, missing_item_group, missing_input_vat_account, cost_not_found, mapping_target_not_found, missing_inventory_account, missing_ap_account, missing_cost_center, missing_direct_account, account_not_in_coa. Treat an unknown code as \"unmapped, needs review\".",
             "example": "missing_ap_account"
           }
         },
@@ -1518,7 +1518,7 @@
           },
           "price": {
             "type": "string",
-            "description": "Unit price in the document currency. Decimal string without trailing-zero padding (Carmen 4: InvdPrice)",
+            "description": "Unit price BEFORE discount, in the document currency. Decimal string without trailing-zero padding. `net_amount` is AFTER discount, so `qty` x `price` may differ from `net_amount` (GRN `qty` also excludes FOC quantity) (Carmen 4: InvdPrice)",
             "example": "100"
           },
           "net_amount": {
@@ -1871,7 +1871,6 @@
             "type": "string",
             "enum": [
               "inventory",
-              "ap",
               "adjustment",
               "sr_in",
               "sr_out"
