@@ -3840,7 +3840,8 @@
       "costBreakdownDesc": "Ingredient, labor, and overhead costs that add up to the cost per portion.",
       "marginsDesc": "Selling price and profit — set a price that hits your target margin.",
       "otherMetricsDesc": "Extra numbers that help you judge how worthwhile the recipe is.",
-      "pricingDesc": "The cost of one portion and the price you sell it at."
+      "pricingDesc": "The cost of one portion and the price you sell it at.",
+      "lifecycle": "Lifecycle"
     }
   },
   "productManagement": {

@@ -8,6 +8,13 @@ import {
 import type { Recipe } from "@/types/recipe";
 import type { Cuisine } from "@/types/cuisine";
 import type { RecipeCategory } from "@/types/recipe-category";
+import { useAmountFormatter } from "@/hooks/use-number-formatter";
+import { RecipeDifficultyPips } from "./recipe-difficulty-pips";
+import {
+  RecipeFoodCostCell,
+  RecipeStatusBadge,
+  RecipeThumb,
+} from "./recipe-list-cells";
 
 interface RecipeCardProps {
   readonly item: Recipe;
@@ -23,7 +30,7 @@ interface RecipeCardProps {
  * ใช้ `ListCard` ตัวเดียวกับการ์ดโมดูลอื่น — ไฟล์นี้เหลือแค่ว่าข้อมูลอะไรอยู่
  * แถวไหน ครบเท่าคอลัมน์ของตารางสูตรอาหาร
  *
- * ระดับความยากเป็นข้อความธรรมดา ไม่ใช่ badge สี — ของเดิม map EASY/MEDIUM/HARD
+ * ระดับความยากเป็นจุดสามดวงสีกลาง ไม่ใช่ badge สี — ของเดิม map EASY/MEDIUM/HARD
  * เป็น success/warning/destructive ซึ่งเป็นการยืม token ความหมาย "ดี/เตือน/ผิด"
  * มาใช้กับข้อมูลที่ไม่ได้ดีหรือแย่ (สูตรยากไม่ใช่ error) และทำให้การ์ดมีสองสี
  * ขึ้นไปต่อใบ ผิดกฎ single accent ของ DESIGN.md
@@ -43,14 +50,23 @@ export default function RecipeCard({
 }: RecipeCardProps) {
   const t = useTranslations("operationPlan.recipe");
   const tfl = useTranslations("field");
+  const ts = useTranslations("status");
+  const formatAmount = useAmountFormatter();
 
   const cuisineName = cuisines.find((c) => c.id === item.cuisine_id)?.name;
   const categoryName = categories.find((c) => c.id === item.category_id)?.name;
   const totalTime = (item.prep_time ?? 0) + (item.cook_time ?? 0);
+  const name = item.name || "...";
 
   return (
     <ListCard
-      title={item.name || "..."}
+      title={
+        <span className="flex min-w-0 items-center gap-2.5" title={name}>
+          <RecipeThumb image={item.primary_image} />
+          <span className="truncate">{name}</span>
+        </span>
+      }
+      badge={<RecipeStatusBadge status={item.status} />}
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}
     >
@@ -63,7 +79,12 @@ export default function RecipeCard({
         <ListCardRow label={tfl("category")}>{categoryName}</ListCardRow>
       )}
       {item.difficulty && (
-        <ListCardRow label={tfl("difficulty")}>{item.difficulty}</ListCardRow>
+        <ListCardRow label={tfl("difficulty")}>
+          <span className="inline-flex items-center gap-2">
+            <RecipeDifficultyPips difficulty={item.difficulty} />
+            {ts(item.difficulty.toLowerCase() as "easy" | "medium" | "hard")}
+          </span>
+        </ListCardRow>
       )}
       {totalTime > 0 && (
         <ListCardRow label={tfl("totalTime")}>
@@ -73,6 +94,28 @@ export default function RecipeCard({
               {t("minShort")}
             </span>
           </span>
+        </ListCardRow>
+      )}
+      {item.cost_per_portion > 0 && (
+        <ListCardRow label={t("costPerPortion")}>
+          <span className="tabular-nums">
+            {formatAmount(item.cost_per_portion)}
+          </span>
+        </ListCardRow>
+      )}
+      {!!item.selling_price && (
+        <ListCardRow label={t("sellingPrice")}>
+          <span className="tabular-nums">
+            {formatAmount(item.selling_price)}
+          </span>
+        </ListCardRow>
+      )}
+      {item.actual_food_cost_percentage != null && (
+        <ListCardRow label={t("foodCost")}>
+          <RecipeFoodCostCell
+            actual={item.actual_food_cost_percentage}
+            target={item.target_food_cost_percentage}
+          />
         </ListCardRow>
       )}
       <ListCardAuditRows audit={item.audit} />

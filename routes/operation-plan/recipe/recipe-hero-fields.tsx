@@ -6,6 +6,7 @@ import { EyeBrow } from "@/components/ui/eye-brow";
 import { formatCurrency } from "@/lib/currency-utils";
 import { RecipeNameField } from "./recipe-name-field";
 import { RecipeImageGallery } from "./recipe-image-gallery";
+import { RecipeDifficultyPips } from "./recipe-difficulty-pips";
 import {
   Select,
   SelectContent,
@@ -24,12 +25,6 @@ interface RecipeHeroFieldsProps {
   readonly computed: RecipeComputed;
   readonly gallery: RecipeGalleryController;
 }
-
-const DIFFICULTY_DOTS: Record<string, number> = {
-  EASY: 1,
-  MEDIUM: 2,
-  HARD: 3,
-};
 
 export function RecipeHeroFields({
   form,
@@ -72,20 +67,7 @@ export function RecipeHeroFields({
                   className="text-micro h-6 gap-1.5 rounded-md px-2 font-semibold tracking-wider"
                   aria-label={tfl("difficulty")}
                 >
-                  <span className="inline-flex items-center gap-1">
-                    {[1, 2, 3].map((dot) => (
-                      <span
-                        key={dot}
-                        className={cn(
-                          "size-1.5 rounded-full",
-                          dot <= (DIFFICULTY_DOTS[difficulty] ?? 0)
-                            ? "bg-foreground"
-                            : "bg-muted-foreground/30",
-                        )}
-                        aria-hidden="true"
-                      />
-                    ))}
-                  </span>
+                  <RecipeDifficultyPips difficulty={difficulty} />
                   <SelectValue placeholder={t("selectDifficulty")} />
                 </SelectTrigger>
                 <SelectContent>

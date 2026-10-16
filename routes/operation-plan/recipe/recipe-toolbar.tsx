@@ -1,6 +1,5 @@
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
-import { StatusDotBadge, type DotTone } from "@/components/ui/status-dot-badge";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import {
   Select,
@@ -13,12 +12,7 @@ import { RECIPE_STATUS_OPTIONS } from "@/constant/recipe";
 import { cn } from "@/lib/utils";
 import type { FormMode } from "@/types/form";
 import type { RecipeFormValues } from "./recipe-form-schema";
-
-const STATUS_DOT_TONE: Record<string, DotTone> = {
-  DRAFT: "info",
-  PUBLISHED: "success",
-  ARCHIVED: "warning",
-};
+import { RecipeStatusBadge } from "./recipe-list-cells";
 
 interface RecipeToolbarProps {
   readonly form: UseFormReturn<RecipeFormValues>;
@@ -68,16 +62,10 @@ export function RecipeToolbar({
         {code || "—"}
       </span>
       {isView ? (
-        <StatusDotBadge
-          tone={STATUS_DOT_TONE[status] ?? "info"}
-          size="xs"
+        <RecipeStatusBadge
+          status={status}
           className="tracking-wider uppercase"
-        >
-          {ts(
-            (status?.toLowerCase() ?? "draft") as
-              "draft" | "published" | "archived",
-          )}
-        </StatusDotBadge>
+        />
       ) : (
         <Select
           value={status}
