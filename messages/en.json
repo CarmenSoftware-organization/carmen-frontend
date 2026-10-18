@@ -1099,6 +1099,7 @@
     "vendor": "Vendor",
     "vendorCount": "Vendor Count",
     "product": "Product",
+    "recipe": "Recipe",
     "unit": "Unit",
     "lotNo": "Lot No.",
     "currency": "Currency",

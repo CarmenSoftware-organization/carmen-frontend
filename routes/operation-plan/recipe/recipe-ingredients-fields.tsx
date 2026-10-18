@@ -45,7 +45,9 @@ import {
   formatQty,
   pairCostsFrom,
   pairKey,
+  parsePairKey,
   pendingPairs,
+  refOf,
   resolveRowCosts,
   round5,
   type IngredientDraft,
@@ -125,7 +127,7 @@ export function RecipeIngredientsFields({
   const ratios = new Map<string, number>();
   productIds.forEach((pid, idx) => {
     for (const u of unitQueries[idx]?.data ?? []) {
-      ratios.set(pairKey(pid, u.id), Number(u.conversion));
+      ratios.set(pairKey(`p:${pid}`, u.id), Number(u.conversion));
     }
   });
 
@@ -163,9 +165,7 @@ export function RecipeIngredientsFields({
 
   // ถามต้นทุนปัจจุบันเฉพาะคู่ที่ยังไม่รู้ — debounce กันยิงระหว่างเลือกหลายแถวติดกัน
   const { mutateAsync: previewCosts } = usePreviewIngredientCosts();
-  const needKey = pendingPairs(drafts, rows)
-    .map((p) => pairKey(p.product_id, p.ingredient_unit_id))
-    .join(",");
+  const needKey = pendingPairs(drafts, rows).join(",");
   const debouncedNeedKey = useDebouncedValue(needKey, 400);
   const inFlight = useRef(new Set<string>());
   const recipeId = recipe?.id;
@@ -173,13 +173,7 @@ export function RecipeIngredientsFields({
   const requestPair = (key: string) => {
     if (!recipeId || inFlight.current.has(key)) return;
     inFlight.current.add(key);
-    const [product_id, ingredient_unit_id] = key.split("|");
-    previewCosts({
-      recipeId,
-      items: [
-        { product_id, ingredient_unit_id, qty: 1, wastage_percentage: 0 },
-      ],
-    })
+    previewCosts({ recipeId, items: [parsePairKey(key)] })
       .then((res) => {
         const hit = pairCostsFrom(res.items).find(([k]) => k === key);
         setCurrent((prev) =>
@@ -316,7 +310,7 @@ export function RecipeIngredientsFields({
               onRetryCost={() => {
                 const d = drafts[i];
                 if (d?.product_id && d.ingredient_unit_id)
-                  retryPair(pairKey(d.product_id, d.ingredient_unit_id));
+                  retryPair(pairKey(refOf(d), d.ingredient_unit_id));
               }}
             />
           ))}

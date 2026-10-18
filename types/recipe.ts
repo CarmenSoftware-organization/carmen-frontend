@@ -49,11 +49,10 @@ export interface RecipePreparationStep {
 
 /** แหล่งที่มาของต้นทุนต่อหน่วย — server เลือกตามลำดับ fallback (snapshot = คงราคาที่บันทึกไว้) */
 export type IngredientCostSource =
-  | "average"
-  | "last_average"
-  | "standard"
-  | "none"
-  | "snapshot";
+  "average" | "last_average" | "standard" | "none" | "snapshot" | "recipe";
+
+/** วัตถุดิบเป็นสินค้า หรือเป็นสูตรอื่น (sub-recipe) */
+export type IngredientType = "product" | "recipe";
 
 /**
  * บรรทัดวัตถุดิบพร้อมต้นทุนที่ server คำนวณ — รูปเดียวกันทั้ง recipe detail,
@@ -64,8 +63,13 @@ export type IngredientCostSource =
 export interface IngredientCostLine {
   id?: string;
   sequence_no: number;
-  product_id: string;
+  /** null เมื่อบรรทัดอ้างสูตรอื่น (`ingredient_type` = "recipe") */
+  product_id: string | null;
   product: { id: string; code: string; name: string } | null;
+  /** ไม่ส่ง = "product" (ข้อมูลเก่า) */
+  ingredient_type?: IngredientType;
+  sub_recipe_id?: string | null;
+  sub_recipe?: { id: string; code: string; name: string } | null;
   qty: number;
   ingredient_unit_id: string;
   ingredient_unit: { id: string; name: string } | null;
@@ -92,9 +96,15 @@ export interface RecipeIngredientLine extends IngredientCostLine {
 
 /** หนึ่งบรรทัดใน body ของ preview / PUT — ไม่มีตัวเลขต้นทุน (server คำนวณเอง) */
 export interface IngredientInput {
-  product_id: string;
+  /** ไม่ส่ง = "product" */
+  ingredient_type?: IngredientType;
+  /** ส่งเมื่อเป็น product เท่านั้น — ห้ามส่งในบรรทัด recipe */
+  product_id?: string;
+  /** ส่งเมื่อเป็น recipe เท่านั้น — ห้ามส่งในบรรทัด product */
+  sub_recipe_id?: string;
   qty: number;
-  ingredient_unit_id: string;
+  /** บรรทัด recipe ไม่บังคับ (server ใช้หน่วยผลผลิตของสูตรฐาน) ถ้าส่งต้องตรงกับหน่วยนั้น */
+  ingredient_unit_id?: string;
   wastage_percentage?: number;
   note?: string | null;
 }

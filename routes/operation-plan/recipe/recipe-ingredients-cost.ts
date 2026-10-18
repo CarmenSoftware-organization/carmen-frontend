@@ -2,6 +2,7 @@ import type {
   IngredientCostLine,
   IngredientCostSource,
   IngredientInput,
+  IngredientType,
   RecipeIngredientLine,
 } from "@/types/recipe";
 
@@ -9,8 +10,12 @@ import type {
 export interface IngredientDraft {
   /** id ของแถวที่บันทึกแล้ว · null = แถวใหม่ (PUT แทนทั้งชุด จึงใช้แค่อ้างอิง) */
   line_id: string | null;
+  ingredient_type: IngredientType;
+  /** ใช้เมื่อ `ingredient_type` = "product" · ประเภทอื่นเป็น "" */
   product_id: string;
-  /** ชื่อสินค้าที่รู้อยู่แล้ว — ให้ lookup โชว์ได้แม้สินค้าอยู่นอกหน้าแรกของรายการ */
+  /** ใช้เมื่อ `ingredient_type` = "recipe" · ประเภทอื่นเป็น "" */
+  sub_recipe_id: string;
+  /** ชื่อของสินค้า/สูตรที่รู้อยู่แล้ว — ให้ lookup โชว์ได้แม้รายการอยู่นอกหน้าแรกของรายการ */
   product_label: string;
   qty: number;
   ingredient_unit_id: string;
@@ -20,7 +25,9 @@ export interface IngredientDraft {
 
 export const EMPTY_INGREDIENT: IngredientDraft = {
   line_id: null,
+  ingredient_type: "product",
   product_id: "",
+  sub_recipe_id: "",
   product_label: "",
   qty: 1,
   ingredient_unit_id: "",
@@ -53,8 +60,48 @@ export type RowCost =
   | { state: "error"; message: string }
   | { state: "ok"; unit: UnitCost; line_cost: number };
 
-export const pairKey = (productId: string, unitId: string) =>
-  `${productId}|${unitId}`;
+/** ตัวอ้างอิงวัตถุดิบ: "p:<id>" (สินค้า) · "r:<id>" (สูตร) · "" เมื่อยังไม่เลือก */
+export function refOf(d: {
+  ingredient_type?: IngredientType | null;
+  product_id?: string | null;
+  sub_recipe_id?: string | null;
+}): string {
+  if (d.ingredient_type === "recipe")
+    return d.sub_recipe_id ? `r:${d.sub_recipe_id}` : "";
+  return d.product_id ? `p:${d.product_id}` : "";
+}
+
+/** กุญแจของคู่ (ตัวอ้างอิง, หน่วย) — ref มี ":" แต่ไม่มี "|" จึงแยกกลับได้ */
+export const pairKey = (ref: string, unitId: string) => `${ref}|${unitId}`;
+
+/**
+ * แปลง pairKey กลับเป็นบรรทัดสำหรับยิง preview (qty 1, เสีย 0)
+ * บรรทัดสูตรที่ไม่มีหน่วยไม่ส่ง `ingredient_unit_id` — server ใช้หน่วยผลผลิตของสูตรฐาน
+ */
+export function parsePairKey(key: string): IngredientInput {
+  const [ref = "", unitId = ""] = key.split("|");
+  const id = ref.slice(2);
+  if (ref.startsWith("r:")) {
+    return {
+      ingredient_type: "recipe",
+      sub_recipe_id: id,
+      ...(unitId ? { ingredient_unit_id: unitId } : {}),
+      qty: 1,
+      wastage_percentage: 0,
+    };
+  }
+  return {
+    ingredient_type: "product",
+    product_id: id,
+    ingredient_unit_id: unitId,
+    qty: 1,
+    wastage_percentage: 0,
+  };
+}
+
+/** บรรทัดสินค้าต้องมีหน่วย · บรรทัดสูตรไม่บังคับ (server ใช้หน่วยผลผลิตของสูตรฐาน) */
+const isDraftComplete = (d: IngredientDraft) =>
+  !!refOf(d) && (d.ingredient_type === "recipe" || !!d.ingredient_unit_id);
 
 /** แถวที่ยังไม่ลบ เรียงตาม sequence_no */
 export function activeIngredients(
@@ -66,22 +113,32 @@ export function activeIngredients(
 }
 
 export function ingredientToDraft(line: RecipeIngredientLine): IngredientDraft {
+  const type: IngredientType = line.ingredient_type ?? "product";
+  const ref = type === "recipe" ? line.sub_recipe : line.product;
   return {
     line_id: line.id,
-    product_id: line.product_id,
-    product_label: line.product?.name ?? line.product?.code ?? "",
+    ingredient_type: type,
+    product_id: type === "product" ? (line.product_id ?? "") : "",
+    sub_recipe_id: type === "recipe" ? (line.sub_recipe_id ?? "") : "",
+    product_label: ref?.name ?? ref?.code ?? "",
     qty: Number(line.qty) || 0,
-    ingredient_unit_id: line.ingredient_unit_id,
+    ingredient_unit_id: line.ingredient_unit_id ?? "",
     wastage_percentage: Number(line.wastage_percentage) || 0,
     note: line.note ?? "",
   };
 }
 
 export function draftToInput(d: IngredientDraft): IngredientInput {
+  const isRecipe = d.ingredient_type === "recipe";
   return {
-    product_id: d.product_id,
+    ingredient_type: isRecipe ? "recipe" : "product",
+    ...(isRecipe
+      ? { sub_recipe_id: d.sub_recipe_id }
+      : { product_id: d.product_id }),
     qty: Number(d.qty),
-    ingredient_unit_id: d.ingredient_unit_id,
+    ...(d.ingredient_unit_id
+      ? { ingredient_unit_id: d.ingredient_unit_id }
+      : {}),
     wastage_percentage: Number(d.wastage_percentage) || 0,
     note: d.note.trim() || null,
   };
@@ -179,13 +236,14 @@ export function resolveRowCosts(
 ): RowCost[] {
   const used = new Set<number>();
   return drafts.map((d): RowCost => {
-    if (!d.product_id || !d.ingredient_unit_id) return { state: "incomplete" };
+    if (!isDraftComplete(d)) return { state: "incomplete" };
+    const dRef = refOf(d);
     let unit: UnitCost | null = null;
     if (!recalculate) {
       const idx = saved.findIndex(
         (s, i) =>
           !used.has(i) &&
-          s.product_id === d.product_id &&
+          refOf(s) === dRef &&
           s.ingredient_unit_id === d.ingredient_unit_id,
       );
       if (idx >= 0) {
@@ -195,13 +253,16 @@ export function resolveRowCosts(
         unit = {
           ...unitCostOf(s, "snapshot"),
           ...(savedQty > 0
-            ? { saved_inventory_per_qty: (Number(s.inventory_qty) || 0) / savedQty }
+            ? {
+                saved_inventory_per_qty:
+                  (Number(s.inventory_qty) || 0) / savedQty,
+              }
             : {}),
         };
       }
     }
     if (!unit) {
-      const pc = current.get(pairKey(d.product_id, d.ingredient_unit_id));
+      const pc = current.get(pairKey(dRef, d.ingredient_unit_id));
       if (!pc) return { state: "pending" };
       if (!pc.ok) return { state: "error", message: pc.message };
       unit = pc;
@@ -213,38 +274,31 @@ export function resolveRowCosts(
         d.qty,
         d.wastage_percentage,
         unit,
-        ratios.get(pairKey(d.product_id, d.ingredient_unit_id)),
+        ratios.get(pairKey(dRef, d.ingredient_unit_id)),
       ),
     };
   });
 }
 
-/** คู่ (สินค้า, หน่วย) ที่ยังต้องถามต้นทุนปัจจุบัน — ไม่ซ้ำ */
+/** pairKey ของคู่ (วัตถุดิบ, หน่วย) ที่ยังต้องถามต้นทุนปัจจุบัน — ไม่ซ้ำ (ใช้ `parsePairKey` แปลงกลับ) */
 export function pendingPairs(
   drafts: IngredientDraft[],
   rows: RowCost[],
-): { product_id: string; ingredient_unit_id: string }[] {
+): string[] {
   const seen = new Set<string>();
-  const out: { product_id: string; ingredient_unit_id: string }[] = [];
   rows.forEach((r, i) => {
     if (r.state !== "pending") return;
     const d = drafts[i];
-    const key = pairKey(d.product_id, d.ingredient_unit_id);
-    if (seen.has(key)) return;
-    seen.add(key);
-    out.push({
-      product_id: d.product_id,
-      ingredient_unit_id: d.ingredient_unit_id,
-    });
+    seen.add(pairKey(refOf(d), d.ingredient_unit_id));
   });
-  return out;
+  return [...seen];
 }
 
 export function pairCostsFrom(
   lines: IngredientCostLine[],
 ): [string, PairCost][] {
   return lines.map((l) => [
-    pairKey(l.product_id, l.ingredient_unit_id),
+    pairKey(refOf(l), l.ingredient_unit_id),
     { ok: true, unit_name: l.ingredient_unit?.name ?? null, ...unitCostOf(l) },
   ]);
 }
