@@ -61,16 +61,20 @@ const FREQUENCIES = accountingSchema.shape.posting_frequency.options;
  * @param props.hidePosting - ซ่อน section Posting (brand `external` — ระบบภายนอกดึงเองตามจังหวะของมัน
  *   รูปแบบไฟล์/ความถี่ในการส่งจึงไม่มีความหมาย) · ค่า `export_format`/`posting_frequency` เดิม
  *   ยังถูกส่งกลับตอน Save เช่นเดียวกับ Connection
+ * @param props.hideInvoiceValue - ซ่อนช่อง Default invoice value ใน Vendor fallbacks (brand `external`)
+ *   และใช้คำอธิบาย section ที่ไม่พูดถึงมูลค่าใบแจ้งหนี้ · ค่าเดิมยังถูกส่งกลับตอน Save
  * @returns React element ของ SettingSection ที่ไม่ได้ถูกซ่อน (สูงสุดสามอัน)
  */
 export function AccountingFields({
   form,
   hideConnection = false,
   hidePosting = false,
+  hideInvoiceValue = false,
 }: {
   readonly form: UseFormReturn<AccountingFormValues>;
   readonly hideConnection?: boolean;
   readonly hidePosting?: boolean;
+  readonly hideInvoiceValue?: boolean;
 }) {
   const t = useTranslations("systemAdmin.interface");
   const ta = useTranslations("systemAdmin.interface.accounting");
@@ -100,7 +104,9 @@ export function AccountingFields({
       <SettingSection
         first={hideConnection}
         title={ta("defaults")}
-        description={ta("defaultsDesc")}
+        description={
+          hideInvoiceValue ? ta("defaultsDescNoInvoice") : ta("defaultsDesc")
+        }
       >
         <TextField
           label={ta("defaultAccountCode")}
@@ -114,12 +120,14 @@ export function AccountingFields({
           error={form.formState.errors.default_department_code?.message}
           placeholder="D1"
         />
-        <TextField
-          label={ta("defaultInvoiceValue")}
-          field={form.register("default_invoice_value")}
-          error={form.formState.errors.default_invoice_value?.message}
-          placeholder="0"
-        />
+        {!hideInvoiceValue && (
+          <TextField
+            label={ta("defaultInvoiceValue")}
+            field={form.register("default_invoice_value")}
+            error={form.formState.errors.default_invoice_value?.message}
+            placeholder="0"
+          />
+        )}
       </SettingSection>
 
       {!hidePosting && (
