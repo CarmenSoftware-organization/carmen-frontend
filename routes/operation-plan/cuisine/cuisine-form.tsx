@@ -24,6 +24,7 @@ import { CuisineToolbar } from "./cuisine-toolbar";
 import { CuisineGeneralFields } from "./cuisine-general-fields";
 import { CuisineDetailFields } from "./cuisine-detail-fields";
 import { CuisineAdditionalFields } from "./cuisine-additional-fields";
+import { CuisineRecipes } from "./cuisine-recipes";
 
 interface CuisineFormProps {
   readonly cuisine?: Cuisine;
@@ -47,7 +48,7 @@ export function CuisineForm({ cuisine }: CuisineFormProps) {
     listPath: LIST_PATH,
     isPending: createCuisine.isPending || updateCuisine.isPending,
   });
-  const { form, isEdit, isDisabled } = f;
+  const { form, isEdit, isView, isDisabled } = f;
   const isPending = createCuisine.isPending || updateCuisine.isPending;
 
   const onSubmit = (values: CuisineFormValues) => {
@@ -103,10 +104,24 @@ export function CuisineForm({ cuisine }: CuisineFormProps) {
           scrollToFirstInvalidField(),
         )}
       >
-        <CuisineGeneralFields form={form} isDisabled={isDisabled} />
-        <CuisineDetailFields form={form} isDisabled={isDisabled} />
-        <CuisineAdditionalFields form={form} isDisabled={isDisabled} />
+        <CuisineGeneralFields
+          form={form}
+          isDisabled={isDisabled}
+          isView={isView}
+        />
+        <CuisineDetailFields
+          form={form}
+          isDisabled={isDisabled}
+          isView={isView}
+        />
+        <CuisineAdditionalFields
+          form={form}
+          isDisabled={isDisabled}
+          isView={isView}
+        />
       </form>
+
+      {cuisine && <CuisineRecipes cuisineId={cuisine.id} />}
 
       <DiscardDialog {...f.discard.dialogProps} variant="warning" />
 

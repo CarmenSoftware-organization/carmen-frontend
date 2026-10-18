@@ -8,21 +8,24 @@ import {
 } from "@/components/ui/field";
 import { SelectContent, SelectItem } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  CUISINE_REGION_OPTIONS,
-  CUISINE_REGION_LABEL_KEY,
-} from "@/constant/cuisine";
+import { CUISINE_REGION_OPTIONS } from "@/constant/cuisine";
 import { SettingSection } from "@/components/ui/setting-section";
 import type { CuisineFormValues } from "./cuisine-form-schema";
+import { CuisineRegionLabel } from "./cuisine-region-label";
+
+const READ_MODE_EMPTY = "—";
 
 interface CuisineGeneralFieldsProps {
   readonly form: UseFormReturn<CuisineFormValues>;
   readonly isDisabled: boolean;
+  /** โหมดอ่าน — ช่องว่างแสดง "—" และซ่อนตัวนับตัวอักษร */
+  readonly isView: boolean;
 }
 
 export function CuisineGeneralFields({
   form,
   isDisabled,
+  isView,
 }: CuisineGeneralFieldsProps) {
   const t = useTranslations("operationPlan.cuisine");
   const tfl = useTranslations("field");
@@ -67,7 +70,7 @@ export function CuisineGeneralFields({
                 <SelectContent>
                   {CUISINE_REGION_OPTIONS.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {t(CUISINE_REGION_LABEL_KEY[opt.value])}
+                      <CuisineRegionLabel region={opt.value} />
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -83,9 +86,10 @@ export function CuisineGeneralFields({
         </FieldLabel>
         <Textarea
           id="cuisine-description"
-          placeholder={tfl("optional")}
+          placeholder={isView ? READ_MODE_EMPTY : tfl("optional")}
+          rows={2}
           disabled={isDisabled}
-          maxLength={256}
+          maxLength={isView ? undefined : 256}
           {...form.register("description")}
         />
       </Field>
