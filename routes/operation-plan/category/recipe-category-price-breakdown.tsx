@@ -1,7 +1,7 @@
 import { AlertTriangle, CircleCheck, Info } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { cn } from "@/lib/utils";
-import { formatPct } from "./recipe-category-defaults";
+import { formatPct } from "../shared/recipe-category-defaults";
 
 /**
  * สีของแต่ละส่วนในแถบ — ใช้ร่วมกับจุดสีหน้าชื่อช่องในฟอร์ม ให้ช่องกับแถบผูกกันด้วยสีเดียว

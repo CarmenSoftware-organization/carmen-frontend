@@ -2,6 +2,8 @@ import type { RecipeCategory } from "@/types/recipe-category";
 
 export interface RecipeCategoryDefaults {
   readonly foodCost: number | null;
+  readonly labor: number | null;
+  readonly overhead: number | null;
   readonly marginMin: number | null;
   readonly marginTarget: number | null;
 }
@@ -21,6 +23,8 @@ export function readRecipeCategoryDefaults(
       category.default_cost_settings,
       "target_food_cost_percentage",
     ),
+    labor: pct(category.default_cost_settings, "labor_cost_percentage"),
+    overhead: pct(category.default_cost_settings, "overhead_percentage"),
     marginMin: pct(category.default_margins, "minimum_profit_margin"),
     marginTarget: pct(category.default_margins, "target_profit_margin"),
   };
@@ -36,7 +40,7 @@ export function formatPct(value: number) {
 export function formatMarginRange({
   marginMin,
   marginTarget,
-}: RecipeCategoryDefaults) {
+}: Pick<RecipeCategoryDefaults, "marginMin" | "marginTarget">) {
   if (marginMin != null && marginTarget != null)
     return `${PCT.format(marginMin)} → ${formatPct(marginTarget)}`;
   if (marginTarget != null) return formatPct(marginTarget);

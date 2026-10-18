@@ -13,11 +13,14 @@ import {
 } from "./recipe-form-schema";
 import type { RecipeComputed, RecipeCostCalc } from "./use-recipe-cost-calc";
 import { RecipePriceRecommendations } from "./recipe-price-recommendations";
+import type { RecipeCategoryDefaults } from "../shared/recipe-category-defaults";
 
 interface RecipeCostFieldsProps {
   readonly form: UseFormReturn<RecipeFormValues>;
   readonly isDisabled: boolean;
   readonly computed: RecipeCostCalc;
+  /** ค่าตั้งต้นของหมวดที่เลือก — ใช้แสดงเทียบ (null = ยังไม่เลือก/ยังโหลด) */
+  readonly categoryDefaults: RecipeCategoryDefaults | null;
 }
 
 type CostKey = "total_ingredient_cost" | "labor_cost" | "overhead_cost";
@@ -49,6 +52,7 @@ export function RecipeCostFields({
   form,
   isDisabled,
   computed,
+  categoryDefaults,
 }: RecipeCostFieldsProps) {
   const t = useTranslations("operationPlan.recipe");
   // ต้อง subscribe เอง — อ่าน form.formState.errors ตรง ๆ จะ render ใหม่เฉพาะตอน
@@ -218,6 +222,19 @@ export function RecipeCostFields({
                 %
               </span>
             </div>
+            {categoryDefaults?.foodCost != null && (
+              <CategoryFoodCostHint
+                value={categoryDefaults.foodCost}
+                current={targetPct}
+                isDisabled={isDisabled}
+                onApply={(v) =>
+                  form.setValue("target_food_cost_percentage", v, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              />
+            )}
           </div>
           <div>
             <EyeBrow className="mb-1">
@@ -258,7 +275,11 @@ export function RecipeCostFields({
       {/* 4 · ผลลัพธ์ — food cost เทียบเป้า + กำไรขั้นต้น */}
       <div className="mt-4 border-t pt-4">
         {hasPrice ? (
-          <RecipeCostVerdict computed={computed} targetPct={targetPct} />
+          <RecipeCostVerdict
+            computed={computed}
+            targetPct={targetPct}
+            categoryDefaults={categoryDefaults}
+          />
         ) : (
           <p className="text-muted-foreground text-xs">{t("noPriceYet")}</p>
         )}
@@ -273,12 +294,14 @@ export function RecipeCostFields({
               <span className="text-foreground font-semibold tabular-nums">
                 {computed.laborCostPct?.toFixed(1) ?? "—"}%
               </span>
+              <CategoryRatio value={categoryDefaults?.labor} />
             </span>
             <span>
               {t("overhead")}{" "}
               <span className="text-foreground font-semibold tabular-nums">
                 {computed.overheadPct?.toFixed(1) ?? "—"}%
               </span>
+              <CategoryRatio value={categoryDefaults?.overhead} />
             </span>
           </>
         )}
@@ -316,9 +339,11 @@ export function RecipeCostFields({
 function RecipeCostVerdict({
   computed,
   targetPct,
+  categoryDefaults,
 }: {
   readonly computed: RecipeComputed;
   readonly targetPct: number;
+  readonly categoryDefaults: RecipeCategoryDefaults | null;
 }) {
   const t = useTranslations("operationPlan.recipe");
   const food = computed.actualFoodCostPct ?? 0;
@@ -392,7 +417,89 @@ function RecipeCostVerdict({
         >
           {margin < 0 ? t("belowCost") : `${marginPct.toFixed(1)}%`}
         </div>
+        {categoryDefaults && margin >= 0 && (
+          <CategoryMarginNote
+            marginPct={marginPct}
+            min={categoryDefaults.marginMin}
+            target={categoryDefaults.marginTarget}
+          />
+        )}
       </div>
+    </div>
+  );
+}
+
+/** เป้า food cost ของหมวด ใต้ช่องเป้า — กดใช้ได้เมื่อค่าในช่องไม่ตรงกับหมวด */
+function CategoryFoodCostHint({
+  value,
+  current,
+  isDisabled,
+  onApply,
+}: {
+  readonly value: number;
+  readonly current: number;
+  readonly isDisabled: boolean;
+  readonly onApply: (value: number) => void;
+}) {
+  const t = useTranslations("operationPlan.recipe");
+  return (
+    <p className="text-muted-foreground text-micro mt-1 flex items-center gap-1.5">
+      <span className="tabular-nums">
+        {t("categoryDefaultHint", { pct: formatPct(value) })}
+      </span>
+      {!isDisabled && current !== value && (
+        <button
+          type="button"
+          className="text-primary font-medium hover:underline"
+          onClick={() => onApply(value)}
+        >
+          {t("applyCategoryDefault")}
+        </button>
+      )}
+    </p>
+  );
+}
+
+/** "(หมวด 25%)" ต่อท้ายสัดส่วนค่าแรง/โสหุ้ย — ไม่ตั้งในหมวด = ไม่แสดง */
+function CategoryRatio({ value }: { readonly value?: number | null }) {
+  const t = useTranslations("operationPlan.recipe");
+  if (value == null) return null;
+  return (
+    <span className="ml-1 tabular-nums">
+      {t("categoryRatio", { pct: formatPct(value) })}
+    </span>
+  );
+}
+
+/** กำไรขั้นต้นจริงเทียบขั้นต่ำ/เป้าของหมวด — ต่ำกว่าขั้นต่ำเท่านั้นที่ขึ้นสีเตือน */
+function CategoryMarginNote({
+  marginPct,
+  min,
+  target,
+}: {
+  readonly marginPct: number;
+  readonly min: number | null;
+  readonly target: number | null;
+}) {
+  const t = useTranslations("operationPlan.recipe");
+  if (min != null && marginPct < min)
+    return (
+      <div className="text-warning-ink text-micro mt-0.5 font-semibold">
+        {t("marginBelowCategoryMin", { pct: formatPct(min) })}
+      </div>
+    );
+  if (target == null) return null;
+  const meets = marginPct >= target;
+  return (
+    <div
+      className={cn(
+        "text-micro mt-0.5",
+        meets ? "text-success-ink" : "text-muted-foreground",
+      )}
+    >
+      {t(meets ? "marginMeetsCategoryTarget" : "marginCategoryTarget", {
+        pct: formatPct(target),
+      })}
     </div>
   );
 }

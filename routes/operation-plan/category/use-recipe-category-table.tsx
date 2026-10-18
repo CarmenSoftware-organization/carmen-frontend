@@ -12,7 +12,7 @@ import {
   formatMarginRange,
   formatPct,
   readRecipeCategoryDefaults,
-} from "./recipe-category-defaults";
+} from "../shared/recipe-category-defaults";
 
 function Unset() {
   return <span className="text-muted-foreground">—</span>;
