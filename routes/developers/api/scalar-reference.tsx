@@ -74,7 +74,8 @@ const CUSTOM_CSS = `
  * และ agent / mcp / developer tools / Try it ปิดทั้งหมด
  *
  * @param props.locale - locale ของแอป — เปลี่ยนแล้ว remount (เปลี่ยนแค่ content ภาษา UI ไม่ตาม)
- * @param props.dark - ธีมที่ resolve แล้วของแอป
+ * @param props.dark - ธีมที่ resolve แล้ว — เปลี่ยนแล้ว remount เช่นกัน เพราะ Scalar อ่าน
+ *   `forceDarkModeState` ครั้งเดียวตอน setup (ไม่ reactive) ส่งค่าใหม่เข้าไปเฉย ๆ เอกสารไม่เปลี่ยนธีม
  * @returns React element ของเอกสาร
  */
 export default function ScalarReference({
@@ -87,7 +88,7 @@ export default function ScalarReference({
   const content = useMemo(() => localizedSpec(locale), [locale]);
   return (
     <ApiReferenceReact
-      key={locale}
+      key={`${locale}-${dark ? "dark" : "light"}`}
       configuration={{
         content,
         layout: "modern",
