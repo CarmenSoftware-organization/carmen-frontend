@@ -410,8 +410,7 @@ export const moduleList: ModuleDto[] = [
   {
     name: "storeOperations",
     path: "/store-operation",
-    // ไม่ใช้ Store — เมนูลูก storeRequisition ใช้ไอคอนนั้นแล้ว และ ModuleLanding
-    // โชว์ไอคอนแม่เป็นหัวเพจโดยมีการ์ดลูกอยู่ข้างล่างหน้าเดียวกัน จะซ้ำกันเอง
+    // ไม่ใช้ Store — เมนูลูก storeRequisition ใช้ไอคอนนั้นแล้ว ใช้ซ้ำจะแยกแม่กับลูกไม่ออก
     icon: Boxes,
     subModules: [
       {
