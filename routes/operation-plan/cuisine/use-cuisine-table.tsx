@@ -8,7 +8,7 @@ import type { Cuisine } from "@/types/cuisine";
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
-import { CUISINE_REGION_LABEL_KEY } from "@/constant/cuisine";
+import { CuisineRegionLabel } from "./cuisine-region-label";
 
 interface UseCuisineTableOptions {
   cuisines: Cuisine[];
@@ -42,6 +42,7 @@ export function useCuisineTable({
           {row.getValue("name") || "..."}
         </CellAction>
       ),
+      size: 220,
       meta: { headerTitle: tfl("name") },
     },
     {
@@ -49,13 +50,43 @@ export function useCuisineTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("region")} />
       ),
-      cell: ({ row }) => {
-        const region = row.getValue("region") as string;
-        const labelKey = CUISINE_REGION_LABEL_KEY[region];
-        return labelKey ? t(labelKey) : region;
-      },
+      cell: ({ row }) => (
+        <CuisineRegionLabel region={row.getValue("region") as string} />
+      ),
       size: 150,
       meta: { headerTitle: tfl("region") },
+    },
+    {
+      accessorKey: "description",
+      header: () => tfl("description"),
+      cell: ({ row }) => (
+        <span
+          className="text-muted-foreground block truncate"
+          title={row.original.description ?? undefined}
+        >
+          {row.original.description || "—"}
+        </span>
+      ),
+      enableSorting: false,
+      size: 320,
+      meta: { headerTitle: tfl("description") },
+    },
+    {
+      // backend ยังไม่ส่ง recipe_count (ก่อน deploy) = "—" ไม่ใช่ 0 ซึ่งจะโกหกว่าไม่มีสูตร
+      // sort ไม่ได้ — เป็นค่านับจาก relation ไม่ใช่คอลัมน์ในตาราง
+      accessorKey: "recipe_count",
+      header: () => t("recipes"),
+      cell: ({ row }) =>
+        row.original.recipe_count ?? (
+          <span className="text-muted-foreground">—</span>
+        ),
+      enableSorting: false,
+      size: 90,
+      meta: {
+        headerTitle: t("recipes"),
+        headerClassName: "text-right",
+        cellClassName: "text-right tabular-nums whitespace-nowrap",
+      },
     },
     // Status ก่อน created/updated (hideStatus:true กัน useConfigTable inject ซ้ำ)
     statusColumn<Cuisine>(tfl),

@@ -9,6 +9,8 @@ interface KeyValueInputProps {
   readonly disabled?: boolean;
   readonly keyPlaceholder?: string;
   readonly valuePlaceholder?: string;
+  readonly addLabel?: string;
+  readonly removeLabel?: string;
 }
 
 export function KeyValueInput({
@@ -17,6 +19,8 @@ export function KeyValueInput({
   disabled,
   keyPlaceholder = "Key",
   valuePlaceholder = "Value",
+  addLabel = "Add",
+  removeLabel = "Remove row",
 }: KeyValueInputProps) {
   const handleAdd = () => {
     onChange([...value, createKeyValueRow()]);
@@ -38,7 +42,24 @@ export function KeyValueInput({
   };
 
   if (disabled && value.length === 0) {
-    return <span className="text-muted-foreground text-sm">—</span>;
+    return <span className="text-muted-foreground text-xs">—</span>;
+  }
+
+  // โหมดอ่าน — ตารางคู่ค่า ไม่ใช่ช่องกรอกที่ถูกล็อก
+  if (disabled) {
+    return (
+      <dl className="divide-border border-border divide-y rounded-md border text-xs">
+        {value.map((row) => (
+          <div
+            key={row._id}
+            className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-3 px-3 py-1.5"
+          >
+            <dt className="text-muted-foreground truncate">{row.key}</dt>
+            <dd className="text-foreground break-words">{row.value || "—"}</dd>
+          </div>
+        ))}
+      </dl>
+    );
   }
 
   return (
@@ -80,7 +101,7 @@ export function KeyValueInput({
               type="button"
               variant="ghost"
               size="icon-xs"
-              aria-label="Remove row"
+              aria-label={removeLabel}
               onClick={() => handleRemove(index)}
             >
               <X />
@@ -92,7 +113,7 @@ export function KeyValueInput({
       {!disabled && (
         <Button type="button" variant="outline" size="xs" onClick={handleAdd}>
           <Plus aria-hidden="true" />
-          Add
+          {addLabel}
         </Button>
       )}
     </div>

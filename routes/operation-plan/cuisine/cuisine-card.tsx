@@ -5,8 +5,8 @@ import {
   ListCardRow,
   ListCardActiveRow,
 } from "@/components/share/list-card";
-import { CUISINE_REGION_LABEL_KEY } from "@/constant/cuisine";
 import type { Cuisine } from "@/types/cuisine";
+import { CuisineRegionLabel } from "./cuisine-region-label";
 
 interface CuisineCardProps {
   readonly item: Cuisine;
@@ -17,9 +17,8 @@ interface CuisineCardProps {
 /**
  * การ์ด cuisine 1 รายการ สำหรับหน้ารายการโหมด grid/mobile
  *
- * ใช้ `ListCard` ตัวเดียวกับการ์ดโมดูลอื่น · region เป็นข้อความ (label ที่แปลแล้ว)
- * ไม่ใช่ badge สี — การ์ดจึงมีสัญญาณสีเดียวที่สถานะ ส่วน ramp สีของ region
- * ยังใช้ในคอลัมน์ของตารางตามเดิม
+ * ใช้ `ListCard` ตัวเดียวกับการ์ดโมดูลอื่น · region แสดงด้วย `CuisineRegionLabel`
+ * (จุดสี + ชื่อ) ตัวเดียวกับคอลัมน์ในตาราง ให้สีตรงกันทั้งสองมุมมอง
  *
  * @param props.item - ข้อมูล cuisine
  * @param props.onEdit - callback เมื่อคลิกการ์ด
@@ -30,10 +29,8 @@ export default function CuisineCard({
   onEdit,
   onDelete,
 }: CuisineCardProps) {
-  const t = useTranslations();
+  const t = useTranslations("operationPlan.cuisine");
   const tfl = useTranslations("field");
-
-  const regionKey = CUISINE_REGION_LABEL_KEY[item.region];
 
   return (
     <ListCard
@@ -44,7 +41,12 @@ export default function CuisineCard({
       <ListCardActiveRow active={item.is_active} />
       {item.region && (
         <ListCardRow label={tfl("region")}>
-          {regionKey ? t(regionKey) : item.region}
+          <CuisineRegionLabel region={item.region} />
+        </ListCardRow>
+      )}
+      {item.recipe_count != null && (
+        <ListCardRow label={t("recipes")}>
+          <span className="tabular-nums">{item.recipe_count}</span>
         </ListCardRow>
       )}
       {item.description && (

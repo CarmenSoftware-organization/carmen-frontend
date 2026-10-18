@@ -129,7 +129,11 @@ export function objectToKeyValues(
 ): KeyValueRow[] {
   if (!value || Object.keys(value).length === 0) return [];
   return Object.entries(value).map(([k, v]) =>
-    createKeyValueRow(k, String(v ?? "")),
+    // ค่าซ้อน (object/array) ต้องเป็น JSON — String() ได้ "[object Object]" แล้วเซฟทับของจริง
+    createKeyValueRow(
+      k,
+      v !== null && typeof v === "object" ? JSON.stringify(v) : String(v ?? ""),
+    ),
   );
 }
 
@@ -229,6 +233,13 @@ export function keyValuesToObject(
       result[k] = true;
     } else if (v === "false") {
       result[k] = false;
+    } else if (/^[[{]/.test(v)) {
+      // คู่กับ objectToKeyValues ที่ stringify ค่าซ้อน — parse ไม่ผ่านก็เก็บเป็นข้อความตามที่พิมพ์
+      try {
+        result[k] = JSON.parse(v);
+      } catch {
+        result[k] = v;
+      }
     } else {
       result[k] = v;
     }
