@@ -86,7 +86,13 @@ export function EqImageField({
         {t("image")}
       </span>
 
-      {displayUrl ? (
+      {/* โหมดอ่าน + ไม่มีรูป: บอกว่าไม่มี ไม่ใช่ชวนอัปโหลดทั้งที่กดไม่ได้ */}
+      {!displayUrl && disabled ? (
+        <div className="bg-muted/40 text-muted-foreground flex h-24 items-center justify-center gap-2 rounded-md border border-dashed text-sm">
+          <ImageIcon className="size-4" aria-hidden="true" />
+          {t("noPhoto")}
+        </div>
+      ) : displayUrl ? (
         <div className="bg-muted relative flex h-44 items-center justify-center overflow-hidden rounded-md border md:h-56">
           <img
             src={displayUrl}

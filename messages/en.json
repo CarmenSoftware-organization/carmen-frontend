@@ -3745,7 +3745,14 @@
       "equipmentImage": "Photo",
       "equipmentImageDesc": "A photo so staff can recognize it at a glance.",
       "portableDesc": "Can this equipment be moved between stations?",
-      "notFound": "Equipment not found"
+      "notFound": "Equipment not found",
+      "availabilityCol": "Available / Total",
+      "maintOverdue": "{days, plural, =1 {Overdue 1 day} other {Overdue # days}}",
+      "maintDueToday": "Due today",
+      "maintDueIn": "{days, plural, =1 {Due in 1 day} other {Due in # days}}",
+      "maintNext": "Next {date}",
+      "maintLast": "Last serviced {date}",
+      "noPhoto": "No photo"
     },
     "equipmentCategory": {
       "entity": "Equipment Category",

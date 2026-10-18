@@ -8,6 +8,8 @@ import type { Equipment } from "@/types/equipment";
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
+import { EqMaintenanceBadge } from "./eq-maintenance-badge";
+import { EqAvailability } from "./eq-availability";
 
 interface UseEquipmentTableOptions {
   equipments: Equipment[];
@@ -29,6 +31,7 @@ export function useEquipmentTable({
   onDelete,
 }: UseEquipmentTableOptions) {
   const tfl = useTranslations("field");
+  const t = useTranslations("operationPlan.equipment");
   const { dateTimeFormat } = useProfile();
 
   const columns: ColumnDef<Equipment>[] = [
@@ -96,6 +99,32 @@ export function useEquipmentTable({
       size: 120,
       meta: { headerTitle: tfl("capacity") },
     },
+    {
+      // sort ตาม available_qty ฝั่ง server — คอลัมน์โชว์คู่กับ total
+      accessorKey: "available_qty",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={t("availabilityCol")} />
+      ),
+      cell: ({ row }) => (
+        <EqAvailability
+          available={row.original.available_qty}
+          total={row.original.total_qty}
+        />
+      ),
+      size: 130,
+      meta: { headerTitle: t("availabilityCol") },
+    },
+    {
+      accessorKey: "next_maintenance_date",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={t("maintenance")} />
+      ),
+      cell: ({ row }) => (
+        <EqMaintenanceBadge nextDate={row.original.next_maintenance_date} />
+      ),
+      size: 170,
+      meta: { headerTitle: t("maintenance") },
+    },
     // Status ก่อน created/updated (hideStatus:true กัน useConfigTable inject ซ้ำ)
     statusColumn<Equipment>(tfl),
     ...auditColumns<Equipment>(tfl, dateTimeFormat),
@@ -110,7 +139,12 @@ export function useEquipmentTable({
     onDelete,
     hideStatus: true,
     initialState: {
-      columnVisibility: { created_at: false, updated_at: false },
+      // capacity ส่วนใหญ่ว่าง — ซ่อนไว้ เปิดได้จากเมนูคอลัมน์
+      columnVisibility: {
+        capacity: false,
+        created_at: false,
+        updated_at: false,
+      },
     },
   });
 }

@@ -26,6 +26,7 @@ import { EqQuantitySection } from "./eq-quantity-section";
 import { EqInstructionsSection } from "./eq-instructions-section";
 import { EqMaintenanceSection } from "./eq-maintenance-section";
 import { EqAdditionalSection } from "./eq-additional-section";
+import { EqSummary } from "./eq-summary";
 
 interface EquipmentFormProps {
   readonly equipment?: Equipment;
@@ -149,6 +150,7 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
 
   return (
     <FormPageShell
+      width="wide"
       header={
         <EqToolbar
           form={form}
@@ -162,6 +164,10 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
         />
       }
     >
+      {equipment && f.mode === "view" && (
+        <EqSummary form={form} imageUrl={equipment.image_url} />
+      )}
+
       <form
         id="equipment-form"
         onSubmit={form.handleSubmit(onSubmit, () =>
