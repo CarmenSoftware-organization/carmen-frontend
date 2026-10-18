@@ -86,3 +86,7 @@ export function useVendorWidgets() {
 export function useOperationPlanWidgets() {
   return useDashboardWidgetConfigs("operation-plan");
 }
+
+export function useStoreOperationWidgets() {
+  return useDashboardWidgetConfigs("store-operation");
+}
