@@ -58,6 +58,11 @@ export const router = createBrowserRouter([
         path: "/pl/:url_token",
         lazy: () => import("./external/pl/price-list-external.route"),
       },
+      // เอกสาร API ขาเข้า — public เพราะคนอ่านคือนักพัฒนาฝั่งลูกค้าที่ไม่มีบัญชี Carmen
+      {
+        path: "/developers/api",
+        lazy: () => import("./developers/api/api-docs.route"),
+      },
       {
         Component: ProtectedShell,
         children: [

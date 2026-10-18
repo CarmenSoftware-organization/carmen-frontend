@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
@@ -40,15 +41,13 @@ function LiveZoneDivider({
   readonly title: string;
   readonly hint: string;
 }) {
-  // grid เดียวกับ SettingSection (md:grid-cols-3) — ข้อความอยู่คอลัมน์ซ้ายตรงกับหัว section
-  // เส้นอยู่คอลัมน์ขวาตรงกับการ์ด จอแคบซ้อนกันเหลือแค่ข้อความ + เส้นใต้
+  // แถบเต็มความกว้าง ไม่ใช่ grid ของ SettingSection — แบบเดิม (หัวซ้าย + เส้นขวา) อ่านเป็น
+  // section ที่ไม่มีการ์ด ไม่ใช่เส้นแบ่งโซน
   return (
-    <div className="mt-12 grid items-center gap-x-10 gap-y-3 md:grid-cols-3">
-      <div className="min-w-0 md:col-span-1">
-        <p className="text-sm font-semibold">{title}</p>
-        <p className="text-muted-foreground text-xs">{hint}</p>
-      </div>
-      <div aria-hidden="true" className="bg-border h-px md:col-span-2" />
+    <div className="bg-muted/40 mt-12 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-dashed px-4 py-2.5">
+      <Zap aria-hidden="true" className="text-primary size-4 shrink-0" />
+      <p className="text-sm font-semibold">{title}</p>
+      <p className="text-muted-foreground text-xs">{hint}</p>
     </div>
   );
 }

@@ -2659,16 +2659,16 @@
         },
         "apiDocs": {
           "title": "API documentation",
-          "desc": "How external systems call this business unit's inbound API. Reference only — no request is sent from this page.",
-          "show": "Show API documentation",
-          "hide": "Hide API documentation",
-          "loadError": "Couldn't load the API documentation.",
+          "desc": "How external systems call this business unit's inbound API. The full documentation opens without signing in — send the link to the integration team.",
           "quickStart": "Quick start",
           "quickStartDesc": "Set the CARMEN_CLIENT_SECRET environment variable to the secret from API access before running. Never put the secret itself into a script or URL.",
           "quickStartNoKey": "This business unit has no API key yet. Create one in API access, then replace YOUR_CLIENT_ID and set CARMEN_CLIENT_SECRET.",
           "copyCurl": "Copy command",
           "copied": "Copied",
-          "download": "Download openapi.json"
+          "download": "Download openapi.json",
+          "openFull": "Open full documentation",
+          "copyLink": "Copy link",
+          "linkCopied": "Link copied"
         }
       },
       "showSecret": "Show",
@@ -6160,5 +6160,13 @@
     "invalid": "The default currency of business unit {bu} no longer exists — amounts are shown in THB until it is fixed.",
     "goToSettings": "Set it in Company Profile",
     "contactAdmin": "Please contact your administrator."
+  },
+  "developers": {
+    "apiDocs": {
+      "pageTitle": "Carmen API reference",
+      "brand": "API reference",
+      "download": "Download openapi.json",
+      "loadError": "Couldn't load the API documentation."
+    }
   }
 }

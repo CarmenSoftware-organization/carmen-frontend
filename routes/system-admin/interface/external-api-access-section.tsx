@@ -190,21 +190,20 @@ export function ExternalApiAccessSection() {
   } else {
     body = (
       <div className="space-y-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* สวิตช์กับป้ายเป็นตัวควบคุมเดียว — เดิมแยกซ้ายขวา บอกสถานะเดียวกันสองที่ */}
+        <label className="inline-flex items-center gap-2.5">
+          {canEdit && (
+            <Switch
+              aria-label={t("status")}
+              checked={!!info.is_active}
+              disabled={busy}
+              onCheckedChange={(v) => setActive.mutate(v)}
+            />
+          )}
           <StatusDotBadge tone={info.is_active ? "success" : "neutral"}>
             {info.is_active ? t("active") : t("inactive")}
           </StatusDotBadge>
-          {canEdit && (
-            <label className="text-muted-foreground flex items-center gap-2 text-xs">
-              {t("status")}
-              <Switch
-                checked={!!info.is_active}
-                disabled={busy}
-                onCheckedChange={(v) => setActive.mutate(v)}
-              />
-            </label>
-          )}
-        </div>
+        </label>
 
         {/* Base URL เต็มแถว, Client ID กับ Secret คู่กันเมื่อ "การ์ด" กว้างพอ — วัดที่ container
             ไม่ใช่ viewport เพราะการ์ดอยู่คอลัมน์ขวา 2/3 ความกว้างของ viewport บอกอะไรไม่ได้ */}
@@ -281,8 +280,9 @@ export function ExternalApiAccessSection() {
           </span>
         </p>
 
+        {/* ใช้นานครั้งที่สุดแต่อันตรายที่สุด — แถวเงียบท้ายการ์ด ไม่ใช่กล่องแดง (ConfirmDialog กันพลาดอยู่แล้ว) */}
         {canEdit && (
-          <div className="border-destructive/30 bg-destructive/5 flex flex-wrap items-center justify-between gap-3 rounded-md border px-3 py-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
             <p className="text-muted-foreground min-w-0 flex-1 basis-56 text-xs">
               {t("regenerateDesc")}
             </p>
