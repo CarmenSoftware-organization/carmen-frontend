@@ -95,6 +95,7 @@ export function RecipeCategoryForm({ category }: RecipeCategoryFormProps) {
 
   return (
     <FormPageShell
+      width="wide"
       header={
         <RecipeCategoryToolbar
           form={form}

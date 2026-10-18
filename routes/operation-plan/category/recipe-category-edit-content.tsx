@@ -13,7 +13,7 @@ export function RecipeCategoryEditContent({ id }: { id: string }) {
     refetch,
   } = useRecipeCategoryById(id);
 
-  if (isLoading) return <FormPageSkeleton />;
+  if (isLoading) return <FormPageSkeleton width="wide" />;
   if (error || !category)
     return (
       <ErrorState
