@@ -3745,7 +3745,14 @@
       "equipmentImage": "รูปภาพ",
       "equipmentImageDesc": "รูปให้พนักงานเห็นแล้วจำอุปกรณ์ได้",
       "portableDesc": "อุปกรณ์นี้ย้ายไปใช้ตามจุดต่าง ๆ ได้ไหม",
-      "notFound": "ไม่พบอุปกรณ์"
+      "notFound": "ไม่พบอุปกรณ์",
+      "availabilityCol": "พร้อมใช้ / ทั้งหมด",
+      "maintOverdue": "{days, plural, other {เลยกำหนด # วัน}}",
+      "maintDueToday": "ถึงกำหนดวันนี้",
+      "maintDueIn": "{days, plural, other {อีก # วัน}}",
+      "maintNext": "ครั้งถัดไป {date}",
+      "maintLast": "ซ่อมล่าสุด {date}",
+      "noPhoto": "ไม่มีรูป"
     },
     "equipmentCategory": {
       "entity": "หมวดหมู่อุปกรณ์",
