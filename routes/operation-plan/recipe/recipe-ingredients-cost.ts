@@ -82,7 +82,6 @@ export function parsePairKey(key: string): IngredientInput {
     return {
       ingredient_type: "recipe",
       sub_recipe_id: id,
-      ingredient_unit_id: unitId,
       qty: 1,
       wastage_percentage: 0,
     };
@@ -133,7 +132,9 @@ export function draftToInput(d: IngredientDraft): IngredientInput {
       ? { sub_recipe_id: d.sub_recipe_id }
       : { product_id: d.product_id }),
     qty: Number(d.qty),
-    ...(d.ingredient_unit_id
+    // บรรทัดสูตรไม่ส่งหน่วย — backend ตั้งจากหน่วยผลผลิตของสูตรฐานเอง (กัน gateway .uuid() ตีกลับ
+    // 400 ทั่วไปเมื่อหน่วยเป็นค่าเก่าที่ไม่ใช่ UUID) draft/pairKey ยังเก็บหน่วยไว้จับคู่ snapshot
+    ...(d.ingredient_unit_id && !isRecipe
       ? { ingredient_unit_id: d.ingredient_unit_id }
       : {}),
     wastage_percentage: Number(d.wastage_percentage) || 0,

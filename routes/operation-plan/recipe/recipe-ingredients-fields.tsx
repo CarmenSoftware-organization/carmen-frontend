@@ -62,6 +62,9 @@ import {
 import { usePreviewIngredientCosts } from "./use-recipe-ingredients";
 import { RecipeIngredientsRecalcDialog } from "./recipe-ingredients-recalc-dialog";
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 interface RecipeIngredientsFieldsProps {
   readonly form: UseFormReturn<RecipeFormValues>;
   readonly isDisabled: boolean;
@@ -402,9 +405,12 @@ function IngredientRow({
       ],
     });
   const isRecipe = ingredientType === "recipe";
+  // หน่วยเก่าที่ไม่ใช่ UUID (เช่น "PCS") ห้ามยิง useUnitById — ถือว่าสูตรฐานยังไม่มีหน่วยผลผลิต
+  const recipeUnitValid = isRecipe && !!unitId && UUID_RE.test(unitId);
   const { data: recipeUnit } = useUnitById(
-    isRecipe && unitId ? unitId : undefined,
+    recipeUnitValid ? unitId : undefined,
   );
+  const recipeMissingUnit = isRecipe && !!subRecipeId && !recipeUnitValid;
   const excludeSelf = new Set(recipeId ? [recipeId] : []);
   const opts = { shouldDirty: true, shouldValidate: isSubmitted };
   // เปลี่ยนประเภท = ล้างตัวอ้างอิง ชื่อ และหน่วยของแถวทั้งหมด (หน่วยของสินค้ากับสูตรไม่เกี่ยวกัน)
@@ -577,7 +583,13 @@ function IngredientRow({
               )}
             />
           )}
-          <FieldError errors={[rowErrors?.ingredient_unit_id]} />
+          {recipeMissingUnit ? (
+            <p className="text-destructive mt-1 text-xs" role="alert">
+              {t("subRecipeNoYieldUnit")}
+            </p>
+          ) : (
+            <FieldError errors={[rowErrors?.ingredient_unit_id]} />
+          )}
         </div>
 
         <FieldInput
@@ -793,7 +805,9 @@ function UnitName({
 }) {
   const { data: units } = useProductIngredientUnits(productId || undefined);
   // แถวสูตรไม่มีรายการหน่วยของสินค้า — ใช้ชื่อหน่วยผลผลิตตาม id
-  const { data: unit } = useUnitById(!productId && unitId ? unitId : undefined);
+  const { data: unit } = useUnitById(
+    !productId && unitId && UUID_RE.test(unitId) ? unitId : undefined,
+  );
   const name =
     units?.find((u) => u.id === unitId)?.name ??
     unit?.name ??
