@@ -8,7 +8,7 @@ export function CuisineEditContent({ id }: { id: string }) {
   const tErr = useTranslations("operationPlan.cuisine");
   const { data: cuisine, isLoading, error, refetch } = useCuisineById(id);
 
-  if (isLoading) return <FormPageSkeleton />;
+  if (isLoading) return <FormPageSkeleton width="wide" />;
   if (error || !cuisine)
     return (
       <ErrorState

@@ -84,6 +84,7 @@ export function CuisineForm({ cuisine }: CuisineFormProps) {
 
   return (
     <FormPageShell
+      width="wide"
       header={
         <CuisineToolbar
           form={form}
