@@ -77,6 +77,7 @@ describe("interfaceGroups", () => {
       "accounting",
       "pos",
       "pms",
+      "export",
     ]);
   });
 

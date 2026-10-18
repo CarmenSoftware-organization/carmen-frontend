@@ -82,7 +82,7 @@ function readAccounts(value: Record<string, unknown> | undefined): Accounts {
  * @returns React element ของส่วนบัญชีตั้งต้น
  */
 export function ExternalGlDefaultsSection() {
-  const t = useTranslations("systemAdmin.interface.accounting.external");
+  const t = useTranslations("systemAdmin.interface.export");
   const binding = useContext(GlDefaultsHandleContext);
   const { value, isLoading, isError, refetch } =
     useInterfaceConfig(GL_SETTING_KEY);

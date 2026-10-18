@@ -801,6 +801,16 @@ export const router = createBrowserRouter([
                 lazy: () => import("./system-admin/interface/interface.route"),
               },
               {
+                // External ย้ายจากหมวด accounting ไป export — คงลิงก์/บุ๊กมาร์กเก่าไว้
+                path: "interface/accounting/external",
+                element: (
+                  <Navigate
+                    to="/system-admin/interface/export/external"
+                    replace
+                  />
+                ),
+              },
+              {
                 path: "interface/:category/:brand",
                 lazy: () =>
                   import("./system-admin/interface/interface-detail.route"),

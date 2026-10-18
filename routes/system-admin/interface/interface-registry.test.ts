@@ -6,11 +6,12 @@ import {
 } from "./interface-registry";
 
 describe("interface registry", () => {
-  it("registers the three v1 categories", () => {
+  it("registers the four categories", () => {
     expect(INTERFACE_CATEGORIES.map((d) => d.key)).toEqual([
       "accounting",
       "pos",
       "pms",
+      "export",
     ]);
   });
 
@@ -35,11 +36,18 @@ describe("interface registry", () => {
     }
   });
 
-  it("gives every category an icon, a form, and at least one brand", () => {
+  it("gives every category an icon and at least one brand", () => {
     for (const category of INTERFACE_CATEGORIES) {
       expect(category.icon).toBeDefined();
-      expect(category.form).toBeDefined();
       expect(category.brands.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("gives every brand a form (its own or the category's)", () => {
+    for (const category of INTERFACE_CATEGORIES) {
+      for (const brand of category.brands) {
+        expect(brand.form ?? category.form).toBeDefined();
+      }
     }
   });
 
@@ -89,8 +97,12 @@ describe("brand form overrides", () => {
     expect(findBrand("accounting", "carmen_gl")?.form).toBeDefined();
   });
 
-  it("gives external its own form", () => {
-    expect(findBrand("accounting", "external")?.form).toBeDefined();
+  it("gives external its own form under export", () => {
+    expect(findBrand("export", "external")?.form).toBeDefined();
+    expect(findBrand("export", "external")?.configKey).toBe(
+      "interface_export_external",
+    );
+    expect(findBrand("accounting", "external")).toBeUndefined();
   });
 
   it("leaves blueledgers on the category form", () => {

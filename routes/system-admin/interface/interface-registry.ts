@@ -1,5 +1,5 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
-import { BookOpen, Hotel, ShoppingCart } from "lucide-react";
+import { BookOpen, FileOutput, Hotel, ShoppingCart } from "lucide-react";
 import type { LucideIcon } from "../landing-types";
 
 export type BrandDef = {
@@ -17,7 +17,8 @@ export type InterfaceCategoryDef = {
   readonly key: string;
   readonly icon: LucideIcon;
   readonly brands: readonly BrandDef[];
-  readonly form: LazyExoticComponent<ComponentType>;
+  /** ฟอร์มตั้งต้นของ brand ในหมวด — ไม่มี = ทุก brand ต้องถือ `form` ของตัวเอง (ไม่งั้นหน้า detail ขึ้น "ไม่พบ") */
+  readonly form?: LazyExoticComponent<ComponentType>;
 };
 
 function brands(
@@ -42,7 +43,9 @@ function brands(
  * permission.route-map.ts` ของรีโป backend) — ลืมขั้นนี้แล้ว brand ใหม่จะตกไปอยู่ใต้ license
  * `configuration.app_config` เงียบ ๆ (ทุก BU มีอยู่แล้ว) แปลว่าขายแยกไม่ได้เลย และไม่มีด่านไหน
  * แดงเตือน เพราะ config key ยังอ่าน/เขียนได้ปกติ แค่ไม่ผ่าน license feature ของตัวเอง
- * เพิ่ม category = เพิ่ม entry ที่นี่ + สร้างไฟล์ form หนึ่งไฟล์
+ * เพิ่ม category = เพิ่ม entry ที่นี่ + สร้างไฟล์ form หนึ่งไฟล์ + เติมชื่อ category ใน regex ฝั่ง backend
+ * (`INTERFACE_CONFIG_KEY_RE` ของ gateway และ `defaultFor`/`validateValue` ของ micro-business) —
+ * ลืม regex ของ gateway แล้ว config key ของหมวดใหม่จะไม่ถูกตรวจ license ระดับ brand เลย แบบไม่มีอะไรแดง
  */
 export const INTERFACE_CATEGORIES: readonly InterfaceCategoryDef[] = [
   {
@@ -56,13 +59,6 @@ export const INTERFACE_CATEGORIES: readonly InterfaceCategoryDef[] = [
         form: lazy(() => import("./carmen-gl-interface-form")),
       },
       ...brands("accounting", ["blueledgers"]),
-      {
-        key: "external",
-        configKey: "interface_accounting_external",
-        // ฟอร์ม accounting (ไม่มี section Connection/Posting) + บัญชีตั้งต้น gl_setting + API Access
-        form: lazy(() => import("./external-interface-form")),
-        noConnection: true,
-      },
     ],
     form: lazy(() => import("./accounting-interface-form")),
   },
@@ -77,6 +73,20 @@ export const INTERFACE_CATEGORIES: readonly InterfaceCategoryDef[] = [
     icon: Hotel,
     brands: brands("pms", ["opera", "protel"]),
     form: lazy(() => import("./pms-interface-form")),
+  },
+  {
+    // เครื่องมือให้ระบบภายนอกดึงข้อมูลออกเอง — ไม่มีฟอร์มกลาง ทุก brand ถือฟอร์มของตัวเอง
+    key: "export",
+    icon: FileOutput,
+    brands: [
+      {
+        key: "external",
+        configKey: "interface_export_external",
+        // ฟิลด์ accounting (ไม่มี section Connection/Posting) + บัญชีตั้งต้น gl_setting + API Access
+        form: lazy(() => import("./external-interface-form")),
+        noConnection: true,
+      },
+    ],
   },
 ];
 

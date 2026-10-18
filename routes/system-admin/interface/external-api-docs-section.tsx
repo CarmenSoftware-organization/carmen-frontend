@@ -51,9 +51,7 @@ class DocsErrorBoundary extends Component<
  * @returns React element ของ section หรือ null เมื่อไม่มีสิทธิ์ดู
  */
 export function ExternalApiDocsSection() {
-  const t = useTranslations(
-    "systemAdmin.interface.accounting.external.apiDocs",
-  );
+  const t = useTranslations("systemAdmin.interface.export.apiDocs");
   const { can } = useCan();
   const { canReadConfig } = useInterfaceEntitlement();
   const [open, setOpen] = useState(false);
@@ -63,7 +61,7 @@ export function ExternalApiDocsSection() {
     setDocs((d) => ({ Lazy: lazy(loadDocs), key: d.key + 1 }));
 
   const canView = can(PERMISSIONS.system_admin.bu_api_key.view);
-  const readable = canReadConfig("accounting", "external");
+  const readable = canReadConfig("export", "external");
   const query = useBuApiKey(canView && readable);
 
   if (!canView || !readable) return null;

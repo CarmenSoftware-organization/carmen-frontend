@@ -26,7 +26,7 @@ import {
   type GlDefaultsHandle,
 } from "./external-gl-defaults-section";
 
-const CONFIG_KEY = "interface_accounting_external";
+const CONFIG_KEY = "interface_export_external";
 
 /**
  * เส้นแบ่งโซน "มีผลทันที" — ส่วน API ด้านล่างไม่อยู่ในรอบ Edit/Save ของฟอร์มด้านบน
@@ -54,9 +54,9 @@ function LiveZoneDivider({
 }
 
 /**
- * หน้า config ของ Accounting brand `external` — ใช้ฟิลด์ของฟอร์ม accounting ทั่วไปเฉพาะ Vendor fallbacks
+ * หน้า config ของ brand `external` ในหมวด Export tools — ใช้ฟิลด์ของฟอร์ม accounting ทั่วไปเฉพาะ Vendor fallbacks
  * (รหัสบัญชี/รหัสแผนก — ไม่มี Default invoice value)
- * (config `interface_accounting_external` · ซ่อน Connection/Posting เพราะระบบภายนอกดึงเองผ่าน API key)
+ * (config `interface_export_external` · ซ่อน Connection/Posting เพราะระบบภายนอกดึงเองผ่าน API key)
  * บวกส่วนบัญชีตั้งต้น (`gl_setting`)
  *
  * ปุ่ม Save ปุ่มเดียวบันทึกทั้งสองก้อน: interface config ก่อน แล้วค่อย `gl_setting`
@@ -66,8 +66,7 @@ function LiveZoneDivider({
  */
 export default function ExternalInterfaceForm() {
   const t = useTranslations("systemAdmin.interface");
-  const ta = useTranslations("systemAdmin.interface.accounting");
-  const te = useTranslations("systemAdmin.interface.accounting.external");
+  const te = useTranslations("systemAdmin.interface.export");
   const navigate = useNavigate();
   const { can } = useCan();
   const showApiZone = can(PERMISSIONS.system_admin.bu_api_key.view);
@@ -122,8 +121,8 @@ export default function ExternalInterfaceForm() {
 
   return (
     <InterfacePageLayout
-      title={ta("brand.external")}
-      description={ta("desc")}
+      title={te("brand.external")}
+      description={te("desc")}
       onSave={submit}
       onCancel={() => {
         form.reset(value ? toFormValues(value) : EMPTY_ACCOUNTING);

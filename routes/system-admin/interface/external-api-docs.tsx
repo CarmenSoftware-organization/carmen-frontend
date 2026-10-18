@@ -79,9 +79,7 @@ export default function ExternalApiDocs({
   readonly root: string;
   readonly clientId: string | null;
 }) {
-  const t = useTranslations(
-    "systemAdmin.interface.accounting.external.apiDocs",
-  );
+  const t = useTranslations("systemAdmin.interface.export.apiDocs");
   const hostRef = useRef<HTMLDivElement>(null);
   const spec = useMemo(() => specFor(root), [root]);
   const curl = curlFor(root, clientId);
