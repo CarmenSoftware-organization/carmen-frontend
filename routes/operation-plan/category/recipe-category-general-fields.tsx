@@ -12,9 +12,13 @@ import { SettingSection } from "@/components/ui/setting-section";
 import type { RecipeCategoryLookup } from "@/types/lookup";
 import type { RecipeCategoryFormValues } from "./recipe-category-form-schema";
 
+const READ_MODE_EMPTY = "—";
+
 interface RecipeCategoryGeneralFieldsProps {
   readonly form: UseFormReturn<RecipeCategoryFormValues>;
   readonly isDisabled: boolean;
+  /** โหมดอ่าน — ช่องว่างแสดง "—" และซ่อนตัวนับตัวอักษร */
+  readonly isView: boolean;
   readonly excludeIds?: Set<string>;
   /** หมวดแม่ที่ผู้ใช้เพิ่งเลือก (undefined = ล้างค่า) — ใช้คำนวณ level */
   readonly onParentChange: (parent?: RecipeCategoryLookup) => void;
@@ -23,6 +27,7 @@ interface RecipeCategoryGeneralFieldsProps {
 export function RecipeCategoryGeneralFields({
   form,
   isDisabled,
+  isView,
   excludeIds,
   onParentChange,
 }: RecipeCategoryGeneralFieldsProps) {
@@ -83,13 +88,15 @@ export function RecipeCategoryGeneralFields({
                 }}
                 onItemChange={(parent) => onParentChange(parent)}
                 disabled={isDisabled}
-                placeholder={t("notSet")}
+                placeholder={isView ? READ_MODE_EMPTY : t("notSet")}
                 excludeIds={excludeIds}
                 error={errors.parent_id?.message}
               />
             )}
           />
-          <FieldDescription>{t("parentCategoryDesc")}</FieldDescription>
+          {!isView && (
+            <FieldDescription>{t("parentCategoryDesc")}</FieldDescription>
+          )}
         </Field>
       </div>
 
@@ -97,10 +104,10 @@ export function RecipeCategoryGeneralFields({
         <FieldLabel htmlFor="rc-description">{tfl("description")}</FieldLabel>
         <Textarea
           id="rc-description"
-          placeholder={tfl("optional")}
+          placeholder={isView ? READ_MODE_EMPTY : tfl("optional")}
           rows={2}
           disabled={isDisabled}
-          maxLength={256}
+          maxLength={isView ? undefined : 256}
           {...form.register("description")}
         />
       </Field>

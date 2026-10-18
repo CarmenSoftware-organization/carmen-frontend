@@ -23,8 +23,7 @@ import {
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { RecipeCategoryToolbar } from "./recipe-category-toolbar";
 import { RecipeCategoryGeneralFields } from "./recipe-category-general-fields";
-import { RecipeCategoryCostFields } from "./recipe-category-cost-fields";
-import { RecipeCategoryMarginFields } from "./recipe-category-margin-fields";
+import { RecipeCategoryPricingFields } from "./recipe-category-pricing-fields";
 
 interface RecipeCategoryFormProps {
   readonly category?: RecipeCategory;
@@ -119,11 +118,15 @@ export function RecipeCategoryForm({ category }: RecipeCategoryFormProps) {
         <RecipeCategoryGeneralFields
           form={form}
           isDisabled={isDisabled}
+          isView={f.isView}
           excludeIds={excludeIds}
           onParentChange={handleParentChange}
         />
-        <RecipeCategoryCostFields form={form} isDisabled={isDisabled} />
-        <RecipeCategoryMarginFields form={form} isDisabled={isDisabled} />
+        <RecipeCategoryPricingFields
+          form={form}
+          isDisabled={isDisabled}
+          isView={f.isView}
+        />
       </form>
 
       {category && (
