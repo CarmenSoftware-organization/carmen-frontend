@@ -2627,7 +2627,7 @@
         "liveZoneHint": "Takes effect immediately — not part of Edit and Save above.",
         "apiAccess": {
           "title": "API access",
-          "desc": "Credentials external systems use to read and export AP invoices and GL journals (with account codes) out of this business unit.",
+          "desc": "Credentials external systems use to pull AP invoices and GL journals.",
           "noKey": "This business unit has no API key yet.",
           "create": "Create key",
           "creating": "Creating...",
@@ -2659,7 +2659,7 @@
         },
         "apiDocs": {
           "title": "API documentation",
-          "desc": "How external systems call this business unit's inbound API. The full documentation opens without signing in — send the link to the integration team.",
+          "desc": "Opens without signing in — share the link with the integration team.",
           "quickStart": "Quick start",
           "quickStartDesc": "Set the CARMEN_CLIENT_SECRET environment variable to the secret from API access before running. Never put the secret itself into a script or URL.",
           "quickStartNoKey": "This business unit has no API key yet. Create one in API access, then replace YOUR_CLIENT_ID and set CARMEN_CLIENT_SECRET.",
