@@ -214,12 +214,19 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                   return (
                     <li key={line.id}>
                       {/* checkbox กับลิงก์แยกกัน — ลิงก์ไปสูตรฐานต้องไม่ติ๊ก/ไม่ถูกติ๊กแทน */}
-                      <div className="hover:bg-muted/60 flex min-h-11 items-start gap-3 rounded-md px-2 py-2">
+                      <div className="hover:bg-muted/60 relative flex min-h-11 items-start gap-3 rounded-md px-2 py-2">
+                        {/* label ขยายเต็มแถว — แตะตรงไหนก็ติ๊กได้ (ลิงก์ z-10 อยู่เหนือ) */}
+                        <label
+                          htmlFor={id}
+                          aria-hidden="true"
+                          className="absolute inset-0 cursor-pointer rounded-md"
+                        />
                         <Checkbox
                           id={id}
+                          aria-label={name}
                           checked={isChecked}
                           onCheckedChange={(v) => toggle(line.id, v === true)}
-                          className="mt-0.5 size-5"
+                          className="relative z-10 mt-0.5 size-5"
                         />
                         <div
                           className={cn(
@@ -245,32 +252,24 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                                   </Badge>
                                   <Link
                                     to={`${LIST_PATH}/${line.sub_recipe_id}`}
-                                    className="underline underline-offset-2"
+                                    className="relative z-10 underline underline-offset-2"
                                   >
                                     {name}
                                   </Link>
                                 </>
                               ) : (
-                                <label htmlFor={id} className="cursor-pointer">
-                                  {name}
-                                </label>
+                                name
                               )}
                             </span>
-                            <label
-                              htmlFor={id}
-                              className="shrink-0 cursor-pointer tabular-nums"
-                            >
+                            <span className="shrink-0 tabular-nums">
                               {formatQty(line.qty)}{" "}
                               {line.ingredient_unit?.name ?? ""}
-                            </label>
+                            </span>
                           </div>
                           {line.note && (
-                            <label
-                              htmlFor={id}
-                              className="text-muted-foreground mt-0.5 block cursor-pointer text-xs"
-                            >
+                            <span className="text-muted-foreground mt-0.5 block text-xs">
                               {line.note}
-                            </label>
+                            </span>
                           )}
                         </div>
                       </div>
