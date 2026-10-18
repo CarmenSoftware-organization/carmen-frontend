@@ -54,8 +54,9 @@ function LiveZoneDivider({
 }
 
 /**
- * หน้า config ของ Accounting brand `external` — ฟิลด์ทั้งหมดเหมือนฟอร์ม accounting ทั่วไป
- * (config `interface_accounting_external`) บวกส่วนบัญชีตั้งต้น (`gl_setting`)
+ * หน้า config ของ Accounting brand `external` — ใช้ฟิลด์ของฟอร์ม accounting ทั่วไปเฉพาะ Vendor fallbacks
+ * (config `interface_accounting_external` · ซ่อน Connection/Posting เพราะระบบภายนอกดึงเองผ่าน API key)
+ * บวกส่วนบัญชีตั้งต้น (`gl_setting`)
  *
  * ปุ่ม Save ปุ่มเดียวบันทึกทั้งสองก้อน: interface config ก่อน แล้วค่อย `gl_setting`
  * (เฉพาะเมื่อแก้ส่วนบัญชี) เพื่อไม่ให้เขียน `gl_setting` ทับโดยไม่จำเป็น
@@ -149,7 +150,7 @@ export default function ExternalInterfaceForm() {
         </>
       }
     >
-      <AccountingFields form={form} hideConnection />
+      <AccountingFields form={form} hideConnection hidePosting />
 
       <GlDefaultsHandleProvider value={glBinding}>
         <ExternalGlDefaultsSection />
