@@ -7,20 +7,10 @@ import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
 import "./external-api-docs.css";
-// สำเนาของ BE `docs/external-api/openapi.json` (carmen-turborepo-backend-v2) —
-// อัปเดต: รัน `bun run swagger:export-external` ที่ BE แล้ว copy ไฟล์นั้นมาทับไฟล์นี้
-// import ตรงนี้ (ไม่ใช่ public/) เพื่อให้เข้า chunk lazy นี้ chunk เดียว และ version ตาม build
-import openapi from "./external-api-openapi.json";
-
-/**
- * ประโยคใน spec ที่ชวนกด Authorize แล้วลองยิง — หน้านี้ปิด Try it out และซ่อน Authorize
- * (ไม่ให้วาง secret ในเบราว์เซอร์) จึงตัดทิ้งตอนแสดง ถ้า BE เปลี่ยนถ้อยคำ = ไม่ตัด ไม่พัง
- */
-const AUTHORIZE_HINT =
-  "In this page, click **Authorize** and fill in both values to try the endpoint.";
+import { baseSpec } from "@/lib/external-api/localized-spec";
 
 /** path แรกของ spec (ต้องเป็น `/api/ext/v1/ap-invoices` — ลำดับ path ใน openapi.json กำหนดตัวอย่าง curl) — ใช้ประกอบตัวอย่าง curl */
-const FIRST_PATH = Object.keys(openapi.paths)[0];
+const FIRST_PATH = Object.keys(baseSpec().paths)[0];
 
 /**
  * spec ฉบับของ BU นี้ — server เป็นราก host ของ BU (path ใน spec มี `/api/ext/v1` อยู่แล้ว)
@@ -29,14 +19,7 @@ const FIRST_PATH = Object.keys(openapi.paths)[0];
  * @returns spec ที่เปลี่ยน `servers` และตัดประโยค Authorize ออก
  */
 function specFor(root: string) {
-  return {
-    ...openapi,
-    info: {
-      ...openapi.info,
-      description: openapi.info.description.replace(AUTHORIZE_HINT, ""),
-    },
-    servers: [{ url: root, description: "Carmen" }],
-  };
+  return { ...baseSpec(), servers: [{ url: root, description: "Carmen" }] };
 }
 
 /**
