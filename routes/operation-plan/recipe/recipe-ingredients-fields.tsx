@@ -44,6 +44,7 @@ import {
   EMPTY_INGREDIENT,
   formatQty,
   pairCostsFrom,
+  isDraftComplete,
   pairKey,
   parsePairKey,
   pendingPairs,
@@ -125,6 +126,7 @@ export function RecipeIngredientsFields({
     queries: productIds.map((id) => productIngredientUnitsQuery(buCode, id)),
   });
   const ratios = new Map<string, number>();
+  // แถวสูตร (r:) หน่วย 1:1 กับหน่วยผลผลิต ไม่ต้องใช้อัตราส่วน — มีแต่แถวสินค้า
   productIds.forEach((pid, idx) => {
     for (const u of unitQueries[idx]?.data ?? []) {
       ratios.set(pairKey(`p:${pid}`, u.id), Number(u.conversion));
@@ -309,7 +311,7 @@ export function RecipeIngredientsFields({
               onRemove={() => remove(i)}
               onRetryCost={() => {
                 const d = drafts[i];
-                if (d?.product_id && d.ingredient_unit_id)
+                if (d && isDraftComplete(d))
                   retryPair(pairKey(refOf(d), d.ingredient_unit_id));
               }}
             />

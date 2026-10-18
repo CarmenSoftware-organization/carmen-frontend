@@ -74,10 +74,7 @@ export function refOf(d: {
 /** กุญแจของคู่ (ตัวอ้างอิง, หน่วย) — ref มี ":" แต่ไม่มี "|" จึงแยกกลับได้ */
 export const pairKey = (ref: string, unitId: string) => `${ref}|${unitId}`;
 
-/**
- * แปลง pairKey กลับเป็นบรรทัดสำหรับยิง preview (qty 1, เสีย 0)
- * บรรทัดสูตรที่ไม่มีหน่วยไม่ส่ง `ingredient_unit_id` — server ใช้หน่วยผลผลิตของสูตรฐาน
- */
+/** แปลง pairKey กลับเป็นบรรทัดสำหรับยิง preview (qty 1, เสีย 0) */
 export function parsePairKey(key: string): IngredientInput {
   const [ref = "", unitId = ""] = key.split("|");
   const id = ref.slice(2);
@@ -85,7 +82,7 @@ export function parsePairKey(key: string): IngredientInput {
     return {
       ingredient_type: "recipe",
       sub_recipe_id: id,
-      ...(unitId ? { ingredient_unit_id: unitId } : {}),
+      ingredient_unit_id: unitId,
       qty: 1,
       wastage_percentage: 0,
     };
@@ -99,9 +96,9 @@ export function parsePairKey(key: string): IngredientInput {
   };
 }
 
-/** บรรทัดสินค้าต้องมีหน่วย · บรรทัดสูตรไม่บังคับ (server ใช้หน่วยผลผลิตของสูตรฐาน) */
-const isDraftComplete = (d: IngredientDraft) =>
-  !!refOf(d) && (d.ingredient_type === "recipe" || !!d.ingredient_unit_id);
+/** ทั้งสองประเภทต้องมีตัวอ้างอิงและหน่วย — บรรทัดสูตรใช้หน่วยผลผลิตของสูตรฐาน (server คืนหน่วยนี้เสมอ) */
+export const isDraftComplete = (d: IngredientDraft) =>
+  !!refOf(d) && !!d.ingredient_unit_id;
 
 /** แถวที่ยังไม่ลบ เรียงตาม sequence_no */
 export function activeIngredients(
