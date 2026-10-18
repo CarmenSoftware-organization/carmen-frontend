@@ -124,7 +124,7 @@ inline script ใน `index.html`** แก้สคริปต์นั้น�
 **dark mode เปิดให้ผู้ใช้จริงแล้ว** — `ThemeProvider` ของ next-themes (`components/providers.tsx`,
 `attribute="class"`, ค่าเริ่มต้น `system`) ตั้งคลาส `.dark` ที่ `<html>` ตามที่ผู้ใช้เลือกใน
 `ThemeSwitch` (เมนูโปรไฟล์) หรือตามธีมของ OS UI ใหม่ทุกชิ้นต้องอ่านออกทั้งสองธีม — ของ third-party
-ที่ออกแบบมาบนพื้นขาว (เช่น Swagger UI ในหน้า External) ให้วางบนพื้นสว่างเสมอ ปุ่มสลับธีมในหน้า
+ที่ออกแบบมาบนพื้นขาวอย่างเดียว ให้วางบนพื้นสว่างเสมอ (ของที่มีธีมมืดเองอย่าง Scalar ใน `/developers/api` ให้ส่งธีมของแอปเข้าไป) ปุ่มสลับธีมในหน้า
 `/design-system` ยังผูกคลาสไว้ที่ container ของหน้าเอง (`&:is(.dark *)` ต้องการแค่ ancestor) ใช้ดูงานได้โดยไม่กระทบทั้งแอป
 
 ## Known open items

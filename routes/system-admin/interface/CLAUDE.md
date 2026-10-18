@@ -52,15 +52,21 @@ systems pull data themselves via a BU API key). Config storage only; no sync/tes
 - รูปแบบ response, กติกา Dr/Cr และขั้นตอน deploy อยู่ที่ BE: `docs/external-api/accounting-export.md`
   (รีโป `carmen-turborepo-backend-v2`) · ลำดับ deploy: BE (micro-business ต้องตั้ง env `SECRET_ENCRYPTION_KEY` ไม่งั้น create/regenerate/reveal ตอบ 500) + allowlist `buApiKey.*` ก่อน FE
 
-## API documentation (Swagger UI ของ API ขาเข้า)
+## API documentation (เอกสาร API ขาเข้า)
 
-ส่วนใต้ API Access — `external-api-docs-section.tsx` (สิทธิ์/ใบ INF กติกาเดียวกับ API Access, ปิดไว้ก่อน)
-lazy-import `external-api-docs.tsx` ซึ่งเป็น chunk เดียวที่ลาก `swagger-ui-dist` (~1.5 MB, React 18
-ของมันเอง) + CSS + `external-api-openapi.json` มา
+ส่วนใต้ API Access — `external-api-docs-section.tsx` (สิทธิ์/ใบ INF กติกาเดียวกับ API Access): Quick start curl
+ที่เติม URL + Client ID ของ BU, ดาวน์โหลด openapi.json (server = host ของ BU), และลิงก์/คัดลอกลิงก์ไปเอกสาร
+ฉบับเต็มที่หน้า **public `/developers/api`** (`routes/developers/api/` — Scalar, ไม่ต้องล็อกอิน, EN/TH)
 
-- **`external-api-openapi.json` เป็นสำเนา** ของ BE `docs/external-api/openapi.json` — อัปเดตด้วย
-  `bun run swagger:export-external` ที่ `carmen-turborepo-backend-v2` แล้ว copy มาทับ (ไม่มีอะไรซิงก์ให้)
-- path ใน spec มี `/api/ext/v1` อยู่แล้ว → server ต้องเป็น**ราก** host (`externalApiRoot`) ไม่ใช่ base URL
-- Try it out ปิด (`supportedSubmitMethods: []`) และซ่อน Authorize — ไม่ให้วาง secret ในเบราว์เซอร์;
-  ตัวอย่าง curl ใช้ `$CARMEN_CLIENT_SECRET` เสมอ ห้ามเติม secret จริง
-- ผ่าน CSP production เดิมได้โดยไม่ต้องแก้ (ไม่มี eval, CSS อยู่ใต้ `.swagger-ui` ทั้งหมด)
+- **spec อยู่ที่ `lib/external-api/openapi.json`** (shared layer เพราะสองโมดูลใช้) เป็นสำเนาของ BE
+  `docs/external-api/openapi.json` — อัปเดต: `bun run swagger:export-external` ที่ `carmen-turborepo-backend-v2`
+  → copy มาทับ → `bun run docs:i18n-check` → แปลส่วนที่ขาดใน `lib/external-api/openapi.th.json` (ไม่มีอะไรซิงก์ให้)
+- คำแปลไทยของเนื้อหา spec เป็น overlay (JSON pointer → `{ en, th }`) — `localizedSpec("th")` ทับเฉพาะที่ `en`
+  ยังตรงต้นฉบับ BE แก้ข้อความแล้วยังไม่แปล = แสดงอังกฤษ ไม่แสดงคำแปลเก่า; ชื่อ field / enum / ตัวอย่างห้ามแปล
+- path ใน spec มี `/api/ext/v1` อยู่แล้ว → server ต้องเป็น**ราก** host (`externalApiRoot`) ไม่ใช่ base URL;
+  หน้า public ใช้ placeholder `https://your-carmen-api-host` (host จริงของ `/api/ext` อาจไม่ใช่ `BACKEND_URL`)
+- ไม่มี Try it — ไม่ให้วาง secret ในเบราว์เซอร์; snippet ใช้ `YOUR_CLIENT_ID` / `YOUR_CLIENT_SECRET`,
+  curl ในแอปใช้ `$CARMEN_CLIENT_SECRET` เสมอ ห้ามเติม secret จริง
+- **Scalar: `telemetry: false` ห้ามหาย** (ค่าเริ่มต้น true — CSP `connect-src https:` ไม่บล็อก) และ
+  `withDefaultFonts: false` (CSP font-src) · pin เวอร์ชัน exact เพราะ `customCss` อิง selector ภายใน
+  (Generate SDK, Powered by Scalar, `.credential-value`) — อัปเกรดแล้วต้องเปิดหน้าดูด้วยตา
