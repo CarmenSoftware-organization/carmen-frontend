@@ -3648,7 +3648,9 @@
       "generalInfoDesc": "Name and details of this recipe category.",
       "defaultCostSettingsDesc": "Default labor and overhead costs that recipes in this category start with.",
       "defaultProfitMarginsDesc": "Default profit target for this category — helps price its recipes.",
-      "notFound": "Recipe category not found"
+      "notFound": "Recipe category not found",
+      "foodCostCol": "Food Cost",
+      "marginCol": "Margin"
     },
     "cuisine": {
       "regionAsia": "Asia",
