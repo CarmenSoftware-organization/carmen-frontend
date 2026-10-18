@@ -7,9 +7,14 @@ import { SettingSection } from "@/components/ui/setting-section";
 import { EqImageField, type EqImageChange } from "./eq-image-field";
 import type { EquipmentFormValues } from "./eq-form-schema";
 
+/** ขีดแทนช่องว่างในโหมดอ่าน — placeholder ตัวอย่างอย่าง "e.g. Samsung" ดูเหมือนค่าจริง */
+const READ_MODE_EMPTY = "—";
+
 interface EqGeneralSectionProps {
   readonly form: UseFormReturn<EquipmentFormValues>;
   readonly isDisabled: boolean;
+  /** โหมดอ่าน — ช่องว่างขึ้น — แทน placeholder และไม่มีตัวนับตัวอักษร */
+  readonly isView: boolean;
   readonly imageUrl?: string | null;
   readonly imageFile: File | null;
   readonly imageRemoved: boolean;
@@ -24,6 +29,7 @@ interface EqGeneralSectionProps {
 export function EqGeneralSection({
   form,
   isDisabled,
+  isView,
   imageUrl,
   imageFile,
   imageRemoved,
@@ -100,7 +106,7 @@ export function EqGeneralSection({
             <FieldLabel htmlFor="equipment-brand">{tfl("brand")}</FieldLabel>
             <FieldInput
               id="equipment-brand"
-              placeholder={t("brandPlaceholder")}
+              placeholder={isView ? READ_MODE_EMPTY : t("brandPlaceholder")}
               className="h-8"
               disabled={isDisabled}
               maxLength={100}
@@ -113,7 +119,7 @@ export function EqGeneralSection({
             <FieldLabel htmlFor="equipment-model">{tfl("model")}</FieldLabel>
             <FieldInput
               id="equipment-model"
-              placeholder={t("modelPlaceholder")}
+              placeholder={isView ? READ_MODE_EMPTY : t("modelPlaceholder")}
               className="h-8"
               disabled={isDisabled}
               maxLength={100}
@@ -128,7 +134,7 @@ export function EqGeneralSection({
             </FieldLabel>
             <FieldInput
               id="equipment-serial-no"
-              placeholder={t("serialNoPlaceholder")}
+              placeholder={isView ? READ_MODE_EMPTY : t("serialNoPlaceholder")}
               className="h-8"
               disabled={isDisabled}
               maxLength={100}
@@ -144,10 +150,10 @@ export function EqGeneralSection({
           </FieldLabel>
           <Textarea
             id="equipment-description"
-            placeholder={tfl("optional")}
+            placeholder={isView ? READ_MODE_EMPTY : tfl("optional")}
             rows={2}
             disabled={isDisabled}
-            maxLength={256}
+            maxLength={isView ? undefined : 256}
             {...form.register("description")}
           />
         </Field>
@@ -166,7 +172,7 @@ export function EqGeneralSection({
             </FieldLabel>
             <FieldInput
               id="equipment-station"
-              placeholder={t("stationPlaceholder")}
+              placeholder={isView ? READ_MODE_EMPTY : t("stationPlaceholder")}
               className="h-8"
               disabled={isDisabled}
               maxLength={100}
@@ -181,7 +187,7 @@ export function EqGeneralSection({
             </FieldLabel>
             <FieldInput
               id="equipment-capacity"
-              placeholder={t("capacityPlaceholder")}
+              placeholder={isView ? READ_MODE_EMPTY : t("capacityPlaceholder")}
               className="h-8"
               disabled={isDisabled}
               maxLength={100}
@@ -196,7 +202,9 @@ export function EqGeneralSection({
             </FieldLabel>
             <FieldInput
               id="equipment-power-rating"
-              placeholder={t("powerRatingPlaceholder")}
+              placeholder={
+                isView ? READ_MODE_EMPTY : t("powerRatingPlaceholder")
+              }
               className="h-8"
               disabled={isDisabled}
               maxLength={100}
@@ -207,22 +215,24 @@ export function EqGeneralSection({
         </div>
       </SettingSection>
 
-      {/* Photo */}
-      <SettingSection
-        plain
-        title={t("equipmentImage")}
-        description={t("equipmentImageDesc")}
-      >
-        <div className="max-w-xs">
-          <EqImageField
-            disabled={isDisabled}
-            serverImageUrl={imageUrl}
-            file={imageFile}
-            removed={imageRemoved}
-            onChange={onImageChange}
-          />
-        </div>
-      </SettingSection>
+      {/* Photo — โหมดอ่านที่ไม่มีรูป แถบสรุปบอกไว้แล้ว กล่อง "No photo" ซ้ำอีกรอบเป็นแค่ที่ว่าง */}
+      {!(isView && !imageUrl) && (
+        <SettingSection
+          plain
+          title={t("equipmentImage")}
+          description={t("equipmentImageDesc")}
+        >
+          <div className="max-w-xs">
+            <EqImageField
+              disabled={isDisabled}
+              serverImageUrl={imageUrl}
+              file={imageFile}
+              removed={imageRemoved}
+              onChange={onImageChange}
+            />
+          </div>
+        </SettingSection>
+      )}
     </>
   );
 }

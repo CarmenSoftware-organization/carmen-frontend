@@ -70,6 +70,7 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
     onResetExtra: resetImage,
   });
   const { form, isEdit, isDisabled } = f;
+  const isView = f.mode === "view";
 
   const onSubmit = (values: EquipmentFormValues) => {
     const payload = {
@@ -164,7 +165,7 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
         />
       }
     >
-      {equipment && f.mode === "view" && (
+      {equipment && isView && (
         <EqSummary form={form} imageUrl={equipment.image_url} />
       )}
 
@@ -177,6 +178,7 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
         <EqGeneralSection
           form={form}
           isDisabled={isDisabled}
+          isView={isView}
           imageUrl={equipment?.image_url}
           imageFile={imageFile}
           imageRemoved={imageRemoved}
@@ -188,9 +190,21 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
           }
         />
         <EqQuantitySection form={form} isDisabled={isDisabled} />
-        <EqInstructionsSection form={form} isDisabled={isDisabled} />
-        <EqMaintenanceSection form={form} isDisabled={isDisabled} />
-        <EqAdditionalSection form={form} isDisabled={isDisabled} />
+        <EqInstructionsSection
+          form={form}
+          isDisabled={isDisabled}
+          isView={isView}
+        />
+        <EqMaintenanceSection
+          form={form}
+          isDisabled={isDisabled}
+          isView={isView}
+        />
+        <EqAdditionalSection
+          form={form}
+          isDisabled={isDisabled}
+          isView={isView}
+        />
       </form>
 
       <DiscardDialog {...f.discard.dialogProps} variant="warning" />

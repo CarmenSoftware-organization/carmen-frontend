@@ -6,14 +6,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { SettingSection } from "@/components/ui/setting-section";
 import type { EquipmentFormValues } from "./eq-form-schema";
 
+/** ขีดแทนช่องว่างในโหมดอ่าน — placeholder "Optional" ดูเหมือนค่าจริง */
+const READ_MODE_EMPTY = "—";
+
 interface EqAdditionalSectionProps {
   readonly form: UseFormReturn<EquipmentFormValues>;
   readonly isDisabled: boolean;
+  /** โหมดอ่าน — ช่องว่างขึ้น — แทน placeholder และไม่มีตัวนับตัวอักษร */
+  readonly isView: boolean;
 }
 
 export function EqAdditionalSection({
   form,
   isDisabled,
+  isView,
 }: EqAdditionalSectionProps) {
   const t = useTranslations("operationPlan.equipment");
   const tfl = useTranslations("field");
@@ -29,10 +35,10 @@ export function EqAdditionalSection({
           <FieldLabel htmlFor="equipment-note">{tfl("note")}</FieldLabel>
           <Textarea
             id="equipment-note"
-            placeholder={tfl("optional")}
+            placeholder={isView ? READ_MODE_EMPTY : tfl("optional")}
             rows={2}
             disabled={isDisabled}
-            maxLength={256}
+            maxLength={isView ? undefined : 256}
             {...form.register("note")}
           />
         </Field>
