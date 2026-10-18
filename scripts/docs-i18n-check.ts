@@ -10,17 +10,16 @@
  * - orphan:  คำแปลของ pointer ที่ไม่มีใน spec แล้ว
  */
 import { readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   baseSpec,
   collectTranslatableStrings,
   type SpecOverlay,
 } from "../lib/external-api/localized-spec";
 
-const OVERLAY_PATH = resolve(
-  import.meta.dir,
-  "../lib/external-api/openapi.th.json",
-);
+const HERE = dirname(fileURLToPath(import.meta.url));
+const OVERLAY_PATH = resolve(HERE, "../lib/external-api/openapi.th.json");
 
 const overlay = JSON.parse(readFileSync(OVERLAY_PATH, "utf8")) as SpecOverlay;
 const current = collectTranslatableStrings(baseSpec());
