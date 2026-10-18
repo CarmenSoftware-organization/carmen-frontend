@@ -62,7 +62,7 @@ function sourceHref(
     case "location":
       return `/config/location/${row.location.id}`;
     case "bu_default":
-      return "/system-admin/interface/accounting/external";
+      return "/system-admin/interface/export/external";
     case "adjustment_type":
       return "/config/adjustment-type";
     // vendor: แถว list ไม่มี vendor จึงไม่มีปลายทางให้ลิงก์
@@ -111,7 +111,7 @@ function issueHref(issue: MappingIssue, row: AccountMappingRow): string {
     case "account_not_in_coa":
       return "/config/chart-of-accounts";
     case "missing_ap_account":
-      return "/system-admin/interface/accounting/external";
+      return "/system-admin/interface/export/external";
     case "missing_adjustment_account":
       return "/config/adjustment-type";
     case "missing_inventory_account":

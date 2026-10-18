@@ -1,13 +1,15 @@
 # Interfaces config (`/system-admin/interface`)
 
 Per-BU config for connections to external systems — **Accounting**, **POS**, **PMS**
-(the customer's "HMS"). Config storage only; no sync/test-connection.
+(the customer's "HMS"), plus **Export tools** (category key `export`: External — external
+systems pull data themselves via a BU API key). Config storage only; no sync/test-connection.
 
 - **Registry (`interface-registry.ts`)** holds *list metadata only* — `key` (route param),
   `configKey` (`interface_<key>`), `icon`, and a `lazy()` form. Each interface owns its own
   form + zod schema (`<name>-interface-form.tsx`), NOT a shared schema. **Add an interface** =
   one registry entry + one form file (+ its i18n block, + a backend `secretPathsByKey` path if
-  it has a secret). A future interface can render anything (e.g. a mapping table) without
+  it has a secret). A new **category** also needs its name in the backend regexes
+  (gateway `INTERFACE_CONFIG_KEY_RE`, micro-business `defaultFor`/`validateValue`). A future interface can render anything (e.g. a mapping table) without
   touching the others.
 - **Shared bits:** `use-interface-config.ts` (wraps `useAppConfigByKey`/`useUpsertAppConfig`;
   maps 404 → `isNew`, not an error), `interface-page-layout.tsx` (presentational shell +

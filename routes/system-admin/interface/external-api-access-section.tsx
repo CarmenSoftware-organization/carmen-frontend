@@ -83,9 +83,7 @@ function CredentialField({
  * @returns React element ของ section หรือ null เมื่อไม่มีสิทธิ์ดู
  */
 export function ExternalApiAccessSection() {
-  const t = useTranslations(
-    "systemAdmin.interface.accounting.external.apiAccess",
-  );
+  const t = useTranslations("systemAdmin.interface.export.apiAccess");
   const { can, canWrite } = useCan();
   const {
     entitlementOf,
@@ -105,11 +103,11 @@ export function ExternalApiAccessSection() {
 
   const canView = can(PERMISSIONS.system_admin.bu_api_key.view);
   const licenseExpired =
-    !canWrite || entitlementOf("accounting", "external") === "expired";
+    !canWrite || entitlementOf("export", "external") === "expired";
   const canEdit =
     can(PERMISSIONS.system_admin.bu_api_key.update) && !licenseExpired;
 
-  const readable = canReadConfig("accounting", "external");
+  const readable = canReadConfig("export", "external");
   const query = useBuApiKey(canView && readable);
   const create = useCreateBuApiKey();
   const regenerate = useRegenerateBuApiKey();

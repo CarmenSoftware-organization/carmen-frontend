@@ -40,7 +40,9 @@ export function Component() {
       ? entitlementOf(categoryDef.key, brandDef.key)
       : "none";
 
-  if (!categoryDef || !brandDef || entitlement === "none") {
+  const Form = brandDef?.form ?? categoryDef?.form;
+
+  if (!categoryDef || !brandDef || !Form || entitlement === "none") {
     return (
       <ErrorState message={t("notFound")} backTo="/system-admin/interface" />
     );
@@ -50,7 +52,6 @@ export function Component() {
   // (ฟอร์มยิง GET เองทันที) แสดงคำอธิบายแทน
   const readable = canReadConfig(categoryDef.key, brandDef.key);
 
-  const Form = brandDef.form ?? categoryDef.form;
   return (
     <>
       {/* อ่านไม่ได้ = ไม่มีอะไรให้ "อ่านอย่างเดียว" — Empty ด้านล่างอธิบายแทน */}

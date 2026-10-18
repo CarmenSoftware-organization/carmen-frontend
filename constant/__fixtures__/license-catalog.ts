@@ -21,7 +21,7 @@
  * ห้ามแก้ไฟล์นี้เพื่อ "ทำให้เทสต์ผ่าน" — ถ้าเทสต์แดง แปลว่า `module-list.ts` ชี้ไป feature
  * ที่ backend ไม่รู้จัก ต้องแก้ที่ `module-list.ts`
  *
- * ขนาด catalog: 110 feature (13 module + 97 resource)
+ * ขนาด catalog: 111 feature (13 module + 98 resource)
  *
  * **ไม่มีวันที่ในไฟล์นี้โดยตั้งใจ** — เพื่อให้ `bun run gen:license-fixture && git diff --exit-code`
  * เป็นด่านตรวจความสดได้: diff ว่าง = fixture ตรงกับ backend ณ ตอนนั้นจริง
@@ -74,7 +74,8 @@ export const LICENSE_FEATURE_KEYS: readonly string[] = [
   "interface.accounting",
   "interface.accounting.blueledgers",
   "interface.accounting.carmen_gl",
-  "interface.accounting.external",
+  "interface.export",
+  "interface.export.external",
   "interface.pms",
   "interface.pms.opera",
   "interface.pms.protel",
