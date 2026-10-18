@@ -6,6 +6,11 @@ import {
   ListCardActiveRow,
 } from "@/components/share/list-card";
 import type { RecipeCategory } from "@/types/recipe-category";
+import {
+  formatMarginRange,
+  formatPct,
+  readRecipeCategoryDefaults,
+} from "./recipe-category-defaults";
 
 interface RecipeCategoryCardProps {
   readonly item: RecipeCategory;
@@ -21,6 +26,9 @@ export default function RecipeCategoryCard({
   onDelete,
 }: RecipeCategoryCardProps) {
   const tfl = useTranslations("field");
+  const t = useTranslations("operationPlan.recipeCategory");
+  const defaults = readRecipeCategoryDefaults(item);
+  const margin = formatMarginRange(defaults);
 
   return (
     <ListCard
@@ -32,6 +40,16 @@ export default function RecipeCategoryCard({
       {item.code && <ListCardRow label={tfl("code")}>{item.code}</ListCardRow>}
       {parentName && (
         <ListCardRow label={tfl("parentCategory")}>{parentName}</ListCardRow>
+      )}
+      {defaults.foodCost != null && (
+        <ListCardRow label={t("foodCostCol")}>
+          <span className="tabular-nums">{formatPct(defaults.foodCost)}</span>
+        </ListCardRow>
+      )}
+      {margin && (
+        <ListCardRow label={t("marginCol")}>
+          <span className="tabular-nums">{margin}</span>
+        </ListCardRow>
       )}
       {item.description && (
         <ListCardRow label={tfl("description")}>{item.description}</ListCardRow>
