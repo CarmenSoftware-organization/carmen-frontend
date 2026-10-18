@@ -17,6 +17,12 @@ declare module "@tanstack/react-table" {
     headerTitle?: string;
     headerClassName?: string;
     cellClassName?: string;
+    /**
+     * คอลัมน์นี้รับความกว้างที่เหลือของตาราง — ถ้ามีคอลัมน์ใดติดธงนี้ คอลัมน์ที่เหลือ
+     * กว้างคงที่ตาม `size` (px) แทนการยืดตามสัดส่วน ใช้กับคอลัมน์ข้อความยาว
+     * (เช่น description) ให้ตัวเลข/สถานะไม่ถูกดันไปไกลจากชื่อบนจอกว้าง
+     */
+    grow?: boolean;
     skeleton?: ReactNode;
     expandedContent?: (row: TData) => ReactNode;
     expandedColStart?: number;

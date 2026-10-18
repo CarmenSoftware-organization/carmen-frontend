@@ -55,14 +55,24 @@ const bodyCellSpacingVariants = cva("", {
 const FIXED_PX_COLUMN_IDS = new Set(["index", "select"]);
 const CONTENT_SIZED_TABLE = /(^|\s)(min-)?w-(max|fit)(\s|$)/;
 
-/** ฟังก์ชันคืน % ของหัวคอลัมน์ — `undefined` = ใช้ px จาก size */
+const isGrowColumn = <TData,>(column: Column<TData>) =>
+  !!column.columnDef.meta?.grow;
+
+/**
+ * ฟังก์ชันคืน % ของหัวคอลัมน์ — `undefined` = ใช้ px จาก size
+ *
+ * มีคอลัมน์ `meta.grow` = แบ่ง % เฉพาะในกลุ่ม grow (รวม 100) ที่เหลือเป็น px ทั้งหมด
+ * — กลไกเดียวกับ `#` ข้างบน แค่ขยายชุดคอลัมน์ px
+ */
 function headerWidthPercent<TData>(
   headers: Header<TData, unknown>[],
   tableBaseClassName?: string,
 ) {
+  const contentSized = CONTENT_SIZED_TABLE.test(tableBaseClassName ?? "");
+  const hasGrow = !contentSized && headers.some((h) => isGrowColumn(h.column));
   const isFixed = (h: Header<TData, unknown>) =>
-    !CONTENT_SIZED_TABLE.test(tableBaseClassName ?? "") &&
-    FIXED_PX_COLUMN_IDS.has(h.column.id);
+    !contentSized &&
+    (hasGrow ? !isGrowColumn(h.column) : FIXED_PX_COLUMN_IDS.has(h.column.id));
   const flexTotal = headers.reduce(
     (sum, h) => (isFixed(h) ? sum : sum + h.getSize()),
     0,
@@ -88,6 +98,13 @@ function getPinningStyles<TData>(column: Column<TData>): CSSProperties {
 function DataGridTableBase({ children }: { children: ReactNode }) {
   "use no memo"; // TanStack table is stable-ref but mutable; opt out of React Compiler
   const { props, table } = useDataGrid();
+  // คอลัมน์ grow เป็น % — จอแคบกว่าผลรวม size มันจะยุบเหลือ 0 จึงล็อกขั้นต่ำไว้ที่
+  // ผลรวม size แล้วให้ ScrollArea เลื่อนแนวนอนแทน
+  const growMinWidth =
+    !props.tableLayout?.columnsResizable &&
+    table.getVisibleLeafColumns().some(isGrowColumn)
+      ? table.getTotalSize()
+      : undefined;
 
   return (
     <table
@@ -103,7 +120,9 @@ function DataGridTableBase({ children }: { children: ReactNode }) {
       style={
         props.tableLayout?.columnsResizable
           ? { width: table.getTotalSize() }
-          : undefined
+          : growMinWidth != null
+            ? { minWidth: growMinWidth }
+            : undefined
       }
     >
       {children}
