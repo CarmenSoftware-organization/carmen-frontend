@@ -8,6 +8,7 @@ import type { EquipmentCategory } from "@/types/equipment-category";
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
+import { EquipmentCountLink } from "./equipment-count-link";
 
 interface UseEquipmentCategoryTableOptions {
   equipmentCategories: EquipmentCategory[];
@@ -27,6 +28,7 @@ export function useEquipmentCategoryTable({
   onDelete,
 }: UseEquipmentCategoryTableOptions) {
   const tfl = useTranslations("field");
+  const t = useTranslations("operationPlan.equipmentCategory");
   const { dateTimeFormat } = useProfile();
 
   const columns: ColumnDef<EquipmentCategory>[] = [
@@ -40,7 +42,41 @@ export function useEquipmentCategoryTable({
           {row.getValue("name") || "..."}
         </CellAction>
       ),
+      size: 220,
       meta: { headerTitle: tfl("name") },
+    },
+    {
+      accessorKey: "description",
+      header: () => tfl("description"),
+      cell: ({ row }) => (
+        <span
+          className="text-muted-foreground block truncate"
+          title={row.original.description ?? undefined}
+        >
+          {row.original.description || "—"}
+        </span>
+      ),
+      enableSorting: false,
+      size: 320,
+      meta: { headerTitle: tfl("description") },
+    },
+    {
+      // sort ไม่ได้ — เป็นค่านับจาก relation ไม่ใช่คอลัมน์ในตาราง
+      accessorKey: "equipment_count",
+      header: () => t("equipment"),
+      cell: ({ row }) => (
+        <EquipmentCountLink
+          categoryId={row.original.id}
+          count={row.original.equipment_count}
+        />
+      ),
+      enableSorting: false,
+      size: 100,
+      meta: {
+        headerTitle: t("equipment"),
+        headerClassName: "text-right",
+        cellClassName: "text-right tabular-nums whitespace-nowrap",
+      },
     },
     // Status ก่อน created/updated (hideStatus:true กัน useConfigTable inject ซ้ำ)
     statusColumn<EquipmentCategory>(tfl),

@@ -6,6 +6,7 @@ import {
   ListCardActiveRow,
 } from "@/components/share/list-card";
 import type { EquipmentCategory } from "@/types/equipment-category";
+import { EquipmentCountLink } from "./equipment-count-link";
 
 interface EquipmentCategoryCardProps {
   readonly item: EquipmentCategory;
@@ -19,6 +20,7 @@ export default function EquipmentCategoryCard({
   onDelete,
 }: EquipmentCategoryCardProps) {
   const tfl = useTranslations("field");
+  const t = useTranslations("operationPlan.equipmentCategory");
 
   return (
     <ListCard
@@ -27,6 +29,14 @@ export default function EquipmentCategoryCard({
       onDelete={() => onDelete(item)}
     >
       <ListCardActiveRow active={item.is_active} />
+      <ListCardRow label={t("equipment")}>
+        <span className="tabular-nums">
+          <EquipmentCountLink
+            categoryId={item.id}
+            count={item.equipment_count}
+          />
+        </span>
+      </ListCardRow>
       {item.description && (
         <ListCardRow label={tfl("description")}>{item.description}</ListCardRow>
       )}
