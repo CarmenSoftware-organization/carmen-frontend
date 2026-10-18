@@ -6160,5 +6160,13 @@
     "invalid": "The default currency of business unit {bu} no longer exists — amounts are shown in THB until it is fixed.",
     "goToSettings": "Set it in Company Profile",
     "contactAdmin": "Please contact your administrator."
+  },
+  "developers": {
+    "apiDocs": {
+      "pageTitle": "Carmen API reference",
+      "brand": "API reference",
+      "download": "Download openapi.json",
+      "loadError": "Couldn't load the API documentation."
+    }
   }
 }

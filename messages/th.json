@@ -6160,5 +6160,13 @@
     "invalid": "สกุลเงินหลักของหน่วยธุรกิจ {bu} ไม่มีอยู่ในระบบแล้ว — ยอดเงินจะแสดงเป็น THB ไปก่อนจนกว่าจะแก้ไข",
     "goToSettings": "ไปตั้งค่าที่ Company Profile",
     "contactAdmin": "กรุณาติดต่อผู้ดูแลระบบ"
+  },
+  "developers": {
+    "apiDocs": {
+      "pageTitle": "เอกสารอ้างอิง Carmen API",
+      "brand": "เอกสาร API",
+      "download": "ดาวน์โหลด openapi.json",
+      "loadError": "โหลดเอกสาร API ไม่สำเร็จ"
+    }
   }
 }
