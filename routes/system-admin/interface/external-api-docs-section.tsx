@@ -70,9 +70,16 @@ export function ExternalApiDocsSection() {
   const clientId = query.data?.exists ? query.data.client_id : null;
 
   return (
-    <div className="mt-8">
-      <SettingSection title={t("title")} description={t("desc")} plain first>
-        <Collapsible open={open} onOpenChange={setOpen}>
+    // wide + frameless: เอกสารยาวมาก ถ้าอยู่คอลัมน์ขวา 2/3 คอลัมน์ซ้ายจะว่างตลอดความยาว
+    // และกล่องกระดาษของ Swagger มีกรอบของตัวเองอยู่แล้ว ห่อการ์ดอีกชั้น = การ์ดซ้อนการ์ด
+    <Collapsible open={open} onOpenChange={setOpen} className="mt-8">
+      <SettingSection
+        title={t("title")}
+        description={t("desc")}
+        first
+        wide
+        frameless
+        action={
           <CollapsibleTrigger asChild>
             <Button type="button" variant="outline" size="sm">
               <BookOpen aria-hidden="true" />
@@ -83,18 +90,19 @@ export function ExternalApiDocsSection() {
               />
             </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-4">
-            <DocsErrorBoundary
-              key={docs.key}
-              fallback={<ErrorState message={t("loadError")} onRetry={retry} />}
-            >
-              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-                <docs.Lazy root={root} clientId={clientId} />
-              </Suspense>
-            </DocsErrorBoundary>
-          </CollapsibleContent>
-        </Collapsible>
+        }
+      >
+        <CollapsibleContent>
+          <DocsErrorBoundary
+            key={docs.key}
+            fallback={<ErrorState message={t("loadError")} onRetry={retry} />}
+          >
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              <docs.Lazy root={root} clientId={clientId} />
+            </Suspense>
+          </DocsErrorBoundary>
+        </CollapsibleContent>
       </SettingSection>
-    </div>
+    </Collapsible>
   );
 }
