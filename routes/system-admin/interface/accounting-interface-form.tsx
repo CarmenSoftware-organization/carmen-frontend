@@ -58,14 +58,19 @@ const FREQUENCIES = accountingSchema.shape.posting_frequency.options;
  * @param props.form - `useForm` ของฟอร์มแม่ (ถือ state เอง component นี้ไม่ถือ)
  * @param props.hideConnection - ซ่อน section Connection (brand `external` — ระบบภายนอกดึงเอง
  *   ไม่มีปลายทางให้ส่ง) · ค่า `enabled`/`endpoint` เดิมยังอยู่ใน form จึงถูกส่งกลับตอน Save ไม่หาย
- * @returns React element ของ SettingSection สามอัน (หรือสองอันเมื่อซ่อน Connection)
+ * @param props.hidePosting - ซ่อน section Posting (brand `external` — ระบบภายนอกดึงเองตามจังหวะของมัน
+ *   รูปแบบไฟล์/ความถี่ในการส่งจึงไม่มีความหมาย) · ค่า `export_format`/`posting_frequency` เดิม
+ *   ยังถูกส่งกลับตอน Save เช่นเดียวกับ Connection
+ * @returns React element ของ SettingSection ที่ไม่ได้ถูกซ่อน (สูงสุดสามอัน)
  */
 export function AccountingFields({
   form,
   hideConnection = false,
+  hidePosting = false,
 }: {
   readonly form: UseFormReturn<AccountingFormValues>;
   readonly hideConnection?: boolean;
+  readonly hidePosting?: boolean;
 }) {
   const t = useTranslations("systemAdmin.interface");
   const ta = useTranslations("systemAdmin.interface.accounting");
@@ -117,26 +122,28 @@ export function AccountingFields({
         />
       </SettingSection>
 
-      <SettingSection title={ta("posting")} description={ta("postingDesc")}>
-        <EnumField
-          label={ta("exportFormat")}
-          value={form.watch("export_format")}
-          options={FORMATS}
-          optionLabel={(f) => ta(`formatOption.${f}`)}
-          onChange={(v) =>
-            form.setValue("export_format", v, { shouldDirty: true })
-          }
-        />
-        <EnumField
-          label={ta("postingFrequency")}
-          value={form.watch("posting_frequency")}
-          options={FREQUENCIES}
-          optionLabel={(f) => t(`frequencyOption.${f}`)}
-          onChange={(v) =>
-            form.setValue("posting_frequency", v, { shouldDirty: true })
-          }
-        />
-      </SettingSection>
+      {!hidePosting && (
+        <SettingSection title={ta("posting")} description={ta("postingDesc")}>
+          <EnumField
+            label={ta("exportFormat")}
+            value={form.watch("export_format")}
+            options={FORMATS}
+            optionLabel={(f) => ta(`formatOption.${f}`)}
+            onChange={(v) =>
+              form.setValue("export_format", v, { shouldDirty: true })
+            }
+          />
+          <EnumField
+            label={ta("postingFrequency")}
+            value={form.watch("posting_frequency")}
+            options={FREQUENCIES}
+            optionLabel={(f) => t(`frequencyOption.${f}`)}
+            onChange={(v) =>
+              form.setValue("posting_frequency", v, { shouldDirty: true })
+            }
+          />
+        </SettingSection>
+      )}
     </>
   );
 }

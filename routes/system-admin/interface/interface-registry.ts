@@ -59,7 +59,7 @@ export const INTERFACE_CATEGORIES: readonly InterfaceCategoryDef[] = [
       {
         key: "external",
         configKey: "interface_accounting_external",
-        // ฟอร์ม accounting (ไม่มี section Connection) + บัญชีตั้งต้น gl_setting + API Access
+        // ฟอร์ม accounting (ไม่มี section Connection/Posting) + บัญชีตั้งต้น gl_setting + API Access
         form: lazy(() => import("./external-interface-form")),
         noConnection: true,
       },
