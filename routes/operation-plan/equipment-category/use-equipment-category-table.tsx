@@ -46,21 +46,6 @@ export function useEquipmentCategoryTable({
       meta: { headerTitle: tfl("name") },
     },
     {
-      accessorKey: "description",
-      header: () => tfl("description"),
-      cell: ({ row }) => (
-        <span
-          className="text-muted-foreground block truncate"
-          title={row.original.description ?? undefined}
-        >
-          {row.original.description || "—"}
-        </span>
-      ),
-      enableSorting: false,
-      size: 320,
-      meta: { headerTitle: tfl("description") },
-    },
-    {
       // sort ไม่ได้ — เป็นค่านับจาก relation ไม่ใช่คอลัมน์ในตาราง
       accessorKey: "equipment_count",
       header: () => t("equipment"),
@@ -80,6 +65,22 @@ export function useEquipmentCategoryTable({
     },
     // Status ก่อน created/updated (hideStatus:true กัน useConfigTable inject ซ้ำ)
     statusColumn<EquipmentCategory>(tfl),
+    // ข้อความยาวอยู่ท้ายและรับที่ว่างที่เหลือ (grow) — จำนวน/สถานะจึงอยู่ชิดชื่อบนจอกว้าง
+    {
+      accessorKey: "description",
+      header: () => tfl("description"),
+      cell: ({ row }) => (
+        <span
+          className="text-muted-foreground block truncate"
+          title={row.original.description ?? undefined}
+        >
+          {row.original.description || "—"}
+        </span>
+      ),
+      enableSorting: false,
+      size: 320,
+      meta: { headerTitle: tfl("description"), grow: true },
+    },
     ...auditColumns<EquipmentCategory>(tfl, dateTimeFormat),
   ];
 
