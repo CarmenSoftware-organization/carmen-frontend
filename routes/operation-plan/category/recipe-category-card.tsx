@@ -10,7 +10,7 @@ import {
   formatMarginRange,
   formatPct,
   readRecipeCategoryDefaults,
-} from "./recipe-category-defaults";
+} from "../shared/recipe-category-defaults";
 
 interface RecipeCategoryCardProps {
   readonly item: RecipeCategory;

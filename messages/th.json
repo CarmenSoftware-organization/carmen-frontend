@@ -3641,7 +3641,7 @@
       "foodCostCol": "ต้นทุนอาหาร",
       "marginCol": "อัตรากำไร",
       "pricingTargets": "เป้าต้นทุนและกำไร",
-      "pricingTargetsDesc": "ต้นทุนแต่ละส่วนคิดเป็นสัดส่วนของราคาขาย พร้อมอัตรากำไรที่หมวดนี้ตั้งเป้าไว้",
+      "pricingTargetsDesc": "ต้นทุนแต่ละส่วนคิดเป็นสัดส่วนของราคาขาย พร้อมอัตรากำไรที่หมวดนี้ตั้งเป้าไว้ สูตรใหม่จะได้เป้าต้นทุนอาหารไปใช้ ส่วนค่าอื่นแสดงเทียบในหน้าสูตร",
       "foodCostShort": "ต้นทุนอาหาร",
       "laborShort": "ค่าแรง",
       "overheadShort": "ค่าโสหุ้ย",
@@ -3990,7 +3990,13 @@
       "ingredientCostTable": "ต้นทุนรายวัตถุดิบ",
       "shareOfTotal": "% ของรวม",
       "ingredientCostFromLines": "ยอดรวมของบรรทัดวัตถุดิบ — แก้ที่วัตถุดิบเพื่อเปลี่ยนค่านี้",
-      "cookIngredients": "วัตถุดิบ"
+      "cookIngredients": "วัตถุดิบ",
+      "categoryDefaultHint": "หมวด: {pct}%",
+      "applyCategoryDefault": "ใช้ค่านี้",
+      "categoryRatio": "(หมวด {pct}%)",
+      "marginBelowCategoryMin": "ต่ำกว่าขั้นต่ำของหมวด {pct}%",
+      "marginCategoryTarget": "เป้าของหมวด {pct}%",
+      "marginMeetsCategoryTarget": "ถึงเป้าของหมวด {pct}% แล้ว"
     }
   },
   "productManagement": {

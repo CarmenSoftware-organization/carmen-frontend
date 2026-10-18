@@ -3641,7 +3641,7 @@
       "foodCostCol": "Food Cost",
       "marginCol": "Margin",
       "pricingTargets": "Cost & Margin Targets",
-      "pricingTargetsDesc": "Each cost as a share of the selling price, and the profit margin this category aims for.",
+      "pricingTargetsDesc": "Each cost as a share of the selling price, and the margin this category aims for. New recipes take the food cost target; the rest is shown on the recipe as a benchmark.",
       "foodCostShort": "Food Cost",
       "laborShort": "Labor",
       "overheadShort": "Overhead",
@@ -3990,7 +3990,13 @@
       "ingredientCostTable": "Cost by ingredient",
       "shareOfTotal": "% of total",
       "ingredientCostFromLines": "Total of the ingredient lines — change the ingredients to change it",
-      "cookIngredients": "Ingredients"
+      "cookIngredients": "Ingredients",
+      "categoryDefaultHint": "Category: {pct}%",
+      "applyCategoryDefault": "Apply",
+      "categoryRatio": "(category {pct}%)",
+      "marginBelowCategoryMin": "Below category minimum {pct}%",
+      "marginCategoryTarget": "Category target {pct}%",
+      "marginMeetsCategoryTarget": "Meets category target {pct}%"
     }
   },
   "productManagement": {

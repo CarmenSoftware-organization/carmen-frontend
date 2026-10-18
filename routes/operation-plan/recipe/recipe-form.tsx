@@ -42,6 +42,7 @@ import {
   ingredientsChanged,
 } from "./recipe-ingredients-cost";
 import { RecipeCostFields } from "./recipe-cost-fields";
+import { useRecipeCategoryDefaults } from "./use-recipe-category-defaults";
 import { RecipeComplianceFields } from "./recipe-compliance-fields";
 import { recipeCommentCrud } from "./use-recipe-comments";
 
@@ -100,6 +101,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
   const { form, isEdit, isDisabled } = f;
 
   const computed = useRecipeCostCalc(form);
+  const categoryDefaults = useRecipeCategoryDefaults(form, isDisabled);
 
   const onSubmit = (values: RecipeFormValues) => {
     const payload = buildRecipePayload(values);
@@ -314,6 +316,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
           form={form}
           isDisabled={isDisabled}
           computed={computed}
+          categoryDefaults={categoryDefaults}
         />
       </form>
 
