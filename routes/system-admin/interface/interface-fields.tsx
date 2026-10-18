@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { READ_MODE_EMPTY, useInterfaceReadMode } from "./interface-read-mode";
 
 export function TextField({
   label,
@@ -32,6 +33,7 @@ export function TextField({
   readonly revealLabels?: { readonly show: string; readonly hide: string };
 }) {
   const id = useId();
+  const readMode = useInterfaceReadMode();
   const [revealed, setRevealed] = useState(false);
   const isSecret = type === "password";
   return (
@@ -42,7 +44,7 @@ export function TextField({
           {...field}
           id={id}
           type={isSecret && !revealed ? "password" : "text"}
-          placeholder={placeholder}
+          placeholder={readMode ? READ_MODE_EMPTY : placeholder}
           className={isSecret ? "pr-8" : undefined}
         />
         {isSecret && (

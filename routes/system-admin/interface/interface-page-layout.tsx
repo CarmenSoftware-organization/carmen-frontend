@@ -9,19 +9,18 @@ import { SettingSectionSkeleton } from "@/components/ui/setting-section";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { useInterfaceEntitlement } from "@/hooks/use-interface-entitlement";
 import { cn } from "@/lib/utils";
+import { InterfaceReadModeContext } from "./interface-read-mode";
 
 /**
  * โหมดอ่านใช้ `disabled` ของ fieldset ปิดช่อง แต่สไตล์ disabled ของ primitive (`opacity-50`)
  * ทำให้ค่าที่ตั้งไว้จางจนแยกจาก placeholder ไม่ออก — คืนความทึบให้เฉพาะช่องกรอก (input /
  * select / lookup / switch) ไม่แตะปุ่ม action ทั่วไป ปุ่มที่กดไม่ได้ต้องยังดูกดไม่ได้
  *
- * placeholder ของ input เป็น "ตัวอย่าง" (เช่น `1000`) ในโหมดอ่านจะดูเหมือนค่าที่ตั้งไว้จริง
- * จึงซ่อน — ช่องว่างต้องดูว่าง ส่วน placeholder ของ select ("Select GL Account") เป็นคำสั่ง
- * ไม่ใช่ตัวอย่าง จึงคงไว้
+ * ช่องว่างไม่ได้ซ่อน placeholder ด้วย CSS — field เปลี่ยน placeholder เป็น "—" เองผ่าน
+ * `useInterfaceReadMode()` (ดู `interface-read-mode.ts`) ให้ input / lookup ว่างแสดงเหมือนกัน
  */
 const READ_MODE = cn(
   "[&_input:disabled]:opacity-100 [&_textarea:disabled]:opacity-100",
-  "[&_input:disabled]:placeholder:text-transparent [&_textarea:disabled]:placeholder:text-transparent",
   "[&_button[aria-haspopup]:disabled]:opacity-100 [&_[role=combobox]:disabled]:opacity-100",
   "[&_[role=switch]:disabled]:opacity-100",
   "[&_:disabled]:cursor-default",
@@ -162,7 +161,9 @@ export function InterfacePageLayout({
             disabled={!isEditing}
             className={cn("min-w-0 border-0 p-0", !isEditing && READ_MODE)}
           >
-            {children}
+            <InterfaceReadModeContext.Provider value={!isEditing}>
+              {children}
+            </InterfaceReadModeContext.Provider>
           </fieldset>
         </form>
       )}

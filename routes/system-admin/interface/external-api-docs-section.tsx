@@ -1,5 +1,6 @@
 import { endOfMonth, format, startOfMonth } from "date-fns";
-import { Download, ExternalLink } from "lucide-react";
+import { Download, ExternalLink, Link2 } from "lucide-react";
+import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
@@ -7,6 +8,7 @@ import { SettingSection } from "@/components/ui/setting-section";
 import { PERMISSIONS } from "@/constant/permissions";
 import { useCan } from "@/hooks/use-can";
 import { useInterfaceEntitlement } from "@/hooks/use-interface-entitlement";
+import { copyToClipboard } from "@/lib/clipboard";
 import { baseSpec } from "@/lib/external-api/localized-spec";
 import {
   externalApiBaseUrl,
@@ -87,43 +89,49 @@ export function ExternalApiDocsSection() {
     <div className="mt-8">
       <SettingSection title={t("title")} description={t("desc")} plain first>
         <div className="space-y-5">
+          {/* ของที่ส่งให้ทีม integrator อยู่กลุ่มเดียวกัน — outline ทั้งหมด ให้ Edit ที่ header
+              เป็นปุ่มหลักปุ่มเดียวของหน้า (ลิงก์เอกสารไม่ใช่การกระทำหลักของหน้าตั้งค่า) */}
           <div className="flex flex-wrap items-center gap-2">
-            <Button asChild size="sm">
+            <Button asChild variant="outline" size="sm">
               <a href={DOCS_PATH} target="_blank" rel="noopener noreferrer">
                 <ExternalLink aria-hidden="true" />
                 {t("openFull")}
               </a>
             </Button>
-            <CopyButton
-              value={docsUrl}
-              label={t("copyLink")}
-              successMessage={t("linkCopied")}
+            {/* Button ไม่ใช่ CopyButton — CopyButton เป็นชิปเล็กสีจาง วางคู่ปุ่ม outline แล้วดูเป็นของคนละชุด */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                if (await copyToClipboard(docsUrl))
+                  toast.success(t("linkCopied"));
+              }}
             >
+              <Link2 aria-hidden="true" />
               {t("copyLink")}
-            </CopyButton>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => downloadSpec(root)}
+            >
+              <Download aria-hidden="true" />
+              {t("download")}
+            </Button>
           </div>
 
           <div className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-sm font-medium">{t("quickStart")}</h3>
-              <div className="flex items-center gap-2">
-                <CopyButton
-                  value={curl}
-                  label={t("copyCurl")}
-                  successMessage={t("copied")}
-                >
-                  {t("copyCurl")}
-                </CopyButton>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => downloadSpec(root)}
-                >
-                  <Download aria-hidden="true" />
-                  {t("download")}
-                </Button>
-              </div>
+              <CopyButton
+                value={curl}
+                label={t("copyCurl")}
+                successMessage={t("copied")}
+              >
+                {t("copyCurl")}
+              </CopyButton>
             </div>
             <p className="text-muted-foreground text-xs">
               {clientId ? t("quickStartDesc") : t("quickStartNoKey")}

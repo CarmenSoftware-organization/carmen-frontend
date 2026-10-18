@@ -11,6 +11,7 @@ import { useTranslations } from "use-intl";
 import { SettingSection } from "@/components/ui/setting-section";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { LookupChartOfAccountById } from "@/components/lookup/lookup-chart-of-account-by-id";
+import { READ_MODE_EMPTY, useInterfaceReadMode } from "./interface-read-mode";
 import { useQueryClient } from "@tanstack/react-query";
 import { useBuCode } from "@/hooks/use-bu-code";
 import {
@@ -84,6 +85,7 @@ function readAccounts(value: Record<string, unknown> | undefined): Accounts {
 export function ExternalGlDefaultsSection() {
   const t = useTranslations("systemAdmin.interface.export");
   const binding = useContext(GlDefaultsHandleContext);
+  const readMode = useInterfaceReadMode();
   const { value, isLoading, isError, refetch } =
     useInterfaceConfig(GL_SETTING_KEY);
   const queryClient = useQueryClient();
@@ -194,6 +196,7 @@ export function ExternalGlDefaultsSection() {
         <LookupChartOfAccountById
           value={draft.ap}
           disabled={isLoading || isError}
+          placeholder={readMode ? READ_MODE_EMPTY : undefined}
           onValueChange={(ap) => setDraft((d) => ({ ...d, ap }))}
         />
       </Field>
@@ -202,6 +205,7 @@ export function ExternalGlDefaultsSection() {
         <LookupChartOfAccountById
           value={draft.vat}
           disabled={isLoading || isError}
+          placeholder={readMode ? READ_MODE_EMPTY : undefined}
           onValueChange={(vat) => setDraft((d) => ({ ...d, vat }))}
         />
       </Field>
