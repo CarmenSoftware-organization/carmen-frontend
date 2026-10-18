@@ -3759,6 +3759,7 @@
       "title": "Equipment Category",
       "desc": "How equipment is grouped — cooking, chilling, preparation.",
       "add": "Add Category",
+      "equipment": "Equipment",
       "deleteTitle": "Delete Equipment Category",
       "deleteConfirm": "Are you sure you want to delete equipment category \"{name}\"? This action cannot be undone.",
       "noCategories": "No Categories",
