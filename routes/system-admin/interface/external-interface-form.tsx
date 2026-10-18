@@ -55,6 +55,7 @@ function LiveZoneDivider({
 
 /**
  * หน้า config ของ Accounting brand `external` — ใช้ฟิลด์ของฟอร์ม accounting ทั่วไปเฉพาะ Vendor fallbacks
+ * (รหัสบัญชี/รหัสแผนก — ไม่มี Default invoice value)
  * (config `interface_accounting_external` · ซ่อน Connection/Posting เพราะระบบภายนอกดึงเองผ่าน API key)
  * บวกส่วนบัญชีตั้งต้น (`gl_setting`)
  *
@@ -150,7 +151,12 @@ export default function ExternalInterfaceForm() {
         </>
       }
     >
-      <AccountingFields form={form} hideConnection hidePosting />
+      <AccountingFields
+        form={form}
+        hideConnection
+        hidePosting
+        hideInvoiceValue
+      />
 
       <GlDefaultsHandleProvider value={glBinding}>
         <ExternalGlDefaultsSection />

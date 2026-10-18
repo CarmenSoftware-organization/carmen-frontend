@@ -2588,6 +2588,7 @@
         },
         "defaults": "Vendor fallbacks",
         "defaultsDesc": "Used when a vendor has no account code, department code or invoice value of its own.",
+        "defaultsDescNoInvoice": "Used when a vendor has no account code or department code of its own.",
         "defaultAccountCode": "Default account code",
         "defaultDepartmentCode": "Default department code",
         "defaultInvoiceValue": "Default invoice value",
