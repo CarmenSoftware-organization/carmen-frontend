@@ -1,10 +1,5 @@
-import { ModuleLanding } from "@/components/module-landing";
+import StoreOperationDashboard from "./store-operation-dashboard";
 
 export function Component() {
-  return (
-    <ModuleLanding
-      modulePath="/store-operation"
-      description="storeOperationsDesc"
-    />
-  );
+  return <StoreOperationDashboard />;
 }

@@ -4169,6 +4169,10 @@
   },
   "storeOperation": {
     "title": "Store Operation",
+    "dashboard": {
+      "title": "Store Operation Overview",
+      "description": "Store requisitions and items that need replenishing"
+    },
     "storeRequisition": {
       "entity": "Store Requisition",
       "title": "Store Requisition",
