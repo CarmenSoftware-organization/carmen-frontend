@@ -55,7 +55,23 @@ const templateToReport = (t: ReportTemplate): Report => {
     _columns: t.columns ?? [],
     _templateType: t.template_type ?? "list",
     _hasExport: t.has_export ?? false,
+    _allowRun: t.allow_run ?? true,
   };
+};
+
+// REPORT_TEMPLATE_UNAVAILABLE: reason บอกว่าสวิตช์ของ template ปิดอยู่ ไม่งั้นคือใช้กับ BU นี้ไม่ได้
+const unavailableMessage = (
+  err: unknown,
+  t: (key: "actionDisabled" | "unavailableForBu") => string,
+): string | undefined => {
+  if (
+    !(err instanceof ApiError) ||
+    err.appCode !== "REPORT_TEMPLATE_UNAVAILABLE"
+  )
+    return undefined;
+  return err.appReason === "run_disabled" || err.appReason === "export_disabled"
+    ? t("actionDisabled")
+    : t("unavailableForBu");
 };
 
 export default function ReportComponent() {
@@ -72,7 +88,7 @@ export default function ReportComponent() {
   });
 
   // Server-side pagination — ส่ง page/perpage/search ไป BE
-  const templatesQuery = useReportTemplates(params);
+  const templatesQuery = useReportTemplates(params, { actionable: true });
   const runReport = useRunReportMutation();
   const exportReport = useExportReportMutation();
   // isPending จาก closure ยังเป็น false จนกว่า React จะ re-render — คลิกซ้ำใน tick เดียวกันหลุดผ่านได้
@@ -179,12 +195,7 @@ export default function ReportComponent() {
       // hooks/use-error-toast.ts ปิดไปแล้วที่ท่อกลาง หน้านี้ยิง toast เอง
       // เลยหลุดมาได้ · รายละเอียดจริงดูได้ที่ Report History
       // REPORT_TEMPLATE_UNAVAILABLE = report นี้ใช้กับ BU นี้ไม่ได้ — บอกตรง ๆ แทนข้อความกลาง
-      toast.error(
-        err instanceof ApiError && err.appCode === "REPORT_TEMPLATE_UNAVAILABLE"
-          ? t("unavailableForBu")
-          : t("runError"),
-        { id: toastId },
-      );
+      toast.error(unavailableMessage(err, t) ?? t("runError"), { id: toastId });
     }
   };
 
@@ -219,12 +230,9 @@ export default function ReportComponent() {
         id: toastId,
       });
     } catch (err) {
-      toast.error(
-        err instanceof ApiError && err.appCode === "REPORT_TEMPLATE_UNAVAILABLE"
-          ? t("unavailableForBu")
-          : t("exportError"),
-        { id: toastId },
-      );
+      toast.error(unavailableMessage(err, t) ?? t("exportError"), {
+        id: toastId,
+      });
     } finally {
       exportInFlight.current = false;
     }

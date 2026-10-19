@@ -75,6 +75,12 @@ export class ApiError extends Error {
    */
   public readonly catalogId?: number;
 
+  /**
+   * เหตุผลย่อยของรหัสเดียวกัน (`error.reason` หรือ `reason` ระดับบนสุด) เช่น
+   * `REPORT_TEMPLATE_UNAVAILABLE` + `run_disabled` / `export_disabled`
+   */
+  public readonly appReason?: string;
+
   constructor(
     public readonly code: ErrorCode,
     message: string,
@@ -86,6 +92,7 @@ export class ApiError extends Error {
     fieldErrors?: readonly string[],
     appParams?: Readonly<Record<string, string | number>>,
     catalogId?: number,
+    appReason?: string,
   ) {
     super(message);
     this.name = "ApiError";
@@ -94,6 +101,7 @@ export class ApiError extends Error {
     this.fieldErrors = fieldErrors;
     this.appParams = appParams;
     this.catalogId = catalogId;
+    this.appReason = appReason;
   }
 
   /**
@@ -143,6 +151,7 @@ export class ApiError extends Error {
       fieldErrors,
       appParams,
       catalogId,
+      appReason,
     } = await readErrorBody(res);
     // sanitize คืน fallback เมื่อ message ใช้ไม่ได้ — เทียบเพื่อไม่ให้ fallback
     // (ข้อความของ dev) กลายเป็น serverMessage ที่เอาไปโชว์ user
@@ -160,6 +169,7 @@ export class ApiError extends Error {
       fieldErrors,
       appParams,
       catalogId,
+      appReason,
     );
   }
 }
@@ -319,6 +329,7 @@ const readErrorBody = async (
   fieldErrors?: readonly string[];
   appParams?: Readonly<Record<string, string | number>>;
   catalogId?: number;
+  appReason?: string;
 }> => {
   try {
     const body = await res.clone().json();
@@ -345,6 +356,12 @@ const readErrorBody = async (
       appParams: readParams(body?.params),
       catalogId:
         typeof body?.error?.id === "number" ? body.error.id : undefined,
+      appReason:
+        typeof body?.error?.reason === "string"
+          ? body.error.reason
+          : typeof body?.reason === "string"
+            ? body.reason
+            : undefined,
     };
   } catch {
     return { message: undefined, data: undefined };

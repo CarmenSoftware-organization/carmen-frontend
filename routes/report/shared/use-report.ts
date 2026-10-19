@@ -17,10 +17,24 @@ import type {
 } from "@/types/report";
 import type { PaginatedResponse, ParamsDto } from "@/types/params";
 
-export function useReportTemplates(params?: ParamsDto) {
+interface ReportTemplatesOptions {
+  /** ซ่อน template ที่ปิดทั้ง Run และ Export — ส่งเฉพาะ /report/list (ตัวเลือกของ schedule ต้องเห็นครบ) */
+  readonly actionable?: boolean;
+}
+
+export function useReportTemplates(
+  params?: ParamsDto,
+  options?: ReportTemplatesOptions,
+) {
   const buCode = useBuCode();
   return useQuery<PaginatedResponse<ReportTemplate>, ApiError>({
-    queryKey: [QUERY_KEYS.REPORTS, "templates", buCode, params],
+    queryKey: [
+      QUERY_KEYS.REPORTS,
+      "templates",
+      buCode,
+      params,
+      options?.actionable,
+    ],
     queryFn: async () => {
       const qs = buildQueryString({
         page: params?.page,
@@ -28,6 +42,7 @@ export function useReportTemplates(params?: ParamsDto) {
         search: params?.search,
         filter: params?.filter,
         sort: params?.sort,
+        actionable: options?.actionable ? "true" : undefined,
       });
       const base = `${API_ENDPOINTS.REPORTS(buCode!)}/templates`;
       const url = qs ? `${base}?${qs}` : base;
