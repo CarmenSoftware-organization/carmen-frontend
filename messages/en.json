@@ -6172,6 +6172,8 @@
       "businessUnit": "Business Unit"
     },
     "commentLabel": "Comment",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
     "tabAll": "All",
     "tabUnread": "Unread",
     "loadMore": "Load more",

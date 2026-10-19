@@ -6172,6 +6172,8 @@
       "businessUnit": "หน่วยธุรกิจ"
     },
     "commentLabel": "ความคิดเห็น",
+    "copyLink": "คัดลอกลิงก์",
+    "linkCopied": "คัดลอกลิงก์แล้ว",
     "tabAll": "ทั้งหมด",
     "tabUnread": "ยังไม่อ่าน",
     "loadMore": "โหลดเพิ่ม",

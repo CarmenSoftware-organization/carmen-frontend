@@ -321,7 +321,7 @@ export function NotificationDetailDialog({
 
             {data && (
               <p className="text-foreground/90 text-sm leading-relaxed font-medium whitespace-pre-wrap">
-                {formatMessage(data.message)}
+                {formatMessage(data.message, { linkUrls: true })}
               </p>
             )}
           </div>
