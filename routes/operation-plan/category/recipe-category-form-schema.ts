@@ -37,13 +37,9 @@ export function getDefaultValues(
   if (!category) return EMPTY_FORM;
 
   const costSettings = category.default_cost_settings as
-    | Record<string, number>
-    | null
-    | undefined;
+    Record<string, number> | null | undefined;
   const margins = category.default_margins as
-    | Record<string, number>
-    | null
-    | undefined;
+    Record<string, number> | null | undefined;
 
   return {
     code: category.code,
