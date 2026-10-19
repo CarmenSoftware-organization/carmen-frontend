@@ -151,7 +151,8 @@ The export uses the same rows the viewer sees **except for date rewriting**:
 
 ## Deploy order
 
-DB migration → micro-report → gateway → carmen-platform / FE.
+DB migration → micro-report + backend-v2 (gateway and micro-cluster together) → carmen-platform / FE.
+micro-cluster's regenerated Prisma client selects `export_xml` by default, so it must not run before the migration or every report-template read fails.
 FE before backend is harmless (no `has_export` → button hidden). Platform before backend would drop the
 field on save — deploy platform after gateway.
 
