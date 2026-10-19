@@ -10,6 +10,8 @@ import type { AdjFormValues } from "./ia-form-schema";
 const estimate = { average_cost_per_unit: 62.5, total_cost: 125 };
 vi.mock("@/hooks/use-product-cost", () => ({
   useProductCostByLocationQty: () => ({ data: estimate }),
+  // ราคาตั้งต้นของใบรับเข้า (si.cost-from) — ต่างจากราคาที่พิมพ์ไว้ จะได้เห็นว่าไม่ทับ
+  useStockInDefaultCost: () => ({ data: { cost_per_unit: 99, method: "last_cost" } }),
 }));
 vi.mock("@/hooks/use-profile", () => ({
   useProfile: () => ({ buCode: "BU-1" }),
