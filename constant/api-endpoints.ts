@@ -350,6 +350,14 @@ export const API_ENDPOINTS = {
     atDate?: string,
   ) =>
     `/api/proxy/api/${buCode}/cost/products/${productId}/location/${locationId}/qty/${qty}${atDateQuery(atDate)}`,
+  // ราคาตั้งต้นของบรรทัดใบรับเข้า ตามค่า "Default price for added items" (si.cost-from) ของ BU
+  STOCK_IN_DEFAULT_COST: (
+    buCode: string,
+    productId: string,
+    locationId: string,
+    atDate?: string,
+  ) =>
+    `/api/proxy/api/${buCode}/cost/products/${productId}/location/${locationId}/stock-in${atDateQuery(atDate)}`,
   PRODUCT_INVENTORY: (
     buCode: string,
     locationId: string,

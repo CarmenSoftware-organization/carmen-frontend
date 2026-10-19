@@ -16,9 +16,14 @@ const DOC_DATE = "2026-07-14T17:00:00.000Z";
 const OVER_MESSAGE = "More than can be issued on 2026-07-15 (3 available)";
 
 const costCalls: unknown[][] = [];
+const stockInCostCalls: unknown[][] = [];
 vi.mock("@/hooks/use-product-cost", () => ({
   useProductCostByLocationQty: (...args: unknown[]) => {
     costCalls.push(args);
+    return { data: undefined };
+  },
+  useStockInDefaultCost: (...args: unknown[]) => {
+    stockInCostCalls.push(args);
     return { data: undefined };
   },
 }));
@@ -86,6 +91,7 @@ function Harness({
 
 beforeEach(() => {
   costCalls.length = 0;
+  stockInCostCalls.length = 0;
   dialogProps.length = 0;
   onHandProps.length = 0;
   inventory = { available_qty: 3, as_of_date: "2026-07-15" };
@@ -139,12 +145,14 @@ describe("AdjItemFields — stock-out reads stock on its own date", () => {
   });
 });
 
-describe("AdjItemFields — stock-in is not dated", () => {
-  it("sends no date and never warns", async () => {
+describe("AdjItemFields — stock-in stock is not dated", () => {
+  it("prices from si.cost-from as of its date, reads stock undated and never warns", async () => {
     renderForm(<Harness type="stock-in" qty={5} />);
 
-    await waitFor(() => expect(costCalls.length).toBeGreaterThan(0));
-    expect(costCalls.at(-1)?.[4]).toBeUndefined();
+    // the starting price follows the BU si.cost-from, not the issue estimate
+    await waitFor(() => expect(stockInCostCalls.length).toBeGreaterThan(0));
+    expect(stockInCostCalls.at(-1)).toEqual(["BU-1", "prod-1", "loc-1", DOC_DATE]);
+    expect(costCalls).toHaveLength(0);
     expect(dialogProps.at(-1)?.atDate).toBeUndefined();
     // the per-location list is there too, on the current period like the box
     expect(typeof dialogProps.at(-1)?.onOnHandClick).toBe("function");

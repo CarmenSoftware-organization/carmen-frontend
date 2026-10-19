@@ -90,6 +90,7 @@ export const QUERY_KEYS = {
   PRODUCT_INVENTORY: "product-inventory",
   PRODUCT_ON_ORDER: "product-on-order",
   PRODUCT_COST_BY_LOCATION_QTY: "product-cost-by-location-qty",
+  STOCK_IN_DEFAULT_COST: "stock-in-default-cost",
   PRODUCT_LAST_RECEIVING: "product-last-receiving",
   PRODUCT_LAST_RECEIVING_BY_UNIT: "product-last-receiving-by-unit",
   PRODUCT_INVENTORY_MOVEMENT: "product-inventory-movement",

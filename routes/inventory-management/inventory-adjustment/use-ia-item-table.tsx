@@ -26,7 +26,10 @@ import { InventoryDialog } from "@/components/share/inventory-dialog";
 import { OnHandDialog } from "@/components/share/on-hand-dialog";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
 import { useProfile } from "@/hooks/use-profile";
-import { useProductCostByLocationQty } from "@/hooks/use-product-cost";
+import {
+  useProductCostByLocationQty,
+  useStockInDefaultCost,
+} from "@/hooks/use-product-cost";
 import { useProductInventory } from "@/hooks/use-product-inventory";
 import {
   IA_TYPE_ICON_COLOR,
@@ -292,6 +295,54 @@ const CostProbe = memo(function CostProbe({
   return null;
 });
 
+/**
+ * ราคาตั้งต้นของบรรทัดใบรับเข้า (SI) ตามค่า si.cost-from ของ BU (หน้า Company Profile)
+ *
+ * เดิมใบรับเข้าใช้ CostProbe ตัวเดียวกับใบจ่าย ซึ่งดึง "ต้นทุนการจ่าย" — BU ถัวเฉลี่ยจึงได้ค่าเฉลี่ยเสมอ
+ * BU FIFO ได้ล็อตเก่าสุด และไม่ได้ราคาเลยถ้าคลังยังไม่มีของ ค่าที่ตั้งไว้จึงไม่มีผล
+ * ราคาไม่ขึ้นกับจำนวน: เขียนทับเฉพาะตอน สินค้า/คลัง/วันที่ของใบ เปลี่ยน แก้จำนวนแล้วราคาที่พิมพ์ไว้ไม่หาย
+ * (ยอดรวมคำนวณใหม่จากช่องจำนวนเอง) · แถวที่มีราคาอยู่แล้วตอน mount ถือว่าเขียนแล้ว เหมือน CostProbe
+ */
+const StockInCostProbe = memo(function StockInCostProbe({
+  form,
+  index,
+}: {
+  form: UseFormReturn<AdjFormValues>;
+  index: number;
+}) {
+  "use no memo";
+  const { buCode } = useProfile();
+  const { control } = form;
+  const locationId = useWatch({ control, name: "location_id" }) ?? "";
+  const productId =
+    useWatch({ control, name: `items.${index}.product_id` }) ?? "";
+  const docDate = useWatch({ control, name: "date" }) ?? "";
+  const atDate = docDate || undefined;
+  const { data } = useStockInDefaultCost(
+    buCode,
+    productId || undefined,
+    locationId || undefined,
+    atDate,
+  );
+  const key = `${productId}|${locationId}|${atDate ?? ""}`;
+  const mountedItem = form.getValues(`items.${index}`);
+  const appliedKey = useRef<string | null>(
+    mountedItem?.id || mountedItem?.cost_per_unit ? key : null,
+  );
+  useEffect(() => {
+    if (!data) return;
+    if (appliedKey.current === key) return;
+    appliedKey.current = key;
+    const cost = Number(data.cost_per_unit) || 0;
+    const qty = Number(form.getValues(`items.${index}.qty`)) || 0;
+    form.setValue(`items.${index}.cost_per_unit`, cost, { shouldDirty: true });
+    form.setValue(`items.${index}.total_cost`, qty * cost, {
+      shouldDirty: true,
+    });
+  }, [data, form, index, key]);
+  return null;
+});
+
 const ProductCell = memo(function ProductCell({
   control,
   form,
@@ -388,7 +439,12 @@ const ProductCell = memo(function ProductCell({
         index={index}
         isStockOut={isCostEstimate}
       />
-      <CostProbe form={form} index={index} isEstimate={isCostEstimate} />
+      {/* ใบจ่ายออกตีราคาด้วยต้นทุนการจ่าย ส่วนใบรับเข้าเริ่มจากราคาตาม si.cost-from */}
+      {isCostEstimate ? (
+        <CostProbe form={form} index={index} isEstimate />
+      ) : (
+        <StockInCostProbe form={form} index={index} />
+      )}
     </div>
   );
 });
