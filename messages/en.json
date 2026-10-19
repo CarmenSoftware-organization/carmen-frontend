@@ -5427,7 +5427,8 @@
     "rememberedParams": "Filled in with the values you last ran (kept for 30 minutes).",
     "resetParams": "Reset to defaults",
     "openFilters": "Open filters",
-    "unavailableForBu": "This report is not available for this business unit"
+    "unavailableForBu": "This report is not available for this business unit",
+    "actionDisabled": "This action is turned off for this report."
   },
   "reportSchedule": {
     "title": "Report Schedules",

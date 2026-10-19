@@ -883,9 +883,16 @@ export function ReportParamDialog({
               {t("exportData")}
             </Button>
           )}
-          <Button type="button" size="sm" disabled={busy} onClick={handleSubmit}>
-            {t("runReport")}
-          </Button>
+          {report._allowRun !== false && (
+            <Button
+              type="button"
+              size="sm"
+              disabled={busy}
+              onClick={handleSubmit}
+            >
+              {t("runReport")}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
