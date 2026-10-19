@@ -75,6 +75,8 @@ export default function ReportComponent() {
   const templatesQuery = useReportTemplates(params);
   const runReport = useRunReportMutation();
   const exportReport = useExportReportMutation();
+  // isPending จาก closure ยังเป็น false จนกว่า React จะ re-render — คลิกซ้ำใน tick เดียวกันหลุดผ่านได้
+  const exportInFlight = React.useRef(false);
 
   const reports = useMemo(
     () => (templatesQuery.data?.data ?? []).map(templateToReport),
@@ -190,7 +192,9 @@ export default function ReportComponent() {
     report: Report,
     filters: Record<string, string>,
   ) => {
-    if (exportReport.isPending || runReport.isPending) return;
+    if (exportInFlight.current || exportReport.isPending || runReport.isPending)
+      return;
+    exportInFlight.current = true;
     const toastId = toast.loading(t("generating", { name: report.ReportName }));
 
     try {
@@ -221,6 +225,8 @@ export default function ReportComponent() {
           : t("exportError"),
         { id: toastId },
       );
+    } finally {
+      exportInFlight.current = false;
     }
   };
 
