@@ -11,6 +11,7 @@ import { useQueries } from "@tanstack/react-query";
 import { Calculator, Plus, RotateCw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Toggle } from "@/components/ui/toggle";
 import { FieldError, FieldInput } from "@/components/ui/field";
 import {
   Select,
@@ -23,6 +24,9 @@ import { SettingSection } from "@/components/ui/setting-section";
 import { EyeBrow } from "@/components/ui/eye-brow";
 import EmptyComponent from "@/components/empty-component";
 import { LookupProduct } from "@/components/lookup/lookup-product";
+import { LookupRecipe } from "@/components/lookup/lookup-recipe";
+import { useUnitById } from "@/hooks/use-unit";
+import { getUserErrorMessage } from "@/lib/error-message";
 import {
   productIngredientUnitsQuery,
   useProductIngredientUnits,
@@ -44,8 +48,11 @@ import {
   EMPTY_INGREDIENT,
   formatQty,
   pairCostsFrom,
+  isDraftComplete,
   pairKey,
+  parsePairKey,
   pendingPairs,
+  refOf,
   resolveRowCosts,
   round5,
   type IngredientDraft,
@@ -54,6 +61,9 @@ import {
 } from "./recipe-ingredients-cost";
 import { usePreviewIngredientCosts } from "./use-recipe-ingredients";
 import { RecipeIngredientsRecalcDialog } from "./recipe-ingredients-recalc-dialog";
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface RecipeIngredientsFieldsProps {
   readonly form: UseFormReturn<RecipeFormValues>;
@@ -68,7 +78,11 @@ const SOURCE_BADGE: Partial<
   Record<
     IngredientCostSource,
     {
-      key: "costSourceLastAverage" | "costSourceStandard" | "costSourceNone";
+      key:
+        | "costSourceLastAverage"
+        | "costSourceStandard"
+        | "costSourceNone"
+        | "costSourceRecipe";
       variant: "warning-light" | "info-light" | "destructive-light";
     }
   >
@@ -76,6 +90,7 @@ const SOURCE_BADGE: Partial<
   last_average: { key: "costSourceLastAverage", variant: "warning-light" },
   standard: { key: "costSourceStandard", variant: "info-light" },
   none: { key: "costSourceNone", variant: "destructive-light" },
+  recipe: { key: "costSourceRecipe", variant: "info-light" },
 };
 
 const EPSILON = 1e-6;
@@ -123,9 +138,10 @@ export function RecipeIngredientsFields({
     queries: productIds.map((id) => productIngredientUnitsQuery(buCode, id)),
   });
   const ratios = new Map<string, number>();
+  // แถวสูตร (r:) หน่วย 1:1 กับหน่วยผลผลิต ไม่ต้องใช้อัตราส่วน — มีแต่แถวสินค้า
   productIds.forEach((pid, idx) => {
     for (const u of unitQueries[idx]?.data ?? []) {
-      ratios.set(pairKey(pid, u.id), Number(u.conversion));
+      ratios.set(pairKey(`p:${pid}`, u.id), Number(u.conversion));
     }
   });
 
@@ -163,23 +179,16 @@ export function RecipeIngredientsFields({
 
   // ถามต้นทุนปัจจุบันเฉพาะคู่ที่ยังไม่รู้ — debounce กันยิงระหว่างเลือกหลายแถวติดกัน
   const { mutateAsync: previewCosts } = usePreviewIngredientCosts();
-  const needKey = pendingPairs(drafts, rows)
-    .map((p) => pairKey(p.product_id, p.ingredient_unit_id))
-    .join(",");
+  const needKey = pendingPairs(drafts, rows).join(",");
   const debouncedNeedKey = useDebouncedValue(needKey, 400);
   const inFlight = useRef(new Set<string>());
   const recipeId = recipe?.id;
+  const tErr = useTranslations("errors");
   const fallbackError = t("costPreviewFailed");
   const requestPair = (key: string) => {
     if (!recipeId || inFlight.current.has(key)) return;
     inFlight.current.add(key);
-    const [product_id, ingredient_unit_id] = key.split("|");
-    previewCosts({
-      recipeId,
-      items: [
-        { product_id, ingredient_unit_id, qty: 1, wastage_percentage: 0 },
-      ],
-    })
+    previewCosts({ recipeId, items: [parsePairKey(key)] })
       .then((res) => {
         const hit = pairCostsFrom(res.items).find(([k]) => k === key);
         setCurrent((prev) =>
@@ -189,13 +198,10 @@ export function RecipeIngredientsFields({
           ),
         );
       })
-      .catch((err: Error) => {
-        setCurrent((prev) =>
-          new Map(prev).set(key, {
-            ok: false,
-            message: err.message || fallbackError,
-          }),
-        );
+      .catch((err: unknown) => {
+        // ข้อความจาก catalog ของ server (เช่น RECIPE_SUB_RECIPE_CYCLE) ขึ้นที่บรรทัดนั้น
+        const message = getUserErrorMessage(err, tErr) || fallbackError;
+        setCurrent((prev) => new Map(prev).set(key, { ok: false, message }));
       })
       .finally(() => inFlight.current.delete(key));
   };
@@ -224,8 +230,7 @@ export function RecipeIngredientsFields({
   const recalc = usePreviewIngredientCosts();
   const [showRecalc, setShowRecalc] = useState(false);
   const canRecalc =
-    drafts.length > 0 &&
-    drafts.every((d) => d.product_id && d.ingredient_unit_id && d.qty > 0);
+    drafts.length > 0 && drafts.every((d) => isDraftComplete(d) && d.qty > 0);
   const openRecalc = () => {
     if (!recipeId) return;
     recalc.reset();
@@ -311,12 +316,13 @@ export function RecipeIngredientsFields({
               index={i}
               cost={rows[i] ?? { state: "incomplete" }}
               saved={saved}
+              recipeId={recipeId}
               isDisabled={isDisabled}
               onRemove={() => remove(i)}
               onRetryCost={() => {
                 const d = drafts[i];
-                if (d?.product_id && d.ingredient_unit_id)
-                  retryPair(pairKey(d.product_id, d.ingredient_unit_id));
+                if (d && isDraftComplete(d))
+                  retryPair(pairKey(refOf(d), d.ingredient_unit_id));
               }}
             />
           ))}
@@ -364,6 +370,7 @@ function IngredientRow({
   index: i,
   cost,
   saved,
+  recipeId,
   isDisabled,
   onRemove,
   onRetryCost,
@@ -372,6 +379,8 @@ function IngredientRow({
   readonly index: number;
   readonly cost: RowCost;
   readonly saved: RecipeIngredientLine[];
+  /** id ของสูตรที่กำลังแก้ — ห้ามเลือกตัวเองเป็นสูตรย่อย */
+  readonly recipeId?: string;
   readonly isDisabled: boolean;
   readonly onRemove: () => void;
   readonly onRetryCost: () => void;
@@ -384,26 +393,49 @@ function IngredientRow({
     name: `ingredients.${i}`,
   });
   const rowErrors = errors.ingredients?.[i];
-  const [productId, productLabel, unitId] = useWatch({
-    control: form.control,
-    name: [
-      `ingredients.${i}.product_id`,
-      `ingredients.${i}.product_label`,
-      `ingredients.${i}.ingredient_unit_id`,
-    ],
-  });
-  const { data: units } = useProductIngredientUnits(productId || undefined);
+  const [ingredientType, productId, subRecipeId, productLabel, unitId] =
+    useWatch({
+      control: form.control,
+      name: [
+        `ingredients.${i}.ingredient_type`,
+        `ingredients.${i}.product_id`,
+        `ingredients.${i}.sub_recipe_id`,
+        `ingredients.${i}.product_label`,
+        `ingredients.${i}.ingredient_unit_id`,
+      ],
+    });
+  const isRecipe = ingredientType === "recipe";
+  // หน่วยเก่าที่ไม่ใช่ UUID (เช่น "PCS") ห้ามยิง useUnitById — ถือว่าสูตรฐานยังไม่มีหน่วยผลผลิต
+  const recipeUnitValid = isRecipe && !!unitId && UUID_RE.test(unitId);
+  const { data: recipeUnit } = useUnitById(
+    recipeUnitValid ? unitId : undefined,
+  );
+  const recipeMissingUnit = isRecipe && !!subRecipeId && !recipeUnitValid;
+  const excludeSelf = new Set(recipeId ? [recipeId] : []);
+  const opts = { shouldDirty: true, shouldValidate: isSubmitted };
+  // เปลี่ยนประเภท = ล้างตัวอ้างอิง ชื่อ และหน่วยของแถวทั้งหมด (หน่วยของสินค้ากับสูตรไม่เกี่ยวกัน)
+  const changeType = (next: "product" | "recipe") => {
+    if (next === (isRecipe ? "recipe" : "product")) return;
+    form.setValue(`ingredients.${i}.ingredient_type`, next, opts);
+    form.setValue(`ingredients.${i}.product_id`, "", opts);
+    form.setValue(`ingredients.${i}.sub_recipe_id`, "", opts);
+    form.setValue(`ingredients.${i}.product_label`, "", opts);
+    form.setValue(`ingredients.${i}.ingredient_unit_id`, "", opts);
+  };
+  const { data: units } = useProductIngredientUnits(
+    !isRecipe && productId ? productId : undefined,
+  );
   const firstUnitId = units?.[0]?.id;
 
   // เปลี่ยนสินค้าแล้วหน่วยว่าง — ตั้งเป็นหน่วยแรก (หน่วย inventory) ให้เลย
   useEffect(() => {
-    if (productId && !unitId && firstUnitId) {
+    if (!isRecipe && productId && !unitId && firstUnitId) {
       form.setValue(`ingredients.${i}.ingredient_unit_id`, firstUnitId, {
         shouldDirty: true,
         shouldValidate: isSubmitted,
       });
     }
-  }, [productId, unitId, firstUnitId, i, form, isSubmitted]);
+  }, [isRecipe, productId, unitId, firstUnitId, i, form, isSubmitted]);
 
   // หน่วยที่บันทึกไว้แต่ไม่อยู่ในรายการแล้ว (conversion ถูกปิด) ยังต้องโชว์ชื่อได้
   const savedUnit = saved.find(
@@ -421,59 +453,143 @@ function IngredientRow({
     <div className="rounded-md border p-3">
       {/* สินค้าเต็มแถวบน — การ์ดในฟอร์มแคบ ถ้าอยู่แถวเดียวกับหน่วย/จำนวน ชื่อสินค้าเหลือ ~120px */}
       <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_6rem_5rem_7rem_auto] sm:items-start">
-        <div className="min-w-0 sm:col-span-full">
-          <LookupProduct
-            value={productId}
-            defaultLabel={productLabel || undefined}
-            size="sm"
-            // ปุ่ม combobox กว้างตามชื่อสินค้า (shrink-0) — ชื่อยาวล้นทับช่องหน่วย
-            className="w-full min-w-0"
-            disabled={isDisabled}
-            placeholder={t("ingredientName")}
-            error={rowErrors?.product_id?.message}
-            onValueChange={(id, item) => {
-              if (id === productId) return;
-              const opts = { shouldDirty: true, shouldValidate: isSubmitted };
-              form.setValue(`ingredients.${i}.product_id`, id, opts);
-              form.setValue(
-                `ingredients.${i}.product_label`,
-                item?.name ?? item?.code ?? "",
-                opts,
-              );
-              form.setValue(`ingredients.${i}.ingredient_unit_id`, "", opts);
-            }}
-          />
+        <div className="flex min-w-0 items-start gap-2 sm:col-span-full">
+          <div
+            role="group"
+            aria-label={t("ingredientType")}
+            className="flex shrink-0 items-center gap-1"
+          >
+            <Toggle
+              variant="outline"
+              size="sm"
+              pressed={!isRecipe}
+              disabled={isDisabled}
+              onPressedChange={() => changeType("product")}
+            >
+              {t("ingredientTypeProduct")}
+            </Toggle>
+            <Toggle
+              variant="outline"
+              size="sm"
+              pressed={isRecipe}
+              disabled={isDisabled}
+              onPressedChange={() => changeType("recipe")}
+            >
+              {t("ingredientTypeRecipe")}
+            </Toggle>
+          </div>
+          <div className="min-w-0 flex-1">
+            {isRecipe ? (
+              <LookupRecipe
+                value={subRecipeId}
+                defaultLabel={productLabel || undefined}
+                size="sm"
+                className="w-full min-w-0"
+                disabled={isDisabled}
+                placeholder={t("ingredientName")}
+                excludeIds={excludeSelf}
+                error={rowErrors?.sub_recipe_id?.message}
+                onValueChange={(id) => {
+                  if (id === subRecipeId) return;
+                  form.setValue(`ingredients.${i}.sub_recipe_id`, id, opts);
+                }}
+                onItemChange={(r) => {
+                  form.setValue(
+                    `ingredients.${i}.product_label`,
+                    r.name ?? r.code ?? "",
+                    opts,
+                  );
+                  // หน่วยของสูตรคือหน่วยผลผลิตเสมอ — ว่างแปลว่าแถวยังไม่ครบ (server ก็ปฏิเสธ)
+                  form.setValue(
+                    `ingredients.${i}.ingredient_unit_id`,
+                    r.base_yield_unit ?? "",
+                    opts,
+                  );
+                }}
+              />
+            ) : (
+              <LookupProduct
+                value={productId}
+                defaultLabel={productLabel || undefined}
+                size="sm"
+                // ปุ่ม combobox กว้างตามชื่อสินค้า (shrink-0) — ชื่อยาวล้นทับช่องหน่วย
+                className="w-full min-w-0"
+                disabled={isDisabled}
+                placeholder={t("ingredientName")}
+                error={rowErrors?.product_id?.message}
+                onValueChange={(id, item) => {
+                  if (id === productId) return;
+                  form.setValue(`ingredients.${i}.product_id`, id, opts);
+                  form.setValue(
+                    `ingredients.${i}.product_label`,
+                    item?.name ?? item?.code ?? "",
+                    opts,
+                  );
+                  form.setValue(
+                    `ingredients.${i}.ingredient_unit_id`,
+                    "",
+                    opts,
+                  );
+                }}
+              />
+            )}
+            {isRecipe && subRecipeId && (
+              <a
+                href={`/operation-plan/recipe/${subRecipeId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-primary mt-1 inline-block text-xs underline-offset-2 hover:underline"
+              >
+                {productLabel || t("openSubRecipe")}
+              </a>
+            )}
+          </div>
         </div>
 
         <div>
-          <Controller
-            control={form.control}
-            name={`ingredients.${i}.ingredient_unit_id`}
-            render={({ field }) => (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isDisabled || !productId}
-              >
-                <SelectTrigger
-                  size="sm"
-                  className="w-full"
-                  aria-label={tfl("unit")}
-                  aria-invalid={!!rowErrors?.ingredient_unit_id}
+          {isRecipe ? (
+            <div
+              className="bg-muted/40 text-muted-foreground flex h-8 items-center truncate rounded-md border px-2 text-sm"
+              aria-label={tfl("unit")}
+            >
+              {recipeUnit?.name ?? savedUnit?.name ?? "—"}
+            </div>
+          ) : (
+            <Controller
+              control={form.control}
+              name={`ingredients.${i}.ingredient_unit_id`}
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isDisabled || !productId}
                 >
-                  <SelectValue placeholder={tfl("unit")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {unitOptions.map((u) => (
-                    <SelectItem key={u.id} value={u.id}>
-                      {u.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          <FieldError errors={[rowErrors?.ingredient_unit_id]} />
+                  <SelectTrigger
+                    size="sm"
+                    className="w-full"
+                    aria-label={tfl("unit")}
+                    aria-invalid={!!rowErrors?.ingredient_unit_id}
+                  >
+                    <SelectValue placeholder={tfl("unit")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {unitOptions.map((u) => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          )}
+          {recipeMissingUnit ? (
+            <p className="text-destructive mt-1 text-xs" role="alert">
+              {t("subRecipeNoYieldUnit")}
+            </p>
+          ) : (
+            <FieldError errors={[rowErrors?.ingredient_unit_id]} />
+          )}
         </div>
 
         <FieldInput
@@ -644,11 +760,20 @@ function IngredientCostTable({
           <tbody>
             {lines.map(({ d, cost, i }) => (
               <tr key={i} className="border-border/60 border-t">
-                <td className="px-2 py-1.5">{d.product_label || "—"}</td>
+                <td className="px-2 py-1.5">
+                  {d.product_label || "—"}
+                  {d.ingredient_type === "recipe" && (
+                    <Badge variant="info-light" size="xs" className="ml-1.5">
+                      {t("subRecipeBadge")}
+                    </Badge>
+                  )}
+                </td>
                 <td className="px-2 py-1.5 text-right tabular-nums">
                   {formatQty(d.qty)}{" "}
                   <UnitName
-                    productId={d.product_id}
+                    productId={
+                      d.ingredient_type === "recipe" ? "" : d.product_id
+                    }
                     unitId={d.ingredient_unit_id}
                     saved={saved}
                   />
@@ -679,8 +804,13 @@ function UnitName({
   readonly saved: RecipeIngredientLine[];
 }) {
   const { data: units } = useProductIngredientUnits(productId || undefined);
+  // แถวสูตรไม่มีรายการหน่วยของสินค้า — ใช้ชื่อหน่วยผลผลิตตาม id
+  const { data: unit } = useUnitById(
+    !productId && unitId && UUID_RE.test(unitId) ? unitId : undefined,
+  );
   const name =
     units?.find((u) => u.id === unitId)?.name ??
+    unit?.name ??
     saved.find((s) => s.ingredient_unit_id === unitId)?.ingredient_unit?.name;
   return <>{name ?? ""}</>;
 }

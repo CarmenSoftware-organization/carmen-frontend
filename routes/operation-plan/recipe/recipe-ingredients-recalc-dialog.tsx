@@ -16,7 +16,11 @@ import { cn } from "@/lib/utils";
 import type { IngredientCostLine, IngredientCostResult } from "@/types/recipe";
 import type { RecipeFormValues } from "./recipe-form-schema";
 import { computeRecipeCost, type RecipeCostCalc } from "./use-recipe-cost-calc";
-import type { IngredientDraft, RowCost } from "./recipe-ingredients-cost";
+import {
+  refOf,
+  type IngredientDraft,
+  type RowCost,
+} from "./recipe-ingredients-cost";
 
 interface RecipeIngredientsRecalcDialogProps {
   readonly form: UseFormReturn<RecipeFormValues>;
@@ -148,11 +152,12 @@ export function RecipeIngredientsRecalcDialog({
                     const newCost = Number(line.line_cost) || 0;
                     return (
                       <tr
-                        key={`${line.product_id}-${i}`}
+                        key={`${refOf(line)}-${i}`}
                         className="border-border/60 border-t"
                       >
                         <td className="px-2 py-1.5">
-                          {line.product?.name ??
+                          {line.sub_recipe?.name ??
+                            line.product?.name ??
                             drafts[i]?.product_label ??
                             "—"}
                         </td>

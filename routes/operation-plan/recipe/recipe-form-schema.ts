@@ -74,23 +74,45 @@ function createStepSchema(tv: TranslationFn, tf: TranslationFn) {
 }
 
 function createIngredientSchema(tv: TranslationFn, tf: TranslationFn) {
-  return z.object({
-    line_id: z.string().nullable(),
-    product_id: z.string().min(1, tv("required", { field: tf("product") })),
-    product_label: z.string(),
-    qty: z.coerce.number().gt(0, tv("positive", { field: tf("qty") })),
-    ingredient_unit_id: z
-      .string()
-      .min(1, tv("required", { field: tf("unit") })),
-    wastage_percentage: z.preprocess(
-      (v) => (v === "" || v === undefined || Number.isNaN(v) ? 0 : v),
-      z.coerce
-        .number()
-        .min(0, tv("minZero", { field: "%" }))
-        .max(100, tv("maxNumber", { field: "%", max: 100 })),
-    ),
-    note: z.string().max(500, tv("maxLength", { field: tf("note"), max: 500 })),
-  });
+  return z
+    .object({
+      line_id: z.string().nullable(),
+      ingredient_type: z.enum(["product", "recipe"]),
+      product_id: z.string(),
+      sub_recipe_id: z.string(),
+      product_label: z.string(),
+      qty: z.coerce.number().gt(0, tv("positive", { field: tf("qty") })),
+      ingredient_unit_id: z
+        .string()
+        .min(1, tv("required", { field: tf("unit") })),
+      wastage_percentage: z.preprocess(
+        (v) => (v === "" || v === undefined || Number.isNaN(v) ? 0 : v),
+        z.coerce
+          .number()
+          .min(0, tv("minZero", { field: "%" }))
+          .max(100, tv("maxNumber", { field: "%", max: 100 })),
+      ),
+      note: z
+        .string()
+        .max(500, tv("maxLength", { field: tf("note"), max: 500 })),
+    })
+    .superRefine((line, ctx) => {
+      // บรรทัดสินค้าต้องมีสินค้า บรรทัดสูตรต้องมีสูตร — ข้อความแสดงที่ช่องเลือกของบรรทัดนั้น
+      if (line.ingredient_type === "recipe") {
+        if (!line.sub_recipe_id)
+          ctx.addIssue({
+            code: "custom",
+            path: ["sub_recipe_id"],
+            message: tv("required", { field: tf("recipe") }),
+          });
+      } else if (!line.product_id) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["product_id"],
+          message: tv("required", { field: tf("product") }),
+        });
+      }
+    });
 }
 
 export function createRecipeSchema(tv: TranslationFn, tf: TranslationFn) {

@@ -205,45 +205,74 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                 {ingredients.map((line) => {
                   const id = `cook-ingredient-${line.id}`;
                   const isChecked = checked.has(line.id);
+                  const isRecipe = line.ingredient_type === "recipe";
+                  const name =
+                    line.sub_recipe?.name ??
+                    line.product?.name ??
+                    line.product?.code ??
+                    "—";
                   return (
                     <li key={line.id}>
-                      <label
-                        htmlFor={id}
-                        className="hover:bg-muted/60 flex min-h-11 cursor-pointer items-start gap-3 rounded-md px-2 py-2"
-                      >
+                      {/* checkbox กับลิงก์แยกกัน — ลิงก์ไปสูตรฐานต้องไม่ติ๊ก/ไม่ถูกติ๊กแทน */}
+                      <div className="hover:bg-muted/60 relative flex min-h-11 items-start gap-3 rounded-md px-2 py-2">
+                        {/* label ขยายเต็มแถว — แตะตรงไหนก็ติ๊กได้ (ลิงก์ z-10 อยู่เหนือ) */}
+                        <label
+                          htmlFor={id}
+                          aria-hidden="true"
+                          className="absolute inset-0 cursor-pointer rounded-md"
+                        />
                         <Checkbox
                           id={id}
+                          aria-label={name}
                           checked={isChecked}
                           onCheckedChange={(v) => toggle(line.id, v === true)}
-                          className="mt-0.5 size-5"
+                          className="relative z-10 mt-0.5 size-5"
                         />
-                        <span
+                        <div
                           className={cn(
                             "min-w-0 flex-1 text-sm",
                             isChecked && "text-muted-foreground line-through",
                           )}
                         >
-                          <span className="flex flex-wrap items-baseline justify-between gap-x-2">
+                          <div className="flex flex-wrap items-baseline justify-between gap-x-2">
                             <span
                               className={cn(
                                 "font-medium break-words",
                                 !isChecked && "text-foreground",
                               )}
                             >
-                              {line.product?.name ?? line.product?.code ?? "—"}
+                              {isRecipe && line.sub_recipe_id ? (
+                                <>
+                                  <Badge
+                                    variant="info-light"
+                                    size="xs"
+                                    className="mr-1.5"
+                                  >
+                                    {t("subRecipeBadge")}
+                                  </Badge>
+                                  <Link
+                                    to={`${LIST_PATH}/${line.sub_recipe_id}`}
+                                    className="relative z-10 underline underline-offset-2"
+                                  >
+                                    {name}
+                                  </Link>
+                                </>
+                              ) : (
+                                name
+                              )}
                             </span>
                             <span className="shrink-0 tabular-nums">
                               {formatQty(line.qty)}{" "}
                               {line.ingredient_unit?.name ?? ""}
                             </span>
-                          </span>
+                          </div>
                           {line.note && (
                             <span className="text-muted-foreground mt-0.5 block text-xs">
                               {line.note}
                             </span>
                           )}
-                        </span>
-                      </label>
+                        </div>
+                      </div>
                     </li>
                   );
                 })}

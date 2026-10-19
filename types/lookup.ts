@@ -36,6 +36,7 @@ export type LookupResource =
   | "currency"
   | "credit_term"
   | "recipe_category"
+  | "recipe"
   | "product_sub_category"
   | "location"
   | "notification_template";
@@ -59,6 +60,10 @@ export type CurrencyLookup = LookupItem & {
 };
 export type CreditTermLookup = LookupItem & { value: number | null };
 export type RecipeCategoryLookup = LookupItem & { level: number | null };
+export type RecipeLookup = LookupItem & {
+  base_yield_unit: string;
+  recipe_status: string;
+};
 export type LocationLookup = LookupItem & {
   location_type: INVENTORY_TYPE;
   delivery_point: { id: string | null; name: string | null } | null;
@@ -75,6 +80,7 @@ export const LOOKUP_EXTRA_FIELDS: Partial<
   currency: ["exchange_rate", "decimal_places"],
   credit_term: ["value"],
   recipe_category: ["level"],
+  recipe: ["base_yield_unit", "recipe_status"],
   location: ["location_type", "delivery_point"],
 };
 
