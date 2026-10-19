@@ -5,6 +5,7 @@ import type {
   NotificationMetadata,
 } from "@/types/notification";
 import { safeNavigationHref } from "@/lib/utils";
+import { NotificationMessageUrl } from "@/components/navbar/notification-message-url";
 
 export const DOC_TYPE_ROUTES: Record<NotificationDocType, string | null> = {
   system: null,
@@ -75,10 +76,24 @@ export function getNotificationHref(n: NotificationType): string | undefined {
     : undefined;
 }
 
-export function formatMessage(message: string | null | undefined) {
+/** URL เปล่า ๆ ในข้อความ (ไม่อยู่ในรูป [text](url)) เช่นลิงก์รายงานจาก schedule */
+const BARE_URL = /(https?:\/\/[^\s<>()]+)/g;
+
+/**
+ * แปลงข้อความแจ้งเตือนเป็น node — `[text](url)` เป็นลิงก์ และ URL เปล่า ๆ แสดงตาม `linkUrls`
+ *
+ * @param message - ข้อความของการแจ้งเตือน
+ * @param options.linkUrls - true (dialog รายละเอียด) = URL เป็นลิงก์เปิดแท็บใหม่ + ปุ่มคัดลอก ·
+ *   false (แถวในรายการซึ่งทั้งแถวกดได้) = URL ย่อเป็นบรรทัดเดียว ไม่ซ้อนปุ่มในปุ่ม
+ * @returns node สำหรับวางใน `<p>`
+ */
+export function formatMessage(
+  message: string | null | undefined,
+  options: { linkUrls?: boolean } = {},
+) {
   if (!message) return [];
   const parts = message.split(/(\[.*?\]\(.*?\))/g);
-  return parts.map((part, index) => {
+  return parts.flatMap((part, index) => {
     const match = /^\[(.*?)\]\((.*?)\)$/.exec(part);
     if (match) {
       const safeHref = safeNavigationHref(match[2]);
@@ -95,6 +110,20 @@ export function formatMessage(message: string | null | undefined) {
         </Link>
       );
     }
-    return part;
+    return part.split(BARE_URL).map((piece, i) => {
+      if (i % 2 === 0) return piece;
+      const key = `${index}-${i}`;
+      return options.linkUrls ? (
+        <NotificationMessageUrl key={key} href={piece} />
+      ) : (
+        <span
+          key={key}
+          title={piece}
+          className="inline-block max-w-56 truncate align-bottom"
+        >
+          {piece}
+        </span>
+      );
+    });
   });
 }
