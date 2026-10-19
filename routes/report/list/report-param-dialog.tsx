@@ -57,6 +57,8 @@ interface ReportParamDialogProps {
   readonly report: Report | null;
   readonly buCode?: string;
   readonly onRun?: (report: Report, filters: Record<string, string>) => void;
+  readonly onExport?: (report: Report, filters: Record<string, string>) => void;
+  readonly busy?: boolean;
 }
 
 function resolveDateKeyword(value: string, periods?: ReportPeriodMap): string {
@@ -658,6 +660,8 @@ export function ReportParamDialog({
   report,
   buCode,
   onRun,
+  onExport,
+  busy,
 }: ReportParamDialogProps) {
   const tc = useTranslations("common");
   const t = useTranslations("report");
@@ -738,9 +742,7 @@ export function ReportParamDialog({
       : enrichField(cell),
   );
 
-  const handleSubmit = () => {
-    if (!report || !onRun) return;
-
+  const collectFilters = (): Record<string, string> => {
     const filters: Record<string, string> = {};
     const labels: Record<string, string> = {};
     if (formRef.current) {
@@ -755,8 +757,17 @@ export function ReportParamDialog({
       }
     }
     if (memoryKey) saveReportParams(memoryKey, { values: filters, labels });
+    return filters;
+  };
 
-    onRun(report, filters);
+  const handleSubmit = () => {
+    if (!report || !onRun) return;
+    onRun(report, collectFilters());
+  };
+
+  const handleExportClick = () => {
+    if (!report || !onExport) return;
+    onExport(report, collectFilters());
   };
 
   if (!report) return null;
@@ -861,7 +872,18 @@ export function ReportParamDialog({
           >
             {tc("cancel")}
           </Button>
-          <Button type="button" size="sm" onClick={handleSubmit}>
+          {report._hasExport && onExport && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={busy}
+              onClick={handleExportClick}
+            >
+              {t("exportData")}
+            </Button>
+          )}
+          <Button type="button" size="sm" disabled={busy} onClick={handleSubmit}>
             {t("runReport")}
           </Button>
         </DialogFooter>
