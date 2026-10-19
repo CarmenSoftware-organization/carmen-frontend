@@ -12,6 +12,7 @@ export interface Report {
   _content?: string;
   _columns?: string[];
   _templateType?: "form" | "list";
+  _hasExport?: boolean;
 }
 
 export interface ReportTemplate {
@@ -25,6 +26,7 @@ export interface ReportTemplate {
   is_standard: boolean;
   is_active: boolean;
   template_type?: "form" | "list";
+  has_export?: boolean;
 }
 
 export interface RunReportPayload {

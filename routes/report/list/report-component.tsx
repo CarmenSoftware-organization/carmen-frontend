@@ -22,7 +22,11 @@ import EmptyComponent from "@/components/empty-component";
 import { ErrorState } from "@/components/ui/error-state";
 import { ActiveFilterBar } from "@/components/ui/active-filter-bar";
 import type { Report, ReportTemplate } from "@/types/report";
-import { useReportTemplates, useRunReportMutation } from "../shared/use-report";
+import {
+  useExportReportMutation,
+  useReportTemplates,
+  useRunReportMutation,
+} from "../shared/use-report";
 import { useReportTable } from "./use-report-table";
 import { safeNavigationHref } from "@/lib/utils";
 import { ReportParamDialog } from "./report-param-dialog";
@@ -50,6 +54,7 @@ const templateToReport = (t: ReportTemplate): Report => {
     _content: t.content,
     _columns: t.columns ?? [],
     _templateType: t.template_type ?? "list",
+    _hasExport: t.has_export ?? false,
   };
 };
 
@@ -69,6 +74,7 @@ export default function ReportComponent() {
   // Server-side pagination — ส่ง page/perpage/search ไป BE
   const templatesQuery = useReportTemplates(params);
   const runReport = useRunReportMutation();
+  const exportReport = useExportReportMutation();
 
   const reports = useMemo(
     () => (templatesQuery.data?.data ?? []).map(templateToReport),
@@ -180,6 +186,44 @@ export default function ReportComponent() {
     }
   };
 
+  const handleExport = async (
+    report: Report,
+    filters: Record<string, string>,
+  ) => {
+    if (exportReport.isPending || runReport.isPending) return;
+    const toastId = toast.loading(t("generating", { name: report.ReportName }));
+
+    try {
+      const { blob, fileName, rowCount } = await exportReport.mutateAsync({
+        template_id: report._templateId ?? "",
+        filters,
+      });
+      if (rowCount === 0) {
+        toast.info(t("exportNoData"), { id: toastId });
+        return;
+      }
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = fileName ?? `${report.ReportName}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+      setDialogOpen(false);
+      toast.success(t("exportReady", { name: report.ReportName }), {
+        id: toastId,
+      });
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError && err.appCode === "REPORT_TEMPLATE_UNAVAILABLE"
+          ? t("unavailableForBu")
+          : t("exportError"),
+        { id: toastId },
+      );
+    }
+  };
+
   const table = useReportTable({
     reports: filteredReports,
     onSelect: handleSelect,
@@ -277,6 +321,8 @@ export default function ReportComponent() {
         report={selectedReport}
         buCode={buCode}
         onRun={handleRunReport}
+        onExport={handleExport}
+        busy={exportReport.isPending}
       />
 
       <SaveViewDialog
