@@ -3,7 +3,7 @@
   "paths": {
     "/api/ext/v1/ap-invoices": {
       "get": {
-        "description": "Returns final (and voided) GRN invoices and CN credit notes of the API key's business unit as vendor-invoice records with one line per received / returned item, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no line (e.g. only consignment lines) is not returned. A document is in exactly one endpoint: GRN / CN here, SR / SI / SO in `/gl-journals`. CN amounts are positive; reverse them on your side by `doc_type`. Each line carries three accounts named by role (inventory = `debit_*`, payable = `ap_*`, input VAT = `tax_*`), not by side. Line `description` is the product name. `tax_type` is `add` when the line base tax is not 0, else `none` (`included` is reserved and never emitted). The tax account / cost center are set only on taxed lines and the tax cost center equals `debit_cost_center_code`. `qty`, `price`, `tax_rate` and `exchange_rate` are decimal strings without trailing-zero padding (e.g. `\"10\"`, `\"7\"`); money fields are 2-decimal strings. Lines with `unmapped: true` carry the correct amount but need an account fixed in the GL / AP mapping in Carmen; `issues` lists `{ account: \"debit\" | \"ap\" | \"tax\" | null, code }`. Each field description names its Carmen 4 column where there is one.",
+        "description": "Returns final (and voided) GRN invoices and CN credit notes of the API key's business unit as vendor-invoice records with one line per received / returned item, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no line (e.g. only consignment lines) is not returned. A document is in exactly one endpoint: GRN / CN here, SR / SI / SO in `/gl-journals`. CN amounts are positive; reverse them on your side by `doc_type`. Each line carries two accounts named by role (inventory = `debit_*`, payable = `ap_*`), not by side, plus tax amounts; the input VAT account is set in your accounting system. Line `description` is the product name. `tax_type` is `add` when the line base tax is not 0, else `none` (`included` is reserved and never emitted). The tax cost center is set only on taxed lines and equals `debit_cost_center_code`. `qty`, `price`, `tax_rate` and `exchange_rate` are decimal strings without trailing-zero padding (e.g. `\"10\"`, `\"7\"`); money fields are 2-decimal strings. Lines with `unmapped: true` carry the correct amount but need an account fixed in the GL / AP mapping in Carmen; `issues` lists `{ account: \"debit\" | \"ap\" | null, code }`. Each field description names its Carmen 4 column where there is one.",
         "operationId": "ApInvoiceExportController_list",
         "parameters": [
           {
@@ -1584,7 +1584,7 @@
           "tax_cost_center_code": {
             "type": "string",
             "nullable": true,
-            "description": "Cost center of the input VAT account — equal to debit_cost_center_code. Only on taxed lines (Carmen 4: InvdT1DrDeptCode)",
+            "description": "Cost center of the tax amount — equal to debit_cost_center_code. Only on taxed lines (Carmen 4: InvdT1DrDeptCode)",
             "example": "CC-KIT"
           },
           "unmapped": {

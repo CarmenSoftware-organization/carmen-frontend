@@ -2660,7 +2660,7 @@
           "external": "External system"
         },
         "liveZone": "API connection",
-        "liveZoneHint": "Takes effect immediately — not part of Edit and Save above.",
+        "liveZoneHint": "Changes here take effect immediately — there is no Save button.",
         "apiAccess": {
           "title": "API access",
           "desc": "Credentials external systems use to pull AP invoices and GL journals.",

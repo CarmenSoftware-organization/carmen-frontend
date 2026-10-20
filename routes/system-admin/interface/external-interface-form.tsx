@@ -8,9 +8,8 @@ import { ExternalApiAccessSection } from "./external-api-access-section";
 import { ExternalApiDocsSection } from "./external-api-docs-section";
 
 /**
- * เส้นแบ่งโซน "มีผลทันที" — ส่วน API ด้านล่างไม่อยู่ในรอบ Edit/Save ของฟอร์มด้านบน
- * แต่ใช้ SettingSection หน้าตาเดียวกัน ไม่มีเส้นนี้ผู้ใช้จะคิดว่าต้องกด Edit ก่อน
- * หรือสลับสถานะ key แล้วรอกด Save
+ * เส้นแบ่งโซน "มีผลทันที" — ส่วน API ด้านล่างบันทึกทันทีที่ทำรายการ ไม่มีปุ่มบันทึกแยก
+ * แต่ใช้ SettingSection หน้าตาเดียวกัน ไม่มีเส้นนี้ผู้ใช้จะรอปุ่มบันทึกหลังสลับสถานะ key
  */
 function LiveZoneDivider({
   title,

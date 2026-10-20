@@ -77,7 +77,10 @@ export function SourceBadge({
   const t = useTranslations("config.chartOfAccountMapping");
   if (!source) return null;
   const override = source === "override";
-  const label = t(SOURCE_KEY[source]);
+  const key = SOURCE_KEY[source];
+  // backend รุ่นเก่ายังส่ง vendor / bu_default / adjustment_type ที่ไม่มีคีย์แปลแล้ว — ไม่แสดงป้าย
+  if (!key) return null;
+  const label = t(key);
   if (href) {
     return (
       <Badge asChild size="xs" variant="outline">
