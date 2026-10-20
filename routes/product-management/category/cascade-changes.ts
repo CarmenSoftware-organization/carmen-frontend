@@ -15,6 +15,8 @@ export interface CascadeChanges {
   qty_deviation_limit?: ValueChange<number>;
   inventory?: ValueChange<string | null>;
   direct?: ValueChange<string | null>;
+  /** ชื่อภาษีก่อน/หลัง (ไว้แสดง) — ตัดสินว่าเปลี่ยนจาก tax_profile_id */
+  tax?: ValueChange<string | null>;
 }
 
 export type CascadeSource = Pick<
@@ -23,10 +25,14 @@ export type CascadeSource = Pick<
   | "qty_deviation_limit"
   | "inventory_account_code"
   | "direct_account_code"
->;
+  | "tax_profile_id"
+> & {
+  /** ไม่ได้อยู่ในฟอร์ม — ผู้เรียกเติมให้เพื่อแสดงในกล่องยืนยัน */
+  tax_profile_name?: string | null;
+};
 
 /**
- * เทียบค่าก่อน/หลังแก้ เฉพาะ 4 ค่าที่ cascade ลงชั้นล่างได้
+ * เทียบค่าก่อน/หลังแก้ เฉพาะค่าที่ cascade ลงชั้นล่างได้ (deviation · รหัสบัญชี · ภาษี)
  * deviation เทียบแบบตัวเลข, รหัสบัญชีเทียบแบบ normalise (ว่าง = null)
  * @param before - ค่าเดิมของ node
  * @param after - ค่าที่ผู้ใช้กรอกในฟอร์ม
@@ -54,6 +60,13 @@ export function detectCascadeChanges(
     if (from !== to) changes[type] = { from, to };
   }
 
+  if ((before.tax_profile_id || null) !== (after.tax_profile_id || null)) {
+    changes.tax = {
+      from: before.tax_profile_name || before.tax_profile_id || null,
+      to: after.tax_profile_name || after.tax_profile_id || null,
+    };
+  }
+
   return changes;
 }
 
@@ -75,6 +88,8 @@ export interface CascadeDecision {
 export interface CascadePayload {
   cascade_deviation: boolean;
   cascade_account_codes?: CascadeAccountType[];
+  /** backend default false — ส่งเฉพาะเมื่อเลือกเขียนทับและภาษีเปลี่ยนจริง */
+  cascade_tax?: boolean;
 }
 
 /**
@@ -114,6 +129,9 @@ export function applyCascadeDecision<T extends Record<string, unknown>>(
   if (changes.inventory) accountTypes.push("inventory");
   if (changes.direct) accountTypes.push("direct");
   if (accountTypes.length > 0) result.cascade_account_codes = accountTypes;
+
+  // ภาษีลงถึง product — backend คัดลอก id/ชื่อ/อัตราของแถวที่บันทึกแล้ว
+  if (changes.tax) result.cascade_tax = true;
 
   return result;
 }

@@ -65,6 +65,14 @@ export function CascadeConfirmDialog({
       to: String(changes.qty_deviation_limit.to),
     });
   }
+  if (changes.tax) {
+    rows.push({
+      key: "tax",
+      label: tfl("taxProfile"),
+      from: changes.tax.from ?? "—",
+      to: changes.tax.to ?? "—",
+    });
+  }
   if (changes.inventory) {
     rows.push({
       key: "inventory",
@@ -135,11 +143,13 @@ export function CascadeConfirmDialog({
           </section>
 
           {hasCleared && (
-            <p className="text-warning-ink">{t(
+            <p className="text-warning-ink">
+              {t(
                 nodeType === NODE_TYPE.CATEGORY
                   ? "cascadeClearWarningCategory"
                   : "cascadeClearWarning",
-              )}</p>
+              )}
+            </p>
           )}
           {flagsChanged && (
             <p className="text-warning-ink">{t("confirmFlagsChange")}</p>

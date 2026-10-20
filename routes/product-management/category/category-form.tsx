@@ -82,6 +82,10 @@ export function CategoryForm({
     data: CategoryFormValues;
     changes: CascadeChanges;
   } | null>(null);
+  // ชื่อภาษีที่เลือกล่าสุด — ฟอร์มเก็บแค่ id ใช้แสดง "เดิม → ใหม่" ในกล่องยืนยัน cascade
+  const [taxProfileName, setTaxProfileName] = useState<string | null>(
+    selectedNode?.tax_profile_name ?? null,
+  );
 
   const parentDisplay =
     type === "category"
@@ -156,7 +160,10 @@ export function CategoryForm({
       (selectedNode.is_used_in_recipe !== data.is_used_in_recipe ||
         selectedNode.is_sold_directly !== data.is_sold_directly);
     if (mode === "edit" && selectedNode) {
-      const changes = detectCascadeChanges(defaultValues, data);
+      const changes = detectCascadeChanges(
+        { ...defaultValues, tax_profile_name: selectedNode.tax_profile_name },
+        { ...data, tax_profile_name: taxProfileName },
+      );
       if (hasCascadeChanges(changes)) {
         setPendingCascade({ data: payload, changes });
         return;
@@ -256,9 +263,10 @@ export function CategoryForm({
             render={({ field }) => (
               <LookupTaxProfile
                 value={field.value ?? ""}
-                onValueChange={(id, taxRate) => {
+                onValueChange={(id, taxRate, name) => {
                   field.onChange(id);
                   form.setValue("tax_rate", taxRate);
+                  setTaxProfileName(name);
                 }}
                 disabled={isPending}
                 className="w-full"
