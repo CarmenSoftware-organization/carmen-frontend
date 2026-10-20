@@ -135,6 +135,21 @@
   height: 1rem;
 }
 
+/* จอสัมผัส: เป้ากด 44px (WCAG 2.5.5) ไอคอนยังเล็กเท่าเดิม — ชิดมุมบนขวาพอดี
+   ช่องว่าง padding-right 2.75rem ที่เผื่อไว้ จึงไม่ล้นกล่องและไม่ดันข้อความ
+   600px = จุดที่ sonner สลับเป็น layout มือถือ · pointer: coarse เก็บแท็บเล็ต */
+@media (max-width: 600px), (pointer: coarse) {
+  :root
+    [data-sonner-toaster]
+    [data-sonner-toast][data-styled="true"]
+    [data-close-button] {
+    top: 0;
+    right: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
 /* ปุ่ม action ใน toast — ให้เป็นปุ่มของ Carmen ไม่ใช่กล่องดำ/ขาวของ sonner */
 [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-button] {
   border-radius: var(--radius-md);
