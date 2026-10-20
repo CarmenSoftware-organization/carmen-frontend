@@ -4,6 +4,13 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.5.24] - 2026-10-20
+
+### Fixed
+- **my-approval:** ถอดปุ่ม Filter/saved view ที่ไม่มีอะไรให้กรอง วางชิปกรองแถวเดียวกับช่องค้น (#395) — Thammanoon Semapru `6711160c`
+- **ui:** ช่องกรอกที่แก้ได้ทุกตัวเป็นพื้นขาว ผ่าน token --field (#394) — Thammanoon Semapru `d4d958e5`
+- **product:** รหัสในตารางสินค้าเป็นลิงก์เปิดรายการ ชื่อเป็นข้อความธรรมดา (#393) — Thammanoon Semapru `af221ba5`
+
 ## [2.5.23] - 2026-10-20
 
 ### Fixed
