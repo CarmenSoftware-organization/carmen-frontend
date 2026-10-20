@@ -9,10 +9,17 @@
    ทำไมต้องเป็นไฟล์ CSS ไม่ใช่ className: sonner เขียนกฎด้วย selector
    `[data-sonner-toast][data-styled='true']` (specificity 0-2-0) utility
    ของ Tailwind ตัวเดียวสู้ไม่ได้ ต้องพ่วง `!` ทุกคลาสซึ่งอ่านยากกว่า
+
+   ทุก selector ของใบ toast ขึ้นต้นด้วย `[data-sonner-toaster]` (0-3-0) เพราะ
+   sonner ฉีด <style> ของตัวเองตอน runtime ต่อท้าย <head> — ตามหลังไฟล์นี้เสมอ
+   ถ้า specificity เท่ากัน (0-2-0) ของ sonner ชนะทุกข้อ ซึ่งเคยเป็นมาแล้ว:
+   padding/ตัวอักษร/เงาด้านล่างนี้ไม่เคยมีผลจนกว่าจะเติมตัวนำหน้า
    ══════════════════════════════════════════════════════════════════════════ */
 
-[data-sonner-toaster] {
-  /* sonner หยิบสามตัวนี้ไปทำพื้น/ขอบ/ตัวหนังสือของทุกใบ (รวมปุ่มปิด) */
+:root [data-sonner-toaster][data-sonner-theme] {
+  /* sonner หยิบสามตัวนี้ไปทำพื้น/ขอบ/ตัวหนังสือของทุกใบ (รวมปุ่มปิด)
+     sonner ตั้งชุดเดียวกันเป็นขาว/ดำตายตัวที่ `[data-sonner-toaster][data-sonner-theme='…']`
+     (0-2-0) — `:root` นำหน้าให้ชนะ (0-3-0) ไม่งั้นพื้นไม่เคยเป็น popover จริง */
   --normal-bg: var(--popover);
   --normal-border: var(--border);
   --normal-text: var(--popover-foreground);
@@ -23,36 +30,120 @@
   font-family: inherit;
 }
 
-[data-sonner-toast][data-styled="true"] {
-  /* 16px กว้างเกินสำหรับข้อความบรรทัดเดียวซึ่งเป็น 99% ของ toast ในแอปนี้ */
-  padding: 0.75rem 0.875rem;
-  gap: 0.625rem;
-  font-size: var(--text-fine-print);
-  line-height: var(--text-fine-print--line-height);
-  /* chrome แบน เงาบางพอให้ลอยเหนือหน้าเท่านั้น (DESIGN.md: Elevation) */
-  box-shadow: var(--shadow-md);
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
+  /* ทรง IBM Carbon (low-contrast notification) — กล่องเกือบเหลี่ยม พื้นจางตามชนิด
+     ขอบบางสีเดียวกัน + แถบซ้าย 3px · default/loading เป็น popover เปล่า
+     --toast-tone ใช้ token สีพื้น (ไม่ใช่ -ink) เพราะเป็นพื้น/ขอบ ไม่ใช่ตัวหนังสือ */
+  --toast-tone: transparent;
+  background: color-mix(in oklab, var(--toast-tone) 9%, var(--normal-bg));
+  border-color: color-mix(
+    in oklab,
+    var(--toast-tone) 45%,
+    var(--normal-border)
+  );
+  border-radius: var(--radius-sm);
+  /* ขวาเผื่อที่ให้ปุ่มปิดที่อยู่ในกล่อง */
+  padding: 0.75rem 2.75rem 0.75rem 1rem;
+  gap: 0.75rem;
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  /* แถบเป็น inset shadow ไม่ใช่ border-left/::before — border-left ทำขอบบาง
+     สามด้านที่เหลือเบี้ยว และ sonner จอง ::before/::after ไว้ทำพื้นที่ swipe */
+  box-shadow:
+    inset 3px 0 0 var(--toast-tone),
+    var(--shadow-md);
 }
 
-[data-sonner-toast][data-styled="true"] [data-title] {
-  font-weight: 500;
+[data-sonner-toaster] [data-sonner-toast][data-type="success"] {
+  /* positive ไม่ใช่ success — เหตุผลเดียวกับไอคอนใน toaster.tsx */
+  --toast-tone: var(--positive);
+}
+[data-sonner-toaster] [data-sonner-toast][data-type="error"] {
+  --toast-tone: var(--negative);
+}
+[data-sonner-toaster] [data-sonner-toast][data-type="warning"] {
+  --toast-tone: var(--warning);
+}
+[data-sonner-toaster] [data-sonner-toast][data-type="info"] {
+  --toast-tone: var(--info);
+}
+
+/* sonner ล็อกกล่องไอคอนไว้ 16px — ขยายให้รับไอคอน size-5 ใน toaster.tsx
+   และตัด margin ติดลบของ sonner ที่ดันไอคอนเข้าหาแถบสี */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-icon] {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  /* ชิดบรรทัดแรก — ไอคอนสูง 20px เท่า line-height ของ text-sm พอดี */
+  align-self: flex-start;
+}
+
+/* หัวข้อ + คำอธิบายเรียงในบรรทัดเดียวกันแบบ Carbon ยาวเกินค่อยตัดลงบรรทัดใหม่ */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-content] {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.375rem;
+  row-gap: 0;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-title] {
+  font-weight: 600;
+  line-height: inherit;
 }
 
 /* ค่า default ของ sonner เป็น #3f3f3f ตายตัว ธีมมืดแล้วอ่านไม่ออก */
-[data-sonner-toast][data-styled="true"] [data-description] {
+:root
+  [data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-description] {
   color: var(--muted-foreground);
-  font-size: var(--text-micro);
-  line-height: var(--text-micro--line-height);
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* ปุ่มปิดอยู่ในกล่องมุมขวาบน ไม่ใช่วงกลมลอยที่มุมแบบ sonner
+   `:root` นำหน้าเพราะกฎ dark/hover ของ sonner ที่ปุ่มนี้แรงถึง 0-5-0 */
+:root
+  [data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-close-button] {
+  left: auto;
+  right: 0.5rem;
+  top: 0.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  transform: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted-foreground);
+}
+:root
+  [data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-close-button]:hover {
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+  color: var(--foreground);
+}
+:root
+  [data-sonner-toaster]
+  [data-sonner-toast][data-styled="true"]
+  [data-close-button]
+  svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 /* ปุ่ม action ใน toast — ให้เป็นปุ่มของ Carmen ไม่ใช่กล่องดำ/ขาวของ sonner */
-[data-sonner-toast][data-styled="true"] [data-button] {
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-button] {
   border-radius: var(--radius-md);
   background: var(--primary);
   color: var(--primary-foreground);
   font-weight: 500;
 }
 
-[data-sonner-toast][data-styled="true"] [data-cancel] {
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-cancel] {
   background: var(--muted);
   color: var(--muted-foreground);
 }

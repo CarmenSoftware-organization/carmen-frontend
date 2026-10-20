@@ -86,7 +86,7 @@ describe("ApiErrorToaster", () => {
 
     await waitFor(() => expect(toast.error).toHaveBeenCalled());
     const [, options] = vi.mocked(toast.error).mock.calls[0];
-    expect(options).toEqual({ duration: 5000 });
+    expect(options).toEqual({ duration: 8000 });
   });
 
   // 401/403 already redirect to login / open PermissionDeniedDialog — a toast

@@ -29,11 +29,12 @@ export function useErrorToastWithOptions() {
 
       // บรรทัดเดียวจบ ไม่มี description — เคยใส่รหัส error + รายละเอียดไว้ข้างล่าง
       // แล้ว backend ส่ง stack trace มาเป็นสิบบรรทัด toast กินครึ่งจอและไม่มีใคร
-      // อ่าน · 5 วินาทีพอสำหรับประโยคเดียว และยังมีปุ่มปิดถ้าอยากไล่ก่อน
+      // อ่าน · ค้าง 8 วินาที (นานกว่า success 4 วินาทีของ sonner) เพราะ error ต้องอ่านให้ทัน
+      // และยังมีปุ่มปิดถ้าอยากไล่ก่อน
       const message =
         (options?.preferServerMessage && getDisplayableServerMessage(err)) ||
         getUserErrorMessage(err, t, tField);
-      toast.error(message, { duration: 5000 });
+      toast.error(message, { duration: 8000 });
     },
     [t, tField],
   );
@@ -46,5 +47,8 @@ export function useErrorToastWithOptions() {
  */
 export function useErrorToast() {
   const toastWithOptions = useErrorToastWithOptions();
-  return useCallback((err: unknown) => toastWithOptions(err), [toastWithOptions]);
+  return useCallback(
+    (err: unknown) => toastWithOptions(err),
+    [toastWithOptions],
+  );
 }
