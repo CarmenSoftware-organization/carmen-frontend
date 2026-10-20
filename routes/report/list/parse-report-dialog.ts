@@ -27,7 +27,25 @@ export interface DateNode {
   selfLabel: string | null;
 }
 
-type DialogNode = LabelNode | LookupNode | DateNode;
+/**
+ * <TextBox Name Value Type="Number" Min> — ช่องพิมพ์ค่าเอง (เช่น Slow Moving: Day = จำนวนวัน)
+ * Type="Number" → รับเฉพาะจำนวนเต็ม ≥ Min (ค่าเริ่มต้น 1) และต้องกรอก
+ */
+export interface TextNode {
+  type: "text";
+  name: string;
+  value: string;
+  numeric: boolean;
+  min: number;
+  colSpan: number;
+  /** ค่า attribute Label บน control เอง — null = ไม่มี (ใช้ <Label> ข้างหน้าแบบเดิม) */
+  selfLabel: string | null;
+}
+
+/** control ที่ส่งค่าเป็น filter ได้ */
+export type ControlNode = LookupNode | DateNode | TextNode;
+
+type DialogNode = LabelNode | ControlNode;
 
 /** เพดานคอลัมน์ของ dialog — modal กว้างได้จำกัด เกินนี้ Lookup จะแคบจนอ่านไม่ออก */
 export const MAX_COLS = 4;
@@ -79,15 +97,15 @@ const readSpan = (el: Element, cols: number): number =>
 export interface RangeField {
   kind: "range";
   label: string;
-  from: LookupNode | DateNode;
-  to: LookupNode | DateNode;
+  from: ControlNode;
+  to: ControlNode;
   colSpan: number;
 }
 
 export interface SingleField {
   kind: "single";
   label: string;
-  control: LookupNode | DateNode;
+  control: ControlNode;
   colSpan: number;
 }
 
@@ -120,8 +138,8 @@ function resolveDataSource(raw: string): string {
 
 const isControl = (
   node: DialogNode | undefined,
-): node is LookupNode | DateNode => {
-  return node?.type === "lookup" || node?.type === "date";
+): node is ControlNode => {
+  return node?.type === "lookup" || node?.type === "date" || node?.type === "text";
 };
 
 const isToLabel = (node: DialogNode | undefined): boolean => {
@@ -135,7 +153,7 @@ const isToLabel = (node: DialogNode | undefined): boolean => {
  * ช่วงอยู่แล้ว (<X>From → >=, <X>To → <=)
  */
 const isNamedPair = (
-  from: LookupNode | DateNode,
+  from: ControlNode,
   to: DialogNode | undefined,
 ): boolean =>
   isControl(to) &&
@@ -219,6 +237,16 @@ const parseNodes = (elements: Element[], cols: number): DialogNode[] => {
         values: rawValues ? rawValues.split("~") : [],
         value: attr(child, "Value"),
         multi: attr(child, "Multi") === "true",
+        colSpan: readSpan(child, cols),
+        selfLabel: child.getAttribute("Label"),
+      });
+    } else if (tag === "TextBox") {
+      nodes.push({
+        type: "text",
+        name: attr(child, "Name"),
+        value: attr(child, "Value"),
+        numeric: attr(child, "Type").toLowerCase() === "number",
+        min: Number.parseInt(attr(child, "Min"), 10) || 1,
         colSpan: readSpan(child, cols),
         selfLabel: child.getAttribute("Label"),
       });

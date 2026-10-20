@@ -388,3 +388,67 @@ describe("ReportParamDialog <Note>", () => {
     expect(screen.getByText(`Today = ${today}`)).toBeInTheDocument();
   });
 });
+
+describe("ReportParamDialog <TextBox>", () => {
+  const dayReport = {
+    Id: 4,
+    ReportName: "Slow Moving Report",
+    _templateId: "tpl-day",
+    Dialog:
+      '<Dialog><Label Text="Day"/><TextBox Name="Day" Value="30" Type="Number" Min="1"/></Dialog>',
+  } as unknown as Report;
+
+  function renderDay(onRun = vi.fn()) {
+    const qc = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    render(
+      <QueryClientProvider client={qc}>
+        <IntlProvider locale="en" messages={en}>
+          <ReportParamDialog
+            open
+            onOpenChange={() => {}}
+            report={dayReport}
+            buCode="BU1"
+            onRun={onRun}
+          />
+        </IntlProvider>
+      </QueryClientProvider>,
+    );
+    return onRun;
+  }
+
+  beforeEach(() => {
+    localStorage.clear();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => lookupResponse()),
+    );
+  });
+
+  it("starts at the default and runs with what the user types", async () => {
+    const onRun = renderDay();
+    const user = userEvent.setup();
+    const box = screen.getByRole("spinbutton");
+    expect(box).toHaveValue(30);
+
+    await user.clear(box);
+    await user.type(box, "45");
+    await user.click(screen.getByRole("button", { name: en.report.runReport }));
+    expect(onRun).toHaveBeenCalledWith(dayReport, { Day: "45" });
+  });
+
+  it("does not run with an empty, zero or fractional day", async () => {
+    const onRun = renderDay();
+    const user = userEvent.setup();
+    const box = screen.getByRole("spinbutton");
+    const run = screen.getByRole("button", { name: en.report.runReport });
+
+    for (const bad of ["", "0", "2.5"]) {
+      await user.clear(box);
+      if (bad) await user.type(box, bad);
+      await user.click(run);
+    }
+    expect(onRun).not.toHaveBeenCalled();
+  });
+});
