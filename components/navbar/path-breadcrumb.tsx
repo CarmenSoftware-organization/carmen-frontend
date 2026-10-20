@@ -57,6 +57,7 @@ const EXTRA_SEGMENT_KEY: Record<string, string> = {
   setting: "setting",
   notifications: "notifications",
   "from-price-list": "fromPriceList",
+  history: "history",
 };
 
 /**

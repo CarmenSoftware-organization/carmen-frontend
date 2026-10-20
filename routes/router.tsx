@@ -426,6 +426,11 @@ export const router = createBrowserRouter([
                   import("./inventory-management/spot-check/spot-check.route"),
               },
               {
+                path: "spot-check/history",
+                lazy: () =>
+                  import("./inventory-management/spot-check/spot-check-history.route"),
+              },
+              {
                 path: "spot-check/location/:location_id",
                 lazy: () =>
                   import("./inventory-management/spot-check/spot-check-by-location.route"),
