@@ -2,10 +2,7 @@ import { useTranslations } from "use-intl";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
-import {
-  WASTAGE_URGENT_DAYS,
-  WASTAGE_WINDOW_DAYS,
-} from "@/constant/wastage-reporting";
+import { WASTAGE_URGENT_DAYS } from "@/constant/wastage-reporting";
 
 type Urgency = "expired" | "urgent" | "soon";
 
@@ -18,23 +15,18 @@ const TEXT_CLASS: Record<Urgency, string> = {
   soon: "text-foreground",
 };
 
-const FILL_CLASS: Record<Exclude<Urgency, "expired">, string> = {
-  urgent: "bg-warning",
-  soon: "bg-muted-foreground/50",
-};
-
 interface ExpiryUrgencyProps {
   readonly daysToExpiry: number;
   readonly expiredAt: string;
-  /** `inline` = คำกับวันที่บรรทัดเดียว ไม่มีแถบ (เซลล์ compact บนมือถือ) */
+  /** `inline` = คำกับวันที่บรรทัดเดียว (เซลล์ compact บนมือถือ) */
   readonly variant?: "stacked" | "inline";
 }
 
 /**
  * แทนคอลัมน์ Expiry Date / Days Left / Status สามช่อง — คำถามของหน้านี้คือ "ต้อง
  * จัดการล็อตไหนก่อน" ตัวเลขติดลบกับป้ายสถานะแยกกันตอบด้วยตาไม่ได้ จึงพูดเป็นคำ
- * ("เลยมา 3 วัน" / "อีก 5 วัน") สีตามความเร่งด่วน บรรทัดรองคือแถบระยะที่เหลือในช่วง
- * window (หมดแล้ว = รางสีแดงจางไม่มีเนื้อแถบ) ตามด้วยวันที่จริง
+ * ("เลยมา 3 วัน" / "อีก 5 วัน") สีตามความเร่งด่วน วันที่จริงเป็นบรรทัดรองจาง ๆ
+ * แบบเดียวกับเลข/วันที่ใบแจ้งหนี้ในตาราง GRN
  */
 export function ExpiryUrgency({
   daysToExpiry,
@@ -51,62 +43,32 @@ export function ExpiryUrgency({
       : daysToExpiry === 0
         ? t("expiresToday")
         : t("daysLeft", { count: daysToExpiry });
-
-  const fill =
-    urgency === "expired"
-      ? "0%"
-      : `${Math.max(4, Math.min(100, (daysToExpiry / WASTAGE_WINDOW_DAYS) * 100))}%`;
-
-  const date = (
-    <span className="text-muted-foreground text-micro whitespace-nowrap tabular-nums">
-      {formatDate(expiredAt, dateFormat)}
-    </span>
-  );
+  const date = formatDate(expiredAt, dateFormat);
 
   if (variant === "inline") {
     return (
       <span className="flex min-w-0 items-baseline gap-1.5">
         <span
-          className={cn(
-            "truncate text-xs font-semibold tabular-nums",
-            TEXT_CLASS[urgency],
-          )}
+          className={cn("truncate text-xs font-medium", TEXT_CLASS[urgency])}
         >
           {label}
         </span>
-        {date}
+        <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
+          {date}
+        </span>
       </span>
     );
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-0.5">
+    <div className="min-w-0">
       <span
-        className={cn(
-          "truncate text-sm font-semibold tabular-nums",
-          TEXT_CLASS[urgency],
-        )}
+        className={cn("block truncate font-medium", TEXT_CLASS[urgency])}
+        title={label}
       >
         {label}
       </span>
-      <span className="flex items-center gap-2">
-        <span
-          aria-hidden="true"
-          className={cn(
-            "relative h-1 w-10 shrink-0 rounded-full",
-            urgency === "expired" ? "bg-destructive/25" : "bg-muted",
-          )}
-        >
-          {urgency !== "expired" && (
-            <span
-              className={cn(
-                "absolute inset-y-0 left-0 rounded-full",
-                FILL_CLASS[urgency],
-              )}
-              style={{ width: fill }}
-            />
-          )}
-        </span>
+      <span className="text-muted-foreground block text-xs tabular-nums">
         {date}
       </span>
     </div>

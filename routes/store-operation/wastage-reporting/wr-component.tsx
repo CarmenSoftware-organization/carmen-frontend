@@ -20,6 +20,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { ListPageShell } from "@/components/share/list-page-shell";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { WASTAGE_WINDOW_DAYS } from "@/constant/wastage-reporting";
 import { useWastageReportTable } from "./use-wr-table";
 import { WrSummaryBar } from "./wr-summary-bar";
@@ -35,6 +36,7 @@ export default function WrComponent() {
   const t = useTranslations("storeOperation.wastageReporting");
   const tc = useTranslations("common");
   const { params, search, setSearch, tableConfig } = useDataGridState();
+  const isMobile = useIsMobile() === true;
 
   // ไม่มี ListToolbar / saved view: ตัวกรองเดียวคือสถานะ ซึ่งอยู่บนหน้าแล้ว
   // (WrSummaryBar) เมนู Filter ว่างเปล่า และ view ที่บันทึกได้มีแค่คำค้น+สถานะ
@@ -113,6 +115,7 @@ export default function WrComponent() {
   return (
     <ListPageShell
       title={t("title")}
+      count={totalRecords}
       description={t("desc", { days: WASTAGE_WINDOW_DAYS })}
       toolbar={
         <div className="w-full sm:w-auto sm:flex-initial">
@@ -133,8 +136,8 @@ export default function WrComponent() {
           recordCount={totalRecords}
           isLoading={isLoading}
           emptyMessage={emptyMessage}
-          // เซลล์วันหมดอายุมีแถบ (flex) อยู่ข้างใน — clamp ใช้ -webkit-box ทำ layout แถบเพี้ยน
-          tableLayout={{ cellAlign: "top", rowClamp: false }}
+          // มือถือเป็นเซลล์เดียวสามบรรทัด — clamp สองบรรทัดจะตัด GRN ทิ้ง
+          tableLayout={{ rowClamp: !isMobile }}
         >
           <DataGridContainer>
             <DataGridTable />

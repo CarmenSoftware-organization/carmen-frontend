@@ -50,7 +50,7 @@ export function useWastageReportTable({
       ),
       enableSorting: false,
       meta: { skeleton: columnSkeletons.text },
-      size: 160,
+      size: 140,
     },
     {
       id: "product",
@@ -64,7 +64,7 @@ export function useWastageReportTable({
           </p>
           {row.original.product_local_name && (
             <p
-              className="text-muted-foreground text-micro truncate"
+              className="text-muted-foreground truncate text-xs"
               title={row.original.product_local_name}
             >
               {row.original.product_local_name}
@@ -126,12 +126,12 @@ export function useWastageReportTable({
         />
       ),
       cell: ({ row }) => (
-        <>
-          {row.original.remaining_qty}{" "}
-          <span className="text-muted-foreground">
+        <span>
+          {row.original.remaining_qty}
+          <span className="text-muted-foreground ms-1 text-xs">
             {row.original.inventory_unit.name}
           </span>
-        </>
+        </span>
       ),
       enableSorting: false,
       size: 100,
@@ -166,8 +166,12 @@ export function useWastageReportTable({
           className="justify-end"
         />
       ),
-      cell: ({ row }) =>
-        formatCurrency(row.getValue<number>("remaining_value")),
+      // ยอดเงินหลักของแถว — หนักเท่า Total Amount ในตาราง GRN
+      cell: ({ row }) => (
+        <span className="font-medium">
+          {formatCurrency(row.getValue<number>("remaining_value"))}
+        </span>
+      ),
       enableSorting: false,
       size: 110,
       meta: {
