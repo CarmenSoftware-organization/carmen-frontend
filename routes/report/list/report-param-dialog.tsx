@@ -18,6 +18,7 @@ import {
   Field,
   FieldDatePicker,
   FieldGroup,
+  FieldInput,
   FieldLabel,
   FieldSelect,
 } from "@/components/ui/field";
@@ -35,12 +36,14 @@ import {
   flattenFields,
   parseReportDialog,
   resolveNoteText,
+  type ControlNode,
   type DateNode,
   type DialogCell,
   type FormField,
   type LookupNode,
   type ParsedDialog,
   type SingleField,
+  type TextNode,
   MAX_COLS,
 } from "./parse-report-dialog";
 import { COL_SPAN, GRID_COLS, MODAL_W } from "./dialog-layout";
@@ -427,12 +430,37 @@ function DateControlInner({
   );
 }
 
+/**
+ * ช่องพิมพ์ค่าเอง — Type="Number" รับเฉพาะจำนวนเต็ม ≥ min และต้องกรอก ตรวจด้วย constraint ของ browser
+ * (reportValidity ตอนกด Run/Export) ค่าไม่ถูกจึงไม่หลุดไปถึง report
+ */
+function TextControl({ node }: { readonly node: TextNode }) {
+  const remembered = useContext(RememberedParamsContext)?.values;
+  const initial =
+    remembered && node.name in remembered ? remembered[node.name] : node.value;
+  return node.numeric ? (
+    <FieldInput
+      name={node.name}
+      type="number"
+      inputMode="numeric"
+      min={node.min}
+      step={1}
+      required
+      defaultValue={initial}
+      className="h-8"
+    />
+  ) : (
+    <FieldInput name={node.name} defaultValue={initial} className="h-8" />
+  );
+}
+
 interface ControlProps {
-  readonly node: LookupNode | DateNode;
+  readonly node: ControlNode;
   readonly periods?: ReportPeriodMap;
 }
 
 function Control({ node, periods }: ControlProps) {
+  if (node.type === "text") return <TextControl node={node} />;
   if (node.type === "lookup") {
     return node.multi ? (
       <MultiLookupControl node={node} id={node.name} />
@@ -709,7 +737,7 @@ export function ReportParamDialog({
   const periods = lookupResult?.periods ?? {};
 
   // Inject lookup data into fields
-  const injectLookup = (ctrl: LookupNode | DateNode): LookupNode | DateNode => {
+  const injectLookup = (ctrl: ControlNode): ControlNode => {
     if (ctrl.type !== "lookup") return ctrl;
     const ds = ctrl.dataSource;
     if (!ds) return ctrl;
@@ -761,13 +789,16 @@ export function ReportParamDialog({
     return filters;
   };
 
+  // ช่องที่มีเงื่อนไข (TextBox ตัวเลข) ต้องผ่านก่อน — browser ชี้ช่องที่ผิดให้เอง
+  const formIsValid = () => !formRef.current || formRef.current.reportValidity();
+
   const handleSubmit = () => {
-    if (!report || !onRun) return;
+    if (!report || !onRun || !formIsValid()) return;
     onRun(report, collectFilters());
   };
 
   const handleExportClick = () => {
-    if (!report || !onExport) return;
+    if (!report || !onExport || !formIsValid()) return;
     onExport(report, collectFilters());
   };
 

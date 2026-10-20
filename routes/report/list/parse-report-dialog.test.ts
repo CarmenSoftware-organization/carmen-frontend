@@ -113,3 +113,24 @@ describe("<Note> in a report dialog", () => {
     expect(resolveNoteText("no token")).toBe("no token");
   });
 });
+
+// Slow Moving: Day พิมพ์เองได้ (dashboard ยังเป็น 30/60/90/180) — <TextBox Type="Number">
+describe("<TextBox> in a report dialog", () => {
+  it("parses a number box as a single field with its default and minimum", () => {
+    const { cells } = parseReportDialog(`<Dialog>
+  <Label Text="Day"/><TextBox Name="Day" Value="30" Type="Number" Min="1"/>
+</Dialog>`);
+
+    expect(cells).toHaveLength(1);
+    expect(cells[0]).toMatchObject({
+      kind: "single",
+      label: "Day",
+      control: { type: "text", name: "Day", value: "30", numeric: true, min: 1 },
+    });
+  });
+
+  it("defaults to a plain text box with minimum 1", () => {
+    const { cells } = parseReportDialog(`<Dialog><Label Text="Note"/><TextBox Name="Remark"/></Dialog>`);
+    expect(cells[0]).toMatchObject({ control: { type: "text", numeric: false, min: 1, value: "" } });
+  });
+});
