@@ -15,6 +15,8 @@ const crud = createConfigCrud<ProductDetail, CreateProductDto>({
   label: "product",
   updateMethod: "PATCH",
   cacheProfile: CACHE_NORMAL,
+  // item group list มี product_count — สร้าง/ลบ/ย้ายกลุ่มสินค้าแล้วต้นไม้หน้า Category ต้องนับใหม่
+  extraInvalidateKeys: [QUERY_KEYS.PRODUCT_ITEM_GROUPS],
 });
 
 export const useProduct = crud.useList;
