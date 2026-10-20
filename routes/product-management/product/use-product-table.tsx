@@ -65,13 +65,16 @@ export function useProductTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("code")} />
       ),
-      // รหัสเป็นข้อความเฉย ๆ ไม่ใช่ลิงก์ — ลิงก์เปิดรายการมีที่เดียวคือคอลัมน์ Name
-      // (เดิมทั้งสองคอลัมน์เป็นลิงก์สีน้ำเงิน แย่งสายตากันทุกแถว) · tabular-nums
-      // ให้ตัวเลขกว้างเท่ากัน ไล่อ่านเทียบรหัสลงแนวตั้งได้
+      // รหัสเป็นลิงก์เปิดรายการ (/product-management/product/:id) และเป็นลิงก์เดียว
+      // ของแถว — ชื่อเป็นข้อความธรรมดา (เดิมทั้งสองคอลัมน์เป็นลิงก์สีน้ำเงิน แย่งสายตา
+      // กันทุกแถว) · tabular-nums ให้ตัวเลขกว้างเท่ากัน ไล่อ่านเทียบรหัสลงแนวตั้งได้
       cell: ({ row }) => (
-        <span className="text-muted-foreground tabular-nums">
+        <CellAction
+          onClick={() => onEdit(row.original)}
+          className="tabular-nums"
+        >
           {row.original.code}
-        </span>
+        </CellAction>
       ),
       meta: { headerTitle: tfl("code"), skeleton: columnSkeletons.text },
     },
@@ -91,12 +94,7 @@ export function useProductTable({
           <div className="min-w-0">
             <Tooltip>
               <TooltipTrigger asChild>
-                <CellAction
-                  onClick={() => onEdit(row.original)}
-                  className="block w-full truncate"
-                >
-                  {name}
-                </CellAction>
+                <span className="block truncate font-medium">{name}</span>
               </TooltipTrigger>
               <TooltipContent>{name}</TooltipContent>
             </Tooltip>
