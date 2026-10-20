@@ -6,7 +6,27 @@ import { useBuCode } from "@/hooks/use-bu-code";
 import { httpClient } from "@/lib/http-client";
 import { ApiError } from "@/lib/api-error";
 import { CACHE_DYNAMIC } from "@/lib/cache-config";
-import type { Locations } from "@/types/stock-replenishment";
+import type { Locations, ProductLocation } from "@/types/stock-replenishment";
+
+const SEVERITY: Record<ProductLocation["status"], number> = {
+  critical: 0,
+  warning: 1,
+  low: 2,
+};
+
+// เรียงใน queryFn ไม่ใช่ตอน render — ตารางแต่ละคลังส่ง array นี้เข้า useReactTable
+// ตรง ๆ ใต้ "use no memo" ถ้าเรียงทุก render จะได้ reference ใหม่ทุกรอบ
+// ลำดับ: วิกฤตก่อน แล้วต้องสั่งมากไปน้อย
+export function sortBySeverity(locations: Locations): Locations {
+  return locations.map((loc) => ({
+    ...loc,
+    products_location: [...loc.products_location].sort(
+      (a, b) =>
+        SEVERITY[a.status] - SEVERITY[b.status] ||
+        b.reorder_qty - a.reorder_qty,
+    ),
+  }));
+}
 
 export function useStockReplenishment() {
   const buCode = useBuCode();
@@ -22,7 +42,7 @@ export function useStockReplenishment() {
         throw await ApiError.from(res, "Failed to fetch stock replenishment");
       }
       const json = await res.json();
-      return json.data ?? [];
+      return sortBySeverity(json.data ?? []);
     },
     enabled: !!buCode,
     ...CACHE_DYNAMIC,

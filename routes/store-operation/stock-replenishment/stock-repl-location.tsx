@@ -17,6 +17,7 @@ import {
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import type { Location, ProductLocation } from "@/types/stock-replenishment";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
+import { StockLevelBar } from "./stock-level-bar";
 
 interface StockReplLocationProps {
   readonly location: Location;
@@ -109,93 +110,45 @@ export function StockReplLocation({
     {
       accessorKey: "name",
       header: tfl("product"),
-      // ชื่อหลักบน local name เป็นบรรทัดรองข้างล่าง — ยาวเกินคอลัมน์ให้ตัดด้วย
-      // ellipsis (table เป็น table-fixed ความกว้างตาม size ข้างล่าง)
-      cell: ({ row }) => (
-        <NameWithSubtext
-          primary={row.getValue("name") || "..."}
-          secondary={row.original.local_name || undefined}
-        />
-      ),
-      enableSorting: false,
-      size: 180,
-    },
-    {
-      id: "category",
-      header: tfl("category"),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">
-          {row.original.category.name}
-        </span>
-      ),
-      enableSorting: false,
-    },
-    {
-      id: "sub_category",
-      header: tfl("subCategory"),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">
-          {row.original.sub_category.name}
-        </span>
-      ),
+      // ชื่อหลัก → ชื่อท้องถิ่น → หมวด › หมวดย่อย › กลุ่ม — เดิมสามอย่างหลังกินคนละ
+      // คอลัมน์เป็นตัวจางทั้งหมด จนชื่อสินค้าถูกตัดเหลือ "White Tofu Tube 885…"
+      cell: ({ row }) => {
+        const p = row.original;
+        const path = [p.category.name, p.sub_category.name, p.item_group.name]
+          .filter(Boolean)
+          .join(" › ");
+        return (
+          <div className="min-w-0">
+            <NameWithSubtext
+              primary={p.name || "..."}
+              secondary={p.local_name || undefined}
+            />
+            {path && (
+              <p
+                className="text-muted-foreground text-micro-legal truncate leading-[normal]"
+                title={path}
+              >
+                {path}
+              </p>
+            )}
+          </div>
+        );
+      },
       enableSorting: false,
     },
     {
-      id: "item_group",
-      header: tfl("itemGroup"),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">
-          {row.original.item_group.name}
-        </span>
-      ),
+      id: "stock_level",
+      header: t("stockLevel"),
+      cell: ({ row }) => <StockLevelBar product={row.original} />,
       enableSorting: false,
-    },
-    {
-      accessorKey: "on_hand_qty",
-      header: tfl("onHandQty"),
-      cell: ({ row }) => (
-        <span className="tabular-nums">{row.getValue("on_hand_qty")}</span>
-      ),
-      enableSorting: false,
-      size: 80,
-      meta: { headerClassName: "text-right", cellClassName: "text-right" },
-    },
-    {
-      accessorKey: "min_qty",
-      header: tfl("minQty"),
-      cell: ({ row }) => (
-        <span className="tabular-nums">{row.getValue("min_qty")}</span>
-      ),
-      enableSorting: false,
-      size: 80,
-      meta: { headerClassName: "text-right", cellClassName: "text-right" },
-    },
-    {
-      accessorKey: "max_qty",
-      header: tfl("maxQty"),
-      cell: ({ row }) => (
-        <span className="tabular-nums">{row.getValue("max_qty")}</span>
-      ),
-      enableSorting: false,
-      size: 80,
-      meta: { headerClassName: "text-right", cellClassName: "text-right" },
-    },
-    {
-      accessorKey: "par_qty",
-      header: tfl("parQty"),
-      cell: ({ row }) => (
-        <span className="tabular-nums">{row.getValue("par_qty")}</span>
-      ),
-      enableSorting: false,
-      size: 80,
-      meta: { headerClassName: "text-right", cellClassName: "text-right" },
+      size: 220,
     },
     {
       accessorKey: "reorder_qty",
       header: tfl("reorderQty"),
       cell: ({ row }) => (
         <span className="font-semibold tabular-nums">
-          {row.getValue("reorder_qty")}
+          {(row.getValue("reorder_qty") as number).toLocaleString()}
         </span>
       ),
       enableSorting: false,

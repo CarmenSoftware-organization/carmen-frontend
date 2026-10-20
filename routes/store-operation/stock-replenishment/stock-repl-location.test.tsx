@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { IntlProvider } from "use-intl";
 import en from "@/messages/en.json";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import type { Location } from "@/types/stock-replenishment";
 import { StockReplLocation } from "./stock-repl-location";
 
@@ -36,13 +37,15 @@ const location: Location = {
 function renderLocation(selectedIds: Set<string>, onChange = vi.fn()) {
   render(
     <IntlProvider locale="en" messages={en}>
-      <StockReplLocation
-        location={location}
-        selectedIds={selectedIds}
-        open
-        onOpenChange={() => {}}
-        onSelectionChange={onChange}
-      />
+      <TooltipProvider>
+        <StockReplLocation
+          location={location}
+          selectedIds={selectedIds}
+          open
+          onOpenChange={() => {}}
+          onSelectionChange={onChange}
+        />
+      </TooltipProvider>
     </IntlProvider>,
   );
   return onChange;
@@ -77,9 +80,6 @@ describe("StockReplLocation — selection", () => {
       }),
     );
 
-    expect(onChange).toHaveBeenCalledWith(
-      "loc-1",
-      new Set(["p1", "p2", "p3"]),
-    );
+    expect(onChange).toHaveBeenCalledWith("loc-1", new Set(["p1", "p2", "p3"]));
   });
 });

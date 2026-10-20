@@ -4364,17 +4364,20 @@
       "createSrTitle": "Create Store Requisition",
       "createSrDesc": "Review the selected items and create a store requisition.",
       "nLocations": "{count} locations",
-      "nItems": "{count} items",
+      "nItems": "{count, plural, one {# item} other {# items}}",
       "nCritical": "{count} critical",
       "nWarning": "{count} warning",
       "nLow": "{count} low",
-      "totalNeed": "Total reorder:",
       "selectAllIn": "Select all products in {location}",
       "requestQty": "Request",
       "srOneLocationTitle": "One location per requisition",
       "srOneLocationDesc": "A store requisition moves stock between one source and one destination. Pick items from one location at a time.",
       "createdNPr": "Created {count} purchase request(s)",
-      "nDocumentsWillBeCreated": "{count} purchase requests will be created — one per location"
+      "nDocumentsWillBeCreated": "{count} purchase requests will be created — one per location",
+      "nToReorder": "{count, plural, one {# item to reorder} other {# items to reorder}}",
+      "nSelected": "{count, plural, one {# item selected} other {# items selected}}",
+      "stockLevel": "Stock level",
+      "stockLevelAria": "On hand {onHand}, min {min}, par {par}, max {max}"
     },
     "wastageReporting": {
       "title": "Wastage Reporting",

@@ -4368,13 +4368,16 @@
       "nCritical": "{count} วิกฤต",
       "nWarning": "{count} เตือน",
       "nLow": "{count} ต่ำ",
-      "totalNeed": "จุดสั่งซื้อรวม:",
       "selectAllIn": "เลือกสินค้าทั้งหมดใน{location}",
       "requestQty": "ขอ",
       "srOneLocationTitle": "ใบเบิกได้ทีละคลัง",
       "srOneLocationDesc": "ใบเบิกของย้ายของจากคลังต้นทางเดียวไปปลายทางเดียว เลือกของทีละคลังนะ",
       "createdNPr": "สร้างใบขอซื้อแล้ว {count} ใบ",
-      "nDocumentsWillBeCreated": "จะได้ใบขอซื้อ {count} ใบ — คลังละใบ"
+      "nDocumentsWillBeCreated": "จะได้ใบขอซื้อ {count} ใบ — คลังละใบ",
+      "nToReorder": "ต้องสั่ง {count} รายการ",
+      "nSelected": "เลือกแล้ว {count} รายการ",
+      "stockLevel": "ระดับสต็อก",
+      "stockLevelAria": "คงเหลือ {onHand} ขั้นต่ำ {min} พาร์ {par} ขั้นสูง {max}"
     },
     "wastageReporting": {
       "title": "รายงานของเสีย",
