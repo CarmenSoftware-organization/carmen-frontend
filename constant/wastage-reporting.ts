@@ -1,12 +1,8 @@
-import type { DotTone } from "@/components/ui/status-dot-badge";
-import type { WastageStatus } from "@/types/wastage-reporting";
+/**
+ * ช่วงวันข้างหน้าที่นับว่า "ใกล้หมดอายุ" — ส่งเป็น `?days=` ทุกครั้ง แทนการพึ่ง
+ * default 30 ของ backend เพื่อให้ป้าย "≤ 30 วัน" บนหน้ากับข้อมูลที่ได้ผูกกันอยู่
+ */
+export const WASTAGE_WINDOW_DAYS = 30;
 
-export const WASTAGE_STATUS_TONE: Record<WastageStatus, DotTone> = {
-  expired: "destructive",
-  expiring: "warning",
-};
-
-export const WASTAGE_STATUS_OPTIONS = [
-  { label: "Expired", value: "status|string:expired" },
-  { label: "Expiring", value: "status|string:expiring" },
-];
+/** เหลือไม่เกินกี่วันถึงขึ้นสีเตือน — ที่เหลือในช่วง window เป็นสีกลาง */
+export const WASTAGE_URGENT_DAYS = 7;

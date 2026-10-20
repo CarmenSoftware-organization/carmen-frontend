@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { Package } from "lucide-react";
+import { PackageCheck, SearchX, X } from "lucide-react";
 import { useTranslations } from "use-intl";
 import {
   DataGrid,
@@ -11,42 +11,48 @@ import { DataGridPagination } from "@/components/ui/data-grid/data-grid-paginati
 import { useWastageReport } from "./use-wastage-report";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { ErrorState } from "@/components/ui/error-state";
-import EmptyComponent from "@/components/empty-component";
-import { StatusFilter } from "@/components/ui/status-filter";
-import { StatusDotBadge } from "@/components/ui/status-dot-badge";
+import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { ListPageShell } from "@/components/share/list-page-shell";
-import { formatCurrency } from "@/lib/currency-utils";
-import { WASTAGE_STATUS_OPTIONS } from "@/constant/wastage-reporting";
+import { WASTAGE_WINDOW_DAYS } from "@/constant/wastage-reporting";
 import { useWastageReportTable } from "./use-wr-table";
+import { WrSummaryBar } from "./wr-summary-bar";
 import { useListFilters } from "@/hooks/use-list-filters";
 import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
+import type { WastageStatus } from "@/types/wastage-reporting";
+
+const isWastageStatus = (v: string): v is WastageStatus =>
+  v === "expired" || v === "expiring";
 
 export default function WrComponent() {
   const navigate = useNavigate();
   const t = useTranslations("storeOperation.wastageReporting");
+  const tc = useTranslations("common");
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
   const { params, search, setSearch, tableConfig } = useDataGridState();
 
-  // WASTAGE_STATUS_OPTIONS label เป็น literal string ไม่ใช่ i18n key จึงห่อด้วย
-  // control: "custom" แทน control: "status" (ตัวนั้นเรียก t() กับ label ตรง ๆ)
+  // สถานะคุมด้วย segmented บนหน้า (WrSummaryBar) จึงเป็น field hidden — ยังอยู่ใน
+  // URL / saved view ตามปกติ แต่ไม่ซ้ำเป็นเมนูใน Filter และไม่ออก chip
+  // ไม่ใช้ filterParam: endpoint นี้อ่าน `?status=` ของตัวเอง ไม่อ่าน `filter`
+  // (เดิมส่ง `filter=status|string:expired` ไป backend ทิ้งเงียบ ๆ ได้ทุกแถว)
   const wrFilterFields = useMemo<FilterFieldDef[]>(
     () => [
       {
-        key: "filter",
-        section: "listView.sectionDocument",
+        key: "status",
         control: "custom",
         labelKey: "common.status",
-        render: (value, onChange) => (
-          <StatusFilter
-            value={value}
-            onChange={onChange}
-            options={WASTAGE_STATUS_OPTIONS}
-            className="w-full"
-          />
-        ),
+        hidden: true,
+        render: () => null,
       },
     ],
     [],
@@ -56,14 +62,31 @@ export default function WrComponent() {
     pageKey: LIST_PAGE_KEYS.WASTAGE_REPORTING,
     fields: wrFilterFields,
   });
+  const status = isWastageStatus(lf.values.status) ? lf.values.status : "";
 
-  const queryParams = { ...params, filter: lf.filterParam };
+  const { data, isLoading, error, refetch } = useWastageReport({
+    page: params.page,
+    perpage: params.perpage,
+    search: params.search,
+    days: WASTAGE_WINDOW_DAYS,
+    ...(status ? { status } : {}),
+  });
 
-  const { data, isLoading, error, refetch } = useWastageReport(queryParams);
+  // summary ของ backend คิดหลังกรองสถานะ — กรอง "หมดอายุแล้ว" อยู่ ปุ่ม "ใกล้หมด"
+  // จะนับได้ 0 ทั้งที่มีของ จึงยิงอีกครั้งแบบไม่กรอง (แถวเดียว) เฉพาะตอนที่กรองอยู่
+  const { data: unfiltered } = useWastageReport(
+    {
+      page: 1,
+      perpage: 1,
+      search: params.search,
+      days: WASTAGE_WINDOW_DAYS,
+    },
+    { enabled: !!status },
+  );
 
   const items = data?.data ?? [];
   const totalRecords = data?.paginate?.total ?? 0;
-  const summary = data?.summary;
+  const counts = status ? unfiltered?.summary : data?.summary;
 
   const table = useWastageReportTable({
     items,
@@ -76,10 +99,42 @@ export default function WrComponent() {
 
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
 
+  const emptyMessage = search ? (
+    <Empty className="py-10">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <SearchX />
+        </EmptyMedia>
+        <EmptyTitle>{t("noResultsTitle", { search })}</EmptyTitle>
+        <EmptyDescription>{t("noResultsDesc")}</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button size="sm" variant="outline" onClick={() => setSearch("")}>
+          <X />
+          {tc("clearSearch")}
+        </Button>
+      </EmptyContent>
+    </Empty>
+  ) : (
+    <Empty className="py-10">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <PackageCheck />
+        </EmptyMedia>
+        <EmptyTitle>
+          {t(status === "expired" ? "noExpiredTitle" : "allFreshTitle")}
+        </EmptyTitle>
+        <EmptyDescription>
+          {t("allFreshDesc", { days: WASTAGE_WINDOW_DAYS })}
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  );
+
   return (
     <ListPageShell
       title={t("title")}
-      description={t("desc")}
+      description={t("desc", { days: WASTAGE_WINDOW_DAYS })}
       toolbar={
         <ListToolbar
           search={search}
@@ -91,41 +146,20 @@ export default function WrComponent() {
       }
     >
       <div className="space-y-3">
-        {/* summary จาก backend — ยอดรวมทั้งชุดข้อมูล ไม่ใช่แค่หน้าปัจจุบัน */}
-        {summary && (
-          <div className="bg-muted/30 flex flex-wrap items-center gap-3 rounded-md border px-3 py-2 text-xs">
-            <span className="text-muted-foreground flex items-center gap-1.5">
-              <Package className="size-3.5" aria-hidden="true" />
-              {t("nItems", { count: summary.total_items })}
-            </span>
-            <span className="text-muted-foreground/40">|</span>
-            <StatusDotBadge tone="destructive" size="xs">
-              {t("nExpired", { count: summary.expired_count })}
-            </StatusDotBadge>
-            <StatusDotBadge tone="warning" size="xs">
-              {t("nExpiring", { count: summary.expiring_count })}
-            </StatusDotBadge>
-            <span className="text-muted-foreground/40">|</span>
-            <span className="font-semibold">
-              {t("qtyAtRisk")}{" "}
-              <span className="tabular-nums">
-                {summary.total_qty_at_risk.toLocaleString()}
-              </span>
-            </span>
-            <span className="font-semibold">
-              {t("valueAtRisk")}{" "}
-              <span className="tabular-nums">
-                {formatCurrency(summary.total_value_at_risk)}
-              </span>
-            </span>
-          </div>
-        )}
+        <WrSummaryBar
+          counts={counts}
+          valueAtRisk={data?.summary?.total_value_at_risk}
+          status={status}
+          onStatusChange={(next) => lf.setValue("status", next)}
+        />
 
         <DataGrid
           table={table}
           recordCount={totalRecords}
           isLoading={isLoading}
-          emptyMessage={<EmptyComponent />}
+          emptyMessage={emptyMessage}
+          // เซลล์วันหมดอายุมีสามชั้น (คำ · แถบ · วันที่) clamp สองบรรทัดจะตัดวันที่ทิ้ง
+          tableLayout={{ cellAlign: "top", rowClamp: false }}
         >
           <DataGridContainer>
             <DataGridTable />
