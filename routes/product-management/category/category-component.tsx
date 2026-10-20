@@ -37,6 +37,7 @@ import { useNodeAccountCodes } from "./use-node-account-codes";
 import {
   applyCascadeDecision,
   type CascadeDecision,
+  type CascadePayload,
 } from "./cascade-changes";
 import TreeContent from "./tree-content";
 import { ListPageShell } from "@/components/share/list-page-shell";
@@ -193,9 +194,7 @@ export default function CategoryComponent() {
             isEdit ? (selectedNode?.account_codes ?? []) : [],
             { inventory: inventory_account_code, direct: direct_account_code },
           );
-    const base = { ...rest, ...(account_codes ? { account_codes } : {}) };
-    // edit ต้องผ่าน applyCascadeDecision เสมอ — backend ถือ cascade_deviation=true เมื่อไม่ส่ง
-    const data = isEdit ? applyCascadeDecision(base, decision) : base;
+    const data = { ...rest, ...(account_codes ? { account_codes } : {}) };
     const ok = () => handleOpenChange(false);
     const opts = (label: string) => ({
       onSuccess: () => {
@@ -214,7 +213,11 @@ export default function CategoryComponent() {
       const payload = {
         id: selectedNode.id,
         doc_version: selectedNode.doc_version,
-        ...data,
+        // edit ต้องผ่าน applyCascadeDecision เสมอ — backend ถือ cascade_deviation=true เมื่อไม่ส่ง
+        // (ห้าม spread data ซ้ำ: deviation ที่ไม่เปลี่ยนถูกลบออกจาก payload โดยตั้งใจ)
+        // cast: Partial ของ helper มาจาก delete key deviation ที่ DTO ฝั่ง update รับเป็น optional จริง
+        ...(applyCascadeDecision(data, decision) as typeof data &
+          CascadePayload),
       };
       const label = NODE_LABELS[selectedNode.type];
       const actions = {
