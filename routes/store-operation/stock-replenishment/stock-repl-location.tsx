@@ -249,9 +249,9 @@ export function StockReplLocation({
             recordCount={products.length}
             tableLayout={{
               checkbox: true,
-              // ชื่อสินค้ามีชื่อท้องถิ่นเป็นบรรทัดรอง เซลล์อื่นไม่มี — ชิดบนให้
-              // ทุกคอลัมน์เริ่มบรรทัดแรกที่เส้นเดียวกัน (ตารางนี้อ่านอย่างเดียว)
-              cellAlign: "top",
+              // หัวตารางมีพื้นหลังและติดขอบบนตอนเลื่อน แบบเดียวกับหน้า list อื่น
+              // แถวจัดกึ่งกลางแนวตั้งตามค่าเริ่มต้น (เหมือนตาราง GRN)
+              headerSticky: true,
               // เซลล์ compact สูงเกินสองบรรทัดเสมอ clamp จะตัดแถบสต็อกทิ้ง
               rowClamp: !isMobile,
             }}

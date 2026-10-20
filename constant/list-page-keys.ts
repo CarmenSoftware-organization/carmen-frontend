@@ -50,7 +50,6 @@ export const LIST_PAGE_KEYS = {
   REPORT_HISTORY: "report_history",
   // store-operation
   STORE_REQUISITION: "sr",
-  WASTAGE_REPORTING: "wastage",
   // system-admin
   USER: "user",
   ROLE: "role",

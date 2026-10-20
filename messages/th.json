@@ -4386,12 +4386,20 @@
     },
     "wastageReporting": {
       "title": "รายงานของเสีย",
-      "desc": "ล็อตสินค้าหมดอายุ/ใกล้หมดอายุ พร้อมจำนวนและมูลค่าที่เสี่ยงเสีย",
-      "nItems": "{count} รายการ",
-      "nExpired": "หมดอายุ {count}",
-      "nExpiring": "ใกล้หมดอายุ {count}",
-      "qtyAtRisk": "จำนวนเสี่ยง:",
-      "valueAtRisk": "มูลค่าเสี่ยง:"
+      "desc": "ล็อตที่หมดอายุแล้วหรือจะหมดใน {days} วันและยังมีของเหลือ — เรียงจากเร่งด่วนที่สุด",
+      "valueAtRisk": "มูลค่าเสี่ยง",
+      "segmentAll": "ทั้งหมด",
+      "segmentExpired": "หมดอายุแล้ว",
+      "segmentExpiring": "ใกล้หมด ≤ {days} วัน",
+      "statusFilterAria": "กรองตามสถานะวันหมดอายุ",
+      "daysOverdue": "เลยมา {count} วัน",
+      "expiresToday": "หมดอายุวันนี้",
+      "daysLeft": "อีก {count} วัน",
+      "noResultsTitle": "ไม่พบ “{search}”",
+      "noResultsDesc": "ค้นได้จากชื่อสินค้า คลัง และเลขที่ GRN",
+      "allFreshTitle": "ไม่มีล็อตที่เสี่ยงเสีย",
+      "noExpiredTitle": "ไม่มีล็อตที่หมดอายุค้างอยู่",
+      "allFreshDesc": "ไม่มีของคงเหลือที่หมดอายุแล้วหรือจะหมดใน {days} วันข้างหน้า"
     }
   },
   "procurement": {

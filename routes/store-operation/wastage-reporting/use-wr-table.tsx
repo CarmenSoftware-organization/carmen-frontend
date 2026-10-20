@@ -7,14 +7,12 @@ import {
   indexColumn,
   columnSkeletons,
 } from "@/components/ui/data-grid/columns";
-import { StatusDotBadge } from "@/components/ui/status-dot-badge";
-import { useProfile } from "@/hooks/use-profile";
-import { formatDate } from "@/lib/date-utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { formatCurrency } from "@/lib/currency-utils";
 import type { WastageItem } from "@/types/wastage-reporting";
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
-import { WASTAGE_STATUS_TONE } from "@/constant/wastage-reporting";
+import { ExpiryUrgency } from "./expiry-urgency";
 
 interface UseWastageReportTableOptions {
   items: WastageItem[];
@@ -32,23 +30,27 @@ export function useWastageReportTable({
   onOpenGrn,
 }: UseWastageReportTableOptions) {
   "use no memo";
-  const { dateFormat } = useProfile();
   const tfl = useTranslations("field");
-  const ts = useTranslations("status");
+  const isMobile = useIsMobile() === true;
 
   const dataColumns: ColumnDef<WastageItem>[] = [
     {
-      accessorKey: "grn_no",
+      // วันหมดอายุ + เหลือกี่วัน + สถานะ รวมเป็นคอลัมน์เดียว (ดู ExpiryUrgency)
+      // วางหน้าสุดเพราะ backend เรียงตามคอลัมน์นี้เสมอ — ไม่เปิด sort ให้กดเพราะ
+      // endpoint ไม่รับ `sort` กดแล้วไม่มีอะไรเปลี่ยน
+      id: "expiry",
       header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("grnNo")} />
+        <DataGridColumnHeader column={column} title={tfl("expiryDate")} />
       ),
       cell: ({ row }) => (
-        <CellAction onClick={() => onOpenGrn(row.original)}>
-          {row.getValue("grn_no")}
-        </CellAction>
+        <ExpiryUrgency
+          daysToExpiry={row.original.days_to_expiry}
+          expiredAt={row.original.expired_at}
+        />
       ),
+      enableSorting: false,
       meta: { skeleton: columnSkeletons.text },
-      size: 130,
+      size: 140,
     },
     {
       id: "product",
@@ -62,7 +64,7 @@ export function useWastageReportTable({
           </p>
           {row.original.product_local_name && (
             <p
-              className="text-muted-foreground text-micro truncate"
+              className="text-muted-foreground truncate text-xs"
               title={row.original.product_local_name}
             >
               {row.original.product_local_name}
@@ -98,53 +100,21 @@ export function useWastageReportTable({
       ),
       enableSorting: false,
       meta: { skeleton: columnSkeletons.text },
-      size: 150,
+      size: 120,
     },
     {
-      accessorKey: "expired_at",
+      accessorKey: "grn_no",
       header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("expiryDate")} />
+        <DataGridColumnHeader column={column} title={tfl("grnNo")} />
       ),
-      cell: ({ row }) => formatDate(row.getValue("expired_at"), dateFormat),
+      cell: ({ row }) => (
+        <CellAction onClick={() => onOpenGrn(row.original)}>
+          {row.getValue("grn_no")}
+        </CellAction>
+      ),
+      enableSorting: false,
       meta: { skeleton: columnSkeletons.text },
-      size: 110,
-    },
-    {
-      accessorKey: "days_to_expiry",
-      header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("daysToExpiry")}
-          className="justify-end"
-        />
-      ),
-      enableSorting: false,
-      size: 90,
-      meta: {
-        cellClassName: "text-right tabular-nums",
-        skeleton: columnSkeletons.text,
-      },
-    },
-    {
-      accessorKey: "status",
-      header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("status")}
-          className="justify-center"
-        />
-      ),
-      enableSorting: false,
-      cell: ({ row }) => {
-        const status = row.original.status;
-        return (
-          <StatusDotBadge tone={WASTAGE_STATUS_TONE[status]} size="xs">
-            {ts(status)}
-          </StatusDotBadge>
-        );
-      },
-      meta: { skeleton: columnSkeletons.badge, cellClassName: "text-center" },
-      size: 100,
+      size: 130,
     },
     {
       accessorKey: "remaining_qty",
@@ -156,15 +126,15 @@ export function useWastageReportTable({
         />
       ),
       cell: ({ row }) => (
-        <>
-          {row.original.remaining_qty}{" "}
-          <span className="text-muted-foreground">
+        <span>
+          {row.original.remaining_qty}
+          <span className="text-muted-foreground ms-1 text-xs">
             {row.original.inventory_unit.name}
           </span>
-        </>
+        </span>
       ),
       enableSorting: false,
-      size: 100,
+      size: 130,
       meta: {
         cellClassName: "text-right tabular-nums",
         skeleton: columnSkeletons.text,
@@ -196,10 +166,14 @@ export function useWastageReportTable({
           className="justify-end"
         />
       ),
-      cell: ({ row }) =>
-        formatCurrency(row.getValue<number>("remaining_value")),
+      // ยอดเงินหลักของแถว — หนักเท่า Total Amount ในตาราง GRN
+      cell: ({ row }) => (
+        <span className="font-medium">
+          {formatCurrency(row.getValue<number>("remaining_value"))}
+        </span>
+      ),
       enableSorting: false,
-      size: 110,
+      size: 140,
       meta: {
         cellClassName: "text-right tabular-nums",
         skeleton: columnSkeletons.text,
@@ -207,10 +181,55 @@ export function useWastageReportTable({
     },
   ];
 
-  const allColumns: ColumnDef<WastageItem>[] = [
-    indexColumn<WastageItem>(params),
-    ...dataColumns,
-  ];
+  // จอเล็ก 9 คอลัมน์บีบจนอ่านไม่ออก — เหลือเซลล์เดียวสามบรรทัด: สินค้า · มูลค่า /
+  // ความเร่งด่วน · คงเหลือ / คลัง · ล็อต · GRN (แนวเดียวกับ stock-replenishment)
+  const compactColumn: ColumnDef<WastageItem> = {
+    id: "compact",
+    header: tfl("product"),
+    cell: ({ row }) => {
+      const it = row.original;
+      return (
+        <div className="min-w-0 space-y-0.5">
+          <div className="flex items-start gap-2">
+            <p className="min-w-0 flex-1 truncate" title={it.product_name}>
+              {it.product_name}
+            </p>
+            <span className="shrink-0 font-semibold tabular-nums">
+              {formatCurrency(it.remaining_value)}
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <div className="min-w-0 flex-1">
+              <ExpiryUrgency
+                variant="inline"
+                daysToExpiry={it.days_to_expiry}
+                expiredAt={it.expired_at}
+              />
+            </div>
+            <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+              {it.remaining_qty} {it.inventory_unit.name}
+            </span>
+          </div>
+          <div className="text-muted-foreground text-micro flex min-w-0 items-center gap-1.5">
+            <span className="min-w-0 truncate">
+              {it.location_name} · {it.lot_no}
+            </span>
+            <CellAction
+              onClick={() => onOpenGrn(it)}
+              className="ml-auto shrink-0"
+            >
+              {it.grn_no}
+            </CellAction>
+          </div>
+        </div>
+      );
+    },
+    enableSorting: false,
+  };
+
+  const allColumns: ColumnDef<WastageItem>[] = isMobile
+    ? [compactColumn]
+    : [indexColumn<WastageItem>(params), ...dataColumns];
 
   return useReactTable({
     data: items,

@@ -4386,12 +4386,20 @@
     },
     "wastageReporting": {
       "title": "Wastage Reporting",
-      "desc": "Expired and expiring stock lots — quantity and value at risk.",
-      "nItems": "{count} items",
-      "nExpired": "{count} expired",
-      "nExpiring": "{count} expiring",
-      "qtyAtRisk": "Qty at risk:",
-      "valueAtRisk": "Value at risk:"
+      "desc": "Lots that have expired or will expire within {days} days, still on hand — act on the most urgent first.",
+      "valueAtRisk": "Value at risk",
+      "segmentAll": "All",
+      "segmentExpired": "Expired",
+      "segmentExpiring": "Expiring ≤ {days} days",
+      "statusFilterAria": "Filter by expiry status",
+      "daysOverdue": "{count, plural, one {# day overdue} other {# days overdue}}",
+      "expiresToday": "Expires today",
+      "daysLeft": "{count, plural, one {# day left} other {# days left}}",
+      "noResultsTitle": "Nothing matches “{search}”",
+      "noResultsDesc": "Search covers product, location and GRN number.",
+      "allFreshTitle": "No lots at risk",
+      "noExpiredTitle": "No expired lots on hand",
+      "allFreshDesc": "Nothing on hand has expired or will expire in the next {days} days."
     }
   },
   "procurement": {

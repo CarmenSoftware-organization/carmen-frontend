@@ -7,7 +7,20 @@ import { ApiError } from "@/lib/api-error";
 import { CACHE_DYNAMIC } from "@/lib/cache-config";
 import { buildUrl } from "@/lib/build-query-string";
 import type { ParamsDto, PaginatedResponse } from "@/types/params";
-import type { WastageItem, WastageSummary } from "@/types/wastage-reporting";
+import type {
+  WastageItem,
+  WastageStatus,
+  WastageSummary,
+} from "@/types/wastage-reporting";
+
+/**
+ * endpoint นี้ไม่อ่าน `filter` แบบ list ทั่วไป — กรองผ่าน query ของตัวเอง
+ * (`status` / `days`) และเรียงตามวันหมดอายุตายตัว (ไม่รับ `sort`)
+ */
+export interface WastageReportParams extends ParamsDto {
+  status?: WastageStatus;
+  days?: number;
+}
 
 export interface WastageReportResponse extends PaginatedResponse<WastageItem> {
   summary?: WastageSummary;
@@ -18,11 +31,15 @@ export interface WastageReportResponse extends PaginatedResponse<WastageItem> {
  * ยิง `GET /api/{bu}/wastage-reporting` แบบแบ่งหน้า พร้อม `summary`
  * (จำนวน/มูลค่าที่เสี่ยงเสียรวม) จะไม่ fetch จนกว่า buCode จะพร้อม
  * @param params - พารามิเตอร์ค้นหา/กรอง/แบ่งหน้า
+ * @param options.enabled - ปิด query ชั่วคราว (default เปิด)
  * @returns ผลลัพธ์ useQuery ของ WastageReportResponse
  * @example
  * const { data } = useWastageReport({ page: 1, search: "GRN2608" });
  */
-export function useWastageReport(params?: ParamsDto) {
+export function useWastageReport(
+  params?: WastageReportParams,
+  options?: { enabled?: boolean },
+) {
   const buCode = useBuCode();
 
   return useQuery<WastageReportResponse>({
@@ -37,7 +54,7 @@ export function useWastageReport(params?: ParamsDto) {
       }
       return res.json();
     },
-    enabled: !!buCode,
+    enabled: !!buCode && (options?.enabled ?? true),
     ...CACHE_DYNAMIC,
   });
 }
