@@ -1,7 +1,26 @@
 {
-  "current": "2.5.22",
-  "generated_at": "2026-10-20T16:22:31.390Z",
+  "current": "2.5.23",
+  "generated_at": "2026-10-20T16:48:37.439Z",
   "versions": [
+    {
+      "version": "2.5.23",
+      "build": "2.5.23-build.20261020.03f63522",
+      "date": "2026-10-20",
+      "commit": "03f63522",
+      "changes": {
+        "added": [],
+        "fixed": [
+          {
+            "scope": "toast",
+            "summary": "ขยายเป้ากดปุ่มปิด toast เป็น 44px บนมือถือ/จอสัมผัส",
+            "hash": "d8a140c1",
+            "author": "Thammanoon Semapru",
+            "pr": 392
+          }
+        ],
+        "changed": []
+      }
+    },
     {
       "version": "2.5.22",
       "build": "2.5.22-build.20261020.af81ef80",

@@ -4,6 +4,11 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.5.23] - 2026-10-20
+
+### Fixed
+- **toast:** ขยายเป้ากดปุ่มปิด toast เป็น 44px บนมือถือ/จอสัมผัส (#392) — Thammanoon Semapru `d8a140c1`
+
 ## [2.5.22] - 2026-10-20
 
 ### Added
