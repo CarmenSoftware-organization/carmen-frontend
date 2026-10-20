@@ -17,13 +17,6 @@
             "pr": 399
           },
           {
-            "scope": "list-return",
-            "summary": "useListReturn รับ list path ได้หลายตัว",
-            "hash": "2c34dfeb",
-            "author": "Thammanoon Semapru",
-            "pr": 399
-          },
-          {
             "scope": "wastage-reporting",
             "summary": "ตัวกรองสถานะแบบ segmented ที่กรองได้จริง คอลัมน์ความเร่งด่วน และเลย์เอาต์มือถือ",
             "hash": "675563d8",

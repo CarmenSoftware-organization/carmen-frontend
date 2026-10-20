@@ -8,7 +8,6 @@
 
 ### Added
 - **spot-check:** แยก History เป็น route ของตัวเอง + ตารางพร้อม toolbar ตัวกรอง (#399) — Thammanoon Semapru `69d8747b`
-- **list-return:** useListReturn รับ list path ได้หลายตัว (#399) — Thammanoon Semapru `2c34dfeb`
 - **wastage-reporting:** ตัวกรองสถานะแบบ segmented ที่กรองได้จริง คอลัมน์ความเร่งด่วน และเลย์เอาต์มือถือ (#398) — Thammanoon Semapru `675563d8`
 - **stock-replenishment:** แถบระดับสต็อก นับรายการต้องสั่งแทนยอดรวมข้ามหน่วย แถบ action ติดขอบล่าง (#396) — Thammanoon Semapru `5d5779fb`
 
