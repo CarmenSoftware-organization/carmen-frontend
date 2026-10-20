@@ -10,6 +10,7 @@ import { getSpotCheckMethodLabel } from "@/constant/spot-check-method";
 import type { SpotCheckMethod, SpotCheckStatus } from "@/types/spot-check";
 import { METHOD_VISUAL, STATUS_VISUAL } from "./sc-status-visual";
 import { BackButton } from "@/components/share/back-button";
+import { SC_LIST_PATHS } from "./sc-paths";
 
 interface ScEntryHeaderProps {
   readonly locationName: string;
@@ -34,7 +35,7 @@ export function ScEntryHeader({
 }: ScEntryHeaderProps) {
   const t = useTranslations("inventoryManagement.spotCheck");
   const ts = useTranslations("status");
-  const { toList } = useListReturn("/inventory-management/spot-check");
+  const { toList } = useListReturn(SC_LIST_PATHS);
   const { dateFormat } = useProfile();
 
   const status = STATUS_VISUAL[docStatus ?? "pending"] ?? STATUS_VISUAL.pending;

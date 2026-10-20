@@ -34,6 +34,7 @@ import {
   mapFormToPayload,
   type SpotCheckFormValues,
 } from "./sc-form-schema";
+import { SC_LIST_PATHS } from "./sc-paths";
 
 const FORM_ID = "sc-form";
 
@@ -55,9 +56,7 @@ export function ScForm({
   const tc = useTranslations("common");
   const tform = useTranslations("form");
   const navigate = useNavigate();
-  const { toList, returnState } = useListReturn(
-    "/inventory-management/spot-check",
-  );
+  const { toList, returnState } = useListReturn(SC_LIST_PATHS);
   const createSc = useCreateSpotCheck();
   const isPending = createSc.isPending;
 

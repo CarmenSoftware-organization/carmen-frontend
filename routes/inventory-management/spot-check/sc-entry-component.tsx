@@ -34,6 +34,7 @@ import { ScEntryNotesDialog } from "./sc-entry-notes-dialog";
 import { EntryToolbar } from "../shared/entry-toolbar";
 import { EntrySheetHeader } from "../shared/entry-sheet-header";
 import { useEntryAdvance } from "../shared/use-entry-advance";
+import { SC_LIST_PATHS } from "./sc-paths";
 
 interface ScEntryComponentProps {
   readonly spotCheckId: string;
@@ -46,9 +47,7 @@ const ROW_ESTIMATE = 53; // px ของแถวใบนับหนึ่ง�
 export function ScEntryComponent({ spotCheckId }: ScEntryComponentProps) {
   const t = useTranslations("inventoryManagement.spotCheck");
   const navigate = useNavigate();
-  const { toList, returnState } = useListReturn(
-    "/inventory-management/spot-check",
-  );
+  const { toList, returnState } = useListReturn(SC_LIST_PATHS);
 
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");

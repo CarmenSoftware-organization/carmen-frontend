@@ -11,6 +11,7 @@ import type {
   SpotCheckReviewItem,
 } from "@/types/spot-check";
 import { ReviewComponent } from "../shared/review-component";
+import { SC_LIST_PATHS } from "./sc-paths";
 
 interface ScReviewComponentProps {
   readonly review: SpotCheckReviewData;
@@ -30,7 +31,7 @@ export function ScReviewComponent({
   onBack,
 }: ScReviewComponentProps) {
   const t = useTranslations("inventoryManagement.spotCheck");
-  const { toList } = useListReturn("/inventory-management/spot-check");
+  const { toList } = useListReturn(SC_LIST_PATHS);
   const submitSc = useSubmitSpotCheck(review.id);
 
   // ชื่อหน่วยเฉพาะที่แถว review อ้างถึง (ดึงตาม id)
