@@ -451,6 +451,45 @@
         "pending": "รอดำเนินการ",
         "urgent": "เร่งด่วน"
       }
+    },
+    "settings": {
+      "pageDescription": "ค่าตั้งต้นที่โมดูล Accounting ของระบบใช้ — งวดบัญชี GL และการลงบัญชี AP / AR",
+      "readOnlyNote": "อ่านอย่างเดียว — ต้องมีสิทธิ์แก้ไขการตั้งค่าแอปจึงจะแก้ได้",
+      "loadError": "โหลดการตั้งค่า Accounting ไม่สำเร็จ",
+      "freshLoadError": "อ่านค่าล่าสุดไม่ได้ จึงยังไม่ได้บันทึก ลองใหม่อีกครั้ง",
+      "saved": "บันทึกการตั้งค่า Accounting แล้ว",
+      "prefixNone": "ไม่ระบุ",
+      "prefixUnknown": "prefix ที่ไม่อยู่ในรายการ",
+      "sections": {
+        "generalLedger": "บัญชีแยกประเภท",
+        "generalLedgerDesc": "ปีบัญชี การปิดงวด และ prefix ของใบสำคัญที่ระบบสร้างเอง",
+        "accountsPayable": "เจ้าหนี้",
+        "accountsPayableDesc": "บัญชีและ prefix ที่ใช้ตอนลงบัญชี AP Invoice และ AP Payment",
+        "accountsReceivable": "ลูกหนี้",
+        "accountsReceivableDesc": "บัญชีและ prefix ที่ใช้ตอนลงบัญชีเอกสาร AR"
+      },
+      "fields": {
+        "fiscalYearStartMonth": "เดือนเริ่มต้นปีบัญชี",
+        "retainedEarningsAccount": "บัญชีกำไรสะสม",
+        "reversalPrefix": "prefix ใบสำคัญกลับรายการ",
+        "autoJvPrefix": "prefix ใบสำคัญอัตโนมัติ",
+        "allowPostToClosedPeriod": "อนุญาตให้ลงบัญชีในงวดที่ปิดแล้ว",
+        "apControlAccount": "บัญชีคุมเจ้าหนี้",
+        "inputVatAccount": "บัญชีภาษีซื้อ",
+        "whtPayableAccount": "บัญชีภาษีหัก ณ ที่จ่ายค้างจ่าย",
+        "advanceDepositAccount": "บัญชีเงินมัดจำจ่ายล่วงหน้า",
+        "realizedFxGainAccount": "บัญชีกำไรจากอัตราแลกเปลี่ยนที่เกิดขึ้นจริง",
+        "realizedFxLossAccount": "บัญชีขาดทุนจากอัตราแลกเปลี่ยนที่เกิดขึ้นจริง",
+        "apJvPrefix": "prefix ใบสำคัญเจ้าหนี้",
+        "arControlAccount": "บัญชีคุมลูกหนี้",
+        "outputVatAccount": "บัญชีภาษีขาย",
+        "arJvPrefix": "prefix ใบสำคัญลูกหนี้"
+      },
+      "hints": {
+        "fiscalYear": "ถ้าเปลี่ยนหลังจากมีงวดบัญชีแล้ว ขอบเขตของทุกงวดจะเลื่อนตาม",
+        "apPosting": "ใช้ตอนลงบัญชี AP Invoice — การส่งออก External ใช้บัญชีจาก Chart of Account mapping อย่างเดียว",
+        "allowPostToClosedPeriod": "เปิดไว้ = เอกสารที่ลงวันที่ในงวดที่ปิดแล้วยังลงบัญชีได้"
+      }
     }
   },
   "dashboardWidget": {
@@ -1518,7 +1557,6 @@
       "deleteConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบประเภทการปรับปรุง \"{name}\"? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
       "codePlaceholder": "เช่น TRFOT",
       "namePlaceholder": "เช่น โอนออก",
-      "account": "บัญชี",
       "notFound": "ไม่พบประเภทการปรับปรุง"
     },
     "creditTerm": {
@@ -1729,14 +1767,11 @@
       "sourceSubCategory": "ค่าเริ่มต้น · sub-category",
       "sourceCategory": "ค่าเริ่มต้น · category",
       "sourceLocation": "ค่าเริ่มต้น · location",
-      "sourceVendor": "ค่าเริ่มต้น · vendor",
-      "sourceBuDefault": "ค่าเริ่มต้น · ตั้งค่า BU",
-      "sourceAdjustmentType": "ค่าเริ่มต้น · ประเภทการปรับปรุง",
       "issueMissingInventoryAccount": "item group / sub-category / category ยังไม่มี inventory account",
       "issueMissingDirectAccount": "item group / sub-category / category ยังไม่มี direct account",
       "issueAccountNotInCoa": "รหัสบัญชีนี้ไม่มีในผังบัญชี",
-      "issueMissingApAccount": "BU นี้ยังไม่ได้ตั้งบัญชี AP เริ่มต้น",
-      "issueMissingAdjustmentAccount": "ประเภทการปรับปรุงยังไม่มีบัญชี",
+      "issueMissingApAccount": "ยังไม่ได้ผูกบัญชีเจ้าหนี้ใน mapping — กำหนดที่แถวนี้",
+      "issueMissingAdjustmentAccount": "ยังไม่ได้ผูกบัญชีของรายการปรับปรุงนี้ใน mapping — กำหนดที่แถวนี้",
       "issueMissingCostCenter": "location ยังไม่ได้ผูก cost center",
       "issueShortNoAccount": "ยังไม่มีบัญชี",
       "issueShortNoCostCenter": "ยังไม่มี cost center",
@@ -2624,14 +2659,8 @@
         "brand": {
           "external": "ระบบภายนอก"
         },
-        "glDefaults": "บัญชีตั้งต้น",
-        "glDefaultsDesc": "ใช้ตอนลงบัญชีเจ้าหนี้เมื่อผังการผูกบัญชียังไม่ได้ระบุบัญชีเอง",
-        "apControlAccount": "บัญชีเจ้าหนี้ตั้งต้น",
-        "inputVatAccount": "บัญชีภาษีซื้อ",
-        "glLoadError": "โหลดบัญชีตั้งต้นไม่สำเร็จ",
-        "partialSaveFailed": "บันทึกการตั้งค่า interface แล้ว แต่บันทึกบัญชีตั้งต้นไม่สำเร็จ กรุณาลองอีกครั้ง",
         "liveZone": "การเชื่อมต่อ API",
-        "liveZoneHint": "มีผลทันที ไม่ต้องกดแก้ไขหรือบันทึกด้านบน",
+        "liveZoneHint": "การเปลี่ยนแปลงในส่วนนี้มีผลทันที ไม่มีปุ่มบันทึก",
         "apiAccess": {
           "title": "การเข้าถึงผ่าน API",
           "desc": "ข้อมูลรับรองที่ระบบภายนอกใช้ดึงใบแจ้งหนี้ AP และสมุดรายวัน GL",
@@ -5661,6 +5690,7 @@
     "templateVoucher": "แม่แบบใบสำคัญ",
     "recurringVoucher": "ใบสำคัญประจำ",
     "allocationVoucher": "ใบสำคัญปันส่วน",
+    "accountingSettings": "ตั้งค่า",
     "accountsPayable": "เจ้าหนี้การค้า",
     "apDashboard": "แดชบอร์ด",
     "apInvoice": "ใบแจ้งหนี้",

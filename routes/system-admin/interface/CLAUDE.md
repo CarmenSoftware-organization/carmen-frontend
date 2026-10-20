@@ -39,6 +39,10 @@ systems pull data themselves via a BU API key). Config storage only; no sync/tes
 
 ## API Access (กุญแจ API ขาเข้าต่อ BU)
 
+หน้า External (`external-interface-form.tsx`) เหลือแค่โซน API สดนี้ + เอกสาร — **ไม่มีฟอร์ม ไม่มี Save และไม่เขียน
+`interface_export_external` อีก** บัญชีที่ export ใช้มาจากผังการผูกบัญชี (COA mapping) อย่างเดียว ส่วนบัญชีตั้งต้นของ
+`gl_setting` ย้ายไปหน้าตั้งค่า Accounting
+
 ส่วน API Access ในแบรนด์ External เป็น **ขาเข้า** — ระบบภายนอกใช้ `x-client-id` / `x-client-secret`
 เรียก Carmen (`/api/ext/v1/...`) ไม่เหมือน secret ของแบรนด์อื่นที่เป็น **ขาออก** (Carmen เอาไปเรียกระบบเขา
 และเก็บใน `tb_application_config` แบบ encrypt+mask)

@@ -6,6 +6,7 @@ import {
   BookText,
   LayoutDashboard,
   Settings2,
+  Settings,
   Coins,
   Building,
   ShoppingCart,
@@ -180,6 +181,15 @@ export const accountingModuleSections: ModuleDto[] = [
         path: "/accounting/allocation-voucher",
         licenseFeature: "accounting.gl",
         icon: ArrowLeftRight,
+      },
+      {
+        name: "accountingSettings",
+        path: "/accounting/settings",
+        // การอ่าน gl_setting ต้องมี configuration.app_config.view — role Accounting ที่ seed ไว้ไม่มี
+        // ถ้าไม่ผูกสิทธิ์ non-admin จะเห็นหน้าที่ขึ้นแต่ error
+        permission: PERMISSIONS.configuration.app_config.view,
+        licenseFeature: "accounting.gl",
+        icon: Settings,
       },
     ],
   },

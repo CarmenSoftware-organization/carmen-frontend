@@ -907,6 +907,11 @@ export const router = createBrowserRouter([
                   import("./accounting/documents/accounting-document-detail.route"),
               },
               {
+                path: "settings",
+                lazy: () =>
+                  import("./accounting/settings/accounting-settings.route"),
+              },
+              {
                 path: "accounts-payable",
                 lazy: () =>
                   import("./accounting/accounts-payable/ap-dashboard.route"),

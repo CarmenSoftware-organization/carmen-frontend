@@ -21,9 +21,6 @@ const SOURCE_KEY = {
   item_group: "sourceItemGroup",
   sub_category: "sourceSubCategory",
   category: "sourceCategory",
-  vendor: "sourceVendor",
-  bu_default: "sourceBuDefault",
-  adjustment_type: "sourceAdjustmentType",
   location: "sourceLocation",
 } as const;
 
@@ -61,11 +58,6 @@ function sourceHref(
       return "/product-management/category";
     case "location":
       return `/config/location/${row.location.id}`;
-    case "bu_default":
-      return "/system-admin/interface/export/external";
-    case "adjustment_type":
-      return "/config/adjustment-type";
-    // vendor: แถว list ไม่มี vendor จึงไม่มีปลายทางให้ลิงก์
     default:
       return undefined;
   }
@@ -85,7 +77,10 @@ export function SourceBadge({
   const t = useTranslations("config.chartOfAccountMapping");
   if (!source) return null;
   const override = source === "override";
-  const label = t(SOURCE_KEY[source]);
+  const key = SOURCE_KEY[source];
+  // backend รุ่นเก่ายังส่ง vendor / bu_default / adjustment_type ที่ไม่มีคีย์แปลแล้ว — ไม่แสดงป้าย
+  if (!key) return null;
+  const label = t(key);
   if (href) {
     return (
       <Badge asChild size="xs" variant="outline">
@@ -104,16 +99,20 @@ export function SourceBadge({
  * หน้าที่ต้องไปแก้เพื่อให้ issue หาย — แก้ที่ต้นทางแล้วทุกแถวที่ใช้ค่าเริ่มต้นตามไปเอง
  * (ไม่ใช่ override ทีละแถว) · หน้า category รับ `?search=` แล้วกางต้นไม้ถึง item group นั้น
  */
-function issueHref(issue: MappingIssue, row: AccountMappingRow): string {
+function issueHref(
+  issue: MappingIssue,
+  row: AccountMappingRow,
+): string | undefined {
   switch (issue) {
     case "missing_cost_center":
       return `/config/location/${row.location.id}`;
     case "account_not_in_coa":
       return "/config/chart-of-accounts";
+    // AP / adjustment: บัญชีมาจาก mapping อย่างเดียว — ไม่มีต้นทางอื่นให้ไปแก้
+    // (กดแถวเพื่อเปิดแผงแก้ override ของแถวนั้น)
     case "missing_ap_account":
-      return "/system-admin/interface/export/external";
     case "missing_adjustment_account":
-      return "/config/adjustment-type";
+      return undefined;
     case "missing_inventory_account":
     case "missing_direct_account":
       return `/product-management/category?search=${encodeURIComponent(row.item_group.code)}`;
@@ -132,20 +131,28 @@ export function IssueText({
   readonly row: AccountMappingRow;
 }) {
   const t = useTranslations("config.chartOfAccountMapping");
+  const href = issueHref(issue, row);
+  const body = (
+    <>
+      <TriangleAlert className="size-3.5 shrink-0" aria-hidden />
+      {t(ISSUE_SHORT_KEY[issue])}
+    </>
+  );
+  const cls = "text-warning-ink inline-flex w-fit items-center gap-1 text-xs";
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Link
-          to={issueHref(issue, row)}
-          className="text-warning-ink inline-flex w-fit items-center gap-1 text-xs hover:underline"
-        >
-          <TriangleAlert className="size-3.5 shrink-0" aria-hidden />
-          {t(ISSUE_SHORT_KEY[issue])}
-        </Link>
+        {href ? (
+          <Link to={href} className={`${cls} hover:underline`}>
+            {body}
+          </Link>
+        ) : (
+          <span className={cls}>{body}</span>
+        )}
       </TooltipTrigger>
       <TooltipContent className="max-w-xs">
         <p>{t(ISSUE_KEY[issue])}</p>
-        <p className="text-muted-foreground">{t("issueFixHint")}</p>
+        {href && <p className="text-muted-foreground">{t("issueFixHint")}</p>}
       </TooltipContent>
     </Tooltip>
   );

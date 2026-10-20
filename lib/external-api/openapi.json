@@ -3,7 +3,7 @@
   "paths": {
     "/api/ext/v1/ap-invoices": {
       "get": {
-        "description": "Returns final (and voided) GRN invoices and CN credit notes of the API key's business unit as vendor-invoice records with one line per received / returned item, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no line (e.g. only consignment lines) is not returned. A document is in exactly one endpoint: GRN / CN here, SR / SI / SO in `/gl-journals`. CN amounts are positive; reverse them on your side by `doc_type`. Each line carries three accounts named by role (inventory = `debit_*`, payable = `ap_*`, input VAT = `tax_*`), not by side. Line `description` is the product name. `tax_type` is `add` when the line base tax is not 0, else `none` (`included` is reserved and never emitted). The tax account / cost center are set only on taxed lines and the tax cost center equals `debit_cost_center_code`. `qty`, `price`, `tax_rate` and `exchange_rate` are decimal strings without trailing-zero padding (e.g. `\"10\"`, `\"7\"`); money fields are 2-decimal strings. Lines with `unmapped: true` carry the correct amount but need an account fixed in the GL / AP mapping in Carmen; `issues` lists `{ account: \"debit\" | \"ap\" | \"tax\" | null, code }`. Each field description names its Carmen 4 column where there is one.",
+        "description": "Returns final (and voided) GRN invoices and CN credit notes of the API key's business unit as vendor-invoice records with one line per received / returned item, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no line (e.g. only consignment lines) is not returned. A document is in exactly one endpoint: GRN / CN here, SR / SI / SO in `/gl-journals`. CN amounts are positive; reverse them on your side by `doc_type`. Each line carries two accounts named by role (inventory = `debit_*`, payable = `ap_*`), not by side, plus tax amounts; the input VAT account is set in your accounting system. Line `description` is the product name. `tax_type` is `add` when the line base tax is not 0, else `none` (`included` is reserved and never emitted). The tax cost center is set only on taxed lines and equals `debit_cost_center_code`. `qty`, `price`, `tax_rate` and `exchange_rate` are decimal strings without trailing-zero padding (e.g. `\"10\"`, `\"7\"`); money fields are 2-decimal strings. Lines with `unmapped: true` carry the correct amount but need an account fixed in the GL / AP mapping in Carmen; `issues` lists `{ account: \"debit\" | \"ap\" | null, code }`. Each field description names its Carmen 4 column where there is one.",
         "operationId": "ApInvoiceExportController_list",
         "parameters": [
           {
@@ -106,7 +106,7 @@
                 "examples": {
                   "page": {
                     "summary": "One page: a GRN (taxed + untaxed line) and a CN with ref_grn",
-                    "description": "Money fields are 2-decimal strings; `qty`, `price`, `tax_rate`, `exchange_rate` are decimal strings without trailing zeros. The CN amounts are positive: reverse them by `doc_type`. The untaxed line has `tax_type: \"none\"` and no tax account / cost center.",
+                    "description": "Money fields are 2-decimal strings; `qty`, `price`, `tax_rate`, `exchange_rate` are decimal strings without trailing zeros. The CN amounts are positive: reverse them by `doc_type`. The untaxed line has `tax_type: \"none\"` and no tax cost center.",
                     "value": {
                       "data": [
                         {
@@ -161,7 +161,6 @@
                               "debit_cost_center_code": "CC-KIT",
                               "ap_account_code": "2110-00",
                               "ap_cost_center_code": "CC-KIT",
-                              "tax_account_code": "1160-00",
                               "tax_cost_center_code": "CC-KIT",
                               "unmapped": false,
                               "issues": []
@@ -185,7 +184,6 @@
                               "debit_cost_center_code": "CC-FB",
                               "ap_account_code": "2110-00",
                               "ap_cost_center_code": "CC-FB",
-                              "tax_account_code": null,
                               "tax_cost_center_code": null,
                               "unmapped": false,
                               "issues": []
@@ -248,7 +246,6 @@
                               "debit_cost_center_code": "CC-KIT",
                               "ap_account_code": "2110-00",
                               "ap_cost_center_code": "CC-KIT",
-                              "tax_account_code": "1160-00",
                               "tax_cost_center_code": "CC-KIT",
                               "unmapped": false,
                               "issues": []
@@ -1302,7 +1299,7 @@
   },
   "info": {
     "title": "Carmen External API",
-    "description": "Read-only API for external systems (for example a customer's accounting system) to pull data out\nof **Carmen**. Each request is authenticated with a **per-business-unit API key**, not a user login,\nand only ever sees the data of the business unit (BU) the key belongs to.\n\nCurrently available:\n\n- **AP invoices** (`GET /api/ext/v1/ap-invoices`) — committed GRN (vendor invoices) and CN\n  (credit notes) with one line per item and the inventory, payable and input-VAT accounts mapped\n  in Carmen.\n- **GL journals** (`GET /api/ext/v1/gl-journals`) — committed SR, SI and SO as balanced Dr/Cr\n  journals with the GL accounts mapped in Carmen.\n\n**A document is in exactly one endpoint** (GRN / CN in AP invoices, SR / SI / SO in GL journals), so\nimporting both never double-posts: an AP invoice already produces its own GL entry in your\naccounting system.\n\n## 1. Get an API key\n\nAn administrator of the BU (with the `system_admin.bu_api_key` permission) opens\n**Interface → Export tools → External → API Access** in Carmen and creates the key. The page shows\nthe **client id**, the **secret** (reveal on demand) and the base URL to call.\n\n- One key per business unit. The BU needs the External interface license.\n- **Regenerate** issues a new secret and the old secret stops working **immediately**.\n- Keep the secret in an environment variable or secret store. Never commit it or put it in a URL.\n\n## 2. Base URL\n\n```\n<your Carmen API host>/api/ext/v1\n```\n\nThe host differs per environment; use the URL shown on the API Access page.\n\n## 3. Authentication\n\nSend both headers on every request (no `Authorization` header is needed):\n\n| Header | Value |\n| --- | --- |\n| `x-client-id` | Client id of the key |\n| `x-client-secret` | Secret of the key |\n\nIn this page, click **Authorize** and fill in both values to try the endpoint.\n\n## 4. Quick start\n\n```bash\nexport CARMEN_API=\"https://<your Carmen API host>\"\nexport CARMEN_CLIENT_ID=\"<client id>\"\nexport CARMEN_CLIENT_SECRET=\"<secret>\"\n\ncurl -sS -G \"$CARMEN_API/api/ext/v1/ap-invoices\" \\\n  -H \"x-client-id: $CARMEN_CLIENT_ID\" \\\n  -H \"x-client-secret: $CARMEN_CLIENT_SECRET\" \\\n  --data-urlencode \"date_from=2026-10-01\" \\\n  --data-urlencode \"date_to=2026-10-31\" \\\n  --data-urlencode \"doc_types=GRN,CN\" \\\n  --data-urlencode \"perpage=50\"\n```\n\n## 5. Pagination\n\nResponses carry `paginate: { total, page, perpage, pages }`. Request `page=1,2,…` until\n`page >= pages`. `perpage` is 1–200 (default 50). Documents are ordered by document date,\ndocument no, doc type and id, across all requested types. Both endpoints take the same query\n(`date_from`, `date_to`, `date_field`, `doc_types`, `page`, `perpage`); a `doc_types` value that\nbelongs to the other endpoint is a 400.\n\n## 6. Incremental sync (recommended)\n\nDocuments can be edited or voided after you first read them, so do not rely on the document date alone:\n\n1. First run: `date_field=document` over the periods you need; page through all results.\n2. Each later run: `date_field=updated`, `date_from` = the day of your last successful sync\n   (one day earlier for safety), `date_to` = today.\n3. Upsert by `(doc_type, id)` — the latest version wins — and replace all lines of the document,\n   since line grouping and mapping can change.\n4. A range spans at most 366 days (inclusive).\n\n## 7. Errors\n\nAll errors share one body: `{ success: false, status, message, timestamp, path, error? }`.\n\n| Status | Meaning |\n| --- | --- |\n| 400 | Invalid query parameters; `error.errors` lists the issues. |\n| 401 | `Invalid API credentials` — missing header, unknown client id, wrong secret, inactive key or BU. Same body for every cause. |\n| 403 | The API is not enabled (or the method is not GET — HEAD is rejected too), or the BU's External interface license is missing or expired. |\n| 429 | Rate limit exceeded. Back off and retry. |\n| 503 | Temporarily unavailable (allowlist not loaded, or the license could not be verified). Retry later. |\n\n## 8. Rate limits\n\n- **300 requests per minute per API key** (fixed one-minute window).\n  Requests rejected with 403 or 429 still count.\n- A global **per-source-IP** limit (300 per minute by default) also applies, so several keys polled\n  from the same IP can be throttled before reaching their per-key limit.",
+    "description": "Read-only API for external systems (for example a customer's accounting system) to pull data out\nof **Carmen**. Each request is authenticated with a **per-business-unit API key**, not a user login,\nand only ever sees the data of the business unit (BU) the key belongs to.\n\nCurrently available:\n\n- **AP invoices** (`GET /api/ext/v1/ap-invoices`) — committed GRN (vendor invoices) and CN\n  (credit notes) with one line per item and the inventory and payable accounts mapped in\n  Carmen, plus tax amounts (the input VAT account is set in your accounting system).\n- **GL journals** (`GET /api/ext/v1/gl-journals`) — committed SR, SI and SO as balanced Dr/Cr\n  journals with the GL accounts mapped in Carmen.\n\n**A document is in exactly one endpoint** (GRN / CN in AP invoices, SR / SI / SO in GL journals), so\nimporting both never double-posts: an AP invoice already produces its own GL entry in your\naccounting system.\n\n## 1. Get an API key\n\nAn administrator of the BU (with the `system_admin.bu_api_key` permission) opens\n**Interface → Export tools → External → API Access** in Carmen and creates the key. The page shows\nthe **client id**, the **secret** (reveal on demand) and the base URL to call.\n\n- One key per business unit. The BU needs the External interface license.\n- **Regenerate** issues a new secret and the old secret stops working **immediately**.\n- Keep the secret in an environment variable or secret store. Never commit it or put it in a URL.\n\n## 2. Base URL\n\n```\n<your Carmen API host>/api/ext/v1\n```\n\nThe host differs per environment; use the URL shown on the API Access page.\n\n## 3. Authentication\n\nSend both headers on every request (no `Authorization` header is needed):\n\n| Header | Value |\n| --- | --- |\n| `x-client-id` | Client id of the key |\n| `x-client-secret` | Secret of the key |\n\nIn this page, click **Authorize** and fill in both values to try the endpoint.\n\n## 4. Quick start\n\n```bash\nexport CARMEN_API=\"https://<your Carmen API host>\"\nexport CARMEN_CLIENT_ID=\"<client id>\"\nexport CARMEN_CLIENT_SECRET=\"<secret>\"\n\ncurl -sS -G \"$CARMEN_API/api/ext/v1/ap-invoices\" \\\n  -H \"x-client-id: $CARMEN_CLIENT_ID\" \\\n  -H \"x-client-secret: $CARMEN_CLIENT_SECRET\" \\\n  --data-urlencode \"date_from=2026-10-01\" \\\n  --data-urlencode \"date_to=2026-10-31\" \\\n  --data-urlencode \"doc_types=GRN,CN\" \\\n  --data-urlencode \"perpage=50\"\n```\n\n## 5. Pagination\n\nResponses carry `paginate: { total, page, perpage, pages }`. Request `page=1,2,…` until\n`page >= pages`. `perpage` is 1–200 (default 50). Documents are ordered by document date,\ndocument no, doc type and id, across all requested types. Both endpoints take the same query\n(`date_from`, `date_to`, `date_field`, `doc_types`, `page`, `perpage`); a `doc_types` value that\nbelongs to the other endpoint is a 400.\n\n## 6. Incremental sync (recommended)\n\nDocuments can be edited or voided after you first read them, so do not rely on the document date alone:\n\n1. First run: `date_field=document` over the periods you need; page through all results.\n2. Each later run: `date_field=updated`, `date_from` = the day of your last successful sync\n   (one day earlier for safety), `date_to` = today.\n3. Upsert by `(doc_type, id)` — the latest version wins — and replace all lines of the document,\n   since line grouping and mapping can change.\n4. A range spans at most 366 days (inclusive).\n\n## 7. Errors\n\nAll errors share one body: `{ success: false, status, message, timestamp, path, error? }`.\n\n| Status | Meaning |\n| --- | --- |\n| 400 | Invalid query parameters; `error.errors` lists the issues. |\n| 401 | `Invalid API credentials` — missing header, unknown client id, wrong secret, inactive key or BU. Same body for every cause. |\n| 403 | The API is not enabled (or the method is not GET — HEAD is rejected too), or the BU's External interface license is missing or expired. |\n| 429 | Rate limit exceeded. Back off and retry. |\n| 503 | Temporarily unavailable (allowlist not loaded, or the license could not be verified). Retry later. |\n\n## 8. Rate limits\n\n- **300 requests per minute per API key** (fixed one-minute window).\n  Requests rejected with 403 or 429 still count.\n- A global **per-source-IP** limit (300 per minute by default) also applies, so several keys polled\n  from the same IP can be throttled before reaching their per-key limit.",
     "version": "v1",
     "contact": {}
   },
@@ -1464,15 +1461,14 @@
             "nullable": true,
             "enum": [
               "debit",
-              "ap",
-              "tax"
+              "ap"
             ],
             "description": "Which account of the line the issue belongs to; null when it is not tied to one account (e.g. missing_location, cost_not_found)",
             "example": "ap"
           },
           "code": {
             "type": "string",
-            "description": "Reason code, e.g. missing_location, missing_product, missing_item_group, missing_input_vat_account, cost_not_found, mapping_target_not_found, missing_inventory_account, missing_ap_account, missing_cost_center, missing_direct_account, account_not_in_coa. Treat an unknown code as \"unmapped, needs review\".",
+            "description": "Reason code, e.g. missing_location, missing_product, missing_item_group, cost_not_found, mapping_target_not_found, missing_inventory_account, missing_ap_account, missing_cost_center, missing_direct_account, account_not_in_coa. Treat an unknown code as \"unmapped, needs review\".",
             "example": "missing_ap_account"
           }
         },
@@ -1585,16 +1581,10 @@
             "description": "Cost center of the payable account (Carmen 4: InvdBTaxCr1DeptCode)",
             "example": "CC-KIT"
           },
-          "tax_account_code": {
-            "type": "string",
-            "nullable": true,
-            "description": "Input VAT account of the business unit. Only on taxed lines; null when the line has no tax (Carmen 4: InvdT1Dr)",
-            "example": "1160-00"
-          },
           "tax_cost_center_code": {
             "type": "string",
             "nullable": true,
-            "description": "Cost center of the input VAT account — equal to debit_cost_center_code. Only on taxed lines (Carmen 4: InvdT1DrDeptCode)",
+            "description": "Cost center of the tax amount — equal to debit_cost_center_code. Only on taxed lines (Carmen 4: InvdT1DrDeptCode)",
             "example": "CC-KIT"
           },
           "unmapped": {
@@ -1629,7 +1619,6 @@
           "debit_cost_center_code",
           "ap_account_code",
           "ap_cost_center_code",
-          "tax_account_code",
           "tax_cost_center_code",
           "unmapped",
           "issues"
