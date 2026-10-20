@@ -14,7 +14,6 @@ const baseValues: CategoryFormValues = {
   name: "Beverage",
   description: "",
   is_active: true,
-  cascade_deviation: true,
   price_deviation_limit: 0,
   qty_deviation_limit: 0,
   is_used_in_recipe: false,

@@ -24,7 +24,6 @@ const sub = (
   name: `sub-${code}`,
   is_active: true,
   product_category: { id: product_category_id },
-  cascade_deviation: false,
 });
 
 const ig = (
@@ -37,7 +36,6 @@ const ig = (
   name: `ig-${code}`,
   is_active: true,
   product_subcategory_id,
-  cascade_deviation: false,
 });
 
 describe("useCategoryTree — sort by code", () => {

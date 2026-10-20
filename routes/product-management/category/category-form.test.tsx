@@ -62,7 +62,6 @@ describe("CategoryForm — auto-generated code field", () => {
       name: "Beverage",
       type: NODE_TYPE.CATEGORY,
       is_active: true,
-      cascade_deviation: true,
     };
     renderForm({ mode: "edit", selectedNode });
     const codeInput = screen.getByLabelText(en.field.code) as HTMLInputElement;

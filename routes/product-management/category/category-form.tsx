@@ -80,7 +80,6 @@ export function CategoryForm({
       name: selectedNode?.name ?? "",
       description: selectedNode?.description ?? "",
       is_active: selectedNode?.is_active ?? true,
-      cascade_deviation: selectedNode?.cascade_deviation ?? true,
       price_deviation_limit:
         selectedNode?.price_deviation_limit ??
         parentNode?.price_deviation_limit ??
