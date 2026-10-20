@@ -29,6 +29,8 @@
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.91 0 0);
   --input: oklch(0.91 0 0);
+  /* พื้นช่องกรอกที่แก้ได้ — ขาวล้วนให้ตัดกับพื้นหน้า (--background 0.98) */
+  --field: oklch(1 0 0);
   --ring: oklch(0.4714 0.1794 258.7);
   --chart-1: oklch(0.4714 0.1794 258.7);
   --chart-2: oklch(0.7515 0.1117 188.43);
@@ -154,6 +156,7 @@
   --destructive-foreground: oklch(0.18 0.03 24.11);
   --border: oklch(0.3 0 0);
   --input: oklch(0.28 0 0);
+  --field: var(--background);
   --ring: oklch(0.66 0.1706 253.27);
   --chart-1: oklch(0.5852 0.1706 253.27);
   --chart-2: oklch(0.7515 0.1117 188.43);
@@ -262,6 +265,7 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
+  --color-field: var(--field);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);

@@ -99,7 +99,7 @@ export function RichTextEditorInner({
   return (
     <div
       className={cn(
-        "border-input bg-background focus-within:border-ring focus-within:ring-ring/50 rounded-md border transition-[color,box-shadow] focus-within:ring-2",
+        "border-input bg-field focus-within:border-ring focus-within:ring-ring/50 rounded-md border transition-[color,box-shadow] focus-within:ring-2",
         ariaInvalid && "border-destructive ring-destructive/20",
         disabled && "opacity-50",
         className,

@@ -93,7 +93,7 @@ export function DatePicker({
             size={size}
             aria-invalid={invalid || undefined}
             className={cn(
-              "justify-start font-normal",
+              "bg-field justify-start font-normal",
               value && !disabled && !hideClear && "pr-7",
               !value && "text-muted-foreground",
               className,

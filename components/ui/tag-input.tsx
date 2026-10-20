@@ -105,7 +105,7 @@ export function TagInput({
   return (
     <div
       className={cn(
-        "border-input bg-background focus-within:border-ring focus-within:ring-ring/50 flex min-h-9 w-full flex-wrap items-center gap-1 rounded-md border px-1.5 py-1 transition-[color,box-shadow] focus-within:ring-2",
+        "border-input bg-field focus-within:border-ring focus-within:ring-ring/50 flex min-h-9 w-full flex-wrap items-center gap-1 rounded-md border px-1.5 py-1 transition-[color,box-shadow] focus-within:ring-2",
         className,
       )}
     >

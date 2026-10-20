@@ -266,7 +266,7 @@ export function LookupCombobox<T>({
                 aria-expanded={open}
                 aria-invalid={!!error}
                 className={cn(
-                  "flex items-center justify-between pr-1 pl-3 text-xs",
+                  "bg-field flex items-center justify-between pr-1 pl-3 text-xs",
                   size === "default" && "h-9",
                   size === "sm" && "h-8",
                   size === "xs" && "h-6 gap-1 px-2 text-xs",
