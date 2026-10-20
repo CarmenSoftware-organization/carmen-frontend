@@ -130,10 +130,11 @@ export function TreeNode({
           {getNodeIcon()}
         </div>
 
-        {/* Content - clickable for expand */}
+        {/* Content - clickable for expand. ไม่ยืดเต็มแถว: ปุ่มจึงต่อท้ายชื่อ
+            แทนที่จะไปอยู่สุดขอบการ์ดที่กว้างเต็มจอ */}
         <button
           type="button"
-          className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
+          className="flex min-w-0 items-center gap-1.5 text-left"
           onClick={() => toggleExpand(node.id)}
         >
           <span
@@ -153,27 +154,9 @@ export function TreeNode({
           )}
         </button>
 
-        {/* Meta: สถานะ + จำนวนลูก ชิดขวาก่อนปุ่ม — ตาไม่ต้องข้ามที่ว่างทั้งแถว */}
-        <div className="ml-2 flex shrink-0 items-center gap-2">
-          {!node.is_active && (
-            <Badge
-              variant="secondary"
-              size="xs"
-              className="text-micro-legal shrink-0"
-            >
-              {ts("inactive")}
-            </Badge>
-          )}
-          {node.type !== NODE_TYPE.ITEM_GROUP && (
-            <span className="text-muted-foreground/70 text-micro-legal hidden tabular-nums sm:inline">
-              {childLabel}
-            </span>
-          )}
-        </div>
-
-        {/* Actions — กว้างคงที่ (ช่องว่างไว้ตอนซ่อน) แถว meta จึงไม่ขยับตอน hover;
+        {/* Actions — จองที่ไว้ตอนซ่อน (invisible) แถวจึงไม่ขยับตอน hover;
             โผล่ตอน hover/โฟกัสคีย์บอร์ด และขึ้นตลอดบนจอสัมผัส */}
-        <div className="invisible flex w-23 shrink-0 items-center justify-end pr-2 group-focus-within/node:visible group-hover/node:visible pointer-coarse:visible">
+        <div className="invisible ml-1 flex shrink-0 items-center group-focus-within/node:visible group-hover/node:visible pointer-coarse:visible">
           {node.type !== NODE_TYPE.ITEM_GROUP && (
             <button
               type="button"
@@ -214,6 +197,32 @@ export function TreeNode({
           >
             <Trash2 className="h-3 w-3" />
           </button>
+        </div>
+
+        {/* ที่ว่างระหว่างปุ่มกับ meta ยังกดพับ/กางได้เหมือนตอนปุ่มเนื้อหายืดเต็มแถว
+            (คีย์บอร์ดใช้ปุ่มเนื้อหาอยู่แล้ว จึงไม่ต้องเป็นปุ่มซ้ำ) */}
+        <div
+          aria-hidden
+          className="h-full min-w-2 flex-1"
+          onClick={() => toggleExpand(node.id)}
+        />
+
+        {/* Meta: สถานะ + จำนวนลูก ชิดขวาสุดของแถว เรียงตรงแนวเดียวกันทุกแถว */}
+        <div className="ml-2 flex shrink-0 items-center gap-2 pr-3">
+          {!node.is_active && (
+            <Badge
+              variant="secondary"
+              size="xs"
+              className="text-micro-legal shrink-0"
+            >
+              {ts("inactive")}
+            </Badge>
+          )}
+          {node.type !== NODE_TYPE.ITEM_GROUP && (
+            <span className="text-muted-foreground/70 text-micro-legal hidden tabular-nums sm:inline">
+              {childLabel}
+            </span>
+          )}
         </div>
       </div>
 
