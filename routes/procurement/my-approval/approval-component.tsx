@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useTranslations } from "use-intl";
 import {
   ClipboardList,
@@ -17,23 +16,8 @@ import { ListPageShell } from "@/components/share/list-page-shell";
 import type { ApprovalPendingSummary } from "@/types/approval";
 import ApprovalQueueList from "./approve-queue-list";
 import { cn } from "@/lib/utils";
-import { useListFilters } from "@/hooks/use-list-filters";
-import { ListToolbar } from "@/components/list-filter/list-toolbar";
-import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
-import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
-import type { FilterFieldDef } from "@/types/list-filter";
+import SearchInput from "@/components/search-input";
 import { SENDBACK_FILTER_CLAUSE } from "@/constant/last-action";
-
-const APPROVAL_FILTER_FIELDS: FilterFieldDef[] = [
-  {
-    key: "filter",
-    labelKey: "",
-    control: "custom",
-    hidden: true,
-    toClause: () => "",
-    render: () => null,
-  },
-];
 
 export default function ApprovalComponent() {
   const t = useTranslations("procurement.approval");
@@ -103,13 +87,6 @@ export default function ApprovalComponent() {
     applyFilter(key, sendBackOnly);
   };
 
-  const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
-
-  const lf = useListFilters({
-    pageKey: LIST_PAGE_KEYS.APPROVAL,
-    fields: APPROVAL_FILTER_FIELDS,
-  });
-
   const { data, isLoading, error, refetch } = useApprovalPending(params);
   const { data: summary, isLoading: summaryLoading } =
     useApprovalPendingSummary();
@@ -134,99 +111,105 @@ export default function ApprovalComponent() {
     <ListPageShell
       title={t("title")}
       description={t("desc")}
+      // ไม่ใช้ ListToolbar — หน้านี้ไม่มีฟิลด์ให้กรอง ปุ่ม Filter กับ saved view จึง
+      // เปิดมาเจอแค่ของว่าง ตัวกรองจริงคือชิปประเภท/ตีกลับ วางแถวเดียวกับช่องค้น
+      // (ชิปซ้ายเป็นตัวหลัก ช่องค้นชิดขวา) · ค้นหาและ filter ทำที่ SQL ทั้งคู่ ใช้ร่วมกันได้
       toolbar={
-        <ListToolbar
-          search={search}
-          // ค้นหาและ filter ประเภทเอกสารทำที่ SQL ทั้งคู่ จึงใช้ร่วมกันได้ตรง ๆ
-          // เดิมต้องล้าง filter ทิ้งตอนค้น เพราะทั้งสองทำฝั่ง client บนข้อมูลหน้าแรก
-          onSearch={setSearch}
-          lf={lf}
-          fields={APPROVAL_FILTER_FIELDS}
-          onSaveViewClick={() => setSaveViewDialogOpen(true)}
-        />
-      }
-    >
-      {/* แถบกรองตามประเภท — ตัวเลขคือจำนวนที่รอ คลิกเพื่อกรองตาราง */}
-      <div className="flex flex-wrap gap-2" role="group">
-        {SUMMARY_CARDS.map((card) => {
-          const Icon = card.icon;
-          if (summaryLoading) {
-            return <Skeleton key={card.key} className="h-9 w-40 rounded-md" />;
-          }
-          const active = activeType === card.key;
-          return (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* แถบกรองตามประเภท — ตัวเลขคือจำนวนที่รอ คลิกเพื่อกรองตาราง */}
+          <div className="flex flex-wrap items-center gap-2" role="group">
+            {SUMMARY_CARDS.map((card) => {
+              const Icon = card.icon;
+              if (summaryLoading) {
+                return (
+                  <Skeleton key={card.key} className="h-8 w-40 rounded-md" />
+                );
+              }
+              const active = activeType === card.key;
+              return (
+                <button
+                  type="button"
+                  key={card.key}
+                  className={cn(
+                    "bg-card flex h-8 cursor-pointer items-center gap-2 rounded-md border pr-3 pl-1.5 text-left transition-colors",
+                    active
+                      ? "border-primary ring-primary ring-1"
+                      : "hover:bg-accent",
+                  )}
+                  onClick={() => handleCardClick(card.key)}
+                  aria-pressed={active}
+                >
+                  <span
+                    className={cn(
+                      "flex size-6 items-center justify-center rounded",
+                      card.iconClassName,
+                    )}
+                  >
+                    <Icon className="size-3.5" />
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs",
+                      active ? "text-foreground" : "text-muted-foreground",
+                    )}
+                  >
+                    {card.label}
+                  </span>
+                  <span className="text-sm font-semibold tabular-nums">
+                    {summary?.[card.key] ?? 0}
+                  </span>
+                </button>
+              );
+            })}
+
+            <span aria-hidden className="bg-border mx-1 h-6 w-px self-center" />
+
+            {/* ใบที่ถูกตีกลับมาหาฉัน — ใช้ร่วมกับตัวกรองประเภทได้ (เช่น PO ที่ถูกตีกลับ)
+                ไฮไลต์ตัวเลขเมื่อมีค้าง เพราะเป็นงานที่ต้องรีบแก้ก่อนใบใหม่ */}
             <button
               type="button"
-              key={card.key}
               className={cn(
-                "bg-card flex h-9 cursor-pointer items-center gap-2 rounded-md border pr-3 pl-1.5 text-left transition-colors",
-                active
+                "bg-card flex h-8 cursor-pointer items-center gap-2 rounded-md border pr-3 pl-1.5 text-left transition-colors",
+                sendBackOnly
                   ? "border-primary ring-primary ring-1"
                   : "hover:bg-accent",
               )}
-              onClick={() => handleCardClick(card.key)}
-              aria-pressed={active}
+              onClick={() => applyFilter(activeType, !sendBackOnly)}
+              aria-pressed={sendBackOnly}
             >
-              <span
-                className={cn(
-                  "flex size-6 items-center justify-center rounded",
-                  card.iconClassName,
-                )}
-              >
-                <Icon className="size-3.5" />
+              <span className="flex size-6 items-center justify-center rounded bg-[var(--status-review)]">
+                <Undo2 className="size-3.5 text-[var(--status-review-fg)]" />
               </span>
               <span
                 className={cn(
                   "text-xs",
-                  active ? "text-foreground" : "text-muted-foreground",
+                  sendBackOnly ? "text-foreground" : "text-muted-foreground",
                 )}
               >
-                {card.label}
+                {tc("sendBack")}
               </span>
-              <span className="text-sm font-semibold tabular-nums">
-                {summary?.[card.key] ?? 0}
+              <span
+                className={cn(
+                  "text-sm font-semibold tabular-nums",
+                  sendBackCount > 0 && "text-destructive",
+                )}
+              >
+                {sendBackCount}
               </span>
             </button>
-          );
-        })}
-
-        <span aria-hidden className="bg-border mx-1 h-6 w-px self-center" />
-
-        {/* ใบที่ถูกตีกลับมาหาฉัน — ใช้ร่วมกับตัวกรองประเภทได้ (เช่น PO ที่ถูกตีกลับ)
-            ไฮไลต์ตัวเลขเมื่อมีค้าง เพราะเป็นงานที่ต้องรีบแก้ก่อนใบใหม่ */}
-        <button
-          type="button"
-          className={cn(
-            "bg-card flex h-9 cursor-pointer items-center gap-2 rounded-md border pr-3 pl-1.5 text-left transition-colors",
-            sendBackOnly
-              ? "border-primary ring-primary ring-1"
-              : "hover:bg-accent",
-          )}
-          onClick={() => applyFilter(activeType, !sendBackOnly)}
-          aria-pressed={sendBackOnly}
-        >
-          <span className="flex size-6 items-center justify-center rounded bg-[var(--status-review)]">
-            <Undo2 className="size-3.5 text-[var(--status-review-fg)]" />
-          </span>
-          <span
-            className={cn(
-              "text-xs",
-              sendBackOnly ? "text-foreground" : "text-muted-foreground",
-            )}
-          >
-            {tc("sendBack")}
-          </span>
-          <span
-            className={cn(
-              "text-sm font-semibold tabular-nums",
-              sendBackCount > 0 && "text-destructive",
-            )}
-          >
-            {sendBackCount}
-          </span>
-        </button>
-      </div>
-
+          </div>
+          {/* ยืดเต็มที่เหลือข้างชิป (กว้างสุด max-w-xs) — ความกว้างตายตัวของ
+              SearchInput (xl 380px) ดันตัวเองลงบรรทัดใหม่บนจอ laptop */}
+          <div className="flex min-w-48 flex-1 justify-end">
+            <SearchInput
+              defaultValue={search}
+              onSearch={setSearch}
+              containerClassName="w-full sm:max-w-xs"
+            />
+          </div>
+        </div>
+      }
+    >
       <ApprovalQueueList
         items={items}
         totalRecords={totalRecords}
@@ -234,14 +217,6 @@ export default function ApprovalComponent() {
         dateFormat={dateFormat}
         params={params}
         tableConfig={tableConfig}
-      />
-
-      <SaveViewDialog
-        open={saveViewDialogOpen}
-        onOpenChange={setSaveViewDialogOpen}
-        canManageBu={lf.view.canManageBu}
-        existingNames={lf.view.existingNames}
-        onSave={lf.view.saveOrUpdate}
       />
     </ListPageShell>
   );
