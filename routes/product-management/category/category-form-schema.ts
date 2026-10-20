@@ -25,7 +25,6 @@ export function createCategorySchema(tv: TranslationFn, tf: TranslationFn) {
     tax_rate: z.coerce.number().min(0, tv("minZero", { field: tf("taxRate") })),
     product_category_id: z.string().optional(),
     product_subcategory_id: z.string().optional(),
-    cascade_deviation: z.boolean(),
     inventory_account_code: z.string().nullable().optional(),
     direct_account_code: z.string().nullable().optional(),
   });

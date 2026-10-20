@@ -50,7 +50,6 @@ export interface CategoryNode {
   product_category_id?: string;
   product_subcategory_id?: string;
   itemCount?: number;
-  cascade_deviation: boolean;
   doc_version?: number;
   account_codes?: AccountCodeEntry[];
 }
@@ -90,7 +89,6 @@ export interface SubCategoryDto {
   // ของเดิม tax_profile_id/tax_profile_name เป็น phantom ไม่เคยมีจริงบน wire
   tax_profile?: EntityRef | null;
   tax_rate?: number;
-  cascade_deviation: boolean;
   doc_version?: number;
   account_codes?: AccountCodeEntry[];
 }
@@ -109,7 +107,6 @@ export interface ItemGroupDto {
   tax_profile_id?: string;
   tax_profile_name?: string;
   tax_rate?: number;
-  cascade_deviation: boolean;
   sub_category?: { id: string; code: string; name: string };
   category?: { id: string; code: string; name: string };
   doc_version?: number;
