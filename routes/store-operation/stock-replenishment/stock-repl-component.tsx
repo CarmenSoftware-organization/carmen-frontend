@@ -5,9 +5,9 @@ import {
   ChevronsUpDown,
   FileText,
   MapPin,
-  Package,
   RefreshCcw,
   ShoppingCart,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusDotBadge } from "@/components/ui/status-dot-badge";
@@ -59,13 +59,23 @@ export default function StockReplComponent() {
     new Map(),
   );
   const [search, setSearch] = useState("");
-  const [openLocations, setOpenLocations] = useState<Set<string>>(new Set());
+  // null = ผู้ใช้ยังไม่แตะ → กางคลังที่มีของวิกฤตไว้ก่อน ไม่งั้นจอแรกว่างเปล่า
+  // ต้องกด Expand all ทุกครั้ง พอแตะครั้งแรกก็ยึดตามที่ผู้ใช้เลือกตลอด
+  const [openOverride, setOpenOverride] = useState<Set<string> | null>(null);
   const [createDialog, setCreateDialog] = useState<"pr" | "sr" | null>(null);
   const [locationWarningOpen, setLocationWarningOpen] = useState(false);
 
+  const openLocations =
+    openOverride ??
+    new Set(
+      (locations ?? [])
+        .filter((l) => l.products_location.some((p) => p.status === "critical"))
+        .map((l) => l.location_id),
+    );
+
   const handleOpenChange = (locationId: string, open: boolean) => {
-    setOpenLocations((prev) => {
-      const next = new Set(prev);
+    setOpenOverride(() => {
+      const next = new Set(openLocations);
       if (open) {
         next.add(locationId);
       } else {
@@ -82,21 +92,21 @@ export default function StockReplComponent() {
     filteredLocations.every((l) => openLocations.has(l.location_id));
 
   const handleExpandAll = () => {
-    setOpenLocations(new Set(filteredLocations.map((l) => l.location_id)));
+    setOpenOverride(new Set(filteredLocations.map((l) => l.location_id)));
   };
 
   const handleCollapseAll = () => {
-    setOpenLocations(new Set());
+    setOpenOverride(new Set());
   };
 
   const allProducts = filteredLocations.flatMap((l) => l.products_location);
   const summary = {
     locations: filteredLocations.length,
-    totalItems: allProducts.length,
     critical: allProducts.filter((p) => p.status === "critical").length,
     warning: allProducts.filter((p) => p.status === "warning").length,
     low: allProducts.filter((p) => p.status === "low").length,
-    totalNeed: allProducts.reduce((sum, p) => sum + p.reorder_qty, 0),
+    // นับรายการ ไม่ใช่บวก reorder_qty — สินค้าคนละหน่วยกัน (จาน ขวด กิโล) บวกกันไม่ได้ความหมาย
+    toReorder: allProducts.filter((p) => p.reorder_qty > 0).length,
   };
 
   const handleSelectionChange = (locationId: string, ids: Set<string>) => {
@@ -199,27 +209,30 @@ export default function StockReplComponent() {
               <MapPin className="size-3.5" aria-hidden="true" />
               {t("nLocations", { count: summary.locations })}
             </span>
-            <span className="text-muted-foreground flex items-center gap-1.5">
-              <Package className="size-3.5" aria-hidden="true" />
-              {t("nItems", { count: summary.totalItems })}
+            <span className="font-semibold tabular-nums">
+              {t("nToReorder", { count: summary.toReorder })}
             </span>
-            <span className="text-muted-foreground/40">|</span>
-            <StatusDotBadge tone="destructive" size="xs">
-              {t("nCritical", { count: summary.critical })}
-            </StatusDotBadge>
-            <StatusDotBadge tone="warning" size="xs">
-              {t("nWarning", { count: summary.warning })}
-            </StatusDotBadge>
-            <StatusDotBadge tone="neutral" size="xs">
-              {t("nLow", { count: summary.low })}
-            </StatusDotBadge>
-            <span className="text-muted-foreground/40">|</span>
-            <span className="font-semibold">
-              {t("totalNeed")}{" "}
-              <span className="tabular-nums">
-                {summary.totalNeed.toLocaleString()}
-              </span>
-            </span>
+            {(summary.critical > 0 ||
+              summary.warning > 0 ||
+              summary.low > 0) && (
+              <span className="text-muted-foreground/40">|</span>
+            )}
+            {/* ป้ายที่เป็น 0 ไม่บอกอะไร — ซ่อนเหมือนที่หัวคลังทำ */}
+            {summary.critical > 0 && (
+              <StatusDotBadge tone="destructive" size="xs">
+                {t("nCritical", { count: summary.critical })}
+              </StatusDotBadge>
+            )}
+            {summary.warning > 0 && (
+              <StatusDotBadge tone="warning" size="xs">
+                {t("nWarning", { count: summary.warning })}
+              </StatusDotBadge>
+            )}
+            {summary.low > 0 && (
+              <StatusDotBadge tone="neutral" size="xs">
+                {t("nLow", { count: summary.low })}
+              </StatusDotBadge>
+            )}
             <span className="ml-auto">
               <Button
                 size="xs"
@@ -237,35 +250,6 @@ export default function StockReplComponent() {
             </span>
           </div>
 
-          {/* section ปุ่มสร้างเอกสาร แยกจาก summary — โผล่เมื่อมีการเลือก */}
-          {hasSelection && (
-            <div className="flex items-center gap-2">
-              {/* จาง + aria-disabled แต่ยังกดได้ — กดแล้วเด้ง dialog บอกเหตุผล
-                  ดีกว่าปุ่มตายที่ไม่บอกอะไรเลย (ทรงเดียวกับปุ่ม Add ของ
-                  DocumentListActions ที่ถูก gate ด้วย permission) */}
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={handleCreatePR}
-                aria-disabled={!canCreatePr || undefined}
-                className={cn(!canCreatePr && "opacity-50")}
-              >
-                <ShoppingCart />
-                {t("createPr")} ({totalSelected})
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={handleCreateSR}
-                aria-disabled={!canCreateSr || undefined}
-                className={cn(!canCreateSr && "opacity-50")}
-              >
-                <FileText />
-                {t("createSr")} ({totalSelected})
-              </Button>
-            </div>
-          )}
-
           {filteredLocations.map((location) => (
             <StockReplLocation
               key={location.location_id}
@@ -280,6 +264,48 @@ export default function StockReplComponent() {
               onSelectionChange={handleSelectionChange}
             />
           ))}
+
+          {/* แถบ action ติดขอบล่าง — เดิมโผล่เหนือรายการตอนติ๊กแถวแรก แล้วดันทุกอย่าง
+              ข้างล่างลงไป ~50px อยู่ท้ายรายการแทนจึงไม่มีอะไรข้างบนขยับ */}
+          {hasSelection && (
+            <div className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t py-3 backdrop-blur">
+              <span className="text-sm font-semibold tabular-nums">
+                {t("nSelected", { count: totalSelected })}
+              </span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setSelections(new Map())}
+              >
+                <X />
+                {tc("clear")}
+              </Button>
+              <div className="ml-auto flex items-center gap-2">
+                {/* จาง + aria-disabled แต่ยังกดได้ — กดแล้วเด้ง dialog บอกเหตุผล
+                    ดีกว่าปุ่มตายที่ไม่บอกอะไรเลย (ทรงเดียวกับปุ่ม Add ของ
+                    DocumentListActions ที่ถูก gate ด้วย permission) */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCreateSR}
+                  aria-disabled={!canCreateSr || undefined}
+                  className={cn(!canCreateSr && "opacity-50")}
+                >
+                  <FileText />
+                  {t("createSr")}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleCreatePR}
+                  aria-disabled={!canCreatePr || undefined}
+                  className={cn(!canCreatePr && "opacity-50")}
+                >
+                  <ShoppingCart />
+                  {t("createPr")}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

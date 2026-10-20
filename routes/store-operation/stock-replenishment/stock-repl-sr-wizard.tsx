@@ -143,10 +143,7 @@ export function StockReplSrWizard({
             aria-label={`${t("requestQty")} ${row.original.product.name}`}
             value={row.original.qty}
             onChange={(e) =>
-              setQty(
-                row.original.product,
-                e.currentTarget.valueAsNumber || 0,
-              )
+              setQty(row.original.product, e.currentTarget.valueAsNumber || 0)
             }
             className="ms-auto h-7 w-24 text-right text-xs"
           />
