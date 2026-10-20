@@ -21,10 +21,7 @@ export type AccountSource =
   | "override"
   | "item_group"
   | "sub_category"
-  | "category"
-  | "vendor"
-  | "bu_default"
-  | "adjustment_type";
+  | "category";
 export type CostCenterSource = "override" | "location";
 export type AccountIssue =
   | "missing_inventory_account"
