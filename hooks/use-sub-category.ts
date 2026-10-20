@@ -7,6 +7,8 @@ const crud = createConfigCrud<SubCategoryDto, CreateSubCategoryDto>({
   queryKey: QUERY_KEYS.PRODUCT_SUB_CATEGORIES,
   endpoint: API_ENDPOINTS.PRODUCT_SUB_CATEGORIES,
   label: "sub-category",
+  // backend cascade ลง item group + product — ล้าง cache ของลูกด้วย
+  extraInvalidateKeys: [QUERY_KEYS.PRODUCT_ITEM_GROUPS, QUERY_KEYS.PRODUCTS],
 });
 
 export const useSubCategory = crud.useList;
