@@ -20,8 +20,6 @@ export const adjustmentTypeSchema = z.object({
   description: z.string(),
   note: z.string(),
   is_active: z.boolean(),
-  // uuid ของ tb_chart_of_accounts — null = ไม่ผูกบัญชี
-  chart_of_accounts_id: z.string().nullable(),
 });
 
 export type AdjustmentTypeFormValues = z.infer<typeof adjustmentTypeSchema>;
@@ -30,6 +28,8 @@ export interface AdjustmentType extends AdjustmentTypeFormValues {
   id: string;
   doc_version?: number;
   audit?: Audit;
+  // ไม่มีที่ใดอ่านแล้ว (บัญชีมาจาก mapping) — เก็บค่าเดิมในฐานข้อมูล ไม่ส่งจากฟอร์ม
+  chart_of_accounts_id?: string | null;
 }
 
 export interface CreateAdjustmentTypeDto {

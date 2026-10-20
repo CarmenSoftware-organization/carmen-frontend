@@ -1518,7 +1518,6 @@
       "deleteConfirm": "Are you sure you want to delete adjustment type \"{name}\"? This action cannot be undone.",
       "codePlaceholder": "e.g. TRFOT",
       "namePlaceholder": "e.g. Transfer Out",
-      "account": "Account",
       "notFound": "Adjustment type not found"
     },
     "creditTerm": {
