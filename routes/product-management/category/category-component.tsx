@@ -34,6 +34,10 @@ import {
   type CategoryFormValues,
 } from "./category-form-schema";
 import { useNodeAccountCodes } from "./use-node-account-codes";
+import {
+  applyCascadeDecision,
+  type CascadeDecision,
+} from "./cascade-changes";
 import TreeContent from "./tree-content";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { DocumentListActions } from "@/components/share/document-list-actions";
@@ -176,7 +180,10 @@ export default function CategoryComponent() {
   const accountCodesUnavailable =
     dialogMode === "edit" && !!listSelectedNode && !selectedCodes.codes;
 
-  const handleFormSubmit = (formData: CategoryFormValues) => {
+  const handleFormSubmit = (
+    formData: CategoryFormValues,
+    decision?: CascadeDecision,
+  ) => {
     const isEdit = dialogMode === "edit";
     const { inventory_account_code, direct_account_code, ...rest } = formData;
     const account_codes =
@@ -186,7 +193,9 @@ export default function CategoryComponent() {
             isEdit ? (selectedNode?.account_codes ?? []) : [],
             { inventory: inventory_account_code, direct: direct_account_code },
           );
-    const data = { ...rest, ...(account_codes ? { account_codes } : {}) };
+    const base = { ...rest, ...(account_codes ? { account_codes } : {}) };
+    // edit ต้องผ่าน applyCascadeDecision เสมอ — backend ถือ cascade_deviation=true เมื่อไม่ส่ง
+    const data = isEdit ? applyCascadeDecision(base, decision) : base;
     const ok = () => handleOpenChange(false);
     const opts = (label: string) => ({
       onSuccess: () => {

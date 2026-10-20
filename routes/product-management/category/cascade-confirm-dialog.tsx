@@ -69,7 +69,7 @@ export function CascadeConfirmDialog({
     rows.push({
       key: "inventory",
       label: t("inventoryAccount"),
-      from: changes.inventory.from ?? t("cascadeInherit"),
+      from: accountValue(changes.inventory.from),
       to: accountValue(changes.inventory.to),
     });
   }
@@ -77,7 +77,7 @@ export function CascadeConfirmDialog({
     rows.push({
       key: "direct",
       label: t("directAccount"),
-      from: changes.direct.from ?? t("cascadeInherit"),
+      from: accountValue(changes.direct.from),
       to: accountValue(changes.direct.to),
     });
   }
@@ -99,7 +99,7 @@ export function CascadeConfirmDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent aria-describedby={undefined}>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("cascadeTitle")}</AlertDialogTitle>
         </AlertDialogHeader>

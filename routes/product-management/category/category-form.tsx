@@ -29,6 +29,15 @@ import {
   type CategoryFormValues,
 } from "./category-form-schema";
 import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
+import {
+  countDescendants,
+  detectCascadeChanges,
+  hasCascadeChanges,
+  type CascadeChanges,
+  type CascadeChoice,
+  type CascadeDecision,
+} from "./cascade-changes";
+import { CascadeConfirmDialog } from "./cascade-confirm-dialog";
 
 interface CategoryFormProps {
   readonly type: CategoryType;
@@ -39,7 +48,10 @@ interface CategoryFormProps {
   readonly ancestors?: CategoryNode[];
   /** โหลด account_codes ของ node นี้ไม่สำเร็จ → ปิดช่องบัญชี */
   readonly accountCodesUnavailable?: boolean;
-  readonly onSubmit: (data: CategoryFormValues) => void;
+  readonly onSubmit: (
+    data: CategoryFormValues,
+    decision?: CascadeDecision,
+  ) => void;
   readonly onCancel: () => void;
   readonly isPending?: boolean;
 }
@@ -66,6 +78,10 @@ export function CategoryForm({
   const [pendingData, setPendingData] = useState<CategoryFormValues | null>(
     null,
   );
+  const [pendingCascade, setPendingCascade] = useState<{
+    data: CategoryFormValues;
+    changes: CascadeChanges;
+  } | null>(null);
 
   const parentDisplay =
     type === "category"
@@ -134,12 +150,19 @@ export function CategoryForm({
 
   const handleFormSubmit = (data: CategoryFormValues) => {
     const payload = stripAutoCode(mode, data);
-    if (
+    const flagsChanged =
       mode === "edit" &&
-      selectedNode &&
+      !!selectedNode &&
       (selectedNode.is_used_in_recipe !== data.is_used_in_recipe ||
-        selectedNode.is_sold_directly !== data.is_sold_directly)
-    ) {
+        selectedNode.is_sold_directly !== data.is_sold_directly);
+    if (mode === "edit" && selectedNode) {
+      const changes = detectCascadeChanges(defaultValues, data);
+      if (hasCascadeChanges(changes)) {
+        setPendingCascade({ data: payload, changes });
+        return;
+      }
+    }
+    if (flagsChanged) {
       setPendingData(payload);
       setShowConfirm(true);
       return;
@@ -435,6 +458,31 @@ export function CategoryForm({
           }
         }}
       />
+
+      {pendingCascade && selectedNode && (
+        <CascadeConfirmDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setPendingCascade(null);
+          }}
+          nodeType={selectedNode.type}
+          changes={pendingCascade.changes}
+          counts={countDescendants(selectedNode)}
+          flagsChanged={
+            selectedNode.is_used_in_recipe !==
+              pendingCascade.data.is_used_in_recipe ||
+            selectedNode.is_sold_directly !==
+              pendingCascade.data.is_sold_directly
+          }
+          onChoose={(choice: CascadeChoice) => {
+            onSubmit(pendingCascade.data, {
+              choice,
+              changes: pendingCascade.changes,
+            });
+            setPendingCascade(null);
+          }}
+        />
+      )}
     </>
   );
 }

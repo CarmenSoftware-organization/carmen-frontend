@@ -13,6 +13,7 @@ import {
   type CategoryType,
 } from "@/types/category";
 import type { FormMode } from "@/types/form";
+import type { CascadeDecision } from "./cascade-changes";
 import { CategoryForm } from "./category-form";
 import type { CategoryFormValues } from "./category-form-schema";
 
@@ -28,7 +29,10 @@ interface CategoryDialogProps {
   readonly accountCodesLoading?: boolean;
   /** โหมด edit: โหลด account_codes ไม่สำเร็จ → ปิดช่องบัญชี */
   readonly accountCodesUnavailable?: boolean;
-  readonly onSubmit: (data: CategoryFormValues) => void;
+  readonly onSubmit: (
+    data: CategoryFormValues,
+    decision?: CascadeDecision,
+  ) => void;
   readonly isPending?: boolean;
 }
 
