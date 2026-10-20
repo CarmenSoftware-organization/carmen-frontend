@@ -1,7 +1,861 @@
 {
-  "current": "2.5.14",
-  "generated_at": "2026-10-15T11:10:04.879Z",
+  "current": "2.5.22",
+  "generated_at": "2026-10-20T16:22:31.390Z",
   "versions": [
+    {
+      "version": "2.5.22",
+      "build": "2.5.22-build.20261020.af81ef80",
+      "date": "2026-10-20",
+      "commit": "af81ef80",
+      "changes": {
+        "added": [
+          {
+            "scope": "toast",
+            "summary": "ปรับ toast เป็นทรง IBM Carbon และย้ายไปกลางขอบบน",
+            "hash": "3dc3e9c7",
+            "author": "Thammanoon Semapru",
+            "pr": 391
+          },
+          {
+            "scope": "category",
+            "summary": "คอลัมน์ค่าที่ไหลลงชั้นล่างในต้นไม้หมวดหมู่",
+            "hash": "17f5acd7",
+            "author": "Thammanoon Semapru",
+            "pr": 389
+          },
+          {
+            "scope": "category",
+            "summary": "แสดงจำนวนสินค้าในต้นไม้หมวดหมู่",
+            "hash": "0a72b914",
+            "author": "Thammanoon Semapru",
+            "pr": 386
+          },
+          {
+            "scope": "category",
+            "summary": "ถามก่อนเขียนทับค่าลงชั้นล่างเมื่อแก้ category/sub-category/item group",
+            "hash": "a96ef7ca",
+            "author": "Thammanoon Semapru",
+            "pr": 385
+          },
+          {
+            "scope": "category",
+            "summary": "dialog ยืนยันการเขียนทับลงชั้นล่าง",
+            "hash": "3543ab05",
+            "author": "Thammanoon Semapru",
+            "pr": 385
+          },
+          {
+            "scope": "report",
+            "summary": "dialog รายงานรองรับ <TextBox> — ช่องพิมพ์ค่าเอง (Slow Moving: Day)",
+            "hash": "69cb7d8b",
+            "author": "Khafang",
+            "pr": 383
+          },
+          {
+            "scope": "report",
+            "summary": "dialog รายงานรองรับ <Note> — ข้อความใต้ช่อง filter แทน @today ด้วยวันที่วันนี้",
+            "hash": "0f6ffe0f",
+            "author": "Khafang",
+            "pr": 379
+          },
+          {
+            "scope": "accounting",
+            "summary": "หน้าตั้งค่า Accounting แก้ gl_setting ครบทุกช่อง",
+            "hash": "5d9d3d79",
+            "author": "Thammanoon Semapru",
+            "pr": 378
+          },
+          {
+            "scope": "report",
+            "summary": "ซ่อนปุ่ม Run/Export ตามสวิตช์ของ template",
+            "hash": "e2368f92",
+            "author": "Thammanoon Semapru",
+            "pr": 376
+          },
+          {
+            "scope": "report",
+            "summary": "ปุ่ม Export data ในหน้าเลือกรายงาน",
+            "hash": "6ab0c5d7",
+            "author": "Thammanoon Semapru",
+            "pr": 375
+          },
+          {
+            "scope": "notification",
+            "summary": "ลิงก์ยาวในข้อความแจ้งเตือนมีปุ่มคัดลอก (ลิงก์รายงานจาก schedule)",
+            "hash": "d7b0d3d8",
+            "author": "Khafang",
+            "pr": 374
+          },
+          {
+            "scope": "stock-in",
+            "summary": "ราคาตั้งต้นของบรรทัด SI ตามค่า si.cost-from",
+            "hash": "b02286c7",
+            "author": "Khafang",
+            "pr": 373
+          },
+          {
+            "scope": "recipe",
+            "summary": "โหมดทำอาหารแสดงวัตถุดิบที่เป็นสูตรพร้อมลิงก์ไปสูตรฐาน",
+            "hash": "264a1d7f",
+            "author": "Thammanoon Semapru",
+            "pr": 372
+          },
+          {
+            "scope": "recipe",
+            "summary": "เลือกสูตรอื่นเป็นวัตถุดิบในฟอร์มสูตร",
+            "hash": "4b952da2",
+            "author": "Thammanoon Semapru",
+            "pr": 372
+          },
+          {
+            "scope": "recipe",
+            "summary": "แยกตัวอ้างอิงวัตถุดิบ สินค้า/สูตร ในตัวช่วยคิดต้นทุน",
+            "hash": "405e4bf5",
+            "author": "Thammanoon Semapru",
+            "pr": 372
+          },
+          {
+            "scope": "data-grid",
+            "summary": "meta.grow ให้คอลัมน์ข้อความยาวรับที่ว่างที่เหลือ",
+            "hash": "3305767f",
+            "author": "Thammanoon Semapru",
+            "pr": 371
+          },
+          {
+            "scope": "equipment-category",
+            "summary": "คอลัมน์ Description + จำนวนอุปกรณ์ที่กดไปหน้ารายการที่กรองแล้ว",
+            "hash": "5ac1f4b5",
+            "author": "Thammanoon Semapru",
+            "pr": 370
+          },
+          {
+            "scope": "equipment",
+            "summary": "โหมดอ่านขึ้น — แทน placeholder และซ่อนส่วนรูปที่ว่าง",
+            "hash": "1cd157b1",
+            "author": "Thammanoon Semapru",
+            "pr": 369
+          },
+          {
+            "scope": "equipment",
+            "summary": "สถานะรอบซ่อมบำรุง จำนวนพร้อมใช้ และรูปบนหน้ารายการ/รายละเอียด",
+            "hash": "3c93ea06",
+            "author": "Thammanoon Semapru",
+            "pr": 368
+          },
+          {
+            "scope": "cuisine",
+            "summary": "ตั้งความกว้างหน้ารายละเอียดเป็น wide",
+            "hash": "a96f2cfe",
+            "author": "Thammanoon Semapru",
+            "pr": 367
+          },
+          {
+            "scope": "cuisine",
+            "summary": "ปรับหน้า Cuisine Type — ชิปรายการ, ตาราง Info, สี region, สูตรที่ใช้อยู่",
+            "hash": "a86eb398",
+            "author": "Thammanoon Semapru",
+            "pr": 366
+          },
+          {
+            "scope": "recipe",
+            "summary": "ใช้ค่าตั้งต้นของหมวดในฟอร์มสูตร",
+            "hash": "6638a022",
+            "author": "Thammanoon Semapru",
+            "pr": 365
+          },
+          {
+            "scope": "recipe-category",
+            "summary": "ตั้งความกว้างหน้ารายละเอียดเป็น wide",
+            "hash": "8e0d16d8",
+            "author": "Thammanoon Semapru",
+            "pr": 364
+          },
+          {
+            "scope": "recipe-category",
+            "summary": "รวมต้นทุน/กำไรเป็น section เดียวพร้อมแถบแบ่งราคาขาย และแก้โหมดอ่าน",
+            "hash": "d443837c",
+            "author": "Thammanoon Semapru",
+            "pr": 364
+          },
+          {
+            "scope": "recipe-category",
+            "summary": "แสดงต้นทุนอาหาร/อัตรากำไร และรวม parent เข้าคอลัมน์ชื่อในหน้า list",
+            "hash": "4e950086",
+            "author": "Thammanoon Semapru",
+            "pr": 363
+          },
+          {
+            "scope": "store-operation",
+            "summary": "เพิ่ม dashboard widget ในหน้า Store Operation เหมือนโมดูลอื่น",
+            "hash": "d0e97b35",
+            "author": "Thammanoon Semapru",
+            "pr": 362
+          },
+          {
+            "scope": "developers",
+            "summary": "แปลเอกสาร API เป็นภาษาไทยและเพิ่มสคริปต์ docs:i18n-check",
+            "hash": "b39257a8",
+            "author": "Thammanoon Semapru",
+            "pr": 360
+          },
+          {
+            "scope": "developers",
+            "summary": "หน้าเอกสาร API สาธารณะ /developers/api ด้วย Scalar",
+            "hash": "93cca70f",
+            "author": "Thammanoon Semapru",
+            "pr": 360
+          },
+          {
+            "scope": "interface",
+            "summary": "ย้าย External ไปหมวดใหม่ Export tools",
+            "hash": "c4b7b0a7",
+            "author": "Thammanoon Semapru",
+            "pr": 359
+          },
+          {
+            "scope": "interface",
+            "summary": "ถอดช่อง Default invoice value ออกจากหน้า External",
+            "hash": "59049b66",
+            "author": "Thammanoon Semapru",
+            "pr": 358
+          },
+          {
+            "scope": "interface",
+            "summary": "ถอด section Posting (Export format/Posting frequency) ออกจากหน้า External — ระบบภายนอกดึงเองผ่าน API key",
+            "hash": "7c2b1df7",
+            "author": "Thammanoon Semapru",
+            "pr": 357
+          },
+          {
+            "scope": "interface",
+            "summary": "หน้าเอกสาร External API แสดง ap-invoices / gl-journals",
+            "hash": "d66fe400",
+            "author": "Thammanoon Semapru",
+            "pr": 356
+          },
+          {
+            "scope": "interface",
+            "summary": "ถอด section Connection (Enabled/Endpoint) ออกจากหน้า External — ระบบภายนอกดึงเองผ่าน API key",
+            "hash": "39b851c4",
+            "author": "Thammanoon Semapru",
+            "pr": 355
+          },
+          {
+            "scope": "interface",
+            "summary": "ทุกหน้า config ของ interface ใช้ความกว้างแบบ wide (ตั้งที่ InterfacePageLayout ที่เดียว ถอด prop width)",
+            "hash": "6899935c",
+            "author": "Thammanoon Semapru",
+            "pr": 354
+          },
+          {
+            "scope": "interface",
+            "summary": "หน้า Carmen GL ใช้ความกว้างแบบ wide",
+            "hash": "0041ac28",
+            "author": "Thammanoon Semapru",
+            "pr": 354
+          },
+          {
+            "scope": "interface",
+            "summary": "ส่วน API connection / access / documentation ใช้ layout 2 คอลัมน์ตามส่วนฟอร์มด้านบน",
+            "hash": "0f33e710",
+            "author": "Thammanoon Semapru",
+            "pr": 352
+          },
+          {
+            "scope": "interface",
+            "summary": "ปรับ Swagger UI ให้เข้ากับแอป — ซ่อนหัว spec, ฟอนต์แอป, จำกัดความยาวบรรทัด, ลดขนาดหัวข้อ",
+            "hash": "30036472",
+            "author": "Thammanoon Semapru",
+            "pr": 352
+          },
+          {
+            "scope": "interface",
+            "summary": "หน้า External ใช้ความกว้างแบบ wide (เพิ่ม prop width ให้ InterfacePageLayout)",
+            "hash": "0b5ea8d1",
+            "author": "Thammanoon Semapru",
+            "pr": 352
+          },
+          {
+            "scope": "interface",
+            "summary": "ให้ส่วน API access กว้างเต็มแถวเท่าส่วนเอกสาร (Client ID คู่กับ Secret)",
+            "hash": "81cd0650",
+            "author": "Thammanoon Semapru",
+            "pr": 352
+          },
+          {
+            "scope": "interface",
+            "summary": "จัดหน้า API access ใหม่เป็นแผงข้อมูลรับรอง + แยกโซนที่มีผลทันที",
+            "hash": "03d3a9d8",
+            "author": "Thammanoon Semapru",
+            "pr": 352
+          },
+          {
+            "scope": "interface",
+            "summary": "เพิ่มเอกสาร API ขาเข้า (Swagger UI) ในหน้า External",
+            "hash": "7c79b6c8",
+            "author": "Thammanoon Semapru",
+            "pr": 350
+          },
+          {
+            "scope": "interface",
+            "summary": "จัดการ API key ของ BU ในหน้า External",
+            "hash": "5559f284",
+            "author": "Thammanoon Semapru",
+            "pr": 349
+          },
+          {
+            "scope": "interface",
+            "summary": "ฟอร์ม External พร้อมตั้งบัญชีเจ้าหนี้และภาษีซื้อตั้งต้น",
+            "hash": "90c24111",
+            "author": "Thammanoon Semapru",
+            "pr": 348
+          },
+          {
+            "scope": "vendor,adjustment-type",
+            "summary": "เพิ่มช่องเลือกบัญชีเจ้าหนี้และบัญชีของ adjustment type",
+            "hash": "5adaf944",
+            "author": "Thammanoon Semapru",
+            "pr": 348
+          },
+          {
+            "scope": "coam",
+            "summary": "แสดงแหล่งบัญชี vendor/BU/adjustment type และแถว GL grn/cn",
+            "hash": "48d73eb6",
+            "author": "Thammanoon Semapru",
+            "pr": 348
+          },
+          {
+            "scope": "cost-center",
+            "summary": "ไม่บังคับเลือกกลุ่มศูนย์ต้นทุน",
+            "hash": "da006e8e",
+            "author": "Thammanoon Semapru",
+            "pr": 342
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "เมนู Edit ในแถวรายการสูตร",
+            "hash": "ce241911",
+            "author": "Thammanoon Semapru",
+            "pr": 341
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "เช็กลิสต์วัตถุดิบในโหมดทำอาหาร",
+            "hash": "3a138078",
+            "author": "Thammanoon Semapru",
+            "pr": 340
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "ส่วนวัตถุดิบในฟอร์มสูตรบันทึกจริง ต้นทุนจาก server และปุ่มคำนวณใหม่",
+            "hash": "7e50ece4",
+            "author": "Thammanoon Semapru",
+            "pr": 340
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "type, endpoint และ hook ของวัตถุดิบสูตร (preview / แทนทั้งชุด / หน่วยสูตร)",
+            "hash": "f810e795",
+            "author": "Thammanoon Semapru",
+            "pr": 340
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "โหมดทำอาหารสำหรับแท็บเล็ตในครัว",
+            "hash": "9c7f07ff",
+            "author": "Thammanoon Semapru",
+            "pr": 339
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "แก้ไขขั้นตอนทำในฟอร์มสูตรอาหาร",
+            "hash": "11577935",
+            "author": "Thammanoon Semapru",
+            "pr": 339
+          },
+          {
+            "scope": "lookup",
+            "summary": "lookup อุปกรณ์ครัวสำหรับขั้นตอนทำ",
+            "hash": "2a1ed9b8",
+            "author": "Thammanoon Semapru",
+            "pr": 339
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "type และ hook sync ขั้นตอนทำของสูตร",
+            "hash": "64668e6e",
+            "author": "Thammanoon Semapru",
+            "pr": 339
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "แยกหน้าสูตรเป็นโหมดทำอาหาร (/:id) กับฟอร์มแก้ไข (/:id/edit)",
+            "hash": "808a81c6",
+            "author": "Thammanoon Semapru",
+            "pr": 339
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "เพดาน food cost การ์ดคำแนะนำราคา และบันทึกจัดจาน/เก็บรักษาในฟอร์มสูตร",
+            "hash": "d3f25453",
+            "author": "Thammanoon Semapru",
+            "pr": 338
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "ปุ่มประวัติการแก้ไข และ comment + ไฟล์แนบในหน้าสูตรอาหาร",
+            "hash": "77deb22f",
+            "author": "Thammanoon Semapru",
+            "pr": 336
+          },
+          {
+            "scope": "certification",
+            "summary": "ช่องผู้ขายที่ถือใบแสดงใช้ได้ X/Y พร้อมแถบสัดส่วน + ความกว้างคอลัมน์ตาม size",
+            "hash": "b8b6aca6",
+            "author": "Thammanoon Semapru",
+            "pr": 327
+          },
+          {
+            "scope": "request-price-list",
+            "summary": "โหมดดูหน้าใบขอราคากระชับขึ้น ท่าเดียวกับหน้า price list / แม่แบบ",
+            "hash": "a59f7706",
+            "author": "Thammanoon Semapru",
+            "pr": 326
+          },
+          {
+            "scope": "price-list-template",
+            "summary": "โหมดดูหน้าแม่แบบกระชับขึ้น ท่าเดียวกับหน้า price list / ผู้ขาย",
+            "hash": "ea35f338",
+            "author": "Thammanoon Semapru",
+            "pr": 325
+          },
+          {
+            "scope": "price-list",
+            "summary": "ช่วงราคาที่หมดอายุแล้วขึ้น Expired เป็นสีแดง",
+            "hash": "5f2d671a",
+            "author": "Thammanoon Semapru",
+            "pr": 324
+          },
+          {
+            "scope": "price-list",
+            "summary": "โหมดดูหน้า price list กระชับขึ้น — ตัดค่าที่ซ้ำแถบหัว, รวมช่วงเวลาที่มีผลพร้อมบอกว่ายังใช้ได้ไหม",
+            "hash": "496340e4",
+            "author": "Thammanoon Semapru",
+            "pr": 323
+          },
+          {
+            "scope": "vendor",
+            "summary": "หน้าผู้ขายกว้างเต็มจอ (FormPageShell width=wide)",
+            "hash": "189d6425",
+            "author": "Thammanoon Semapru",
+            "pr": 322
+          },
+          {
+            "scope": "vendor",
+            "summary": "Rating เต็มแถว + คำอธิบาย General ตรงกับโหมดดู",
+            "hash": "33bfcdc9",
+            "author": "Thammanoon Semapru",
+            "pr": 322
+          },
+          {
+            "scope": "vendor",
+            "summary": "โหมดดูหน้าผู้ขายกระชับขึ้น — ตัดค่าที่ซ้ำแถบหัว, หมวดว่างเหลือบรรทัดเดียว, เตือนใบรับรองใกล้หมดอายุ",
+            "hash": "dd0b72d7",
+            "author": "Thammanoon Semapru",
+            "pr": 322
+          },
+          {
+            "scope": "comment",
+            "summary": "ใช้นโยบายไฟล์แนบของ BU (ชนิด + ขนาด) ในแผง comment และ notes dialog",
+            "hash": "833178e1",
+            "author": "Thammanoon Semapru",
+            "pr": 321
+          },
+          {
+            "scope": "comment",
+            "summary": "โหลด comment ทีละหน้า (ใหม่ → เก่า) ตอนเลื่อนถึงท้ายแผง",
+            "hash": "61011d0e",
+            "author": "Thammanoon Semapru",
+            "pr": 320
+          },
+          {
+            "scope": "vendor",
+            "summary": "เพิ่ม comment + ไฟล์แนบในหน้า vendor",
+            "hash": "bbf4e706",
+            "author": "Thammanoon Semapru",
+            "pr": 318
+          },
+          {
+            "scope": null,
+            "summary": "add GL dimensions and dimension rules functionality",
+            "hash": "f6d89d8f",
+            "author": "llHorizonll",
+            "pr": null
+          }
+        ],
+        "fixed": [
+          {
+            "scope": "category",
+            "summary": "แก้ภาษีแล้วถามก่อนส่งลงชั้นล่าง (cascade_tax)",
+            "hash": "fa14b568",
+            "author": "Thammanoon Semapru",
+            "pr": 390
+          },
+          {
+            "scope": "product",
+            "summary": "ล้าง cache ของ item group หลังสร้าง/แก้/ลบสินค้า",
+            "hash": "47dde7f1",
+            "author": "Thammanoon Semapru",
+            "pr": 388
+          },
+          {
+            "scope": "category",
+            "summary": "ล้าง cache ของชั้นลูกหลังแก้ category/sub-category/item group",
+            "hash": "dc7bd656",
+            "author": "Thammanoon Semapru",
+            "pr": 387
+          },
+          {
+            "scope": "category",
+            "summary": "ข้อความเตือนล้างบัญชีระดับ category + พหูพจน์ภาษาอังกฤษ",
+            "hash": "532d85c5",
+            "author": "Thammanoon Semapru",
+            "pr": 385
+          },
+          {
+            "scope": "category",
+            "summary": "แก้ type ของ payload edit หลังใช้ applyCascadeDecision",
+            "hash": "6af2d400",
+            "author": "Thammanoon Semapru",
+            "pr": 385
+          },
+          {
+            "scope": "category",
+            "summary": "ย้ายปุ่ม hover มาต่อท้ายชื่อใน tree หมวดสินค้า",
+            "hash": "ba20555d",
+            "author": "Thammanoon Semapru",
+            "pr": 384
+          },
+          {
+            "scope": "tooling",
+            "summary": "ปิดช่องแทรกข้อความผ่าน hook และจำกัด allowlist ของ graft/trail",
+            "hash": "74061aff",
+            "author": "Thammanoon Semapru",
+            "pr": 382
+          },
+          {
+            "scope": "accounting",
+            "summary": "ผูกเมนูตั้งค่ากับสิทธิ์ app_config และเก็บกวาดข้อความ",
+            "hash": "7e13de71",
+            "author": "Thammanoon Semapru",
+            "pr": 378
+          },
+          {
+            "scope": "report",
+            "summary": "กันกด Export data ซ้ำใน tick เดียวกันด้วย ref",
+            "hash": "d71ef5f0",
+            "author": "Thammanoon Semapru",
+            "pr": 375
+          },
+          {
+            "scope": "recipe",
+            "summary": "ข้อความ error ของสูตรที่ถูกใช้อยู่แสดงรายชื่อเมนูครบ + บรรทัดสูตรไม่ส่งหน่วย",
+            "hash": "812e9be0",
+            "author": "Thammanoon Semapru",
+            "pr": 372
+          },
+          {
+            "scope": "recipe",
+            "summary": "โหมดทำอาหารให้แตะได้ทั้งแถวและตั้งชื่อ checkbox",
+            "hash": "fa5a370e",
+            "author": "Thammanoon Semapru",
+            "pr": 372
+          },
+          {
+            "scope": "recipe",
+            "summary": "บรรทัดสูตรต้องมีหน่วยก่อนนับว่าครบ เพื่อจับคู่ต้นทุนได้",
+            "hash": "834bb9ce",
+            "author": "Thammanoon Semapru",
+            "pr": 372
+          },
+          {
+            "scope": "developers",
+            "summary": "เอกสาร API เปลี่ยนธีมตามแอปทันทีเมื่อสลับธีมระหว่างเปิดหน้า",
+            "hash": "6fffb956",
+            "author": "Thammanoon Semapru",
+            "pr": 360
+          },
+          {
+            "scope": "developers",
+            "summary": "docs:i18n-check ใช้ import.meta.url แทน import.meta.dir ให้ผ่าน tsc",
+            "hash": "a1000a39",
+            "author": "Thammanoon Semapru",
+            "pr": 360
+          },
+          {
+            "scope": "interface",
+            "summary": "คำแนะนำช่อง Authorize token ขึ้นเป็นชื่อคีย์ดิบ — \"<token>\" ถูก use-intl อ่านเป็นแท็ก rich text",
+            "hash": "0b1e1295",
+            "author": "Thammanoon Semapru",
+            "pr": 354
+          },
+          {
+            "scope": "lookup",
+            "summary": "placeholder ผังบัญชีแปลตามภาษา (เดิม hardcode \"GL Account\" → ภาษาไทยขึ้น \"เลือกGL Account\")",
+            "hash": "6306e302",
+            "author": "Thammanoon Semapru",
+            "pr": 353
+          },
+          {
+            "scope": "interface",
+            "summary": "ให้ Swagger UI อยู่บนพื้นสว่างเสมอ อ่านออกในธีมมืด",
+            "hash": "70f45ee0",
+            "author": "Thammanoon Semapru",
+            "pr": 350
+          },
+          {
+            "scope": "interface",
+            "summary": "แก้คำอธิบาย API Access ให้ทิศทางถูก (อ่าน/ดึงออก) และเติม SECRET_ENCRYPTION_KEY ในลำดับ deploy",
+            "hash": "87ed7f62",
+            "author": "Thammanoon Semapru",
+            "pr": 349
+          },
+          {
+            "scope": "interface",
+            "summary": "ตรวจ success:false และ data ว่างใน mutation ที่คืน secret",
+            "hash": "324f22e5",
+            "author": "Thammanoon Semapru",
+            "pr": 349
+          },
+          {
+            "scope": "interface",
+            "summary": "แก้ข้อความ API key ตอน license อ่านไม่ได้ และรอบแก้รีวิว",
+            "hash": "a20a2f5b",
+            "author": "Thammanoon Semapru",
+            "pr": 349
+          },
+          {
+            "scope": "gl-account",
+            "summary": "ส่งบัญชีเฉพาะตอนแก้ไข, แสดงป้ายบัญชีนอก 100 แถวแรก, map GL_ACCOUNT_NOT_POSTABLE เข้าฟิลด์",
+            "hash": "b7b650ce",
+            "author": "Thammanoon Semapru",
+            "pr": 348
+          },
+          {
+            "scope": "interface",
+            "summary": "External อ่านค่า gl_setting ล่าสุดก่อน merge, แยก AccountingFields ใช้ร่วม, แจ้งเมื่อบันทึกบัญชีตั้งต้นไม่สำเร็จ",
+            "hash": "128d288e",
+            "author": "Thammanoon Semapru",
+            "pr": 348
+          },
+          {
+            "scope": "coa",
+            "summary": "สวิตช์ Require Dimension อ่านสถานะจากกฎที่มีอยู่ และปิด = ลบกฎ",
+            "hash": "4a1528df",
+            "author": "Thammanoon Semapru",
+            "pr": 347
+          },
+          {
+            "scope": "coa",
+            "summary": "เลือกได้เฉพาะ Account Code Group ชั้นล่างสุด (leaf)",
+            "hash": "dd292933",
+            "author": "Thammanoon Semapru",
+            "pr": 346
+          },
+          {
+            "scope": "coa",
+            "summary": "ขยายฟอร์มผังบัญชีเป็น width wide",
+            "hash": "e1c6af34",
+            "author": "Thammanoon Semapru",
+            "pr": 345
+          },
+          {
+            "scope": "coa",
+            "summary": "ไม่บังคับเลือก Account Code Group ในผังบัญชี",
+            "hash": "408d9b58",
+            "author": "Thammanoon Semapru",
+            "pr": 344
+          },
+          {
+            "scope": "config",
+            "summary": "เมนู Chart of Accounts ขึ้นก่อน Account Code Groups",
+            "hash": "46865be8",
+            "author": "Thammanoon Semapru",
+            "pr": 343
+          },
+          {
+            "scope": "config",
+            "summary": "เมนู Cost Centers ขึ้นก่อน Cost Center Groups",
+            "hash": "96ceed8b",
+            "author": "Thammanoon Semapru",
+            "pr": 343
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "ฟิลด์ต้นทุนที่คำนวณเองไม่ทำให้ฟอร์ม dirty หลังแก้แล้วเปลี่ยนกลับ",
+            "hash": "578b7e2e",
+            "author": "Thammanoon Semapru",
+            "pr": 341
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "แจ้งชัดเมื่อขั้นตอนสูตรถูกคนอื่นแก้ระหว่างเรียงลำดับ",
+            "hash": "faa32a86",
+            "author": "Thammanoon Semapru",
+            "pr": 341
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "ข้อความ error ในฟอร์มสูตรอัปเดตตามจริง",
+            "hash": "5f3c4ddd",
+            "author": "Thammanoon Semapru",
+            "pr": 341
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "ฟอร์มสูตรไม่ค้าง dirty หลังแก้ตัวเลขแล้วแก้กลับ",
+            "hash": "19648ee3",
+            "author": "Thammanoon Semapru",
+            "pr": 341
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "การ์ดราคาแนะนำขึ้นเมื่อตั้งแค่เพดาน food cost",
+            "hash": "7e6092ca",
+            "author": "Thammanoon Semapru",
+            "pr": 341
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "ยอดวัตถุดิบตรงกับ server คืนค่ากรอกมือเมื่อลบแถวหมด และลองดึงต้นทุนใหม่ได้",
+            "hash": "562aebd2",
+            "author": "Thammanoon Semapru",
+            "pr": 340
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "ลบวัตถุดิบหมดแล้วยอดกลับเป็น 0 และช่องสินค้าเต็มแถว",
+            "hash": "b399e193",
+            "author": "Thammanoon Semapru",
+            "pr": 340
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "ปุ่มย้อนกลับในโหมดทำอาหารใช้ BackButton กลาง",
+            "hash": "c3c74e24",
+            "author": "Thammanoon Semapru",
+            "pr": 339
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "บันทึกขั้นตอนล้มกลางทางไม่ทิ้งสิ่งที่กรอก, กันกด Save ซ้ำก่อน refetch, ปรับคีย์ลัด/wake lock ของโหมดทำอาหาร",
+            "hash": "9896313f",
+            "author": "Thammanoon Semapru",
+            "pr": 339
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "กรองขั้นตอนทำที่ลบแล้วออก และไม่ให้ guard เด้งกลับ /edit หลังบันทึก",
+            "hash": "f8411961",
+            "author": "Thammanoon Semapru",
+            "pr": 339
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "ช่องในส่วนต้นทุนแสดง error ไม่ตรงสถานะ (เพดานไม่ขึ้น error, ช่องที่แก้แล้วค้าง)",
+            "hash": "e874fbb1",
+            "author": "Thammanoon Semapru",
+            "pr": 338
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "ไม่แสดงราคาขั้นต่ำเมื่อเพดานต่ำกว่าเป้า และตรวจช่องเพดานใหม่เมื่อแก้เป้า",
+            "hash": "56774edd",
+            "author": "Thammanoon Semapru",
+            "pr": 338
+          },
+          {
+            "scope": "pr",
+            "summary": "auto allocate ส่ง qty ไปเทียบราคา — ไม่ให้ได้ tier MOQ ที่จำนวนไม่ถึง",
+            "hash": "260f03d7",
+            "author": "Khafang",
+            "pr": 337
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "food cost % และราคาแนะนำของสูตรคำนวณผิดฐาน",
+            "hash": "37c12897",
+            "author": "Thammanoon Semapru",
+            "pr": 335
+          },
+          {
+            "scope": "attachment",
+            "summary": "ยิงนโยบายไฟล์แนบเฉพาะตอนเปิดแผง + cache 1 นาที + notes dialog เมื่อ BU ไม่เปิดรูป",
+            "hash": "6d8691d0",
+            "author": "Thammanoon Semapru",
+            "pr": 321
+          },
+          {
+            "scope": "comment",
+            "summary": "ไฟล์ที่ backend ไม่รับถูกปัดตกตั้งแต่ FE + โหลด comment ครบทุกหน้า",
+            "hash": "55ba30d9",
+            "author": "Thammanoon Semapru",
+            "pr": 319
+          }
+        ],
+        "changed": [
+          {
+            "scope": "category",
+            "summary": "ตรวจค่าที่เปลี่ยน + สร้าง payload cascade แทน cascade_deviation ตายตัว",
+            "hash": "ca2ec66a",
+            "author": "Thammanoon Semapru",
+            "pr": 385
+          },
+          {
+            "scope": "adjustment-type",
+            "summary": "ตัดช่องบัญชีออก เพราะไม่มีที่ใดอ่านแล้ว",
+            "hash": "bd572120",
+            "author": "Thammanoon Semapru",
+            "pr": 378
+          },
+          {
+            "scope": "coam",
+            "summary": "ตัดที่มาของบัญชีแบบ vendor / BU / adjustment type",
+            "hash": "898d63f0",
+            "author": "Thammanoon Semapru",
+            "pr": 378
+          },
+          {
+            "scope": "interface",
+            "summary": "หน้า External เหลือแค่ส่วน API ตัด Vendor fallbacks และบัญชีตั้งต้นออก",
+            "hash": "d3c2f91f",
+            "author": "Thammanoon Semapru",
+            "pr": 378
+          },
+          {
+            "scope": null,
+            "summary": "ลบ ModuleLanding ที่ไม่มีหน้าไหนใช้แล้ว",
+            "hash": "302de0bb",
+            "author": "Thammanoon Semapru",
+            "pr": 362
+          },
+          {
+            "scope": "interface",
+            "summary": "เลิกใช้ Swagger UI ลิงก์ไปเอกสารสาธารณะแทน",
+            "hash": "af1bba88",
+            "author": "Thammanoon Semapru",
+            "pr": 360
+          },
+          {
+            "scope": "interface",
+            "summary": "ย้าย openapi.json ไป lib/external-api และเพิ่ม localizedSpec",
+            "hash": "1171ef46",
+            "author": "Thammanoon Semapru",
+            "pr": 360
+          }
+        ]
+      }
+    },
     {
       "version": "2.5.14",
       "build": "2.5.14-build.20261015.6e4f2e20",

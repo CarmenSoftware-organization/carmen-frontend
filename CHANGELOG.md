@@ -4,6 +4,134 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.5.22] - 2026-10-20
+
+### Added
+- **toast:** ปรับ toast เป็นทรง IBM Carbon และย้ายไปกลางขอบบน (#391) — Thammanoon Semapru `3dc3e9c7`
+- **category:** คอลัมน์ค่าที่ไหลลงชั้นล่างในต้นไม้หมวดหมู่ (#389) — Thammanoon Semapru `17f5acd7`
+- **category:** แสดงจำนวนสินค้าในต้นไม้หมวดหมู่ (#386) — Thammanoon Semapru `0a72b914`
+- **category:** ถามก่อนเขียนทับค่าลงชั้นล่างเมื่อแก้ category/sub-category/item group (#385) — Thammanoon Semapru `a96ef7ca`
+- **category:** dialog ยืนยันการเขียนทับลงชั้นล่าง (#385) — Thammanoon Semapru `3543ab05`
+- **report:** dialog รายงานรองรับ <TextBox> — ช่องพิมพ์ค่าเอง (Slow Moving: Day) (#383) — Khafang `69cb7d8b`
+- **report:** dialog รายงานรองรับ <Note> — ข้อความใต้ช่อง filter แทน @today ด้วยวันที่วันนี้ (#379) — Khafang `0f6ffe0f`
+- **accounting:** หน้าตั้งค่า Accounting แก้ gl_setting ครบทุกช่อง (#378) — Thammanoon Semapru `5d9d3d79`
+- **report:** ซ่อนปุ่ม Run/Export ตามสวิตช์ของ template (#376) — Thammanoon Semapru `e2368f92`
+- **report:** ปุ่ม Export data ในหน้าเลือกรายงาน (#375) — Thammanoon Semapru `6ab0c5d7`
+- **notification:** ลิงก์ยาวในข้อความแจ้งเตือนมีปุ่มคัดลอก (ลิงก์รายงานจาก schedule) (#374) — Khafang `d7b0d3d8`
+- **stock-in:** ราคาตั้งต้นของบรรทัด SI ตามค่า si.cost-from (#373) — Khafang `b02286c7`
+- **recipe:** โหมดทำอาหารแสดงวัตถุดิบที่เป็นสูตรพร้อมลิงก์ไปสูตรฐาน (#372) — Thammanoon Semapru `264a1d7f`
+- **recipe:** เลือกสูตรอื่นเป็นวัตถุดิบในฟอร์มสูตร (#372) — Thammanoon Semapru `4b952da2`
+- **recipe:** แยกตัวอ้างอิงวัตถุดิบ สินค้า/สูตร ในตัวช่วยคิดต้นทุน (#372) — Thammanoon Semapru `405e4bf5`
+- **data-grid:** meta.grow ให้คอลัมน์ข้อความยาวรับที่ว่างที่เหลือ (#371) — Thammanoon Semapru `3305767f`
+- **equipment-category:** คอลัมน์ Description + จำนวนอุปกรณ์ที่กดไปหน้ารายการที่กรองแล้ว (#370) — Thammanoon Semapru `5ac1f4b5`
+- **equipment:** โหมดอ่านขึ้น — แทน placeholder และซ่อนส่วนรูปที่ว่าง (#369) — Thammanoon Semapru `1cd157b1`
+- **equipment:** สถานะรอบซ่อมบำรุง จำนวนพร้อมใช้ และรูปบนหน้ารายการ/รายละเอียด (#368) — Thammanoon Semapru `3c93ea06`
+- **cuisine:** ตั้งความกว้างหน้ารายละเอียดเป็น wide (#367) — Thammanoon Semapru `a96f2cfe`
+- **cuisine:** ปรับหน้า Cuisine Type — ชิปรายการ, ตาราง Info, สี region, สูตรที่ใช้อยู่ (#366) — Thammanoon Semapru `a86eb398`
+- **recipe:** ใช้ค่าตั้งต้นของหมวดในฟอร์มสูตร (#365) — Thammanoon Semapru `6638a022`
+- **recipe-category:** ตั้งความกว้างหน้ารายละเอียดเป็น wide (#364) — Thammanoon Semapru `8e0d16d8`
+- **recipe-category:** รวมต้นทุน/กำไรเป็น section เดียวพร้อมแถบแบ่งราคาขาย และแก้โหมดอ่าน (#364) — Thammanoon Semapru `d443837c`
+- **recipe-category:** แสดงต้นทุนอาหาร/อัตรากำไร และรวม parent เข้าคอลัมน์ชื่อในหน้า list (#363) — Thammanoon Semapru `4e950086`
+- **store-operation:** เพิ่ม dashboard widget ในหน้า Store Operation เหมือนโมดูลอื่น (#362) — Thammanoon Semapru `d0e97b35`
+- **developers:** แปลเอกสาร API เป็นภาษาไทยและเพิ่มสคริปต์ docs:i18n-check (#360) — Thammanoon Semapru `b39257a8`
+- **developers:** หน้าเอกสาร API สาธารณะ /developers/api ด้วย Scalar (#360) — Thammanoon Semapru `93cca70f`
+- **interface:** ย้าย External ไปหมวดใหม่ Export tools (#359) — Thammanoon Semapru `c4b7b0a7`
+- **interface:** ถอดช่อง Default invoice value ออกจากหน้า External (#358) — Thammanoon Semapru `59049b66`
+- **interface:** ถอด section Posting (Export format/Posting frequency) ออกจากหน้า External — ระบบภายนอกดึงเองผ่าน API key (#357) — Thammanoon Semapru `7c2b1df7`
+- **interface:** หน้าเอกสาร External API แสดง ap-invoices / gl-journals (#356) — Thammanoon Semapru `d66fe400`
+- **interface:** ถอด section Connection (Enabled/Endpoint) ออกจากหน้า External — ระบบภายนอกดึงเองผ่าน API key (#355) — Thammanoon Semapru `39b851c4`
+- **interface:** ทุกหน้า config ของ interface ใช้ความกว้างแบบ wide (ตั้งที่ InterfacePageLayout ที่เดียว ถอด prop width) (#354) — Thammanoon Semapru `6899935c`
+- **interface:** หน้า Carmen GL ใช้ความกว้างแบบ wide (#354) — Thammanoon Semapru `0041ac28`
+- **interface:** ส่วน API connection / access / documentation ใช้ layout 2 คอลัมน์ตามส่วนฟอร์มด้านบน (#352) — Thammanoon Semapru `0f33e710`
+- **interface:** ปรับ Swagger UI ให้เข้ากับแอป — ซ่อนหัว spec, ฟอนต์แอป, จำกัดความยาวบรรทัด, ลดขนาดหัวข้อ (#352) — Thammanoon Semapru `30036472`
+- **interface:** หน้า External ใช้ความกว้างแบบ wide (เพิ่ม prop width ให้ InterfacePageLayout) (#352) — Thammanoon Semapru `0b5ea8d1`
+- **interface:** ให้ส่วน API access กว้างเต็มแถวเท่าส่วนเอกสาร (Client ID คู่กับ Secret) (#352) — Thammanoon Semapru `81cd0650`
+- **interface:** จัดหน้า API access ใหม่เป็นแผงข้อมูลรับรอง + แยกโซนที่มีผลทันที (#352) — Thammanoon Semapru `03d3a9d8`
+- **interface:** เพิ่มเอกสาร API ขาเข้า (Swagger UI) ในหน้า External (#350) — Thammanoon Semapru `7c79b6c8`
+- **interface:** จัดการ API key ของ BU ในหน้า External (#349) — Thammanoon Semapru `5559f284`
+- **interface:** ฟอร์ม External พร้อมตั้งบัญชีเจ้าหนี้และภาษีซื้อตั้งต้น (#348) — Thammanoon Semapru `90c24111`
+- **vendor,adjustment-type:** เพิ่มช่องเลือกบัญชีเจ้าหนี้และบัญชีของ adjustment type (#348) — Thammanoon Semapru `5adaf944`
+- **coam:** แสดงแหล่งบัญชี vendor/BU/adjustment type และแถว GL grn/cn (#348) — Thammanoon Semapru `48d73eb6`
+- **cost-center:** ไม่บังคับเลือกกลุ่มศูนย์ต้นทุน (#342) — Thammanoon Semapru `da006e8e`
+- **operation-plan:** เมนู Edit ในแถวรายการสูตร (#341) — Thammanoon Semapru `ce241911`
+- **operation-plan:** เช็กลิสต์วัตถุดิบในโหมดทำอาหาร (#340) — Thammanoon Semapru `3a138078`
+- **operation-plan:** ส่วนวัตถุดิบในฟอร์มสูตรบันทึกจริง ต้นทุนจาก server และปุ่มคำนวณใหม่ (#340) — Thammanoon Semapru `7e50ece4`
+- **operation-plan:** type, endpoint และ hook ของวัตถุดิบสูตร (preview / แทนทั้งชุด / หน่วยสูตร) (#340) — Thammanoon Semapru `f810e795`
+- **operation-plan:** โหมดทำอาหารสำหรับแท็บเล็ตในครัว (#339) — Thammanoon Semapru `9c7f07ff`
+- **operation-plan:** แก้ไขขั้นตอนทำในฟอร์มสูตรอาหาร (#339) — Thammanoon Semapru `11577935`
+- **lookup:** lookup อุปกรณ์ครัวสำหรับขั้นตอนทำ (#339) — Thammanoon Semapru `2a1ed9b8`
+- **operation-plan:** type และ hook sync ขั้นตอนทำของสูตร (#339) — Thammanoon Semapru `64668e6e`
+- **operation-plan:** แยกหน้าสูตรเป็นโหมดทำอาหาร (/:id) กับฟอร์มแก้ไข (/:id/edit) (#339) — Thammanoon Semapru `808a81c6`
+- **operation-plan:** เพดาน food cost การ์ดคำแนะนำราคา และบันทึกจัดจาน/เก็บรักษาในฟอร์มสูตร (#338) — Thammanoon Semapru `d3f25453`
+- **operation-plan:** ปุ่มประวัติการแก้ไข และ comment + ไฟล์แนบในหน้าสูตรอาหาร (#336) — Thammanoon Semapru `77deb22f`
+- **certification:** ช่องผู้ขายที่ถือใบแสดงใช้ได้ X/Y พร้อมแถบสัดส่วน + ความกว้างคอลัมน์ตาม size (#327) — Thammanoon Semapru `b8b6aca6`
+- **request-price-list:** โหมดดูหน้าใบขอราคากระชับขึ้น ท่าเดียวกับหน้า price list / แม่แบบ (#326) — Thammanoon Semapru `a59f7706`
+- **price-list-template:** โหมดดูหน้าแม่แบบกระชับขึ้น ท่าเดียวกับหน้า price list / ผู้ขาย (#325) — Thammanoon Semapru `ea35f338`
+- **price-list:** ช่วงราคาที่หมดอายุแล้วขึ้น Expired เป็นสีแดง (#324) — Thammanoon Semapru `5f2d671a`
+- **price-list:** โหมดดูหน้า price list กระชับขึ้น — ตัดค่าที่ซ้ำแถบหัว, รวมช่วงเวลาที่มีผลพร้อมบอกว่ายังใช้ได้ไหม (#323) — Thammanoon Semapru `496340e4`
+- **vendor:** หน้าผู้ขายกว้างเต็มจอ (FormPageShell width=wide) (#322) — Thammanoon Semapru `189d6425`
+- **vendor:** Rating เต็มแถว + คำอธิบาย General ตรงกับโหมดดู (#322) — Thammanoon Semapru `33bfcdc9`
+- **vendor:** โหมดดูหน้าผู้ขายกระชับขึ้น — ตัดค่าที่ซ้ำแถบหัว, หมวดว่างเหลือบรรทัดเดียว, เตือนใบรับรองใกล้หมดอายุ (#322) — Thammanoon Semapru `dd0b72d7`
+- **comment:** ใช้นโยบายไฟล์แนบของ BU (ชนิด + ขนาด) ในแผง comment และ notes dialog (#321) — Thammanoon Semapru `833178e1`
+- **comment:** โหลด comment ทีละหน้า (ใหม่ → เก่า) ตอนเลื่อนถึงท้ายแผง (#320) — Thammanoon Semapru `61011d0e`
+- **vendor:** เพิ่ม comment + ไฟล์แนบในหน้า vendor (#318) — Thammanoon Semapru `bbf4e706`
+- add GL dimensions and dimension rules functionality — llHorizonll `f6d89d8f`
+
+### Fixed
+- **category:** แก้ภาษีแล้วถามก่อนส่งลงชั้นล่าง (cascade_tax) (#390) — Thammanoon Semapru `fa14b568`
+- **product:** ล้าง cache ของ item group หลังสร้าง/แก้/ลบสินค้า (#388) — Thammanoon Semapru `47dde7f1`
+- **category:** ล้าง cache ของชั้นลูกหลังแก้ category/sub-category/item group (#387) — Thammanoon Semapru `dc7bd656`
+- **category:** ข้อความเตือนล้างบัญชีระดับ category + พหูพจน์ภาษาอังกฤษ (#385) — Thammanoon Semapru `532d85c5`
+- **category:** แก้ type ของ payload edit หลังใช้ applyCascadeDecision (#385) — Thammanoon Semapru `6af2d400`
+- **category:** ย้ายปุ่ม hover มาต่อท้ายชื่อใน tree หมวดสินค้า (#384) — Thammanoon Semapru `ba20555d`
+- **tooling:** ปิดช่องแทรกข้อความผ่าน hook และจำกัด allowlist ของ graft/trail (#382) — Thammanoon Semapru `74061aff`
+- **accounting:** ผูกเมนูตั้งค่ากับสิทธิ์ app_config และเก็บกวาดข้อความ (#378) — Thammanoon Semapru `7e13de71`
+- **report:** กันกด Export data ซ้ำใน tick เดียวกันด้วย ref (#375) — Thammanoon Semapru `d71ef5f0`
+- **recipe:** ข้อความ error ของสูตรที่ถูกใช้อยู่แสดงรายชื่อเมนูครบ + บรรทัดสูตรไม่ส่งหน่วย (#372) — Thammanoon Semapru `812e9be0`
+- **recipe:** โหมดทำอาหารให้แตะได้ทั้งแถวและตั้งชื่อ checkbox (#372) — Thammanoon Semapru `fa5a370e`
+- **recipe:** บรรทัดสูตรต้องมีหน่วยก่อนนับว่าครบ เพื่อจับคู่ต้นทุนได้ (#372) — Thammanoon Semapru `834bb9ce`
+- **developers:** เอกสาร API เปลี่ยนธีมตามแอปทันทีเมื่อสลับธีมระหว่างเปิดหน้า (#360) — Thammanoon Semapru `6fffb956`
+- **developers:** docs:i18n-check ใช้ import.meta.url แทน import.meta.dir ให้ผ่าน tsc (#360) — Thammanoon Semapru `a1000a39`
+- **interface:** คำแนะนำช่อง Authorize token ขึ้นเป็นชื่อคีย์ดิบ — "<token>" ถูก use-intl อ่านเป็นแท็ก rich text (#354) — Thammanoon Semapru `0b1e1295`
+- **lookup:** placeholder ผังบัญชีแปลตามภาษา (เดิม hardcode "GL Account" → ภาษาไทยขึ้น "เลือกGL Account") (#353) — Thammanoon Semapru `6306e302`
+- **interface:** ให้ Swagger UI อยู่บนพื้นสว่างเสมอ อ่านออกในธีมมืด (#350) — Thammanoon Semapru `70f45ee0`
+- **interface:** แก้คำอธิบาย API Access ให้ทิศทางถูก (อ่าน/ดึงออก) และเติม SECRET_ENCRYPTION_KEY ในลำดับ deploy (#349) — Thammanoon Semapru `87ed7f62`
+- **interface:** ตรวจ success:false และ data ว่างใน mutation ที่คืน secret (#349) — Thammanoon Semapru `324f22e5`
+- **interface:** แก้ข้อความ API key ตอน license อ่านไม่ได้ และรอบแก้รีวิว (#349) — Thammanoon Semapru `a20a2f5b`
+- **gl-account:** ส่งบัญชีเฉพาะตอนแก้ไข, แสดงป้ายบัญชีนอก 100 แถวแรก, map GL_ACCOUNT_NOT_POSTABLE เข้าฟิลด์ (#348) — Thammanoon Semapru `b7b650ce`
+- **interface:** External อ่านค่า gl_setting ล่าสุดก่อน merge, แยก AccountingFields ใช้ร่วม, แจ้งเมื่อบันทึกบัญชีตั้งต้นไม่สำเร็จ (#348) — Thammanoon Semapru `128d288e`
+- **coa:** สวิตช์ Require Dimension อ่านสถานะจากกฎที่มีอยู่ และปิด = ลบกฎ (#347) — Thammanoon Semapru `4a1528df`
+- **coa:** เลือกได้เฉพาะ Account Code Group ชั้นล่างสุด (leaf) (#346) — Thammanoon Semapru `dd292933`
+- **coa:** ขยายฟอร์มผังบัญชีเป็น width wide (#345) — Thammanoon Semapru `e1c6af34`
+- **coa:** ไม่บังคับเลือก Account Code Group ในผังบัญชี (#344) — Thammanoon Semapru `408d9b58`
+- **config:** เมนู Chart of Accounts ขึ้นก่อน Account Code Groups (#343) — Thammanoon Semapru `46865be8`
+- **config:** เมนู Cost Centers ขึ้นก่อน Cost Center Groups (#343) — Thammanoon Semapru `96ceed8b`
+- **operation-plan:** ฟิลด์ต้นทุนที่คำนวณเองไม่ทำให้ฟอร์ม dirty หลังแก้แล้วเปลี่ยนกลับ (#341) — Thammanoon Semapru `578b7e2e`
+- **operation-plan:** แจ้งชัดเมื่อขั้นตอนสูตรถูกคนอื่นแก้ระหว่างเรียงลำดับ (#341) — Thammanoon Semapru `faa32a86`
+- **operation-plan:** ข้อความ error ในฟอร์มสูตรอัปเดตตามจริง (#341) — Thammanoon Semapru `5f3c4ddd`
+- **operation-plan:** ฟอร์มสูตรไม่ค้าง dirty หลังแก้ตัวเลขแล้วแก้กลับ (#341) — Thammanoon Semapru `19648ee3`
+- **operation-plan:** การ์ดราคาแนะนำขึ้นเมื่อตั้งแค่เพดาน food cost (#341) — Thammanoon Semapru `7e6092ca`
+- **operation-plan:** ยอดวัตถุดิบตรงกับ server คืนค่ากรอกมือเมื่อลบแถวหมด และลองดึงต้นทุนใหม่ได้ (#340) — Thammanoon Semapru `562aebd2`
+- **operation-plan:** ลบวัตถุดิบหมดแล้วยอดกลับเป็น 0 และช่องสินค้าเต็มแถว (#340) — Thammanoon Semapru `b399e193`
+- **operation-plan:** ปุ่มย้อนกลับในโหมดทำอาหารใช้ BackButton กลาง (#339) — Thammanoon Semapru `c3c74e24`
+- **operation-plan:** บันทึกขั้นตอนล้มกลางทางไม่ทิ้งสิ่งที่กรอก, กันกด Save ซ้ำก่อน refetch, ปรับคีย์ลัด/wake lock ของโหมดทำอาหาร (#339) — Thammanoon Semapru `9896313f`
+- **operation-plan:** กรองขั้นตอนทำที่ลบแล้วออก และไม่ให้ guard เด้งกลับ /edit หลังบันทึก (#339) — Thammanoon Semapru `f8411961`
+- **operation-plan:** ช่องในส่วนต้นทุนแสดง error ไม่ตรงสถานะ (เพดานไม่ขึ้น error, ช่องที่แก้แล้วค้าง) (#338) — Thammanoon Semapru `e874fbb1`
+- **operation-plan:** ไม่แสดงราคาขั้นต่ำเมื่อเพดานต่ำกว่าเป้า และตรวจช่องเพดานใหม่เมื่อแก้เป้า (#338) — Thammanoon Semapru `56774edd`
+- **pr:** auto allocate ส่ง qty ไปเทียบราคา — ไม่ให้ได้ tier MOQ ที่จำนวนไม่ถึง (#337) — Khafang `260f03d7`
+- **operation-plan:** food cost % และราคาแนะนำของสูตรคำนวณผิดฐาน (#335) — Thammanoon Semapru `37c12897`
+- **attachment:** ยิงนโยบายไฟล์แนบเฉพาะตอนเปิดแผง + cache 1 นาที + notes dialog เมื่อ BU ไม่เปิดรูป (#321) — Thammanoon Semapru `6d8691d0`
+- **comment:** ไฟล์ที่ backend ไม่รับถูกปัดตกตั้งแต่ FE + โหลด comment ครบทุกหน้า (#319) — Thammanoon Semapru `55ba30d9`
+
+### Changed
+- **category:** ตรวจค่าที่เปลี่ยน + สร้าง payload cascade แทน cascade_deviation ตายตัว (#385) — Thammanoon Semapru `ca2ec66a`
+- **adjustment-type:** ตัดช่องบัญชีออก เพราะไม่มีที่ใดอ่านแล้ว (#378) — Thammanoon Semapru `bd572120`
+- **coam:** ตัดที่มาของบัญชีแบบ vendor / BU / adjustment type (#378) — Thammanoon Semapru `898d63f0`
+- **interface:** หน้า External เหลือแค่ส่วน API ตัด Vendor fallbacks และบัญชีตั้งต้นออก (#378) — Thammanoon Semapru `d3c2f91f`
+- ลบ ModuleLanding ที่ไม่มีหน้าไหนใช้แล้ว (#362) — Thammanoon Semapru `302de0bb`
+- **interface:** เลิกใช้ Swagger UI ลิงก์ไปเอกสารสาธารณะแทน (#360) — Thammanoon Semapru `af1bba88`
+- **interface:** ย้าย openapi.json ไป lib/external-api และเพิ่ม localizedSpec (#360) — Thammanoon Semapru `1171ef46`
+
 ## [2.5.14] - 2026-10-15
 
 ### Added
