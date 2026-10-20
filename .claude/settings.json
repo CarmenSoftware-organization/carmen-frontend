@@ -80,10 +80,21 @@
   ],
   "permissions": {
     "allow": [
-      "Bash(trail:*)",
-      "Bash(graft:*)",
-      "Bash(npx graft:*)",
-      "Bash(graft-dev:*)"
+      "Bash(graft ask:*)",
+      "Bash(graft grep:*)",
+      "Bash(graft skeleton:*)",
+      "Bash(graft callers:*)",
+      "Bash(graft map:*)",
+      "Bash(trail ask:*)",
+      "Bash(trail grep:*)",
+      "Bash(trail skeleton:*)",
+      "Bash(trail callers:*)",
+      "Bash(trail map:*)",
+      "Bash(npx graft ask:*)",
+      "Bash(npx graft grep:*)",
+      "Bash(npx graft skeleton:*)",
+      "Bash(npx graft callers:*)",
+      "Bash(npx graft map:*)"
     ],
     "deny": [
       "Bash(rm -rf /*)",
