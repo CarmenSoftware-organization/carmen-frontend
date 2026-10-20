@@ -29,6 +29,8 @@ export const PERMISSIONS = {
   configuration: {
     view: "configuration.view",
     adjustment_type: crud("configuration.adjustment_type"),
+    /** app-config (`tb_application_config`) — gateway ตรวจคีย์นี้ตอน PUT `/app-config/:key` */
+    app_config: crud("configuration.app_config"),
     business_type: crud("configuration.business_type"),
     cost_center: crud("configuration.cost_center"),
     cost_center_group: crud("configuration.cost_center_group"),

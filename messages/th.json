@@ -451,6 +451,45 @@
         "pending": "รอดำเนินการ",
         "urgent": "เร่งด่วน"
       }
+    },
+    "settings": {
+      "pageDescription": "ค่าตั้งต้นที่โมดูล Accounting ของระบบใช้ — งวดบัญชี GL และการลงบัญชี AP / AR",
+      "readOnlyNote": "อ่านอย่างเดียว — ต้องมีสิทธิ์แก้ไขการตั้งค่าแอปจึงจะแก้ได้",
+      "loadError": "โหลดการตั้งค่า Accounting ไม่สำเร็จ",
+      "freshLoadError": "อ่านค่าล่าสุดไม่ได้ จึงยังไม่ได้บันทึก ลองใหม่อีกครั้ง",
+      "saved": "บันทึกการตั้งค่า Accounting แล้ว",
+      "prefixNone": "ไม่ระบุ",
+      "prefixUnknown": "prefix ที่ไม่อยู่ในรายการ",
+      "sections": {
+        "generalLedger": "บัญชีแยกประเภท",
+        "generalLedgerDesc": "ปีบัญชี การปิดงวด และ prefix ของใบสำคัญที่ระบบสร้างเอง",
+        "accountsPayable": "เจ้าหนี้",
+        "accountsPayableDesc": "บัญชีและ prefix ที่ใช้ตอนลงบัญชี AP Invoice และ AP Payment",
+        "accountsReceivable": "ลูกหนี้",
+        "accountsReceivableDesc": "บัญชีและ prefix ที่ใช้ตอนลงบัญชีเอกสาร AR"
+      },
+      "fields": {
+        "fiscalYearStartMonth": "เดือนเริ่มต้นปีบัญชี",
+        "retainedEarningsAccount": "บัญชีกำไรสะสม",
+        "reversalPrefix": "prefix ใบสำคัญกลับรายการ",
+        "autoJvPrefix": "prefix ใบสำคัญอัตโนมัติ",
+        "allowPostToClosedPeriod": "อนุญาตให้ลงบัญชีในงวดที่ปิดแล้ว",
+        "apControlAccount": "บัญชีคุมเจ้าหนี้",
+        "inputVatAccount": "บัญชีภาษีซื้อ",
+        "whtPayableAccount": "บัญชีภาษีหัก ณ ที่จ่ายค้างจ่าย",
+        "advanceDepositAccount": "บัญชีเงินมัดจำจ่ายล่วงหน้า",
+        "realizedFxGainAccount": "บัญชีกำไรจากอัตราแลกเปลี่ยนที่เกิดขึ้นจริง",
+        "realizedFxLossAccount": "บัญชีขาดทุนจากอัตราแลกเปลี่ยนที่เกิดขึ้นจริง",
+        "apJvPrefix": "prefix ใบสำคัญเจ้าหนี้",
+        "arControlAccount": "บัญชีคุมลูกหนี้",
+        "outputVatAccount": "บัญชีภาษีขาย",
+        "arJvPrefix": "prefix ใบสำคัญลูกหนี้"
+      },
+      "hints": {
+        "fiscalYear": "ถ้าเปลี่ยนหลังจากมีงวดบัญชีแล้ว ขอบเขตของทุกงวดจะเลื่อนตาม",
+        "apPosting": "ใช้ตอนลงบัญชี AP Invoice — การส่งออก External ใช้บัญชีจาก Chart of Account mapping อย่างเดียว",
+        "allowPostToClosedPeriod": "เปิดไว้ = เอกสารที่ลงวันที่ในงวดที่ปิดแล้วยังลงบัญชีได้"
+      }
     }
   },
   "dashboardWidget": {
@@ -5651,6 +5690,7 @@
     "templateVoucher": "แม่แบบใบสำคัญ",
     "recurringVoucher": "ใบสำคัญประจำ",
     "allocationVoucher": "ใบสำคัญปันส่วน",
+    "accountingSettings": "ตั้งค่า",
     "accountsPayable": "เจ้าหนี้การค้า",
     "apDashboard": "แดชบอร์ด",
     "apInvoice": "ใบแจ้งหนี้",

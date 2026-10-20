@@ -451,6 +451,45 @@
         "pending": "Pending",
         "urgent": "Urgent"
       }
+    },
+    "settings": {
+      "pageDescription": "Defaults used by our own Accounting module — GL periods, AP and AR posting.",
+      "readOnlyNote": "Read only — you need permission to edit app configuration.",
+      "loadError": "Unable to load accounting settings",
+      "freshLoadError": "Could not read the latest settings, nothing was saved. Try again.",
+      "saved": "Accounting settings saved",
+      "prefixNone": "Not set",
+      "prefixUnknown": "Unknown prefix (not in the list)",
+      "sections": {
+        "generalLedger": "General ledger",
+        "generalLedgerDesc": "Fiscal year, closing and the prefixes used for system-generated journal vouchers.",
+        "accountsPayable": "Accounts payable",
+        "accountsPayableDesc": "Accounts and prefix used when AP Invoice and AP Payment are posted.",
+        "accountsReceivable": "Accounts receivable",
+        "accountsReceivableDesc": "Accounts and prefix used when AR documents are posted."
+      },
+      "fields": {
+        "fiscalYearStartMonth": "Fiscal year start month",
+        "retainedEarningsAccount": "Retained earnings account",
+        "reversalPrefix": "Reversal JV prefix",
+        "autoJvPrefix": "Auto JV prefix",
+        "allowPostToClosedPeriod": "Allow posting to closed periods",
+        "apControlAccount": "AP control account",
+        "inputVatAccount": "Input VAT account",
+        "whtPayableAccount": "WHT payable account",
+        "advanceDepositAccount": "Advance deposit account",
+        "realizedFxGainAccount": "Realized FX gain account",
+        "realizedFxLossAccount": "Realized FX loss account",
+        "apJvPrefix": "AP JV prefix",
+        "arControlAccount": "AR control account",
+        "outputVatAccount": "Output VAT account",
+        "arJvPrefix": "AR JV prefix"
+      },
+      "hints": {
+        "fiscalYear": "Changing this after GL periods exist shifts every period boundary.",
+        "apPosting": "Used by AP Invoice posting. The External export takes accounts from the Chart of Account mapping only.",
+        "allowPostToClosedPeriod": "When on, documents dated in a closed period can still be posted."
+      }
     }
   },
   "dashboardWidget": {
@@ -5651,6 +5690,7 @@
     "templateVoucher": "Template Voucher",
     "recurringVoucher": "Recurring Voucher",
     "allocationVoucher": "Allocation Voucher",
+    "accountingSettings": "Settings",
     "accountsPayable": "Accounts Payable",
     "apDashboard": "Dashboard",
     "apInvoice": "Invoice",
