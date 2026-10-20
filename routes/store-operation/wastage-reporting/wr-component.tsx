@@ -4,6 +4,7 @@ import { useTranslations } from "use-intl";
 import {
   DataGrid,
   DataGridContainer,
+  DataGridScrollArea,
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
@@ -20,6 +21,8 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { ListPageShell } from "@/components/share/list-page-shell";
+import { LIST_GRID_MAX_H } from "@/components/share/list-grid-max-h";
+import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { WASTAGE_WINDOW_DAYS } from "@/constant/wastage-reporting";
 import { useWastageReportTable } from "./use-wr-table";
@@ -137,10 +140,16 @@ export default function WrComponent() {
           isLoading={isLoading}
           emptyMessage={emptyMessage}
           // มือถือเป็นเซลล์เดียวสามบรรทัด — clamp สองบรรทัดจะตัด GRN ทิ้ง
-          tableLayout={{ rowClamp: !isMobile }}
+          tableLayout={{ headerSticky: true, rowClamp: !isMobile }}
         >
-          <DataGridContainer>
-            <DataGridTable />
+          {/* แถบสรุป (WrSummaryBar) กินอีกแถวเหนือตารางเท่ากับ ActiveFilterBar
+              จึงใช้สูตร withFilters — หน้านี้ไม่มี ActiveFilterBar ของตัวเอง */}
+          <DataGridContainer
+            className={cn("flex flex-col", LIST_GRID_MAX_H.withFilters)}
+          >
+            <DataGridScrollArea>
+              <DataGridTable />
+            </DataGridScrollArea>
             <DataGridPagination />
           </DataGridContainer>
         </DataGrid>

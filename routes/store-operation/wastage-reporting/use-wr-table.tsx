@@ -100,7 +100,7 @@ export function useWastageReportTable({
       ),
       enableSorting: false,
       meta: { skeleton: columnSkeletons.text },
-      size: 150,
+      size: 120,
     },
     {
       accessorKey: "grn_no",
@@ -134,7 +134,7 @@ export function useWastageReportTable({
         </span>
       ),
       enableSorting: false,
-      size: 100,
+      size: 130,
       meta: {
         cellClassName: "text-right tabular-nums",
         skeleton: columnSkeletons.text,
@@ -173,7 +173,7 @@ export function useWastageReportTable({
         </span>
       ),
       enableSorting: false,
-      size: 110,
+      size: 140,
       meta: {
         cellClassName: "text-right tabular-nums",
         skeleton: columnSkeletons.text,
