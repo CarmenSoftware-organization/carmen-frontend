@@ -46,6 +46,19 @@ export type DialogCell = FormField | GroupCell;
 export interface ParsedDialog {
   cols: number;
   cells: DialogCell[];
+  /** ข้อความจาก <Note Text> ระดับบนสุด แสดงใต้ช่อง filter (ไม่ใช่ filter ไม่ถูกส่งไป) — ใช้ resolveNoteText ก่อนแสดง */
+  notes: string[];
+}
+
+const pad2 = (n: number): string => String(n).padStart(2, "0");
+
+/**
+ * แทน token ในข้อความ <Note> ด้วยค่าจริงตอนเปิด dialog — ตอนนี้มี `@today` → วันที่วันนี้ dd/MM/yyyy
+ * (รูปเดียวกับวันที่ในรายงาน) เช่น Slow Moving: `Today = @today` → `Today = 20/10/2026`
+ */
+export function resolveNoteText(text: string, now: Date = new Date()): string {
+  const today = `${pad2(now.getDate())}/${pad2(now.getMonth() + 1)}/${now.getFullYear()}`;
+  return text.replaceAll("@today", today);
 }
 
 const INT = /^\s*\d+\s*$/;
@@ -133,16 +146,22 @@ const isNamedPair = (
 export function parseReportDialog(xml: string): ParsedDialog {
   const doc = new DOMParser().parseFromString(xml, "text/xml");
   const dialogEl = doc.querySelector("Dialog");
-  if (!dialogEl) return { cols: 1, cells: [] };
+  if (!dialogEl) return { cols: 1, cells: [], notes: [] };
 
   const cols = readCols(dialogEl);
   const cells: DialogCell[] = [];
+  const notes: string[] = [];
   let run: Element[] = [];
   const flush = () => {
     if (run.length) cells.push(...groupFields(parseNodes(run, cols)));
     run = [];
   };
   for (const child of Array.from(dialogEl.children)) {
+    if (child.tagName === "Note") {
+      const text = attr(child, "Text").trim();
+      if (text) notes.push(text);
+      continue;
+    }
     if (child.tagName !== "Group") {
       run.push(child);
       continue;
@@ -162,7 +181,7 @@ export function parseReportDialog(xml: string): ParsedDialog {
     }
   }
   flush();
-  return { cols, cells };
+  return { cols, cells, notes };
 }
 
 /** Group ซ้อน Group ไม่รองรับ — ยกลูกของกลุ่มในขึ้นมาแทนที่ เพื่อไม่ให้ field หาย */

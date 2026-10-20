@@ -358,3 +358,33 @@ describe("ReportParamDialog From–To pair", () => {
     expect(screen.queryByRole("button", { name: "P1 - Product 1" })).toBeNull();
   });
 });
+
+describe("ReportParamDialog <Note>", () => {
+  it("shows the note with today's date under the fields", () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => lookupResponse()),
+    );
+    const noteReport = {
+      Id: 3,
+      ReportName: "Slow Moving Report",
+      Dialog:
+        '<Dialog><Label Text="Day"/><Lookup Name="Day" Items="30~60" Values="30~60" Value="30"/>' +
+        '<Note Text="Today = @today"/></Dialog>',
+    } as unknown as Report;
+    const qc = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    render(
+      <QueryClientProvider client={qc}>
+        <IntlProvider locale="en" messages={en}>
+          <ReportParamDialog open onOpenChange={() => {}} report={noteReport} />
+        </IntlProvider>
+      </QueryClientProvider>,
+    );
+
+    const now = new Date();
+    const today = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+    expect(screen.getByText(`Today = ${today}`)).toBeInTheDocument();
+  });
+});
