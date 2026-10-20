@@ -223,6 +223,19 @@ export function TreeNode({
               {childLabel}
             </span>
           )}
+          {/* จำนวนสินค้า — คอลัมน์กว้างคงที่ ตัวเลขจึงตรงแนวทุกระดับ; ซ่อนจนกว่า backend จะส่งค่า */}
+          {node.product_count !== undefined && (
+            <span
+              className={cn(
+                "text-micro-legal hidden min-w-20 text-right tabular-nums sm:inline",
+                node.product_count === 0
+                  ? "text-muted-foreground/50"
+                  : "text-muted-foreground",
+              )}
+            >
+              {t("nProducts", { count: node.product_count })}
+            </span>
+          )}
         </div>
       </div>
 
