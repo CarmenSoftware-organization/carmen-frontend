@@ -4091,6 +4091,7 @@
       "nItems": "{count} รายการ",
       "nCategories": "{count} หมวดหมู่",
       "nSubcategories": "{count} หมวดย่อย",
+      "nProducts": "{count} สินค้า",
       "nItemGroups": "{count} กลุ่มสินค้า",
       "nMatches": "พบ {count} รายการ",
       "nodeCategory": "หมวดหมู่",

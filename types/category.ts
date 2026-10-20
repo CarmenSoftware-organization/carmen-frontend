@@ -50,6 +50,9 @@ export interface CategoryNode {
   product_category_id?: string;
   product_subcategory_id?: string;
   itemCount?: number;
+  /** จำนวนสินค้าที่ยังไม่ถูกลบ — item group มาจาก backend, ชั้นบนรวมจากลูก;
+   *  undefined เมื่อ backend ยังไม่ส่ง `product_count` */
+  product_count?: number;
   doc_version?: number;
   account_codes?: AccountCodeEntry[];
 }
@@ -109,6 +112,8 @@ export interface ItemGroupDto {
   tax_rate?: number;
   sub_category?: { id: string; code: string; name: string };
   category?: { id: string; code: string; name: string };
+  /** มีเฉพาะ list — จำนวนสินค้าที่ยังไม่ถูกลบใน item group นี้ */
+  product_count?: number;
   doc_version?: number;
   account_codes?: AccountCodeEntry[];
 }
