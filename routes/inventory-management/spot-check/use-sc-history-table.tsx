@@ -208,7 +208,11 @@ export function useScHistoryTable({
             <CellAction onClick={() => onOpen(sc)} className="min-w-0 truncate">
               {sc.spot_check_no}
             </CellAction>
-            {renderStatus(sc, "text-muted-foreground ml-auto shrink-0")}
+            {renderStatus(
+              sc,
+              // สีเดียวกับคอลัมน์สถานะบนจอใหญ่ — ไอคอนรับสีจากข้อความ
+              "text-muted-foreground ml-auto shrink-0 [&_svg]:text-current!",
+            )}
           </div>
           <div className="text-muted-foreground text-micro flex min-w-0 items-center gap-1.5">
             <span className="min-w-0 truncate">{sc.location_name}</span>
@@ -217,8 +221,8 @@ export function useScHistoryTable({
               {getSpotCheckMethodLabel(t, sc.method)}
             </span>
             <span className="ml-auto shrink-0 tabular-nums">
-              {formatDate(sc.start_date, dateFormat)} · {sc.size}{" "}
-              {tfl("items").toLowerCase()}
+              {formatDate(sc.start_date, dateFormat)} ·{" "}
+              {t("historyItemCount", { count: sc.size })}
             </span>
           </div>
         </div>

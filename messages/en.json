@@ -3421,6 +3421,7 @@
       "noHistory": "No spot check history yet",
       "noHistoryDesc": "Spot checks appear here once one is started from the Locations tab.",
       "noHistoryMatch": "No spot checks match these filters",
+      "historyItemCount": "{count, plural, one {# item} other {# items}}",
       "tabAll": "All",
       "tabResume": "Resume",
       "tabInProgress": "In Progress",
