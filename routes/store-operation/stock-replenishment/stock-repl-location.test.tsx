@@ -6,6 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import type { Location } from "@/types/stock-replenishment";
 import { StockReplLocation } from "./stock-repl-location";
 
+const mobile = { value: false };
+vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => mobile.value }));
+
 const product = (id: string, name: string) => ({
   id,
   name,
@@ -81,5 +84,18 @@ describe("StockReplLocation — selection", () => {
     );
 
     expect(onChange).toHaveBeenCalledWith("loc-1", new Set(["p1", "p2", "p3"]));
+  });
+});
+
+describe("StockReplLocation — mobile", () => {
+  it("จอเล็กยังติ๊กรายตัวได้ และไม่มีคอลัมน์ Min/Max ให้บีบ", () => {
+    mobile.value = true;
+    const onChange = renderLocation(new Set());
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "Select Item One" }));
+
+    expect(onChange).toHaveBeenCalledWith("loc-1", new Set(["p1"]));
+    expect(screen.queryByText("Stock level")).toBeNull();
+    mobile.value = false;
   });
 });

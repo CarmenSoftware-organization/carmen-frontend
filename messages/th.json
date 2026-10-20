@@ -4377,7 +4377,12 @@
       "nToReorder": "ต้องสั่ง {count} รายการ",
       "nSelected": "เลือกแล้ว {count} รายการ",
       "stockLevel": "ระดับสต็อก",
-      "stockLevelAria": "คงเหลือ {onHand} ขั้นต่ำ {min} พาร์ {par} ขั้นสูง {max}"
+      "stockLevelAria": "คงเหลือ {onHand} ขั้นต่ำ {min} พาร์ {par} ขั้นสูง {max}",
+      "noResultsTitle": "ไม่พบสินค้าที่ตรงกับ \"{search}\"",
+      "noResultsDesc": "ลองค้นด้วยชื่อ รหัส หมวด หรือกลุ่มสินค้า",
+      "allStockedTitle": "สต็อกทุกคลังอยู่ในเกณฑ์",
+      "allStockedDesc": "ตอนนี้ไม่มีสินค้าที่ต่ำกว่าขั้นต่ำ",
+      "nHiddenBySearch": "ซ่อนจากการค้นหา {count} รายการ"
     },
     "wastageReporting": {
       "title": "รายงานของเสีย",
