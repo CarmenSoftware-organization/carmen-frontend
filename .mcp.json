@@ -4,8 +4,7 @@
       "command": "graft",
       "args": [
         "mcp"
-      ],
-      "description": "graft code graph: ranked code search, callers/callees and file skeletons for this repo (read-only, local process)"
+      ]
     }
   }
 }
