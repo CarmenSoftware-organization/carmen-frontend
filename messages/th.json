@@ -3421,6 +3421,7 @@
       "noHistory": "ยังไม่มีประวัติการสุ่มตรวจ",
       "noHistoryDesc": "ใบตรวจนับจะขึ้นที่นี่เมื่อเริ่มตรวจจากแท็บสถานที่",
       "noHistoryMatch": "ไม่พบใบตรวจนับที่ตรงกับเงื่อนไข",
+      "historyItemCount": "{count, plural, other {# รายการ}}",
       "tabAll": "ทั้งหมด",
       "tabResume": "ดำเนินต่อ",
       "tabInProgress": "กำลังตรวจ",
