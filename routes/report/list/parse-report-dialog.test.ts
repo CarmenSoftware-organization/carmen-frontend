@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { flattenFields, parseReportDialog } from "./parse-report-dialog";
+import { flattenFields, parseReportDialog, resolveNoteText } from "./parse-report-dialog";
 
 // Stock Card / Inventory Balance: ป้ายของทั้งสองฝั่ง ("Location From" / "Location To") — เคยขึ้นเป็นสี่แถวแยกกัน
 const CURRENT_DIALOG = `<Dialog>
@@ -78,5 +78,38 @@ describe("parseReportDialog", () => {
     expect(
       flattenFields(cells).map((f) => (f.kind === "single" ? f.control.name : f.from.name)),
     ).toEqual(["A", "B", "C"]);
+  });
+});
+
+// Slow Moving: วันที่ไม่ใช่ filter (นับจากวันนี้เสมอ) แต่ dialog ต้องบอกว่าวันนี้วันอะไร — <Note> แสดงเฉย ๆ ไม่ส่งไป
+describe("<Note> in a report dialog", () => {
+  const SLOW_MOVING = `<Dialog>
+  <Label Text="Location From"/><Lookup Name="LocationFrom" DataSource="@location_list"/>
+  <Label Text="Location To"/><Lookup Name="LocationTo" DataSource="@location_list"/>
+  <Label Text="Day"/><Lookup Name="Day" Items="30~60~90~180" Values="30~60~90~180" Value="30"/>
+  <Label Text="Group By"/><Lookup Name="GroupBy" Items="Location~Category" Values="Location~Category"/>
+  <Note Text="Today = @today"/>
+</Dialog>`;
+
+  it("collects the note text and keeps it out of the fields", () => {
+    const { cells, notes } = parseReportDialog(SLOW_MOVING);
+
+    expect(notes).toEqual(["Today = @today"]);
+    expect(flattenFields(cells).map((f) => f.kind)).toEqual(["range", "single", "single"]);
+    expect(cells[1]).toMatchObject({
+      label: "Day",
+      control: { name: "Day", values: ["30", "60", "90", "180"], value: "30" },
+    });
+  });
+
+  it("returns no notes when the dialog has none", () => {
+    expect(parseReportDialog(CURRENT_DIALOG).notes).toEqual([]);
+    expect(parseReportDialog("<NotADialog/>").notes).toEqual([]);
+  });
+
+  it("replaces @today with today's date as dd/MM/yyyy", () => {
+    expect(resolveNoteText("Today = @today", new Date(2026, 9, 20))).toBe("Today = 20/10/2026");
+    expect(resolveNoteText("Today = @today", new Date(2026, 0, 5))).toBe("Today = 05/01/2026");
+    expect(resolveNoteText("no token")).toBe("no token");
   });
 });

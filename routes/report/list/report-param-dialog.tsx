@@ -34,6 +34,7 @@ import type { Report } from "@/types/report";
 import {
   flattenFields,
   parseReportDialog,
+  resolveNoteText,
   type DateNode,
   type DialogCell,
   type FormField,
@@ -686,7 +687,7 @@ export function ReportParamDialog({
   const dialogXml = report?.Dialog;
   const parsed: ParsedDialog =
     !dialogXml || dialogXml.trim().length === 0
-      ? { cols: 1, cells: [] }
+      ? { cols: 1, cells: [], notes: [] }
       : parseReportDialog(dialogXml);
   const fields: FormField[] = flattenFields(parsed.cells);
 
@@ -844,6 +845,11 @@ export function ReportParamDialog({
                   )}
                 </FieldGroup>
               )}
+              {parsed.notes.map((note) => (
+                <p key={note} className="text-muted-foreground mt-3 text-xs">
+                  {resolveNoteText(note)}
+                </p>
+              ))}
             </form>
           </RememberedParamsContext.Provider>
         </LookupRefreshContext.Provider>
