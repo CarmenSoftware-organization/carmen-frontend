@@ -2624,12 +2624,6 @@
         "brand": {
           "external": "External system"
         },
-        "glDefaults": "Default accounts",
-        "glDefaultsDesc": "Used for AP postings when the account mapping does not name an account itself.",
-        "apControlAccount": "Default AP control account",
-        "inputVatAccount": "Input VAT account",
-        "glLoadError": "Could not load the default accounts.",
-        "partialSaveFailed": "Interface settings were saved, but the default accounts were not. Please try again.",
         "liveZone": "API connection",
         "liveZoneHint": "Takes effect immediately — not part of Edit and Save above.",
         "apiAccess": {
