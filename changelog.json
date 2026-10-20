@@ -1,7 +1,63 @@
 {
-  "current": "2.5.24",
-  "generated_at": "2026-10-20T17:11:17.639Z",
+  "current": "2.5.25",
+  "generated_at": "2026-10-20T18:42:26.066Z",
   "versions": [
+    {
+      "version": "2.5.25",
+      "build": "2.5.25-build.20261020.6f2af66a",
+      "date": "2026-10-20",
+      "commit": "6f2af66a",
+      "changes": {
+        "added": [
+          {
+            "scope": "spot-check",
+            "summary": "แยก History เป็น route ของตัวเอง + ตารางพร้อม toolbar ตัวกรอง",
+            "hash": "69d8747b",
+            "author": "Thammanoon Semapru",
+            "pr": 399
+          },
+          {
+            "scope": "list-return",
+            "summary": "useListReturn รับ list path ได้หลายตัว",
+            "hash": "2c34dfeb",
+            "author": "Thammanoon Semapru",
+            "pr": 399
+          },
+          {
+            "scope": "wastage-reporting",
+            "summary": "ตัวกรองสถานะแบบ segmented ที่กรองได้จริง คอลัมน์ความเร่งด่วน และเลย์เอาต์มือถือ",
+            "hash": "675563d8",
+            "author": "Thammanoon Semapru",
+            "pr": 398
+          },
+          {
+            "scope": "stock-replenishment",
+            "summary": "แถบระดับสต็อก นับรายการต้องสั่งแทนยอดรวมข้ามหน่วย แถบ action ติดขอบล่าง",
+            "hash": "5d5779fb",
+            "author": "Thammanoon Semapru",
+            "pr": 396
+          }
+        ],
+        "fixed": [
+          {
+            "scope": "stock-replenishment",
+            "summary": "เลย์เอาต์มือถือ สถานะว่าง skeleton และบอกของที่ติ๊กแต่ถูกค้นซ่อน",
+            "hash": "d2b44353",
+            "author": "Thammanoon Semapru",
+            "pr": 397
+          }
+        ],
+        "changed": [
+          {
+            "scope": "wastage-reporting",
+            "summary": "ถอด View/Filter (saved views) ออก เหลือช่องค้นหาอย่างเดียว",
+            "hash": "6a1e7042",
+            "author": "Thammanoon Semapru",
+            "pr": 398
+          }
+        ]
+      }
+    },
     {
       "version": "2.5.24",
       "build": "2.5.24-build.20261020.b3885580",

@@ -4,6 +4,20 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.5.25] - 2026-10-20
+
+### Added
+- **spot-check:** แยก History เป็น route ของตัวเอง + ตารางพร้อม toolbar ตัวกรอง (#399) — Thammanoon Semapru `69d8747b`
+- **list-return:** useListReturn รับ list path ได้หลายตัว (#399) — Thammanoon Semapru `2c34dfeb`
+- **wastage-reporting:** ตัวกรองสถานะแบบ segmented ที่กรองได้จริง คอลัมน์ความเร่งด่วน และเลย์เอาต์มือถือ (#398) — Thammanoon Semapru `675563d8`
+- **stock-replenishment:** แถบระดับสต็อก นับรายการต้องสั่งแทนยอดรวมข้ามหน่วย แถบ action ติดขอบล่าง (#396) — Thammanoon Semapru `5d5779fb`
+
+### Fixed
+- **stock-replenishment:** เลย์เอาต์มือถือ สถานะว่าง skeleton และบอกของที่ติ๊กแต่ถูกค้นซ่อน (#397) — Thammanoon Semapru `d2b44353`
+
+### Changed
+- **wastage-reporting:** ถอด View/Filter (saved views) ออก เหลือช่องค้นหาอย่างเดียว (#398) — Thammanoon Semapru `6a1e7042`
+
 ## [2.5.24] - 2026-10-20
 
 ### Fixed
