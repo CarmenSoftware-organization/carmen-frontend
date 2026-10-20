@@ -52,14 +52,22 @@ export function listReturnState(): { state: ListReturnState } {
  * `listPath` ของฟอร์มนี้เท่านั้น เก็บ pathname ไว้ด้วยเพราะ state เดินทางข้ามโมดูลได้
  * (wastage-reporting เปิด GRN detail ตรง ๆ) ถ้าเอา query ของ list อื่นมาต่อท้าย
  * list ของตัวเองจะได้ตัวกรองที่ไม่มีความหมาย
+ *
+ * list ที่แยกมุมมองด้วย path (spot-check `/` กับ `/history`) ส่งเป็น array —
+ * ตัวแรกคือปลายทางเมื่อไม่มี state ตัวอื่นแค่ยอมรับเป็นที่กลับได้
  */
-export function resolveListPath(listPath: string, state: unknown): string {
-  if (typeof state !== "object" || state === null) return listPath;
+export function resolveListPath(
+  listPath: string | readonly string[],
+  state: unknown,
+): string {
+  const paths = typeof listPath === "string" ? [listPath] : listPath;
+  const fallback = paths[0];
+  if (typeof state !== "object" || state === null) return fallback;
   const value = (state as Record<string, unknown>)[LIST_RETURN_KEY];
-  if (typeof value !== "string") return listPath;
+  if (typeof value !== "string") return fallback;
   const query = value.indexOf("?");
   const pathname = query === -1 ? value : value.slice(0, query);
-  return pathname === listPath ? value : listPath;
+  return paths.includes(pathname) ? value : fallback;
 }
 
 /**
@@ -70,8 +78,11 @@ export function resolveListPath(listPath: string, state: unknown): string {
  * const { toList, returnState } = useListReturn("/procurement/purchase-request");
  * const goBack = () => toList();
  * navigate(`/procurement/purchase-request/${id}`, { replace: true, ...returnState });
+ *
+ * `listPath` เป็น array ต้องเป็นค่าคงที่ระดับโมดูล — literal ใน render ทำให้
+ * `toList` เปลี่ยนตัวทุก render
  */
-export function useListReturn(listPath: string) {
+export function useListReturn(listPath: string | readonly string[]) {
   const navigate = useNavigate();
   const { state } = useLocation();
 
