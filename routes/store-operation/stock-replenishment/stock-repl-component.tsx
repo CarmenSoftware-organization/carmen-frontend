@@ -4,14 +4,25 @@ import {
   ChevronsDownUp,
   ChevronsUpDown,
   FileText,
+  PackageCheck,
   MapPin,
   RefreshCcw,
+  SearchX,
   ShoppingCart,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusDotBadge } from "@/components/ui/status-dot-badge";
 import { ErrorState } from "@/components/ui/error-state";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import { WarningDialog } from "@/components/ui/warning-dialog";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import SearchInput from "@/components/search-input";
@@ -132,6 +143,17 @@ export default function StockReplComponent() {
     0,
   );
   const hasSelection = totalSelected > 0;
+  // ที่ติ๊กไว้แล้วถูกคำค้นกรองหายจากจอ — ยังถูกส่งเข้า PR/SR อยู่ ต้องบอกให้รู้
+  // (ไม่ล้างให้เอง ไม่งั้นแค่พิมพ์ค้นก็ทำของที่เลือกไว้หายเงียบ ๆ)
+  const visibleSelected = filteredLocations.reduce(
+    (sum, loc) =>
+      sum +
+      loc.products_location.filter((p) =>
+        selections.get(loc.location_id)?.has(p.id),
+      ).length,
+    0,
+  );
+  const hiddenSelected = totalSelected - visibleSelected;
 
   // PR ผูกคลังรายแถว (item.location_id ของ PR form) — แถวที่ติ๊กจึงต้องพกคลัง
   // ต้นสังกัดไปด้วย ส่วน SR ใช้แค่ตัวสินค้าเพราะคลังต้นทางเลือกทีเดียวทั้งใบ
@@ -198,11 +220,26 @@ export default function StockReplComponent() {
       }
     >
       {isLoading && (
-        <div className="text-muted-foreground py-8 text-center text-sm">
-          {tc("loading")}
+        // ทรงเดียวกับแถบสรุป + หัวคลัง จะได้ไม่กระโดดตอนข้อมูลมา
+        <div className="space-y-3" aria-busy="true" aria-label={tc("loading")}>
+          <Skeleton className="h-9 w-full" />
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-10 w-full" />
+          ))}
         </div>
       )}
-      {!isLoading && locations && (
+      {!isLoading && locations?.length === 0 && (
+        <Empty className="border py-12">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <PackageCheck />
+            </EmptyMedia>
+            <EmptyTitle>{t("allStockedTitle")}</EmptyTitle>
+            <EmptyDescription>{t("allStockedDesc")}</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      )}
+      {!isLoading && locations && locations.length > 0 && (
         <div className="space-y-3">
           <div className="bg-muted/30 flex flex-wrap items-center gap-3 rounded-md border px-3 py-2 text-xs">
             <span className="text-muted-foreground flex items-center gap-1.5">
@@ -250,6 +287,28 @@ export default function StockReplComponent() {
             </span>
           </div>
 
+          {filteredLocations.length === 0 && (
+            <Empty className="border py-12">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <SearchX />
+                </EmptyMedia>
+                <EmptyTitle>{t("noResultsTitle", { search })}</EmptyTitle>
+                <EmptyDescription>{t("noResultsDesc")}</EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSearch("")}
+                >
+                  <X />
+                  {tc("clearSearch")}
+                </Button>
+              </EmptyContent>
+            </Empty>
+          )}
+
           {filteredLocations.map((location) => (
             <StockReplLocation
               key={location.location_id}
@@ -272,6 +331,11 @@ export default function StockReplComponent() {
               <span className="text-sm font-semibold tabular-nums">
                 {t("nSelected", { count: totalSelected })}
               </span>
+              {hiddenSelected > 0 && (
+                <span className="text-muted-foreground text-xs">
+                  ({t("nHiddenBySearch", { count: hiddenSelected })})
+                </span>
+              )}
               <Button
                 size="sm"
                 variant="ghost"

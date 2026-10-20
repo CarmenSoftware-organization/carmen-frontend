@@ -17,6 +17,7 @@ import {
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import type { Location, ProductLocation } from "@/types/stock-replenishment";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { StockLevelBar } from "./stock-level-bar";
 
 interface StockReplLocationProps {
@@ -42,6 +43,7 @@ export function StockReplLocation({
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
   const tl = useTranslations("lookup");
+  const isMobile = useIsMobile() === true;
 
   // สีอยู่ที่ dot ตัวเดียว chip เป็นกลาง ตาม pattern StatusDotBadge ของแอป
   const STATUS_CONFIG = {
@@ -110,30 +112,7 @@ export function StockReplLocation({
     {
       accessorKey: "name",
       header: tfl("product"),
-      // ชื่อหลัก → ชื่อท้องถิ่น → หมวด › หมวดย่อย › กลุ่ม — เดิมสามอย่างหลังกินคนละ
-      // คอลัมน์เป็นตัวจางทั้งหมด จนชื่อสินค้าถูกตัดเหลือ "White Tofu Tube 885…"
-      cell: ({ row }) => {
-        const p = row.original;
-        const path = [p.category.name, p.sub_category.name, p.item_group.name]
-          .filter(Boolean)
-          .join(" › ");
-        return (
-          <div className="min-w-0">
-            <NameWithSubtext
-              primary={p.name || "..."}
-              secondary={p.local_name || undefined}
-            />
-            {path && (
-              <p
-                className="text-muted-foreground text-micro-legal truncate leading-[normal]"
-                title={path}
-              >
-                {path}
-              </p>
-            )}
-          </div>
-        );
-      },
+      cell: ({ row }) => <ProductInfo product={row.original} />,
       enableSorting: false,
     },
     {
@@ -172,9 +151,47 @@ export function StockReplLocation({
     },
   ];
 
+  // จอเล็กตาราง 6 คอลัมน์บีบจนชื่อเหลือ "Dish…" และสถานะเหลือ "Cri" — เหลือ
+  // checkbox + เซลล์เดียวที่วางเป็นสองชั้นแทน (ไม่ใช้เลื่อนแนวนอน เพราะซ้อนอยู่ใน
+  // collapsible ของแต่ละคลังอีกชั้น เลื่อนแล้วหลงว่าอยู่คลังไหน)
+  const compactColumn: ColumnDef<ProductLocation> = {
+    id: "compact",
+    header: tfl("product"),
+    cell: ({ row }) => {
+      const p = row.original;
+      const config = STATUS_CONFIG[p.status];
+      return (
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <div className="flex items-start gap-2">
+            <div className="min-w-0 flex-1">
+              <ProductInfo product={p} />
+            </div>
+            <StatusDotBadge tone={config.tone} size="xs">
+              {config.label}
+            </StatusDotBadge>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <StockLevelBar product={p} />
+            </div>
+            <span className="text-muted-foreground shrink-0 text-xs">
+              {tfl("reorderQty")}{" "}
+              <span className="text-foreground font-semibold tabular-nums">
+                {p.reorder_qty.toLocaleString()}
+              </span>
+            </span>
+          </div>
+        </div>
+      );
+    },
+    enableSorting: false,
+  };
+
   const table = useReactTable({
     data: products,
-    columns,
+    columns: isMobile
+      ? [...columns.filter((c) => c.id === "select"), compactColumn]
+      : columns,
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id,
   });
@@ -197,7 +214,12 @@ export function StockReplLocation({
             </span>
             {location.location_name}
           </span>
-          <Badge variant="secondary" size="sm">
+          {/* จอเล็กเหลือที่ให้ชื่อคลัง — ป้ายวิกฤตยังอยู่ จำนวนรายการเห็นได้จากตาราง */}
+          <Badge
+            variant="secondary"
+            size="sm"
+            className="hidden sm:inline-flex"
+          >
             {t("nItems", { count: products.length })}
           </Badge>
           {criticalCount > 0 && (
@@ -230,6 +252,8 @@ export function StockReplLocation({
               // ชื่อสินค้ามีชื่อท้องถิ่นเป็นบรรทัดรอง เซลล์อื่นไม่มี — ชิดบนให้
               // ทุกคอลัมน์เริ่มบรรทัดแรกที่เส้นเดียวกัน (ตารางนี้อ่านอย่างเดียว)
               cellAlign: "top",
+              // เซลล์ compact สูงเกินสองบรรทัดเสมอ clamp จะตัดแถบสต็อกทิ้ง
+              rowClamp: !isMobile,
             }}
           >
             <DataGridContainer>
@@ -239,5 +263,33 @@ export function StockReplLocation({
         </div>
       </CollapsibleContent>
     </Collapsible>
+  );
+}
+
+function ProductInfo({ product }: { readonly product: ProductLocation }) {
+  // ชื่อหลัก → ชื่อท้องถิ่น → หมวด › หมวดย่อย › กลุ่ม — เดิมสามอย่างหลังกินคนละ
+  // คอลัมน์เป็นตัวจางทั้งหมด จนชื่อสินค้าถูกตัดเหลือ "White Tofu Tube 885…"
+  const path = [
+    product.category.name,
+    product.sub_category.name,
+    product.item_group.name,
+  ]
+    .filter(Boolean)
+    .join(" › ");
+  return (
+    <div className="min-w-0">
+      <NameWithSubtext
+        primary={product.name || "..."}
+        secondary={product.local_name || undefined}
+      />
+      {path && (
+        <p
+          className="text-muted-foreground text-micro-legal truncate leading-[normal]"
+          title={path}
+        >
+          {path}
+        </p>
+      )}
+    </div>
   );
 }

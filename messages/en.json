@@ -4377,7 +4377,12 @@
       "nToReorder": "{count, plural, one {# item to reorder} other {# items to reorder}}",
       "nSelected": "{count, plural, one {# item selected} other {# items selected}}",
       "stockLevel": "Stock level",
-      "stockLevelAria": "On hand {onHand}, min {min}, par {par}, max {max}"
+      "stockLevelAria": "On hand {onHand}, min {min}, par {par}, max {max}",
+      "noResultsTitle": "No products match \"{search}\"",
+      "noResultsDesc": "Try a product name, code, category or item group.",
+      "allStockedTitle": "Every location is within its stock levels",
+      "allStockedDesc": "Nothing is below its minimum right now.",
+      "nHiddenBySearch": "{count} hidden by search"
     },
     "wastageReporting": {
       "title": "Wastage Reporting",
