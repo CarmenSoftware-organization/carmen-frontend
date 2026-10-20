@@ -1,7 +1,7 @@
 {
   "/paths/~1api~1ext~1v1~1ap-invoices/get/description": {
-    "en": "Returns final (and voided) GRN invoices and CN credit notes of the API key's business unit as vendor-invoice records with one line per received / returned item, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no line (e.g. only consignment lines) is not returned. A document is in exactly one endpoint: GRN / CN here, SR / SI / SO in `/gl-journals`. CN amounts are positive; reverse them on your side by `doc_type`. Each line carries two accounts named by role (inventory = `debit_*`, payable = `ap_*`), not by side, plus tax amounts; the input VAT account is set in your accounting system. Line `description` is the product name. `tax_type` is `add` when the line base tax is not 0, else `none` (`included` is reserved and never emitted). The tax cost center is set only on taxed lines and equals `debit_cost_center_code`. `qty`, `price`, `tax_rate` and `exchange_rate` are decimal strings without trailing-zero padding (e.g. `\"10\"`, `\"7\"`); money fields are 2-decimal strings. Lines with `unmapped: true` carry the correct amount but need an account fixed in the GL / AP mapping in Carmen; `issues` lists `{ account: \"debit\" | \"ap\" | null, code }`. Each field description names its Carmen 4 column where there is one.",
-    "th": "คืนใบรับสินค้า (GRN) ในฐานะใบแจ้งหนี้ และใบลดหนี้ (CN) ที่เป็นเอกสารฉบับสุดท้าย (รวมที่ถูก void) ของหน่วยธุรกิจเจ้าของ API key ในรูปแบบรายการใบแจ้งหนี้ผู้ขาย หนึ่งบรรทัดต่อรายการที่รับเข้า / ส่งคืน เรียงตามวันที่เอกสาร เลขที่เอกสาร ประเภทเอกสาร และ id แบ่งหน้ารวมทุกประเภทที่ขอ หน่วยธุรกิจมาจาก API key — `bu_code` ใน query จะถูกเพิกเฉย เอกสารฉบับร่างไม่ถูกส่งออกเลย และเอกสารที่ไม่เหลือบรรทัดใด (เช่นมีแต่บรรทัดฝากขาย) จะไม่ถูกคืนมา เอกสารหนึ่งฉบับอยู่ใน endpoint เดียวเท่านั้น: GRN / CN อยู่ที่นี่ ส่วน SR / SI / SO อยู่ที่ `/gl-journals` ยอดของ CN เป็นค่าบวก ให้กลับเครื่องหมายฝั่งคุณตาม `doc_type` แต่ละบรรทัดมีสองบัญชีที่ตั้งชื่อตามบทบาท (บัญชีสินค้า = `debit_*`, บัญชีเจ้าหนี้ = `ap_*`) ไม่ใช่ตามฝั่งเดบิต/เครดิต พร้อมยอดภาษี ส่วนบัญชีภาษีซื้อให้ตั้งในระบบบัญชีของคุณเอง `description` ของบรรทัดคือชื่อสินค้า `tax_type` เป็น `add` เมื่อภาษีฐานของบรรทัดไม่เป็น 0 ไม่เช่นนั้นเป็น `none` (`included` สงวนไว้และไม่ถูกส่งออก) ศูนย์ต้นทุนของภาษีมีเฉพาะบรรทัดที่มีภาษี และเท่ากับ `debit_cost_center_code` ค่า `qty`, `price`, `tax_rate` และ `exchange_rate` เป็นสตริงทศนิยมที่ไม่เติมศูนย์ท้าย (เช่น `\"10\"`, `\"7\"`) ส่วนช่องจำนวนเงินเป็นสตริงทศนิยม 2 ตำแหน่ง บรรทัดที่ `unmapped: true` มียอดเงินถูกต้อง แต่ต้องแก้บัญชีในการผูกบัญชี GL / AP ใน Carmen; `issues` แสดง `{ account: \"debit\" | \"ap\" | null, code }` คำอธิบายของแต่ละ field ระบุคอลัมน์ใน Carmen 4 ที่ตรงกันไว้เมื่อมี"
+    "en": "Returns final (and voided) GRN invoices and CN credit notes of the API key's business unit as vendor-invoice records with one line per received / returned item, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no line (e.g. only consignment lines) is not returned. A document is in exactly one endpoint: GRN / CN here, SR / SI / SO in `/gl-journals`. CN amounts are positive; reverse them on your side by `doc_type`. Each line carries two accounts named by role (inventory = `debit_*`, payable = `ap_*`), not by side, plus tax amounts; the input VAT account is set in your accounting system. Line `description` is the product name. `tax_type` is `add` when the line base tax is not 0, else `none` (`included` is reserved and never emitted). The tax cost center is set only on taxed lines and equals `debit_cost_center_code`. `qty`, `price`, `tax_rate` and `exchange_rate` are numbers at full precision as stored (not rounded, e.g. `10`, `2.5`); money fields are numbers rounded to 2 decimals (half up). Lines with `unmapped: true` carry the correct amount but need an account fixed in the GL / AP mapping in Carmen; `issues` lists `{ account: \"debit\" | \"ap\" | null, code }`. Each field description names its Carmen 4 column where there is one.",
+    "th": "คืนใบรับสินค้า (GRN) ในฐานะใบแจ้งหนี้ และใบลดหนี้ (CN) ที่เป็นเอกสารฉบับสุดท้าย (รวมที่ถูก void) ของหน่วยธุรกิจเจ้าของ API key ในรูปแบบรายการใบแจ้งหนี้ผู้ขาย หนึ่งบรรทัดต่อรายการที่รับเข้า / ส่งคืน เรียงตามวันที่เอกสาร เลขที่เอกสาร ประเภทเอกสาร และ id แบ่งหน้ารวมทุกประเภทที่ขอ หน่วยธุรกิจมาจาก API key — `bu_code` ใน query จะถูกเพิกเฉย เอกสารฉบับร่างไม่ถูกส่งออกเลย และเอกสารที่ไม่เหลือบรรทัดใด (เช่นมีแต่บรรทัดฝากขาย) จะไม่ถูกคืนมา เอกสารหนึ่งฉบับอยู่ใน endpoint เดียวเท่านั้น: GRN / CN อยู่ที่นี่ ส่วน SR / SI / SO อยู่ที่ `/gl-journals` ยอดของ CN เป็นค่าบวก ให้กลับเครื่องหมายฝั่งคุณตาม `doc_type` แต่ละบรรทัดมีสองบัญชีที่ตั้งชื่อตามบทบาท (บัญชีสินค้า = `debit_*`, บัญชีเจ้าหนี้ = `ap_*`) ไม่ใช่ตามฝั่งเดบิต/เครดิต พร้อมยอดภาษี ส่วนบัญชีภาษีซื้อให้ตั้งในระบบบัญชีของคุณเอง `description` ของบรรทัดคือชื่อสินค้า `tax_type` เป็น `add` เมื่อภาษีฐานของบรรทัดไม่เป็น 0 ไม่เช่นนั้นเป็น `none` (`included` สงวนไว้และไม่ถูกส่งออก) ศูนย์ต้นทุนของภาษีมีเฉพาะบรรทัดที่มีภาษี และเท่ากับ `debit_cost_center_code` ค่า `qty`, `price`, `tax_rate` และ `exchange_rate` เป็นตัวเลข (number) ทศนิยมครบตามที่เก็บ ไม่ปัดเศษ (เช่น `10`, `2.5`) ส่วนช่องจำนวนเงินเป็นตัวเลขที่ปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น) บรรทัดที่ `unmapped: true` มียอดเงินถูกต้อง แต่ต้องแก้บัญชีในการผูกบัญชี GL / AP ใน Carmen; `issues` แสดง `{ account: \"debit\" | \"ap\" | null, code }` คำอธิบายของแต่ละ field ระบุคอลัมน์ใน Carmen 4 ที่ตรงกันไว้เมื่อมี"
   },
   "/paths/~1api~1ext~1v1~1ap-invoices/get/parameters/0/description": {
     "en": "Start of the range, `YYYY-MM-DD`, inclusive, in the business unit timezone. Must not be after `date_to`.",
@@ -128,8 +128,8 @@
     "th": "ส่งออกใบแจ้งหนี้ AP (GRN / CN)"
   },
   "/paths/~1api~1ext~1v1~1gl-journals/get/description": {
-    "en": "Returns final (and stock-moving voided) SR / SI / SO documents of the API key's business unit as one balanced Dr/Cr journal per document, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and documents that post nothing to stock are excluded (consignment-only SI / SO, SR without a stock movement), so every returned journal has at least one line. A document is in exactly one endpoint: SR / SI / SO here, GRN / CN in `/ap-invoices`. Amounts are base currency, 2-decimal strings; `balanced` is reported, never forced; `exchange_rate` is a decimal string without trailing-zero padding. Line `description` is the product name. Lines with `unmapped: true` carry the correct amount but need their account fixed in the GL mapping in Carmen. Each field description names its Carmen 4 column where there is one.",
-    "th": "คืนเอกสาร SR / SI / SO ที่เป็นฉบับสุดท้าย (รวมที่ถูก void แต่มีการเคลื่อนไหวสต็อก) ของหน่วยธุรกิจเจ้าของ API key เป็นสมุดรายวันที่ Dr/Cr สมดุลหนึ่งรายการต่อเอกสาร เรียงตามวันที่เอกสาร เลขที่เอกสาร ประเภทเอกสาร และ id แบ่งหน้ารวมทุกประเภทที่ขอ หน่วยธุรกิจมาจาก API key — `bu_code` ใน query จะถูกเพิกเฉย เอกสารฉบับร่างไม่ถูกส่งออกเลย และเอกสารที่ไม่ลงสต็อกเลยจะถูกตัดออก (SI / SO ที่มีแต่ฝากขาย, SR ที่ไม่มีการเคลื่อนไหวสต็อก) ทุกรายการที่คืนมาจึงมีอย่างน้อยหนึ่งบรรทัด เอกสารหนึ่งฉบับอยู่ใน endpoint เดียวเท่านั้น: SR / SI / SO อยู่ที่นี่ ส่วน GRN / CN อยู่ที่ `/ap-invoices` จำนวนเงินเป็นสกุลเงินหลัก สตริงทศนิยม 2 ตำแหน่ง; `balanced` เป็นการรายงานผลเท่านั้น ไม่มีการปรับให้สมดุล; `exchange_rate` เป็นสตริงทศนิยมที่ไม่เติมศูนย์ท้าย `description` ของบรรทัดคือชื่อสินค้า บรรทัดที่ `unmapped: true` มียอดเงินถูกต้อง แต่ต้องแก้บัญชีในการผูกบัญชี GL ใน Carmen คำอธิบายของแต่ละ field ระบุคอลัมน์ใน Carmen 4 ที่ตรงกันไว้เมื่อมี"
+    "en": "Returns final (and stock-moving voided) SR / SI / SO documents of the API key's business unit as one balanced Dr/Cr journal per document, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and documents that post nothing to stock are excluded (consignment-only SI / SO, SR without a stock movement), so every returned journal has at least one line. A document is in exactly one endpoint: SR / SI / SO here, GRN / CN in `/ap-invoices`. Amounts are base currency numbers rounded to 2 decimals; `balanced` is reported, never forced; `exchange_rate` is a number at full precision. Line `description` is the product name. Lines with `unmapped: true` carry the correct amount but need their account fixed in the GL mapping in Carmen. Each field description names its Carmen 4 column where there is one.",
+    "th": "คืนเอกสาร SR / SI / SO ที่เป็นฉบับสุดท้าย (รวมที่ถูก void แต่มีการเคลื่อนไหวสต็อก) ของหน่วยธุรกิจเจ้าของ API key เป็นสมุดรายวันที่ Dr/Cr สมดุลหนึ่งรายการต่อเอกสาร เรียงตามวันที่เอกสาร เลขที่เอกสาร ประเภทเอกสาร และ id แบ่งหน้ารวมทุกประเภทที่ขอ หน่วยธุรกิจมาจาก API key — `bu_code` ใน query จะถูกเพิกเฉย เอกสารฉบับร่างไม่ถูกส่งออกเลย และเอกสารที่ไม่ลงสต็อกเลยจะถูกตัดออก (SI / SO ที่มีแต่ฝากขาย, SR ที่ไม่มีการเคลื่อนไหวสต็อก) ทุกรายการที่คืนมาจึงมีอย่างน้อยหนึ่งบรรทัด เอกสารหนึ่งฉบับอยู่ใน endpoint เดียวเท่านั้น: SR / SI / SO อยู่ที่นี่ ส่วน GRN / CN อยู่ที่ `/ap-invoices` จำนวนเงินเป็นสกุลเงินหลัก เป็นตัวเลขที่ปัดเศษ 2 ตำแหน่ง; `balanced` เป็นการรายงานผลเท่านั้น ไม่มีการปรับให้สมดุล; `exchange_rate` เป็นตัวเลขทศนิยมครบตามที่เก็บ `description` ของบรรทัดคือชื่อสินค้า บรรทัดที่ `unmapped: true` มียอดเงินถูกต้อง แต่ต้องแก้บัญชีในการผูกบัญชี GL ใน Carmen คำอธิบายของแต่ละ field ระบุคอลัมน์ใน Carmen 4 ที่ตรงกันไว้เมื่อมี"
   },
   "/paths/~1api~1ext~1v1~1gl-journals/get/parameters/0/description": {
     "en": "Start of the range, `YYYY-MM-DD`, inclusive, in the business unit timezone. Must not be after `date_to`.",
@@ -304,44 +304,44 @@
     "th": "ชื่อสินค้า (Carmen 4: InvdDesc)"
   },
   "/components/schemas/ApInvoiceLineSwaggerDto/properties/qty/description": {
-    "en": "Received (GRN) / returned (CN) quantity. Decimal string without trailing-zero padding (Carmen 4: InvdQty)",
-    "th": "จำนวนที่รับเข้า (GRN) / ส่งคืน (CN) สตริงทศนิยมที่ไม่เติมศูนย์ท้าย (Carmen 4: InvdQty)"
+    "en": "Received (GRN) / returned (CN) quantity. Number, full precision as stored (not rounded) (Carmen 4: InvdQty)",
+    "th": "จำนวนที่รับเข้า (GRN) / ส่งคืน (CN) ตัวเลขทศนิยมครบตามที่เก็บ ไม่ปัดเศษ (Carmen 4: InvdQty)"
   },
   "/components/schemas/ApInvoiceLineSwaggerDto/properties/unit_code/description": {
     "en": "Unit (Carmen 4: UnitCode)",
     "th": "หน่วย (Carmen 4: UnitCode)"
   },
   "/components/schemas/ApInvoiceLineSwaggerDto/properties/price/description": {
-    "en": "Unit price BEFORE discount, in the document currency. Decimal string without trailing-zero padding. `net_amount` is AFTER discount, so `qty` x `price` may differ from `net_amount` (GRN `qty` also excludes FOC quantity) (Carmen 4: InvdPrice)",
-    "th": "ราคาต่อหน่วย **ก่อน**ส่วนลด ในสกุลเงินของเอกสาร สตริงทศนิยมที่ไม่เติมศูนย์ท้าย `net_amount` เป็นยอด**หลัง**ส่วนลด ดังนั้น `qty` x `price` อาจไม่เท่ากับ `net_amount` (`qty` ของ GRN ไม่รวมจำนวนของแถม FOC ด้วย) (Carmen 4: InvdPrice)"
+    "en": "Unit price BEFORE discount, in the document currency. Number, full precision as stored (not rounded). `net_amount` is AFTER discount, so `qty` x `price` may differ from `net_amount` (GRN `qty` also excludes FOC quantity) (Carmen 4: InvdPrice)",
+    "th": "ราคาต่อหน่วย **ก่อน**ส่วนลด ในสกุลเงินของเอกสาร ตัวเลขทศนิยมครบตามที่เก็บ ไม่ปัดเศษ `net_amount` เป็นยอด**หลัง**ส่วนลด ดังนั้น `qty` x `price` อาจไม่เท่ากับ `net_amount` (`qty` ของ GRN ไม่รวมจำนวนของแถม FOC ด้วย) (Carmen 4: InvdPrice)"
   },
   "/components/schemas/ApInvoiceLineSwaggerDto/properties/net_amount/description": {
-    "en": "Amount before tax, document currency, 2 decimals (Carmen 4: NetAmt)",
-    "th": "ยอดก่อนภาษี สกุลเงินของเอกสาร ทศนิยม 2 ตำแหน่ง (Carmen 4: NetAmt)"
+    "en": "Amount before tax, document currency, number rounded to 2 decimals (half up) (Carmen 4: NetAmt)",
+    "th": "ยอดก่อนภาษี สกุลเงินของเอกสาร ตัวเลขปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น) (Carmen 4: NetAmt)"
   },
   "/components/schemas/ApInvoiceLineSwaggerDto/properties/base_net_amount/description": {
-    "en": "Amount before tax, base currency, 2 decimals (Carmen 4: NetBaseAmt / InvdAbfTax)",
-    "th": "ยอดก่อนภาษี สกุลเงินหลัก ทศนิยม 2 ตำแหน่ง (Carmen 4: NetBaseAmt / InvdAbfTax)"
+    "en": "Amount before tax, base currency, number rounded to 2 decimals (half up) (Carmen 4: NetBaseAmt / InvdAbfTax)",
+    "th": "ยอดก่อนภาษี สกุลเงินหลัก ตัวเลขปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น) (Carmen 4: NetBaseAmt / InvdAbfTax)"
   },
   "/components/schemas/ApInvoiceLineSwaggerDto/properties/tax_type/description": {
     "en": "`add` when the line base tax is not 0, else `none`. `included` is reserved and never emitted (Carmen 4: InvdTaxT1, N / A / I)",
     "th": "`add` เมื่อภาษีฐานของบรรทัดไม่เป็น 0 ไม่เช่นนั้นเป็น `none` ส่วน `included` สงวนไว้และไม่ถูกส่งออก (Carmen 4: InvdTaxT1, N / A / I)"
   },
   "/components/schemas/ApInvoiceLineSwaggerDto/properties/tax_rate/description": {
-    "en": "Tax rate in percent. Decimal string without trailing-zero padding (Carmen 4: InvdTaxR1)",
-    "th": "อัตราภาษีเป็นเปอร์เซ็นต์ สตริงทศนิยมที่ไม่เติมศูนย์ท้าย (Carmen 4: InvdTaxR1)"
+    "en": "Tax rate in percent. Number, full precision as stored (not rounded) (Carmen 4: InvdTaxR1)",
+    "th": "อัตราภาษีเป็นเปอร์เซ็นต์ ตัวเลขทศนิยมครบตามที่เก็บ ไม่ปัดเศษ (Carmen 4: InvdTaxR1)"
   },
   "/components/schemas/ApInvoiceLineSwaggerDto/properties/tax_amount/description": {
-    "en": "Tax, document currency, 2 decimals (Carmen 4: InvdTaxC1 — C = document currency)",
-    "th": "ภาษี สกุลเงินของเอกสาร ทศนิยม 2 ตำแหน่ง (Carmen 4: InvdTaxC1 — C = สกุลเงินของเอกสาร)"
+    "en": "Tax, document currency, number rounded to 2 decimals (half up) (Carmen 4: InvdTaxC1 — C = document currency)",
+    "th": "ภาษี สกุลเงินของเอกสาร ตัวเลขปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น) (Carmen 4: InvdTaxC1 — C = สกุลเงินของเอกสาร)"
   },
   "/components/schemas/ApInvoiceLineSwaggerDto/properties/base_tax_amount/description": {
-    "en": "Tax, base currency, 2 decimals (Carmen 4: InvdTaxA1 — A = base currency)",
-    "th": "ภาษี สกุลเงินหลัก ทศนิยม 2 ตำแหน่ง (Carmen 4: InvdTaxA1 — A = สกุลเงินหลัก)"
+    "en": "Tax, base currency, number rounded to 2 decimals (half up) (Carmen 4: InvdTaxA1 — A = base currency)",
+    "th": "ภาษี สกุลเงินหลัก ตัวเลขปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น) (Carmen 4: InvdTaxA1 — A = สกุลเงินหลัก)"
   },
   "/components/schemas/ApInvoiceLineSwaggerDto/properties/total_amount/description": {
-    "en": "net_amount + tax_amount, document currency, 2 decimals (Carmen 4: TotalPrice)",
-    "th": "net_amount + tax_amount สกุลเงินของเอกสาร ทศนิยม 2 ตำแหน่ง (Carmen 4: TotalPrice)"
+    "en": "net_amount + tax_amount, document currency, number rounded to 2 decimals (half up) (Carmen 4: TotalPrice)",
+    "th": "net_amount + tax_amount สกุลเงินของเอกสาร ตัวเลขปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น) (Carmen 4: TotalPrice)"
   },
   "/components/schemas/ApInvoiceLineSwaggerDto/properties/debit_account_code/description": {
     "en": "Inventory account — the debit side of a GRN, the credit side of a CN (Carmen 4: InvdBTaxDr)",
@@ -424,8 +424,8 @@
     "th": "สกุลเงินของเอกสาร (Carmen 4: CurCode)"
   },
   "/components/schemas/ApInvoiceSwaggerDto/properties/exchange_rate/description": {
-    "en": "Rate to base currency. Decimal string without trailing-zero padding (Carmen 4: CurRate)",
-    "th": "อัตราแลกเปลี่ยนเป็นสกุลเงินหลัก สตริงทศนิยมที่ไม่เติมศูนย์ท้าย (Carmen 4: CurRate)"
+    "en": "Rate to base currency. Number, full precision as stored (not rounded) (Carmen 4: CurRate)",
+    "th": "อัตราแลกเปลี่ยนเป็นสกุลเงินหลัก ตัวเลขทศนิยมครบตามที่เก็บ ไม่ปัดเศษ (Carmen 4: CurRate)"
   },
   "/components/schemas/ApInvoiceSwaggerDto/properties/ref_grn/description": {
     "en": "CN only: the GRN it credits; null on a GRN or a CN without a GRN (Carmen 4: InvhRef)",
@@ -436,28 +436,28 @@
     "th": "เฉพาะ CN; null สำหรับ GRN"
   },
   "/components/schemas/ApInvoiceSwaggerDto/properties/net_amount/description": {
-    "en": "Sum of line net_amount, document currency, 2 decimals",
-    "th": "ผลรวม net_amount ของบรรทัด สกุลเงินของเอกสาร ทศนิยม 2 ตำแหน่ง"
+    "en": "Sum of line net_amount, document currency, number rounded to 2 decimals (half up)",
+    "th": "ผลรวม net_amount ของบรรทัด สกุลเงินของเอกสาร ตัวเลขปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น)"
   },
   "/components/schemas/ApInvoiceSwaggerDto/properties/tax_amount/description": {
-    "en": "Sum of line tax_amount, document currency, 2 decimals",
-    "th": "ผลรวม tax_amount ของบรรทัด สกุลเงินของเอกสาร ทศนิยม 2 ตำแหน่ง"
+    "en": "Sum of line tax_amount, document currency, number rounded to 2 decimals (half up)",
+    "th": "ผลรวม tax_amount ของบรรทัด สกุลเงินของเอกสาร ตัวเลขปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น)"
   },
   "/components/schemas/ApInvoiceSwaggerDto/properties/total_amount/description": {
-    "en": "net_amount + tax_amount, document currency, 2 decimals (Carmen 4: InvhTotalAmt)",
-    "th": "net_amount + tax_amount สกุลเงินของเอกสาร ทศนิยม 2 ตำแหน่ง (Carmen 4: InvhTotalAmt)"
+    "en": "net_amount + tax_amount, document currency, number rounded to 2 decimals (half up) (Carmen 4: InvhTotalAmt)",
+    "th": "net_amount + tax_amount สกุลเงินของเอกสาร ตัวเลขปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น) (Carmen 4: InvhTotalAmt)"
   },
   "/components/schemas/ApInvoiceSwaggerDto/properties/base_net_amount/description": {
-    "en": "Sum of line base_net_amount, base currency, 2 decimals",
-    "th": "ผลรวม base_net_amount ของบรรทัด สกุลเงินหลัก ทศนิยม 2 ตำแหน่ง"
+    "en": "Sum of line base_net_amount, base currency, number rounded to 2 decimals (half up)",
+    "th": "ผลรวม base_net_amount ของบรรทัด สกุลเงินหลัก ตัวเลขปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น)"
   },
   "/components/schemas/ApInvoiceSwaggerDto/properties/base_tax_amount/description": {
-    "en": "Sum of line base_tax_amount, base currency, 2 decimals",
-    "th": "ผลรวม base_tax_amount ของบรรทัด สกุลเงินหลัก ทศนิยม 2 ตำแหน่ง"
+    "en": "Sum of line base_tax_amount, base currency, number rounded to 2 decimals (half up)",
+    "th": "ผลรวม base_tax_amount ของบรรทัด สกุลเงินหลัก ตัวเลขปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น)"
   },
   "/components/schemas/ApInvoiceSwaggerDto/properties/base_total_amount/description": {
-    "en": "base_net_amount + base_tax_amount, base currency, 2 decimals",
-    "th": "base_net_amount + base_tax_amount สกุลเงินหลัก ทศนิยม 2 ตำแหน่ง"
+    "en": "base_net_amount + base_tax_amount, base currency, number rounded to 2 decimals (half up)",
+    "th": "base_net_amount + base_tax_amount สกุลเงินหลัก ตัวเลขปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น)"
   },
   "/components/schemas/ApInvoiceSwaggerDto/properties/unmapped/description": {
     "en": "true when any line is unmapped",
@@ -480,8 +480,8 @@
     "th": "ศูนย์ต้นทุนที่ได้ (Carmen 4: DeptCode)"
   },
   "/components/schemas/GlJournalLineSwaggerDto/properties/amount/description": {
-    "en": "Non-negative decimal string, base currency, 2 decimals. `0.00` when issue is `cost_not_found` (Carmen 4: JvdBAmt; JvdAmt is the same since GL documents are in base currency)",
-    "th": "สตริงทศนิยมไม่ติดลบ สกุลเงินหลัก ทศนิยม 2 ตำแหน่ง เป็น `0.00` เมื่อ issue คือ `cost_not_found` (Carmen 4: JvdBAmt; JvdAmt มีค่าเท่ากันเพราะเอกสาร GL เป็นสกุลเงินหลัก)"
+    "en": "Non-negative number, base currency, rounded to 2 decimals (half up). `0` when issue is `cost_not_found` (Carmen 4: JvdBAmt; JvdAmt is the same since GL documents are in base currency)",
+    "th": "ตัวเลขไม่ติดลบ สกุลเงินหลัก ปัดเศษ 2 ตำแหน่ง (ปัดครึ่งขึ้น) เป็น `0` เมื่อ issue คือ `cost_not_found` (Carmen 4: JvdBAmt; JvdAmt มีค่าเท่ากันเพราะเอกสาร GL เป็นสกุลเงินหลัก)"
   },
   "/components/schemas/GlJournalLineSwaggerDto/properties/unmapped/description": {
     "en": "true when account_code is null or issue is set. The amount is still correct; the account needs fixing in the GL mapping",
@@ -520,8 +520,8 @@
     "th": "สกุลเงินหลักของหน่วยธุรกิจ เอกสาร GL เป็นสกุลเงินหลัก ใช้อ้างอิงเท่านั้น"
   },
   "/components/schemas/GlJournalSwaggerDto/properties/exchange_rate/description": {
-    "en": "Rate to base currency. Decimal string without trailing-zero padding. Reference only",
-    "th": "อัตราแลกเปลี่ยนเป็นสกุลเงินหลัก สตริงทศนิยมที่ไม่เติมศูนย์ท้าย ใช้อ้างอิงเท่านั้น"
+    "en": "Rate to base currency. Number, full precision as stored (not rounded). Reference only",
+    "th": "อัตราแลกเปลี่ยนเป็นสกุลเงินหลัก ตัวเลขทศนิยมครบตามที่เก็บ ไม่ปัดเศษ ใช้อ้างอิงเท่านั้น"
   },
   "/components/schemas/GlJournalSwaggerDto/properties/adjustment_type/description": {
     "en": "Adjustment type of an SI / SO; null otherwise",

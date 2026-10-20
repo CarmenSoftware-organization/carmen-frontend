@@ -3,7 +3,7 @@
   "paths": {
     "/api/ext/v1/ap-invoices": {
       "get": {
-        "description": "Returns final (and voided) GRN invoices and CN credit notes of the API key's business unit as vendor-invoice records with one line per received / returned item, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no line (e.g. only consignment lines) is not returned. A document is in exactly one endpoint: GRN / CN here, SR / SI / SO in `/gl-journals`. CN amounts are positive; reverse them on your side by `doc_type`. Each line carries two accounts named by role (inventory = `debit_*`, payable = `ap_*`), not by side, plus tax amounts; the input VAT account is set in your accounting system. Line `description` is the product name. `tax_type` is `add` when the line base tax is not 0, else `none` (`included` is reserved and never emitted). The tax cost center is set only on taxed lines and equals `debit_cost_center_code`. `qty`, `price`, `tax_rate` and `exchange_rate` are decimal strings without trailing-zero padding (e.g. `\"10\"`, `\"7\"`); money fields are 2-decimal strings. Lines with `unmapped: true` carry the correct amount but need an account fixed in the GL / AP mapping in Carmen; `issues` lists `{ account: \"debit\" | \"ap\" | null, code }`. Each field description names its Carmen 4 column where there is one.",
+        "description": "Returns final (and voided) GRN invoices and CN credit notes of the API key's business unit as vendor-invoice records with one line per received / returned item, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and a document left with no line (e.g. only consignment lines) is not returned. A document is in exactly one endpoint: GRN / CN here, SR / SI / SO in `/gl-journals`. CN amounts are positive; reverse them on your side by `doc_type`. Each line carries two accounts named by role (inventory = `debit_*`, payable = `ap_*`), not by side, plus tax amounts; the input VAT account is set in your accounting system. Line `description` is the product name. `tax_type` is `add` when the line base tax is not 0, else `none` (`included` is reserved and never emitted). The tax cost center is set only on taxed lines and equals `debit_cost_center_code`. `qty`, `price`, `tax_rate` and `exchange_rate` are numbers at full precision as stored (not rounded, e.g. `10`, `2.5`); money fields are numbers rounded to 2 decimals (half up). Lines with `unmapped: true` carry the correct amount but need an account fixed in the GL / AP mapping in Carmen; `issues` lists `{ account: \"debit\" | \"ap\" | null, code }`. Each field description names its Carmen 4 column where there is one.",
         "operationId": "ApInvoiceExportController_list",
         "parameters": [
           {
@@ -131,15 +131,15 @@
                           "credit_term_days": 30,
                           "description": "Weekly fresh produce",
                           "currency_code": "THB",
-                          "exchange_rate": "1",
+                          "exchange_rate": 1,
                           "ref_grn": null,
                           "credit_note_type": null,
-                          "net_amount": "1500.00",
-                          "tax_amount": "70.00",
-                          "total_amount": "1570.00",
-                          "base_net_amount": "1500.00",
-                          "base_tax_amount": "70.00",
-                          "base_total_amount": "1570.00",
+                          "net_amount": 1500,
+                          "tax_amount": 70,
+                          "total_amount": 1570,
+                          "base_net_amount": 1500,
+                          "base_tax_amount": 70,
+                          "base_total_amount": 1570,
                           "unmapped": false,
                           "lines": [
                             {
@@ -147,16 +147,16 @@
                               "product_code": "FD-1001",
                               "location_code": "MAIN-STORE",
                               "item_group_code": "FOOD",
-                              "qty": "10",
+                              "qty": 10,
                               "unit_code": "KG",
-                              "price": "100",
-                              "net_amount": "1000.00",
-                              "base_net_amount": "1000.00",
+                              "price": 100,
+                              "net_amount": 1000,
+                              "base_net_amount": 1000,
                               "tax_type": "add",
-                              "tax_rate": "7",
-                              "tax_amount": "70.00",
-                              "base_tax_amount": "70.00",
-                              "total_amount": "1070.00",
+                              "tax_rate": 7,
+                              "tax_amount": 70,
+                              "base_tax_amount": 70,
+                              "total_amount": 1070,
                               "debit_account_code": "1150-01",
                               "debit_cost_center_code": "CC-KIT",
                               "ap_account_code": "2110-00",
@@ -170,16 +170,16 @@
                               "product_code": "BV-2003",
                               "location_code": "MAIN-STORE",
                               "item_group_code": "BEVERAGE",
-                              "qty": "5",
+                              "qty": 5,
                               "unit_code": "CASE",
-                              "price": "100",
-                              "net_amount": "500.00",
-                              "base_net_amount": "500.00",
+                              "price": 100,
+                              "net_amount": 500,
+                              "base_net_amount": 500,
                               "tax_type": "none",
-                              "tax_rate": "0",
-                              "tax_amount": "0.00",
-                              "base_tax_amount": "0.00",
-                              "total_amount": "500.00",
+                              "tax_rate": 0,
+                              "tax_amount": 0,
+                              "base_tax_amount": 0,
+                              "total_amount": 500,
                               "debit_account_code": "1150-02",
                               "debit_cost_center_code": "CC-FB",
                               "ap_account_code": "2110-00",
@@ -212,19 +212,19 @@
                           "credit_term_days": null,
                           "description": "Return of damaged chicken",
                           "currency_code": "THB",
-                          "exchange_rate": "1",
+                          "exchange_rate": 1,
                           "ref_grn": {
                             "id": "6f1c2a5e-8d4b-4a51-9c0e-2b7d3f9a1c01",
                             "no": "GRN261000012",
                             "date": "2026-10-03"
                           },
                           "credit_note_type": "quantity_return",
-                          "net_amount": "200.00",
-                          "tax_amount": "14.00",
-                          "total_amount": "214.00",
-                          "base_net_amount": "200.00",
-                          "base_tax_amount": "14.00",
-                          "base_total_amount": "214.00",
+                          "net_amount": 200,
+                          "tax_amount": 14,
+                          "total_amount": 214,
+                          "base_net_amount": 200,
+                          "base_tax_amount": 14,
+                          "base_total_amount": 214,
                           "unmapped": false,
                           "lines": [
                             {
@@ -232,16 +232,16 @@
                               "product_code": "FD-1001",
                               "location_code": "MAIN-STORE",
                               "item_group_code": "FOOD",
-                              "qty": "2",
+                              "qty": 2,
                               "unit_code": "KG",
-                              "price": "100",
-                              "net_amount": "200.00",
-                              "base_net_amount": "200.00",
+                              "price": 100,
+                              "net_amount": 200,
+                              "base_net_amount": 200,
                               "tax_type": "add",
-                              "tax_rate": "7",
-                              "tax_amount": "14.00",
-                              "base_tax_amount": "14.00",
-                              "total_amount": "214.00",
+                              "tax_rate": 7,
+                              "tax_amount": 14,
+                              "base_tax_amount": 14,
+                              "total_amount": 214,
                               "debit_account_code": "1150-01",
                               "debit_cost_center_code": "CC-KIT",
                               "ap_account_code": "2110-00",
@@ -700,7 +700,7 @@
     },
     "/api/ext/v1/gl-journals": {
       "get": {
-        "description": "Returns final (and stock-moving voided) SR / SI / SO documents of the API key's business unit as one balanced Dr/Cr journal per document, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and documents that post nothing to stock are excluded (consignment-only SI / SO, SR without a stock movement), so every returned journal has at least one line. A document is in exactly one endpoint: SR / SI / SO here, GRN / CN in `/ap-invoices`. Amounts are base currency, 2-decimal strings; `balanced` is reported, never forced; `exchange_rate` is a decimal string without trailing-zero padding. Line `description` is the product name. Lines with `unmapped: true` carry the correct amount but need their account fixed in the GL mapping in Carmen. Each field description names its Carmen 4 column where there is one.",
+        "description": "Returns final (and stock-moving voided) SR / SI / SO documents of the API key's business unit as one balanced Dr/Cr journal per document, ordered by document date, document no, doc type and id, paginated across all requested types. The business unit is taken from the API key; any `bu_code` in the query is ignored. Drafts are never exported, and documents that post nothing to stock are excluded (consignment-only SI / SO, SR without a stock movement), so every returned journal has at least one line. A document is in exactly one endpoint: SR / SI / SO here, GRN / CN in `/ap-invoices`. Amounts are base currency numbers rounded to 2 decimals; `balanced` is reported, never forced; `exchange_rate` is a number at full precision. Line `description` is the product name. Lines with `unmapped: true` carry the correct amount but need their account fixed in the GL mapping in Carmen. Each field description names its Carmen 4 column where there is one.",
         "operationId": "GlJournalController_list",
         "parameters": [
           {
@@ -815,7 +815,7 @@
                           "updated_at": "2026-10-08T11:20:45.300Z",
                           "description": "Stock in - cycle count variance",
                           "currency_code": "THB",
-                          "exchange_rate": "1",
+                          "exchange_rate": 1,
                           "adjustment_type": {
                             "code": "ADJ-IN",
                             "type": "stock_in"
@@ -827,7 +827,7 @@
                               "role": "inventory",
                               "account_code": "1150-01",
                               "cost_center_code": "CC-KIT",
-                              "amount": "300.00",
+                              "amount": 300,
                               "location_code": "MAIN-STORE",
                               "product_code": "FD-1001",
                               "item_group_code": "FOOD",
@@ -840,7 +840,7 @@
                               "role": "adjustment",
                               "account_code": "5190-00",
                               "cost_center_code": "CC-KIT",
-                              "amount": "300.00",
+                              "amount": 300,
                               "location_code": "MAIN-STORE",
                               "product_code": "FD-1001",
                               "item_group_code": "FOOD",
@@ -1502,9 +1502,9 @@
             "example": "FOOD"
           },
           "qty": {
-            "type": "string",
-            "description": "Received (GRN) / returned (CN) quantity. Decimal string without trailing-zero padding (Carmen 4: InvdQty)",
-            "example": "10"
+            "type": "number",
+            "description": "Received (GRN) / returned (CN) quantity. Number, full precision as stored (not rounded) (Carmen 4: InvdQty)",
+            "example": 10
           },
           "unit_code": {
             "type": "string",
@@ -1513,19 +1513,19 @@
             "example": "KG"
           },
           "price": {
-            "type": "string",
-            "description": "Unit price BEFORE discount, in the document currency. Decimal string without trailing-zero padding. `net_amount` is AFTER discount, so `qty` x `price` may differ from `net_amount` (GRN `qty` also excludes FOC quantity) (Carmen 4: InvdPrice)",
-            "example": "100"
+            "type": "number",
+            "description": "Unit price BEFORE discount, in the document currency. Number, full precision as stored (not rounded). `net_amount` is AFTER discount, so `qty` x `price` may differ from `net_amount` (GRN `qty` also excludes FOC quantity) (Carmen 4: InvdPrice)",
+            "example": 100
           },
           "net_amount": {
-            "type": "string",
-            "description": "Amount before tax, document currency, 2 decimals (Carmen 4: NetAmt)",
-            "example": "1000.00"
+            "type": "number",
+            "description": "Amount before tax, document currency, number rounded to 2 decimals (half up) (Carmen 4: NetAmt)",
+            "example": 1000
           },
           "base_net_amount": {
-            "type": "string",
-            "description": "Amount before tax, base currency, 2 decimals (Carmen 4: NetBaseAmt / InvdAbfTax)",
-            "example": "1000.00"
+            "type": "number",
+            "description": "Amount before tax, base currency, number rounded to 2 decimals (half up) (Carmen 4: NetBaseAmt / InvdAbfTax)",
+            "example": 1000
           },
           "tax_type": {
             "type": "string",
@@ -1538,24 +1538,24 @@
             "example": "add"
           },
           "tax_rate": {
-            "type": "string",
-            "description": "Tax rate in percent. Decimal string without trailing-zero padding (Carmen 4: InvdTaxR1)",
-            "example": "7"
+            "type": "number",
+            "description": "Tax rate in percent. Number, full precision as stored (not rounded) (Carmen 4: InvdTaxR1)",
+            "example": 7
           },
           "tax_amount": {
-            "type": "string",
-            "description": "Tax, document currency, 2 decimals (Carmen 4: InvdTaxC1 — C = document currency)",
-            "example": "70.00"
+            "type": "number",
+            "description": "Tax, document currency, number rounded to 2 decimals (half up) (Carmen 4: InvdTaxC1 — C = document currency)",
+            "example": 70
           },
           "base_tax_amount": {
-            "type": "string",
-            "description": "Tax, base currency, 2 decimals (Carmen 4: InvdTaxA1 — A = base currency)",
-            "example": "70.00"
+            "type": "number",
+            "description": "Tax, base currency, number rounded to 2 decimals (half up) (Carmen 4: InvdTaxA1 — A = base currency)",
+            "example": 70
           },
           "total_amount": {
-            "type": "string",
-            "description": "net_amount + tax_amount, document currency, 2 decimals (Carmen 4: TotalPrice)",
-            "example": "1070.00"
+            "type": "number",
+            "description": "net_amount + tax_amount, document currency, number rounded to 2 decimals (half up) (Carmen 4: TotalPrice)",
+            "example": 1070
           },
           "debit_account_code": {
             "type": "string",
@@ -1726,9 +1726,9 @@
             "example": "THB"
           },
           "exchange_rate": {
-            "type": "string",
-            "description": "Rate to base currency. Decimal string without trailing-zero padding (Carmen 4: CurRate)",
-            "example": "1"
+            "type": "number",
+            "description": "Rate to base currency. Number, full precision as stored (not rounded) (Carmen 4: CurRate)",
+            "example": 1
           },
           "ref_grn": {
             "nullable": true,
@@ -1751,34 +1751,34 @@
             "example": null
           },
           "net_amount": {
-            "type": "string",
-            "description": "Sum of line net_amount, document currency, 2 decimals",
-            "example": "1500.00"
+            "type": "number",
+            "description": "Sum of line net_amount, document currency, number rounded to 2 decimals (half up)",
+            "example": 1500
           },
           "tax_amount": {
-            "type": "string",
-            "description": "Sum of line tax_amount, document currency, 2 decimals",
-            "example": "70.00"
+            "type": "number",
+            "description": "Sum of line tax_amount, document currency, number rounded to 2 decimals (half up)",
+            "example": 70
           },
           "total_amount": {
-            "type": "string",
-            "description": "net_amount + tax_amount, document currency, 2 decimals (Carmen 4: InvhTotalAmt)",
-            "example": "1570.00"
+            "type": "number",
+            "description": "net_amount + tax_amount, document currency, number rounded to 2 decimals (half up) (Carmen 4: InvhTotalAmt)",
+            "example": 1570
           },
           "base_net_amount": {
-            "type": "string",
-            "description": "Sum of line base_net_amount, base currency, 2 decimals",
-            "example": "1500.00"
+            "type": "number",
+            "description": "Sum of line base_net_amount, base currency, number rounded to 2 decimals (half up)",
+            "example": 1500
           },
           "base_tax_amount": {
-            "type": "string",
-            "description": "Sum of line base_tax_amount, base currency, 2 decimals",
-            "example": "70.00"
+            "type": "number",
+            "description": "Sum of line base_tax_amount, base currency, number rounded to 2 decimals (half up)",
+            "example": 70
           },
           "base_total_amount": {
-            "type": "string",
-            "description": "base_net_amount + base_tax_amount, base currency, 2 decimals",
-            "example": "1570.00"
+            "type": "number",
+            "description": "base_net_amount + base_tax_amount, base currency, number rounded to 2 decimals (half up)",
+            "example": 1570
           },
           "unmapped": {
             "type": "boolean",
@@ -1880,9 +1880,9 @@
             "example": "CC-KIT"
           },
           "amount": {
-            "type": "string",
-            "description": "Non-negative decimal string, base currency, 2 decimals. `0.00` when issue is `cost_not_found` (Carmen 4: JvdBAmt; JvdAmt is the same since GL documents are in base currency)",
-            "example": "300.00"
+            "type": "number",
+            "description": "Non-negative number, base currency, rounded to 2 decimals (half up). `0` when issue is `cost_not_found` (Carmen 4: JvdBAmt; JvdAmt is the same since GL documents are in base currency)",
+            "example": 300
           },
           "location_code": {
             "type": "string",
@@ -1988,9 +1988,9 @@
             "example": "THB"
           },
           "exchange_rate": {
-            "type": "string",
-            "description": "Rate to base currency. Decimal string without trailing-zero padding. Reference only",
-            "example": "1"
+            "type": "number",
+            "description": "Rate to base currency. Number, full precision as stored (not rounded). Reference only",
+            "example": 1
           },
           "adjustment_type": {
             "nullable": true,
