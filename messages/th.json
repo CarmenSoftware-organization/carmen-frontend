@@ -4108,6 +4108,7 @@
       "cascadeInherit": "สืบทอดจากชั้นบน",
       "cascadeNone": "ไม่มี",
       "cascadeClearWarning": "บัญชีที่ล้างค่าจะถูกลบออกจากทุกรายการชั้นล่าง ให้กลับไปสืบทอดจากชั้นบน",
+      "cascadeClearWarningCategory": "บัญชีที่ล้างค่าจะถูกลบออกจากทุกรายการชั้นล่าง และรายการเหล่านั้นจะไม่มีบัญชีชนิดนี้",
       "cascadeOverwrite": "เขียนทับลงชั้นล่าง",
       "cascadeSelfOnly": "บันทึกเฉพาะรายการนี้",
       "inventoryAccount": "บัญชี Inventory",

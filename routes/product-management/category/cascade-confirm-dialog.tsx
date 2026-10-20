@@ -135,7 +135,11 @@ export function CascadeConfirmDialog({
           </section>
 
           {hasCleared && (
-            <p className="text-warning-ink">{t("cascadeClearWarning")}</p>
+            <p className="text-warning-ink">{t(
+                nodeType === NODE_TYPE.CATEGORY
+                  ? "cascadeClearWarningCategory"
+                  : "cascadeClearWarning",
+              )}</p>
           )}
           {flagsChanged && (
             <p className="text-warning-ink">{t("confirmFlagsChange")}</p>
