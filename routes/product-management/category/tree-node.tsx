@@ -14,9 +14,12 @@ import { openActivity } from "@/components/share/activity-sheet-host";
 import { cn } from "@/lib/utils";
 import { NODE_TYPE, type CategoryNode } from "@/types/category";
 import { Badge } from "@/components/ui/badge";
+import { COL, NodeColumns } from "./tree-columns";
 
 interface TreeNodeProps {
   readonly node: CategoryNode;
+  /** ใช้เทียบค่าในคอลัมน์ว่าสืบทอดหรือตั้งเอง — ชั้นบนสุดไม่มี */
+  readonly parent?: CategoryNode;
   readonly level?: number;
   readonly expanded: Record<string, boolean>;
   readonly toggleExpand: (id: string) => void;
@@ -28,6 +31,7 @@ interface TreeNodeProps {
 
 export function TreeNode({
   node,
+  parent,
   level = 0,
   expanded,
   toggleExpand,
@@ -152,6 +156,17 @@ export function TreeNode({
               — {highlight(node.description)}
             </span>
           )}
+
+          {/* ป้ายสถานะอยู่ติดชื่อ ไม่อยู่ฝั่งคอลัมน์ — ความกว้างไม่คงที่จะดันคอลัมน์ให้เหลื่อม */}
+          {!node.is_active && (
+            <Badge
+              variant="secondary"
+              size="xs"
+              className="text-micro-legal shrink-0"
+            >
+              {ts("inactive")}
+            </Badge>
+          )}
         </button>
 
         {/* Actions — จองที่ไว้ตอนซ่อน (invisible) แถวจึงไม่ขยับตอน hover;
@@ -207,35 +222,33 @@ export function TreeNode({
           onClick={() => toggleExpand(node.id)}
         />
 
-        {/* Meta: สถานะ + จำนวนลูก ชิดขวาสุดของแถว เรียงตรงแนวเดียวกันทุกแถว */}
-        <div className="ml-2 flex shrink-0 items-center gap-2 pr-3">
-          {!node.is_active && (
-            <Badge
-              variant="secondary"
-              size="xs"
-              className="text-micro-legal shrink-0"
-            >
-              {ts("inactive")}
-            </Badge>
-          )}
-          {node.type !== NODE_TYPE.ITEM_GROUP && (
-            <span className="text-muted-foreground/70 text-micro-legal hidden tabular-nums sm:inline">
-              {childLabel}
-            </span>
-          )}
-          {/* จำนวนสินค้า — คอลัมน์กว้างคงที่ ตัวเลขจึงตรงแนวทุกระดับ; ซ่อนจนกว่า backend จะส่งค่า */}
-          {node.product_count !== undefined && (
-            <span
-              className={cn(
-                "text-micro-legal hidden min-w-20 text-right tabular-nums sm:inline",
-                node.product_count === 0
-                  ? "text-muted-foreground/50"
-                  : "text-muted-foreground",
-              )}
-            >
-              {t("nProducts", { count: node.product_count })}
-            </span>
-          )}
+        {/* คอลัมน์ค่าที่ cascade — กว้างคงที่ ตรงกับ TreeColumnsHeader */}
+        <NodeColumns node={node} parent={parent} />
+
+        {/* Meta: จำนวนลูก + จำนวนสินค้า ชิดขวาสุด กว้างคงที่ทุกช่อง (ว่างก็จองที่)
+            คอลัมน์จึงตรงแนวกับหัวตารางทุกแถว */}
+        <div className="flex shrink-0 items-center pr-3">
+          <span
+            className={cn(
+              "text-muted-foreground/70 text-micro-legal hidden text-right tabular-nums sm:inline",
+              COL.children,
+            )}
+          >
+            {node.type !== NODE_TYPE.ITEM_GROUP && childLabel}
+          </span>
+          {/* จำนวนสินค้า — ว่างจนกว่า backend จะส่งค่า */}
+          <span
+            className={cn(
+              "text-micro-legal hidden text-right tabular-nums sm:inline",
+              COL.products,
+              node.product_count === 0
+                ? "text-muted-foreground/50"
+                : "text-muted-foreground",
+            )}
+          >
+            {node.product_count !== undefined &&
+              t("nProducts", { count: node.product_count })}
+          </span>
         </div>
       </div>
 
@@ -251,6 +264,7 @@ export function TreeNode({
             <TreeNode
               key={child.id}
               node={child}
+              parent={node}
               level={level + 1}
               expanded={expanded}
               toggleExpand={toggleExpand}

@@ -40,6 +40,7 @@ import {
   type CascadePayload,
 } from "./cascade-changes";
 import TreeContent from "./tree-content";
+import { TreeColumnsHeader } from "./tree-columns";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { DocumentListActions } from "@/components/share/document-list-actions";
 
@@ -356,6 +357,7 @@ export default function CategoryComponent() {
         {/* Radix ห่อ viewport ด้วย display:table ซึ่งกว้างตามเนื้อหา ทำให้แถวล้นออกนอก
             viewport และปุ่มลบท้ายแถวโดนตัด — บังคับเป็น block ให้แถวกว้างเท่ากล่อง */}
         <ScrollArea className="h-[calc(100vh-21rem-1.5rem)] sm:h-[calc(100vh-11rem-1.5rem)] [&_[data-slot=scroll-area-viewport]>div]:block!">
+          {!isLoading && filteredData.length > 0 && <TreeColumnsHeader />}
           <TreeContent
             isLoading={isLoading}
             filteredData={filteredData}
