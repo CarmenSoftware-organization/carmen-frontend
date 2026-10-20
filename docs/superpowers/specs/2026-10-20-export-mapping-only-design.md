@@ -37,12 +37,11 @@ of `gl_setting`** (15 fields), not just the two that leave the External page.
    `chart_of_accounts_id`) is removed too (user's decision: "mapping อย่างเดียว").
    This resolver also feeds the Chart of Account mapping page's preview, which therefore stops
    showing "Default · vendor" / "Default · BU setting" / "Default · adjustment type" sources.
-   **Product-side account (GL + AP inventory lines): override → item group only.** The
-   `sub_category` and `category` levels are dropped (user's decision: "Item Group ไม่มีบัญชีให้ขึ้น
-   ว่าขาดบัญชีเลย") — no override and no item-group account of the location's kind →
-   `missing_inventory_account` / `missing_direct_account`. Sources `sub_category` / `category`
-   disappear from the resolver, `statusCte()` and the FE `AccountSource` union. Cost center
-   stays override → store location.
+   **Product-side account (GL + AP inventory lines) is unchanged:** override → item group →
+   sub-category → category, by the location's kind (inventory / direct). These levels are
+   accounts set on the product category tree, which the user treats as part of the mapping.
+   (The user briefly chose "item group only", then reversed it the same day — keep the chain.)
+   Cost center stays override → store location.
    **The AP rule has a second copy** in SQL: `statusCte()` in
    `master/account-mapping/account-mapping.service.ts:146` does
    `COALESCE(m.account_code, buDefaultApCode)` and `findAll` (≈ line 256) feeds it `buDefaultAp`.
@@ -104,10 +103,8 @@ of `gl_setting`** (15 fields), not just the two that leave the External page.
 - GL journals export: changes only through the adjustment rule above.
 - No data migration; no deletion of stored `default_account_code` / `gl_setting` values /
   `tb_adjustment_type.chart_of_accounts_id`.
-- **No backfill of AP or adjustment overrides, nor of item-group accounts (user's decision).**
-  On deploy, every AP mapping row and every GL adjustment row without an override — and every
-  row whose item group has no account of its own (previously inherited from sub-category /
-  category) — turns incomplete and every AP export line is flagged `unmapped` until users map the
+- **No backfill of AP or adjustment overrides (user's decision).** On deploy, every AP mapping
+  row and every GL adjustment row without an override turns incomplete and every AP export line is flagged `unmapped` until users map the
   rows themselves (the mapping page's existing batch edit covers this). This is expected, not a
   regression — the release note must say so.
 
@@ -168,11 +165,6 @@ so a GRN override also moves the SI/SO inventory account — unchanged, flagged 
   becomes a dead input — nothing else in micro-business reads `tb_adjustment_type.chart_of_accounts_id`.
   Remove the field from the dialog (keep the DB column and API field). Unlike the vendor's AP
   account, which AP Invoice still uses and so stays on the vendor form.
-
-- **Category tree form** (`routes/product-management/category/category-form*.ts(x)`): the
-  inventory / direct account fields are shown only on **item group** nodes; category and
-  sub-category nodes stop offering them (stored rows untouched, API unchanged). They would
-  otherwise be dead inputs after the chain change.
 
 ## Left to the builder
 
