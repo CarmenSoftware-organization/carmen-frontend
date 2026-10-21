@@ -1,6 +1,6 @@
 # Accounting Business Flow Checklist (Drive FRD vs Implementation)
 
-เอกสารนี้เปรียบเทียบ Business Flow ตามเอกสารสเปกใน [Google Drive Folder](https://drive.google.com/drive/folders/1nSKSvjF37mh8EPJTOA3AionmgnsyuczU) กับสถานะการพัฒนาปัจจุบันในระบบ Carmen Frontend และ Backend APIs  
+เอกสารนี้เปรียบเทียบ Business Flow ตามเอกสารสเปกใน [Google Drive Folder](https://drive.google.com/drive/folders/1nSKSvjF37mh8EPJTOA3AionmgnsyuczU) กับสถานะการพัฒนาปัจจุบันในระบบ Carmen Blue Frontend และ Backend APIs  
 สถานะข้อมูล: **2026-09-30** (ตรวจสถานะ API เพิ่มเติมใน [API integration checklist](api-integration-checklist.md))
 
 ---

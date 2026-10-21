@@ -4,13 +4,13 @@
 
 สร้าง mockup React ที่ใช้งานคลิก flow ได้ครบสำหรับ GL, Accounting Master Data และ AP โดย:
 
-- ใช้ Carmen shell, layout, typography, spacing, colors และ shared components ปัจจุบัน
+- ใช้ Carmen Blue shell, layout, typography, spacing, colors และ shared components ปัจจุบัน
 - ใช้ข้อมูล mock/local repository เท่านั้นในรอบนี้
 - นำ interaction flow ใหม่จาก Drive spec มาใช้เมื่อระบบเดิมยังไม่มี flow นั้น
 - ไม่ copy HTML/CSS/Tailwind/CDN/Supabase code จาก mockup ใน Drive
 - ไม่ออกแบบ backend contract, migration หรือ production accounting logic ในรอบนี้
 
-หลักตัดสิน: **Carmen visual language + shared components เดิม, Drive interaction flow ใหม่**
+หลักตัดสิน: **Carmen Blue visual language + shared components เดิม, Drive interaction flow ใหม่**
 
 ## 2. Reference pages and shared components
 
@@ -43,7 +43,7 @@ No raw `<table>`, `<select>`, ad-hoc page header, custom search box, or duplicat
 
 Drive mockups provide information architecture and click behavior, not visual styling.
 
-### Keep from Carmen
+### Keep from Carmen Blue
 
 - Current app navigation and page container
 - Existing font scale and compact ERP density
@@ -64,7 +64,7 @@ Drive mockups provide information architecture and click behavior, not visual st
 
 ### Table rule
 
-All list and line-item tables use the existing Carmen `DataGrid` appearance:
+All list and line-item tables use the existing Carmen Blue `DataGrid` appearance:
 
 - no custom outer border box
 - no vertical cell borders
@@ -117,7 +117,7 @@ If the same Save/Submit footer composition is used by three document pages, exte
 
 ## 5. New interaction patterns allowed
 
-Use Drive behavior when Carmen has no equivalent, but compose it from existing primitives.
+Use Drive behavior when Carmen Blue has no equivalent, but compose it from existing primitives.
 
 | New flow                          | Implementation                                                                          |
 | --------------------------------- | --------------------------------------------------------------------------------------- |
@@ -166,7 +166,7 @@ Modules:
 
 Flow:
 
-- list uses standard Carmen list page
+- list uses standard Carmen Blue list page
 - add/edit uses a wider dialog only while the form remains usable and accessible
 - account/Cost Center/dimension mappings use grouped existing fields
 - changing Account Code resets dependent mock values where the Drive flow requires it
@@ -194,7 +194,7 @@ COA list remains the existing borderless `DataGrid`; identifier click opens the 
 
 ### D. AP Dashboard
 
-- keep current Carmen accounting dashboard shell and shared widget/card vocabulary
+- keep current Carmen Blue accounting dashboard shell and shared widget/card vocabulary
 - preserve Drive information groups: outstanding, aging, due, approval, payment, and tax/WHT exceptions
 - every clickable card/chip navigates to the existing Invoice/Payment list with mock query filters
 - do not add a second dashboard navigation system
@@ -305,9 +305,9 @@ This increment proves all three page families: simple master, new interaction di
 ## 9. Verification per increment
 
 - loading, empty, error, populated, view, add, edit, disabled, permission-restricted, dependency-blocked, and long-text states
-- desktop and mobile comparison against the chosen Carmen reference page
+- desktop and mobile comparison against the chosen Carmen Blue reference page
 - keyboard navigation, focus return, dialog titles/descriptions, and sticky-footer overlap
-- table remains borderless and consistent with current Carmen grids
+- table remains borderless and consistent with current Carmen Blue grids
 - no raw controls where a shared component exists
 - `bunx tsc --noEmit`
 - targeted Vitest for non-trivial mock transitions

@@ -13,7 +13,7 @@ Drive connection verified 2026-09-28. The folder is accessible; this is a review
 
 The Google Docs FRDs are the business-rule source. The latest HTML in each folder is a visual and interaction reference, not a database or API contract. Older HTML versions are reference history only unless a newer FRD explicitly preserves their behavior.
 
-Implementation must extend the existing Carmen React patterns and accounting documents. Do not port the standalone HTML, CDN dependencies, local mock persistence, or Supabase proof-of-concept code.
+Implementation must extend the existing Carmen Blue React patterns and accounting documents. Do not port the standalone HTML, CDN dependencies, local mock persistence, or Supabase proof-of-concept code.
 
 ## 2. Current repository state
 
@@ -38,7 +38,7 @@ Relevant existing implementation:
 
 ## 3. Cross-module rules
 
-These rules repeat across the Drive specs and should be one backend/API convention with reused Carmen UI behavior:
+These rules repeat across the Drive specs and should be one backend/API convention with reused Carmen Blue UI behavior:
 
 1. Scope every master by Business Unit/property where applicable.
 2. Normalize codes with trim and uppercase; enforce case-insensitive uniqueness in the database.
@@ -114,7 +114,7 @@ Build the smallest reusable layer needed by the repeated master screens:
 - create/update/status/delete mutations with `doc_version`
 - capability-aware actions
 - reusable dependency-blocked dialog using backend details
-- active-status badge and code-lock behavior using existing Carmen components
+- active-status badge and code-lock behavior using existing Carmen Blue components
 - audit/activity readback
 - route/menu/permission registration
 
@@ -195,19 +195,19 @@ Verification follows `accounts-payable-implementation-readiness.md`; no capabili
 - add AP control-account reconciliation drill-down
 - verify schedule, auto-reverse, period lock, idempotency, and source trace
 
-Do not copy the Drive GL page's Supabase setup, dark-mode implementation, Swagger screen, or local master editor. Existing Carmen shell, theme, API client, and configuration modules own those concerns.
+Do not copy the Drive GL page's Supabase setup, dark-mode implementation, Swagger screen, or local master editor. Existing Carmen Blue shell, theme, API client, and configuration modules own those concerns.
 
 ### Slice 7 — AR contract and implementation (new 2026-09-27)
 
 The AR FRD v1.07 adds five document kinds: Invoice (ARIV), Credit Note (ARCN), Debit Note (ARDN), Advance Deposit (ARDP), and Receipt/Tax Invoice (ARRC). The `/accounting/accounts-receivable/receipt` route still uses the generic `accounting-document-*` mock; the ARIV route has a domain UI preview without server actions. Complete the AR lifecycle only after its backend owner confirms the posting and settlement contracts.
 
-**UI progress 2026-09-28:** `/accounting/accounts-receivable/invoice` now has an ARIV-specific list and detail preview. The detail includes the FRD header, item grid/detail sheet, tax register, deposit reference, receipt/open balance, Manual GL preview, PMS no-repost message, and two-currency footer in the Carmen shell. The screen explicitly marks server actions as pending; no ARIV Submit, tax-number allocation, approval, deposit settlement, receipt creation, or GL posting is simulated as a successful backend operation. Existing legacy `Carmen.WebApi/Controllers/ArInvoiceController.cs` is available for contract comparison but must not be assumed to implement the v1.07 rules.
+**UI progress 2026-09-28:** `/accounting/accounts-receivable/invoice` now has an ARIV-specific list and detail preview. The detail includes the FRD header, item grid/detail sheet, tax register, deposit reference, receipt/open balance, Manual GL preview, PMS no-repost message, and two-currency footer in the Carmen Blue shell. The screen explicitly marks server actions as pending; no ARIV Submit, tax-number allocation, approval, deposit settlement, receipt creation, or GL posting is simulated as a successful backend operation. Existing legacy `Carmen.WebApi/Controllers/ArInvoiceController.cs` is available for contract comparison but must not be assumed to implement the v1.07 rules.
 
 **FRD correction needed before Deposit JV:** §6.4 example says Dr `3,370.50 + 727.60 = 4,098.10` and Cr `3,150 + 220.50 + 749 + 21.40 = 4,098.10`, but that credit sum is `4,140.90`. The stated FX gain sign also does not balance the entry. Confirm the offset posting direction and FX account sign with Accounting before implementing or exposing it as a balanced JV.
 
 1. Agree on AR Profile/customer, PMS folio ingestion, tax invoice running, period policy, LOA capabilities, open items and idempotent GL event contracts. Preserve the existing source-generated JV read-only rule. PMS folio invoices must not post revenue/AR twice after night audit.
 2. Replace the generic AR mock with domain list/detail and a repository boundary. Start with ARIV and ARRC, then ARDP and document application, then ARCN/ARDN. Add routes for the latter three only with their domain operations and permissions.
-3. Implement invoice lines, tax invoice register, document references, receipt history and GL trace in the existing Carmen shell. Tax invoice numbering is separate from document numbering and assigned by the backend. Invoice WHT amount is informational at invoicing; recognize WHT at receipt.
+3. Implement invoice lines, tax invoice register, document references, receipt history and GL trace in the existing Carmen Blue shell. Tax invoice numbering is separate from document numbering and assigned by the backend. Invoice WHT amount is informational at invoicing; recognize WHT at receipt.
 4. Make application/settlement atomic on the backend: same BU/customer/currency policy, available balance, folio amount cap, realized FX, period validation, tax adjustment and rollback on failure. ARRC must clear the correct open item; ARDP must reduce aging only when applied.
 5. Verify duplicate submission, partial receipt, over-application, closed period, PMS replay/no double posting, tax-number uniqueness, cross-BU isolation, masked guest/card data, AR aging against open items and AR control-account reconciliation against GL.
 
