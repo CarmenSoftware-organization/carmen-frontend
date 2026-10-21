@@ -11,7 +11,7 @@ import { FieldInput, FieldPlainText } from "@/components/ui/field";
 import { LookupProduct } from "@/components/lookup/lookup-product";
 import { LookupProductUnit } from "@/components/lookup/lookup-product-unit";
 import { LookupTaxProfile } from "@/components/lookup/lookup-tax-profile";
-import { round2 } from "@/lib/currency-utils";
+import { formatTaxRate, priceListTaxParts } from "@/lib/price-list-tax";
 import type { EntityRef } from "@/types/entity-ref";
 import type { PriceList } from "@/types/price-list";
 import type { PriceListFormValues } from "./pl-form-schema";
@@ -246,45 +246,51 @@ function useRowPriceParts(
   isView: boolean,
   detailRef?: DetailRef,
 ) {
-  const priceWatch = useWatch({
+  const [priceWatch, rateWatch, profileWatch] = useWatch({
     control: form.control,
-    name: `pricelist_detail.${index}.price`,
+    name: [
+      `pricelist_detail.${index}.price`,
+      `pricelist_detail.${index}.tax_rate`,
+      `pricelist_detail.${index}.tax_profile_id`,
+    ],
   });
-  const rateWatch = useWatch({
-    control: form.control,
-    name: `pricelist_detail.${index}.tax_rate`,
-  });
-  const priceGross = isView
-    ? Number(detailRef?.price) || 0
-    : Number(priceWatch) || 0;
-  const rate = isView
-    ? Number(detailRef?.tax_rate) || 0
-    : Number(rateWatch) || 0;
-  const pwt = round2(priceGross / (1 + rate / 100));
+  // price = ก่อนภาษี (add VAT) — สูตรเดียวกับ portal vendor ผ่าน priceListTaxParts
+  const rate = isView ? detailRef?.tax_rate : rateWatch;
   return {
-    priceGross,
-    pwt,
-    taxAmt: round2(priceGross - pwt),
-    amount: priceGross,
+    ...priceListTaxParts(isView ? detailRef?.price : priceWatch, rate),
+    rate,
+    // view ไม่มี tax_profile_id ใน detailRef — ถือว่ามีเสมอ (rate มาจาก profile)
+    hasProfile: isView ? true : !!profileWatch,
   };
 }
 
-export function PWTCell({ form, index, isView, detailRef }: CellProps) {
+/** Tax rate — อ่านอย่างเดียว ตามมาจาก tax profile ที่เลือก */
+export function TaxRateCell({ form, index, isView, detailRef }: CellProps) {
   "use no memo";
-  const { pwt } = useRowPriceParts(form, index, isView, detailRef);
+  const { rate, hasProfile } = useRowPriceParts(form, index, isView, detailRef);
   return (
     <span className="text-muted-foreground text-xs tabular-nums">
-      {pwt.toFixed(2)}
+      {formatTaxRate(rate, hasProfile)}
     </span>
   );
 }
 
-export function AmountCell({ form, index, isView, detailRef }: CellProps) {
+export function TaxAmountCell({ form, index, isView, detailRef }: CellProps) {
   "use no memo";
-  const { amount } = useRowPriceParts(form, index, isView, detailRef);
+  const { taxAmt } = useRowPriceParts(form, index, isView, detailRef);
+  return (
+    <span className="text-muted-foreground text-xs tabular-nums">
+      {taxAmt.toFixed(2)}
+    </span>
+  );
+}
+
+export function TotalCell({ form, index, isView, detailRef }: CellProps) {
+  "use no memo";
+  const { total } = useRowPriceParts(form, index, isView, detailRef);
   return (
     <span className="text-foreground text-xs font-semibold tabular-nums">
-      {amount.toFixed(2)}
+      {total.toFixed(2)}
     </span>
   );
 }

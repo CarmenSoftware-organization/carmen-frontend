@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { FieldArrayWithId } from "react-hook-form";
 import type { TranslationFn } from "@/lib/i18n-schema";
+import { priceListTaxParts } from "@/lib/price-list-tax";
 import type { PriceList } from "@/types/price-list";
 
 function createPriceListDetailSchema(tv: TranslationFn, tf: TranslationFn) {
@@ -173,18 +174,18 @@ export function mapDetailToPayload(
   d: PriceListFormValues["pricelist_detail"][number],
   index: number,
 ) {
-  // Input คือ price (รวมภาษี/gross) — derive price_without_tax (ก่อนภาษี) + tax_amt
-  // กลับที่ submit (cell ไม่ sync field พวกนี้ระหว่างพิมพ์)
-  const price = Number(d.price) || 0;
-  const rate = Number(d.tax_rate) || 0;
-  const priceNoTax = Math.round((price / (1 + rate / 100)) * 100) / 100;
-  const taxAmt = Math.round((price - priceNoTax) * 100) / 100;
+  // Input คือ price ก่อนภาษี (add VAT) — derive tax_amt ที่ submit
+  // (cell ไม่ sync field พวกนี้ระหว่างพิมพ์) · price_without_tax = price
+  const { price, priceWithoutTax, taxAmt } = priceListTaxParts(
+    d.price,
+    d.tax_rate,
+  );
   return {
     ...(d.doc_version != null ? { doc_version: d.doc_version } : {}),
     sequence_no: index + 1,
     product_id: d.product_id,
     price,
-    price_without_tax: priceNoTax,
+    price_without_tax: priceWithoutTax,
     unit_id: d.unit_id,
     tax_profile_id: d.tax_profile_id || "",
     tax_rate: d.tax_rate,

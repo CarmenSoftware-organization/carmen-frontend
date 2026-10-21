@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useTranslations } from "use-intl";
 import { Crown } from "lucide-react";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
-import { round2 } from "@/lib/currency-utils";
+import { formatTaxRate, priceListTaxParts } from "@/lib/price-list-tax";
 import { cn } from "@/lib/utils";
 import {
   buildProductGroups,
@@ -35,9 +35,10 @@ export function PLItemGroupedView({
             <Th className="w-14 text-center">#</Th>
             <Th className="text-left">{tfl("product")}</Th>
             <Th className="w-36 text-left">{tfl("moq")}</Th>
-            <Th className="w-24 text-right">{tfl("pwt")}</Th>
+            <Th className="w-24 text-right">{tfl("price")}</Th>
+            <Th className="w-20 text-right">{tfl("taxRate")}</Th>
             <Th className="w-20 text-right">{tfl("tax")}</Th>
-            <Th className="w-24 text-right">{tfl("amount")}</Th>
+            <Th className="w-24 text-right">{tfl("total")}</Th>
             {showNote && <Th className="w-96 text-left">{tfl("note")}</Th>}
           </tr>
         </thead>
@@ -50,11 +51,12 @@ export function PLItemGroupedView({
                 "py-1",
                 isLast && "border-border/50 border-b",
               );
-              // Amount = price (gross, authoritative) · PWT = ก่อนภาษี ·
-              // Tax = ส่วนต่าง (ค่าเงิน) — ใช้ค่าที่เก็บไว้ตรง ๆ ไม่ recompute จาก rate
-              const pwt = Number(tier.price_without_tax) || 0;
-              const amount = round2(Number(tier.price ?? pwt) || 0);
-              const taxAmt = round2(amount - pwt);
+              // price = ก่อนภาษี (add VAT) · Tax = price × rate · Total = price + Tax
+              // — สูตรเดียวกับตารางแก้ไขและ portal vendor (priceListTaxParts)
+              const { price, taxAmt, total } = priceListTaxParts(
+                tier.price ?? tier.price_without_tax,
+                tier.tax_rate,
+              );
               return (
                 <tr key={tier.id ?? `${group.productId}-${ti}`}>
                   {isFirst && (
@@ -80,7 +82,7 @@ export function PLItemGroupedView({
                       </Td>
                     </>
                   )}
-                  {/* MOQ tier + lead time (ราคาย้ายไปเป็นคอลัมน์ PWT/Amount) */}
+                  {/* MOQ tier + lead time (ราคาย้ายไปเป็นคอลัมน์ Price/Total) */}
                   <Td className={cn("align-middle", tierClass)}>
                     <span className="flex items-center gap-1.5 text-xs tabular-nums">
                       {tier.is_preferred && (
@@ -97,14 +99,23 @@ export function PLItemGroupedView({
                       </span>
                     </span>
                   </Td>
-                  {/* PWT = ราคาก่อนภาษี */}
+                  {/* Price = ราคาก่อนภาษี */}
                   <Td
                     className={cn(
                       "text-foreground text-right align-middle tabular-nums",
                       tierClass,
                     )}
                   >
-                    {pwt.toFixed(2)}
+                    {price.toFixed(2)}
+                  </Td>
+                  {/* Tax rate = อ่านอย่างเดียว ตาม tax profile */}
+                  <Td
+                    className={cn(
+                      "text-muted-foreground text-right align-middle tabular-nums",
+                      tierClass,
+                    )}
+                  >
+                    {formatTaxRate(tier.tax_rate, true)}
                   </Td>
                   {/* Tax = ยอดภาษี (ค่าเงิน) */}
                   <Td
@@ -115,14 +126,14 @@ export function PLItemGroupedView({
                   >
                     {taxAmt.toFixed(2)}
                   </Td>
-                  {/* Amount = ราคารวมภาษี (gross) */}
+                  {/* Total = ราคา + ภาษี */}
                   <Td
                     className={cn(
                       "text-foreground text-right align-middle font-semibold tabular-nums",
                       tierClass,
                     )}
                   >
-                    {amount.toFixed(2)}
+                    {total.toFixed(2)}
                   </Td>
                   {showNote && (
                     <Td

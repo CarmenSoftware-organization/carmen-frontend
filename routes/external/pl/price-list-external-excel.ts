@@ -1,5 +1,5 @@
 import { buildXlsxFileName } from "@/lib/xlsx-utils";
-import { round2 } from "@/lib/currency-utils";
+import { priceListTaxParts } from "@/lib/price-list-tax";
 import type {
   PricelistExternalDto,
   PricelistExternalDetailDto,
@@ -150,7 +150,7 @@ const norm = (v: unknown) =>
  *    match เลย = ไฟล์ไม่ใช่ของเอกสารนี้ → reject
  *
  * ช่องว่างคงค่าเดิม · Tax Profile (ชื่อ) map กลับเป็น id + rate จาก taxProfiles
- * (ไม่รู้จัก/ว่าง = คงเดิม) แล้วคำนวณ price_without_tax / tax_amt ใหม่จาก price
+ * (ไม่รู้จัก/ว่าง = คงเดิม) แล้วคำนวณ tax_amt ใหม่แบบ add VAT (price = ก่อนภาษี)
  */
 export function applyExcelRows(
   rows: Record<string, unknown>[],
@@ -195,7 +195,7 @@ export function applyExcelRows(
         rate = prof.tax_rate;
       }
     }
-    const pwt = rate > 0 ? round2(price / (1 + rate / 100)) : price;
+    const { priceWithoutTax, taxAmt } = priceListTaxParts(price, rate);
     const noteCell = row[H.note];
     updated[idx] = {
       ...d,
@@ -204,8 +204,8 @@ export function applyExcelRows(
       tax_profile_id: taxProfileId,
       tax_profile_name: taxProfileName,
       tax_rate: rate,
-      price_without_tax: pwt,
-      tax_amt: round2(price - pwt),
+      price_without_tax: priceWithoutTax,
+      tax_amt: taxAmt,
       lead_time_days: toNum(row[H.lead], d.lead_time_days),
       note: noteCell === "" || noteCell == null ? d.note : String(noteCell),
     };
