@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { getStageActionFlags } from "@/lib/workflow-stage-actions";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "use-intl";
@@ -75,6 +76,8 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
   // เทียบ role === CREATE · ค่าอื่นที่อ่าน role ไม่กระทบ (undefined กับ "create"
   // ต่างก็ไม่เท่ากับ APPROVE/VIEW_ONLY อยู่แล้ว)
   const role = purchaseOrder?.role ?? STAGE_ROLE.CREATE;
+  // คำนวณครั้งเดียวแล้วส่งให้ทั้งปุ่ม bulk และ footer — null (backend เก่า) = เปิดหมด
+  const stageActions = getStageActionFlags(purchaseOrder?.stage_actions);
   const terminalStatus =
     purchaseOrder?.po_status === PO_STATUS.APPROVED ||
     purchaseOrder?.po_status === PO_STATUS.SENT_OR_PRINT ||
@@ -264,6 +267,7 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
             purchaseOrder ? () => dialogs.setShowReject(true) : undefined
           }
           onReview={purchaseOrder ? handleReviewConfirm : undefined}
+          stageActions={stageActions}
         />
       }
     >
@@ -302,6 +306,7 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
             purchaseOrder ? () => dialogs.setShowReject(true) : undefined
           }
           onClose={purchaseOrder ? handleClosePo : undefined}
+          stageActions={stageActions}
         />
       </form>
 

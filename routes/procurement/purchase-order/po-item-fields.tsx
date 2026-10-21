@@ -31,6 +31,15 @@ import { usePoItemTable } from "./use-po-item-table";
 import { PoItemComputedSync } from "./po-item-cells";
 import { getDeleteDescription } from "@/lib/form-utils";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
+import {
+  wouldRejectAll,
+  type StageActionFlags,
+} from "@/lib/workflow-stage-actions";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface PoItemFieldsProps {
   form: UseFormReturn<PoFormValues>;
@@ -44,6 +53,8 @@ interface PoItemFieldsProps {
   onReject?: () => void;
   onClose?: (reason: string) => void;
   isPending?: boolean;
+  /** ตัวเลือกที่ stage ปัจจุบันเปิดให้ตัดสิน (ผ่าน getStageActionFlags แล้ว) — มีแต่ตัดออก ไม่เพิ่มสิทธิ์ */
+  stageActions: StageActionFlags;
   /** id ของแถว PO → ใบขอซื้อต้นทาง (มาจาก response ของ GET ไม่ได้อยู่ในฟอร์ม) */
   prSourcesByDetailId: Map<string, PrSource[]>;
   /** id ของแถว PO → ใบรับสินค้าที่รับของแถวนี้เข้ามา (ที่มาเดียวกัน) */
@@ -62,6 +73,7 @@ export function PoItemFields({
   onReject,
   onClose,
   isPending,
+  stageActions,
   prSourcesByDetailId,
   grnSourcesByDetailId,
 }: PoItemFieldsProps) {
@@ -196,6 +208,13 @@ export function PoItemFields({
   const canBulkAct = isApprover && isEditMode && selectedRows.length > 0;
   const showBulkActions = selectedRows.length > 0 && (canBulkAct || canClose);
 
+  // stage ที่ปิด reject แต่เปิด approve ยังปัดตกบางแถวได้ (partial reject) — ห้ามแค่
+  // ให้ทุกแถวกลายเป็น reject เพราะนั่นคือการปัดตกทั้งใบ · ใช้ itemStatuses ที่มีอยู่แล้ว
+  // และนิยาม reject เดียวกับ computePoAction ("rejected")
+  const rejectWouldRejectAll =
+    !stageActions.reject &&
+    wouldRejectAll(itemStatuses, selectedIndices, (s) => s === "rejected");
+
   const handleBulkApprove = () => {
     for (const index of selectedIndices) {
       form.setValue(`items.${index}.stage_status`, "approve");
@@ -278,48 +297,75 @@ export function PoItemFields({
           <>
             {canBulkAct && (
               <>
-                <Button
-                  type="button"
-                  variant="success"
-                  size="sm"
-                  disabled={isPending}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleBulkApprove();
-                  }}
-                >
-                  <Check />
-                  {tc("approve")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="warning"
-                  size="sm"
-                  disabled={isPending}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleBulkReview();
-                  }}
-                >
-                  <Eye />
-                  {tc("review")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  disabled={isPending}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setBulkAction("reject");
-                  }}
-                >
-                  <ThumbsDown />
-                  {tc("reject")}
-                </Button>
+                {stageActions.approve && (
+                  <Button
+                    type="button"
+                    variant="success"
+                    size="sm"
+                    disabled={isPending}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleBulkApprove();
+                    }}
+                  >
+                    <Check />
+                    {tc("approve")}
+                  </Button>
+                )}
+                {stageActions.sendback && (
+                  <Button
+                    type="button"
+                    variant="warning"
+                    size="sm"
+                    disabled={isPending}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleBulkReview();
+                    }}
+                  >
+                    <Eye />
+                    {tc("review")}
+                  </Button>
+                )}
+                {(stageActions.reject || stageActions.approve) &&
+                  (rejectWouldRejectAll ? (
+                    <Tooltip>
+                      {/* ปุ่ม disabled ไม่ยิง pointer event — ต้องห่อด้วย span ให้ tooltip จับ hover ได้ */}
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0}>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            disabled
+                          >
+                            <ThumbsDown />
+                            {tc("reject")}
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {tc("rejectAllNotAllowed")}
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      disabled={isPending}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setBulkAction("reject");
+                      }}
+                    >
+                      <ThumbsDown />
+                      {tc("reject")}
+                    </Button>
+                  ))}
               </>
             )}
             {canClose && (
@@ -381,36 +427,36 @@ export function PoItemFields({
         />
       ))}
 
-        <DataGrid
-          table={table}
-          recordCount={itemFields.length}
-          tableLayout={{
-            rowClamp: false,
-            checkbox: showApproveCheckbox,
-            // โหมดอ่านชิดบน — บางเซลล์มีบรรทัดรอง (รหัสคลัง · ชื่อท้องถิ่น ·
-            // เปอร์เซ็นต์ใต้ยอดเงิน) บางเซลล์ไม่มี กึ่งกลางแล้วเซลล์บรรทัดเดียว
-            // จะลอยอยู่ระหว่างสองบรรทัดของเพื่อนบ้าน
-            cellAlign: disabled || readOnly ? "top" : "middle",
-            // table กว้างเกิน container → scroll แนวนอน (เหมือน PR): width =
-            // getTotalSize(), column กว้างตาม size px ที่กำหนด
-            columnsResizable: true,
-          }}
-          emptyMessage={
-            <EmptyComponent
-              icon={BoxIcon}
-              title={t("noItems")}
-              description={t("noItemsDesc")}
-            />
-          }
-        >
-          {/* DataGridContainer = native overflow-auto (เลี่ยง nested scroll ของ
+      <DataGrid
+        table={table}
+        recordCount={itemFields.length}
+        tableLayout={{
+          rowClamp: false,
+          checkbox: showApproveCheckbox,
+          // โหมดอ่านชิดบน — บางเซลล์มีบรรทัดรอง (รหัสคลัง · ชื่อท้องถิ่น ·
+          // เปอร์เซ็นต์ใต้ยอดเงิน) บางเซลล์ไม่มี กึ่งกลางแล้วเซลล์บรรทัดเดียว
+          // จะลอยอยู่ระหว่างสองบรรทัดของเพื่อนบ้าน
+          cellAlign: disabled || readOnly ? "top" : "middle",
+          // table กว้างเกิน container → scroll แนวนอน (เหมือน PR): width =
+          // getTotalSize(), column กว้างตาม size px ที่กำหนด
+          columnsResizable: true,
+        }}
+        emptyMessage={
+          <EmptyComponent
+            icon={BoxIcon}
+            title={t("noItems")}
+            description={t("noItemsDesc")}
+          />
+        }
+      >
+        {/* DataGridContainer = native overflow-auto (เลี่ยง nested scroll ของ
               Radix ScrollArea ที่ทำ scroll แนวนอนสะดุด)
               · pb-3 = ที่ว่างให้ scrollbar แนวนอนยืน — บน macOS แถบนี้ลอยทับ
               เนื้อหาโดยไม่กินที่ ไม่เว้นไว้มันจะไปบังตัวเลขแถวสุดท้าย */}
-          <DataGridContainer scroll>
-            <DataGridTable />
-          </DataGridContainer>
-        </DataGrid>
+        <DataGridContainer scroll>
+          <DataGridTable />
+        </DataGridContainer>
+      </DataGrid>
 
       <DeleteDialog
         open={deleteIndex !== null}
