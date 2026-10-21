@@ -1040,6 +1040,7 @@
       "USER_USERNAME_OR_EMAIL_EXISTS": "Another user already has this username or email. Use a different one.",
       "COMMON_UNIQUE_CONSTRAINT_VIOLATION": "Something with the same code or name is already in the system. Change it and try again.",
       "PRICE_LIST_LINE_DUPLICATE_IN_REQUEST": "The same product with the same unit and MOQ appears more than once. Remove the extra line.",
+      "PRICE_LIST_IN_USE": "Can't delete: these documents still reference this price list: {documents}. Void it instead.",
       "CUSTOMER_ADDRESS_TYPE_DUPLICATE": "Each address type can only be used once. Remove or change the repeated one."
     }
   },

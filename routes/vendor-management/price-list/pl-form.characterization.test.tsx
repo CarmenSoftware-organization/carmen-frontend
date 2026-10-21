@@ -14,6 +14,8 @@ const navigate = vi.fn();
 const createMut = fakeMutation({ data: { id: "pl-new" } });
 const updateMut = fakeMutation();
 const deleteMut = fakeMutation();
+const voidMut = fakeMutation();
+const restoreMut = fakeMutation();
 
 vi.mock("react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("react-router")>()),
@@ -24,6 +26,8 @@ vi.mock("@/hooks/use-price-list", () => ({
   useCreatePriceList: () => createMut,
   useUpdatePriceList: () => updateMut,
   useDeletePriceList: () => deleteMut,
+  useVoidPriceList: () => voidMut,
+  useRestorePriceList: () => restoreMut,
 }));
 // FormToolbar ปิดปุ่ม Edit เมื่อไม่มีสิทธิ์ — เทสต์นี้สนใจเส้นทางหลัง save
 // ไม่ใช่ permission ให้ผ่านหมดไปเลย
