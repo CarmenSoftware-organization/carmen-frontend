@@ -13,8 +13,6 @@ export const operatorValues = [
   "between",
 ] as const;
 
-export const actionTypeValues = ["SKIP_STAGE", "NEXT_STAGE"] as const;
-
 export const conditionFieldKeys: Record<string, string> = {
   total_amount: "condTotalAmount",
   department: "condDepartment",
@@ -28,9 +26,4 @@ export const operatorKeys: Record<string, string> = {
   gte: "opGreaterOrEqual",
   lte: "opLessOrEqual",
   between: "opBetween",
-};
-
-export const actionTypeKeys: Record<string, string> = {
-  SKIP_STAGE: "actionSkipStage",
-  NEXT_STAGE: "actionNextStage",
 };
