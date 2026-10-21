@@ -11,6 +11,12 @@ const mockAvailability = vi.fn();
 vi.mock("./use-wf-mutations", () => ({
   useDeleteWorkflow: () => ({ mutate: vi.fn(), isPending: false }),
 }));
+vi.mock("./use-wf-row-mutations", () => ({
+  useWfRowMutations: () => ({ pendingId: null, duplicate: vi.fn() }),
+}));
+vi.mock("@/hooks/use-permission-prefix", () => ({
+  usePermissionPrefix: () => undefined,
+}));
 vi.mock("./use-wf-availability", () => ({
   useWorkflowEditAvailability: () => mockAvailability(),
 }));

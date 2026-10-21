@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useListReturn } from "@/hooks/use-list-return";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import { Lock } from "lucide-react";
+import { Copy, History, Lock } from "lucide-react";
+import { useNavigate } from "react-router";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -14,8 +16,14 @@ import {
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { WarningDialog } from "@/components/ui/warning-dialog";
 import { FormToolbar } from "@/components/share/form-toolbar";
+import { openActivity } from "@/components/share/activity-sheet-host";
+import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
+import { useCan } from "@/hooks/use-can";
+import { usePermissionPrefix } from "@/hooks/use-permission-prefix";
+import { buildPermissionKey, isKnownPermission } from "@/constant/permissions";
 import { useDeleteWorkflow } from "./use-wf-mutations";
 import { useWorkflowEditAvailability } from "./use-wf-availability";
+import { useWfRowMutations } from "./use-wf-row-mutations";
 import type { Workflow } from "@/types/workflows";
 import { getWorkflowTypeLabels } from "@/constant/workflow";
 
@@ -37,13 +45,20 @@ export function WfHeader({
   formId,
 }: WfHeaderProps) {
   const { toList } = useListReturn("/system-admin/workflow");
+  const navigate = useNavigate();
   const deleteWorkflow = useDeleteWorkflow();
+  const { pendingId, duplicate } = useWfRowMutations();
+  const isDuplicating = pendingId === workflow.id;
+  const { can, isAdmin, canWrite } = useCan();
+  const prefix = usePermissionPrefix();
   const [showDelete, setShowDelete] = useState(false);
   const [showBlocked, setShowBlocked] = useState(false);
   const t = useTranslations("systemAdmin.workflow");
   const tc = useTranslations("common");
   const tw = useTranslations("systemAdmin.workflow.documents");
   const tt = useTranslations("toast");
+  const tl = useTranslations("license");
+  const tActivity = useTranslations("activity");
 
   const typeLabels = getWorkflowTypeLabels(t);
   const { data: availability } = useWorkflowEditAvailability(workflow.id);
@@ -127,6 +142,20 @@ export function WfHeader({
     setShowDelete(true);
   };
 
+  // ทำสำเนา = สร้างรายการใหม่ จึงผูกสิทธิ์ create ทางเดียวกับปุ่มใน FormToolbar:
+  // license หมดปิดปุ่มจริง ส่วนไม่มีสิทธิ์ยังกดได้แล้วเด้ง dialog ขอสิทธิ์
+  const createKey = prefix ? buildPermissionKey(prefix, "create") : undefined;
+  const createPermission =
+    createKey && isKnownPermission(createKey) ? createKey : undefined;
+  const createDenied = !!createPermission && !isAdmin && !can(createPermission);
+  const handleDuplicate = () => {
+    if (createDenied) {
+      dispatchPermissionDenied(createPermission);
+      return;
+    }
+    void duplicate(workflow, (id) => navigate(`/system-admin/workflow/${id}`));
+  };
+
   return (
     <>
       <FormToolbar
@@ -142,8 +171,34 @@ export function WfHeader({
         onEdit={onEdit}
         onDelete={handleDelete}
         deleteIsPending={deleteWorkflow.isPending}
-        activity={{ id: workflow.id, label: workflow.name }}
-      />
+      >
+        {!isEditing && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={canWrite ? handleDuplicate : undefined}
+            disabled={!canWrite || (!createDenied && isDuplicating)}
+            title={!canWrite ? tl("writeDisabledTitle") : undefined}
+            aria-disabled={canWrite && createDenied ? true : undefined}
+            className={canWrite && createDenied ? "opacity-50" : undefined}
+          >
+            <Copy />
+            {t("duplicate")}
+          </Button>
+        )}
+        {/* วาด Activity เองแทน prop activity ของ FormToolbar (ซึ่งต่อ children ไว้หลัง Activity)
+            เพื่อให้ปุ่มประวัติอยู่ท้ายสุด ถัดจากทำสำเนา */}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => openActivity(workflow.id, workflow.name)}
+        >
+          <History />
+          {tActivity("title")}
+        </Button>
+      </FormToolbar>
 
       <WarningDialog
         open={showBlocked}
