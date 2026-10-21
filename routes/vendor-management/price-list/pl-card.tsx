@@ -11,18 +11,19 @@ import { PlPeriodCell } from "./pl-period-cell";
 interface PriceListCardProps {
   readonly item: PriceList;
   readonly onEdit: (item: PriceList) => void;
-  readonly onDelete: (item: PriceList) => void;
+  readonly onVoid: (item: PriceList) => void;
   readonly quietExpired?: boolean;
 }
 
 export default function PriceListCard({
   item,
   onEdit,
-  onDelete,
+  onVoid,
   quietExpired = false,
 }: PriceListCardProps) {
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
+  const t = useTranslations("vendorManagement.priceList");
 
   return (
     <ListCard
@@ -37,7 +38,11 @@ export default function PriceListCard({
         />
       }
       onOpen={() => onEdit(item)}
-      onDelete={() => onDelete(item)}
+      onDelete={() => onVoid(item)}
+      deleteLabel={t("void")}
+      deleteDisabledTitle={
+        item.status === "voided" ? t("alreadyVoided") : undefined
+      }
     >
       {item.no && <ListCardRow label={tfl("no")}>{item.no}</ListCardRow>}
       {item.vendor?.name && (

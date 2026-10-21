@@ -72,6 +72,8 @@ interface ListCardProps {
   readonly onDelete?: () => void;
   /** เหตุผลที่การ์ดนี้ลบไม่ได้ (ปุ่มลบปิด + title) — กติกาเดียวกับ `DataGridRowActions` */
   readonly deleteDisabledTitle?: string;
+  /** tooltip/aria-label ของปุ่มลบแทน `common.delete` — ไม่ส่ง = เดิม */
+  readonly deleteLabel?: string;
   readonly actions?: ReactNode;
   readonly children: ReactNode;
 }
@@ -261,6 +263,7 @@ export function ListCard({
   onOpen,
   onDelete,
   deleteDisabledTitle,
+  deleteLabel,
   actions,
   children,
 }: ListCardProps) {
@@ -336,9 +339,9 @@ export function ListCard({
                 title={
                   writeDisabled
                     ? writeDisabledTitle
-                    : (deleteDisabledTitle ?? tc("delete"))
+                    : (deleteDisabledTitle ?? deleteLabel ?? tc("delete"))
                 }
-                aria-label={tc("delete")}
+                aria-label={deleteLabel ?? tc("delete")}
                 aria-disabled={
                   !deleteDisabled && deleteDenied ? true : undefined
                 }

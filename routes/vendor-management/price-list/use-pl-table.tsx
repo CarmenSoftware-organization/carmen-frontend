@@ -24,7 +24,7 @@ interface UsePriceListTableOptions {
   params: ParamsDto;
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onEdit: (priceList: PriceList) => void;
-  onDelete: (priceList: PriceList) => void;
+  onVoid: (priceList: PriceList) => void;
   /** แท็บหมดช่วงแล้ว — ส่งต่อให้ PlPeriodCell */
   quietExpired?: boolean;
 }
@@ -35,13 +35,14 @@ export function usePriceListTable({
   params,
   tableConfig,
   onEdit,
-  onDelete,
+  onVoid,
   quietExpired = false,
 }: UsePriceListTableOptions) {
   "use no memo";
   const { dateTimeFormat } = useProfile();
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
+  const t = useTranslations("vendorManagement.priceList");
   const deleteGate = useDeleteGate();
 
   const dataColumns: ColumnDef<PriceList>[] = [
@@ -153,8 +154,11 @@ export function usePriceListTable({
     selectColumn<PriceList>(),
     indexColumn<PriceList>(params),
     ...dataColumns,
-    actionColumn<PriceList>(onDelete, {
+    actionColumn<PriceList>(onVoid, {
       ...deleteGate,
+      deleteLabel: t("void"),
+      deleteDisabledTitle: (r) =>
+        r.status === "voided" ? t("alreadyVoided") : undefined,
       activity: { id: (r) => r.id, label: (r) => r.no },
     }),
   ];

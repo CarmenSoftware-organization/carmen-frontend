@@ -2987,6 +2987,7 @@
       "voidConfirm": "Void price list \"{name}\"? It will no longer be usable, but the record and its number are kept and it can be restored.",
       "voidSuccess": "Price list voided",
       "voidReasonLabel": "Reason for voiding",
+      "alreadyVoided": "This price list is already voided",
       "restore": "Restore",
       "restoreTitle": "Restore Price List",
       "restoreConfirm": "Restore price list \"{name}\"?",

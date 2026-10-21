@@ -37,6 +37,8 @@ interface DataGridRowActionsProps {
    * ก็ตีกลับ 422 อยู่ดี ไม่ควรให้กดแล้วค่อยรู้
    */
   readonly deleteDisabledTitle?: string;
+  /** ข้อความของเมนูลบแทน `common.delete` (เช่น "ยกเลิก (โมฆะ)") — ไม่ส่ง = ใช้ "ลบ" เดิม */
+  readonly deleteLabel?: string;
   /**
    * เปิดเมนู Activity ของแถวนี้ — ไม่ส่ง = ไม่มีเมนู
    *
@@ -78,6 +80,7 @@ export function DataGridRowActions({
   writeDisabled,
   writeDisabledTitle,
   deleteDisabledTitle,
+  deleteLabel,
   activity,
 }: DataGridRowActionsProps) {
   const tc = useTranslations("common");
@@ -144,7 +147,7 @@ export function DataGridRowActions({
               className={cn((deleteDisabled || deleteDenied) && "opacity-50")}
             >
               <Trash2 className="text-destructive" />
-              {tc("delete")}
+              {deleteLabel ?? tc("delete")}
             </DropdownMenuItem>
           )}
           {children}
