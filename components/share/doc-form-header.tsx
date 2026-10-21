@@ -69,11 +69,15 @@ export function DocFormHeader({
             <BackButton
               onClick={onBack}
               label={backLabel}
-              className="absolute top-1/2 left-0 -translate-x-[calc(100%+0.25rem)] -translate-y-1/2"
+              // top-4 ไม่ใช่ top-1/2: จอแคบปุ่มตกบรรทัด แถวสูงสองบรรทัด — ยึดกลาง
+              // บรรทัดแรก (ปุ่ม h-8) ให้ลูกศรอยู่ข้าง title เสมอ
+              className="absolute top-4 left-0 -translate-x-[calc(100%+0.25rem)] -translate-y-1/2"
             />
           )}
           {leading}
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+          {/* min-w-48 ไม่ใช่ min-w-0: ถ้าหดได้ถึง 0 แถวนอกจะไม่มีวันห่อ กลุ่มปุ่ม
+              (shrink-0) เลยทับ badge บนจอแคบ — ต่ำกว่า 12rem ให้ปุ่มตกบรรทัดแทน */}
+          <div className="flex min-w-48 flex-1 flex-wrap items-center gap-2">
             <h1
               className={cn(
                 // ชื่อยาวตัดท้ายบรรทัดเดียว ไม่ห่อลงบรรทัดสอง — ตั้งใจ ไม่ใช่หลุด
