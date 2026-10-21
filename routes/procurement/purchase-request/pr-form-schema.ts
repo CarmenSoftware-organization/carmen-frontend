@@ -9,6 +9,7 @@ import type {
   PurchaseApproveDetail,
 } from "@/types/purchase-request";
 import type { EntityRef } from "@/types/entity-ref";
+import type { HiddenPriceField } from "@/types/workflows";
 import { STAGE_ROLE } from "@/types/stage-role";
 import { PR_ITEM_STAGE_STATUS } from "@/types/purchase-request";
 import { addDays, isoToDateInput } from "@/lib/date-utils";
@@ -556,43 +557,68 @@ export function prepareStageDetails(
     }));
 }
 
+/**
+ * @param hidden - `hidden_fields` ของใบ — ไม่ว่าง = stage นี้ซ่อนราคาจากผู้ใช้ ห้ามส่ง
+ *   key ราคา/แหล่งราคาใด ๆ กลับไป (backend ทิ้งอยู่แล้วและคำนวณยอดเองจากราคาที่เก็บไว้
+ *   × approved_qty) ฟอร์มถือค่าเหล่านี้เป็น null ส่งไปก็มีแต่เสี่ยงเขียนทับ
+ */
 export function prepareApproveDetails(
   items: PrFormValues["items"],
   purchaseRequestId?: string,
+  hidden?: readonly HiddenPriceField[],
 ): ApproveDetail[] {
+  const anyHidden = (hidden?.length ?? 0) > 0;
   return items
     .filter((item) => item.id)
-    .map((item) => ({
-      id: item.id!,
-      purchase_request_id: purchaseRequestId,
-      stage_status: resolveApproveStageStatus(item),
-      stage_message: item.stage_message || "",
-      approved_qty: resolveApprovedQty(item),
-      approved_unit_id: item.approved_unit_id || item.requested_unit_id,
-      vendor_id: item.vendor_id || undefined,
-      // omit null string FK ทั้งหมด — backend zod รับเป็น string (ห้าม null);
-      // item ที่ถูก reject มักยังไม่มี tax/location/pricelist → ต้องไม่ส่ง null
-      pricelist_detail_id: item.pricelist_detail_id || undefined,
-      pricelist_price: Number(item.pricelist_price),
-      pricelist_no: item.pricelist_no,
-      pricelist_type: item.pricelist_type || null,
-      currency_id: item.currency_id || undefined,
-      delivery_point_id: item.delivery_point_id || undefined,
-      delivery_date: item.delivery_date || undefined,
-      location_id: item.location_id || undefined,
-      tax_profile_id: item.tax_profile_id || undefined,
-      tax_rate: Number(item.tax_rate ?? 0),
-      tax_amount: Number(item.tax_amount ?? 0),
-      is_tax_adjustment: item.is_tax_adjustment ?? false,
-      discount_rate: Number(item.discount_rate ?? 0),
-      discount_amount: Number(item.discount_amount ?? 0),
-      is_discount_adjustment: item.is_discount_adjustment ?? false,
-      net_amount: Number(item.net_amount ?? 0),
-      total_price: Number(item.total_price ?? 0),
-      foc_qty: Number(item.foc_qty ?? 0),
-      foc_unit_id: item.foc_unit_id || undefined,
-      comment: item.comment || "",
-    }));
+    .map((item) => {
+      if (anyHidden) {
+        return {
+          id: item.id!,
+          purchase_request_id: purchaseRequestId,
+          stage_status: resolveApproveStageStatus(item),
+          stage_message: item.stage_message || "",
+          approved_qty: resolveApprovedQty(item),
+          approved_unit_id: item.approved_unit_id || item.requested_unit_id,
+          delivery_point_id: item.delivery_point_id || undefined,
+          delivery_date: item.delivery_date || undefined,
+          location_id: item.location_id || undefined,
+          foc_qty: Number(item.foc_qty ?? 0),
+          foc_unit_id: item.foc_unit_id || undefined,
+          comment: item.comment || "",
+        };
+      }
+      return {
+        id: item.id!,
+        purchase_request_id: purchaseRequestId,
+        stage_status: resolveApproveStageStatus(item),
+        stage_message: item.stage_message || "",
+        approved_qty: resolveApprovedQty(item),
+        approved_unit_id: item.approved_unit_id || item.requested_unit_id,
+        vendor_id: item.vendor_id || undefined,
+        // omit null string FK ทั้งหมด — backend zod รับเป็น string (ห้าม null);
+        // item ที่ถูก reject มักยังไม่มี tax/location/pricelist → ต้องไม่ส่ง null
+        pricelist_detail_id: item.pricelist_detail_id || undefined,
+        pricelist_price: Number(item.pricelist_price),
+        pricelist_no: item.pricelist_no,
+        pricelist_type: item.pricelist_type || null,
+        currency_id: item.currency_id || undefined,
+        delivery_point_id: item.delivery_point_id || undefined,
+        delivery_date: item.delivery_date || undefined,
+        location_id: item.location_id || undefined,
+        tax_profile_id: item.tax_profile_id || undefined,
+        tax_rate: Number(item.tax_rate ?? 0),
+        tax_amount: Number(item.tax_amount ?? 0),
+        is_tax_adjustment: item.is_tax_adjustment ?? false,
+        discount_rate: Number(item.discount_rate ?? 0),
+        discount_amount: Number(item.discount_amount ?? 0),
+        is_discount_adjustment: item.is_discount_adjustment ?? false,
+        net_amount: Number(item.net_amount ?? 0),
+        total_price: Number(item.total_price ?? 0),
+        foc_qty: Number(item.foc_qty ?? 0),
+        foc_unit_id: item.foc_unit_id || undefined,
+        comment: item.comment || "",
+      };
+    });
 }
 
 /**

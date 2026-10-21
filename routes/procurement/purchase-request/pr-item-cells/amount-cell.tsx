@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/input/input-suffix";
 import type { PrFormValues } from "../pr-form-schema";
 import { useIsRowLocked } from "./helpers";
+import { HiddenValue } from "@/components/share/hidden-value";
 
 export const AmountCell = memo(function AmountCell({
   control,
@@ -15,12 +16,15 @@ export const AmountCell = memo(function AmountCell({
   baseCurrencyCode,
   currencySlot,
   isDisabled,
+  isHidden,
 }: {
   control: Control<PrFormValues>;
   index: number;
   baseCurrencyCode?: string;
   currencySlot?: ReactNode;
   isDisabled?: boolean;
+  /** stage ซ่อน `total_price` — ขึ้น badge แทนยอด (ยอดในฟอร์มเป็น 0 ปลอมจาก null) */
+  isHidden?: boolean;
 }) {
   "use no memo";
   const totalPrice =
@@ -37,6 +41,15 @@ export const AmountCell = memo(function AmountCell({
 
   // currency เลือกได้เมื่อฟอร์มยังแก้ได้และ row ไม่ถูก lock (ตรงกับ CurrencyCell)
   const currencySelectable = !isDisabled && !isRowLocked;
+
+  if (isHidden) {
+    return (
+      <div className="flex items-center justify-end gap-1.5">
+        <HiddenValue />
+        <span className="text-muted-foreground">{currencySlot}</span>
+      </div>
+    );
+  }
 
   const baseLine = isForeignCurrency && (
     <span className="text-muted-foreground text-micro tabular-nums">

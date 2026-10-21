@@ -1,5 +1,6 @@
 import { type UseFormReturn, type FieldArrayWithId } from "react-hook-form";
 import { STAGE_ROLE } from "@/types/stage-role";
+import { isPriceHidden, type HiddenPriceField } from "@/types/workflows";
 import { PR_STATUS, PR_ITEM_STAGE_STATUS } from "@/types/purchase-request";
 import type { PrItemFilter } from "./use-pr-item-filter";
 import { useTranslations } from "use-intl";
@@ -95,6 +96,8 @@ interface UsePrItemTableOptions {
   baseCurrencyCode?: string;
   onDelete: (index: number) => void;
   filter: PrItemFilter;
+  /** `hidden_fields` ของใบ — ราคาที่ stage ปัจจุบันซ่อนจากผู้ใช้ */
+  hiddenFields?: readonly HiddenPriceField[];
 }
 
 export function usePrItemTable({
@@ -108,6 +111,7 @@ export function usePrItemTable({
   dateFormat,
   onDelete,
   filter,
+  hiddenFields,
 }: UsePrItemTableOptions) {
   "use no memo";
   const t = useTranslations("procurement.purchaseRequest");
@@ -129,6 +133,11 @@ export function usePrItemTable({
 
   const isLockedAfterCreate =
     isDisabled || (!!role && role !== STAGE_ROLE.CREATE);
+
+  // boolean ไม่ใช่ตัว array — ใช้เป็น dep ของ useMemo คอลัมน์ได้นิ่ง ๆ
+  const hidePrice = isPriceHidden(hiddenFields, "price_per_unit");
+  const hideTotal = isPriceHidden(hiddenFields, "total_price");
+  const anyPriceHidden = hidePrice || hideTotal;
 
   const allColumns = useMemo<ColumnDef<ItemField>[]>(() => {
     const inputColSize = isDisabled ? INPUT_COL_SIZE_VIEW : INPUT_COL_SIZE;
@@ -205,15 +214,17 @@ export function usePrItemTable({
         // (เว้น select + index) ไม่มีคอลัมน์ expand แยกแล้ว
         expandedColStart: 2,
         // ปุ่ม compare pricelist วางใน gutter ซ้าย ตรงแถว Pricelist (แถวแรก)
-        expandedLeading: (row) => (
-          <PrPricelistCompare
-            control={form.control}
-            form={form}
-            index={row.index}
-            role={role}
-            isDisabled={isDisabled}
-          />
-        ),
+        // stage ซ่อนราคา = ไม่มีปุ่มเทียบราคา (ในกล่องเทียบมีราคาทุกเจ้า)
+        expandedLeading: (row) =>
+          anyPriceHidden ? null : (
+            <PrPricelistCompare
+              control={form.control}
+              form={form}
+              index={row.index}
+              role={role}
+              isDisabled={isDisabled}
+            />
+          ),
         expandedContent: (item: ItemField) => (
           <PrItemExpand
             item={item}
@@ -222,6 +233,8 @@ export function usePrItemTable({
             itemFields={itemFields}
             buCode={buCode}
             baseCurrencyCode={baseCurrencyCode}
+            hidePrice={hidePrice}
+            hideTotal={hideTotal}
           />
         ),
       },
@@ -377,12 +390,14 @@ export function usePrItemTable({
             index={row.index}
             baseCurrencyCode={baseCurrencyCode}
             isDisabled={isDisabled}
+            isHidden={hideTotal}
             currencySlot={
               <CurrencyCell
                 control={form.control}
                 form={form}
                 index={row.index}
-                isDisabled={isDisabled}
+                // currency_id เป็น key แหล่งราคา — stage ซ่อนราคาไม่ส่งกลับ แก้ไปก็ไม่มีผล
+                isDisabled={isDisabled || anyPriceHidden}
               />
             }
           />
@@ -531,6 +546,9 @@ export function usePrItemTable({
     pendingCount,
     today,
     isLockedAfterCreate,
+    hidePrice,
+    hideTotal,
+    anyPriceHidden,
     t,
     tfl,
     tc,
