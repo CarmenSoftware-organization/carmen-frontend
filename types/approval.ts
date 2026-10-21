@@ -1,4 +1,5 @@
 import type { LastAction } from "./last-action";
+import type { HiddenPriceField } from "./workflows";
 
 export type ApprovalDocType = "pr" | "po" | "sr";
 
@@ -20,7 +21,9 @@ export interface ApprovalItem {
   department_name: string;
   // PO (ผู้ขาย) หรือ SR (ต้นทาง -> ปลายทาง)
   vendor_name: string;
-  total_amount: number;
+  // null เมื่อ hidden_fields มี total_price
+  total_amount: number | null;
+  hidden_fields?: HiddenPriceField[];
   delivery_date: string | null;
   // หน่วยธุรกิจที่เอกสารอยู่ — รายการเดียวครอบได้หลายหน่วย
   bu_code: string;
@@ -71,4 +74,5 @@ export interface RawApprovalUnified {
   doc_version: number | null;
   bu_code: string;
   bu_name: string | null;
+  hidden_fields?: HiddenPriceField[];
 }

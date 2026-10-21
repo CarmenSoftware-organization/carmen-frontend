@@ -532,6 +532,8 @@
     "footer": "© {year} CARMEN BLUE · ระบบ ERP สำหรับธุรกิจโรงแรม"
   },
   "common": {
+    "hiddenValue": "ซ่อน",
+    "hiddenValueHint": "ซ่อนตามการตั้งค่า workflow ของขั้นตอนนี้",
     "yes": "ใช่",
     "no": "ไม่",
     "businessUnit": "หน่วยธุรกิจ",

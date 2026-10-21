@@ -532,6 +532,8 @@
     "footer": "© {year} CARMEN BLUE · ERP for Hospitality"
   },
   "common": {
+    "hiddenValue": "Hidden",
+    "hiddenValueHint": "Hidden by the workflow at this stage",
     "yes": "Yes",
     "no": "No",
     "businessUnit": "Business Unit",

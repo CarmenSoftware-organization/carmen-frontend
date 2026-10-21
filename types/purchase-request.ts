@@ -5,6 +5,7 @@ import { lastActionSchema } from "./last-action";
 import type { LastAction } from "./last-action";
 import type { DiscountFields, ItemMoneyFields, TaxFields } from "./shared-item";
 import type { EntityRef } from "./entity-ref";
+import type { HiddenPriceField } from "./workflows";
 import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 
 type PurchaseRequestStatus =
@@ -153,6 +154,8 @@ export interface PurchaseRequest {
   doc_status: PurchaseRequestStatus;
   role: string;
   stage_actions?: StageActionFlags | null;
+  // ฟิลด์ราคาที่ stage ปัจจุบันซ่อนจากผู้ใช้นี้ ([] = ไม่ซ่อน) — ค่าที่ซ่อนมาเป็น null
+  hidden_fields?: HiddenPriceField[];
   // list endpoint (`GET /api/purchase-requests`): แถวจริงอยู่ที่ `data[].data[]`
   // (multi-BU envelope) — `@CollapseRefs({'': PR_HEADER_REFS})` เดินจาก path ''
   // ไปไม่ถึงแถวที่ซ้อนอยู่ **บั๊กเดียวกับที่ CLAUDE.md เอกสารไว้กับ audit
@@ -188,8 +191,8 @@ export interface PurchaseRequest {
 
 // --- Zod runtime validation schema (for list API response) ---
 const purchaseRequestDetailSummarySchema = z.looseObject({
-  price: z.number(),
-  total_price: z.number(),
+  price: z.number().nullable(),
+  total_price: z.number().nullable(),
 });
 
 export const purchaseRequestSchema = z.looseObject({
