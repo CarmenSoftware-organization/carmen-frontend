@@ -1,7 +1,55 @@
 {
-  "current": "2.5.26",
-  "generated_at": "2026-10-21T02:19:08.875Z",
+  "current": "2.5.27",
+  "generated_at": "2026-10-21T06:22:51.049Z",
   "versions": [
+    {
+      "version": "2.5.27",
+      "build": "2.5.27-build.20261021.51f34fb3",
+      "date": "2026-10-21",
+      "commit": "51f34fb3",
+      "changes": {
+        "added": [
+          {
+            "scope": "price-list",
+            "summary": "แยกแท็บ ยังมีผล / หมดช่วงแล้ว / ทั้งหมด",
+            "hash": "96fb726b",
+            "author": "Thammanoon Semapru",
+            "pr": 405
+          },
+          {
+            "scope": "price-list",
+            "summary": "portal vendor สลับภาษาไทย/อังกฤษได้",
+            "hash": "1122742b",
+            "author": "Thammanoon Semapru",
+            "pr": 404
+          },
+          {
+            "scope": "price-list",
+            "summary": "ราคาเป็นก่อนภาษี (add VAT อย่างเดียว) + คอลัมน์ Tax Rate/Total",
+            "hash": "2a3d6ef8",
+            "author": "Thammanoon Semapru",
+            "pr": 402
+          }
+        ],
+        "fixed": [
+          {
+            "scope": "price-list",
+            "summary": "จับคู่ import Excel ด้วย Row ID ที่คงที่ข้าม save",
+            "hash": "d14868ce",
+            "author": "Thammanoon Semapru",
+            "pr": 403
+          },
+          {
+            "scope": "price-list",
+            "summary": "import Excel ทับแถวผิดเมื่อ product code ซ้ำ",
+            "hash": "2f73d335",
+            "author": "Thammanoon Semapru",
+            "pr": 403
+          }
+        ],
+        "changed": []
+      }
+    },
     {
       "version": "2.5.26",
       "build": "2.5.26-build.20261021.249da190",

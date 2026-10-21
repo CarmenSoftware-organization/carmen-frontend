@@ -4,6 +4,17 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.5.27] - 2026-10-21
+
+### Added
+- **price-list:** แยกแท็บ ยังมีผล / หมดช่วงแล้ว / ทั้งหมด (#405) — Thammanoon Semapru `96fb726b`
+- **price-list:** portal vendor สลับภาษาไทย/อังกฤษได้ (#404) — Thammanoon Semapru `1122742b`
+- **price-list:** ราคาเป็นก่อนภาษี (add VAT อย่างเดียว) + คอลัมน์ Tax Rate/Total (#402) — Thammanoon Semapru `2a3d6ef8`
+
+### Fixed
+- **price-list:** จับคู่ import Excel ด้วย Row ID ที่คงที่ข้าม save (#403) — Thammanoon Semapru `d14868ce`
+- **price-list:** import Excel ทับแถวผิดเมื่อ product code ซ้ำ (#403) — Thammanoon Semapru `2f73d335`
+
 ## [2.5.26] - 2026-10-21
 
 ### Fixed
