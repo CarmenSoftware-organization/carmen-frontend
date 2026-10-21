@@ -12,11 +12,12 @@ const UNIT_TO_MINUTES: Record<SlaUnit, number> = {
 };
 
 export type ActionKey = "submit" | "approve" | "reject" | "sendback";
-export type RecipientKey = "requestor" | "current_approve" | "next_step";
+export type RecipientKey =
+  "requestor" | "current_approve" | "next_step" | "previous_step";
 
 export interface StageActionCell {
   readonly active: boolean;
-  /** จำนวนผู้รับแจ้งเตือนที่เปิดอยู่ของปุ่มนี้ (requestor / current approver / next step) */
+  /** จำนวนผู้รับแจ้งเตือนที่เปิดอยู่ของปุ่มนี้ (requestor / current approver / next step / previous step) */
   readonly recipients: number;
 }
 
@@ -57,6 +58,7 @@ const RECIPIENTS: readonly RecipientKey[] = [
   "requestor",
   "current_approve",
   "next_step",
+  "previous_step",
 ];
 
 const stageMinutes = (stage: Stage): number => {
