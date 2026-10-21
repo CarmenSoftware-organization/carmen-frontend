@@ -15,8 +15,8 @@ backend directly. Spec: `docs/superpowers/specs/2026-06-11-carmen-react-ssg-migr
 bun dev              # Dev server = dev:local (VITE_DEV_PROXY_TARGET=<backend> to proxy /api)
 bun run dev:{local,dev,uat,prod}   # Dev server per backend env → public/config.<env>.json (prod = dev backend until real prod exists)
 bun run build        # tsc + bump patch ใน package.json + vite build → dist/ (config.json = config.prod.json) · ข้าม bump เมื่อ CI / ไม่มี .git / SKIP_VERSION_BUMP=1 · What's New เทียบ changelog.json ไม่ใช่เลขนี้
-bun run build:{local,dev,uat,prod}   # เหมือน build แต่เลือก public/config.<env>.json → dist/config.json — มีผลกับ `bun run preview` ในเครื่องเท่านั้น (S3/GCS/Docker ใช้ config.json ของ environment เอง; Vercel รัน `bun run build` เปล่า ๆ ไม่ผ่านสคริปต์นี้ และ clone ไม่มี public/config*.json ติดมา — ต้องตั้ง env var `APP_CONFIG_JSON` เป็น JSON ทั้งก้อน — แต่ `vercel --prod` อัปโหลดไฟล์ในเครื่องขึ้นไปด้วย เส้นทางนี้เลยยังไม่เคยถูกใช้จริง; **deploy = `vercel --prod` จากเครื่องเท่านั้น** git-triggered deploy โดน CANCELED ทุกใบ)
-bun run build:force  # ลบ dist/ · node_modules/.vite · tsconfig.tsbuildinfo แล้ว build ใหม่ (ที่มีผลจริงคือบังคับ tsc ตรวจใหม่ทั้งหมด — vite build ไม่ใช้ .vite/deps และล้าง dist เองอยู่แล้ว; dev เสิร์ฟของค้างใช้ `bun dev --force`) · ใช้คู่ BUILD_CONFIG_FILE=… ได้
+bun run build:{local,dev,uat,prod}   # เหมือน build แต่เลือก public/config.<env>.json → dist/config.json — มีผลกับ `bun run preview` ในเครื่องเท่านั้น · **deploy Vercel = `vercel --prod` จากเครื่องเท่านั้น** (รายละเอียด → skill `release-and-deploy`)
+bun run build:force  # บังคับ tsc ตรวจใหม่ทั้งหมด · dev เสิร์ฟของค้างใช้ `bun dev --force`
 bun run typecheck    # tsc --noEmit เดี่ยว ๆ (gate ของ build:bump)
 bun run lint         # ESLint        bun test          # Vitest watch
 bun test:run         # Single run    bun test:run path # Single file
@@ -69,10 +69,6 @@ bun test:run         # Single run    bun test:run path # Single file
   shell routes carry `RouteErrorBoundaryAdapter` (in-layout error UI); the root route
   has `RootErrorBoundary` (`routes/root-error-boundary.tsx`) as a full-page catch-all so
   React Router's default error screen never shows. Both render `ModuleError` → `ErrorState`.
-- **Imports (no compat layer):** the `lib/compat/*` shims are **removed** — import
-  `react-router` / `use-intl` directly (ESLint blocks direct `next*` imports).
-- **i18n:** `use-intl` + `components/i18n-provider.tsx`; locale persisted in
-  localStorage (`carmen.locale`); messages in `messages/{en,th}.json`.
 - **Runtime config:** `public/config.json` (`BACKEND_URL`, `X_APP_ID`) fetched at boot —
   never hardcode backend URLs in the bundle.
 
