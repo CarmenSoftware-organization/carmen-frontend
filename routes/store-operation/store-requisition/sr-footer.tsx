@@ -69,8 +69,14 @@ export function SrFooter({
   const showReject = stageActions.reject && action === "rejected";
   const showApprove = stageActions.approve && action === "approved";
   const showRejectAllBlocked = !stageActions.reject && action === "rejected";
+  // เรื่องเดียวกัน: ปิด approve แต่ทุกแถวอนุมัติอยู่ = ไม่มีปุ่ม ต้องบอกให้ปัดตก/ส่งกลับแทน
+  const showApproveBlocked = !stageActions.approve && action === "approved";
   const hasAction =
-    showSendBack || showReject || showApprove || showRejectAllBlocked;
+    showSendBack ||
+    showReject ||
+    showApprove ||
+    showRejectAllBlocked ||
+    showApproveBlocked;
   const showActions = canSubmit || (isWorkflowReviewer && hasAction);
   // มีรายการแล้วต้องเห็นยอดรวม แม้จะไม่มีปุ่มให้กด (view ใบที่ปิดแล้ว)
   const showBar = showActions || hasItems;
@@ -134,6 +140,11 @@ export function SrFooter({
           {isWorkflowReviewer && showRejectAllBlocked && (
             <span className="text-warning-ink text-xs">
               {tc("rejectAllNotAllowed")}
+            </span>
+          )}
+          {isWorkflowReviewer && showApproveBlocked && (
+            <span className="text-warning-ink text-xs">
+              {tc("approveNotAllowed")}
             </span>
           )}
           {isWorkflowReviewer && showReject && (

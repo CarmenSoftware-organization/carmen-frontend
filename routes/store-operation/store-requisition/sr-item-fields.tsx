@@ -173,13 +173,15 @@ export function SrItemFields({
 
   // stage ที่ปิด reject แต่เปิด approve ยังปัดตกบางแถวได้ (partial reject) — ห้ามแค่ให้
   // ทุกแถวกลายเป็น reject เพราะนั่นคือการปัดตกทั้งใบ · นิยาม reject และฟิลด์ที่อ่านเดียวกับ
-  // computeSrAction ที่คุมปุ่มใน footer (stage_status ค่าสดในฟอร์ม)
+  // computeSrAction ที่คุมปุ่มใน footer (stage_status ค่าสดในฟอร์ม) · แถวที่ยังไม่ตัดสิน
+  // (สถานะว่าง) computeSrAction ทิ้งด้วย filter(Boolean) จึงนับเป็น "ไม่ขวาง" ที่นี่เช่นกัน —
+  // ไม่ filter ทิ้งจริงเพราะ index ต้องตรงกับแถวที่ติ๊ก
   const rejectWouldRejectAll =
     !stageActions.reject &&
     wouldRejectAll(
       (watchedItems ?? []).map((item) => item?.stage_status ?? ""),
       selectedRows.map((row) => row.index),
-      (s) => s === SR_ITEM_STAGE.REJECT,
+      (s) => s === "" || s === SR_ITEM_STAGE.REJECT,
     );
 
   const getSelectedIndices = () =>

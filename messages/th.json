@@ -661,7 +661,8 @@
     "workflowHistoryHint": "ดูว่าใบนี้ผ่านมือใครมาบ้าง",
     "sentBackBy": "ส่งกลับโดย {name}",
     "sentBackNoReason": "ไม่ได้ระบุเหตุผล",
-    "rejectAllNotAllowed": "stage นี้ปัดตกทั้งใบไม่ได้ ต้องอนุมัติไว้อย่างน้อย 1 รายการ"
+    "rejectAllNotAllowed": "stage นี้ปัดตกทั้งใบไม่ได้ ต้องอนุมัติไว้อย่างน้อย 1 รายการ",
+    "approveNotAllowed": "stage นี้อนุมัติไม่ได้ ให้ปัดตกหรือส่งกลับแทน"
   },
   "pagination": {
     "label": "การแบ่งหน้า",
@@ -4486,6 +4487,8 @@
       "batchApproveConfirm": "คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบขอซื้อ {count} รายการ?",
       "batchRejectTitle": "ไม่อนุมัติใบขอซื้อหลายใบ",
       "batchRejectConfirm": "กรุณาระบุเหตุผลที่ไม่อนุมัติใบขอซื้อ {count} ใบ",
+      "swipePartialFailed": "เอกสารบางใบดำเนินการไม่สำเร็จ",
+      "swipeFailedDocs": "ที่ไม่สำเร็จ: {prNos}",
       "notFound": "ไม่พบใบขอซื้อ",
       "noDepartment": "โปรไฟล์ของคุณไม่มีแผนกที่กำหนด กรุณาติดต่อผู้ดูแลระบบ",
       "addItem": "เพิ่มรายการ",

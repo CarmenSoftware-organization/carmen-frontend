@@ -111,11 +111,18 @@ export function PrFooterAction({
   const showSendBack = stageActions.sendback && purchaseAction === "review";
   const showRejectAllBlocked =
     !stageActions.reject && purchaseAction === "rejected";
+  // เรื่องเดียวกัน: ปิด approve แต่ทุกแถวอนุมัติอยู่ = ไม่มีปุ่ม ต้องบอกให้ปัดตก/ส่งกลับแทน
+  const showApproveBlocked =
+    !stageActions.approve && purchaseAction === "approved";
   const hasVisibleButton =
     showSubmit ||
     (showWorkflowActions &&
       canDecide &&
-      (showApprove || showReject || showSendBack || showRejectAllBlocked));
+      (showApprove ||
+        showReject ||
+        showSendBack ||
+        showRejectAllBlocked ||
+        showApproveBlocked));
 
   const reviewItems: ActionDialogItem[] = items
     .map((item, index) => ({ index, item }))
@@ -194,6 +201,12 @@ export function PrFooterAction({
             {canDecide && showRejectAllBlocked && (
               <span className="text-warning-ink text-xs">
                 {tc("rejectAllNotAllowed")}
+              </span>
+            )}
+
+            {canDecide && showApproveBlocked && (
+              <span className="text-warning-ink text-xs">
+                {tc("approveNotAllowed")}
               </span>
             )}
 

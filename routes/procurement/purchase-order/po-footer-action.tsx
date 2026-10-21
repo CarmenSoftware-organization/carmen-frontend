@@ -144,8 +144,20 @@ export function PoFooterAction({
   const showRejectAllBlocked =
     !!onReject && isApprover && !stageActions.reject && poAction === "rejected";
 
+  // เรื่องเดียวกัน: ปิด approve แต่ทุกแถวอนุมัติอยู่ = ไม่มีปุ่ม ต้องบอกให้ปัดตก/ส่งกลับแทน
+  const showApproveBlocked =
+    !!onApprove &&
+    isApprover &&
+    !stageActions.approve &&
+    poAction === "approved";
+
   const showActions =
-    showSubmit || canApprove || canReject || canReview || showRejectAllBlocked;
+    showSubmit ||
+    canApprove ||
+    canReject ||
+    canReview ||
+    showRejectAllBlocked ||
+    showApproveBlocked;
   const hasItems = (items?.length ?? 0) > 0;
   const showBar = isEditMode || showActions || hasItems;
 
@@ -216,6 +228,11 @@ export function PoFooterAction({
             {showRejectAllBlocked && (
               <span className="text-warning-ink text-xs">
                 {tc("rejectAllNotAllowed")}
+              </span>
+            )}
+            {showApproveBlocked && (
+              <span className="text-warning-ink text-xs">
+                {tc("approveNotAllowed")}
               </span>
             )}
             {canApprove && (

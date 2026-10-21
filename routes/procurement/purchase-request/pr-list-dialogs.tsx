@@ -10,6 +10,7 @@ import {
   useBatchDeletePurchaseRequest,
 } from "./use-purchase-request";
 import type { usePrTable } from "./use-pr-table";
+import { getSwipeFailures, STAGE_ACTION_DISABLED_CODE } from "./swipe-results";
 
 interface PrListDialogsProps {
   deleteTarget: PurchaseRequest | null;
@@ -55,10 +56,41 @@ export function PrListDialogs({
   const t = useTranslations("procurement.purchaseRequest");
   const tc = useTranslations("common");
   const tt = useTranslations("toast");
+  const te = useTranslations("errors");
   const deletePurchaseRequest = useDeletePurchaseRequest();
   const batchApprovePurchaseRequest = useBatchApprovePurchaseRequest();
   const batchRejectPurchaseRequest = useBatchRejectPurchaseRequest();
   const batchDeletePurchaseRequest = useBatchDeletePurchaseRequest();
+
+  /**
+   * อ่านผลรายใบของ swipe แล้วขึ้น toast — success เฉพาะเมื่อทุกใบผ่าน
+   * ใบที่ backend บล็อกมาใน 200 (เช่น stage ปิด action) ไม่ใช่ HTTP error จึงต้องเช็คเอง
+   * @returns true เมื่อทุกใบสำเร็จ
+   */
+  const reportSwipeResult = (
+    response: unknown,
+    items: PurchaseRequest[],
+    successKey: "approveSuccess" | "rejectSuccess",
+  ) => {
+    const failures = getSwipeFailures(response);
+    if (failures.length === 0) {
+      toast.success(tt(successKey, { entity: t("entity") }));
+      return true;
+    }
+    const prNos = failures
+      .map((f) => items.find((item) => item.id === f.id)?.pr_no ?? f.id)
+      .join(", ");
+    const allStageDisabled = failures.every(
+      (f) => f.app_code === STAGE_ACTION_DISABLED_CODE,
+    );
+    toast.error(
+      allStageDisabled
+        ? te(`byCode.${STAGE_ACTION_DISABLED_CODE}`)
+        : t("swipePartialFailed"),
+      { description: t("swipeFailedDocs", { prNos }) },
+    );
+    return false;
+  };
 
   return (
     <>
@@ -80,8 +112,8 @@ export function PrListDialogs({
           batchApprovePurchaseRequest.mutate(
             { pr_ids: [approveTarget.id] },
             {
-              onSuccess: () => {
-                toast.success(tt("approveSuccess", { entity: t("entity") }));
+              onSuccess: (res) => {
+                reportSwipeResult(res, [approveTarget], "approveSuccess");
                 setApproveTarget(null);
               },
             },
@@ -105,8 +137,8 @@ export function PrListDialogs({
           batchRejectPurchaseRequest.mutate(
             { pr_ids: [rejectTarget.id], reject_message: messages[0] ?? "" },
             {
-              onSuccess: () => {
-                toast.success(tt("rejectSuccess", { entity: t("entity") }));
+              onSuccess: (res) => {
+                reportSwipeResult(res, [rejectTarget], "rejectSuccess");
                 setRejectTarget(null);
               },
             },
@@ -159,8 +191,8 @@ export function PrListDialogs({
           batchApprovePurchaseRequest.mutate(
             { pr_ids: selectedIds },
             {
-              onSuccess: () => {
-                toast.success(tt("approveSuccess", { entity: t("entity") }));
+              onSuccess: (res) => {
+                reportSwipeResult(res, selectedItems, "approveSuccess");
                 setBatchApproveOpen(false);
                 clearSelection();
               },
@@ -195,8 +227,8 @@ export function PrListDialogs({
           batchRejectPurchaseRequest.mutate(
             { pr_ids: selectedIds, reject_message: messages[0] ?? "" },
             {
-              onSuccess: () => {
-                toast.success(tt("rejectSuccess", { entity: t("entity") }));
+              onSuccess: (res) => {
+                reportSwipeResult(res, selectedItems, "rejectSuccess");
                 setBatchRejectOpen(false);
                 clearSelection();
               },
