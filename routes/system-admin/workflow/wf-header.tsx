@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useListReturn } from "@/hooks/use-list-return";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
+import { Lock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Separator } from "@/components/ui/separator";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
@@ -41,30 +43,42 @@ export function WfHeader({
   const typeLabels = getWorkflowTypeLabels(t);
   const { data: availability } = useWorkflowEditAvailability(workflow.id);
 
-  // จำนวนเอกสารแยกตามสถานะ — in_progress คือตัวที่ทำให้แก้ workflow ไม่ได้ จึงเน้นให้เห็นต่างจาก
-  // อีกสองถัง ผู้ใช้จะได้รู้ตั้งแต่ก่อนกด Edit ว่าติดอะไรและติดอยู่เท่าไร
+  // จำนวนเอกสารแยกตามสถานะ — in_progress คือตัวที่ทำให้แก้โครงสร้าง workflow ไม่ได้ จึงเป็นชิปเตือน
+  // พร้อมกุญแจ ผู้ใช้จะได้รู้ตั้งแต่ก่อนกด Edit ว่าติดอะไรและติดอยู่เท่าไร ส่วนถังที่เป็น 0 ไม่ต้องโชว์
+  // (workflow ใหม่ที่ยังไม่มีเอกสารเลย บรรทัดนี้หายไปทั้งบรรทัด)
   const docCounts = availability?.documents;
-  const docBadges = docCounts ? (
-    <>
-      <Separator orientation="vertical" className="mx-0.5 h-3.5" />
-      <span className="text-muted-foreground flex items-center gap-1.5 text-sm">
-        <span>
-          {tw("draft")}: {docCounts.draft}
-        </span>
-        <span
-          className={docCounts.in_progress > 0 ? "text-warning-ink" : ""}
-          title={
-            docCounts.in_progress > 0 ? tw("inProgressBlocksEdit") : undefined
-          }
-        >
-          {tw("inProgress")}: {docCounts.in_progress}
-        </span>
-        <span>
-          {tw("done")}: {docCounts.done}
-        </span>
-      </span>
-    </>
-  ) : null;
+  const quietCounts = docCounts
+    ? [
+        { key: "draft", label: tw("draft"), count: docCounts.draft },
+        { key: "done", label: tw("done"), count: docCounts.done },
+      ].filter((c) => c.count > 0)
+    : [];
+  const hasInProgress = (docCounts?.in_progress ?? 0) > 0;
+  const docBadges =
+    docCounts && (hasInProgress || quietCounts.length > 0) ? (
+      <>
+        <Separator orientation="vertical" className="mx-0.5 h-3.5" />
+        {hasInProgress && (
+          <Badge
+            variant="warning-light"
+            size="sm"
+            className="gap-1 tabular-nums"
+            title={tw("inProgressBlocksEdit")}
+          >
+            <Lock className="size-3" aria-hidden="true" />
+            {tw("inProgress")}: {docCounts.in_progress}
+          </Badge>
+        )}
+        {quietCounts.map((c) => (
+          <span
+            key={c.key}
+            className="text-muted-foreground text-sm tabular-nums"
+          >
+            {c.label}: {c.count}
+          </span>
+        ))}
+      </>
+    ) : null;
 
   // status + type-label (คั่นด้วย separator) แสดงข้าง title
   const badges = !isEditing ? (

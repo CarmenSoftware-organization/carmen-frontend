@@ -1,6 +1,12 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { AlertCircle, GitBranch, GripVertical, Trash2 } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  GitBranch,
+  GripVertical,
+  Trash2,
+} from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -10,11 +16,18 @@ import { useTranslations } from "use-intl";
 import type { Role } from "@/types/workflows";
 import { cn } from "@/lib/utils";
 import { StageRailMarker, StageRailSummary } from "./wf-stage-rail-node";
+import type { IssueSeverity } from "./wf-validate";
 
 /** กฎ routing ที่เริ่มจากขั้นนี้ — แสดงเป็นชิปเดียวพร้อม tooltip รายชื่อปลายทาง */
 export interface StageRouteHint {
   readonly name: string;
   readonly target: string;
+}
+
+/** ปัญหาของขั้นนี้จาก validateWorkflow — ข้อความสั้นที่แปลแล้ว เขียนใต้ชื่อขั้นตรง ๆ */
+export interface StageIssueHint {
+  readonly severity: IssueSeverity;
+  readonly label: string;
 }
 
 interface SortableStageItemProps {
@@ -30,7 +43,7 @@ interface SortableStageItemProps {
   readonly onClick: () => void;
   readonly userCount?: number;
   readonly isHod?: boolean;
-  readonly hasWarning?: boolean;
+  readonly issues?: StageIssueHint[];
   readonly dragDisabled?: boolean;
   readonly onDelete?: () => void;
 }
@@ -49,7 +62,7 @@ export default function SortableStageItem({
   onClick,
   userCount = 0,
   isHod = false,
-  hasWarning = false,
+  issues = [],
   dragDisabled = false,
   onDelete,
 }: SortableStageItemProps) {
@@ -108,25 +121,31 @@ export default function SortableStageItem({
             isHod={isHod}
             isLast={isLast}
           />
+          {issues.length > 0 && (
+            <span className="mt-1 flex flex-col gap-0.5">
+              {issues.map((issue, i) => {
+                const Icon =
+                  issue.severity === "error" ? AlertCircle : AlertTriangle;
+                return (
+                  <span
+                    key={`${issue.label}-${i}`}
+                    className={cn(
+                      "flex items-center gap-1 text-xs font-medium",
+                      issue.severity === "error"
+                        ? "text-destructive"
+                        : "text-warning-ink",
+                    )}
+                  >
+                    <Icon className="size-3 shrink-0" aria-hidden="true" />
+                    {issue.label}
+                  </span>
+                );
+              })}
+            </span>
+          )}
         </button>
 
         <span className="flex shrink-0 items-center gap-0.5">
-          {hasWarning && (
-            <Tooltip delayDuration={150}>
-              <TooltipTrigger asChild>
-                <span
-                  className="inline-flex p-1"
-                  role="img"
-                  aria-label={t("warningNoUsers")}
-                >
-                  <AlertCircle className="text-destructive size-4" />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="text-sm">
-                {t("warningNoUsers")}
-              </TooltipContent>
-            </Tooltip>
-          )}
           {routes.length > 0 && (
             <Tooltip delayDuration={150}>
               <TooltipTrigger asChild>

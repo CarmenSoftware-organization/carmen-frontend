@@ -1,6 +1,6 @@
 import { PencilLine, ShoppingCart, Stamp, PackageCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { Role } from "@/types/workflows";
+import { WORKFLOW_TYPE, type Role } from "@/types/workflows";
 
 /**
  * ไอคอนประจำ role — ตัวแยกหมวดตัวเดียวที่เหลือ
@@ -18,6 +18,21 @@ export const ROLE_ICON: Record<Role, LucideIcon> = {
   purchase: ShoppingCart,
   issue: PackageCheck,
 };
+
+/**
+ * role ที่ stage ของ workflow แต่ละชนิดเลือกได้ — PR ไปจบที่จัดซื้อ (purchase) PO ไม่มีขั้นต่อจาก
+ * อนุมัติ ส่วน SR ไปจบที่ตัดจ่าย (issue) ชนิดที่ไม่รู้จักได้ครบทุก role (ไม่ล็อกของเก่าที่อ่านไม่ออก)
+ */
+export const ROLES_BY_WORKFLOW_TYPE: Record<WORKFLOW_TYPE, readonly Role[]> = {
+  [WORKFLOW_TYPE.PR]: ["create", "approve", "purchase"],
+  [WORKFLOW_TYPE.PO]: ["create", "approve"],
+  [WORKFLOW_TYPE.SR]: ["create", "approve", "issue"],
+};
+
+const ALL_ROLES: readonly Role[] = ["create", "approve", "purchase", "issue"];
+
+export const getAllowedRoles = (workflowType?: string): readonly Role[] =>
+  ROLES_BY_WORKFLOW_TYPE[workflowType as WORKFLOW_TYPE] ?? ALL_ROLES;
 
 /** คีย์ i18n (namespace `systemAdmin.workflow`) ของชื่อ role */
 export const ROLE_LABEL: Record<Role, string> = {

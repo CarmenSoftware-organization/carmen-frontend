@@ -2423,7 +2423,23 @@
         "blockedTitle": "Can’t delete this workflow yet",
         "blockedDescription": "{count} document(s) are still in progress on this workflow. Deleting it would take away the stages they are moving through, so finish or void them first.",
         "structureLocked": "{count} document(s) are moving through these stages right now, so stages can't be added, renamed or reordered and routing can't change. Everything else on this form still saves."
-      }
+      },
+      "issueShort": {
+        "no_users_assigned": "No users assigned",
+        "no_actions_enabled": "No actions enabled",
+        "duplicate_name": "Duplicate stage name",
+        "missing_create_role": "First stage must be Create",
+        "missing_completed_stage": "Last stage should be Completed",
+        "no_sla": "No SLA set",
+        "empty_name": "Stage has no name",
+        "submit_only_on_first": "Submit only belongs on the first stage",
+        "role_not_allowed": "Role not allowed for this workflow type"
+      },
+      "issueCountError": "{count, plural, one {# error} other {# errors}}",
+      "issueCountWarning": "{count, plural, one {# warning} other {# warnings}}",
+      "routingEmptyTitle": "No routing rules",
+      "routingEmptyDesc": "Documents move through the stages in order. Add a rule to skip or jump to a stage when a condition matches.",
+      "issueRoleNotAllowed": "Stage \"{stage}\" uses a role this workflow type doesn't allow"
     },
     "runningCode": {
       "entity": "Running Code",
