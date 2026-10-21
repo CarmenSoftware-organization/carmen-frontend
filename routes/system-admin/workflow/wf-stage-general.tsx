@@ -41,7 +41,7 @@ interface WfStageGeneralProps {
   readonly isFirst: boolean;
   readonly isDisabled: boolean;
   readonly isNameDisabled: boolean;
-  /** โหมดดู — ค่าเป็นข้อความแทนช่องที่ถูกปิด (แบบเดียวกับ `WfGeneral`) */
+  /** โหมดดู — ค่าเป็นข้อความแทนช่องที่ถูกปิด */
   readonly readOnly?: boolean;
 }
 
@@ -124,31 +124,25 @@ export function WfStageGeneral({
       stage?.hide_fields?.price_per_unit && t("pricePerUnit"),
       stage?.hide_fields?.total_price && t("totalPrice"),
     ].filter(Boolean);
-    const role = stage?.role as keyof typeof roleLabelKeys | undefined;
-    const slaUnit = stage?.sla_unit as
-      keyof typeof slaUnitLabelKeys | undefined;
+    const description = stage?.description?.trim();
 
+    // ชื่อ role และ SLA อยู่บนหัวของขั้นแล้ว (มาร์กเกอร์ + บรรทัดรอง) — ที่นี่เหลือแค่ค่าที่หัวไม่ได้บอก
+    // วางใน grid สองคอลัมน์ชุดเดียว ช่องที่ไม่เกี่ยวกับขั้นนี้หายไปโดยแถวไม่เหลื่อมกัน
     return (
-      <FieldGroup className="gap-4 pt-4">
-        <div className="grid grid-cols-1 gap-4 @md:grid-cols-2">
+      <div className="@container pt-4">
+        <FieldGroup className="grid grid-cols-1 gap-x-6 gap-y-5 @md:grid-cols-2">
           <Field>
-            <FieldLabel>{t("stageName")}</FieldLabel>
-            <FieldPlainText>{stage?.name}</FieldPlainText>
-          </Field>
-          <Field>
-            <FieldLabel>{t("stageRole")}</FieldLabel>
-            <FieldPlainText>
-              {role && roleLabelKeys[role] ? t(roleLabelKeys[role]) : role}
+            <FieldLabel>{t("availableActions")}</FieldLabel>
+            <FieldPlainText className="flex-wrap gap-1">
+              {enabledActions.length > 0 ? enabledActions : null}
             </FieldPlainText>
           </Field>
-        </div>
-        <Field>
-          <FieldLabel>{tfl("description")}</FieldLabel>
-          <FieldPlainText className="whitespace-pre-line">
-            {stage?.description}
-          </FieldPlainText>
-        </Field>
-        <div className="grid grid-cols-1 gap-4 @md:grid-cols-2">
+          <Field>
+            <FieldLabel>{t("showSignatureInReport")}</FieldLabel>
+            <FieldPlainText>
+              {stage?.is_show_signature ? tc("yes") : tc("no")}
+            </FieldPlainText>
+          </Field>
           {isFirst && (
             <Field>
               <FieldLabel>{t("creatorAccess")}</FieldLabel>
@@ -159,36 +153,28 @@ export function WfStageGeneral({
               </FieldPlainText>
             </Field>
           )}
-          <Field>
-            <FieldLabel>{t("sla")}</FieldLabel>
-            <FieldPlainText className="tabular-nums">
-              {stage?.sla
-                ? `${stage.sla} ${slaUnit && slaUnitLabelKeys[slaUnit] ? t(slaUnitLabelKeys[slaUnit]) : (slaUnit ?? "")}`
-                : null}
-            </FieldPlainText>
-          </Field>
-        </div>
-        <div className="grid grid-cols-1 gap-4 @lg:grid-cols-[2fr_1fr_1fr]">
-          <Field>
-            <FieldLabel>{t("availableActions")}</FieldLabel>
-            <FieldPlainText className="flex-wrap gap-1">
-              {enabledActions.length > 0 ? enabledActions : null}
-            </FieldPlainText>
-          </Field>
           {hideFieldsApplicable && (
             <Field>
               <FieldLabel>{t("hideFields")}</FieldLabel>
               <FieldPlainText>{hiddenFields.join(", ")}</FieldPlainText>
             </Field>
           )}
-          <Field>
-            <FieldLabel>{t("showSignatureInReport")}</FieldLabel>
-            <FieldPlainText>
-              {stage?.is_show_signature ? tc("yes") : tc("no")}
-            </FieldPlainText>
-          </Field>
-        </div>
-      </FieldGroup>
+          {stage?.is_hod && (
+            <Field>
+              <FieldLabel>{t("isHod")}</FieldLabel>
+              <FieldPlainText>{tc("yes")}</FieldPlainText>
+            </Field>
+          )}
+          {description && (
+            <Field className="@md:col-span-2">
+              <FieldLabel>{tfl("description")}</FieldLabel>
+              <FieldPlainText className="whitespace-pre-line">
+                {description}
+              </FieldPlainText>
+            </Field>
+          )}
+        </FieldGroup>
+      </div>
     );
   }
 

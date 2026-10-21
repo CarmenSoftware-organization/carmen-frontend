@@ -4,10 +4,13 @@ import {
   Bell,
   CircleAlert,
   CircleCheck,
+  Crown,
   TriangleAlert,
 } from "lucide-react";
 import { useTranslations } from "use-intl";
 import type { Stage } from "@/types/workflows";
+import { getWorkflowTypeLabels } from "@/constant/workflow";
+import { WORKFLOW_TYPE } from "@/types/workflows";
 import { cn } from "@/lib/utils";
 import type { WorkflowCreateModel } from "./wf-form-schema";
 import { ROLE_ICON, ROLE_LABEL } from "./wf-role-colors";
@@ -33,6 +36,13 @@ interface WfInsightsProps {
   readonly routingRules?: RoutingRule[];
   readonly productCount?: number;
   readonly workflowType?: string;
+  /** ค่าของ PO เท่านั้น — ชนิดอื่นไม่มีเอกสารต้นทางให้รับลายเซ็น */
+  readonly inheritSignatureFromPr?: boolean;
+  /**
+   * โหมดดู — รางด้านซ้ายขึ้น "พร้อมใช้งาน" ให้อยู่แล้ว ส่วนตรวจความพร้อมจึงโผล่เฉพาะตอนมีปัญหา
+   * (ข้อความ "พร้อมบันทึก" มีความหมายแค่ตอนแก้)
+   */
+  readonly readOnly?: boolean;
   readonly onNavigate?: (target: InsightsTarget) => void;
 }
 
@@ -61,9 +71,12 @@ export default function WfInsights({
   routingRules = [],
   productCount = 0,
   workflowType,
+  inheritSignatureFromPr,
+  readOnly = false,
   onNavigate,
 }: WfInsightsProps) {
   const t = useTranslations("systemAdmin.workflow");
+  const tc = useTranslations("common");
 
   if (!stages || stages.length === 0) {
     return (
@@ -117,70 +130,94 @@ export default function WfInsights({
     a.severity === b.severity ? 0 : a.severity === "error" ? -1 : 1,
   );
 
-  const lastStageName = stages[stages.length - 1]?.name ?? "";
   const noUsersStages = new Set(
     validation.issues
       .filter((i) => i.code === "no_users_assigned")
       .map((i) => i.stageIndex),
   );
 
-  return (
-    <div className="space-y-8 pt-4">
-      <Section
-        title={t("insightsChecks")}
-        aside={
-          checks.length > 0 && (
-            <span className="text-muted-foreground text-xs">
-              {[
-                validation.errorCount > 0 &&
-                  t("issueCountError", { count: validation.errorCount }),
-                checks.length - validation.errorCount > 0 &&
-                  t("issueCountWarning", {
-                    count: checks.length - validation.errorCount,
-                  }),
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </span>
-          )
-        }
-      >
-        {checks.length === 0 ? (
-          <p className="text-success-ink flex items-center gap-2 text-sm">
-            <CircleCheck className="size-4 shrink-0" />
-            {t("insightsNoProblems")}
-          </p>
-        ) : (
-          <ul className="divide-y rounded-lg border">
-            {checks.map((check) => (
-              <CheckRow
-                key={check.key}
-                check={check}
-                targetLabel={t(TARGET_LABEL[check.target.tab])}
-                onNavigate={onNavigate}
-              />
-            ))}
-          </ul>
-        )}
-      </Section>
+  const typeLabels = getWorkflowTypeLabels(t);
+  // แถว fact ชุดเดียวของทั้ง workflow — ชื่อกับคำอธิบายอยู่บนหัวหน้าแล้ว ส่วนเส้นทางทีละขั้นอยู่ที่ราง
+  // ชนิดล็อกหลังสร้างเสมอ (role ของทุก stage ผูกกับชนิด) จึงเป็นแค่ข้อความ ไม่มีช่องให้แก้ — ตอนดูเฉย ๆ
+  // หัวหน้าแสดงชนิดไว้แล้ว โผล่ที่นี่เฉพาะตอนแก้ (หัวหน้าซ่อน badge ทั้งแถว)
+  const facts: [string, string][] = [
+    ...(readOnly
+      ? []
+      : ([
+          [
+            t("workflowType"),
+            workflowType ? (typeLabels[workflowType] ?? workflowType) : "—",
+          ],
+        ] as [string, string][])),
+    [t("statCycleTime"), formatCycleTime(insights.totalCycleMinutes) || "—"],
+    [t("statApprovers"), insights.stats.approverStages.toLocaleString()],
+    [t("statHod"), insights.stats.hodStages.toLocaleString()],
+    [t("statTotalUsers"), insights.stats.totalUsers.toLocaleString()],
+    [t("statRoutingRules"), routingRules.length.toLocaleString()],
+    [t("statProducts"), productCount.toLocaleString()],
+    ...(workflowType === WORKFLOW_TYPE.PO
+      ? ([
+          [
+            t("inheritSignatureFromPr"),
+            inheritSignatureFromPr ? tc("yes") : tc("no"),
+          ],
+        ] as [string, string][])
+      : []),
+  ];
+  const showChecks = checks.length > 0 || !readOnly;
 
-      <Section
-        title={t("insightsJourney")}
-        aside={
-          <span className="text-muted-foreground text-xs">
-            {t("statCycleTime")}{" "}
-            <span className="text-foreground font-semibold tabular-nums">
-              {formatCycleTime(insights.totalCycleMinutes) || "—"}
-            </span>
-          </span>
-        }
-      >
-        <Journey
-          rows={insights.stageRows}
-          totalMinutes={insights.totalCycleMinutes}
-          endLabel={lastStageName}
-        />
-      </Section>
+  return (
+    <div className="@container space-y-8 pt-4">
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-4 @md:grid-cols-4">
+        {facts.map(([label, value]) => (
+          <div key={label} className="min-w-0 space-y-1">
+            <dt className="text-muted-foreground truncate text-xs">{label}</dt>
+            <dd className="text-foreground text-sm font-medium tabular-nums">
+              {value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      {showChecks && (
+        <Section
+          title={t("insightsChecks")}
+          aside={
+            checks.length > 0 && (
+              <span className="text-muted-foreground text-xs">
+                {[
+                  validation.errorCount > 0 &&
+                    t("issueCountError", { count: validation.errorCount }),
+                  checks.length - validation.errorCount > 0 &&
+                    t("issueCountWarning", {
+                      count: checks.length - validation.errorCount,
+                    }),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            )
+          }
+        >
+          {checks.length === 0 ? (
+            <p className="text-success-ink flex items-center gap-2 text-sm">
+              <CircleCheck className="size-4 shrink-0" />
+              {t("insightsNoProblems")}
+            </p>
+          ) : (
+            <ul className="divide-y rounded-lg border">
+              {checks.map((check) => (
+                <CheckRow
+                  key={check.key}
+                  check={check}
+                  targetLabel={t(TARGET_LABEL[check.target.tab])}
+                  onNavigate={onNavigate}
+                />
+              ))}
+            </ul>
+          )}
+        </Section>
+      )}
 
       <Section title={t("insightsMatrix")}>
         <StageMatrix
@@ -193,23 +230,6 @@ export default function WfInsights({
           }
         />
       </Section>
-
-      <p className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 border-t pt-4 text-xs">
-        {[
-          [t("statApprovers"), insights.stats.approverStages],
-          [t("statHod"), insights.stats.hodStages],
-          [t("statTotalUsers"), insights.stats.totalUsers],
-          [t("statRoutingRules"), routingRules.length],
-          [t("statProducts"), productCount],
-        ].map(([label, value]) => (
-          <span key={label}>
-            {label}{" "}
-            <span className="text-foreground font-medium tabular-nums">
-              {value.toLocaleString()}
-            </span>
-          </span>
-        ))}
-      </p>
     </div>
   );
 }
@@ -282,56 +302,6 @@ function CheckRow({
   );
 }
 
-/**
- * แถบเดียวแบ่งช่วงตามสัดส่วน SLA ของแต่ละขั้น — ใช้สีหลักสีเดียว (DESIGN.md ไม่ให้แยก role ด้วยสี)
- * ขั้นที่ไม่ได้ตั้ง SLA ได้ช่องเล็กแบบเส้นประ จะได้ยังเห็นว่ามีขั้นนี้อยู่
- */
-function Journey({
-  rows,
-  totalMinutes,
-  endLabel,
-}: {
-  readonly rows: StageRow[];
-  readonly totalMinutes: number;
-  readonly endLabel: string;
-}) {
-  const t = useTranslations("systemAdmin.workflow");
-  const floor = totalMinutes > 0 ? totalMinutes * 0.06 : 1;
-
-  return (
-    <div className="flex items-start gap-1">
-      {rows.map((row) => (
-        <div
-          key={`${row.index}-${row.name}`}
-          className="min-w-0 basis-0 space-y-1.5"
-          style={{ flexGrow: Math.max(row.minutes, floor) }}
-        >
-          <div
-            className={cn(
-              "h-2.5 rounded-sm",
-              row.minutes > 0
-                ? "bg-primary/80"
-                : "border-muted-foreground/40 border border-dashed",
-            )}
-          />
-          <p className="truncate text-xs" title={row.name}>
-            {row.name}
-          </p>
-          <p className="text-muted-foreground truncate text-xs tabular-nums">
-            {row.minutes > 0
-              ? formatCycleTime(row.minutes)
-              : t("insightsNoSla")}
-          </p>
-        </div>
-      ))}
-      <div className="text-muted-foreground flex shrink-0 items-center gap-1 pl-1 text-xs leading-none">
-        <ArrowRight className="size-3" />
-        <span className="max-w-24 truncate">{endLabel}</span>
-      </div>
-    </div>
-  );
-}
-
 function StageMatrix({
   rows,
   noUsersStages,
@@ -343,115 +313,143 @@ function StageMatrix({
 }) {
   const t = useTranslations("systemAdmin.workflow");
   const th = "text-muted-foreground px-2 py-2 text-xs font-medium";
+  // คอลัมน์ "ซ่อน" ที่ว่างทั้งคอลัมน์ไม่บอกอะไร — โผล่เฉพาะเมื่อมีขั้นที่ซ่อนฟิลด์จริง
+  const showHidden = rows.some((r) => r.hidePrice || r.hideTotal);
 
   return (
-    <div className="overflow-x-auto rounded-lg border">
-      <table className="w-full min-w-[40rem] text-xs">
-        <thead className="bg-muted/40 border-b">
-          <tr>
-            <th className={cn(th, "pl-3 text-left")}>
-              {t("insightsColStage")}
-            </th>
-            <th className={cn(th, "text-left")}>{t("insightsColUsers")}</th>
-            <th className={cn(th, "text-left")}>SLA</th>
-            {ACTIONS.map((action) => (
-              <th key={action} className={cn(th, "text-center")}>
-                {t(ACTION_LABEL[action])}
+    <div className="space-y-2">
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="w-full min-w-[40rem] text-xs">
+          <thead className="bg-muted/40 border-b">
+            <tr>
+              <th className={cn(th, "pl-3 text-left")}>
+                {t("insightsColStage")}
               </th>
-            ))}
-            <th className={cn(th, "pr-3 text-left")}>
-              {t("insightsColHidden")}
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y">
-          {rows.map((row) => {
-            const RoleIcon = ROLE_ICON[row.role];
-            const hidden = [
-              row.hidePrice && t("insightsHiddenPrice"),
-              row.hideTotal && t("insightsHiddenTotal"),
-            ].filter(Boolean);
-            return (
-              <tr key={`${row.index}-${row.name}`}>
-                <td className="py-2 pr-2 pl-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    {RoleIcon && (
-                      <RoleIcon
-                        className="text-muted-foreground size-3.5 shrink-0"
-                        aria-label={t(ROLE_LABEL[row.role])}
-                      />
-                    )}
-                    {onSelectStage ? (
-                      <button
-                        type="button"
-                        className="truncate font-medium hover:underline"
-                        onClick={() => onSelectStage(row.index)}
-                      >
-                        {row.name}
-                      </button>
-                    ) : (
-                      <span className="truncate font-medium">{row.name}</span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-2 py-2 tabular-nums">
-                  {row.isHod ? (
-                    <span className="text-warning-ink font-medium">HOD</span>
-                  ) : noUsersStages.has(row.index) ? (
-                    <span className="text-destructive inline-flex items-center gap-1 font-medium">
-                      <CircleAlert className="size-3.5" />0
-                    </span>
-                  ) : (
-                    row.userCount
-                  )}
-                </td>
-                <td className="px-2 py-2 tabular-nums">
-                  {row.minutes > 0 ? (
-                    formatCycleTime(row.minutes)
-                  ) : (
-                    <span className="text-muted-foreground/60">—</span>
-                  )}
-                </td>
-                {ACTIONS.map((action) => {
-                  const cell = row.actions[action];
-                  return (
-                    <td key={action} className="px-2 py-2 text-center">
-                      {cell.active ? (
-                        <span className="inline-flex items-center gap-1.5">
-                          <span
-                            className="bg-primary inline-block size-2 rounded-full"
-                            aria-label={t(ACTION_LABEL[action])}
-                          />
-                          {cell.recipients > 0 && (
-                            <span
-                              className="text-muted-foreground inline-flex items-center gap-0.5 tabular-nums"
-                              title={t("insightsRecipients", {
-                                count: cell.recipients,
-                              })}
-                            >
-                              <Bell className="size-3" />
-                              {cell.recipients}
-                            </span>
-                          )}
-                        </span>
+              <th className={cn(th, "text-left")}>{t("insightsColUsers")}</th>
+              <th className={cn(th, "text-left")}>SLA</th>
+              {ACTIONS.map((action) => (
+                <th key={action} className={cn(th, "text-center")}>
+                  {t(ACTION_LABEL[action])}
+                </th>
+              ))}
+              {showHidden && (
+                <th className={cn(th, "pr-3 text-left")}>
+                  {t("insightsColHidden")}
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {rows.map((row) => {
+              const RoleIcon = ROLE_ICON[row.role];
+              const hidden = [
+                row.hidePrice && t("insightsHiddenPrice"),
+                row.hideTotal && t("insightsHiddenTotal"),
+              ].filter(Boolean);
+              return (
+                <tr key={`${row.index}-${row.name}`}>
+                  <td className="py-2 pr-2 pl-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      {RoleIcon && (
+                        <RoleIcon
+                          className="text-muted-foreground size-3.5 shrink-0"
+                          aria-label={t(ROLE_LABEL[row.role])}
+                        />
+                      )}
+                      {onSelectStage ? (
+                        <button
+                          type="button"
+                          className="truncate font-medium hover:underline"
+                          onClick={() => onSelectStage(row.index)}
+                        >
+                          {row.name}
+                        </button>
                       ) : (
-                        <span className="text-muted-foreground/40">–</span>
+                        <span className="truncate font-medium">{row.name}</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-2 py-2 tabular-nums">
+                    {row.isHod ? (
+                      <Crown
+                        className="text-warning-ink size-3.5"
+                        aria-label={t("isHod")}
+                      />
+                    ) : noUsersStages.has(row.index) ? (
+                      <span className="text-destructive inline-flex items-center gap-1 font-medium">
+                        <CircleAlert className="size-3.5" />0
+                      </span>
+                    ) : (
+                      row.userCount
+                    )}
+                  </td>
+                  <td className="px-2 py-2 tabular-nums">
+                    {row.slaLabel ? (
+                      row.slaLabel
+                    ) : (
+                      <span className="text-muted-foreground/60">—</span>
+                    )}
+                  </td>
+                  {ACTIONS.map((action) => {
+                    const cell = row.actions[action];
+                    return (
+                      <td key={action} className="px-2 py-2 text-center">
+                        {cell.active ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <span
+                              className="bg-primary inline-block size-2 rounded-full"
+                              aria-label={t(ACTION_LABEL[action])}
+                            />
+                            {cell.recipients > 0 && (
+                              <span
+                                className="text-muted-foreground inline-flex items-center gap-0.5 tabular-nums"
+                                title={t("insightsRecipients", {
+                                  count: cell.recipients,
+                                })}
+                              >
+                                <Bell className="size-3" />
+                                {cell.recipients}
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground/40">–</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                  {showHidden && (
+                    <td className="py-2 pr-3 pl-2">
+                      {hidden.length > 0 ? (
+                        hidden.join(" · ")
+                      ) : (
+                        <span className="text-muted-foreground/40">—</span>
                       )}
                     </td>
-                  );
-                })}
-                <td className="py-2 pr-3 pl-2">
-                  {hidden.length > 0 ? (
-                    hidden.join(" · ")
-                  ) : (
-                    <span className="text-muted-foreground/40">—</span>
                   )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+        <span className="inline-flex items-center gap-1.5">
+          <span
+            aria-hidden="true"
+            className="bg-primary inline-block size-2 rounded-full"
+          />
+          {t("insightsLegendActive")}
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <Bell className="size-3" aria-hidden="true" />
+          {t("insightsLegendRecipients")}
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <Crown className="text-warning-ink size-3" aria-hidden="true" />
+          {t("isHod")}
+        </span>
+      </p>
     </div>
   );
 }

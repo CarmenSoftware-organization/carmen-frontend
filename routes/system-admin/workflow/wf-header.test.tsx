@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { IntlProvider } from "use-intl";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import en from "@/messages/en.json";
 import type { Workflow } from "@/types/workflows";
 
@@ -65,14 +66,16 @@ const counts = (in_progress: number) => ({
 function renderHeader(onEdit = vi.fn()) {
   render(
     <IntlProvider locale="en" messages={en}>
-      <WfHeader
-        workflow={workflow}
-        isEditing={false}
-        isPending={false}
-        onEdit={onEdit}
-        onCancel={vi.fn()}
-        formId="wf-form"
-      />
+      <TooltipProvider>
+        <WfHeader
+          workflow={workflow}
+          isEditing={false}
+          isPending={false}
+          onEdit={onEdit}
+          onCancel={vi.fn()}
+          formId="wf-form"
+        />
+      </TooltipProvider>
     </IntlProvider>,
   );
   return onEdit;

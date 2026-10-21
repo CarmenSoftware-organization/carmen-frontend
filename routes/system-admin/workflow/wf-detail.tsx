@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   useForm,
   useFieldArray,
@@ -49,7 +49,7 @@ interface WfDetailProps {
 export function WfDetail({ workflow, users, products }: WfDetailProps) {
   "use no memo";
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState("overview");
   const [selectedStageIndex, setSelectedStageIndex] = useState(0);
   const updateWorkflow = useUpdateWorkflow();
   const isPending = updateWorkflow.isPending;
@@ -80,9 +80,16 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
     />
   ) : null;
 
+  // รางด้านซ้ายเป็นทางเลือก stage ทางเดียว — เลือกแล้วฝั่งขวาเป็นรายละเอียดของขั้นนั้น (value "stage"
+  // ไม่มีปุ่มแท็บ แถบแท็บจึงไม่มีอันไหนถูกเลือก) กดแท็บใดก็กลับสู่ระดับ workflow
+  // ต่ำกว่า lg รางกับฝั่งขวาเรียงซ้อนกัน รายละเอียดจึงไปโผล่ใต้รางนอกจอ — เลื่อนลงไปให้เห็น
+  const detailRef = useRef<HTMLFormElement>(null);
   const handleSelectStage = (index: number) => {
     setSelectedStageIndex(index);
-    setActiveTab("stages");
+    setActiveTab("stage");
+    if (!window.matchMedia("(min-width: 1024px)").matches) {
+      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   const form = useForm<WorkflowCreateModel>({
@@ -121,6 +128,11 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
     name: "workflow_type",
   });
 
+  const watchedInheritSignature = useWatch({
+    control: form.control,
+    name: "data.inherit_signature_from_pr",
+  });
+
   const routingFieldArray = useFieldArray({
     control: form.control,
     name: "data.routing_rules",
@@ -129,7 +141,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
   const hasStages = !!watchedStages && watchedStages.length > 0;
 
   // ปัญหาของ workflow ไปอยู่บนรางขั้นด้านซ้าย (ใต้ชื่อขั้นที่มีปัญหา) ซึ่งเห็นได้ทุกแท็บ —
-  // จุดแดงบนแท็บ Stages จึงเหลือไว้บอกแค่ error ของตัวฟอร์มเอง
+  // error ของตัวฟอร์มใน stage ก็ขึ้นที่หัวรางเช่นกัน
   const hasStageErrors = !!form.formState.errors.data?.stages;
   const validationIssues = hasStages
     ? validateWorkflow(watchedStages!, watchedType).issues
@@ -198,7 +210,8 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
               form={form}
               fieldArray={stagesFieldArray}
               selectedIndex={selectedStageIndex}
-              showSelection={activeTab === "stages"}
+              showSelection={activeTab === "stage"}
+              hasFormErrors={hasStageErrors}
               onSelect={handleSelectStage}
               isDisabled={isStructureDisabled}
               lockedReason={lockedReason}
@@ -208,6 +221,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
           )}
 
           <form
+            ref={detailRef}
             id="wf-detail-form"
             onSubmit={form.handleSubmit(onSubmit, () =>
               scrollToFirstInvalidField(),
@@ -224,25 +238,9 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                   variant="line"
                   className="h-auto gap-4 bg-transparent p-0"
                 >
-                  <TabsTrigger value="general" className="relative py-2.5">
-                    {t("general")}
+                  <TabsTrigger value="overview" className="relative py-2.5">
+                    {t("overview")}
                     {hasGeneralErrors && (
-                      <div className="bg-destructive absolute top-2 right-2 size-2 rounded-full" />
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="stages" className="relative py-2.5">
-                    {t("stages")}
-                    {tabLockIcon}
-                    {watchedStages && watchedStages.length > 0 && (
-                      <Badge
-                        variant="secondary"
-                        size="xs"
-                        className="ml-2 tabular-nums"
-                      >
-                        {watchedStages.length}
-                      </Badge>
-                    )}
-                    {hasStageErrors && (
                       <div className="bg-destructive absolute top-2 right-0 size-2 rounded-full" />
                     )}
                   </TabsTrigger>
@@ -274,22 +272,34 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                       </Badge>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="insights" className="py-2.5">
-                    {t("insights")}
-                  </TabsTrigger>
                 </TabsList>
               </div>
 
               <div className="flex-1 p-4 md:p-6">
-                <TabsContent value="general" className="mt-0 outline-none">
-                  <WfGeneral
-                    form={form}
-                    isDisabled={isDisabled}
-                    readOnly={!isEditing}
-                  />
+                <TabsContent value="overview" className="mt-0 outline-none">
+                  <div className="space-y-6">
+                    {isEditing && (
+                      <div className="border-b pb-6">
+                        <WfGeneral form={form} isDisabled={isDisabled} />
+                      </div>
+                    )}
+                    <WfInsights
+                      stages={watchedStages ?? []}
+                      productCount={watchedProducts?.length ?? 0}
+                      routingRules={watchedRoutingRules ?? []}
+                      workflowType={watchedType}
+                      inheritSignatureFromPr={watchedInheritSignature}
+                      readOnly={!isEditing}
+                      onNavigate={(target) =>
+                        target.tab === "stages"
+                          ? handleSelectStage(target.stageIndex ?? 0)
+                          : setActiveTab(target.tab)
+                      }
+                    />
+                  </div>
                 </TabsContent>
 
-                <TabsContent value="stages" className="mt-0 outline-none">
+                <TabsContent value="stage" className="mt-0 outline-none">
                   <WfStages
                     form={form}
                     fieldArray={stagesFieldArray}
@@ -317,21 +327,6 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                     allProducts={products}
                     isDisabled={isDisabled}
                     readOnly={!isEditing}
-                  />
-                </TabsContent>
-
-                <TabsContent value="insights" className="mt-0 outline-none">
-                  <WfInsights
-                    stages={watchedStages ?? []}
-                    productCount={watchedProducts?.length ?? 0}
-                    routingRules={watchedRoutingRules ?? []}
-                    workflowType={watchedType}
-                    onNavigate={(target) =>
-                      target.tab === "stages" &&
-                      typeof target.stageIndex === "number"
-                        ? handleSelectStage(target.stageIndex)
-                        : setActiveTab(target.tab)
-                    }
                   />
                 </TabsContent>
               </div>

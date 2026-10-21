@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Controller, type UseFormReturn } from "react-hook-form";
+import { Controller, useWatch, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
-import { Search, UserRoundCheck } from "lucide-react";
+import { Crown, Search, UserRoundCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
@@ -29,6 +29,8 @@ interface WfStageUsersProps {
   readonly isDisabled: boolean;
   readonly isHod: boolean;
   readonly assignedUserIds: Set<string>;
+  /** โหมดดู — เหลือแค่คนที่ถูก assign (หรือบรรทัดเส้นทาง HOD) ไม่มีตัวเลือกผู้ใช้ที่ถูกปิดทั้งชุด */
+  readonly readOnly?: boolean;
 }
 
 const matchesQuery = (u: User, q: string) =>
@@ -45,7 +47,99 @@ export function WfStageUsers({
   isDisabled,
   isHod,
   assignedUserIds,
+  readOnly = false,
 }: WfStageUsersProps) {
+  if (readOnly) {
+    return (
+      <WfStageUsersView form={form} index={index} users={users} isHod={isHod} />
+    );
+  }
+  return (
+    <WfStageUsersEditor
+      form={form}
+      index={index}
+      users={users}
+      isMiddle={isMiddle}
+      isDisabled={isDisabled}
+      isHod={isHod}
+      assignedUserIds={assignedUserIds}
+    />
+  );
+}
+
+function WfStageUsersView({
+  form,
+  index,
+  users,
+  isHod,
+}: Pick<WfStageUsersProps, "form" | "index" | "users" | "isHod">) {
+  const t = useTranslations("systemAdmin.workflow");
+  const assigned = useWatch({
+    control: form.control,
+    name: `data.stages.${index}.assigned_users`,
+  });
+
+  if (isHod) {
+    return (
+      <div className="flex items-start gap-3">
+        <Crown
+          className="text-warning-ink mt-0.5 size-4 shrink-0"
+          aria-hidden="true"
+        />
+        <div className="space-y-0.5">
+          <p className="text-foreground text-sm font-medium">{t("hodRoute")}</p>
+          <p className="text-muted-foreground text-xs">{t("hodRouteHint")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ค่าใน stage อาจเป็นข้อมูลเก่าที่เก็บไว้ไม่ครบ — เติมชื่อ/อีเมลจากรายชื่อผู้ใช้ปัจจุบันถ้ามี
+  const byId = new Map(users.map((u) => [u.user_id, u]));
+  const people = (assigned ?? [])
+    .map((u) => ({ ...u, ...byId.get(u.user_id) }))
+    .sort((a, b) =>
+      `${a.firstname} ${a.lastname}`.localeCompare(
+        `${b.firstname} ${b.lastname}`,
+      ),
+    );
+
+  if (people.length === 0) {
+    return <p className="text-destructive text-sm">{t("noAssignedUsers")}</p>;
+  }
+
+  return (
+    <ul className="divide-y rounded-lg border">
+      {people.map((user) => (
+        <li key={user.user_id} className="flex items-center gap-3 px-3 py-2">
+          <Avatar className="size-7 shrink-0">
+            <AvatarFallback className="bg-muted text-foreground text-micro font-medium">
+              {formatName(user.firstname, user.lastname)}
+            </AvatarFallback>
+          </Avatar>
+          <span className="flex min-w-0 flex-col">
+            <span className="text-foreground truncate text-sm leading-tight font-medium">
+              {user.firstname} {user.lastname}
+            </span>
+            <span className="text-muted-foreground truncate text-xs leading-tight">
+              {user.email}
+            </span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function WfStageUsersEditor({
+  form,
+  index,
+  users,
+  isMiddle,
+  isDisabled,
+  isHod,
+  assignedUserIds,
+}: Omit<WfStageUsersProps, "readOnly">) {
   const [userSearch, setUserSearch] = useState("");
   const [assignedOnly, setAssignedOnly] = useState(false);
   const t = useTranslations("systemAdmin.workflow");

@@ -4,6 +4,7 @@ import {
   type Stage,
   type SlaUnit,
 } from "@/types/workflows";
+import { formatStageSla } from "./wf-sla-utils";
 
 const UNIT_TO_MINUTES: Record<SlaUnit, number> = {
   minutes: 1,
@@ -21,12 +22,14 @@ export interface StageActionCell {
   readonly recipients: number;
 }
 
-/** หนึ่งแถวของตาราง stage ในแท็บ Insights — ไม่รวมขั้นสุดท้าย (Completed) ที่ไม่มีปุ่มหรือ SLA */
+/** หนึ่งแถวของตาราง stage ในแท็บภาพรวม — ไม่รวมขั้นสุดท้าย (Completed) ที่ไม่มีปุ่มหรือ SLA */
 export interface StageRow {
   readonly index: number;
   readonly name: string;
   readonly role: Role;
   readonly minutes: number;
+  /** ป้าย SLA ตามที่ตั้งไว้ ("24h") — รูปเดียวกับรางด้านซ้าย */
+  readonly slaLabel: string;
   readonly userCount: number;
   readonly isHod: boolean;
   readonly actions: Record<ActionKey, StageActionCell>;
@@ -102,6 +105,7 @@ export function computeWorkflowInsights(
       name: stage.name || `#${index + 1}`,
       role: stage.role,
       minutes: stageMinutes(stage),
+      slaLabel: formatStageSla(stage),
       userCount: stage.assigned_users?.length ?? 0,
       isHod: stage.is_hod === true,
       actions,

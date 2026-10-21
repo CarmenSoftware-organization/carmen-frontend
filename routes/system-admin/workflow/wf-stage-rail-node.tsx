@@ -3,6 +3,11 @@ import { CheckCircle2, Clock, Crown, Play, Users } from "lucide-react";
 import { useTranslations } from "use-intl";
 import type { Role, Stage } from "@/types/workflows";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ROLE_ICON, ROLE_LABEL } from "./wf-role-colors";
 import { formatStageSla } from "./wf-sla-utils";
 
@@ -95,10 +100,15 @@ export function StageRailSummary({
           {name}
         </span>
         {isHod && !isLast && (
-          <Crown
-            className="text-warning-ink size-3.5 shrink-0"
-            aria-label={t("isHod")}
-          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Crown
+                className="text-warning-ink size-3.5 shrink-0"
+                aria-label={t("isHod")}
+              />
+            </TooltipTrigger>
+            <TooltipContent>{t("isHod")}</TooltipContent>
+          </Tooltip>
         )}
       </span>
 

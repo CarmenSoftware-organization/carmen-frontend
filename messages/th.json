@@ -2380,7 +2380,6 @@
       "issueLastNotCompleted": "ขั้นตอนสุดท้ายควรเป็น \"Completed\"",
       "issueNoSla": "ขั้นตอน \"{stage}\" ยังไม่ได้กำหนด SLA",
       "issueEmptyName": "ขั้นตอนยังไม่มีชื่อ",
-      "insights": "สถิติ",
       "viewFlow": "ลำดับ",
       "viewDiagram": "ผังกราฟ",
       "viewMode": "โหมดการแสดงผล",
@@ -2448,7 +2447,8 @@
         "blockedDescription": "มีเอกสาร {count} ฉบับที่ยังดำเนินการอยู่บน workflow นี้ การลบจะทำให้ stage ที่เอกสารเดินอยู่หายไป กรุณาทำให้เสร็จหรือยกเลิกเอกสารก่อน",
         "structureLocked": "มีเอกสาร {count} ฉบับกำลังเดินอยู่บน stage ชุดนี้ จึงเพิ่ม ลบ เปลี่ยนชื่อ หรือสลับลำดับ stage และแก้เส้นทางไม่ได้ ส่วนอื่นของฟอร์มยังบันทึกได้ตามปกติ",
         "lockedAction": "ล็อกอยู่ — มีเอกสาร {count} ฉบับยังดำเนินการอยู่บน workflow นี้",
-        "viewInProgress": "ดูเอกสารที่กำลังดำเนินการ"
+        "viewInProgress": "ดูเอกสารที่กำลังดำเนินการ",
+        "label": "เอกสาร"
       },
       "issueShort": {
         "no_users_assigned": "ยังไม่มีผู้อนุมัติ",
@@ -2498,17 +2498,20 @@
       "productsNoneSelected": "ยังไม่ได้เลือกสินค้า",
       "productsNoneSelectedWarning": "ยังไม่ได้เลือกสินค้า — เอกสารที่ใช้ workflow นี้จะเพิ่มรายการสินค้าไม่ได้จนกว่าจะเลือก",
       "insightsChecks": "ตรวจความพร้อม",
-      "insightsJourney": "เส้นทางเอกสาร",
       "insightsMatrix": "ภาพรวมแต่ละขั้น",
       "insightsNoProblems": "ไม่พบปัญหา — workflow นี้พร้อมบันทึก",
       "insightsRuleIssue": "กฎ “{rule}”: {issue}",
-      "insightsNoSla": "ไม่ได้ตั้ง SLA",
       "insightsColStage": "ขั้น",
       "insightsColUsers": "ผู้ใช้",
       "insightsColHidden": "ซ่อน",
       "insightsHiddenPrice": "ราคา",
       "insightsHiddenTotal": "ยอดรวม",
-      "insightsRecipients": "แจ้งเตือน {count} ผู้รับ"
+      "insightsRecipients": "แจ้งเตือน {count} ผู้รับ",
+      "overview": "ภาพรวม",
+      "insightsLegendActive": "เปิดใช้ action นี้",
+      "notifyOff": "ปิด",
+      "insightsLegendRecipients": "จำนวนผู้รับแจ้งเตือน",
+      "stageFormErrors": "มีช่องใน stage ที่ยังไม่ถูกต้อง"
     },
     "runningCode": {
       "entity": "รหัสลำดับ",

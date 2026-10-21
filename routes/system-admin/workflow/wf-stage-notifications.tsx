@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { LookupNotificationTemplate } from "@/components/lookup/lookup-noti-tmpl";
+import { useLookupResource } from "@/hooks/use-lookup-resource";
+import { lookupLabel } from "@/types/lookup";
 import { cn } from "@/lib/utils";
 import type { Stage } from "@/types/workflows";
 import type { WorkflowCreateModel } from "./wf-form-schema";
@@ -28,7 +30,16 @@ interface WfStageNotificationsProps {
   readonly isMiddle: boolean;
   readonly isDisabled: boolean;
   readonly watchedStage: Stage | undefined;
+  /** โหมดดู — แถวเป็นข้อความ ผู้รับ → ชื่อเทมเพลต แทนสวิตช์กับ select ที่ถูกปิด */
+  readonly readOnly?: boolean;
 }
+
+const RECIPIENT_KEYS = [
+  "requestor",
+  "current_approve",
+  "next_step",
+  "previous_step",
+] as const;
 
 export function WfStageNotifications({
   form,
@@ -37,9 +48,33 @@ export function WfStageNotifications({
   isMiddle,
   isDisabled,
   watchedStage,
+  readOnly = false,
 }: WfStageNotificationsProps) {
   const t = useTranslations("systemAdmin.workflow");
   const actions = watchedStage?.available_actions;
+
+  // โหมดดูต้องการแค่ชื่อเทมเพลต — ดึงทุก id ของขั้นนี้ในคำขอเดียว (enabled: false = ไม่โหลดรายการ)
+  const templateIds = readOnly
+    ? Object.values(actions ?? {}).flatMap((action) =>
+        RECIPIENT_KEYS.map(
+          (r) =>
+            action?.recipients?.[r]?.notification_channel?.app
+              ?.notification_template_id,
+        ).filter((id): id is string => !!id),
+      )
+    : [];
+  const { selectedItems: templates } = useLookupResource(
+    "notification_template",
+    { search: "", enabled: false, selectedIds: templateIds },
+  );
+  const templateLabels = new Map(
+    templates.map((tpl) => [tpl.id, lookupLabel(tpl)]),
+  );
+  const slaFlags = watchedStage?.sla_warning_notification?.recipients;
+  const slaRecipients = [
+    slaFlags?.requestor && t("requester"),
+    slaFlags?.current_approve && t("currentApprover"),
+  ].filter((label): label is string => !!label);
 
   const sections: {
     action: WfAction;
@@ -98,11 +133,36 @@ export function WfStageNotifications({
             label={t(section.labelKey)}
             showNextStep={section.showNextStep}
             isDisabled={isDisabled}
+            readOnly={readOnly}
+            templateLabels={templateLabels}
           />
         </div>
       ))}
 
-      {isMiddle && (
+      {isMiddle && readOnly && (
+        <>
+          {sections.length > 0 && <FieldSeparator />}
+          <div className="grid grid-cols-1 gap-x-4 gap-y-1 @lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)]">
+            <span className="text-foreground text-sm font-medium">
+              {t("slaWarning")}
+            </span>
+            <span
+              className={cn(
+                "text-sm",
+                slaRecipients.length > 0
+                  ? "text-foreground"
+                  : "text-muted-foreground",
+              )}
+            >
+              {slaRecipients.length > 0
+                ? slaRecipients.join(" · ")
+                : t("notifyOff")}
+            </span>
+          </div>
+        </>
+      )}
+
+      {isMiddle && !readOnly && (
         <>
           {sections.length > 0 && <FieldSeparator />}
           <FieldSet className="gap-3">
@@ -140,6 +200,8 @@ interface NotificationSectionProps {
   readonly label: string;
   readonly showNextStep: boolean;
   readonly isDisabled: boolean;
+  readonly readOnly: boolean;
+  readonly templateLabels: ReadonlyMap<string, string>;
 }
 
 function NotificationSection({
@@ -149,9 +211,19 @@ function NotificationSection({
   label,
   showNextStep,
   isDisabled,
+  readOnly,
+  templateLabels,
 }: NotificationSectionProps) {
   const t = useTranslations("systemAdmin.workflow");
   const dotClass = action === "submit" ? null : ACTION_DOT_CLASS[action];
+  const rowProps = {
+    form,
+    index,
+    action,
+    isDisabled,
+    readOnly,
+    templateLabels,
+  };
 
   return (
     <FieldSet className="gap-3">
@@ -166,35 +238,26 @@ function NotificationSection({
       </FieldLegend>
       <div className="flex flex-col gap-3">
         <RecipientRow
-          form={form}
-          index={index}
-          action={action}
+          {...rowProps}
           recipient="requestor"
           label={t("requester")}
-          isDisabled={isDisabled}
         />
         {/* ไม่มีแถว `current_approve` — dispatcher ส่งช่องนั้นให้คนที่เพิ่งกดเอง (submit = ผู้ขอ ซ้ำกับแถวบน)
             reject ใช้ `previous_step` แทนสำหรับผู้อนุมัติขั้นก่อนหน้า */}
         {action === "reject" && (
           <RecipientRow
-            form={form}
-            index={index}
-            action={action}
+            {...rowProps}
             recipient="previous_step"
             label={t("previousApprovers")}
-            isDisabled={isDisabled}
           />
         )}
         {showNextStep && (
           <RecipientRow
-            form={form}
-            index={index}
-            action={action}
+            {...rowProps}
             recipient="next_step"
             label={
               action === "sendback" ? t("sendbackReceiver") : t("nextApprover")
             }
-            isDisabled={isDisabled}
           />
         )}
       </div>
@@ -212,6 +275,8 @@ interface RecipientRowProps {
   readonly recipient: WfRecipient;
   readonly label: string;
   readonly isDisabled: boolean;
+  readonly readOnly: boolean;
+  readonly templateLabels: ReadonlyMap<string, string>;
 }
 
 /**
@@ -227,6 +292,8 @@ function RecipientRow({
   recipient,
   label,
   isDisabled,
+  readOnly,
+  templateLabels,
 }: RecipientRowProps) {
   const t = useTranslations("systemAdmin.workflow");
   const base =
@@ -243,6 +310,30 @@ function RecipientRow({
   });
   // dispatcher ฝั่ง backend ข้ามผู้รับที่ไม่มี template (`no_template_id`) — เตือนให้เห็นก่อนบันทึก
   const missingTemplate = Boolean(isActive) && !templateId;
+
+  // โหมดดู: ชื่อเทมเพลตเป็นข้อมูลหลักของแถว จึงเป็นตัวหนังสือสีปกติ ไม่ใช่ select ที่ถูกปิดจนจาง
+  // ช่องทางตัดออก — เหลือในแอปช่องทางเดียว
+  if (readOnly) {
+    return (
+      <div className="grid grid-cols-1 gap-x-4 gap-y-0.5 @lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)]">
+        <span className="text-muted-foreground text-sm">{label}</span>
+        {!isActive ? (
+          <span className="text-muted-foreground text-sm">
+            {t("notifyOff")}
+          </span>
+        ) : missingTemplate ? (
+          <span className="text-warning-ink flex items-center gap-1 text-sm">
+            <CircleAlert className="size-3.5 shrink-0" aria-hidden="true" />
+            {t("templateMissing")}
+          </span>
+        ) : (
+          <span className="text-foreground min-w-0 text-sm">
+            {(templateId && templateLabels.get(templateId)) ?? "…"}
+          </span>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 items-start gap-x-4 gap-y-1.5 @lg:grid-cols-[minmax(0,14rem)_auto_minmax(0,1fr)]">
