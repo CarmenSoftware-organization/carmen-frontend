@@ -14,11 +14,11 @@ import { LookupCurrency } from "@/components/lookup/lookup-currency";
 import { LookupVendor } from "@/components/lookup/lookup-vendor";
 import { PRICE_LIST_STATUS_OPTIONS } from "@/constant/price-list";
 import { SettingSection } from "@/components/ui/setting-section";
-import type { PriceList } from "@/types/price-list";
+import type { PriceList, PriceListStatus } from "@/types/price-list";
 import type { PriceListFormValues } from "./pl-form-schema";
 import { PlPeriodCell } from "./pl-period-cell";
 
-type PlStatus = "draft" | "submitted" | "active" | "inactive";
+type PlStatus = PriceListStatus;
 
 interface PLGeneralCardProps {
   readonly form: UseFormReturn<PriceListFormValues>;

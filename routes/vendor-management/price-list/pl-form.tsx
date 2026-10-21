@@ -4,10 +4,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
+import { Ban, RotateCcw } from "lucide-react";
 
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Button } from "@/components/ui/button";
+import { VoidDialog } from "@/components/share/void-dialog";
+import { useCan } from "@/hooks/use-can";
+import { useDeleteGate } from "@/hooks/use-delete-gate";
 import { useEntityForm } from "@/hooks/use-entity-form";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { FormToolbar } from "@/components/share/form-toolbar";
@@ -18,10 +24,16 @@ import {
 import {
   useCreatePriceList,
   useDeletePriceList,
+  useRestorePriceList,
   useUpdatePriceList,
+  useVoidPriceList,
 } from "@/hooks/use-price-list";
 import { useProfile } from "@/hooks/use-profile";
-import type { CreatePriceListDto, PriceList } from "@/types/price-list";
+import type {
+  CreatePriceListDto,
+  PriceList,
+  PriceListStatus,
+} from "@/types/price-list";
 import {
   createPriceListSchema,
   getDefaultValues,
@@ -30,6 +42,7 @@ import {
 } from "./pl-form-schema";
 import { PLGeneralCard } from "./pl-general-card";
 import { PlItemFields } from "./pl-item-fields";
+import { PlVoidBanner } from "./pl-void-banner";
 
 const FORM_ID = "pl-form";
 
@@ -50,7 +63,13 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
   const createPriceList = useCreatePriceList();
   const updatePriceList = useUpdatePriceList();
   const deletePriceList = useDeletePriceList();
+  const voidPriceList = useVoidPriceList();
+  const restorePriceList = useRestorePriceList();
   const [showDelete, setShowDelete] = useState(false);
+  const [showVoid, setShowVoid] = useState(false);
+  const [showRestore, setShowRestore] = useState(false);
+  const { isAdmin } = useCan();
+  const { deleteDenied, writeDisabled } = useDeleteGate();
   const isPending = createPriceList.isPending || updatePriceList.isPending;
 
   const { defaultCurrencyId } = useProfile();
@@ -87,6 +106,8 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
   // signature of the detail ids — it changes exactly when rows are added or
   // removed (the cases where the stale-id bug bites). NOT keyed on `mode`, so
   // it cannot fire on the edit→view transition before the refetch lands.
+  // Also keyed on `status`: void/restore happen in view mode only and change
+  // nothing but the status, so without it the header badge keeps the old one.
   const detailIdsKey = (priceList?.pricelist_detail ?? [])
     .map((d) => d.id)
     .join(",");
@@ -95,7 +116,7 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
       form.reset(getDefaultValues(priceList, { defaultCurrencyId }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- form/getDefaultValues stable; mode/defaultCurrencyId read intentionally without retriggering
-  }, [detailIdsKey, priceList?.id]);
+  }, [detailIdsKey, priceList?.id, priceList?.status]);
 
   const watchedName = useWatch({ control: form.control, name: "name" });
   const watchedFrom = useWatch({
@@ -143,6 +164,8 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
     }
   };
 
+  // ลบถาวร (admin) — 409 PRICE_LIST_IN_USE ขึ้น toast กลางผ่าน errors.byCode
+  // พร้อมเลขเอกสารที่อ้างใบนี้อยู่ ไม่ต้องจับเองที่นี่
   const handleConfirmDelete = () => {
     if (!priceList) return;
     deletePriceList.mutate(priceList.id, {
@@ -153,9 +176,39 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
     });
   };
 
+  const handleConfirmVoid = (reason: string) => {
+    if (!priceList) return;
+    voidPriceList.mutate(
+      { id: priceList.id, reason },
+      {
+        onSuccess: () => {
+          toast.success(t("voidSuccess"));
+          setShowVoid(false);
+        },
+      },
+    );
+  };
+
+  const handleConfirmRestore = () => {
+    if (!priceList) return;
+    restorePriceList.mutate(priceList.id, {
+      onSuccess: () => {
+        toast.success(t("restoreSuccess"));
+        setShowRestore(false);
+      },
+    });
+  };
+
+  // ใบโมฆะเป็นแบบอ่านอย่างเดียว: ไม่มี Edit = ไม่มีทาง submit และช่อง status
+  // (ซึ่งไม่มีตัวเลือก voided) ก็ไม่ถูก render เพราะแสดงเฉพาะนอกโหมด view
+  const isVoided = priceList?.status === "voided";
+  // void/restore ใช้ด่านเดียวกับลบในหน้า list · เฉพาะโหมด view กันชนกับการแก้ที่ค้างอยู่
+  const canVoidOrRestore =
+    !!priceList && isView && !deleteDenied && !writeDisabled;
+
   const plNo = priceList?.no ?? null;
   const tsStatus = ts as (
-    key: "draft" | "submitted" | "active" | "inactive",
+    key: PriceListStatus,
   ) => string;
 
   return (
@@ -170,8 +223,10 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
           titleMuted={!watchedName}
           onBack={f.handleBack}
           onCancel={f.handleCancel}
-          onEdit={f.handleEdit}
-          onDelete={priceList ? () => setShowDelete(true) : undefined}
+          onEdit={isVoided ? undefined : f.handleEdit}
+          onDelete={
+            priceList && isAdmin ? () => setShowDelete(true) : undefined
+          }
           deleteIsPending={deletePriceList.isPending}
           activity={priceList && { id: priceList.id, label: priceList.no }}
           badges={
@@ -190,9 +245,35 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
               />
             </>
           }
-        />
+        >
+          {canVoidOrRestore &&
+            (isVoided ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowRestore(true)}
+                disabled={restorePriceList.isPending}
+              >
+                <RotateCcw />
+                {t("restore")}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowVoid(true)}
+                disabled={voidPriceList.isPending}
+              >
+                <Ban />
+                {t("void")}
+              </Button>
+            ))}
+        </FormToolbar>
       }
     >
+      {isVoided && priceList && <PlVoidBanner priceList={priceList} />}
       <form
         id={FORM_ID}
         onSubmit={form.handleSubmit(handleSubmit, () =>
@@ -236,10 +317,39 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
           onOpenChange={(open) =>
             !open && !deletePriceList.isPending && setShowDelete(false)
           }
-          title={t("deleteTitle")}
-          description={t("deleteConfirm", { name: priceList.name })}
+          title={t("hardDeleteTitle")}
+          description={t("hardDeleteConfirm", { name: priceList.name })}
           isPending={deletePriceList.isPending}
           onConfirm={handleConfirmDelete}
+        />
+      )}
+
+      {priceList && (
+        // key รวม status: หลังโมฆะสำเร็จ dialog ปิดเองโดยไม่ล้างช่องเหตุผล → mount ใหม่
+        // เมื่อสถานะเปลี่ยน กันเหตุผลเก่าค้างตอนโมฆะซ้ำหลังกู้คืน
+        <VoidDialog
+          key={`${priceList.id}-${priceList.status}`}
+          open={showVoid}
+          onOpenChange={(open) => !open && setShowVoid(false)}
+          title={t("voidTitle")}
+          description={t("voidConfirm", { name: priceList.name })}
+          isPending={voidPriceList.isPending}
+          onConfirm={handleConfirmVoid}
+        />
+      )}
+
+      {priceList && (
+        <ConfirmDialog
+          open={showRestore}
+          onOpenChange={(open) =>
+            !open && !restorePriceList.isPending && setShowRestore(false)
+          }
+          title={t("restoreTitle")}
+          description={t("restoreConfirm", { name: priceList.name })}
+          isPending={restorePriceList.isPending}
+          onConfirm={handleConfirmRestore}
+          confirmText={t("restore")}
+          confirmIcon={<RotateCcw />}
         />
       )}
     </FormPageShell>

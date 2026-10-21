@@ -114,6 +114,8 @@ export function actionColumn<T>(
     writeDisabledTitle?: string;
     /** คืนเหตุผลเมื่อแถวนี้ลบไม่ได้ (ปุ่มลบปิด + title) · คืน undefined = ลบได้ */
     deleteDisabledTitle?: (item: T) => string | undefined;
+    /** ข้อความเมนูลบแทน "ลบ" (เช่น void) — ไม่ส่ง = เดิม */
+    deleteLabel?: string;
     activity?: ActionColumnActivity<T>;
     edit?: ActionColumnEdit<T>;
   },
@@ -133,6 +135,7 @@ export function actionColumn<T>(
           writeDisabled={options?.writeDisabled}
           writeDisabledTitle={options?.writeDisabledTitle}
           deleteDisabledTitle={options?.deleteDisabledTitle?.(row.original)}
+          deleteLabel={options?.deleteLabel}
           activity={
             activityId
               ? {

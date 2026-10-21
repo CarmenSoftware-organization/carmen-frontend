@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useApiMutation } from "@/hooks/use-api-mutation";
 import { createConfigCrud } from "@/hooks/use-config-crud";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useXlsxExport, type XlsxColumn } from "@/hooks/use-xlsx-export";
@@ -32,7 +33,26 @@ export const useCreatePriceList = crud.useCreate;
 
 export const useUpdatePriceList = crud.useUpdate;
 
+// DELETE = hard delete (admin only) — ใช้ void/restore สำหรับการยกเลิกปกติ
 export const useDeletePriceList = crud.useDelete;
+
+export function useVoidPriceList() {
+  return useApiMutation<{ id: string; reason: string }>({
+    mutationFn: ({ id, reason }, buCode) =>
+      httpClient.post(API_ENDPOINTS.PRICE_LIST_VOID(buCode, id), { reason }),
+    invalidateKeys: [QUERY_KEYS.PRICE_LISTS],
+    errorMessage: "Failed to void price list",
+  });
+}
+
+export function useRestorePriceList() {
+  return useApiMutation<string>({
+    mutationFn: (id, buCode) =>
+      httpClient.post(API_ENDPOINTS.PRICE_LIST_RESTORE(buCode, id), {}),
+    invalidateKeys: [QUERY_KEYS.PRICE_LISTS],
+    errorMessage: "Failed to restore price list",
+  });
+}
 
 // --- Export ---
 

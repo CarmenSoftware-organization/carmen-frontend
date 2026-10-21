@@ -14,7 +14,7 @@ import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
 import {
   usePriceList,
-  useDeletePriceList,
+  useVoidPriceList,
   useExportPriceList,
 } from "@/hooks/use-price-list";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
@@ -22,10 +22,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useGridPagination } from "@/hooks/use-grid-pagination";
 import { useCurrency } from "@/hooks/use-currency";
 import { MultiSelectFilter } from "@/components/ui/multi-select-filter";
-import type { PriceList } from "@/types/price-list";
+import type { PriceList, PriceListStatus } from "@/types/price-list";
 import { defineEntitySource } from "@/components/filter/entity-filter-source";
 import type { Currency } from "@/types/currency";
-import { DeleteDialog } from "@/components/ui/delete-dialog";
+import { VoidDialog } from "@/components/share/void-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import EmptyComponent from "@/components/empty-component";
 import { ListPageShell } from "@/components/share/list-page-shell";
@@ -42,6 +42,7 @@ import type { FilterFieldDef } from "@/types/list-filter";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { VENDOR_ENTITY } from "@/components/filter/entity-sources";
 import { setURLParams, useURL } from "@/hooks/use-url";
+import { encodeFilterParam, clauseTokens } from "@/lib/list-filter-encode";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, subDays } from "date-fns";
 
@@ -70,6 +71,46 @@ function validityClause(validity: Validity, now: Date): string | undefined {
   return undefined;
 }
 
+// สถานะที่ไม่ใช่โมฆะทั้งหมด (enum_pricelist_status ฝั่ง BE มี expired ด้วย)
+const NON_VOIDED_STATUSES = [
+  "draft",
+  "submitted",
+  "active",
+  "inactive",
+  "expired",
+];
+
+/**
+ * รวม filter ที่ผู้ใช้เลือกกับแท็บแบบ AND — แท็บ "ยังมีผล"/"หมดช่วงแล้ว" ไม่แสดงใบโมฆะ
+ * จึงต้องมี clause `status` ของตัวเอง ซึ่งชนคีย์กับสถานะที่ผู้ใช้เลือก (เขียนทับกัน)
+ * จึงตัดกันที่ฝั่งนี้: สถานะที่ใช้จริง = ที่ผู้ใช้เลือก ลบ voided (ไม่เลือกเลย = ทุกสถานะ
+ * ที่ไม่ใช่ voided) · ผู้ใช้เลือกแต่ voided บนแท็บเหล่านี้ = ไม่มีทางตรง → matchesNothing
+ * (ผู้เรียกไม่ยิง request แล้วแสดงสถานะว่าง) · แท็บ "ทั้งหมด" ไม่แตะ status
+ */
+function buildListFilter(
+  fields: readonly FilterFieldDef[],
+  values: Record<string, string>,
+  validity: Validity,
+  now: Date,
+): { filter: string | undefined; matchesNothing: boolean } {
+  if (validity === "all") {
+    return { filter: encodeFilterParam(fields, values), matchesNothing: false };
+  }
+  const picked = clauseTokens(values.filter ?? "");
+  const statuses = picked.length
+    ? picked.filter((s) => s !== "voided")
+    : NON_VOIDED_STATUSES;
+  const rest = encodeFilterParam(fields, { ...values, filter: "" });
+  const filter = [
+    rest,
+    statuses.length ? `status|string:${statuses.join(",")}` : undefined,
+    validityClause(validity, now),
+  ]
+    .filter(Boolean)
+    .join(";");
+  return { filter: filter || undefined, matchesNothing: statuses.length === 0 };
+}
+
 // ค่าที่ URL เก็บคือรหัสสกุล (`currency_code|string:THB,USD`) ไม่ใช่ id — ดึงชื่อตาม `code`
 const CURRENCY_ENTITY = defineEntitySource<Currency>({
   fieldKey: "currency_code",
@@ -86,12 +127,11 @@ export default function PriceListComponent() {
   const exportErrorToast = useExportErrorToast();
   const ts = useTranslations("status");
   const tfl = useTranslations("field");
-  const tt = useTranslations("toast");
-  const [deleteTarget, setDeleteTarget] = useState<PriceList | null>(null);
+  const [voidTarget, setVoidTarget] = useState<PriceList | null>(null);
   const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
   const isMobile = useIsMobile();
-  const deletePriceList = useDeletePriceList();
+  const voidPriceList = useVoidPriceList();
   const { exportPriceList, isExporting } = useExportPriceList();
   const [validityParam] = useURL("validity", { defaultValue: "current" });
   const validity: Validity = (VALIDITY_TABS as readonly string[]).includes(
@@ -107,7 +147,7 @@ export default function PriceListComponent() {
   // ป้ายในตาราง — ค่าเป็น clause เต็มต่อตัว MultiSelectFilter join เองเมื่อเลือกหลายตัว
   const statusOptions = useMemo(
     () =>
-      (["draft", "submitted", "active", "inactive"] as const).map((status) => ({
+      (["draft", "submitted", "active", "inactive", "voided"] as const).map((status) => ({
         label: ts(status),
         value: `status|string:${status}`,
       })),
@@ -180,22 +220,24 @@ export default function PriceListComponent() {
     defaultSort: VALIDITY_DEFAULT_SORT[validity],
   });
 
-  const filter =
-    [lf.filterParam, validityClause(validity, new Date())]
-      .filter(Boolean)
-      .join(";") || undefined;
+  const { filter, matchesNothing } = buildListFilter(
+    priceListFilterFields,
+    lf.values,
+    validity,
+    new Date(),
+  );
   const queryParams = { ...params, filter };
 
   const isGridMode = isMobile || displayMode === "grid";
 
   const { data, isLoading, error, refetch } = usePriceList(queryParams, {
-    enabled: !isGridMode,
+    enabled: !isGridMode && !matchesNothing,
   });
 
   const grid = useGridPagination<PriceList>({
     useListHook: usePriceList,
     params: queryParams,
-    enabled: isGridMode,
+    enabled: isGridMode && !matchesNothing,
   });
 
   const priceLists = isGridMode ? grid.items : (data?.data ?? []);
@@ -204,6 +246,11 @@ export default function PriceListComponent() {
     : (data?.paginate?.total ?? 0);
 
   const handleExport = async () => {
+    // แท็บกรองแล้วไม่เหลือสถานะ (เลือกแต่ voided) — ไม่ยิง export ไม่งั้นได้ทั้งช่วงวันที่
+    if (matchesNothing) {
+      toast.warning(tc("exportNoData"));
+      return;
+    }
     try {
       const count = await exportPriceList({
         params: queryParams,
@@ -222,8 +269,7 @@ export default function PriceListComponent() {
           },
           {
             header: tfl("status"),
-            value: (r) =>
-              ts(r.status as "draft" | "submitted" | "active" | "inactive"),
+            value: (r) => ts(r.status as PriceListStatus),
             width: 12,
           },
           {
@@ -253,7 +299,7 @@ export default function PriceListComponent() {
         `/vendor-management/price-list/${priceList.id}`,
         listReturnState(),
       ),
-    onDelete: setDeleteTarget,
+    onVoid: setVoidTarget,
     quietExpired: validity === "expired",
   });
 
@@ -321,7 +367,7 @@ export default function PriceListComponent() {
                     listReturnState(),
                   )
                 }
-                onDelete={setDeleteTarget}
+                onVoid={setVoidTarget}
                 quietExpired={validity === "expired"}
               />
             ))}
@@ -361,22 +407,25 @@ export default function PriceListComponent() {
         </DataGrid>
       )}
 
-      <DeleteDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) =>
-          !open && !deletePriceList.isPending && setDeleteTarget(null)
-        }
-        title={t("deleteTitle")}
-        description={t("deleteConfirm", { name: deleteTarget?.name ?? "" })}
-        isPending={deletePriceList.isPending}
-        onConfirm={() => {
-          if (!deleteTarget) return;
-          deletePriceList.mutate(deleteTarget.id, {
-            onSuccess: () => {
-              toast.success(tt("deleteSuccess", { entity: t("entity") }));
-              setDeleteTarget(null);
+      {/* key ตาม id: mount ใหม่ต่อใบ ช่องเหตุผลจะไม่ค้างค่าจากใบก่อนหน้า */}
+      <VoidDialog
+        key={voidTarget?.id}
+        open={!!voidTarget}
+        onOpenChange={(open) => !open && setVoidTarget(null)}
+        title={t("voidTitle")}
+        description={t("voidConfirm", { name: voidTarget?.name ?? "" })}
+        isPending={voidPriceList.isPending}
+        onConfirm={(reason) => {
+          if (!voidTarget) return;
+          voidPriceList.mutate(
+            { id: voidTarget.id, reason },
+            {
+              onSuccess: () => {
+                toast.success(t("voidSuccess"));
+                setVoidTarget(null);
+              },
             },
-          });
+          );
         }}
       />
 

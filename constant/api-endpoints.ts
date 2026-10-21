@@ -297,6 +297,10 @@ export const API_ENDPOINTS = {
   PHYSICAL_COUNT_SUBMIT: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/physical-counts/${id}/submit`,
   PRICE_LISTS: (buCode: string) => `/api/proxy/api/config/${buCode}/pricelists`,
+  PRICE_LIST_VOID: (buCode: string, id: string) =>
+    `/api/proxy/api/config/${buCode}/pricelists/${id}/void`,
+  PRICE_LIST_RESTORE: (buCode: string, id: string) =>
+    `/api/proxy/api/config/${buCode}/pricelists/${id}/restore`,
   PRICE_LIST_ACTIVE_BY_VENDOR: (
     buCode: string,
     vendorId: string,
