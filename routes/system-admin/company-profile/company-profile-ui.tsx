@@ -39,9 +39,8 @@ function fieldError(form: Form, name: FormName): string | undefined {
 
 /**
  * กรอบของค่าในโหมดดู — ขนาด/เส้นเท่า input ของโหมดแก้ กด Edit แล้ว layout ไม่กระโดด
- * export ไว้ให้ช่องที่ render เอง (เช่น `LookupCurrency` แบบ readOnly) ใช้กรอบเดียวกัน
  */
-export const VIEW_BOX_CLASS =
+const VIEW_BOX_CLASS =
   "bg-muted/50 min-h-8 w-full rounded-md border px-3 py-1.5 text-sm";
 
 /**
@@ -102,19 +101,31 @@ export function SettingField({
   );
 }
 
+/**
+ * @param helperBelow - คำอธิบายไว้ใต้ช่องกรอก (helper text) แทนใต้ label — ใช้ในฟอร์ม
+ *   company profile: คำอธิบายยาวไม่เท่ากัน ถ้าอยู่เหนือช่อง กรอบของสองช่องในแถว
+ *   เดียวกันจะเหลื่อมกัน (ConfigField ของ default-setting ยังใช้แบบเหนือช่อง)
+ */
 function EditShell({
   label,
   description,
   htmlFor,
   fullWidth,
+  helperBelow,
   children,
 }: {
   readonly label: string;
   readonly description?: string;
   readonly htmlFor?: string;
   readonly fullWidth?: boolean;
+  readonly helperBelow?: boolean;
   readonly children: React.ReactNode;
 }) {
+  const helper = description && (
+    <p className="text-muted-foreground/80 text-micro leading-snug">
+      {description}
+    </p>
+  );
   return (
     <div className={cn("min-w-0 space-y-1", fullWidth && "sm:col-span-2")}>
       <Label
@@ -123,12 +134,9 @@ function EditShell({
       >
         {label}
       </Label>
-      {description && (
-        <p className="text-muted-foreground/80 text-micro leading-snug">
-          {description}
-        </p>
-      )}
+      {!helperBelow && helper}
       {children}
+      {helperBelow && helper}
     </div>
   );
 }
@@ -179,6 +187,7 @@ export function EditableField({
       description={description}
       htmlFor={name}
       fullWidth={fullWidth}
+      helperBelow
     >
       {type === "textarea" ? (
         <Textarea
@@ -305,6 +314,7 @@ export function SelectField({
       description={description}
       htmlFor={name}
       fullWidth={fullWidth}
+      helperBelow
     >
       <SelectControl
         form={form}
@@ -358,7 +368,7 @@ export function NumberFormatField({
     );
   }
   return (
-    <EditShell label={label} description={description}>
+    <EditShell label={label} description={description} helperBelow>
       <div className={showDigits ? "grid grid-cols-2 gap-2" : undefined}>
         <SelectControl
           form={form}
