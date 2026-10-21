@@ -26,6 +26,7 @@ import {
   getDefaultValues,
   getDuplicateValues,
 } from "./pr-form-schema";
+import { getStageActionFlags } from "@/lib/workflow-stage-actions";
 import { useCan } from "@/hooks/use-can";
 import { useProfile } from "@/hooks/use-profile";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
@@ -46,6 +47,8 @@ export function PurchaseRequestForm({
   duplicateFrom,
 }: PurchaseRequestFormProps) {
   const t = useTranslations("procurement.purchaseRequest");
+  // คำนวณครั้งเดียวแล้วส่งให้ทั้งปุ่ม bulk และ footer — null (backend เก่า) = เปิดหมด
+  const stageActions = getStageActionFlags(purchaseRequest?.stage_actions);
   const tv = useTranslations("validation");
   const tfl = useTranslations("field");
   const {
@@ -307,6 +310,7 @@ export function PurchaseRequestForm({
           onApprove={actions.handleApprove}
           onReject={actions.handleReject}
           onReview={actions.handleReview}
+          stageActions={stageActions}
           onPurchaseApprove={actions.handlePurchaseApprove}
           onValidatePurchase={validatePurchase}
         />
@@ -334,6 +338,7 @@ export function PurchaseRequestForm({
           onSplit={actions.handleSplit}
           previousStages={previousStages}
           stagesLoading={stagesLoading}
+          stageActions={stageActions}
           onBulkReview={actions.handleBulkReview}
         />
       </form>

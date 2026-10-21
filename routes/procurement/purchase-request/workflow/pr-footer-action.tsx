@@ -16,6 +16,7 @@ import {
   type ActionDialogItem,
 } from "./pr-action-dialog";
 import { computePurchaseAction } from "./pr-purchase-action";
+import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 
 interface PrFooterActionProps {
   readonly role?: string;
@@ -26,6 +27,8 @@ interface PrFooterActionProps {
   readonly currencyCode?: string;
   readonly previousStages?: StageOption[];
   readonly stagesLoading?: boolean;
+  /** ตัวเลือกที่ stage ปัจจุบันเปิดให้ตัดสิน — AND กับสิทธิ์ตาม role เสมอ ไม่เพิ่มปุ่มที่ role ไม่มี */
+  readonly stageActions: StageActionFlags;
   readonly onSubmitPr?: () => void;
   readonly onApprove?: () => void;
   readonly onReject?: () => void;
@@ -59,6 +62,7 @@ export function PrFooterAction({
   currencyCode,
   previousStages,
   stagesLoading,
+  stageActions,
   onSubmitPr,
   onApprove,
   onReject,
@@ -99,10 +103,19 @@ export function PrFooterAction({
     );
 
   const showSubmit = canSubmit && !isVoided;
+  const canDecide = canApprove || canPurchaseApprove;
+  // flag ปิด = ปุ่มนั้นหาย · ปิด reject แต่ทุกแถวถูก reject แล้ว = ปุ่มไม่มี แต่ต้องบอกเหตุผล
+  // ไม่ใช่เงียบหาย ผู้ใช้จะงงว่าทำไมตัดสินต่อไม่ได้
+  const showApprove = stageActions.approve && purchaseAction === "approved";
+  const showReject = stageActions.reject && purchaseAction === "rejected";
+  const showSendBack = stageActions.sendback && purchaseAction === "review";
+  const showRejectAllBlocked =
+    !stageActions.reject && purchaseAction === "rejected";
   const hasVisibleButton =
     showSubmit ||
     (showWorkflowActions &&
-      ((canApprove && purchaseAction !== "none") || canPurchaseApprove));
+      canDecide &&
+      (showApprove || showReject || showSendBack || showRejectAllBlocked));
 
   const reviewItems: ActionDialogItem[] = items
     .map((item, index) => ({ index, item }))
@@ -178,7 +191,13 @@ export function PrFooterAction({
               </Button>
             )}
 
-            {canApprove && purchaseAction === "approved" && (
+            {canDecide && showRejectAllBlocked && (
+              <span className="text-warning-ink text-xs">
+                {tc("rejectAllNotAllowed")}
+              </span>
+            )}
+
+            {canApprove && showApprove && (
               <Button
                 type="button"
                 size="sm"
@@ -199,7 +218,7 @@ export function PrFooterAction({
               </Button>
             )}
 
-            {canApprove && purchaseAction === "rejected" && (
+            {canApprove && showReject && (
               <Button
                 type="button"
                 size="sm"
@@ -220,7 +239,7 @@ export function PrFooterAction({
               </Button>
             )}
 
-            {canApprove && purchaseAction === "review" && (
+            {canApprove && showSendBack && (
               <Button
                 type="button"
                 size="sm"
@@ -233,7 +252,7 @@ export function PrFooterAction({
               </Button>
             )}
 
-            {canPurchaseApprove && purchaseAction === "approved" && (
+            {canPurchaseApprove && showApprove && (
               <Button
                 type="button"
                 size="sm"
@@ -262,7 +281,7 @@ export function PrFooterAction({
               </Button>
             )}
 
-            {canPurchaseApprove && purchaseAction === "rejected" && (
+            {canPurchaseApprove && showReject && (
               <Button
                 type="button"
                 size="sm"
@@ -283,7 +302,7 @@ export function PrFooterAction({
               </Button>
             )}
 
-            {canPurchaseApprove && purchaseAction === "review" && (
+            {canPurchaseApprove && showSendBack && (
               <Button
                 type="button"
                 size="sm"

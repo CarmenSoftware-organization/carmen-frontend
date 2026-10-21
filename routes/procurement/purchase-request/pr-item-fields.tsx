@@ -61,6 +61,15 @@ import { PR_ITEM_STAGE_STATUS } from "@/types/purchase-request";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { PrAskAiMenu } from "./ai/pr-ask-ai-menu";
 import { runPrAutoAllocate } from "./pr-auto-allocate";
+import {
+  wouldRejectAll,
+  type StageActionFlags,
+} from "@/lib/workflow-stage-actions";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface PrItemFieldsProps {
   readonly form: UseFormReturn<PrFormValues>;
@@ -74,6 +83,8 @@ interface PrItemFieldsProps {
   readonly onSplit?: (detailIds: string[]) => void;
   readonly previousStages?: StageOption[];
   readonly stagesLoading?: boolean;
+  /** ตัวเลือกที่ stage ปัจจุบันเปิดให้ตัดสิน (ผ่าน getStageActionFlags แล้ว) — มีแต่ตัดออก ไม่เพิ่มสิทธิ์ */
+  readonly stageActions: StageActionFlags;
   readonly onBulkReview?: (
     detailIds: string[],
     messages: Record<number, string>,
@@ -93,6 +104,7 @@ export function PrItemFields({
   onSplit,
   previousStages,
   stagesLoading,
+  stageActions,
   onBulkReview,
 }: PrItemFieldsProps) {
   const t = useTranslations("procurement.purchaseRequest");
@@ -113,6 +125,7 @@ export function PrItemFields({
     remove: removeItem,
   } = useFieldArray({ control: form.control, name: "items" });
 
+  const watchedItems = useWatch({ control: form.control, name: "items" });
   const workflowId = useWatch({ control: form.control, name: "workflow_id" });
   const canAddItem = !!workflowId;
 
@@ -227,6 +240,19 @@ export function PrItemFields({
   const getSelectedIndices = (): number[] => {
     return selectedRows.map((row) => row.index);
   };
+
+  // stage ที่ปิด reject แต่เปิด approve ยังปัดตกบางแถวได้ (partial reject) — ห้ามแค่
+  // ให้ทุกแถวกลายเป็น reject เพราะนั่นคือการปัดตกทั้งใบ · แถวที่ reject อยู่แล้วนับด้วย
+  // นิยาม reject เดียวกับ computePurchaseAction ที่คุมปุ่มใน footer
+  const rejectWouldRejectAll =
+    !stageActions.reject &&
+    wouldRejectAll(
+      (watchedItems ?? []).map((item) => item?.current_stage_status ?? ""),
+      selectedRows.map((row) => row.index),
+      (s) =>
+        s === PR_ITEM_STAGE_STATUS.REJECT ||
+        s === PR_ITEM_STAGE_STATUS.REJECTED,
+    );
 
   const guardSelectedItemErrors = async (): Promise<boolean> => {
     await form.trigger("items");
@@ -401,36 +427,61 @@ export function PrItemFields({
               รายแถวได้ ปุ่มที่กดไม่ได้อย่างน้อยยังบอกว่ามีทางนี้อยู่ */}
           {canBulkAction && (
             <>
-              <Button
-                type="button"
-                variant="success"
-                size="sm"
-                disabled={!hasSelection}
-                onClick={handleBulkApprove}
-              >
-                <Check />
-                {tc("approve")}
-              </Button>
-              <Button
-                type="button"
-                variant="warning"
-                size="sm"
-                disabled={!hasSelection}
-                onClick={handleBulkReview}
-              >
-                <Eye />
-                {t("reviewTitle")}
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                disabled={!hasSelection}
-                onClick={handleBulkReject}
-              >
-                <X />
-                {tc("reject")}
-              </Button>
+              {stageActions.approve && (
+                <Button
+                  type="button"
+                  variant="success"
+                  size="sm"
+                  disabled={!hasSelection}
+                  onClick={handleBulkApprove}
+                >
+                  <Check />
+                  {tc("approve")}
+                </Button>
+              )}
+              {stageActions.sendback && (
+                <Button
+                  type="button"
+                  variant="warning"
+                  size="sm"
+                  disabled={!hasSelection}
+                  onClick={handleBulkReview}
+                >
+                  <Eye />
+                  {t("reviewTitle")}
+                </Button>
+              )}
+              {(stageActions.reject || stageActions.approve) &&
+                (rejectWouldRejectAll ? (
+                  <Tooltip>
+                    {/* ปุ่ม disabled ไม่ยิง pointer event — ต้องห่อด้วย span ให้ tooltip จับ hover ได้ */}
+                    <TooltipTrigger asChild>
+                      <span tabIndex={0}>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          disabled
+                        >
+                          <X />
+                          {tc("reject")}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>{tc("rejectAllNotAllowed")}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    disabled={!hasSelection}
+                    onClick={handleBulkReject}
+                  >
+                    <X />
+                    {tc("reject")}
+                  </Button>
+                ))}
               {prId && (
                 <Button
                   type="button"
