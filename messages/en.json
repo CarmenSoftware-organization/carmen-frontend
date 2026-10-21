@@ -2380,7 +2380,6 @@
       "issueLastNotCompleted": "Last stage should be \"Completed\"",
       "issueNoSla": "Stage \"{stage}\" has no SLA configured",
       "issueEmptyName": "Stage has empty name",
-      "insights": "Insights",
       "viewFlow": "Flow",
       "viewDiagram": "Diagram",
       "viewMode": "View mode",
@@ -2448,7 +2447,8 @@
         "blockedDescription": "{count} document(s) are still in progress on this workflow. Deleting it would take away the stages they are moving through, so finish or void them first.",
         "structureLocked": "{count} document(s) are moving through these stages right now, so stages can't be added, renamed or reordered and routing can't change. Everything else on this form still saves.",
         "lockedAction": "Locked — {count} document(s) are still in progress on this workflow",
-        "viewInProgress": "View in-progress documents"
+        "viewInProgress": "View in-progress documents",
+        "label": "Documents"
       },
       "issueShort": {
         "no_users_assigned": "No users assigned",
@@ -2498,17 +2498,19 @@
       "productsNoneSelected": "No products selected yet.",
       "productsNoneSelectedWarning": "No products selected — documents on this workflow can't add any item until you pick some.",
       "insightsChecks": "Checks",
-      "insightsJourney": "Journey",
       "insightsMatrix": "Stages at a glance",
       "insightsNoProblems": "No problems found — this workflow is ready to save.",
       "insightsRuleIssue": "Rule “{rule}”: {issue}",
-      "insightsNoSla": "No SLA",
       "insightsColStage": "Stage",
       "insightsColUsers": "Users",
       "insightsColHidden": "Hidden",
       "insightsHiddenPrice": "Price",
       "insightsHiddenTotal": "Total",
-      "insightsRecipients": "{count, plural, one {# recipient notified} other {# recipients notified}}"
+      "insightsRecipients": "{count, plural, one {# recipient notified} other {# recipients notified}}",
+      "overview": "Overview",
+      "insightsLegendActive": "Action enabled",
+      "insightsLegendRecipients": "Recipients notified",
+      "stageFormErrors": "Some stage fields are invalid"
     },
     "runningCode": {
       "entity": "Running Code",

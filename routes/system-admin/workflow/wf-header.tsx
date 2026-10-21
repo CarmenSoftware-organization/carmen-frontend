@@ -6,6 +6,11 @@ import { Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { WarningDialog } from "@/components/ui/warning-dialog";
 import { FormToolbar } from "@/components/share/form-toolbar";
@@ -58,16 +63,26 @@ export function WfHeader({
     docCounts && (hasInProgress || quietCounts.length > 0) ? (
       <>
         <Separator orientation="vertical" className="mx-0.5 h-3.5" />
+        {/* ป้ายกลุ่ม — ไม่มีมันตัวเลขชุดนี้ดูเหมือนสถิติของ workflow เอง ไม่ใช่จำนวนเอกสารที่ใช้มันอยู่ */}
+        <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+          {tw("label")}
+        </span>
         {hasInProgress && (
-          <Badge
-            variant="warning-light"
-            size="sm"
-            className="gap-1 tabular-nums"
-            title={tw("inProgressBlocksEdit")}
-          >
-            <Lock className="size-3" aria-hidden="true" />
-            {tw("inProgress")}: {docCounts.in_progress}
-          </Badge>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge
+                variant="warning-light"
+                size="sm"
+                className="gap-1 tabular-nums"
+              >
+                <Lock className="size-3" aria-hidden="true" />
+                {tw("inProgress")}: {docCounts.in_progress}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-64">
+              {tw("inProgressBlocksEdit")}
+            </TooltipContent>
+          </Tooltip>
         )}
         {quietCounts.map((c) => (
           <span

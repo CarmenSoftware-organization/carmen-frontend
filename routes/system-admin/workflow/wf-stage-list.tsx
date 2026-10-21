@@ -58,7 +58,7 @@ interface WfStageListProps {
   readonly isDisabled: boolean;
   /** โครงถูกล็อกเพราะมีเอกสารค้าง — ปุ่มเพิ่มแสดงเป็นสีเทาพร้อมเหตุผลนี้แทนการหายไป */
   readonly lockedReason?: string;
-  /** ไฮไลต์ขั้นที่เลือกเฉพาะตอนแท็บ Stages เปิดอยู่ — แท็บอื่นไม่ได้ "อยู่ที่" ขั้นไหน */
+  /** ไฮไลต์ขั้นที่เลือกเฉพาะตอนฝั่งขวาแสดงรายละเอียด stage — แท็บระดับ workflow ไม่ได้ "อยู่ที่" ขั้นไหน */
   readonly showSelection?: boolean;
   readonly routingRules?: RoutingRule[];
   /**
@@ -66,6 +66,8 @@ interface WfStageListProps {
    * และข้อความสั้น ๆ ใต้ชื่อขั้นที่มีปัญหา (ทุก issue ผูกกับ stageIndex อยู่แล้ว)
    */
   readonly issues?: readonly ValidationIssue[];
+  /** มี error ของ zod ใน stage — แท็บ Stages ถูกตัดไปแล้ว หัวรางจึงเป็นที่เดียวที่บอกได้ */
+  readonly hasFormErrors?: boolean;
   readonly className?: string;
 }
 
@@ -124,6 +126,7 @@ export function WfStageList({
   showSelection = true,
   routingRules = [],
   issues = [],
+  hasFormErrors = false,
   className,
 }: WfStageListProps) {
   const { fields, move, insert } = fieldArray;
@@ -271,7 +274,13 @@ export function WfStageList({
             {t("issueCountWarning", { count: warningCount })}
           </span>
         )}
-        {issues.length === 0 && (
+        {hasFormErrors && (
+          <span className="text-destructive inline-flex items-center gap-1 font-medium">
+            <AlertCircle className="size-3" aria-hidden="true" />
+            {t("stageFormErrors")}
+          </span>
+        )}
+        {issues.length === 0 && !hasFormErrors && (
           <span className="text-success-ink inline-flex items-center gap-1">
             <CheckCircle2 className="size-3" aria-hidden="true" />
             {t("validationReadyShort")}
