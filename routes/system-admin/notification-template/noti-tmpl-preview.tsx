@@ -61,13 +61,13 @@ export function NotiTmplPreview({
           ไม่ใช่การ์ดซ้อนการ์ด (ทั้งบล็อกนี้อยู่ในการ์ดของ SettingSection แล้ว) */}
       <div className="bg-muted/50 flex-1 rounded-lg p-3 sm:p-4">
         <div className="bg-card flex gap-2.5 rounded-lg border p-3 shadow-sm">
-          <div className="bg-info/15 text-info-ink text-micro flex size-7 shrink-0 items-center justify-center rounded-full font-bold">
+          <div className="bg-info/15 text-info-ink flex size-7 shrink-0 items-center justify-center rounded-full text-micro font-bold">
             C
           </div>
           <div className="min-w-0 flex-1 space-y-0.5">
             <div className="flex items-baseline justify-between gap-2">
               <p className="truncate text-xs font-semibold">{name}</p>
-              <span className="text-muted-foreground text-micro shrink-0">
+              <span className="text-muted-foreground shrink-0 text-micro">
                 {t("previewNow")}
               </span>
             </div>
@@ -79,7 +79,7 @@ export function NotiTmplPreview({
       </div>
 
       {unknown.length > 0 && (
-        <p className="text-destructive text-micro flex items-start gap-1.5">
+        <p className="text-destructive flex items-start gap-1.5 text-micro">
           <AlertTriangle className="mt-px size-3 shrink-0" aria-hidden />
           <span>
             {t("previewUnknownVars")}{" "}
