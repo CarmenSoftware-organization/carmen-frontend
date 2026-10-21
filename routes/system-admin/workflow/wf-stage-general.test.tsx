@@ -86,7 +86,7 @@ describe("WfStageGeneral — show signature in report", () => {
     const user = userEvent.setup();
     renderStage([makeStage(false, "A")], 0);
 
-    const cb = screen.getByRole("checkbox", { name: label });
+    const cb = screen.getByRole("switch", { name: label });
     expect(cb).not.toBeChecked();
 
     await user.click(cb);
@@ -104,7 +104,7 @@ describe("WfStageGeneral — show signature in report", () => {
     ];
     renderStage(stages, 5);
 
-    expect(screen.getByRole("checkbox", { name: label })).toBeDisabled();
+    expect(screen.getByRole("switch", { name: label })).toBeDisabled();
     expect(
       screen.getByText(en.systemAdmin.workflow.signatureLimitReached),
     ).toBeInTheDocument();
@@ -121,7 +121,7 @@ describe("WfStageGeneral — show signature in report", () => {
     ];
     renderStage(stages, 0);
 
-    const cb = screen.getByRole("checkbox", { name: label });
+    const cb = screen.getByRole("switch", { name: label });
     expect(cb).toBeEnabled();
 
     await user.click(cb);
@@ -139,7 +139,7 @@ describe("WfStageGeneral — show signature in report", () => {
 
     renderStage([makeStageWithoutSignatureKey("A")], 0);
 
-    const cb = screen.getByRole("checkbox", { name: label });
+    const cb = screen.getByRole("switch", { name: label });
     expect(cb).not.toBeChecked();
 
     await user.click(cb);

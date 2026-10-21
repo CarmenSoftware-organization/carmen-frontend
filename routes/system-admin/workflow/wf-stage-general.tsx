@@ -1,5 +1,5 @@
-import { Controller, type UseFormReturn } from "react-hook-form";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Controller, type Path, type UseFormReturn } from "react-hook-form";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -14,10 +14,16 @@ import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "use-intl";
 import {
   Field,
+  FieldContent,
+  FieldDescription,
   FieldGroup,
   FieldLabel,
+  FieldLegend,
   FieldPlainText,
+  FieldSeparator,
+  FieldSet,
 } from "@/components/ui/field";
+import { cn } from "@/lib/utils";
 import { WORKFLOW_TYPE, type Role } from "@/types/workflows";
 import type { WorkflowCreateModel } from "./wf-form-schema";
 import { getAllowedRoles } from "./wf-role-colors";
@@ -27,6 +33,29 @@ import {
 } from "./wf-signature-limit";
 
 const slaUnitValues = ["minutes", "hours", "days"] as const;
+
+// จุดสีใช้ token เดียวกับปุ่ม action บนเอกสาร (approve / reject / send back) ให้ admin
+// จับคู่ได้ทันทีว่าเปิดตัวไหนแล้วปุ่มไหนโผล่ — สีพื้นใช้ได้ (ไม่ใช่สีตัวอักษร)
+const ACTION_ROWS = [
+  {
+    key: "approve",
+    labelKey: "actionApprove",
+    hintKey: "actionApproveHint",
+    dotClass: "bg-success",
+  },
+  {
+    key: "reject",
+    labelKey: "actionReject",
+    hintKey: "actionRejectHint",
+    dotClass: "bg-destructive",
+  },
+  {
+    key: "sendback",
+    labelKey: "actionSendBack",
+    hintKey: "actionSendBackHint",
+    dotClass: "bg-warning",
+  },
+] as const;
 
 interface WfStageGeneralProps {
   readonly form: UseFormReturn<WorkflowCreateModel>;
@@ -186,11 +215,12 @@ export function WfStageGeneral({
   }
 
   return (
-    <FieldGroup className="gap-4 pt-4">
-      <div className="grid grid-cols-1 gap-4 @md:grid-cols-2">
+    <FieldGroup className="gap-5 pt-4">
+      <div className="grid grid-cols-1 gap-4 @md:grid-cols-2 @2xl:grid-cols-3">
         <Field>
-          <FieldLabel>{t("stageName")}</FieldLabel>
+          <FieldLabel htmlFor={`${prefix}-name`}>{t("stageName")}</FieldLabel>
           <Input
+            id={`${prefix}-name`}
             size="sm"
             disabled={isDisabled || isNameDisabled}
             {...form.register(`data.stages.${index}.name`)}
@@ -208,7 +238,7 @@ export function WfStageGeneral({
                 onValueChange={field.onChange}
                 disabled={isDisabled}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label={t("stageRole")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -226,12 +256,95 @@ export function WfStageGeneral({
             )}
           />
         </Field>
+
+        {/* SLA เป็นค่าเดียว (จำนวน + หน่วย) จึงอยู่ช่องเดียวกัน ไม่แยกเป็นสอง field เต็มแถว */}
+        <Field>
+          <FieldLabel htmlFor={`${prefix}-sla`}>{t("sla")}</FieldLabel>
+          <div className="grid grid-cols-[minmax(0,1fr)_8rem] gap-2">
+            <Input
+              id={`${prefix}-sla`}
+              type="number"
+              size="sm"
+              className="tabular-nums"
+              disabled={isDisabled}
+              {...form.register(`data.stages.${index}.sla`)}
+            />
+            <Controller
+              control={form.control}
+              name={`data.stages.${index}.sla_unit`}
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isDisabled}
+                >
+                  <SelectTrigger aria-label={t("slaUnit")} className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {slaUnitValues.map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {t(slaUnitLabelKeys[value])}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+        </Field>
+
+        {isFirst && (
+          <Field>
+            <FieldLabel>{t("creatorAccess")}</FieldLabel>
+            <Controller
+              control={form.control}
+              name={`data.stages.${index}.creator_access`}
+              render={({ field }) => (
+                <RadioGroup
+                  value={field.value ?? "only_creator"}
+                  onValueChange={field.onChange}
+                  disabled={isDisabled}
+                  className="flex min-h-8 items-center gap-4"
+                >
+                  <Field orientation="horizontal" className="w-auto gap-2">
+                    <RadioGroupItem
+                      value="only_creator"
+                      id={`${prefix}-creator-only`}
+                    />
+                    <FieldLabel
+                      htmlFor={`${prefix}-creator-only`}
+                      className="font-normal"
+                    >
+                      {t("onlyCreator")}
+                    </FieldLabel>
+                  </Field>
+                  <Field orientation="horizontal" className="w-auto gap-2">
+                    <RadioGroupItem
+                      value="all_department"
+                      id={`${prefix}-all-dept`}
+                    />
+                    <FieldLabel
+                      htmlFor={`${prefix}-all-dept`}
+                      className="font-normal"
+                    >
+                      {t("allDepartment")}
+                    </FieldLabel>
+                  </Field>
+                </RadioGroup>
+              )}
+            />
+          </Field>
+        )}
       </div>
 
       <Field>
-        <FieldLabel>{tfl("description")}</FieldLabel>
+        <FieldLabel htmlFor={`${prefix}-description`}>
+          {tfl("description")}
+        </FieldLabel>
         <Textarea
-          className="min-h-[80px]"
+          id={`${prefix}-description`}
+          className="min-h-14"
           disabled={isDisabled}
           placeholder={tfl("optional")}
           maxLength={256}
@@ -239,231 +352,145 @@ export function WfStageGeneral({
         />
       </Field>
 
-      {isFirst && (
-        <Field>
-          <FieldLabel>{t("creatorAccess")}</FieldLabel>
-          <Controller
-            control={form.control}
-            name={`data.stages.${index}.creator_access`}
-            render={({ field }) => (
-              <RadioGroup
-                value={field.value ?? "only_creator"}
-                onValueChange={field.onChange}
-                disabled={isDisabled}
-                className="flex gap-3"
-              >
-                <div className="flex items-center gap-1">
-                  <RadioGroupItem
-                    value="only_creator"
-                    id={`${prefix}-creator-only`}
-                  />
-                  <label
-                    htmlFor={`${prefix}-creator-only`}
-                    className="text-sm font-medium"
-                  >
-                    {t("onlyCreator")}
-                  </label>
-                </div>
-                <div className="flex items-center gap-1">
-                  <RadioGroupItem
-                    value="all_department"
-                    id={`${prefix}-all-dept`}
-                  />
-                  <label
-                    htmlFor={`${prefix}-all-dept`}
-                    className="text-sm font-medium"
-                  >
-                    {t("allDepartment")}
-                  </label>
-                </div>
-              </RadioGroup>
-            )}
-          />
-        </Field>
-      )}
+      <FieldSeparator />
 
-      <div className="grid grid-cols-1 gap-4 @md:grid-cols-2">
-        <Field>
-          <FieldLabel>{t("sla")}</FieldLabel>
-          <Input
-            type="number"
-            size="sm"
-            disabled={isDisabled}
-            {...form.register(`data.stages.${index}.sla`)}
-          />
-        </Field>
-        <Field>
-          <FieldLabel>{t("slaUnit")}</FieldLabel>
-          <Controller
-            control={form.control}
-            name={`data.stages.${index}.sla_unit`}
-            render={({ field }) => (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isDisabled}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {slaUnitValues.map((value) => (
-                    <SelectItem key={value} value={value}>
-                      {t(slaUnitLabelKeys[value])}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </Field>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 @lg:grid-cols-[2fr_1fr_1fr]">
-        <div>
-          <FieldLabel className="mb-1.5">{t("availableActions")}</FieldLabel>
-          <div className="flex flex-wrap gap-x-3 gap-y-1">
-            <Field orientation="horizontal">
-              <Controller
-                control={form.control}
-                name={`data.stages.${index}.available_actions.submit.is_active`}
-                render={({ field }) => (
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled={isDisabled}
-                  />
-                )}
-              />
-              <FieldLabel>{t("actionSubmit")}</FieldLabel>
-            </Field>
-
-            {!isFirst && (
-              <>
-                <Field orientation="horizontal">
-                  <Controller
-                    control={form.control}
-                    name={`data.stages.${index}.available_actions.approve.is_active`}
-                    render={({ field }) => (
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={isDisabled}
-                      />
-                    )}
-                  />
-                  <FieldLabel>
-                    <Badge variant="success" size="sm" className="font-medium">
-                      {t("actionApprove")}
-                    </Badge>
-                  </FieldLabel>
-                </Field>
-                <Field orientation="horizontal">
-                  <Controller
-                    control={form.control}
-                    name={`data.stages.${index}.available_actions.reject.is_active`}
-                    render={({ field }) => (
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={isDisabled}
-                      />
-                    )}
-                  />
-                  <FieldLabel>
-                    <Badge
-                      variant="destructive"
-                      size="sm"
-                      className="font-medium"
-                    >
-                      {t("actionReject")}
-                    </Badge>
-                  </FieldLabel>
-                </Field>
-                <Field orientation="horizontal">
-                  <Controller
-                    control={form.control}
-                    name={`data.stages.${index}.available_actions.sendback.is_active`}
-                    render={({ field }) => (
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={isDisabled}
-                      />
-                    )}
-                  />
-                  <FieldLabel>
-                    <Badge variant="warning" size="sm" className="font-medium">
-                      {t("actionSendBack")}
-                    </Badge>
-                  </FieldLabel>
-                </Field>
-              </>
-            )}
-          </div>
-        </div>
-
-        {hideFieldsApplicable && (
-          <div>
-            <FieldLabel className="mb-1.5">{t("hideFields")}</FieldLabel>
-            <div className="flex flex-wrap gap-x-3 gap-y-1">
-              <Field orientation="horizontal">
-                <Controller
-                  control={form.control}
-                  name={`data.stages.${index}.hide_fields.price_per_unit`}
-                  render={({ field }) => (
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled={isDisabled}
-                    />
-                  )}
-                />
-                <FieldLabel>{t("pricePerUnit")}</FieldLabel>
-              </Field>
-              <Field orientation="horizontal">
-                <Controller
-                  control={form.control}
-                  name={`data.stages.${index}.hide_fields.total_price`}
-                  render={({ field }) => (
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled={isDisabled}
-                    />
-                  )}
-                />
-                <FieldLabel>{t("totalPrice")}</FieldLabel>
-              </Field>
-            </div>
-          </div>
-        )}
-
-        <div>
-          <FieldLabel className="mb-1.5">
-            {t("showSignatureInReport")}
-          </FieldLabel>
-          <Field orientation="horizontal">
-            <Controller
-              control={form.control}
-              name={`data.stages.${index}.is_show_signature`}
-              render={({ field }) => (
-                <Checkbox
-                  aria-label={t("showSignatureInReport")}
-                  checked={field.value ?? false}
-                  onCheckedChange={field.onChange}
-                  disabled={isDisabled || signatureDisabled}
-                />
-              )}
+      <FieldSet className="gap-3">
+        <FieldLegend variant="label" className="mb-0">
+          {t("availableActions")}
+        </FieldLegend>
+        <FieldDescription>{t("availableActionsHint")}</FieldDescription>
+        <div className="grid grid-cols-1 gap-x-6 gap-y-3 @lg:grid-cols-3">
+          {/* Submit มีความหมายเฉพาะ stage แรก — stage อนุมัติไม่ต้องเห็นตัวเลือกนี้ */}
+          {isFirst ? (
+            <StageSwitchRow
+              form={form}
+              id={`${prefix}-action-submit`}
+              name={`data.stages.${index}.available_actions.submit.is_active`}
+              label={t("actionSubmit")}
+              description={t("actionSubmitHint")}
+              disabled={isDisabled}
             />
-          </Field>
-          {signatureDisabled && (
-            <p className="text-muted-foreground mt-1 text-xs">
-              {t("signatureLimitReached")}
-            </p>
+          ) : (
+            ACTION_ROWS.map((action) => (
+              <StageSwitchRow
+                key={action.key}
+                form={form}
+                id={`${prefix}-action-${action.key}`}
+                name={`data.stages.${index}.available_actions.${action.key}.is_active`}
+                label={
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className={cn("size-2 rounded-full", action.dotClass)}
+                    />
+                    {t(action.labelKey)}
+                  </>
+                }
+                description={t(action.hintKey)}
+                disabled={isDisabled}
+              />
+            ))
           )}
         </div>
-      </div>
+      </FieldSet>
+
+      <FieldSeparator />
+
+      <FieldSet className="gap-3">
+        <FieldLegend variant="label" className="mb-0">
+          {t("visibilitySection")}
+        </FieldLegend>
+        <FieldDescription>{t("visibilitySectionHint")}</FieldDescription>
+        <div className="grid grid-cols-1 gap-x-6 gap-y-3 @lg:grid-cols-3">
+          {hideFieldsApplicable && (
+            <>
+              <StageSwitchRow
+                form={form}
+                id={`${prefix}-hide-price-per-unit`}
+                name={`data.stages.${index}.hide_fields.price_per_unit`}
+                label={t("hidePricePerUnit")}
+                description={t("hidePricePerUnitHint")}
+                disabled={isDisabled}
+              />
+              <StageSwitchRow
+                form={form}
+                id={`${prefix}-hide-total-price`}
+                name={`data.stages.${index}.hide_fields.total_price`}
+                label={t("hideTotalPrice")}
+                description={t("hideTotalPriceHint")}
+                disabled={isDisabled}
+              />
+            </>
+          )}
+          <StageSwitchRow
+            form={form}
+            id={`${prefix}-show-signature`}
+            name={`data.stages.${index}.is_show_signature`}
+            label={t("showSignatureInReport")}
+            description={
+              signatureDisabled
+                ? t("signatureLimitReached")
+                : t("showSignatureHint")
+            }
+            disabled={isDisabled || signatureDisabled}
+          />
+        </div>
+      </FieldSet>
     </FieldGroup>
+  );
+}
+
+type StageSwitchName = Extract<
+  Path<WorkflowCreateModel>,
+  | `data.stages.${number}.available_actions.${string}.is_active`
+  | `data.stages.${number}.hide_fields.${string}`
+  | `data.stages.${number}.is_show_signature`
+>;
+
+/**
+ * แถวตั้งค่าแบบเปิด/ปิดของ stage — switch + ชื่อ + คำอธิบายสั้น (pattern เดียวกับหน้า settings อื่น)
+ * @param form - ฟอร์ม workflow
+ * @param id - id ของ switch ผูกกับ label
+ * @param name - path ของค่า boolean ในฟอร์ม
+ * @param label - ชื่อการตั้งค่า (ใส่จุดสีนำหน้าได้)
+ * @param description - คำอธิบายว่าเปิดแล้วเกิดอะไร
+ * @param disabled - ปิดการแก้ไข
+ */
+function StageSwitchRow({
+  form,
+  id,
+  name,
+  label,
+  description,
+  disabled,
+}: {
+  readonly form: UseFormReturn<WorkflowCreateModel>;
+  readonly id: string;
+  readonly name: StageSwitchName;
+  readonly label: React.ReactNode;
+  readonly description: string;
+  readonly disabled: boolean;
+}) {
+  return (
+    <Controller
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <Field orientation="horizontal" data-disabled={disabled}>
+          <Switch
+            id={id}
+            checked={Boolean(field.value)}
+            onCheckedChange={field.onChange}
+            disabled={disabled}
+          />
+          <FieldContent className="gap-0.5">
+            <FieldLabel htmlFor={id} className="font-medium">
+              {label}
+            </FieldLabel>
+            <FieldDescription>{description}</FieldDescription>
+          </FieldContent>
+        </Field>
+      )}
+    />
   );
 }
