@@ -64,6 +64,11 @@ export interface Recipients {
   requestor: RecipientNotification;
   current_approve: RecipientNotification;
   next_step: RecipientNotification;
+  /**
+   * ผู้รับผิดชอบของ stage ก่อนหน้า stage ของผู้กด (dispatcher ฝั่ง backend: slot `previous_step`)
+   * ตอนนี้ใช้จริงแค่ตอนปฏิเสธ — workflow เก่าไม่มีคีย์นี้ (ดู `moveRejectPreviousApprover`)
+   */
+  previous_step?: RecipientNotification;
 }
 
 export interface Action {

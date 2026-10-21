@@ -25,11 +25,13 @@ export function makeRecipients(
   requestor: boolean,
   currentApprove: boolean,
   nextStep: boolean,
+  previousStep = false,
 ): Recipients {
   return {
     requestor: emptyRecipientNotification(requestor),
     current_approve: emptyRecipientNotification(currentApprove),
     next_step: emptyRecipientNotification(nextStep),
+    previous_step: emptyRecipientNotification(previousStep),
   };
 }
 
@@ -86,6 +88,8 @@ const recipientsSchema = z.object({
   requestor: recipientNotificationSchema,
   current_approve: recipientNotificationSchema,
   next_step: recipientNotificationSchema,
+  // ต้องประกาศไว้ ไม่งั้น zod ตัดทิ้งตอน parse แล้วค่าที่ตั้งไว้หายเมื่อกดเซฟ
+  previous_step: recipientNotificationSchema.optional(),
 });
 
 const actionSchema = z.object({
@@ -237,8 +241,45 @@ export function getWorkflowFormDefaults(
     workflow_type: workflow.workflow_type,
     is_active: workflow.is_active,
     description: workflow.description ?? "",
-    data: parsedData.data,
+    data: {
+      ...parsedData.data,
+      stages: moveRejectPreviousApprover(parsedData.data.stages),
+    },
   };
+}
+
+/**
+ * ย้ายค่าแถว "ผู้อนุมัติขั้นก่อนหน้า" ตอนปฏิเสธจาก `current_approve` ไป `previous_step`
+ *
+ * หน้านี้เคยผูกแถวนั้นกับ `current_approve` แต่ dispatcher ฝั่ง backend ส่ง `current_approve`
+ * ให้ผู้กดปฏิเสธเอง ส่วนผู้อนุมัติขั้นก่อนหน้าคือ `previous_step` — stage ไหนที่ reject ยังไม่มี
+ * `previous_step` ให้ยกค่าเดิมของ `current_approve` ไปไว้ที่ `previous_step` แล้วปิด
+ * `current_approve` (ตรงกับ seed step `move-reject-previous` ของ backend) stage ที่มี
+ * `previous_step` แล้วไม่แตะ จึงเรียกซ้ำได้ ไม่แก้ของเดิม
+ * @param stages - stage ที่ parse แล้ว
+ * @returns สำเนาที่ reject ของทุก stage มี `previous_step`
+ */
+export function moveRejectPreviousApprover<
+  S extends { available_actions: { reject: { recipients: Recipients } } },
+>(stages: S[]): S[] {
+  return stages.map((stage) => {
+    const reject = stage.available_actions.reject;
+    if (reject.recipients.previous_step !== undefined) return stage;
+    return {
+      ...stage,
+      available_actions: {
+        ...stage.available_actions,
+        reject: {
+          ...reject,
+          recipients: {
+            ...reject.recipients,
+            previous_step: reject.recipients.current_approve,
+            current_approve: emptyRecipientNotification(false),
+          },
+        },
+      },
+    };
+  });
 }
 
 export function buildDefaultStages(): Stage[] {
@@ -341,20 +382,26 @@ export function syncRecipientChannels(
           {
             ...config,
             recipients: Object.fromEntries(
-              Object.entries(config.recipients).map(([slot, recipient]) => [
-                slot,
-                {
-                  ...recipient,
-                  is_notification: recipient.is_active,
-                  notification_channel: {
-                    ...recipient.notification_channel,
-                    app: {
-                      ...recipient.notification_channel.app,
-                      is_active: recipient.is_active,
+              Object.entries(config.recipients)
+                // `previous_step` เป็น optional — ข้ามคีย์ที่ไม่มีค่า
+                .filter(
+                  (entry): entry is [string, RecipientNotification] =>
+                    entry[1] !== undefined,
+                )
+                .map(([slot, recipient]) => [
+                  slot,
+                  {
+                    ...recipient,
+                    is_notification: recipient.is_active,
+                    notification_channel: {
+                      ...recipient.notification_channel,
+                      app: {
+                        ...recipient.notification_channel.app,
+                        is_active: recipient.is_active,
+                      },
                     },
                   },
-                },
-              ]),
+                ]),
             ),
           },
         ]),

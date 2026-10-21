@@ -4,7 +4,13 @@ import type { Stage } from "@/types/workflows";
 export type SeededTemplateIds = ReadonlyMap<string, string>;
 
 const ACTIONS = ["submit", "approve", "reject", "sendback"] as const;
-const SLOTS = ["requestor", "current_approve", "next_step"] as const;
+// เติมเฉพาะ code ที่มีใน map — ตอนนี้ previous_step มีแค่ `wf.reject.previous_step`
+const SLOTS = [
+  "requestor",
+  "current_approve",
+  "next_step",
+  "previous_step",
+] as const;
 
 /**
  * เติม template เริ่มต้นให้ช่องที่ยังว่าง (`""`) ตาม code `wf.<action>.<slot>`

@@ -18,7 +18,8 @@ import type { WorkflowCreateModel } from "./wf-form-schema";
 import { ACTION_DOT_CLASS } from "./wf-action-meta";
 
 type WfAction = "submit" | "approve" | "reject" | "sendback";
-type WfRecipient = "requestor" | "current_approve" | "next_step";
+type WfRecipient =
+  "requestor" | "current_approve" | "next_step" | "previous_step";
 
 interface WfStageNotificationsProps {
   readonly form: UseFormReturn<WorkflowCreateModel>;
@@ -172,16 +173,26 @@ function NotificationSection({
           label={t("requester")}
           isDisabled={isDisabled}
         />
-        <RecipientRow
-          form={form}
-          index={index}
-          action={action}
-          recipient="current_approve"
-          label={
-            action === "reject" ? t("previousApprovers") : t("currentApprover")
-          }
-          isDisabled={isDisabled}
-        />
+        {/* reject: dispatcher ส่ง `current_approve` ให้ผู้กดปฏิเสธเอง ผู้อนุมัติขั้นก่อนหน้าคือ `previous_step` */}
+        {action === "reject" ? (
+          <RecipientRow
+            form={form}
+            index={index}
+            action={action}
+            recipient="previous_step"
+            label={t("previousApprovers")}
+            isDisabled={isDisabled}
+          />
+        ) : (
+          <RecipientRow
+            form={form}
+            index={index}
+            action={action}
+            recipient="current_approve"
+            label={t("currentApprover")}
+            isDisabled={isDisabled}
+          />
+        )}
         {showNextStep && (
           <RecipientRow
             form={form}
@@ -279,7 +290,7 @@ function RecipientRow({
           name={`${base}.notification_channel.app.notification_template_id`}
           render={({ field }) => (
             <LookupNotificationTemplate
-              value={field.value}
+              value={field.value ?? ""}
               onValueChange={field.onChange}
               channelType="app"
               disabled={isDisabled || !isActive}
