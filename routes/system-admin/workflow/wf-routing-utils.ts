@@ -5,6 +5,15 @@ type RoutingRule = WorkflowCreateModel["data"]["routing_rules"][number];
 export type RoutingRuleIssue =
   "unknownTrigger" | "noField" | "noValue" | "category" | "badTarget";
 
+/** คีย์ i18n (namespace `systemAdmin.workflow`) ของข้อความเตือนแต่ละแบบ — ใช้ทั้งแท็บ Routing และ Insights */
+export const ROUTING_ISSUE_KEY: Record<RoutingRuleIssue, string> = {
+  unknownTrigger: "routingIssueUnknownTrigger",
+  noField: "routingIssueNoField",
+  noValue: "routingIssueNoValue",
+  category: "routingIssueCategory",
+  badTarget: "routingIssueBadTarget",
+};
+
 /**
  * ขั้นที่เลือกเป็นปลายทางได้ — เฉพาะขั้นที่อยู่หลังขั้นที่กฎทำงาน
  *

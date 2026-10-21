@@ -44,7 +44,7 @@ import {
   routingRuleIssue,
   routingSkippedStages,
   routingTargetOptions,
-  type RoutingRuleIssue,
+  ROUTING_ISSUE_KEY,
 } from "./wf-routing-utils";
 import { CategoryCheckboxList } from "./wf-routing-category-list";
 import { WfStructureAddButton } from "./wf-structure-lock-notice";
@@ -62,14 +62,6 @@ const OPERATOR_SYMBOL: Record<string, string> = {
   lt: "<",
   gte: "≥",
   lte: "≤",
-};
-
-const ISSUE_KEY: Record<RoutingRuleIssue, string> = {
-  unknownTrigger: "routingIssueUnknownTrigger",
-  noField: "routingIssueNoField",
-  noValue: "routingIssueNoValue",
-  category: "routingIssueCategory",
-  badTarget: "routingIssueBadTarget",
 };
 
 interface WfRoutingProps {
@@ -660,7 +652,7 @@ function RuleDetail({
           className="border-warning/40 bg-warning/10 text-warning-ink flex items-start gap-2 rounded-md border px-3 py-2 text-sm"
         >
           <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-          {t(ISSUE_KEY[issue])}
+          {t(ROUTING_ISSUE_KEY[issue])}
         </p>
       )}
     </div>
