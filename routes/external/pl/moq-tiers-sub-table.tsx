@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { Trash2 } from "lucide-react";
+import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { FieldInput } from "@/components/ui/field";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
@@ -30,11 +31,11 @@ const NUMBER_CLASS =
  * useFieldArray แม่ churn → sub-row ไม่ remount)
  */
 export default function MoqTiersEditor({ form, index }: MoqTiersEditorProps) {
+  const t = useTranslations("priceListPortal");
   const path = `tb_pricelist_detail.${index}.moq_tiers` as const;
   const tiers =
     (useWatch({ control: form.control, name: path }) as
-      | MoqTierDto[]
-      | undefined) ?? [];
+      MoqTierDto[] | undefined) ?? [];
 
   // index ของ tier ที่รอ confirm ลบ (null = ไม่มี dialog เปิดอยู่)
   const [tierToDelete, setTierToDelete] = useState<number | null>(null);
@@ -51,16 +52,14 @@ export default function MoqTiersEditor({ form, index }: MoqTiersEditorProps) {
     <div className="bg-muted/30 flex justify-end px-6 py-4">
       <div className="w-full max-w-2xl space-y-1.5">
         <div className="text-muted-foreground text-micro-legal grid grid-cols-[1fr_1fr_1fr_2rem] gap-3 px-0.5 font-semibold tracking-wider uppercase">
-          <span className="text-right">MOQ</span>
-          <span className="text-right">Price</span>
-          <span className="text-right">Lead Time</span>
+          <span className="text-right">{t("colMoq")}</span>
+          <span className="text-right">{t("colPrice")}</span>
+          <span className="text-right">{t("colLeadTime")}</span>
           <span />
         </div>
 
         {tiers.length === 0 ? (
-          <p className="text-muted-foreground py-1 text-xs">
-            No pricing tiers yet.
-          </p>
+          <p className="text-muted-foreground py-1 text-xs">{t("noTiers")}</p>
         ) : (
           tiers.map((tier, i) => (
             <div
@@ -102,7 +101,7 @@ export default function MoqTiersEditor({ form, index }: MoqTiersEditorProps) {
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Remove tier"
+                aria-label={t("removeTier")}
                 onClick={() => setTierToDelete(i)}
                 className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
               >
@@ -120,8 +119,8 @@ export default function MoqTiersEditor({ form, index }: MoqTiersEditorProps) {
           if (tierToDelete !== null) removeTier(tierToDelete);
           setTierToDelete(null);
         }}
-        title="Remove pricing tier"
-        description="Are you sure you want to remove this pricing tier? This can't be undone."
+        title={t("removeTierTitle")}
+        description={t("removeTierDescription")}
       />
     </div>
   );

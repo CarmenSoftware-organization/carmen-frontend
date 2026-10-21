@@ -17,6 +17,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronRight, Plus, Save, Send } from "lucide-react";
+import { useTranslations } from "use-intl";
 import {
   DataGrid,
   DataGridContainer,
@@ -182,6 +183,7 @@ export default function PriceListExternalProductTable({
   isSubmitting = false,
   taxProfiles = [],
 }: PriceListExternalProductTableProps) {
+  const t = useTranslations("priceListPortal");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -237,7 +239,7 @@ export default function PriceListExternalProductTable({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Toggle pricing tiers"
+            aria-label={t("toggleTiers")}
             onClick={row.getToggleExpandedHandler()}
             className="text-muted-foreground"
           >
@@ -270,7 +272,7 @@ export default function PriceListExternalProductTable({
         id: "product_name",
         header: ({ column }) => (
           <DataGridColumnHeader
-            title="Product"
+            title={t("colProduct")}
             visibility={false}
             column={column}
           />
@@ -297,7 +299,7 @@ export default function PriceListExternalProductTable({
         id: "unit_name",
         header: ({ column }) => (
           <DataGridColumnHeader
-            title="Unit"
+            title={t("colUnit")}
             visibility={false}
             column={column}
           />
@@ -317,7 +319,7 @@ export default function PriceListExternalProductTable({
         id: "moq_qty",
         header: ({ column }) => (
           <DataGridColumnHeader
-            title="MOQ"
+            title={t("colMoq")}
             visibility={false}
             column={column}
           />
@@ -348,7 +350,7 @@ export default function PriceListExternalProductTable({
         id: "price",
         header: ({ column }) => (
           <DataGridColumnHeader
-            title="Price"
+            title={t("colPrice")}
             visibility={false}
             column={column}
           />
@@ -379,7 +381,7 @@ export default function PriceListExternalProductTable({
         id: "tax_profile_name",
         header: ({ column }) => (
           <DataGridColumnHeader
-            title="Tax Profile"
+            title={t("colTaxProfile")}
             visibility={false}
             column={column}
           />
@@ -405,7 +407,7 @@ export default function PriceListExternalProductTable({
         id: "tax_rate",
         header: ({ column }) => (
           <DataGridColumnHeader
-            title="Tax Rate"
+            title={t("colTaxRate")}
             visibility={false}
             column={column}
           />
@@ -424,7 +426,7 @@ export default function PriceListExternalProductTable({
         id: "tax_amount",
         header: ({ column }) => (
           <DataGridColumnHeader
-            title="Tax Amount"
+            title={t("colTaxAmount")}
             visibility={false}
             column={column}
           />
@@ -443,7 +445,7 @@ export default function PriceListExternalProductTable({
         id: "total",
         header: ({ column }) => (
           <DataGridColumnHeader
-            title="Total"
+            title={t("colTotal")}
             visibility={false}
             column={column}
           />
@@ -463,7 +465,7 @@ export default function PriceListExternalProductTable({
         id: "lead_time_days",
         header: ({ column }) => (
           <DataGridColumnHeader
-            title="Lead Time"
+            title={t("colLeadTime")}
             visibility={false}
             column={column}
           />
@@ -493,7 +495,9 @@ export default function PriceListExternalProductTable({
       {
         id: "actions",
         header: () => (
-          <span className="text-muted-foreground text-micro">Tiers</span>
+          <span className="text-muted-foreground text-micro">
+            {t("colTiers")}
+          </span>
         ),
         cell: ({ row }) => {
           const itemIndex = fields.findIndex((f) => f.id === row.original.id);
@@ -506,14 +510,14 @@ export default function PriceListExternalProductTable({
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Add pricing tier"
+                    aria-label={t("addTier")}
                     onClick={() => addTierToItem(itemIndex, row.id)}
                     className="text-primary hover:text-primary hover:bg-primary/5"
                   >
                     <Plus className="size-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="top">Add pricing tier</TooltipContent>
+                <TooltipContent side="top">{t("addTier")}</TooltipContent>
               </Tooltip>
             </div>
           );
@@ -529,11 +533,12 @@ export default function PriceListExternalProductTable({
       },
     ],
     // form เป็น stable ref จาก useForm · taxProfiles จาก query cache (ref นิ่งจน
-    // โหลดเสร็จ) — เพิ่มได้โดยไม่ทำให้ columns recreate ต่อ render
+    // โหลดเสร็จ) — เพิ่มได้โดยไม่ทำให้ columns recreate ต่อ render · t เปลี่ยน
+    // เฉพาะตอนสลับภาษา (หัวคอลัมน์ต้องตามภาษาใหม่)
     // (อย่าใส่ handleTiersUpdate ที่ recreate ทุก render ไม่งั้น columns จะ recreate →
     // row remount → focus หายกลับมา ซึ่งเป็นบั๊กที่เพิ่งแก้)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [fields, form, taxProfiles],
+    [fields, form, taxProfiles, t],
   );
 
   // Table for edit mode
@@ -587,7 +592,7 @@ export default function PriceListExternalProductTable({
         <div className="flex items-center justify-end gap-2">
           {hasPendingChanges && (
             <Badge variant="warning" className="text-xs">
-              Unsaved changes
+              {t("unsavedChanges")}
             </Badge>
           )}
           <Button
@@ -597,7 +602,7 @@ export default function PriceListExternalProductTable({
             disabled={isSaving}
           >
             <Save className="h-4 w-4" />
-            {isSaving ? "Saving..." : "Save Draft"}
+            {isSaving ? t("saving") : t("saveDraft")}
           </Button>
           <Button
             size="sm"
@@ -605,7 +610,7 @@ export default function PriceListExternalProductTable({
             disabled={isSaving || isSubmitting}
           >
             <Send className="h-4 w-4" />
-            {isSubmitting ? "Submitting..." : "Submit"}
+            {isSubmitting ? t("submitting") : t("submit")}
           </Button>
         </div>
       </div>

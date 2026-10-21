@@ -1,3 +1,4 @@
+import { useTranslations } from "use-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function MetaSkeleton() {
@@ -25,11 +26,12 @@ function RowSkeleton() {
 }
 
 export default function PriceListExternalSkeleton() {
+  const t = useTranslations("priceListPortal");
   return (
     <div
       className="mx-auto max-w-5xl space-y-6 p-6"
       aria-busy="true"
-      aria-label="Loading request for pricing"
+      aria-label={t("loading")}
     >
       {/* header */}
       <header className="space-y-6">

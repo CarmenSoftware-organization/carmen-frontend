@@ -1,5 +1,6 @@
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { FileSpreadsheet, Upload } from "lucide-react";
+import { useTranslations } from "use-intl";
 import {
   Dialog,
   DialogContent,
@@ -18,8 +19,8 @@ interface PriceListExternalImportDialogProps {
 
 /**
  * dialog import excel ของ portal — รับไฟล์ได้ทั้ง drag & drop และเลือกจากเครื่อง
- * (mirror dropzone ของ EntryImportDialog แต่เบากว่า · อังกฤษ hardcode เหมือน
- * ส่วนอื่นของหน้า public นี้) · เลือกไฟล์แล้วปิด dialog แล้วส่งต่อให้ parent
+ * (mirror dropzone ของ EntryImportDialog แต่เบากว่า · ข้อความจาก namespace
+ * priceListPortal) · เลือกไฟล์แล้วปิด dialog แล้วส่งต่อให้ parent
  */
 export default function PriceListExternalImportDialog({
   open,
@@ -27,6 +28,7 @@ export default function PriceListExternalImportDialog({
   onFile,
   isImporting = false,
 }: PriceListExternalImportDialogProps) {
+  const t = useTranslations("priceListPortal");
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -59,11 +61,10 @@ export default function PriceListExternalImportDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <Upload className="size-4" aria-hidden="true" />
-            Import from Excel
+            {t("importTitle")}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Drag &amp; drop your filled file here, or click to browse. Rows are
-            matched by the &ldquo;No.&rdquo; column and saved as a draft.
+            {t("importDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -73,7 +74,7 @@ export default function PriceListExternalImportDialog({
           accept=".xlsx,.xls"
           className="hidden"
           onChange={handleChange}
-          aria-label="Choose Excel file"
+          aria-label={t("importChooseFile")}
         />
 
         <button
@@ -98,7 +99,7 @@ export default function PriceListExternalImportDialog({
             aria-hidden="true"
           />
           <span className="text-foreground text-xs font-semibold">
-            {isImporting ? "Importing…" : "Drop Excel file or click to browse"}
+            {isImporting ? t("importing") : t("importDrop")}
           </span>
           <span className="text-muted-foreground text-micro-legal tracking-wide uppercase">
             .xlsx, .xls

@@ -1,4 +1,6 @@
 import { Link2Off } from "lucide-react";
+import { useTranslations } from "use-intl";
+import { LocaleToggle } from "@/components/locale-toggle";
 
 /**
  * หน้า "ลิงก์หมดอายุ" ของ RFQ portal — แสดงเมื่อ token ใช้ไม่ได้ (401)
@@ -9,17 +11,18 @@ import { Link2Off } from "lucide-react";
  * neutral (สัญญาณสีเดียว ไม่ใช่ alarm แดง), ไม่มีเงา, whitespace เยอะ
  */
 export default function PriceListExternalExpired() {
+  const t = useTranslations("priceListPortal");
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center px-6 text-center">
+      <LocaleToggle className="mb-8" />
       <div className="bg-muted mb-6 flex size-14 items-center justify-center rounded-full">
         <Link2Off className="text-muted-foreground size-6" aria-hidden="true" />
       </div>
       <h1 className="text-foreground text-xl font-semibold tracking-tight">
-        This link has expired
+        {t("expiredTitle")}
       </h1>
       <p className="text-muted-foreground mt-2.5 text-sm leading-relaxed">
-        It may have expired or already been used. Contact the hotel that sent it
-        for a new link.
+        {t("expiredBody")}
       </p>
     </div>
   );
