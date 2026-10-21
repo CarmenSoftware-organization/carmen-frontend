@@ -15,3 +15,13 @@ scripts/deploy-{s3,gcs,docker}.sh       # Deploy: S3/CloudFront · GCS/Cloud CDN
 ข้อจำกัดฝั่ง environment ที่มีผลตอน deploy (`SECRET_ENCRYPTION_KEY`, `LICENSE_ENFORCEMENT`,
 backend CORS, การเลือก `config.<env>.json`) อยู่ใน `CLAUDE.md` หัวข้อ **Interfaces config**
 และ **Known open items** — อ่านที่นั่น อย่าคัดลอกมาไว้ที่นี่
+
+## Vercel
+
+- **deploy = `vercel --prod` จากเครื่องเท่านั้น** — git-triggered deploy โดน CANCELED ทุกใบ
+- Vercel รัน `bun run build` เปล่า ๆ ไม่ผ่าน `build:<env>` และ clone ไม่มี `public/config*.json`
+  ติดมา — ทางที่ออกแบบไว้คือตั้ง env var `APP_CONFIG_JSON` เป็น JSON ทั้งก้อน แต่ `vercel --prod`
+  อัปโหลดไฟล์ในเครื่องขึ้นไปด้วย เส้นทาง `APP_CONFIG_JSON` เลยยังไม่เคยถูกใช้จริง
+- `build:force` ลบ `dist/` · `node_modules/.vite` · `tsconfig.tsbuildinfo` แล้ว build ใหม่ — ที่มีผลจริงคือ
+  บังคับ tsc ตรวจใหม่ทั้งหมด (vite build ไม่ใช้ `.vite/deps` และล้าง dist เองอยู่แล้ว) · ใช้คู่
+  `BUILD_CONFIG_FILE=…` ได้
