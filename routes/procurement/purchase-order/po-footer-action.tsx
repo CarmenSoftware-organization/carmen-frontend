@@ -12,7 +12,8 @@ import { computePoAction } from "@/constant/purchase-order";
 import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 import type { PoFormValues } from "./po-form-schema";
 import { HiddenValue } from "@/components/share/hidden-value";
-import { isPriceHidden, type HiddenPriceField } from "@/types/workflows";
+import type { HiddenPriceField } from "@/types/workflows";
+import { getPoHiddenFlags } from "./po-hidden-fields";
 import {
   PoActionDialog,
   type StageOption,
@@ -84,13 +85,24 @@ export function PoFooterAction({
   // grand summary = ผลรวมของแถว โดยใช้ computeItemPricing ตัวเดียวกับที่ตารางใช้
   // ห้ามคำนวณเองซ้ำ — ส่วนลด/ภาษีอยู่ระดับ location (แต่ละที่คนละเรต และ override
   // เป็นจำนวนเงินได้) เขียนสูตรใหม่ที่นี่เมื่อไหร่ ยอดล่างกับยอดในตารางไม่ตรงกันทันที
+  // ยอดในฟอร์มเป็น null→0 ปลอมเมื่อ stage ซ่อน — รวมแล้วจะโชว์ 0.00 หลอกตา
+  const { hideTotal, hidePrice } = getPoHiddenFlags(hiddenFields);
   let subtotal = 0;
   let totalDiscount = 0;
   let totalNet = 0;
   let totalTax = 0;
   let grandTotal = 0;
   for (const item of items ?? []) {
-    const line = computeItemPricing(item);
+    // ราคาต่อหน่วยซ่อน = ราคาในฟอร์มเป็น 0 ปลอม รวมยอดจากค่าที่ backend ส่งมาแทน
+    const line = hidePrice
+      ? {
+          subtotal: Number(item?.sub_total_price) || 0,
+          discountAmount: Number(item?.discount_amount) || 0,
+          netAmount: Number(item?.net_amount) || 0,
+          taxAmount: Number(item?.tax_amount) || 0,
+          totalPrice: Number(item?.total_price) || 0,
+        }
+      : computeItemPricing(item);
     subtotal += line.subtotal;
     totalDiscount += line.discountAmount;
     totalNet += line.netAmount;
@@ -104,9 +116,6 @@ export function PoFooterAction({
     totalTax: round2(totalTax),
     grandTotal: round2(grandTotal),
   };
-
-  // ยอดในฟอร์มเป็น null→0 ปลอมเมื่อ stage ซ่อน — รวมแล้วจะโชว์ 0.00 หลอกตา
-  const hideTotal = isPriceHidden(hiddenFields, "total_price");
 
   const itemStatuses = items.map((item) =>
     typeof item?.current_stage_status === "string"

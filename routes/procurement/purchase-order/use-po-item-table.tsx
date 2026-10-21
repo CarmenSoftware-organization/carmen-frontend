@@ -29,7 +29,8 @@ import { PriceCell, ProductHeaderCell, StatusCell } from "./po-item-cells";
 import { ItemHistorySheet } from "@/components/share/item-history-sheet";
 import { ITEM_HISTORY_STATUS_CONFIG } from "@/constant/item-history";
 import type { PoFormValues } from "./po-form-schema";
-import { isPriceHidden, type HiddenPriceField } from "@/types/workflows";
+import type { HiddenPriceField } from "@/types/workflows";
+import { getPoHiddenFlags } from "./po-hidden-fields";
 import type { FieldArrayWithId } from "react-hook-form";
 
 export type PoItemField = FieldArrayWithId<PoFormValues, "items", "id">;
@@ -146,8 +147,7 @@ export function usePoItemTable({
   "use no memo";
   const tfl = useTranslations("field");
   // boolean ไม่ใช่ตัว array — ใช้เป็น dep ของ useMemo คอลัมน์ได้นิ่ง ๆ
-  const hidePrice = isPriceHidden(hiddenFields, "price_per_unit");
-  const hideTotal = isPriceHidden(hiddenFields, "total_price");
+  const { hidePrice, hideTotal } = getPoHiddenFlags(hiddenFields);
   const showAction = !disabled && !readOnly;
 
   // แถวแก้ไม่ได้ = ทุกเซลล์เป็นตัวหนังสือ ไม่มี control ให้เผื่อที่
@@ -294,6 +294,7 @@ export function usePoItemTable({
             index={row.index}
             field="sub_total_price"
             isHidden={hideTotal}
+            useStored={hidePrice}
           />
         ),
       },
@@ -308,6 +309,7 @@ export function usePoItemTable({
             itemIndex={row.index}
             editable={!disabled && !readOnly}
             isHidden={hideTotal}
+            useStored={hidePrice}
           />
         ),
       },
@@ -322,6 +324,7 @@ export function usePoItemTable({
             index={row.index}
             field="net_amount"
             isHidden={hideTotal}
+            useStored={hidePrice}
           />
         ),
       },
@@ -336,6 +339,7 @@ export function usePoItemTable({
             itemIndex={row.index}
             editable={!disabled && !readOnly}
             isHidden={hideTotal}
+            useStored={hidePrice}
           />
         ),
       },
@@ -353,6 +357,7 @@ export function usePoItemTable({
             index={row.index}
             field="total_price"
             isHidden={hideTotal}
+            useStored={hidePrice}
           />
         ),
       },

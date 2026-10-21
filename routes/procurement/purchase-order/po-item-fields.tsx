@@ -30,6 +30,7 @@ import { PoWorkflowRequiredDialog } from "./po-workflow-required-dialog";
 import { usePoItemTable } from "./use-po-item-table";
 import { PoItemComputedSync } from "./po-item-cells";
 import type { HiddenPriceField } from "@/types/workflows";
+import { getPoHiddenFlags } from "./po-hidden-fields";
 import { getDeleteDescription } from "@/lib/form-utils";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import {
@@ -430,7 +431,7 @@ export function PoItemFields({
           form={form}
           index={i}
           // ราคาถูกซ่อน = ค่าในฟอร์มเป็น 0 ปลอม คำนวณแล้วเขียนกลับจะได้ยอด 0 ทับของจริง
-          skip={(hiddenFields?.length ?? 0) > 0}
+          skip={getPoHiddenFlags(hiddenFields).anyHidden}
         />
       ))}
 

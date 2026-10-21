@@ -143,12 +143,15 @@ export function ItemDiscountCell({
   itemIndex,
   editable,
   isHidden = false,
+  useStored = false,
 }: {
   readonly form: UseFormReturn<PoFormValues>;
   readonly itemIndex: number;
   readonly editable: boolean;
   /** stage ซ่อน `total_price` — ยอดเงินเป็น badge (ใช้ในโหมดอ่านเท่านั้น) */
   readonly isHidden?: boolean;
+  /** ราคาต่อหน่วยถูกซ่อน — ยอดเงินมาจากค่าที่ backend ส่งมา ไม่คำนวณจากราคา 0 ปลอม */
+  readonly useStored?: boolean;
 }) {
   "use no memo";
   const tfl = useTranslations("field");
@@ -161,7 +164,9 @@ export function ItemDiscountCell({
       name: `${base}.is_discount_adjustment`,
     }) ?? false;
   const line = useItemLine(form, itemIndex);
-  const amount = line.discountAmount;
+  const amount = useStored
+    ? Number(form.getValues(`${base}.discount_amount`)) || 0
+    : line.discountAmount;
 
   if (!editable || isHidden) {
     return (
@@ -221,12 +226,15 @@ export function ItemTaxCell({
   itemIndex,
   editable,
   isHidden = false,
+  useStored = false,
 }: {
   readonly form: UseFormReturn<PoFormValues>;
   readonly itemIndex: number;
   readonly editable: boolean;
   /** stage ซ่อน `total_price` — ยอดเงินเป็น badge (ใช้ในโหมดอ่านเท่านั้น) */
   readonly isHidden?: boolean;
+  /** ราคาต่อหน่วยถูกซ่อน — ยอดเงินมาจากค่าที่ backend ส่งมา ไม่คำนวณจากราคา 0 ปลอม */
+  readonly useStored?: boolean;
 }) {
   "use no memo";
   const tfl = useTranslations("field");
@@ -239,7 +247,9 @@ export function ItemTaxCell({
     useWatch({ control: form.control, name: `${base}.is_tax_adjustment` }) ??
     false;
   const line = useItemLine(form, itemIndex);
-  const amount = line.taxAmount;
+  const amount = useStored
+    ? Number(form.getValues(`${base}.tax_amount`)) || 0
+    : line.taxAmount;
 
   if (!editable || isHidden) {
     return (

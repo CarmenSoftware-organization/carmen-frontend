@@ -10,6 +10,7 @@ export const ComputedPricingCell = function ComputedPricingCell({
   index,
   field: displayField,
   isHidden = false,
+  useStored = false,
 }: {
   control: Control<PoFormValues>;
   index: number;
@@ -21,18 +22,28 @@ export const ComputedPricingCell = function ComputedPricingCell({
     | "total_price";
   /** stage ซ่อน `total_price` — badge แทนยอด (ยอดในฟอร์มเป็น 0 ปลอมจาก null) */
   isHidden?: boolean;
+  /** ราคาต่อหน่วยถูกซ่อน — โชว์ยอดที่ backend ส่งมา ไม่คำนวณจากราคา 0 ปลอม */
+  useStored?: boolean;
 }) {
   "use no memo";
   const item = useWatch({ control, name: `items.${index}` });
   const { subtotal, discountAmount, netAmount, taxAmount, totalPrice } =
     computeItemPricing(item);
-  const values = {
-    sub_total_price: subtotal,
-    discount_amount: discountAmount,
-    net_amount: netAmount,
-    tax_amount: taxAmount,
-    total_price: totalPrice,
-  };
+  const values = useStored
+    ? {
+        sub_total_price: Number(item?.sub_total_price) || 0,
+        discount_amount: Number(item?.discount_amount) || 0,
+        net_amount: Number(item?.net_amount) || 0,
+        tax_amount: Number(item?.tax_amount) || 0,
+        total_price: Number(item?.total_price) || 0,
+      }
+    : {
+        sub_total_price: subtotal,
+        discount_amount: discountAmount,
+        net_amount: netAmount,
+        tax_amount: taxAmount,
+        total_price: totalPrice,
+      };
   if (isHidden) {
     return (
       <span className="flex justify-end">
