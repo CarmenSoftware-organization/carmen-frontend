@@ -18,3 +18,11 @@ export const ROLE_ICON: Record<Role, LucideIcon> = {
   purchase: ShoppingCart,
   issue: PackageCheck,
 };
+
+/** คีย์ i18n (namespace `systemAdmin.workflow`) ของชื่อ role */
+export const ROLE_LABEL: Record<Role, string> = {
+  create: "roleCreate",
+  approve: "roleApprove",
+  purchase: "rolePurchase",
+  issue: "roleIssue",
+};

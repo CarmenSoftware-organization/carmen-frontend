@@ -32,7 +32,7 @@ import { WfProducts } from "./wf-products";
 import WfValidationPanel from "./wf-validation-panel";
 import { validateWorkflow } from "./wf-validate";
 import WfInsights from "./wf-insights";
-import WfDiagram from "./wf-diagram";
+import { WfStageList } from "./wf-stage-list";
 import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 
 interface WfDetailProps {
@@ -158,24 +158,17 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
             hasStages && "lg:grid-cols-[20rem_minmax(0,1fr)] lg:items-start",
           )}
         >
-          {watchedStages && watchedStages.length > 0 && (
-            <WfDiagram
-              orientation="vertical"
-              className="lg:sticky lg:top-2"
-              stages={watchedStages}
+          {hasStages && (
+            <WfStageList
+              className="bg-card rounded-xl border p-4 lg:sticky lg:top-2 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto"
+              form={form}
+              fieldArray={stagesFieldArray}
+              selectedIndex={selectedStageIndex}
+              showSelection={activeTab === "stages"}
+              onSelect={handleSelectStage}
+              isDisabled={isStructureDisabled}
               routingRules={routingFieldArray.fields as never}
-              selectedIndex={
-                activeTab === "stages" ? selectedStageIndex : undefined
-              }
-              onSelectStage={handleSelectStage}
-              onMoveStage={
-                isEditing
-                  ? (from, to) => {
-                      stagesFieldArray.move(from, to);
-                      setSelectedStageIndex(to);
-                    }
-                  : undefined
-              }
+              isValid={validationResult?.issues.length === 0}
             />
           )}
 
@@ -184,7 +177,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
             onSubmit={form.handleSubmit(onSubmit, () =>
               scrollToFirstInvalidField(),
             )}
-            className="bg-card text-card-foreground mt-6 flex flex-col overflow-hidden rounded-xl border"
+            className="bg-card text-card-foreground flex flex-col overflow-hidden rounded-xl border"
           >
             <Tabs
               value={activeTab}
@@ -264,7 +257,6 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                     isStructureDisabled={isStructureDisabled}
                     inProgressCount={availability?.documents.in_progress ?? 0}
                     selectedIndex={selectedStageIndex}
-                    onSelectIndex={setSelectedStageIndex}
                   />
                 </TabsContent>
 

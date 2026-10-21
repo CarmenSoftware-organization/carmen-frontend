@@ -2339,6 +2339,7 @@
       "approvers": "approvers",
       "warningNoUsers": "No users assigned",
       "validationReady": "Workflow ready · No issues found",
+      "validationReadyShort": "Ready",
       "validationIssuesFound": "{count, plural, one {# issue found} other {# issues found}}",
       "issueErrorLabel": "errors",
       "issueWarningLabel": "warnings",

@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  AlertCircle,
-  AlertTriangle,
-  CheckCircle2,
-  ChevronDown,
-  Info,
-} from "lucide-react";
+import { AlertCircle, AlertTriangle, ChevronDown, Info } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,20 +46,8 @@ export default function WfValidationPanel({
 
   const totalIssues = issues.length;
 
-  if (totalIssues === 0) {
-    return (
-      <div
-        role="status"
-        className="bg-card flex items-center gap-4 rounded-xl border p-4"
-      >
-        <CheckCircle2
-          className="text-success-ink size-5 shrink-0"
-          aria-hidden="true"
-        />
-        <p className="text-sm font-semibold">{t("validationReady")}</p>
-      </div>
-    );
-  }
+  // ไม่มีอะไรต้องแจ้ง = ไม่กินพื้นที่ทั้งแถว — สถานะ "พร้อมใช้งาน" ไปอยู่ที่หัวรางขั้นแทน
+  if (totalIssues === 0) return null;
 
   const HeaderIcon = isReady ? AlertTriangle : AlertCircle;
   const headerIconClass = isReady ? "text-warning-ink" : "text-destructive";
