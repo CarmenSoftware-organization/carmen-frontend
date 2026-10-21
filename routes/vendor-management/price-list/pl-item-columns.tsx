@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import type { PriceList } from "@/types/price-list";
 import type { PriceListFormValues } from "./pl-form-schema";
 import {
-  AmountCell,
   LeadCell,
   MoqCell,
   PreferredCell,
   PriceCell,
   ProductCell,
-  PWTCell,
+  TaxAmountCell,
+  TaxRateCell,
+  TotalCell,
   TaxCell,
   UnitCell,
   type DetailField,
@@ -123,11 +124,26 @@ export function buildPlItemColumns({
       ),
     },
     {
-      id: "pwt",
+      id: "tax_rate",
       size: 96,
-      header: () => tfl("pwt"),
+      header: () => tfl("taxRate"),
       cell: ({ row }) => (
-        <PWTCell
+        <TaxRateCell
+          form={form}
+          index={row.index}
+          isView={isView}
+          isDisabled={isDisabled}
+          detailRef={detailRefs?.[row.index]}
+        />
+      ),
+      meta: { headerClassName: "text-right", cellClassName: "text-right" },
+    },
+    {
+      id: "tax_amount",
+      size: 96,
+      header: () => tfl("tax"),
+      cell: ({ row }) => (
+        <TaxAmountCell
           form={form}
           index={row.index}
           isView={isView}
@@ -153,11 +169,11 @@ export function buildPlItemColumns({
       meta: { headerClassName: "text-right", cellClassName: "text-right" },
     },
     {
-      id: "amount",
+      id: "total",
       size: 120,
-      header: () => tfl("amount"),
+      header: () => tfl("total"),
       cell: ({ row }) => (
-        <AmountCell
+        <TotalCell
           form={form}
           index={row.index}
           isView={isView}

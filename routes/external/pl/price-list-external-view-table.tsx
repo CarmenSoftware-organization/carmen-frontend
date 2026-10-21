@@ -1,4 +1,4 @@
-import { round2 } from "@/lib/currency-utils";
+import { formatTaxRate, priceListTaxParts } from "@/lib/price-list-tax";
 import { cn } from "@/lib/utils";
 import type { PricelistExternalDetailDto } from "@/types/price-list-external";
 
@@ -14,10 +14,10 @@ interface PriceListExternalViewTableProps {
 
 /**
  * View-mode ตาราง read-only ของ price list external — คอลัมน์ตรงกับ edit mode
- * เป๊ะ (Product · Unit · MOQ · Price · Tax Profile · Price without Tax ·
- * Tax Amount · Lead Time) · 1 แถว/product เหมือน edit (MOQ tiers ซ้อนอยู่ใน
- * moq_tiers ไม่โชว์ที่นี่ เหมือน edit ที่พับไว้) · PWT/Tax amount คำนวณสดจาก
- * price + rate ด้วยสูตรเดียวกับ edit ให้ตัวเลขตรงกัน
+ * เป๊ะ (Product · Unit · MOQ · Price · Tax Profile · Tax Rate · Tax Amount ·
+ * Total · Lead Time) · 1 แถว/product เหมือน edit (MOQ tiers ซ้อนอยู่ใน
+ * moq_tiers ไม่โชว์ที่นี่ เหมือน edit ที่พับไว้) · Tax amount/Total คำนวณสดจาก
+ * price + rate ด้วย priceListTaxParts ตัวเดียวกับ edit (price = ก่อนภาษี)
  */
 export default function PriceListExternalViewTable({
   details,
@@ -33,17 +33,19 @@ export default function PriceListExternalViewTable({
             <Th className="text-right">MOQ</Th>
             <Th className="text-right">Price</Th>
             <Th className="text-left">Tax Profile</Th>
-            <Th className="text-right">Price without Tax</Th>
+            <Th className="text-right">Tax Rate</Th>
             <Th className="text-right">Tax Amount</Th>
+            <Th className="text-right">Total</Th>
             <Th className="text-right">Lead Time</Th>
           </tr>
         </thead>
         <tbody>
           {details.map((d) => {
-            const p = Number(d.price) || 0;
-            const r = Number(d.tax_rate) || 0;
-            const pwt = round2(p / (1 + r / 100));
-            const taxAmt = round2(p - pwt);
+            const {
+              price: p,
+              taxAmt,
+              total,
+            } = priceListTaxParts(d.price, d.tax_rate);
             return (
               <tr key={d.id} className="border-border/50 border-b">
                 <Td className="text-muted-foreground text-center tabular-nums">
@@ -66,9 +68,12 @@ export default function PriceListExternalViewTable({
                 <Td className="text-right tabular-nums">{fmtMoney(p)}</Td>
                 <Td>{d.tax_profile_name || "—"}</Td>
                 <Td className="text-muted-foreground text-right tabular-nums">
-                  {fmtMoney(pwt)}
+                  {formatTaxRate(d.tax_rate, !!d.tax_profile_id)}
                 </Td>
                 <Td className="text-right tabular-nums">{fmtMoney(taxAmt)}</Td>
+                <Td className="text-right font-medium tabular-nums">
+                  {fmtMoney(total)}
+                </Td>
                 <Td className="text-right tabular-nums">
                   {Number(d.lead_time_days) || 0}
                 </Td>

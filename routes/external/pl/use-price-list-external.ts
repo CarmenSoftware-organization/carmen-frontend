@@ -2,20 +2,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { httpClient } from "@/lib/http-client";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { QUERY_KEYS } from "@/constant/query-keys";
+import { priceListTaxParts } from "@/lib/price-list-tax";
 import type {
   PricelistExternalDto,
   PricelistExternalTaxProfileOption,
 } from "@/types/price-list-external";
-
-const round2 = (n: number) => Math.round(n * 100) / 100;
 
 const isNewTierId = (id?: string | null) =>
   !id || String(id).startsWith("tier-new-");
 
 /**
  * แปลงฟอร์มเป็น payload update — โครงเดียวกับ price list ปกติ (เรื่องเดียวกัน
- * ต่างแค่ vendor เป็นคนกรอก). Input `price` เป็นราคารวมภาษี (gross) → derive
- * price_without_tax + tax_amt กลับตอนส่ง
+ * ต่างแค่ vendor เป็นคนกรอก). Input `price` เป็นราคาก่อนภาษี (add VAT) →
+ * price_without_tax = price · tax_amt = price × rate (priceListTaxParts)
  *
  * MOQ tier (ที่กรอกใน expanded) ถูก flatten เป็น pricelist_detail row แยก — tier
  * = สินค้าเดิม/หน่วยเดิม/ภาษีเดิมของ parent แต่ MOQ/ราคา/lead เป็นของ tier เอง:
@@ -29,14 +28,9 @@ const buildPayload = (formData: PricelistExternalDto) => {
   const add: Record<string, unknown>[] = [];
   let seq = 0;
 
-  const derive = (gross: number | string, rate: number) => {
-    const price = Number(gross) || 0;
-    const priceNoTax = round2(price / (1 + rate / 100));
-    return {
-      price,
-      price_without_tax: priceNoTax,
-      tax_amt: round2(price - priceNoTax),
-    };
+  const derive = (net: number | string, rate: number) => {
+    const { price, priceWithoutTax, taxAmt } = priceListTaxParts(net, rate);
+    return { price, price_without_tax: priceWithoutTax, tax_amt: taxAmt };
   };
 
   for (const d of formData.tb_pricelist_detail) {

@@ -35,7 +35,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { round2 } from "@/lib/currency-utils";
+import { formatTaxRate, priceListTaxParts } from "@/lib/price-list-tax";
 import MoqTiersEditor from "./moq-tiers-sub-table";
 import PriceListExternalViewTable from "./price-list-external-view-table";
 import type {
@@ -62,25 +62,24 @@ interface PriceListExternalProductTableProps {
   taxProfiles?: PricelistExternalTaxProfileOption[];
 }
 
-function RowPWT({
+function RowTaxRate({
   form,
   index,
 }: {
   form: UseFormReturn<PricelistExternalDto>;
   index: number;
 }) {
-  const price = useWatch({
+  // อ่านอย่างเดียว — rate มาจาก tax profile ที่เลือก ไม่มีช่องให้แก้
+  const [rate, profileId] = useWatch({
     control: form.control,
-    name: `tb_pricelist_detail.${index}.price`,
+    name: [
+      `tb_pricelist_detail.${index}.tax_rate`,
+      `tb_pricelist_detail.${index}.tax_profile_id`,
+    ],
   });
-  const rate = useWatch({
-    control: form.control,
-    name: `tb_pricelist_detail.${index}.tax_rate`,
-  });
-  const pwt = round2((Number(price) || 0) / (1 + (Number(rate) || 0) / 100));
   return (
     <span className="text-muted-foreground text-sm tabular-nums">
-      {fmtMoney(pwt)}
+      {formatTaxRate(rate, !!profileId)}
     </span>
   );
 }
@@ -130,6 +129,20 @@ function TaxProfileCell({
   );
 }
 
+function useRowTaxParts(
+  form: UseFormReturn<PricelistExternalDto>,
+  index: number,
+) {
+  const [price, rate] = useWatch({
+    control: form.control,
+    name: [
+      `tb_pricelist_detail.${index}.price`,
+      `tb_pricelist_detail.${index}.tax_rate`,
+    ],
+  });
+  return priceListTaxParts(price, rate);
+}
+
 function RowTaxAmount({
   form,
   index,
@@ -137,19 +150,25 @@ function RowTaxAmount({
   form: UseFormReturn<PricelistExternalDto>;
   index: number;
 }) {
-  const price = useWatch({
-    control: form.control,
-    name: `tb_pricelist_detail.${index}.price`,
-  });
-  const rate = useWatch({
-    control: form.control,
-    name: `tb_pricelist_detail.${index}.tax_rate`,
-  });
-  const p = Number(price) || 0;
-  const r = Number(rate) || 0;
+  const { taxAmt } = useRowTaxParts(form, index);
   return (
     <span className="text-foreground text-sm tabular-nums">
-      {fmtMoney(round2(p - p / (1 + r / 100)))}
+      {fmtMoney(taxAmt)}
+    </span>
+  );
+}
+
+function RowTotal({
+  form,
+  index,
+}: {
+  form: UseFormReturn<PricelistExternalDto>;
+  index: number;
+}) {
+  const { total } = useRowTaxParts(form, index);
+  return (
+    <span className="text-foreground text-sm font-medium tabular-nums">
+      {fmtMoney(total)}
     </span>
   );
 }
@@ -368,7 +387,7 @@ export default function PriceListExternalProductTable({
         cell: ({ row }) => {
           const fieldIndex = fields.findIndex((f) => f.id === row.original.id);
           // taxProfiles (prop) มาจาก endpoint แยก — portal public เรียก auth lookup
-          // ไม่ได้ · เซลล์นี้เป็น select อย่างเดียว (tax amount แยกไปคอลัมน์หลัง PWT)
+          // ไม่ได้ · เซลล์นี้เป็น select อย่างเดียว (rate/tax amount/total แยกเป็นคอลัมน์ถัดไป)
           return (
             <TaxProfileCell
               form={form}
@@ -383,19 +402,19 @@ export default function PriceListExternalProductTable({
         enableResizing: false,
       },
       {
-        id: "pwt",
+        id: "tax_rate",
         header: ({ column }) => (
           <DataGridColumnHeader
-            title="Price without Tax"
+            title="Tax Rate"
             visibility={false}
             column={column}
           />
         ),
         cell: ({ row }) => {
           const fieldIndex = fields.findIndex((f) => f.id === row.original.id);
-          return <RowPWT form={form} index={fieldIndex} />;
+          return <RowTaxRate form={form} index={fieldIndex} />;
         },
-        size: 150,
+        size: 96,
         enableSorting: false,
         enableHiding: false,
         enableResizing: false,
@@ -413,6 +432,25 @@ export default function PriceListExternalProductTable({
         cell: ({ row }) => {
           const fieldIndex = fields.findIndex((f) => f.id === row.original.id);
           return <RowTaxAmount form={form} index={fieldIndex} />;
+        },
+        size: 128,
+        enableSorting: false,
+        enableHiding: false,
+        enableResizing: false,
+        meta: { cellClassName: "text-right", headerClassName: "text-right" },
+      },
+      {
+        id: "total",
+        header: ({ column }) => (
+          <DataGridColumnHeader
+            title="Total"
+            visibility={false}
+            column={column}
+          />
+        ),
+        cell: ({ row }) => {
+          const fieldIndex = fields.findIndex((f) => f.id === row.original.id);
+          return <RowTotal form={form} index={fieldIndex} />;
         },
         size: 128,
         enableSorting: false,

@@ -37,7 +37,7 @@ function detail(
 }
 
 describe("applyExcelRows", () => {
-  it("จับคู่ Product Code + Tax Profile (ชื่อ) → id + rate แล้วคำนวณ pwt/tax_amt", () => {
+  it("จับคู่ Product Code + Tax Profile (ชื่อ) → id + rate แล้วคำนวณ tax_amt แบบ add VAT", () => {
     const details = [
       detail({ sequence_no: 1, product_code: "SUG01" }),
       detail({ sequence_no: 2, product_code: "FLR01" }),
@@ -47,7 +47,7 @@ describe("applyExcelRows", () => {
         {
           "Product Code": "SUG01",
           "MOQ Qty": 5,
-          Price: 107,
+          Price: 100,
           "Tax Profile": "VAT 7%",
           Note: "hi",
         },
@@ -61,7 +61,8 @@ describe("applyExcelRows", () => {
     expect(result.skipped).toBe(0);
     expect(result.updated[0]).toMatchObject({
       moq_qty: 5,
-      price: 107,
+      // price = ก่อนภาษี → price_without_tax เท่ากัน, ภาษีบวกทับ
+      price: 100,
       tax_profile_id: "tp7",
       tax_profile_name: "VAT 7%",
       tax_rate: 7,
