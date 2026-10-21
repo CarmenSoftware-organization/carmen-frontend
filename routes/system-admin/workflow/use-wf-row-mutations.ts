@@ -17,7 +17,7 @@ import {
 interface MutateOptions<T> {
   readonly mutate: (
     payload: T,
-    cb: { onSuccess: () => void; onError: (err: Error) => void },
+    cb: { onSuccess: (res: unknown) => void; onError: (err: Error) => void },
   ) => void;
 }
 
@@ -25,12 +25,12 @@ const runMutation = <T>(
   mutation: MutateOptions<T>,
   payload: T,
   successMessage: string,
-): Promise<void> =>
-  new Promise<void>((resolve, reject) => {
+): Promise<unknown> =>
+  new Promise<unknown>((resolve, reject) => {
     mutation.mutate(payload, {
-      onSuccess: () => {
+      onSuccess: (res) => {
         toast.success(successMessage);
-        resolve();
+        resolve(res);
       },
       onError: (err: Error) => reject(err),
     });
@@ -55,7 +55,7 @@ export function useWfRowMutations() {
   };
 
   const handle = async <T>(
-    workflow: WorkflowDto,
+    workflow: Pick<WorkflowDto, "id">,
     runner: (detail: Workflow) => Promise<T>,
   ) => {
     try {
@@ -100,15 +100,27 @@ export function useWfRowMutations() {
       );
     });
 
-  const duplicate = (workflow: WorkflowDto) =>
+  // onCreated ได้ id ของสำเนา — หน้า detail ใช้พาไปเปิดตัวใหม่ ส่วนหน้า list ไม่ส่ง (อยู่หน้าเดิม)
+  const duplicate = (
+    workflow: Pick<WorkflowDto, "id">,
+    onCreated?: (id: string) => void,
+  ) =>
     handle(workflow, async (detail) => {
       const defaults = getWorkflowFormDefaults(detail);
+      const newId = crypto.randomUUID();
       const payload: WorkflowCreateModel = {
         ...defaults,
-        id: crypto.randomUUID(),
+        id: newId,
         name: `${detail.name} ${t("copySuffix")}`,
       };
-      await runMutation(createWorkflow, payload, t("duplicateSuccess"));
+      const res = await runMutation(
+        createWorkflow,
+        payload,
+        t("duplicateSuccess"),
+      );
+      // shape เดียวกับ wf-new-form — backend คืน data.id ถ้าไม่มีก็ใช้ id ที่ส่งไป
+      const data = res as { data?: { id?: string } } | undefined;
+      onCreated?.(data?.data?.id ?? newId);
     });
 
   return { pendingId, toggleActive, duplicate };
