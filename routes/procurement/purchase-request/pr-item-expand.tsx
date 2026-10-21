@@ -18,6 +18,7 @@ import {
   resolveApprovedQty,
   type PrFormValues,
 } from "./pr-form-schema";
+import { storedSubtotal } from "./pr-hidden-fields";
 import PrInventoryRow from "./pr-inventory-row";
 import { PrItemSummary } from "./pr-item-summary";
 import { PrLastReceivingInfo } from "./pr-last-receiving-info";
@@ -56,6 +57,8 @@ export function PrItemExpand({
   // ซ่อนอย่างใดอย่างหนึ่ง = ผู้ขาย/pricelist/ภาษี/ส่วนลดเป็นข้อความล้วน — backend ทิ้ง
   // key ราคาและแหล่งราคาของผู้ใช้กลุ่มนี้อยู่แล้ว ปล่อยเป็นช่องกรอกจะหลอกว่าแก้ได้
   const isFieldDisabled = isDisabled || anyHidden;
+  // ซ่อนเฉพาะราคาต่อหน่วย: ราคาในฟอร์มเป็น 0 ปลอม แต่ backend ส่งยอดจริงมา — โชว์ยอดนั้น
+  const useStored = hidePrice && !hideTotal;
 
   const [
     watchPrice,
@@ -73,6 +76,8 @@ export function PrItemExpand({
     watchExchangeRate,
     watchVendorName,
     watchTaxProfileName,
+    watchNetAmt,
+    watchTotalPrice,
   ] = useWatch({
     control: form.control,
     name: [
@@ -91,6 +96,8 @@ export function PrItemExpand({
       `items.${i}.exchange_rate`,
       `items.${i}.vendor_name`,
       `items.${i}.tax_profile_name`,
+      `items.${i}.net_amount`,
+      `items.${i}.total_price`,
     ] as const,
   });
 
@@ -111,17 +118,25 @@ export function PrItemExpand({
   const isForeignCurrency =
     !!baseCurrencyCode && !!currencyCode && currencyCode !== baseCurrencyCode;
 
-  const { subtotal, discountAmount, netAmount, taxAmount, totalPrice } =
-    computePrItemAmounts({
-      price,
-      qty: calcQty,
-      discRate,
-      isDiscAdj,
-      discAmt,
-      taxRate,
-      isTaxAdj,
-      taxAmt,
-    });
+  const computed = computePrItemAmounts({
+    price,
+    qty: calcQty,
+    discRate,
+    isDiscAdj,
+    discAmt,
+    taxRate,
+    isTaxAdj,
+    taxAmt,
+  });
+  const subtotal = useStored
+    ? storedSubtotal(watchNetAmt, discAmt)
+    : computed.subtotal;
+  const discountAmount = useStored ? discAmt : computed.discountAmount;
+  const netAmount = useStored ? Number(watchNetAmt) || 0 : computed.netAmount;
+  const taxAmount = useStored ? taxAmt : computed.taxAmount;
+  const totalPrice = useStored
+    ? Number(watchTotalPrice) || 0
+    : computed.totalPrice;
 
   // Sync computed values back to form
   // stage ซ่อนราคา: ราคาในฟอร์มเป็น null→0 ปลอม คำนวณแล้วเขียนกลับจะได้ยอด 0

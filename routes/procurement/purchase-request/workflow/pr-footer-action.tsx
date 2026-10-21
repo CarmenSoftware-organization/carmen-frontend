@@ -8,6 +8,7 @@ import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { STAGE_ROLE } from "@/types/stage-role";
 import { formatCurrency } from "@/lib/currency-utils";
 import type { PrFormValues } from "../pr-form-schema";
+import { getPrHiddenFlags } from "../pr-hidden-fields";
 import { computePrSummary } from "../pr-summary";
 import { PR_STATUS, PR_ITEM_STAGE_STATUS } from "@/types/purchase-request";
 import {
@@ -18,7 +19,7 @@ import {
 import { computePurchaseAction } from "./pr-purchase-action";
 import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 import { HiddenValue } from "@/components/share/hidden-value";
-import { isPriceHidden, type HiddenPriceField } from "@/types/workflows";
+import { type HiddenPriceField } from "@/types/workflows";
 
 interface PrFooterActionProps {
   readonly role?: string;
@@ -92,9 +93,10 @@ export function PrFooterAction({
 
   const itemStatuses = items.map((item) => item?.current_stage_status ?? "");
 
-  const summary = computePrSummary(items);
-  // ยอดในฟอร์มเป็น null→0 ปลอมเมื่อ stage ซ่อน — รวมแล้วจะโชว์ 0.00 หลอกตา
-  const hideTotal = isPriceHidden(hiddenFields, "total_price");
+  // ยอดในฟอร์มเป็น null→0 ปลอมเมื่อ stage ซ่อน total — รวมแล้วจะโชว์ 0.00 หลอกตา
+  // ซ่อนเฉพาะราคาต่อหน่วย = ยอดจริงมาจาก backend ใช้ยอดที่เก็บไว้ ไม่คูณราคา 0 ปลอม
+  const { hideTotal, useStored } = getPrHiddenFlags(hiddenFields);
+  const summary = computePrSummary(items, useStored);
 
   // const canSubmit = role === STAGE_ROLE.CREATE && prStatus !== "in_progress";
   const canSubmit = role === STAGE_ROLE.CREATE;

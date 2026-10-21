@@ -316,6 +316,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                     stages={watchedStages ?? []}
                     productCount={watchedProducts?.length ?? 0}
                     routingCount={routingFieldArray.fields.length}
+                    workflowType={watchedType}
                   />
                 </TabsContent>
               </div>

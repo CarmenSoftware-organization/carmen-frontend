@@ -1,3 +1,4 @@
+import { storedSubtotal } from "./pr-hidden-fields";
 import { resolveApprovedQty, type PrFormValues } from "./pr-form-schema";
 
 export interface PrSummary {
@@ -20,12 +21,15 @@ export interface PrSummary {
  * Discount ก็ไม่เท่ากับ Net ทันทีที่ผู้อนุมัติหั่นจำนวนลง
  *
  * @param items - items จากฟอร์ม PR
+ * @param useStored - ซ่อนเฉพาะราคาต่อหน่วย: pricelist_price เป็น 0 ปลอม จึงคิด subtotal จาก
+ *   net + discount ที่ backend ส่งมาแทนราคา × จำนวน
  * @returns ยอดรวมห้าช่องของแถบสรุป
  * @example
  * const summary = computePrSummary(useWatch({ control, name: "items" }) ?? []);
  */
 export function computePrSummary(
   items: readonly (PrFormValues["items"][number] | undefined)[],
+  useStored = false,
 ): PrSummary {
   let subtotal = 0;
   let totalDiscount = 0;
@@ -40,7 +44,9 @@ export function computePrSummary(
       approved_qty: item.approved_qty ?? 0,
       requested_qty: item.requested_qty ?? 0,
     });
-    subtotal += Number(item.pricelist_price ?? 0) * qty * rate;
+    subtotal += useStored
+      ? storedSubtotal(item.net_amount, item.discount_amount) * rate
+      : Number(item.pricelist_price ?? 0) * qty * rate;
     totalDiscount += Number(item.discount_amount ?? 0) * rate;
     totalNet += Number(item.net_amount ?? 0) * rate;
     totalTax += Number(item.tax_amount ?? 0) * rate;

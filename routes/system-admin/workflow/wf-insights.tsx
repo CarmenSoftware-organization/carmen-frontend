@@ -15,6 +15,7 @@ interface WfInsightsProps {
   readonly stages: Stage[];
   readonly productCount?: number;
   readonly routingCount?: number;
+  readonly workflowType?: string;
 }
 
 const ACTION_LABEL: Record<ActionKey, string> = {
@@ -34,6 +35,7 @@ export default function WfInsights({
   stages,
   productCount = 0,
   routingCount = 0,
+  workflowType,
 }: WfInsightsProps) {
   const t = useTranslations("systemAdmin.workflow");
 
@@ -45,7 +47,7 @@ export default function WfInsights({
     );
   }
 
-  const insights = computeWorkflowInsights(stages);
+  const insights = computeWorkflowInsights(stages, workflowType);
 
   return (
     <div className="space-y-6 pt-4">
