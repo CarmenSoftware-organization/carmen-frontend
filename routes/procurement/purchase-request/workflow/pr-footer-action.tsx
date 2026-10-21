@@ -8,6 +8,7 @@ import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { STAGE_ROLE } from "@/types/stage-role";
 import { formatCurrency } from "@/lib/currency-utils";
 import type { PrFormValues } from "../pr-form-schema";
+import { getPrHiddenFlags } from "../pr-hidden-fields";
 import { computePrSummary } from "../pr-summary";
 import { PR_STATUS, PR_ITEM_STAGE_STATUS } from "@/types/purchase-request";
 import {
@@ -17,6 +18,8 @@ import {
 } from "./pr-action-dialog";
 import { computePurchaseAction } from "./pr-purchase-action";
 import type { StageActionFlags } from "@/lib/workflow-stage-actions";
+import { HiddenValue } from "@/components/share/hidden-value";
+import { type HiddenPriceField } from "@/types/workflows";
 
 interface PrFooterActionProps {
   readonly role?: string;
@@ -29,6 +32,8 @@ interface PrFooterActionProps {
   readonly stagesLoading?: boolean;
   /** ตัวเลือกที่ stage ปัจจุบันเปิดให้ตัดสิน — AND กับสิทธิ์ตาม role เสมอ ไม่เพิ่มปุ่มที่ role ไม่มี */
   readonly stageActions: StageActionFlags;
+  /** `hidden_fields` ของใบ — ซ่อน `total_price` = ยอดรวมท้ายใบเป็น badge */
+  readonly hiddenFields?: readonly HiddenPriceField[];
   readonly onSubmitPr?: () => void;
   readonly onApprove?: () => void;
   readonly onReject?: () => void;
@@ -63,6 +68,7 @@ export function PrFooterAction({
   previousStages,
   stagesLoading,
   stageActions,
+  hiddenFields,
   onSubmitPr,
   onApprove,
   onReject,
@@ -87,7 +93,10 @@ export function PrFooterAction({
 
   const itemStatuses = items.map((item) => item?.current_stage_status ?? "");
 
-  const summary = computePrSummary(items);
+  // ยอดในฟอร์มเป็น null→0 ปลอมเมื่อ stage ซ่อน total — รวมแล้วจะโชว์ 0.00 หลอกตา
+  // ซ่อนเฉพาะราคาต่อหน่วย = ยอดจริงมาจาก backend ใช้ยอดที่เก็บไว้ ไม่คูณราคา 0 ปลอม
+  const { hideTotal, useStored } = getPrHiddenFlags(hiddenFields);
+  const summary = computePrSummary(items, useStored);
 
   // const canSubmit = role === STAGE_ROLE.CREATE && prStatus !== "in_progress";
   const canSubmit = role === STAGE_ROLE.CREATE;
@@ -143,32 +152,53 @@ export function PrFooterAction({
           {
             key: "subtotal",
             label: tfl("subtotal"),
-            value: formatCurrency(summary.subtotal),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : (
+              formatCurrency(summary.subtotal)
+            ),
           },
           {
             key: "discount",
             label: tfl("discount"),
-            value:
-              summary.totalDiscount > 0
-                ? `-${formatCurrency(summary.totalDiscount)}`
-                : formatCurrency(0),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : summary.totalDiscount > 0 ? (
+              `-${formatCurrency(summary.totalDiscount)}`
+            ) : (
+              formatCurrency(0)
+            ),
             valueClassName:
-              summary.totalDiscount > 0 ? "text-destructive" : undefined,
+              !hideTotal && summary.totalDiscount > 0
+                ? "text-destructive"
+                : undefined,
           },
           {
             key: "net",
             label: tfl("net"),
-            value: formatCurrency(summary.totalNet),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : (
+              formatCurrency(summary.totalNet)
+            ),
           },
           {
             key: "tax",
             label: tfl("tax"),
-            value: formatCurrency(summary.totalTax),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : (
+              formatCurrency(summary.totalTax)
+            ),
           },
           {
             key: "grandTotal",
             label: tfl("grandTotal"),
-            value: formatCurrency(summary.grandTotal),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : (
+              formatCurrency(summary.grandTotal)
+            ),
             emphasis: true,
             suffix: currencyCode,
           },

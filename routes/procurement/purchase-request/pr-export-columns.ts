@@ -1,4 +1,5 @@
 import type { XlsxColumn } from "@/hooks/use-xlsx-export";
+import { isPriceHidden } from "@/types/workflows";
 import { formatDate } from "@/lib/date-utils";
 import type { PurchaseRequest } from "@/types/purchase-request";
 
@@ -37,7 +38,10 @@ export function buildPrExportColumns({
     },
     {
       header: tfl("totalAmount"),
-      value: (r) => r.base_total_amount,
+      value: (r) =>
+        isPriceHidden(r.hidden_fields, "total_price")
+          ? ""
+          : r.base_total_amount,
       width: 16,
     },
     {

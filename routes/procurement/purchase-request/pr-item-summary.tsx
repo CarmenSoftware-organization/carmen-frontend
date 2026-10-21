@@ -1,4 +1,5 @@
 import { formatCurrency } from "@/lib/currency-utils";
+import { HiddenValue } from "@/components/share/hidden-value";
 
 interface Props {
   readonly subtotal: number;
@@ -9,6 +10,8 @@ interface Props {
   readonly exchangeRate: number;
   readonly isForeignCurrency: boolean;
   readonly baseCurrencyCode?: string;
+  /** stage ซ่อน `total_price` — ยอดสกุลฐาน (`base_*`) เป็น badge แทนตัวเลข */
+  readonly isHidden?: boolean;
 }
 
 export function PrItemSummary({
@@ -20,6 +23,7 @@ export function PrItemSummary({
   exchangeRate,
   isForeignCurrency,
   baseCurrencyCode,
+  isHidden = false,
 }: Props) {
   if (!isForeignCurrency) return null;
 
@@ -34,7 +38,7 @@ export function PrItemSummary({
   return (
     <>
       {/* base currency code — คอลัมน์ Currency (col 3) แถวเดียวกับค่า base */}
-      <div className="text-muted-foreground text-micro flex items-center justify-end col-start-3">
+      <div className="text-muted-foreground text-micro col-start-3 flex items-center justify-end">
         {baseCurrencyCode}
       </div>
       {metrics.map((m, i) => (
@@ -44,7 +48,7 @@ export function PrItemSummary({
             i === 0 ? "col-start-6" : ""
           }`}
         >
-          {formatCurrency(m.v * exchangeRate)}
+          {isHidden ? <HiddenValue /> : formatCurrency(m.v * exchangeRate)}
         </div>
       ))}
     </>

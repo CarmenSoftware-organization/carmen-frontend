@@ -29,6 +29,8 @@ import { PoActionDialog } from "./po-action-dialog";
 import { PoWorkflowRequiredDialog } from "./po-workflow-required-dialog";
 import { usePoItemTable } from "./use-po-item-table";
 import { PoItemComputedSync } from "./po-item-cells";
+import type { HiddenPriceField } from "@/types/workflows";
+import { getPoHiddenFlags } from "./po-hidden-fields";
 import { getDeleteDescription } from "@/lib/form-utils";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import {
@@ -59,6 +61,8 @@ interface PoItemFieldsProps {
   prSourcesByDetailId: Map<string, PrSource[]>;
   /** id ของแถว PO → ใบรับสินค้าที่รับของแถวนี้เข้ามา (ที่มาเดียวกัน) */
   grnSourcesByDetailId: Map<string, PrSource[]>;
+  /** `hidden_fields` ของใบ — ราคาที่ stage ปัจจุบันซ่อนจากผู้ใช้ (ค่าในฟอร์มเป็น 0 ปลอมจาก null) */
+  hiddenFields?: readonly HiddenPriceField[];
 }
 
 export function PoItemFields({
@@ -76,6 +80,7 @@ export function PoItemFields({
   stageActions,
   prSourcesByDetailId,
   grnSourcesByDetailId,
+  hiddenFields,
 }: PoItemFieldsProps) {
   "use no memo";
   const t = useTranslations("procurement.purchaseOrder");
@@ -118,6 +123,7 @@ export function PoItemFields({
     prSourcesByDetailId,
     grnSourcesByDetailId,
     onDelete: setDeleteIndex,
+    hiddenFields,
   });
 
   const handleAddItem = () => {
@@ -424,6 +430,8 @@ export function PoItemFields({
           control={form.control}
           form={form}
           index={i}
+          // ราคาถูกซ่อน = ค่าในฟอร์มเป็น 0 ปลอม คำนวณแล้วเขียนกลับจะได้ยอด 0 ทับของจริง
+          skip={getPoHiddenFlags(hiddenFields).anyHidden}
         />
       ))}
 

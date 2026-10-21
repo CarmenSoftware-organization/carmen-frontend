@@ -1,4 +1,6 @@
 import { useTranslations } from "use-intl";
+import { HiddenValue } from "@/components/share/hidden-value";
+import { isPriceHidden } from "@/types/workflows";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
@@ -233,6 +235,8 @@ export function usePoTable({
         />
       ),
       cell: ({ row }) => {
+        if (isPriceHidden(row.original.hidden_fields, "total_price"))
+          return <HiddenValue />;
         const amount = row.getValue<number>("total_amount");
         const currency = row.original.currency?.code;
         if (amount == null) return <span></span>;

@@ -3,6 +3,7 @@ import type { WorkflowHistoryEntry } from "./purchase-request";
 import type { Audit } from "./audit";
 import type { LastAction } from "./last-action";
 import type { EntityRef } from "./entity-ref";
+import type { HiddenPriceField } from "./workflows";
 import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 
 export enum PO_STATUS {
@@ -197,6 +198,7 @@ export interface PurchaseOrder {
   exchange_rate: number;
   doc_version: number;
   total_amount: number;
+  hidden_fields?: HiddenPriceField[];
   last_action?: LastAction | null;
   workflow_current_stage: string | null;
   workflow_next_stage: string | null;

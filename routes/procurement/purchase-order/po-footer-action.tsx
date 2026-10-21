@@ -11,6 +11,9 @@ import { STAGE_ROLE } from "@/types/stage-role";
 import { computePoAction } from "@/constant/purchase-order";
 import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 import type { PoFormValues } from "./po-form-schema";
+import { HiddenValue } from "@/components/share/hidden-value";
+import type { HiddenPriceField } from "@/types/workflows";
+import { getPoHiddenFlags } from "./po-hidden-fields";
 import {
   PoActionDialog,
   type StageOption,
@@ -28,6 +31,8 @@ interface PoFooterActionProps {
   readonly isEditMode?: boolean;
   /** ตัวเลือกที่ stage ปัจจุบันเปิดให้ตัดสิน — AND กับสิทธิ์ตาม role เสมอ ไม่เพิ่มปุ่มที่ role ไม่มี */
   readonly stageActions: StageActionFlags;
+  /** `hidden_fields` ของใบ — ซ่อน `total_price` = ยอดรวมท้ายใบเป็น badge */
+  readonly hiddenFields?: readonly HiddenPriceField[];
   readonly onSubmit?: () => void;
   /**
    * ตรวจก่อนเปิดกล่องยืนยัน "ส่งใบ" — คืน false = ไม่ต้องเปิดกล่อง
@@ -59,6 +64,7 @@ export function PoFooterAction({
   stagesLoading,
   isEditMode = false,
   stageActions,
+  hiddenFields,
   onSubmit,
   onValidateSubmit,
   onApprove,
@@ -79,13 +85,24 @@ export function PoFooterAction({
   // grand summary = ผลรวมของแถว โดยใช้ computeItemPricing ตัวเดียวกับที่ตารางใช้
   // ห้ามคำนวณเองซ้ำ — ส่วนลด/ภาษีอยู่ระดับ location (แต่ละที่คนละเรต และ override
   // เป็นจำนวนเงินได้) เขียนสูตรใหม่ที่นี่เมื่อไหร่ ยอดล่างกับยอดในตารางไม่ตรงกันทันที
+  // ยอดในฟอร์มเป็น null→0 ปลอมเมื่อ stage ซ่อน — รวมแล้วจะโชว์ 0.00 หลอกตา
+  const { hideTotal, hidePrice } = getPoHiddenFlags(hiddenFields);
   let subtotal = 0;
   let totalDiscount = 0;
   let totalNet = 0;
   let totalTax = 0;
   let grandTotal = 0;
   for (const item of items ?? []) {
-    const line = computeItemPricing(item);
+    // ราคาต่อหน่วยซ่อน = ราคาในฟอร์มเป็น 0 ปลอม รวมยอดจากค่าที่ backend ส่งมาแทน
+    const line = hidePrice
+      ? {
+          subtotal: Number(item?.sub_total_price) || 0,
+          discountAmount: Number(item?.discount_amount) || 0,
+          netAmount: Number(item?.net_amount) || 0,
+          taxAmount: Number(item?.tax_amount) || 0,
+          totalPrice: Number(item?.total_price) || 0,
+        }
+      : computeItemPricing(item);
     subtotal += line.subtotal;
     totalDiscount += line.discountAmount;
     totalNet += line.netAmount;
@@ -171,32 +188,53 @@ export function PoFooterAction({
           {
             key: "subtotal",
             label: tfl("subtotal"),
-            value: formatCurrency(summary.subtotal),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : (
+              formatCurrency(summary.subtotal)
+            ),
           },
           {
             key: "discount",
             label: tfl("discount"),
-            value:
-              summary.totalDiscount > 0
-                ? `-${formatCurrency(summary.totalDiscount)}`
-                : formatCurrency(0),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : summary.totalDiscount > 0 ? (
+              `-${formatCurrency(summary.totalDiscount)}`
+            ) : (
+              formatCurrency(0)
+            ),
             valueClassName:
-              summary.totalDiscount > 0 ? "text-destructive" : undefined,
+              !hideTotal && summary.totalDiscount > 0
+                ? "text-destructive"
+                : undefined,
           },
           {
             key: "net",
             label: tfl("net"),
-            value: formatCurrency(summary.totalNet),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : (
+              formatCurrency(summary.totalNet)
+            ),
           },
           {
             key: "tax",
             label: tfl("tax"),
-            value: formatCurrency(summary.totalTax),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : (
+              formatCurrency(summary.totalTax)
+            ),
           },
           {
             key: "grandTotal",
             label: tfl("grandTotal"),
-            value: formatCurrency(summary.grandTotal),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : (
+              formatCurrency(summary.grandTotal)
+            ),
             emphasis: true,
             suffix: docCurrencyCode,
           },

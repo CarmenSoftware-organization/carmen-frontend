@@ -79,6 +79,19 @@ interface AvailableActions {
   sendback: Action;
 }
 
+export type HiddenPriceField = "price_per_unit" | "total_price";
+
+/**
+ * ฟิลด์ราคาถูกซ่อนหรือไม่ — ตัดสินจาก `hidden_fields` ที่ backend ส่งมาเท่านั้น
+ * ห้ามเดาจากค่า null (null อาจเป็นข้อมูลว่างจริง)
+ */
+export function isPriceHidden(
+  hidden: readonly HiddenPriceField[] | undefined,
+  field: HiddenPriceField,
+): boolean {
+  return hidden?.includes(field) ?? false;
+}
+
 interface HideFields {
   price_per_unit: boolean;
   total_price: boolean;

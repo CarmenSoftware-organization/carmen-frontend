@@ -1,4 +1,9 @@
-import type { Role, Stage, SlaUnit } from "@/types/workflows";
+import {
+  WORKFLOW_TYPE,
+  type Role,
+  type Stage,
+  type SlaUnit,
+} from "@/types/workflows";
 
 const UNIT_TO_MINUTES: Record<SlaUnit, number> = {
   minutes: 1,
@@ -69,7 +74,15 @@ const stageMinutes = (stage: Stage): number => {
   return value * (UNIT_TO_MINUTES[unit] ?? 60);
 };
 
-export function computeWorkflowInsights(stages: Stage[]): WorkflowInsights {
+/**
+ * @param stages - stage ของ workflow
+ * @param workflowType - ชนิด workflow — ใบเบิก (SR) ไม่มียอด ค่า hide_fields ที่ค้างอยู่ไม่มีผล
+ *   จึงไม่นับ (ไม่ส่ง = นับตามปกติ)
+ */
+export function computeWorkflowInsights(
+  stages: Stage[],
+  workflowType?: string,
+): WorkflowInsights {
   const safe = stages ?? [];
 
   const stageSla: StageSlaRow[] = safe.map((stage, index) => ({
@@ -130,16 +143,23 @@ export function computeWorkflowInsights(stages: Stage[]): WorkflowInsights {
     0,
   );
 
+  const hideEligible =
+    workflowType === WORKFLOW_TYPE.SR
+      ? []
+      : middle.filter((s) => s.role !== "create" && s.role !== "purchase");
+
   const stats: QuickStats = {
     totalStages: safe.length,
     approverStages: middle.filter((s) => s.role === "approve").length,
     totalUsers,
     hodStages: middle.filter((s) => s.is_hod === true).length,
-    hiddenPriceCount: middle.filter(
+    // stage create/purchase ไม่ถูกซ่อนราคาเสมอ และ SR ไม่มียอด — ค่าเก่าที่ค้างอยู่ไม่นับ
+    hiddenPriceCount: hideEligible.filter(
       (s) => s.hide_fields?.price_per_unit === true,
     ).length,
-    hiddenTotalCount: middle.filter((s) => s.hide_fields?.total_price === true)
-      .length,
+    hiddenTotalCount: hideEligible.filter(
+      (s) => s.hide_fields?.total_price === true,
+    ).length,
   };
 
   return {

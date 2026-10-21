@@ -4,12 +4,15 @@ import { InputAmount } from "@/components/ui/input/input-amount";
 import { formatCurrency } from "@/lib/currency-utils";
 import { cn } from "@/lib/utils";
 import type { PoFormValues } from "../po-form-schema";
+import { HiddenValue } from "@/components/share/hidden-value";
 
 interface CellProps {
   readonly form: UseFormReturn<PoFormValues>;
   readonly index: number;
   readonly disabled: boolean;
   readonly readOnly: boolean;
+  /** stage ซ่อน `price_per_unit` — badge แทนราคา และไม่เปิดช่องกรอก */
+  readonly isHidden?: boolean;
 }
 
 const PricePlain = memo(function PricePlain({
@@ -30,8 +33,16 @@ export const PriceCell = memo(function PriceCell({
   index,
   disabled,
   readOnly,
+  isHidden = false,
 }: CellProps) {
   "use no memo";
+  if (isHidden) {
+    return (
+      <span className="flex justify-end">
+        <HiddenValue />
+      </span>
+    );
+  }
   if (disabled || readOnly) {
     return <PricePlain form={form} index={index} />;
   }

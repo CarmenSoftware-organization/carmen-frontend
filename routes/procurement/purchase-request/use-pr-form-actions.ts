@@ -88,7 +88,10 @@ export function usePrFormActions({
         // 200 แต่ไม่มี doc_version = backend ไม่ส่งมา ไม่ใช่ "ใบนี้ไม่มีเวอร์ชัน"
         // ต้องเห็นตอน dev ไม่งั้นจะไปโผล่เป็น 409 ตอนบันทึกแล้วหาต้นตอไม่เจอ
         if (import.meta.env.DEV && fresh?.doc_version == null) {
-          console.warn("[PR] GET คืน 200 แต่ไม่มี doc_version — ใช้ค่าในฟอร์มแทน", id);
+          console.warn(
+            "[PR] GET คืน 200 แต่ไม่มี doc_version — ใช้ค่าในฟอร์มแทน",
+            id,
+          );
         }
         return fresh;
       }
@@ -98,7 +101,8 @@ export function usePrFormActions({
       // ยังคืน null (ไม่ throw) เพราะ GET ล้มไม่ควรทำให้บันทึกไม่ได้เลย — แต่ต้อง
       // ไม่เงียบ ผลของการ fallback คือส่ง doc_version เก่า ซึ่งจบที่ 409 ปลายทาง
       // แล้วสาวกลับมาถึงบรรทัดนี้ไม่ได้ถ้าไม่มีอะไรบอก
-      if (import.meta.env.DEV) console.warn("[PR] ดึง doc_version สดไม่สำเร็จ", err);
+      if (import.meta.env.DEV)
+        console.warn("[PR] ดึง doc_version สดไม่สำเร็จ", err);
     }
     return null;
   };
@@ -246,6 +250,7 @@ export function usePrFormActions({
       return prepareApproveDetails(
         values.items,
         purchaseRequest.id,
+        purchaseRequest.hidden_fields,
       ) as unknown as CreatePurchaseRequestDto["details"];
     }
     return buildCreateDetails(values, docVersion, freshDetails);
@@ -558,6 +563,7 @@ export function usePrFormActions({
         details: prepareApproveDetails(
           form.getValues("items"),
           purchaseRequest.id,
+          purchaseRequest.hidden_fields,
         ),
       },
       {

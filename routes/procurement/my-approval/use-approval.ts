@@ -4,6 +4,7 @@ import { buildUrl } from "@/lib/build-query-string";
 import { httpClient } from "@/lib/http-client";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { QUERY_KEYS } from "@/constant/query-keys";
+import { isPriceHidden } from "@/types/workflows";
 import type {
   ApprovalItem,
   ApprovalPendingSummary,
@@ -38,7 +39,10 @@ function normalizeApproval(item: RawApprovalUnified): ApprovalItem {
     requestor_name: item.requestor_name ?? "",
     department_name: item.department_name ?? "",
     vendor_name: item.counterparty_name ?? "",
-    total_amount: item.total_amount ?? 0,
+    total_amount: isPriceHidden(item.hidden_fields, "total_price")
+      ? null
+      : (item.total_amount ?? 0),
+    hidden_fields: item.hidden_fields ?? [],
     delivery_date: item.due_date,
     bu_code: item.bu_code,
     bu_name: item.bu_name ?? "",

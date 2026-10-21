@@ -12,11 +12,13 @@ import { InputAmount } from "@/components/ui/input/input-amount";
 import { formatCurrency, EXCHANGE_RATE_DECIMALS } from "@/lib/currency-utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LookupVendor } from "@/components/lookup/lookup-vendor";
+import { HiddenValue } from "@/components/share/hidden-value";
 import {
   computePrItemAmounts,
   resolveApprovedQty,
   type PrFormValues,
 } from "./pr-form-schema";
+import { storedSubtotal } from "./pr-hidden-fields";
 import PrInventoryRow from "./pr-inventory-row";
 import { PrItemSummary } from "./pr-item-summary";
 import { PrLastReceivingInfo } from "./pr-last-receiving-info";
@@ -31,6 +33,10 @@ interface PrItemExpandProps {
   readonly itemFields: ItemField[];
   readonly buCode?: string;
   readonly baseCurrencyCode?: string;
+  /** stage ซ่อน `price_per_unit` — ราคาต่อหน่วย / pricelist / ราคารับล่าสุด */
+  readonly hidePrice?: boolean;
+  /** stage ซ่อน `total_price` — subtotal / ส่วนลด / net / ภาษี / total / ยอดสกุลฐาน */
+  readonly hideTotal?: boolean;
 }
 
 export function PrItemExpand({
@@ -40,12 +46,19 @@ export function PrItemExpand({
   itemFields,
   buCode,
   baseCurrencyCode,
+  hidePrice = false,
+  hideTotal = false,
 }: PrItemExpandProps) {
   const tfl = useTranslations("field");
   const index = itemFields.findIndex((f) => f.id === item.id);
 
   const i = Math.max(index, 0);
-  const isFieldDisabled = isDisabled;
+  const anyHidden = hidePrice || hideTotal;
+  // ซ่อนอย่างใดอย่างหนึ่ง = ผู้ขาย/pricelist/ภาษี/ส่วนลดเป็นข้อความล้วน — backend ทิ้ง
+  // key ราคาและแหล่งราคาของผู้ใช้กลุ่มนี้อยู่แล้ว ปล่อยเป็นช่องกรอกจะหลอกว่าแก้ได้
+  const isFieldDisabled = isDisabled || anyHidden;
+  // ซ่อนเฉพาะราคาต่อหน่วย: ราคาในฟอร์มเป็น 0 ปลอม แต่ backend ส่งยอดจริงมา — โชว์ยอดนั้น
+  const useStored = hidePrice && !hideTotal;
 
   const [
     watchPrice,
@@ -63,6 +76,8 @@ export function PrItemExpand({
     watchExchangeRate,
     watchVendorName,
     watchTaxProfileName,
+    watchNetAmt,
+    watchTotalPrice,
   ] = useWatch({
     control: form.control,
     name: [
@@ -81,6 +96,8 @@ export function PrItemExpand({
       `items.${i}.exchange_rate`,
       `items.${i}.vendor_name`,
       `items.${i}.tax_profile_name`,
+      `items.${i}.net_amount`,
+      `items.${i}.total_price`,
     ] as const,
   });
 
@@ -101,21 +118,31 @@ export function PrItemExpand({
   const isForeignCurrency =
     !!baseCurrencyCode && !!currencyCode && currencyCode !== baseCurrencyCode;
 
-  const { subtotal, discountAmount, netAmount, taxAmount, totalPrice } =
-    computePrItemAmounts({
-      price,
-      qty: calcQty,
-      discRate,
-      isDiscAdj,
-      discAmt,
-      taxRate,
-      isTaxAdj,
-      taxAmt,
-    });
+  const computed = computePrItemAmounts({
+    price,
+    qty: calcQty,
+    discRate,
+    isDiscAdj,
+    discAmt,
+    taxRate,
+    isTaxAdj,
+    taxAmt,
+  });
+  const subtotal = useStored
+    ? storedSubtotal(watchNetAmt, discAmt)
+    : computed.subtotal;
+  const discountAmount = useStored ? discAmt : computed.discountAmount;
+  const netAmount = useStored ? Number(watchNetAmt) || 0 : computed.netAmount;
+  const taxAmount = useStored ? taxAmt : computed.taxAmount;
+  const totalPrice = useStored
+    ? Number(watchTotalPrice) || 0
+    : computed.totalPrice;
 
   // Sync computed values back to form
+  // stage ซ่อนราคา: ราคาในฟอร์มเป็น null→0 ปลอม คำนวณแล้วเขียนกลับจะได้ยอด 0
+  // ทับของจริง — ข้ามทั้งก้อน (backend คำนวณยอดเองจากราคาที่เก็บไว้ × approved_qty)
   useEffect(() => {
-    if (index === -1) return;
+    if (index === -1 || anyHidden) return;
     // override ปิด: amount auto จาก rate · override เปิด: amount กรอกเอง,
     // rate ค้างค่าเดิม (disabled, ไม่ back-compute) — ทั้ง discount และ tax
     if (!isDiscAdj) {
@@ -135,6 +162,7 @@ export function PrItemExpand({
     isDiscAdj,
     isTaxAdj,
     form,
+    anyHidden,
   ]);
 
   if (index === -1) return null;
@@ -197,7 +225,7 @@ export function PrItemExpand({
           <p
             className={`flex items-center truncate text-xs font-medium ${isFieldDisabled ? "min-h-6" : "min-h-8"}`}
           >
-            {pricelistNo || "—"}
+            {hidePrice ? <HiddenValue /> : pricelistNo || "—"}
           </p>
         </Field>
 
@@ -281,15 +309,17 @@ export function PrItemExpand({
             className="text-muted-foreground flex min-h-6 items-center justify-end gap-1 text-xs tracking-wide"
           >
             {tfl("unitPrice")}
-            <PrLastReceivingInfo
-              control={form.control}
-              index={index}
-              buCode={buCode}
-            />
+            {!hidePrice && (
+              <PrLastReceivingInfo
+                control={form.control}
+                index={index}
+                buCode={buCode}
+              />
+            )}
           </FieldLabel>
           {isFieldDisabled ? (
             <p className="flex min-h-6 items-center justify-end text-xs font-semibold tabular-nums">
-              {formatCurrency(price)}
+              {hidePrice ? <HiddenValue /> : formatCurrency(price)}
             </p>
           ) : (
             <InputAmount
@@ -351,7 +381,7 @@ export function PrItemExpand({
           <p
             className={`flex items-center justify-end text-xs font-medium tabular-nums ${isFieldDisabled ? "min-h-6" : "min-h-8"}`}
           >
-            {formatCurrency(subtotal)}
+            {hideTotal ? <HiddenValue /> : formatCurrency(subtotal)}
           </p>
         </Field>
 
@@ -372,9 +402,13 @@ export function PrItemExpand({
                 {discRate}%
               </span>
               <span className="text-muted-foreground">·</span>
-              <span className="tabular-nums">
-                {formatCurrency(discountAmount)}
-              </span>
+              {hideTotal ? (
+                <HiddenValue />
+              ) : (
+                <span className="tabular-nums">
+                  {formatCurrency(discountAmount)}
+                </span>
+              )}
             </p>
           ) : (
             <PrDiscountInput
@@ -393,7 +427,7 @@ export function PrItemExpand({
           <p
             className={`flex items-center justify-end text-xs font-medium tabular-nums ${isFieldDisabled ? "min-h-6" : "min-h-8"}`}
           >
-            {formatCurrency(netAmount)}
+            {hideTotal ? <HiddenValue /> : formatCurrency(netAmount)}
           </p>
         </Field>
 
@@ -422,9 +456,13 @@ export function PrItemExpand({
                 <>
                   <span className="truncate">{taxProfileName}</span>
                   <span className="text-muted-foreground">·</span>
-                  <span className="tabular-nums">
-                    {formatCurrency(taxAmount)}
-                  </span>
+                  {hideTotal ? (
+                    <HiddenValue />
+                  ) : (
+                    <span className="tabular-nums">
+                      {formatCurrency(taxAmount)}
+                    </span>
+                  )}
                 </>
               ) : (
                 "—"
@@ -447,7 +485,7 @@ export function PrItemExpand({
           <p
             className={`flex items-center justify-end text-xs font-semibold tabular-nums ${isFieldDisabled ? "min-h-6" : "min-h-8"}`}
           >
-            {formatCurrency(totalPrice)}
+            {hideTotal ? <HiddenValue /> : formatCurrency(totalPrice)}
           </p>
         </Field>
 
@@ -474,6 +512,7 @@ export function PrItemExpand({
           exchangeRate={exchangeRate}
           isForeignCurrency={isForeignCurrency}
           baseCurrencyCode={baseCurrencyCode}
+          isHidden={hideTotal}
         />
       </div>
     </div>

@@ -39,6 +39,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { STAGE_ROLE } from "@/types/stage-role";
+import { isPriceHidden, type HiddenPriceField } from "@/types/workflows";
 import type { BusinessUnit } from "@/types/profile";
 import type { PrFormValues } from "./pr-form-schema";
 import { usePrItemTable } from "./use-pr-item-table";
@@ -85,6 +86,8 @@ interface PrItemFieldsProps {
   readonly stagesLoading?: boolean;
   /** ตัวเลือกที่ stage ปัจจุบันเปิดให้ตัดสิน (ผ่าน getStageActionFlags แล้ว) — มีแต่ตัดออก ไม่เพิ่มสิทธิ์ */
   readonly stageActions: StageActionFlags;
+  /** `hidden_fields` ของใบ — ราคาที่ stage ปัจจุบันซ่อนจากผู้ใช้ (ว่าง = ไม่ซ่อน) */
+  readonly hiddenFields?: readonly HiddenPriceField[];
   readonly onBulkReview?: (
     detailIds: string[],
     messages: Record<number, string>,
@@ -105,6 +108,7 @@ export function PrItemFields({
   previousStages,
   stagesLoading,
   stageActions,
+  hiddenFields,
   onBulkReview,
 }: PrItemFieldsProps) {
   const t = useTranslations("procurement.purchaseRequest");
@@ -207,7 +211,9 @@ export function PrItemFields({
     buCode,
     baseCurrencyCode: defaultBu?.config?.default_currency?.code,
     onDelete: setDeleteIndex,
+    hiddenFields,
   });
+  const hidePrice = isPriceHidden(hiddenFields, "price_per_unit");
 
   const selectedRows = table.getSelectedRowModel().rows;
 
@@ -516,7 +522,8 @@ export function PrItemFields({
                     productLocalName: item.product_local_name,
                     qty: item.requested_qty,
                     unitName: item.requested_unit_name,
-                    price: item.pricelist_price,
+                    // ราคาที่ stage ซ่อนไว้ห้ามหลุดไปกับ prompt ของ AI
+                    price: hidePrice ? undefined : item.pricelist_price,
                     currencyCode: item.currency_code ?? undefined,
                   };
                 })}

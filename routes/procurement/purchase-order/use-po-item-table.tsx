@@ -29,6 +29,8 @@ import { PriceCell, ProductHeaderCell, StatusCell } from "./po-item-cells";
 import { ItemHistorySheet } from "@/components/share/item-history-sheet";
 import { ITEM_HISTORY_STATUS_CONFIG } from "@/constant/item-history";
 import type { PoFormValues } from "./po-form-schema";
+import type { HiddenPriceField } from "@/types/workflows";
+import { getPoHiddenFlags } from "./po-hidden-fields";
 import type { FieldArrayWithId } from "react-hook-form";
 
 export type PoItemField = FieldArrayWithId<PoFormValues, "items", "id">;
@@ -121,6 +123,8 @@ interface UsePoItemTableOptions {
   /** id ของแถว PO → ใบรับสินค้าที่รับของแถวนี้เข้ามา (ที่มาเดียวกัน) */
   grnSourcesByDetailId: Map<string, PrSource[]>;
   onDelete: (index: number) => void;
+  /** `hidden_fields` ของใบ — ราคาที่ stage ปัจจุบันซ่อนจากผู้ใช้ */
+  hiddenFields?: readonly HiddenPriceField[];
 }
 
 const PO_LEADING_COL = 33;
@@ -138,9 +142,12 @@ export function usePoItemTable({
   prSourcesByDetailId,
   grnSourcesByDetailId,
   onDelete,
+  hiddenFields,
 }: UsePoItemTableOptions) {
   "use no memo";
   const tfl = useTranslations("field");
+  // boolean ไม่ใช่ตัว array — ใช้เป็น dep ของ useMemo คอลัมน์ได้นิ่ง ๆ
+  const { hidePrice, hideTotal } = getPoHiddenFlags(hiddenFields);
   const showAction = !disabled && !readOnly;
 
   // แถวแก้ไม่ได้ = ทุกเซลล์เป็นตัวหนังสือ ไม่มี control ให้เผื่อที่
@@ -272,6 +279,7 @@ export function usePoItemTable({
             index={row.index}
             disabled={disabled}
             readOnly={readOnly}
+            isHidden={hidePrice}
           />
         ),
       },
@@ -285,6 +293,8 @@ export function usePoItemTable({
             control={form.control}
             index={row.index}
             field="sub_total_price"
+            isHidden={hideTotal}
+            useStored={hidePrice}
           />
         ),
       },
@@ -298,6 +308,8 @@ export function usePoItemTable({
             form={form}
             itemIndex={row.index}
             editable={!disabled && !readOnly}
+            isHidden={hideTotal}
+            useStored={hidePrice}
           />
         ),
       },
@@ -311,6 +323,8 @@ export function usePoItemTable({
             control={form.control}
             index={row.index}
             field="net_amount"
+            isHidden={hideTotal}
+            useStored={hidePrice}
           />
         ),
       },
@@ -324,6 +338,8 @@ export function usePoItemTable({
             form={form}
             itemIndex={row.index}
             editable={!disabled && !readOnly}
+            isHidden={hideTotal}
+            useStored={hidePrice}
           />
         ),
       },
@@ -340,6 +356,8 @@ export function usePoItemTable({
             control={form.control}
             index={row.index}
             field="total_price"
+            isHidden={hideTotal}
+            useStored={hidePrice}
           />
         ),
       },
@@ -383,6 +401,8 @@ export function usePoItemTable({
     onDelete,
     tfl,
     showAction,
+    hidePrice,
+    hideTotal,
   ]);
 
   return useReactTable({

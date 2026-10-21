@@ -311,6 +311,7 @@ export function PurchaseRequestForm({
           onReject={actions.handleReject}
           onReview={actions.handleReview}
           stageActions={stageActions}
+          hiddenFields={purchaseRequest?.hidden_fields}
           onPurchaseApprove={actions.handlePurchaseApprove}
           onValidatePurchase={validatePurchase}
         />
@@ -339,6 +340,7 @@ export function PurchaseRequestForm({
           previousStages={previousStages}
           stagesLoading={stagesLoading}
           stageActions={stageActions}
+          hiddenFields={purchaseRequest?.hidden_fields}
           onBulkReview={actions.handleBulkReview}
         />
       </form>
