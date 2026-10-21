@@ -65,6 +65,11 @@
   — แม้ค่าใน DB จะติ๊กไว้ (ข้อมูลเก่าที่ติ๊กค้างไว้ไม่ต้อง migrate)
 - หน้าตั้งค่า workflow ซ่อนบล็อก Hide Fields ใน stage ที่ role = `create`
 
+**stage role `purchase` (PR) ก็ไม่ใช้ Hide Fields เช่นกัน** (ตัดสินโดย Claude ระหว่างเขียนแผน —
+เหตุผลเดียวกับ create: จัดซื้อเป็นคนใส่ราคา และ FE บังคับ `pricelist_price > 0` ก่อน Purchase Approve
+`pr-form-schema.ts:148-158`, `pr-footer-action.tsx:99-103` — ซ่อนแล้วเอกสารเดินต่อไม่ได้) helper ตอบ
+"ไม่ซ่อน" และหน้าตั้งค่าซ่อน checkbox ใน stage role `purchase` ด้วย
+
 **config ที่ใช้:** อ่าน `hide_fields` จาก workflow ปัจจุบัน ของ stage ที่ตรงกับ
 `workflow_current_stage` — ไม่ snapshot ตอนเอกสารเข้า stage (admin แก้ config แล้วมีผลทันที
 กับเอกสารที่ค้างอยู่) (ตัดสินโดย Claude)
@@ -99,7 +104,7 @@
 | list | ✓ | ✓ | ต้องตัดสินต่อแถว — PR list มี role ต่อแถวแล้ว (`service.ts:406-440`), PO list ยังไม่มี ต้องเพิ่ม |
 | my-pending detail/list + my-approve | ✓ | ✓ | |
 | unified my-pending (`sys_v_my_pending`) | ✓ | ✓ | แถวใน my-pending แทบทั้งหมดคือ "ผู้ใช้อยู่ใน stage" → ตัดสินจาก stage ของแถว |
-| print / print-viewer | ✓ | ✓ (+ send-email ที่แนบ PDF) | payload ไป micro-report มาจาก micro-business (`purchase-request.service.ts:3333`, `purchase-order.service.ts:6727`) → mask ก่อนส่ง แสดงเป็น `***` |
+| print / print-viewer | ✓ | ✓ · **send-email ไป vendor: ตอบ 422 เมื่อผู้ส่งถูกซ่อน** (ไม่ mask — vendor ต้องได้ PO ที่มีราคา; ตัดสินโดย Claude ระหว่างเขียนแผน) | payload ไป micro-report มาจาก micro-business (`purchase-request.service.ts:3333`, `purchase-order.service.ts:6727`) → mask ก่อนส่ง แสดงเป็น `***` |
 | export | ✓ | ✓ | เซลล์ว่าง |
 | history ของรายการ / calculate / for-po | ✓ | — | `detail/:id/history`, `detail/:id/calculate`, `for-po` — builder ตรวจว่าใครเรียกได้ แล้ว mask ตามกติกา |
 | activity log | ✓ | ✓ | ตัดฟิลด์ราคาออกจาก `old_data`, `new_data` และรายการ `changes` เมื่อ entity เป็น PR/PO ที่ผู้เรียกถูกซ่อน *ณ ตอนที่เปิดดู* (ไม่ใช่ตอนที่ log ถูกเขียน) · log ของ entity รายบรรทัด (`pr_detail`/`po_detail`) หาเอกสารแม่เพื่อดู stage (โหลดเป็นชุดต่อหน้า ไม่ N+1) (ตัดสินโดย Claude) |
