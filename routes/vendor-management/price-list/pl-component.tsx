@@ -246,6 +246,11 @@ export default function PriceListComponent() {
     : (data?.paginate?.total ?? 0);
 
   const handleExport = async () => {
+    // แท็บกรองแล้วไม่เหลือสถานะ (เลือกแต่ voided) — ไม่ยิง export ไม่งั้นได้ทั้งช่วงวันที่
+    if (matchesNothing) {
+      toast.warning(tc("exportNoData"));
+      return;
+    }
     try {
       const count = await exportPriceList({
         params: queryParams,
