@@ -243,7 +243,9 @@ export function getWorkflowFormDefaults(
     description: workflow.description ?? "",
     data: {
       ...parsedData.data,
-      stages: moveRejectPreviousApprover(parsedData.data.stages),
+      stages: clearCurrentApprover(
+        moveRejectPreviousApprover(parsedData.data.stages),
+      ),
     },
   };
 }
@@ -279,6 +281,41 @@ export function moveRejectPreviousApprover<
         },
       },
     };
+  });
+}
+
+const WF_ACTIONS = ["submit", "approve", "reject", "sendback"] as const;
+
+/**
+ * ปิด `current_approve` ของทุก action ทุก stage
+ *
+ * dispatcher ฝั่ง backend ส่ง `current_approve` ให้คนที่เพิ่งกด — ตอน submit คือผู้ขอ
+ * (ซ้ำกับ `requestor` ผู้ขอได้ 2 ฉบับ) ตอน approve/sendback คือแจ้งคนกดถึงการกระทำของตัวเอง
+ * หน้านี้เลิกแสดงแถวนั้นแล้ว ค่าที่ค้างในฐานข้อมูลจึงต้องปิดตอนโหลด ไม่งั้นมองไม่เห็น
+ * แต่ยังถูกบันทึกกลับไป — ต้องเรียกหลัง `moveRejectPreviousApprover` ที่ยังอ่านค่าเดิมอยู่
+ * @param stages - stage ที่ parse แล้ว
+ * @returns สำเนาที่ทุก action ปิด `current_approve`
+ */
+export function clearCurrentApprover<
+  S extends { available_actions: Stage["available_actions"] },
+>(stages: S[]): S[] {
+  return stages.map((stage) => {
+    const actions = stage.available_actions;
+    if (
+      !WF_ACTIONS.some((a) => actions[a].recipients.current_approve.is_active)
+    )
+      return stage;
+    const available_actions = { ...actions };
+    for (const a of WF_ACTIONS) {
+      available_actions[a] = {
+        ...actions[a],
+        recipients: {
+          ...actions[a].recipients,
+          current_approve: emptyRecipientNotification(false),
+        },
+      };
+    }
+    return { ...stage, available_actions };
   });
 }
 

@@ -173,23 +173,15 @@ function NotificationSection({
           label={t("requester")}
           isDisabled={isDisabled}
         />
-        {/* reject: dispatcher ส่ง `current_approve` ให้ผู้กดปฏิเสธเอง ผู้อนุมัติขั้นก่อนหน้าคือ `previous_step` */}
-        {action === "reject" ? (
+        {/* ไม่มีแถว `current_approve` — dispatcher ส่งช่องนั้นให้คนที่เพิ่งกดเอง (submit = ผู้ขอ ซ้ำกับแถวบน)
+            reject ใช้ `previous_step` แทนสำหรับผู้อนุมัติขั้นก่อนหน้า */}
+        {action === "reject" && (
           <RecipientRow
             form={form}
             index={index}
             action={action}
             recipient="previous_step"
             label={t("previousApprovers")}
-            isDisabled={isDisabled}
-          />
-        ) : (
-          <RecipientRow
-            form={form}
-            index={index}
-            action={action}
-            recipient="current_approve"
-            label={t("currentApprover")}
             isDisabled={isDisabled}
           />
         )}
