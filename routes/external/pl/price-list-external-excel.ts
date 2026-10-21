@@ -145,9 +145,10 @@ const norm = (v: unknown) =>
  *
  * validate 2 ชั้นกัน vendor วางไฟล์มั่ว:
  * 1. โครงสร้าง — ต้องมี header "Product Code" + "Price" ไม่งั้น = ไม่ใช่ไฟล์นี้
- * 2. จับคู่ด้วย **product_code** (ไม่ใช่ตำแหน่ง/No.) → apply ตามตัวสินค้า reorder
- *    ไม่พัง และเอาไฟล์ของ price list อื่นมาวางก็ไม่ทับผิดตัว · ไม่มี code ไหน
- *    match เลย = ไฟล์ไม่ใช่ของเอกสารนี้ → reject
+ * 2. จับคู่ด้วย **No. + product_code** (ไม่ใช่ตำแหน่งแถว) → reorder ไม่พัง และ
+ *    ไฟล์ของ price list อื่นไม่ทับผิดตัว (code ต้องตรงด้วย) · code ซ้ำได้ (คนละ
+ *    MOQ) จึงต้องมี No. แยกแถว · ไม่มี No. = ใช้ code ได้เฉพาะ code ที่ไม่ซ้ำ ·
+ *    ไม่มีแถวไหน match เลย = ไฟล์ไม่ใช่ของเอกสารนี้ → reject
  *
  * ช่องว่างคงค่าเดิม · Tax Profile (ชื่อ) map กลับเป็น id + rate จาก taxProfiles
  * (ไม่รู้จัก/ว่าง = คงเดิม) แล้วคำนวณ tax_amt ใหม่แบบ add VAT (price = ก่อนภาษี)
@@ -162,10 +163,28 @@ export function applyExcelRows(
     return { ok: false, reason: "structure" };
   }
 
-  const indexByCode = new Map<string, number>();
+  // product code ไม่ unique ใน list (สินค้าเดียวกันคนละ MOQ) — key หลักคือ
+  // No. (sequence_no) + code คู่กัน · fallback ด้วย code อย่างเดียวเฉพาะ code
+  // ที่มีแถวเดียว (code ซ้ำ + ไม่มี No. = เดาไม่ได้ → skip ดีกว่าทับผิดแถว)
+  const indexBySeqCode = new Map<string, number>();
+  const indexesByCode = new Map<string, number[]>();
   details.forEach((d, i) => {
-    if (d.product_code) indexByCode.set(norm(d.product_code), i);
+    if (!d.product_code) return;
+    const code = norm(d.product_code);
+    indexBySeqCode.set(`${d.sequence_no}|${code}`, i);
+    indexesByCode.set(code, [...(indexesByCode.get(code) ?? []), i]);
   });
+  const findIndex = (row: Record<string, unknown>): number | undefined => {
+    const code = norm(row[H.code]);
+    if (!code) return undefined;
+    const seq = norm(row[H.no]);
+    const bySeq = seq
+      ? indexBySeqCode.get(`${Number(seq)}|${code}`)
+      : undefined;
+    if (bySeq !== undefined) return bySeq;
+    const candidates = indexesByCode.get(code);
+    return candidates?.length === 1 ? candidates[0] : undefined;
+  };
   const profileByName = new Map(taxProfiles.map((t) => [norm(t.name), t]));
 
   const updated = details.map((d) => ({ ...d }));
@@ -173,8 +192,7 @@ export function applyExcelRows(
   let skipped = 0;
 
   for (const row of rows) {
-    const code = norm(row[H.code]);
-    const idx = code ? indexByCode.get(code) : undefined;
+    const idx = findIndex(row);
     if (idx === undefined) {
       skipped++;
       continue;

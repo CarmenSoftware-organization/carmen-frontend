@@ -93,6 +93,56 @@ describe("applyExcelRows", () => {
     expect(result.updated[1].price).toBe(20); // FLR01
   });
 
+  it("product code ซ้ำ (สินค้าเดียวกันคนละ MOQ) → จับคู่ด้วย No. เข้าครบทุกแถว", () => {
+    const details = [
+      detail({ sequence_no: 1, product_code: "MK70", moq_qty: 1 }),
+      detail({ sequence_no: 2, product_code: "MK70", moq_qty: 10 }),
+    ];
+    const result = applyExcelRows(
+      [
+        { "No.": 1, "Product Code": "MK70", "MOQ Qty": 1, Price: 100 },
+        { "No.": 2, "Product Code": "MK70", "MOQ Qty": 10, Price: 90 },
+      ],
+      details,
+      TAX_PROFILES,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.applied).toBe(2);
+    expect(result.updated[0]).toMatchObject({ moq_qty: 1, price: 100 });
+    expect(result.updated[1]).toMatchObject({ moq_qty: 10, price: 90 });
+  });
+
+  it("product code ซ้ำแต่ไม่มี No. → ไม่เดาแถว (skipped) ไม่ทับแถวผิดตัว", () => {
+    const details = [
+      detail({ sequence_no: 1, product_code: "MK70", price: 5 }),
+      detail({ sequence_no: 2, product_code: "MK70", price: 6 }),
+      detail({ sequence_no: 3, product_code: "SUG01" }),
+    ];
+    const result = applyExcelRows(
+      [
+        { "Product Code": "MK70", Price: 100 },
+        { "Product Code": "SUG01", Price: 10 },
+      ],
+      details,
+      TAX_PROFILES,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.applied).toBe(1);
+    expect(result.skipped).toBe(1);
+    expect(result.updated.map((d) => d.price)).toEqual([5, 6, 10]);
+  });
+
+  it("No. ชี้แถวที่ code ไม่ตรง (ไฟล์ของ list อื่น) → ไม่ใช้ No. นั้น", () => {
+    const result = applyExcelRows(
+      [{ "No.": 1, "Product Code": "OTHER99", Price: 50 }],
+      [detail({ sequence_no: 1, product_code: "SUG01" })],
+      TAX_PROFILES,
+    );
+    expect(result).toEqual({ ok: false, reason: "no-match" });
+  });
+
   it("ไม่มี header ที่ต้องใช้ → reason structure (ไฟล์มั่ว)", () => {
     const result = applyExcelRows(
       [{ Foo: 1, Bar: 2 }],
