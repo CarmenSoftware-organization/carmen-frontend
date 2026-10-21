@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useFieldArray, type UseFormReturn } from "react-hook-form";
+import { useFieldArray, useWatch, type UseFormReturn } from "react-hook-form";
 import { useLocationPairProducts } from "@/hooks/use-location-pair-products";
 import { useTranslations } from "use-intl";
 import { BoxIcon, Check, Eye, Plus, X } from "lucide-react";
@@ -23,6 +23,15 @@ import { useSrItemTable } from "./use-sr-item-table";
 import { SrSelectDialog } from "./sr-select-dialog";
 import { SrActionDialog } from "./sr-action-dialog";
 import { getDeleteDescription } from "@/lib/form-utils";
+import {
+  wouldRejectAll,
+  type StageActionFlags,
+} from "@/lib/workflow-stage-actions";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SrItemFieldsProps {
   readonly form: UseFormReturn<SrFormValues>;
@@ -35,6 +44,8 @@ interface SrItemFieldsProps {
   /** id ของใบ — ใบที่จ่ายแล้วใช้ดึงต้นทุนที่ลงบัญชีจริง */
   readonly srId?: string;
   readonly docStatus?: string;
+  /** ตัวเลือกที่ stage ปัจจุบันเปิดให้ตัดสิน (ผ่าน getStageActionFlags แล้ว) — มีแต่ตัดออก ไม่เพิ่มสิทธิ์ */
+  readonly stageActions: StageActionFlags;
 }
 
 export function SrItemFields({
@@ -47,6 +58,7 @@ export function SrItemFields({
   role,
   srId,
   docStatus,
+  stageActions,
 }: SrItemFieldsProps) {
   "use no memo";
   // ใบที่จ่ายแล้วโชว์ต้นทุนที่ลงบัญชีจริงจาก stock movement ของใบ ไม่ใช่ราคาประมาณที่คิดจาก
@@ -155,8 +167,20 @@ export function SrItemFields({
   });
 
   const selectedRows = table.getSelectedRowModel().rows;
+  const watchedItems = useWatch({ control: form.control, name: "items" });
   const canBulkAction =
     !disabled && (role === STAGE_ROLE.APPROVE || role === STAGE_ROLE.ISSUE);
+
+  // stage ที่ปิด reject แต่เปิด approve ยังปัดตกบางแถวได้ (partial reject) — ห้ามแค่ให้
+  // ทุกแถวกลายเป็น reject เพราะนั่นคือการปัดตกทั้งใบ · นิยาม reject และฟิลด์ที่อ่านเดียวกับ
+  // computeSrAction ที่คุมปุ่มใน footer (stage_status ค่าสดในฟอร์ม)
+  const rejectWouldRejectAll =
+    !stageActions.reject &&
+    wouldRejectAll(
+      (watchedItems ?? []).map((item) => item?.stage_status ?? ""),
+      selectedRows.map((row) => row.index),
+      (s) => s === SR_ITEM_STAGE.REJECT,
+    );
 
   const getSelectedIndices = () =>
     table.getSelectedRowModel().rows.map((row) => row.index);
@@ -193,33 +217,58 @@ export function SrItemFields({
       <div className="flex flex-wrap items-center gap-1.5">
         {selectedRows.length > 0 && canBulkAction && (
           <>
-            <Button
-              type="button"
-              variant="success"
-              size="xs"
-              onClick={handleBulkApprove}
-            >
-              <Check />
-              {tc("approve")}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              size="xs"
-              onClick={() => setBulkAction("reject")}
-            >
-              <X />
-              {tc("reject")}
-            </Button>
-            <Button
-              type="button"
-              variant="warning"
-              size="xs"
-              onClick={handleBulkReview}
-            >
-              <Eye />
-              {tc("sendBack")}
-            </Button>
+            {stageActions.approve && (
+              <Button
+                type="button"
+                variant="success"
+                size="xs"
+                onClick={handleBulkApprove}
+              >
+                <Check />
+                {tc("approve")}
+              </Button>
+            )}
+            {(stageActions.reject || stageActions.approve) &&
+              (rejectWouldRejectAll ? (
+                <Tooltip>
+                  {/* ปุ่ม disabled ไม่ยิง pointer event — ต้องห่อด้วย span ให้ tooltip จับ hover ได้ */}
+                  <TooltipTrigger asChild>
+                    <span tabIndex={0}>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="xs"
+                        disabled
+                      >
+                        <X />
+                        {tc("reject")}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>{tc("rejectAllNotAllowed")}</TooltipContent>
+                </Tooltip>
+              ) : (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="xs"
+                  onClick={() => setBulkAction("reject")}
+                >
+                  <X />
+                  {tc("reject")}
+                </Button>
+              ))}
+            {stageActions.sendback && (
+              <Button
+                type="button"
+                variant="warning"
+                size="xs"
+                onClick={handleBulkReview}
+              >
+                <Eye />
+                {tc("sendBack")}
+              </Button>
+            )}
           </>
         )}
         {!disabled && (

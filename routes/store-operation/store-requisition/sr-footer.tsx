@@ -6,6 +6,7 @@ import { useSrStockMovements } from "./use-sr";
 import { formatCurrency } from "@/lib/currency-utils";
 import { STAGE_ROLE } from "@/types/stage-role";
 import { srStockVisible } from "./sr-form-helpers";
+import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 
 type SrAction = "none" | "review" | "rejected" | "approved";
 
@@ -23,6 +24,8 @@ interface SrFooterProps {
   readonly activeTab: "items" | "stock";
   readonly srId?: string;
   readonly docStatus?: string;
+  /** ตัวเลือกที่ stage ปัจจุบันเปิดให้ตัดสิน — AND กับสิทธิ์ตาม role เสมอ ไม่เพิ่มปุ่มที่ role ไม่มี */
+  readonly stageActions: StageActionFlags;
   readonly onSubmit: () => void;
   readonly onApprove: () => void;
   readonly onIssue: () => void;
@@ -40,6 +43,7 @@ export function SrFooter({
   activeTab,
   srId,
   docStatus,
+  stageActions,
   onSubmit,
   onApprove,
   onIssue,
@@ -59,7 +63,14 @@ export function SrFooter({
   const isApprover = role === STAGE_ROLE.APPROVE;
   const isIssuer = role === STAGE_ROLE.ISSUE;
   const isWorkflowReviewer = isApprover || isIssuer;
-  const hasAction = action !== "none";
+  // flag ปิด = ปุ่มนั้นหาย (Issue ใช้ approve endpoint จึงผูกกับ flag approve) · ปิด reject
+  // แต่ทุกแถวถูก reject แล้ว = ปุ่มไม่มี แต่ต้องบอกเหตุผล ไม่ใช่เงียบหาย
+  const showSendBack = stageActions.sendback && action === "review";
+  const showReject = stageActions.reject && action === "rejected";
+  const showApprove = stageActions.approve && action === "approved";
+  const showRejectAllBlocked = !stageActions.reject && action === "rejected";
+  const hasAction =
+    showSendBack || showReject || showApprove || showRejectAllBlocked;
   const showActions = canSubmit || (isWorkflowReviewer && hasAction);
   // มีรายการแล้วต้องเห็นยอดรวม แม้จะไม่มีปุ่มให้กด (view ใบที่ปิดแล้ว)
   const showBar = showActions || hasItems;
@@ -108,7 +119,7 @@ export function SrFooter({
     <SummaryFooterBar hasRecord={hasItems} items={summaryItems}>
       {showActions && (
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-          {isWorkflowReviewer && action === "review" && (
+          {isWorkflowReviewer && showSendBack && (
             <Button
               type="button"
               size="sm"
@@ -120,7 +131,12 @@ export function SrFooter({
               {tc("sendBack")}
             </Button>
           )}
-          {isWorkflowReviewer && action === "rejected" && (
+          {isWorkflowReviewer && showRejectAllBlocked && (
+            <span className="text-warning-ink text-xs">
+              {tc("rejectAllNotAllowed")}
+            </span>
+          )}
+          {isWorkflowReviewer && showReject && (
             <Button
               type="button"
               size="sm"
@@ -132,7 +148,7 @@ export function SrFooter({
               {tc("reject")}
             </Button>
           )}
-          {isApprover && action === "approved" && (
+          {isApprover && showApprove && (
             <Button
               type="button"
               size="sm"
@@ -144,7 +160,7 @@ export function SrFooter({
               {tc("approve")}
             </Button>
           )}
-          {isIssuer && action === "approved" && (
+          {isIssuer && showApprove && (
             <Button
               type="button"
               size="sm"
