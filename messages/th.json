@@ -2339,6 +2339,7 @@
       "approvers": "ผู้อนุมัติ",
       "warningNoUsers": "ยังไม่มีผู้ใช้ที่กำหนด",
       "validationReady": "พร้อมใช้งาน · ไม่พบปัญหา",
+      "validationReadyShort": "พร้อมใช้งาน",
       "validationIssuesFound": "พบ {count} จุดที่ต้องแก้ไข",
       "issueErrorLabel": "ข้อผิดพลาด",
       "issueWarningLabel": "คำเตือน",

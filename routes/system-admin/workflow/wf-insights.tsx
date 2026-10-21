@@ -1,7 +1,8 @@
 import { Activity, Clock, EyeOff, Users } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { EyeBrow } from "@/components/ui/eye-brow";
-import type { Role, Stage } from "@/types/workflows";
+import type { Stage } from "@/types/workflows";
+import { ROLE_LABEL } from "./wf-role-colors";
 import { formatCycleTime } from "./wf-sla-utils";
 import {
   computeWorkflowInsights,
@@ -15,13 +16,6 @@ interface WfInsightsProps {
   readonly productCount?: number;
   readonly routingCount?: number;
 }
-
-const ROLE_LABEL: Record<Role, string> = {
-  create: "roleCreate",
-  approve: "roleApprove",
-  purchase: "rolePurchase",
-  issue: "roleIssue",
-};
 
 const ACTION_LABEL: Record<ActionKey, string> = {
   submit: "actionSubmit",
