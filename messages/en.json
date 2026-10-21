@@ -4,6 +4,16 @@
     "loadError": "Failed to load business unit settings.",
     "minDigits": "min {n} digits",
     "noImage": "No image",
+    "sectionNav": "Sections",
+    "identity": {
+      "lockedHint": "Set when the business unit was created — can't be changed here."
+    },
+    "address": {
+      "printedOn": "As printed on documents",
+      "notSet": "Not set",
+      "noAddress": "No address yet",
+      "copyFromHotel": "Copy address from hotel"
+    },
     "sections": {
       "general": "General",
       "generalDesc": "Core identity of this business unit.",
