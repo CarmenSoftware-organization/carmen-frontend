@@ -2343,6 +2343,8 @@
       "currentApprover": "Current Approver",
       "previousApprovers": "Previous Stage Approvers",
       "nextApprover": "Next Stage Approver",
+      "sendbackReceiver": "Receiving stage",
+      "approveFinalHint": "On final approval, the requestor gets the \"Fully approved\" message instead of the selected template.",
       "slaWarning": "SLA Warning",
       "noActiveActions": "No active actions to configure notifications for.",
       "channelApp": "In-app",

@@ -37,6 +37,8 @@ import {
 } from "react-hook-form";
 import type { Role, RoutingRule, Stage } from "@/types/workflows";
 import { cn } from "@/lib/utils";
+import { useSeededTemplateIds } from "./use-seeded-template-ids";
+import { fillSeededTemplateIds } from "./wf-seeded-templates";
 import { makeRecipients, type WorkflowCreateModel } from "./wf-form-schema";
 import SortableStageItem, {
   type StageIssueHint,
@@ -129,6 +131,7 @@ export function WfStageList({
   const [stageToDelete, setStageToDelete] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const t = useTranslations("systemAdmin.workflow");
+  const seededIds = useSeededTemplateIds();
   const tc = useTranslations("common");
 
   const watchedStages = useWatch({
@@ -167,7 +170,7 @@ export function WfStageList({
   const handleAddStage = () => {
     const names = fields.map((f) => f.name);
     const newStage = buildNewStage(names, (n) => t("newStage", { n }));
-    insert(fields.length - 1, newStage);
+    insert(fields.length - 1, fillSeededTemplateIds([newStage], seededIds)[0]);
     onSelect(fields.length - 1);
   };
 
