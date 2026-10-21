@@ -1,4 +1,4 @@
-import { Clock, GitBranch, ListChecks, Lock } from "lucide-react";
+import { Clock, Lock } from "lucide-react";
 import { useLocale } from "use-intl";
 
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -14,6 +14,7 @@ import type { WorkflowDto } from "@/types/workflows";
 import { formatRelativeTime } from "@/lib/relative-time";
 import { cn } from "@/lib/utils";
 import WfFlowStrip from "./wf-flow-strip";
+import WfScopeLine from "./wf-scope-line";
 import WfRowActions from "./wf-row-actions";
 
 interface WfCardProps {
@@ -107,29 +108,8 @@ export default function WfCard({
       </CardHeader>
       <Separator />
       <CardContent className="space-y-1.5 p-4 text-sm">
-        <div className="flex items-center justify-between gap-3">
-          <WfFlowStrip workflow={item} />
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <GitBranch
-                className="text-muted-foreground size-3"
-                aria-hidden="true"
-              />
-              <span className="text-muted-foreground tabular-nums">
-                {item.stages}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <ListChecks
-                className="text-muted-foreground size-3"
-                aria-hidden="true"
-              />
-              <span className="text-muted-foreground tabular-nums">
-                {item.rules}
-              </span>
-            </div>
-          </div>
-        </div>
+        <WfFlowStrip workflow={item} />
+        <WfScopeLine workflow={item} className="block" />
         {updatedRelative && (
           <div className="text-muted-foreground flex items-center gap-1 text-xs">
             <Clock className="size-2.5" aria-hidden="true" />

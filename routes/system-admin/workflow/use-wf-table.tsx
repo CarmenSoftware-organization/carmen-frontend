@@ -19,6 +19,7 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { formatRelativeTime } from "@/lib/relative-time";
 import { cn } from "@/lib/utils";
 import WfFlowStrip from "./wf-flow-strip";
+import WfScopeLine from "./wf-scope-line";
 import WfRowActions from "./wf-row-actions";
 
 interface UseWfTableOptions {
@@ -57,35 +58,42 @@ export function useWfTable({
       cell: ({ row }) => {
         const inactive = !row.original.is_active;
         return (
-          <CellAction onClick={() => onEdit(row.original)}>
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5",
-                inactive && "text-muted-foreground",
-              )}
-            >
-              {inactive && (
-                <Tooltip delayDuration={150}>
-                  <TooltipTrigger asChild>
-                    <Lock
-                      className="size-3 shrink-0"
-                      aria-label={tfl("inactive")}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-sm">
-                    {tfl("inactive")}
-                  </TooltipContent>
-                </Tooltip>
-              )}
+          // data-slot: กันไม่ให้ line-clamp-2 ของ DataGrid ทับ flex จนบรรทัดย่อยไปติดชื่อ
+          <div
+            data-slot="wf-name-cell"
+            className="flex flex-col items-start gap-0.5"
+          >
+            <CellAction onClick={() => onEdit(row.original)}>
               <span
                 className={cn(
-                  inactive && "decoration-muted-foreground/40 line-through",
+                  "inline-flex items-center gap-1.5",
+                  inactive && "text-muted-foreground",
                 )}
               >
-                {row.getValue("name") || "..."}
+                {inactive && (
+                  <Tooltip delayDuration={150}>
+                    <TooltipTrigger asChild>
+                      <Lock
+                        className="size-3 shrink-0"
+                        aria-label={tfl("inactive")}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-sm">
+                      {tfl("inactive")}
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+                <span
+                  className={cn(
+                    inactive && "decoration-muted-foreground/40 line-through",
+                  )}
+                >
+                  {row.getValue("name") || "..."}
+                </span>
               </span>
-            </span>
-          </CellAction>
+            </CellAction>
+            <WfScopeLine workflow={row.original} />
+          </div>
         );
       },
     },
@@ -99,7 +107,7 @@ export function useWfTable({
           <WfFlowStrip workflow={row.original} />
         </div>
       ),
-      size: 200,
+      size: 460,
       enableSorting: false,
     },
     {
