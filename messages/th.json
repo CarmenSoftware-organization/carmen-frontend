@@ -2509,6 +2509,7 @@
       "insightsRecipients": "แจ้งเตือน {count} ผู้รับ",
       "overview": "ภาพรวม",
       "insightsLegendActive": "เปิดใช้ action นี้",
+      "notifyOff": "ปิด",
       "insightsLegendRecipients": "จำนวนผู้รับแจ้งเตือน",
       "stageFormErrors": "มีช่องใน stage ที่ยังไม่ถูกต้อง"
     },

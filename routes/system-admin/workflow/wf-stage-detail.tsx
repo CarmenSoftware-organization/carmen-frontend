@@ -93,6 +93,7 @@ export function WfStageDetail({
             isMiddle={isMiddle}
             isDisabled={isDisabled}
             watchedStage={watchedStage}
+            readOnly={readOnly}
           />
         </TabsContent>
 
@@ -105,6 +106,7 @@ export function WfStageDetail({
             isDisabled={isDisabled}
             isHod={isHod}
             assignedUserIds={assignedUserIds}
+            readOnly={readOnly}
           />
         </TabsContent>
       </Tabs>

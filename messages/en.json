@@ -2509,6 +2509,7 @@
       "insightsRecipients": "{count, plural, one {# recipient notified} other {# recipients notified}}",
       "overview": "Overview",
       "insightsLegendActive": "Action enabled",
+      "notifyOff": "Off",
       "insightsLegendRecipients": "Recipients notified",
       "stageFormErrors": "Some stage fields are invalid"
     },
