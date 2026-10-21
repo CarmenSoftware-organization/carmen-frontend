@@ -23,12 +23,10 @@ import {
   CheckCircle2,
   Clock,
   GripVertical,
-  Plus,
   Search,
   Stamp,
   Waypoints,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
@@ -48,6 +46,7 @@ import type { ValidationIssue } from "./wf-validate";
 import { computeWorkflowInsights } from "./wf-insights-utils";
 import { formatCycleTime, formatStageSla } from "./wf-sla-utils";
 import { StageRailList } from "./wf-stage-rail-node";
+import { WfStructureAddButton } from "./wf-structure-lock-notice";
 
 interface WfStageListProps {
   readonly form: UseFormReturn<WorkflowCreateModel>;
@@ -55,6 +54,8 @@ interface WfStageListProps {
   readonly selectedIndex: number;
   readonly onSelect: (index: number) => void;
   readonly isDisabled: boolean;
+  /** โครงถูกล็อกเพราะมีเอกสารค้าง — ปุ่มเพิ่มแสดงเป็นสีเทาพร้อมเหตุผลนี้แทนการหายไป */
+  readonly lockedReason?: string;
   /** ไฮไลต์ขั้นที่เลือกเฉพาะตอนแท็บ Stages เปิดอยู่ — แท็บอื่นไม่ได้ "อยู่ที่" ขั้นไหน */
   readonly showSelection?: boolean;
   readonly routingRules?: RoutingRule[];
@@ -117,6 +118,7 @@ export function WfStageList({
   selectedIndex,
   onSelect,
   isDisabled,
+  lockedReason,
   showSelection = true,
   routingRules = [],
   issues = [],
@@ -231,18 +233,12 @@ export function WfStageList({
             {fields.length}
           </Badge>
         </h2>
-        {!isDisabled && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleAddStage}
-            className="hover:bg-muted/50"
-          >
-            <Plus className="mr-1.5 size-3.5" />
-            {t("addStage")}
-          </Button>
-        )}
+        <WfStructureAddButton
+          label={t("addStage")}
+          onClick={handleAddStage}
+          isDisabled={isDisabled}
+          lockedReason={lockedReason}
+        />
       </div>
 
       <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
@@ -311,16 +307,14 @@ export function WfStageList({
                 <p className="text-foreground text-sm font-medium">
                   {tc("noData") || "No stages found"}
                 </p>
-                {!isDisabled && !searchQuery && (
-                  <Button
-                    variant="outline"
-                    size="sm"
+                {!searchQuery && (
+                  <WfStructureAddButton
+                    label={t("addStage")}
                     onClick={handleAddStage}
+                    isDisabled={isDisabled}
+                    lockedReason={lockedReason}
                     className="mt-4"
-                  >
-                    <Plus className="mr-1.5 size-3.5" />
-                    {t("addStage")}
-                  </Button>
+                  />
                 )}
               </li>
             ) : (

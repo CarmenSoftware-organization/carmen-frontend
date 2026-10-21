@@ -2422,7 +2422,9 @@
         "inProgressBlocksEdit": "Documents still in progress — stages and routing are locked until they finish",
         "blockedTitle": "Can’t delete this workflow yet",
         "blockedDescription": "{count} document(s) are still in progress on this workflow. Deleting it would take away the stages they are moving through, so finish or void them first.",
-        "structureLocked": "{count} document(s) are moving through these stages right now, so stages can't be added, renamed or reordered and routing can't change. Everything else on this form still saves."
+        "structureLocked": "{count} document(s) are moving through these stages right now, so stages can't be added, renamed or reordered and routing can't change. Everything else on this form still saves.",
+        "lockedAction": "Locked — {count} document(s) are still in progress on this workflow",
+        "viewInProgress": "View in-progress documents"
       },
       "issueShort": {
         "no_users_assigned": "No users assigned",
