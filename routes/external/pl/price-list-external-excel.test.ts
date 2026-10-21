@@ -113,6 +113,27 @@ describe("applyExcelRows", () => {
     expect(result.updated[1]).toMatchObject({ moq_qty: 10, price: 90 });
   });
 
+  it("No. เลื่อนหลัง save (เพิ่ม tier) → จับคู่ด้วย Row ID ยังเข้าถูกแถว", () => {
+    // ไฟล์ export ตอน MK70 อยู่ No. 1/2 · หลัง save มีแถวแทรก No. เลยเลื่อนเป็น 2/3
+    const details = [
+      detail({ id: "new", sequence_no: 1, product_code: "MK70" }),
+      detail({ id: "r1", sequence_no: 2, product_code: "MK70" }),
+      detail({ id: "r2", sequence_no: 3, product_code: "MK70" }),
+    ];
+    const result = applyExcelRows(
+      [
+        { "No.": 1, "Product Code": "MK70", Price: 100, "Row ID": "r1" },
+        { "No.": 2, "Product Code": "MK70", Price: 90, "Row ID": "r2" },
+      ],
+      details,
+      TAX_PROFILES,
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.applied).toBe(2);
+    expect(result.updated.map((d) => d.price)).toEqual([0, 100, 90]);
+  });
+
   it("product code ซ้ำแต่ไม่มี No. → ไม่เดาแถว (skipped) ไม่ทับแถวผิดตัว", () => {
     const details = [
       detail({ sequence_no: 1, product_code: "MK70", price: 5 }),

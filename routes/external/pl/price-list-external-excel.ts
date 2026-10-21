@@ -7,7 +7,8 @@ import type {
 } from "@/types/price-list-external";
 
 // header ของ sheet (portal เป็น public → อังกฤษล้วนเหมือน UI ส่วนอื่น)
-// "No." = sequence_no ใช้เป็น key จับคู่ตอน upload ห้ามให้ vendor แก้
+// "Row ID" = id ของแถว (ซ่อน, คอลัมน์ท้าย) key หลักตอน upload — id คงที่ข้าม
+// save ต่างจาก "No." (sequence_no) ที่ buildPayload เรียงใหม่ทุกครั้งที่เซฟ
 // "Tax Profile" = ชื่อ tax profile (dropdown) → map กลับเป็น id + rate ตอน import
 const H = {
   no: "No.",
@@ -19,6 +20,7 @@ const H = {
   tax: "Tax Profile",
   lead: "Lead Time (days)",
   note: "Note",
+  rowId: "Row ID",
 } as const;
 
 // ตำแหน่งคอลัมน์ Tax Profile (1-based) — ใช้ผูก data validation
@@ -60,6 +62,7 @@ export async function downloadExternalPricelistXlsx(
     { header: H.tax, key: "tax", width: 22 },
     { header: H.lead, key: "lead", width: 16 },
     { header: H.note, key: "note", width: 32 },
+    { header: H.rowId, key: "rowId", width: 38, hidden: true },
   ];
   ws.getRow(1).font = { bold: true };
 
@@ -74,6 +77,7 @@ export async function downloadExternalPricelistXlsx(
       tax: d.tax_profile_name ?? "",
       lead: d.lead_time_days,
       note: d.note ?? "",
+      rowId: d.id,
     });
   }
 
@@ -145,9 +149,10 @@ const norm = (v: unknown) =>
  *
  * validate 2 ชั้นกัน vendor วางไฟล์มั่ว:
  * 1. โครงสร้าง — ต้องมี header "Product Code" + "Price" ไม่งั้น = ไม่ใช่ไฟล์นี้
- * 2. จับคู่ด้วย **No. + product_code** (ไม่ใช่ตำแหน่งแถว) → reorder ไม่พัง และ
- *    ไฟล์ของ price list อื่นไม่ทับผิดตัว (code ต้องตรงด้วย) · code ซ้ำได้ (คนละ
- *    MOQ) จึงต้องมี No. แยกแถว · ไม่มี No. = ใช้ code ได้เฉพาะ code ที่ไม่ซ้ำ ·
+ * 2. จับคู่ด้วย **Row ID / No. + product_code** (ไม่ใช่ตำแหน่งแถว) → reorder
+ *    ไม่พัง และไฟล์ของ price list อื่นไม่ทับผิดตัว (code ต้องตรงด้วย) · code
+ *    ซ้ำได้ (คนละ MOQ) จึงต้องมี key แยกแถว · ไม่มี key = ใช้ code ได้เฉพาะ
+ *    code ที่ไม่ซ้ำ ·
  *    ไม่มีแถวไหน match เลย = ไฟล์ไม่ใช่ของเอกสารนี้ → reject
  *
  * ช่องว่างคงค่าเดิม · Tax Profile (ชื่อ) map กลับเป็น id + rate จาก taxProfiles
@@ -163,20 +168,25 @@ export function applyExcelRows(
     return { ok: false, reason: "structure" };
   }
 
-  // product code ไม่ unique ใน list (สินค้าเดียวกันคนละ MOQ) — key หลักคือ
-  // No. (sequence_no) + code คู่กัน · fallback ด้วย code อย่างเดียวเฉพาะ code
-  // ที่มีแถวเดียว (code ซ้ำ + ไม่มี No. = เดาไม่ได้ → skip ดีกว่าทับผิดแถว)
+  // product code ไม่ unique ใน list (สินค้าเดียวกันคนละ MOQ) — ลำดับ key:
+  // Row ID + code (คงที่ข้าม save) → No. + code (ไฟล์ที่ไม่มี Row ID) → code
+  // อย่างเดียวเฉพาะ code ที่มีแถวเดียว (code ซ้ำ + ไม่มี key = skip ไม่เดา)
+  const indexById = new Map<string, number>();
   const indexBySeqCode = new Map<string, number>();
   const indexesByCode = new Map<string, number[]>();
   details.forEach((d, i) => {
     if (!d.product_code) return;
     const code = norm(d.product_code);
+    if (d.id) indexById.set(`${norm(d.id)}|${code}`, i);
     indexBySeqCode.set(`${d.sequence_no}|${code}`, i);
     indexesByCode.set(code, [...(indexesByCode.get(code) ?? []), i]);
   });
   const findIndex = (row: Record<string, unknown>): number | undefined => {
     const code = norm(row[H.code]);
     if (!code) return undefined;
+    const rowId = norm(row[H.rowId]);
+    const byId = rowId ? indexById.get(`${rowId}|${code}`) : undefined;
+    if (byId !== undefined) return byId;
     const seq = norm(row[H.no]);
     const bySeq = seq
       ? indexBySeqCode.get(`${Number(seq)}|${code}`)
