@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslations } from "use-intl";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
@@ -43,6 +44,7 @@ interface PriceListExternalComponentProps {
 export default function PriceListExternalComponent({
   urlToken,
 }: PriceListExternalComponentProps) {
+  const t = useTranslations("priceListPortal");
   const { data, isLoading, isError, error, refetch } =
     usePriceListExternal(urlToken);
   const { data: taxProfiles } = useExternalTaxProfiles(urlToken);
@@ -92,14 +94,14 @@ export default function PriceListExternalComponent({
 
     try {
       await updateMutation.mutateAsync(formData);
-      toast.success("Draft saved");
+      toast.success(t("toastDraftSaved"));
       form.reset(formData);
       setIsViewMode(true);
     } catch (err) {
       // surface ข้อความจริงจาก backend (เช่น validation / ลิงก์หมดอายุ) ให้ vendor
       // ภายนอกเห็น แทนข้อความ generic — invalidate/refetch จัดการ reset เอง
       toast.error(
-        err instanceof HttpError ? err.message : "Failed to save changes",
+        err instanceof HttpError ? err.message : t("toastSaveFailed"),
       );
     }
   };
@@ -114,11 +116,11 @@ export default function PriceListExternalComponent({
         form.reset(formData);
       }
       await submitMutation.mutateAsync();
-      toast.success("Price list submitted successfully");
+      toast.success(t("toastSubmitted"));
       setIsViewMode(true);
     } catch (err) {
       toast.error(
-        err instanceof HttpError ? err.message : "Failed to submit price list",
+        err instanceof HttpError ? err.message : t("toastSubmitFailed"),
       );
     }
   };
@@ -132,7 +134,7 @@ export default function PriceListExternalComponent({
   // export ค่าปัจจุบันใน form (รวมที่แก้ยังไม่เซฟ) เป็น xlsx
   const handleDownloadExcel = () => {
     downloadExternalPricelistXlsx(form.getValues(), taxProfiles ?? []).catch(
-      () => toast.error("Could not generate the Excel file"),
+      () => toast.error(t("toastExcelFailed")),
     );
   };
 
@@ -144,7 +146,7 @@ export default function PriceListExternalComponent({
     try {
       rows = await readXlsxFirstSheet(file);
     } catch {
-      toast.error("Could not read the Excel file");
+      toast.error(t("toastReadFailed"));
       return;
     }
     const result = applyExcelRows(
@@ -155,8 +157,8 @@ export default function PriceListExternalComponent({
     if (!result.ok) {
       toast.error(
         result.reason === "structure"
-          ? "This doesn’t look like a price list file. Please use the downloaded Excel."
-          : "This file doesn’t match this price list.",
+          ? t("toastWrongStructure")
+          : t("toastNoMatch"),
       );
       return;
     }
@@ -167,13 +169,13 @@ export default function PriceListExternalComponent({
       form.reset(formData);
       setIsViewMode(true);
       toast.success(
-        `Imported ${applied} item${applied > 1 ? "s" : ""}` +
-          (skipped ? `, ${skipped} row(s) skipped` : "") +
-          " and saved as draft",
+        skipped
+          ? t("toastImportedSkipped", { applied, skipped })
+          : t("toastImported", { applied }),
       );
     } catch (err) {
       toast.error(
-        err instanceof HttpError ? err.message : "Failed to save imported data",
+        err instanceof HttpError ? err.message : t("toastImportSaveFailed"),
       );
     }
   };
@@ -211,9 +213,7 @@ export default function PriceListExternalComponent({
           <div className="border-border space-y-6 border-t pt-6">
             <div className="flex items-center justify-between gap-4">
               <p className="text-muted-foreground text-sm">
-                {isViewMode
-                  ? "Items requested for pricing."
-                  : "Enter your price and tax for each item, then submit."}
+                {isViewMode ? t("introView") : t("introEdit")}
               </p>
               <div className="flex shrink-0 items-center gap-2">
                 {/* ดาวน์โหลดค่าปัจจุบันไปกรอก/ดูใน excel — ใช้ได้ทุกสถานะ */}
@@ -224,7 +224,7 @@ export default function PriceListExternalComponent({
                   className="gap-1.5"
                 >
                   <Download className="h-4 w-4" />
-                  Excel
+                  {t("excel")}
                 </Button>
                 {/* submit แล้ว vendor แก้ไม่ได้อีก → ซ่อน upload + สลับ edit mode */}
                 {data.status !== "submitted" && (
@@ -237,7 +237,7 @@ export default function PriceListExternalComponent({
                       className="gap-1.5"
                     >
                       <Upload className="h-4 w-4" />
-                      Import
+                      {t("import")}
                     </Button>
                     <Button
                       variant="outline"
@@ -252,12 +252,12 @@ export default function PriceListExternalComponent({
                       {isViewMode ? (
                         <>
                           <Pencil className="h-4 w-4" />
-                          Enter Prices
+                          {t("enterPrices")}
                         </>
                       ) : (
                         <>
                           <Eye className="h-4 w-4" />
-                          Preview
+                          {t("preview")}
                         </>
                       )}
                     </Button>
@@ -295,17 +295,16 @@ export default function PriceListExternalComponent({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Submit price list?</AlertDialogTitle>
+            <AlertDialogTitle>{t("submitConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Once submitted, you won’t be able to edit this price list anymore.
-              Any unsaved changes will be saved first.
+              {t("submitConfirmDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
               disabled={submitMutation.isPending || updateMutation.isPending}
             >
-              Cancel
+              {t("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
@@ -315,8 +314,8 @@ export default function PriceListExternalComponent({
               disabled={submitMutation.isPending || updateMutation.isPending}
             >
               {submitMutation.isPending || updateMutation.isPending
-                ? "Submitting…"
-                : "Submit"}
+                ? t("submitting")
+                : t("submit")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

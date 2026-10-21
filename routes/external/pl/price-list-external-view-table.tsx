@@ -1,3 +1,4 @@
+import { useTranslations } from "use-intl";
 import { formatTaxRate, priceListTaxParts } from "@/lib/price-list-tax";
 import { cn } from "@/lib/utils";
 import type { PricelistExternalDetailDto } from "@/types/price-list-external";
@@ -22,21 +23,22 @@ interface PriceListExternalViewTableProps {
 export default function PriceListExternalViewTable({
   details,
 }: PriceListExternalViewTableProps) {
+  const t = useTranslations("priceListPortal");
   return (
     <div className="border-border/60 bg-card w-full overflow-x-auto rounded-lg border">
       <table className="text-foreground w-full border-collapse text-sm">
         <thead>
           <tr className="bg-muted/60 text-muted-foreground border-border/60 border-b">
             <Th className="w-12 text-center">#</Th>
-            <Th className="text-left">Product</Th>
-            <Th className="text-left">Unit</Th>
-            <Th className="text-right">MOQ</Th>
-            <Th className="text-right">Price</Th>
-            <Th className="text-left">Tax Profile</Th>
-            <Th className="text-right">Tax Rate</Th>
-            <Th className="text-right">Tax Amount</Th>
-            <Th className="text-right">Total</Th>
-            <Th className="text-right">Lead Time</Th>
+            <Th className="text-left">{t("colProduct")}</Th>
+            <Th className="text-left">{t("colUnit")}</Th>
+            <Th className="text-right">{t("colMoq")}</Th>
+            <Th className="text-right">{t("colPrice")}</Th>
+            <Th className="text-left">{t("colTaxProfile")}</Th>
+            <Th className="text-right">{t("colTaxRate")}</Th>
+            <Th className="text-right">{t("colTaxAmount")}</Th>
+            <Th className="text-right">{t("colTotal")}</Th>
+            <Th className="text-right">{t("colLeadTime")}</Th>
           </tr>
         </thead>
         <tbody>

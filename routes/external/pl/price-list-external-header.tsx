@@ -1,7 +1,9 @@
+import { useTranslations } from "use-intl";
 import { formatDate } from "@/lib/date-utils";
 import type { PricelistExternalDto } from "@/types/price-list-external";
 import { StatusDotBadge } from "@/components/ui/status-dot-badge";
 import { PL_STATUS_TONE } from "@/constant/price-list";
+import { LocaleToggle } from "@/components/locale-toggle";
 
 const DATE_FORMAT = "yyyy-MM-dd";
 
@@ -31,12 +33,14 @@ function Meta({ label, value }: { label: string; value: string }) {
 export default function PriceListExternalHeader({
   data,
 }: PriceListHeaderProps) {
+  const t = useTranslations("priceListPortal");
+  const ts = useTranslations("status");
   return (
     <header className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1.5">
           <p className="text-micro text-muted-foreground font-semibold tracking-wider uppercase">
-            Request for Pricing · {data.pricelist_no}
+            {t("requestForPricing")} · {data.pricelist_no}
           </p>
           <h1 className="text-foreground text-2xl font-semibold tracking-tight">
             {data.hotel?.name ?? "—"}
@@ -47,30 +51,36 @@ export default function PriceListExternalHeader({
             </p>
           )}
         </div>
-        <StatusDotBadge tone={PL_STATUS_TONE[data.status] ?? "neutral"}>
-          {data.status.toLocaleUpperCase()}
-        </StatusDotBadge>
+        <div className="flex shrink-0 flex-col items-end gap-3">
+          {/* vendor ภายนอกไม่มีเมนูผู้ใช้ให้เปลี่ยนภาษา — วางปุ่มไว้บนหัวเอกสาร */}
+          <LocaleToggle />
+          <StatusDotBadge tone={PL_STATUS_TONE[data.status] ?? "neutral"}>
+            {ts.has(data.status)
+              ? ts(data.status)
+              : data.status.toLocaleUpperCase()}
+          </StatusDotBadge>
+        </div>
       </div>
 
       <dl className="border-border bg-muted/50 grid grid-cols-2 gap-6 rounded-lg border p-5 md:grid-cols-4">
-        <Meta label="Vendor" value={data.vendor?.name || "—"} />
-        <Meta label="Currency" value={data.currency_code} />
+        <Meta label={t("vendor")} value={data.vendor?.name || "—"} />
+        <Meta label={t("currency")} value={data.currency_code} />
         <Meta
-          label="Effective period"
+          label={t("effectivePeriod")}
           value={`${formatDate(data.effective_from_date, DATE_FORMAT)} – ${formatDate(
             data.effective_to_date,
             DATE_FORMAT,
           )}`}
         />
-        <Meta label="Reference" value={data.name} />
+        <Meta label={t("reference")} value={data.name} />
       </dl>
 
       {(data.description || data.note) && (
         <dl className="border-border mt-6 grid gap-4 border-t pt-6">
           {data.description && (
-            <Meta label="Instructions" value={data.description} />
+            <Meta label={t("instructions")} value={data.description} />
           )}
-          {data.note && <Meta label="Note" value={data.note} />}
+          {data.note && <Meta label={t("note")} value={data.note} />}
         </dl>
       )}
     </header>
