@@ -166,6 +166,17 @@ export function NotificationTemplateForm({
             />
           </Field>
 
+          {template?.code && (
+            <div className="sm:col-span-2">
+              <p className="text-muted-foreground font-mono text-xs">
+                {template.code}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {t("systemDefaultHint")}
+              </p>
+            </div>
+          )}
+
           <Field className="sm:col-span-2">
             <FieldLabel htmlFor="nt-description">
               {tfl("description")}

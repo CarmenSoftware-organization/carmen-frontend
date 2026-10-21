@@ -2588,6 +2588,8 @@
       "testSent": "Test email sent successfully"
     },
     "notificationTemplate": {
+      "systemDefault": "System default",
+      "systemDefaultHint": "Workflows pick this template automatically by its code",
       "entity": "Notification Template",
       "title": "Notification Template",
       "desc": "The wording of the in-app alerts sent when a document moves along.",

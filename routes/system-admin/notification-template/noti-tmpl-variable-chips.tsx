@@ -42,7 +42,7 @@ export function VariableChips({
   if (disabled) return null;
   return (
     <div className="flex flex-wrap items-center gap-1 pt-1">
-      <span className="text-muted-foreground mr-0.5 text-micro">{label}</span>
+      <span className="text-muted-foreground text-micro mr-0.5">{label}</span>
       {NOTIFICATION_VARIABLES.map((key) => (
         <Button
           key={key}

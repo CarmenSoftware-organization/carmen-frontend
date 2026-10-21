@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { listReturnState } from "@/hooks/use-list-return";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
+import { Badge } from "@/components/ui/badge";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
 import { columnSkeletons } from "@/components/ui/data-grid/columns";
@@ -32,13 +33,20 @@ export function useNotiTmplTable({
         <DataGridColumnHeader column={column} title={t("colName")} />
       ),
       cell: ({ row }) => (
-        <Link
-          to={`/system-admin/notification-template/${row.original.id}`}
-          state={listReturnState().state}
-          className="focus-visible:ring-ring/50 text-primary font-semibold hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:outline-none"
-        >
-          {row.original.name || "..."}
-        </Link>
+        <span className="inline-flex items-center gap-2">
+          <Link
+            to={`/system-admin/notification-template/${row.original.id}`}
+            state={listReturnState().state}
+            className="focus-visible:ring-ring/50 text-primary font-semibold hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+          >
+            {row.original.name || "..."}
+          </Link>
+          {row.original.code && (
+            <Badge variant="secondary" size="xs">
+              {t("systemDefault")}
+            </Badge>
+          )}
+        </span>
       ),
       meta: { headerTitle: t("colName"), skeleton: columnSkeletons.text },
     },

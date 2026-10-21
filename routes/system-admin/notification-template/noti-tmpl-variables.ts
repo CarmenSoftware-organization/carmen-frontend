@@ -1,9 +1,9 @@
 /**
  * ตัวแปรที่แทรกในข้อความแจ้งเตือนได้
  *
- * รายการนี้อ่านจากเทมเพลตที่มีอยู่จริงทั้ง 80 รายการ และ **เรียงตามความถี่ที่ใช้จริง**
- * (docNo อยู่ครบทุกแถว, actorName 60, recipientName/url 40, ที่เหลือ 10–20)
- * ตัวที่ใช้บ่อยที่สุดจึงเป็นชิปตัวแรก — ปุ่มที่กดบ่อยอยู่ใกล้มือที่สุด
+ * รายการนี้อ่านจากเทมเพลตจริงและ **เรียงตามความถี่ที่ใช้จริงโดยประมาณ**
+ * (docNo อยู่ครบทุกแถว, docType มากับเทมเพลตเวิร์กโฟลว์ของระบบ, actorName มาก,
+ * recipientName/url รองลงมา, ที่เหลือใช้น้อย) ตัวที่ใช้บ่อยที่สุดจึงเป็นชิปตัวแรก — ปุ่มที่กดบ่อยอยู่ใกล้มือที่สุด
  *
  * ผู้เติมค่าจริงคือ backend ตอนส่ง — ฝั่งนี้ไม่ได้บังคับว่ามีตัวไหนได้บ้าง เป็น
  * "รายการที่รู้จัก" สำหรับปุ่มแทรกและพรีวิว ตัวแปรนอกรายการที่พิมพ์เองจะถูก
@@ -11,6 +11,7 @@
  */
 export const NOTIFICATION_VARIABLES = [
   "docNo",
+  "docType",
   "actorName",
   "recipientName",
   "url",
@@ -25,6 +26,7 @@ export type NotificationVariable = (typeof NOTIFICATION_VARIABLES)[number];
 /** ค่าตัวอย่างสำหรับพรีวิวเท่านั้น ไม่เคยถูกส่งออกไปจริง */
 export const NOTIFICATION_VARIABLE_SAMPLES: Record<string, string> = {
   docNo: "PR-2026-000412",
+  docType: "PR",
   actorName: "Somchai Prasert",
   recipientName: "Alex Tan",
   url: "https://carmen.example.com/pr/PR-2026-000412",
