@@ -2476,7 +2476,13 @@
       "routingIssueNoField": "Choose a field — until then this rule never matches",
       "routingIssueNoValue": "Enter a value — until then this rule never matches",
       "routingIssueCategory": "Category conditions don't run yet — documents don't carry a category, so this rule never matches",
-      "routingIssueBadTarget": "Pick a target stage that comes after the trigger stage"
+      "routingIssueBadTarget": "Pick a target stage that comes after the trigger stage",
+      "productsViewAll": "All",
+      "productsViewSelected": "Selected",
+      "productsCoverage": "Selected / total",
+      "selectShownProducts": "Select all {count} shown",
+      "productsNoneSelected": "No products selected yet.",
+      "productsNoneSelectedWarning": "No products selected — documents on this workflow can't add any item until you pick some."
     },
     "runningCode": {
       "entity": "Running Code",
