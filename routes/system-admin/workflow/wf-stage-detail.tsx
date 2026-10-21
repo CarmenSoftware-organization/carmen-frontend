@@ -15,6 +15,7 @@ interface WfStageDetailProps {
   readonly users: User[];
   readonly isDisabled: boolean;
   readonly isStructureDisabled: boolean;
+  readonly readOnly?: boolean;
   readonly isFirst: boolean;
   readonly isLast: boolean;
 }
@@ -25,6 +26,7 @@ export function WfStageDetail({
   users,
   isDisabled,
   isStructureDisabled,
+  readOnly = false,
   isFirst,
   isLast,
 }: WfStageDetailProps) {
@@ -79,6 +81,7 @@ export function WfStageDetail({
             isFirst={isFirst}
             isDisabled={isDisabled}
             isNameDisabled={isStructureDisabled}
+            readOnly={readOnly}
           />
         </TabsContent>
 

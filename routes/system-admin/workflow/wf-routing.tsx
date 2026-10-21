@@ -119,6 +119,37 @@ export function WfRouting({
       return ruleName.toLowerCase().includes(searchQuery.toLowerCase());
     });
 
+  // ยังไม่มีกฎเลย = ไม่ต้องแบ่งซ้าย/ขวา (เดิมได้ "No data" กับ "Select or add…" สองก้อนคู่กัน)
+  // ก้อนเดียวที่บอกว่า routing ทำอะไร พร้อมปุ่มเพิ่มเมื่ออยู่ในโหมดแก้
+  if (fields.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
+        <Waypoints
+          className="text-muted-foreground/40 mb-3 size-10"
+          aria-hidden="true"
+        />
+        <p className="text-foreground text-sm font-medium">
+          {t("routingEmptyTitle")}
+        </p>
+        <p className="text-muted-foreground mt-1 max-w-sm text-sm">
+          {t("routingEmptyDesc")}
+        </p>
+        {!isDisabled && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleAddRule}
+            className="mt-4"
+          >
+            <Plus className="mr-1.5 size-3.5" />
+            {tc("add")}
+          </Button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 pt-4 lg:flex-row">
       {/* Left: Rule list */}

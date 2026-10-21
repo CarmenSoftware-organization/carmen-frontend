@@ -2423,7 +2423,23 @@
         "blockedTitle": "ยังลบ workflow นี้ไม่ได้",
         "blockedDescription": "มีเอกสาร {count} ฉบับที่ยังดำเนินการอยู่บน workflow นี้ การลบจะทำให้ stage ที่เอกสารเดินอยู่หายไป กรุณาทำให้เสร็จหรือยกเลิกเอกสารก่อน",
         "structureLocked": "มีเอกสาร {count} ฉบับกำลังเดินอยู่บน stage ชุดนี้ จึงเพิ่ม ลบ เปลี่ยนชื่อ หรือสลับลำดับ stage และแก้เส้นทางไม่ได้ ส่วนอื่นของฟอร์มยังบันทึกได้ตามปกติ"
-      }
+      },
+      "issueShort": {
+        "no_users_assigned": "ยังไม่มีผู้อนุมัติ",
+        "no_actions_enabled": "ยังไม่ได้เปิดการกระทำใดเลย",
+        "duplicate_name": "ชื่อขั้นซ้ำกับขั้นอื่น",
+        "missing_create_role": "ขั้นแรกต้องเป็นบทบาท Create",
+        "missing_completed_stage": "ขั้นสุดท้ายควรเป็น Completed",
+        "no_sla": "ยังไม่ได้ตั้ง SLA",
+        "empty_name": "ขั้นนี้ยังไม่มีชื่อ",
+        "submit_only_on_first": "Submit ใช้ได้เฉพาะขั้นแรก",
+        "role_not_allowed": "บทบาทนี้ใช้กับชนิด workflow นี้ไม่ได้"
+      },
+      "issueCountError": "{count, plural, other {ข้อผิดพลาด # รายการ}}",
+      "issueCountWarning": "{count, plural, other {คำเตือน # รายการ}}",
+      "routingEmptyTitle": "ยังไม่มีกฎเส้นทาง",
+      "routingEmptyDesc": "เอกสารจะเดินตามลำดับขั้นปกติ เพิ่มกฎเมื่อต้องการข้ามหรือกระโดดไปขั้นอื่นตามเงื่อนไข",
+      "issueRoleNotAllowed": "ขั้น \"{stage}\" ใช้บทบาทที่ชนิด workflow นี้ไม่อนุญาต"
     },
     "runningCode": {
       "entity": "รหัสลำดับ",

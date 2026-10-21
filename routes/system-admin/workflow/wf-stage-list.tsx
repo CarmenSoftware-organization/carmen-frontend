@@ -18,6 +18,8 @@ import {
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { useTranslations } from "use-intl";
 import {
+  AlertCircle,
+  AlertTriangle,
   CheckCircle2,
   Clock,
   GripVertical,
@@ -38,7 +40,11 @@ import {
 import type { Role, RoutingRule, Stage } from "@/types/workflows";
 import { cn } from "@/lib/utils";
 import { makeRecipients, type WorkflowCreateModel } from "./wf-form-schema";
-import SortableStageItem, { type StageRouteHint } from "./wf-sort-table-item";
+import SortableStageItem, {
+  type StageIssueHint,
+  type StageRouteHint,
+} from "./wf-sort-table-item";
+import type { ValidationIssue } from "./wf-validate";
 import { computeWorkflowInsights } from "./wf-insights-utils";
 import { formatCycleTime, formatStageSla } from "./wf-sla-utils";
 import { StageRailList } from "./wf-stage-rail-node";
@@ -52,8 +58,11 @@ interface WfStageListProps {
   /** ไฮไลต์ขั้นที่เลือกเฉพาะตอนแท็บ Stages เปิดอยู่ — แท็บอื่นไม่ได้ "อยู่ที่" ขั้นไหน */
   readonly showSelection?: boolean;
   readonly routingRules?: RoutingRule[];
-  /** ไม่มี issue จาก validateWorkflow — แสดงเป็นเครื่องหมายเล็กแทนแบนเนอร์เต็มแถว */
-  readonly isValid?: boolean;
+  /**
+   * ผลจาก validateWorkflow — รางเป็นที่เดียวที่บอกความพร้อมของ workflow: สรุปจำนวนที่หัวราง
+   * และข้อความสั้น ๆ ใต้ชื่อขั้นที่มีปัญหา (ทุก issue ผูกกับ stageIndex อยู่แล้ว)
+   */
+  readonly issues?: readonly ValidationIssue[];
   readonly className?: string;
 }
 
@@ -110,7 +119,7 @@ export function WfStageList({
   isDisabled,
   showSelection = true,
   routingRules = [],
-  isValid = false,
+  issues = [],
   className,
 }: WfStageListProps) {
   const { fields, move, insert } = fieldArray;
@@ -190,6 +199,19 @@ export function WfStageList({
   const approverCount = insights.stats.approverStages;
   const cycleTime = formatCycleTime(insights.totalCycleMinutes);
 
+  const issuesByStage = new Map<number, StageIssueHint[]>();
+  for (const issue of issues) {
+    if (typeof issue.stageIndex !== "number") continue;
+    const list = issuesByStage.get(issue.stageIndex) ?? [];
+    list.push({
+      severity: issue.severity,
+      label: t(`issueShort.${issue.code}`),
+    });
+    issuesByStage.set(issue.stageIndex, list);
+  }
+  const errorCount = issues.filter((i) => i.severity === "error").length;
+  const warningCount = issues.filter((i) => i.severity === "warning").length;
+
   const routesByStage = new Map<string, StageRouteHint[]>();
   for (const rule of routingRules) {
     const from = rule.trigger_stage;
@@ -238,7 +260,19 @@ export function WfStageList({
             <span className="text-foreground font-medium">{cycleTime}</span>
           </span>
         )}
-        {isValid && (
+        {errorCount > 0 && (
+          <span className="text-destructive inline-flex items-center gap-1 font-medium tabular-nums">
+            <AlertCircle className="size-3" aria-hidden="true" />
+            {t("issueCountError", { count: errorCount })}
+          </span>
+        )}
+        {warningCount > 0 && (
+          <span className="text-warning-ink inline-flex items-center gap-1 font-medium tabular-nums">
+            <AlertTriangle className="size-3" aria-hidden="true" />
+            {t("issueCountWarning", { count: warningCount })}
+          </span>
+        )}
+        {issues.length === 0 && (
           <span className="text-success-ink inline-flex items-center gap-1">
             <CheckCircle2 className="size-3" aria-hidden="true" />
             {t("validationReadyShort")}
@@ -297,8 +331,6 @@ export function WfStageList({
                 const isLast = index === fields.length - 1;
                 const isHod = stage?.is_hod ?? false;
                 const userCount = stage?.assigned_users?.length ?? 0;
-                const hasWarning =
-                  !isFirst && !isLast && !isHod && userCount === 0;
                 const stageName = stage?.name ?? field.name;
                 return (
                   <SortableStageItem
@@ -314,7 +346,7 @@ export function WfStageList({
                     isLast={isLast}
                     userCount={userCount}
                     isHod={isHod}
-                    hasWarning={hasWarning}
+                    issues={issuesByStage.get(index)}
                     dragDisabled={isDisabled || searchQuery.length > 0}
                     onClick={() => onSelect(index)}
                     onDelete={

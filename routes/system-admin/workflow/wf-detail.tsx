@@ -29,7 +29,6 @@ import { WfGeneral } from "./wf-general";
 import { WfStages } from "./wf-stages";
 import { WfRouting } from "./wf-routing";
 import { WfProducts } from "./wf-products";
-import WfValidationPanel from "./wf-validation-panel";
 import { validateWorkflow } from "./wf-validate";
 import WfInsights from "./wf-insights";
 import { WfStageList } from "./wf-stage-list";
@@ -90,6 +89,11 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
     name: "data.products",
   }) as string[] | undefined;
 
+  const watchedType = useWatch({
+    control: form.control,
+    name: "workflow_type",
+  });
+
   const routingFieldArray = useFieldArray({
     control: form.control,
     name: "data.routing_rules",
@@ -97,12 +101,12 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
 
   const hasStages = !!watchedStages && watchedStages.length > 0;
 
-  let hasStageErrors = !!form.formState.errors.data?.stages;
-  let validationResult = null;
-  if (hasStages) {
-    validationResult = validateWorkflow(watchedStages!);
-    if (validationResult.errorCount > 0) hasStageErrors = true;
-  }
+  // ปัญหาของ workflow ไปอยู่บนรางขั้นด้านซ้าย (ใต้ชื่อขั้นที่มีปัญหา) ซึ่งเห็นได้ทุกแท็บ —
+  // จุดแดงบนแท็บ Stages จึงเหลือไว้บอกแค่ error ของตัวฟอร์มเอง
+  const hasStageErrors = !!form.formState.errors.data?.stages;
+  const validationIssues = hasStages
+    ? validateWorkflow(watchedStages!, watchedType).issues
+    : [];
 
   const hasGeneralErrors =
     !!form.formState.errors.name || !!form.formState.errors.workflow_type;
@@ -142,16 +146,6 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
       }
     >
       <div className="space-y-3">
-        {hasStages && validationResult && (
-          <WfValidationPanel
-            issues={validationResult.issues}
-            errorCount={validationResult.errorCount}
-            warningCount={validationResult.warningCount}
-            isReady={validationResult.isReady}
-            onSelectStage={handleSelectStage}
-          />
-        )}
-
         <div
           className={cn(
             "grid gap-4",
@@ -168,7 +162,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
               onSelect={handleSelectStage}
               isDisabled={isStructureDisabled}
               routingRules={routingFieldArray.fields as never}
-              isValid={validationResult?.issues.length === 0}
+              issues={validationIssues}
             />
           )}
 
@@ -245,7 +239,11 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
 
               <div className="flex-1 p-4 md:p-6">
                 <TabsContent value="general" className="mt-0 outline-none">
-                  <WfGeneral form={form} isDisabled={isDisabled} />
+                  <WfGeneral
+                    form={form}
+                    isDisabled={isDisabled}
+                    readOnly={!isEditing}
+                  />
                 </TabsContent>
 
                 <TabsContent value="stages" className="mt-0 outline-none">
@@ -255,6 +253,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                     users={users}
                     isDisabled={isDisabled}
                     isStructureDisabled={isStructureDisabled}
+                    readOnly={!isEditing}
                     inProgressCount={availability?.documents.in_progress ?? 0}
                     selectedIndex={selectedStageIndex}
                   />

@@ -1,4 +1,5 @@
 import type { Stage } from "@/types/workflows";
+import { getAllowedRoles } from "./wf-role-colors";
 
 export type IssueSeverity = "error" | "warning" | "info";
 
@@ -10,6 +11,7 @@ export type IssueCode =
   | "missing_completed_stage"
   | "no_sla"
   | "empty_name"
+  | "role_not_allowed"
   | "submit_only_on_first";
 
 export interface ValidationIssue {
@@ -40,7 +42,10 @@ const isAnyActionActive = (stage: Stage): boolean => {
   );
 };
 
-export function validateWorkflow(stages: Stage[]): ValidationSummary {
+export function validateWorkflow(
+  stages: Stage[],
+  workflowType?: string,
+): ValidationSummary {
   const issues: ValidationIssue[] = [];
 
   if (!stages || stages.length === 0) {
@@ -54,6 +59,7 @@ export function validateWorkflow(stages: Stage[]): ValidationSummary {
   }
 
   const lastIndex = stages.length - 1;
+  const allowedRoles = getAllowedRoles(workflowType);
   const seenNames = new Map<string, number[]>();
 
   stages.forEach((stage, index) => {
@@ -84,6 +90,18 @@ export function validateWorkflow(stages: Stage[]): ValidationSummary {
         stageIndex: index,
         stageName: trimmedName || `#${index + 1}`,
         translationKey: "issueNoUsers",
+        translationValues: { stage: trimmedName || `#${index + 1}` },
+      });
+    }
+
+    // ขั้นจบไม่มี role ให้เลือก (หน้าจอไม่มีฟอร์มให้) จึงไม่ตรวจ
+    if (!isLast && stage.role && !allowedRoles.includes(stage.role)) {
+      issues.push({
+        code: "role_not_allowed",
+        severity: "error",
+        stageIndex: index,
+        stageName: trimmedName || `#${index + 1}`,
+        translationKey: "issueRoleNotAllowed",
         translationValues: { stage: trimmedName || `#${index + 1}` },
       });
     }
