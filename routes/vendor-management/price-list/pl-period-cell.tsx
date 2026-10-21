@@ -6,9 +6,12 @@ import { cn } from "@/lib/utils";
 
 // เหลือไม่เกินกี่วันถึงขึ้นสีเตือน — ราว ๆ หนึ่งรอบสั่งซื้อรายสัปดาห์
 const ENDING_SOON_DAYS = 7;
+// ในรายการ บรรทัด "เหลือ N วัน" มีค่าเฉพาะตอนใกล้หมด — ไกลกว่านี้ซ่อน ตารางจะเงียบ
+// แล้วใบที่ใกล้หมดเด่นขึ้นเอง (เคยขึ้น "365,125 days left" กับใบที่พิมพ์ปีผิด)
+const DAYS_LEFT_VISIBLE = 30;
 
 type Validity =
-  | { kind: "expired" }
+  | { kind: "expired"; days: number }
   | { kind: "upcoming"; days: number }
   | { kind: "current"; days: number };
 
@@ -23,7 +26,7 @@ export function periodValidity(period: string, now: Date): Validity | null {
   const to = new Date(parts[1]);
   if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return null;
   const toEnd = differenceInCalendarDays(to, now);
-  if (toEnd < 0) return { kind: "expired" };
+  if (toEnd < 0) return { kind: "expired", days: -toEnd };
   const toStart = differenceInCalendarDays(from, now);
   if (toStart > 0) return { kind: "upcoming", days: toStart };
   return { kind: "current", days: toEnd };
@@ -36,9 +39,15 @@ export function periodValidity(period: string, now: Date): Validity | null {
 export function PlPeriodCell({
   period,
   className,
+  compact = false,
+  quietExpired = false,
 }: {
   readonly period: string;
   readonly className?: string;
+  /** รายการ: ซ่อน "เหลือ N วัน" เมื่อเกิน DAYS_LEFT_VISIBLE (ฟอร์มยังโชว์เต็มเป็น feedback ตอนแก้วันที่) */
+  readonly compact?: boolean;
+  /** แท็บที่กรองเฉพาะใบหมดช่วงแล้ว — แดงซ้ำทุกแถวเป็นแค่เสียงรบกวน บอกจำนวนวันแบบเทาแทน */
+  readonly quietExpired?: boolean;
 }) {
   const t = useTranslations("vendorManagement.priceList");
   const { dateFormat } = useProfile();
@@ -55,10 +64,16 @@ export function PlPeriodCell({
     validity?.kind === "current" && validity.days <= ENDING_SOON_DAYS;
 
   let note: string | null = null;
-  if (validity?.kind === "expired") note = t("periodExpired");
+  if (validity?.kind === "expired")
+    note = quietExpired
+      ? t("periodEndedAgo", { count: validity.days })
+      : t("periodExpired");
   else if (validity?.kind === "upcoming")
     note = t("periodStartsIn", { count: validity.days });
-  else if (validity?.kind === "current")
+  else if (
+    validity?.kind === "current" &&
+    !(compact && validity.days > DAYS_LEFT_VISIBLE)
+  )
     note =
       validity.days === 0
         ? t("periodEndsToday")
@@ -80,7 +95,7 @@ export function PlPeriodCell({
             "block text-xs whitespace-nowrap",
             // หมดช่วงแล้วเป็นแดง — ใบ ACTIVE ที่ราคาหมดอายุคือสิ่งที่ฝ่ายจัดซื้อต้องเห็นก่อน
             // ออก PO (ท่าเดียวกับใบรับรองหมดอายุในหน้าผู้ขาย)
-            expired
+            expired && !quietExpired
               ? "text-destructive font-medium"
               : endingSoon
                 ? "text-warning-ink"

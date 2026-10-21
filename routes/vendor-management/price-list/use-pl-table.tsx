@@ -25,6 +25,8 @@ interface UsePriceListTableOptions {
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onEdit: (priceList: PriceList) => void;
   onDelete: (priceList: PriceList) => void;
+  /** แท็บหมดช่วงแล้ว — ส่งต่อให้ PlPeriodCell */
+  quietExpired?: boolean;
 }
 
 export function usePriceListTable({
@@ -34,6 +36,7 @@ export function usePriceListTable({
   tableConfig,
   onEdit,
   onDelete,
+  quietExpired = false,
 }: UsePriceListTableOptions) {
   "use no memo";
   const { dateTimeFormat } = useProfile();
@@ -100,7 +103,11 @@ export function usePriceListTable({
         <DataGridColumnHeader column={column} title={tfl("effectivePeriod")} />
       ),
       cell: ({ row }) => (
-        <PlPeriodCell period={row.getValue("effective_from_date")} />
+        <PlPeriodCell
+          period={row.getValue("effective_from_date")}
+          compact
+          quietExpired={quietExpired}
+        />
       ),
       meta: {
         headerTitle: tfl("effectivePeriod"),

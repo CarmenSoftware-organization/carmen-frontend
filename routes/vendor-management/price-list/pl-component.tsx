@@ -41,6 +41,34 @@ import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { VENDOR_ENTITY } from "@/components/filter/entity-sources";
+import { setURLParams, useURL } from "@/hooks/use-url";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format, subDays } from "date-fns";
+
+// "current" ไม่ใช่ "active" — คำว่า active เป็นสถานะเอกสารอยู่แล้ว (ใบ DRAFT ก็ยังอยู่ในช่วงราคาได้)
+const VALIDITY_TABS = ["current", "expired", "all"] as const;
+type Validity = (typeof VALIDITY_TABS)[number];
+
+// เรียงตามงานของแต่ละแท็บ: ใบที่ใกล้หมดขึ้นก่อน (ต้องต่อราคา) / ใบที่เพิ่งหมดขึ้นก่อน
+const VALIDITY_DEFAULT_SORT: Record<Validity, string> = {
+  current: "effective_to_date:asc",
+  expired: "effective_to_date:desc",
+  all: "pricelist_no:asc",
+};
+
+/**
+ * แยกใบตามวันสิ้นสุดเทียบวันนี้ (ปฏิทินเครื่องผู้ใช้ ปลายช่วงนับรวม — นิยามเดียวกับ
+ * periodValidity ในคอลัมน์ช่วงวันที่) กรองที่ server เพราะรายการแบ่งหน้า
+ * · "ยังมีผล" รวมใบที่ยังไม่ถึงวันเริ่มด้วย — ยังไม่หมดอายุ ฝ่ายจัดซื้อต้องเห็นล่วงหน้า
+ * · ขอบล่าง 0001 ไม่ใช่ 1970 — มีใบที่พิมพ์ปีผิด (เช่น 0302) ซึ่งต้องโผล่ในแท็บหมดอายุ
+ */
+function validityClause(validity: Validity, now: Date): string | undefined {
+  if (validity === "current")
+    return `effective_to_date|date_range:${format(now, "yyyy-MM-dd")},9999-12-31`;
+  if (validity === "expired")
+    return `effective_to_date|date_range:0001-01-01,${format(subDays(now, 1), "yyyy-MM-dd")}`;
+  return undefined;
+}
 
 // ค่าที่ URL เก็บคือรหัสสกุล (`currency_code|string:THB,USD`) ไม่ใช่ id — ดึงชื่อตาม `code`
 const CURRENCY_ENTITY = defineEntitySource<Currency>({
@@ -65,8 +93,14 @@ export default function PriceListComponent() {
   const isMobile = useIsMobile();
   const deletePriceList = useDeletePriceList();
   const { exportPriceList, isExporting } = useExportPriceList();
+  const [validityParam] = useURL("validity", { defaultValue: "current" });
+  const validity: Validity = (VALIDITY_TABS as readonly string[]).includes(
+    validityParam,
+  )
+    ? (validityParam as Validity)
+    : "current";
   const { params, search, setSearch, tableConfig } = useDataGridState({
-    defaultSort: "pricelist_no:asc",
+    defaultSort: VALIDITY_DEFAULT_SORT[validity],
   });
 
   // ป้ายเป็น i18n (ไม่ใช่ createStatusFilterOptions ที่เป็นอังกฤษล้วน) ให้ตรงกับ
@@ -143,10 +177,14 @@ export default function PriceListComponent() {
   const lf = useListFilters({
     pageKey: LIST_PAGE_KEYS.PRICE_LIST,
     fields: priceListFilterFields,
-    defaultSort: "pricelist_no:asc",
+    defaultSort: VALIDITY_DEFAULT_SORT[validity],
   });
 
-  const queryParams = { ...params, filter: lf.filterParam };
+  const filter =
+    [lf.filterParam, validityClause(validity, new Date())]
+      .filter(Boolean)
+      .join(";") || undefined;
+  const queryParams = { ...params, filter };
 
   const isGridMode = isMobile || displayMode === "grid";
 
@@ -216,6 +254,7 @@ export default function PriceListComponent() {
         listReturnState(),
       ),
     onDelete: setDeleteTarget,
+    quietExpired: validity === "expired",
   });
 
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
@@ -236,16 +275,36 @@ export default function PriceListComponent() {
         />
       }
       toolbar={
-        <ListToolbar
-          search={search}
-          onSearch={setSearch}
-          lf={lf}
-          fields={priceListFilterFields}
-          onSaveViewClick={() => setSaveViewDialogOpen(true)}
-          table={table}
-          displayMode={displayMode}
-          onDisplayModeChange={setDisplayMode}
-        />
+        <div className="flex flex-col gap-2">
+          {/* เลขหน้าค้างไว้อาจไม่มีจริงในอีกแท็บ — กลับหน้า 1 และคืน sort เริ่มต้นของแท็บ */}
+          <Tabs
+            value={validity}
+            onValueChange={(next) =>
+              setURLParams({ validity: next, page: "", sort: "" })
+            }
+          >
+            {/* px-0: ให้เส้นใต้แท็บแรกชิดขอบเดียวกับช่องค้นหาด้านล่าง */}
+            <TabsList
+              variant="line"
+              className="px-0"
+              aria-label={t("validityAria")}
+            >
+              <TabsTrigger value="current">{t("validityCurrent")}</TabsTrigger>
+              <TabsTrigger value="expired">{t("validityExpired")}</TabsTrigger>
+              <TabsTrigger value="all">{t("validityAll")}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <ListToolbar
+            search={search}
+            onSearch={setSearch}
+            lf={lf}
+            fields={priceListFilterFields}
+            onSaveViewClick={() => setSaveViewDialogOpen(true)}
+            table={table}
+            displayMode={displayMode}
+            onDisplayModeChange={setDisplayMode}
+          />
+        </div>
       }
     >
       {isGridMode && grid.isLoading && <CardSkeletonGrid />}
@@ -263,6 +322,7 @@ export default function PriceListComponent() {
                   )
                 }
                 onDelete={setDeleteTarget}
+                quietExpired={validity === "expired"}
               />
             ))}
           </div>

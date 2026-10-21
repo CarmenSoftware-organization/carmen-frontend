@@ -3024,7 +3024,12 @@
       "periodExpired": "หมดอายุแล้ว",
       "periodEndsToday": "หมดวันนี้",
       "periodDaysLeft": "เหลือ {count} วัน",
-      "periodStartsIn": "เริ่มในอีก {count} วัน"
+      "periodStartsIn": "เริ่มในอีก {count} วัน",
+      "periodEndedAgo": "หมดมาแล้ว {count} วัน",
+      "validityCurrent": "ยังมีผล",
+      "validityExpired": "หมดช่วงแล้ว",
+      "validityAll": "ทั้งหมด",
+      "validityAria": "ช่วงราคาที่มีผล"
     },
     "priceListTemplate": {
       "entity": "แม่แบบรายการราคา",
