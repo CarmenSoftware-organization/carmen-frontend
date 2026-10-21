@@ -19,7 +19,10 @@ import {
   FieldLabel,
   FieldError,
 } from "@/components/ui/field";
-import { getWorkflowTypeOptions } from "@/constant/workflow";
+import {
+  getWorkflowTypeLabels,
+  getWorkflowTypeOptions,
+} from "@/constant/workflow";
 import { WORKFLOW_TYPE } from "@/types/workflows";
 import type { WorkflowCreateModel } from "./wf-form-schema";
 
@@ -34,7 +37,12 @@ export function WfGeneral({ form, isDisabled }: WfGeneralProps) {
 
   const workflowTypeOptions = getWorkflowTypeOptions(t);
   // มีแต่ PO ที่มีเอกสารต้นทางให้รับลายเซ็นต่อ — PR/SR ติ๊กไปก็ไม่มีใครอ่าน (backend ลบ key ทิ้ง)
-  const isPurchaseOrder = form.watch("workflow_type") === WORKFLOW_TYPE.PO;
+  const workflowType = form.watch("workflow_type");
+  const isPurchaseOrder = workflowType === WORKFLOW_TYPE.PO;
+  const typeLabels = getWorkflowTypeLabels(t);
+  const namePlaceholder = t("workflowNamePlaceholder", {
+    type: typeLabels[workflowType] ?? typeLabels[WORKFLOW_TYPE.PR],
+  });
 
   return (
     <div className="@container w-full pt-4">
@@ -45,7 +53,7 @@ export function WfGeneral({ form, isDisabled }: WfGeneralProps) {
             <Input
               id="wf-name"
               size="sm"
-              placeholder={t("workflowNamePlaceholder")}
+              placeholder={namePlaceholder}
               disabled={isDisabled}
               maxLength={100}
               {...form.register("name")}

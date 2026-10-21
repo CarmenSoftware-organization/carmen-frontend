@@ -40,7 +40,8 @@ import { cn } from "@/lib/utils";
 import { makeRecipients, type WorkflowCreateModel } from "./wf-form-schema";
 import SortableStageItem, { type StageRouteHint } from "./wf-sort-table-item";
 import { computeWorkflowInsights } from "./wf-insights-utils";
-import { formatCycleTime } from "./wf-sla-utils";
+import { formatCycleTime, formatStageSla } from "./wf-sla-utils";
+import { StageRailList } from "./wf-stage-rail-node";
 
 interface WfStageListProps {
   readonly form: UseFormReturn<WorkflowCreateModel>;
@@ -58,13 +59,6 @@ interface WfStageListProps {
 
 /** เกินจำนวนนี้ถึงจะมีช่องค้นหา — รางสั้น ๆ มองเห็นครบอยู่แล้ว */
 const SEARCH_THRESHOLD = 8;
-
-const formatSla = (
-  stage: (Pick<Stage, "sla"> & { sla_unit?: string }) | undefined,
-): string =>
-  stage?.sla && stage.sla !== "0"
-    ? `${stage.sla}${stage.sla_unit?.[0] ?? "h"}`
-    : "";
 
 const buildNewStage = (
   existingNames: string[],
@@ -276,13 +270,7 @@ export function WfStageList({
           items={filteredIds}
           strategy={verticalListSortingStrategy}
         >
-          <ol className="relative space-y-1">
-            {filteredFields.length > 1 && (
-              <span
-                aria-hidden="true"
-                className="bg-border absolute top-5 bottom-4 left-3 w-px"
-              />
-            )}
+          <StageRailList count={filteredFields.length}>
             {filteredFields.length === 0 ? (
               <li className="animate-in fade-in zoom-in-95 flex flex-col items-center justify-center py-10 text-center duration-200">
                 <Waypoints className="text-muted-foreground/30 mb-3 size-10" />
@@ -319,7 +307,7 @@ export function WfStageList({
                     index={index}
                     name={stageName}
                     role={stage?.role as Role | undefined}
-                    slaLabel={formatSla(stage)}
+                    slaLabel={formatStageSla(stage)}
                     routes={routesByStage.get(stageName)}
                     isSelected={showSelection && selectedIndex === index}
                     isFirst={isFirst}
@@ -338,7 +326,7 @@ export function WfStageList({
                 );
               })
             )}
-          </ol>
+          </StageRailList>
         </SortableContext>
 
         <DragOverlay>

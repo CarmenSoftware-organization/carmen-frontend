@@ -1,16 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  Crown,
-  GitBranch,
-  GripVertical,
-  Play,
-  Users,
-  Trash2,
-} from "lucide-react";
+import { AlertCircle, GitBranch, GripVertical, Trash2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -19,7 +9,7 @@ import {
 import { useTranslations } from "use-intl";
 import type { Role } from "@/types/workflows";
 import { cn } from "@/lib/utils";
-import { ROLE_ICON, ROLE_LABEL } from "./wf-role-colors";
+import { StageRailMarker, StageRailSummary } from "./wf-stage-rail-node";
 
 /** กฎ routing ที่เริ่มจากขั้นนี้ — แสดงเป็นชิปเดียวพร้อม tooltip รายชื่อปลายทาง */
 export interface StageRouteHint {
@@ -45,11 +35,7 @@ interface SortableStageItemProps {
   readonly onDelete?: () => void;
 }
 
-/**
- * โหนดหนึ่งตัวบนราง stage — เลขลำดับนับเฉพาะขั้นกลาง (ขั้นสร้างเป็นไอคอน Play
- * ขั้นจบเป็น CheckCircle2) ให้ตรงกันทุกจุดในหน้า เส้นเชื่อมแนวตั้งวาดโดย
- * container (`WfStageList`) ตัวมาร์กเกอร์มีพื้น bg-card จึงทับเส้นพอดี
- */
+/** โหนดบนรางที่ลากเรียงได้ — ภาพมาจาก `wf-stage-rail-node.tsx` ตัวนี้เพิ่มแค่ dnd + ปุ่ม */
 export default function SortableStageItem({
   id,
   index,
@@ -83,14 +69,6 @@ export default function SortableStageItem({
     transition,
   };
 
-  const RoleIcon = role ? ROLE_ICON[role] : null;
-
-  const renderMarker = () => {
-    if (isLast) return <CheckCircle2 className="size-3.5" />;
-    if (isFirst) return <Play className="size-3 fill-current" />;
-    return index;
-  };
-
   return (
     <li
       ref={setNodeRef}
@@ -100,17 +78,12 @@ export default function SortableStageItem({
         isDragging && "z-10 opacity-80",
       )}
     >
-      <span
-        aria-hidden="true"
-        className={cn(
-          "relative z-1 mt-2 flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold tabular-nums transition-colors",
-          isSelected
-            ? "border-primary bg-primary text-primary-foreground"
-            : "bg-card text-muted-foreground",
-        )}
-      >
-        {renderMarker()}
-      </span>
+      <StageRailMarker
+        index={index}
+        isFirst={isFirst}
+        isLast={isLast}
+        isSelected={isSelected}
+      />
 
       <div
         className={cn(
@@ -127,40 +100,14 @@ export default function SortableStageItem({
           onClick={onClick}
           aria-current={isSelected ? "step" : undefined}
         >
-          <span className="flex items-center gap-1.5">
-            <span className="text-foreground truncate text-sm font-medium">
-              {name}
-            </span>
-            {isHod && !isLast && (
-              <Crown
-                className="text-warning-ink size-3.5 shrink-0"
-                aria-label={t("isHod")}
-              />
-            )}
-          </span>
-
-          {!isLast && (
-            <span className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs">
-              {RoleIcon && role && (
-                <span className="inline-flex items-center gap-1">
-                  <RoleIcon className="size-3" aria-hidden="true" />
-                  {t(ROLE_LABEL[role])}
-                </span>
-              )}
-              {!isHod && userCount > 0 && (
-                <span className="inline-flex items-center gap-1 tabular-nums">
-                  <Users className="size-3" aria-hidden="true" />
-                  {userCount}
-                </span>
-              )}
-              {slaLabel && (
-                <span className="inline-flex items-center gap-1 tabular-nums">
-                  <Clock className="size-3" aria-hidden="true" />
-                  {slaLabel}
-                </span>
-              )}
-            </span>
-          )}
+          <StageRailSummary
+            name={name}
+            role={role}
+            slaLabel={slaLabel}
+            userCount={userCount}
+            isHod={isHod}
+            isLast={isLast}
+          />
         </button>
 
         <span className="flex shrink-0 items-center gap-0.5">

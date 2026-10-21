@@ -29,3 +29,11 @@ export function formatCycleTime(minutes: number): string {
   if (days === 0 && mins > 0) parts.push(`${mins}m`);
   return parts.slice(0, 2).join(" ") || "0m";
 }
+
+/** ป้าย SLA สั้น ๆ ของขั้นเดียว ("24h", "2d") — ขั้นที่ SLA เป็น 0 ได้สตริงว่าง */
+export const formatStageSla = (
+  stage: (Pick<Stage, "sla"> & { sla_unit?: string }) | undefined,
+): string =>
+  stage?.sla && stage.sla !== "0"
+    ? `${stage.sla}${stage.sla_unit?.[0] ?? "h"}`
+    : "";
