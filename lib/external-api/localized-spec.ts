@@ -19,7 +19,7 @@ const AUTHORIZE_HINT =
 export const PUBLIC_SERVERS = [
   {
     url: "https://{host}",
-    description: "Carmen",
+    description: "Carmen Blue",
     variables: { host: { default: "your-carmen-api-host" } },
   },
 ];
