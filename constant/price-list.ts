@@ -11,6 +11,7 @@ export const PL_STATUS_TONE: Record<string, DotTone> = {
   submitted: "warning",
   active: "success",
   inactive: "neutral",
+  voided: "neutral",
   expired: "destructive",
 };
 
@@ -26,4 +27,5 @@ export const PL_STATUS_CONFIG = createStatusConfig([
   "submitted",
   "active",
   "inactive",
+  "voided",
 ] as const);

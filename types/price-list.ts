@@ -1,7 +1,12 @@
 import type { Audit } from "@/types/audit";
 import type { EntityRef } from "@/types/entity-ref";
 
-type PriceListStatus = "draft" | "submitted" | "active" | "inactive";
+export type PriceListStatus =
+  | "draft"
+  | "submitted"
+  | "active"
+  | "inactive"
+  | "voided";
 
 export interface PriceListActiveVendor {
   id: string;
@@ -48,6 +53,9 @@ export interface PriceList {
   currency: EntityRef | null;
   effectivePeriod: string;
   note: string;
+  void_reason?: string | null;
+  voided_at?: string | null;
+  voided_by_id?: string | null;
   pricelist_detail: PriceListDetailItem[];
   can_use?: boolean;
   doc_version?: number;

@@ -5,7 +5,7 @@ import {
   ListCardAuditRows,
   ListCardRow,
 } from "@/components/share/list-card";
-import type { PriceList } from "@/types/price-list";
+import type { PriceList, PriceListStatus } from "@/types/price-list";
 import { PlPeriodCell } from "./pl-period-cell";
 
 interface PriceListCardProps {
@@ -31,7 +31,7 @@ export default function PriceListCard({
         <StatusIconLabel
           status={item.status}
           label={ts(
-            item.status as "draft" | "submitted" | "active" | "inactive",
+            item.status as PriceListStatus,
           )}
           className="uppercase"
         />

@@ -22,7 +22,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useGridPagination } from "@/hooks/use-grid-pagination";
 import { useCurrency } from "@/hooks/use-currency";
 import { MultiSelectFilter } from "@/components/ui/multi-select-filter";
-import type { PriceList } from "@/types/price-list";
+import type { PriceList, PriceListStatus } from "@/types/price-list";
 import { defineEntitySource } from "@/components/filter/entity-filter-source";
 import type { Currency } from "@/types/currency";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
@@ -223,7 +223,7 @@ export default function PriceListComponent() {
           {
             header: tfl("status"),
             value: (r) =>
-              ts(r.status as "draft" | "submitted" | "active" | "inactive"),
+              ts(r.status as PriceListStatus),
             width: 12,
           },
           {

@@ -21,7 +21,11 @@ import {
   useUpdatePriceList,
 } from "@/hooks/use-price-list";
 import { useProfile } from "@/hooks/use-profile";
-import type { CreatePriceListDto, PriceList } from "@/types/price-list";
+import type {
+  CreatePriceListDto,
+  PriceList,
+  PriceListStatus,
+} from "@/types/price-list";
 import {
   createPriceListSchema,
   getDefaultValues,
@@ -155,7 +159,7 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
 
   const plNo = priceList?.no ?? null;
   const tsStatus = ts as (
-    key: "draft" | "submitted" | "active" | "inactive",
+    key: PriceListStatus,
   ) => string;
 
   return (
