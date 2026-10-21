@@ -2476,7 +2476,13 @@
       "routingIssueNoField": "เลือกฟิลด์ก่อน — ระหว่างนี้กฎจะไม่มีวันตรงเงื่อนไข",
       "routingIssueNoValue": "ใส่ค่าก่อน — ระหว่างนี้กฎจะไม่มีวันตรงเงื่อนไข",
       "routingIssueCategory": "เงื่อนไขหมวดสินค้ายังไม่ทำงาน — เอกสารยังไม่มีข้อมูลหมวด กฎนี้จึงไม่มีวันตรง",
-      "routingIssueBadTarget": "เลือกขั้นปลายทางที่อยู่หลังขั้นที่กฎทำงาน"
+      "routingIssueBadTarget": "เลือกขั้นปลายทางที่อยู่หลังขั้นที่กฎทำงาน",
+      "productsViewAll": "ทั้งหมด",
+      "productsViewSelected": "ที่เลือก",
+      "productsCoverage": "เลือก / ทั้งหมด",
+      "selectShownProducts": "เลือกทั้ง {count} รายการที่แสดง",
+      "productsNoneSelected": "ยังไม่ได้เลือกสินค้า",
+      "productsNoneSelectedWarning": "ยังไม่ได้เลือกสินค้า — เอกสารที่ใช้ workflow นี้จะเพิ่มรายการสินค้าไม่ได้จนกว่าจะเลือก"
     },
     "runningCode": {
       "entity": "รหัสลำดับ",
