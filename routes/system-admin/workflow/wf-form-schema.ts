@@ -320,3 +320,45 @@ export function mapToPayload(values: WorkflowFormValues): WorkflowCreateModel {
     },
   };
 }
+
+/**
+ * ทำให้ "เปิดผู้รับ = ส่งในแอป" เป็นจริงตอนบันทึก — UI มีสวิตช์เดียวต่อผู้รับ แต่ dispatcher
+ * ฝั่ง backend ตัดสินจาก 3 flag (`is_active`, `is_notification`, `notification_channel.app.is_active`)
+ * workflow เก่าที่เคยติ๊ก In-app แยกไว้ไม่ตรงกับผู้รับ จะถูกปรับให้ตรงกันเมื่อบันทึกครั้งถัดไป
+ * @param data - ข้อมูล workflow จากฟอร์ม
+ * @returns สำเนาที่ flag ช่องทางในแอปของทุกผู้รับตรงกับสวิตช์ผู้รับ
+ */
+export function syncRecipientChannels(
+  data: WorkflowCreateModel["data"],
+): WorkflowCreateModel["data"] {
+  return {
+    ...data,
+    stages: data.stages.map((stage) => ({
+      ...stage,
+      available_actions: Object.fromEntries(
+        Object.entries(stage.available_actions).map(([action, config]) => [
+          action,
+          {
+            ...config,
+            recipients: Object.fromEntries(
+              Object.entries(config.recipients).map(([slot, recipient]) => [
+                slot,
+                {
+                  ...recipient,
+                  is_notification: recipient.is_active,
+                  notification_channel: {
+                    ...recipient.notification_channel,
+                    app: {
+                      ...recipient.notification_channel.app,
+                      is_active: recipient.is_active,
+                    },
+                  },
+                },
+              ]),
+            ),
+          },
+        ]),
+      ) as typeof stage.available_actions,
+    })),
+  };
+}

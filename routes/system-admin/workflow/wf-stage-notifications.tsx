@@ -1,14 +1,24 @@
 import { Controller, useWatch, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { CircleAlert } from "lucide-react";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+} from "@/components/ui/field";
+import { Switch } from "@/components/ui/switch";
 import { LookupNotificationTemplate } from "@/components/lookup/lookup-noti-tmpl";
+import { cn } from "@/lib/utils";
 import type { Stage } from "@/types/workflows";
 import type { WorkflowCreateModel } from "./wf-form-schema";
+import { ACTION_DOT_CLASS } from "./wf-action-meta";
 
 type WfAction = "submit" | "approve" | "reject" | "sendback";
 type WfRecipient = "requestor" | "current_approve" | "next_step";
-type WfChannel = "app";
 
 interface WfStageNotificationsProps {
   readonly form: UseFormReturn<WorkflowCreateModel>;
@@ -28,100 +38,97 @@ export function WfStageNotifications({
   watchedStage,
 }: WfStageNotificationsProps) {
   const t = useTranslations("systemAdmin.workflow");
+  const actions = watchedStage?.available_actions;
+
+  const sections: {
+    action: WfAction;
+    labelKey: string;
+    showNextStep: boolean;
+  }[] = [];
+  if (actions?.submit.is_active) {
+    sections.push({
+      action: "submit",
+      labelKey: "actionSubmit",
+      showNextStep: true,
+    });
+  }
+  if (!isFirst && actions?.approve.is_active) {
+    sections.push({
+      action: "approve",
+      labelKey: "actionApprove",
+      showNextStep: true,
+    });
+  }
+  if (!isFirst && actions?.reject.is_active) {
+    sections.push({
+      action: "reject",
+      labelKey: "actionReject",
+      showNextStep: false,
+    });
+  }
+  if (!isFirst && actions?.sendback.is_active) {
+    sections.push({
+      action: "sendback",
+      labelKey: "actionSendBack",
+      showNextStep: false,
+    });
+  }
+
+  if (sections.length === 0 && !isMiddle) {
+    return (
+      <p className="text-muted-foreground py-3 text-sm">
+        {t("noActiveActions")}
+      </p>
+    );
+  }
 
   return (
-    <>
-      {watchedStage?.available_actions.submit.is_active && (
-        <NotificationSection
-          form={form}
-          index={index}
-          action="submit"
-          actionKey="actionSubmit"
-          isDisabled={isDisabled}
-          showNextStep
-        />
+    <FieldGroup className="gap-5">
+      {sections.length > 0 && (
+        <FieldDescription>{t("notificationsHint")}</FieldDescription>
       )}
-
-      {!isFirst && watchedStage?.available_actions.approve.is_active && (
-        <NotificationSection
-          form={form}
-          index={index}
-          action="approve"
-          actionKey="actionApprove"
-          isDisabled={isDisabled}
-          showNextStep
-        />
-      )}
-
-      {!isFirst && watchedStage?.available_actions.reject.is_active && (
-        <NotificationSection
-          form={form}
-          index={index}
-          action="reject"
-          actionKey="actionReject"
-          isDisabled={isDisabled}
-        />
-      )}
-
-      {!isFirst && watchedStage?.available_actions.sendback.is_active && (
-        <NotificationSection
-          form={form}
-          index={index}
-          action="sendback"
-          actionKey="actionSendBack"
-          isDisabled={isDisabled}
-        />
-      )}
+      {sections.map((section, i) => (
+        <div key={section.action} className="contents">
+          {i > 0 && <FieldSeparator />}
+          <NotificationSection
+            form={form}
+            index={index}
+            action={section.action}
+            label={t(section.labelKey)}
+            showNextStep={section.showNextStep}
+            isDisabled={isDisabled}
+          />
+        </div>
+      ))}
 
       {isMiddle && (
-        <div className="bg-muted/20 space-y-3 rounded-xl border p-4">
-          <span className="text-foreground text-sm font-semibold">
-            {t("slaWarning")}
-          </span>
-          <div className="space-y-3">
-            <Field orientation="horizontal">
-              <Controller
-                control={form.control}
+        <>
+          {sections.length > 0 && <FieldSeparator />}
+          <FieldSet className="gap-3">
+            <FieldLegend variant="label" className="mb-0">
+              {t("slaWarning")}
+            </FieldLegend>
+            <FieldDescription>{t("slaWarningHint")}</FieldDescription>
+            <div className="flex flex-wrap gap-x-8 gap-y-3">
+              <SlaWarningSwitch
+                form={form}
+                id={`stage-${index}-sla-requestor`}
                 name={`data.stages.${index}.sla_warning_notification.recipients.requestor`}
-                render={({ field }) => (
-                  <Checkbox
-                    checked={field.value ?? false}
-                    onCheckedChange={field.onChange}
-                    disabled={isDisabled}
-                  />
-                )}
+                label={t("requester")}
+                isDisabled={isDisabled}
               />
-              <FieldLabel>{t("requester")}</FieldLabel>
-            </Field>
-            <Field orientation="horizontal">
-              <Controller
-                control={form.control}
+              <SlaWarningSwitch
+                form={form}
+                id={`stage-${index}-sla-current`}
                 name={`data.stages.${index}.sla_warning_notification.recipients.current_approve`}
-                render={({ field }) => (
-                  <Checkbox
-                    checked={field.value ?? false}
-                    onCheckedChange={field.onChange}
-                    disabled={isDisabled}
-                  />
-                )}
+                label={t("currentApprover")}
+                isDisabled={isDisabled}
               />
-              <FieldLabel>{t("currentApprover")}</FieldLabel>
-            </Field>
-          </div>
-        </div>
+            </div>
+          </FieldSet>
+        </>
       )}
-
-      {!watchedStage?.available_actions.submit.is_active &&
-        (isFirst ||
-          (!watchedStage?.available_actions.approve.is_active &&
-            !watchedStage?.available_actions.reject.is_active &&
-            !watchedStage?.available_actions.sendback.is_active)) &&
-        !isMiddle && (
-          <p className="text-muted-foreground py-3 text-sm">
-            {t("noActiveActions")}
-          </p>
-        )}
-    </>
+    </FieldGroup>
   );
 }
 
@@ -129,27 +136,34 @@ interface NotificationSectionProps {
   readonly form: UseFormReturn<WorkflowCreateModel>;
   readonly index: number;
   readonly action: WfAction;
-  readonly actionKey: string;
+  readonly label: string;
+  readonly showNextStep: boolean;
   readonly isDisabled: boolean;
-  readonly showNextStep?: boolean;
 }
 
 function NotificationSection({
   form,
   index,
   action,
-  actionKey,
-  isDisabled,
+  label,
   showNextStep,
+  isDisabled,
 }: NotificationSectionProps) {
   const t = useTranslations("systemAdmin.workflow");
+  const dotClass = action === "submit" ? null : ACTION_DOT_CLASS[action];
 
   return (
-    <div className="bg-muted/20 space-y-3 rounded-xl border p-4">
-      <span className="text-foreground text-sm font-semibold">
-        {t(actionKey)}
-      </span>
-      <div className="space-y-4">
+    <FieldSet className="gap-3">
+      <FieldLegend variant="label" className="mb-0 flex items-center gap-2">
+        {dotClass && (
+          <span
+            aria-hidden="true"
+            className={cn("size-2 rounded-full", dotClass)}
+          />
+        )}
+        {label}
+      </FieldLegend>
+      <div className="flex flex-col gap-3">
         <RecipientRow
           form={form}
           index={index}
@@ -179,7 +193,7 @@ function NotificationSection({
           />
         )}
       </div>
-    </div>
+    </FieldSet>
   );
 }
 
@@ -192,6 +206,12 @@ interface RecipientRowProps {
   readonly isDisabled: boolean;
 }
 
+/**
+ * ผู้รับหนึ่งคน = แถวเดียวตำแหน่งคงที่: สวิตช์ · ชื่อผู้รับ · ช่องทาง · template
+ * สวิตช์ตัวเดียวคุม is_active / is_notification / ช่องทางในแอปพร้อมกัน (ตอนบันทึก
+ * `syncRecipientChannels` ปรับข้อมูลเก่าให้ตรงอีกชั้น) ช่อง template ไม่หายตอนปิด
+ * แค่ถูก disable — หน้าจึงไม่ดีดเวลาสลับ
+ */
 function RecipientRow({
   form,
   index,
@@ -200,96 +220,111 @@ function RecipientRow({
   label,
   isDisabled,
 }: RecipientRowProps) {
+  const t = useTranslations("systemAdmin.workflow");
+  const base =
+    `data.stages.${index}.available_actions.${action}.recipients.${recipient}` as const;
+  const id = `stage-${index}-${action}-${recipient}`;
+
   const isActive = useWatch({
     control: form.control,
-    name: `data.stages.${index}.available_actions.${action}.recipients.${recipient}.is_active`,
+    name: `${base}.is_active`,
   });
+  const templateId = useWatch({
+    control: form.control,
+    name: `${base}.notification_channel.app.notification_template_id`,
+  });
+  // dispatcher ฝั่ง backend ข้ามผู้รับที่ไม่มี template (`no_template_id`) — เตือนให้เห็นก่อนบันทึก
+  const missingTemplate = Boolean(isActive) && !templateId;
 
   return (
-    <div className="space-y-3">
-      <Field orientation="horizontal">
+    <div className="grid grid-cols-1 items-start gap-x-4 gap-y-1.5 @lg:grid-cols-[minmax(0,14rem)_auto_minmax(0,1fr)]">
+      <Controller
+        control={form.control}
+        name={`${base}.is_active`}
+        render={({ field }) => (
+          <Field orientation="horizontal" className="min-h-8 gap-2">
+            <Switch
+              id={id}
+              checked={Boolean(field.value)}
+              onCheckedChange={(checked) => {
+                field.onChange(checked);
+                form.setValue(`${base}.is_notification`, checked, {
+                  shouldDirty: true,
+                });
+                form.setValue(
+                  `${base}.notification_channel.app.is_active`,
+                  checked,
+                  { shouldDirty: true },
+                );
+              }}
+              disabled={isDisabled}
+            />
+            <FieldLabel htmlFor={id} className="font-medium">
+              {label}
+            </FieldLabel>
+          </Field>
+        )}
+      />
+      <span className="text-muted-foreground hidden min-h-8 items-center text-xs @lg:flex">
+        {t("channelApp")}
+      </span>
+      <div className="flex flex-col gap-1">
         <Controller
           control={form.control}
-          name={`data.stages.${index}.available_actions.${action}.recipients.${recipient}.is_active`}
+          name={`${base}.notification_channel.app.notification_template_id`}
           render={({ field }) => (
-            <Checkbox
-              checked={field.value}
-              onCheckedChange={field.onChange}
-              disabled={isDisabled}
+            <LookupNotificationTemplate
+              value={field.value}
+              onValueChange={field.onChange}
+              channelType="app"
+              disabled={isDisabled || !isActive}
+              className="w-full"
             />
           )}
         />
-        <FieldLabel>{label}</FieldLabel>
-      </Field>
-      {isActive && (
-        <div className="space-y-3 pl-7">
-          <ChannelRow
-            form={form}
-            index={index}
-            action={action}
-            recipient={recipient}
-            channel="app"
-            isDisabled={isDisabled}
-          />
-        </div>
-      )}
+        {missingTemplate && (
+          <p className="text-warning-ink flex items-center gap-1 text-xs">
+            <CircleAlert className="size-3.5 shrink-0" aria-hidden="true" />
+            {t("templateMissing")}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
 
-interface ChannelRowProps {
+interface SlaWarningSwitchProps {
   readonly form: UseFormReturn<WorkflowCreateModel>;
-  readonly index: number;
-  readonly action: WfAction;
-  readonly recipient: WfRecipient;
-  readonly channel: WfChannel;
+  readonly id: string;
+  readonly name: `data.stages.${number}.sla_warning_notification.recipients.${"requestor" | "current_approve"}`;
+  readonly label: string;
   readonly isDisabled: boolean;
 }
 
-function ChannelRow({
+function SlaWarningSwitch({
   form,
-  index,
-  action,
-  recipient,
-  channel,
+  id,
+  name,
+  label,
   isDisabled,
-}: ChannelRowProps) {
-  const t = useTranslations("systemAdmin.workflow");
-  const channelLabel = t("channelApp");
-  const channelActive = useWatch({
-    control: form.control,
-    name: `data.stages.${index}.available_actions.${action}.recipients.${recipient}.notification_channel.${channel}.is_active`,
-  });
-
+}: SlaWarningSwitchProps) {
   return (
-    <div className="flex items-center gap-4">
-      <Controller
-        control={form.control}
-        name={`data.stages.${index}.available_actions.${action}.recipients.${recipient}.notification_channel.${channel}.is_active`}
-        render={({ field }) => (
-          <Checkbox
-            checked={field.value}
+    <Controller
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <Field orientation="horizontal" className="w-auto gap-2">
+          <Switch
+            id={id}
+            checked={Boolean(field.value)}
             onCheckedChange={field.onChange}
             disabled={isDisabled}
           />
-        )}
-      />
-      <span className="text-muted-foreground w-12 shrink-0 text-sm font-semibold">
-        {channelLabel}
-      </span>
-      <Controller
-        control={form.control}
-        name={`data.stages.${index}.available_actions.${action}.recipients.${recipient}.notification_channel.${channel}.notification_template_id`}
-        render={({ field }) => (
-          <LookupNotificationTemplate
-            value={field.value}
-            onValueChange={field.onChange}
-            channelType={channel}
-            disabled={isDisabled || !channelActive}
-            className="flex-1"
-          />
-        )}
-      />
-    </div>
+          <FieldLabel htmlFor={id} className="font-medium">
+            {label}
+          </FieldLabel>
+        </Field>
+      )}
+    />
   );
 }
