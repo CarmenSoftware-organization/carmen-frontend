@@ -300,7 +300,6 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                   <WfRouting
                     form={form}
                     fieldArray={routingFieldArray}
-                    stages={stagesFieldArray.fields}
                     allProducts={products}
                     isDisabled={isStructureDisabled}
                     lockedReason={lockedReason}
