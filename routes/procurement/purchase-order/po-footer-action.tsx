@@ -11,6 +11,8 @@ import { STAGE_ROLE } from "@/types/stage-role";
 import { computePoAction } from "@/constant/purchase-order";
 import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 import type { PoFormValues } from "./po-form-schema";
+import { HiddenValue } from "@/components/share/hidden-value";
+import { isPriceHidden, type HiddenPriceField } from "@/types/workflows";
 import {
   PoActionDialog,
   type StageOption,
@@ -28,6 +30,8 @@ interface PoFooterActionProps {
   readonly isEditMode?: boolean;
   /** ตัวเลือกที่ stage ปัจจุบันเปิดให้ตัดสิน — AND กับสิทธิ์ตาม role เสมอ ไม่เพิ่มปุ่มที่ role ไม่มี */
   readonly stageActions: StageActionFlags;
+  /** `hidden_fields` ของใบ — ซ่อน `total_price` = ยอดรวมท้ายใบเป็น badge */
+  readonly hiddenFields?: readonly HiddenPriceField[];
   readonly onSubmit?: () => void;
   /**
    * ตรวจก่อนเปิดกล่องยืนยัน "ส่งใบ" — คืน false = ไม่ต้องเปิดกล่อง
@@ -59,6 +63,7 @@ export function PoFooterAction({
   stagesLoading,
   isEditMode = false,
   stageActions,
+  hiddenFields,
   onSubmit,
   onValidateSubmit,
   onApprove,
@@ -99,6 +104,9 @@ export function PoFooterAction({
     totalTax: round2(totalTax),
     grandTotal: round2(grandTotal),
   };
+
+  // ยอดในฟอร์มเป็น null→0 ปลอมเมื่อ stage ซ่อน — รวมแล้วจะโชว์ 0.00 หลอกตา
+  const hideTotal = isPriceHidden(hiddenFields, "total_price");
 
   const itemStatuses = items.map((item) =>
     typeof item?.current_stage_status === "string"
@@ -171,32 +179,53 @@ export function PoFooterAction({
           {
             key: "subtotal",
             label: tfl("subtotal"),
-            value: formatCurrency(summary.subtotal),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : (
+              formatCurrency(summary.subtotal)
+            ),
           },
           {
             key: "discount",
             label: tfl("discount"),
-            value:
-              summary.totalDiscount > 0
-                ? `-${formatCurrency(summary.totalDiscount)}`
-                : formatCurrency(0),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : summary.totalDiscount > 0 ? (
+              `-${formatCurrency(summary.totalDiscount)}`
+            ) : (
+              formatCurrency(0)
+            ),
             valueClassName:
-              summary.totalDiscount > 0 ? "text-destructive" : undefined,
+              !hideTotal && summary.totalDiscount > 0
+                ? "text-destructive"
+                : undefined,
           },
           {
             key: "net",
             label: tfl("net"),
-            value: formatCurrency(summary.totalNet),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : (
+              formatCurrency(summary.totalNet)
+            ),
           },
           {
             key: "tax",
             label: tfl("tax"),
-            value: formatCurrency(summary.totalTax),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : (
+              formatCurrency(summary.totalTax)
+            ),
           },
           {
             key: "grandTotal",
             label: tfl("grandTotal"),
-            value: formatCurrency(summary.grandTotal),
+            value: hideTotal ? (
+              <HiddenValue />
+            ) : (
+              formatCurrency(summary.grandTotal)
+            ),
             emphasis: true,
             suffix: docCurrencyCode,
           },

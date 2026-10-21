@@ -268,6 +268,7 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
           }
           onReview={purchaseOrder ? handleReviewConfirm : undefined}
           stageActions={stageActions}
+          hiddenFields={purchaseOrder?.hidden_fields}
         />
       }
     >
@@ -307,6 +308,7 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
           }
           onClose={purchaseOrder ? handleClosePo : undefined}
           stageActions={stageActions}
+          hiddenFields={purchaseOrder?.hidden_fields}
         />
       </form>
 

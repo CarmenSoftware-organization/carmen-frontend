@@ -16,6 +16,7 @@ import { formatCurrency } from "@/lib/currency-utils";
 import { computeLineAmounts } from "@/lib/line-pricing";
 import type { PoFormValues } from "../po-form-schema";
 import { coerceNumberInput } from "@/lib/form-helpers";
+import { HiddenValue } from "@/components/share/hidden-value";
 
 type ItemPricingField =
   | "sub_total_price"
@@ -109,10 +110,25 @@ export function ItemPriceText({
 function RateSubtext({
   amount,
   rate,
+  isHidden = false,
 }: {
   readonly amount: number;
   readonly rate: number;
+  /** ยอดเงินถูกซ่อน (`total_price`) — เปอร์เซ็นต์ยังเห็นได้ */
+  readonly isHidden?: boolean;
 }) {
+  if (isHidden) {
+    return (
+      <div className="flex w-full flex-col items-end">
+        <HiddenValue />
+        {rate > 0 && (
+          <p className="text-muted-foreground text-micro-legal py-0.5 tabular-nums">
+            {rate}%
+          </p>
+        )}
+      </div>
+    );
+  }
   return (
     <NameWithSubtext
       align="end"
@@ -126,10 +142,13 @@ export function ItemDiscountCell({
   form,
   itemIndex,
   editable,
+  isHidden = false,
 }: {
   readonly form: UseFormReturn<PoFormValues>;
   readonly itemIndex: number;
   readonly editable: boolean;
+  /** stage ซ่อน `total_price` — ยอดเงินเป็น badge (ใช้ในโหมดอ่านเท่านั้น) */
+  readonly isHidden?: boolean;
 }) {
   "use no memo";
   const tfl = useTranslations("field");
@@ -144,8 +163,14 @@ export function ItemDiscountCell({
   const line = useItemLine(form, itemIndex);
   const amount = line.discountAmount;
 
-  if (!editable) {
-    return <RateSubtext amount={amount} rate={Number(rate) || 0} />;
+  if (!editable || isHidden) {
+    return (
+      <RateSubtext
+        amount={amount}
+        rate={Number(rate) || 0}
+        isHidden={isHidden}
+      />
+    );
   }
   return (
     <div className="flex flex-col gap-0.5">
@@ -195,10 +220,13 @@ export function ItemTaxCell({
   form,
   itemIndex,
   editable,
+  isHidden = false,
 }: {
   readonly form: UseFormReturn<PoFormValues>;
   readonly itemIndex: number;
   readonly editable: boolean;
+  /** stage ซ่อน `total_price` — ยอดเงินเป็น badge (ใช้ในโหมดอ่านเท่านั้น) */
+  readonly isHidden?: boolean;
 }) {
   "use no memo";
   const tfl = useTranslations("field");
@@ -213,8 +241,14 @@ export function ItemTaxCell({
   const line = useItemLine(form, itemIndex);
   const amount = line.taxAmount;
 
-  if (!editable) {
-    return <RateSubtext amount={amount} rate={Number(rate) || 0} />;
+  if (!editable || isHidden) {
+    return (
+      <RateSubtext
+        amount={amount}
+        rate={Number(rate) || 0}
+        isHidden={isHidden}
+      />
+    );
   }
   return (
     <div className="flex flex-col gap-0.5">
