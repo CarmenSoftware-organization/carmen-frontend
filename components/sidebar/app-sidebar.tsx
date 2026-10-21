@@ -22,12 +22,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <span className="group-data-[collapsible=icon]:hidden">
             <img
               src={brandingLightUrl}
-              alt="Carmen"
+              alt="Carmen Blue"
               className="h-11 w-auto dark:hidden"
             />
             <img
               src={brandingDarkUrl}
-              alt="Carmen"
+              alt="Carmen Blue"
               className="hidden h-11 w-auto dark:block"
             />
           </span>

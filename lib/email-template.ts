@@ -35,7 +35,7 @@ export const EMAIL_PLACEHOLDER_SAMPLES: Record<
   po: {
     po_no: "PO-2026-000123",
     vendor_name: "Siam Fresh Supply Co., Ltd.",
-    bu_name: "Carmen Hotel Bangkok",
+    bu_name: "Riverside Hotel Bangkok",
     total: "125,400.00 THB",
     delivery_date: "31/12/2026",
   },
@@ -43,7 +43,7 @@ export const EMAIL_PLACEHOLDER_SAMPLES: Record<
     rfp_name: "Dry goods Q1/2027",
     vendor_name: "Siam Fresh Supply Co., Ltd.",
     contact_person: "Somchai P.",
-    bu_name: "Carmen Hotel Bangkok",
+    bu_name: "Riverside Hotel Bangkok",
     start_date: "01/01/2027",
     end_date: "15/01/2027",
     portal_url: "https://carmen.example.com/pl/sample-token",

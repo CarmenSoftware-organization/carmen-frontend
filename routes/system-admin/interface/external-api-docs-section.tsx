@@ -45,7 +45,7 @@ function curlFor(root: string, clientId: string | null) {
 function downloadSpec(root: string) {
   const spec = {
     ...baseSpec(),
-    servers: [{ url: root, description: "Carmen" }],
+    servers: [{ url: root, description: "Carmen Blue" }],
   };
   const blob = new Blob([JSON.stringify(spec, null, 2)], {
     type: "application/json",

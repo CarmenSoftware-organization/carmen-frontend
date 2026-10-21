@@ -62,12 +62,12 @@ function DocsHeader() {
       <div className="flex h-12 items-center gap-3 px-4 sm:px-6">
         <img
           src={brandingLightUrl}
-          alt="Carmen"
+          alt="Carmen Blue"
           className="h-6 w-auto dark:hidden"
         />
         <img
           src={brandingDarkUrl}
-          alt="Carmen"
+          alt="Carmen Blue"
           className="hidden h-6 w-auto dark:block"
         />
         <span className="text-muted-foreground border-l pl-3 text-sm font-semibold">

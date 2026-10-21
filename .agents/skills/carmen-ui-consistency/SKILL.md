@@ -1,22 +1,22 @@
 ---
 name: carmen-ui-consistency
-description: Build new Carmen frontend pages by reusing the repository's existing layout, components, tokens, and interaction patterns. Use when creating or substantially changing React pages, routes, list views, detail views, forms, settings, tables, filters, or toolbars in the Carmen frontend.
+description: Build new Carmen Blue frontend pages by reusing the repository's existing layout, components, tokens, and interaction patterns. Use when creating or substantially changing React pages, routes, list views, detail views, forms, settings, tables, filters, or toolbars in the Carmen Blue frontend.
 ---
 
-# Carmen UI Consistency
+# Carmen Blue UI Consistency
 
 ## Non-negotiable rule
 
 A new page must look and behave like an existing page of the same family before adding custom UI. Reuse shared components first; create a new component only when an existing one cannot express the requirement.
 
-Treat existing shared Carmen components as locked. Do not change their API, layout, or styling for a feature-specific requirement unless the user explicitly requests a shared-system change. Adapt the consuming page with local composition, wrappers, or feature-local components instead.
+Treat existing shared Carmen Blue components as locked. Do not change their API, layout, or styling for a feature-specific requirement unless the user explicitly requests a shared-system change. Adapt the consuming page with local composition, wrappers, or feature-local components instead.
 
 ## Adaptation boundary
 
-When a supplied mockup or specification introduces a new workflow, preserve its information architecture and interaction intent while rendering it with Carmen's existing visual language and shared components.
+When a supplied mockup or specification introduces a new workflow, preserve its information architecture and interaction intent while rendering it with Carmen Blue's existing visual language and shared components.
 
-- Reuse Carmen headers, actions, fields, tables, dialogs, sheets, footers, spacing, and tokens; do not pixel-copy an external mockup's shell or styling.
-- Keep established actions such as Back, Save, Save Draft, Submit, Edit, Delete, and Activity in the shared Carmen header/toolbar/footer positions.
+- Reuse Carmen Blue headers, actions, fields, tables, dialogs, sheets, footers, spacing, and tokens; do not pixel-copy an external mockup's shell or styling.
+- Keep established actions such as Back, Save, Save Draft, Submit, Edit, Delete, and Activity in the shared Carmen Blue header/toolbar/footer positions.
 - Use `SummaryFooterBar` for sticky totals and persistent document actions. Extend it only when the same missing composition is needed by multiple pages.
 - Use the existing borderless `DataGrid` treatment. Do not wrap tables in a new bordered card or add vertical cell borders merely because the mockup does.
 - A genuinely new click flow is allowed: compose it from existing `Dialog`, `Sheet`, `ConfirmDialog`, `WarningDialog`, and shared controls.

@@ -201,7 +201,7 @@ typography:
     lineHeight: 1.05
 
 rounded:
-  # Carmen's real radius grammar, counted from the code. Base `--radius: 0.625rem`
+  # Carmen Blue's real radius grammar, counted from the code. Base `--radius: 0.625rem`
   # in styles/globals.css; the rest are Tailwind's rounded-* steps off it.
   # A full-pill primary CTA was trialled on Button and intentionally REVERTED —
   # it did not fit dense ERP chrome. Pills are for indicators, not actions.
@@ -213,7 +213,7 @@ rounded:
   none: 0px         # 25 uses — flush table edges, full-bleed strips
 
 spacing:
-  # ── Project constraint (Carmen / Tailwind v4) ───────────────
+  # ── Project constraint (Carmen Blue / Tailwind v4) ───────────────
   # Do NOT define a `--spacing-md` token. In Tailwind v4 the `md` key is SHARED
   # by the spacing scale AND the container/max-width scale, so defining it
   # shadows `max-w-md` (28rem → your value) and collapses every `max-w-md` /
@@ -231,7 +231,7 @@ spacing:
   xxl: 48px
 
 components:
-  # Carmen's real primitives, read from components/ui/. Variants are listed where
+  # Carmen Blue's real primitives, read from components/ui/. Variants are listed where
   # the component defines them; this is a map of what exists, not a wish-list.
   button:
     element: components/ui/button.tsx
@@ -278,7 +278,7 @@ components:
 
 ## Overview
 
-Carmen is a hospitality supply-chain ERP: purchase requests, purchase orders, goods receipt, store requisitions, physical counts, vendor price lists. The people using it are storekeepers, cost controllers and procurement officers who sit in it for most of a working day, in Thai or English, mostly on a desktop.
+Carmen Blue is a hospitality supply-chain ERP: purchase requests, purchase orders, goods receipt, store requisitions, physical counts, vendor price lists. The people using it are storekeepers, cost controllers and procurement officers who sit in it for most of a working day, in Thai or English, mostly on a desktop.
 
 That gives the interface one job above all others: **let someone scan hundreds of rows and find the one that is wrong.** Every rule below follows from it.
 
@@ -442,7 +442,7 @@ Specs live in the `components` block above, read from the source. Notes that do 
 
 ## Responsive Behavior
 
-Carmen is desktop-first: it is a working tool for people at a desk, and the tables assume width. Real breakpoint usage in the code is `sm:` 590 · `lg:` 181 · `md:` 123 · `xl:` 27 · `2xl:` 1 — so the meaningful decisions are "does this stack on a phone" (`sm:`) and "does the sidebar/grid change on a laptop" (`lg:`). Do not design an eight-step responsive matrix; this app does not have one.
+Carmen Blue is desktop-first: it is a working tool for people at a desk, and the tables assume width. Real breakpoint usage in the code is `sm:` 590 · `lg:` 181 · `md:` 123 · `xl:` 27 · `2xl:` 1 — so the meaningful decisions are "does this stack on a phone" (`sm:`) and "does the sidebar/grid change on a laptop" (`lg:`). Do not design an eight-step responsive matrix; this app does not have one.
 
 - Tables scroll horizontally rather than reflowing — a column that disappears is a column somebody was reading.
 - The sidebar collapses to icons, then to a sheet.

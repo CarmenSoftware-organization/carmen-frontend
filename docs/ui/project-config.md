@@ -1,5 +1,5 @@
 # Project Config
-**Project:** Carmen Blue (Carmen Inventory — React SPA)
+**Project:** Carmen Blue (React SPA)
 **Created:** 2026-09-29
 
 ## Domains

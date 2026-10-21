@@ -1,4 +1,4 @@
-# Carmen Accounting
+# Carmen Blue Accounting
 
 คำศัพท์กลางของบริบท Accounting สำหรับ General Ledger และ subledgers ที่ส่งรายการเข้าบัญชี เพื่อให้เอกสารและระบบใช้ความหมายเดียวกัน
 
@@ -65,7 +65,7 @@ _Avoid_: Exact duplicate, guaranteed duplicate
 _Avoid_: Carmen-calculated balance, functional total
 
 **Computed Control Totals**:
-จำนวนและยอดที่ Carmen คำนวณจากข้อมูลที่รับ, จัดกลุ่ม, map, generate และ post เพื่อ reconcile กับ source และแต่ละขั้นของ Batch
+จำนวนและยอดที่ Carmen Blue คำนวณจากข้อมูลที่รับ, จัดกลุ่ม, map, generate และ post เพื่อ reconcile กับ source และแต่ละขั้นของ Batch
 _Avoid_: Source totals, user-entered expected amount
 
 **Draft Reference**:

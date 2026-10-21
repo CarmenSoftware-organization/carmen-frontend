@@ -1,6 +1,6 @@
 ---
 name: accounting-detail-shell
-description: Use when creating, changing, or reviewing accounting document detail pages in Carmen, especially JV, AP Invoice/Payment, AR Invoice/Receipt, and Asset, to keep their header, borderless form, actions, and summary footer consistent.
+description: Use when creating, changing, or reviewing accounting document detail pages in Carmen Blue, especially JV, AP Invoice/Payment, AR Invoice/Receipt, and Asset, to keep their header, borderless form, actions, and summary footer consistent.
 ---
 
 # Accounting detail shell

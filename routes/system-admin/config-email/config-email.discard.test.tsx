@@ -20,7 +20,7 @@ const SAVED = {
     },
     recipients: ["admin@carmen.test"],
     cc: [],
-    subject_prefix: "[Carmen]",
+    subject_prefix: "[Carmen Blue]",
   },
 };
 

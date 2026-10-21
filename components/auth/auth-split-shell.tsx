@@ -154,12 +154,12 @@ function BrandMark({ size = "sm" }: { readonly size?: "sm" | "lg" }) {
     <>
       <img
         src={brandingLightUrl}
-        alt="Carmen"
+        alt="Carmen Blue"
         className={`${size === "lg" ? "h-18 w-auto" : "h-7 w-auto"} dark:hidden`}
       />
       <img
         src={brandingDarkUrl}
-        alt="Carmen"
+        alt="Carmen Blue"
         className={`${size === "lg" ? "h-18 w-auto" : "h-7 w-auto"} hidden dark:block`}
       />
     </>

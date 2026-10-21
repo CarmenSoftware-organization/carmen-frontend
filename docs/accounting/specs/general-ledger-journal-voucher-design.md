@@ -2,7 +2,7 @@
 
 ## 1. เป้าหมาย
 
-สร้าง Journal Voucher (JV) เป็น transaction แรกของ General Ledger บน Accounting Foundation โดยรองรับการบันทึกรายการแบบ double-entry, approval, posting, scheduled posting และ automatic reversal พร้อม reuse Currency, Exchange Rate, Department, Workflow, Running Code, Activity Log และ UI infrastructure ของ Carmen Inventory
+สร้าง Journal Voucher (JV) เป็น transaction แรกของ General Ledger บน Accounting Foundation โดยรองรับการบันทึกรายการแบบ double-entry, approval, posting, scheduled posting และ automatic reversal พร้อม reuse Currency, Exchange Rate, Department, Workflow, Running Code, Activity Log และ UI infrastructure ของ Carmen Blue
 
 เอกสารนี้เป็น functional design ยังไม่ใช่ implementation plan หรือ API contract ฉบับสุดท้าย
 
@@ -310,6 +310,6 @@ Frontend ต้องแสดง field errors ที่ line/header และ�
 3. เมื่อ approval เสร็จหลัง scheduled time จะ post ทันทีหรือให้ผู้ใช้ยืนยันใหม่
 4. Auto-generated reversal ต้องผ่าน approval หรือ auto-post เป็น default
 5. Tax/WHT และ Budget Check อยู่ใน Phase 1 release แรกหรือ feature flag
-6. Dimension definitions มาจาก service/table ใด และ dimension ใดมีอยู่จริงใน Carmen backend
+6. Dimension definitions มาจาก service/table ใด และ dimension ใดมีอยู่จริงใน Carmen Blue backend
 7. Manual exchange-rate override ใช้ permission และ approval แบบใด
 8. **Decided:** JV ที่มาจาก AP/AR/Inventory/Asset เป็น immutable projection และดูอย่างเดียวใน GL การแก้/Reverse/Correct เริ่มจาก source owner แล้วส่ง source version/event ใหม่ผ่าน posting contract

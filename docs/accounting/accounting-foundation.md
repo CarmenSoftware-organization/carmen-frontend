@@ -2,7 +2,7 @@
 
 ## 1. เป้าหมาย
 
-สร้างฐานร่วมสำหรับ General Ledger, Accounts Payable, Accounts Receivable และ Fixed Assets โดยใช้ master data และ platform services ที่มีอยู่ใน Carmen Inventory ให้มากที่สุด แต่แยกข้อมูลที่ต้องมี accounting integrity ออกมาให้ Accounting เป็นเจ้าของ
+สร้างฐานร่วมสำหรับ General Ledger, Accounts Payable, Accounts Receivable และ Fixed Assets โดยใช้ master data และ platform services ที่มีอยู่ใน Carmen Blue ให้มากที่สุด แต่แยกข้อมูลที่ต้องมี accounting integrity ออกมาให้ Accounting เป็นเจ้าของ
 
 Foundation ต้องทำให้ทุก subledger ใช้กฎเดียวกันสำหรับ:
 
@@ -26,7 +26,7 @@ Budget check ใน Journal Voucher สามารถอ่านข้อม�
 
 ## 3. Accounting boundaries
 
-### Shared Carmen data
+### Shared Carmen Blue data
 
 ข้อมูลต่อไปนี้เป็น master data กลางและไม่ควรสร้างสำเนาใหม่ใน Accounting:
 
@@ -52,7 +52,7 @@ Accounting เก็บ foreign key ไปยัง master data เหล่า�
 - Tax/WHT accounting detail และ account mapping
 - Source-to-journal posting mapping
 
-## 4. Reuse Existing Carmen Services
+## 4. Reuse Existing Carmen Blue Services
 
 สถานะในตารางอ้างอิงจากโค้ด frontend ปัจจุบัน ต้องยืนยัน API/schema กับ backend ก่อน implementation
 
@@ -233,7 +233,7 @@ Source สามารถส่ง deterministic `idempotency_key` ที่ม�
 Journal Batch เก็บ control totals สองชุด:
 
 - `declared_control_totals` — source ระบุ record count และยอดแยกตาม transaction currency
-- `computed_control_totals` — Carmen คำนวณใหม่ในแต่ละ stage
+- `computed_control_totals` — Carmen Blue คำนวณใหม่ในแต่ละ stage
 
 ```text
 received -> generated -> submitted -> posted
@@ -251,7 +251,7 @@ received -> generated -> submitted -> posted
 System/API integration ต้องส่ง declared record count เป็นอย่างน้อย และควรส่ง transaction totals แยก currency เมื่อ source คำนวณได้ CSV/Excel รองรับ control row/metadata หรือให้ผู้ใช้ออกค่าก่อน submit ส่วน Manual Copy/Paste ที่ไม่มี declared totals ใช้ computed totals อย่างเดียวและต้องแสดง `source_totals_not_provided`
 
 - Declared กับ computed ไม่ตรงให้ Batch เป็น `reconciliation_failed` และ block generate/post จน resolve
-- Functional totals เป็นค่าที่ Carmen คำนวณเท่านั้น source ห้าม override
+- Functional totals เป็นค่าที่ Carmen Blue คำนวณเท่านั้น source ห้าม override
 - Reconciliation ต้อง trace จาก Batch -> `journal_group_key` -> JV -> Journal Lines ได้
 
 ### Generated-JV edit policy
@@ -281,7 +281,7 @@ Source-generated Journal Voucher เป็น immutable projection ของ sou
 
 | Channel | Use case | หมายเหตุ |
 | --- | --- | --- |
-| Carmen subledger/API | Inventory, AP, AR, Fixed Assets | ช่องทางหลักของระบบภายใน ใช้ idempotency/source version |
+| Carmen Blue subledger/API | Inventory, AP, AR, Fixed Assets | ช่องทางหลักของระบบภายใน ใช้ idempotency/source version |
 | External integration API | POS, PMS, payroll, bank หรือระบบลูกค้า | ใช้ authenticated contract, mapping profile และ asynchronous result |
 | Journal Template | รูปแบบบรรทัดเดิมแต่ parameter/ยอดเปลี่ยน | Template สร้าง event ไม่สร้าง ledger โดยตรง |
 | Recurring Journal | ค่าเช่า, accrual, prepaid และรายการตามรอบ | Scheduler สร้าง event ตาม recurrence แล้วผ่าน validation ทุกครั้ง |
