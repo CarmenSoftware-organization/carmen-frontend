@@ -258,6 +258,8 @@ export default function CompanyProfileComponent() {
                   {t("fields.defaultCurrencyIdDesc")}
                 </p>
               )}
+              {/* default currency: read-only เสมอเหมือน costing method — ค่าไม่เคยเปลี่ยน
+                  buildPatch จึงไม่ส่งช่องนี้ไป backend */}
               <Controller
                 control={form.control}
                 name="default_currency_id"
@@ -265,9 +267,9 @@ export default function CompanyProfileComponent() {
                   <LookupCurrency
                     value={field.value ?? ""}
                     onValueChange={field.onChange}
-                    readOnly={!editing}
-                    // โหมดดูใช้กรอบเดียวกับช่องอื่น (ค่าตั้งต้นของ FieldPlainText ไม่มีกรอบ)
-                    className={editing ? undefined : VIEW_BOX_CLASS}
+                    readOnly
+                    // ใช้กรอบเดียวกับช่องอื่น (ค่าตั้งต้นของ FieldPlainText ไม่มีกรอบ)
+                    className={VIEW_BOX_CLASS}
                   />
                 )}
               />
