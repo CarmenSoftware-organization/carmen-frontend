@@ -12,12 +12,14 @@ interface PriceListCardProps {
   readonly item: PriceList;
   readonly onEdit: (item: PriceList) => void;
   readonly onDelete: (item: PriceList) => void;
+  readonly quietExpired?: boolean;
 }
 
 export default function PriceListCard({
   item,
   onEdit,
   onDelete,
+  quietExpired = false,
 }: PriceListCardProps) {
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
@@ -43,7 +45,12 @@ export default function PriceListCard({
       )}
       {item.effectivePeriod && (
         <ListCardRow label={tfl("effectivePeriod")}>
-          <PlPeriodCell period={item.effectivePeriod} className="text-right" />
+          <PlPeriodCell
+            period={item.effectivePeriod}
+            className="text-right"
+            compact
+            quietExpired={quietExpired}
+          />
         </ListCardRow>
       )}
       <ListCardAuditRows audit={item.audit} />

@@ -3024,7 +3024,12 @@
       "periodExpired": "Expired",
       "periodEndsToday": "Ends today",
       "periodDaysLeft": "{count, plural, one {# day left} other {# days left}}",
-      "periodStartsIn": "{count, plural, one {Starts in # day} other {Starts in # days}}"
+      "periodStartsIn": "{count, plural, one {Starts in # day} other {Starts in # days}}",
+      "periodEndedAgo": "{count, plural, one {Ended # day ago} other {Ended # days ago}}",
+      "validityCurrent": "Current",
+      "validityExpired": "Expired",
+      "validityAll": "All",
+      "validityAria": "Price list validity"
     },
     "priceListTemplate": {
       "entity": "Price List Template",
