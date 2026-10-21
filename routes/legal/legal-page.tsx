@@ -88,12 +88,12 @@ function LegalHeader() {
         <Link to="/login" className="shrink-0">
           <img
             src={brandingLightUrl}
-            alt="Carmen"
+            alt="Carmen Blue"
             className="h-7 w-auto dark:hidden"
           />
           <img
             src={brandingDarkUrl}
-            alt="Carmen"
+            alt="Carmen Blue"
             className="hidden h-7 w-auto dark:block"
           />
         </Link>

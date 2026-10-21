@@ -47,7 +47,7 @@ const EMPTY_FORM: FormValues = {
   smtp_enabled: true,
   recipients: "",
   cc: "",
-  subject_prefix: "[Carmen]",
+  subject_prefix: "[Carmen Blue]",
 };
 
 function toFormValues(value: Record<string, unknown> | undefined): FormValues {
@@ -272,7 +272,7 @@ export default function ConfigEmailComponent() {
             <FieldLabel>{t("subjectPrefix")}</FieldLabel>
             <Input
               {...form.register("subject_prefix")}
-              placeholder="[Carmen]"
+              placeholder="[Carmen Blue]"
             />
           </Field>
         </SettingSection>

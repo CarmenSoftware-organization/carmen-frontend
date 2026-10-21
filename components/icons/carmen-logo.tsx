@@ -10,14 +10,14 @@ type CarmenLogoProps = {
 export function CarmenLogo({
   variant = "mark",
   size = 32,
-  title = "Carmen",
+  title = "Carmen Blue",
 }: CarmenLogoProps) {
   const mark = (
     <img src={carmenLogoUrl} width={size} height={size} alt={title} />
   );
 
   if (variant === "lockup") {
-    return <span>{mark} Carmen</span>;
+    return <span>{mark} CARMEN BLUE</span>;
   }
 
   return mark;

@@ -805,7 +805,7 @@
     "forgotPasswordLink": "Forgot password?",
     "goToSignIn": "Go to sign in",
     "registerDoneTitle": "Account created",
-    "registerDoneSubtitle": "Your Carmen account is ready.",
+    "registerDoneSubtitle": "Your Carmen Blue account is ready.",
     "registerDoneHint": "Sign in with your email and password. If your property has not been assigned yet, ask your manager to add you.",
     "passwordHint": "At least {min} characters, with an uppercase and lowercase letter, a number, and a special character.",
     "registerTermsLine": "By creating an account you agree to our <terms>terms of service</terms> and <privacy>privacy policy</privacy>.",
@@ -1876,7 +1876,7 @@
     "landing": {
       "kicker": "The control room",
       "title": "System Admin",
-      "lede": "Everything behind Carmen — the calendars, permissions, workflows, scripts and datasets that make the rest of the building work. Eleven tools, grouped into five chapters by what they do.",
+      "lede": "Everything behind Carmen Blue — the calendars, permissions, workflows, scripts and datasets that make the rest of the building work. Eleven tools, grouped into five chapters by what they do.",
       "meta": {
         "module": "Module · System Admin",
         "version": "v2026.05",
@@ -1926,12 +1926,12 @@
         "config": {
           "kicker": "System Configuration",
           "title": "Wiring it together",
-          "lede": "The pieces that connect Carmen to the rest of the world — mailservers, scripts that fire on events, scheduled code that runs without a human."
+          "lede": "The pieces that connect Carmen Blue to the rest of the world — mailservers, scripts that fire on events, scheduled code that runs without a human."
         },
         "data": {
           "kicker": "Data Platform",
           "title": "Data, ready for use",
-          "lede": "Datasets are the raw material the rest of Carmen reads from. Query them to explore; promote them to a dashboard once they earn it."
+          "lede": "Datasets are the raw material the rest of Carmen Blue reads from. Query them to explore; promote them to a dashboard once they earn it."
         }
       },
       "modules": {
@@ -1994,14 +1994,14 @@
         "interface": {
           "name": "Interfaces",
           "one": "Accounting, POS and PMS connections.",
-          "long": "Point Carmen at the systems around it — the ledger that receives your postings, the tills that report what was sold, the property system that owns the folios. Set the codes each one expects and the cadence they run at.",
+          "long": "Point Carmen Blue at the systems around it — the ledger that receives your postings, the tills that report what was sold, the property system that owns the folios. Set the codes each one expects and the cadence they run at.",
           "stat": "3 interfaces",
           "meta": "Accounting · POS · PMS"
         },
         "notifyTemplate": {
           "name": "Notification Templates",
           "one": "Reusable messages for workflow events.",
-          "long": "Author the emails and in-app alerts Carmen sends on submit, approve, reject and SLA breach. Edit subject and body per event, drop in tokens, reuse the same template across every workflow.",
+          "long": "Author the emails and in-app alerts Carmen Blue sends on submit, approve, reject and SLA breach. Edit subject and body per event, drop in tokens, reuse the same template across every workflow.",
           "stat": "12 templates · 5 events",
           "meta": "EN + TH · edited 3d ago"
         },
@@ -2014,7 +2014,7 @@
         },
         "query": {
           "name": "Query Dataset",
-          "one": "SQL workbench over every Carmen table.",
+          "one": "SQL workbench over every Carmen Blue table.",
           "long": "Browse the catalog, run ad-hoc SQL, save queries, share with teammates. Sandboxed read-only by default — promote a query to a saved dataset when it's right.",
           "stat": "184 saved queries",
           "meta": "avg. exec · 1.2s"
@@ -2539,7 +2539,7 @@
     },
     "interface": {
       "title": "Interfaces",
-      "desc": "Connections between Carmen and your accounting, POS and property systems.",
+      "desc": "Connections between Carmen Blue and your accounting, POS and property systems.",
       "save": "Save",
       "saved": "Interface settings saved",
       "loadError": "Could not load interface settings",
@@ -2623,7 +2623,7 @@
         "title": "POS Interface",
         "desc": "How sales and consumption from your point-of-sale system reach inventory.",
         "connection": "Connection",
-        "connectionDesc": "Which POS system Carmen reads from.",
+        "connectionDesc": "Which POS system Carmen Blue reads from.",
         "brand": {
           "micros": "Oracle Micros",
           "infrasys": "Infrasys",
@@ -2643,14 +2643,14 @@
         "title": "PMS Interface",
         "desc": "How city ledger and credit card postings reach receivables from your property system.",
         "connection": "Connection",
-        "connectionDesc": "Which property management system Carmen reads from.",
+        "connectionDesc": "Which property management system Carmen Blue reads from.",
         "brand": {
           "opera": "Oracle Opera",
           "protel": "Protel"
         },
         "propertyCode": "Property code",
         "posting": "Posting",
-        "postingDesc": "Which postings Carmen pulls from the PMS.",
+        "postingDesc": "Which postings Carmen Blue pulls from the PMS.",
         "postCityLedger": "Post city ledger",
         "postCreditCard": "Post credit card"
       },
@@ -2719,7 +2719,7 @@
       "reconnect": "Reconnect",
       "oauth": {
         "title": "Connect Microsoft account",
-        "desc": "Sign in as {mailbox} to allow Carmen to send email from it.",
+        "desc": "Sign in as {mailbox} to allow Carmen Blue to send email from it.",
         "starting": "Requesting a sign-in code…",
         "step1": "Open the Microsoft sign-in page.",
         "step2": "Enter the code below.",
@@ -5352,7 +5352,7 @@
     "removeSignatureConfirmDesc": "This permanently deletes your saved signature.",
     "mcpTokens": {
       "title": "MCP tokens",
-      "description": "Long-lived tokens that let an AI assistant (e.g. Claude Code) read your Carmen data on your behalf. Each token expires after 90 days. You can hold up to 10 active tokens.",
+      "description": "Long-lived tokens that let an AI assistant (e.g. Claude Code) read your Carmen Blue data on your behalf. Each token expires after 90 days. You can hold up to 10 active tokens.",
       "create": "Create token",
       "creating": "Creating…",
       "empty": "No MCP tokens yet",
@@ -5397,7 +5397,7 @@
       "version": "v2026.05",
       "chaptersBadge": "3 chapters",
       "title": "Reports",
-      "ledePrefix": "Three places where information leaves Carmen and enters someone's inbox, screen, or audit folder.",
+      "ledePrefix": "Three places where information leaves Carmen Blue and enters someone's inbox, screen, or audit folder.",
       "ledeMenu": "The Menu",
       "ledeMenuDesc": "is the catalog of every saved report.",
       "ledeSchedule": "The Schedule",
@@ -5426,13 +5426,13 @@
       "chapter1Shortcut": "shortcut · ⌘1",
       "chapter2Kicker": "The Schedule · what runs without you",
       "chapter2Title": "Set it once.",
-      "chapter2Lede": "The reports you care about most shouldn't need a click. Pick a cadence, recipients, channel — Carmen pushes it out on time, every time.",
+      "chapter2Lede": "The reports you care about most shouldn't need a click. Pick a cadence, recipients, channel — Carmen Blue pushes it out on time, every time.",
       "chapter2Bullet1Title": "Daily, weekly, monthly cadences",
       "chapter2Bullet1Desc": "Or a custom schedule. Each schedule can be paused without being deleted.",
       "chapter2Bullet2Title": "Email · Drive · Slack",
       "chapter2Bullet2Desc": "Pick where the file lands. Multiple recipients, cc lists and roles.",
       "chapter2Bullet3Title": "XLSX, PDF, or CSV",
-      "chapter2Bullet3Desc": "Each recipient picks their format — Carmen handles the rest.",
+      "chapter2Bullet3Desc": "Each recipient picks their format — Carmen Blue handles the rest.",
       "chapter2Cta": "Open the schedule",
       "chapter2Shortcut": "shortcut · ⌘2",
       "chapter3Kicker": "The History · every run, kept",
@@ -5600,7 +5600,7 @@
     "loggingOut": "Logging out...",
     "modules": "Modules",
     "shortcutOpen": "Open with",
-    "moreFromCarmen": "More from Carmen",
+    "moreFromCarmen": "More from Carmen Blue",
     "switchLanguage": "Switch language",
     "notifications": "Notifications",
     "clearAll": "Clear",
@@ -6299,7 +6299,7 @@
   },
   "developers": {
     "apiDocs": {
-      "pageTitle": "Carmen API reference",
+      "pageTitle": "Carmen Blue API reference",
       "brand": "API reference",
       "download": "Download openapi.json",
       "loadError": "Couldn't load the API documentation."
