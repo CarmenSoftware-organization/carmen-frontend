@@ -1,4 +1,4 @@
-# Carmen — Technology Overview
+# Carmen Blue — Technology Overview
 
 August 2026 · Prepared for prospective investors
 
@@ -9,7 +9,7 @@ August 2026 · Prepared for prospective investors
 
 ## 1. Executive summary
 
-Carmen is a supply-chain ERP for hotel and restaurant operations. It covers the full
+Carmen Blue is a supply-chain ERP for hotel and restaurant operations. It covers the full
 path from a purchase request raised in a kitchen, through approval and ordering, to
 goods received and posted into the stock ledger — across every property in a group.
 
@@ -91,7 +91,7 @@ flowchart TD
 
 ## 4. Multi-tenancy and the data model
 
-Carmen separates two kinds of data:
+Carmen Blue separates two kinds of data:
 
 - **Platform schema (shared)** — users, clusters, business units, roles, permissions,
   subscriptions. One copy, serving every tenant.
@@ -115,7 +115,7 @@ What the separation buys:
 ## 5. Identity, authorization and security
 
 - **Identity is delegated.** An identity provider issues tokens; the API gateway validates
-  them on every request. Carmen never stores a password.
+  them on every request. Carmen Blue never stores a password.
 - **Permissions are scoped to cluster and business unit.** A role grants what a user may
   do; the scope decides where.
 - **The access token is held in memory only** in the web client. It is never written to

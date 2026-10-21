@@ -11,7 +11,7 @@ talks to the backend gateway directly. There is **no application server** of our
 
 ## System context
 
-How this SPA sits in the wider Carmen system. Service names and ports match the
+How this SPA sits in the wider Carmen Blue system. Service names and ports match the
 backend's `carmen-turborepo-backend-v2/docs/architecture-system.md`. There is no
 frontend application server: the static bundle runs in the browser and calls the
 backend gateway directly.

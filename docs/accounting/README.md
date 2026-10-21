@@ -1,6 +1,6 @@
-# Carmen Accounting
+# Carmen Blue Accounting
 
-เอกสารชุดนี้กำหนดฐานของโมดูล Accounting ที่จะทำงานร่วมกับ Carmen Inventory โดยไม่สร้าง master data และ infrastructure ซ้ำโดยไม่จำเป็น
+เอกสารชุดนี้กำหนดฐานของโมดูล Accounting ที่จะทำงานร่วมกับ Carmen Blue โดยไม่สร้าง master data และ infrastructure ซ้ำโดยไม่จำเป็น
 
 > สถานะ: Phase 1 implementation (dev2) — Foundation และ General Ledger/JV มี backend schema/contract ตามเอกสาร backend แต่ frontend JV ยังใช้ mock repository ที่แยกผ่าน adapter boundary; Accounts Payable มี interactive UI prototype สำหรับ Dashboard, Invoice และ Payment แต่ยังใช้ browser-local mock repository และยังไม่เชื่อม AP backend; migration/runtime integration verification ยังเป็นงานถัดไป
 
@@ -50,7 +50,7 @@ Repository นี้เป็น Vite/React SPA และไม่มี applica
 
 - UI, route, validation ฝั่งผู้ใช้ และการเรียก API อยู่ใน repository นี้
 - การสร้างเลขเอกสาร, approval, posting, scheduled jobs, auto-reversal, period locking และ transaction integrity ต้องทำใน backend
-- งาน scheduler ต้องทำแบบ idempotent และใช้ distributed lock ตาม operational pattern ของ Carmen
+- งาน scheduler ต้องทำแบบ idempotent และใช้ distributed lock ตาม operational pattern ของ Carmen Blue
 - Phase 1 ใช้ `micro-business` เป็น owner ของ Accounting backend และ `backend-gateway` เป็น HTTP boundary; การแยก service เป็นการตัดสินใจเชิงสถาปัตยกรรมในอนาคตเมื่อปริมาณงานต้องการ
 
 ## หลักการ
