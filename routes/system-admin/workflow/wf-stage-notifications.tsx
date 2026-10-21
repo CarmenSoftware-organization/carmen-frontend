@@ -70,7 +70,7 @@ export function WfStageNotifications({
     sections.push({
       action: "sendback",
       labelKey: "actionSendBack",
-      showNextStep: false,
+      showNextStep: true,
     });
   }
 
@@ -188,11 +188,16 @@ function NotificationSection({
             index={index}
             action={action}
             recipient="next_step"
-            label={t("nextApprover")}
+            label={
+              action === "sendback" ? t("sendbackReceiver") : t("nextApprover")
+            }
             isDisabled={isDisabled}
           />
         )}
       </div>
+      {action === "approve" && (
+        <p className="text-muted-foreground text-xs">{t("approveFinalHint")}</p>
+      )}
     </FieldSet>
   );
 }

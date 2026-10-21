@@ -34,6 +34,8 @@ import {
   buildDefaultStages,
   type WorkflowFormValues,
 } from "./wf-form-schema";
+import { useSeededTemplateIds } from "./use-seeded-template-ids";
+import { fillSeededTemplateIds } from "./wf-seeded-templates";
 import { WfStageRailPreview } from "./wf-stage-rail-node";
 import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 
@@ -82,6 +84,7 @@ export default function WorkflowNewForm({
     isDirty: form.formState.isDirty,
     isPending,
   });
+  const seededIds = useSeededTemplateIds();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navGuard = useNavigationGuard(form.formState.isDirty && !isSubmitting);
 
@@ -90,6 +93,7 @@ export default function WorkflowNewForm({
 
   const onSubmit = (values: WorkflowFormValues) => {
     const payload = mapToPayload(values);
+    payload.data.stages = fillSeededTemplateIds(payload.data.stages, seededIds);
 
     setIsSubmitting(true);
     createWorkflow.mutate(payload, {

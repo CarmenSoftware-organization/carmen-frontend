@@ -11,6 +11,8 @@ export interface NotificationTemplate {
   id: string;
   doc_version?: number;
   name: string;
+  /** รหัสเทมเพลตของระบบ (เช่น wf.approve.next_step) — null = เทมเพลตที่ผู้ใช้สร้างเอง */
+  code?: string | null;
   type: NotificationTemplateType;
   subject: string | null;
   body: string;

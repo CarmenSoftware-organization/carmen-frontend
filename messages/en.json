@@ -2343,6 +2343,8 @@
       "currentApprover": "Current Approver",
       "previousApprovers": "Previous Stage Approvers",
       "nextApprover": "Next Stage Approver",
+      "sendbackReceiver": "Receiving stage",
+      "approveFinalHint": "On final approval, the requestor gets the \"Fully approved\" message instead of the selected template, when that template exists.",
       "slaWarning": "SLA Warning",
       "noActiveActions": "No active actions to configure notifications for.",
       "channelApp": "In-app",
@@ -2588,6 +2590,8 @@
       "testSent": "Test email sent successfully"
     },
     "notificationTemplate": {
+      "systemDefault": "System default",
+      "systemDefaultHint": "Workflows pick this template automatically by its code",
       "entity": "Notification Template",
       "title": "Notification Template",
       "desc": "The wording of the in-app alerts sent when a document moves along.",
