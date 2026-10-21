@@ -18,7 +18,7 @@ import {
   FieldLabel,
   FieldPlainText,
 } from "@/components/ui/field";
-import type { Role } from "@/types/workflows";
+import { WORKFLOW_TYPE, type Role } from "@/types/workflows";
 import type { WorkflowCreateModel } from "./wf-form-schema";
 import { getAllowedRoles } from "./wf-role-colors";
 import {
@@ -68,6 +68,12 @@ export function WfStageGeneral({
     currentRole && !allowedRoles.includes(currentRole)
       ? [...allowedRoles, currentRole]
       : allowedRoles;
+
+  // ฟีเจอร์ซ่อนราคาไม่มีผลกับใบเบิก (SR ไม่มียอด) และ stage create/purchase (ไม่ถูกซ่อนเสมอ)
+  const hideFieldsApplicable =
+    workflowType !== WORKFLOW_TYPE.SR &&
+    currentRole !== "create" &&
+    currentRole !== "purchase";
 
   const roleLabelKeys = {
     create: "roleCreate",
@@ -162,10 +168,12 @@ export function WfStageGeneral({
               {enabledActions.length > 0 ? enabledActions : null}
             </FieldPlainText>
           </Field>
-          <Field>
-            <FieldLabel>{t("hideFields")}</FieldLabel>
-            <FieldPlainText>{hiddenFields.join(", ")}</FieldPlainText>
-          </Field>
+          {hideFieldsApplicable && (
+            <Field>
+              <FieldLabel>{t("hideFields")}</FieldLabel>
+              <FieldPlainText>{hiddenFields.join(", ")}</FieldPlainText>
+            </Field>
+          )}
           <Field>
             <FieldLabel>{t("showSignatureInReport")}</FieldLabel>
             <FieldPlainText>
@@ -395,39 +403,41 @@ export function WfStageGeneral({
           </div>
         </div>
 
-        <div>
-          <FieldLabel className="mb-1.5">{t("hideFields")}</FieldLabel>
-          <div className="flex flex-wrap gap-x-3 gap-y-1">
-            <Field orientation="horizontal">
-              <Controller
-                control={form.control}
-                name={`data.stages.${index}.hide_fields.price_per_unit`}
-                render={({ field }) => (
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled={isDisabled}
-                  />
-                )}
-              />
-              <FieldLabel>{t("pricePerUnit")}</FieldLabel>
-            </Field>
-            <Field orientation="horizontal">
-              <Controller
-                control={form.control}
-                name={`data.stages.${index}.hide_fields.total_price`}
-                render={({ field }) => (
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled={isDisabled}
-                  />
-                )}
-              />
-              <FieldLabel>{t("totalPrice")}</FieldLabel>
-            </Field>
+        {hideFieldsApplicable && (
+          <div>
+            <FieldLabel className="mb-1.5">{t("hideFields")}</FieldLabel>
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              <Field orientation="horizontal">
+                <Controller
+                  control={form.control}
+                  name={`data.stages.${index}.hide_fields.price_per_unit`}
+                  render={({ field }) => (
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isDisabled}
+                    />
+                  )}
+                />
+                <FieldLabel>{t("pricePerUnit")}</FieldLabel>
+              </Field>
+              <Field orientation="horizontal">
+                <Controller
+                  control={form.control}
+                  name={`data.stages.${index}.hide_fields.total_price`}
+                  render={({ field }) => (
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isDisabled}
+                    />
+                  )}
+                />
+                <FieldLabel>{t("totalPrice")}</FieldLabel>
+              </Field>
+            </div>
           </div>
-        </div>
+        )}
 
         <div>
           <FieldLabel className="mb-1.5">

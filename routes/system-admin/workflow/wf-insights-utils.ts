@@ -130,16 +130,22 @@ export function computeWorkflowInsights(stages: Stage[]): WorkflowInsights {
     0,
   );
 
+  const hideEligible = middle.filter(
+    (s) => s.role !== "create" && s.role !== "purchase",
+  );
+
   const stats: QuickStats = {
     totalStages: safe.length,
     approverStages: middle.filter((s) => s.role === "approve").length,
     totalUsers,
     hodStages: middle.filter((s) => s.is_hod === true).length,
-    hiddenPriceCount: middle.filter(
+    // stage create/purchase ไม่ถูกซ่อนราคาเสมอ — ค่าเก่าที่ค้างอยู่ไม่นับ
+    hiddenPriceCount: hideEligible.filter(
       (s) => s.hide_fields?.price_per_unit === true,
     ).length,
-    hiddenTotalCount: middle.filter((s) => s.hide_fields?.total_price === true)
-      .length,
+    hiddenTotalCount: hideEligible.filter(
+      (s) => s.hide_fields?.total_price === true,
+    ).length,
   };
 
   return {

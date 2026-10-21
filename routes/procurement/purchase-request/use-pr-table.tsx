@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
 import { useCreatableWorkflows } from "@/hooks/use-workflow";
-import { WORKFLOW_TYPE } from "@/types/workflows";
+import { WORKFLOW_TYPE, isPriceHidden } from "@/types/workflows";
+import { HiddenValue } from "@/components/share/hidden-value";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
 import {
@@ -231,6 +232,8 @@ export function usePrTable({
         />
       ),
       cell: ({ row }) => {
+        if (isPriceHidden(row.original.hidden_fields, "total_price"))
+          return <HiddenValue />;
         const amount = row.original.base_total_amount;
         if (amount == null) return <span></span>;
         return (

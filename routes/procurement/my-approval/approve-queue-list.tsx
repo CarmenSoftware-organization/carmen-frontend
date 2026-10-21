@@ -1,4 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
+import { HiddenValue } from "@/components/share/hidden-value";
+import { isPriceHidden } from "@/types/workflows";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { Clock } from "lucide-react";
@@ -193,6 +195,9 @@ export default function ApprovalQueueList({
         // ใบเบิกสินค้าไม่มียอดเงิน — 0 ของมันไม่ใช่ศูนย์บาทจริง
         if (item.doc_type === "sr") {
           return <span className="text-muted-foreground">—</span>;
+        }
+        if (isPriceHidden(item.hidden_fields, "total_price")) {
+          return <HiddenValue />;
         }
         return (
           <span className="text-xs tabular-nums">

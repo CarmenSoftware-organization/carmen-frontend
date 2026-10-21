@@ -14,6 +14,8 @@ import { formatAmount } from "@/lib/currency-utils";
 import { PR_STATUS_CONFIG } from "@/constant/purchase-request";
 import type { PurchaseRequest } from "@/types/purchase-request";
 import { PR_STATUS } from "@/types/purchase-request";
+import { HiddenValue } from "@/components/share/hidden-value";
+import { isPriceHidden } from "@/types/workflows";
 
 interface PrCardProps {
   readonly item: PurchaseRequest;
@@ -38,6 +40,7 @@ export default function PrCard({
 
   const config = PR_STATUS_CONFIG[item.pr_status] ?? PR_STATUS_CONFIG.draft;
   const totalAmount = item.base_total_amount;
+  const totalHidden = isPriceHidden(item.hidden_fields, "total_price");
   const hasTotal = totalAmount != null && !Number.isNaN(Number(totalAmount));
   const isDraft = item.pr_status === PR_STATUS.DRAFT;
   const isPendingApproval = item.pr_status === PR_STATUS.IN_PROGRESS;
@@ -111,7 +114,12 @@ export default function PrCard({
           {item.workflow_current_stage}
         </ListCardRow>
       )}
-      {hasTotal && (
+      {totalHidden && (
+        <ListCardRow label={tfl("totalAmount")}>
+          <HiddenValue />
+        </ListCardRow>
+      )}
+      {!totalHidden && hasTotal && (
         <ListCardRow label={tfl("totalAmount")}>
           <span className="font-semibold tabular-nums">
             {formatAmount(Number(totalAmount), amountFormat)}

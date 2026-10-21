@@ -39,7 +39,7 @@ import { usePoTable } from "./use-po-table";
 import PoCardList from "./po-card-list";
 import { DocumentListActions } from "@/components/share/document-list-actions";
 import { useCreatableWorkflows } from "@/hooks/use-workflow";
-import { WORKFLOW_TYPE } from "@/types/workflows";
+import { WORKFLOW_TYPE, isPriceHidden } from "@/types/workflows";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
 import { FieldLabel } from "@/components/ui/field";
 import { useListFilters } from "@/hooks/use-list-filters";
@@ -300,7 +300,10 @@ export default function PoComponent() {
           { header: tfl("status"), value: (r) => r.po_status, width: 14 },
           {
             header: tfl("totalAmount"),
-            value: (r) => r.total_amount,
+            value: (r) =>
+              isPriceHidden(r.hidden_fields, "total_price")
+                ? ""
+                : r.total_amount,
             width: 16,
           },
           {

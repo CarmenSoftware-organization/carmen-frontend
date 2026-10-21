@@ -964,6 +964,7 @@
       "PO_DELETE_FORBIDDEN": "You can only delete purchase orders you created yourself.",
       "PO_ONLY_DRAFT_DELETABLE": "This purchase order is past draft, so it can no longer be deleted. Refresh to see its current status.",
       "WORKFLOW_STAGE_ACTION_DISABLED": "This workflow stage doesn't allow that action anymore. Refresh to see the current options.",
+      "PO_SEND_EMAIL_PRICE_HIDDEN": "You can't send this PO to the vendor while its prices are hidden from you at this stage.",
       "PR_NOT_FOUND": "This purchase request no longer exists. Someone may have deleted it.",
       "PR_NO_WORKFLOW_ASSIGNED": "This purchase request has no approval route attached. Ask your administrator to set one.",
       "PR_NO_PRINT_MAPPING": "No print form has been set up for purchase requests yet. Ask your administrator to add one.",

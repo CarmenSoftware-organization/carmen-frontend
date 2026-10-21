@@ -1,4 +1,6 @@
 import { useTranslations } from "use-intl";
+import { HiddenValue } from "@/components/share/hidden-value";
+import { isPriceHidden } from "@/types/workflows";
 import {
   ListCard,
   ListCardAuditRows,
@@ -44,6 +46,7 @@ export default function PoCard({ item, onEdit, onDelete }: PoCardProps) {
     PO_TYPE_CONFIG[item.po_type ?? PO_TYPE.MANUAL] ??
     PO_TYPE_CONFIG[PO_TYPE.MANUAL];
   const amount = item.total_amount;
+  const totalHidden = isPriceHidden(item.hidden_fields, "total_price");
   const hasAmount = amount != null && !Number.isNaN(Number(amount));
 
   return (
@@ -78,7 +81,12 @@ export default function PoCard({ item, onEdit, onDelete }: PoCardProps) {
           </span>
         </ListCardRow>
       )}
-      {hasAmount && (
+      {totalHidden && (
+        <ListCardRow label={tfl("totalAmount")}>
+          <HiddenValue />
+        </ListCardRow>
+      )}
+      {!totalHidden && hasAmount && (
         <ListCardRow label={tfl("totalAmount")}>
           <span className="font-semibold tabular-nums">
             {formatCurrency(Number(amount))}
