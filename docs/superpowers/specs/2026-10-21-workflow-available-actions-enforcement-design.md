@@ -85,7 +85,8 @@ Purchase Approve (PR role `purchase`) และ Issue (SR role `issue`) ใช�
    HTTP status: *ปล่อยให้ builder เลือกให้สอดคล้อง guard อื่นใน orchestrator*
 3. **ส่ง `available_actions` ให้ FE** — `resolveUserRole` (:389) เรียก `fetchStageRole` (:423)
    ซึ่งได้ stage ทั้งก้อนมาแล้วแต่เก็บแค่ `.role` ให้คืน `available_actions` ด้วย แล้วเพิ่มฟิลด์
-   `available_actions` (ชื่อฟิลด์ระดับบนสุดของ detail) ใน serializer ทั้ง 3:
+   `stage_actions: { approve, reject, sendback } | null` (flag boolean — *การตัดสินของ Claude:* ไม่ส่ง
+   `available_actions` ทั้งก้อนเพราะมี recipients/notification config ที่หน้าเอกสารไม่ต้องรู้) ใน serializer ทั้ง 3:
    `purchase-request.serializer.ts:121`, `purchase-order.serializer.ts:115`,
    `store-requisition.serializer.ts:51` และใน gateway serializer ถ้ามี
    (ดู memory "backend add-field serializer gotcha": ต้องเพิ่มทั้ง micro และ gateway)
