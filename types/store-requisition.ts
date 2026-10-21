@@ -1,6 +1,7 @@
 import type { Audit } from "./audit";
 import type { LastAction } from "./last-action";
 import type { EntityRef } from "./entity-ref";
+import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 
 export type StoreRequisitionStatus =
   "draft" | "in_progress" | "completed" | "cancelled" | "voided";
@@ -50,6 +51,7 @@ export interface StoreRequisition {
   sr_no: string;
   sr_type: StoreRequisitionType;
   role?: string;
+  stage_actions?: StageActionFlags | null;
   sr_date: string;
   expected_date: string;
   description: string;

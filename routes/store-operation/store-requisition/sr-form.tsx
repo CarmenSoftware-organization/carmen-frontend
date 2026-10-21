@@ -30,6 +30,7 @@ import { SrItemFields } from "./sr-item-fields";
 import { SrHeader } from "./sr-header";
 import { SrRequestDetails } from "./sr-request-details";
 import { SrFooter } from "./sr-footer";
+import { getStageActionFlags } from "@/lib/workflow-stage-actions";
 import { SrFormDialogs } from "./sr-form-dialogs";
 import { SrStockTable } from "./sr-stock-table";
 
@@ -210,6 +211,9 @@ export function StoreRequisitionForm({
     derivedSrType = storeRequisition?.sr_type;
   }
 
+  // คำนวณครั้งเดียวแล้วส่งให้ทั้งปุ่ม bulk และ footer — null (backend เก่า) = เปิดหมด
+  const stageActions = getStageActionFlags(storeRequisition?.stage_actions);
+
   const itemFieldsProps = {
     form,
     disabled: isDisabled,
@@ -220,6 +224,7 @@ export function StoreRequisitionForm({
     role: storeRequisition ? storeRequisition.role : STAGE_ROLE.CREATE,
     srId: storeRequisition?.id,
     docStatus: storeRequisition?.doc_status,
+    stageActions,
   };
 
   return (
@@ -257,6 +262,7 @@ export function StoreRequisitionForm({
           activeTab={tab === "stock" ? "stock" : "items"}
           srId={storeRequisition?.id}
           docStatus={storeRequisition?.doc_status}
+          stageActions={stageActions}
           onSubmit={actions.openSubmitDialog}
           onApprove={() => actions.setActionDialog("approve")}
           onIssue={() => actions.setActionDialog("issue")}

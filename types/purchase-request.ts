@@ -5,6 +5,7 @@ import { lastActionSchema } from "./last-action";
 import type { LastAction } from "./last-action";
 import type { DiscountFields, ItemMoneyFields, TaxFields } from "./shared-item";
 import type { EntityRef } from "./entity-ref";
+import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 
 type PurchaseRequestStatus =
   | "draft"
@@ -151,6 +152,7 @@ export interface PurchaseRequest {
   description: string;
   doc_status: PurchaseRequestStatus;
   role: string;
+  stage_actions?: StageActionFlags | null;
   // list endpoint (`GET /api/purchase-requests`): แถวจริงอยู่ที่ `data[].data[]`
   // (multi-BU envelope) — `@CollapseRefs({'': PR_HEADER_REFS})` เดินจาก path ''
   // ไปไม่ถึงแถวที่ซ้อนอยู่ **บั๊กเดียวกับที่ CLAUDE.md เอกสารไว้กับ audit

@@ -9,6 +9,7 @@ import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { PO_STATUS } from "@/types/purchase-order";
 import { STAGE_ROLE } from "@/types/stage-role";
 import { computePoAction } from "@/constant/purchase-order";
+import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 import type { PoFormValues } from "./po-form-schema";
 import {
   PoActionDialog,
@@ -25,6 +26,8 @@ interface PoFooterActionProps {
   readonly previousStages?: StageOption[];
   readonly stagesLoading?: boolean;
   readonly isEditMode?: boolean;
+  /** ตัวเลือกที่ stage ปัจจุบันเปิดให้ตัดสิน — AND กับสิทธิ์ตาม role เสมอ ไม่เพิ่มปุ่มที่ role ไม่มี */
+  readonly stageActions: StageActionFlags;
   readonly onSubmit?: () => void;
   /**
    * ตรวจก่อนเปิดกล่องยืนยัน "ส่งใบ" — คืน false = ไม่ต้องเปิดกล่อง
@@ -55,6 +58,7 @@ export function PoFooterAction({
   previousStages,
   stagesLoading,
   isEditMode = false,
+  stageActions,
   onSubmit,
   onValidateSubmit,
   onApprove,
@@ -126,11 +130,34 @@ export function PoFooterAction({
   const isApprover =
     role === STAGE_ROLE.APPROVE && poStatus === PO_STATUS.IN_PROGRESS;
   const poAction = computePoAction(itemStatuses);
-  const canApprove = !!onApprove && isApprover && poAction === "approved";
-  const canReject = !!onReject && isApprover && poAction === "rejected";
-  const canReview = !!onReview && isApprover && poAction === "review";
+  const canApprove =
+    !!onApprove &&
+    isApprover &&
+    stageActions.approve &&
+    poAction === "approved";
+  const canReject =
+    !!onReject && isApprover && stageActions.reject && poAction === "rejected";
+  const canReview =
+    !!onReview && isApprover && stageActions.sendback && poAction === "review";
+  // ปิด reject แต่ทุกแถวถูก reject แล้ว = ปุ่มไม่มี แต่ต้องบอกเหตุผล ไม่ใช่เงียบหาย
+  // ผู้ใช้จะงงว่าทำไมตัดสินต่อไม่ได้
+  const showRejectAllBlocked =
+    !!onReject && isApprover && !stageActions.reject && poAction === "rejected";
 
-  const showActions = showSubmit || canApprove || canReject || canReview;
+  // เรื่องเดียวกัน: ปิด approve แต่ทุกแถวอนุมัติอยู่ = ไม่มีปุ่ม ต้องบอกให้ปัดตก/ส่งกลับแทน
+  const showApproveBlocked =
+    !!onApprove &&
+    isApprover &&
+    !stageActions.approve &&
+    poAction === "approved";
+
+  const showActions =
+    showSubmit ||
+    canApprove ||
+    canReject ||
+    canReview ||
+    showRejectAllBlocked ||
+    showApproveBlocked;
   const hasItems = (items?.length ?? 0) > 0;
   const showBar = isEditMode || showActions || hasItems;
 
@@ -197,6 +224,16 @@ export function PoFooterAction({
                 <SendHorizontal aria-hidden="true" />
                 {tc("submit")}
               </Button>
+            )}
+            {showRejectAllBlocked && (
+              <span className="text-warning-ink text-xs">
+                {tc("rejectAllNotAllowed")}
+              </span>
+            )}
+            {showApproveBlocked && (
+              <span className="text-warning-ink text-xs">
+                {tc("approveNotAllowed")}
+              </span>
             )}
             {canApprove && (
               <Button

@@ -3,6 +3,7 @@ import type { WorkflowHistoryEntry } from "./purchase-request";
 import type { Audit } from "./audit";
 import type { LastAction } from "./last-action";
 import type { EntityRef } from "./entity-ref";
+import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 
 export enum PO_STATUS {
   DRAFT = "draft",
@@ -221,6 +222,7 @@ export interface PurchaseOrder {
   credit_term?: EntityRef | null;
   credit_term_value?: number;
   role?: string;
+  stage_actions?: StageActionFlags | null;
   workflow_previous_stage?: string | null;
   workflow_history?: WorkflowHistoryEntry[];
   email?: string;

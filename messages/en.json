@@ -660,7 +660,9 @@
     "formatJson": "Format",
     "workflowHistoryHint": "See who has handled this document",
     "sentBackBy": "Sent back by {name}",
-    "sentBackNoReason": "No reason given"
+    "sentBackNoReason": "No reason given",
+    "rejectAllNotAllowed": "This stage can't reject the whole document. Keep at least one item approved.",
+    "approveNotAllowed": "This stage can't approve. Reject or send back instead."
   },
   "pagination": {
     "label": "Pagination",
@@ -959,6 +961,7 @@
       "PO_BATCH_DELETE_BLOCKED": "Nothing was deleted: {blocked} of {total} purchase orders cannot be deleted — they are past draft, or someone else created them.",
       "PO_DELETE_FORBIDDEN": "You can only delete purchase orders you created yourself.",
       "PO_ONLY_DRAFT_DELETABLE": "This purchase order is past draft, so it can no longer be deleted. Refresh to see its current status.",
+      "WORKFLOW_STAGE_ACTION_DISABLED": "This workflow stage doesn't allow that action anymore. Refresh to see the current options.",
       "PR_NOT_FOUND": "This purchase request no longer exists. Someone may have deleted it.",
       "PR_NO_WORKFLOW_ASSIGNED": "This purchase request has no approval route attached. Ask your administrator to set one.",
       "PR_NO_PRINT_MAPPING": "No print form has been set up for purchase requests yet. Ask your administrator to add one.",
@@ -4484,6 +4487,8 @@
       "batchApproveConfirm": "Are you sure you want to approve {count, plural, =1 {# purchase request} other {# purchase requests}}?",
       "batchRejectTitle": "Batch Reject Purchase Requests",
       "batchRejectConfirm": "Please provide a reason for rejecting {count, plural, =1 {# purchase request} other {# purchase requests}}.",
+      "swipePartialFailed": "Some documents couldn't be processed",
+      "swipeFailedDocs": "Not processed: {prNos}",
       "notFound": "Purchase request not found",
       "noDepartment": "Your profile does not have a department assigned. Please contact your administrator.",
       "addItem": "Add Item",
