@@ -41,10 +41,11 @@ export default function PriceListExternalViewTable({
         </thead>
         <tbody>
           {details.map((d) => {
-            const { price: p, taxAmt, total } = priceListTaxParts(
-              d.price,
-              d.tax_rate,
-            );
+            const {
+              price: p,
+              taxAmt,
+              total,
+            } = priceListTaxParts(d.price, d.tax_rate);
             return (
               <tr key={d.id} className="border-border/50 border-b">
                 <Td className="text-muted-foreground text-center tabular-nums">
