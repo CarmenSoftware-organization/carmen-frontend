@@ -111,6 +111,11 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
     name: "data.products",
   }) as string[] | undefined;
 
+  const watchedRoutingRules = useWatch({
+    control: form.control,
+    name: "data.routing_rules",
+  });
+
   const watchedType = useWatch({
     control: form.control,
     name: "workflow_type",
@@ -319,8 +324,14 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                   <WfInsights
                     stages={watchedStages ?? []}
                     productCount={watchedProducts?.length ?? 0}
-                    routingCount={routingFieldArray.fields.length}
+                    routingRules={watchedRoutingRules ?? []}
                     workflowType={watchedType}
+                    onNavigate={(target) =>
+                      target.tab === "stages" &&
+                      typeof target.stageIndex === "number"
+                        ? handleSelectStage(target.stageIndex)
+                        : setActiveTab(target.tab)
+                    }
                   />
                 </TabsContent>
               </div>
