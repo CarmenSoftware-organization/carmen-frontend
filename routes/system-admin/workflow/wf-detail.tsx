@@ -8,6 +8,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
+import { Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
@@ -32,6 +33,10 @@ import { WfProducts } from "./wf-products";
 import { validateWorkflow } from "./wf-validate";
 import WfInsights from "./wf-insights";
 import { WfStageList } from "./wf-stage-list";
+import {
+  WfStructureLockNotice,
+  getInProgressDocumentsHref,
+} from "./wf-structure-lock-notice";
 import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 
 interface WfDetailProps {
@@ -56,7 +61,23 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
   const isStructureDisabled =
     isDisabled || availability?.can_edit_stages === false;
   const t = useTranslations("systemAdmin.workflow");
+  const td = useTranslations("systemAdmin.workflow.documents");
   const tt = useTranslations("toast");
+
+  // ล็อกเพราะเอกสารค้าง (ไม่ใช่เพราะยังไม่กด Edit) — เป็นตัวเดียวที่ต้องอธิบาย ตอนดูเฉย ๆ ทุกช่อง
+  // เป็นสีเทาอยู่แล้ว ส่วนชิป "กำลังดำเนินการ" บนหัวหน้าก็บอกไว้แล้ว
+  const inProgressCount = availability?.documents.in_progress ?? 0;
+  const isStructureLocked =
+    isEditing && availability?.can_edit_stages === false;
+  const lockedReason = isStructureLocked
+    ? td("lockedAction", { count: inProgressCount })
+    : undefined;
+  const tabLockIcon = isStructureLocked ? (
+    <Lock
+      className="text-warning-ink ml-1.5 size-3.5"
+      aria-label={td("inProgressBlocksEdit")}
+    />
+  ) : null;
 
   const handleSelectStage = (index: number) => {
     setSelectedStageIndex(index);
@@ -146,6 +167,15 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
       }
     >
       <div className="space-y-3">
+        {isStructureLocked && (
+          <WfStructureLockNotice
+            count={inProgressCount}
+            href={getInProgressDocumentsHref(
+              workflow.workflow_type,
+              workflow.id,
+            )}
+          />
+        )}
         <div
           className={cn(
             "grid gap-4",
@@ -161,6 +191,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
               showSelection={activeTab === "stages"}
               onSelect={handleSelectStage}
               isDisabled={isStructureDisabled}
+              lockedReason={lockedReason}
               routingRules={routingFieldArray.fields as never}
               issues={validationIssues}
             />
@@ -191,6 +222,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                   </TabsTrigger>
                   <TabsTrigger value="stages" className="relative py-2.5">
                     {t("stages")}
+                    {tabLockIcon}
                     {watchedStages && watchedStages.length > 0 && (
                       <Badge
                         variant="secondary"
@@ -206,6 +238,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                   </TabsTrigger>
                   <TabsTrigger value="routing" className="relative py-2.5">
                     {t("routing")}
+                    {tabLockIcon}
                     {routingFieldArray.fields.length > 0 && (
                       <Badge
                         variant="secondary"
@@ -254,7 +287,6 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                     isDisabled={isDisabled}
                     isStructureDisabled={isStructureDisabled}
                     readOnly={!isEditing}
-                    inProgressCount={availability?.documents.in_progress ?? 0}
                     selectedIndex={selectedStageIndex}
                   />
                 </TabsContent>
@@ -266,6 +298,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                     stages={stagesFieldArray.fields}
                     allProducts={products}
                     isDisabled={isStructureDisabled}
+                    lockedReason={lockedReason}
                   />
                 </TabsContent>
 

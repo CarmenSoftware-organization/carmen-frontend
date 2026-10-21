@@ -7,7 +7,6 @@ import {
 import type { Stage, User } from "@/types/workflows";
 import type { WorkflowCreateModel } from "./wf-form-schema";
 import { WfStageDetail } from "./wf-stage-detail";
-import { WfStructureLockNotice } from "./wf-structure-lock-notice";
 import { StageRailMarker, StageRailSummary } from "./wf-stage-rail-node";
 import { formatStageSla } from "./wf-sla-utils";
 
@@ -18,7 +17,6 @@ interface WfStagesProps {
   readonly isDisabled: boolean;
   readonly isStructureDisabled: boolean;
   readonly readOnly?: boolean;
-  readonly inProgressCount: number;
   readonly selectedIndex?: number;
 }
 
@@ -29,7 +27,6 @@ export function WfStages({
   isDisabled,
   isStructureDisabled,
   readOnly = false,
-  inProgressCount,
   selectedIndex: controlledIndex,
 }: WfStagesProps) {
   const selectedIndex = controlledIndex ?? 0;
@@ -47,12 +44,8 @@ export function WfStages({
     name: `data.stages.${safeIndex}`,
   }) as Stage | undefined;
 
-  // แสดงเฉพาะตอนอยู่ในโหมดแก้ไข — ตอนดูเฉย ๆ ทุกช่องเป็นสีเทาอยู่แล้ว ไม่มีอะไรให้อธิบาย
-  const showLockNotice = isStructureDisabled && !isDisabled;
-
   return (
     <div className="pt-4">
-      {showLockNotice && <WfStructureLockNotice count={inProgressCount} />}
       <div className="@container min-w-0">
         {fields.length === 0 ? (
           <p className="text-muted-foreground py-10 text-center text-sm">

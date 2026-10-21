@@ -5,9 +5,8 @@ import {
   type UseFormReturn,
   type UseFieldArrayReturn,
 } from "react-hook-form";
-import { Plus, Trash2, Search, Waypoints } from "lucide-react";
+import { Trash2, Search, Waypoints } from "lucide-react";
 import { useTranslations } from "use-intl";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -33,6 +32,7 @@ import {
   operatorValues,
 } from "./wf-routing-constants";
 import { CategoryCheckboxList } from "./wf-routing-category-list";
+import { WfStructureAddButton } from "./wf-structure-lock-notice";
 
 interface WfRoutingProps {
   readonly form: UseFormReturn<WorkflowCreateModel>;
@@ -43,6 +43,8 @@ interface WfRoutingProps {
   readonly stages: { id: string; name: string }[];
   readonly allProducts: Product[];
   readonly isDisabled: boolean;
+  /** โครงถูกล็อกเพราะมีเอกสารค้าง — ปุ่มเพิ่มแสดงเป็นสีเทาพร้อมเหตุผลนี้แทนการหายไป */
+  readonly lockedReason?: string;
 }
 
 export function WfRouting({
@@ -51,6 +53,7 @@ export function WfRouting({
   stages,
   allProducts,
   isDisabled,
+  lockedReason,
 }: WfRoutingProps) {
   const { fields, append, remove } = fieldArray;
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -134,18 +137,13 @@ export function WfRouting({
         <p className="text-muted-foreground mt-1 max-w-sm text-sm">
           {t("routingEmptyDesc")}
         </p>
-        {!isDisabled && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleAddRule}
-            className="mt-4"
-          >
-            <Plus className="mr-1.5 size-3.5" />
-            {tc("add")}
-          </Button>
-        )}
+        <WfStructureAddButton
+          label={tc("add")}
+          onClick={handleAddRule}
+          isDisabled={isDisabled}
+          lockedReason={lockedReason}
+          className="mt-4"
+        />
       </div>
     );
   }
@@ -158,18 +156,12 @@ export function WfRouting({
           <span className="text-foreground text-sm font-semibold">
             {t("rules")}
           </span>
-          {!isDisabled && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAddRule}
-              className="hover:bg-muted/50"
-            >
-              <Plus className="mr-1.5 size-3.5" />
-              {tc("add")}
-            </Button>
-          )}
+          <WfStructureAddButton
+            label={tc("add")}
+            onClick={handleAddRule}
+            isDisabled={isDisabled}
+            lockedReason={lockedReason}
+          />
         </div>
 
         <div className="relative px-1">
@@ -189,16 +181,14 @@ export function WfRouting({
             <p className="text-foreground text-sm font-medium">
               {tc("noData") || "No routing rules found"}
             </p>
-            {!isDisabled && !searchQuery && (
-              <Button
-                variant="outline"
-                size="sm"
+            {!searchQuery && (
+              <WfStructureAddButton
+                label={tc("add")}
                 onClick={handleAddRule}
+                isDisabled={isDisabled}
+                lockedReason={lockedReason}
                 className="mt-4"
-              >
-                <Plus className="mr-1.5 size-3.5" />
-                {tc("add")}
-              </Button>
+              />
             )}
           </div>
         ) : (
