@@ -1,7 +1,26 @@
 {
-  "current": "2.5.25",
-  "generated_at": "2026-10-20T18:42:26.066Z",
+  "current": "2.5.26",
+  "generated_at": "2026-10-21T02:19:08.875Z",
   "versions": [
+    {
+      "version": "2.5.26",
+      "build": "2.5.26-build.20261021.249da190",
+      "date": "2026-10-21",
+      "commit": "249da190",
+      "changes": {
+        "added": [],
+        "fixed": [
+          {
+            "scope": "spot-check",
+            "summary": "จำนวนรายการเป็นเอกพจน์/พหูพจน์ และสีไอคอนสถานะบนมือถือเท่าจอใหญ่",
+            "hash": "a77f976a",
+            "author": "Thammanoon Semapru",
+            "pr": 401
+          }
+        ],
+        "changed": []
+      }
+    },
     {
       "version": "2.5.25",
       "build": "2.5.25-build.20261020.6f2af66a",

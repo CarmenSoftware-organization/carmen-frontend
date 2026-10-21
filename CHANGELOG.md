@@ -4,6 +4,11 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.5.26] - 2026-10-21
+
+### Fixed
+- **spot-check:** จำนวนรายการเป็นเอกพจน์/พหูพจน์ และสีไอคอนสถานะบนมือถือเท่าจอใหญ่ (#401) — Thammanoon Semapru `a77f976a`
+
 ## [2.5.25] - 2026-10-20
 
 ### Added
