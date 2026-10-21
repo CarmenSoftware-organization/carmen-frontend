@@ -161,7 +161,9 @@
       "po": "PO",
       "poDesc": "Purchase Order settings for this business unit.",
       "printForm": "Print Forms",
-      "printFormDesc": "Report form used when printing each document type."
+      "printFormDesc": "Report form used when printing each document type.",
+      "documents": "Document behavior",
+      "documentsDesc": "Defaults applied when staff create purchasing and stock documents."
     },
     "config": {
       "prAllowDuplicateProduct": "Allow selecting duplicate products",
@@ -172,23 +174,27 @@
         "lastCost": "Last cost"
       },
       "poGroupByPrComment": "Group by PR comment",
-      "printFormPr": "PR - Purchase Request",
-      "printFormPo": "PO - Purchase Order",
-      "printFormGrn": "GRN - Good Received Note",
-      "printFormSr": "SR - Store Requisition",
-      "printFormCn": "CN - Credit Note",
-      "printFormSi": "SI - Stock In",
-      "printFormSo": "SO - Stock Out",
-      "printFormIa": "IA - Inventory Adjustment",
-      "printFormPc": "PC - Physical Count",
-      "printFormSc": "SC - Spot Check",
-      "printFormRfp": "RFP - Request For Pricing",
-      "printFormEop": "EOP - End Of Period",
+      "printFormPr": "Purchase Request",
+      "printFormPo": "Purchase Order",
+      "printFormGrn": "Good Received Note",
+      "printFormSr": "Store Requisition",
+      "printFormCn": "Credit Note",
+      "printFormSi": "Stock In",
+      "printFormSo": "Stock Out",
+      "printFormIa": "Inventory Adjustment",
+      "printFormPc": "Physical Count",
+      "printFormSc": "Spot Check",
+      "printFormRfp": "Request For Pricing",
+      "printFormEop": "End Of Period",
       "printFormLoading": "Loading forms…",
       "printFormUnknown": "⚠ Unknown template ({id})",
       "printFormUnavailable": "Saved form ({id})",
       "printFormLoadError": "Could not load report forms.",
-      "printFormSystemDefault": "Use the system default"
+      "printFormSystemDefault": "Use the system default",
+      "prAllowDuplicateProductDesc": "Let one purchase request list the same product on more than one line.",
+      "siCostFromDesc": "Unit cost filled in when a line is added to a stock-in.",
+      "poGroupByPrCommentDesc": "When purchase requests become a purchase order, group lines by their PR comment.",
+      "printFormCustomCount": "{n} of {total} customised"
     }
   },
   "accounting": {

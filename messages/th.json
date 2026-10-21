@@ -161,7 +161,9 @@
       "po": "PO",
       "poDesc": "การตั้งค่าใบสั่งซื้อของหน่วยธุรกิจนี้",
       "printForm": "แบบฟอร์มการพิมพ์",
-      "printFormDesc": "แบบฟอร์มรายงานที่ใช้พิมพ์สำหรับเอกสารแต่ละประเภท"
+      "printFormDesc": "แบบฟอร์มรายงานที่ใช้พิมพ์สำหรับเอกสารแต่ละประเภท",
+      "documents": "การทำงานของเอกสาร",
+      "documentsDesc": "ค่าตั้งต้นที่ใช้ตอนสร้างเอกสารจัดซื้อและเอกสารคลัง"
     },
     "config": {
       "prAllowDuplicateProduct": "อนุญาตให้เลือกสินค้าซ้ำกันได้",
@@ -172,23 +174,27 @@
         "lastCost": "ต้นทุนล่าสุด"
       },
       "poGroupByPrComment": "เพิ่มการจัดกลุ่มตามหมายเหตุของใบขอซื้อ",
-      "printFormPr": "PR - ใบขอซื้อ",
-      "printFormPo": "PO - ใบสั่งซื้อ",
-      "printFormGrn": "GRN - ใบรับสินค้า",
-      "printFormSr": "SR - ใบเบิกสินค้า",
-      "printFormCn": "CN - ใบลดหนี้",
-      "printFormSi": "SI - รับสินค้าเข้า",
-      "printFormSo": "SO - จ่ายสินค้าออก",
-      "printFormIa": "IA - ปรับปรุงสินค้าคงคลัง",
-      "printFormPc": "PC - ตรวจนับสินค้า",
-      "printFormSc": "SC - ตรวจสอบเฉพาะจุด",
-      "printFormRfp": "RFP - ขอราคา",
-      "printFormEop": "EOP - สิ้นงวด",
+      "printFormPr": "ใบขอซื้อ",
+      "printFormPo": "ใบสั่งซื้อ",
+      "printFormGrn": "ใบรับสินค้า",
+      "printFormSr": "ใบเบิกสินค้า",
+      "printFormCn": "ใบลดหนี้",
+      "printFormSi": "รับสินค้าเข้า",
+      "printFormSo": "จ่ายสินค้าออก",
+      "printFormIa": "ปรับปรุงสินค้าคงคลัง",
+      "printFormPc": "ตรวจนับสินค้า",
+      "printFormSc": "ตรวจสอบเฉพาะจุด",
+      "printFormRfp": "ขอราคา",
+      "printFormEop": "สิ้นงวด",
       "printFormLoading": "กำลังโหลดแบบฟอร์ม…",
       "printFormUnknown": "⚠ ไม่พบเทมเพลต ({id})",
       "printFormUnavailable": "แบบฟอร์มที่บันทึกไว้ ({id})",
       "printFormLoadError": "โหลดรายการแบบฟอร์มรายงานไม่สำเร็จ",
-      "printFormSystemDefault": "ใช้ค่าเริ่มต้นของระบบ"
+      "printFormSystemDefault": "ใช้ค่าเริ่มต้นของระบบ",
+      "prAllowDuplicateProductDesc": "ให้ใบขอซื้อหนึ่งใบมีสินค้าตัวเดียวกันได้มากกว่าหนึ่งบรรทัด",
+      "siCostFromDesc": "ต้นทุนต่อหน่วยที่เติมให้เมื่อเพิ่มบรรทัดในใบรับเข้า",
+      "poGroupByPrCommentDesc": "ตอนสร้างใบสั่งซื้อจากใบขอซื้อ จัดกลุ่มบรรทัดตามหมายเหตุของใบขอซื้อ",
+      "printFormCustomCount": "ตั้งเอง {n} จาก {total}"
     }
   },
   "accounting": {

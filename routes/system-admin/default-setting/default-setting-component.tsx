@@ -113,6 +113,8 @@ export default function DefaultSettingComponent() {
   const configGroups = data
     ? groupConfigForRender(mergeSeededConfig(normalizeConfig(data.config)))
     : { sections: [], other: [] };
+  const docSections = configGroups.sections.filter((s) => s.id !== "printForm");
+  const printSection = configGroups.sections.find((s) => s.id === "printForm");
   const isBusy = !isProfileReady || isLoading;
 
   // มีการแก้ค้าง (dirty) ระหว่างโหมด edit → กัน discard โดยไม่ได้ตั้งใจ
@@ -157,6 +159,7 @@ export default function DefaultSettingComponent() {
 
   return (
     <FormPageShell
+      width="wide"
       header={
         <FormToolbar
           mode={editing ? "edit" : "view"}
@@ -176,34 +179,97 @@ export default function DefaultSettingComponent() {
 
       {!isError && isBusy && (
         <div>
-          <SettingSectionSkeleton first fields={["half"]} />
-          <SettingSectionSkeleton fields={["half"]} />
-          <SettingSectionSkeleton fields={["half"]} />
+          <SettingSectionSkeleton first fields={["full", "full", "full"]} />
+          <SettingSectionSkeleton
+            fields={["full", "full", "full", "full", "full", "full"]}
+          />
         </div>
       )}
 
       {!isError && !isBusy && data && (
         <form id={FORM_ID} onSubmit={onSubmit}>
-          {configGroups.sections.map((section, i) => (
+          {/* PR / SI / PO มีหมวดละ 1–2 ค่า — เดิมกินการ์ดใหญ่หมวดละใบ รวมเป็นรายการเดียว
+              แล้วใช้รหัสเอกสารหน้าแถวบอกว่าค่านั้นเป็นของเอกสารไหน */}
+          {docSections.length > 0 && (
             <SettingSection
-              key={section.id}
-              first={i === 0}
-              title={t(section.titleKey)}
-              description={t(section.descKey)}
+              first
+              plain
+              title={t("sections.documents")}
+              description={t("sections.documentsDesc")}
+            >
+              <div className="divide-y">
+                {docSections.flatMap((section) =>
+                  section.entries.map((entry) => (
+                    <ConfigField
+                      key={entry.item.key}
+                      editing={editing}
+                      form={form}
+                      index={entry.index}
+                      item={entry.item}
+                      code={entry.code ?? t(section.titleKey)}
+                      label={t(entry.labelKey)}
+                      description={entry.descKey ? t(entry.descKey) : undefined}
+                      yesLabel={t("yes")}
+                      noLabel={t("no")}
+                      options={
+                        entry.options
+                          ? resolveConfigOptions(
+                              entry.options,
+                              data.calculation_method,
+                              entry.item.value,
+                            ).map((o) => ({
+                              value: o.value,
+                              label: t(o.labelKey),
+                            }))
+                          : undefined
+                      }
+                    />
+                  )),
+                )}
+              </div>
+            </SettingSection>
+          )}
+
+          {printSection && (
+            <SettingSection
+              first={docSections.length === 0}
+              plain
+              title={t(printSection.titleKey)}
+              description={t(printSection.descKey)}
               action={
-                section.id === "printForm" && formTemplates.isError ? (
+                formTemplates.isError ? (
                   <p className="text-destructive text-xs" role="alert">
                     {t("config.printFormLoadError")}
                   </p>
-                ) : undefined
+                ) : (
+                  <p className="text-muted-foreground text-xs tabular-nums">
+                    {t("config.printFormCustomCount", {
+                      n: printSection.entries.filter((e) => e.item.value !== "")
+                        .length,
+                      total: printSection.entries.length,
+                    })}
+                  </p>
+                )
               }
             >
-              {section.entries.map((entry) => {
-                const group = entry.optionsGroup;
-                const options = group
-                  ? buildPrintFormOptions({
+              <div className="divide-y">
+                {printSection.entries.map((entry) => (
+                  <ConfigField
+                    key={entry.item.key}
+                    editing={editing}
+                    form={form}
+                    index={entry.index}
+                    item={entry.item}
+                    code={entry.code}
+                    label={t(entry.labelKey)}
+                    yesLabel={t("yes")}
+                    noLabel={t("no")}
+                    emptyIsDefault
+                    options={buildPrintFormOptions({
                       current: entry.item.value,
-                      list: formTemplates.data?.get(group),
+                      list: entry.optionsGroup
+                        ? formTemplates.data?.get(entry.optionsGroup)
+                        : undefined,
                       isLoading: formTemplates.isLoading,
                       isError: formTemplates.isError,
                       unknownLabel: t("config.printFormUnknown", {
@@ -214,31 +280,13 @@ export default function DefaultSettingComponent() {
                         id: entry.item.value,
                       }),
                       systemDefaultLabel: t("config.printFormSystemDefault"),
-                    })
-                  : entry.options
-                    ? resolveConfigOptions(
-                        entry.options,
-                        data.calculation_method,
-                        entry.item.value,
-                      ).map((o) => ({ value: o.value, label: t(o.labelKey) }))
-                    : undefined;
-                return (
-                  <ConfigField
-                    key={entry.item.key}
-                    editing={editing}
-                    form={form}
-                    index={entry.index}
-                    item={entry.item}
-                    label={t(entry.labelKey)}
-                    yesLabel={t("yes")}
-                    noLabel={t("no")}
-                    options={options}
-                    disabled={group !== undefined && formTemplates.isLoading}
+                    })}
+                    disabled={formTemplates.isLoading}
                   />
-                );
-              })}
+                ))}
+              </div>
             </SettingSection>
-          ))}
+          )}
         </form>
       )}
 

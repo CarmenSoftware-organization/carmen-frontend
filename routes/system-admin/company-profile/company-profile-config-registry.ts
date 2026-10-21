@@ -18,6 +18,10 @@ export interface SeededConfigItem {
   defaultValue: string;
   label: string;
   labelKey: string;
+  /** i18n key ของคำอธิบายสั้นใต้ป้าย (ไม่มี = ไม่โชว์) */
+  descKey?: string;
+  /** รหัสเอกสารที่โชว์เป็นป้ายหน้าแถว (เช่น "PR") — ไม่มี = ใช้ชื่อ section */
+  code?: string;
   options?: ConfigOption[];
   /**
    * สำหรับ enum ที่ options มาจาก report-template API (ไม่ใช่ static `options`)
@@ -45,6 +49,7 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
         defaultValue: "false",
         label: "Allow selecting duplicate products",
         labelKey: "config.prAllowDuplicateProduct",
+        descKey: "config.prAllowDuplicateProductDesc",
       },
     ],
   },
@@ -59,6 +64,7 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
         defaultValue: "last_cost",
         label: "Default price for added items",
         labelKey: "config.siCostFrom",
+        descKey: "config.siCostFromDesc",
         options: [
           {
             value: "average",
@@ -88,6 +94,7 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
         defaultValue: "false",
         label: "Group by PR comment",
         labelKey: "config.poGroupByPrComment",
+        descKey: "config.poGroupByPrCommentDesc",
       },
     ],
   },
@@ -116,6 +123,7 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
       defaultValue: "",
       label,
       labelKey,
+      code: type,
       optionsGroup: type,
     })),
   },
@@ -132,6 +140,8 @@ export interface ConfigSectionEntry {
   item: BusinessUnitConfigItem;
   index: number;
   labelKey: string;
+  descKey?: string;
+  code?: string;
   options?: ConfigOption[];
   optionsGroup?: string;
 }
@@ -175,6 +185,8 @@ export function groupConfigForRender(
         entries.push({
           ...found,
           labelKey: seeded.labelKey,
+          descKey: seeded.descKey,
+          code: seeded.code,
           options: seeded.options,
           optionsGroup: seeded.optionsGroup,
         });

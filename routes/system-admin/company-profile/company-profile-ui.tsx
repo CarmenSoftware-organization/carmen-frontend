@@ -392,13 +392,19 @@ export function NumberFormatField({
 }
 
 /**
- * Field ของ config หนึ่งรายการ — label มาจาก backend, value เก็บเป็น string เสมอ
+ * แถวของ config หนึ่งรายการ (หน้า Default Setting) — ป้าย + คำอธิบายซ้าย ค่า/คอนโทรลขวา
+ * value เก็บเป็น string เสมอ: boolean → Switch, enum (มี options) → Select, อื่นๆ → text input
  *
- * boolean → Switch, enum (มี options) → Select, อื่นๆ → text input. view แสดงค่าปัจจุบัน
+ * คีย์ดิบ (`item.key`) ไม่โชว์แล้ว — เป็นภาษา dev ผู้ใช้อ่านไม่ออก เหลือไว้ใน `title`
+ * ของป้ายให้ทีม support ชี้เมาส์ดูได้
  *
  * @param yesLabel/noLabel - ป้าย boolean ในโหมด view
  * @param label - override label ที่แสดง (เช่น i18n ของ seeded item); ไม่มี → ใช้ item.label
+ * @param description - คำอธิบายสั้นใต้ป้าย
+ * @param code - รหัสเอกสารหน้าแถว (เช่น "PR")
  * @param options - สำหรับ enum: รายการ {value,label} ที่ resolve แล้ว; ไม่มี → fallback text input
+ * @param emptyIsDefault - enum ที่ค่าว่าง = "ใช้ค่าของระบบ" → โหมดดูแสดงค่าจาง
+ *   ให้แถวที่ตั้งเองเด่นกว่า (แบบฟอร์มการพิมพ์ 12 แถวที่ส่วนใหญ่เป็นค่าระบบ)
  */
 export function ConfigField({
   editing,
@@ -408,8 +414,11 @@ export function ConfigField({
   yesLabel,
   noLabel,
   label,
+  description,
+  code,
   options,
   disabled,
+  emptyIsDefault,
 }: {
   readonly editing: boolean;
   readonly form: Form;
@@ -418,92 +427,122 @@ export function ConfigField({
   readonly yesLabel: string;
   readonly noLabel: string;
   readonly label?: string;
+  readonly description?: string;
+  readonly code?: string;
   readonly options?: readonly { value: string; label: string }[];
   readonly disabled?: boolean;
+  readonly emptyIsDefault?: boolean;
 }) {
   const isBool = item.datatype === "boolean";
   const isEnum = item.datatype === "enum" && options != null;
   const name = `config.${index}.value` as FormName;
   const displayLabel = label ?? item.label;
 
+  let control: React.ReactNode;
   if (!editing) {
     let displayValue: string;
+    let muted = false;
     if (isBool) {
       displayValue = item.value === "true" ? yesLabel : noLabel;
+      muted = item.value !== "true";
     } else if (isEnum) {
       const lookupValue = item.value === "" ? CONFIG_ENUM_EMPTY : item.value;
       displayValue =
         options.find((o) => o.value === lookupValue)?.label ?? item.value;
+      muted = !!emptyIsDefault && item.value === "";
     } else {
       displayValue = item.value;
     }
-    return (
-      <SettingField
-        label={displayLabel}
-        description={item.key}
-        value={displayValue}
+    control = (
+      <span
+        className={cn(
+          "inline-flex items-center gap-2 text-sm",
+          muted ? "text-muted-foreground" : "text-foreground font-medium",
+        )}
+      >
+        {!muted && (
+          <span
+            aria-hidden
+            className="bg-primary size-1.5 shrink-0 rounded-full"
+          />
+        )}
+        {displayValue || "—"}
+      </span>
+    );
+  } else if (isBool) {
+    control = (
+      <Controller
+        control={form.control}
+        name={name}
+        render={({ field }) => (
+          <Switch
+            id={name}
+            checked={field.value === "true"}
+            onCheckedChange={(v) => field.onChange(v ? "true" : "false")}
+          />
+        )}
       />
     );
-  }
-
-  if (isBool) {
-    return (
-      <EditShell label={displayLabel} description={item.key}>
-        <Controller
-          control={form.control}
-          name={name}
-          render={({ field }) => (
-            <Switch
-              checked={field.value === "true"}
-              onCheckedChange={(v) => field.onChange(v ? "true" : "false")}
-            />
-          )}
-        />
-      </EditShell>
+  } else if (isEnum) {
+    control = (
+      <Controller
+        control={form.control}
+        name={name}
+        render={({ field }) => {
+          const current = typeof field.value === "string" ? field.value : "";
+          return (
+            <Select
+              value={current === "" ? CONFIG_ENUM_EMPTY : current}
+              onValueChange={(v) =>
+                field.onChange(v === CONFIG_ENUM_EMPTY ? "" : v)
+              }
+              disabled={disabled}
+            >
+              <SelectTrigger id={name} size="sm" className="w-full text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {options.map((o) => (
+                  <SelectItem key={o.value} value={o.value} className="text-sm">
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        }}
+      />
     );
-  }
-
-  if (isEnum) {
-    return (
-      <EditShell label={displayLabel} description={item.key} htmlFor={name}>
-        <Controller
-          control={form.control}
-          name={name}
-          render={({ field }) => {
-            const current = typeof field.value === "string" ? field.value : "";
-            return (
-              <Select
-                value={current === "" ? CONFIG_ENUM_EMPTY : current}
-                onValueChange={(v) =>
-                  field.onChange(v === CONFIG_ENUM_EMPTY ? "" : v)
-                }
-                disabled={disabled}
-              >
-                <SelectTrigger id={name} size="sm" className="w-full text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {options.map((o) => (
-                    <SelectItem
-                      key={o.value}
-                      value={o.value}
-                      className="text-sm"
-                    >
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            );
-          }}
-        />
-      </EditShell>
-    );
+  } else {
+    control = <Input id={name} {...form.register(name)} className="h-8" />;
   }
 
   return (
-    <EditShell label={displayLabel} description={item.key} htmlFor={name}>
-      <Input {...form.register(name)} className="h-8" />
-    </EditShell>
+    <div className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          {code && (
+            <span className="bg-muted text-muted-foreground text-micro w-10 shrink-0 rounded py-0.5 text-center font-mono font-semibold">
+              {code}
+            </span>
+          )}
+          <Label
+            htmlFor={editing ? name : undefined}
+            title={item.key}
+            className="text-foreground text-sm font-medium"
+          >
+            {displayLabel}
+          </Label>
+        </div>
+        {description && (
+          <p className="text-muted-foreground mt-0.5 text-xs leading-snug">
+            {description}
+          </p>
+        )}
+      </div>
+      <div className={cn("flex shrink-0 sm:justify-end", !isBool && "sm:w-64")}>
+        {control}
+      </div>
+    </div>
   );
 }
