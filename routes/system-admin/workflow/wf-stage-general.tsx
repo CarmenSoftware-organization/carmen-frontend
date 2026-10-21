@@ -27,35 +27,13 @@ import { cn } from "@/lib/utils";
 import { WORKFLOW_TYPE, type Role } from "@/types/workflows";
 import type { WorkflowCreateModel } from "./wf-form-schema";
 import { getAllowedRoles } from "./wf-role-colors";
+import { ACTION_ROWS } from "./wf-action-meta";
 import {
   isSignatureCheckboxDisabled,
   type SignatureStageLike,
 } from "./wf-signature-limit";
 
 const slaUnitValues = ["minutes", "hours", "days"] as const;
-
-// จุดสีใช้ token เดียวกับปุ่ม action บนเอกสาร (approve / reject / send back) ให้ admin
-// จับคู่ได้ทันทีว่าเปิดตัวไหนแล้วปุ่มไหนโผล่ — สีพื้นใช้ได้ (ไม่ใช่สีตัวอักษร)
-const ACTION_ROWS = [
-  {
-    key: "approve",
-    labelKey: "actionApprove",
-    hintKey: "actionApproveHint",
-    dotClass: "bg-success",
-  },
-  {
-    key: "reject",
-    labelKey: "actionReject",
-    hintKey: "actionRejectHint",
-    dotClass: "bg-destructive",
-  },
-  {
-    key: "sendback",
-    labelKey: "actionSendBack",
-    hintKey: "actionSendBackHint",
-    dotClass: "bg-warning",
-  },
-] as const;
 
 interface WfStageGeneralProps {
   readonly form: UseFormReturn<WorkflowCreateModel>;

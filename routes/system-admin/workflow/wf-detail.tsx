@@ -21,6 +21,7 @@ import type { Workflow, User, Product, Stage } from "@/types/workflows";
 import {
   wfFormSchema,
   getWorkflowFormDefaults,
+  syncRecipientChannels,
   type WorkflowCreateModel,
 } from "./wf-form-schema";
 import { FormPageShell } from "@/components/share/form-page-shell";
@@ -133,7 +134,11 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
     !!form.formState.errors.name || !!form.formState.errors.workflow_type;
   const hasRoutingErrors = !!form.formState.errors.data?.routing_rules;
 
-  const onSubmit = (values: WorkflowCreateModel) => {
+  const onSubmit = (formValues: WorkflowCreateModel) => {
+    const values = {
+      ...formValues,
+      data: syncRecipientChannels(formValues.data),
+    };
     updateWorkflow.mutate(
       // doc_version round-trips the loaded record's version — backend requires it for optimistic-concurrency on update
       { id: workflow.id, doc_version: workflow.doc_version, ...values },
