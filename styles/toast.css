@@ -100,6 +100,8 @@
   color: var(--muted-foreground);
   font-size: inherit;
   line-height: inherit;
+  /* description ที่ประกอบด้วย \n (สรุปนำเข้า, error ต่อแถว) ต้องขึ้นบรรทัดใหม่จริง */
+  white-space: pre-line;
 }
 
 /* ปุ่มปิดอยู่ในกล่องมุมขวาบน ไม่ใช่วงกลมลอยที่มุมแบบ sonner

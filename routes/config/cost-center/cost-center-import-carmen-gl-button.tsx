@@ -67,8 +67,8 @@ export function CostCenterImportCarmenGlButton() {
     if (summary.in_use > 0) {
       const shown = result.in_use_codes.slice(0, MAX_SHOWN_CODES).join(", ");
       const more =
-        result.in_use_codes.length > MAX_SHOWN_CODES
-          ? ` … +${result.in_use_codes.length - MAX_SHOWN_CODES}`
+        summary.in_use > MAX_SHOWN_CODES
+          ? ` … +${summary.in_use - MAX_SHOWN_CODES}`
           : "";
       lines.push(t("inUse", { count: summary.in_use, codes: `${shown}${more}` }));
     }
