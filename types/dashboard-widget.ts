@@ -95,10 +95,23 @@ interface MatrixData {
  */
 type TableColumnType = "text" | "number" | "currency" | "date" | "icon" | "id";
 
+/**
+ * ช่องที่เป็นลิงก์ไปหาเอกสารของแถว — ค่าในนี้เป็น "คีย์ของคอลัมน์" ในแถวเดียวกัน ไม่ใช่ค่า
+ * (คอลัมน์พวกนั้น backend ประกาศเป็น type `id` ตารางจึงไม่วาด) · `doc_type` คือ
+ * `inventory_doc_type` ของ transaction ซึ่ง `cellDocHref` map เป็น route ของหน้าเว็บ
+ */
+export interface TableColumnLink {
+  readonly doc_type: string;
+  readonly doc_id: string;
+  /** คีย์ของเลขที่เอกสาร ใช้เป็น tooltip */
+  readonly title?: string;
+}
+
 export interface TableColumn {
   readonly key: string;
   readonly label: string;
   readonly type?: TableColumnType;
+  readonly link?: TableColumnLink;
 }
 
 export interface TableData {

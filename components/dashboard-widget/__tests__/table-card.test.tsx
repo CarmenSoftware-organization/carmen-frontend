@@ -131,4 +131,40 @@ describe("TableCard", () => {
     );
     expect(container.textContent).toContain("noData");
   });
+
+  it("links a cell to its row's document and keeps the carrier columns hidden", () => {
+    const data: TableData = {
+      columns: [
+        { key: "product_code", label: "Product ID", type: "text" },
+        {
+          key: "last_active_type",
+          label: "Type",
+          type: "text",
+          link: { doc_type: "last_doc_type", doc_id: "last_doc_id", title: "last_doc_no" },
+        },
+        { key: "last_doc_type", label: "", type: "id" },
+        { key: "last_doc_id", label: "", type: "id" },
+        { key: "last_doc_no", label: "", type: "id" },
+      ],
+      rows: [
+        { product_code: "11110051", last_active_type: "EOP-OUT", last_doc_type: "stock_out", last_doc_id: "so-1", last_doc_no: "SO260100004" },
+        { product_code: "T-06-A", last_active_type: "", last_doc_type: "", last_doc_id: null, last_doc_no: "" },
+      ],
+    };
+    const { container } = render(
+      <TableCard
+        widget={{ ...makeWidget(data), dataset_id: "inventory.slow-moving" }}
+        moduleName="inventory"
+        subTileFor={noop}
+      />,
+      { wrapper: MemoryRouter },
+    );
+    const links = container.querySelectorAll("a");
+    expect(links).toHaveLength(1);
+    expect(links[0].getAttribute("href")).toBe("/inventory-management/inventory-adjustment/so-1?type=stock-out");
+    expect(links[0].getAttribute("title")).toBe("SO260100004");
+    expect(links[0].textContent).toBe("EOP-OUT");
+    expect(container.textContent).not.toContain("stock_out");
+    expect(container.textContent).not.toContain("SO260100004");
+  });
 });

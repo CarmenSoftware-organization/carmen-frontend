@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { docHref, idColumnKey } from "../table-row-link";
+import { cellDocHref, docHref, idColumnKey } from "../table-row-link";
 import type { TableData } from "@/types/dashboard-widget";
 
 const table = (cols: TableData["columns"]): TableData => ({
@@ -80,5 +80,29 @@ describe("docHref", () => {
     expect(docHref("document.pr-table", { id: "a/b?c" }, "id")).toBe(
       "/procurement/purchase-request/a%2Fb%3Fc",
     );
+  });
+});
+
+describe("cellDocHref", () => {
+  const link = { doc_type: "last_doc_type", doc_id: "last_doc_id", title: "last_doc_no" };
+  const row = (type: unknown, id: unknown) => ({ last_doc_type: type, last_doc_id: id, last_doc_no: "X" });
+
+  it("routes every inventory document type to its own page", () => {
+    expect(cellDocHref(row("good_received_note", "g1"), link)).toBe("/procurement/goods-receive-note/g1");
+    expect(cellDocHref(row("credit_note", "c1"), link)).toBe("/procurement/credit-note/c1");
+    expect(cellDocHref(row("store_requisition", "r1"), link)).toBe("/store-operation/store-requisition/r1");
+    expect(cellDocHref(row("stock_in", "s1"), link)).toBe("/inventory-management/inventory-adjustment/s1?type=stock-in");
+    expect(cellDocHref(row("stock_out", "o1"), link)).toBe("/inventory-management/inventory-adjustment/o1?type=stock-out");
+  });
+
+  it("has no link without a document or for a type with no page", () => {
+    expect(cellDocHref(row("stock_out", ""), link)).toBeNull();
+    expect(cellDocHref(row("stock_out", null), link)).toBeNull();
+    expect(cellDocHref(row("", "o1"), link)).toBeNull();
+    expect(cellDocHref(row("close", "o1"), link)).toBeNull();
+  });
+
+  it("encodes the id", () => {
+    expect(cellDocHref(row("credit_note", "a/b"), link)).toBe("/procurement/credit-note/a%2Fb");
   });
 });
