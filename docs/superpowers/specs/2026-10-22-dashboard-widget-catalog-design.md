@@ -118,10 +118,11 @@ micro-data ตอบ `LabDatasetInfo` (`service/dashboard/lab.go`) = `DashboardM
 - จัดกลุ่มตาม prefix ของ dataset_id
 - แสดงทั้ง `supported_renders` ของ backend และผลตัดกับ FE renderer
 - ภาคผนวก display keys เป็นค่าคงที่ในสคริปต์
-- บัญชีที่ใช้ตอนพัฒนา: บัญชี god mode ของ dev (ดู memory "Local backend test accounts") ผ่าน env
-  `WIDGET_DOC_EMAIL` / `WIDGET_DOC_PASSWORD` — ผู้สร้าง **รันกับ dev ได้** (อ่านอย่างเดียว) เพื่อตรวจรูป response
-  และสร้าง `docs/dashboard-widgets.md` ชุดแรกที่ commit ถ้า login ด้วย `X_APP_ID` ของ config.prod.json แล้ว
-  ได้ 403 จาก endpoint `api-system/*` ให้หยุดแล้วรายงาน อย่าเดา app-id อื่น
+- บัญชี: ต้องเป็นบัญชี **platform** ที่มี `dashboard_template.read` (role platform_admin / cluster_admin /
+  support_manager) ผ่าน env `WIDGET_DOC_EMAIL` / `WIDGET_DOC_PASSWORD` — บัญชี zebra (god mode ฝั่ง business)
+  ยิง `api-system/dashboard-templates*` ได้ **403** (ยืนยันกับ dev แล้ว 2026-10-22) ต้องขอบัญชีจาก user
+  ระหว่างพัฒนาตรวจ render ด้วยข้อมูลฝั่ง BU แทน: `GET /api/T02/dashboard-lab/datasets` คืน payload
+  เดียวกับ catalog (95 ตัว) และ `GET /api/T02/dashboard-widgets/<module>/config` คืน system widget ที่กรองแล้ว
 - ลำดับ module (`DASHBOARD_MODULES`) อยู่แค่ใน gateway → hardcode 7 ตัวในสคริปต์ module ที่ไม่รู้จักต่อท้าย
 - แก้ comment ที่ล้าสมัยใน `types/dashboard-widget.ts` (บอกว่า system widget hardcode ที่ gateway —
   จริง ๆ เป็นแถว template ใน DB ของ platform ที่ gateway cache 60 วินาที)
