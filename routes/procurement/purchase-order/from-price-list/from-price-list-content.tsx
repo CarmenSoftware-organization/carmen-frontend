@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
-import { BackButton } from "@/components/share/back-button";
+import { DocFormHeader } from "@/components/share/doc-form-header";
 import { toast } from "sonner";
 import {
   useForm,
@@ -267,17 +267,12 @@ export function FromPriceListContent() {
 
   return (
     <div className="flex flex-col gap-4 p-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <header className="flex items-start gap-3">
-        <BackButton onClick={handleCancel} className="mt-0.5" />
-        <div className="min-w-0 flex-1 space-y-0.5">
-          <h1 className="text-foreground text-lg font-semibold tracking-tight">
-            {t("fromPriceList")}
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            {t("fromPriceListDesc")}
-          </p>
-        </div>
-      </header>
+      <DocFormHeader
+        flush
+        title={t("fromPriceList")}
+        subtitle={t("fromPriceListDesc")}
+        onBack={handleCancel}
+      />
 
       {/* Mobile + Tablet (< lg / 1024px): horizontal stepper on top */}
       <Stepper

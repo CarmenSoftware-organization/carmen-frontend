@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "use-intl";
-import { BackButton } from "@/components/share/back-button";
+import { DocFormHeader } from "@/components/share/doc-form-header";
 import {
   type ColumnDef,
   type SortingState,
@@ -185,43 +185,35 @@ export function QtyStep({ template, onBack, onContinue }: QtyStepProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <header className="flex items-start gap-3">
-        <BackButton onClick={onBack} className="mt-0.5" />
-        <div className="min-w-0 flex-1 space-y-0.5">
-          {/* workflow นำหน้าชื่อเทมเพลต — ใบที่กำลังจะเกิดเดินตาม workflow นี้
-              และเปลี่ยนทีหลังไม่ได้ ต้องเห็นก่อนกรอกจำนวน ไม่ใช่ไปรู้ในฟอร์ม */}
-          <h1 className="text-foreground flex min-w-0 items-baseline gap-1.5 text-lg font-semibold tracking-tight">
-            {template.workflow?.name && (
-              <>
-                <span>{template.workflow.name}</span>
-                <span className="text-muted-foreground/60 shrink-0 font-normal">
-                  ·
-                </span>
-              </>
-            )}
-            <span className="truncate">{template.name}</span>
-          </h1>
-          <p className="text-muted-foreground text-xs">
-            {t("templateQtyDesc")}
-          </p>
-        </div>
-        <Button
-          size="sm"
-          onClick={() =>
-            onContinue(
-              pickedItems.map((d) => ({
-                ...d,
-                requested_qty: qtyById[d.id] ?? 0,
-              })),
-            )
-          }
-          disabled={pickedItems.length === 0}
-          className="mr-10"
-        >
-          {tc("next")}
-          <ArrowRight />
-        </Button>
-      </header>
+      {/* workflow นำหน้าชื่อเทมเพลต — ใบที่กำลังจะเกิดเดินตาม workflow นี้
+          และเปลี่ยนทีหลังไม่ได้ ต้องเห็นก่อนกรอกจำนวน ไม่ใช่ไปรู้ในฟอร์ม */}
+      <DocFormHeader
+        flush
+        title={
+          template.workflow?.name
+            ? `${template.workflow.name} · ${template.name}`
+            : template.name
+        }
+        subtitle={t("templateQtyDesc")}
+        onBack={onBack}
+        actions={
+          <Button
+            size="sm"
+            onClick={() =>
+              onContinue(
+                pickedItems.map((d) => ({
+                  ...d,
+                  requested_qty: qtyById[d.id] ?? 0,
+                })),
+              )
+            }
+            disabled={pickedItems.length === 0}
+          >
+            {tc("next")}
+            <ArrowRight />
+          </Button>
+        }
+      />
 
       <div className="space-y-4 px-10">
         <DataGrid

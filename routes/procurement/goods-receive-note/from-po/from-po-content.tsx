@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useListReturn } from "@/hooks/use-list-return";
 import { useTranslations } from "use-intl";
-import { BackButton } from "@/components/share/back-button";
+import { DocFormHeader } from "@/components/share/doc-form-header";
 import { toast } from "sonner";
 import { ArrowRight, Check, ClipboardCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -118,20 +118,19 @@ export function FromPoContent() {
 
   return (
     <div className="flex flex-col gap-4 p-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <header className="flex items-start gap-3">
-        <BackButton onClick={handleCancel} className="mt-0.5" />
-        <div className="min-w-0 flex-1 space-y-0.5">
-          <h1 className="text-foreground text-lg font-semibold tracking-tight">
-            {t("fromPo")}
-          </h1>
-          <p className="text-muted-foreground text-sm">{t("fromPoDesc")}</p>
-        </div>
-        {selected.size > 0 && (
-          <Badge className="mt-0.5 shrink-0 tabular-nums">
-            {t("nSelected", { count: selected.size })}
-          </Badge>
-        )}
-      </header>
+      <DocFormHeader
+        flush
+        title={t("fromPo")}
+        subtitle={t("fromPoDesc")}
+        onBack={handleCancel}
+        badges={
+          selected.size > 0 && (
+            <Badge className="tabular-nums">
+              {t("nSelected", { count: selected.size })}
+            </Badge>
+          )
+        }
+      />
 
       <Stepper
         value={step}

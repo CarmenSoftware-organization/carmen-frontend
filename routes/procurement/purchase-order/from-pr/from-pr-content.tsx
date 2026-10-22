@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
-import { BackButton } from "@/components/share/back-button";
+import { DocFormHeader } from "@/components/share/doc-form-header";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import type { RowSelectionState } from "@tanstack/react-table";
@@ -149,30 +149,28 @@ export function FromPrContent() {
 
   return (
     <div className="flex flex-col gap-4 p-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <header className="flex items-start gap-3">
-        <BackButton onClick={handleCancel} className="mt-0.5" />
-        <div className="min-w-0 flex-1 space-y-0.5">
-          <h1 className="text-foreground text-lg font-semibold tracking-tight">
-            {t("fromPr")}
-          </h1>
-          <p className="text-muted-foreground text-sm">{t("fromPrDesc")}</p>
-        </div>
-        {step === LAST_STEP && (
-          <Button
-            size="sm"
-            className="mr-8"
-            onClick={() => setConfirmOpen(true)}
-            disabled={isConfirming}
-          >
-            {isConfirming ? (
-              <Loader2 className="animate-spin" aria-hidden="true" />
-            ) : (
-              <ClipboardCheck aria-hidden="true" />
-            )}
-            {tc("confirm")}
-          </Button>
-        )}
-      </header>
+      <DocFormHeader
+        flush
+        title={t("fromPr")}
+        subtitle={t("fromPrDesc")}
+        onBack={handleCancel}
+        actions={
+          step === LAST_STEP && (
+            <Button
+              size="sm"
+              onClick={() => setConfirmOpen(true)}
+              disabled={isConfirming}
+            >
+              {isConfirming ? (
+                <Loader2 className="animate-spin" aria-hidden="true" />
+              ) : (
+                <ClipboardCheck aria-hidden="true" />
+              )}
+              {tc("confirm")}
+            </Button>
+          )
+        }
+      />
 
       <Stepper
         value={step}
