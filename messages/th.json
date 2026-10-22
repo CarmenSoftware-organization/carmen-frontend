@@ -2850,7 +2850,8 @@
           "remoteFolder": "โฟลเดอร์บนเซิร์ฟเวอร์",
           "filePattern": "รูปแบบชื่อไฟล์",
           "scheduleTime": "เวลาดึงไฟล์ (HH:mm)",
-          "scheduleInvalid": "ใช้รูปแบบ 24 ชั่วโมง HH:mm เช่น 03:00"
+          "scheduleInvalid": "ใช้รูปแบบ 24 ชั่วโมง HH:mm เช่น 03:00",
+          "portInvalid": "พอร์ตต้องเป็นจำนวนเต็ม 1 ถึง 65535"
         },
         "micros3700": {
           "title": "Micros 3700",

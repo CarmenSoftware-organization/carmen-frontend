@@ -11,6 +11,9 @@ import { InterfacePageLayout } from "../interface-page-layout";
 import { TextField, ToggleField } from "../interface-fields";
 import { PosOperations } from "./pos-operations";
 
+/** mask ที่ backend ส่งกลับแทนรหัสผ่านที่เก็บไว้ */
+const ENCRYPTED_MASK = "***ENCRYPTED***";
+
 /** ตรงกับ regex ฝั่ง backend — 24 ชั่วโมง HH:mm */
 const SCHEDULE_TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -78,8 +81,16 @@ export default function PosSimphonyForm() {
       save(
         { ...values },
         {
-          // อยู่หน้าเดิม — แท็บงานอยู่หน้านี้
-          onSuccess: () => toast.success(t("saved")),
+          // อยู่หน้าเดิม — reset เป็นค่าที่เพิ่งบันทึก: refetch แล้วค่าเหมือนเดิมทุกประการ
+          // reference ไม่เปลี่ยน useEffect([value]) จึงไม่ยิง (ถ้าแก้แค่รหัสผ่าน form จะค้าง dirty)
+          // รหัสผ่านที่บันทึกแล้ว backend ตอบกลับเป็น mask เสมอ
+          onSuccess: () => {
+            toast.success(t("saved"));
+            form.reset({
+              ...values,
+              sftp_password: values.sftp_password ? ENCRYPTED_MASK : "",
+            });
+          },
         },
       ),
     () => scrollToFirstInvalidField(),
@@ -117,7 +128,7 @@ export default function PosSimphonyForm() {
         <TextField
           label={tp("port")}
           field={form.register("sftp_port")}
-          error={errors.sftp_port?.message}
+          error={errors.sftp_port ? tp("portInvalid") : undefined}
           placeholder="22"
         />
         <TextField

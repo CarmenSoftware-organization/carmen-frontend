@@ -2850,7 +2850,8 @@
           "remoteFolder": "Remote folder path",
           "filePattern": "File name pattern",
           "scheduleTime": "Pull time (HH:mm)",
-          "scheduleInvalid": "Use 24-hour HH:mm format, e.g. 03:00"
+          "scheduleInvalid": "Use 24-hour HH:mm format, e.g. 03:00",
+          "portInvalid": "Port must be a whole number from 1 to 65535"
         },
         "micros3700": {
           "title": "Micros 3700",

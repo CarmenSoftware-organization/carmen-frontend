@@ -49,7 +49,12 @@ export default function PosMicros3700Form() {
       save(
         { ...values },
         // อยู่หน้าเดิม — แท็บงานอยู่หน้านี้
-        { onSuccess: () => toast.success(t("saved")) },
+        {
+          onSuccess: () => {
+            toast.success(t("saved"));
+            form.reset(values);
+          },
+        },
       ),
     () => scrollToFirstInvalidField(),
   );
