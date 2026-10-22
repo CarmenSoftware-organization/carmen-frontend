@@ -226,7 +226,8 @@ interface CompositeWidgetListResponse {
 // System widget config (from /dashboard-widgets/{module}/config)
 // — config เปล่า ๆ ไม่มี data: หน้า module dashboard ยิงตัวนี้ก่อนเพื่อวาดกริด
 // แล้วค่อยให้แต่ละใบยิง dataset ของตัวเอง (ดู `useDashboardWidgetConfigs`)
-// ไม่มี `id` เพราะ system widget hardcode ที่ gateway ไม่มีแถวใน DB
+// ไม่มี `id` เพราะ gateway ส่งแค่ config — system widget คือแถว template ใน DB ของ
+// platform (kind=system) ที่ gateway cache 60 วิแล้วกรองตาม BU ไม่ใช่ค่าที่ hardcode
 // -------------------------------------------------------------
 export type SystemWidgetConfigItem = Omit<
   CompositeWidgetItem,
