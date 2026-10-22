@@ -2828,7 +2828,37 @@
         }
       },
       "showSecret": "Show",
-      "hideSecret": "Hide"
+      "hideSecret": "Hide",
+      "posSale": {
+        "tabs": {
+          "history": "Import history",
+          "outlets": "Outlet mapping",
+          "items": "Item mapping"
+        },
+        "simphony": {
+          "title": "Oracle Simphony",
+          "desc": "Receive daily POS sales from Oracle Simphony and post stock deductions.",
+          "sftp": "SFTP connection",
+          "sftpDesc": "Connection to the server holding the sales export files. Automatic pulling will be enabled in a later release; for now, import files manually from the Import history tab.",
+          "host": "SFTP host",
+          "port": "Port",
+          "username": "Username",
+          "password": "Password",
+          "passwordHint": "Leave as-is to keep the current password",
+          "pull": "Pull schedule",
+          "pullDesc": "Where and when to look for export files. Automatic pulling will be enabled in a later release.",
+          "remoteFolder": "Remote folder path",
+          "filePattern": "File name pattern",
+          "scheduleTime": "Pull time (HH:mm)",
+          "scheduleInvalid": "Use 24-hour HH:mm format, e.g. 03:00"
+        },
+        "micros3700": {
+          "title": "Micros 3700",
+          "desc": "Receive daily POS sales from Micros 3700 and post stock deductions.",
+          "general": "General",
+          "generalDesc": "Turn this brand on or off for the business unit. PDF upload will be available in a later release."
+        }
+      }
     },
     "emailProfile": {
       "badgeMicrosoft": "Microsoft",
