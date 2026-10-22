@@ -2911,6 +2911,9 @@
           "scheduleTime": "Pull time (HH:mm)",
           "scheduleInvalid": "Use 24-hour HH:mm format, e.g. 03:00",
           "portInvalid": "Port must be a whole number from 1 to 65535",
+          "hostInvalid": "Enter a valid host name or IP address",
+          "folderInvalid": "The folder path must not contain a \"..\" segment",
+          "patternInvalid": "The pattern must be 100 characters or fewer",
           "lastPull": {
             "title": "Latest automatic pull",
             "never": "No automatic pull has run yet.",
@@ -2924,7 +2927,19 @@
             },
             "summary": "Imported {imported} · Rejected {rejected} · Failed {failed} · Skipped {skipped}",
             "hostKey": "Server key (SHA-256): {fingerprint}",
-            "hostKeyHint": "Confirm this key with the SFTP administrator, then press Save on these settings again to trust the new key."
+            "hostKeyHint": "Confirm this key with the SFTP administrator, then press Save on these settings again to trust the new key.",
+            "loadError": "Could not load the latest pull status.",
+            "someFailed": "Some files failed to import. They will be retried on the next pull while they are still within the look-back window.",
+            "error": {
+              "unreachable": "Could not reach the SFTP server. Check the host and port, and that the server is online.",
+              "dnsNotFound": "The SFTP host name could not be resolved. Check the host spelling.",
+              "authFailed": "The server rejected the login. Check the username and password.",
+              "hostNotAllowed": "The host points to a local or metadata address, which is not allowed. Use the SFTP server address instead.",
+              "hostKeyMismatch": "The server key differs from the one trusted before.",
+              "secretUnreadable": "The saved password cannot be decrypted. Ask IT to set SECRET_ENCRYPTION_KEY and then save the password again.",
+              "stale": "The pull was interrupted before it finished (the service may have restarted). It will be retried.",
+              "unknown": "The pull failed. See the server logs for details."
+            }
           }
         },
         "micros3700": {

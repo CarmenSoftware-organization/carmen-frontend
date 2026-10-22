@@ -18,14 +18,28 @@ const ENCRYPTED_MASK = "***ENCRYPTED***";
 /** ตรงกับ regex ฝั่ง backend — 24 ชั่วโมง HH:mm */
 const SCHEDULE_TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+/** ชื่อโฮสต์ตาม RFC 1123 — ตรงกับ `SFTP_HOSTNAME_REGEX` ฝั่ง backend */
+const HOSTNAME =
+  /^(?=.{1,253}$)([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+/** IPv4 ทศนิยม 4 ส่วน 0-255 */
+const IPV4 = /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/;
+
+/** ค่าว่าง / ชื่อโฮสต์ / IPv4 / IPv6 (ต้องมี `:` และใช้เฉพาะอักขระ hex) */
+function isValidSftpHost(v: string): boolean {
+  if (v === "") return true;
+  if (IPV4.test(v) || HOSTNAME.test(v)) return true;
+  return v.includes(":") && /^[0-9a-fA-F:.]+(%[\w.-]+)?$/.test(v);
+}
+
 export const simphonySchema = z.object({
   enabled: z.boolean(),
-  sftp_host: z.string(),
+  sftp_host: z.string().refine(isValidSftpHost),
   sftp_port: z.coerce.number().int().min(1).max(65535),
   sftp_username: z.string(),
   sftp_password: z.string(),
-  remote_folder_path: z.string(),
-  file_pattern: z.string(),
+  remote_folder_path: z.string().refine((v) => !v.split("/").includes("..")),
+  file_pattern: z.string().max(100),
   schedule_time: z.string().regex(SCHEDULE_TIME),
 });
 
@@ -123,7 +137,7 @@ export default function PosSimphonyForm() {
         <TextField
           label={tp("host")}
           field={form.register("sftp_host")}
-          error={errors.sftp_host?.message}
+          error={errors.sftp_host ? tp("hostInvalid") : undefined}
           placeholder="sftp.example.com"
         />
         <TextField
@@ -152,13 +166,13 @@ export default function PosSimphonyForm() {
         <TextField
           label={tp("remoteFolder")}
           field={form.register("remote_folder_path")}
-          error={errors.remote_folder_path?.message}
+          error={errors.remote_folder_path ? tp("folderInvalid") : undefined}
           placeholder="/export/"
         />
         <TextField
           label={tp("filePattern")}
           field={form.register("file_pattern")}
-          error={errors.file_pattern?.message}
+          error={errors.file_pattern ? tp("patternInvalid") : undefined}
           placeholder="GLExport_*.txt"
         />
         <TextField

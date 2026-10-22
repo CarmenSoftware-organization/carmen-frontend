@@ -16,6 +16,18 @@ const STATUS_TONE: Record<PosSftpPullStatus, string> = {
   failed: "text-destructive",
 };
 
+/** ข้อความ error ที่ backend เก็บไว้ → คีย์ i18n (ข้อความอื่นไม่โชว์ดิบ เผื่อหลุดรายละเอียดภายใน) */
+const ERROR_KEY: Record<string, string> = {
+  unreachable: "unreachable",
+  dns_not_found: "dnsNotFound",
+  auth_failed: "authFailed",
+  host_not_allowed: "hostNotAllowed",
+  host_key_mismatch: "hostKeyMismatch",
+  "SFTP password cannot be decrypted — check SECRET_ENCRYPTION_KEY":
+    "secretUnreadable",
+  "run did not finish within 30 minutes (service restarted?)": "stale",
+};
+
 /**
  * สถานะรอบดึงไฟล์ Simphony ผ่าน SFTP ล่าสุด — แสดงใต้ส่วนตั้งเวลาดึงของหน้า Simphony
  *
@@ -38,49 +50,60 @@ export function PosSftpLastPull({ enabled }: { enabled: boolean }) {
     const code = error?.statusCode;
     if (code === 403 || code === 404) return null;
   }
+  const body = (() => {
+    if (isError)
+      return <p className="text-muted-foreground mt-2">{t("loadError")}</p>;
+    if (!data)
+      return <p className="text-muted-foreground mt-2">{t("never")}</p>;
+    return null;
+  })();
 
   return (
     <section
       aria-label={t("title")}
-      className="mt-6 rounded-lg border bg-card p-4 text-sm"
+      className="bg-card mt-6 rounded-lg border p-4 text-sm"
     >
       <h3 className="font-medium">{t("title")}</h3>
-      {!data ? (
-        <p className="mt-2 text-muted-foreground">{t("never")}</p>
-      ) : (
-        <div className="mt-2 space-y-1">
-          <p>
-            <span className="text-muted-foreground">
-              {formatDate(data.started_at, dateTimeFormat)}
-            </span>
-            {" · "}
-            <span className={cn("font-medium", STATUS_TONE[data.status])}>
-              {t(`status.${data.status}`)}
-            </span>
-          </p>
-          <p className="text-muted-foreground">
-            {t("summary", {
-              imported: data.files_imported,
-              rejected: data.files_rejected,
-              failed: data.files_failed,
-              skipped: data.files_skipped,
-            })}
-          </p>
-          {data.status !== "completed" && data.error_message && (
-            <p className="text-destructive">{data.error_message}</p>
-          )}
-          {data.status === "host_key_mismatch" && (
-            <div>
-              {data.host_key_sha256 && (
-                <p className="break-all font-mono text-muted-foreground">
-                  {t("hostKey", { fingerprint: data.host_key_sha256 })}
-                </p>
-              )}
-              <p className="text-muted-foreground">{t("hostKeyHint")}</p>
-            </div>
-          )}
-        </div>
-      )}
+      {body ??
+        (data ? (
+          <div className="mt-2 space-y-1">
+            <p>
+              <span className="text-muted-foreground">
+                {formatDate(data.started_at, dateTimeFormat)}
+              </span>
+              {" · "}
+              <span className={cn("font-medium", STATUS_TONE[data.status])}>
+                {t(`status.${data.status}`)}
+              </span>
+            </p>
+            <p className="text-muted-foreground">
+              {t("summary", {
+                imported: data.files_imported,
+                rejected: data.files_rejected,
+                failed: data.files_failed,
+                skipped: data.files_skipped,
+              })}
+            </p>
+            {data.status === "completed" && data.files_failed > 0 && (
+              <p className="text-warning-ink">{t("someFailed")}</p>
+            )}
+            {data.status !== "completed" && data.error_message && (
+              <p className="text-destructive">
+                {t(`error.${ERROR_KEY[data.error_message] ?? "unknown"}`)}
+              </p>
+            )}
+            {data.status === "host_key_mismatch" && (
+              <div>
+                {data.host_key_sha256 && (
+                  <p className="text-muted-foreground font-mono break-all">
+                    {t("hostKey", { fingerprint: data.host_key_sha256 })}
+                  </p>
+                )}
+                <p className="text-muted-foreground">{t("hostKeyHint")}</p>
+              </div>
+            )}
+          </div>
+        ) : null)}
     </section>
   );
 }
