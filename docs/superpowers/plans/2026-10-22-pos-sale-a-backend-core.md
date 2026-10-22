@@ -106,7 +106,7 @@
 
 **Interfaces:**
 - Produces: `export const POS_SALE_ADJUSTMENT_TYPE_CODE = 'SALE'` (ใน `pos-sale.constants.ts` — ไฟล์นี้ export ค่าคงที่ตัวเดียว)
-- Produces: `posSaleAdjustmentTypeSeedSet: SeedSetDef` — `key: 'pos-sale-adjustment-type'`, แถว `{ code: 'SALE', name: 'Sale', type: enum_adjustment_type.stock_out, description: 'Ingredient consumption from POS sales (recipe-based)' }`
+- Produces: `posSaleAdjustmentTypeSeedSet: SeedSetDef` — `key: 'pos-sale-adjustment-type'`, แถว `{ code: 'SALE', name: 'POS Sale', type: enum_adjustment_type.stock_out, description: 'Ingredient consumption from POS sales (recipe-based)' }`
 
 - [ ] **Step 1:** เขียน seed set ตามรูป `adjustment-type.seed-set.ts` แต่ `listMissing` ตรวจ **code อย่างเดียว** — เหตุผล (ใส่เป็นคอมเมนต์ไทย): set เดิมข้ามแถวเมื่อมี type ซ้ำ ซึ่งทุก BU มี stock_out type อยู่แล้ว แถวนี้จะไม่ถูกสร้างเลย
   — code `SALE` เป็นคำสามัญ BU อาจตั้งเองไว้แล้ว: ถ้ามีแถว `SALE` อยู่แล้ว seed ข้าม (unique `AT1_code_u`) และ confirm ใช้แถวนั้นเมื่อเป็น type `stock_out` ที่ active ไม่งั้นได้ `POS_SALE_ADJUSTMENT_TYPE_MISSING` — ก่อน deploy ให้ query ทุก BU หาแถว code `SALE` ที่ type ไม่ใช่ `stock_out` แล้วรายงาน user
