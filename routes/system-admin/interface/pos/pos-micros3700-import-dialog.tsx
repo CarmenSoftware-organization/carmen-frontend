@@ -51,6 +51,18 @@ export type Micros3700Ready = Extract<PosMicros3700CheckResult, { kind: "ready" 
 
 type Decision = "skip" | "overwrite";
 
+/** ชุด live เดิมยังเป็นชุดเดียวกับที่ผู้ใช้เห็นไหม (import เดียวกัน + Stock Out ชุดเดียวกัน ลำดับใดก็ได้) */
+function sameExisting(
+  a: PosMicros3700OutletCheck["existing"],
+  b: PosMicros3700OutletCheck["existing"],
+): boolean {
+  if (!a || !b) return a === b;
+  if (a.import_id !== b.import_id) return false;
+  const ids = new Set(a.stock_out_ids);
+  const other = new Set(b.stock_out_ids);
+  return ids.size === other.size && [...other].every((id) => ids.has(id));
+}
+
 const ACTION_TONE: Record<PosMicros3700OutletAction, DotTone> = {
   imported: "success",
   overwritten: "success",
@@ -63,8 +75,9 @@ const ACTION_TONE: Record<PosMicros3700OutletAction, DotTone> = {
  * ที่มีอยู่แล้ว → นำเข้า → ผลต่อ Outlet
  *
  * เขียนทับ Outlet ที่ยืนยันแล้วต้องยกเลิก Stock Out เดิม จึงต้องมีสิทธิ์ `stock_out.delete`
- * (backend ตรวจซ้ำ) · `needs_resolution` = มีคนนำเข้าวันเดียวกันระหว่างนี้ → แทนตารางด้วยชุดใหม่
- * ให้เลือกอีกครั้ง · parent unmount dialog เมื่อปิด state ทั้งหมดจึงล้างเอง
+ * (backend ตรวจซ้ำ) · การเขียนทับส่งชุด live + Stock Out ที่ผู้ใช้เห็นไปด้วย ·
+ * `needs_resolution` = มีคนนำเข้า/ยืนยัน/เขียนทับวันเดียวกันระหว่างนี้ → แทนตารางด้วยชุดใหม่ และ
+ * Outlet ที่ชุดเปลี่ยนกลับเป็น ข้าม ให้เลือกอีกครั้ง · parent unmount dialog เมื่อปิด state ทั้งหมดจึงล้างเอง
  *
  * @param props.open เปิดอยู่หรือไม่
  * @param props.onOpenChange เรียกเมื่อ dialog ต้องเปิด/ปิด
@@ -129,9 +142,13 @@ export function PosMicros3700ImportDialog({
         file_name: payload.file_name,
         lines: payload.lines,
         extract_ms: payload.extract_ms,
-        overwrite_outlet_codes: existing
+        overwrite: existing
           .filter((o) => decisionOf(o) === "overwrite")
-          .map((o) => o.code),
+          .map((o) => ({
+            code: o.code,
+            import_id: o.existing?.import_id ?? "",
+            stock_out_ids: o.existing?.stock_out_ids ?? [],
+          })),
         skip_outlet_codes: existing
           .filter((o) => decisionOf(o) === "skip")
           .map((o) => o.code),
@@ -139,6 +156,15 @@ export function PosMicros3700ImportDialog({
       {
         onSuccess: (res) => {
           if (res.kind === "needs_resolution") {
+            const seen = new Map(outlets.map((o) => [o.code, o.existing]));
+            setDecisions((prev) => {
+              const next = { ...prev };
+              for (const o of res.outlets) {
+                if (!sameExisting(seen.get(o.code) ?? null, o.existing))
+                  delete next[o.code];
+              }
+              return next;
+            });
             setOutlets(res.outlets);
             toast.warning(t("needsResolution"));
             return;

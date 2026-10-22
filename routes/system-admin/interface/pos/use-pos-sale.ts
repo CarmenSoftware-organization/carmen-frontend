@@ -23,6 +23,7 @@ import type {
   PosMicros3700CheckResult,
   PosMicros3700ImportResult,
   PosMicros3700OutletResult,
+  PosMicros3700Overwrite,
   PosOutlet,
   PosPreview,
   PosShortage,
@@ -279,11 +280,15 @@ export function useCheckMicros3700() {
   });
 }
 
-/** นำเข้ารายงาน Micros 3700 ต่อ Outlet — Outlet ที่มีอยู่แล้วต้องระบุข้ามหรือเขียนทับ ไม่งั้น `needs_resolution` */
+/**
+ * นำเข้ารายงาน Micros 3700 ต่อ Outlet — Outlet ที่มีอยู่แล้วต้องระบุข้าม หรือเขียนทับพร้อมชุดที่เห็นตอนตรวจ
+ * ไม่งั้น (หรือชุดเปลี่ยนไปแล้ว) ได้ `needs_resolution` · เขียนทับ void Stock Out เดิมได้ จึง invalidate
+ * รายการ/รายละเอียด Stock Out ด้วย
+ */
 export function useImportMicros3700() {
   return usePosMutation<
     Micros3700CheckVariables & {
-      overwrite_outlet_codes: string[];
+      overwrite: PosMicros3700Overwrite[];
       skip_outlet_codes: string[];
     },
     PosMicros3700ImportResult
@@ -301,6 +306,7 @@ export function useImportMicros3700() {
       [QUERY_KEYS.POS_SALE_STORES],
       [QUERY_KEYS.POS_SALE_OUTLETS],
       [QUERY_KEYS.POS_SALE_ITEMS],
+      [QUERY_KEYS.INVENTORY_ADJUSTMENTS],
     ],
   });
 }

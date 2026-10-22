@@ -248,6 +248,16 @@ export interface PosMicros3700Existing {
   created_at: string | null;
 }
 
+/**
+ * Outlet ที่เลือกเขียนทับ พร้อมชุด live และ Stock Out ที่ผู้ใช้เห็นตอนตรวจ — ถ้าชุดเปลี่ยนไปแล้ว
+ * backend ไม่เขียนอะไรและตอบ `needs_resolution`
+ */
+export interface PosMicros3700Overwrite {
+  code: string;
+  import_id: string;
+  stock_out_ids: string[];
+}
+
 /** Outlet หนึ่งในไฟล์ที่ตรวจแล้ว */
 export interface PosMicros3700OutletCheck {
   code: string;

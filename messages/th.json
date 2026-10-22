@@ -1079,6 +1079,8 @@
       "POS_SALE_OVERWRITE_VOID_FORBIDDEN": "ไม่สามารถเขียนทับ Outlet {outlet} ได้ เพราะคุณไม่มีสิทธิ์ยกเลิก Stock Out ที่ยืนยันไปแล้ว",
       "POS_SALE_OVERWRITE_CONFLICT": "Outlet {outlet} กำลังถูกเขียนทับหรือเพิ่งถูกเขียนทับโดยผู้อื่น",
       "POS_SALE_OUTLET_ALREADY_IMPORTED": "Outlet {outlet} มีการนำเข้าของวันที่ {date} อยู่แล้ว",
+      "POS_SALE_OUTLET_IMPORT_FAILED": "นำเข้า Outlet {outlet} ไม่สำเร็จเพราะเกิดข้อผิดพลาดที่ไม่คาดคิด อัปโหลดไฟล์อีกครั้งเพื่อลองใหม่",
+      "POS_SALE_IMPORT_TIME_BUDGET": "ยังไม่ได้นำเข้า Outlet {outlet} เพราะการอัปโหลดครั้งนี้ใช้เวลาเกินกำหนด อัปโหลดไฟล์อีกครั้งเพื่อนำเข้า Outlet ที่เหลือ",
       "STOCK_OUT_DATE_NOT_CURRENT_PERIOD": "ใบจ่ายออกลงวันที่ได้เฉพาะในงวดปัจจุบัน ({period}: {start} ถึง {end})",
       "STOCK_OUT_NO_OPEN_PERIOD": "ไม่มีงวดสินค้าคงคลังที่เปิดอยู่ จึงบันทึกใบจ่ายออกไม่ได้",
       "STOCK_OUT_ALREADY_VOIDED": "รายการเบิกออกถูกยกเลิกแล้ว"

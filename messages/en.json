@@ -1079,6 +1079,8 @@
       "POS_SALE_OVERWRITE_VOID_FORBIDDEN": "Cannot overwrite outlet {outlet}: you are not allowed to void its confirmed Stock Out",
       "POS_SALE_OVERWRITE_CONFLICT": "Outlet {outlet} is being overwritten or was just overwritten by someone else",
       "POS_SALE_OUTLET_ALREADY_IMPORTED": "Outlet {outlet} already has an import for {date}",
+      "POS_SALE_OUTLET_IMPORT_FAILED": "Outlet {outlet} could not be imported because of an unexpected error; upload the file again to retry it",
+      "POS_SALE_IMPORT_TIME_BUDGET": "Outlet {outlet} was not imported because this upload ran out of time; upload the file again to finish the remaining outlets",
       "STOCK_OUT_DATE_NOT_CURRENT_PERIOD": "A stock-out can only be dated inside the current period ({period}: {start} to {end})",
       "STOCK_OUT_NO_OPEN_PERIOD": "No inventory period is open, so a stock-out cannot be recorded",
       "STOCK_OUT_ALREADY_VOIDED": "Stock out is already voided"
