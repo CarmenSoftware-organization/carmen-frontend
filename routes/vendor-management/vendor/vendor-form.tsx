@@ -12,6 +12,8 @@ import { useEntityForm } from "@/hooks/use-entity-form";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { FormToolbar } from "@/components/share/form-toolbar";
+import { PrintDocumentButton } from "@/components/print-document-button";
+import { VENDOR_DETAIL_TEMPLATE_ID } from "@/lib/print-document";
 import {
   useCreateVendor,
   useDeleteVendor,
@@ -261,7 +263,16 @@ export function VendorForm({ vendor }: VendorFormProps) {
               {!isAdd && <StatusBadge active={watchedActive} />}
             </>
           }
-        />
+        >
+          {/* Vendor Detail Report ของผู้ขายรายนี้ — ไม่อยู่ในหน้ารายการรายงาน */}
+          {f.mode === "view" && vendor?.code && (
+            <PrintDocumentButton
+              documentType="VENDOR"
+              templateId={VENDOR_DETAIL_TEMPLATE_ID}
+              filters={{ VendorFrom: vendor.code, VendorTo: vendor.code, Status: "ALL" }}
+            />
+          )}
+        </FormToolbar>
       }
     >
       <form
