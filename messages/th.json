@@ -1075,7 +1075,13 @@
       "POS_SALE_ADJUSTMENT_TYPE_MISSING": "ไม่พบประเภทการปรับปรุง Stock Out รหัส {code}",
       "POS_SALE_UNRESOLVED_INGREDIENTS": "ไม่สามารถคำนวณวัตถุดิบได้ {count} รายการ (แปลงหน่วยไม่ได้ ปริมาณผลผลิตเป็นศูนย์ หรือสูตรซ้อนลึกเกินไป)",
       "POS_SALE_INSUFFICIENT_STOCK": "สินค้าคงเหลือไม่เพียงพอ {count} รายการ ที่ {location} ณ วันที่ {date}",
-      "POS_SALE_CONFIRM_CONFLICT": "Outlet นี้กำลังถูกยืนยันหรือเพิ่งถูกยืนยันไปแล้ว"
+      "POS_SALE_CONFIRM_CONFLICT": "Outlet นี้กำลังถูกยืนยันหรือเพิ่งถูกยืนยันไปแล้ว",
+      "POS_SALE_OVERWRITE_VOID_FORBIDDEN": "ไม่สามารถเขียนทับ Outlet {outlet} ได้ เพราะคุณไม่มีสิทธิ์ยกเลิก Stock Out ที่ยืนยันไปแล้ว",
+      "POS_SALE_OVERWRITE_CONFLICT": "Outlet {outlet} กำลังถูกเขียนทับหรือเพิ่งถูกเขียนทับโดยผู้อื่น",
+      "POS_SALE_OUTLET_ALREADY_IMPORTED": "Outlet {outlet} มีการนำเข้าของวันที่ {date} อยู่แล้ว",
+      "STOCK_OUT_DATE_NOT_CURRENT_PERIOD": "ใบจ่ายออกลงวันที่ได้เฉพาะในงวดปัจจุบัน ({period}: {start} ถึง {end})",
+      "STOCK_OUT_NO_OPEN_PERIOD": "ไม่มีงวดสินค้าคงคลังที่เปิดอยู่ จึงบันทึกใบจ่ายออกไม่ได้",
+      "STOCK_OUT_ALREADY_VOIDED": "รายการเบิกออกถูกยกเลิกแล้ว"
     }
   },
   "validation": {

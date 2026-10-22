@@ -40,6 +40,12 @@ export interface PosImportListItem extends PosImportSummary {
   created_at: string | null;
   line_count: number;
   confirmed_line_count: number;
+  /** รหัสชุดนำเข้าของไฟล์เดียวกัน (Micros 3700: หนึ่งไฟล์ = หลาย Outlet) — null = ไม่ได้มาจากชุด */
+  batch_id: string | null;
+  /** Outlet ของการนำเข้านี้ (Micros 3700: หนึ่งการนำเข้าต่อ Outlet) */
+  outlet_id: string | null;
+  /** id ของการนำเข้าใหม่ที่เขียนทับรายการนี้ — null = ยังไม่ถูกเขียนทับ */
+  replaced_by_id: string | null;
 }
 
 /** ร้าน POS ตามหัวไฟล์ */
@@ -94,6 +100,12 @@ export interface PosImportDetail extends PosImportSummary {
   created_at: string | null;
   outlets: PosImportOutlet[];
   lines: PosImportLine[];
+  /** รหัสชุดนำเข้าของไฟล์เดียวกัน (Micros 3700: หนึ่งไฟล์ = หลาย Outlet) — null = ไม่ได้มาจากชุด */
+  batch_id: string | null;
+  /** Outlet ของการนำเข้านี้ (Micros 3700: หนึ่งการนำเข้าต่อ Outlet) */
+  outlet_id: string | null;
+  /** id ของการนำเข้าใหม่ที่เขียนทับรายการนี้ — null = ยังไม่ถูกเขียนทับ */
+  replaced_by_id: string | null;
 }
 
 /** ร้าน POS พร้อมจำนวนการผูก */
@@ -211,3 +223,85 @@ export interface PosShortage {
   requested: number;
   available: number;
 }
+
+/** ยอดรวมที่คำนวณเทียบกับที่รายงานพิมพ์ไว้ — ต่างเกิน 0.05 = ไฟล์ถูกปฏิเสธ */
+export interface PosMicros3700Footing {
+  computed_total: number;
+  reported_total: number;
+  outlets: {
+    code: string;
+    computed_total: number;
+    computed_qty: number;
+    reported_total: number | null;
+    reported_qty: number | null;
+  }[];
+}
+
+/** การนำเข้า live เดิมของ Outlet/วันเดียวกัน (ถ้านำเข้าอีกต้องเลือกข้ามหรือเขียนทับ) */
+export interface PosMicros3700Existing {
+  import_id: string;
+  line_count: number;
+  total: number;
+  confirmed_line_count: number;
+  /** Stock Out ที่เกิดจากการยืนยัน — เขียนทับแล้วจะถูกยกเลิก */
+  stock_out_ids: string[];
+  created_at: string | null;
+}
+
+/** Outlet หนึ่งในไฟล์ที่ตรวจแล้ว */
+export interface PosMicros3700OutletCheck {
+  code: string;
+  name: string;
+  line_count: number;
+  qty: number;
+  total: number;
+  /** ยอด Total ของ Outlet ที่รายงานพิมพ์ไว้ — null = รายงานไม่มี */
+  reported_total: number | null;
+  /** null = ยังไม่เคยนำเข้า (ใหม่) */
+  existing: PosMicros3700Existing | null;
+}
+
+/** ผลตรวจไฟล์ — `rejected` = ไฟล์ถูกบันทึกเป็นประวัติที่ไม่สำเร็จแล้ว */
+export type PosMicros3700CheckResult =
+  | { kind: "rejected"; import: PosImportSummary }
+  | {
+      kind: "ready";
+      doc_date: string;
+      store_name: string;
+      detected_version: string | null;
+      footing: PosMicros3700Footing;
+      outlets: PosMicros3700OutletCheck[];
+    };
+
+/** สิ่งที่เกิดกับ Outlet หนึ่งตอนนำเข้า */
+export type PosMicros3700OutletAction =
+  | "imported"
+  | "overwritten"
+  | "skipped"
+  | "failed";
+
+/** ผลของ Outlet หนึ่งตอนนำเข้า — Outlet ที่ล้มไม่กระทบ Outlet อื่น */
+export interface PosMicros3700OutletResult {
+  code: string;
+  name: string;
+  action: PosMicros3700OutletAction;
+  import_id: string | null;
+  /** Stock Out ที่ถูกยกเลิกไปแล้วระหว่างเขียนทับ (มีค่าได้แม้ `failed`) */
+  voided_stock_out_ids: string[];
+  error: {
+    app_code: string | null;
+    message: string;
+    params: Record<string, string | number>;
+  } | null;
+}
+
+/** ผลนำเข้า — `needs_resolution` = ไม่ได้เขียนอะไร ต้องเลือกข้าม/เขียนทับใหม่ */
+export type PosMicros3700ImportResult =
+  | { kind: "rejected"; import: PosImportSummary }
+  | { kind: "needs_resolution"; outlets: PosMicros3700OutletCheck[] }
+  | {
+      kind: "imported";
+      batch_id: string;
+      doc_date: string;
+      outlets: PosMicros3700OutletResult[];
+    };

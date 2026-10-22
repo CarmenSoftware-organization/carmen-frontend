@@ -1075,7 +1075,13 @@
       "POS_SALE_ADJUSTMENT_TYPE_MISSING": "Stock Out adjustment type {code} was not found",
       "POS_SALE_UNRESOLVED_INGREDIENTS": "{count} ingredients could not be resolved (unit conversion failed, yield is zero or recipe is nested too deeply)",
       "POS_SALE_INSUFFICIENT_STOCK": "Insufficient stock for {count} products at {location} on {date}",
-      "POS_SALE_CONFIRM_CONFLICT": "This outlet is already being confirmed or has just been confirmed"
+      "POS_SALE_CONFIRM_CONFLICT": "This outlet is already being confirmed or has just been confirmed",
+      "POS_SALE_OVERWRITE_VOID_FORBIDDEN": "Cannot overwrite outlet {outlet}: you are not allowed to void its confirmed Stock Out",
+      "POS_SALE_OVERWRITE_CONFLICT": "Outlet {outlet} is being overwritten or was just overwritten by someone else",
+      "POS_SALE_OUTLET_ALREADY_IMPORTED": "Outlet {outlet} already has an import for {date}",
+      "STOCK_OUT_DATE_NOT_CURRENT_PERIOD": "A stock-out can only be dated inside the current period ({period}: {start} to {end})",
+      "STOCK_OUT_NO_OPEN_PERIOD": "No inventory period is open, so a stock-out cannot be recorded",
+      "STOCK_OUT_ALREADY_VOIDED": "Stock out is already voided"
     }
   },
   "validation": {

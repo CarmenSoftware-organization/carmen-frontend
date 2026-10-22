@@ -307,6 +307,10 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/pos-sales/imports`,
   POS_SALE_IMPORT_SIMPHONY: (buCode: string) =>
     `/api/proxy/api/${buCode}/pos-sales/imports/simphony`,
+  POS_SALE_IMPORT_MICROS3700_CHECK: (buCode: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/imports/micros3700/check`,
+  POS_SALE_IMPORT_MICROS3700: (buCode: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/imports/micros3700`,
   POS_SALE_IMPORT: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/pos-sales/imports/${encodeURIComponent(id)}`,
   POS_SALE_IMPORT_PREVIEW: (buCode: string, id: string) =>

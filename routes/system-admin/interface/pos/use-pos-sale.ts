@@ -11,6 +11,7 @@ import { ApiError } from "@/lib/api-error";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { QUERY_KEYS } from "@/constant/query-keys";
 import { CACHE_DYNAMIC } from "@/lib/cache-config";
+import type { TranslationFn } from "@/lib/i18n-schema";
 import type { PaginatedResponse, ParamsDto } from "@/types/params";
 import type {
   PosBrand,
@@ -19,6 +20,9 @@ import type {
   PosImportListItem,
   PosImportSummary,
   PosItem,
+  PosMicros3700CheckResult,
+  PosMicros3700ImportResult,
+  PosMicros3700OutletResult,
   PosOutlet,
   PosPreview,
   PosShortage,
@@ -61,6 +65,31 @@ export function usePosImports(
     ...CACHE_DYNAMIC,
     ...options,
     enabled: !!buCode && (options?.enabled ?? true),
+  });
+}
+
+/**
+ * การนำเข้าทั้งหมดของชุดเดียวกัน (ไฟล์ Micros 3700 หนึ่งไฟล์ = หนึ่งรายการต่อ Outlet)
+ *
+ * @param batchId - รหัสชุดจากผลนำเข้า — ไม่มี = ไม่ยิง
+ */
+export function usePosBatchImports(batchId: string | null | undefined) {
+  const buCode = useBuCode();
+  return useQuery<PosImportListItem[]>({
+    queryKey: [QUERY_KEYS.POS_SALE_IMPORTS, buCode, "batch", batchId],
+    queryFn: async () =>
+      (
+        await getJson<PaginatedResponse<PosImportListItem>>(
+          buildUrl(API_ENDPOINTS.POS_SALE_IMPORTS(buCode!), {
+            batch_id: batchId ?? undefined,
+            perpage: 50,
+            brand: "micros3700",
+          }),
+          "Failed to load POS batch imports",
+        )
+      ).data,
+    ...CACHE_DYNAMIC,
+    enabled: !!buCode && !!batchId,
   });
 }
 
@@ -227,6 +256,70 @@ export function useUploadSimphony() {
       [QUERY_KEYS.POS_SALE_ITEMS],
     ],
   });
+}
+
+/** บรรทัดข้อความที่อ่านจาก PDF ในเบราว์เซอร์ — PDF ไม่ถูกส่งขึ้นเซิร์ฟเวอร์ */
+interface Micros3700CheckVariables {
+  file_name: string;
+  lines: string[][];
+  /** เวลาที่ใช้อ่าน PDF (ms) */
+  extract_ms: number;
+}
+
+/** ตรวจไฟล์ Micros 3700 — ไฟล์ที่ถูกปฏิเสธถูกบันทึกเป็นประวัติตั้งแต่ขั้นนี้ ส่วน `ready` ไม่เขียนอะไร */
+export function useCheckMicros3700() {
+  return usePosMutation<Micros3700CheckVariables, PosMicros3700CheckResult>({
+    call: (buCode, variables) =>
+      httpClient.post(
+        API_ENDPOINTS.POS_SALE_IMPORT_MICROS3700_CHECK(buCode),
+        variables,
+      ),
+    errorMessage: "Failed to check Micros 3700 report",
+    invalidate: () => [[QUERY_KEYS.POS_SALE_IMPORTS]],
+  });
+}
+
+/** นำเข้ารายงาน Micros 3700 ต่อ Outlet — Outlet ที่มีอยู่แล้วต้องระบุข้ามหรือเขียนทับ ไม่งั้น `needs_resolution` */
+export function useImportMicros3700() {
+  return usePosMutation<
+    Micros3700CheckVariables & {
+      overwrite_outlet_codes: string[];
+      skip_outlet_codes: string[];
+    },
+    PosMicros3700ImportResult
+  >({
+    call: (buCode, variables) =>
+      httpClient.post(
+        API_ENDPOINTS.POS_SALE_IMPORT_MICROS3700(buCode),
+        variables,
+      ),
+    errorMessage: "Failed to import Micros 3700 report",
+    invalidate: () => [
+      [QUERY_KEYS.POS_SALE_IMPORTS],
+      [QUERY_KEYS.POS_SALE_IMPORT],
+      [QUERY_KEYS.POS_SALE_PREVIEW],
+      [QUERY_KEYS.POS_SALE_STORES],
+      [QUERY_KEYS.POS_SALE_OUTLETS],
+      [QUERY_KEYS.POS_SALE_ITEMS],
+    ],
+  });
+}
+
+/**
+ * ข้อความของ Outlet ที่นำเข้าไม่สำเร็จ
+ *
+ * @param error - `error` ของ `PosMicros3700OutletResult`
+ * @param t - แปลจาก namespace `errors`
+ * @returns ข้อความแปลตาม `byCode.<app_code>` พร้อม params ไม่งั้นใช้ `message` จาก backend
+ */
+export function outletErrorMessage(
+  error: PosMicros3700OutletResult["error"],
+  t: TranslationFn,
+): string {
+  if (!error) return "";
+  const key = `byCode.${error.app_code}`;
+  if (error.app_code && t.has?.(key)) return t(key, error.params);
+  return error.message;
 }
 
 /** ยกเลิกการนำเข้า (ไม่ได้ถ้ามีบรรทัดที่ยืนยันแล้ว) */
