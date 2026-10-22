@@ -2913,7 +2913,7 @@
           "title": "Micros 3700",
           "desc": "รับยอดขายรายวันจาก Micros 3700 และตัดสต็อก",
           "general": "ทั่วไป",
-          "generalDesc": "เปิดหรือปิดแบรนด์นี้สำหรับหน่วยธุรกิจ การอัปโหลด PDF จะมาในรุ่นถัดไป"
+          "generalDesc": "เปิดหรือปิดแบรนด์นี้สำหรับหน่วยธุรกิจ อัปโหลดรายงาน PDF รายวันได้ที่แท็บประวัติการนำเข้า"
         },
         "store": {
           "label": "ร้าน",
@@ -3038,6 +3038,50 @@
           "too_deep": "สูตรย่อยซ้อนกันลึกเกินไป",
           "recipe_unusable": "สูตรถูกปิดใช้หรือใช้ไม่ได้",
           "empty_recipe": "สูตรไม่มีวัตถุดิบ"
+        },
+        "micros3700Upload": {
+          "action": "อัปโหลด PDF",
+          "reading": "กำลังอ่าน PDF…",
+          "checking": "กำลังตรวจ…",
+          "tooLarge": "ไฟล์ {name} ใหญ่เกิน 20 MB",
+          "pdfPassword": "PDF นี้มีรหัสผ่าน ให้ export รายงานใหม่แบบไม่ตั้งรหัสผ่าน",
+          "pdfUnreadable": "เปิดไฟล์นี้ไม่ได้ ไฟล์เสียหายหรือไม่ใช่ PDF",
+          "title": "นำเข้ารายงาน Micros 3700",
+          "resultTitle": "ผลการนำเข้า",
+          "pages": "{count} หน้า",
+          "footingOk": "ยอดรวมตรงกับรายงาน (ต่าง {diff})",
+          "columns": {
+            "outlet": "Outlet",
+            "lines": "รายการ",
+            "qty": "ชิ้น",
+            "total": "ยอด",
+            "reported": "ยอดในรายงาน",
+            "status": "สถานะ",
+            "result": "ผล"
+          },
+          "status": {
+            "new": "ใหม่",
+            "existing": "มีอยู่แล้ว"
+          },
+          "existingTotal": "ยอดเดิม {amount}",
+          "existingConfirmed": "ยืนยันแล้ว {confirmed}/{total} บรรทัด",
+          "decision": {
+            "label": "เลือกการจัดการ {outlet}",
+            "skip": "ข้าม",
+            "overwrite": "เขียนทับ"
+          },
+          "voidWarning": "จะยกเลิก Stock Out เดิม {count} ใบ แล้วรอยืนยันใหม่",
+          "noVoidPermission": "ต้องมีสิทธิ์ลบ Stock Out จึงจะเขียนทับ Outlet นี้ได้",
+          "import": "นำเข้า",
+          "needsResolution": "มีข้อมูลเดิมเพิ่มระหว่างนี้ เลือกใหม่อีกครั้ง",
+          "outcome": {
+            "imported": "นำเข้าแล้ว",
+            "overwritten": "เขียนทับแล้ว",
+            "skipped": "ข้าม",
+            "failed": "ไม่สำเร็จ"
+          },
+          "voided": "ยกเลิก Stock Out {count} ใบ",
+          "review": "ตรวจและยืนยัน"
         }
       }
     },

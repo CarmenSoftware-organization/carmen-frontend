@@ -44,6 +44,7 @@ import {
   importStatusTone,
   type ConfirmationState,
 } from "./pos-import-status";
+import { PosMicros3700UploadButton } from "./pos-micros3700-upload-button";
 import { PosSimphonyUploadButton } from "./pos-simphony-upload-button";
 import type { PosBrand, PosImportListItem } from "./pos-sale-types";
 import { usePosWritable } from "./use-pos-writable";
@@ -60,7 +61,7 @@ const CONFIRMATION_CLASS: Record<ConfirmationState, string> = {
 };
 
 /**
- * แท็บประวัติการนำเข้ายอดขาย POS — ตาราง server-side pagination + อัปโหลด (Simphony) + ยกเลิก
+ * แท็บประวัติการนำเข้ายอดขาย POS — ตาราง server-side pagination + อัปโหลด (Simphony / Micros 3700) + ยกเลิก
  *
  * @param brand แบรนด์ POS ของหน้านี้
  * @returns React element ของแท็บ
@@ -289,9 +290,13 @@ export function PosImportHistory({ brand }: { brand: PosBrand }) {
 
   return (
     <div className="space-y-3 pt-4">
-      {brand === "simphony" && canWrite && (
+      {canWrite && (brand === "simphony" || brand === "micros3700") && (
         <div className="flex justify-end">
-          <PosSimphonyUploadButton />
+          {brand === "simphony" ? (
+            <PosSimphonyUploadButton />
+          ) : (
+            <PosMicros3700UploadButton />
+          )}
         </div>
       )}
       <DataGrid

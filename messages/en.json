@@ -2913,7 +2913,7 @@
           "title": "Micros 3700",
           "desc": "Receive daily POS sales from Micros 3700 and post stock deductions.",
           "general": "General",
-          "generalDesc": "Turn this brand on or off for the business unit. PDF upload will be available in a later release."
+          "generalDesc": "Turn this brand on or off for the business unit. Upload the daily PDF report from the Import history tab."
         },
         "store": {
           "label": "Store",
@@ -3038,6 +3038,50 @@
           "too_deep": "Sub-recipes are nested too deeply",
           "recipe_unusable": "Recipe is inactive or unusable",
           "empty_recipe": "Recipe has no ingredients"
+        },
+        "micros3700Upload": {
+          "action": "Upload PDF",
+          "reading": "Reading PDF…",
+          "checking": "Checking…",
+          "tooLarge": "{name} is larger than 20 MB",
+          "pdfPassword": "This PDF is password-protected. Export the report again without a password.",
+          "pdfUnreadable": "Could not open this file. It is damaged or not a PDF.",
+          "title": "Import Micros 3700 report",
+          "resultTitle": "Import result",
+          "pages": "{count, plural, one {# page} other {# pages}}",
+          "footingOk": "Totals match the report (difference {diff})",
+          "columns": {
+            "outlet": "Outlet",
+            "lines": "Items",
+            "qty": "Qty",
+            "total": "Total",
+            "reported": "Report total",
+            "status": "Status",
+            "result": "Result"
+          },
+          "status": {
+            "new": "New",
+            "existing": "Already imported"
+          },
+          "existingTotal": "Previous total {amount}",
+          "existingConfirmed": "Confirmed {confirmed}/{total} lines",
+          "decision": {
+            "label": "What to do with {outlet}",
+            "skip": "Skip",
+            "overwrite": "Overwrite"
+          },
+          "voidWarning": "Will void {count, plural, one {# existing Stock Out} other {# existing Stock Outs}} and wait for confirmation again",
+          "noVoidPermission": "You need permission to delete Stock Out to overwrite this outlet",
+          "import": "Import",
+          "needsResolution": "Data for this date was added in the meantime. Choose again.",
+          "outcome": {
+            "imported": "Imported",
+            "overwritten": "Overwritten",
+            "skipped": "Skipped",
+            "failed": "Failed"
+          },
+          "voided": "Voided {count, plural, one {# Stock Out} other {# Stock Outs}}",
+          "review": "Review and confirm"
         }
       }
     },

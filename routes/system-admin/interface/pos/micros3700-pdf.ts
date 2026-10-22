@@ -81,10 +81,13 @@ export async function extractMicros3700Lines(file: File): Promise<Micros3700PdfT
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
   const data = new Uint8Array(await file.arrayBuffer());
-  let pdf: Awaited<ReturnType<typeof pdfjs.getDocument>["promise"]>;
+  const loadingTask = pdfjs.getDocument({ data, isEvalSupported: false });
+  let pdf: Awaited<typeof loadingTask.promise>;
   try {
-    pdf = await pdfjs.getDocument({ data, isEvalSupported: false }).promise;
+    pdf = await loadingTask.promise;
   } catch (e) {
+    // เปิดไม่สำเร็จ = ไม่มี pdf ให้ destroy — ต้องปิด loading task (และ worker) เอง
+    void loadingTask.destroy();
     if (e instanceof Error && e.name === "PasswordException") throw new Micros3700PdfError("password");
     throw new Micros3700PdfError("unreadable", e instanceof Error ? e.message : undefined);
   }
