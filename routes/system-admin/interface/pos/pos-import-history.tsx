@@ -53,6 +53,7 @@ import { useCancelPosImport, usePosImports } from "./use-pos-sale";
 const LEGACY_EXPORT_WARNING = "legacy_export_version";
 
 const CONFIRMATION_CLASS: Record<ConfirmationState, string> = {
+  replaced: "text-muted-foreground",
   cancelled: "text-muted-foreground",
   not_applicable: "text-muted-foreground",
   pending: "text-muted-foreground",

@@ -5,7 +5,12 @@ export type ImportStatusTone = "success" | "warning" | "destructive";
 
 /** สถานะการยืนยันตัดสต็อกของการนำเข้าหนึ่งรายการ */
 export type ConfirmationState =
-  "cancelled" | "not_applicable" | "pending" | "partial" | "confirmed";
+  | "replaced"
+  | "cancelled"
+  | "not_applicable"
+  | "pending"
+  | "partial"
+  | "confirmed";
 
 /**
  * สีสถานะของผลการนำเข้า
@@ -25,7 +30,7 @@ export function importStatusTone(status: PosImportStatus): ImportStatusTone {
 /**
  * สถานะการยืนยันตัดสต็อกของแถวประวัติ
  *
- * ถูกยกเลิก → `cancelled` · ไม่ใช่ `success` → `not_applicable` (ไม่มีอะไรให้ยืนยัน)
+ * ถูกเขียนทับ (ยกเลิกพร้อม `replaced_by_id`) → `replaced` · ถูกยกเลิก → `cancelled` · ไม่ใช่ `success` → `not_applicable` (ไม่มีอะไรให้ยืนยัน)
  * · ยืนยันแล้ว 0 บรรทัด → `pending` · ยืนยันบางส่วน → `partial` · ครบ → `confirmed`
  *
  * @param row - ฟิลด์ที่ใช้ตัดสินจากแถวประวัติ
@@ -34,9 +39,13 @@ export function importStatusTone(status: PosImportStatus): ImportStatusTone {
 export function confirmationState(row: {
   status: PosImportStatus;
   cancelled_at: string | null;
+  replaced_by_id: string | null;
   line_count: number;
   confirmed_line_count: number;
 }): ConfirmationState {
+  if (row.cancelled_at !== null && row.replaced_by_id !== null) {
+    return "replaced";
+  }
   if (row.cancelled_at !== null) return "cancelled";
   if (row.status !== "success") return "not_applicable";
   if (row.confirmed_line_count === 0) return "pending";

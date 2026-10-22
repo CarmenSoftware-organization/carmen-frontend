@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { CalendarX, Ban, TriangleAlert } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { DocFormHeader } from "@/components/share/doc-form-header";
@@ -14,7 +14,12 @@ import { useProfile } from "@/hooks/use-profile";
 import { PERMISSIONS } from "@/constant/permissions";
 import { formatDate } from "@/lib/date-utils";
 import { PosConfirmDialog } from "./pos-confirm-dialog";
-import { importStatusLabel, importStatusTone } from "./pos-import-status";
+import {
+  confirmationState,
+  type ConfirmationState,
+  importStatusLabel,
+  importStatusTone,
+} from "./pos-import-status";
 import { PosOutletReviewCard } from "./pos-outlet-review-card";
 import type {
   PosBrand,
@@ -22,9 +27,28 @@ import type {
   PosOutletPreview,
   PosPreview,
 } from "./pos-sale-types";
-import { usePosImport, usePosImportPreview } from "./use-pos-sale";
+import {
+  usePosBatchImports,
+  usePosImport,
+  usePosImportPreview,
+} from "./use-pos-sale";
 
 const LEGACY_EXPORT_WARNING = "legacy_export_version";
+
+const CONFIRMATION_CLASS: Record<ConfirmationState, string> = {
+  replaced: "text-muted-foreground",
+  cancelled: "text-muted-foreground",
+  not_applicable: "text-muted-foreground",
+  pending: "text-muted-foreground",
+  partial: "text-warning-ink",
+  confirmed: "text-success-ink",
+};
+
+/** รหัส Outlet ท้าย source (`Micros 3700 PDF - <hotel> - <outlet>`) — ชื่อโรงแรมมี ` - ` ได้ จึงตัดจากท้าย */
+function outletCodeOf(source: string | null): string {
+  const parts = (source ?? "").split(" - ");
+  return parts[parts.length - 1] ?? "";
+}
 
 /** ตัวเลขของการ์ดสรุปสามใบ */
 function summarize(detail: PosImportDetail, preview: PosPreview | undefined) {
@@ -92,6 +116,9 @@ export function PosImportReview({
     detailQuery.data?.status === "success",
   );
   const [target, setTarget] = useState<PosOutletPreview | null>(null);
+  const batchId =
+    detailQuery.data?.brand === "micros3700" ? detailQuery.data.batch_id : null;
+  const batchQuery = usePosBatchImports(batchId);
 
   const basePath = `/system-admin/interface/pos/${brand}`;
   const backPath = `${basePath}?tab=history`;
@@ -152,6 +179,12 @@ export function PosImportReview({
     ? `${basePath}?tab=items&store=${detail.store.id}`
     : `${basePath}?tab=items`;
   const summary = summarize(detail, preview);
+  // Outlet อื่นจากไฟล์เดียวกัน — ตัดตัวเอง และแถวที่นำเข้าไม่สำเร็จ
+  const siblings = (batchQuery.data ?? []).filter(
+    (r) => r.id !== detail.id && r.status === "success",
+  );
+  const isReplaced =
+    detail.cancelled_at !== null && detail.replaced_by_id !== null;
   const docDate = preview?.doc_date ?? detail.doc_date;
   const channel =
     detail.ingest_method === "manual" || detail.ingest_method === "sftp"
@@ -198,13 +231,47 @@ export function PosImportReview({
       }
     >
       <div className="space-y-4">
-        {detail.cancelled_at !== null && (
+        {isReplaced && (
+          <div
+            role="alert"
+            className="bg-muted flex items-center gap-2 rounded-md px-4 py-2 text-xs"
+          >
+            <Ban className="text-destructive size-4 shrink-0" aria-hidden />
+            <span>{t("replacedNotice")}</span>
+            <Link
+              to={`${basePath}/imports/${detail.replaced_by_id}`}
+              className="text-primary underline underline-offset-2"
+            >
+              {t("replacedLink")}
+            </Link>
+          </div>
+        )}
+        {detail.cancelled_at !== null && !isReplaced && (
           <div
             role="alert"
             className="bg-muted flex items-center gap-2 rounded-md px-4 py-2 text-xs"
           >
             <Ban className="text-destructive size-4 shrink-0" aria-hidden />
             <span>{t("cancelledNotice")}</span>
+          </div>
+        )}
+        {siblings.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-muted-foreground">
+              {t("sameFileOutlets")}
+            </span>
+            {siblings.map((r) => (
+              <Link
+                key={r.id}
+                to={`${basePath}/imports/${r.id}`}
+                className="hover:bg-muted flex items-center gap-1.5 rounded-full border px-2.5 py-1"
+              >
+                <span className="font-medium">{outletCodeOf(r.source)}</span>
+                <span className={CONFIRMATION_CLASS[confirmationState(r)]}>
+                  {tHistory(`confirmation.${confirmationState(r)}`)}
+                </span>
+              </Link>
+            ))}
           </div>
         )}
         {detail.status !== "success" && (

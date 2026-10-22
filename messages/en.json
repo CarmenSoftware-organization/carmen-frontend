@@ -2854,6 +2854,7 @@
           },
           "legacyWarning": "Legacy export format: some fields may be missing",
           "confirmation": {
+            "replaced": "Overwritten",
             "cancelled": "Cancelled",
             "pending": "Pending",
             "partial": "Partial",
@@ -2913,7 +2914,7 @@
           "title": "Micros 3700",
           "desc": "Receive daily POS sales from Micros 3700 and post stock deductions.",
           "general": "General",
-          "generalDesc": "Turn this brand on or off for the business unit. Upload the daily PDF report from the Import history tab."
+          "generalDesc": "Turn this brand on or off for the business unit. Upload the daily PDF report from the Import history tab. The file is read in your browser and is never sent to the server."
         },
         "store": {
           "label": "Store",
@@ -2952,6 +2953,9 @@
           "linesCount": "{count, plural, one {# line} other {# lines}}",
           "salesAmount": "Sales {amount}",
           "cancelledNotice": "This import was cancelled. Nothing can be confirmed.",
+          "replacedNotice": "This set was overwritten. Nothing can be confirmed here.",
+          "replacedLink": "Open the new import",
+          "sameFileOutlets": "Other outlets from the same file",
           "periodClosed": "The sales date is not in an open inventory period, so stock-out cannot be confirmed.",
           "noOutlets": "This import has no sales to review",
           "summary": {
