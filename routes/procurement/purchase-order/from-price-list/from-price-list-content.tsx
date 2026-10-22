@@ -279,7 +279,6 @@ export function FromPriceListContent() {
         value={step}
         onValueChange={handleStepChange}
         indicators={{ completed: COMPLETED_INDICATOR }}
-        className="px-9"
       >
         {/* แถบขั้นตอนกว้างเท่าที่มันต้องใช้ ไม่กางเต็มจอ — StepperNav บังคับ
             w-full ของตัวเองไว้ด้วย data-variant ซึ่งชนะ class ที่ส่งเข้าไป
@@ -315,7 +314,7 @@ export function FromPriceListContent() {
         </StepperPanel>
       </Stepper>
 
-      <footer className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 flex items-center justify-between px-8 py-3 backdrop-blur">
+      <footer className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 flex items-center justify-between py-3 backdrop-blur">
         <Button
           variant="outline"
           size="sm"

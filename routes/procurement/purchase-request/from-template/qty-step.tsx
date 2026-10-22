@@ -215,7 +215,7 @@ export function QtyStep({ template, onBack, onContinue }: QtyStepProps) {
         }
       />
 
-      <div className="space-y-4 px-10">
+      <div className="space-y-4">
         <DataGrid
           table={table}
           recordCount={rows.length}
@@ -226,7 +226,10 @@ export function QtyStep({ template, onBack, onContinue }: QtyStepProps) {
             rowClamp: false,
           }}
           tableClassNames={{
-            base: "text-xs",
+            // table-fixed แบ่งเป็น % — จอแคบกว่านี้ช่องจำนวนถูกบีบจนไม่เห็นตัวเลข
+            // ตั้งขั้นต่ำแล้วให้ container เลื่อนแนวนอนแทน (ไม่ใช่ min-w-max: ดู
+            // CONTENT_SIZED_TABLE ใน data-grid-table)
+            base: "text-xs min-w-[44rem]",
             headerRow: "h-10",
             bodyRow: "h-14",
           }}

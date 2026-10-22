@@ -72,7 +72,7 @@ export function FromTemplateContent() {
         onBack={() => navigate(PR_LIST_PATH)}
       />
 
-      <div className="space-y-4 px-10">
+      <div className="space-y-4">
         {hasTemplates && (
           <SearchInput
             defaultValue={searchTerm}

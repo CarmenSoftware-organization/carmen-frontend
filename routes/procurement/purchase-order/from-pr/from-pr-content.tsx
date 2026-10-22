@@ -176,7 +176,6 @@ export function FromPrContent() {
         value={step}
         onValueChange={handleStepChange}
         indicators={{ completed: COMPLETED_INDICATOR }}
-        className="px-9"
       >
         <div className="mx-auto w-96 max-w-full">
           <StepperNav>
@@ -214,7 +213,7 @@ export function FromPrContent() {
         </StepperPanel>
       </Stepper>
 
-      <footer className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 flex items-center justify-between px-8 py-3 backdrop-blur">
+      <footer className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 flex items-center justify-between py-3 backdrop-blur">
         <Button
           variant="outline"
           size="sm"
