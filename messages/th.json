@@ -2830,6 +2830,56 @@
       "showSecret": "แสดง",
       "hideSecret": "ซ่อน",
       "posSale": {
+        "history": {
+          "columns": {
+            "docDate": "วันขาย",
+            "store": "ร้าน",
+            "source": "Source",
+            "file": "ไฟล์",
+            "channel": "ช่องทาง",
+            "status": "สถานะ",
+            "lines": "บรรทัด",
+            "sales": "ยอดขาย",
+            "confirmation": "ตัดสต็อก"
+          },
+          "channel": {
+            "manual": "อัปโหลดเอง",
+            "sftp": "SFTP"
+          },
+          "legacyWarning": "ไฟล์รูปแบบเก่า ข้อมูลบางช่องอาจไม่ครบ",
+          "confirmation": {
+            "cancelled": "ยกเลิกแล้ว",
+            "pending": "รอยืนยัน",
+            "partial": "ยืนยันบางส่วน",
+            "confirmed": "ยืนยันครบ"
+          },
+          "actions": {
+            "inspect": "ตรวจ",
+            "cancel": "ยกเลิก"
+          },
+          "cancelDialog": {
+            "title": "ยกเลิกการนำเข้านี้?",
+            "desc": "ยกเลิกแล้วนำเข้าไฟล์วันเดียวกันใหม่ได้ ถ้ามีบรรทัดที่ยืนยันตัดสต็อกแล้วจะยกเลิกไม่ได้",
+            "confirm": "ยกเลิกการนำเข้า",
+            "success": "ยกเลิกการนำเข้าแล้ว"
+          }
+        },
+        "importStatus": {
+          "success": "นำเข้าสำเร็จ",
+          "unsupported_format": "รูปแบบไฟล์ไม่รองรับ",
+          "duplicate_file": "ไฟล์นี้เคยนำเข้าแล้ว",
+          "parse_error": "อ่านไฟล์ไม่ได้",
+          "duplicate_business_date": "วันขายนี้เคยนำเข้าแล้ว",
+          "failed": "นำเข้าไม่สำเร็จ"
+        },
+        "upload": {
+          "action": "อัปโหลดไฟล์",
+          "uploading": "กำลังอัปโหลด…",
+          "tooLarge": "ไฟล์ {name} ใหญ่เกิน 10 MB",
+          "success": "นำเข้าสำเร็จ",
+          "successDesc": "นำเข้า {count} บรรทัด ยอดขาย {amount}",
+          "legacyWarning": "นำเข้าจากไฟล์รูปแบบเก่า"
+        },
         "tabs": {
           "history": "ประวัติการนำเข้า",
           "outlets": "ผูกจุดขาย",

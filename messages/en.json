@@ -2830,6 +2830,56 @@
       "showSecret": "Show",
       "hideSecret": "Hide",
       "posSale": {
+        "history": {
+          "columns": {
+            "docDate": "Sales date",
+            "store": "Store",
+            "source": "Source",
+            "file": "File",
+            "channel": "Channel",
+            "status": "Status",
+            "lines": "Lines",
+            "sales": "Sales amount",
+            "confirmation": "Stock-out"
+          },
+          "channel": {
+            "manual": "Manual",
+            "sftp": "SFTP"
+          },
+          "legacyWarning": "Legacy export format: some fields may be missing",
+          "confirmation": {
+            "cancelled": "Cancelled",
+            "pending": "Pending",
+            "partial": "Partial",
+            "confirmed": "Confirmed"
+          },
+          "actions": {
+            "inspect": "Review",
+            "cancel": "Cancel import"
+          },
+          "cancelDialog": {
+            "title": "Cancel this import?",
+            "desc": "Cancelling lets you import the file for the same day again. Imports with confirmed lines cannot be cancelled.",
+            "confirm": "Cancel import",
+            "success": "Import cancelled"
+          }
+        },
+        "importStatus": {
+          "success": "Imported",
+          "unsupported_format": "Unsupported file format",
+          "duplicate_file": "This file was already imported",
+          "parse_error": "Could not read the file",
+          "duplicate_business_date": "This business date was already imported",
+          "failed": "Import failed"
+        },
+        "upload": {
+          "action": "Upload file",
+          "uploading": "Uploading…",
+          "tooLarge": "{name} is larger than 10 MB",
+          "success": "Import complete",
+          "successDesc": "Imported {count} lines, sales {amount}",
+          "legacyWarning": "Imported from a legacy export format"
+        },
         "tabs": {
           "history": "Import history",
           "outlets": "Outlet mapping",

@@ -1,6 +1,7 @@
 import { useSearchParams } from "react-router";
 import { useTranslations } from "use-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PosImportHistory } from "./pos-import-history";
 import type { PosBrand } from "./pos-sale-types";
 
 const TABS = ["history", "outlets", "items"] as const;
@@ -14,13 +15,12 @@ function isPosTab(v: string | null): v is PosTab {
  * แท็บงาน POS ใต้ฟอร์มตั้งค่า — ประวัติการนำเข้า / ผูกจุดขาย / ผูกรายการขาย
  *
  * แท็บปัจจุบันเก็บใน query `?tab=` (ค่าเริ่ม `history`) และคง query อื่นไว้
- * เนื้อหาแต่ละแท็บยังเป็น placeholder — งานถัดไปมาแทน
+ * แท็บ `outlets` / `items` ยังเป็น placeholder — งานถัดไปมาแทน
  *
  * @param brand แบรนด์ POS ของหน้านี้
  * @returns React element ของแท็บงาน
  */
 export function PosOperations({ brand }: { brand: PosBrand }) {
-  void brand;
   const t = useTranslations("systemAdmin.interface.posSale.tabs");
   const [params, setParams] = useSearchParams();
   const raw = params.get("tab");
@@ -46,7 +46,9 @@ export function PosOperations({ brand }: { brand: PosBrand }) {
           </TabsTrigger>
         ))}
       </TabsList>
-      <TabsContent value="history">{null}</TabsContent>
+      <TabsContent value="history">
+        <PosImportHistory brand={brand} />
+      </TabsContent>
       <TabsContent value="outlets">{null}</TabsContent>
       <TabsContent value="items">{null}</TabsContent>
     </Tabs>
