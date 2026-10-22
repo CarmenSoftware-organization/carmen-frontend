@@ -39,6 +39,12 @@ const MODULE_ORDER = [
   "store-operation",
 ];
 
+/**
+ * dataset ทดลองของ dashboard-lab — backend ส่งมาใน catalog เดียวกัน แต่ไม่ใช่ของที่
+ * support จะตั้งให้ลูกค้า จึงไม่ลงเอกสาร
+ */
+const LAB_PREFIX = "lab.";
+
 // ── types ───────────────────────────────────────────────────────────────────
 interface CatalogParam {
   name: string;
@@ -246,8 +252,10 @@ function moduleRank(m: string): number {
 }
 
 export function renderDoc(input: DocInput): string {
-  const catalog = [...input.catalog].sort((a, b) => a.id.localeCompare(b.id));
-  const byId = new Map(catalog.map((d) => [d.id, d]));
+  const all = [...input.catalog].sort((a, b) => a.id.localeCompare(b.id));
+  // template ยังอ้าง dataset lab ได้ จึงเก็บไว้ใน byId — แค่ไม่ลงแคตตาล็อก
+  const byId = new Map(all.map((d) => [d.id, d]));
+  const catalog = all.filter((d) => !d.id.startsWith(LAB_PREFIX));
 
   const groups = new Map<string, CatalogItem[]>();
   for (const d of catalog) {
@@ -288,6 +296,8 @@ export function renderDoc(input: DocInput): string {
     "## 1. แคตตาล็อก dataset",
     "",
     "ตัวแปรที่แสดงคือตัวที่ผู้ใช้ตั้งได้เท่านั้น ตัวที่ระบบเติมเอง (เช่น user ปัจจุบัน) ไม่อยู่ในรายการ",
+    "",
+    "ไม่รวม dataset ทดลอง (`lab.*`)",
     "",
   ];
 
