@@ -303,6 +303,32 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/physical-counts/${id}/save`,
   PHYSICAL_COUNT_SUBMIT: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/physical-counts/${id}/submit`,
+  POS_SALE_IMPORTS: (buCode: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/imports`,
+  POS_SALE_IMPORT_SIMPHONY: (buCode: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/imports/simphony`,
+  POS_SALE_IMPORT: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/imports/${id}`,
+  POS_SALE_IMPORT_PREVIEW: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/imports/${id}/preview`,
+  POS_SALE_IMPORT_CANCEL: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/imports/${id}/cancel`,
+  POS_SALE_OUTLET_CONFIRM: (
+    buCode: string,
+    importId: string,
+    outletId: string,
+  ) =>
+    `/api/proxy/api/${buCode}/pos-sales/imports/${importId}/outlets/${outletId}/confirm`,
+  POS_SALE_STORES: (buCode: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/stores`,
+  POS_SALE_OUTLETS: (buCode: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/outlets`,
+  POS_SALE_OUTLET: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/outlets/${id}`,
+  POS_SALE_ITEMS: (buCode: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/items`,
+  POS_SALE_ITEM: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/items/${id}`,
   PRICE_LISTS: (buCode: string) => `/api/proxy/api/config/${buCode}/pricelists`,
   PRICE_LIST_VOID: (buCode: string, id: string) =>
     `/api/proxy/api/config/${buCode}/pricelists/${id}/void`,

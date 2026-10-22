@@ -1062,7 +1062,20 @@
       "COMMON_UNIQUE_CONSTRAINT_VIOLATION": "Something with the same code or name is already in the system. Change it and try again.",
       "PRICE_LIST_LINE_DUPLICATE_IN_REQUEST": "The same product with the same unit and MOQ appears more than once. Remove the extra line.",
       "PRICE_LIST_IN_USE": "Can't delete: these documents still reference this price list: {documents}. Void it instead.",
-      "CUSTOMER_ADDRESS_TYPE_DUPLICATE": "Each address type can only be used once. Remove or change the repeated one."
+      "CUSTOMER_ADDRESS_TYPE_DUPLICATE": "Each address type can only be used once. Remove or change the repeated one.",
+      "POS_SALE_IMPORT_NOT_FOUND": "POS sale import not found",
+      "POS_SALE_OUTLET_NOT_FOUND": "POS sale outlet not found",
+      "POS_SALE_ITEM_NOT_FOUND": "POS sale item not found",
+      "POS_SALE_UNSUPPORTED_FILE": "The POS file is empty or is not a text file",
+      "POS_SALE_IMPORT_NOT_CONFIRMABLE": "Cannot confirm a POS sale import with status {status}; only successful imports can be confirmed",
+      "POS_SALE_IMPORT_CANCELLED": "This POS sale import has been cancelled",
+      "POS_SALE_IMPORT_HAS_CONFIRMED_LINES": "Cannot cancel this import because {count} lines have already been confirmed to Stock Out",
+      "POS_SALE_OUTLET_NOT_MAPPED": "Outlet {outlet} is not mapped to a location",
+      "POS_SALE_NOTHING_TO_CONFIRM": "Outlet {outlet} has no lines left to confirm",
+      "POS_SALE_ADJUSTMENT_TYPE_MISSING": "Stock Out adjustment type {code} was not found",
+      "POS_SALE_UNRESOLVED_INGREDIENTS": "{count} ingredients could not be resolved (unit conversion failed, yield is zero or recipe is nested too deeply)",
+      "POS_SALE_INSUFFICIENT_STOCK": "Insufficient stock for {count} products at {location} on {date}",
+      "POS_SALE_CONFIRM_CONFLICT": "This outlet is already being confirmed or has just been confirmed"
     }
   },
   "validation": {
