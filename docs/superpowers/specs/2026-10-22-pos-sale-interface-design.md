@@ -93,7 +93,7 @@ Infrasys / Square ตามมาทีหลังด้วยเอกสา�
 ### 4.2 ที่ผมตัดสินเอง (แย้งได้)
 - **Stock Out ลงวันที่ = DocDate (วันขาย)** — วันขายไม่อยู่ในงวดที่เปิด = ยืนยันไม่ได้ (กติกา period เดิม)
 - **คำนวณวัตถุดิบตอนกดยืนยัน** แล้วเก็บผลไว้ในใบ; หน้าตรวจแสดง preview จากสูตรปัจจุบัน
-- Stock Out ใช้ adjustment type **"POS Sale"** (seed ต่อ BU) และอ้างกลับไปที่การนำเข้า/Outlet ต้นทาง
+- Stock Out ใช้ adjustment type ชนิด stock_out **code `SALE`** (seed ต่อ BU — user กำหนด) และอ้างกลับไปที่การนำเข้า/Outlet ต้นทาง
 - **ยืนยัน = สร้างและ commit Stock Out ทันที** — การกดของ Cost Controller คือการตรวจแล้ว ไม่มีขั้นอนุมัติซ้ำ
 - void Stock Out ที่มาจาก POS → บรรทัดยอดขายของใบนั้นกลับเป็น "ยังไม่ตัด" (ยืนยันใหม่ได้)
 - **ยกเลิกการนำเข้า** ได้เมื่อยังไม่มีบรรทัดใดถูกยืนยัน → นำเข้าไฟล์วันเดียวกันใหม่ได้ (FRD ไม่มี; ไม่งั้นไฟล์ผิดที่ SUCCESS
@@ -184,7 +184,7 @@ index นับแบบ 1-based รวมช่องชนิดบรรท�
 ### 5.3 การยืนยัน (ต่อ Outlet)
 1. ปุ่มยืนยันของ Outlet ปิดเมื่อ: ไม่ได้ผูก location, ไม่มีบรรทัดพร้อมตัด, DocDate ไม่อยู่ในงวดที่เปิด, หรือการนำเข้าถูกยกเลิก
 2. กดแล้ว BE ใน transaction เดียว: lock บรรทัดที่ `stock_out_id IS NULL` และพร้อมตัด → คำนวณ → สร้าง Stock Out
-   (location ของ Outlet, `so_date` = DocDate, adjustment type "POS Sale", อ้าง import + outlet) → commit ผ่าน service เดิม
+   (location ของ Outlet, `so_date` = DocDate, adjustment type `SALE`, อ้าง import + outlet) → commit ผ่าน service เดิม
    → set `stock_out_id` ให้บรรทัด
 3. ของไม่พอแม้ตัวเดียว → ล้มทั้งใบ คืนรายการสินค้าที่ขาด (ต้องการ / คงเหลือ ณ DocDate)
 4. ผูก recipe/location ทีหลังแล้วยืนยันอีก → ใบใหม่เฉพาะบรรทัดที่ยังไม่ตัด
@@ -238,7 +238,7 @@ Micros TC-MIC-001 … 008 ผ่าน (TC-MIC-005 ตามกติกาเ�
 ยกเว้นตัวอ่านไฟล์สองตัวที่ builder อาจเสนอ fixture test จากไฟล์ตัวอย่าง — ต้องถาม user ก่อน
 
 ## 7. ลำดับงานและ deploy (ข้อเสนอ)
-1. BE แกนกลาง: migration ตาราง POS + seed "POS Sale" + endpoint ประวัติ/master/ผูก/ยกเลิก
+1. BE แกนกลาง: migration ตาราง POS + seed adjustment type `SALE` + endpoint ประวัติ/master/ผูก/ยกเลิก
 2. BE Simphony: parser + อัปโหลด
 3. BE ตรวจและยืนยัน: preview + ยืนยันต่อ Outlet + hook ตอน void
 4. FE: ย้ายแบรนด์ (`simphony`, `micros3700`) + ตั้งค่า/อัปโหลด Simphony → ประวัติ → ผูก → ตรวจและยืนยัน
