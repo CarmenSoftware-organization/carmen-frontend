@@ -99,6 +99,7 @@ export function usePosBatchImports(batchId: string | null | undefined) {
  * รอบดึงไฟล์ Simphony ผ่าน SFTP ล่าสุด — `null` = ยังไม่เคยมีรอบ
  *
  * ไม่ retry: 403/404 (license หมด หรือ backend ยังไม่มี endpoint) ให้ผู้เรียกซ่อนส่วนนี้ทันที
+ * ระหว่างรอบล่าสุดยัง `running` โหลดซ้ำทุก 15 วิ ให้เห็นผลเมื่อรอบจบโดยไม่ต้องรีเฟรชหน้า
  *
  * @param enabled - ยิงเมื่อ true เท่านั้น (ฟอร์มโหลดแล้วและ license ใช้งานได้)
  */
@@ -115,6 +116,8 @@ export function usePosSftpLatestPull(enabled: boolean) {
       ).data,
     ...CACHE_DYNAMIC,
     retry: false,
+    refetchInterval: (query) =>
+      query.state.data?.status === "running" ? 15_000 : false,
     enabled: !!buCode && enabled,
   });
 }

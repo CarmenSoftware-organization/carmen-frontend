@@ -39,7 +39,11 @@ export const simphonySchema = z.object({
   sftp_username: z.string(),
   sftp_password: z.string(),
   remote_folder_path: z.string().refine((v) => !v.split("/").includes("..")),
-  file_pattern: z.string().max(100),
+  // glob ของชื่อไฟล์ในโฟลเดอร์เดียว — `/` ใช้ไม่ได้ (backend ปฏิเสธเหมือนกัน)
+  file_pattern: z
+    .string()
+    .max(100)
+    .refine((v) => !v.includes("/")),
   schedule_time: z.string().regex(SCHEDULE_TIME),
 });
 

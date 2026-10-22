@@ -28,7 +28,10 @@ export interface PosSftpPullRun {
   started_at: string;
   finished_at: string | null;
   attempt_count: number;
+  /** key ที่เชื่อถือ: ของรอบที่ผ่าน auth หรือ pin ที่ถูกเทียบในรอบ `host_key_mismatch` */
   host_key_sha256: string | null;
+  /** key ที่เซิร์ฟเวอร์ยื่นมาในรอบ `host_key_mismatch` (แสดงเท่านั้น) นอกนั้น null */
+  presented_host_key_sha256: string | null;
   files_found: number;
   files_imported: number;
   files_rejected: number;

@@ -16,16 +16,18 @@ const STATUS_TONE: Record<PosSftpPullStatus, string> = {
   failed: "text-destructive",
 };
 
-/** ข้อความ error ที่ backend เก็บไว้ → คีย์ i18n (ข้อความอื่นไม่โชว์ดิบ เผื่อหลุดรายละเอียดภายใน) */
+/** รหัส error ระดับรอบที่ backend เก็บไว้ → คีย์ i18n (ข้อความอื่นไม่โชว์ดิบ เผื่อหลุดรายละเอียดภายใน) */
 const ERROR_KEY: Record<string, string> = {
   unreachable: "unreachable",
   dns_not_found: "dnsNotFound",
   auth_failed: "authFailed",
   host_not_allowed: "hostNotAllowed",
   host_key_mismatch: "hostKeyMismatch",
-  "SFTP password cannot be decrypted — check SECRET_ENCRYPTION_KEY":
-    "secretUnreadable",
-  "run did not finish within 30 minutes (service restarted?)": "stale",
+  secret_unreadable: "secretUnreadable",
+  stale_run: "stale",
+  sftp_session_lost: "sessionLost",
+  list_failed: "listFailed",
+  run_budget_exceeded: "runBudgetExceeded",
 };
 
 /**
@@ -96,11 +98,23 @@ export function PosSftpLastPull({ enabled }: { enabled: boolean }) {
               <div>
                 {data.host_key_sha256 && (
                   <p className="text-muted-foreground font-mono break-all">
-                    {t("hostKey", { fingerprint: data.host_key_sha256 })}
+                    {t("trustedKey", { fingerprint: data.host_key_sha256 })}
+                  </p>
+                )}
+                {data.presented_host_key_sha256 && (
+                  <p className="text-muted-foreground font-mono break-all">
+                    {t("offeredKey", {
+                      fingerprint: data.presented_host_key_sha256,
+                    })}
                   </p>
                 )}
                 <p className="text-muted-foreground">{t("hostKeyHint")}</p>
               </div>
+            )}
+            {data.status !== "host_key_mismatch" && data.host_key_sha256 && (
+              <p className="text-muted-foreground font-mono text-xs break-all">
+                {t("trustedKey", { fingerprint: data.host_key_sha256 })}
+              </p>
             )}
           </div>
         ) : null)}

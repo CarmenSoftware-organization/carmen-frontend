@@ -200,6 +200,19 @@
 - [ ] **Step 10:** หน้า Simphony ใน FE (light + dark) แสดงสถานะรอบล่าสุดถูกตามข้างบน · รายงานผลแต่ละข้อ (ผ่าน/ไม่ผ่าน + response จริง) ให้ user; `docker rm -f pos-sftp`
 
 ## ลำดับ deploy (ต่อจากแผน A/B)
+
+> **บล็อก deploy (อ่านก่อน — ลำดับนี้ห้ามสลับ)**
+> 1. **migration ทุก BU** — tenant migration ของแผน A (`20261022130000_pos_sale`), C และ D (`20261022140000_pos_sftp_pull` รวมคอลัมน์ `presented_host_key_sha256`) รันครบทุก BU ก่อน BE ขึ้น
+> 2. **BE deploy** พร้อม env:
+>    - micro-business: `SECRET_ENCRYPTION_KEY` (ไม่มี = รอบ `failed` รหัส `secret_unreadable` ทุกชั่วโมง และ Save ค่าตั้งที่มีรหัสผ่าน 400) · `POS_SFTP_DENY_CIDRS` = วง VPC/Docker ของแพลตฟอร์ม คั่นด้วยจุลภาค (อ่านตอนบูต — **เปลี่ยนค่าต้อง restart** micro-business) · egress ไป port SFTP ของลูกค้าได้
+>    - gateway: `INTERNAL_JOB_API_ENABLED=true` + `INTERNAL_JOB_TOKEN` (ค่าเดียวกับที่ micro-cronjobs ใช้)
+> 3. **allowlist application-api ก่อน FE** — `posSale.findLatestSftpPull` และ `posSale.*` ตัวอื่นทั้งหมด ให้ทุกแอปที่ไม่ใช่ `allow_all` — FE ขึ้นก่อน = gateway ตอบ 401 แล้วผู้ใช้โดน logout ตอนเปิดหน้า Simphony
+> 4. **สร้าง cron job ผ่าน API** (`POST /api/cronjobs` ของ micro-cronjobs) — `cron_expression: "0 * * * *"`, `max_retries: 0`, `timeout_seconds` = จำนวน BU × 60, `job_config.user_id` ต้องเป็น **สมาชิกของทุก BU ใน `bu_codes`** (BU ที่ไม่ได้เป็นสมาชิกล้มทุกชั่วโมง)
+> 5. **FE**
+>
+> รอบถึงกำหนดนับเฉพาะ **ชั่วโมง**: ชั่วโมงท้องถิ่นของ BU ≥ ชั่วโมงของ `schedule_time` (ตั้ง 08:30 = ดึงตอน cron 08:00)
+
+รายละเอียดเดิม:
 1. tenant migration `20261022140000_pos_sftp_pull` ทุก BU (คำสั่งเดียวกับ migration ของแผน A — ไปพร้อมกันได้)
 2. BE 3 แอปพร้อมกัน — gateway ต้องมี `INTERNAL_JOB_API_ENABLED=true` + `INTERNAL_JOB_TOKEN` (ชุดเดียวกับ GL), micro-business ต้องมี `SECRET_ENCRYPTION_KEY` และออก network ไป SFTP ของลูกค้าได้ (port ที่ลูกค้าเปิด — ตรวจ firewall egress ของ VM)
 3. platform seed application-api (`posSale.findLatestSftpPull`) + allow ให้แอปที่ไม่ใช่ `allow_all` — ไม่งั้นผู้ใช้โดน logout ตอนเปิดหน้า Simphony
