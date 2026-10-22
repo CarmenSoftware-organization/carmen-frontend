@@ -30,8 +30,10 @@ const td = "px-3 py-2";
  * @param props.preview ตัวอย่างการตัดของ Outlet (จาก `/preview`)
  * @param props.outlet ยอดขายของ Outlet (จากรายละเอียดการนำเข้า) — `undefined` ถ้าหาไม่เจอ
  * @param props.lines บรรทัดยอดขายของ Outlet นี้
- * @param props.canConfirm ผู้ใช้ยืนยันได้ (สิทธิ์ + license) — ไม่รวม `preview.can_confirm`
- * @param props.isConfirming มีการยืนยันวิ่งอยู่
+ * @param props.blockedBy เหตุที่ผู้ใช้ยืนยันไม่ได้ (`license` / `permission`) — `null` = ยืนยันได้
+ *   (ไม่รวม `preview.can_confirm`)
+ * @param props.notInPreview Outlet มีในรายละเอียดแต่ไม่อยู่ใน preview — แสดงยอดขายแต่ยืนยันไม่ได้
+ * @param props.isConfirming มีการยืนยันวิ่งอยู่ หรือข้อมูลกำลัง refetch หลังยืนยัน
  * @param props.itemsHref ลิงก์ไปแท็บผูกเมนูของแบรนด์
  * @param props.onConfirm เปิด dialog ยืนยัน
  * @returns React element ของการ์ด
@@ -40,7 +42,8 @@ export function PosOutletReviewCard({
   preview,
   outlet,
   lines,
-  canConfirm,
+  blockedBy,
+  notInPreview = false,
   isConfirming,
   itemsHref,
   onConfirm,
@@ -48,7 +51,8 @@ export function PosOutletReviewCard({
   readonly preview: PosOutletPreview;
   readonly outlet: PosImportOutlet | undefined;
   readonly lines: PosImportLine[];
-  readonly canConfirm: boolean;
+  readonly blockedBy: "license" | "permission" | null;
+  readonly notInPreview?: boolean;
   readonly isConfirming: boolean;
   readonly itemsHref: string;
   readonly onConfirm: () => void;
@@ -131,14 +135,22 @@ export function PosOutletReviewCard({
             variant="outline"
             size="sm"
             onClick={onConfirm}
-            disabled={!preview.can_confirm || !canConfirm || isConfirming}
+            disabled={
+              !preview.can_confirm || blockedBy !== null || isConfirming
+            }
           >
             <PackageMinus />
             {t("outlet.confirm")}
           </Button>
-          {(preview.block_reasons.length > 0 || !canConfirm) && (
+          {(preview.block_reasons.length > 0 ||
+            blockedBy !== null ||
+            notInPreview) && (
             <ul className="text-muted-foreground space-y-0.5 text-xs sm:text-right">
-              {!canConfirm && <li>{t("outlet.noPermission")}</li>}
+              {blockedBy === "license" && <li>{t("outlet.licenseLocked")}</li>}
+              {blockedBy === "permission" && (
+                <li>{t("outlet.noPermission")}</li>
+              )}
+              {notInPreview && <li>{t("outlet.notInPreview")}</li>}
               {preview.block_reasons.map((r) => (
                 <li key={r}>{tBlock(r)}</li>
               ))}

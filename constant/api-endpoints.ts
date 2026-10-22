@@ -308,27 +308,27 @@ export const API_ENDPOINTS = {
   POS_SALE_IMPORT_SIMPHONY: (buCode: string) =>
     `/api/proxy/api/${buCode}/pos-sales/imports/simphony`,
   POS_SALE_IMPORT: (buCode: string, id: string) =>
-    `/api/proxy/api/${buCode}/pos-sales/imports/${id}`,
+    `/api/proxy/api/${buCode}/pos-sales/imports/${encodeURIComponent(id)}`,
   POS_SALE_IMPORT_PREVIEW: (buCode: string, id: string) =>
-    `/api/proxy/api/${buCode}/pos-sales/imports/${id}/preview`,
+    `/api/proxy/api/${buCode}/pos-sales/imports/${encodeURIComponent(id)}/preview`,
   POS_SALE_IMPORT_CANCEL: (buCode: string, id: string) =>
-    `/api/proxy/api/${buCode}/pos-sales/imports/${id}/cancel`,
+    `/api/proxy/api/${buCode}/pos-sales/imports/${encodeURIComponent(id)}/cancel`,
   POS_SALE_OUTLET_CONFIRM: (
     buCode: string,
     importId: string,
     outletId: string,
   ) =>
-    `/api/proxy/api/${buCode}/pos-sales/imports/${importId}/outlets/${outletId}/confirm`,
+    `/api/proxy/api/${buCode}/pos-sales/imports/${encodeURIComponent(importId)}/outlets/${encodeURIComponent(outletId)}/confirm`,
   POS_SALE_STORES: (buCode: string) =>
     `/api/proxy/api/${buCode}/pos-sales/stores`,
   POS_SALE_OUTLETS: (buCode: string) =>
     `/api/proxy/api/${buCode}/pos-sales/outlets`,
   POS_SALE_OUTLET: (buCode: string, id: string) =>
-    `/api/proxy/api/${buCode}/pos-sales/outlets/${id}`,
+    `/api/proxy/api/${buCode}/pos-sales/outlets/${encodeURIComponent(id)}`,
   POS_SALE_ITEMS: (buCode: string) =>
     `/api/proxy/api/${buCode}/pos-sales/items`,
   POS_SALE_ITEM: (buCode: string, id: string) =>
-    `/api/proxy/api/${buCode}/pos-sales/items/${id}`,
+    `/api/proxy/api/${buCode}/pos-sales/items/${encodeURIComponent(id)}`,
   PRICE_LISTS: (buCode: string) => `/api/proxy/api/config/${buCode}/pricelists`,
   PRICE_LIST_VOID: (buCode: string, id: string) =>
     `/api/proxy/api/config/${buCode}/pricelists/${id}/void`,

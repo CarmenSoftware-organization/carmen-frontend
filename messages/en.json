@@ -2961,7 +2961,9 @@
             "progress": "{confirmed}/{total} lines confirmed",
             "stockOut": "Stock Out {n}",
             "confirm": "Confirm stock-out",
-            "noPermission": "You don't have permission to create Stock Out"
+            "noPermission": "You don't have permission to create Stock Out",
+            "licenseLocked": "License for this interface doesn't allow changes",
+            "notInPreview": "Not included in the stock-out preview"
           },
           "tabs": {
             "sales": "Sales",
@@ -3012,7 +3014,8 @@
             "product": "Product",
             "requested": "Required",
             "available": "On hand"
-          }
+          },
+          "notImportedNotice": "This file was not imported ({status}), so there is nothing to confirm."
         },
         "blockReason": {
           "location_not_mapped": "Outlet has no location mapped",

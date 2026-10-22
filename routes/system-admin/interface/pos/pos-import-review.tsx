@@ -110,10 +110,41 @@ export function PosImportReview({
     return <ErrorState notFoundMessage={t("notFound")} backTo={backPath} />;
   }
 
-  const canConfirm =
-    canWrite &&
-    !expired &&
-    can(PERMISSIONS.inventory_management.stock_out.create);
+  // license มาก่อนสิทธิ์ — ปลดสิทธิ์แล้วก็ยังยืนยันไม่ได้ถ้า license ล็อกอยู่
+  const blockedBy: "license" | "permission" | null =
+    !canWrite || expired
+      ? "license"
+      : can(PERMISSIONS.inventory_management.stock_out.create)
+        ? null
+        : "permission";
+  // หลังยืนยัน hook invalidate แบบไม่รอ — ปิดปุ่มจนกว่า preview/รายละเอียดสดจะกลับมา
+  // ไม่งั้น `can_confirm` เก่ายังเป็น true และกดยืนยันซ้ำได้
+  const isBusy =
+    target !== null || previewQuery.isFetching || detailQuery.isFetching;
+  const outletCards = [
+    ...(preview?.outlets ?? []).map((o) => ({
+      preview: o,
+      notInPreview: false,
+    })),
+    // Outlet ที่มียอดขายแต่ preview ไม่คืนมา — แสดงยอดขายไว้ แต่ยืนยันไม่ได้
+    ...detail.outlets
+      .filter((d) => !preview?.outlets.some((o) => o.outlet_id === d.id))
+      .map((d) => ({
+        preview: {
+          outlet_id: d.id,
+          code: d.code,
+          name: d.name,
+          location: d.location,
+          pending_line_count: d.line_count - d.confirmed_line_count,
+          unmapped_items: [],
+          unresolved: [],
+          ingredients: [],
+          can_confirm: false,
+          block_reasons: [],
+        } satisfies PosOutletPreview,
+        notInPreview: true,
+      })),
+  ];
   const itemsHref = detail.store
     ? `${basePath}?tab=items&store=${detail.store.id}`
     : `${basePath}?tab=items`;
@@ -173,6 +204,17 @@ export function PosImportReview({
             <span>{t("cancelledNotice")}</span>
           </div>
         )}
+        {detail.status !== "success" && (
+          <div
+            role="alert"
+            className="bg-muted flex items-center gap-2 rounded-md px-4 py-2 text-xs"
+          >
+            <Ban className="text-destructive size-4 shrink-0" aria-hidden />
+            <span>
+              {t("notImportedNotice", { status: tStatus(detail.status) })}
+            </span>
+          </div>
+        )}
         {preview && !preview.is_in_open_period && (
           <div
             role="alert"
@@ -224,21 +266,22 @@ export function PosImportReview({
               />
             </div>
 
-            {(preview?.outlets ?? []).length === 0 ? (
+            {outletCards.length === 0 ? (
               <p className="text-muted-foreground py-10 text-center text-sm">
                 {t("noOutlets")}
               </p>
             ) : (
-              (preview?.outlets ?? []).map((o) => (
+              outletCards.map(({ preview: o, notInPreview }) => (
                 <PosOutletReviewCard
                   key={o.outlet_id}
                   preview={o}
+                  notInPreview={notInPreview}
                   outlet={detail.outlets.find((d) => d.id === o.outlet_id)}
                   lines={detail.lines.filter(
                     (l) => l.outlet_id === o.outlet_id,
                   )}
-                  canConfirm={canConfirm}
-                  isConfirming={target !== null}
+                  blockedBy={blockedBy}
+                  isConfirming={isBusy}
                   itemsHref={itemsHref}
                   onConfirm={() => setTarget(o)}
                 />

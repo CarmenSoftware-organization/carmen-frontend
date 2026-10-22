@@ -8,6 +8,10 @@ import type { PosBrand } from "./pos-sale-types";
 
 const POS_BRANDS: readonly PosBrand[] = ["simphony", "micros3700"];
 
+/** id ของการนำเข้าเป็น UUID — ค่าอื่นจาก URL ไม่ถูกส่งต่อเข้า path ของ API */
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function isPosBrand(v: string | undefined): v is PosBrand {
   return POS_BRANDS.some((b) => b === v);
 }
@@ -29,7 +33,12 @@ export function Component() {
   if (isLoading) return <FormPageSkeleton />;
 
   const entitlement = isPosBrand(brand) ? entitlementOf("pos", brand) : "none";
-  if (!isPosBrand(brand) || !importId || entitlement === "none") {
+  if (
+    !isPosBrand(brand) ||
+    !importId ||
+    !UUID_RE.test(importId) ||
+    entitlement === "none"
+  ) {
     return (
       <ErrorState message={t("notFound")} backTo="/system-admin/interface" />
     );

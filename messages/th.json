@@ -2961,7 +2961,9 @@
             "progress": "ยืนยันแล้ว {confirmed}/{total} บรรทัด",
             "stockOut": "Stock Out {n}",
             "confirm": "ยืนยันตัดสต็อก",
-            "noPermission": "คุณไม่มีสิทธิ์สร้าง Stock Out"
+            "noPermission": "คุณไม่มีสิทธิ์สร้าง Stock Out",
+            "licenseLocked": "License ของ interface นี้ไม่อนุญาตให้แก้ไข",
+            "notInPreview": "ไม่อยู่ในตัวอย่างการตัดสต็อก"
           },
           "tabs": {
             "sales": "ยอดขาย",
@@ -3012,7 +3014,8 @@
             "product": "สินค้า",
             "requested": "ต้องการ",
             "available": "คงเหลือ"
-          }
+          },
+          "notImportedNotice": "ไฟล์นี้ไม่ได้ถูกนำเข้า ({status}) จึงไม่มีอะไรให้ยืนยัน"
         },
         "blockReason": {
           "location_not_mapped": "Outlet ยังไม่ได้ผูก Location",
