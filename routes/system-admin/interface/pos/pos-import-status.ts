@@ -14,7 +14,7 @@ export type ConfirmationState =
 /**
  * สีสถานะของผลการนำเข้า
  *
- * `success` = เขียว · ไฟล์ซ้ำ (`duplicate_file` / `duplicate_business_date`) = เหลือง
+ * `success` = เขียว · ไฟล์ซ้ำ (`rejected_duplicate`) = เหลือง
  * เพราะไม่ใช่ความผิดพลาด แค่มีของเดิมอยู่แล้ว · ที่เหลือ = แดง
  *
  * @param status - สถานะที่ backend คืนมา
@@ -22,8 +22,7 @@ export type ConfirmationState =
  */
 export function importStatusTone(status: PosImportStatus): ImportStatusTone {
   if (status === "success") return "success";
-  if (status === "duplicate_file" || status === "duplicate_business_date")
-    return "warning";
+  if (status === "rejected_duplicate") return "warning";
   return "destructive";
 }
 

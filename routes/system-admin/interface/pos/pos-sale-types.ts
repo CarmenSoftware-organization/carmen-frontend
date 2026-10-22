@@ -4,11 +4,11 @@ export type PosBrand = "simphony" | "micros3700";
 /** สถานะผลของการนำเข้า — อย่างอื่นนอกจาก `success` = ไม่มีอะไรถูกนำเข้า */
 export type PosImportStatus =
   | "success"
-  | "unsupported_format"
-  | "duplicate_file"
-  | "parse_error"
-  | "duplicate_business_date"
-  | "failed";
+  | "rejected_duplicate"
+  | "missing_glid_header"
+  | "multi_day_glid_reject"
+  | "rejected_multi_day"
+  | "format_error";
 
 /** อ้างอิงแบบ id + รหัส + ชื่อ (Location หรือสูตรอาหาร) */
 export interface PosCodeName {

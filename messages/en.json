@@ -2866,11 +2866,11 @@
         },
         "importStatus": {
           "success": "Imported",
-          "unsupported_format": "Unsupported file format",
-          "duplicate_file": "This file was already imported",
-          "parse_error": "Could not read the file",
-          "duplicate_business_date": "This business date was already imported",
-          "failed": "Import failed"
+          "rejected_duplicate": "Already imported for this date",
+          "missing_glid_header": "File is missing the GLID header",
+          "multi_day_glid_reject": "File contains more than one business day",
+          "rejected_multi_day": "File spans multiple business days",
+          "format_error": "Unsupported or unreadable file format"
         },
         "upload": {
           "action": "Upload file",

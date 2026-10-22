@@ -2866,11 +2866,11 @@
         },
         "importStatus": {
           "success": "นำเข้าสำเร็จ",
-          "unsupported_format": "รูปแบบไฟล์ไม่รองรับ",
-          "duplicate_file": "ไฟล์นี้เคยนำเข้าแล้ว",
-          "parse_error": "อ่านไฟล์ไม่ได้",
-          "duplicate_business_date": "วันขายนี้เคยนำเข้าแล้ว",
-          "failed": "นำเข้าไม่สำเร็จ"
+          "rejected_duplicate": "วันขายนี้เคยนำเข้าแล้ว",
+          "missing_glid_header": "ไฟล์ไม่มีหัว GLID",
+          "multi_day_glid_reject": "ไฟล์มีมากกว่าหนึ่งวันขาย",
+          "rejected_multi_day": "ไฟล์คร่อมหลายวันขาย",
+          "format_error": "รูปแบบไฟล์ไม่รองรับหรืออ่านไม่ได้"
         },
         "upload": {
           "action": "อัปโหลดไฟล์",
