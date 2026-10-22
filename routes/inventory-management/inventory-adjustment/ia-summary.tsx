@@ -2,6 +2,7 @@ import { useFormatter, useTranslations } from "use-intl";
 import { useWatch, type useForm } from "react-hook-form";
 import { Ban, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useClaimFormPrimary } from "@/components/share/form-primary-action";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { useProfile } from "@/hooks/use-profile";
 import {
@@ -61,6 +62,8 @@ export function AdjSummaryFooter({
 
   const hasItems = items.length > 0;
   const showActions = canVoid || canCommit;
+  // void เป็น outline — ปุ่มหลักคือ commit ตัวเดียว
+  useClaimFormPrimary(canCommit);
   // ยังไม่มีรายการและไม่มีปุ่มให้กด = ไม่มีอะไรให้แสดง ไม่ต้องมีแถบเปล่าค้างก้นจอ
   if (!hasItems && !showActions) return null;
 

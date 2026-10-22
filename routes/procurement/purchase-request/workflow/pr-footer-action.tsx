@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Check, Eye, SendHorizontal, ShoppingCart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
+import { useClaimFormPrimary } from "@/components/share/form-primary-action";
 import { STAGE_ROLE } from "@/types/stage-role";
 import { formatCurrency } from "@/lib/currency-utils";
 import type { PrFormValues } from "../pr-form-schema";
@@ -132,6 +133,13 @@ export function PrFooterAction({
         showSendBack ||
         showRejectAllBlocked ||
         showApproveBlocked));
+  // ปุ่มที่กดได้จริงเท่านั้น — ข้อความ "blocked" ไม่ใช่ปุ่ม หัวต้องกลับเป็นปุ่มหลัก
+  useClaimFormPrimary(
+    showSubmit ||
+      (showWorkflowActions &&
+        canDecide &&
+        (showApprove || showReject || showSendBack)),
+  );
 
   const reviewItems: ActionDialogItem[] = items
     .map((item, index) => ({ index, item }))

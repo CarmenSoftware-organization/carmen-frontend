@@ -4,6 +4,7 @@ import { History, MessageSquare, Pencil, Save, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { openActivity } from "@/components/share/activity-sheet-host";
 import { DocFormHeader } from "@/components/share/doc-form-header";
+import { useFormPrimaryClaimed } from "@/components/share/form-primary-action";
 import { useCan } from "@/hooks/use-can";
 import { usePermissionPrefix } from "@/hooks/use-permission-prefix";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
@@ -139,6 +140,9 @@ export function FormToolbar({
   const saveDenied = denied(savePermission);
   const editDenied = denied(updatePermission);
   const deleteDenied = denied(deletePermission);
+  // footer มีปุ่ม workflow (Submit/Approve/Commit) = ปุ่มนั้นคือปุ่มหลักของหน้า
+  // Edit/Save ลดเป็น outline — ดู form-primary-action.tsx
+  const primaryVariant = useFormPrimaryClaimed() ? "outline" : "default";
 
   const actions = (
     <>
@@ -149,6 +153,7 @@ export function FormToolbar({
         <Button
           key="edit"
           type="button"
+          variant={primaryVariant}
           size="sm"
           onClick={
             writeDisabled
@@ -179,13 +184,20 @@ export function FormToolbar({
           </Button>
           {submitSlot ??
             (writeDisabled ? (
-              <Button type="button" size="sm" disabled title={disabledReason}>
+              <Button
+                type="button"
+                variant={primaryVariant}
+                size="sm"
+                disabled
+                title={disabledReason}
+              >
                 <Save />
                 {submit}
               </Button>
             ) : saveDenied ? (
               <Button
                 type="button"
+                variant={primaryVariant}
                 size="sm"
                 onClick={() => dispatchPermissionDenied(savePermission)}
                 aria-disabled
@@ -197,6 +209,7 @@ export function FormToolbar({
             ) : (
               <Button
                 type="submit"
+                variant={primaryVariant}
                 size="sm"
                 form={formId}
                 disabled={isPending}
