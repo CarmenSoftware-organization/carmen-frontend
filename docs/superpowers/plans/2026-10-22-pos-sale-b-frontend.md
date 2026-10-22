@@ -201,4 +201,14 @@
 ---
 
 ## ลำดับ deploy (เพิ่มจากแผน A)
-FE PR นี้ merge ก่อน BE (ให้ `audit:fe-license-fixture` เขียว) แต่ **deploy FE หลัง BE** — FE ก่อน BE = แท็บ POS ยิง 404, ฟอร์ม Simphony save 400 (schema POS เดิม) · Task 1 อยู่ใน branch BE เดียวกับแผน A
+FE PR นี้ merge ก่อน BE (ให้ `audit:fe-license-fixture` เขียว) แต่ **deploy FE หลัง BE และหลังตั้ง license ครบ** · Task 1 อยู่ใน branch BE เดียวกับแผน A
+
+ลำดับ deploy:
+1. **tenant migration (แผน A) ต่อ BU** + seed ประเภทการปรับสต็อกขาออก `SALE` ของแต่ละ BU (ไม่มี = หน้าตรวจยืนยันไม่ได้)
+2. **deploy BE** — micro-business ต้องตั้ง `SECRET_ENCRYPTION_KEY` ไม่งั้นบันทึกค่า Simphony (รหัสผ่าน SFTP) ตอบ 400
+3. `db:seed.license-feature` เพื่อให้มี feature key ใหม่
+4. **carmen-platform**: assign `interface.pos` + `interface.pos.simphony` / `interface.pos.micros3700` (และ interface ที่ BU เปิดใช้) ให้ทุก BU ที่ต้องใช้ — คีย์ `interface.pos.micros` **ไม่มีแล้ว** BU ที่เคยได้ license ตัวนั้นจะเสียหน้านี้ทันทีที่ deploy FE
+5. ตรวจว่า api_name `posSale.*` (11 ชื่อ) ถูก allow สำหรับทุกแอปที่เรียก — เว็บเป็น `allow_all` อยู่แล้ว แอปอื่นต้องเติมครบ 11 ชื่อ
+6. **deploy FE** — FE ก่อน BE = แท็บ POS ยิง 404, ฟอร์ม Simphony save 400 (schema POS เดิม)
+
+หมายเหตุ: แถว `app_config` เดิมของ `interface_pos_micros` กลายเป็นแถวกำพร้า (ไม่มีหน้าไหนอ่านแล้ว) ไม่ต้องลบทันที
