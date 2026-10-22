@@ -51,9 +51,10 @@ import {
 import { statusOf } from "@/components/dashboard-widget/status-meta";
 import { cn } from "@/lib/utils";
 import { useBuCode } from "@/hooks/use-bu-code";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useInViewport } from "@/hooks/use-in-viewport";
 import {
+  cellDocHref,
   docHref,
   idColumnKey,
 } from "@/components/dashboard-widget/table-row-link";
@@ -935,7 +936,22 @@ export function TableCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
           id: col.key,
           accessorFn: (row: TableRow) => row[col.key],
           header: col.label,
-          cell: ({ getValue }) => renderTableCell(getValue(), col.type),
+          cell: ({ getValue, row }) => {
+            const content = renderTableCell(getValue(), col.type);
+            const href = col.link ? cellDocHref(row.original, col.link) : null;
+            if (!col.link || !href) return content;
+            const title = col.link.title ? row.original[col.link.title] : undefined;
+            return (
+              <Link
+                to={href}
+                title={typeof title === "string" && title ? title : undefined}
+                onClick={(e) => e.stopPropagation()}
+                className="text-primary font-medium hover:underline"
+              >
+                {content}
+              </Link>
+            );
+          },
           meta: isNumericColumn(col.type)
             ? {
                 headerClassName: "text-right",

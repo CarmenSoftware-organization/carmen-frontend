@@ -1,4 +1,4 @@
-import type { TableData } from "@/types/dashboard-widget";
+import type { TableColumnLink, TableData } from "@/types/dashboard-widget";
 
 /**
  * dataset ที่แถวชี้ไปหาเอกสารได้ → path ของหน้ารายละเอียด
@@ -44,5 +44,38 @@ export function docHref(
   const id = row[key];
   return typeof id === "string" && id.length > 0
     ? `${base}/${encodeURIComponent(id)}`
+    : null;
+}
+
+/**
+ * ประเภทเอกสารของ inventory transaction (`inventory_doc_type`) → path หน้ารายละเอียด
+ *
+ * SI / SO (รวมใบปรับปิดงวด EOP-IN / EOP-OUT) อยู่หน้าเดียวกัน แยกด้วย `?type=`
+ * ไม่ส่ง type หน้า inventory adjustment จะขึ้น error
+ */
+const INVENTORY_DOC_ROUTES: Record<string, (id: string) => string> = {
+  good_received_note: (id) => `/procurement/goods-receive-note/${id}`,
+  credit_note: (id) => `/procurement/credit-note/${id}`,
+  store_requisition: (id) => `/store-operation/store-requisition/${id}`,
+  stock_in: (id) => `/inventory-management/inventory-adjustment/${id}?type=stock-in`,
+  stock_out: (id) => `/inventory-management/inventory-adjustment/${id}?type=stock-out`,
+};
+
+/**
+ * path ของเอกสารที่ช่องนั้นลิงก์ไป (คอลัมน์ที่มี `link`)
+ *
+ * @param row - แถวของตาราง
+ * @param link - คีย์ของคอลัมน์ที่ถือประเภทและ id ของเอกสาร
+ * @returns path หรือ null เมื่อแถวไม่มีเอกสาร หรือเป็นประเภทที่ยังไม่มีหน้าปลายทาง
+ */
+export function cellDocHref(
+  row: Record<string, unknown>,
+  link: TableColumnLink,
+): string | null {
+  const type = row[link.doc_type];
+  const id = row[link.doc_id];
+  const route = typeof type === "string" ? INVENTORY_DOC_ROUTES[type] : undefined;
+  return route && typeof id === "string" && id.length > 0
+    ? route(encodeURIComponent(id))
     : null;
 }
