@@ -224,7 +224,12 @@ export function FormToolbar({
           }
           title={disabledReason}
           aria-disabled={!writeDisabled && deleteDenied ? true : undefined}
-          className={cn(!writeDisabled && deleteDenied && "opacity-50")}
+          // outline สีแดง ไม่ใช่ variant destructive (พื้นแดงทึบ) — ยังเป็นปุ่มรองข้าง
+          // ปุ่มหลัก แต่ต้องอ่านออกว่าเป็นการลบ ไม่ใช่ปุ่มเทาเหมือน Cancel ข้าง ๆ
+          className={cn(
+            "text-destructive hover:bg-destructive/10 hover:text-destructive",
+            !writeDisabled && deleteDenied && "opacity-50",
+          )}
         >
           <Trash2 />
           {tc("delete")}
