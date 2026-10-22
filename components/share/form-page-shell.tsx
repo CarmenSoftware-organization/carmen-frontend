@@ -1,5 +1,6 @@
 import type { ReactNode, Ref } from "react";
 import { cn } from "@/lib/utils";
+import { FormPrimaryProvider } from "@/components/share/form-primary-action";
 
 interface FormPageShellProps {
   /** FormToolbar / wrapper โมดูล / DocFormHeader — เรียกแบบ flush เสมอ shell ให้ gutter แล้ว */
@@ -38,9 +39,12 @@ export function FormPageShell({
         footer && "flex min-h-full flex-col",
       )}
     >
-      {header}
-      <div className={cn("mt-6 min-w-0", footer && "flex-1")}>{children}</div>
-      {footer}
+      {/* footer แจ้งหัวว่ามีปุ่ม workflow — ดู form-primary-action.tsx */}
+      <FormPrimaryProvider>
+        {header}
+        <div className={cn("mt-6 min-w-0", footer && "flex-1")}>{children}</div>
+        {footer}
+      </FormPrimaryProvider>
     </div>
   );
 }

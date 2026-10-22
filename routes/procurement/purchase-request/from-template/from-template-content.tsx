@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
-import { BackButton } from "@/components/share/back-button";
+import { DocFormHeader } from "@/components/share/doc-form-header";
 import { Loader2 } from "lucide-react";
 import EmptyComponent from "@/components/empty-component";
 import SearchInput from "@/components/search-input";
@@ -65,19 +65,14 @@ export function FromTemplateContent() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <header className="flex items-start gap-2">
-        <BackButton onClick={() => navigate(PR_LIST_PATH)} className="mt-0.5" />
-        <div className="min-w-0 flex-1 space-y-0.5">
-          <h1 className="text-foreground text-lg font-semibold tracking-tight">
-            {t("selectTemplate")}
-          </h1>
-          <p className="text-muted-foreground text-xs">
-            {t("selectTemplateDesc")}
-          </p>
-        </div>
-      </header>
+      <DocFormHeader
+        flush
+        title={t("selectTemplate")}
+        subtitle={t("selectTemplateDesc")}
+        onBack={() => navigate(PR_LIST_PATH)}
+      />
 
-      <div className="space-y-4 px-10">
+      <div className="space-y-4">
         {hasTemplates && (
           <SearchInput
             defaultValue={searchTerm}

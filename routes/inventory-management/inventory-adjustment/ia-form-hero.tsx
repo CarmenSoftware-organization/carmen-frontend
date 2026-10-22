@@ -3,6 +3,7 @@ import { useTranslations } from "use-intl";
 import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormToolbar } from "@/components/share/form-toolbar";
+import { useFormPrimaryClaimed } from "@/components/share/form-primary-action";
 import { PrintDocumentButton } from "@/components/print-document-button";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { Badge } from "@/components/ui/badge";
@@ -88,9 +89,12 @@ export function IaFormHero({
 
   // Save ตั้ง doc_status=draft ตอนคลิกก่อน submit จึงเป็น submitSlot (ไม่ผ่าน gate
   // license/permission ของ FormToolbar — Edit ยัง gate; โหมด add ตกที่ backend)
+  // submitSlot ไม่ผ่านสีของ FormToolbar — ลดเป็น outline เองเมื่อ footer มี Commit
+  const saveVariant = useFormPrimaryClaimed() ? "outline" : "default";
   const submitSlot = (
     <Button
       type="submit"
+      variant={saveVariant}
       size="sm"
       form={formId}
       disabled={isPending}

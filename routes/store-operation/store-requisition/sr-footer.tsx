@@ -1,6 +1,7 @@
 import { useTranslations } from "use-intl";
 import { Check, Eye, PackageCheck, SendHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useClaimFormPrimary } from "@/components/share/form-primary-action";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { useSrStockMovements } from "./use-sr";
 import { formatCurrency } from "@/lib/currency-utils";
@@ -78,6 +79,11 @@ export function SrFooter({
     showRejectAllBlocked ||
     showApproveBlocked;
   const showActions = canSubmit || (isWorkflowReviewer && hasAction);
+  // ปุ่มที่กดได้จริงเท่านั้น — Submit โผล่เฉพาะคนที่ไม่ใช่ผู้ตรวจ · "blocked" ไม่ใช่ปุ่ม
+  useClaimFormPrimary(
+    (canSubmit && !isWorkflowReviewer) ||
+      (isWorkflowReviewer && (showSendBack || showReject || showApprove)),
+  );
   // มีรายการแล้วต้องเห็นยอดรวม แม้จะไม่มีปุ่มให้กด (view ใบที่ปิดแล้ว)
   const showBar = showActions || hasItems;
 

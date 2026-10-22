@@ -9,7 +9,7 @@ import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { ReviewStatTile } from "./review-stat-tile";
 import { VarianceGrid, type VarianceGridItem } from "./variance-grid";
-import { BackButton } from "@/components/share/back-button";
+import { DocFormHeader } from "@/components/share/doc-form-header";
 
 interface ReviewComponentProps<T extends VarianceGridItem> {
   readonly translationNamespace: string;
@@ -52,33 +52,31 @@ export function ReviewComponent<T extends VarianceGridItem>({
 }: ReviewComponentProps<T>) {
   const t = useTranslations(translationNamespace);
 
+  // ไม่ full-bleed (-mx-3) แล้ว — ขอบ p-3 ของ main + px-4 เท่าหน้าเอกสารอื่น
+  // ปุ่มย้อนกลับของ DocFormHeader ยื่นออกซ้ายได้โดยไม่โดนขอบจอตัด
   return (
-    <div className="relative isolate -mx-3 -my-3">
-      <div
-        className="relative flex min-h-[calc(100vh-4rem-3rem)] flex-col px-4 pt-4 lg:px-4"
-        style={{
-          paddingBottom: "max(7rem, calc(env(safe-area-inset-bottom) + 6rem))",
-        }}
-      >
-        <div className="mb-4 flex items-center gap-2">
-          <BackButton onClick={onBack} />
-          <div className="min-w-0">
-            <h1 className="text-foreground text-lg leading-tight font-semibold tracking-tight md:text-xl">
-              {t("reviewTitle")}
-            </h1>
-            {(locationCode ?? locationName) && (
-              <p className="text-muted-foreground text-micro-legal mt-0.5 tracking-wide uppercase">
-                {locationCode}
-                {locationCode && locationName && (
-                  <>
-                    {" "}
-                    <span className="text-muted-foreground/60">·</span>{" "}
-                  </>
-                )}
-                {locationName}
-              </p>
-            )}
-          </div>
+    <div className="relative isolate">
+      <div className="relative flex min-h-[calc(100vh-4rem-3rem-1.5rem)] flex-col px-4 pt-4">
+        <div className="mb-4">
+          <DocFormHeader
+            flush
+            title={t("reviewTitle")}
+            onBack={onBack}
+            subtitle={
+              (locationCode ?? locationName) && (
+                <span className="text-micro-legal tracking-wide uppercase">
+                  {locationCode}
+                  {locationCode && locationName && (
+                    <>
+                      {" "}
+                      <span className="text-muted-foreground/60">·</span>{" "}
+                    </>
+                  )}
+                  {locationName}
+                </span>
+              )
+            }
+          />
         </div>
 
         <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-4">
@@ -145,7 +143,9 @@ export function ReviewComponent<T extends VarianceGridItem>({
           )}
         </section>
 
-        <div className="border-border/60 bg-card/80 fixed inset-x-0 bottom-0 z-30 border-t px-4 py-3 backdrop-blur-xl">
+        {/* sticky ไม่ใช่ fixed — fixed ทับแถบสถานะล่างจอ (เวอร์ชัน/งวดบัญชี) และ
+            ต้องเผื่อ padding ล่างไว้ให้เนื้อหาไม่จม · mt-auto ดันลงล่างตอนเนื้อสั้น */}
+        <div className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 z-20 -mx-4 mt-auto border-t px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Button size="sm" onClick={onSubmit} disabled={isSubmitting}>
               <SendHorizontal aria-hidden="true" />

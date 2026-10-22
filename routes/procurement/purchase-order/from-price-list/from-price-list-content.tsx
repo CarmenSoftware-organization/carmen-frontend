@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
-import { BackButton } from "@/components/share/back-button";
+import { DocFormHeader } from "@/components/share/doc-form-header";
 import { toast } from "sonner";
 import {
   useForm,
@@ -267,24 +267,18 @@ export function FromPriceListContent() {
 
   return (
     <div className="flex flex-col gap-4 p-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <header className="flex items-start gap-3">
-        <BackButton onClick={handleCancel} className="mt-0.5" />
-        <div className="min-w-0 flex-1 space-y-0.5">
-          <h1 className="text-foreground text-lg font-semibold tracking-tight">
-            {t("fromPriceList")}
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            {t("fromPriceListDesc")}
-          </p>
-        </div>
-      </header>
+      <DocFormHeader
+        flush
+        title={t("fromPriceList")}
+        subtitle={t("fromPriceListDesc")}
+        onBack={handleCancel}
+      />
 
       {/* Mobile + Tablet (< lg / 1024px): horizontal stepper on top */}
       <Stepper
         value={step}
         onValueChange={handleStepChange}
         indicators={{ completed: COMPLETED_INDICATOR }}
-        className="px-9"
       >
         {/* แถบขั้นตอนกว้างเท่าที่มันต้องใช้ ไม่กางเต็มจอ — StepperNav บังคับ
             w-full ของตัวเองไว้ด้วย data-variant ซึ่งชนะ class ที่ส่งเข้าไป
@@ -320,7 +314,7 @@ export function FromPriceListContent() {
         </StepperPanel>
       </Stepper>
 
-      <footer className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 flex items-center justify-between px-8 py-3 backdrop-blur">
+      <footer className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 flex items-center justify-between py-3 backdrop-blur">
         <Button
           variant="outline"
           size="sm"

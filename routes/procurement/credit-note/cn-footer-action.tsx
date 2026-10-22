@@ -2,6 +2,7 @@ import { useTranslations } from "use-intl";
 import { useWatch, type Control } from "react-hook-form";
 import { SendHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useClaimFormPrimary } from "@/components/share/form-primary-action";
 import { formatCurrency } from "@/lib/currency-utils";
 import { useCurrency } from "@/hooks/use-currency";
 import { useEntitiesByIds } from "@/hooks/use-entities-by-ids";
@@ -24,6 +25,7 @@ export function CnFooterAction({
 }: CnFooterActionProps) {
   const tc = useTranslations("common");
   const tfl = useTranslations("field");
+  useClaimFormPrimary(canSubmit);
   const items = useWatch({ control, name: "items" });
   // currency_code เก็บ id → resolve เป็นตัวอักษรสกุลเงินสำหรับต่อท้าย total
   const currencyId = useWatch({ control, name: "currency_code" }) ?? "";

@@ -3,6 +3,7 @@ import { useTranslations } from "use-intl";
 import { useWatch, type Control } from "react-hook-form";
 import { Check, Eye, SendHorizontal, ThumbsDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useClaimFormPrimary } from "@/components/share/form-primary-action";
 import { formatCurrency, round2 } from "@/lib/currency-utils";
 import { computeItemPricing } from "./po-item-pricing";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
@@ -175,6 +176,8 @@ export function PoFooterAction({
     canReview ||
     showRejectAllBlocked ||
     showApproveBlocked;
+  // ปุ่มที่กดได้จริงเท่านั้น — ข้อความ "blocked" ไม่ใช่ปุ่ม หัวต้องกลับเป็นปุ่มหลัก
+  useClaimFormPrimary(showSubmit || canApprove || canReject || canReview);
   const hasItems = (items?.length ?? 0) > 0;
   const showBar = isEditMode || showActions || hasItems;
 

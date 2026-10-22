@@ -1,6 +1,7 @@
 import { useTranslations } from "use-intl";
 import { Ban, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useClaimFormPrimary } from "@/components/share/form-primary-action";
 
 interface GrnFooterActionProps {
   readonly isActionPending: boolean;
@@ -25,6 +26,7 @@ export function GrnFooterAction({
   const t = useTranslations("procurement.goodsReceiveNote");
 
   const showActions = hasRecord && isView && !isCommitted && !isVoid;
+  useClaimFormPrimary(showActions);
 
   if (!showActions) return null;
 

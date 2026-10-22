@@ -46,6 +46,13 @@ const ALLOWED: Record<string, number> = {
   // ── ถาวร
   "routes/legal/legal-page.tsx": 1, // ArrowLeft ลิงก์กลับแอป ไม่ใช่ฟอร์ม
   "routes/inventory-management/period-end/pe-review.tsx": 1, // DFH ตรงใน FormPageShell — ไม่ใช่ฟอร์ม ไม่มีชุด Edit/Save
+  // DFH ตรง — wizard/หน้าตรวจทาน ไม่มีชุด Edit/Save ของ FormToolbar (ปุ่มเดินขั้นส่งเป็น actions เอง)
+  "routes/inventory-management/shared/review-component.tsx": 1,
+  "routes/procurement/goods-receive-note/from-po/from-po-content.tsx": 1,
+  "routes/procurement/purchase-order/from-pr/from-pr-content.tsx": 1,
+  "routes/procurement/purchase-order/from-price-list/from-price-list-content.tsx": 1,
+  "routes/procurement/purchase-request/from-template/from-template-content.tsx": 1,
+  "routes/procurement/purchase-request/from-template/qty-step.tsx": 1,
   // ลิงก์มีป้าย "← Purchase Orders" บนหน้าสำเร็จ ไม่ใช่ปุ่ม back แบบไอคอน — BackButton จะทำป้ายหาย
   "routes/procurement/purchase-order/from-pr/step-result.tsx": 1,
   // ลิงก์มีป้าย "← Interfaces" ในหน้าว่างของ brand ที่หมดอายุจนอ่าน config ไม่ได้ ไม่ใช่ปุ่ม back ของฟอร์ม
