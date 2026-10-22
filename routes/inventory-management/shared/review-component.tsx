@@ -56,12 +56,7 @@ export function ReviewComponent<T extends VarianceGridItem>({
   // ปุ่มย้อนกลับของ DocFormHeader ยื่นออกซ้ายได้โดยไม่โดนขอบจอตัด
   return (
     <div className="relative isolate">
-      <div
-        className="relative flex min-h-[calc(100vh-4rem-3rem-1.5rem)] flex-col px-4 pt-4"
-        style={{
-          paddingBottom: "max(7rem, calc(env(safe-area-inset-bottom) + 6rem))",
-        }}
-      >
+      <div className="relative flex min-h-[calc(100vh-4rem-3rem-1.5rem)] flex-col px-4 pt-4">
         <div className="mb-4">
           <DocFormHeader
             flush
@@ -148,7 +143,9 @@ export function ReviewComponent<T extends VarianceGridItem>({
           )}
         </section>
 
-        <div className="border-border/60 bg-card/80 fixed inset-x-0 bottom-0 z-30 border-t px-4 py-3 backdrop-blur-xl">
+        {/* sticky ไม่ใช่ fixed — fixed ทับแถบสถานะล่างจอ (เวอร์ชัน/งวดบัญชี) และ
+            ต้องเผื่อ padding ล่างไว้ให้เนื้อหาไม่จม · mt-auto ดันลงล่างตอนเนื้อสั้น */}
+        <div className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 z-20 -mx-4 mt-auto border-t px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Button size="sm" onClick={onSubmit} disabled={isSubmitting}>
               <SendHorizontal aria-hidden="true" />
