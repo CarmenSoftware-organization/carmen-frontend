@@ -23,6 +23,7 @@
     "lint": "eslint .",
     "clear": "rm -rf dist node_modules",
     "docs:i18n-check": "bun scripts/docs-i18n-check.ts",
+    "docs:widgets": "bun scripts/gen-widget-docs.ts",
     "gen:license-fixture": "bun scripts/gen-license-fixture.ts",
     "gen:route-map": "bun scripts/gen-route-map.ts"
   },
