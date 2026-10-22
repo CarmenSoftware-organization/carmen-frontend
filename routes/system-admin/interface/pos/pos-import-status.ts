@@ -47,3 +47,13 @@ export function confirmationState(row: {
   if (row.confirmed_line_count < row.line_count) return "partial";
   return "confirmed";
 }
+
+/**
+ * path ของใบ Stock Out ที่การยืนยันตัดสต็อกสร้าง
+ *
+ * @param stockOutId id ของใบ Stock Out
+ * @returns path หน้ารายละเอียดใบปรับสต็อกแบบขาออก
+ */
+export function stockOutPath(stockOutId: string): string {
+  return `/inventory-management/inventory-adjustment/${stockOutId}?type=stock-out`;
+}

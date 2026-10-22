@@ -2938,6 +2938,97 @@
           "recipeInactive": "สูตรปิดใช้",
           "clear": "ล้างสูตร",
           "saved": "บันทึกสูตรแล้ว"
+        },
+        "review": {
+          "back": "กลับไปประวัติการนำเข้า",
+          "notFound": "ไม่พบการนำเข้านี้",
+          "titleFallback": "การนำเข้า POS",
+          "linesCount": "{count} บรรทัด",
+          "salesAmount": "ยอดขาย {amount}",
+          "cancelledNotice": "การนำเข้านี้ถูกยกเลิกแล้ว ยืนยันตัดสต็อกไม่ได้",
+          "periodClosed": "วันขายไม่อยู่ในงวดคลังที่เปิด ยืนยันไม่ได้",
+          "noOutlets": "การนำเข้านี้ไม่มียอดขายให้ตรวจ",
+          "summary": {
+            "outlets": "Outlet",
+            "outletsDetail": "ผูก Location แล้ว {mapped} · ค้าง {pending}",
+            "items": "เมนู",
+            "itemsDetail": "ผูกสูตรแล้ว {mapped} · ค้าง {pending}",
+            "ingredients": "วัตถุดิบที่จะตัด",
+            "ingredientsDetail": "สต็อกไม่พอ {short}"
+          },
+          "outlet": {
+            "notMapped": "ยังไม่ได้ผูก Location",
+            "progress": "ยืนยันแล้ว {confirmed}/{total} บรรทัด",
+            "stockOut": "Stock Out {n}",
+            "confirm": "ยืนยันตัดสต็อก",
+            "noPermission": "คุณไม่มีสิทธิ์สร้าง Stock Out"
+          },
+          "tabs": {
+            "sales": "ยอดขาย",
+            "ingredients": "วัตถุดิบที่จะตัด",
+            "pending": "ค้างผูก"
+          },
+          "columns": {
+            "item": "เมนู",
+            "qty": "จำนวน",
+            "unitPrice": "ราคาต่อหน่วย",
+            "total": "รวม",
+            "state": "สถานะ",
+            "product": "สินค้า",
+            "deduct": "จำนวนที่ตัด",
+            "available": "คงเหลือ",
+            "sources": "มาจากเมนู",
+            "recipe": "สูตร",
+            "ingredient": "วัตถุดิบ",
+            "reason": "เหตุผล"
+          },
+          "lineState": {
+            "confirmed": "ตัดแล้ว",
+            "pending": "รอ"
+          },
+          "sourcesMore": "+{count}",
+          "shortLabel": "(สต็อกไม่พอ)",
+          "emptyLines": "ไม่มีบรรทัดยอดขาย",
+          "emptyIngredients": "ไม่มีวัตถุดิบที่จะตัด",
+          "emptyPending": "ผูกครบทุกรายการแล้ว",
+          "unmappedTitle": "เมนูที่ยังไม่มีสูตร ({count})",
+          "unmappedHint": "บรรทัดเหล่านี้จะถูกข้ามตอนยืนยัน และค้างไว้จนกว่าจะผูกสูตร",
+          "goMapItems": "ไปผูกเมนู",
+          "unresolvedTitle": "สูตรที่มีปัญหา ({count})",
+          "dialog": {
+            "title": "ยืนยันตัดสต็อกของ {outlet}",
+            "desc": "ระบบจะสร้างและลงบัญชี Stock Out หนึ่งใบจากยอดขายที่ผูกสูตรแล้วของ Outlet นี้",
+            "location": "Location",
+            "date": "วันที่เอกสาร",
+            "lines": "บรรทัดยอดขาย",
+            "ingredients": "วัตถุดิบ",
+            "skipped": "มี {count} เมนูที่ยังไม่มีสูตร จะถูกข้าม",
+            "confirm": "ยืนยันตัดสต็อก",
+            "success": "สร้าง Stock Out {soNo} แล้ว",
+            "successDesc": "ตัด {count} บรรทัด",
+            "open": "เปิด",
+            "shortTitle": "สต็อกไม่พอ",
+            "shortDesc": "ยอดคงเหลือเปลี่ยนไปและสินค้าเหล่านี้ไม่พอตัดแล้ว ยังไม่มีการลงบัญชีใด ๆ",
+            "product": "สินค้า",
+            "requested": "ต้องการ",
+            "available": "คงเหลือ"
+          }
+        },
+        "blockReason": {
+          "location_not_mapped": "Outlet ยังไม่ได้ผูก Location",
+          "nothing_to_confirm": "ไม่มีรายการเหลือให้ยืนยัน",
+          "insufficient_stock": "วัตถุดิบบางรายการสต็อกไม่พอ",
+          "unresolved_ingredients": "บางสูตรแตกเป็นวัตถุดิบไม่ได้",
+          "period_closed": "วันขายไม่อยู่ในงวดคลังที่เปิด",
+          "import_cancelled": "การนำเข้าถูกยกเลิกแล้ว",
+          "adjustment_type_missing": "ยังไม่ได้ตั้งประเภทการปรับสต็อกขาออกสำหรับ POS"
+        },
+        "unresolvedReason": {
+          "no_conversion": "ไม่มีการแปลงหน่วยเป็นหน่วยคงคลัง",
+          "zero_yield": "ผลผลิตของสูตรเป็นศูนย์",
+          "too_deep": "สูตรย่อยซ้อนกันลึกเกินไป",
+          "recipe_unusable": "สูตรถูกปิดใช้หรือใช้ไม่ได้",
+          "empty_recipe": "สูตรไม่มีวัตถุดิบ"
         }
       }
     },

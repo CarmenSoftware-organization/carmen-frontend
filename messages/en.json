@@ -2938,6 +2938,97 @@
           "recipeInactive": "Recipe inactive",
           "clear": "Clear recipe",
           "saved": "Recipe saved"
+        },
+        "review": {
+          "back": "Back to import history",
+          "notFound": "Import not found",
+          "titleFallback": "POS import",
+          "linesCount": "{count, plural, one {# line} other {# lines}}",
+          "salesAmount": "Sales {amount}",
+          "cancelledNotice": "This import was cancelled. Nothing can be confirmed.",
+          "periodClosed": "The sales date is not in an open inventory period, so stock-out cannot be confirmed.",
+          "noOutlets": "This import has no sales to review",
+          "summary": {
+            "outlets": "Outlets",
+            "outletsDetail": "{mapped} mapped · {pending} without location",
+            "items": "Menu items",
+            "itemsDetail": "{mapped} mapped · {pending} without recipe",
+            "ingredients": "Ingredients to deduct",
+            "ingredientsDetail": "{short} short of stock"
+          },
+          "outlet": {
+            "notMapped": "No location mapped",
+            "progress": "{confirmed}/{total} lines confirmed",
+            "stockOut": "Stock Out {n}",
+            "confirm": "Confirm stock-out",
+            "noPermission": "You don't have permission to create Stock Out"
+          },
+          "tabs": {
+            "sales": "Sales",
+            "ingredients": "Ingredients to deduct",
+            "pending": "Pending mapping"
+          },
+          "columns": {
+            "item": "Menu item",
+            "qty": "Qty",
+            "unitPrice": "Unit price",
+            "total": "Total",
+            "state": "Status",
+            "product": "Product",
+            "deduct": "Deduct",
+            "available": "On hand",
+            "sources": "From menu",
+            "recipe": "Recipe",
+            "ingredient": "Ingredient",
+            "reason": "Reason"
+          },
+          "lineState": {
+            "confirmed": "Deducted",
+            "pending": "Pending"
+          },
+          "sourcesMore": "+{count}",
+          "shortLabel": "(short of stock)",
+          "emptyLines": "No sales lines",
+          "emptyIngredients": "No ingredients to deduct",
+          "emptyPending": "Everything is mapped",
+          "unmappedTitle": "Menu items without a recipe ({count})",
+          "unmappedHint": "These lines are skipped when you confirm and stay pending until mapped.",
+          "goMapItems": "Map items",
+          "unresolvedTitle": "Recipe problems ({count})",
+          "dialog": {
+            "title": "Confirm stock-out for {outlet}",
+            "desc": "One Stock Out is created and posted for this outlet's mapped sales.",
+            "location": "Location",
+            "date": "Document date",
+            "lines": "Sales lines",
+            "ingredients": "Ingredients",
+            "skipped": "{count, plural, one {# menu item has} other {# menu items have}} no recipe and will be skipped.",
+            "confirm": "Confirm stock-out",
+            "success": "Stock Out {soNo} created",
+            "successDesc": "{count, plural, one {# line} other {# lines}} deducted",
+            "open": "Open",
+            "shortTitle": "Not enough stock",
+            "shortDesc": "Stock on hand changed and these products no longer cover the deduction. Nothing was posted.",
+            "product": "Product",
+            "requested": "Required",
+            "available": "On hand"
+          }
+        },
+        "blockReason": {
+          "location_not_mapped": "Outlet has no location mapped",
+          "nothing_to_confirm": "Nothing left to confirm",
+          "insufficient_stock": "Some ingredients are short of stock",
+          "unresolved_ingredients": "Some recipes can't be converted to ingredients",
+          "period_closed": "Sales date is not in an open inventory period",
+          "import_cancelled": "Import was cancelled",
+          "adjustment_type_missing": "No stock-out adjustment type is set up for POS"
+        },
+        "unresolvedReason": {
+          "no_conversion": "No conversion to the inventory unit",
+          "zero_yield": "Recipe yield is zero",
+          "too_deep": "Sub-recipes are nested too deeply",
+          "recipe_unusable": "Recipe is inactive or unusable",
+          "empty_recipe": "Recipe has no ingredients"
         }
       }
     },
