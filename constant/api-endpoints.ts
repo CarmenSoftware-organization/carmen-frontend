@@ -166,6 +166,13 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/config/${buCode}/gl-jv-prefixes`,
   GL_COST_CENTERS: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/cost-centers`,
+  /**
+   * ดึงศูนย์ต้นทุน (แผนก) จาก Carmen 4 ตามคอนฟิก `interface_accounting_carmen_gl`
+   * — backend เขียนแบบ all-or-nothing และตัดสินเรื่องรหัสซ้ำ/รหัสที่มีเฉพาะฝั่งเรา
+   * จาก `sync_policy` ในคอนฟิกนั้น ไม่ใช่จาก payload ของคำขอ
+   */
+  GL_COST_CENTERS_IMPORT_CARMEN_GL: (buCode: string) =>
+    `/api/proxy/api/config/${buCode}/cost-centers/import-from-interface/carmen-gl`,
   GL_COST_CENTER_GROUPS: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/cost-center-groups`,
   GL_DIMENSIONS: (buCode: string) =>

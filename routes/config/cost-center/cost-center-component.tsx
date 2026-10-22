@@ -7,6 +7,7 @@ import { CostCenterDialog } from "./cost-center-dialog";
 import { useCostCenterTable } from "./use-cost-center-table";
 import { COST_CENTER_FILTER_FIELDS } from "./cost-center-filter-fields";
 import CostCenterCard from "./cost-center-card";
+import { CostCenterImportCarmenGlButton } from "./cost-center-import-carmen-gl-button";
 
 export default function CostCenterComponent() {
   const tfl = useTranslations("field");
@@ -21,6 +22,7 @@ export default function CostCenterComponent() {
       pageKey={LIST_PAGE_KEYS.COST_CENTER}
       filterFields={COST_CENTER_FILTER_FIELDS}
       defaultSort="code:asc"
+      extraActions={<CostCenterImportCarmenGlButton />}
       exportColumns={[
         { header: tfl("code"), value: (r) => r.code, width: 14 },
         { header: tfl("name"), value: (r) => r.name, width: 28 },
