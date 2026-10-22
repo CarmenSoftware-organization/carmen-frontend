@@ -1613,7 +1613,18 @@
       "codePlaceholder": "e.g. 101",
       "namePlaceholder": "e.g. Front Office",
       "noGroupHint": "No active cost center group yet — you can save without one.",
-      "createGroupLink": "Go to Cost Center Group"
+      "createGroupLink": "Go to Cost Center Group",
+      "importCarmenGl": {
+        "action": "Import from Carmen GL",
+        "importing": "Importing…",
+        "confirmTitle": "Import cost centers from Carmen GL?",
+        "confirmDesc": "Departments are pulled from the Carmen GL interface configured for this business unit and written as cost centers in one all-or-nothing transaction. How duplicate codes and codes that exist only here are treated comes from the sync policy on the interface settings page. Cost centers that are still in use are never deleted.",
+        "success": "Cost centers imported",
+        "summary": "Created {created}, updated {updated}, skipped {skipped}, deleted {deleted}",
+        "inUse": "{count} not deleted because still in use: {codes}",
+        "failed": "Import failed",
+        "failedDesc": "Could not import cost centers. Nothing was changed."
+      }
     },
     "creditNoteReason": {
       "entity": "Credit Note Reason",
@@ -2698,7 +2709,7 @@
           "setAccountMappingAllItems": "Set account mapping for all items",
           "allowPostingTransferToGl": "Allow posting the transfer to GL",
           "syncPolicy": "Chart of accounts sync",
-          "syncPolicyDesc": "How an import reconciles Carmen 4 with the accounts here. Applies both to the Import button on the chart of accounts page and to scheduled runs.",
+          "syncPolicyDesc": "How an import reconciles Carmen 4 with the chart of accounts and cost centers here. Applies both to the Import buttons on those two pages and to scheduled runs. Cost centers that are still in use are never deleted.",
           "onDuplicate": "When a code exists on both sides",
           "onDuplicateOption": {
             "skip": "Keep ours",
