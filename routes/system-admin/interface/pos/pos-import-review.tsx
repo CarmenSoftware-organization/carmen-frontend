@@ -14,7 +14,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { PERMISSIONS } from "@/constant/permissions";
 import { formatDate } from "@/lib/date-utils";
 import { PosConfirmDialog } from "./pos-confirm-dialog";
-import { importStatusTone } from "./pos-import-status";
+import { importStatusLabel, importStatusTone } from "./pos-import-status";
 import { PosOutletReviewCard } from "./pos-outlet-review-card";
 import type {
   PosBrand,
@@ -87,7 +87,10 @@ export function PosImportReview({
   const { dateFormat } = useProfile();
   const formatAmount = useAmountFormatter();
   const detailQuery = usePosImport(importId);
-  const previewQuery = usePosImportPreview(importId);
+  const previewQuery = usePosImportPreview(
+    importId,
+    detailQuery.data?.status === "success",
+  );
   const [target, setTarget] = useState<PosOutletPreview | null>(null);
 
   const basePath = `/system-admin/interface/pos/${brand}`;
@@ -181,7 +184,7 @@ export function PosImportReview({
           badges={
             <>
               <StatusDotBadge tone={importStatusTone(detail.status)}>
-                {tStatus(detail.status)}
+                {importStatusLabel(tStatus, detail.status)}
               </StatusDotBadge>
               {detail.warnings.includes(LEGACY_EXPORT_WARNING) && (
                 <span className="text-warning-ink flex items-center gap-1 text-xs">
@@ -211,7 +214,9 @@ export function PosImportReview({
           >
             <Ban className="text-destructive size-4 shrink-0" aria-hidden />
             <span>
-              {t("notImportedNotice", { status: tStatus(detail.status) })}
+              {t("notImportedNotice", {
+                status: importStatusLabel(tStatus, detail.status),
+              })}
             </span>
           </div>
         )}

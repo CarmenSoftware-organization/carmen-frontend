@@ -15,11 +15,11 @@ import { Button } from "@/components/ui/button";
 import EmptyComponent from "@/components/empty-component";
 import { ErrorState } from "@/components/ui/error-state";
 import { LookupLocation } from "@/components/lookup/lookup-location";
-import { useCan } from "@/hooks/use-can";
 import { getUserErrorMessage } from "@/lib/error-message";
 import { PosStoreFilter } from "./pos-store-filter";
 import type { PosBrand, PosOutlet } from "./pos-sale-types";
 import { usePosStoreFilter } from "./use-pos-store-filter";
+import { usePosWritable } from "./use-pos-writable";
 import { usePosOutlets, useUpdatePosOutlet } from "./use-pos-sale";
 
 /**
@@ -32,7 +32,7 @@ export function PosOutletMapping({ brand }: { brand: PosBrand }) {
   "use no memo";
   const t = useTranslations("systemAdmin.interface.posSale.outlets");
   const tErr = useTranslations("errors");
-  const { canWrite } = useCan();
+  const { canWrite } = usePosWritable(brand);
   const { stores, storeId, setStoreId } = usePosStoreFilter(brand);
   const { data, isLoading, error, refetch } = usePosOutlets(storeId);
   const { mutate } = useUpdatePosOutlet();

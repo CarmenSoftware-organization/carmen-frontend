@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { useSearchParams } from "react-router";
 import { X } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
@@ -19,12 +18,14 @@ import EmptyComponent from "@/components/empty-component";
 import SearchInput from "@/components/search-input";
 import { ErrorState } from "@/components/ui/error-state";
 import { LookupRecipe } from "@/components/lookup/lookup-recipe";
-import { useCan } from "@/hooks/use-can";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
+import { setURLParams, useURL } from "@/hooks/use-url";
 import { getUserErrorMessage } from "@/lib/error-message";
+import { clampPerpage } from "./pos-import-status";
 import { PosStoreFilter } from "./pos-store-filter";
 import type { PosBrand, PosItem } from "./pos-sale-types";
 import { usePosStoreFilter } from "./use-pos-store-filter";
+import { usePosWritable } from "./use-pos-writable";
 import { usePosItems, useUpdatePosItem } from "./use-pos-sale";
 
 /**
@@ -40,13 +41,17 @@ export function PosItemMapping({ brand }: { brand: PosBrand }) {
   "use no memo";
   const t = useTranslations("systemAdmin.interface.posSale.items");
   const tErr = useTranslations("errors");
-  const { canWrite } = useCan();
-  const [urlParams, setUrlParams] = useSearchParams();
-  const unmapped = urlParams.get("unmapped") !== "0";
+  const { canWrite } = usePosWritable(brand);
+  const [unmappedRaw] = useURL("unmapped");
+  const unmapped = unmappedRaw !== "0";
   const { stores, storeId, setStoreId } = usePosStoreFilter(brand);
-  const { params, tableConfig, search, setSearch } = useDataGridState({
-    defaultPerpage: 50,
-  });
+  const {
+    params: rawParams,
+    tableConfig,
+    search,
+    setSearch,
+  } = useDataGridState({ defaultPerpage: 50 });
+  const params = { ...rawParams, perpage: clampPerpage(rawParams.perpage, 50) };
   const { data, isLoading, error, refetch } = usePosItems(
     params,
     { storeId, unmapped },
@@ -58,16 +63,7 @@ export function PosItemMapping({ brand }: { brand: PosBrand }) {
   const totalRecords = data?.paginate?.total ?? 0;
 
   const onUnmappedChange = (next: boolean) => {
-    setUrlParams(
-      (prev) => {
-        const p = new URLSearchParams(prev);
-        if (next) p.delete("unmapped");
-        else p.set("unmapped", "0");
-        p.delete("page");
-        return p;
-      },
-      { replace: true },
-    );
+    setURLParams({ unmapped: next ? "" : "0", page: "" });
   };
 
   const columns = useMemo<ColumnDef<PosItem>[]>(() => {
@@ -157,7 +153,7 @@ export function PosItemMapping({ brand }: { brand: PosBrand }) {
     columns,
     getCoreRowModel: getCoreRowModel(),
     ...tableConfig,
-    pageCount: Math.ceil(totalRecords / (params.perpage as number)),
+    pageCount: Math.ceil(totalRecords / params.perpage),
   });
 
   return (

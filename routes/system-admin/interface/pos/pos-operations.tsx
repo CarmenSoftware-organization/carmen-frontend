@@ -1,5 +1,5 @@
-import { useSearchParams } from "react-router";
 import { useTranslations } from "use-intl";
+import { setURLParams, useURL } from "@/hooks/use-url";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PosImportHistory } from "./pos-import-history";
 import { PosItemMapping } from "./pos-item-mapping";
@@ -9,7 +9,7 @@ import type { PosBrand } from "./pos-sale-types";
 const TABS = ["history", "outlets", "items"] as const;
 type PosTab = (typeof TABS)[number];
 
-function isPosTab(v: string | null): v is PosTab {
+function isPosTab(v: string): v is PosTab {
   return TABS.some((t) => t === v);
 }
 
@@ -25,20 +25,11 @@ function isPosTab(v: string | null): v is PosTab {
  */
 export function PosOperations({ brand }: { brand: PosBrand }) {
   const t = useTranslations("systemAdmin.interface.posSale.tabs");
-  const [params, setParams] = useSearchParams();
-  const raw = params.get("tab");
+  const [raw] = useURL("tab");
   const tab: PosTab = isPosTab(raw) ? raw : "history";
 
   const onTabChange = (next: string) => {
-    setParams(
-      (prev) => {
-        const p = new URLSearchParams(prev);
-        p.set("tab", next);
-        for (const k of ["page", "perpage", "search", "sort"]) p.delete(k);
-        return p;
-      },
-      { replace: true },
-    );
+    setURLParams({ tab: next, page: "", perpage: "", search: "", sort: "" });
   };
 
   return (

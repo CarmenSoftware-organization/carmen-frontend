@@ -5,6 +5,7 @@ import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { getUserErrorMessage } from "@/lib/error-message";
+import { importStatusLabel } from "./pos-import-status";
 import { useUploadSimphony } from "./use-pos-sale";
 
 /** เพดานขนาดไฟล์ที่ยอมให้อัปโหลด (ตรงกับฝั่ง backend) */
@@ -41,7 +42,7 @@ export function PosSimphonyUploadButton() {
     upload.mutate(file, {
       onSuccess: (res) => {
         if (res.status !== "success") {
-          toast.error(tStatus(res.status), {
+          toast.error(importStatusLabel(tStatus, res.status), {
             description: res.error_message ?? file.name,
           });
           return;

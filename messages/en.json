@@ -2962,7 +2962,7 @@
             "stockOut": "Stock Out {n}",
             "confirm": "Confirm stock-out",
             "noPermission": "You don't have permission to create Stock Out",
-            "licenseLocked": "License for this interface doesn't allow changes",
+            "licenseLocked": "This interface's license has expired or your contract is read-only, so changes are not allowed",
             "notInPreview": "Not included in the stock-out preview"
           },
           "tabs": {

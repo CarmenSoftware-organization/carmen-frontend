@@ -5,11 +5,7 @@ export type ImportStatusTone = "success" | "warning" | "destructive";
 
 /** สถานะการยืนยันตัดสต็อกของการนำเข้าหนึ่งรายการ */
 export type ConfirmationState =
-  | "cancelled"
-  | "not_applicable"
-  | "pending"
-  | "partial"
-  | "confirmed";
+  "cancelled" | "not_applicable" | "pending" | "partial" | "confirmed";
 
 /**
  * สีสถานะของผลการนำเข้า
@@ -56,4 +52,30 @@ export function confirmationState(row: {
  */
 export function stockOutPath(stockOutId: string): string {
   return `/inventory-management/inventory-adjustment/${stockOutId}?type=stock-out`;
+}
+
+/**
+ * ป้ายสถานะการนำเข้า — สถานะที่ยังไม่มีข้อความแปล (backend เพิ่มใหม่) ใช้ค่าดิบแทนการขึ้นชื่อคีย์
+ *
+ * @param t - translator ของ `posSale.importStatus`
+ * @param status - สถานะที่ backend คืนมา
+ * @returns ข้อความที่แปลแล้ว หรือสถานะดิบเมื่อไม่มีคีย์
+ */
+export function importStatusLabel(
+  t: { (key: string): string; has?: (key: string) => boolean },
+  status: string,
+): string {
+  return t.has?.(status) === false ? status : t(status);
+}
+
+/**
+ * perpage ที่ส่งให้ backend — อ่านจาก URL ได้ค่าใดก็ได้ จึงบีบให้อยู่ใน 1..100
+ *
+ * @param perpage - ค่า perpage จาก `useDataGridState`
+ * @param fallback - ค่าเมื่อไม่ใช่ตัวเลข
+ * @returns จำนวนเต็ม 1..100
+ */
+export function clampPerpage(perpage: unknown, fallback: number): number {
+  const n = Math.trunc(Number(perpage));
+  return Number.isFinite(n) && n >= 1 ? Math.min(n, 100) : fallback;
 }

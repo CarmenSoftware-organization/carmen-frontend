@@ -2962,7 +2962,7 @@
             "stockOut": "Stock Out {n}",
             "confirm": "ยืนยันตัดสต็อก",
             "noPermission": "คุณไม่มีสิทธิ์สร้าง Stock Out",
-            "licenseLocked": "License ของ interface นี้ไม่อนุญาตให้แก้ไข",
+            "licenseLocked": "License ของ interface นี้หมดอายุ หรือสัญญาของ BU เป็นแบบอ่านอย่างเดียว จึงไม่อนุญาตให้แก้ไข",
             "notInPreview": "ไม่อยู่ในตัวอย่างการตัดสต็อก"
           },
           "tabs": {

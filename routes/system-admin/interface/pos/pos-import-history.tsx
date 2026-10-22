@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/tooltip";
 import EmptyComponent from "@/components/empty-component";
 import { ErrorState } from "@/components/ui/error-state";
-import { useCan } from "@/hooks/use-can";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
@@ -40,11 +39,14 @@ import { getUserErrorMessage } from "@/lib/error-message";
 import { cn } from "@/lib/utils";
 import {
   confirmationState,
+  clampPerpage,
+  importStatusLabel,
   importStatusTone,
   type ConfirmationState,
 } from "./pos-import-status";
 import { PosSimphonyUploadButton } from "./pos-simphony-upload-button";
 import type { PosBrand, PosImportListItem } from "./pos-sale-types";
+import { usePosWritable } from "./use-pos-writable";
 import { useCancelPosImport, usePosImports } from "./use-pos-sale";
 
 const LEGACY_EXPORT_WARNING = "legacy_export_version";
@@ -69,10 +71,13 @@ export function PosImportHistory({ brand }: { brand: PosBrand }) {
   const tStatus = useTranslations("systemAdmin.interface.posSale.importStatus");
   const tc = useTranslations("common");
   const tErr = useTranslations("errors");
-  const { canWrite } = useCan();
+  const { canWrite } = usePosWritable(brand);
   const { dateFormat } = useProfile();
   const formatAmount = useAmountFormatter();
-  const { params, tableConfig } = useDataGridState({ defaultPerpage: 20 });
+  const { params: rawParams, tableConfig } = useDataGridState({
+    defaultPerpage: 20,
+  });
+  const params = { ...rawParams, perpage: clampPerpage(rawParams.perpage, 20) };
   const { data, isLoading, error, refetch } = usePosImports(params, brand);
   const cancel = useCancelPosImport();
   const [cancelTarget, setCancelTarget] = useState<PosImportListItem | null>(
@@ -138,7 +143,7 @@ export function PosImportHistory({ brand }: { brand: PosBrand }) {
           const r = row.original;
           const badge = (
             <StatusDotBadge tone={importStatusTone(r.status)}>
-              {tStatus(r.status)}
+              {importStatusLabel(tStatus, r.status)}
             </StatusDotBadge>
           );
           return (
@@ -261,7 +266,7 @@ export function PosImportHistory({ brand }: { brand: PosBrand }) {
     columns,
     getCoreRowModel: getCoreRowModel(),
     ...tableConfig,
-    pageCount: Math.ceil(totalRecords / (params.perpage as number)),
+    pageCount: Math.ceil(totalRecords / params.perpage),
   });
 
   const confirmCancel = () => {

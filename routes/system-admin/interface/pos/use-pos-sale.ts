@@ -82,7 +82,7 @@ export function usePosImport(id: string | undefined) {
 }
 
 /** ตัวอย่างการตัดสต็อกของการนำเข้า (หนึ่งรายการต่อ Outlet) — ยอดคงเหลือเปลี่ยนได้ จึงไม่ cache นาน */
-export function usePosImportPreview(id: string | undefined) {
+export function usePosImportPreview(id: string | undefined, enabled = true) {
   const buCode = useBuCode();
   return useQuery<PosPreview>({
     queryKey: [QUERY_KEYS.POS_SALE_PREVIEW, buCode, id],
@@ -94,7 +94,8 @@ export function usePosImportPreview(id: string | undefined) {
         )
       ).data,
     staleTime: 0,
-    enabled: !!buCode && !!id,
+    // backend ตอบ 400 กับการนำเข้าที่ไม่ใช่ success — รอรู้สถานะก่อนค่อยยิง
+    enabled: !!buCode && !!id && enabled,
   });
 }
 
@@ -139,7 +140,7 @@ export function usePosOutlets(storeId?: string) {
         )
       ).data,
     ...CACHE_DYNAMIC,
-    enabled: !!buCode,
+    enabled: !!buCode && !!storeId,
   });
 }
 
@@ -206,7 +207,7 @@ function usePosMutation<TVariables, TData>(opts: {
   });
 }
 
-/** อัปโหลดไฟล์ Simphony (multipart field `file`) — ไฟล์ที่ถูกปฏิเสธคืน 200 พร้อม status ≠ success */
+/** อัปโหลดไฟล์ Simphony (multipart field `file`) — ไฟล์ที่ถูกปฏิเสธคืน 201 พร้อม status ≠ success */
 export function useUploadSimphony() {
   return usePosMutation<File, PosImportSummary>({
     call: (buCode, file) => {
@@ -221,6 +222,9 @@ export function useUploadSimphony() {
     invalidate: () => [
       [QUERY_KEYS.POS_SALE_IMPORTS],
       [QUERY_KEYS.POS_SALE_STORES],
+      // ไฟล์ใหม่เพิ่ม Outlet / เมนูของร้านได้
+      [QUERY_KEYS.POS_SALE_OUTLETS],
+      [QUERY_KEYS.POS_SALE_ITEMS],
     ],
   });
 }
