@@ -45,7 +45,7 @@ export type CategoryGroup = {
 export function connectionTarget(
   value: Record<string, unknown> | undefined,
 ): string | null {
-  const raw = value?.endpoint ?? value?.api_server;
+  const raw = value?.endpoint ?? value?.api_server ?? value?.sftp_host;
   return typeof raw === "string" && raw.trim() !== "" ? raw.trim() : null;
 }
 

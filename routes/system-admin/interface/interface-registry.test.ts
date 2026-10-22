@@ -75,7 +75,7 @@ describe("findCategory", () => {
 
 describe("findBrand", () => {
   it("resolves a known category + brand", () => {
-    expect(findBrand("pos", "micros")?.configKey).toBe("interface_pos_micros");
+    expect(findBrand("pos", "simphony")?.configKey).toBe("interface_pos_simphony");
   });
 
   it("returns undefined for a brand not in the category", () => {
@@ -83,12 +83,12 @@ describe("findBrand", () => {
   });
 
   it("returns undefined for an unknown category", () => {
-    expect(findBrand("hms", "micros")).toBeUndefined();
+    expect(findBrand("hms", "simphony")).toBeUndefined();
   });
 
   it("returns undefined when either param is missing", () => {
     expect(findBrand("pos", undefined)).toBeUndefined();
-    expect(findBrand(undefined, "micros")).toBeUndefined();
+    expect(findBrand(undefined, "simphony")).toBeUndefined();
   });
 });
 

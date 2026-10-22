@@ -2730,7 +2730,8 @@
         "connection": "การเชื่อมต่อ",
         "connectionDesc": "ระบบขายหน้าร้านที่ Carmen Blue จะดึงข้อมูลมา",
         "brand": {
-          "micros": "Oracle Micros",
+          "simphony": "Oracle Simphony",
+          "micros3700": "Oracle Micros 3700",
           "infrasys": "Infrasys",
           "square": "Square"
         },

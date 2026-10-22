@@ -65,7 +65,19 @@ export const INTERFACE_CATEGORIES: readonly InterfaceCategoryDef[] = [
   {
     key: "pos",
     icon: ShoppingCart,
-    brands: brands("pos", ["micros", "infrasys", "square"]),
+    brands: [
+      {
+        key: "simphony",
+        configKey: "interface_pos_simphony",
+        form: lazy(() => import("./pos/pos-simphony-form")),
+      },
+      {
+        key: "micros3700",
+        configKey: "interface_pos_micros3700",
+        form: lazy(() => import("./pos/pos-micros3700-form")),
+      },
+      ...brands("pos", ["infrasys", "square"]),
+    ],
     form: lazy(() => import("./pos-interface-form")),
   },
   {

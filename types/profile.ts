@@ -49,7 +49,7 @@ export interface BusinessUnit {
   is_active: boolean;
   /**
    * Per-BU interface entitlement — `<category>_<brand>` keys the platform licensed for this
-   * business unit (e.g. `"pos_micros"`). The UI shows ONLY the listed brands. Absent (backend
+   * business unit (e.g. `"pos_simphony"`). The UI shows ONLY the listed brands. Absent (backend
    * did not send it / platform selected none) or an empty array → the UI shows nothing.
    */
   enabled_interfaces?: string[];

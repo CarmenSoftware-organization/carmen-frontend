@@ -24,7 +24,7 @@ export type UseInterfaceConfigResult = {
  * 404 ยัง retry 1 รอบตาม default ของ QueryClient (`components/providers.tsx`) — ยอมได้
  * เพราะเป็น path ชั่วคราวและ backend default ตัดมันทิ้งไปแล้ว
  *
- * @param configKey - key ใน app_config เช่น `interface_pos_micros`
+ * @param configKey - key ใน app_config เช่น `interface_pos_simphony`
  * @returns ค่า config, สถานะโหลด/ใหม่/error และฟังก์ชัน save
  */
 export function useInterfaceConfig(
