@@ -17,11 +17,11 @@ describe("interfaceGroups", () => {
   it("marks a brand enabled when its config row says so", () => {
     const groups = interfaceGroups(
       INTERFACE_CATEGORIES,
-      [config("interface_pos_micros", { enabled: true })],
+      [config("interface_pos_simphony", { enabled: true })],
       allowAll,
     );
     const pos = groups.find((g) => g.category.key === "pos");
-    expect(pos?.brands.find((b) => b.brand.key === "micros")?.enabled).toBe(
+    expect(pos?.brands.find((b) => b.brand.key === "simphony")?.enabled).toBe(
       true,
     );
     expect(pos?.brands.find((b) => b.brand.key === "square")?.enabled).toBe(
@@ -37,13 +37,13 @@ describe("interfaceGroups", () => {
   it("treats a non-boolean enabled as disabled", () => {
     const groups = interfaceGroups(
       INTERFACE_CATEGORIES,
-      [config("interface_pos_micros", { enabled: "yes" })],
+      [config("interface_pos_simphony", { enabled: "yes" })],
       allowAll,
     );
-    const micros = groups
+    const simphony = groups
       .find((g) => g.category.key === "pos")
-      ?.brands.find((b) => b.brand.key === "micros");
-    expect(micros?.enabled).toBe(false);
+      ?.brands.find((b) => b.brand.key === "simphony");
+    expect(simphony?.enabled).toBe(false);
   });
 
   it("ignores app configs that are not interface brands", () => {
@@ -56,7 +56,7 @@ describe("interfaceGroups", () => {
   });
 
   it("filters brands by entitlement and drops empty categories", () => {
-    const enabled = ["interface.pos.micros", "interface.pos.square"];
+    const enabled = ["interface.pos.simphony", "interface.pos.square"];
     const groups = interfaceGroups(
       INTERFACE_CATEGORIES,
       [],
@@ -66,7 +66,7 @@ describe("interfaceGroups", () => {
     // only POS survives; accounting + pms have no entitled brand
     expect(groups.map((g) => g.category.key)).toEqual(["pos"]);
     expect(groups[0].brands.map((b) => b.brand.key)).toEqual([
-      "micros",
+      "simphony",
       "square",
     ]);
   });
@@ -94,9 +94,9 @@ describe("interfaceGroups", () => {
       INTERFACE_CATEGORIES,
       [],
       (c: string, b: string) =>
-        c === "pos" && b === "micros" ? "expired" : "none",
+        c === "pos" && b === "simphony" ? "expired" : "none",
     );
     const pos = groups.find((g) => g.category.key === "pos");
-    expect(pos?.brands.map((b) => b.brand.key)).toEqual(["micros"]);
+    expect(pos?.brands.map((b) => b.brand.key)).toEqual(["simphony"]);
   });
 });
