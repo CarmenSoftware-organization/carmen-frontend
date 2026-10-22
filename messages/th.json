@@ -2908,6 +2908,36 @@
           "desc": "รับยอดขายรายวันจาก Micros 3700 และตัดสต็อก",
           "general": "ทั่วไป",
           "generalDesc": "เปิดหรือปิดแบรนด์นี้สำหรับหน่วยธุรกิจ การอัปโหลด PDF จะมาในรุ่นถัดไป"
+        },
+        "store": {
+          "label": "ร้าน",
+          "placeholder": "เลือกร้าน",
+          "emptyTitle": "ยังไม่มีร้าน",
+          "emptyDesc": "นำเข้าไฟล์ครั้งแรกเพื่อสร้าง"
+        },
+        "outlets": {
+          "columns": {
+            "code": "รหัส",
+            "name": "Outlet",
+            "location": "Location"
+          },
+          "notMapped": "ยังไม่ผูก",
+          "clear": "ล้าง Location",
+          "saved": "บันทึก Location แล้ว"
+        },
+        "items": {
+          "columns": {
+            "code": "รหัส",
+            "desc1": "รายการ",
+            "desc2": "รายการ 2",
+            "department": "แผนก",
+            "recipe": "สูตร"
+          },
+          "unmappedOnly": "เฉพาะที่ยังไม่ผูก",
+          "allMapped": "ผูกครบทุกเมนูแล้ว",
+          "recipeInactive": "สูตรปิดใช้",
+          "clear": "ล้างสูตร",
+          "saved": "บันทึกสูตรแล้ว"
         }
       }
     },

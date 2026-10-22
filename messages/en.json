@@ -2908,6 +2908,36 @@
           "desc": "Receive daily POS sales from Micros 3700 and post stock deductions.",
           "general": "General",
           "generalDesc": "Turn this brand on or off for the business unit. PDF upload will be available in a later release."
+        },
+        "store": {
+          "label": "Store",
+          "placeholder": "Select a store",
+          "emptyTitle": "No stores yet",
+          "emptyDesc": "Import a file for the first time to create one"
+        },
+        "outlets": {
+          "columns": {
+            "code": "Code",
+            "name": "Outlet",
+            "location": "Location"
+          },
+          "notMapped": "Not mapped",
+          "clear": "Clear location",
+          "saved": "Location saved"
+        },
+        "items": {
+          "columns": {
+            "code": "Code",
+            "desc1": "Description",
+            "desc2": "Description 2",
+            "department": "Department",
+            "recipe": "Recipe"
+          },
+          "unmappedOnly": "Unmapped only",
+          "allMapped": "Every item is mapped",
+          "recipeInactive": "Recipe inactive",
+          "clear": "Clear recipe",
+          "saved": "Recipe saved"
         }
       }
     },

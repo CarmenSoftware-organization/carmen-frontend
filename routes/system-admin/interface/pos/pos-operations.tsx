@@ -2,6 +2,8 @@ import { useSearchParams } from "react-router";
 import { useTranslations } from "use-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PosImportHistory } from "./pos-import-history";
+import { PosItemMapping } from "./pos-item-mapping";
+import { PosOutletMapping } from "./pos-outlet-mapping";
 import type { PosBrand } from "./pos-sale-types";
 
 const TABS = ["history", "outlets", "items"] as const;
@@ -15,7 +17,8 @@ function isPosTab(v: string | null): v is PosTab {
  * แท็บงาน POS ใต้ฟอร์มตั้งค่า — ประวัติการนำเข้า / ผูกจุดขาย / ผูกรายการขาย
  *
  * แท็บปัจจุบันเก็บใน query `?tab=` (ค่าเริ่ม `history`) และคง query อื่นไว้
- * แท็บ `outlets` / `items` ยังเป็น placeholder — งานถัดไปมาแทน
+ * ร้านที่เลือกของแท็บ `outlets` / `items` เก็บใน `?store=` (แชร์กัน) ส่วน page / perpage / search / sort
+ * ล้างทุกครั้งที่สลับแท็บ — แต่ละแท็บมีจำนวนแถวต่างกัน กันค้างหน้าที่เกินช่วง
  *
  * @param brand แบรนด์ POS ของหน้านี้
  * @returns React element ของแท็บงาน
@@ -31,6 +34,7 @@ export function PosOperations({ brand }: { brand: PosBrand }) {
       (prev) => {
         const p = new URLSearchParams(prev);
         p.set("tab", next);
+        for (const k of ["page", "perpage", "search", "sort"]) p.delete(k);
         return p;
       },
       { replace: true },
@@ -49,8 +53,12 @@ export function PosOperations({ brand }: { brand: PosBrand }) {
       <TabsContent value="history">
         <PosImportHistory brand={brand} />
       </TabsContent>
-      <TabsContent value="outlets">{null}</TabsContent>
-      <TabsContent value="items">{null}</TabsContent>
+      <TabsContent value="outlets">
+        <PosOutletMapping brand={brand} />
+      </TabsContent>
+      <TabsContent value="items">
+        <PosItemMapping brand={brand} />
+      </TabsContent>
     </Tabs>
   );
 }
