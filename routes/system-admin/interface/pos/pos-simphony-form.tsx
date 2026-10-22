@@ -10,6 +10,7 @@ import { useInterfaceConfig } from "../use-interface-config";
 import { InterfacePageLayout } from "../interface-page-layout";
 import { TextField, ToggleField } from "../interface-fields";
 import { PosOperations } from "./pos-operations";
+import { PosSftpLastPull } from "./pos-sftp-last-pull";
 
 /** mask ที่ backend ส่งกลับแทนรหัสผ่านที่เก็บไว้ */
 const ENCRYPTED_MASK = "***ENCRYPTED***";
@@ -167,6 +168,8 @@ export default function PosSimphonyForm() {
           placeholder="03:00"
         />
       </SettingSection>
+
+      <PosSftpLastPull enabled={!isLoading && !isError} />
     </InterfacePageLayout>
   );
 }

@@ -82,6 +82,7 @@ export const QUERY_KEYS = {
   POS_SALE_IMPORTS: "pos-sale-imports",
   POS_SALE_IMPORT: "pos-sale-import",
   POS_SALE_PREVIEW: "pos-sale-preview",
+  POS_SALE_SFTP_PULL_LATEST: "pos-sale-sftp-pull-latest",
   POS_SALE_STORES: "pos-sale-stores",
   POS_SALE_OUTLETS: "pos-sale-outlets",
   POS_SALE_ITEMS: "pos-sale-items",

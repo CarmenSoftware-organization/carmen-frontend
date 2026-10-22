@@ -26,6 +26,7 @@ import type {
   PosMicros3700Overwrite,
   PosOutlet,
   PosPreview,
+  PosSftpPullRun,
   PosShortage,
   PosStore,
 } from "./pos-sale-types";
@@ -91,6 +92,30 @@ export function usePosBatchImports(batchId: string | null | undefined) {
       ).data,
     ...CACHE_DYNAMIC,
     enabled: !!buCode && !!batchId,
+  });
+}
+
+/**
+ * รอบดึงไฟล์ Simphony ผ่าน SFTP ล่าสุด — `null` = ยังไม่เคยมีรอบ
+ *
+ * ไม่ retry: 403/404 (license หมด หรือ backend ยังไม่มี endpoint) ให้ผู้เรียกซ่อนส่วนนี้ทันที
+ *
+ * @param enabled - ยิงเมื่อ true เท่านั้น (ฟอร์มโหลดแล้วและ license ใช้งานได้)
+ */
+export function usePosSftpLatestPull(enabled: boolean) {
+  const buCode = useBuCode();
+  return useQuery<PosSftpPullRun | null, ApiError>({
+    queryKey: [QUERY_KEYS.POS_SALE_SFTP_PULL_LATEST, buCode],
+    queryFn: async () =>
+      (
+        await getJson<{ data: PosSftpPullRun | null }>(
+          API_ENDPOINTS.POS_SALE_SFTP_PULL_LATEST(buCode!),
+          "Failed to load latest SFTP pull",
+        )
+      ).data,
+    ...CACHE_DYNAMIC,
+    retry: false,
+    enabled: !!buCode && enabled,
   });
 }
 

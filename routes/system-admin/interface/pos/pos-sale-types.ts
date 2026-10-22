@@ -10,6 +10,33 @@ export type PosImportStatus =
   | "rejected_multi_day"
   | "format_error";
 
+/** สถานะของรอบดึงไฟล์ Simphony ผ่าน SFTP */
+export type PosSftpPullStatus =
+  | "running"
+  | "completed"
+  | "connect_failed"
+  | "host_key_mismatch"
+  | "failed"
+  | "abandoned";
+
+/** รอบดึงไฟล์ Simphony ผ่าน SFTP ล่าสุดของ BU (`SftpPullRunView` ฝั่ง backend) */
+export interface PosSftpPullRun {
+  id: string;
+  /** วันของ BU ที่รอบนี้นับ YYYY-MM-DD */
+  run_date: string;
+  status: PosSftpPullStatus;
+  started_at: string;
+  finished_at: string | null;
+  attempt_count: number;
+  host_key_sha256: string | null;
+  files_found: number;
+  files_imported: number;
+  files_rejected: number;
+  files_failed: number;
+  files_skipped: number;
+  error_message: string | null;
+}
+
 /** อ้างอิงแบบ id + รหัส + ชื่อ (Location หรือสูตรอาหาร) */
 export interface PosCodeName {
   id: string;

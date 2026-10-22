@@ -323,6 +323,8 @@ export const API_ENDPOINTS = {
     outletId: string,
   ) =>
     `/api/proxy/api/${buCode}/pos-sales/imports/${encodeURIComponent(importId)}/outlets/${encodeURIComponent(outletId)}/confirm`,
+  POS_SALE_SFTP_PULL_LATEST: (buCode: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/sftp-pulls/latest`,
   POS_SALE_STORES: (buCode: string) =>
     `/api/proxy/api/${buCode}/pos-sales/stores`,
   POS_SALE_OUTLETS: (buCode: string) =>

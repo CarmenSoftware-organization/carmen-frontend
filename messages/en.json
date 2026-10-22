@@ -2898,19 +2898,34 @@
           "title": "Oracle Simphony",
           "desc": "Receive daily POS sales from Oracle Simphony and post stock deductions.",
           "sftp": "SFTP connection",
-          "sftpDesc": "Connection to the server holding the sales export files. Automatic pulling will be enabled in a later release; for now, import files manually from the Import history tab.",
+          "sftpDesc": "Connection to the server holding the sales export files. Files are pulled automatically once a day at the time set below (business unit time zone, checked hourly). Pulled files always wait for the Cost Controller to confirm, and you can still import files manually from the Import history tab.",
           "host": "SFTP host",
           "port": "Port",
           "username": "Username",
           "password": "Password",
           "passwordHint": "Leave as-is to keep the current password",
           "pull": "Pull schedule",
-          "pullDesc": "Where and when to look for export files. Automatic pulling will be enabled in a later release.",
+          "pullDesc": "Where and when to look for export files. Pulled once a day at this time in the business unit time zone; the schedule is checked every hour.",
           "remoteFolder": "Remote folder path",
           "filePattern": "File name pattern",
           "scheduleTime": "Pull time (HH:mm)",
           "scheduleInvalid": "Use 24-hour HH:mm format, e.g. 03:00",
-          "portInvalid": "Port must be a whole number from 1 to 65535"
+          "portInvalid": "Port must be a whole number from 1 to 65535",
+          "lastPull": {
+            "title": "Latest automatic pull",
+            "never": "No automatic pull has run yet.",
+            "status": {
+              "running": "In progress",
+              "completed": "Completed",
+              "connect_failed": "Could not connect",
+              "host_key_mismatch": "Server key changed",
+              "failed": "Failed",
+              "abandoned": "Interrupted"
+            },
+            "summary": "Imported {imported} · Rejected {rejected} · Failed {failed} · Skipped {skipped}",
+            "hostKey": "Server key (SHA-256): {fingerprint}",
+            "hostKeyHint": "Confirm this key with the SFTP administrator, then press Save on these settings again to trust the new key."
+          }
         },
         "micros3700": {
           "title": "Micros 3700",
