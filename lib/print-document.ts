@@ -34,7 +34,18 @@ export type PrintDocumentType =
   | "PC"
   | "SC"
   | "RFP"
-  | "EOP";
+  | "EOP"
+  // master data, not a document: no dedicated endpoint and no BU print-form setting — the caller passes
+  // VENDOR_DETAIL_TEMPLATE_ID plus VendorFrom / VendorTo filters
+  | "VENDOR";
+
+/**
+ * Vendor Detail Report — a form template (micro-report seed, id fixed across environments) printed from the
+ * vendor page; it is not on the report list. Its function f_vendor_detail takes VendorFrom / VendorTo / Status.
+ * Vendor Detail Report — template แบบ form (seed ของ micro-report, id เดียวกันทุก env) พิมพ์จากหน้าผู้ขาย
+ * ไม่อยู่ในหน้ารายการรายงาน · ฟังก์ชัน f_vendor_detail รับ VendorFrom / VendorTo / Status
+ */
+export const VENDOR_DETAIL_TEMPLATE_ID = "da3fff14-8000-4065-bc28-a734e5783814";
 
 export interface ViewerResponse {
   data?: { url: string };
