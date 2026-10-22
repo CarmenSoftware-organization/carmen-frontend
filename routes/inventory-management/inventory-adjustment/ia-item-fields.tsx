@@ -81,7 +81,13 @@ export function AdjItemFields({
         description={disabled ? undefined : t("noItemsDesc")}
         action={
           !disabled ? (
-            <Button type="button" size="sm" onClick={handleAddItem}>
+            // secondary เหมือน Add Item ของ PR/SR — ปุ่มหลักของหน้าคือ Commit ที่ footer
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleAddItem}
+            >
               <Plus /> {t("addItem")}
             </Button>
           ) : undefined
