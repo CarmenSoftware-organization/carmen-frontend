@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { printDocument } from "../print-document";
+import { printDocument, VENDOR_DETAIL_TEMPLATE_ID } from "../print-document";
 
 vi.mock("@/lib/http-client", () => ({
   httpClient: {
@@ -94,5 +94,28 @@ describe("printDocument", () => {
       printDocument(BU, "EOP", { documentId: DOC_ID, target: null }),
     ).rejects.toThrow("No print form configured for EOP");
     expect(httpClient.get).not.toHaveBeenCalled();
+  });
+
+  // Vendor Detail Report: master data, no dedicated endpoint — the vendor page passes the
+  // form template and the vendor's own code as the range
+  it("prints a vendor through the generic viewer with its code as the range", async () => {
+    vi.mocked(httpClient.post).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ data: { url: VIEWER_URL } }),
+    } as unknown as Response);
+
+    const result = await printDocument(BU, "VENDOR", {
+      templateId: VENDOR_DETAIL_TEMPLATE_ID,
+      filters: { VendorFrom: "A023", VendorTo: "A023", Status: "ALL" },
+      target: null,
+    });
+
+    expect(httpClient.get).not.toHaveBeenCalled();
+    expect(httpClient.post).toHaveBeenCalledWith(`/api/proxy/api/${BU}/reports/viewer`, {
+      template_id: VENDOR_DETAIL_TEMPLATE_ID,
+      filters: { VendorFrom: "A023", VendorTo: "A023", Status: "ALL" },
+    });
+    expect(result.url).toBe(VIEWER_URL);
   });
 });
