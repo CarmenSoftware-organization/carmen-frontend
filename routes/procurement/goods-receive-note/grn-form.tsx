@@ -46,6 +46,20 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
   const isCommitted = goodsReceiveNote?.doc_status === "committed";
   const isVoid = goodsReceiveNote?.doc_status === "voided";
 
+  // ใบ saved แก้ได้เหมือนร่าง ยกเว้นบรรทัดที่เอกสารอื่นอ้างอิงแล้ว (lot ถูกตัด / มีใบลดหนี้อ้าง)
+  // หลังบ้านบอกมาต่อบรรทัด · มีสักบรรทัดเมื่อไร ค่าใช้จ่ายเพิ่มเติม สกุลเงิน และอัตรา
+  // ก็ล็อกทั้งใบด้วย เพราะสามอย่างนี้ตีมูลค่าบรรทัดที่ถูกล็อกใหม่
+  const lockedLines = useMemo(
+    () =>
+      new Map(
+        (goodsReceiveNote?.good_received_note_detail ?? [])
+          .filter((detail) => detail.stock_lock_reasons?.length)
+          .map((detail) => [detail.id, detail.stock_lock_reasons ?? []]),
+      ),
+    [goodsReceiveNote],
+  );
+  const hasStockLock = !!goodsReceiveNote?.has_stock_lock;
+
   const [searchParams] = useSearchParams();
   const docTypeParam = searchParams.get("doc_type");
 
@@ -233,7 +247,7 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
           disabled={isDisabled || isView}
           fromWizard={fromWizard}
           lockIdentity={goodsReceiveNote?.doc_status === "saved" || isCommitted}
-          lockCommercial={isCommitted}
+          lockCommercial={isCommitted || hasStockLock}
         />
 
         {/* เส้นคั่นเต็มความกว้าง แยกข้อมูลหัวใบออกจากตารางรายการ (เหมือน PO)
@@ -258,12 +272,21 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
             <TabsTrigger value="stock">{t("tabStock")}</TabsTrigger>
           </TabsList>
           <TabsContent value="general">
-            <GrnItemTable form={form} disabled={isDisabled || isCommitted} />
-          </TabsContent>
-          <TabsContent value="extra-cost">
-            <GrnExtraCostFields
+            <GrnItemTable
               form={form}
               disabled={isDisabled || isCommitted}
+              lockedLines={lockedLines}
+            />
+          </TabsContent>
+          <TabsContent value="extra-cost">
+            {hasStockLock && !isView && !isCommitted && (
+              <p className="text-muted-foreground pt-2 text-xs">
+                {t("extraCostStockLocked")}
+              </p>
+            )}
+            <GrnExtraCostFields
+              form={form}
+              disabled={isDisabled || isCommitted || hasStockLock}
             />
           </TabsContent>
           <TabsContent value="stock">

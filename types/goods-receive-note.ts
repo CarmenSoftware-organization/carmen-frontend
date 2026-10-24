@@ -58,6 +58,15 @@ interface GrnDetailItem extends TaxFields, DiscountFields, ItemMoneyFields {
 
 // --- Detail Group (product + location) ---
 
+/**
+ * เหตุที่บรรทัดของใบ saved เปลี่ยนสิ่งที่ลงสต๊อกไม่ได้แล้ว (หลังบ้าน `good-received-note.stock-lock`)
+ *
+ * - `stock_consumed` — เอกสารอื่นตัดล็อตของบรรทัดนี้ไปแล้ว (SR, SO, โอน, CN ที่ลงแล้ว)
+ * - `credit_note` — มีใบลดหนี้ที่ยังไม่ยกเลิกอ้างบรรทัดนี้ (รวมใบร่าง)
+ * - `legacy_posting` — ใบลงสต๊อกแบบเก่าที่การแก้ไขลงใหม่ให้ไม่ได้
+ */
+export type GrnStockLockReason = "stock_consumed" | "credit_note" | "legacy_posting";
+
 interface GoodsReceiveNoteDetail {
   id: string;
   good_received_note: EntityRef | null;
@@ -71,6 +80,11 @@ interface GoodsReceiveNoteDetail {
   product_sku: string | null;
   items: GrnDetailItem[];
   doc_version?: number;
+  /**
+   * มีค่าเฉพาะใบ saved — ว่าง = แก้ได้ · มีสักเหตุ = จำนวน ราคา ส่วนลด ภาษี หน่วย
+   * สินค้า คลัง แก้ไม่ได้และลบบรรทัดไม่ได้ (optional: backend รุ่นก่อนไม่ส่งมา)
+   */
+  stock_lock_reasons?: GrnStockLockReason[];
 }
 
 // --- Extra Cost ---
@@ -93,14 +107,16 @@ interface ExtraCostDetailItem {
   tax_type: string;
 }
 
+/**
+ * หัวค่าใช้จ่ายเพิ่มเติมของใบ — **object เดียว ไม่ใช่ array** และบรรทัดซ้อนอยู่ข้างใน
+ * (ยืนยันจาก live `GET .../good-received-notes/{id}` 2026-10-23: keys = id,
+ * allocate_extra_cost_type, extra_cost_detail) · ของเดิมประกาศเป็น array คู่กับ
+ * `extra_cost_detail` ระดับบน ซึ่งไม่มีจริง ฟอร์มแก้ไขจึงโหลดค่าใช้จ่ายเดิมไม่ขึ้นเลย
+ */
 interface GrnExtraCost {
   id: string;
-  good_received_note_id: string;
-  name: string | null;
-  allocate_extra_cost_type: string;
-  description: string | null;
-  note: string | null;
-  info: Record<string, unknown> | null;
+  allocate_extra_cost_type: string | null;
+  extra_cost_detail?: ExtraCostDetailItem[];
 }
 
 // --- Main GRN ---
@@ -164,9 +180,13 @@ export interface GoodsReceiveNote {
   audit?: Audit;
   // Detail items (nested: detail → items[])
   good_received_note_detail: GoodsReceiveNoteDetail[];
-  // Extra cost
-  extra_cost: GrnExtraCost[];
-  extra_cost_detail: ExtraCostDetailItem[];
+  // Extra cost — null เมื่อใบไม่มีหัวค่าใช้จ่ายเพิ่มเติม
+  extra_cost: GrnExtraCost | null;
+  /**
+   * true = มีบรรทัดถูกเอกสารอื่นอ้างอิง (ดู `stock_lock_reasons`) ซึ่งล็อกค่าใช้จ่ายเพิ่มเติม
+   * สกุลเงิน และอัตราแลกเปลี่ยนทั้งใบด้วย เพราะสามอย่างนี้ตีมูลค่าทุกบรรทัดใหม่
+   */
+  has_stock_lock?: boolean;
 }
 
 // --- Payloads ---
@@ -255,6 +275,11 @@ export interface GrnStockMovementItem {
   product_local_name?: string | null;
   inventory_unit_name: string;
   lot_no?: string | null;
+  /**
+   * ลำดับชั้นต้นทุนในล็อต — บรรทัดเดียวแตกได้ถึงสองชั้น (รับ 3 ราคา 100 = 2 × 33.33 + 1 × 33.34)
+   * ตารางแสดงทีละชั้นเพื่อให้ จำนวน × ต้นทุนต่อหน่วย = มูลค่า ทุกแถว
+   */
+  lot_index?: number | null;
   /** จำนวนที่ใบบอกว่ารับ — มีค่าเสมอ ต่างจาก `qty_in` ที่ว่างจนกว่าจะเข้าสต๊อกจริง */
   received_qty?: number;
   /** จำนวนที่สต๊อกขยับจริง — `0` ตราบใดที่ `is_posted` ยังไม่เป็น true */

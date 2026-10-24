@@ -359,3 +359,43 @@ describe("mapDetailToPayload ตาม payload ใหม่", () => {
     expect(p.tax_profile_id).toBe("tax-1");
   });
 });
+
+/**
+ * หัวค่าใช้จ่ายเพิ่มเติมจาก `GET .../good-received-notes/{id}` เป็น object เดียว บรรทัดซ้อนอยู่ข้างใน
+ * (ยืนยันจาก live 2026-10-23) — ของเดิมอ่าน `extra_cost[0]` กับ `extra_cost_detail` ระดับบน
+ * ซึ่งไม่มีจริง ฟอร์มแก้ไขจึงเปิดมาโดยไม่มีค่าใช้จ่ายเดิมเลยทุกใบ
+ */
+describe("ค่าใช้จ่ายเพิ่มเติมของใบเดิม", () => {
+  const withExtraCost = {
+    ...twoLocationsOneProduct,
+    extra_cost: {
+      id: "ec-1",
+      allocate_extra_cost_type: "by_value",
+      extra_cost_detail: [
+        {
+          id: "ecd-1",
+          extra_cost_type: { id: "ect-freight" },
+          note: "truck",
+          amount: 150,
+        },
+      ],
+    },
+  } as unknown as Parameters<typeof getDefaultValues>[0];
+
+  it("โหลดวิธีกระจายและบรรทัดจากหัวค่าใช้จ่ายของใบ", () => {
+    const values = getDefaultValues(withExtraCost);
+    expect(values.allocate_extra_cost_type).toBe("by_value");
+    expect(values.extra_cost_details).toEqual([
+      { id: "ecd-1", extra_cost_type_id: "ect-freight", note: "truck", amount: 150 },
+    ]);
+  });
+
+  it("ใบที่ไม่มีหัวค่าใช้จ่ายได้ค่าเริ่มต้น", () => {
+    const values = getDefaultValues({
+      ...twoLocationsOneProduct,
+      extra_cost: null,
+    } as unknown as Parameters<typeof getDefaultValues>[0]);
+    expect(values.allocate_extra_cost_type).toBe("by_qty");
+    expect(values.extra_cost_details).toEqual([]);
+  });
+});

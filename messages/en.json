@@ -1033,6 +1033,9 @@
       "GRN_VOIDED_NOT_EDITABLE": "This goods receive note has been voided, so it can no longer be edited.",
       "GRN_AP_LINKED_NOT_EDITABLE": "This goods receive note is already on AP invoice {doc_nos}, so it can no longer be edited.",
       "GRN_SAVED_HEADER_ONLY": "A saved goods receive note only allows post type, credit term, invoice no./date, due date, note and description to change — anything that moves stock is fixed once saved. Not allowed: {fields}",
+      "GRN_SAVED_IDENTITY_LOCKED": "A saved goods receive note cannot change its vendor or receiving date. Not allowed: {fields}",
+      "GRN_LINE_STOCK_LOCKED": "These lines are already referenced by another document, so their quantity, price, product and location cannot change and they cannot be removed: {lines}",
+      "GRN_COST_STOCK_LOCKED": "Extra cost, currency and exchange rate cannot change while lines of this receipt are referenced by another document: {lines}",
       "GRN_COMMITTED_HEADER_ONLY": "A committed goods receive note only allows post type, credit term, invoice no./date, due date, note and description to change. Not allowed: {fields}",
       "GRN_STATUS_CHANGE_NOT_ALLOWED": "A goods receive note changes status only through its own buttons (Save, Commit, Void), not by editing it ({from} → {to}). Refresh to see its current status.",
       "RFP_VENDOR_REMOVE_ID_REQUIRED": "This vendor could not be removed because its line was not identified. Refresh the page and try again.",
@@ -4996,6 +4999,13 @@
       "refDocs": "Source documents",
       "refDocsComingSoon": "Source documents for this line are not available yet",
       "stockNeedsCommitted": "Stock movement shows after this receipt is committed",
+      "stockLocked": "Referenced by another document — quantity, price, product and location are locked and the line cannot be removed",
+      "extraCostStockLocked": "Extra cost cannot change because lines of this receipt are referenced by another document (currency and exchange rate are locked too)",
+      "stockLockReason": {
+        "stock_consumed": "Stock received on this line has already been issued",
+        "credit_note": "A credit note that is not voided references this line",
+        "legacy_posting": "This receipt was posted the old way and cannot be re-posted to follow an edit"
+      },
       "docInfo": "Document Information",
       "docType": "Document Type",
       "purchaseOrder": "Purchase Order",
