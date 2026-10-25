@@ -1,8 +1,8 @@
-# Report to carmen-turborepo-backend-v2 team — 2026-06-12
+# Report to carmen-turborepo-backend team — 2026-06-12
 
-From the frontend team (carmen-inventory-frontend-react). One bug report and two
+From the frontend team (carmen-frontend). One bug report and two
 feature/config requests, in priority order. All evidence below was captured today
-against a local gateway (`carmen-turborepo-backend-v2` on `http://localhost:4000`),
+against a local gateway (`carmen-turborepo-backend` on `http://localhost:4000`),
 logged in as the seeded admin user.
 
 ---
@@ -89,5 +89,5 @@ for production, but flagging early.
 
 ---
 
-**Contact:** frontend repo `carmen-inventory-frontend-react`; repro steps and this
+**Contact:** frontend repo `carmen-frontend`; repro steps and this
 report live in `docs/2026-06-12-report-to-backend-team.md` there.

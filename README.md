@@ -1,4 +1,4 @@
-# carmen-inventory-frontend-react
+# carmen-frontend
 
 CARMEN BLUE — ERP for hospitality supply chain. **Vite + React Router 7 SPA**, fully
 migrated from the legacy Next.js app (that repo has since been removed)
@@ -117,7 +117,7 @@ scripts/setup-gcs-cdn.sh                            # GCS CDN + security headers
 | `APP_CONFIG_JSON` | No | Whole `config.json` as a JSON string; the fallback when `public/<BUILD_CONFIG_FILE>` is absent (git clones, e.g. CI). Validated at build time | `{"BACKEND_URL":"…","X_APP_ID":"…"}` |
 | `SKIP_VERSION_BUMP` | No | `1` = `bun run build` does not bump the patch version (also skipped automatically when `CI` is set or `.git` is absent) | `1` |
 | `APP_COMMIT_SHA` | No | Commit shown in the version line; falls back to `VERCEL_GIT_COMMIT_SHA`, then `git rev-parse`, then `unknown` — set it where `.git` is absent (Docker) | `4fd0efb` |
-| `BACKEND_REPO` | For `gen:license-fixture` | Path to a `carmen-turborepo-backend-v2` checkout | `../carmen-turborepo-backend-v2` |
+| `BACKEND_REPO` | For `gen:license-fixture` | Path to a `carmen-turborepo-backend` checkout | `../carmen-turborepo-backend` |
 
 Container runtime (`docker-compose.yml`): `BACKEND_URL`, `X_APP_ID`, `WS_URL`,
 `PROXY_SSL_VERIFY`, plus `IMAGE_TAG` / `REGISTRY` for image selection.
@@ -177,7 +177,7 @@ starts (as of 2026-09-08); `vercel --prod` from a developer machine is the only 
   **manual-only** (`workflow_dispatch`) — nothing runs on push or PR, so run the three
   locally before merging; `build` includes `tsc --noEmit`.
 - **Playwright e2e** lives in the dedicated suite
-  [carmen-inventory-frontend-e2e](../carmen-inventory-frontend-e2e) (191+ TC-annotated
+  [carmen-frontend-e2e](../carmen-frontend-e2e) (191+ TC-annotated
   tests, frontend-agnostic). Run it against this SPA with:
-  `E2E_FRONTEND_DIR=../carmen-inventory-frontend-react VITE_DEV_PROXY_TARGET=<backend> bun e2e`
+  `E2E_FRONTEND_DIR=../carmen-frontend VITE_DEV_PROXY_TARGET=<backend> bun e2e`
   — `002-spa-smoke.spec.ts` there covers the SPA-specific boot/auth-guard behavior.

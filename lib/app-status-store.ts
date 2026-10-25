@@ -2,7 +2,7 @@ import type { AppStatusErrorCode } from "@/lib/api-error";
 import { tokenStore } from "@/lib/auth/token-store";
 
 /**
- * สถานะการให้บริการของแอปนี้ (x-app-id) ที่แอดมินตั้งไว้ที่หน้า Applications ของ carmen-platform
+ * สถานะการให้บริการของแอปนี้ (x-app-id) ที่แอดมินตั้งไว้ที่หน้า Applications ของ carmen-backstage
  *
  * gateway เป็นคนบังคับจริง — ฝั่งนี้มีไว้ **แสดงผล** อย่างเดียว ค่าที่อ่านไม่ออกจึงตีเป็น
  * `running` เสมอ (การล็อกทั้งแอปเพราะข้อมูลเพี้ยนแย่กว่าการปล่อยให้ gateway ตอบ 503 เอง)

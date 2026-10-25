@@ -39,7 +39,7 @@ import {
 import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 
 const OAUTH_GUIDE_URL =
-  "https://github.com/CarmenSoftware-organization/carmen-inventory-frontend-react/blob/main/docs/email-profile-microsoft-oauth2.md";
+  "https://github.com/CarmenSoftware-organization/carmen-frontend/blob/main/docs/email-profile-microsoft-oauth2.md";
 
 /** โปรไฟล์เดิมเป็น Microsoft 365 และมี client secret เก็บไว้แล้วหรือไม่ */
 function hasStoredSecret(profile?: EmailProfile | null): boolean {

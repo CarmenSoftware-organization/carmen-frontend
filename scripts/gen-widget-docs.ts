@@ -3,7 +3,7 @@
  * (dashboard templates ของ platform) จาก backend ที่ deploy อยู่จริง
  *
  * ความรู้ชุดนี้กระจายอยู่ 3 รีโป: dataset/params/supported_renders นิยามใน micro-data,
- * template อยู่ใน DB ของ platform (แก้ผ่าน carmen-platform ไม่มี commit), ชื่อไทยกับ
+ * template อยู่ใน DB ของ platform (แก้ผ่าน carmen-backstage ไม่มี commit), ชื่อไทยกับ
  * renderer อยู่ที่นี่ — เขียนมือจะค้างทันทีที่ใครเพิ่ม dataset จึงสร้างจากระบบเท่านั้น
  * ผลลัพธ์คือ **ภาพถ่าย** ของ env ที่เลือก ณ เวลาที่รัน (หัวไฟล์บอกทั้งสองอย่าง)
  *
@@ -280,7 +280,7 @@ export function renderDoc(input: DocInput): string {
     "> ไฟล์นี้ **สร้างอัตโนมัติ ห้ามแก้มือ** — `bun run docs:widgets` (ดู `scripts/gen-widget-docs.ts`)",
     ">",
     `> ภาพถ่ายจาก \`${input.backendUrl}\` เมื่อ ${input.generatedAt}`,
-    "> ส่วนที่ 2 เป็นข้อมูลใน DB ของ platform — แก้ผ่าน carmen-platform ได้โดยไม่มี commit และแต่ละ env/BU อาจต่างจากนี้",
+    "> ส่วนที่ 2 เป็นข้อมูลใน DB ของ platform — แก้ผ่าน carmen-backstage ได้โดยไม่มี commit และแต่ละ env/BU อาจต่างจากนี้",
     "",
     `dataset ${catalog.length} ตัว · system widget ${input.system.length} ตัว · bu_default ${input.buDefault.length} ตัว`,
     "",

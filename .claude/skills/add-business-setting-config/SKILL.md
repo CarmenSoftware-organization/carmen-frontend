@@ -1,6 +1,6 @@
 ---
 name: add-business-setting-config
-description: Use when adding a new configuration option or section to the /system-admin/default-setting page in carmen-inventory-frontend-react — a new config key (boolean toggle or enum dropdown) and/or a new named section (like PR / SI / PO) that persists per business unit.
+description: Use when adding a new configuration option or section to the /system-admin/default-setting page in carmen-frontend — a new config key (boolean toggle or enum dropdown) and/or a new named section (like PR / SI / PO) that persists per business unit.
 ---
 
 # Add a Business Setting config module

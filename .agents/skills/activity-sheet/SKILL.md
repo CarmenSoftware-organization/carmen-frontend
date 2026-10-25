@@ -15,7 +15,7 @@ description: ใช้เมื่อเพิ่มหรือแก้จุ�
 `tree-node.tsx` ของหมวดสินค้า
 
 เปิดเฉพาะ entity ที่ backend บันทึกให้จริง — ทะเบียนอยู่ที่
-`carmen-turborepo-backend-v2/apps/micro-business/src/common/activity/activity-registry.ts`
+`carmen-turborepo-backend/apps/micro-business/src/common/activity/activity-registry.ts`
 ตอนนี้ **ไม่เปิด** 7 list ที่ไม่มีในทะเบียน (certification · eco · equipment · recipe ·
 period · activity-log · user-activity) เปิดไปจะได้เมนูที่กดแล้วว่างเปล่า
 

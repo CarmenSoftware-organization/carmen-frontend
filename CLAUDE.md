@@ -20,7 +20,7 @@ bun run build:force  # บังคับ tsc ตรวจใหม่ทั้�
 bun run typecheck    # tsc --noEmit เดี่ยว ๆ (gate ของ build:bump)
 bun run lint         # ESLint        bun test          # Vitest watch
 bun test:run         # Single run    bun test:run path # Single file
-# e2e: moved to ../carmen-inventory-frontend-e2e (E2E_FRONTEND_DIR=../carmen-inventory-frontend-react bun e2e)
+# e2e: moved to ../carmen-frontend-e2e (E2E_FRONTEND_DIR=../carmen-frontend bun e2e)
 ```
 
 ตัด release / deploy (`build:bump` · changelog · S3/GCS/Docker/CDN) → skill `release-and-deploy`
@@ -140,5 +140,5 @@ inline script ใน `index.html`** แก้สคริปต์นั้น�
   breaking-change badge in What's New for now; such commits render like ordinary features.
 - **`LICENSE_ENFORCEMENT` เปิดอยู่จริงแล้วทุก environment** (config ที่ gitignore ตั้ง `true` ครบ
   อย่าเชื่อ default `false`) — ผูก leaf กับ **license feature key ใหม่ = หน้าล็อกทันทีที่ deploy**;
-  ลำดับเสมอ: deploy backend → `db:seed.license-feature` → assign feature ทุก BU ที่ carmen-platform → deploy FE
+  ลำดับเสมอ: deploy backend → `db:seed.license-feature` → assign feature ทุก BU ที่ carmen-backstage → deploy FE
   · รายละเอียด (canWrite 3 จุด, `useCan().guard()` ไม่มีผู้เรียก, `licenseFeature` ≠ permission key) → skill `license-gating`

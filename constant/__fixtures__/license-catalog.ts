@@ -2,7 +2,7 @@
  * สำเนา feature key ทั้งหมดของ license catalog ฝั่ง backend — **ใช้ในเทสต์เท่านั้น**
  *
  * ไฟล์นี้ถูก **สร้างด้วยสคริปต์ ห้ามแก้ด้วยมือ** — `bun run gen:license-fixture`
- * (อ่านจาก `apps/backend-gateway/src/license/license-catalog.generated.ts` ของ carmen-turborepo-backend-v2 ซึ่งเป็นไฟล์ generated จาก
+ * (อ่านจาก `apps/backend-gateway/src/license/license-catalog.generated.ts` ของ carmen-turborepo-backend ซึ่งเป็นไฟล์ generated จาก
  * `prisma/permission.route-map.ts` + `prisma/seed.permission.data.ts` อีกที)
  *
  * ## ทำไมต้องมีสำเนาในรีโปนี้

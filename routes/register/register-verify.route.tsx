@@ -21,7 +21,7 @@ type LinkState =
 
 /**
  * code ของ error catalog ที่ backend ตอบเมื่ออีเมลไปตรงกับ **ชื่อผู้ใช้** ของบัญชีอื่น
- * (`packages/error-catalog` ของ carmen-turborepo-backend-v2) — ต่างจาก AUTH_EMAIL_ALREADY_EXISTS
+ * (`packages/error-catalog` ของ carmen-turborepo-backend) — ต่างจาก AUTH_EMAIL_ALREADY_EXISTS
  * ที่แปลว่าอีเมลนั้นเป็นบัญชีของเจ้าตัวเองจริง ๆ ทั้งคู่เป็น 409 แต่ทางออกคนละทาง
  */
 const USERNAME_CONFLICT_CODE = "AUTH_USERNAME_ALREADY_EXISTS";

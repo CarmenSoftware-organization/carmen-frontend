@@ -39,6 +39,6 @@ DB columns เป็น `Decimal(20,5)` แต่ schema ฝั่ง API เป
 ซึ่งอยู่ทั้งใต้ `procurement/` และ `store-operation/` จึงเก็บโน้ตนี้ไว้ที่ระดับ `routes/`
 
 **วิธีแก้อยู่ฝั่ง backend:** ลบ `.int()` ออกจาก `ValidateSchema` ทั้ง 3 ชุดใน
-carmen-turborepo-backend-v2 (`backend-gateway`, `micro-business`, `micro-file`)
+carmen-turborepo-backend (`backend-gateway`, `micro-business`, `micro-file`)
 
 **Frontend จงใจไม่ปัดเศษชดเชย** — ปัดเมื่อไรข้อมูลเพี้ยนทันที

@@ -82,7 +82,7 @@ describe("buildPatch", () => {
     });
   });
 
-  // max_license_users ถูกถอดออกทั้งจาก type และหน้าจอแล้ว (ที่นั่งมาจากใบ license ที่ carmen-platform)
+  // max_license_users ถูกถอดออกทั้งจาก type และหน้าจอแล้ว (ที่นั่งมาจากใบ license ที่ carmen-backstage)
   // การ assert ว่ามันเป็น undefined จึงเป็นเทสต์ที่ผ่านโดยไม่พิสูจน์อะไร
   // max_license_users is gone from both the type and the screen, so asserting it is undefined
   // would be a test that passes without proving anything.
