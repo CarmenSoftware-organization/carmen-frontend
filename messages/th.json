@@ -1060,7 +1060,7 @@
       "RUNNING_CODE_ALREADY_EXISTS": "เอกสารประเภทนี้ตั้งเลขที่ไว้แล้ว แก้ที่การตั้งค่าเดิมแทน",
       "PERIOD_ALREADY_EXISTS": "มีงวดนี้อยู่แล้ว",
       "PERIOD_FISCAL_COMBINATION_EXISTS": "มีงวดของปีและเดือนบัญชีนี้อยู่แล้ว",
-      "PLATFORM_ROLE_NAME_ALREADY_EXISTS": "ชื่อนี้มีบทบาทอื่นใช้อยู่แล้ว เปลี่ยนเป็นชื่ออื่น",
+      "BACKSTAGE_ROLE_NAME_ALREADY_EXISTS": "ชื่อนี้มีบทบาทอื่นใช้อยู่แล้ว เปลี่ยนเป็นชื่ออื่น",
       "USER_USERNAME_OR_EMAIL_EXISTS": "ชื่อผู้ใช้หรืออีเมลนี้มีผู้ใช้อื่นใช้อยู่แล้ว เปลี่ยนเป็นค่าอื่น",
       "COMMON_UNIQUE_CONSTRAINT_VIOLATION": "มีข้อมูลที่ใช้รหัสหรือชื่อเดียวกันอยู่ในระบบแล้ว เปลี่ยนแล้วลองใหม่",
       "PRICE_LIST_LINE_DUPLICATE_IN_REQUEST": "มีสินค้าที่ใช้หน่วยและ MOQ เดียวกันซ้ำกันมากกว่าหนึ่งบรรทัด ลบบรรทัดที่ซ้ำออก",
