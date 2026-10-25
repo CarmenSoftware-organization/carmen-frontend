@@ -20,6 +20,7 @@ import type { GrnFormValues } from "./grn-form-schema";
 import { EMPTY_DETAIL } from "./grn-form-schema";
 import EmptyComponent from "@/components/empty-component";
 import type { PoForGrn, PoGrnDetail } from "@/types/purchase-order";
+import type { GrnStockLockReason } from "@/types/goods-receive-note";
 import { useGrnItemTable } from "./use-grn-item-table";
 import { GrnItemComputedSync } from "./grn-item-cells";
 
@@ -142,7 +143,11 @@ const ItemsArrayError = memo(function ItemsArrayError({
 interface GrnItemTableProps {
   readonly form: UseFormReturn<GrnFormValues>;
   readonly disabled: boolean;
+  /** บรรทัดที่เอกสารอื่นอ้างอิงแล้ว (key = id ของ detail) — ดู useGrnItemTable */
+  readonly lockedLines?: ReadonlyMap<string, GrnStockLockReason[]>;
 }
+
+const NO_LOCKED_LINES: ReadonlyMap<string, GrnStockLockReason[]> = new Map();
 
 /**
  * รายการสินค้าของ GRN — **1 แถว = 1 บรรทัดของเอกสาร (สินค้า + คลัง)** ตารางเดียว
@@ -151,7 +156,11 @@ interface GrnItemTableProps {
  * ฟอร์มเก็บ `items` เป็น array แบนอยู่แล้ว การจับกลุ่มเมื่อก่อนเกิดตอน render
  * เท่านั้น — เอาออกแล้ว index ของแถวจึงตรงกับ index ในฟอร์มพอดี
  */
-export function GrnItemTable({ form, disabled }: GrnItemTableProps) {
+export function GrnItemTable({
+  form,
+  disabled,
+  lockedLines = NO_LOCKED_LINES,
+}: GrnItemTableProps) {
   "use no memo";
   const t = useTranslations("procurement.goodsReceiveNote");
   const docType = useWatch({ control: form.control, name: "doc_type" });
@@ -244,6 +253,7 @@ export function GrnItemTable({ form, disabled }: GrnItemTableProps) {
     onLocationPicked: handleLocationPicked,
     onProductPicked: handleProductPicked,
     onDeleteItem: handleDeleteItem,
+    lockedLines,
   });
 
   const handleAddItem = () => {

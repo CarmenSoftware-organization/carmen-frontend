@@ -16,6 +16,7 @@ import { NameWithSubtext } from "@/components/share/name-with-sub-text";
 import { ErrorState } from "@/components/ui/error-state";
 import EmptyComponent from "@/components/empty-component";
 import { useGrnStockMovements } from "@/hooks/use-goods-receive-note";
+import { useProfile } from "@/hooks/use-profile";
 import { formatCurrency } from "@/lib/currency-utils";
 import { cn } from "@/lib/utils";
 import type { GrnStockMovementItem } from "@/types/goods-receive-note";
@@ -23,12 +24,23 @@ import type { GrnStockMovementItem } from "@/types/goods-receive-note";
 const NO_LOT = "-";
 
 /**
- * ใบนี้ดูการเคลื่อนไหวสต๊อกได้หรือยัง — เกณฑ์เดียวกับ CN/SR: ต้องปิดใบแล้ว
- * (GRN ปิดใบ = committed) ก่อนหน้านั้นของยังไม่เข้าคลังจริง โชว์ตารางไว้มีแต่
- * ทำให้คนเข้าใจว่ารับเข้าสต๊อกไปแล้ว
+ * ใบนี้ดูการเคลื่อนไหวสต๊อกได้หรือยัง — เกณฑ์คือ "ของเข้าคลังแล้วหรือยัง"
+ *
+ * FIFO ลงสต๊อกตอน commit จึงเห็นเมื่อ committed เท่านั้น ส่วนต้นทุนเฉลี่ย
+ * (`average` / `average_per_location`) ลงสต๊อกตั้งแต่ตอน save ทั้งที่ใบยังเป็น saved
+ * ถ้ารอถึง committed ผู้ใช้จะไม่เห็นของที่เข้าคลังไปแล้วจริง · ใบ AVG ที่ลงวันที่งวดหลัง
+ * ถูกพักไว้ยังไม่ลงสต๊อก — ตารางยังแสดงได้ เพราะหลังบ้านส่ง `is_posted: false`
+ * มากับแถวคาดการณ์ แล้วตารางขึ้นข้อความ `stockNotPosted` กำกับ
  */
-export function grnStockVisible(docStatus?: string): boolean {
-  return docStatus === "committed";
+export function grnStockVisible(
+  docStatus?: string,
+  calculationMethod?: string | null,
+): boolean {
+  if (docStatus === "committed") return true;
+  const isAverage =
+    calculationMethod === "average" ||
+    calculationMethod === "average_per_location";
+  return docStatus === "saved" && isAverage;
 }
 
 /**
@@ -49,7 +61,11 @@ export function GrnStockTable({
   const tc = useTranslations("common");
   const tfl = useTranslations("field");
 
-  const canView = grnStockVisible(docStatus);
+  const { defaultBu } = useProfile();
+  const canView = grnStockVisible(
+    docStatus,
+    defaultBu?.config?.calculation_method,
+  );
   const { data, isLoading, isError, error, refetch } = useGrnStockMovements(
     grnId,
     { enabled: canView },

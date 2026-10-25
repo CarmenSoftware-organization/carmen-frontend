@@ -322,19 +322,26 @@ export function useGrnFormActions({
       const linesLocked = goodsReceiveNote.doc_status === "committed";
       const hasItemChanges =
         !linesLocked && !!(detail.add || detail.update || detail.remove);
+      // เปลี่ยนแค่วิธีกระจายก็นับเป็นการแก้ — เดิมดูเฉพาะบรรทัด เลือกวิธีใหม่แล้วกดบันทึก
+      // ค่าจึงหายเงียบ ๆ
       const hasExtraCostChanges =
         !linesLocked &&
-        !!(
-        extraCostDetail.add ||
-        extraCostDetail.update ||
-        extraCostDetail.remove
-      );
+        (!!(
+          extraCostDetail.add ||
+          extraCostDetail.update ||
+          extraCostDetail.remove
+        ) ||
+          values.allocate_extra_cost_type !==
+            defaultValues.allocate_extra_cost_type);
 
       if (hasItemChanges) {
         patchPayload.good_received_note_detail = detail;
       }
       if (hasExtraCostChanges) {
         patchPayload.extra_cost = {
+          // ใบหนึ่งมีหัวค่าใช้จ่ายเดียว — ส่ง id ของหัวเดิมไปด้วย ไม่งั้นหลังบ้านรุ่นก่อน
+          // สร้างหัวเปล่าหัวที่สอง แล้วบรรทัดใหม่ไม่มี extra_cost_id จนตอบ 400
+          id: goodsReceiveNote.extra_cost?.id,
           allocate_extra_cost_type:
             values.allocate_extra_cost_type || undefined,
           extra_cost_detail: extraCostDetail,

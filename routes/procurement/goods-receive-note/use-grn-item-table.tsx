@@ -8,7 +8,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { GitBranch, Trash2 } from "lucide-react";
+import { GitBranch, Lock, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
+import type { GrnStockLockReason } from "@/types/goods-receive-note";
 import type { GrnFormValues } from "./grn-form-schema";
 import {
   GrnAmountCell,
@@ -46,6 +47,11 @@ interface UseGrnItemTableOptions {
   onLocationPicked: (rowId: string) => void;
   onProductPicked: (rowId: string) => void;
   onDeleteItem: (index: number) => void;
+  /**
+   * บรรทัดที่เอกสารอื่นอ้างอิงแล้ว (key = id ของ detail) — แก้ได้แค่หมายเหตุ ส่วนคลัง สินค้า
+   * จำนวน ของแถม ราคา ส่วนลด ภาษี และปุ่มลบถูกปิด เพราะหลังบ้านจะปฏิเสธด้วย GRN_LINE_STOCK_LOCKED
+   */
+  lockedLines: ReadonlyMap<string, GrnStockLockReason[]>;
 }
 
 export function useGrnItemTable({
@@ -59,6 +65,7 @@ export function useGrnItemTable({
   onLocationPicked,
   onProductPicked,
   onDeleteItem,
+  lockedLines,
 }: UseGrnItemTableOptions) {
   "use no memo";
   const tfl = useTranslations("field");
@@ -80,6 +87,12 @@ export function useGrnItemTable({
   }, []);
 
   const columns = useMemo<ColumnDef<GrnItemField>[]>(() => {
+    // อ่าน id ของ detail จากค่าในฟอร์ม ไม่ใช่ row.original.id — useFieldArray เขียนทับ
+    // `id` ของแถวด้วย key ที่มันสร้างเอง (keyName ค่าเริ่มต้นคือ "id")
+    const lockReasonsOf = (index: number) =>
+      lockedLines.get(liveItem(form, index)?.id ?? "");
+    const isLocked = (index: number) => !!lockReasonsOf(index)?.length;
+
     const indexColumn: ColumnDef<GrnItemField> = {
       id: "index",
       header: "#",
@@ -116,6 +129,7 @@ export function useGrnItemTable({
             index={row.index}
             disabled={
               disabled ||
+              isLocked(row.index) ||
               (!!row.original.purchase_order_detail_id &&
                 !!row.original.location_id)
             }
@@ -140,7 +154,7 @@ export function useGrnItemTable({
             form={form}
             index={row.index}
             isManual={!row.original.purchase_order_detail_id}
-            disabled={disabled}
+            disabled={disabled || isLocked(row.index)}
             open={row.id === openProductId ? true : undefined}
             onOpenChange={(open) => onProductOpenChange(row.id, open)}
             onPicked={() => onProductPicked(row.id)}
@@ -175,7 +189,7 @@ export function useGrnItemTable({
           <ReceivedQtyCell
             form={form}
             index={row.index}
-            disabled={disabled}
+            disabled={disabled || isLocked(row.index)}
             inputRef={qtyRefFor(row.id)}
           />
         ),
@@ -191,7 +205,7 @@ export function useGrnItemTable({
             index={row.index}
             qtyField="foc_qty"
             unitField="foc_unit_id"
-            disabled={disabled}
+            disabled={disabled || isLocked(row.index)}
           />
         ),
       },
@@ -204,7 +218,7 @@ export function useGrnItemTable({
           <UnitPriceCell
             form={form}
             index={row.index}
-            disabled={disabled}
+            disabled={disabled || isLocked(row.index)}
             autoFocus={row.id === autoFocusPriceId}
             onCommit={() => qtyRefFor(row.id).current?.focus()}
           />
@@ -229,7 +243,7 @@ export function useGrnItemTable({
             <GrnItemDiscountCell
               form={form}
               index={row.index}
-              editable={!isView}
+              editable={!isView && !isLocked(row.index)}
             />
           </div>
         ),
@@ -250,7 +264,11 @@ export function useGrnItemTable({
         meta: rightMeta,
         cell: ({ row }) => (
           <div className="whitespace-nowrap">
-            <GrnItemTaxCell form={form} index={row.index} editable={!isView} />
+            <GrnItemTaxCell
+              form={form}
+              index={row.index}
+              editable={!isView && !isLocked(row.index)}
+            />
           </div>
         ),
       },
@@ -275,7 +293,34 @@ export function useGrnItemTable({
     const actionColumn: ColumnDef<GrnItemField> = {
       id: "action",
       header: () => "",
-      cell: ({ row }) => (
+      cell: ({ row }) => {
+        const lockReasons = lockReasonsOf(row.index);
+        // บรรทัดที่ถูกอ้างอิงลบไม่ได้ — แสดงกุญแจพร้อมเหตุแทนปุ่มลบ ผู้ใช้จะได้รู้ก่อนกรอก
+        // ว่าทำไมช่องปิดอยู่ ไม่ใช่ไปเจอ error ตอนบันทึก
+        if (!isView && lockReasons?.length) {
+          return (
+            <div className="flex items-center justify-center">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className="inline-flex size-6 items-center justify-center text-muted-foreground"
+                    aria-label={t("stockLocked")}
+                    tabIndex={0}
+                  >
+                    <Lock className="size-3.5" aria-hidden="true" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-64">
+                  <p className="font-medium">{t("stockLocked")}</p>
+                  {lockReasons.map((reason) => (
+                    <p key={reason}>{t(`stockLockReason.${reason}`)}</p>
+                  ))}
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          );
+        }
+        return (
         <div className="flex items-center justify-center">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -306,7 +351,8 @@ export function useGrnItemTable({
             </TooltipContent>
           </Tooltip>
         </div>
-      ),
+        );
+      },
       enableSorting: false,
       enableResizing: false,
       size: isView ? 48 : 64,
@@ -341,6 +387,7 @@ export function useGrnItemTable({
     onProductPicked,
     onDeleteItem,
     qtyRefFor,
+    lockedLines,
     tfl,
     t,
   ]);

@@ -259,8 +259,9 @@ export function getDefaultValues(
     exchange_rate_date: grn.exchange_rate_date,
     info: objectToText(grn.info),
     dimension: objectToText(grn.dimension),
+    // extra_cost เป็น object เดียวที่มีบรรทัดซ้อนอยู่ข้างใน ไม่ใช่ array (ดู type GrnExtraCost)
     allocate_extra_cost_type:
-      grn.extra_cost?.[0]?.allocate_extra_cost_type ?? "by_qty",
+      grn.extra_cost?.allocate_extra_cost_type ?? "by_qty",
     // หนึ่งแถว = หนึ่ง detail ไม่ใช่หนึ่ง item — id ที่ส่งกลับตอน PATCH
     // (good_received_note_detail.update/remove) หลังบ้านเอาไปหาใน
     // tb_good_received_note_detail ถ้าส่ง id ของ items ข้างในไปจะ 404
@@ -319,7 +320,7 @@ export function getDefaultValues(
         };
       }) ?? [],
     extra_cost_details:
-      grn.extra_cost_detail?.map((d) => ({
+      grn.extra_cost?.extra_cost_detail?.map((d) => ({
         id: d.id,
         extra_cost_type_id: d.extra_cost_type?.id ?? "",
         note: d.note ?? "",
