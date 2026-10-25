@@ -5,12 +5,12 @@
 #   # UAT self-signed cert เท่านั้น: เพิ่ม PROXY_SSL_VERIFY=off (อย่าใช้ใน production)
 
 services:
-  carmen-inventory-frontend-react:
-    image: ${REGISTRY:-local}/carmen-inventory-frontend-react:${IMAGE_TAG:-latest}
+  carmen-frontend:
+    image: ${REGISTRY:-local}/carmen-frontend:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: carmen-inventory-frontend-react
+    container_name: carmen-frontend
     ports:
       - "127.0.0.1:3000:80"
     environment:
