@@ -62,7 +62,7 @@ function ResetStep() {
       : null;
 
   // ลิงก์ที่ไม่มี `?token=` เลย ไม่ต้องยิงอะไรก็รู้ว่าไปต่อไม่ได้ — เกิดได้จริงเมื่อ
-  // `password_reset.base_url` ฝั่ง platform config ถูกตั้งผิด หรือผู้ใช้ก็อปลิงก์มาไม่ครบ
+  // `password_reset.base_url` ฝั่ง Backstage config ถูกตั้งผิด หรือผู้ใช้ก็อปลิงก์มาไม่ครบ
   if (!token) {
     return (
       <AuthSplitShell
