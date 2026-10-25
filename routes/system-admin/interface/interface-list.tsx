@@ -7,8 +7,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { AuditCell } from "@/components/share/audit-cell";
 import { useProfile } from "@/hooks/use-profile";
+import { useCan } from "@/hooks/use-can";
+import { PERMISSIONS } from "@/constant/permissions";
 import { cn } from "@/lib/utils";
 import { useInterfaceConfigs } from "./use-interface-configs";
+import { useBuApiKey, type BuApiKeyInfo } from "./use-bu-api-key";
 import {
   useInterfaceEntitlement,
   type InterfaceEntitlement,
@@ -25,6 +28,11 @@ export type BrandStatus = {
   readonly brand: BrandDef;
   /** `null` = brand ไม่มีสวิตช์เปิด/ปิด (`noConnection`) */
   readonly enabled: boolean | null;
+  /**
+   * `false` = ยังไม่เคยบันทึก — backend คืน `{ enabled: false }` แทน 404 จึงดูจาก audit
+   * (หรือ enabled ที่ต้องมาจากการบันทึกแน่ ๆ) แทนการดูว่ามีแถวไหม
+   */
+  readonly configured: boolean;
   readonly entitlement: InterfaceEntitlement;
   /** `false` = backend ไม่ให้อ่าน config (คีย์อยู่แค่ใน `expired_features`) สถานะจริงจึงไม่รู้ */
   readonly readable: boolean;
@@ -80,13 +88,18 @@ export function interfaceGroups(
       brands: category.brands
         .map((brand) => {
           const row = byKey.get(brand.configKey);
+          const enabled = brand.noConnection
+            ? null
+            : row?.value?.enabled === true;
+          const updated = row?.audit?.updated ?? row?.audit?.created;
           return {
             brand,
             entitlement: entitlementOf(category.key, brand.key),
             readable: canReadConfig(category.key, brand.key),
-            enabled: brand.noConnection ? null : row?.value?.enabled === true,
+            enabled,
+            configured: enabled === true || updated !== undefined,
             target: brand.noConnection ? null : connectionTarget(row?.value),
-            updated: row?.audit?.updated ?? row?.audit?.created,
+            updated,
           };
         })
         .filter((row) => row.entitlement !== "none"),
@@ -98,25 +111,52 @@ export function interfaceGroups(
 const ROW_GRID =
   "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-3 sm:grid-cols-[auto_minmax(0,14rem)_minmax(0,1fr)_10rem_auto] sm:gap-x-4";
 
-function StatusDot({ enabled }: { readonly enabled: boolean | null }) {
-  // null = ไม่มีสถานะ — เว้นช่องไว้ให้ชื่อ brand ยังตรงแนวกับแถวอื่น
+/** `on` เปิดอยู่ · `off` ตั้งค่าแล้วแต่ปิด · `unset` ยังไม่ได้ตั้งค่า · `none` ไม่รู้สถานะ */
+type DotState = "on" | "off" | "unset" | "none";
+
+function StatusDot({ state }: { readonly state: DotState }) {
+  // none = ไม่มีสถานะ — เว้นช่องไว้ให้ชื่อ brand ยังตรงแนวกับแถวอื่น
   return (
     <span
       aria-hidden="true"
       className={cn(
         "size-2 shrink-0 rounded-full",
-        enabled === true && "bg-success ring-success/20 ring-4",
-        enabled === false && "border-muted-foreground/50 border",
+        state === "on" && "bg-success ring-success/20 ring-4",
+        state === "off" && "bg-muted-foreground/60",
+        state === "unset" && "border-muted-foreground/60 border-[1.5px]",
       )}
     />
   );
+}
+
+/** สถานะของแถวที่ไม่มีสวิตช์ (`noConnection`) มาจาก API key ขาเข้าของ BU แทน */
+function apiKeyState(info: BuApiKeyInfo | undefined): DotState {
+  if (!info) return "none";
+  if (!info.exists) return "unset";
+  return info.is_active ? "on" : "off";
+}
+
+function connectionState({
+  enabled,
+  configured,
+}: Pick<BrandStatus, "enabled" | "configured">): DotState {
+  if (enabled === null) return "none";
+  if (enabled) return "on";
+  return configured ? "off" : "unset";
 }
 
 export default function InterfaceList() {
   const t = useTranslations("systemAdmin.interface");
   const { dateTimeFormat } = useProfile();
   const { entitlementOf, canReadConfig } = useInterfaceEntitlement();
+  const { can } = useCan();
   const { data, isLoading, isError, refetch } = useInterfaceConfigs();
+  // แถว External ไม่มี config ให้อ่าน สถานะจริงคือ API key — ยิงเฉพาะเมื่อมีสิทธิ์ดูและใบ INF ครอบ
+  // (ไม่งั้น backend ตอบ 403) ไม่มีสิทธิ์ = แถวนั้นแสดง "—" เหมือนเดิม
+  const apiKey = useBuApiKey(
+    can(PERMISSIONS.system_admin.bu_api_key.view) &&
+      canReadConfig("export", "external"),
+  );
 
   const groups = interfaceGroups(
     INTERFACE_CATEGORIES,
@@ -132,7 +172,7 @@ export default function InterfaceList() {
       )}
 
       {!isError && isLoading && (
-        <div className="divide-y rounded-lg border">
+        <div className="max-w-5xl divide-y rounded-lg border">
           {[0, 1].map((i) => (
             <div key={i} className={ROW_GRID}>
               <Skeleton className="size-2 rounded-full" />
@@ -148,7 +188,7 @@ export default function InterfaceList() {
       )}
 
       {!isError && !isLoading && groups.length > 0 && (
-        <div className="space-y-6">
+        <div className="max-w-5xl space-y-6">
           {groups.map(({ category, brands }) => {
             const Icon = category.icon;
             // brand ที่ไม่มีสวิตช์ (enabled = null) ไม่นับทั้งตัวตั้งและตัวหาร
@@ -164,23 +204,54 @@ export default function InterfaceList() {
                   <h2 id={headingId} className="text-sm font-semibold">
                     {t(`${category.key}.title`)}
                   </h2>
-                  <span className="text-muted-foreground ml-auto text-xs tabular-nums">
-                    {t("enabledCount", {
-                      enabled: enabledCount,
-                      total: switchable.length,
-                    })}
-                  </span>
+                  {/* หมวดที่ไม่มี brand ไหนมีสวิตช์ — "0 of 0" อ่านแล้วเหมือนบั๊ก */}
+                  {switchable.length > 0 && (
+                    <span className="text-muted-foreground ml-auto text-xs tabular-nums">
+                      {t("enabledCount", {
+                        enabled: enabledCount,
+                        total: switchable.length,
+                      })}
+                    </span>
+                  )}
                 </div>
                 <ul className="bg-card divide-y overflow-hidden rounded-lg border">
-                  {brands.map(
-                    ({
-                      brand,
-                      enabled,
-                      entitlement,
-                      readable,
-                      target,
-                      updated,
-                    }) => (
+                  {brands.map((row) => {
+                    const { brand, entitlement, readable, target, updated } =
+                      row;
+                    const keyInfo = brand.noConnection
+                      ? apiKey.data
+                      : undefined;
+                    // อ่าน config ไม่ได้ = ไม่รู้สถานะจริง ป้าย "หมดอายุ" บอกพอแล้ว อย่าเดาว่า Disabled
+                    const state: DotState = !readable
+                      ? "none"
+                      : brand.noConnection
+                        ? apiKeyState(keyInfo)
+                        : connectionState(row);
+                    const statusLabel = brand.noConnection
+                      ? {
+                          on: t("apiKeyActive"),
+                          off: t("apiKeyInactive"),
+                          unset: t("apiKeyNone"),
+                          none: null,
+                        }[state]
+                      : {
+                          on: t("statusEnabled"),
+                          off: t("statusDisabled"),
+                          unset: t("statusNotSetUp"),
+                          none: null,
+                        }[state];
+                    // ปลายทาง — แถว External ใช้ Client ID ของกุญแจแทน (ไม่ใช่ secret)
+                    const detail = brand.noConnection
+                      ? (keyInfo?.client_id ?? null)
+                      : target;
+                    const detailLabel = brand.noConnection
+                      ? t("clientId")
+                      : t("target");
+                    const detailText = !readable
+                      ? null
+                      : (detail ??
+                        (brand.noConnection ? null : t("notConfigured")));
+                    return (
                       <li key={brand.key}>
                         <Link
                           to={`/system-admin/interface/${category.key}/${brand.key}`}
@@ -189,7 +260,7 @@ export default function InterfaceList() {
                             "group hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:ring-ring transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset",
                           )}
                         >
-                          <StatusDot enabled={enabled} />
+                          <StatusDot state={state} />
                           <span className="flex min-w-0 flex-col">
                             <span className="flex min-w-0 items-center gap-2">
                               <span className="truncate text-sm font-medium">
@@ -201,38 +272,40 @@ export default function InterfaceList() {
                                 </Badge>
                               )}
                             </span>
-                            {/* อ่าน config ไม่ได้ = ไม่รู้สถานะจริง ป้าย "หมดอายุ" บอกพอแล้ว
-                                อย่าเดาว่า Disabled */}
-                            {readable && (
+                            {statusLabel && (
                               <span
                                 className={cn(
                                   "text-xs",
-                                  enabled
+                                  state === "on"
                                     ? "text-success-ink"
                                     : "text-muted-foreground",
                                 )}
                               >
-                                {enabled === null
-                                  ? "—"
-                                  : enabled
-                                    ? t("statusEnabled")
-                                    : t("statusDisabled")}
+                                {statusLabel}
+                              </span>
+                            )}
+                            {/* จอแคบซ่อนคอลัมน์ปลายทาง — ย้ายมาเป็นบรรทัดล่าง เพราะเป็นตัวยืนยันว่าต่อถูกเครื่อง */}
+                            {detail && (
+                              <span
+                                className="text-muted-foreground mt-0.5 truncate font-mono text-xs sm:hidden"
+                                title={detail}
+                              >
+                                <span className="sr-only">{detailLabel}: </span>
+                                {detail}
                               </span>
                             )}
                           </span>
                           <span
                             className={cn(
                               "hidden min-w-0 truncate text-xs sm:block",
-                              target
+                              detail
                                 ? "text-foreground font-mono"
                                 : "text-muted-foreground",
                             )}
-                            title={target ?? undefined}
+                            title={detail ?? undefined}
                           >
-                            <span className="sr-only">{t("target")}: </span>
-                            {readable && !brand.noConnection
-                              ? (target ?? t("notConfigured"))
-                              : "—"}
+                            <span className="sr-only">{detailLabel}: </span>
+                            {detailText ?? "—"}
                           </span>
                           <span className="hidden min-w-0 sm:block">
                             <span className="sr-only">{t("updated")}: </span>
@@ -247,8 +320,8 @@ export default function InterfaceList() {
                           />
                         </Link>
                       </li>
-                    ),
-                  )}
+                    );
+                  })}
                 </ul>
               </section>
             );
