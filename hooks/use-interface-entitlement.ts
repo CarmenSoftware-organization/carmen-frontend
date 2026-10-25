@@ -11,7 +11,7 @@ export type InterfaceEntitlement = "entitled" | "expired" | "none";
 
 /**
  * คีย์ license ของ brand หนึ่ง — ต้องตรงกับ `LICENSE_ONLY_RESOURCES` ฝั่ง backend
- * (`packages/prisma-shared-schema-platform/prisma/permission.route-map.ts`)
+ * (`packages/prisma-shared-schema-backstage/prisma/permission.route-map.ts`)
  */
 export function interfaceFeatureKey(
   categoryKey: string,

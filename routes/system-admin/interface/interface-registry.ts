@@ -39,7 +39,7 @@ function brands(
  * docs/superpowers/specs/2026-07-16-interface-brands-visibility-design.md
  *
  * เพิ่ม brand = เพิ่ม key ใน brands() ของ category นั้น + i18n label + secret path ฝั่ง backend
- * + เพิ่มแถวใน `LICENSE_ROUTE_OVERRIDES` (`packages/prisma-shared-schema-platform/prisma/
+ * + เพิ่มแถวใน `LICENSE_ROUTE_OVERRIDES` (`packages/prisma-shared-schema-backstage/prisma/
  * permission.route-map.ts` ของรีโป backend) — ลืมขั้นนี้แล้ว brand ใหม่จะตกไปอยู่ใต้ license
  * `configuration.app_config` เงียบ ๆ (ทุก BU มีอยู่แล้ว) แปลว่าขายแยกไม่ได้เลย และไม่มีด่านไหน
  * แดงเตือน เพราะ config key ยังอ่าน/เขียนได้ปกติ แค่ไม่ผ่าน license feature ของตัวเอง
