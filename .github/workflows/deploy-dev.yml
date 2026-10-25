@@ -1,4 +1,4 @@
-name: Deploy carmen-inventory (Dev)
+name: Deploy carmen-frontend (Dev)
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
 # deploy สลับทั้งไดเรกทอรี ปล่อยให้สอง run ทับกันแปลว่า swap ของคนละ build
 # อาจสลับกัน — ต่อคิวแทน ไม่ยกเลิกตัวที่กำลังรัน
 concurrency:
-  group: deploy-dev-carmen-inventory
+  group: deploy-dev-carmen-frontend
   cancel-in-progress: false
 
 jobs:
@@ -106,7 +106,7 @@ jobs:
           command_timeout: 10m
           script: |
             set -e
-            ROOT=/var/www/carmen-inventory
+            ROOT=/var/www/carmen-frontend
 
             # แตกข้าง ๆ แล้วค่อยสลับ — แตกทับของเดิมจะมีช่วงที่ index.html ใหม่
             # ชี้ไป chunk ที่ยังเขียนไม่เสร็จ

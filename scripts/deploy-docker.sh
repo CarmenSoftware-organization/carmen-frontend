@@ -4,10 +4,10 @@
 #   [tag]       image tag (default: git short SHA)
 #   [registry]  เช่น 697697503013.dkr.ecr.ap-southeast-7.amazonaws.com — ถ้าให้มา จะ tag+push
 # Run ตัวอย่าง (ดู docs/deploy.md):
-#   docker run -p 3000:80 -e BACKEND_URL=https://backend -e X_APP_ID=<id> carmen-inventory-frontend-react:<tag>
+#   docker run -p 3000:80 -e BACKEND_URL=https://backend -e X_APP_ID=<id> carmen-frontend:<tag>
 set -euo pipefail
 
-IMAGE="carmen-inventory-frontend-react"
+IMAGE="carmen-frontend"
 TAG="${1:-$(git rev-parse --short HEAD)}"
 REGISTRY="${2:-}"
 
