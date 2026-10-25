@@ -1060,7 +1060,7 @@
       "RUNNING_CODE_ALREADY_EXISTS": "Document numbering for this type is already set up. Edit the existing setting instead.",
       "PERIOD_ALREADY_EXISTS": "This period already exists.",
       "PERIOD_FISCAL_COMBINATION_EXISTS": "A period for this fiscal year and month already exists.",
-      "PLATFORM_ROLE_NAME_ALREADY_EXISTS": "Another role already uses this name. Pick a different name.",
+      "BACKSTAGE_ROLE_NAME_ALREADY_EXISTS": "Another role already uses this name. Pick a different name.",
       "USER_USERNAME_OR_EMAIL_EXISTS": "Another user already has this username or email. Use a different one.",
       "COMMON_UNIQUE_CONSTRAINT_VIOLATION": "Something with the same code or name is already in the system. Change it and try again.",
       "PRICE_LIST_LINE_DUPLICATE_IN_REQUEST": "The same product with the same unit and MOQ appears more than once. Remove the extra line.",
