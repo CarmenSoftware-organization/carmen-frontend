@@ -4,7 +4,7 @@
   "status": "reviewed",
   "findings": [
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/http-client.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/http-client.ts",
     "line": 224,
     "severity": "medium",
     "confidence": 0.7,
@@ -14,7 +14,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/safe-storage.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/safe-storage.ts",
     "line": 10,
     "severity": "medium",
     "confidence": 0.6,
@@ -24,7 +24,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/date-utils.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/date-utils.ts",
     "line": 131,
     "severity": "medium",
     "confidence": 0.55,
@@ -34,7 +34,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/http-client.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/http-client.ts",
     "line": 216,
     "severity": "low",
     "confidence": 0.45,
@@ -44,7 +44,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/auth/auth-api.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/auth/auth-api.ts",
     "line": 119,
     "severity": "low",
     "confidence": 0.7,
@@ -54,7 +54,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/index.html",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/index.html",
     "line": 2,
     "severity": "low",
     "confidence": 0.9,
@@ -64,7 +64,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/form-utils.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/form-utils.ts",
     "line": 29,
     "severity": "low",
     "confidence": 0.75,
@@ -74,7 +74,7 @@
     "effort": "medium"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/version.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/version.ts",
     "line": 1,
     "severity": "low",
     "confidence": 0.45,
@@ -84,7 +84,7 @@
     "effort": "medium"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/notification-helpers.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/notification-helpers.tsx",
     "line": 97,
     "severity": "low",
     "confidence": 0.5,
@@ -96,7 +96,7 @@
   ],
   "confirmed": [
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/http-client.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/http-client.ts",
     "line": 224,
     "severity": "medium",
     "confidence": 0.7,
@@ -122,7 +122,7 @@
     "status": "fixed"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/safe-storage.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/safe-storage.ts",
     "line": 10,
     "severity": "medium",
     "confidence": 0.6,
@@ -148,7 +148,7 @@
     "status": "fixed"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/date-utils.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/date-utils.ts",
     "line": 131,
     "severity": "medium",
     "confidence": 0.55,
@@ -177,7 +177,7 @@
   "rejected": [],
   "low": [
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/http-client.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/http-client.ts",
     "line": 216,
     "severity": "low",
     "confidence": 0.45,
@@ -187,7 +187,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/auth/auth-api.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/auth/auth-api.ts",
     "line": 119,
     "severity": "low",
     "confidence": 0.7,
@@ -197,7 +197,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/index.html",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/index.html",
     "line": 2,
     "severity": "low",
     "confidence": 0.9,
@@ -207,7 +207,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/form-utils.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/form-utils.ts",
     "line": 29,
     "severity": "low",
     "confidence": 0.75,
@@ -217,7 +217,7 @@
     "effort": "medium"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/version.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/version.ts",
     "line": 1,
     "severity": "low",
     "confidence": 0.45,
@@ -227,7 +227,7 @@
     "effort": "medium"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/lib/notification-helpers.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/lib/notification-helpers.tsx",
     "line": 97,
     "severity": "low",
     "confidence": 0.5,
@@ -958,7 +958,7 @@
     "confidence": 0.4,
     "category": "security",
     "description": "The WebSocket connection registers with only `{ type: \"register\", user_id }` \u2014 no access token or other credential is sent on the wss connection (WS_URL from config.json, e.g. wss://dev.blueledgers.com:4001/ws). If the backend relies solely on this self-declared user_id, any client can subscribe to any user's real-time notifications. This is primarily a backend concern, but the frontend has the in-memory access token available (tokenStore) and never presents it.",
-    "suggested_fix": "Send the access token in the register payload (or as a query param/subprotocol) and have the backend validate it before binding the socket to the user_id; coordinate with the carmen-turborepo-backend-v2 team.",
+    "suggested_fix": "Send the access token in the register payload (or as a query param/subprotocol) and have the backend validate it before binding the socket to the user_id; coordinate with the carmen-turborepo-backend team.",
     "effort": "medium"
    }
   ],
@@ -979,11 +979,11 @@
      },
      {
       "refuted": false,
-      "reason": "Confirmed real: useLogout (hooks/use-logout.ts) never clears tokenStore/refreshTokenStorage and POSTs LOGOUT with no body, while the actual backend (carmen-turborepo-backend-v2 gateway auth.controller logout \u2192 micro-business auth.service \u2192 Keycloak OIDC logout) revokes the session only via the refresh_token from the request body \u2014 so with an empty body the server-side revocation fails too, the refresh token stays valid in localStorage, and main.tsx's boot-time refreshTokens() silently restores the full session after the redirect/reload; the unused logout() in lib/auth/auth-api.ts is the correct implementation and the suggested fix is sound."
+      "reason": "Confirmed real: useLogout (hooks/use-logout.ts) never clears tokenStore/refreshTokenStorage and POSTs LOGOUT with no body, while the actual backend (carmen-turborepo-backend gateway auth.controller logout \u2192 micro-business auth.service \u2192 Keycloak OIDC logout) revokes the session only via the refresh_token from the request body \u2014 so with an empty body the server-side revocation fails too, the refresh token stays valid in localStorage, and main.tsx's boot-time refreshTokens() silently restores the full session after the redirect/reload; the unused logout() in lib/auth/auth-api.ts is the correct implementation and the suggested fix is sound."
      },
      {
       "refuted": false,
-      "reason": "Confirmed at runtime: useLogout (hooks/use-logout.ts) never clears tokenStore/refreshTokenStorage and posts /api/auth/logout with no body, while the backend (carmen-turborepo-backend-v2 gateway + micro-business AuthService) revokes only the refresh_token supplied in the body \u2014 so nothing is revoked, the refresh token survives in localStorage, and main.tsx's boot-time refreshTokens() silently restores the session on the next page load; the proper logout() in lib/auth/auth-api.ts has no UI callers."
+      "reason": "Confirmed at runtime: useLogout (hooks/use-logout.ts) never clears tokenStore/refreshTokenStorage and posts /api/auth/logout with no body, while the backend (carmen-turborepo-backend gateway + micro-business AuthService) revokes only the refresh_token supplied in the body \u2014 so nothing is revoked, the refresh token survives in localStorage, and main.tsx's boot-time refreshTokens() silently restores the session on the next page load; the proper logout() in lib/auth/auth-api.ts has no UI callers."
      }
     ],
     "confirmed": true,
@@ -1090,7 +1090,7 @@
      },
      {
       "refuted": true,
-      "reason": "Refuted via endpoint trace: every DELETE the app routes through useApiMutation hits a gateway handler with @HttpCode(HttpStatus.OK) whose respond() always sends a StdResponse JSON body (78 of 87 @Delete handlers in carmen-turborepo-backend-v2), while the only nine 204 endpoints (user/BU avatar+logo, cluster images, recipe images, preparation-steps) are either called exclusively by the use-profile.ts hooks that already use res.json().catch(() => ({})) or not called by this frontend at all, so the unconditional res.json() at hooks/use-api-mutation.ts:108 never sees an empty body on the real code paths (and the same code runs unchanged in the production source app against the same backend)."
+      "reason": "Refuted via endpoint trace: every DELETE the app routes through useApiMutation hits a gateway handler with @HttpCode(HttpStatus.OK) whose respond() always sends a StdResponse JSON body (78 of 87 @Delete handlers in carmen-turborepo-backend), while the only nine 204 endpoints (user/BU avatar+logo, cluster images, recipe images, preparation-steps) are either called exclusively by the use-profile.ts hooks that already use res.json().catch(() => ({})) or not called by this frontend at all, so the unconditional res.json() at hooks/use-api-mutation.ts:108 never sees an empty body on the real code paths (and the same code runs unchanged in the production source app against the same backend)."
      }
     ],
     "confirmed": false
@@ -1134,7 +1134,7 @@
     "confidence": 0.4,
     "category": "security",
     "description": "The WebSocket connection registers with only `{ type: \"register\", user_id }` \u2014 no access token or other credential is sent on the wss connection (WS_URL from config.json, e.g. wss://dev.blueledgers.com:4001/ws). If the backend relies solely on this self-declared user_id, any client can subscribe to any user's real-time notifications. This is primarily a backend concern, but the frontend has the in-memory access token available (tokenStore) and never presents it.",
-    "suggested_fix": "Send the access token in the register payload (or as a query param/subprotocol) and have the backend validate it before binding the socket to the user_id; coordinate with the carmen-turborepo-backend-v2 team.",
+    "suggested_fix": "Send the access token in the register payload (or as a query param/subprotocol) and have the backend validate it before binding the socket to the user_id; coordinate with the carmen-turborepo-backend team.",
     "effort": "medium"
    }
   ]
@@ -1538,11 +1538,11 @@
      },
      {
       "refuted": true,
-      "reason": "The stale delivery_point_name is sent but harmless: the backend's Zod DTOs (LocationCreateSchema/LocationUpdateSchema in carmen-turborepo-backend-v2 apps/micro-business/src/master/locations/dto/location.dto.ts) only define delivery_point_id and strip unknown keys, the service persists only delivery_point_id (locations.service.ts:887,995), and all read responses derive delivery_point name from the tb_delivery_point join \u2014 so the hypothesized \"backend that persists the sent name\" does not exist and view mode always shows the name resolved from the saved id."
+      "reason": "The stale delivery_point_name is sent but harmless: the backend's Zod DTOs (LocationCreateSchema/LocationUpdateSchema in carmen-turborepo-backend apps/micro-business/src/master/locations/dto/location.dto.ts) only define delivery_point_id and strip unknown keys, the service persists only delivery_point_id (locations.service.ts:887,995), and all read responses derive delivery_point name from the tb_delivery_point join \u2014 so the hypothesized \"backend that persists the sent name\" does not exist and view mode always shows the name resolved from the saved id."
      },
      {
       "refuted": true,
-      "reason": "The frontend does send a stale delivery_point_name (onItemChange is indeed unwired in location-form.tsx lines 420-433), but tracing the real backend (carmen-turborepo-backend-v2/apps/micro-business/src/master/locations): the create/update Zod DTOs are non-strict and contain only delivery_point_id so the unknown delivery_point_name key is silently stripped, locations.service.ts never writes delivery_point_name (only delivery_point_id at lines 887/995), and all GET responses derive the displayed name by joining tb_delivery_point on the stored id \u2014 so the inconsistent name never persists and the wrong-name display the finding predicts cannot manifest at runtime (it is at most payload dead weight)."
+      "reason": "The frontend does send a stale delivery_point_name (onItemChange is indeed unwired in location-form.tsx lines 420-433), but tracing the real backend (carmen-turborepo-backend/apps/micro-business/src/master/locations): the create/update Zod DTOs are non-strict and contain only delivery_point_id so the unknown delivery_point_name key is silently stripped, locations.service.ts never writes delivery_point_name (only delivery_point_id at lines 887/995), and all GET responses derive the displayed name by joining tb_delivery_point on the stored id \u2014 so the inconsistent name never persists and the wrong-name display the finding predicts cannot manifest at runtime (it is at most payload dead weight)."
      }
     ],
     "confirmed": false
@@ -3220,11 +3220,11 @@
      },
      {
       "refuted": false,
-      "reason": "Cannot refute: the backend (carmen-turborepo-backend-v2 price-list-template.service.ts update, lines 582-646) treats products.add as a pure append (detail.create per entry) and supports remove/update channels by detail id that the frontend never sends, so editing a dirty template genuinely duplicates every existing detail row and clearing the product list (products: {}) is genuinely a silent no-op \u2014 the impact is real and reachable, though it is a faithfully ported pre-existing bug from the source Next.js app."
+      "reason": "Cannot refute: the backend (carmen-turborepo-backend price-list-template.service.ts update, lines 582-646) treats products.add as a pure append (detail.create per entry) and supports remove/update channels by detail id that the frontend never sends, so editing a dirty template genuinely duplicates every existing detail row and clearing the product list (products: {}) is genuinely a silent no-op \u2014 the impact is real and reachable, though it is a faithfully ported pre-existing bug from the source Next.js app."
      },
      {
       "refuted": false,
-      "reason": "Verified against the actual backend (carmen-turborepo-backend-v2 price-list-template.service.ts:582-626): update() handles products.add as a plain per-item create (append, no dedup, no replace) and deletes only via a products.remove id channel the frontend never sends, so editing details duplicates every existing product row and clearing the list (products: {} because shouldSendProducts is false at length 0) silently removes nothing."
+      "reason": "Verified against the actual backend (carmen-turborepo-backend price-list-template.service.ts:582-626): update() handles products.add as a plain per-item create (append, no dedup, no replace) and deletes only via a products.remove id channel the frontend never sends, so editing details duplicates every existing product row and clearing the list (products: {} because shouldSendProducts is false at length 0) silently removes nothing."
      }
     ],
     "confirmed": true,
@@ -3502,7 +3502,7 @@
   "status": "reviewed",
   "findings": [
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/hooks/use-store-requisition.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/hooks/use-store-requisition.ts",
     "line": 73,
     "severity": "high",
     "confidence": 0.6,
@@ -3512,7 +3512,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-component.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-component.tsx",
     "line": 128,
     "severity": "medium",
     "confidence": 0.9,
@@ -3522,7 +3522,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-component.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-component.tsx",
     "line": 138,
     "severity": "medium",
     "confidence": 0.7,
@@ -3532,7 +3532,7 @@
     "effort": "medium"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/hooks/use-wastage-report.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/hooks/use-wastage-report.ts",
     "line": 11,
     "severity": "medium",
     "confidence": 0.95,
@@ -3542,7 +3542,7 @@
     "effort": "large"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/stock-replenishment/_components/stock-repl-component.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/stock-replenishment/_components/stock-repl-component.tsx",
     "line": 145,
     "severity": "medium",
     "confidence": 0.9,
@@ -3552,7 +3552,7 @@
     "effort": "large"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/wastage-reporting/_components/wr-item-table.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/wastage-reporting/_components/wr-item-table.tsx",
     "line": 153,
     "severity": "low",
     "confidence": 0.85,
@@ -3562,7 +3562,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-component.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-component.tsx",
     "line": 216,
     "severity": "low",
     "confidence": 0.7,
@@ -3572,7 +3572,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-card.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-card.tsx",
     "line": 82,
     "severity": "low",
     "confidence": 0.8,
@@ -3582,7 +3582,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-component.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-component.tsx",
     "line": 580,
     "severity": "low",
     "confidence": 0.7,
@@ -3592,7 +3592,7 @@
     "effort": "medium"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-component.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-component.tsx",
     "line": 241,
     "severity": "low",
     "confidence": 0.95,
@@ -3602,7 +3602,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-form.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-form.tsx",
     "line": 116,
     "severity": "low",
     "confidence": 0.5,
@@ -3614,7 +3614,7 @@
   ],
   "confirmed": [
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-component.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-component.tsx",
     "line": 128,
     "severity": "medium",
     "confidence": 0.9,
@@ -3640,7 +3640,7 @@
     "status": "fixed"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-component.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-component.tsx",
     "line": 138,
     "severity": "medium",
     "confidence": 0.7,
@@ -3667,7 +3667,7 @@
     "backlog_reason": "effort=medium \u2014 deferred (not fixed in this pass)"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/hooks/use-wastage-report.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/hooks/use-wastage-report.ts",
     "line": 11,
     "severity": "medium",
     "confidence": 0.95,
@@ -3694,7 +3694,7 @@
     "backlog_reason": "effort=large \u2014 deferred (not fixed in this pass)"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/stock-replenishment/_components/stock-repl-component.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/stock-replenishment/_components/stock-repl-component.tsx",
     "line": 145,
     "severity": "medium",
     "confidence": 0.9,
@@ -3723,7 +3723,7 @@
   ],
   "rejected": [
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/hooks/use-store-requisition.ts",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/hooks/use-store-requisition.ts",
     "line": 73,
     "severity": "high",
     "confidence": 0.6,
@@ -3738,11 +3738,11 @@
      },
      {
       "refuted": true,
-      "reason": "Backend trace (carmen-turborepo-backend-v2: micro-business store-requisition.service.ts findAllMyPending lines 1534-1718, gateway my-pending.store-requisition.service.ts:121, StdResponse.successPaginated) shows the my-pending envelope is { data: [{bu_code, bu_name, data: [...], total}], paginate: {grand} } \u2014 the per-BU entry is pushed unconditionally even with zero pending docs (data: [], total: 0) and the frontend always sends bu_code, so json.data is never [] on the claimed empty-list path and json.data[0].data does not throw; furthermore paginate lives at the top level for this endpoint (per-BU entries have only `total`, no `paginate`), so json.paginate is the correct read and the suggested fix (entry?.paginate) would itself zero out pagination \u2014 the asymmetry vs useStoreRequisition mirrors a real backend envelope asymmetry."
+      "reason": "Backend trace (carmen-turborepo-backend: micro-business store-requisition.service.ts findAllMyPending lines 1534-1718, gateway my-pending.store-requisition.service.ts:121, StdResponse.successPaginated) shows the my-pending envelope is { data: [{bu_code, bu_name, data: [...], total}], paginate: {grand} } \u2014 the per-BU entry is pushed unconditionally even with zero pending docs (data: [], total: 0) and the frontend always sends bu_code, so json.data is never [] on the claimed empty-list path and json.data[0].data does not throw; furthermore paginate lives at the top level for this endpoint (per-BU entries have only `total`, no `paginate`), so json.paginate is the correct read and the suggested fix (entry?.paginate) would itself zero out pagination \u2014 the asymmetry vs useStoreRequisition mirrors a real backend envelope asymmetry."
      },
      {
       "refuted": true,
-      "reason": "Traced to the actual gateway/micro-business code (carmen-turborepo-backend-v2 store-requisition.service.ts findAllMyPending + StdResponse.fromResult): when a user has no pending docs the endpoint still returns data:[{bu_code, bu_name, data: [], total: 0}] (a per-BU entry is always pushed for every resolved bu_code, and the hook only runs with a valid buCode), so json.data[0].data ?? [] yields [] and renders an empty list \u2014 no TypeError; and paginate is emitted at the top level of the envelope (not per-entry, entries carry `total` not `paginate`), so json.paginate is the correct read and the suggested entry?.paginate fix would actually break the working pagination."
+      "reason": "Traced to the actual gateway/micro-business code (carmen-turborepo-backend store-requisition.service.ts findAllMyPending + StdResponse.fromResult): when a user has no pending docs the endpoint still returns data:[{bu_code, bu_name, data: [], total: 0}] (a per-BU entry is always pushed for every resolved bu_code, and the hook only runs with a valid buCode), so json.data[0].data ?? [] yields [] and renders an empty list \u2014 no TypeError; and paginate is emitted at the top level of the envelope (not per-entry, entries carry `total` not `paginate`), so json.paginate is the correct read and the suggested entry?.paginate fix would actually break the working pagination."
      }
     ],
     "confirmed": false
@@ -3750,7 +3750,7 @@
   ],
   "low": [
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/wastage-reporting/_components/wr-item-table.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/wastage-reporting/_components/wr-item-table.tsx",
     "line": 153,
     "severity": "low",
     "confidence": 0.85,
@@ -3760,7 +3760,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-component.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-component.tsx",
     "line": 216,
     "severity": "low",
     "confidence": 0.7,
@@ -3770,7 +3770,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-card.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-card.tsx",
     "line": 82,
     "severity": "low",
     "confidence": 0.8,
@@ -3780,7 +3780,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-component.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-component.tsx",
     "line": 580,
     "severity": "low",
     "confidence": 0.7,
@@ -3790,7 +3790,7 @@
     "effort": "medium"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-component.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-component.tsx",
     "line": 241,
     "severity": "low",
     "confidence": 0.95,
@@ -3800,7 +3800,7 @@
     "effort": "quick-win"
    },
    {
-    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-inventory-frontend-react/routes/store-operation/store-requisition/_components/sr-form.tsx",
+    "file": "/Users/samutpra/GitHub/carmensoftware-organize/carmen-frontend/routes/store-operation/store-requisition/_components/sr-form.tsx",
     "line": 116,
     "severity": "low",
     "confidence": 0.5,

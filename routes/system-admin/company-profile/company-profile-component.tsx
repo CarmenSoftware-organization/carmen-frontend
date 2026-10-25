@@ -341,9 +341,9 @@ export default function CompanyProfileComponent() {
               {/* General — costing method / currency / business group ย้ายไปการ์ดตัวตน (ล็อก)
                   "Max license users" ถูกถอดออกจากหน้านี้ — ที่นั่งไม่ใช่เลขตัวเดียวบน BU อีกแล้ว แต่เป็น
                   ผลรวมของใบ license ที่ยังคุ้มครองอยู่ (tb_business_unit_license → v_business_unit_seat)
-                  และจัดการที่ carmen-platform เท่านั้น
+                  และจัดการที่ carmen-backstage เท่านั้น
                   "Max license users" is gone: seats are no longer a single number on the BU but the
-                  sum of the licences currently in effect, managed only in carmen-platform. */}
+                  sum of the licences currently in effect, managed only in carmen-backstage. */}
               <div id={SECTION_IDS.general}>
                 <SettingSection
                   first

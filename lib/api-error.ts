@@ -222,7 +222,7 @@ export function licenseErrorCodeFrom(
 
 /**
  * error code สามตัวที่ `AppIdGuard` ฝั่ง gateway ส่งมาเมื่อแอป (x-app-id) ไม่ได้อยู่ในสถานะ
- * `running` — แอดมินตั้งไว้ที่หน้า Applications ของ carmen-platform
+ * `running` — แอดมินตั้งไว้ที่หน้า Applications ของ carmen-backstage
  *
  * `APP_MAINTENANCE` / `APP_READ_ONLY` มากับ 503, `APP_DISABLED` มากับ 403 · แยกด้วย
  * `body.error.code` เท่านั้น (เหมือน license) — 503 ตัวจริงตอน gateway ล่มไม่มี code นี้

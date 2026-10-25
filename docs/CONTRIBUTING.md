@@ -1,6 +1,6 @@
 # Contributing
 
-Working agreement for `carmen-inventory-frontend-react` — CARMEN BLUE's Vite + React
+Working agreement for `carmen-frontend` — CARMEN BLUE's Vite + React
 Router 7 SPA. For *how the app is built* read [CLAUDE.md](../CLAUDE.md) (conventions) and
 [architecture.md](architecture.md) (design); this file is about *how to get a change in*.
 
@@ -70,10 +70,10 @@ Vitest + Testing Library, run with `bun test:run` (add a path for one file) or
 folder. The suite is **238 test files** and must be green before merge.
 
 End-to-end tests are **not** in this repo — they live in
-`../carmen-inventory-frontend-e2e` and are run against this SPA with:
+`../carmen-frontend-e2e` and are run against this SPA with:
 
 ```bash
-E2E_FRONTEND_DIR=../carmen-inventory-frontend-react VITE_DEV_PROXY_TARGET=<backend> bun e2e
+E2E_FRONTEND_DIR=../carmen-frontend VITE_DEV_PROXY_TARGET=<backend> bun e2e
 ```
 
 ## Branches and commits

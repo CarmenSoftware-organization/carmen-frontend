@@ -2,7 +2,7 @@
  * สร้าง `constant/__fixtures__/license-catalog.ts` จาก catalog ของ backend
  *
  * เดิมไฟล์ fixture ถูก **คัดลอกด้วยมือ** จาก `license-catalog.generated.ts` ของ
- * `carmen-turborepo-backend-v2` ผลคือมันค้างเงียบ ๆ: ตรวจครั้งล่าสุด 2026-08-30 พบว่า
+ * `carmen-turborepo-backend` ผลคือมันค้างเงียบ ๆ: ตรวจครั้งล่าสุด 2026-08-30 พบว่า
  * fixture มี 74 คีย์ ขณะที่ backend มี 76 (ขาด `configuration.chart_of_accounts`
  * และ `configuration.location_shelf`)
  *
@@ -27,14 +27,14 @@ const REL = "apps/backend-gateway/src/license/license-catalog.generated.ts";
 
 const candidates = [
   process.env.BACKEND_REPO,
-  resolve(HERE, "../../carmen-turborepo-backend-v2"),
+  resolve(HERE, "../../carmen-turborepo-backend"),
 ].filter((p): p is string => Boolean(p));
 
 const repo = candidates.find((p) => existsSync(join(p, REL)));
 if (!repo) {
   console.error(
     `หา ${REL} ไม่เจอ ลองที่:\n${candidates.map((c) => `  - ${join(c, REL)}`).join("\n")}\n` +
-      `ตั้ง BACKEND_REPO ให้ชี้ที่ checkout ของ carmen-turborepo-backend-v2`,
+      `ตั้ง BACKEND_REPO ให้ชี้ที่ checkout ของ carmen-turborepo-backend`,
   );
   process.exit(1);
 }
@@ -76,7 +76,7 @@ writeFileSync(
  * สำเนา feature key ทั้งหมดของ license catalog ฝั่ง backend — **ใช้ในเทสต์เท่านั้น**
  *
  * ไฟล์นี้ถูก **สร้างด้วยสคริปต์ ห้ามแก้ด้วยมือ** — \`bun run gen:license-fixture\`
- * (อ่านจาก \`${REL}\` ของ carmen-turborepo-backend-v2 ซึ่งเป็นไฟล์ generated จาก
+ * (อ่านจาก \`${REL}\` ของ carmen-turborepo-backend ซึ่งเป็นไฟล์ generated จาก
  * \`prisma/permission.route-map.ts\` + \`prisma/seed.permission.data.ts\` อีกที)
  *
  * ## ทำไมต้องมีสำเนาในรีโปนี้

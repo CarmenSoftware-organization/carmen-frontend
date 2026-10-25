@@ -1,7 +1,7 @@
 /**
  * สร้าง changelog ของแอปจาก git history
  *
- * ยกมาจาก carmen-turborepo-backend-v2
+ * ยกมาจาก carmen-turborepo-backend
  * (`apps/backend-gateway/scripts/generate-changelog.ts`) แล้วดัดแปลงให้เข้ากับ
  * รีโปนี้ — ดู `collectCommits()` สำหรับจุดที่ต่างกันจริง ๆ และสำคัญที่สุด
  *

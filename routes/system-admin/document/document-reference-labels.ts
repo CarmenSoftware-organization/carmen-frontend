@@ -1,7 +1,7 @@
 /**
  * แผนที่ `reference_type` ที่ backend ผูกไว้กับไฟล์ → key ใต้ namespace `modules` ของ i18n
  *
- * ครอบ 31 ค่าจาก 39 ค่าที่ backend ใช้จริง (สแกนจาก carmen-turborepo-backend-v2)
+ * ครอบ 31 ค่าจาก 39 ค่าที่ backend ใช้จริง (สแกนจาก carmen-turborepo-backend)
  * ที่เหลืออีก 8 ค่ามี key ของตัวเองที่เพิ่มเข้าไปพร้อมกัน
  */
 export const DOCUMENT_REFERENCE_MODULE_KEY: Record<string, string> = {

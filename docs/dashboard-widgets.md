@@ -3,7 +3,7 @@
 > ไฟล์นี้ **สร้างอัตโนมัติ ห้ามแก้มือ** — `bun run docs:widgets` (ดู `scripts/gen-widget-docs.ts`)
 >
 > ภาพถ่ายจาก `https://dev.blueledgers.com:4001` เมื่อ 2026-10-22T01:59:39.447Z
-> ส่วนที่ 2 เป็นข้อมูลใน DB ของ platform — แก้ผ่าน carmen-platform ได้โดยไม่มี commit และแต่ละ env/BU อาจต่างจากนี้
+> ส่วนที่ 2 เป็นข้อมูลใน DB ของ platform — แก้ผ่าน carmen-backstage ได้โดยไม่มี commit และแต่ละ env/BU อาจต่างจากนี้
 
 dataset 89 ตัว · system widget 63 ตัว · bu_default 8 ตัว
 

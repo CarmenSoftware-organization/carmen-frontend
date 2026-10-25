@@ -17,7 +17,7 @@ systems pull data themselves via a BU API key). Config storage only; no sync/tes
   (`TextField`/`EnumField`/`ToggleField` — label+value, not schema-driven). Forms derive
   dropdown options from `schema.shape.<field>.options` so options and validation can't drift.
 - **Storage:** one `tb_application_config` row per interface. The backend
-  (`carmen-turborepo-backend-v2`) encrypts+masks the `api_key` secret via a generic
+  (`carmen-turborepo-backend`) encrypts+masks the `api_key` secret via a generic
   `secretPathsByKey` registry; a never-configured interface returns `{ enabled: false }`
   (not 404). **Prod/UAT must set `SECRET_ENCRYPTION_KEY`** or any secret-bearing save (incl.
   the pre-existing `report_email`) 400s.
@@ -54,7 +54,7 @@ systems pull data themselves via a BU API key). Config storage only; no sync/tes
 - **secret ห้ามเข้า React Query cache** — GET ไม่คืน secret; reveal เป็น mutation ที่ถือค่าไว้ใน state ชั่วคราว
   ของ component แล้วทิ้งเมื่อปิด ห้ามใส่ใน `queryClient` / localStorage / log
 - รูปแบบ response, กติกา Dr/Cr และขั้นตอน deploy อยู่ที่ BE: `docs/external-api/accounting-export.md`
-  (รีโป `carmen-turborepo-backend-v2`) · ลำดับ deploy: BE (micro-business ต้องตั้ง env `SECRET_ENCRYPTION_KEY` ไม่งั้น create/regenerate/reveal ตอบ 500) + allowlist `buApiKey.*` ก่อน FE
+  (รีโป `carmen-turborepo-backend`) · ลำดับ deploy: BE (micro-business ต้องตั้ง env `SECRET_ENCRYPTION_KEY` ไม่งั้น create/regenerate/reveal ตอบ 500) + allowlist `buApiKey.*` ก่อน FE
 
 ## API documentation (เอกสาร API ขาเข้า)
 
@@ -63,7 +63,7 @@ systems pull data themselves via a BU API key). Config storage only; no sync/tes
 ฉบับเต็มที่หน้า **public `/developers/api`** (`routes/developers/api/` — Scalar, ไม่ต้องล็อกอิน, EN/TH)
 
 - **spec อยู่ที่ `lib/external-api/openapi.json`** (shared layer เพราะสองโมดูลใช้) เป็นสำเนาของ BE
-  `docs/external-api/openapi.json` — อัปเดต: `bun run swagger:export-external` ที่ `carmen-turborepo-backend-v2`
+  `docs/external-api/openapi.json` — อัปเดต: `bun run swagger:export-external` ที่ `carmen-turborepo-backend`
   → copy มาทับ → `bun run docs:i18n-check` → แปลส่วนที่ขาดใน `lib/external-api/openapi.th.json` (ไม่มีอะไรซิงก์ให้)
 - คำแปลไทยของเนื้อหา spec เป็น overlay (JSON pointer → `{ en, th }`) — `localizedSpec("th")` ทับเฉพาะที่ `en`
   ยังตรงต้นฉบับ BE แก้ข้อความแล้วยังไม่แปล = แสดงอังกฤษ ไม่แสดงคำแปลเก่า; ชื่อ field / enum / ตัวอย่างห้ามแปล

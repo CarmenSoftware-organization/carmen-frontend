@@ -120,7 +120,7 @@ docker run -d -p 3000:80 \
   -e BACKEND_URL=https://<backend-host> \
   -e X_APP_ID=<app id> \
   -e WS_URL=wss://<backend-host>/ws \
-  carmen-inventory-frontend-react:latest
+  carmen-frontend:latest
 # หรือ: BACKEND_URL=.. X_APP_ID=.. docker compose up -d --build
 ```
 
@@ -149,10 +149,10 @@ vercel --prod      # จากเครื่องที่มี public/config
 สร้างจาก GitHub webhook เป็น `CANCELED` ทุกใบติดกัน 21 ใบ ทุก branch (main, PR) โดย
 build log ว่างเปล่า = ถูกยกเลิกก่อน build เริ่ม **ยังไม่ทราบสาเหตุ** โครงสร้าง branch
 `vercel` (mirror ของ `main`, Production Branch = `vercel`) ตั้งไว้ครบแล้วตามโมเดลของ
-`carmen-platform` แต่ `git push origin main:vercel` จะไม่ deploy อะไรเลย ถ้าจะรื้อ
+`carmen-backstage` แต่ `git push origin main:vercel` จะไม่ deploy อะไรเลย ถ้าจะรื้อ
 ให้เริ่มที่ banner ในหน้า project settings ของ dashboard
 
-อย่าอ่าน `"live": false` จาก API ว่าโปรเจกต์ถูก pause — `carmen-platform` ที่ deploy
+อย่าอ่าน `"live": false` จาก API ว่าโปรเจกต์ถูก pause — `carmen-backstage` ที่ deploy
 สำเร็จก็เป็น `false` เหมือนกัน
 
 ### ตั้งค่าครั้งเดียวใน Vercel project settings

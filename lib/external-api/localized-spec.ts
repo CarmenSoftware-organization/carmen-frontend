@@ -1,4 +1,4 @@
-// สำเนาของ BE `docs/external-api/openapi.json` (carmen-turborepo-backend-v2) — อัปเดต: รัน
+// สำเนาของ BE `docs/external-api/openapi.json` (carmen-turborepo-backend) — อัปเดต: รัน
 // `bun run swagger:export-external` ที่ BE แล้ว copy มาทับ จากนั้นรัน `bun run docs:i18n-check`
 import openapi from "./openapi.json";
 import thOverlay from "./openapi.th.json";

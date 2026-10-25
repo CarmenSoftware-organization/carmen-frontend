@@ -33,5 +33,5 @@ description: ใช้เมื่อแตะ license gating ฝั่ง FE �
   ผลที่ตามมา: การผูก leaf กับ **license feature key ใหม่ล็อกหน้านั้นทันทีที่ deploy**
   สำหรับ BU ที่ยังไม่ถูก assign feature การเพิ่มคีย์ระดับ resource จึงต้องทำสามขั้นตาม
   ลำดับเสมอ — deploy backend → `db:seed.license-feature` ของ env นั้น → assign feature
-  ให้ทุก BU ที่ carmen-platform → ค่อย deploy FE (ตรวจงาน license ในเครื่องด้วยการสลับ
+  ให้ทุก BU ที่ carmen-backstage → ค่อย deploy FE (ตรวจงาน license ในเครื่องด้วยการสลับ
   `LICENSE_ENFORCEMENT` เป็น `false` ชั่วคราวแล้วคืนค่า)

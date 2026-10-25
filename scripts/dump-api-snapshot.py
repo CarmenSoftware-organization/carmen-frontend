@@ -1,4 +1,4 @@
-# scripts/dump-api-snapshot.py  (ใน carmen-inventory-frontend-react)
+# scripts/dump-api-snapshot.py  (ใน carmen-frontend)
 """ดัมพ์ response ของทุก endpoint เก็บเป็น golden snapshot ก่อนแก้ contract
 ใช้: cd /tmp/carmen-contract-baseline && python3 <path>/scripts/dump-api-snapshot.py
 """

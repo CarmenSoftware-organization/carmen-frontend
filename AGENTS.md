@@ -19,7 +19,7 @@ bun run build:{local,dev,uat,prod}   # เหมือน build แต่เล�
 bun run typecheck    # tsc --noEmit เดี่ยว ๆ (gate ของ build:bump)
 bun run lint         # ESLint        bun test          # Vitest watch
 bun test:run         # Single run    bun test:run path # Single file
-# e2e: moved to ../carmen-inventory-frontend-e2e (E2E_FRONTEND_DIR=../carmen-inventory-frontend-react bun e2e)
+# e2e: moved to ../carmen-frontend-e2e (E2E_FRONTEND_DIR=../carmen-frontend bun e2e)
 ```
 
 ตัด release / deploy (`build:bump` · changelog · S3/GCS/Docker/CDN) → skill `release-and-deploy`
@@ -177,5 +177,5 @@ inline script ใน `index.html`** แก้สคริปต์นั้น�
   ผลที่ตามมา: การผูก leaf กับ **license feature key ใหม่ล็อกหน้านั้นทันทีที่ deploy**
   สำหรับ BU ที่ยังไม่ถูก assign feature การเพิ่มคีย์ระดับ resource จึงต้องทำสามขั้นตาม
   ลำดับเสมอ — deploy backend → `db:seed.license-feature` ของ env นั้น → assign feature
-  ให้ทุก BU ที่ carmen-platform → ค่อย deploy FE (ตรวจงาน license ในเครื่องด้วยการสลับ
+  ให้ทุก BU ที่ carmen-backstage → ค่อย deploy FE (ตรวจงาน license ในเครื่องด้วยการสลับ
   `LICENSE_ENFORCEMENT` เป็น `false` ชั่วคราวแล้วคืนค่า)

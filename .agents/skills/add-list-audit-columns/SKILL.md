@@ -1,6 +1,6 @@
 ---
 name: add-list-audit-columns
-description: Use when adding Created/Updated (audit) columns — timestamp + author name, with sortable headers — to a module's list table (and grid card / Excel export) in carmen-inventory-frontend-react, e.g. "add created and updated columns with sort" to a vendor-management / procurement / config / operation-plan list page.
+description: Use when adding Created/Updated (audit) columns — timestamp + author name, with sortable headers — to a module's list table (and grid card / Excel export) in carmen-frontend, e.g. "add created and updated columns with sort" to a vendor-management / procurement / config / operation-plan list page.
 ---
 
 # Add Created/Updated audit columns to a list page
@@ -27,7 +27,7 @@ menu (see step 1b) — do NOT ship them visible-by-default.
 
 ## Step 0 — Backend precondition (decides frontend-only vs needs-backend)
 
-Verify ONCE in `carmen-turborepo-backend-v2`. If all hold → frontend-only. If the decorator is
+Verify ONCE in `carmen-turborepo-backend`. If all hold → frontend-only. If the decorator is
 missing → the list response has NO `audit`; a backend change is required first (escalate).
 
 - Gateway controller `findAll` for the module has `@EnrichAuditUsers()`

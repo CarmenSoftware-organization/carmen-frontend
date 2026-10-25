@@ -118,7 +118,7 @@ export interface LicenseInfo {
    * ⚠️ **เป็น `null` เสมอในตอนนี้** — `ClusterSeat` ที่ gateway ส่งมา (`license.types.ts`)
    * มีแค่ `{ used, cap, pending_invites }` รวมทั้ง cluster เท่านั้น ไม่มีรายละเอียดว่าที่นั่ง
    * ส่วนไหนของใบไหน (`tb_business_unit_license` รายใบ) จะหมดอายุเมื่อไหร่ — ข้อมูลระดับใบ
-   * เป็นของ carmen-platform (`businessUnitLicenseService`) เท่านั้น ไม่เดินทางมาถึง profile
+   * เป็นของ carmen-backstage (`businessUnitLicenseService`) เท่านั้น ไม่เดินทางมาถึง profile
    * ของแอปนี้ผ่าน seat block
    *
    * `endDate`/`state` ด้านบนใช้แทนไม่ได้เช่นกัน — เป็นคนละสัญญา (`tb_subscription` ของ

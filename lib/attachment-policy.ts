@@ -1,5 +1,5 @@
 /**
- * นโยบายไฟล์แนบ comment ของ BU — ค่าจริงมาจาก `GET api/:bu_code/attachment-policy` (ตั้งจาก carmen-platform)
+ * นโยบายไฟล์แนบ comment ของ BU — ค่าจริงมาจาก `GET api/:bu_code/attachment-policy` (ตั้งจาก carmen-backstage)
  * ค่าเริ่มต้นต้องเท่ากับของ backend (`attachment-policy.ts` ใน backend-gateway): ใช้ระหว่างโหลด / ดึงไม่สำเร็จ
  * backend เป็นด่านจริง — ฝั่งนี้แค่ช่วยให้ผู้ใช้รู้ก่อนอัปโหลด
  */

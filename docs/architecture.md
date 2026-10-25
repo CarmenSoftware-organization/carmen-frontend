@@ -12,13 +12,13 @@ talks to the backend gateway directly. There is **no application server** of our
 ## System context
 
 How this SPA sits in the wider Carmen Blue system. Service names and ports match the
-backend's `carmen-turborepo-backend-v2/docs/architecture-system.md`. There is no
+backend's `carmen-turborepo-backend/docs/architecture-system.md`. There is no
 frontend application server: the static bundle runs in the browser and calls the
 backend gateway directly.
 
 ```mermaid
 flowchart TD
-    Browser["Browser SPA\ncarmen-inventory-frontend-react\n(Vite + React 19 + React Router 7)\nstatic bundle — no app server"]
+    Browser["Browser SPA\ncarmen-frontend\n(Vite + React 19 + React Router 7)\nstatic bundle — no app server"]
     Edge["Static hosting / edge\nS3 + CloudFront · GCS + Cloud CDN ·\nDocker nginx (Port 3000, proxies /api/*)"]
     Config["public/config.json\nBACKEND_URL · X_APP_ID"]
     Gateway["backend-gateway\nAPI Gateway\nHTTP: 4000 / HTTPS: 4001"]
