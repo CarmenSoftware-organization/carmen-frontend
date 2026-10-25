@@ -1,6 +1,6 @@
 /**
  * Whether the gateway offers Google sign-in to the App right now: the operator switch
- * `google_sign_in.app` in platform config AND the gateway's Google configuration.
+ * `google_sign_in.app` in Backstage config AND the gateway's Google configuration.
  *
  * Plain `fetch`, not the http-client: the endpoint is public and is read before there is a session.
  * Any failure (network, 404 from a gateway that predates the endpoint, an odd body) reads as `false`,

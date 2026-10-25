@@ -29,7 +29,7 @@ export const router = createBrowserRouter([
         lazy: () => import("./register/register-verify.route"),
       },
       // กู้คืนรหัสผ่าน — public เพราะคนที่ใช้เส้นทางนี้เข้าระบบไม่ได้อยู่แล้ว
-      // ปลายทางของลิงก์ในอีเมลมาจาก platform config คีย์ `password_reset.base_url` ต้องตั้งให้
+      // ปลายทางของลิงก์ในอีเมลมาจาก Backstage config คีย์ `password_reset.base_url` ต้องตั้งให้
       // ชี้มาที่ `/reset-password` ของแอปนี้ ไม่งั้นลิงก์จะพาไปที่อื่นทั้งที่โค้ดทั้งสองฝั่งถูกต้อง
       {
         path: "/forgot-password",
