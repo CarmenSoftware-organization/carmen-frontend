@@ -6286,9 +6286,12 @@
     "seatExpiringSoon": "{seats} seat(s) expire on {date} — afterward, your {used} active users will exceed the remaining quota ({remaining} seats). Renew or buy more seats soon."
   },
   "profileError": {
-    "missingDepartmentTitle": "No Department Assigned",
-    "missingDepartmentDesc": "You do not have a department assigned to your default business unit ({buName}). Please contact your administrator.",
-    "close": "Close"
+    "missingDepartmentTitle": "Your account has no department",
+    "missingDepartmentDesc": "Approval workflows route documents by department. Until you have one, documents you create may go to the wrong approvers or get stuck.",
+    "missingDepartmentAction": "Ask your business unit admin to assign you a department.",
+    "businessUnit": "Business unit",
+    "account": "Account",
+    "close": "Got it"
   },
   "widget": {
     "common": {

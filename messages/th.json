@@ -6286,9 +6286,12 @@
     "seatExpiringSoon": "ที่นั่ง {seats} ที่นั่งจะหมดอายุวันที่ {date} — หลังจากนั้นผู้ใช้ที่ใช้งานอยู่ ({used} คน) จะเกินโควตาที่เหลือ ({remaining} ที่นั่ง) กรุณาต่ออายุหรือซื้อที่นั่งเพิ่ม"
   },
   "profileError": {
-    "missingDepartmentTitle": "ยังไม่มีแผนกที่กำหนด",
-    "missingDepartmentDesc": "คุณยังไม่มีแผนกในหน่วยงานหลัก ({buName}) กรุณาติดต่อผู้ดูแลระบบ",
-    "close": "ปิด"
+    "missingDepartmentTitle": "บัญชีของคุณยังไม่มีแผนก",
+    "missingDepartmentDesc": "การอนุมัติเอกสารส่งต่อตามแผนก ถ้ายังไม่มีแผนก เอกสารที่คุณสร้างอาจถูกส่งไปผิดผู้อนุมัติหรือค้างอยู่",
+    "missingDepartmentAction": "แจ้งผู้ดูแล business unit ให้กำหนดแผนกให้คุณ",
+    "businessUnit": "Business unit",
+    "account": "บัญชี",
+    "close": "รับทราบ"
   },
   "widget": {
     "common": {
