@@ -4567,7 +4567,12 @@
       "cascadeSelfOnly": "บันทึกเฉพาะรายการนี้",
       "inventoryAccount": "บัญชี Inventory",
       "directAccount": "บัญชี Direct",
-      "inheritedFrom": "สืบทอดจาก {level}: {code}"
+      "inheritedFrom": "สืบทอดจาก {level}: {code}",
+      "reportFrom": "{level} ตั้งแต่",
+      "reportTo": "{level} ถึง",
+      "reportPrintHint": "เลือกช่วงรหัสที่จะพิมพ์ — ช่องที่เป็น ทั้งหมด จะไม่จำกัดรหัส",
+      "reportExportHint": "ส่งออกเป็นรายการแบน (หมวดหมู่ หมวดย่อย กลุ่มสินค้า) เรียงตามรหัส — ช่องที่เป็น ทั้งหมด จะไม่จำกัดรหัส",
+      "reportReset": "ล้างค่า"
     },
     "product": {
       "entity": "สินค้า",

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { IntlProvider } from "use-intl";
 import en from "@/messages/en.json";
@@ -41,20 +41,45 @@ vi.mock("./category-dialog", () => ({ CategoryDialog: () => null }));
 vi.mock("./tree-content", () => ({ default: () => null }));
 vi.mock("@/components/share/list-page-shell", () => ({
   ListPageShell: ({
+    actions,
     toolbar,
     children,
   }: {
+    actions: React.ReactNode;
     toolbar: React.ReactNode;
     children: React.ReactNode;
   }) => (
     <div>
+      {actions}
       {toolbar}
       {children}
     </div>
   ),
 }));
 vi.mock("@/components/share/document-list-actions", () => ({
-  DocumentListActions: () => null,
+  DocumentListActions: ({
+    extraActions,
+  }: {
+    extraActions?: React.ReactNode;
+  }) => <div>{extraActions}</div>,
+}));
+const report = vi.hoisted(() => ({
+  printReport: vi.fn(),
+  exportReport: vi.fn(),
+  isBusy: false,
+}));
+vi.mock("./use-category-report", () => ({
+  useCategoryReport: () => report,
+}));
+// จับ props ที่ส่งให้ dialog ของรายงาน — ตัว dialog จริงมีเทสของมันเอง
+const reportDialog = vi.hoisted(() => ({
+  props: undefined as undefined | Record<string, unknown>,
+}));
+vi.mock("./category-report-dialog", () => ({
+  CategoryReportDialog: (props: Record<string, unknown>) => {
+    reportDialog.props = props;
+    return null;
+  },
 }));
 
 function renderAt(url: string) {
@@ -76,5 +101,36 @@ describe("CategoryComponent — ?search=", () => {
   it("ไม่มี ?search= -> ช่องค้นหาว่าง", () => {
     renderAt("/product-management/category");
     expect(screen.getByRole("textbox")).toHaveValue("");
+  });
+});
+
+describe("CategoryComponent — Product Category Report", () => {
+  it("ปุ่ม Print เปิด dialog โหมดพิมพ์ ส่งต่อไปที่ printReport", () => {
+    renderAt("/product-management/category");
+    expect(reportDialog.props?.open).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: en.common.print }));
+
+    expect(reportDialog.props).toMatchObject({
+      open: true,
+      mode: "print",
+      onSubmit: report.printReport,
+    });
+  });
+
+  it("ปุ่ม Export เปิด dialog โหมด export ส่งต่อไปที่ exportReport แล้วปิดได้", () => {
+    renderAt("/product-management/category");
+
+    fireEvent.click(screen.getByRole("button", { name: en.common.export }));
+    expect(reportDialog.props).toMatchObject({
+      open: true,
+      mode: "export",
+      onSubmit: report.exportReport,
+    });
+
+    act(() =>
+      (reportDialog.props?.onOpenChange as (o: boolean) => void)(false),
+    );
+    expect(reportDialog.props?.open).toBe(false);
   });
 });

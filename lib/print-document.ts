@@ -37,7 +37,9 @@ export type PrintDocumentType =
   | "EOP"
   // master data, not a document: no dedicated endpoint and no BU print-form setting — the caller passes
   // VENDOR_DETAIL_TEMPLATE_ID plus VendorFrom / VendorTo filters
-  | "VENDOR";
+  | "VENDOR"
+  // master data as well — the category page passes PRODUCT_CATEGORY_TEMPLATE_ID plus the code ranges
+  | "PRODUCT_CATEGORY";
 
 /**
  * Vendor Detail Report — a form template (micro-report seed, id fixed across environments) printed from the
@@ -46,6 +48,16 @@ export type PrintDocumentType =
  * ไม่อยู่ในหน้ารายการรายงาน · ฟังก์ชัน f_vendor_detail รับ VendorFrom / VendorTo / Status
  */
 export const VENDOR_DETAIL_TEMPLATE_ID = "da3fff14-8000-4065-bc28-a734e5783814";
+
+/**
+ * Product Category Report — a form template printed and exported from the category page; it is not on the report
+ * list. Its function f_product_category takes CategoryFrom / CategoryTo / SubCategoryFrom / SubCategoryTo /
+ * ItemGroupFrom / ItemGroupTo ("ALL" = no limit).
+ * Product Category Report — template แบบ form พิมพ์และ Export จากหน้า category ไม่อยู่ในหน้ารายการรายงาน
+ * · ฟังก์ชัน f_product_category รับช่วงรหัส Category / Sub Category / Item Group ("ALL" = ไม่จำกัด)
+ */
+export const PRODUCT_CATEGORY_TEMPLATE_ID =
+  "eda55615-08e0-4fc0-941e-c62dc8072e49";
 
 export interface ViewerResponse {
   data?: { url: string };
