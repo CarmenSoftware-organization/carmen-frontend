@@ -327,6 +327,22 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/pos-sales/items`,
   POS_SALE_ITEM: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/pos-sales/items/${encodeURIComponent(id)}`,
+  POS_SALE_STATUS: (buCode: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/status`,
+  SALES_CONSUMPTIONS: (buCode: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/sales-consumptions`,
+  SALES_CONSUMPTION_CALENDAR: (buCode: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/sales-consumptions/calendar`,
+  SALES_CONSUMPTION: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/sales-consumptions/${encodeURIComponent(id)}`,
+  SALES_CONSUMPTION_LINES: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/sales-consumptions/${encodeURIComponent(id)}/lines`,
+  SALES_CONSUMPTION_VERIFY: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/sales-consumptions/${encodeURIComponent(id)}/verify-onhand`,
+  SALES_CONSUMPTION_POST: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/sales-consumptions/${encodeURIComponent(id)}/post`,
+  SALES_CONSUMPTION_VOID: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/pos-sales/sales-consumptions/${encodeURIComponent(id)}/void`,
   PRICE_LISTS: (buCode: string) => `/api/proxy/api/config/${buCode}/pricelists`,
   PRICE_LIST_VOID: (buCode: string, id: string) =>
     `/api/proxy/api/config/${buCode}/pricelists/${id}/void`,

@@ -19,6 +19,7 @@ import type {
   PosImportListItem,
   PosImportSummary,
   PosItem,
+  PosItemStatus,
   PosMicros3700CheckResult,
   PosMicros3700ImportResult,
   PosMicros3700OutletResult,
@@ -185,28 +186,27 @@ export function usePosOutlets(storeId?: string) {
  * เมนู POS พร้อมสูตรที่ผูก (แบ่งหน้า)
  *
  * @param params - page / perpage / search / sort
- * @param filters - `storeId` กรองร้าน · `unmapped` true = เฉพาะที่ยังไม่มีสูตร
+ * @param filters - `storeId` กรองร้าน · `status` = เฉพาะเมนูในสถานะนั้น (unmapped / mapped / ignored)
  * @param options - ตัวเลือก UseQueryOptions เพิ่มเติม
  */
 export function usePosItems(
   params: ParamsDto | undefined,
-  filters: { storeId?: string; unmapped?: boolean } = {},
+  filters: { storeId?: string; status?: PosItemStatus } = {},
   options?: Omit<
     UseQueryOptions<PaginatedResponse<PosItem>>,
     "queryKey" | "queryFn"
   >,
 ) {
   const buCode = useBuCode();
-  const { storeId, unmapped } = filters;
+  const { storeId, status } = filters;
   return useQuery<PaginatedResponse<PosItem>>({
-    queryKey: [QUERY_KEYS.POS_SALE_ITEMS, buCode, storeId, unmapped, params],
+    queryKey: [QUERY_KEYS.POS_SALE_ITEMS, buCode, storeId, status, params],
     queryFn: () =>
       getJson(
         buildUrl(API_ENDPOINTS.POS_SALE_ITEMS(buCode!), {
           ...params,
           store_id: storeId,
-          // backend รับ 'true' | 'false' เป็นสตริง — ไม่ส่งเมื่อไม่ได้กรอง
-          unmapped: unmapped === undefined ? undefined : String(unmapped),
+          status,
         }),
         "Failed to load POS items",
       ),
@@ -366,19 +366,24 @@ export function useUpdatePosOutlet() {
   });
 }
 
-/** ผูก/ล้างสูตรของเมนู (`recipe_id: null` = ล้าง) */
+/**
+ * ผูก/ล้างสูตรของเมนู (`recipe_id: null` = ล้าง) หรือสั่งไม่นับเมนู (`is_ignored`)
+ * — ต้องส่งอย่างน้อยหนึ่งฟิลด์ · สูตรกับ `is_ignored: true` ส่งพร้อมกันไม่ได้
+ */
 export function useUpdatePosItem() {
   return usePosMutation<
-    { id: string; recipe_id: string | null },
+    { id: string; recipe_id?: string | null; is_ignored?: boolean },
     { id: string }
   >({
-    call: (buCode, { id, recipe_id }) =>
-      httpClient.patch(API_ENDPOINTS.POS_SALE_ITEM(buCode, id), { recipe_id }),
+    call: (buCode, { id, ...body }) =>
+      httpClient.patch(API_ENDPOINTS.POS_SALE_ITEM(buCode, id), body),
     errorMessage: "Failed to update POS item",
     invalidate: () => [
       [QUERY_KEYS.POS_SALE_ITEMS],
       [QUERY_KEYS.POS_SALE_STORES],
       [QUERY_KEYS.POS_SALE_IMPORT],
+      // ค่าตั้งต้นของเมนูเปลี่ยน = บรรทัดใน Sales Consumption ที่ยังเป็น pending เปลี่ยนตาม
+      [QUERY_KEYS.SALES_CONSUMPTION],
     ],
   });
 }

@@ -76,6 +76,8 @@ export interface PosImportListItem extends PosImportSummary {
   outlet_id: string | null;
   /** id ของการนำเข้าใหม่ที่เขียนทับรายการนี้ — null = ยังไม่ถูกเขียนทับ */
   replaced_by_id: string | null;
+  /** Sales Consumption ที่ยอดขายนี้อยู่ใน — null = ยังไม่มี */
+  sales_consumption: { id: string; sc_no: string; status: string } | null;
 }
 
 /** ร้าน POS ตามหัวไฟล์ */
@@ -163,6 +165,8 @@ export interface PosItem {
   desc1: string;
   desc2: string | null;
   department_code: string | null;
+  /** true = ไม่นับเมนูนี้เป็นยอดตัดสต็อก */
+  is_ignored: boolean;
   recipe: (PosCodeName & { is_active: boolean | null }) | null;
 }
 
@@ -257,3 +261,6 @@ export type PosMicros3700ImportResult =
       doc_date: string;
       outlets: PosMicros3700OutletResult[];
     };
+
+/** ตัวกรองสถานะการผูกของเมนู POS */
+export type PosItemStatus = "unmapped" | "mapped" | "ignored";

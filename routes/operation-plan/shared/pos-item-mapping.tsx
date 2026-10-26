@@ -54,7 +54,7 @@ export function PosItemMapping({ brand }: { brand: PosBrand }) {
   const params = { ...rawParams, perpage: clampPerpage(rawParams.perpage, 50) };
   const { data, isLoading, error, refetch } = usePosItems(
     params,
-    { storeId, unmapped },
+    { storeId, status: unmapped ? "unmapped" : undefined },
     { enabled: !!storeId },
   );
   const { mutate } = useUpdatePosItem();
