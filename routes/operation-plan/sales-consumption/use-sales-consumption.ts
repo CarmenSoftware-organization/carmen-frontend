@@ -25,6 +25,14 @@ async function getJson<T>(url: string, fallback: string): Promise<T> {
   return res.json();
 }
 
+/** post/void ขยับสต็อก — ต้องล้าง cache ใบปรับสต็อกและยอดคงเหลือ/เคลื่อนไหวด้วย */
+const STOCK_KEYS = [
+  QUERY_KEYS.INVENTORY_ADJUSTMENTS,
+  QUERY_KEYS.PRODUCT_ON_HAND,
+  QUERY_KEYS.PRODUCT_INVENTORY,
+  QUERY_KEYS.PRODUCT_INVENTORY_MOVEMENT,
+] as const;
+
 /** ทุก mutation ของ SC กระทบรายการ/รายละเอียด/ปฏิทินพร้อมกัน */
 const SC_KEYS = [
   QUERY_KEYS.SALES_CONSUMPTION,
@@ -111,7 +119,7 @@ export function usePostSalesConsumption(id: string) {
   return useApiMutation<{ doc_version: number }, { data: ScPostResult }>({
     mutationFn: (body, buCode) =>
       httpClient.post(API_ENDPOINTS.SALES_CONSUMPTION_POST(buCode, id), body),
-    invalidateKeys: [...SC_KEYS, QUERY_KEYS.INVENTORY_ADJUSTMENTS],
+    invalidateKeys: [...SC_KEYS, ...STOCK_KEYS],
     errorMessage: "Failed to post sales consumption",
   });
 }
@@ -124,7 +132,7 @@ export function useVoidSalesConsumption(id: string) {
   >({
     mutationFn: (body, buCode) =>
       httpClient.post(API_ENDPOINTS.SALES_CONSUMPTION_VOID(buCode, id), body),
-    invalidateKeys: [...SC_KEYS, QUERY_KEYS.INVENTORY_ADJUSTMENTS],
+    invalidateKeys: [...SC_KEYS, ...STOCK_KEYS],
     errorMessage: "Failed to void sales consumption",
   });
 }

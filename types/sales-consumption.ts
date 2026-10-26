@@ -111,7 +111,7 @@ export interface ScDetail {
   doc_version: number;
   imports: {
     id: string;
-    brand: string;
+    brand: PosBrand;
     file_name: string;
     ingest_method: string;
     store_name: string | null;

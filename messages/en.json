@@ -1087,7 +1087,18 @@
       "STOCK_OUT_DATE_NOT_CURRENT_PERIOD": "A stock-out can only be dated inside the current period ({period}: {start} to {end})",
       "STOCK_OUT_NO_OPEN_PERIOD": "No inventory period is open, so a stock-out cannot be recorded",
       "STOCK_OUT_ALREADY_VOIDED": "Stock out is already voided",
-      "BUSINESS_UNIT_NOT_CURRENT": "This page shows a business unit other than your current one — it was switched in another tab or device. Reload the page to see the current business unit, then make your change again."
+      "BUSINESS_UNIT_NOT_CURRENT": "This page shows a business unit other than your current one — it was switched in another tab or device. Reload the page to see the current business unit, then make your change again.",
+      "SALES_CONSUMPTION_NOT_FOUND": "Sales Consumption not found",
+      "SALES_CONSUMPTION_NOT_PENDING": "This Sales Consumption is no longer pending. Reload the page to see its current status.",
+      "SALES_CONSUMPTION_NOT_POSTED": "This Sales Consumption has not been posted, so it cannot be voided.",
+      "SALES_CONSUMPTION_HAS_UNRESOLVED_LINES": "{count} line(s) still need a location or recipe. Resolve them before posting.",
+      "SALES_CONSUMPTION_NOT_VERIFIED": "Verify on-hand before posting.",
+      "SALES_CONSUMPTION_VERIFY_STALE": "The document changed after the last on-hand check. Verify on-hand again.",
+      "SALES_CONSUMPTION_VERIFY_FAILED": "The latest on-hand check found insufficient stock. Fix it and verify again.",
+      "SALES_CONSUMPTION_VOID_PERIOD_CLOSED": "Cannot void because the period of this document is already closed.",
+      "SALES_CONSUMPTION_LINE_POSTED": "This line has already been posted and cannot be edited.",
+      "SALES_CONSUMPTION_POS_NOT_ENABLED": "POS integration is not enabled for this business unit.",
+      "POS_SALE_OUTLET_IN_POSTED_SC": "Outlet {outlet} for {date} is already included in a posted Sales Consumption and cannot be overwritten."
     }
   },
   "validation": {
@@ -4508,6 +4519,131 @@
           "hint": "Master mapping is the default for lines that are not posted yet. Posted lines keep the values they were posted with.",
           "outlets": "Outlet → Location",
           "items": "POS item → Recipe"
+        }
+      },
+      "detail": {
+        "back": "Back to Sales Consumption",
+        "notFound": "Sales Consumption not found",
+        "header": {
+          "saleDate": "Sale date",
+          "imports": "POS imports of the day",
+          "importsCount": "{count, plural, one {# file} other {# files}}",
+          "salesAmount": "Sales amount",
+          "stockOuts": "Stock Outs",
+          "none": "–",
+          "missingStores": "No file yet for: {stores}",
+          "replacedBy": "Replaced by {sc}"
+        },
+        "cards": {
+          "mapped": "Mapped",
+          "ignored": "Ignored",
+          "needMapping": "Need mapping",
+          "ingredientCost": "Ingredient cost",
+          "ingredientCostEstimated": "Ingredient cost (estimated)"
+        },
+        "tabs": {
+          "sales": "Sales lines",
+          "ingredients": "Ingredients",
+          "history": "History"
+        },
+        "actions": {
+          "verify": "Verify on-hand",
+          "reverify": "Re-verify on-hand",
+          "verifying": "Verifying...",
+          "post": "Post & deduct stock",
+          "posting": "Posting...",
+          "void": "Void",
+          "voidTitle": "Void this Sales Consumption?",
+          "voidDescription": "Every Stock Out it created is voided and the stock is returned. Sales of the day that are not posted come back as a new pending document.",
+          "verifyDone": "On-hand verified: enough stock for every product",
+          "verifyShort": "On-hand verified: some products are short",
+          "posted": "Posted. Stock deducted",
+          "voided": "Voided. Stock returned",
+          "voidedNew": "Voided. A new pending document was created: {sc}"
+        },
+        "hint": {
+          "unresolved": "{count, plural, one {# item still needs} other {# items still need}} a location or recipe",
+          "notVerified": "Verify on-hand before posting",
+          "stale": "Lines changed after the last check. Verify on-hand again",
+          "short": "Some products are short. Fix the stock or the mapping, then verify again",
+          "ready": "Ready to post. {count, plural, one {# Stock Out} other {# Stock Outs}} will be created",
+          "voidedNote": "This document is voided and cannot be changed"
+        },
+        "lines": {
+          "columns": {
+            "outlet": "Outlet",
+            "location": "Location",
+            "item": "POS item",
+            "recipe": "Recipe",
+            "qty": "Net qty",
+            "amount": "Amount"
+          },
+          "fromOutlet": "from outlet mapping",
+          "changedLine": "changed on this line",
+          "outletNotMapped": "outlet not mapped",
+          "fromItem": "from item mapping",
+          "itemNotMapped": "item not mapped",
+          "notCounted": "Not counted",
+          "ignored": "Ignored",
+          "ignore": "Ignore",
+          "resetToMaster": "Reset to mapping",
+          "setItemDefault": "Also set as item default",
+          "saved": "Line updated",
+          "needsLocation": "Needs location",
+          "needsRecipe": "Needs recipe",
+          "empty": "No sales lines for this day"
+        },
+        "ingredients": {
+          "summaryNotChecked": "On-hand has not been checked yet. Verify on-hand to see which products can be deducted.",
+          "summaryStale": "Lines changed after the last check, so the result was cleared. Verify on-hand again.",
+          "summaryOk": "On-hand checked: every product can be deducted.",
+          "summaryShort": "On-hand checked: {count, plural, one {# product is} other {# products are}} short.",
+          "estimateNote": "Costs are an estimate until posted. After posting, the values come from the Stock Outs.",
+          "problemsTitle": "These lines are not in the ingredient totals and block verify and post",
+          "outlets": "Outlets: {outlets}",
+          "productCount": "{count, plural, one {# product} other {# products}}",
+          "canDeduct": "Can deduct",
+          "shortCount": "{count} short",
+          "notChecked": "Not checked",
+          "stockOutOnPost": "Stock Out on post",
+          "columns": {
+            "product": "Product",
+            "qty": "Qty to deduct",
+            "unit": "Unit",
+            "unitCost": "Unit cost",
+            "totalCost": "Total cost",
+            "onHand": "On hand (sale day)",
+            "canDeduct": "Can deduct?"
+          },
+          "yes": "Yes",
+          "shortBy": "Short {qty}",
+          "dash": "–",
+          "empty": "No ingredients to deduct"
+        },
+        "problems": {
+          "no_conversion": "unit conversion is missing",
+          "zero_yield": "recipe yield is zero",
+          "too_deep": "sub-recipes are nested too deeply",
+          "recipe_unusable": "recipe cannot be used",
+          "empty_recipe": "recipe has no ingredients"
+        },
+        "history": {
+          "empty": "No history yet",
+          "byUser": "by {user}",
+          "actions": {
+            "created": "Document {sc_no} created",
+            "imported": "Imported {file_name}",
+            "onhand_verified": "On-hand verified",
+            "posted": "Posted",
+            "voided": "Voided"
+          },
+          "verifiedOk": "enough stock",
+          "verifiedShort": "some products short",
+          "reason": "Reason: {reason}"
+        },
+        "brand": {
+          "simphony": "Oracle Simphony",
+          "micros3700": "Oracle Micros 3700"
         }
       }
     }

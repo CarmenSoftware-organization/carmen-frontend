@@ -1087,7 +1087,18 @@
       "STOCK_OUT_DATE_NOT_CURRENT_PERIOD": "ใบจ่ายออกลงวันที่ได้เฉพาะในงวดปัจจุบัน ({period}: {start} ถึง {end})",
       "STOCK_OUT_NO_OPEN_PERIOD": "ไม่มีงวดสินค้าคงคลังที่เปิดอยู่ จึงบันทึกใบจ่ายออกไม่ได้",
       "STOCK_OUT_ALREADY_VOIDED": "รายการเบิกออกถูกยกเลิกแล้ว",
-      "BUSINESS_UNIT_NOT_CURRENT": "หน้านี้แสดงหน่วยธุรกิจที่ไม่ใช่หน่วยธุรกิจปัจจุบันของคุณ (มีการสลับจากแท็บหรือเครื่องอื่น) โหลดหน้าใหม่เพื่อดูหน่วยธุรกิจปัจจุบัน แล้วแก้ไขอีกครั้ง"
+      "BUSINESS_UNIT_NOT_CURRENT": "หน้านี้แสดงหน่วยธุรกิจที่ไม่ใช่หน่วยธุรกิจปัจจุบันของคุณ (มีการสลับจากแท็บหรือเครื่องอื่น) โหลดหน้าใหม่เพื่อดูหน่วยธุรกิจปัจจุบัน แล้วแก้ไขอีกครั้ง",
+      "SALES_CONSUMPTION_NOT_FOUND": "ไม่พบ Sales Consumption",
+      "SALES_CONSUMPTION_NOT_PENDING": "Sales Consumption นี้ไม่ได้อยู่ในสถานะรอดำเนินการแล้ว โหลดหน้าใหม่เพื่อดูสถานะปัจจุบัน",
+      "SALES_CONSUMPTION_NOT_POSTED": "Sales Consumption นี้ยังไม่ได้ Post จึงยกเลิกไม่ได้",
+      "SALES_CONSUMPTION_HAS_UNRESOLVED_LINES": "ยังมี {count} บรรทัดที่ต้องระบุ Location หรือสูตร กรุณาระบุให้ครบก่อน Post",
+      "SALES_CONSUMPTION_NOT_VERIFIED": "ต้องตรวจยอดคงเหลือก่อน Post",
+      "SALES_CONSUMPTION_VERIFY_STALE": "เอกสารเปลี่ยนไปหลังตรวจยอดคงเหลือครั้งล่าสุด กรุณาตรวจยอดคงเหลืออีกครั้ง",
+      "SALES_CONSUMPTION_VERIFY_FAILED": "ผลตรวจยอดคงเหลือล่าสุดพบว่าสินค้าไม่เพียงพอ กรุณาแก้ไขแล้วตรวจอีกครั้ง",
+      "SALES_CONSUMPTION_VOID_PERIOD_CLOSED": "ยกเลิกไม่ได้เพราะงวดของเอกสารนี้ปิดแล้ว",
+      "SALES_CONSUMPTION_LINE_POSTED": "บรรทัดนี้ถูก Post แล้ว แก้ไขไม่ได้",
+      "SALES_CONSUMPTION_POS_NOT_ENABLED": "หน่วยธุรกิจนี้ยังไม่ได้เปิดใช้การเชื่อมต่อ POS",
+      "POS_SALE_OUTLET_IN_POSTED_SC": "Outlet {outlet} ของวันที่ {date} ถูกรวมใน Sales Consumption ที่ Post แล้ว จึงเขียนทับไม่ได้"
     }
   },
   "validation": {
@@ -4508,6 +4519,131 @@
           "hint": "Mapping หลักคือค่าเริ่มต้นของบรรทัดที่ยังไม่ post บรรทัดที่ post แล้วคงค่าตอน post ไว้",
           "outlets": "Outlet → Location",
           "items": "เมนู POS → สูตร"
+        }
+      },
+      "detail": {
+        "back": "กลับไป Sales Consumption",
+        "notFound": "ไม่พบ Sales Consumption",
+        "header": {
+          "saleDate": "วันที่ขาย",
+          "imports": "ไฟล์ POS ของวัน",
+          "importsCount": "{count} ไฟล์",
+          "salesAmount": "ยอดขาย",
+          "stockOuts": "ใบจ่ายออก",
+          "none": "–",
+          "missingStores": "ยังไม่มีไฟล์ของ: {stores}",
+          "replacedBy": "ถูกแทนที่ด้วย {sc}"
+        },
+        "cards": {
+          "mapped": "ระบุแล้ว",
+          "ignored": "ไม่นับ",
+          "needMapping": "ต้องระบุ",
+          "ingredientCost": "ต้นทุนวัตถุดิบ",
+          "ingredientCostEstimated": "ต้นทุนวัตถุดิบ (ประมาณการ)"
+        },
+        "tabs": {
+          "sales": "รายการขาย",
+          "ingredients": "วัตถุดิบ",
+          "history": "ประวัติ"
+        },
+        "actions": {
+          "verify": "ตรวจยอดคงเหลือ",
+          "reverify": "ตรวจยอดคงเหลืออีกครั้ง",
+          "verifying": "กำลังตรวจ...",
+          "post": "Post และตัดสต็อก",
+          "posting": "กำลัง Post...",
+          "void": "ยกเลิก",
+          "voidTitle": "ยกเลิก Sales Consumption นี้?",
+          "voidDescription": "ใบจ่ายออกที่สร้างไว้ทุกใบจะถูกยกเลิกและคืนสต็อก ยอดขายของวันที่ยังไม่ได้ post จะกลับมาเป็นเอกสารรอดำเนินการใบใหม่",
+          "verifyDone": "ตรวจยอดคงเหลือแล้ว: สินค้าทุกรายการเพียงพอ",
+          "verifyShort": "ตรวจยอดคงเหลือแล้ว: มีสินค้าไม่เพียงพอ",
+          "posted": "Post แล้ว ตัดสต็อกเรียบร้อย",
+          "voided": "ยกเลิกแล้ว คืนสต็อกเรียบร้อย",
+          "voidedNew": "ยกเลิกแล้ว สร้างเอกสารรอดำเนินการใหม่: {sc}"
+        },
+        "hint": {
+          "unresolved": "ยังมี {count} รายการที่ต้องระบุ Location หรือสูตร",
+          "notVerified": "ต้องตรวจยอดคงเหลือก่อน Post",
+          "stale": "มีการแก้บรรทัดหลังตรวจครั้งล่าสุด กรุณาตรวจยอดคงเหลืออีกครั้ง",
+          "short": "มีสินค้าไม่เพียงพอ แก้สต็อกหรือการระบุสูตร แล้วตรวจอีกครั้ง",
+          "ready": "พร้อม Post จะสร้างใบจ่ายออก {count} ใบ",
+          "voidedNote": "เอกสารนี้ถูกยกเลิกแล้ว แก้ไขไม่ได้"
+        },
+        "lines": {
+          "columns": {
+            "outlet": "Outlet",
+            "location": "Location",
+            "item": "รายการ POS",
+            "recipe": "สูตร",
+            "qty": "จำนวนสุทธิ",
+            "amount": "ยอดขาย"
+          },
+          "fromOutlet": "จากการตั้งค่า Outlet",
+          "changedLine": "แก้เฉพาะบรรทัดนี้",
+          "outletNotMapped": "Outlet ยังไม่ได้ระบุ Location",
+          "fromItem": "จากการตั้งค่ารายการ",
+          "itemNotMapped": "รายการยังไม่ได้ระบุสูตร",
+          "notCounted": "ไม่นับ",
+          "ignored": "ไม่นับ",
+          "ignore": "ไม่นับรายการนี้",
+          "resetToMaster": "กลับไปใช้ค่าตั้งต้น",
+          "setItemDefault": "ตั้งเป็นค่าตั้งต้นของรายการด้วย",
+          "saved": "แก้บรรทัดแล้ว",
+          "needsLocation": "ต้องระบุ Location",
+          "needsRecipe": "ต้องระบุสูตร",
+          "empty": "วันนี้ไม่มีรายการขาย"
+        },
+        "ingredients": {
+          "summaryNotChecked": "ยังไม่ได้ตรวจยอดคงเหลือ กด ตรวจยอดคงเหลือ เพื่อดูว่าสินค้าใดตัดได้",
+          "summaryStale": "มีการแก้บรรทัดหลังตรวจครั้งล่าสุด ผลตรวจจึงถูกล้าง กรุณาตรวจยอดคงเหลืออีกครั้ง",
+          "summaryOk": "ตรวจยอดคงเหลือแล้ว: สินค้าทุกรายการตัดได้",
+          "summaryShort": "ตรวจยอดคงเหลือแล้ว: สินค้าไม่เพียงพอ {count} รายการ",
+          "estimateNote": "ต้นทุนเป็นการประมาณการจนกว่าจะ Post หลัง Post ค่าจะมาจากใบจ่ายออก",
+          "problemsTitle": "บรรทัดเหล่านี้ไม่อยู่ในยอดวัตถุดิบ และทำให้ตรวจยอดคงเหลือและ Post ไม่ได้",
+          "outlets": "Outlet: {outlets}",
+          "productCount": "{count} สินค้า",
+          "canDeduct": "ตัดได้",
+          "shortCount": "ขาด {count}",
+          "notChecked": "ยังไม่ได้ตรวจ",
+          "stockOutOnPost": "สร้างใบจ่ายออกตอน Post",
+          "columns": {
+            "product": "สินค้า",
+            "qty": "จำนวนที่ตัด",
+            "unit": "หน่วย",
+            "unitCost": "ต้นทุนต่อหน่วย",
+            "totalCost": "ต้นทุนรวม",
+            "onHand": "คงเหลือ (วันที่ขาย)",
+            "canDeduct": "ตัดได้?"
+          },
+          "yes": "ได้",
+          "shortBy": "ขาด {qty}",
+          "dash": "–",
+          "empty": "ไม่มีวัตถุดิบที่ต้องตัด"
+        },
+        "problems": {
+          "no_conversion": "ไม่มีการแปลงหน่วย",
+          "zero_yield": "ผลผลิตของสูตรเป็นศูนย์",
+          "too_deep": "สูตรย่อยซ้อนกันลึกเกินไป",
+          "recipe_unusable": "ใช้สูตรนี้ไม่ได้",
+          "empty_recipe": "สูตรไม่มีวัตถุดิบ"
+        },
+        "history": {
+          "empty": "ยังไม่มีประวัติ",
+          "byUser": "โดย {user}",
+          "actions": {
+            "created": "สร้างเอกสาร {sc_no}",
+            "imported": "นำเข้า {file_name}",
+            "onhand_verified": "ตรวจยอดคงเหลือ",
+            "posted": "Post",
+            "voided": "ยกเลิก"
+          },
+          "verifiedOk": "เพียงพอ",
+          "verifiedShort": "มีสินค้าไม่เพียงพอ",
+          "reason": "เหตุผล: {reason}"
+        },
+        "brand": {
+          "simphony": "Oracle Simphony",
+          "micros3700": "Oracle Micros 3700"
         }
       }
     }
