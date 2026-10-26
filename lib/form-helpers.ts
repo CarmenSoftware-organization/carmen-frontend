@@ -137,6 +137,32 @@ export function objectToKeyValues(
   );
 }
 
+/**
+ * `JSON.stringify` ที่เรียง key ของ object ทุกชั้นก่อน — ใช้เทียบว่า "ค่าเท่ากันไหม"
+ * ระหว่างค่าในฟอร์มกับค่าเดิม
+ *
+ * `JSON.stringify` ตรง ๆ ไวต่อลำดับ key ซึ่งสองฝั่งไม่เคยตรงกัน: ค่าที่ `handleSubmit`
+ * ส่งมาผ่าน zod แล้ว key เรียงตาม schema ส่วนค่าเดิมเรียงตามตัว map ตอนโหลด หรือตาม
+ * jsonb ของ Postgres (เรียงตามความยาวชื่อ key) ค่าเท่ากันทุกช่องก็ยังถูกนับว่า "แก้"
+ * ลำดับใน array ยังมีความหมายเหมือนเดิม (ไม่เรียง)
+ *
+ * @example
+ * ```ts
+ * stableStringify({ b: 1, a: 2 }) === stableStringify({ a: 2, b: 1 }); // true
+ * ```
+ */
+export function stableStringify(value: unknown): string {
+  return JSON.stringify(value, (_key, v: unknown) =>
+    v !== null && typeof v === "object" && !Array.isArray(v)
+      ? Object.fromEntries(
+          Object.entries(v as Record<string, unknown>).sort(([a], [b]) =>
+            a < b ? -1 : a > b ? 1 : 0,
+          ),
+        )
+      : v,
+  );
+}
+
 // ── Item changes helpers (add / update / remove) ──
 
 export interface ItemChanges<P> {

@@ -8,6 +8,7 @@ import {
   objectToKeyValues,
   keyValuesToObject,
   buildItemChanges,
+  stableStringify,
 } from "../form-helpers";
 
 // ─── arrayToText / textToArray ───────────────────────────────────────────────
@@ -298,5 +299,32 @@ describe("buildItemChanges", () => {
     ]);
     expect(result.update).toBeUndefined();
     expect(result.remove).toBeUndefined();
+  });
+});
+
+describe("stableStringify", () => {
+  it("ignores key order at every level", () => {
+    expect(stableStringify({ b: 1, a: { d: 2, c: 3 } })).toBe(
+      stableStringify({ a: { c: 3, d: 2 }, b: 1 }),
+    );
+  });
+
+  // config ของ BU จาก jsonb เทียบกับค่าที่ผ่าน zod: ค่าเท่ากัน ลำดับ key ต่างกัน
+  it("treats a jsonb-ordered item and a schema-ordered item as equal", () => {
+    const fromJsonb = [{ key: "k", label: "L", value: "v", datatype: "enum" }];
+    const fromZod = [{ key: "k", label: "L", datatype: "enum", value: "v" }];
+    expect(JSON.stringify(fromJsonb)).not.toBe(JSON.stringify(fromZod));
+    expect(stableStringify(fromJsonb)).toBe(stableStringify(fromZod));
+  });
+
+  it("still sees a changed value or a changed array order", () => {
+    expect(stableStringify({ a: 1 })).not.toBe(stableStringify({ a: 2 }));
+    expect(stableStringify([1, 2])).not.toBe(stableStringify([2, 1]));
+  });
+
+  it("matches JSON.stringify for primitives and null", () => {
+    for (const v of [1, "x", true, null]) {
+      expect(stableStringify(v)).toBe(JSON.stringify(v));
+    }
   });
 });

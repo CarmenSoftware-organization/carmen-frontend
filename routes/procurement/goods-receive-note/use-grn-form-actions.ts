@@ -33,6 +33,7 @@ import { removeSessionItem } from "@/lib/safe-storage";
 import {
   mapDetailToPayload,
   mapExtraCostToPayload,
+  pickTouchedLineUpdates,
   type GrnFormValues,
 } from "./grn-form-schema";
 
@@ -195,36 +196,13 @@ export function useGrnFormActions({
       },
     );
 
-    // แถวที่ผู้ใช้ไม่ได้แตะ ห้ามนับเป็น update — GrnItemComputedSync เขียนค่า
-    // net/total/ส่วนลด/ภาษีที่คำนวณจาก unit_price (ซึ่งปัดจาก sub_total/qty ตอนโหลด)
-    // กลับลงฟอร์มทุกครั้งที่เปิด ค่าจึงคลาดจากของเดิมได้เป็นสตางค์ ถ้าส่งไป หลังบ้าน
-    // คิดราคาใหม่แล้วลงสต๊อกของใบ saved ใหม่ทั้งที่ไม่มีใครแก้อะไร · เทียบเฉพาะช่องที่
-    // คนกรอก (ส่วนลด/ภาษีนับเมื่อติ๊กปรับเองเท่านั้น) แต่ถ้าแถวไหนถูกแก้จริง ยังส่งทั้งแถว
+    // แถวที่ผู้ใช้ไม่ได้แตะ ห้ามนับเป็น update (เหตุผลอยู่ที่ pickTouchedLineUpdates)
     if (goodsReceiveNote && detail.update) {
-      type Line = GrnFormValues["items"][number];
-      const inputOf = (list: Line[], id: string | undefined) => {
-        const item = list.find((i) => i.id === id);
-        if (!item) return "";
-        const {
-          net_amount: _net,
-          total_price: _total,
-          received_base_qty: _baseQty,
-          discount_amount,
-          tax_amount,
-          ...rest
-        } = item;
-        return JSON.stringify({
-          ...rest,
-          sequence: list.indexOf(item),
-          discount_amount: item.is_discount_adjustment ? discount_amount : null,
-          tax_amount: item.is_tax_adjustment ? tax_amount : null,
-        });
-      };
-      const touched = detail.update.filter((u) => {
-        const id = (u as { id?: string }).id;
-        return inputOf(values.items, id) !== inputOf(defaultValues.items, id);
-      });
-      detail.update = touched.length > 0 ? touched : undefined;
+      detail.update = pickTouchedLineUpdates(
+        detail.update,
+        values.items,
+        defaultValues.items,
+      );
     }
 
     // PATCH: backend ต้องการ good_received_note_id (parent ref) ต่อ item ใน update

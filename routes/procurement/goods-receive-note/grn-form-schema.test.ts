@@ -5,6 +5,7 @@ import {
   createGrnSchema,
   getDefaultValues,
   mapDetailToPayload,
+  pickTouchedLineUpdates,
   type GrnFormValues,
 } from "./grn-form-schema";
 
@@ -151,6 +152,66 @@ describe("mapDetailToPayload", () => {
     expect(
       mapDetailToPayload(item({ tax_profile_id: "tax-1" })).tax_profile_id,
     ).toBe("tax-1");
+  });
+});
+
+describe("pickTouchedLineUpdates", () => {
+  type Line = GrnFormValues["items"][number];
+  // ค่าเดิมเรียง key ตามตัว map ตอนโหลด ส่วนค่าตอนกด Save ผ่าน zod แล้วเรียงตาม schema
+  // จำลองด้วยการกลับลำดับ key ของฝั่งค่าเดิม
+  const reorder = (line: Line) =>
+    Object.fromEntries(Object.entries(line).reverse()) as Line;
+  const loaded = [
+    item({ id: "line-1", received_qty: 5, unit_price: 100 }),
+    item({ id: "line-2", received_qty: 3, unit_price: 33.33 }),
+  ];
+  const original = loaded.map(reorder);
+  const update = [{ id: "line-1" }, { id: "line-2" }];
+
+  it("ไม่ส่งแถวที่ไม่ได้แตะ แม้ลำดับ key ต่างกันและค่าคำนวณคลาดไปเป็นสตางค์", () => {
+    // แถว 2 เก็บราคา 33.33333 → ยอดเดิม 99.99999 แต่ฟอร์มคำนวณใหม่ได้ 99.99
+    const current = [
+      { ...loaded[0], received_qty: 6 },
+      {
+        ...loaded[1],
+        net_amount: 99.99,
+        total_price: 99.99,
+        received_base_qty: 3,
+      },
+    ];
+    const before = [
+      original[0],
+      { ...original[1], net_amount: 99.99999, total_price: 99.99999 },
+    ];
+    expect(pickTouchedLineUpdates(update, current, before)).toEqual([
+      { id: "line-1" },
+    ]);
+  });
+
+  it("ส่วนลด/ภาษีที่คำนวณเองไม่นับ แต่ถ้าติ๊กปรับเองแล้วแก้ ต้องส่ง", () => {
+    const computed = [
+      loaded[0],
+      { ...loaded[1], discount_amount: 1.23, tax_amount: 4.56 },
+    ];
+    expect(pickTouchedLineUpdates(update, computed, original)).toBeUndefined();
+
+    const adjusted = [
+      loaded[0],
+      { ...loaded[1], is_discount_adjustment: true, discount_amount: 1.23 },
+    ];
+    const adjustedBefore = [
+      original[0],
+      { ...original[1], is_discount_adjustment: true },
+    ];
+    expect(pickTouchedLineUpdates(update, adjusted, adjustedBefore)).toEqual([
+      { id: "line-2" },
+    ]);
+  });
+
+  it("ย้ายตำแหน่งแถวนับเป็นการแก้", () => {
+    expect(
+      pickTouchedLineUpdates(update, [loaded[1], loaded[0]], original),
+    ).toEqual(update);
   });
 });
 
