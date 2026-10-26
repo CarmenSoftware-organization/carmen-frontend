@@ -75,7 +75,7 @@ export function PosItemMapping() {
   const totalRecords = data?.paginate?.total ?? 0;
 
   const onFilterChange = (next: ItemFilter) => {
-    setURLParams({ items: next, page: "" });
+    setURLParams({ items: next, page: "", search: "" });
   };
 
   const columns = useMemo<ColumnDef<PosItem>[]>(() => {

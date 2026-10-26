@@ -22,7 +22,7 @@ export function ScMapping() {
       <p className="text-muted-foreground text-sm">{t("hint")}</p>
       <Tabs
         value={tab}
-        onValueChange={(v) => setURLParams({ map: v, page: "" })}
+        onValueChange={(v) => setURLParams({ map: v, page: "", search: "" })}
       >
         <TabsList>
           <TabsTrigger value="outlets">{t("outlets")}</TabsTrigger>

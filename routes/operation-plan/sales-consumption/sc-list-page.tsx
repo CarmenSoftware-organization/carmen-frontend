@@ -4,6 +4,7 @@ import { ListPageShell } from "@/components/share/list-page-shell";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { setURLParams, useURL } from "@/hooks/use-url";
+import { usePosWritable } from "../shared/use-pos-writable";
 import { usePosOutlets } from "../shared/use-pos-sale";
 import { ScCalendar } from "./sc-calendar";
 import { ScMapping } from "./sc-mapping";
@@ -28,6 +29,7 @@ export function ScListPage() {
     ? (viewRaw as View)
     : "calendar";
   const month = parseMonth(monthRaw);
+  const { canWrite: canEditMapping } = usePosWritable();
   const { data: outlets } = usePosOutlets();
   const unmappedOutlets = outlets?.filter((o) => !o.location).length ?? 0;
 
@@ -48,21 +50,29 @@ export function ScListPage() {
             <span className="text-warning-ink flex-1">
               {t("outletWarning", { count: unmappedOutlets })}
             </span>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setURLParams({ view: "mapping", map: "outlets" })}
-            >
-              {t("outletWarningAction")}
-            </Button>
+            {canEditMapping && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  setURLParams({ view: "mapping", map: "outlets" })
+                }
+              >
+                {t("outletWarningAction")}
+              </Button>
+            )}
           </div>
         )}
 
         <Tabs
           value={view}
           onValueChange={(v) =>
-            setURLParams({ view: v === "calendar" ? "" : v, page: "" })
+            setURLParams({
+              view: v === "calendar" ? "" : v,
+              page: "",
+              search: "",
+            })
           }
         >
           <TabsList>
