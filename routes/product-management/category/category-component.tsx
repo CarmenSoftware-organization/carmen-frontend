@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,8 @@ import TreeContent from "./tree-content";
 import { TreeColumnsHeader } from "./tree-columns";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { DocumentListActions } from "@/components/share/document-list-actions";
+import { CategoryReportDialog } from "./category-report-dialog";
+import { useCategoryReport } from "./use-category-report";
 
 export default function CategoryComponent() {
   const t = useTranslations("productManagement.category");
@@ -61,6 +63,9 @@ export default function CategoryComponent() {
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(() => searchParams.get("search") ?? "");
   const [deleteTarget, setDeleteTarget] = useState<CategoryNode | null>(null);
+  // Product Category Report — Print / Export เปิด dialog ช่วงรหัสเดียวกัน ต่างกันแค่ปุ่มยืนยัน
+  const [reportMode, setReportMode] = useState<"print" | "export" | null>(null);
+  const categoryReport = useCategoryReport();
 
   // Data
   const { data: catData, isLoading: catLoading } = useCategoryAll();
@@ -295,6 +300,26 @@ export default function CategoryComponent() {
           onAdd={() => handleAdd()}
           addLabel={t("add")}
           hideExportPrint
+          extraActions={
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setReportMode("export")}
+              >
+                <Download aria-hidden="true" />
+                {tc("export")}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setReportMode("print")}
+              >
+                <Printer aria-hidden="true" />
+                {tc("print")}
+              </Button>
+            </>
+          }
         />
       }
       toolbar={
@@ -382,6 +407,21 @@ export default function CategoryComponent() {
         accountCodesUnavailable={accountCodesUnavailable}
         onSubmit={handleFormSubmit}
         isPending={isMutating}
+      />
+
+      <CategoryReportDialog
+        open={reportMode !== null}
+        onOpenChange={(open) => !open && setReportMode(null)}
+        mode={reportMode ?? "print"}
+        categories={catData ?? []}
+        subCategories={subData ?? []}
+        itemGroups={igData ?? []}
+        busy={categoryReport.isBusy}
+        onSubmit={
+          reportMode === "export"
+            ? categoryReport.exportReport
+            : categoryReport.printReport
+        }
       />
 
       <DeleteDialog

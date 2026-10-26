@@ -4567,7 +4567,12 @@
       "cascadeSelfOnly": "Save this item only",
       "inventoryAccount": "Inventory Account",
       "directAccount": "Direct Account",
-      "inheritedFrom": "Inherited from {level}: {code}"
+      "inheritedFrom": "Inherited from {level}: {code}",
+      "reportFrom": "{level} From",
+      "reportTo": "{level} To",
+      "reportPrintHint": "Choose code ranges to print — leave a field on All to include every code.",
+      "reportExportHint": "Exports a flat list (category, sub category, item group) sorted by code — leave a field on All to include every code.",
+      "reportReset": "Reset"
     },
     "product": {
       "entity": "Product",

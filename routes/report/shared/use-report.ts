@@ -198,37 +198,11 @@ export function useReportLookupSearch({
   });
 }
 
-export interface ExportReportResult {
-  blob: Blob;
-  fileName: string | null;
-  rowCount: number | null;
-}
-
-export function useExportReportMutation() {
-  const buCode = useBuCode();
-  return useMutation<ExportReportResult, ApiError, RunReportPayload>({
-    mutationFn: async (payload) => {
-      const res = await httpClient.post(
-        `${API_ENDPOINTS.REPORTS(buCode!)}/export`,
-        payload,
-      );
-      if (!res.ok) {
-        throw await ApiError.from(res, "Failed to export report");
-      }
-      const blob = await res.blob();
-      // header อาจอ่านไม่ได้ถ้า deployment ไม่ expose (CORS) — ตกเป็น null แล้วให้ผู้เรียกใช้ค่าสำรอง
-      const disposition = res.headers.get("content-disposition");
-      const fileName = disposition?.match(/filename="([^"]+)"/)?.[1] ?? null;
-      const rawCount = res.headers.get("x-row-count");
-      const parsedCount = rawCount === null ? Number.NaN : Number(rawCount);
-      return {
-        blob,
-        fileName,
-        rowCount: Number.isFinite(parsedCount) ? parsedCount : null,
-      };
-    },
-  });
-}
+// ย้ายไป hooks/ ให้หน้าอื่นที่มีปุ่ม Export ของรายงาน (เช่นหน้า category) ใช้ได้โดยไม่ import ข้ามโมดูล
+export {
+  useExportReportMutation,
+  type ExportReportResult,
+} from "@/hooks/use-export-report";
 
 export function useRunReportMutation() {
   const buCode = useBuCode();
