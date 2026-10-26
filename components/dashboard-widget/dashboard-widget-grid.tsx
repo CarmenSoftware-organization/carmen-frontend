@@ -1,6 +1,6 @@
 import {
   CircleX,
-  Minus,
+  Info,
   TrendingDown,
   TrendingUp,
   Undo2,
@@ -38,7 +38,6 @@ import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -50,6 +49,12 @@ import {
 } from "@/components/dashboard-widget/widget-status";
 import { statusOf } from "@/components/dashboard-widget/status-meta";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip as UiTooltip,
+  TooltipContent as UiTooltipContent,
+  TooltipProvider as UiTooltipProvider,
+  TooltipTrigger as UiTooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { Link, useNavigate } from "react-router";
 import { useInViewport } from "@/hooks/use-in-viewport";
@@ -401,6 +406,7 @@ export function WidgetRouter({
 }
 
 function WidgetHeader({ widget, moduleName, subTileFor }: WidgetCardProps) {
+  const t = useTranslations("dashboardWidget");
   const titleOf = useWidgetTitle();
   // widget กลุ่ม document.* ที่กรอง status → ไอคอนหลักเปลี่ยนตาม workflow status
   // ที่เหลือ (by-status / series / dataset ทั่วไป) → SubTile รูป doc-type เดิม
@@ -421,14 +427,32 @@ function WidgetHeader({ widget, moduleName, subTileFor }: WidgetCardProps) {
         )}
       </span>
       <div className="min-w-0 space-y-0.5">
-        <CardTitle className="text-sm leading-snug font-semibold">
-          {titleOf(widget, widget.meta.name)}
-        </CardTitle>
-        {!isDocumentWidget && widget.meta.description && (
-          <CardDescription className="text-micro leading-snug">
-            {widget.meta.description}
-          </CardDescription>
-        )}
+        <div className="flex items-start gap-1">
+          <CardTitle className="text-sm leading-snug font-semibold">
+            {titleOf(widget, widget.meta.name)}
+          </CardTitle>
+          {/* คำอธิบายของ dataset เขียนไว้ให้คนตั้งค่า ("capped by the selected row count",
+              "(proxy)") ไม่ใช่ให้คนอ่านตัวเลขทุกเช้า — เก็บไว้หลังไอคอน ⓘ แทนการกินที่
+              ใต้หัวการ์ดทุกใบ ซึ่งเคยดันกราฟจนรายการสีของโดนัทล้นขึ้นไปทับหัวการ์ด */}
+          {!isDocumentWidget && widget.meta.description && (
+            <UiTooltipProvider>
+              <UiTooltip delayDuration={100}>
+                <UiTooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label={t("aboutWidget")}
+                    className="text-muted-foreground hover:text-foreground focus-visible:ring-ring mt-px shrink-0 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+                  >
+                    <Info className="size-3.5" aria-hidden="true" />
+                  </button>
+                </UiTooltipTrigger>
+                <UiTooltipContent className="max-w-64 text-xs">
+                  {widget.meta.description}
+                </UiTooltipContent>
+              </UiTooltip>
+            </UiTooltipProvider>
+          )}
+        </div>
         <WidgetParamsBadges params={widget.params} />
       </div>
     </div>
@@ -608,7 +632,10 @@ export function PieCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <ul className="min-w-0 flex-1 space-y-1.5">
+            {/* รายการสีต้องเลื่อนได้ในกล่องตัวเอง: เดิม ul ถูกจัดกลางแนวตั้ง (items-center)
+                เมื่อรายการยาวกว่ากล่อง ครึ่งบนจึงล้นขึ้นไปทับหัวการ์ด */}
+            <div className="h-full min-h-0 min-w-0 flex-1 overflow-y-auto">
+            <ul className="flex min-h-full flex-col justify-center gap-1.5">
               {chartData.map((item, i) => {
                 const pct =
                   total > 0 ? Math.round((item.value / total) * 100) : 0;
@@ -621,7 +648,10 @@ export function PieCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
                         backgroundColor: CHART_COLORS[i % CHART_COLORS.length],
                       }}
                     />
-                    <span className="text-micro min-w-0 flex-1 truncate leading-tight">
+                    <span
+                      className="text-micro min-w-0 flex-1 truncate leading-tight"
+                      title={item.name}
+                    >
                       {item.name}
                     </span>
                     <span className="text-micro font-semibold tabular-nums">
@@ -634,6 +664,7 @@ export function PieCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
                 );
               })}
             </ul>
+            </div>
           </div>
         )}
       </CardContent>
@@ -689,10 +720,10 @@ export function BarCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
                 <YAxis
                   type="category"
                   dataKey="name"
-                  tick={{ fontSize: 10 }}
+                  tick={<SingleLineTick width={BAR_LABEL_WIDTH} />}
                   tickLine={false}
                   axisLine={false}
-                  width={120}
+                  width={BAR_LABEL_WIDTH}
                   interval={0}
                 />
                 <Tooltip
@@ -708,6 +739,8 @@ export function BarCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
                 <Bar
                   dataKey="value"
                   radius={[0, 3, 3, 0]}
+                  // แท่งเดียว (เช่น My pending PRs ที่มี PR ใบเดียว) เคยหนาเต็มกล่อง
+                  maxBarSize={18}
                   isAnimationActive={false}
                 >
                   {sorted.map((item, i) => (
@@ -742,6 +775,8 @@ export function LineCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
   const data = widget.data as readonly TimeSeriesPoint[];
   const points = data.map((p) => ({ date: p.date, value: p.value }));
   const isCurrency = widget.meta.unit === "฿";
+  const allIntegers = points.every((p) => Number.isInteger(p.value));
+  const yAxisWidth = lineAxisWidth(points.map((p) => p.value));
 
   return (
     <Card className="h-full min-h-0 gap-2 overflow-hidden py-4">
@@ -766,7 +801,7 @@ export function LineCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
             >
               <LineChart
                 data={points}
-                margin={{ top: 8, right: 16, bottom: 0, left: -16 }}
+                margin={{ top: 8, right: 16, bottom: 0, left: 0 }}
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
@@ -784,7 +819,10 @@ export function LineCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
                   tick={{ fontSize: 10 }}
                   tickLine={false}
                   axisLine={false}
-                  width={40}
+                  // เดิม width 40 + margin ซ้าย -16 เหลือที่ให้ป้ายแค่ ~24px ป้าย "0.75" จึงถูกตัด
+                  // เหลือ ".75" — ให้กว้างตามป้ายที่ยาวที่สุด และนับจำนวนนับไม่ให้มีทศนิยม
+                  width={yAxisWidth}
+                  allowDecimals={!allIntegers}
                 />
                 <Tooltip
                   formatter={(v: number) => [
@@ -1103,6 +1141,54 @@ export function WidgetSkeletonCards() {
   );
 }
 
+/** ความกว้างคอลัมน์ป้ายของกราฟแท่งแนวนอน */
+const BAR_LABEL_WIDTH = 120;
+
+/**
+ * ป้ายแกน Y ของกราฟแท่งแบบบรรทัดเดียว — recharts ห่อป้ายยาวเป็นหลายบรรทัดซ้อนกัน
+ * ชื่อ vendor ภาษาไทยยาว ๆ จึงทับแถวข้างเคียงจนอ่านไม่ได้ ตัดด้วย … แล้วให้ชื่อเต็ม
+ * อยู่ใน <title> (เบราว์เซอร์โชว์เมื่อ hover)
+ */
+function SingleLineTick({
+  x,
+  y,
+  payload,
+  width,
+}: {
+  readonly x?: number;
+  readonly y?: number;
+  readonly payload?: { value: string };
+  readonly width: number;
+}) {
+  const full = String(payload?.value ?? "");
+  // ~6px ต่อตัวอักษรที่ 10px — ประมาณแบบเผื่อไว้ เพราะ SVG text ไม่มี ellipsis ให้
+  const maxChars = Math.max(4, Math.floor((width - 8) / 6));
+  const shown =
+    full.length > maxChars ? `${full.slice(0, maxChars - 1)}…` : full;
+  return (
+    <text
+      x={x}
+      y={y}
+      dy={3}
+      textAnchor="end"
+      fontSize={10}
+      fill="var(--muted-foreground)"
+    >
+      <title>{full}</title>
+      {shown}
+    </text>
+  );
+}
+
+/** ความกว้างแกน Y ของกราฟเส้นตามป้ายที่ยาวที่สุด (~6px ต่อตัวอักษรที่ 10px) */
+function lineAxisWidth(values: readonly number[]): number {
+  const longest = values.reduce(
+    (n, v) => Math.max(n, v.toLocaleString().length),
+    1,
+  );
+  return Math.min(72, Math.max(28, longest * 6 + 10));
+}
+
 function DeltaIndicator({
   value,
   prev,
@@ -1114,14 +1200,9 @@ function DeltaIndicator({
   const diff = value - prev;
   const pct = prev === 0 ? null : Math.round((diff / Math.abs(prev)) * 100);
 
-  if (diff === 0) {
-    return (
-      <p className="text-muted-foreground mt-1 flex items-center gap-1 text-xs">
-        <Minus className="size-3" aria-hidden="true" />
-        <span>{t("deltaUnchanged")}</span>
-      </p>
-    );
-  }
+  // ตัวเลขที่ไม่ขยับไม่ต้องพูด: บรรทัด "Unchanged from previous period" ซ้ำ 3 ใน 4 การ์ด
+  // ทำให้การ์ดที่ขยับจริงไม่เด่น บรรทัดนี้จึงขึ้นเฉพาะตอนมีการเปลี่ยนแปลง
+  if (diff === 0) return null;
 
   const isUp = diff > 0;
   const Icon = isUp ? TrendingUp : TrendingDown;
