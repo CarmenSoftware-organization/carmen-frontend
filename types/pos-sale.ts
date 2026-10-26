@@ -76,6 +76,8 @@ export interface PosImportListItem extends PosImportSummary {
   outlet_id: string | null;
   /** id ของการนำเข้าใหม่ที่เขียนทับรายการนี้ — null = ยังไม่ถูกเขียนทับ */
   replaced_by_id: string | null;
+  /** Sales Consumption ที่ยอดขายนี้อยู่ใน — null = ยังไม่มี */
+  sales_consumption: { id: string; sc_no: string; status: string } | null;
 }
 
 /** ร้าน POS ตามหัวไฟล์ */
@@ -163,95 +165,9 @@ export interface PosItem {
   desc1: string;
   desc2: string | null;
   department_code: string | null;
+  /** true = ไม่นับเมนูนี้เป็นยอดตัดสต็อก */
+  is_ignored: boolean;
   recipe: (PosCodeName & { is_active: boolean | null }) | null;
-}
-
-/** เหตุที่ Outlet ยังยืนยันตัดสต็อกไม่ได้ (คำนวณ ไม่ได้เก็บ) */
-export type PosBlockReason =
-  | "location_not_mapped"
-  | "nothing_to_confirm"
-  | "insufficient_stock"
-  | "unresolved_ingredients"
-  | "period_closed"
-  | "import_cancelled"
-  | "adjustment_type_missing";
-
-/** บรรทัดที่ยังไม่ตัดซึ่งเมนูไม่มีสูตรที่ใช้ได้ (การยืนยันจะข้าม) */
-export interface PosUnmappedItem {
-  item_id: string;
-  code: string;
-  desc1: string;
-  qty: number;
-}
-
-/** ปัญหาของสูตรที่ทำให้เมนูแตกเป็นวัตถุดิบไม่ได้ */
-export interface PosUnresolved {
-  item_code: string;
-  recipe_code: string;
-  ingredient_name: string;
-  reason:
-    | "no_conversion"
-    | "zero_yield"
-    | "too_deep"
-    | "recipe_unusable"
-    | "empty_recipe";
-}
-
-/** เมนูที่ขายซึ่งใช้วัตถุดิบนี้ */
-export interface PosIngredientSource {
-  item_code: string;
-  item_desc: string;
-  sale_qty: number;
-}
-
-/** วัตถุดิบหนึ่งตัวที่จะตัดพร้อมยอดคงเหลือ ณ วันที่ขาย */
-export interface PosIngredientPreview {
-  product_id: string;
-  product_code: string;
-  product_name: string;
-  inventory_unit: { id: string; name: string };
-  /** จำนวนที่จะตัด (หน่วยคงคลัง) */
-  qty: number;
-  available: number;
-  is_short: boolean;
-  sources: PosIngredientSource[];
-}
-
-/** ตัวอย่างของ Outlet หนึ่งในการนำเข้า */
-export interface PosOutletPreview {
-  outlet_id: string;
-  code: string;
-  name: string;
-  location: PosCodeName | null;
-  pending_line_count: number;
-  unmapped_items: PosUnmappedItem[];
-  unresolved: PosUnresolved[];
-  ingredients: PosIngredientPreview[];
-  can_confirm: boolean;
-  block_reasons: PosBlockReason[];
-}
-
-/** ตัวอย่างของการนำเข้าทั้งรายการ หนึ่งรายการต่อ Outlet */
-export interface PosPreview {
-  import_id: string;
-  doc_date: string | null;
-  is_in_open_period: boolean;
-  outlets: PosOutletPreview[];
-}
-
-/** ใบตัดสต็อกที่เกิดจากการยืนยัน Outlet หนึ่ง */
-export interface PosConfirmResult {
-  stock_out_id: string;
-  so_no: string;
-  line_count: number;
-}
-
-/** สินค้าที่คงเหลือไม่พอ — อยู่ใน `ApiError.details.shortages` ของ POS_SALE_INSUFFICIENT_STOCK */
-export interface PosShortage {
-  product_code: string;
-  product_name: string;
-  requested: number;
-  available: number;
 }
 
 /** ยอดรวมที่คำนวณเทียบกับที่รายงานพิมพ์ไว้ — ต่างเกิน 0.05 = ไฟล์ถูกปฏิเสธ */
@@ -345,3 +261,6 @@ export type PosMicros3700ImportResult =
       doc_date: string;
       outlets: PosMicros3700OutletResult[];
     };
+
+/** ตัวกรองสถานะการผูกของเมนู POS */
+export type PosItemStatus = "unmapped" | "mapped" | "ignored";

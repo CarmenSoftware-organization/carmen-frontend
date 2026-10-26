@@ -1087,7 +1087,19 @@
       "STOCK_OUT_DATE_NOT_CURRENT_PERIOD": "ใบจ่ายออกลงวันที่ได้เฉพาะในงวดปัจจุบัน ({period}: {start} ถึง {end})",
       "STOCK_OUT_NO_OPEN_PERIOD": "ไม่มีงวดสินค้าคงคลังที่เปิดอยู่ จึงบันทึกใบจ่ายออกไม่ได้",
       "STOCK_OUT_ALREADY_VOIDED": "รายการเบิกออกถูกยกเลิกแล้ว",
-      "BUSINESS_UNIT_NOT_CURRENT": "หน้านี้แสดงหน่วยธุรกิจที่ไม่ใช่หน่วยธุรกิจปัจจุบันของคุณ (มีการสลับจากแท็บหรือเครื่องอื่น) โหลดหน้าใหม่เพื่อดูหน่วยธุรกิจปัจจุบัน แล้วแก้ไขอีกครั้ง"
+      "BUSINESS_UNIT_NOT_CURRENT": "หน้านี้แสดงหน่วยธุรกิจที่ไม่ใช่หน่วยธุรกิจปัจจุบันของคุณ (มีการสลับจากแท็บหรือเครื่องอื่น) โหลดหน้าใหม่เพื่อดูหน่วยธุรกิจปัจจุบัน แล้วแก้ไขอีกครั้ง",
+      "SALES_CONSUMPTION_NOT_FOUND": "ไม่พบ Sales Consumption",
+      "SALES_CONSUMPTION_NOT_PENDING": "Sales Consumption นี้ไม่ได้อยู่ในสถานะรอดำเนินการแล้ว โหลดหน้าใหม่เพื่อดูสถานะปัจจุบัน",
+      "SALES_CONSUMPTION_NOT_POSTED": "Sales Consumption นี้ยังไม่ได้ Post จึงยกเลิกไม่ได้",
+      "SALES_CONSUMPTION_HAS_UNRESOLVED_LINES": "ยังมี {count} บรรทัดที่ต้องระบุ Location หรือสูตร กรุณาระบุให้ครบก่อน Post",
+      "SALES_CONSUMPTION_NOT_VERIFIED": "ต้องตรวจยอดคงเหลือก่อน Post",
+      "SALES_CONSUMPTION_VERIFY_STALE": "เอกสารเปลี่ยนไปหลังตรวจยอดคงเหลือครั้งล่าสุด กรุณาตรวจยอดคงเหลืออีกครั้ง",
+      "SALES_CONSUMPTION_VERIFY_FAILED": "ผลตรวจยอดคงเหลือล่าสุดพบว่าสินค้าไม่เพียงพอ กรุณาแก้ไขแล้วตรวจอีกครั้ง",
+      "SALES_CONSUMPTION_VOID_PERIOD_CLOSED": "ยกเลิกไม่ได้เพราะงวดของเอกสารนี้ปิดแล้ว",
+      "SALES_CONSUMPTION_LINE_POSTED": "บรรทัดนี้ถูก Post แล้ว แก้ไขไม่ได้",
+      "SALES_CONSUMPTION_POS_NOT_ENABLED": "หน่วยธุรกิจนี้ยังไม่ได้เปิดใช้การเชื่อมต่อ POS",
+      "POS_SALE_OUTLET_IN_POSTED_SC": "Outlet {outlet} ของวันที่ {date} ถูกรวมใน Sales Consumption ที่ Post แล้ว จึงเขียนทับไม่ได้",
+      "STOCK_OUT_VOID_VIA_SALES_CONSUMPTION": "Stock Out นี้ถูกสร้างจาก Sales Consumption {sc_no} กรุณายกเลิกที่ Sales Consumption แทน"
     }
   },
   "validation": {
@@ -2847,67 +2859,11 @@
       "showSecret": "แสดง",
       "hideSecret": "ซ่อน",
       "posSale": {
-        "history": {
-          "columns": {
-            "docDate": "วันขาย",
-            "store": "ร้าน",
-            "source": "Source",
-            "file": "ไฟล์",
-            "channel": "ช่องทาง",
-            "status": "สถานะ",
-            "lines": "บรรทัด",
-            "sales": "ยอดขาย",
-            "confirmation": "ตัดสต็อก"
-          },
-          "channel": {
-            "manual": "อัปโหลดเอง",
-            "sftp": "SFTP"
-          },
-          "legacyWarning": "ไฟล์รูปแบบเก่า ข้อมูลบางช่องอาจไม่ครบ",
-          "confirmation": {
-            "replaced": "ถูกเขียนทับ",
-            "cancelled": "ยกเลิกแล้ว",
-            "pending": "รอยืนยัน",
-            "partial": "ยืนยันบางส่วน",
-            "confirmed": "ยืนยันครบ"
-          },
-          "actions": {
-            "inspect": "ตรวจ",
-            "cancel": "ยกเลิก"
-          },
-          "cancelDialog": {
-            "title": "ยกเลิกการนำเข้านี้?",
-            "desc": "ยกเลิกแล้วนำเข้าไฟล์วันเดียวกันใหม่ได้ ถ้ามีบรรทัดที่ยืนยันตัดสต็อกแล้วจะยกเลิกไม่ได้",
-            "confirm": "ยกเลิกการนำเข้า",
-            "success": "ยกเลิกการนำเข้าแล้ว"
-          }
-        },
-        "importStatus": {
-          "success": "นำเข้าสำเร็จ",
-          "rejected_duplicate": "วันขายนี้เคยนำเข้าแล้ว",
-          "missing_glid_header": "ไฟล์ไม่มีหัว GLID",
-          "multi_day_glid_reject": "ไฟล์มีมากกว่าหนึ่งวันขาย",
-          "rejected_multi_day": "ไฟล์คร่อมหลายวันขาย",
-          "format_error": "รูปแบบไฟล์ไม่รองรับหรืออ่านไม่ได้"
-        },
-        "upload": {
-          "action": "อัปโหลดไฟล์",
-          "uploading": "กำลังอัปโหลด…",
-          "tooLarge": "ไฟล์ {name} ใหญ่เกิน 10 MB",
-          "success": "นำเข้าสำเร็จ",
-          "successDesc": "นำเข้า {count} บรรทัด ยอดขาย {amount}",
-          "legacyWarning": "นำเข้าจากไฟล์รูปแบบเก่า"
-        },
-        "tabs": {
-          "history": "ประวัติการนำเข้า",
-          "outlets": "ผูกจุดขาย",
-          "items": "ผูกรายการขาย"
-        },
         "simphony": {
           "title": "Oracle Simphony",
           "desc": "รับยอดขายรายวันจาก Oracle Simphony และตัดสต็อก",
           "sftp": "การเชื่อมต่อ SFTP",
-          "sftpDesc": "การเชื่อมต่อไปยังเซิร์ฟเวอร์ที่เก็บไฟล์ยอดขาย ระบบดึงไฟล์อัตโนมัติวันละครั้งเมื่อถึงเวลาที่ตั้งไว้ด้านล่าง (ตามเขตเวลาของ BU ตรวจทุกชั่วโมง) ไฟล์ที่ดึงมาจะรอ Cost Controller ยืนยันเสมอ และยังนำเข้าไฟล์เองได้ที่แท็บประวัติการนำเข้า",
+          "sftpDesc": "การเชื่อมต่อไปยังเซิร์ฟเวอร์ที่เก็บไฟล์ยอดขาย ระบบดึงไฟล์อัตโนมัติวันละครั้งเมื่อถึงเวลาที่ตั้งไว้ด้านล่าง (ตามเขตเวลาของ BU ตรวจทุกชั่วโมง) ไฟล์ที่ดึงมาจะรอ Cost Controller ยืนยันเสมอ และยังนำเข้าไฟล์เองได้ที่หน้านำเข้ายอดขาย POS",
           "host": "โฮสต์ SFTP",
           "port": "พอร์ต",
           "username": "ชื่อผู้ใช้",
@@ -2923,214 +2879,14 @@
           "hostInvalid": "กรอกชื่อโฮสต์หรือ IP ให้ถูกต้อง",
           "folderInvalid": "พาธโฟลเดอร์ต้องไม่มีส่วน \"..\"",
           "patternInvalid": "รูปแบบต้องยาวไม่เกิน 100 ตัวอักษรและห้ามมี /",
-          "lastPull": {
-            "title": "การดึงอัตโนมัติรอบล่าสุด",
-            "never": "ยังไม่เคยมีการดึงอัตโนมัติ",
-            "status": {
-              "running": "กำลังดึง",
-              "completed": "เสร็จสิ้น",
-              "connect_failed": "เชื่อมต่อไม่ได้",
-              "host_key_mismatch": "คีย์ของเซิร์ฟเวอร์เปลี่ยน",
-              "failed": "ไม่สำเร็จ",
-              "abandoned": "ถูกขัดจังหวะ"
-            },
-            "summary": "นำเข้า {imported} · ปฏิเสธ {rejected} · ล้มเหลว {failed} · ข้าม {skipped}",
-            "trustedKey": "คีย์ที่เชื่อถือ (SHA-256): {fingerprint}",
-            "offeredKey": "คีย์ที่เซิร์ฟเวอร์ยื่นมา (SHA-256): {fingerprint}",
-            "hostKeyHint": "ยืนยันคีย์ที่เซิร์ฟเวอร์ยื่นมากับผู้ดูแล SFTP แล้วกด Save ค่าตั้งนี้อีกครั้งเพื่อเชื่อคีย์นั้น หมายเหตุ: การกด Save ค่าตั้งนี้ครั้งใดก็ตามจะเชื่อคีย์ถัดไปที่เซิร์ฟเวอร์ยื่นมา",
-            "loadError": "โหลดสถานะการดึงล่าสุดไม่สำเร็จ",
-            "someFailed": "บางไฟล์นำเข้าไม่สำเร็จ ระบบจะลองใหม่ในรอบถัดไปตราบที่ไฟล์ยังอยู่ในช่วงที่ตรวจย้อนหลัง",
-            "error": {
-              "unreachable": "เชื่อมต่อเซิร์ฟเวอร์ SFTP ไม่ได้ ตรวจโฮสต์และพอร์ต และว่าเซิร์ฟเวอร์เปิดอยู่",
-              "dnsNotFound": "หาชื่อโฮสต์ SFTP ไม่พบ ตรวจการสะกดโฮสต์",
-              "authFailed": "เซิร์ฟเวอร์ปฏิเสธการเข้าสู่ระบบ ตรวจชื่อผู้ใช้และรหัสผ่าน",
-              "hostNotAllowed": "โฮสต์ชี้ไปยังที่อยู่ภายในเครื่องหรือ metadata ซึ่งไม่อนุญาต ให้ใช้ที่อยู่ของเซิร์ฟเวอร์ SFTP จริง",
-              "hostKeyMismatch": "คีย์ของเซิร์ฟเวอร์ไม่ตรงกับที่เคยเชื่อไว้",
-              "secretUnreadable": "ถอดรหัสรหัสผ่านที่บันทึกไว้ไม่ได้ ให้ฝ่าย IT ตั้งค่า SECRET_ENCRYPTION_KEY แล้วบันทึกรหัสผ่านใหม่",
-              "stale": "การดึงถูกขัดจังหวะก่อนจบ (บริการอาจรีสตาร์ต) ระบบจะลองใหม่",
-              "sessionLost": "การเชื่อมต่อหลุดระหว่างดึงไฟล์ ไฟล์ที่เหลือจะถูกลองใหม่ในชั่วโมงถัดไป",
-              "listFailed": "อ่านรายการไฟล์ในโฟลเดอร์ปลายทางไม่ได้ ตรวจ path ของโฟลเดอร์",
-              "runBudgetExceeded": "การดึงใช้เวลานานเกินไปจึงหยุดก่อน ไฟล์ที่เหลือจะถูกลองใหม่ในชั่วโมงถัดไป",
-              "unknown": "การดึงไม่สำเร็จ ดูรายละเอียดในล็อกของเซิร์ฟเวอร์"
-            }
-          }
+          "goToImport": "ไปที่ Import POS"
         },
         "micros3700": {
           "title": "Micros 3700",
           "desc": "รับยอดขายรายวันจาก Micros 3700 และตัดสต็อก",
           "general": "ทั่วไป",
-          "generalDesc": "เปิดหรือปิดแบรนด์นี้สำหรับหน่วยธุรกิจ อัปโหลดรายงาน PDF รายวันได้ที่แท็บประวัติการนำเข้า ไฟล์ถูกอ่านในเบราว์เซอร์และไม่ถูกส่งขึ้นเซิร์ฟเวอร์"
-        },
-        "store": {
-          "label": "ร้าน",
-          "placeholder": "เลือกร้าน",
-          "emptyTitle": "ยังไม่มีร้าน",
-          "emptyDesc": "นำเข้าไฟล์ครั้งแรกเพื่อสร้าง"
-        },
-        "outlets": {
-          "columns": {
-            "code": "รหัส",
-            "name": "Outlet",
-            "location": "Location"
-          },
-          "notMapped": "ยังไม่ผูก",
-          "clear": "ล้าง Location",
-          "saved": "บันทึก Location แล้ว"
-        },
-        "items": {
-          "columns": {
-            "code": "รหัส",
-            "desc1": "รายการ",
-            "desc2": "รายการ 2",
-            "department": "แผนก",
-            "recipe": "สูตร"
-          },
-          "unmappedOnly": "เฉพาะที่ยังไม่ผูก",
-          "allMapped": "ผูกครบทุกเมนูแล้ว",
-          "recipeInactive": "สูตรปิดใช้",
-          "clear": "ล้างสูตร",
-          "saved": "บันทึกสูตรแล้ว"
-        },
-        "review": {
-          "back": "กลับไปประวัติการนำเข้า",
-          "notFound": "ไม่พบการนำเข้านี้",
-          "titleFallback": "การนำเข้า POS",
-          "linesCount": "{count} บรรทัด",
-          "salesAmount": "ยอดขาย {amount}",
-          "cancelledNotice": "การนำเข้านี้ถูกยกเลิกแล้ว ยืนยันตัดสต็อกไม่ได้",
-          "replacedNotice": "ชุดนี้ถูกเขียนทับแล้ว ยืนยันตัดสต็อกที่นี่ไม่ได้",
-          "replacedLink": "เปิดการนำเข้าใหม่",
-          "sameFileOutlets": "Outlet อื่นจากไฟล์เดียวกัน",
-          "periodClosed": "วันขายไม่อยู่ในงวดคลังที่เปิด ยืนยันไม่ได้",
-          "noOutlets": "การนำเข้านี้ไม่มียอดขายให้ตรวจ",
-          "summary": {
-            "outlets": "Outlet",
-            "outletsDetail": "ผูก Location แล้ว {mapped} · ค้าง {pending}",
-            "items": "เมนู",
-            "itemsDetail": "ผูกสูตรแล้ว {mapped} · ค้าง {pending}",
-            "ingredients": "วัตถุดิบที่จะตัด",
-            "ingredientsDetail": "สต็อกไม่พอ {short}"
-          },
-          "outlet": {
-            "notMapped": "ยังไม่ได้ผูก Location",
-            "progress": "ยืนยันแล้ว {confirmed}/{total} บรรทัด",
-            "stockOut": "Stock Out {n}",
-            "confirm": "ยืนยันตัดสต็อก",
-            "noPermission": "คุณไม่มีสิทธิ์สร้าง Stock Out",
-            "licenseLocked": "License ของ interface นี้หมดอายุ หรือสัญญาของ BU เป็นแบบอ่านอย่างเดียว จึงไม่อนุญาตให้แก้ไข",
-            "notInPreview": "ไม่อยู่ในตัวอย่างการตัดสต็อก"
-          },
-          "tabs": {
-            "sales": "ยอดขาย",
-            "ingredients": "วัตถุดิบที่จะตัด",
-            "pending": "ค้างผูก"
-          },
-          "columns": {
-            "item": "เมนู",
-            "qty": "จำนวน",
-            "unitPrice": "ราคาต่อหน่วย",
-            "total": "รวม",
-            "state": "สถานะ",
-            "product": "สินค้า",
-            "deduct": "จำนวนที่ตัด",
-            "available": "คงเหลือ",
-            "sources": "มาจากเมนู",
-            "recipe": "สูตร",
-            "ingredient": "วัตถุดิบ",
-            "reason": "เหตุผล"
-          },
-          "lineState": {
-            "confirmed": "ตัดแล้ว",
-            "pending": "รอ"
-          },
-          "sourcesMore": "+{count}",
-          "shortLabel": "(สต็อกไม่พอ)",
-          "emptyLines": "ไม่มีบรรทัดยอดขาย",
-          "emptyIngredients": "ไม่มีวัตถุดิบที่จะตัด",
-          "emptyPending": "ผูกครบทุกรายการแล้ว",
-          "unmappedTitle": "เมนูที่ยังไม่มีสูตร ({count})",
-          "unmappedHint": "บรรทัดเหล่านี้จะถูกข้ามตอนยืนยัน และค้างไว้จนกว่าจะผูกสูตร",
-          "goMapItems": "ไปผูกเมนู",
-          "unresolvedTitle": "สูตรที่มีปัญหา ({count})",
-          "dialog": {
-            "title": "ยืนยันตัดสต็อกของ {outlet}",
-            "desc": "ระบบจะสร้างและลงบัญชี Stock Out หนึ่งใบจากยอดขายที่ผูกสูตรแล้วของ Outlet นี้",
-            "location": "Location",
-            "date": "วันที่เอกสาร",
-            "lines": "บรรทัดยอดขาย",
-            "ingredients": "วัตถุดิบ",
-            "skipped": "มี {count} เมนูที่ยังไม่มีสูตร จะถูกข้าม",
-            "confirm": "ยืนยันตัดสต็อก",
-            "success": "สร้าง Stock Out {soNo} แล้ว",
-            "successDesc": "ตัด {count} บรรทัด",
-            "open": "เปิด",
-            "shortTitle": "สต็อกไม่พอ",
-            "shortDesc": "ยอดคงเหลือเปลี่ยนไปและสินค้าเหล่านี้ไม่พอตัดแล้ว ยังไม่มีการลงบัญชีใด ๆ",
-            "product": "สินค้า",
-            "requested": "ต้องการ",
-            "available": "คงเหลือ"
-          },
-          "notImportedNotice": "ไฟล์นี้ไม่ได้ถูกนำเข้า ({status}) จึงไม่มีอะไรให้ยืนยัน"
-        },
-        "blockReason": {
-          "location_not_mapped": "Outlet ยังไม่ได้ผูก Location",
-          "nothing_to_confirm": "ไม่มีรายการเหลือให้ยืนยัน",
-          "insufficient_stock": "วัตถุดิบบางรายการสต็อกไม่พอ",
-          "unresolved_ingredients": "บางสูตรแตกเป็นวัตถุดิบไม่ได้",
-          "period_closed": "วันขายไม่อยู่ในงวดคลังที่เปิด",
-          "import_cancelled": "การนำเข้าถูกยกเลิกแล้ว",
-          "adjustment_type_missing": "ยังไม่ได้ตั้งประเภทการปรับสต็อกขาออกสำหรับ POS"
-        },
-        "unresolvedReason": {
-          "no_conversion": "ไม่มีการแปลงหน่วยเป็นหน่วยคงคลัง",
-          "zero_yield": "ผลผลิตของสูตรเป็นศูนย์",
-          "too_deep": "สูตรย่อยซ้อนกันลึกเกินไป",
-          "recipe_unusable": "สูตรถูกปิดใช้หรือใช้ไม่ได้",
-          "empty_recipe": "สูตรไม่มีวัตถุดิบ"
-        },
-        "micros3700Upload": {
-          "action": "อัปโหลด PDF",
-          "reading": "กำลังอ่าน PDF…",
-          "checking": "กำลังตรวจ…",
-          "tooLarge": "ไฟล์ {name} ใหญ่เกิน 20 MB",
-          "pdfPassword": "PDF นี้มีรหัสผ่าน ให้ export รายงานใหม่แบบไม่ตั้งรหัสผ่าน",
-          "pdfUnreadable": "เปิดไฟล์นี้ไม่ได้ ไฟล์เสียหายหรือไม่ใช่ PDF",
-          "title": "นำเข้ารายงาน Micros 3700",
-          "resultTitle": "ผลการนำเข้า",
-          "pages": "{count} หน้า",
-          "footingOk": "ยอดรวมตรงกับรายงาน (ต่าง {diff})",
-          "columns": {
-            "outlet": "Outlet",
-            "lines": "รายการ",
-            "qty": "ชิ้น",
-            "total": "ยอด",
-            "reported": "ยอดในรายงาน",
-            "status": "สถานะ",
-            "result": "ผล"
-          },
-          "status": {
-            "new": "ใหม่",
-            "existing": "มีอยู่แล้ว"
-          },
-          "existingTotal": "ยอดเดิม {amount}",
-          "existingConfirmed": "ยืนยันแล้ว {confirmed}/{total} บรรทัด",
-          "decision": {
-            "label": "เลือกการจัดการ {outlet}",
-            "skip": "ข้าม",
-            "overwrite": "เขียนทับ"
-          },
-          "voidWarning": "จะยกเลิก Stock Out เดิม {count} ใบ แล้วรอยืนยันใหม่",
-          "noVoidPermission": "ต้องมีสิทธิ์ลบ Stock Out จึงจะเขียนทับ Outlet นี้ได้",
-          "import": "นำเข้า",
-          "needsResolution": "มีข้อมูลเดิมเพิ่มระหว่างนี้ เลือกใหม่อีกครั้ง",
-          "outcome": {
-            "imported": "นำเข้าแล้ว",
-            "overwritten": "เขียนทับแล้ว",
-            "skipped": "ข้าม",
-            "failed": "ไม่สำเร็จ"
-          },
-          "voided": "ยกเลิก Stock Out {count} ใบ",
-          "review": "ตรวจและยืนยัน"
+          "generalDesc": "เปิดหรือปิดแบรนด์นี้สำหรับหน่วยธุรกิจ อัปโหลดรายงาน PDF รายวันได้ที่แท็บประวัติการนำเข้า ไฟล์ถูกอ่านในเบราว์เซอร์และไม่ถูกส่งขึ้นเซิร์ฟเวอร์",
+          "goToImport": "ไปที่ Import POS"
         }
       }
     },
@@ -4503,6 +4259,399 @@
       "marginBelowCategoryMin": "ต่ำกว่าขั้นต่ำของหมวด {pct}%",
       "marginCategoryTarget": "เป้าของหมวด {pct}%",
       "marginMeetsCategoryTarget": "ถึงเป้าของหมวด {pct}% แล้ว"
+    },
+    "posSale": {
+      "history": {
+        "columns": {
+          "docDate": "วันขาย",
+          "store": "ร้าน",
+          "source": "Source",
+          "file": "ไฟล์",
+          "channel": "ช่องทาง",
+          "status": "สถานะ",
+          "lines": "บรรทัด",
+          "sales": "ยอดขาย",
+          "confirmation": "ตัดสต็อก",
+          "pos": "POS",
+          "salesConsumption": "Sales Consumption"
+        },
+        "channel": {
+          "manual": "อัปโหลดเอง",
+          "sftp": "SFTP"
+        },
+        "legacyWarning": "ไฟล์รูปแบบเก่า ข้อมูลบางช่องอาจไม่ครบ",
+        "confirmation": {
+          "replaced": "ถูกเขียนทับ",
+          "cancelled": "ยกเลิกแล้ว",
+          "pending": "รอยืนยัน",
+          "partial": "ยืนยันบางส่วน",
+          "confirmed": "ยืนยันครบ"
+        },
+        "actions": {
+          "cancel": "ยกเลิก",
+          "viewLines": "ดูบรรทัด"
+        },
+        "cancelDialog": {
+          "title": "ยกเลิกการนำเข้านี้?",
+          "desc": "ยกเลิกแล้วนำเข้าไฟล์วันเดียวกันใหม่ได้ ถ้ามีบรรทัดที่ยืนยันตัดสต็อกแล้วจะยกเลิกไม่ได้",
+          "confirm": "ยกเลิกการนำเข้า",
+          "success": "ยกเลิกการนำเข้าแล้ว"
+        }
+      },
+      "importStatus": {
+        "success": "นำเข้าสำเร็จ",
+        "rejected_duplicate": "วันขายนี้เคยนำเข้าแล้ว",
+        "missing_glid_header": "ไฟล์ไม่มีหัว GLID",
+        "multi_day_glid_reject": "ไฟล์มีมากกว่าหนึ่งวันขาย",
+        "rejected_multi_day": "ไฟล์คร่อมหลายวันขาย",
+        "format_error": "รูปแบบไฟล์ไม่รองรับหรืออ่านไม่ได้"
+      },
+      "upload": {
+        "action": "อัปโหลดไฟล์",
+        "uploading": "กำลังอัปโหลด…",
+        "tooLarge": "ไฟล์ {name} ใหญ่เกิน 10 MB",
+        "success": "นำเข้าสำเร็จ",
+        "successDesc": "นำเข้า {count} บรรทัด ยอดขาย {amount}",
+        "legacyWarning": "นำเข้าจากไฟล์รูปแบบเก่า"
+      },
+      "tabs": {
+        "history": "ประวัติการนำเข้า",
+        "outlets": "ผูกจุดขาย",
+        "items": "ผูกรายการขาย"
+      },
+      "store": {
+        "label": "ร้าน",
+        "placeholder": "เลือกร้าน",
+        "emptyTitle": "ยังไม่มีร้าน",
+        "emptyDesc": "นำเข้าไฟล์ครั้งแรกเพื่อสร้าง"
+      },
+      "outlets": {
+        "columns": {
+          "code": "รหัส",
+          "name": "Outlet",
+          "location": "Location"
+        },
+        "notMapped": "ยังไม่ผูก",
+        "clear": "ล้าง Location",
+        "saved": "บันทึก Location แล้ว"
+      },
+      "items": {
+        "columns": {
+          "code": "รหัส",
+          "desc1": "รายการ",
+          "desc2": "รายการ 2",
+          "department": "แผนก",
+          "recipe": "สูตร"
+        },
+        "allMapped": "ผูกครบทุกเมนูแล้ว",
+        "recipeInactive": "สูตรปิดใช้",
+        "clear": "ล้างสูตร",
+        "saved": "บันทึกสูตรแล้ว",
+        "filter": {
+          "label": "สถานะเมนู",
+          "all": "ทั้งหมด",
+          "unmapped": "ต้องผูก",
+          "mapped": "ผูกแล้ว",
+          "ignored": "ไม่นับ"
+        },
+        "ignore": "ไม่นับ",
+        "unignore": "เลิกไม่นับ",
+        "ignored": "ไม่นับ",
+        "ignoredSaved": "ตั้งเมนูเป็นไม่นับแล้ว",
+        "unignored": "เลิกไม่นับเมนูแล้ว"
+      },
+      "micros3700Upload": {
+        "action": "อัปโหลด PDF",
+        "reading": "กำลังอ่าน PDF…",
+        "checking": "กำลังตรวจ…",
+        "tooLarge": "ไฟล์ {name} ใหญ่เกิน 20 MB",
+        "pdfPassword": "PDF นี้มีรหัสผ่าน ให้ export รายงานใหม่แบบไม่ตั้งรหัสผ่าน",
+        "pdfUnreadable": "เปิดไฟล์นี้ไม่ได้ ไฟล์เสียหายหรือไม่ใช่ PDF",
+        "title": "นำเข้ารายงาน Micros 3700",
+        "resultTitle": "ผลการนำเข้า",
+        "pages": "{count} หน้า",
+        "footingOk": "ยอดรวมตรงกับรายงาน (ต่าง {diff})",
+        "columns": {
+          "outlet": "Outlet",
+          "lines": "รายการ",
+          "qty": "ชิ้น",
+          "total": "ยอด",
+          "reported": "ยอดในรายงาน",
+          "status": "สถานะ",
+          "result": "ผล"
+        },
+        "status": {
+          "new": "ใหม่",
+          "existing": "มีอยู่แล้ว"
+        },
+        "existingTotal": "ยอดเดิม {amount}",
+        "existingConfirmed": "ยืนยันแล้ว {confirmed}/{total} บรรทัด",
+        "decision": {
+          "label": "เลือกการจัดการ {outlet}",
+          "skip": "ข้าม",
+          "overwrite": "เขียนทับ"
+        },
+        "inPostedSc": "ถูกตัดสต็อกไปกับ Sales Consumption ที่ Post แล้ว หากต้องการเขียนทับ ให้ยกเลิก (Void) Sales Consumption ของวันที่ {date} ก่อน",
+        "openSalesConsumption": "เปิด Sales Consumption",
+        "import": "นำเข้า",
+        "needsResolution": "มีข้อมูลเดิมเพิ่มระหว่างนี้ เลือกใหม่อีกครั้ง",
+        "outcome": {
+          "imported": "นำเข้าแล้ว",
+          "overwritten": "เขียนทับแล้ว",
+          "skipped": "ข้าม",
+          "failed": "ไม่สำเร็จ"
+        },
+        "viewLines": "ดูบรรทัด"
+      },
+      "simphony": {
+        "lastPull": {
+          "title": "การดึงอัตโนมัติรอบล่าสุด",
+          "never": "ยังไม่เคยมีการดึงอัตโนมัติ",
+          "status": {
+            "running": "กำลังดึง",
+            "completed": "เสร็จสิ้น",
+            "connect_failed": "เชื่อมต่อไม่ได้",
+            "host_key_mismatch": "คีย์ของเซิร์ฟเวอร์เปลี่ยน",
+            "failed": "ไม่สำเร็จ",
+            "abandoned": "ถูกขัดจังหวะ"
+          },
+          "summary": "นำเข้า {imported} · ปฏิเสธ {rejected} · ล้มเหลว {failed} · ข้าม {skipped}",
+          "trustedKey": "คีย์ที่เชื่อถือ (SHA-256): {fingerprint}",
+          "offeredKey": "คีย์ที่เซิร์ฟเวอร์ยื่นมา (SHA-256): {fingerprint}",
+          "hostKeyHint": "ยืนยันคีย์ที่เซิร์ฟเวอร์ยื่นมากับผู้ดูแล SFTP แล้วกด Save ค่าตั้งนี้อีกครั้งเพื่อเชื่อคีย์นั้น หมายเหตุ: การกด Save ค่าตั้งนี้ครั้งใดก็ตามจะเชื่อคีย์ถัดไปที่เซิร์ฟเวอร์ยื่นมา",
+          "loadError": "โหลดสถานะการดึงล่าสุดไม่สำเร็จ",
+          "someFailed": "บางไฟล์นำเข้าไม่สำเร็จ ระบบจะลองใหม่ในรอบถัดไปตราบที่ไฟล์ยังอยู่ในช่วงที่ตรวจย้อนหลัง",
+          "error": {
+            "unreachable": "เชื่อมต่อเซิร์ฟเวอร์ SFTP ไม่ได้ ตรวจโฮสต์และพอร์ต และว่าเซิร์ฟเวอร์เปิดอยู่",
+            "dnsNotFound": "หาชื่อโฮสต์ SFTP ไม่พบ ตรวจการสะกดโฮสต์",
+            "authFailed": "เซิร์ฟเวอร์ปฏิเสธการเข้าสู่ระบบ ตรวจชื่อผู้ใช้และรหัสผ่าน",
+            "hostNotAllowed": "โฮสต์ชี้ไปยังที่อยู่ภายในเครื่องหรือ metadata ซึ่งไม่อนุญาต ให้ใช้ที่อยู่ของเซิร์ฟเวอร์ SFTP จริง",
+            "hostKeyMismatch": "คีย์ของเซิร์ฟเวอร์ไม่ตรงกับที่เคยเชื่อไว้",
+            "secretUnreadable": "ถอดรหัสรหัสผ่านที่บันทึกไว้ไม่ได้ ให้ฝ่าย IT ตั้งค่า SECRET_ENCRYPTION_KEY แล้วบันทึกรหัสผ่านใหม่",
+            "stale": "การดึงถูกขัดจังหวะก่อนจบ (บริการอาจรีสตาร์ต) ระบบจะลองใหม่",
+            "sessionLost": "การเชื่อมต่อหลุดระหว่างดึงไฟล์ ไฟล์ที่เหลือจะถูกลองใหม่ในชั่วโมงถัดไป",
+            "listFailed": "อ่านรายการไฟล์ในโฟลเดอร์ปลายทางไม่ได้ ตรวจ path ของโฟลเดอร์",
+            "runBudgetExceeded": "การดึงใช้เวลานานเกินไปจึงหยุดก่อน ไฟล์ที่เหลือจะถูกลองใหม่ในชั่วโมงถัดไป",
+            "unknown": "การดึงไม่สำเร็จ ดูรายละเอียดในล็อกของเซิร์ฟเวอร์"
+          }
+        }
+      }
+    },
+    "importPos": {
+      "description": "ยอดขายดิบตามที่รับมาจาก POS การผูกเมนูและตัดสต็อกทำที่ Sales Consumption",
+      "brand": {
+        "simphony": "Simphony",
+        "micros3700": "Micros 3700"
+      },
+      "history": {
+        "title": "ประวัติการนำเข้า"
+      },
+      "lines": {
+        "title": "รายการขายดิบ",
+        "search": "ค้นหาเมนูหรือ Outlet",
+        "empty": "ไม่มีบรรทัด",
+        "columns": {
+          "store": "ร้าน",
+          "outlet": "Outlet",
+          "department": "แผนก",
+          "itemCode": "รหัสเมนู",
+          "item": "เมนู",
+          "qty": "จำนวน",
+          "unitPrice": "ราคาต่อหน่วย",
+          "total": "รวม"
+        },
+        "close": "ปิด"
+      },
+      "connectionSettings": "ตั้งค่าการเชื่อมต่อ Simphony SFTP"
+    },
+    "salesConsumption": {
+      "list": {
+        "description": "หนึ่งเอกสารต่อวันขาย: ดูสถานะของแต่ละวัน ตรวจเอกสาร และดูแลการผูกข้อมูลหลัก",
+        "views": {
+          "calendar": "ปฏิทิน",
+          "list": "ตาราง",
+          "mapping": "Mapping"
+        },
+        "status": {
+          "pending": "รอ post",
+          "posted": "Post แล้ว",
+          "voided": "Void แล้ว"
+        },
+        "outletWarning": "มี {count} Outlet ที่ยังไม่ผูก Location ยอดขายจาก Outlet เหล่านี้ยัง post ไม่ได้",
+        "outletWarningAction": "ไปที่ Mapping",
+        "summary": {
+          "pendingPost": "รอ post",
+          "needMapping": "บรรทัดที่ต้องผูก",
+          "posted": "Post แล้ว (เดือนนี้)",
+          "daysNoFile": "วันที่ไม่มีไฟล์"
+        },
+        "calendar": {
+          "prev": "เดือนก่อนหน้า",
+          "next": "เดือนถัดไป",
+          "status": {
+            "posted": "Post แล้ว",
+            "pending": "รอ post",
+            "no_sales": "ไม่มียอดขาย",
+            "no_file": "ไม่มีไฟล์",
+            "future": "ยังไม่ถึงวัน",
+            "before_start": "ก่อนเริ่มใช้"
+          },
+          "unresolved": "ต้องผูก {count}",
+          "late": "มี {count} บรรทัดขายเข้ามาหลัง post",
+          "incomplete": "ไฟล์ขาด {count} ร้าน",
+          "lateLegend": "ยอดขายเข้ามาหลัง post",
+          "incompleteLegend": "ไฟล์ไม่ครบ"
+        },
+        "table": {
+          "columns": {
+            "docNo": "เลขที่เอกสาร",
+            "saleDate": "วันที่ขาย",
+            "imports": "ไฟล์นำเข้า",
+            "locations": "Location",
+            "status": "สถานะ",
+            "lines": "บรรทัด",
+            "needMapping": "ต้องผูก",
+            "totalCost": "ต้นทุนรวม",
+            "stockOut": "Stock Out"
+          }
+        },
+        "mapping": {
+          "hint": "Mapping หลักคือค่าเริ่มต้นของบรรทัดที่ยังไม่ post บรรทัดที่ post แล้วคงค่าตอน post ไว้",
+          "outlets": "Outlet → Location",
+          "items": "เมนู POS → สูตร"
+        }
+      },
+      "detail": {
+        "back": "กลับไป Sales Consumption",
+        "notFound": "ไม่พบ Sales Consumption",
+        "header": {
+          "saleDate": "วันที่ขาย",
+          "imports": "ไฟล์ POS ของวัน",
+          "importsCount": "{count} ไฟล์",
+          "salesAmount": "ยอดขาย",
+          "stockOuts": "ใบจ่ายออก",
+          "none": "–",
+          "missingStores": "ยังไม่มีไฟล์ของ: {stores}",
+          "replacedByPrefix": "ถูกแทนที่ด้วย",
+          "stockOutVoided": "ยกเลิกแล้ว",
+          "lateLines": "มีบรรทัดขาย {count} รายการเข้ามาหลัง Post จึงยังไม่ถูกตัดสต็อก ยกเลิก (Void) แล้ว Post ใหม่เพื่อรวมรายการเหล่านี้"
+        },
+        "cards": {
+          "mapped": "ระบุแล้ว",
+          "ignored": "ไม่นับ",
+          "needMapping": "ต้องระบุ",
+          "ingredientCost": "ต้นทุนวัตถุดิบ",
+          "ingredientCostEstimated": "ต้นทุนวัตถุดิบ (ประมาณการ)"
+        },
+        "tabs": {
+          "sales": "รายการขาย",
+          "ingredients": "วัตถุดิบ",
+          "history": "ประวัติ"
+        },
+        "actions": {
+          "verify": "ตรวจยอดคงเหลือ",
+          "reverify": "ตรวจยอดคงเหลืออีกครั้ง",
+          "verifying": "กำลังตรวจ...",
+          "post": "Post และตัดสต็อก",
+          "posting": "กำลัง Post...",
+          "void": "ยกเลิก",
+          "voidTitle": "ยกเลิก Sales Consumption นี้?",
+          "voidDescription": "ใบจ่ายออกที่สร้างไว้ทุกใบจะถูกยกเลิกและคืนสต็อก ยอดขายของวันที่ยังไม่ได้ post จะกลับมาเป็นเอกสารรอดำเนินการใบใหม่",
+          "verifyDone": "ตรวจยอดคงเหลือแล้ว: สินค้าทุกรายการเพียงพอ",
+          "verifyShort": "ตรวจยอดคงเหลือแล้ว: มีสินค้าไม่เพียงพอ",
+          "posted": "Post แล้ว ตัดสต็อกเรียบร้อย",
+          "voided": "ยกเลิกแล้ว คืนสต็อกเรียบร้อย",
+          "voidedNew": "ยกเลิกแล้ว สร้างเอกสารรอดำเนินการใหม่: {sc}"
+        },
+        "hint": {
+          "unresolved": "ยังมี {count} รายการที่ต้องระบุ Location หรือสูตร",
+          "notVerified": "ต้องตรวจยอดคงเหลือก่อน Post",
+          "stale": "มีการแก้บรรทัดหลังตรวจครั้งล่าสุด กรุณาตรวจยอดคงเหลืออีกครั้ง",
+          "short": "มีสินค้าไม่เพียงพอ แก้สต็อกหรือการระบุสูตร แล้วตรวจอีกครั้ง",
+          "ready": "พร้อม Post จะสร้างใบจ่ายออก {count} ใบ",
+          "voidedNote": "เอกสารนี้ถูกยกเลิกแล้ว แก้ไขไม่ได้",
+          "salesMovedPrefix": "บรรทัดยอดขายย้ายไปที่",
+          "salesMovedNone": "บรรทัดยอดขายของเอกสารนี้ไม่ได้เก็บไว้ที่นี่แล้ว"
+        },
+        "lines": {
+          "columns": {
+            "outlet": "Outlet",
+            "location": "Location",
+            "item": "รายการ POS",
+            "recipe": "สูตร",
+            "qty": "จำนวนสุทธิ",
+            "amount": "ยอดขาย"
+          },
+          "fromOutlet": "จากการตั้งค่า Outlet",
+          "changedLine": "แก้เฉพาะบรรทัดนี้",
+          "outletNotMapped": "Outlet ยังไม่ได้ระบุ Location",
+          "fromItem": "จากการตั้งค่ารายการ",
+          "itemNotMapped": "รายการยังไม่ได้ระบุสูตร",
+          "notCounted": "ไม่นับ",
+          "ignored": "ไม่นับ",
+          "ignore": "ไม่นับรายการนี้",
+          "resetToMaster": "กลับไปใช้ค่าตั้งต้น",
+          "setItemDefault": "ตั้งเป็นค่าตั้งต้นของรายการด้วย",
+          "saved": "แก้บรรทัดแล้ว",
+          "needsLocation": "ต้องระบุ Location",
+          "needsRecipe": "ต้องระบุสูตร",
+          "empty": "วันนี้ไม่มีรายการขาย"
+        },
+        "ingredients": {
+          "summaryNotChecked": "ยังไม่ได้ตรวจยอดคงเหลือ กด ตรวจยอดคงเหลือ เพื่อดูว่าสินค้าใดตัดได้",
+          "summaryStale": "มีการแก้บรรทัดหลังตรวจครั้งล่าสุด ผลตรวจจึงถูกล้าง กรุณาตรวจยอดคงเหลืออีกครั้ง",
+          "summaryOk": "ตรวจยอดคงเหลือแล้ว: สินค้าทุกรายการตัดได้",
+          "summaryShort": "ตรวจยอดคงเหลือแล้ว: สินค้าไม่เพียงพอ {count} รายการ",
+          "estimateNote": "ต้นทุนเป็นการประมาณการจนกว่าจะ Post หลัง Post ค่าจะมาจากใบจ่ายออก",
+          "problemsTitle": "บรรทัดเหล่านี้ไม่อยู่ในยอดวัตถุดิบ และทำให้ตรวจยอดคงเหลือและ Post ไม่ได้",
+          "outlets": "Outlet: {outlets}",
+          "productCount": "{count} สินค้า",
+          "canDeduct": "ตัดได้",
+          "shortCount": "ขาด {count}",
+          "notChecked": "ยังไม่ได้ตรวจ",
+          "stockOutOnPost": "สร้างใบจ่ายออกตอน Post",
+          "columns": {
+            "product": "สินค้า",
+            "qty": "จำนวนที่ตัด",
+            "unit": "หน่วย",
+            "unitCost": "ต้นทุนต่อหน่วย",
+            "totalCost": "ต้นทุนรวม",
+            "onHand": "คงเหลือ (วันที่ขาย)",
+            "canDeduct": "ตัดได้?"
+          },
+          "yes": "ได้",
+          "shortBy": "ขาด {qty}",
+          "dash": "–",
+          "empty": "ไม่มีวัตถุดิบที่ต้องตัด",
+          "summaryVerifiedNoDetail": "ตรวจยอดคงเหลือแล้วเมื่อ {time} แต่ยังไม่ได้โหลดรายละเอียดรายสินค้า กดตรวจยอดคงเหลืออีกครั้งเพื่อดู",
+          "stockOutVoided": "ยกเลิกแล้ว"
+        },
+        "problems": {
+          "no_conversion": "ไม่มีการแปลงหน่วย",
+          "zero_yield": "ผลผลิตของสูตรเป็นศูนย์",
+          "too_deep": "สูตรย่อยซ้อนกันลึกเกินไป",
+          "recipe_unusable": "ใช้สูตรนี้ไม่ได้",
+          "empty_recipe": "สูตรไม่มีวัตถุดิบ"
+        },
+        "history": {
+          "empty": "ยังไม่มีประวัติ",
+          "byUser": "โดย {user}",
+          "actions": {
+            "created": "สร้างเอกสาร {sc_no}",
+            "imported": "นำเข้า {file_name}",
+            "onhand_verified": "ตรวจยอดคงเหลือ",
+            "posted": "Post",
+            "voided": "ยกเลิก"
+          },
+          "verifiedOk": "เพียงพอ",
+          "verifiedShort": "มีสินค้าไม่เพียงพอ",
+          "reason": "เหตุผล: {reason}"
+        },
+        "brand": {
+          "simphony": "Oracle Simphony",
+          "micros3700": "Oracle Micros 3700"
+        }
+      }
     }
   },
   "productManagement": {
@@ -6129,6 +6278,8 @@
     "operationCuisine": "ประเภทอาหาร",
     "operationEquipment": "อุปกรณ์",
     "operationEquipmentCategory": "หมวดหมู่อุปกรณ์",
+    "importPos": "นำเข้ายอดขาย POS",
+    "salesConsumption": "ตัดสต็อกจากยอดขาย",
     "operationRecipe": "สูตรอาหาร",
     "recipePreparationStep": "ขั้นตอนการเตรียม",
     "procurement": "จัดซื้อจัดจ้าง",
@@ -6247,6 +6398,11 @@
     "accessDeniedTitle": "ไม่มีสิทธิ์เข้าถึง",
     "accessDeniedDesc": "คุณไม่มีสิทธิ์เข้าถึงข้อมูลนี้",
     "goBack": "กลับ"
+  },
+  "posNotEnabled": {
+    "title": "ยังไม่ได้เปิด POS interface",
+    "description": "หน่วยธุรกิจนี้ยังไม่ได้ตั้งค่า POS interface จึงใช้หน้านี้ไม่ได้",
+    "openInterface": "ไปที่หน้าตั้งค่า Interface"
   },
   "permissionDenied": {
     "eyebrow": "จำกัดสิทธิ์",

@@ -6,6 +6,7 @@ import {
 } from "@/hooks/use-license";
 import { moduleList, type ModuleDto } from "@/constant/module-list";
 import type { Permission } from "@/constant/permissions";
+import { usePosStatus } from "@/hooks/use-pos-status";
 
 export interface ModuleWithAccess extends ModuleDto {
   denied: boolean;
@@ -23,12 +24,20 @@ export function annotate(
   isLicensed: (featureKey: string) => boolean,
   isHidden: (featureKey: string) => boolean = () => false,
   isExpired: (featureKey: string) => boolean = () => false,
+  posEnabled = true,
 ): ModuleWithAccess[] {
   const out: ModuleWithAccess[] = [];
   for (const mod of modules) {
     const { subModules, ...rest } = mod;
     if (subModules && subModules.length > 0) {
-      const subs = annotate(subModules, can, isLicensed, isHidden, isExpired);
+      const subs = annotate(
+        subModules,
+        can,
+        isLicensed,
+        isHidden,
+        isExpired,
+        posEnabled,
+      );
       // ลูกถูกซ่อนหมด → หัวข้อกลุ่มไม่มีอะไรให้พาไป ซ่อนทั้งก้อน (กติกาเดียวกับ denied/locked
       // ที่ parent เป็น true เมื่อลูกเป็น true หมด)
       if (subs.length === 0) continue;
@@ -41,6 +50,8 @@ export function annotate(
       });
       continue;
     }
+    // leaf ที่ต้องมี POS interface — BU ไม่มี POS ตัดออกเหมือน hidden feature
+    if (mod.requiresPosInterface && !posEnabled) continue;
     const feature = licenseFeatureOf(mod);
     // ตัดออกจากผลลัพธ์ ไม่ใช่ทำเครื่องหมาย — node ที่ยังอยู่ในลิสต์คือ node ที่รอให้ใคร
     // สักคนเผลอ render (leaf ที่ไม่มี feature key อยู่นอกขอบเขต license ห้ามซ่อน)
@@ -71,12 +82,19 @@ export function markAll(
   isLicensed: (featureKey: string) => boolean,
   isHidden: (featureKey: string) => boolean = () => false,
   isExpired: (featureKey: string) => boolean = () => false,
+  posEnabled = true,
 ): ModuleWithAccess[] {
   const out: ModuleWithAccess[] = [];
   for (const mod of modules) {
     const { subModules, ...rest } = mod;
     if (subModules && subModules.length > 0) {
-      const subs = markAll(subModules, isLicensed, isHidden, isExpired);
+      const subs = markAll(
+        subModules,
+        isLicensed,
+        isHidden,
+        isExpired,
+        posEnabled,
+      );
       if (subs.length === 0) continue;
       out.push({
         ...rest,
@@ -86,6 +104,8 @@ export function markAll(
       });
       continue;
     }
+    // leaf ที่ต้องมี POS interface — BU ไม่มี POS ตัดออกเหมือน hidden feature
+    if (mod.requiresPosInterface && !posEnabled) continue;
     const feature = licenseFeatureOf(mod);
     if (feature && isHidden(feature)) continue;
     out.push({
@@ -125,6 +145,9 @@ export function useVisibleModules(
 ): ModuleWithAccess[] {
   const { can, isAdmin } = useCan();
   const { isLicensed, isHidden, isExpired } = useLicense();
-  if (isAdmin) return markAll(modules, isLicensed, isHidden, isExpired);
-  return annotate(modules, can, isLicensed, isHidden, isExpired);
+  // ระหว่างโหลดถือว่า "ยังไม่เปิด" → เมนู POS โผล่ทีหลังแทนที่จะโผล่แล้วหาย
+  const { isEnabled: posEnabled } = usePosStatus();
+  if (isAdmin)
+    return markAll(modules, isLicensed, isHidden, isExpired, posEnabled);
+  return annotate(modules, can, isLicensed, isHidden, isExpired, posEnabled);
 }

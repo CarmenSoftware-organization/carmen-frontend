@@ -644,6 +644,21 @@ export const router = createBrowserRouter([
                 lazy: () =>
                   import("./operation-plan/equipment-category/equipment-category.route"),
               },
+              {
+                path: "import-pos",
+                lazy: () =>
+                  import("./operation-plan/import-pos/import-pos.route"),
+              },
+              {
+                path: "sales-consumption",
+                lazy: () =>
+                  import("./operation-plan/sales-consumption/sales-consumption.route"),
+              },
+              {
+                path: "sales-consumption/:id",
+                lazy: () =>
+                  import("./operation-plan/sales-consumption/sales-consumption-detail.route"),
+              },
             ],
           },
           {
@@ -819,12 +834,6 @@ export const router = createBrowserRouter([
                     replace
                   />
                 ),
-              },
-              {
-                // ต้องมาก่อน `interface/:category/:brand` — ความลึกต่างกันอยู่แล้ว แต่วางชิดกันให้อ่านง่าย
-                path: "interface/pos/:brand/imports/:importId",
-                lazy: () =>
-                  import("./system-admin/interface/pos/pos-import-review.route"),
               },
               {
                 path: "interface/:category/:brand",

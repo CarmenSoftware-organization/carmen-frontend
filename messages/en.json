@@ -1087,7 +1087,19 @@
       "STOCK_OUT_DATE_NOT_CURRENT_PERIOD": "A stock-out can only be dated inside the current period ({period}: {start} to {end})",
       "STOCK_OUT_NO_OPEN_PERIOD": "No inventory period is open, so a stock-out cannot be recorded",
       "STOCK_OUT_ALREADY_VOIDED": "Stock out is already voided",
-      "BUSINESS_UNIT_NOT_CURRENT": "This page shows a business unit other than your current one — it was switched in another tab or device. Reload the page to see the current business unit, then make your change again."
+      "BUSINESS_UNIT_NOT_CURRENT": "This page shows a business unit other than your current one — it was switched in another tab or device. Reload the page to see the current business unit, then make your change again.",
+      "SALES_CONSUMPTION_NOT_FOUND": "Sales Consumption not found",
+      "SALES_CONSUMPTION_NOT_PENDING": "This Sales Consumption is no longer pending. Reload the page to see its current status.",
+      "SALES_CONSUMPTION_NOT_POSTED": "This Sales Consumption has not been posted, so it cannot be voided.",
+      "SALES_CONSUMPTION_HAS_UNRESOLVED_LINES": "{count} line(s) still need a location or recipe. Resolve them before posting.",
+      "SALES_CONSUMPTION_NOT_VERIFIED": "Verify on-hand before posting.",
+      "SALES_CONSUMPTION_VERIFY_STALE": "The document changed after the last on-hand check. Verify on-hand again.",
+      "SALES_CONSUMPTION_VERIFY_FAILED": "The latest on-hand check found insufficient stock. Fix it and verify again.",
+      "SALES_CONSUMPTION_VOID_PERIOD_CLOSED": "Cannot void because the period of this document is already closed.",
+      "SALES_CONSUMPTION_LINE_POSTED": "This line has already been posted and cannot be edited.",
+      "SALES_CONSUMPTION_POS_NOT_ENABLED": "POS integration is not enabled for this business unit.",
+      "POS_SALE_OUTLET_IN_POSTED_SC": "Outlet {outlet} for {date} is already included in a posted Sales Consumption and cannot be overwritten.",
+      "STOCK_OUT_VOID_VIA_SALES_CONSUMPTION": "This Stock Out was created by Sales Consumption {sc_no}. Void it from the Sales Consumption instead."
     }
   },
   "validation": {
@@ -2847,67 +2859,11 @@
       "showSecret": "Show",
       "hideSecret": "Hide",
       "posSale": {
-        "history": {
-          "columns": {
-            "docDate": "Sales date",
-            "store": "Store",
-            "source": "Source",
-            "file": "File",
-            "channel": "Channel",
-            "status": "Status",
-            "lines": "Lines",
-            "sales": "Sales amount",
-            "confirmation": "Stock-out"
-          },
-          "channel": {
-            "manual": "Manual",
-            "sftp": "SFTP"
-          },
-          "legacyWarning": "Legacy export format: some fields may be missing",
-          "confirmation": {
-            "replaced": "Overwritten",
-            "cancelled": "Cancelled",
-            "pending": "Pending",
-            "partial": "Partial",
-            "confirmed": "Confirmed"
-          },
-          "actions": {
-            "inspect": "Review",
-            "cancel": "Cancel import"
-          },
-          "cancelDialog": {
-            "title": "Cancel this import?",
-            "desc": "Cancelling lets you import the file for the same day again. Imports with confirmed lines cannot be cancelled.",
-            "confirm": "Cancel import",
-            "success": "Import cancelled"
-          }
-        },
-        "importStatus": {
-          "success": "Imported",
-          "rejected_duplicate": "Already imported for this date",
-          "missing_glid_header": "File is missing the GLID header",
-          "multi_day_glid_reject": "File contains more than one business day",
-          "rejected_multi_day": "File spans multiple business days",
-          "format_error": "Unsupported or unreadable file format"
-        },
-        "upload": {
-          "action": "Upload file",
-          "uploading": "Uploading…",
-          "tooLarge": "{name} is larger than 10 MB",
-          "success": "Import complete",
-          "successDesc": "Imported {count} lines, sales {amount}",
-          "legacyWarning": "Imported from a legacy export format"
-        },
-        "tabs": {
-          "history": "Import history",
-          "outlets": "Outlet mapping",
-          "items": "Item mapping"
-        },
         "simphony": {
           "title": "Oracle Simphony",
           "desc": "Receive daily POS sales from Oracle Simphony and post stock deductions.",
           "sftp": "SFTP connection",
-          "sftpDesc": "Connection to the server holding the sales export files. Files are pulled automatically once a day at the time set below (business unit time zone, checked hourly). Pulled files always wait for the Cost Controller to confirm, and you can still import files manually from the Import history tab.",
+          "sftpDesc": "Connection to the server holding the sales export files. Files are pulled automatically once a day at the time set below (business unit time zone, checked hourly). Pulled files always wait for the Cost Controller to confirm, and you can still import files manually on the Import POS page.",
           "host": "SFTP host",
           "port": "Port",
           "username": "Username",
@@ -2923,214 +2879,14 @@
           "hostInvalid": "Enter a valid host name or IP address",
           "folderInvalid": "The folder path must not contain a \"..\" segment",
           "patternInvalid": "The pattern must be 100 characters or fewer and cannot contain /",
-          "lastPull": {
-            "title": "Latest automatic pull",
-            "never": "No automatic pull has run yet.",
-            "status": {
-              "running": "In progress",
-              "completed": "Completed",
-              "connect_failed": "Could not connect",
-              "host_key_mismatch": "Server key changed",
-              "failed": "Failed",
-              "abandoned": "Interrupted"
-            },
-            "summary": "Imported {imported} · Rejected {rejected} · Failed {failed} · Skipped {skipped}",
-            "trustedKey": "Trusted key (SHA-256): {fingerprint}",
-            "offeredKey": "Offered key (SHA-256): {fingerprint}",
-            "hostKeyHint": "Confirm the offered key with the SFTP administrator, then press Save on these settings again to trust it. Note: any save of these settings trusts the next key the server offers.",
-            "loadError": "Could not load the latest pull status.",
-            "someFailed": "Some files failed to import. They will be retried on the next pull while they are still within the look-back window.",
-            "error": {
-              "unreachable": "Could not reach the SFTP server. Check the host and port, and that the server is online.",
-              "dnsNotFound": "The SFTP host name could not be resolved. Check the host spelling.",
-              "authFailed": "The server rejected the login. Check the username and password.",
-              "hostNotAllowed": "The host points to a local or metadata address, which is not allowed. Use the SFTP server address instead.",
-              "hostKeyMismatch": "The server key differs from the one trusted before.",
-              "secretUnreadable": "The saved password cannot be decrypted. Ask IT to set SECRET_ENCRYPTION_KEY and then save the password again.",
-              "stale": "The pull was interrupted before it finished (the service may have restarted). It will be retried.",
-              "sessionLost": "The connection dropped mid-pull. The remaining files will be retried next hour.",
-              "listFailed": "Could not list the remote folder. Check the remote folder path.",
-              "runBudgetExceeded": "The pull took too long and stopped. The remaining files will be retried next hour.",
-              "unknown": "The pull failed. See the server logs for details."
-            }
-          }
+          "goToImport": "Go to Import POS"
         },
         "micros3700": {
           "title": "Micros 3700",
           "desc": "Receive daily POS sales from Micros 3700 and post stock deductions.",
           "general": "General",
-          "generalDesc": "Turn this brand on or off for the business unit. Upload the daily PDF report from the Import history tab. The file is read in your browser and is never sent to the server."
-        },
-        "store": {
-          "label": "Store",
-          "placeholder": "Select a store",
-          "emptyTitle": "No stores yet",
-          "emptyDesc": "Import a file for the first time to create one"
-        },
-        "outlets": {
-          "columns": {
-            "code": "Code",
-            "name": "Outlet",
-            "location": "Location"
-          },
-          "notMapped": "Not mapped",
-          "clear": "Clear location",
-          "saved": "Location saved"
-        },
-        "items": {
-          "columns": {
-            "code": "Code",
-            "desc1": "Description",
-            "desc2": "Description 2",
-            "department": "Department",
-            "recipe": "Recipe"
-          },
-          "unmappedOnly": "Unmapped only",
-          "allMapped": "Every item is mapped",
-          "recipeInactive": "Recipe inactive",
-          "clear": "Clear recipe",
-          "saved": "Recipe saved"
-        },
-        "review": {
-          "back": "Back to import history",
-          "notFound": "Import not found",
-          "titleFallback": "POS import",
-          "linesCount": "{count, plural, one {# line} other {# lines}}",
-          "salesAmount": "Sales {amount}",
-          "cancelledNotice": "This import was cancelled. Nothing can be confirmed.",
-          "replacedNotice": "This set was overwritten. Nothing can be confirmed here.",
-          "replacedLink": "Open the new import",
-          "sameFileOutlets": "Other outlets from the same file",
-          "periodClosed": "The sales date is not in an open inventory period, so stock-out cannot be confirmed.",
-          "noOutlets": "This import has no sales to review",
-          "summary": {
-            "outlets": "Outlets",
-            "outletsDetail": "{mapped} mapped · {pending} without location",
-            "items": "Menu items",
-            "itemsDetail": "{mapped} mapped · {pending} without recipe",
-            "ingredients": "Ingredients to deduct",
-            "ingredientsDetail": "{short} short of stock"
-          },
-          "outlet": {
-            "notMapped": "No location mapped",
-            "progress": "{confirmed}/{total} lines confirmed",
-            "stockOut": "Stock Out {n}",
-            "confirm": "Confirm stock-out",
-            "noPermission": "You don't have permission to create Stock Out",
-            "licenseLocked": "This interface's license has expired or your contract is read-only, so changes are not allowed",
-            "notInPreview": "Not included in the stock-out preview"
-          },
-          "tabs": {
-            "sales": "Sales",
-            "ingredients": "Ingredients to deduct",
-            "pending": "Pending mapping"
-          },
-          "columns": {
-            "item": "Menu item",
-            "qty": "Qty",
-            "unitPrice": "Unit price",
-            "total": "Total",
-            "state": "Status",
-            "product": "Product",
-            "deduct": "Deduct",
-            "available": "On hand",
-            "sources": "From menu",
-            "recipe": "Recipe",
-            "ingredient": "Ingredient",
-            "reason": "Reason"
-          },
-          "lineState": {
-            "confirmed": "Deducted",
-            "pending": "Pending"
-          },
-          "sourcesMore": "+{count}",
-          "shortLabel": "(short of stock)",
-          "emptyLines": "No sales lines",
-          "emptyIngredients": "No ingredients to deduct",
-          "emptyPending": "Everything is mapped",
-          "unmappedTitle": "Menu items without a recipe ({count})",
-          "unmappedHint": "These lines are skipped when you confirm and stay pending until mapped.",
-          "goMapItems": "Map items",
-          "unresolvedTitle": "Recipe problems ({count})",
-          "dialog": {
-            "title": "Confirm stock-out for {outlet}",
-            "desc": "One Stock Out is created and posted for this outlet's mapped sales.",
-            "location": "Location",
-            "date": "Document date",
-            "lines": "Sales lines",
-            "ingredients": "Ingredients",
-            "skipped": "{count, plural, one {# menu item has} other {# menu items have}} no recipe and will be skipped.",
-            "confirm": "Confirm stock-out",
-            "success": "Stock Out {soNo} created",
-            "successDesc": "{count, plural, one {# line} other {# lines}} deducted",
-            "open": "Open",
-            "shortTitle": "Not enough stock",
-            "shortDesc": "Stock on hand changed and these products no longer cover the deduction. Nothing was posted.",
-            "product": "Product",
-            "requested": "Required",
-            "available": "On hand"
-          },
-          "notImportedNotice": "This file was not imported ({status}), so there is nothing to confirm."
-        },
-        "blockReason": {
-          "location_not_mapped": "Outlet has no location mapped",
-          "nothing_to_confirm": "Nothing left to confirm",
-          "insufficient_stock": "Some ingredients are short of stock",
-          "unresolved_ingredients": "Some recipes can't be converted to ingredients",
-          "period_closed": "Sales date is not in an open inventory period",
-          "import_cancelled": "Import was cancelled",
-          "adjustment_type_missing": "No stock-out adjustment type is set up for POS"
-        },
-        "unresolvedReason": {
-          "no_conversion": "No conversion to the inventory unit",
-          "zero_yield": "Recipe yield is zero",
-          "too_deep": "Sub-recipes are nested too deeply",
-          "recipe_unusable": "Recipe is inactive or unusable",
-          "empty_recipe": "Recipe has no ingredients"
-        },
-        "micros3700Upload": {
-          "action": "Upload PDF",
-          "reading": "Reading PDF…",
-          "checking": "Checking…",
-          "tooLarge": "{name} is larger than 20 MB",
-          "pdfPassword": "This PDF is password-protected. Export the report again without a password.",
-          "pdfUnreadable": "Could not open this file. It is damaged or not a PDF.",
-          "title": "Import Micros 3700 report",
-          "resultTitle": "Import result",
-          "pages": "{count, plural, one {# page} other {# pages}}",
-          "footingOk": "Totals match the report (difference {diff})",
-          "columns": {
-            "outlet": "Outlet",
-            "lines": "Items",
-            "qty": "Qty",
-            "total": "Total",
-            "reported": "Report total",
-            "status": "Status",
-            "result": "Result"
-          },
-          "status": {
-            "new": "New",
-            "existing": "Already imported"
-          },
-          "existingTotal": "Previous total {amount}",
-          "existingConfirmed": "Confirmed {confirmed}/{total} lines",
-          "decision": {
-            "label": "What to do with {outlet}",
-            "skip": "Skip",
-            "overwrite": "Overwrite"
-          },
-          "voidWarning": "Will void {count, plural, one {# existing Stock Out} other {# existing Stock Outs}} and wait for confirmation again",
-          "noVoidPermission": "You need permission to delete Stock Out to overwrite this outlet",
-          "import": "Import",
-          "needsResolution": "Data for this date was added in the meantime. Choose again.",
-          "outcome": {
-            "imported": "Imported",
-            "overwritten": "Overwritten",
-            "skipped": "Skipped",
-            "failed": "Failed"
-          },
-          "voided": "Voided {count, plural, one {# Stock Out} other {# Stock Outs}}",
-          "review": "Review and confirm"
+          "generalDesc": "Turn this brand on or off for the business unit. Upload the daily PDF report from the Import history tab. The file is read in your browser and is never sent to the server.",
+          "goToImport": "Go to Import POS"
         }
       }
     },
@@ -4503,6 +4259,399 @@
       "marginBelowCategoryMin": "Below category minimum {pct}%",
       "marginCategoryTarget": "Category target {pct}%",
       "marginMeetsCategoryTarget": "Meets category target {pct}%"
+    },
+    "posSale": {
+      "history": {
+        "columns": {
+          "docDate": "Sales date",
+          "store": "Store",
+          "source": "Source",
+          "file": "File",
+          "channel": "Channel",
+          "status": "Status",
+          "lines": "Lines",
+          "sales": "Sales amount",
+          "confirmation": "Stock-out",
+          "pos": "POS",
+          "salesConsumption": "Sales Consumption"
+        },
+        "channel": {
+          "manual": "Manual",
+          "sftp": "SFTP"
+        },
+        "legacyWarning": "Legacy export format: some fields may be missing",
+        "confirmation": {
+          "replaced": "Overwritten",
+          "cancelled": "Cancelled",
+          "pending": "Pending",
+          "partial": "Partial",
+          "confirmed": "Confirmed"
+        },
+        "actions": {
+          "cancel": "Cancel import",
+          "viewLines": "View lines"
+        },
+        "cancelDialog": {
+          "title": "Cancel this import?",
+          "desc": "Cancelling lets you import the file for the same day again. Imports with confirmed lines cannot be cancelled.",
+          "confirm": "Cancel import",
+          "success": "Import cancelled"
+        }
+      },
+      "importStatus": {
+        "success": "Imported",
+        "rejected_duplicate": "Already imported for this date",
+        "missing_glid_header": "File is missing the GLID header",
+        "multi_day_glid_reject": "File contains more than one business day",
+        "rejected_multi_day": "File spans multiple business days",
+        "format_error": "Unsupported or unreadable file format"
+      },
+      "upload": {
+        "action": "Upload file",
+        "uploading": "Uploading…",
+        "tooLarge": "{name} is larger than 10 MB",
+        "success": "Import complete",
+        "successDesc": "Imported {count} lines, sales {amount}",
+        "legacyWarning": "Imported from a legacy export format"
+      },
+      "tabs": {
+        "history": "Import history",
+        "outlets": "Outlet mapping",
+        "items": "Item mapping"
+      },
+      "store": {
+        "label": "Store",
+        "placeholder": "Select a store",
+        "emptyTitle": "No stores yet",
+        "emptyDesc": "Import a file for the first time to create one"
+      },
+      "outlets": {
+        "columns": {
+          "code": "Code",
+          "name": "Outlet",
+          "location": "Location"
+        },
+        "notMapped": "Not mapped",
+        "clear": "Clear location",
+        "saved": "Location saved"
+      },
+      "items": {
+        "columns": {
+          "code": "Code",
+          "desc1": "Description",
+          "desc2": "Description 2",
+          "department": "Department",
+          "recipe": "Recipe"
+        },
+        "allMapped": "Every item is mapped",
+        "recipeInactive": "Recipe inactive",
+        "clear": "Clear recipe",
+        "saved": "Recipe saved",
+        "filter": {
+          "label": "Item status",
+          "all": "All",
+          "unmapped": "Needs mapping",
+          "mapped": "Mapped",
+          "ignored": "Ignored"
+        },
+        "ignore": "Ignore",
+        "unignore": "Unignore",
+        "ignored": "Ignored",
+        "ignoredSaved": "Item ignored",
+        "unignored": "Item restored"
+      },
+      "micros3700Upload": {
+        "action": "Upload PDF",
+        "reading": "Reading PDF…",
+        "checking": "Checking…",
+        "tooLarge": "{name} is larger than 20 MB",
+        "pdfPassword": "This PDF is password-protected. Export the report again without a password.",
+        "pdfUnreadable": "Could not open this file. It is damaged or not a PDF.",
+        "title": "Import Micros 3700 report",
+        "resultTitle": "Import result",
+        "pages": "{count, plural, one {# page} other {# pages}}",
+        "footingOk": "Totals match the report (difference {diff})",
+        "columns": {
+          "outlet": "Outlet",
+          "lines": "Items",
+          "qty": "Qty",
+          "total": "Total",
+          "reported": "Report total",
+          "status": "Status",
+          "result": "Result"
+        },
+        "status": {
+          "new": "New",
+          "existing": "Already imported"
+        },
+        "existingTotal": "Previous total {amount}",
+        "existingConfirmed": "Confirmed {confirmed}/{total} lines",
+        "decision": {
+          "label": "What to do with {outlet}",
+          "skip": "Skip",
+          "overwrite": "Overwrite"
+        },
+        "inPostedSc": "Already deducted on a posted Sales Consumption. To overwrite, void the Sales Consumption of {date} first.",
+        "openSalesConsumption": "Open Sales Consumption",
+        "import": "Import",
+        "needsResolution": "Data for this date was added in the meantime. Choose again.",
+        "outcome": {
+          "imported": "Imported",
+          "overwritten": "Overwritten",
+          "skipped": "Skipped",
+          "failed": "Failed"
+        },
+        "viewLines": "View lines"
+      },
+      "simphony": {
+        "lastPull": {
+          "title": "Latest automatic pull",
+          "never": "No automatic pull has run yet.",
+          "status": {
+            "running": "In progress",
+            "completed": "Completed",
+            "connect_failed": "Could not connect",
+            "host_key_mismatch": "Server key changed",
+            "failed": "Failed",
+            "abandoned": "Interrupted"
+          },
+          "summary": "Imported {imported} · Rejected {rejected} · Failed {failed} · Skipped {skipped}",
+          "trustedKey": "Trusted key (SHA-256): {fingerprint}",
+          "offeredKey": "Offered key (SHA-256): {fingerprint}",
+          "hostKeyHint": "Confirm the offered key with the SFTP administrator, then press Save on these settings again to trust it. Note: any save of these settings trusts the next key the server offers.",
+          "loadError": "Could not load the latest pull status.",
+          "someFailed": "Some files failed to import. They will be retried on the next pull while they are still within the look-back window.",
+          "error": {
+            "unreachable": "Could not reach the SFTP server. Check the host and port, and that the server is online.",
+            "dnsNotFound": "The SFTP host name could not be resolved. Check the host spelling.",
+            "authFailed": "The server rejected the login. Check the username and password.",
+            "hostNotAllowed": "The host points to a local or metadata address, which is not allowed. Use the SFTP server address instead.",
+            "hostKeyMismatch": "The server key differs from the one trusted before.",
+            "secretUnreadable": "The saved password cannot be decrypted. Ask IT to set SECRET_ENCRYPTION_KEY and then save the password again.",
+            "stale": "The pull was interrupted before it finished (the service may have restarted). It will be retried.",
+            "sessionLost": "The connection dropped mid-pull. The remaining files will be retried next hour.",
+            "listFailed": "Could not list the remote folder. Check the remote folder path.",
+            "runBudgetExceeded": "The pull took too long and stopped. The remaining files will be retried next hour.",
+            "unknown": "The pull failed. See the server logs for details."
+          }
+        }
+      }
+    },
+    "importPos": {
+      "description": "Raw sales transactions as received from POS. Mapping and stock-out happen in Sales Consumption.",
+      "brand": {
+        "simphony": "Simphony",
+        "micros3700": "Micros 3700"
+      },
+      "history": {
+        "title": "Import history"
+      },
+      "lines": {
+        "title": "Raw transactions",
+        "search": "Search item or outlet",
+        "empty": "No lines",
+        "columns": {
+          "store": "Store",
+          "outlet": "Outlet",
+          "department": "Department",
+          "itemCode": "Item code",
+          "item": "Item",
+          "qty": "Qty",
+          "unitPrice": "Unit price",
+          "total": "Total"
+        },
+        "close": "Close"
+      },
+      "connectionSettings": "Simphony SFTP connection settings"
+    },
+    "salesConsumption": {
+      "list": {
+        "description": "One document per sale day: see each day's status, review the documents, and maintain master mapping.",
+        "views": {
+          "calendar": "Calendar",
+          "list": "List",
+          "mapping": "Mapping"
+        },
+        "status": {
+          "pending": "Pending",
+          "posted": "Posted",
+          "voided": "Voided"
+        },
+        "outletWarning": "{count, plural, one {# outlet has} other {# outlets have}} no location. Sales from them cannot be posted.",
+        "outletWarningAction": "Go to mapping",
+        "summary": {
+          "pendingPost": "Pending post",
+          "needMapping": "Lines need mapping",
+          "posted": "Posted (this month)",
+          "daysNoFile": "Days without file"
+        },
+        "calendar": {
+          "prev": "Previous month",
+          "next": "Next month",
+          "status": {
+            "posted": "Posted",
+            "pending": "Pending",
+            "no_sales": "No sales",
+            "no_file": "No file",
+            "future": "Not yet",
+            "before_start": "Before start"
+          },
+          "unresolved": "{count} to map",
+          "late": "{count} lines sold after posting",
+          "incomplete": "{count} store files missing",
+          "lateLegend": "Sales after post",
+          "incompleteLegend": "Files incomplete"
+        },
+        "table": {
+          "columns": {
+            "docNo": "Document #",
+            "saleDate": "Sale date",
+            "imports": "Imports",
+            "locations": "Locations",
+            "status": "Status",
+            "lines": "Lines",
+            "needMapping": "Need mapping",
+            "totalCost": "Total cost",
+            "stockOut": "Stock Out"
+          }
+        },
+        "mapping": {
+          "hint": "Master mapping is the default for lines that are not posted yet. Posted lines keep the values they were posted with.",
+          "outlets": "Outlet → Location",
+          "items": "POS item → Recipe"
+        }
+      },
+      "detail": {
+        "back": "Back to Sales Consumption",
+        "notFound": "Sales Consumption not found",
+        "header": {
+          "saleDate": "Sale date",
+          "imports": "POS imports of the day",
+          "importsCount": "{count, plural, one {# file} other {# files}}",
+          "salesAmount": "Sales amount",
+          "stockOuts": "Stock Outs",
+          "none": "–",
+          "missingStores": "No file yet for: {stores}",
+          "replacedByPrefix": "Replaced by",
+          "stockOutVoided": "voided",
+          "lateLines": "{count, plural, one {# sale line} other {# sale lines}} arrived after this was posted and are not deducted. Void and post again to include them."
+        },
+        "cards": {
+          "mapped": "Mapped",
+          "ignored": "Ignored",
+          "needMapping": "Need mapping",
+          "ingredientCost": "Ingredient cost",
+          "ingredientCostEstimated": "Ingredient cost (estimated)"
+        },
+        "tabs": {
+          "sales": "Sales lines",
+          "ingredients": "Ingredients",
+          "history": "History"
+        },
+        "actions": {
+          "verify": "Verify on-hand",
+          "reverify": "Re-verify on-hand",
+          "verifying": "Verifying...",
+          "post": "Post & deduct stock",
+          "posting": "Posting...",
+          "void": "Void",
+          "voidTitle": "Void this Sales Consumption?",
+          "voidDescription": "Every Stock Out it created is voided and the stock is returned. Sales of the day that are not posted come back as a new pending document.",
+          "verifyDone": "On-hand verified: enough stock for every product",
+          "verifyShort": "On-hand verified: some products are short",
+          "posted": "Posted. Stock deducted",
+          "voided": "Voided. Stock returned",
+          "voidedNew": "Voided. A new pending document was created: {sc}"
+        },
+        "hint": {
+          "unresolved": "{count, plural, one {# item still needs} other {# items still need}} a location or recipe",
+          "notVerified": "Verify on-hand before posting",
+          "stale": "Lines changed after the last check. Verify on-hand again",
+          "short": "Some products are short. Fix the stock or the mapping, then verify again",
+          "ready": "Ready to post. {count, plural, one {# Stock Out} other {# Stock Outs}} will be created",
+          "voidedNote": "This document is voided and cannot be changed",
+          "salesMovedPrefix": "Sales lines moved to",
+          "salesMovedNone": "Sales lines of this document are no longer kept here"
+        },
+        "lines": {
+          "columns": {
+            "outlet": "Outlet",
+            "location": "Location",
+            "item": "POS item",
+            "recipe": "Recipe",
+            "qty": "Net qty",
+            "amount": "Amount"
+          },
+          "fromOutlet": "from outlet mapping",
+          "changedLine": "changed on this line",
+          "outletNotMapped": "outlet not mapped",
+          "fromItem": "from item mapping",
+          "itemNotMapped": "item not mapped",
+          "notCounted": "Not counted",
+          "ignored": "Ignored",
+          "ignore": "Ignore",
+          "resetToMaster": "Reset to mapping",
+          "setItemDefault": "Also set as item default",
+          "saved": "Line updated",
+          "needsLocation": "Needs location",
+          "needsRecipe": "Needs recipe",
+          "empty": "No sales lines for this day"
+        },
+        "ingredients": {
+          "summaryNotChecked": "On-hand has not been checked yet. Verify on-hand to see which products can be deducted.",
+          "summaryStale": "Lines changed after the last check, so the result was cleared. Verify on-hand again.",
+          "summaryOk": "On-hand checked: every product can be deducted.",
+          "summaryShort": "On-hand checked: {count, plural, one {# product is} other {# products are}} short.",
+          "estimateNote": "Costs are an estimate until posted. After posting, the values come from the Stock Outs.",
+          "problemsTitle": "These lines are not in the ingredient totals and block verify and post",
+          "outlets": "Outlets: {outlets}",
+          "productCount": "{count, plural, one {# product} other {# products}}",
+          "canDeduct": "Can deduct",
+          "shortCount": "{count} short",
+          "notChecked": "Not checked",
+          "stockOutOnPost": "Stock Out on post",
+          "columns": {
+            "product": "Product",
+            "qty": "Qty to deduct",
+            "unit": "Unit",
+            "unitCost": "Unit cost",
+            "totalCost": "Total cost",
+            "onHand": "On hand (sale day)",
+            "canDeduct": "Can deduct?"
+          },
+          "yes": "Yes",
+          "shortBy": "Short {qty}",
+          "dash": "–",
+          "empty": "No ingredients to deduct",
+          "summaryVerifiedNoDetail": "On-hand was verified at {time}, but the per-product detail is not loaded. Re-verify on-hand to see it.",
+          "stockOutVoided": "voided"
+        },
+        "problems": {
+          "no_conversion": "unit conversion is missing",
+          "zero_yield": "recipe yield is zero",
+          "too_deep": "sub-recipes are nested too deeply",
+          "recipe_unusable": "recipe cannot be used",
+          "empty_recipe": "recipe has no ingredients"
+        },
+        "history": {
+          "empty": "No history yet",
+          "byUser": "by {user}",
+          "actions": {
+            "created": "Document {sc_no} created",
+            "imported": "Imported {file_name}",
+            "onhand_verified": "On-hand verified",
+            "posted": "Posted",
+            "voided": "Voided"
+          },
+          "verifiedOk": "enough stock",
+          "verifiedShort": "some products short",
+          "reason": "Reason: {reason}"
+        },
+        "brand": {
+          "simphony": "Oracle Simphony",
+          "micros3700": "Oracle Micros 3700"
+        }
+      }
     }
   },
   "productManagement": {
@@ -6129,6 +6278,8 @@
     "operationCuisine": "Cuisine Type",
     "operationEquipment": "Equipment",
     "operationEquipmentCategory": "Equipment Category",
+    "importPos": "Import POS",
+    "salesConsumption": "Sales Consumption",
     "operationRecipe": "Recipe",
     "recipePreparationStep": "Preparation Step",
     "procurement": "Procurement",
@@ -6247,6 +6398,11 @@
     "accessDeniedTitle": "Access Denied",
     "accessDeniedDesc": "You do not have permission to access this resource.",
     "goBack": "Go Back"
+  },
+  "posNotEnabled": {
+    "title": "POS interface is not enabled",
+    "description": "This business unit has no POS interface set up, so this page is unavailable.",
+    "openInterface": "Open Interface settings"
   },
   "permissionDenied": {
     "eyebrow": "Restricted",

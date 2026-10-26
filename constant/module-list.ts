@@ -66,10 +66,17 @@ import {
   Leaf,
   Mail,
   MailOpen,
+  FileUp,
+  ClipboardList,
 } from "lucide-react";
 
 export interface ModuleDto {
   name: string;
+  /**
+   * leaf ที่ใช้ได้เฉพาะ BU ที่เปิด POS interface — ถ้า BU ไม่มี POS จะถูกตัดออกจากเมนูทุกที่
+   * (`useVisibleModules`) และ `RouteGuard` แสดง `PosNotEnabled` เมื่อเข้าทาง URL ตรง
+   */
+  requiresPosInterface?: boolean;
   path: string;
   icon: LucideIcon;
   subModules?: ModuleDto[];
@@ -524,6 +531,23 @@ export const moduleList: ModuleDto[] = [
         licenseFeature: "operation_plan.equipment_category", // config:recipe-equipment-categories
         icon: FolderTree,
         permission: PERMISSIONS.operation_plan.equipment_category.view,
+      },
+      {
+        name: "importPos",
+        path: "/operation-plan/import-pos",
+        licenseFeature: "interface.pos", // app:pos-sales
+        icon: FileUp,
+        separatorBefore: true,
+        requiresPosInterface: true,
+        // ไม่ระบุ permission — สิทธิ์จริงตรวจที่ backend
+      },
+      {
+        name: "salesConsumption",
+        path: "/operation-plan/sales-consumption",
+        licenseFeature: "interface.pos", // app:pos-sales
+        icon: ClipboardList,
+        requiresPosInterface: true,
+        permission: PERMISSIONS.inventory_management.stock_out.view,
       },
     ],
   },

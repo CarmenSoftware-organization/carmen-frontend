@@ -8,6 +8,14 @@ import type { RuntimeConfig } from "@/lib/runtime-config";
 import type { BusinessUnitLicense } from "@/types/license";
 
 // t(key) → key
+vi.mock("@/hooks/use-pos-status", () => ({
+  usePosStatus: () => ({
+    enabledBrands: [],
+    isEnabled: true,
+    isLoading: false,
+  }),
+}));
+
 vi.mock("use-intl", () => ({
   useTranslations: () => (key: string) => key,
 }));
@@ -30,7 +38,6 @@ const licenseQuery = vi.fn();
 vi.mock("@/hooks/use-license-query", () => ({
   useLicenseQuery: () => licenseQuery(),
 }));
-
 
 const BU_ID = "bu-1";
 const PERMISSION = PERMISSIONS.procurement.purchase_request.view; // "procurement.purchase_request.view"

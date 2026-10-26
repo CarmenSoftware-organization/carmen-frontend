@@ -3,14 +3,15 @@ import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Link } from "react-router";
 import { useTranslations } from "use-intl";
+import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { SettingSection } from "@/components/ui/setting-section";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useInterfaceConfig } from "../use-interface-config";
 import { InterfacePageLayout } from "../interface-page-layout";
 import { TextField, ToggleField } from "../interface-fields";
-import { PosOperations } from "./pos-operations";
-import { PosSftpLastPull } from "./pos-sftp-last-pull";
 
 /** mask ที่ backend ส่งกลับแทนรหัสผ่านที่เก็บไว้ */
 const ENCRYPTED_MASK = "***ENCRYPTED***";
@@ -75,7 +76,7 @@ export function toSimphonyFormValues(
 }
 
 /**
- * หน้าตั้งค่า Oracle Simphony — SFTP + รอบดึงไฟล์ และแท็บงานนำเข้า/ผูกรหัส
+ * หน้าตั้งค่า Oracle Simphony — SFTP + รอบดึงไฟล์ 
  *
  * @returns React element ของหน้า Simphony
  */
@@ -130,7 +131,13 @@ export default function PosSimphonyForm() {
       onRetry={refetch}
       errorMessage={t("loadError")}
       saveLabel={t("save")}
-      afterForm={<PosOperations brand="simphony" />}
+      afterForm={
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/operation-plan/import-pos">
+            {tp("goToImport")} <ArrowRight />
+          </Link>
+        </Button>
+      }
     >
       <SettingSection first title={tp("sftp")} description={tp("sftpDesc")}>
         <ToggleField
@@ -186,8 +193,6 @@ export default function PosSimphonyForm() {
           placeholder="03:00"
         />
       </SettingSection>
-
-      <PosSftpLastPull enabled={!isLoading && !isError} />
     </InterfacePageLayout>
   );
 }

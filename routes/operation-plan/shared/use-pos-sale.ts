@@ -15,21 +15,19 @@ import type { TranslationFn } from "@/lib/i18n-schema";
 import type { PaginatedResponse, ParamsDto } from "@/types/params";
 import type {
   PosBrand,
-  PosConfirmResult,
   PosImportDetail,
   PosImportListItem,
   PosImportSummary,
   PosItem,
+  PosItemStatus,
   PosMicros3700CheckResult,
   PosMicros3700ImportResult,
   PosMicros3700OutletResult,
   PosMicros3700Overwrite,
   PosOutlet,
-  PosPreview,
   PosSftpPullRun,
-  PosShortage,
   PosStore,
-} from "./pos-sale-types";
+} from "@/types/pos-sale";
 
 /**
  * GET แล้วคืน body ทั้งก้อน (`{ data, paginate? }`) — โยน `ApiError` เมื่อไม่ ok
@@ -44,13 +42,13 @@ async function getJson<T>(url: string, fallback: string): Promise<T> {
  * ประวัติการนำเข้ายอดขาย POS ตามแบรนด์ (แบ่งหน้า)
  *
  * @param params - page / perpage / search / sort
- * @param brand - แบรนด์ที่ต้องการ
+ * @param brand - แบรนด์ที่ต้องการ — ไม่ส่ง = ทุกแบรนด์
  * @param options - ตัวเลือก UseQueryOptions เพิ่มเติม
  * @returns query ของ `PaginatedResponse<PosImportListItem>` — `useGridPagination` ใช้ได้
  */
 export function usePosImports(
   params: ParamsDto | undefined,
-  brand: PosBrand,
+  brand?: PosBrand,
   options?: Omit<
     UseQueryOptions<PaginatedResponse<PosImportListItem>>,
     "queryKey" | "queryFn"
@@ -139,30 +137,12 @@ export function usePosImport(id: string | undefined) {
   });
 }
 
-/** ตัวอย่างการตัดสต็อกของการนำเข้า (หนึ่งรายการต่อ Outlet) — ยอดคงเหลือเปลี่ยนได้ จึงไม่ cache นาน */
-export function usePosImportPreview(id: string | undefined, enabled = true) {
-  const buCode = useBuCode();
-  return useQuery<PosPreview>({
-    queryKey: [QUERY_KEYS.POS_SALE_PREVIEW, buCode, id],
-    queryFn: async () =>
-      (
-        await getJson<{ data: PosPreview }>(
-          API_ENDPOINTS.POS_SALE_IMPORT_PREVIEW(buCode!, id!),
-          "Failed to load POS preview",
-        )
-      ).data,
-    staleTime: 0,
-    // backend ตอบ 400 กับการนำเข้าที่ไม่ใช่ success — รอรู้สถานะก่อนค่อยยิง
-    enabled: !!buCode && !!id && enabled,
-  });
-}
-
 /**
- * ร้าน POS ของแบรนด์ที่เลือก — endpoint ไม่มี filter จึงกรองฝั่ง client
+ * ร้าน POS — endpoint ไม่มี filter จึงกรองฝั่ง client
  *
- * @param brand - แบรนด์ที่ต้องการ
+ * @param brand - แบรนด์ที่ต้องการ — ไม่ส่ง = ทุกร้าน
  */
-export function usePosStores(brand: PosBrand) {
+export function usePosStores(brand?: PosBrand) {
   const buCode = useBuCode();
   return useQuery<PosStore[], ApiError, PosStore[]>({
     queryKey: [QUERY_KEYS.POS_SALE_STORES, buCode],
@@ -173,7 +153,8 @@ export function usePosStores(brand: PosBrand) {
           "Failed to load POS stores",
         )
       ).data,
-    select: (stores) => stores.filter((s) => s.brand === brand),
+    select: (stores) =>
+      brand ? stores.filter((s) => s.brand === brand) : stores,
     ...CACHE_DYNAMIC,
     enabled: !!buCode,
   });
@@ -182,7 +163,7 @@ export function usePosStores(brand: PosBrand) {
 /**
  * Outlet ของ POS พร้อม Location ที่ผูก
  *
- * @param storeId - กรองเฉพาะร้านนี้ (ไม่ส่ง = ทุกร้าน)
+ * @param storeId - กรองเฉพาะร้านนี้ (ไม่ส่ง = ทุกร้านของ BU)
  */
 export function usePosOutlets(storeId?: string) {
   const buCode = useBuCode();
@@ -198,7 +179,7 @@ export function usePosOutlets(storeId?: string) {
         )
       ).data,
     ...CACHE_DYNAMIC,
-    enabled: !!buCode && !!storeId,
+    enabled: !!buCode,
   });
 }
 
@@ -206,28 +187,27 @@ export function usePosOutlets(storeId?: string) {
  * เมนู POS พร้อมสูตรที่ผูก (แบ่งหน้า)
  *
  * @param params - page / perpage / search / sort
- * @param filters - `storeId` กรองร้าน · `unmapped` true = เฉพาะที่ยังไม่มีสูตร
+ * @param filters - `storeId` กรองร้าน · `status` = เฉพาะเมนูในสถานะนั้น (unmapped / mapped / ignored)
  * @param options - ตัวเลือก UseQueryOptions เพิ่มเติม
  */
 export function usePosItems(
   params: ParamsDto | undefined,
-  filters: { storeId?: string; unmapped?: boolean } = {},
+  filters: { storeId?: string; status?: PosItemStatus } = {},
   options?: Omit<
     UseQueryOptions<PaginatedResponse<PosItem>>,
     "queryKey" | "queryFn"
   >,
 ) {
   const buCode = useBuCode();
-  const { storeId, unmapped } = filters;
+  const { storeId, status } = filters;
   return useQuery<PaginatedResponse<PosItem>>({
-    queryKey: [QUERY_KEYS.POS_SALE_ITEMS, buCode, storeId, unmapped, params],
+    queryKey: [QUERY_KEYS.POS_SALE_ITEMS, buCode, storeId, status, params],
     queryFn: () =>
       getJson(
         buildUrl(API_ENDPOINTS.POS_SALE_ITEMS(buCode!), {
           ...params,
           store_id: storeId,
-          // backend รับ 'true' | 'false' เป็นสตริง — ไม่ส่งเมื่อไม่ได้กรอง
-          unmapped: unmapped === undefined ? undefined : String(unmapped),
+          status,
         }),
         "Failed to load POS items",
       ),
@@ -330,7 +310,6 @@ export function useImportMicros3700() {
     invalidate: () => [
       [QUERY_KEYS.POS_SALE_IMPORTS],
       [QUERY_KEYS.POS_SALE_IMPORT],
-      [QUERY_KEYS.POS_SALE_PREVIEW],
       [QUERY_KEYS.POS_SALE_STORES],
       [QUERY_KEYS.POS_SALE_OUTLETS],
       [QUERY_KEYS.POS_SALE_ITEMS],
@@ -370,27 +349,6 @@ export function useCancelPosImport() {
   });
 }
 
-/** ยืนยัน Outlet หนึ่งเป็น Stock Out — refetch ทั้งตอนสำเร็จและ error เพื่อให้ preview สด */
-export function useConfirmPosOutlet() {
-  return usePosMutation<
-    { importId: string; outletId: string },
-    PosConfirmResult
-  >({
-    call: (buCode, { importId, outletId }) =>
-      httpClient.post(
-        API_ENDPOINTS.POS_SALE_OUTLET_CONFIRM(buCode, importId, outletId),
-      ),
-    errorMessage: "Failed to confirm POS outlet",
-    invalidate: ({ importId }) => [
-      [QUERY_KEYS.POS_SALE_IMPORT],
-      [QUERY_KEYS.POS_SALE_PREVIEW],
-      [QUERY_KEYS.POS_SALE_IMPORTS],
-      // กันพลาดเมื่อ key ผูก id ในอนาคต
-      [QUERY_KEYS.POS_SALE_IMPORT, importId],
-    ],
-  });
-}
-
 /** ผูก/ล้าง Location ของ Outlet (`location_id: null` = ล้าง) */
 export function useUpdatePosOutlet() {
   return usePosMutation<
@@ -404,43 +362,35 @@ export function useUpdatePosOutlet() {
     errorMessage: "Failed to update POS outlet",
     invalidate: () => [
       [QUERY_KEYS.POS_SALE_OUTLETS],
-      [QUERY_KEYS.POS_SALE_PREVIEW],
       [QUERY_KEYS.POS_SALE_IMPORT],
-    ],
-  });
-}
-
-/** ผูก/ล้างสูตรของเมนู (`recipe_id: null` = ล้าง) */
-export function useUpdatePosItem() {
-  return usePosMutation<
-    { id: string; recipe_id: string | null },
-    { id: string }
-  >({
-    call: (buCode, { id, recipe_id }) =>
-      httpClient.patch(API_ENDPOINTS.POS_SALE_ITEM(buCode, id), { recipe_id }),
-    errorMessage: "Failed to update POS item",
-    invalidate: () => [
-      [QUERY_KEYS.POS_SALE_ITEMS],
-      [QUERY_KEYS.POS_SALE_STORES],
-      [QUERY_KEYS.POS_SALE_PREVIEW],
-      [QUERY_KEYS.POS_SALE_IMPORT],
+      // location ตั้งต้นเปลี่ยน = จำนวนบรรทัดค้างผูกของ SC และปฏิทินเปลี่ยนตาม
+      [QUERY_KEYS.SALES_CONSUMPTION],
+      [QUERY_KEYS.SALES_CONSUMPTIONS],
+      [QUERY_KEYS.SALES_CONSUMPTION_CALENDAR],
     ],
   });
 }
 
 /**
- * รายการสินค้าที่ไม่พอจาก error ของการยืนยัน
- *
- * @param err - error ที่ mutation โยนมา
- * @returns `details.shortages` เมื่อเป็น `POS_SALE_INSUFFICIENT_STOCK` ไม่งั้น `[]`
+ * ผูก/ล้างสูตรของเมนู (`recipe_id: null` = ล้าง) หรือสั่งไม่นับเมนู (`is_ignored`)
+ * — ต้องส่งอย่างน้อยหนึ่งฟิลด์ · สูตรกับ `is_ignored: true` ส่งพร้อมกันไม่ได้
  */
-export function shortagesOf(err: unknown): PosShortage[] {
-  if (
-    !(err instanceof ApiError) ||
-    err.appCode !== "POS_SALE_INSUFFICIENT_STOCK"
-  )
-    return [];
-  const shortages = (err.details as { shortages?: unknown } | undefined)
-    ?.shortages;
-  return Array.isArray(shortages) ? (shortages as PosShortage[]) : [];
+export function useUpdatePosItem() {
+  return usePosMutation<
+    { id: string; recipe_id?: string | null; is_ignored?: boolean },
+    { id: string }
+  >({
+    call: (buCode, { id, ...body }) =>
+      httpClient.patch(API_ENDPOINTS.POS_SALE_ITEM(buCode, id), body),
+    errorMessage: "Failed to update POS item",
+    invalidate: () => [
+      [QUERY_KEYS.POS_SALE_ITEMS],
+      [QUERY_KEYS.POS_SALE_STORES],
+      [QUERY_KEYS.POS_SALE_IMPORT],
+      // ค่าตั้งต้นของเมนูเปลี่ยน = บรรทัดใน Sales Consumption ที่ยังเป็น pending เปลี่ยนตาม
+      [QUERY_KEYS.SALES_CONSUMPTION],
+      [QUERY_KEYS.SALES_CONSUMPTIONS],
+      [QUERY_KEYS.SALES_CONSUMPTION_CALENDAR],
+    ],
+  });
 }

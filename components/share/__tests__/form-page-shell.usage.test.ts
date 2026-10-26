@@ -53,8 +53,6 @@ const ALLOWED: Record<string, number> = {
   "routes/procurement/purchase-order/from-price-list/from-price-list-content.tsx": 1,
   "routes/procurement/purchase-request/from-template/from-template-content.tsx": 1,
   "routes/procurement/purchase-request/from-template/qty-step.tsx": 1,
-  // หน้าตรวจนำเข้ายอดขาย POS — DFH ตรงใน FormPageShell ไม่ใช่ฟอร์ม ไม่มีชุด Edit/Save (ปุ่มยืนยันอยู่ต่อ Outlet)
-  "routes/system-admin/interface/pos/pos-import-review.tsx": 1,
   // ลิงก์มีป้าย "← Purchase Orders" บนหน้าสำเร็จ ไม่ใช่ปุ่ม back แบบไอคอน — BackButton จะทำป้ายหาย
   "routes/procurement/purchase-order/from-pr/step-result.tsx": 1,
   // ลิงก์มีป้าย "← Interfaces" ในหน้าว่างของ brand ที่หมดอายุจนอ่าน config ไม่ได้ ไม่ใช่ปุ่ม back ของฟอร์ม

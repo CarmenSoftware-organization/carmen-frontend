@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { getUserErrorMessage } from "@/lib/error-message";
 import { importStatusLabel } from "./pos-import-status";
-import { useUploadSimphony } from "./use-pos-sale";
+import { useUploadSimphony } from "../shared/use-pos-sale";
 
 /** เพดานขนาดไฟล์ที่ยอมให้อัปโหลด (ตรงกับฝั่ง backend) */
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
@@ -23,8 +23,8 @@ const LEGACY_EXPORT_WARNING = "legacy_export_version";
  * @returns React element ของปุ่มและ input ที่ซ่อนอยู่
  */
 export function PosSimphonyUploadButton() {
-  const t = useTranslations("systemAdmin.interface.posSale.upload");
-  const tStatus = useTranslations("systemAdmin.interface.posSale.importStatus");
+  const t = useTranslations("operationPlan.posSale.upload");
+  const tStatus = useTranslations("operationPlan.posSale.importStatus");
   const tErr = useTranslations("errors");
   const inputRef = useRef<HTMLInputElement>(null);
   const upload = useUploadSimphony();

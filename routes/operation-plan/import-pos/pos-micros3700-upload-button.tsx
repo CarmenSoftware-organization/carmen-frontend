@@ -11,7 +11,7 @@ import {
   type Micros3700Ready,
 } from "./pos-micros3700-import-dialog";
 import { importStatusLabel } from "./pos-import-status";
-import { useCheckMicros3700 } from "./use-pos-sale";
+import { useCheckMicros3700 } from "../shared/use-pos-sale";
 
 /** เพดานขนาด PDF ที่ยอมเปิดในเบราว์เซอร์ */
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
@@ -28,8 +28,8 @@ type Stage = "idle" | "reading" | "checking";
  * @returns React element ของปุ่ม, input ที่ซ่อนอยู่ และ dialog
  */
 export function PosMicros3700UploadButton() {
-  const t = useTranslations("systemAdmin.interface.posSale.micros3700Upload");
-  const tStatus = useTranslations("systemAdmin.interface.posSale.importStatus");
+  const t = useTranslations("operationPlan.posSale.micros3700Upload");
+  const tStatus = useTranslations("operationPlan.posSale.importStatus");
   const tErr = useTranslations("errors");
   const inputRef = useRef<HTMLInputElement>(null);
   const check = useCheckMicros3700();
