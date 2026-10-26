@@ -1,5 +1,4 @@
 import { useTranslations } from "use-intl";
-import EmptyComponent from "@/components/empty-component";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import type { ScDetail, ScHistoryEntry } from "@/types/sales-consumption";
