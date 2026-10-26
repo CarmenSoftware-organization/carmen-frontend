@@ -5447,7 +5447,7 @@
       "section": "Saved Widgets",
       "add": "Add Widget",
       "emptyTitle": "Build your dashboard",
-      "emptyDescription": "Pick a data set from the \"+ Add Widget\" menu above to create your first widget",
+      "emptyDescription": "Choose a data set to create your first widget",
       "emptyHintKpi": "KPI metrics",
       "emptyHintPie": "Distribution",
       "emptyHintBar": "Comparison",

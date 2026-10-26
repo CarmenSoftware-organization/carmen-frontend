@@ -38,6 +38,9 @@ interface LookupDatasetProps {
   readonly className?: string;
   readonly size?: "xs" | "sm" | "default";
   readonly error?: string;
+  /** คุมการเปิดจากข้างนอก (เช่นปุ่มใน empty state ของ dashboard) — ส่ง `open` แล้วต้องรับ `onOpenChange` ด้วย */
+  readonly open?: boolean;
+  readonly onOpenChange?: (open: boolean) => void;
 }
 
 export function LookupDataset({
@@ -55,12 +58,14 @@ export function LookupDataset({
   className,
   size,
   error,
+  open,
+  onOpenChange,
 }: LookupDatasetProps) {
   const tl = useTranslations("lookup");
   const tfl = useTranslations("field");
   // Lazy: เรียก API ต่อเมื่อผู้ใช้คลิกเปิด lookup ครั้งแรกเท่านั้น
   const [hasOpened, setHasOpened] = useState(false);
-  const { data, isLoading } = useDashboardDatasets(hasOpened);
+  const { data, isLoading } = useDashboardDatasets(hasOpened || !!open);
 
   const datasets = [...(extraItems ?? []), ...(data?.items ?? [])].filter(
     (d) => {
@@ -81,8 +86,10 @@ export function LookupDataset({
         onValueChange(id);
         if (item) onItemChange?.(item);
       }}
-      onOpenChange={(open) => {
-        if (open) setHasOpened(true);
+      open={open}
+      onOpenChange={(next) => {
+        if (next) setHasOpened(true);
+        onOpenChange?.(next);
       }}
       items={datasets}
       getId={(d) => d.id}
