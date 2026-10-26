@@ -4,6 +4,91 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.5.28] - 2026-10-26
+
+### Added
+- **grn:** ใบ saved ของ AVG เห็นสต๊อก ล็อกบรรทัดที่ถูกอ้างอิง และโหลด extra cost เดิมได้ (#438) — Khafang `97524c95`
+- **pos:** แสดงสถานะรอบดึงไฟล์ Simphony ล่าสุดในหน้าตั้งค่า (#437) — Thammanoon Semapru `fbbde85a`
+- **pos:** แสดงชุดที่ถูกเขียนทับและ Outlet อื่นจากไฟล์ PDF เดียวกัน (#437) — Thammanoon Semapru `ed9fb4fe`
+- **pos:** อัปโหลด PDF Micros 3700 พร้อมสรุปต่อ Outlet และเลือกเขียนทับ (#437) — Thammanoon Semapru `af087c10`
+- **pos:** ชั้น API ตรวจและนำเข้ารายงาน Micros 3700 (#437) — Thammanoon Semapru `c7da82ac`
+- **pos:** อ่านข้อความ PDF Micros 3700 ในเบราว์เซอร์ด้วย pdf.js (#437) — Thammanoon Semapru `ac0dd427`
+- **pos:** หน้าตรวจวัตถุดิบและยืนยันตัดสต็อกต่อ Outlet (#437) — Thammanoon Semapru `5798fb87`
+- **pos:** ผูก Outlet กับ Location และเมนู POS กับสูตร (#437) — Thammanoon Semapru `5f39c9de`
+- **pos:** ประวัติการนำเข้า อัปโหลดไฟล์ Simphony และยกเลิกการนำเข้า (#437) — Thammanoon Semapru `adafe083`
+- **pos:** หน้าตั้งค่า Simphony / Micros 3700 และแท็บงาน POS (#437) — Thammanoon Semapru `538dbd5f`
+- **pos:** ชั้น API นำเข้ายอดขาย POS และข้อความ error (#437) — Thammanoon Semapru `86a71a1f`
+- **interface:** แยกแบรนด์ POS เป็น Oracle Simphony และ Micros 3700 (#437) — Thammanoon Semapru `f0439af8`
+- **vendor:** ปุ่ม Print ในหน้าผู้ขาย — Vendor Detail Report ของผู้ขายรายนั้น (#436) — Khafang `561c0e77`
+- **dashboard:** ช่องในตาราง widget ลิงก์ไปเอกสารได้ (slow moving: Type → เอกสารล่าสุด) (#435) — Khafang `9fef2a05`
+- **cost-center:** ปุ่มนำเข้าศูนย์ต้นทุนจาก Carmen GL (#434) — Thammanoon Semapru `c7b95bc5`
+- **docs:** ไม่ลง dataset ทดลอง lab.* ในแคตตาล็อก widget (#432) — Thammanoon Semapru `49b1ab03`
+- **docs:** สคริปต์ docs:widgets สร้างแคตตาล็อก widget dashboard จาก backend (#432) — Thammanoon Semapru `ce1e4a9c`
+- **form:** ปุ่ม workflow ใน footer เป็นปุ่มหลักตัวเดียว หัวใบลด Edit/Save เป็น outline (#431) — Thammanoon Semapru `d6536f28`
+- **workflow:** ปุ่มทำสำเนาในหน้ารายละเอียด พาไปเปิดสำเนาใหม่ทันที (#430) — Thammanoon Semapru `935b2fce`
+- **workflow:** รายละเอียด stage มีโหมดดูจริงทั้งสามแท็บ (#429) — Thammanoon Semapru `e4cdaa93`
+- **workflow:** หน้ารายละเอียด workflow ใช้รางขั้นเป็นแกนหลัก (#429) — Thammanoon Semapru `f89c0427`
+- **workflow:** ช่องผู้อนุมัติขั้นก่อนหน้าตอนปฏิเสธใช้ previous_step + เลือกเทมเพลต wf.reject.previous_step อัตโนมัติ (#427) — Thammanoon Semapru `d40bf6c5`
+- **workflow:** เลือกเทมเพลตแจ้งเตือนเริ่มต้นให้อัตโนมัติตอนสร้าง stage + คำอธิบายอนุมัติขั้นสุดท้าย + เปิดช่องผู้รับเอกสารคืนตอนส่งกลับ (#426) — Thammanoon Semapru `18405175`
+- **notification-template:** ป้ายค่าเริ่มต้นของระบบ + ตัวแปร docType (#426) — Thammanoon Semapru `fb1545c3`
+- **default-setting:** จัดหน้าใหม่เป็นรายการตั้งค่าแบบแถว + หน้ากว้าง (#425) — Thammanoon Semapru `5177ef3a`
+- **company-profile:** จัดหน้าใหม่ — การ์ดตัวตน ค่าที่ล็อก ที่อยู่แบบหัวเอกสาร และเมนูข้ามหมวด (#424) — Thammanoon Semapru `1f7b317c`
+- **workflow:** แท็บ Insights — จุดตรวจก่อนบันทึก เส้นทางเอกสารตามสัดส่วน SLA และตารางปุ่มรายขั้น (#422) — Thammanoon Semapru `1b589ed0`
+- **workflow:** แท็บ Products — ตัวเลขเลือก/ทั้งหมดกับแถบความครอบคลุมทุกกิ่ง สลับดูเฉพาะที่เลือก (#421) — Thammanoon Semapru `b6e3818a`
+- **workflow:** แท็บ Global Routing — อ่านกฎเป็นประโยค เมื่อ/ถ้า/จึง พร้อมบอกขั้นที่ถูกข้าม (#420) — Thammanoon Semapru `626ef5f3`
+- **workflow:** แท็บ Assigned Users ของ stage — แถวคลิกได้ทั้งแถวพร้อม checkbox, เลือกทั้งหมดแบบ tri-state, HOD เป็น switch มีคำอธิบาย (#419) — Thammanoon Semapru `ede31cad`
+- **workflow:** แท็บ Notifications ของ stage — ผู้รับเป็นแถวเดียวสวิตช์เดียว เตือนเมื่อไม่มี template (#418) — Thammanoon Semapru `d32a7958`
+- **workflow:** จัดแท็บ General ของ stage ใหม่ — แบ่งหมวด action/การมองเห็นเป็น switch พร้อมคำอธิบาย (#416) — Thammanoon Semapru `235af1cd`
+- **workflow:** badge ซ่อนราคาใน list/my-approval และซ่อน checkbox ที่ไม่มีผล (#415) — Thammanoon Semapru `a2734e55`
+- **po:** แสดง badge ซ่อนราคาใน PO (#415) — Thammanoon Semapru `d48cc8ab`
+- **pr:** แสดง badge ซ่อนราคาและไม่ส่งราคาเมื่อ stage ซ่อน (#415) — Thammanoon Semapru `056136cf`
+- **workflow:** type hidden_fields + badge ซ่อนราคา (#415) — Thammanoon Semapru `24b47500`
+- **sr:** ซ่อนตัวเลือกอนุมัติ/ปัดตก/ส่งกลับ/จ่ายของที่ stage ปิดไว้ (#414) — Thammanoon Semapru `626a8790`
+- **po:** ซ่อนตัวเลือกอนุมัติ/ปัดตก/ส่งกลับที่ stage ปิดไว้ (#414) — Thammanoon Semapru `f69072ae`
+- **pr:** ซ่อนตัวเลือกอนุมัติ/ปัดตก/ส่งกลับที่ stage ปิดไว้ (#414) — Thammanoon Semapru `9b527b5d`
+- **workflow:** helper อ่าน stage_actions ของเอกสาร (#414) — Thammanoon Semapru `a9052b98`
+- **workflow:** บอกเหตุผลที่โครง stage/routing ถูกล็อกให้เห็นทุกแท็บ (#413) — Thammanoon Semapru `d590dbc7`
+- **workflow:** หน้ารายละเอียด workflow อ่านง่ายขึ้น + จำกัด role ตามชนิด workflow (#412) — Thammanoon Semapru `cd2a118a`
+- **workflow:** หน้าสร้าง workflow แสดงพรีวิวรางขั้นตอน + ชนิดที่ล็อกไว้ข้างหัวข้อ (#411) — Thammanoon Semapru `a8a32ae7`
+- **workflow:** รางขั้นตอนแทนผัง ReactFlow ในหน้ารายละเอียด workflow (#410) — Thammanoon Semapru `0b0fbf6b`
+- **workflow:** คอลัมน์ Flow แสดงชื่อขั้นอนุมัติ + บรรทัดสินค้า/กฎใต้ชื่อ (#409) — Thammanoon Semapru `37b7edcf`
+- **price-list:** ปุ่ม void/กู้คืน/ลบถาวร (admin) ในหน้าเอกสาร (#407) — Thammanoon Semapru `51da3224`
+- **price-list:** list ใช้ void แทนลบ และแสดงใบโมฆะในแท็บทั้งหมด (#407) — Thammanoon Semapru `480247fc`
+- **price-list:** type/hook/ข้อความของสถานะ voided (#407) — Thammanoon Semapru `73880bff`
+
+### Fixed
+- **grn,company-profile:** เทียบค่าฟอร์มกับค่าเดิมแบบไม่สนลำดับ key (#446) — Khafang `0ecf4ca9`
+- **branding:** ตั้งชื่อแท็บแอปหลักเป็น Carmen Blue Platform (#440) — Thammanoon Semapru `f0cc7450`
+- **interface:** แยกสถานะ 'ยังไม่ได้ตั้งค่า' ออกจาก 'ปิดใช้งาน' แสดงสถานะ API key ของแถว External และโชว์ปลายทางบนมือถือ (#439) — Thammanoon Semapru `98f1760f`
+- **pos:** แสดงคีย์ที่เชื่อถือและคีย์ที่เซิร์ฟเวอร์ยื่นมา แปลรหัส error ระดับรอบชุดใหม่ และโหลดสถานะซ้ำระหว่างรอบกำลังดึง (#437) — Thammanoon Semapru `057204bf`
+- **pos:** แปลข้อความ error ของรอบดึง SFTP และตรวจฟอร์ม Simphony ให้ตรงกับ backend (#437) — Thammanoon Semapru `9d9529d3`
+- **pos:** ส่งชุดที่ผู้ใช้เห็นไปกับการเขียนทับ Micros 3700 และรีเฟรช Stock Out หลังนำเข้า (#437) — Thammanoon Semapru `19559fa6`
+- **pos:** รวม URL state ผ่าน use-url, gate license หมดอายุทุกแท็บ และเก็บตกจากรีวิวรอบสุดท้าย (#437) — Thammanoon Semapru `5f17fb9f`
+- **pos:** ขึ้นทะเบียนหน้าตรวจนำเข้า POS ในรายการหัวฟอร์มที่ประกอบเอง (#437) — Thammanoon Semapru `5365d63d`
+- **pos:** กันยืนยันซ้ำระหว่าง refetch, ตรวจ importId และเหตุผล license บนหน้าตรวจ POS (#437) — Thammanoon Semapru `298d3c83`
+- **pos:** สถานะการนำเข้าให้ตรงกับ enum ของ backend (#437) — Thammanoon Semapru `280d3ce0`
+- **pos:** reset ฟอร์มตั้งค่าหลังบันทึก และข้อความ error พอร์ตเป็น i18n (#437) — Thammanoon Semapru `f8a05b4b`
+- **cost-center:** ขึ้นบรรทัดใหม่ใน toast และนับ +n จากยอดจริง (#434) — Thammanoon Semapru `324e323e`
+- **ia:** ปุ่ม Save ของใบปรับสต๊อกลดเป็น outline เมื่อ footer มี Commit (#431) — Thammanoon Semapru `79f80d85`
+- **wizard:** เนื้อหา wizard ตรงแนวชื่อหน้า + ตารางกรอกจำนวนจอแคบเลื่อนแนวนอน (#431) — Thammanoon Semapru `1763a207`
+- **review:** แถบ Submit ของหน้าตรวจทาน PC/SC เป็น sticky ไม่ทับแถบสถานะ (#431) — Thammanoon Semapru `27831a94`
+- **grn:** รายการเลือก PO บนจอแคบเลื่อนแนวนอนแทนการบีบชื่อสินค้าจนหาย (#431) — Thammanoon Semapru `20891235`
+- **doc-header:** จอแคบปุ่มบนหัวเอกสารตกบรรทัดแทนการทับ badge (#431) — Thammanoon Semapru `9b29f3fd`
+- **workflow:** ตัดแถวผู้อนุมัติปัจจุบันออกจากการแจ้งเตือนทุก action (#428) — Thammanoon Semapru `3e46adbe`
+- **workflow:** คำอธิบายอนุมัติขั้นสุดท้ายบอกว่าใช้ข้อความ "อนุมัติครบ" เมื่อมีเทมเพลตนั้นเท่านั้น (#426) — Thammanoon Semapru `3913fb75`
+- **company-profile:** ล็อก Default Currency ให้อ่านอย่างเดียวเสมอ (#423) — Thammanoon Semapru `ead2abe5`
+- **ui:** Switch ตอนปิดมีขอบให้เห็นทั้ง light/dark และ thumb ไม่จมในราง dark (#417) — Thammanoon Semapru `5f173b7b`
+- **workflow:** PR โชว์ยอดจาก backend เมื่อซ่อนเฉพาะราคาต่อหน่วย, insights ไม่นับ hide_fields ของ SR (#415) — Thammanoon Semapru `88252a4a`
+- **po:** โชว์ยอดที่ backend ส่งมาเมื่อซ่อนเฉพาะราคาต่อหน่วย (#415) — Thammanoon Semapru `f57c2466`
+- **workflow:** list swipe PR อ่านผลรายใบก่อนขึ้น toast, footer บอกเมื่อ approve ปิด, SR reject-all ข้ามแถวว่าง (#414) — Thammanoon Semapru `1b93f0bc`
+- **branding:** sync External API docs ชื่อ Carmen Blue เข้าหน้า /developers/api (#408) — Thammanoon Semapru `d19b5f6d`
+- **branding:** เปลี่ยนชื่อผลิตภัณฑ์บนหน้าจอเป็น Carmen Blue (#408) — Thammanoon Semapru `3bfa8073`
+- **price-list:** ข้อความยืนยันลบถาวร/กู้คืน และลบคีย์ซ้ำ (#407) — Thammanoon Semapru `c1010fa4`
+- **price-list:** export ไม่ดึงข้อมูลเมื่อแท็บกรองแล้วไม่เหลือสถานะ (#407) — Thammanoon Semapru `288300dc`
+
+### Changed
+- **header:** หน้า wizard/review ใช้ DocFormHeader แทนหัวที่เขียนเอง (#431) — Thammanoon Semapru `5d79e96b`
+
 ## [2.5.27] - 2026-10-21
 
 ### Added

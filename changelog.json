@@ -1,7 +1,560 @@
 {
-  "current": "2.5.27",
-  "generated_at": "2026-10-21T06:22:51.049Z",
+  "current": "2.5.28",
+  "generated_at": "2026-10-26T06:38:10.857Z",
   "versions": [
+    {
+      "version": "2.5.28",
+      "build": "2.5.28-build.20261026.c4d52f12",
+      "date": "2026-10-26",
+      "commit": "c4d52f12",
+      "changes": {
+        "added": [
+          {
+            "scope": "grn",
+            "summary": "ใบ saved ของ AVG เห็นสต๊อก ล็อกบรรทัดที่ถูกอ้างอิง และโหลด extra cost เดิมได้",
+            "hash": "97524c95",
+            "author": "Khafang",
+            "pr": 438
+          },
+          {
+            "scope": "pos",
+            "summary": "แสดงสถานะรอบดึงไฟล์ Simphony ล่าสุดในหน้าตั้งค่า",
+            "hash": "fbbde85a",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "แสดงชุดที่ถูกเขียนทับและ Outlet อื่นจากไฟล์ PDF เดียวกัน",
+            "hash": "ed9fb4fe",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "อัปโหลด PDF Micros 3700 พร้อมสรุปต่อ Outlet และเลือกเขียนทับ",
+            "hash": "af087c10",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "ชั้น API ตรวจและนำเข้ารายงาน Micros 3700",
+            "hash": "c7da82ac",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "อ่านข้อความ PDF Micros 3700 ในเบราว์เซอร์ด้วย pdf.js",
+            "hash": "ac0dd427",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "หน้าตรวจวัตถุดิบและยืนยันตัดสต็อกต่อ Outlet",
+            "hash": "5798fb87",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "ผูก Outlet กับ Location และเมนู POS กับสูตร",
+            "hash": "5f39c9de",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "ประวัติการนำเข้า อัปโหลดไฟล์ Simphony และยกเลิกการนำเข้า",
+            "hash": "adafe083",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "หน้าตั้งค่า Simphony / Micros 3700 และแท็บงาน POS",
+            "hash": "538dbd5f",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "ชั้น API นำเข้ายอดขาย POS และข้อความ error",
+            "hash": "86a71a1f",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "interface",
+            "summary": "แยกแบรนด์ POS เป็น Oracle Simphony และ Micros 3700",
+            "hash": "f0439af8",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "vendor",
+            "summary": "ปุ่ม Print ในหน้าผู้ขาย — Vendor Detail Report ของผู้ขายรายนั้น",
+            "hash": "561c0e77",
+            "author": "Khafang",
+            "pr": 436
+          },
+          {
+            "scope": "dashboard",
+            "summary": "ช่องในตาราง widget ลิงก์ไปเอกสารได้ (slow moving: Type → เอกสารล่าสุด)",
+            "hash": "9fef2a05",
+            "author": "Khafang",
+            "pr": 435
+          },
+          {
+            "scope": "cost-center",
+            "summary": "ปุ่มนำเข้าศูนย์ต้นทุนจาก Carmen GL",
+            "hash": "c7b95bc5",
+            "author": "Thammanoon Semapru",
+            "pr": 434
+          },
+          {
+            "scope": "docs",
+            "summary": "ไม่ลง dataset ทดลอง lab.* ในแคตตาล็อก widget",
+            "hash": "49b1ab03",
+            "author": "Thammanoon Semapru",
+            "pr": 432
+          },
+          {
+            "scope": "docs",
+            "summary": "สคริปต์ docs:widgets สร้างแคตตาล็อก widget dashboard จาก backend",
+            "hash": "ce1e4a9c",
+            "author": "Thammanoon Semapru",
+            "pr": 432
+          },
+          {
+            "scope": "form",
+            "summary": "ปุ่ม workflow ใน footer เป็นปุ่มหลักตัวเดียว หัวใบลด Edit/Save เป็น outline",
+            "hash": "d6536f28",
+            "author": "Thammanoon Semapru",
+            "pr": 431
+          },
+          {
+            "scope": "workflow",
+            "summary": "ปุ่มทำสำเนาในหน้ารายละเอียด พาไปเปิดสำเนาใหม่ทันที",
+            "hash": "935b2fce",
+            "author": "Thammanoon Semapru",
+            "pr": 430
+          },
+          {
+            "scope": "workflow",
+            "summary": "รายละเอียด stage มีโหมดดูจริงทั้งสามแท็บ",
+            "hash": "e4cdaa93",
+            "author": "Thammanoon Semapru",
+            "pr": 429
+          },
+          {
+            "scope": "workflow",
+            "summary": "หน้ารายละเอียด workflow ใช้รางขั้นเป็นแกนหลัก",
+            "hash": "f89c0427",
+            "author": "Thammanoon Semapru",
+            "pr": 429
+          },
+          {
+            "scope": "workflow",
+            "summary": "ช่องผู้อนุมัติขั้นก่อนหน้าตอนปฏิเสธใช้ previous_step + เลือกเทมเพลต wf.reject.previous_step อัตโนมัติ",
+            "hash": "d40bf6c5",
+            "author": "Thammanoon Semapru",
+            "pr": 427
+          },
+          {
+            "scope": "workflow",
+            "summary": "เลือกเทมเพลตแจ้งเตือนเริ่มต้นให้อัตโนมัติตอนสร้าง stage + คำอธิบายอนุมัติขั้นสุดท้าย + เปิดช่องผู้รับเอกสารคืนตอนส่งกลับ",
+            "hash": "18405175",
+            "author": "Thammanoon Semapru",
+            "pr": 426
+          },
+          {
+            "scope": "notification-template",
+            "summary": "ป้ายค่าเริ่มต้นของระบบ + ตัวแปร docType",
+            "hash": "fb1545c3",
+            "author": "Thammanoon Semapru",
+            "pr": 426
+          },
+          {
+            "scope": "default-setting",
+            "summary": "จัดหน้าใหม่เป็นรายการตั้งค่าแบบแถว + หน้ากว้าง",
+            "hash": "5177ef3a",
+            "author": "Thammanoon Semapru",
+            "pr": 425
+          },
+          {
+            "scope": "company-profile",
+            "summary": "จัดหน้าใหม่ — การ์ดตัวตน ค่าที่ล็อก ที่อยู่แบบหัวเอกสาร และเมนูข้ามหมวด",
+            "hash": "1f7b317c",
+            "author": "Thammanoon Semapru",
+            "pr": 424
+          },
+          {
+            "scope": "workflow",
+            "summary": "แท็บ Insights — จุดตรวจก่อนบันทึก เส้นทางเอกสารตามสัดส่วน SLA และตารางปุ่มรายขั้น",
+            "hash": "1b589ed0",
+            "author": "Thammanoon Semapru",
+            "pr": 422
+          },
+          {
+            "scope": "workflow",
+            "summary": "แท็บ Products — ตัวเลขเลือก/ทั้งหมดกับแถบความครอบคลุมทุกกิ่ง สลับดูเฉพาะที่เลือก",
+            "hash": "b6e3818a",
+            "author": "Thammanoon Semapru",
+            "pr": 421
+          },
+          {
+            "scope": "workflow",
+            "summary": "แท็บ Global Routing — อ่านกฎเป็นประโยค เมื่อ/ถ้า/จึง พร้อมบอกขั้นที่ถูกข้าม",
+            "hash": "626ef5f3",
+            "author": "Thammanoon Semapru",
+            "pr": 420
+          },
+          {
+            "scope": "workflow",
+            "summary": "แท็บ Assigned Users ของ stage — แถวคลิกได้ทั้งแถวพร้อม checkbox, เลือกทั้งหมดแบบ tri-state, HOD เป็น switch มีคำอธิบาย",
+            "hash": "ede31cad",
+            "author": "Thammanoon Semapru",
+            "pr": 419
+          },
+          {
+            "scope": "workflow",
+            "summary": "แท็บ Notifications ของ stage — ผู้รับเป็นแถวเดียวสวิตช์เดียว เตือนเมื่อไม่มี template",
+            "hash": "d32a7958",
+            "author": "Thammanoon Semapru",
+            "pr": 418
+          },
+          {
+            "scope": "workflow",
+            "summary": "จัดแท็บ General ของ stage ใหม่ — แบ่งหมวด action/การมองเห็นเป็น switch พร้อมคำอธิบาย",
+            "hash": "235af1cd",
+            "author": "Thammanoon Semapru",
+            "pr": 416
+          },
+          {
+            "scope": "workflow",
+            "summary": "badge ซ่อนราคาใน list/my-approval และซ่อน checkbox ที่ไม่มีผล",
+            "hash": "a2734e55",
+            "author": "Thammanoon Semapru",
+            "pr": 415
+          },
+          {
+            "scope": "po",
+            "summary": "แสดง badge ซ่อนราคาใน PO",
+            "hash": "d48cc8ab",
+            "author": "Thammanoon Semapru",
+            "pr": 415
+          },
+          {
+            "scope": "pr",
+            "summary": "แสดง badge ซ่อนราคาและไม่ส่งราคาเมื่อ stage ซ่อน",
+            "hash": "056136cf",
+            "author": "Thammanoon Semapru",
+            "pr": 415
+          },
+          {
+            "scope": "workflow",
+            "summary": "type hidden_fields + badge ซ่อนราคา",
+            "hash": "24b47500",
+            "author": "Thammanoon Semapru",
+            "pr": 415
+          },
+          {
+            "scope": "sr",
+            "summary": "ซ่อนตัวเลือกอนุมัติ/ปัดตก/ส่งกลับ/จ่ายของที่ stage ปิดไว้",
+            "hash": "626a8790",
+            "author": "Thammanoon Semapru",
+            "pr": 414
+          },
+          {
+            "scope": "po",
+            "summary": "ซ่อนตัวเลือกอนุมัติ/ปัดตก/ส่งกลับที่ stage ปิดไว้",
+            "hash": "f69072ae",
+            "author": "Thammanoon Semapru",
+            "pr": 414
+          },
+          {
+            "scope": "pr",
+            "summary": "ซ่อนตัวเลือกอนุมัติ/ปัดตก/ส่งกลับที่ stage ปิดไว้",
+            "hash": "9b527b5d",
+            "author": "Thammanoon Semapru",
+            "pr": 414
+          },
+          {
+            "scope": "workflow",
+            "summary": "helper อ่าน stage_actions ของเอกสาร",
+            "hash": "a9052b98",
+            "author": "Thammanoon Semapru",
+            "pr": 414
+          },
+          {
+            "scope": "workflow",
+            "summary": "บอกเหตุผลที่โครง stage/routing ถูกล็อกให้เห็นทุกแท็บ",
+            "hash": "d590dbc7",
+            "author": "Thammanoon Semapru",
+            "pr": 413
+          },
+          {
+            "scope": "workflow",
+            "summary": "หน้ารายละเอียด workflow อ่านง่ายขึ้น + จำกัด role ตามชนิด workflow",
+            "hash": "cd2a118a",
+            "author": "Thammanoon Semapru",
+            "pr": 412
+          },
+          {
+            "scope": "workflow",
+            "summary": "หน้าสร้าง workflow แสดงพรีวิวรางขั้นตอน + ชนิดที่ล็อกไว้ข้างหัวข้อ",
+            "hash": "a8a32ae7",
+            "author": "Thammanoon Semapru",
+            "pr": 411
+          },
+          {
+            "scope": "workflow",
+            "summary": "รางขั้นตอนแทนผัง ReactFlow ในหน้ารายละเอียด workflow",
+            "hash": "0b0fbf6b",
+            "author": "Thammanoon Semapru",
+            "pr": 410
+          },
+          {
+            "scope": "workflow",
+            "summary": "คอลัมน์ Flow แสดงชื่อขั้นอนุมัติ + บรรทัดสินค้า/กฎใต้ชื่อ",
+            "hash": "37b7edcf",
+            "author": "Thammanoon Semapru",
+            "pr": 409
+          },
+          {
+            "scope": "price-list",
+            "summary": "ปุ่ม void/กู้คืน/ลบถาวร (admin) ในหน้าเอกสาร",
+            "hash": "51da3224",
+            "author": "Thammanoon Semapru",
+            "pr": 407
+          },
+          {
+            "scope": "price-list",
+            "summary": "list ใช้ void แทนลบ และแสดงใบโมฆะในแท็บทั้งหมด",
+            "hash": "480247fc",
+            "author": "Thammanoon Semapru",
+            "pr": 407
+          },
+          {
+            "scope": "price-list",
+            "summary": "type/hook/ข้อความของสถานะ voided",
+            "hash": "73880bff",
+            "author": "Thammanoon Semapru",
+            "pr": 407
+          }
+        ],
+        "fixed": [
+          {
+            "scope": "grn,company-profile",
+            "summary": "เทียบค่าฟอร์มกับค่าเดิมแบบไม่สนลำดับ key",
+            "hash": "0ecf4ca9",
+            "author": "Khafang",
+            "pr": 446
+          },
+          {
+            "scope": "branding",
+            "summary": "ตั้งชื่อแท็บแอปหลักเป็น Carmen Blue Platform",
+            "hash": "f0cc7450",
+            "author": "Thammanoon Semapru",
+            "pr": 440
+          },
+          {
+            "scope": "interface",
+            "summary": "แยกสถานะ 'ยังไม่ได้ตั้งค่า' ออกจาก 'ปิดใช้งาน' แสดงสถานะ API key ของแถว External และโชว์ปลายทางบนมือถือ",
+            "hash": "98f1760f",
+            "author": "Thammanoon Semapru",
+            "pr": 439
+          },
+          {
+            "scope": "pos",
+            "summary": "แสดงคีย์ที่เชื่อถือและคีย์ที่เซิร์ฟเวอร์ยื่นมา แปลรหัส error ระดับรอบชุดใหม่ และโหลดสถานะซ้ำระหว่างรอบกำลังดึง",
+            "hash": "057204bf",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "แปลข้อความ error ของรอบดึง SFTP และตรวจฟอร์ม Simphony ให้ตรงกับ backend",
+            "hash": "9d9529d3",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "ส่งชุดที่ผู้ใช้เห็นไปกับการเขียนทับ Micros 3700 และรีเฟรช Stock Out หลังนำเข้า",
+            "hash": "19559fa6",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "รวม URL state ผ่าน use-url, gate license หมดอายุทุกแท็บ และเก็บตกจากรีวิวรอบสุดท้าย",
+            "hash": "5f17fb9f",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "ขึ้นทะเบียนหน้าตรวจนำเข้า POS ในรายการหัวฟอร์มที่ประกอบเอง",
+            "hash": "5365d63d",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "กันยืนยันซ้ำระหว่าง refetch, ตรวจ importId และเหตุผล license บนหน้าตรวจ POS",
+            "hash": "298d3c83",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "สถานะการนำเข้าให้ตรงกับ enum ของ backend",
+            "hash": "280d3ce0",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "pos",
+            "summary": "reset ฟอร์มตั้งค่าหลังบันทึก และข้อความ error พอร์ตเป็น i18n",
+            "hash": "f8a05b4b",
+            "author": "Thammanoon Semapru",
+            "pr": 437
+          },
+          {
+            "scope": "cost-center",
+            "summary": "ขึ้นบรรทัดใหม่ใน toast และนับ +n จากยอดจริง",
+            "hash": "324e323e",
+            "author": "Thammanoon Semapru",
+            "pr": 434
+          },
+          {
+            "scope": "ia",
+            "summary": "ปุ่ม Save ของใบปรับสต๊อกลดเป็น outline เมื่อ footer มี Commit",
+            "hash": "79f80d85",
+            "author": "Thammanoon Semapru",
+            "pr": 431
+          },
+          {
+            "scope": "wizard",
+            "summary": "เนื้อหา wizard ตรงแนวชื่อหน้า + ตารางกรอกจำนวนจอแคบเลื่อนแนวนอน",
+            "hash": "1763a207",
+            "author": "Thammanoon Semapru",
+            "pr": 431
+          },
+          {
+            "scope": "review",
+            "summary": "แถบ Submit ของหน้าตรวจทาน PC/SC เป็น sticky ไม่ทับแถบสถานะ",
+            "hash": "27831a94",
+            "author": "Thammanoon Semapru",
+            "pr": 431
+          },
+          {
+            "scope": "grn",
+            "summary": "รายการเลือก PO บนจอแคบเลื่อนแนวนอนแทนการบีบชื่อสินค้าจนหาย",
+            "hash": "20891235",
+            "author": "Thammanoon Semapru",
+            "pr": 431
+          },
+          {
+            "scope": "doc-header",
+            "summary": "จอแคบปุ่มบนหัวเอกสารตกบรรทัดแทนการทับ badge",
+            "hash": "9b29f3fd",
+            "author": "Thammanoon Semapru",
+            "pr": 431
+          },
+          {
+            "scope": "workflow",
+            "summary": "ตัดแถวผู้อนุมัติปัจจุบันออกจากการแจ้งเตือนทุก action",
+            "hash": "3e46adbe",
+            "author": "Thammanoon Semapru",
+            "pr": 428
+          },
+          {
+            "scope": "workflow",
+            "summary": "คำอธิบายอนุมัติขั้นสุดท้ายบอกว่าใช้ข้อความ \"อนุมัติครบ\" เมื่อมีเทมเพลตนั้นเท่านั้น",
+            "hash": "3913fb75",
+            "author": "Thammanoon Semapru",
+            "pr": 426
+          },
+          {
+            "scope": "company-profile",
+            "summary": "ล็อก Default Currency ให้อ่านอย่างเดียวเสมอ",
+            "hash": "ead2abe5",
+            "author": "Thammanoon Semapru",
+            "pr": 423
+          },
+          {
+            "scope": "ui",
+            "summary": "Switch ตอนปิดมีขอบให้เห็นทั้ง light/dark และ thumb ไม่จมในราง dark",
+            "hash": "5f173b7b",
+            "author": "Thammanoon Semapru",
+            "pr": 417
+          },
+          {
+            "scope": "workflow",
+            "summary": "PR โชว์ยอดจาก backend เมื่อซ่อนเฉพาะราคาต่อหน่วย, insights ไม่นับ hide_fields ของ SR",
+            "hash": "88252a4a",
+            "author": "Thammanoon Semapru",
+            "pr": 415
+          },
+          {
+            "scope": "po",
+            "summary": "โชว์ยอดที่ backend ส่งมาเมื่อซ่อนเฉพาะราคาต่อหน่วย",
+            "hash": "f57c2466",
+            "author": "Thammanoon Semapru",
+            "pr": 415
+          },
+          {
+            "scope": "workflow",
+            "summary": "list swipe PR อ่านผลรายใบก่อนขึ้น toast, footer บอกเมื่อ approve ปิด, SR reject-all ข้ามแถวว่าง",
+            "hash": "1b93f0bc",
+            "author": "Thammanoon Semapru",
+            "pr": 414
+          },
+          {
+            "scope": "branding",
+            "summary": "sync External API docs ชื่อ Carmen Blue เข้าหน้า /developers/api",
+            "hash": "d19b5f6d",
+            "author": "Thammanoon Semapru",
+            "pr": 408
+          },
+          {
+            "scope": "branding",
+            "summary": "เปลี่ยนชื่อผลิตภัณฑ์บนหน้าจอเป็น Carmen Blue",
+            "hash": "3bfa8073",
+            "author": "Thammanoon Semapru",
+            "pr": 408
+          },
+          {
+            "scope": "price-list",
+            "summary": "ข้อความยืนยันลบถาวร/กู้คืน และลบคีย์ซ้ำ",
+            "hash": "c1010fa4",
+            "author": "Thammanoon Semapru",
+            "pr": 407
+          },
+          {
+            "scope": "price-list",
+            "summary": "export ไม่ดึงข้อมูลเมื่อแท็บกรองแล้วไม่เหลือสถานะ",
+            "hash": "288300dc",
+            "author": "Thammanoon Semapru",
+            "pr": 407
+          }
+        ],
+        "changed": [
+          {
+            "scope": "header",
+            "summary": "หน้า wizard/review ใช้ DocFormHeader แทนหัวที่เขียนเอง",
+            "hash": "5d79e96b",
+            "author": "Thammanoon Semapru",
+            "pr": 431
+          }
+        ]
+      }
+    },
     {
       "version": "2.5.27",
       "build": "2.5.27-build.20261021.51f34fb3",
