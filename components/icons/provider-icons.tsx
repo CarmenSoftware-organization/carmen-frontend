@@ -1,5 +1,5 @@
-import { useId } from "react";
-
+import { useId, type ComponentType } from "react";
+import { Sparkle } from "lucide-react";
 
 export function ClaudeIcon({ className }: { readonly className?: string }) {
   return (
@@ -174,4 +174,46 @@ export function GrokIcon({ className }: { readonly className?: string }) {
       <path d="M325.226 695.251C206.128 580.84 226.662 403.776 328.285 301.668C403.431 226.097 526.549 195.254 634.026 240.596L749.454 186.994C728.657 171.88 702.007 155.623 671.424 144.2C533.19 86.9942 367.693 115.465 255.323 228.382C147.234 337.081 113.244 504.215 171.613 646.833C215.216 753.423 143.739 828.818 71.7385 904.916C46.2237 931.893 20.6216 958.87 0 987.429L325.139 695.339" />
     </svg>
   );
+}
+
+export type ProviderIcon = ComponentType<{ readonly className?: string }>;
+
+const ICONS: Readonly<Record<string, ProviderIcon>> = {
+  claude: ClaudeIcon,
+  chatgpt: ChatGptIcon,
+  gemini: GeminiIcon,
+  deepseek: DeepseekIcon,
+  grok: GrokIcon,
+  google: GoogleIcon,
+};
+
+/** icon_key ที่ไม่รู้จัก (หรือ null) → Sparkle */
+export function providerIcon(iconKey: string | null): ProviderIcon {
+  return (iconKey && ICONS[iconKey]) || Sparkle;
+}
+
+/** วาดไอคอนของ provider ตาม icon_key (ใช้แทน `providerIcon()` เมื่อไม่ต้องการสร้าง component ตอน render) */
+export function ProviderIconMark({
+  iconKey,
+  className,
+}: {
+  readonly iconKey: string | null;
+  readonly className?: string;
+}) {
+  switch (iconKey) {
+    case "claude":
+      return <ClaudeIcon className={className} />;
+    case "chatgpt":
+      return <ChatGptIcon className={className} />;
+    case "gemini":
+      return <GeminiIcon className={className} />;
+    case "deepseek":
+      return <DeepseekIcon className={className} />;
+    case "grok":
+      return <GrokIcon className={className} />;
+    case "google":
+      return <GoogleIcon className={className} />;
+    default:
+      return <Sparkle className={className} />;
+  }
 }

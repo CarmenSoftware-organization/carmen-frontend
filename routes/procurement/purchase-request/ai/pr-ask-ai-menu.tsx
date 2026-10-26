@@ -8,8 +8,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AI_PROVIDERS, type AiProvider } from "./ai-providers";
-import { buildPrAiQuery, type PrAiQueryItem } from "./build-pr-ai-query";
+import { providerIcon } from "@/components/icons/provider-icons";
+import {
+  buildPrAiQuery,
+  buildProviderUrl,
+  type PrAiQueryItem,
+} from "./build-pr-ai-query";
+import { useAskAiProviders, type AskAiProvider } from "./use-ask-ai-providers";
 
 interface PrAskAiMenuProps {
   readonly items: readonly PrAiQueryItem[];
@@ -18,10 +23,14 @@ interface PrAskAiMenuProps {
 
 export function PrAskAiMenu({ items, disabled }: PrAskAiMenuProps) {
   const t = useTranslations("procurement.purchaseRequest");
+  const { data: providers, isLoading, isError } = useAskAiProviders();
 
-  const handlePick = (provider: AiProvider) => {
-    const query = buildPrAiQuery(items);
-    if (!provider.supportsPrefill && navigator.clipboard) {
+  if (providers && providers.length === 0) return null;
+
+  const handlePick = (provider: AskAiProvider) => {
+    const query = buildPrAiQuery(provider.prompt, items);
+    const { url, copy } = buildProviderUrl(provider.url_template, query);
+    if (copy && navigator.clipboard) {
       navigator.clipboard
         .writeText(query)
         .then(() =>
@@ -29,26 +38,41 @@ export function PrAskAiMenu({ items, disabled }: PrAskAiMenuProps) {
         )
         .catch(() => toast.error(t("askAiCopyFailed")));
     }
-    window.open(provider.buildUrl(query), "_blank", "noopener,noreferrer");
+    if (!url.startsWith("https://")) return;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button type="button" variant="outline" size="sm" disabled={disabled}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={disabled || isLoading || isError || !providers}
+        >
           <Sparkle />
           {t("askAi")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
-        {AI_PROVIDERS.map((provider) => {
-          const Icon = provider.icon;
+        {(providers ?? []).map((provider) => {
+          const Icon = providerIcon(provider.icon_key);
           return (
             <DropdownMenuItem
-              key={provider.id}
+              key={provider.code}
               onClick={() => handlePick(provider)}
             >
-              <Icon className="size-3.5" />
+              {provider.icon_url ? (
+                <img
+                  src={provider.icon_url}
+                  className="size-3.5"
+                  alt=""
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <Icon className="size-3.5" />
+              )}
               {provider.label}
             </DropdownMenuItem>
           );

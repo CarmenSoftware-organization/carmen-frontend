@@ -29,6 +29,9 @@ const atDateQuery = (atDate?: string) =>
   atDate ? `?at_date=${encodeURIComponent(atDate)}` : "";
 
 export const API_ENDPOINTS = {
+  ASK_AI_PROVIDERS: (buCode: string) =>
+    `/api/proxy/api/${buCode}/ask-ai/providers`,
+  ASK_AI_CONFIG: (buCode: string) => `/api/proxy/api/config/${buCode}/ask-ai`,
   ACCOUNT_MAPPING: (buCode: string) =>
     `/api/proxy/api/${buCode}/account-mapping`,
   ACTIVITY_LOGS: (buCode: string) => `/api/proxy/api/${buCode}/activity-logs`,

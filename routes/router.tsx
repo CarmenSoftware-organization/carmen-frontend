@@ -822,6 +822,10 @@ export const router = createBrowserRouter([
                   import("./system-admin/default-setting/default-setting.route"),
               },
               {
+                path: "ask-ai",
+                lazy: () => import("./system-admin/ask-ai/ask-ai.route"),
+              },
+              {
                 path: "interface",
                 lazy: () => import("./system-admin/interface/interface.route"),
               },

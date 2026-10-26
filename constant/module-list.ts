@@ -27,6 +27,7 @@ import {
   Briefcase,
   Scale,
   SlidersHorizontal,
+  Sparkles,
   Handshake,
   Building2,
   BadgeDollarSign,
@@ -787,6 +788,13 @@ export const moduleList: ModuleDto[] = [
         // ซึ่งอยู่นอกขอบเขต license ทั้งคู่
         licenseFeature: "system_admin",
         icon: SlidersHorizontal,
+        permission: PERMISSIONS.system_admin.business_unit.view,
+      },
+      {
+        name: "askAi",
+        path: "/system-admin/ask-ai",
+        licenseFeature: "system_admin",
+        icon: Sparkles,
         permission: PERMISSIONS.system_admin.business_unit.view,
       },
       {

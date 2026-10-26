@@ -17,27 +17,6 @@ export interface PrAiQueryItem {
   readonly currencyCode?: string;
 }
 
-/**
- * บริบทที่ AI ต้องรู้ก่อนตอบ
- *
- * ไม่มีบรรทัดพวกนี้ AI จะตอบเป็นราคาปลีกสกุลดอลลาร์จากเว็บอเมริกา เพราะไม่มีอะไร
- * บอกว่าคนถามเป็นฝ่ายจัดซื้อโรงแรมในไทยที่ซื้อขายส่งเข้าครัว
- *
- * บรรทัด "อย่าเดา" สำคัญที่สุด — คำตอบนี้ไปอยู่ในมือคนที่กำลังจะเซ็นอนุมัติ AI
- * สาธารณะไม่รู้จักซัพพลายเออร์ในไทยจริง ถ้าไม่ห้ามไว้มันจะแต่งชื่อบริษัทออกมา
- * ซึ่งอันตรายกว่าไม่ตอบ
- */
-const CONTEXT = [
-  "You are helping a hotel purchasing officer in Thailand review a purchase request.",
-  "Prices are for wholesale / foodservice supply, not retail.",
-  "",
-  "For each item below, give a typical wholesale price range for that pack size and",
-  "say whether the quoted price looks reasonable. Answer as a short table.",
-  "If you are not confident about Thai market prices, say so instead of guessing.",
-  "Do not invent supplier names.",
-  "",
-];
-
 function money(value: number | undefined, currency: string | undefined) {
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
     return "—";
@@ -45,7 +24,18 @@ function money(value: number | undefined, currency: string | undefined) {
   return `${value.toFixed(2)}${currency ? ` ${currency}` : ""}`;
 }
 
-export function buildPrAiQuery(items: readonly PrAiQueryItem[]): string {
+/** URL ที่แทนแล้วยาวเกินนี้ → คัดลอกลง clipboard แทน (เบราว์เซอร์/เซิร์ฟเวอร์ตัดที่ราว ๆ นี้) */
+const MAX_URL_LENGTH = 8000;
+
+/**
+ * สร้าง prompt จาก template ของ provider + ตาราง item
+ * `{items}` แทนทุกจุดด้วย function replacer (กัน `$&` ใน prompt) — ไม่มี `{items}`
+ * ต่อตารางท้าย prompt หลังบรรทัดว่าง
+ */
+export function buildPrAiQuery(
+  template: string,
+  items: readonly PrAiQueryItem[],
+): string {
   const rows = items
     .filter((it) => it.productName)
     .map((it, i) => {
@@ -59,10 +49,30 @@ export function buildPrAiQuery(items: readonly PrAiQueryItem[]): string {
       return `| ${i + 1} | ${name} | ${qty} | ${money(it.price, it.currencyCode)} |`;
     });
 
-  return [
-    ...CONTEXT,
+  const table = [
     "| # | Item | Qty | Quoted price |",
     "| --- | --- | --- | --- |",
     ...rows,
   ].join("\n");
+
+  return template.includes("{items}")
+    ? template.replace(/\{items\}/g, () => table)
+    : `${template}\n\n${table}`;
+}
+
+/**
+ * แทน `{query}` ใน url_template — `copy: true` = ผู้เรียกต้องคัดลอก prompt ลง clipboard
+ * (provider ไม่รับ prefill หรือ URL ยาวเกิน)
+ */
+export function buildProviderUrl(
+  urlTemplate: string,
+  query: string,
+): { url: string; copy: boolean } {
+  if (!urlTemplate.includes("{query}")) {
+    return { url: urlTemplate, copy: true };
+  }
+  const encoded = encodeURIComponent(query);
+  const url = urlTemplate.replace(/\{query\}/g, () => encoded);
+  if (url.length <= MAX_URL_LENGTH) return { url, copy: false };
+  return { url: urlTemplate.replace(/\{query\}/g, ""), copy: true };
 }
