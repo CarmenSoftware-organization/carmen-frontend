@@ -6281,7 +6281,8 @@
     "expiredBanner": "Your subscription expired on {date} — you can still view data, but saving or editing is disabled.",
     "inactiveBanner": "Your subscription has been suspended — you can still view data, but saving or editing is disabled.",
     "writeDisabledTitle": "Disabled — your subscription is expired or inactive. Contact your administrator to renew.",
-    "seatOverQuota": "This cluster has {used}/{cap} users — over the seats you've purchased. Saving is disabled until you reduce users or buy more seats.",
+    "seatOverQuota": "Saving is disabled — this cluster has {used}/{cap} users, more than the seats purchased.",
+    "seatOverQuotaAction": "Ask your business unit admin or cluster admin to buy more seats or deactivate some users.",
     "seatExpiringSoon": "{seats} seat(s) expire on {date} — afterward, your {used} active users will exceed the remaining quota ({remaining} seats). Renew or buy more seats soon."
   },
   "profileError": {
