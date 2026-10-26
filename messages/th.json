@@ -143,6 +143,22 @@
     "saved": "อัปเดตหน่วยธุรกิจแล้ว",
     "saveError": "บันทึกการเปลี่ยนแปลงไม่สำเร็จ"
   },
+  "askAi": {
+    "pageDescription": "เลือกว่า AI ตัวไหนจะขึ้นในเมนู Ask AI ของใบขอซื้อ และปรับ prompt ที่ส่งให้แต่ละตัว",
+    "loadError": "โหลดการตั้งค่า Ask AI ไม่สำเร็จ",
+    "saved": "บันทึกการตั้งค่า Ask AI แล้ว",
+    "enabled": "เปิดใช้งาน",
+    "usingDefault": "ใช้ค่ามาตรฐาน",
+    "customized": "แก้แล้ว",
+    "promptLabel": "Prompt",
+    "promptPlaceholder": "เว้นว่างเพื่อใช้ prompt มาตรฐาน",
+    "promptHintPrefix": "ใส่",
+    "promptHintSuffix": "ตรงจุดที่ต้องการให้แทนด้วยตารางรายการ ถ้าไม่ใส่จะต่อตารางท้าย prompt หลังบรรทัดว่าง",
+    "showDefault": "ดู prompt มาตรฐาน",
+    "hideDefault": "ซ่อน prompt มาตรฐาน",
+    "resetPrompt": "กลับไปใช้ค่ามาตรฐาน",
+    "empty": "ไม่มี AI provider ให้ใช้งาน"
+  },
   "defaultSetting": {
     "pageDescription": "การตั้งค่าเริ่มต้นการทำงานของหน่วยธุรกิจปัจจุบัน",
     "loadError": "โหลดการตั้งค่าหน่วยธุรกิจไม่สำเร็จ",
@@ -6321,6 +6337,7 @@
     "dashboardDataset": "ชุดข้อมูลแดชบอร์ด",
     "companyProfile": "ข้อมูลบริษัท",
     "defaultSetting": "ค่าเริ่มต้น",
+    "askAi": "Ask AI",
     "vendorManagement": "จัดการผู้ขาย",
     "priceList": "รายการราคา",
     "priceListTemplate": "แม่แบบรายการราคา",

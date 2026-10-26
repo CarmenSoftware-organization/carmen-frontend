@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { providerIcon } from "./ai-providers";
+import { providerIcon } from "@/components/icons/provider-icons";
 import {
   buildPrAiQuery,
   buildProviderUrl,

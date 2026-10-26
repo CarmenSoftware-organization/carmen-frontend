@@ -143,6 +143,22 @@
     "saved": "Business unit updated",
     "saveError": "Failed to save changes"
   },
+  "askAi": {
+    "pageDescription": "Choose which AI assistants appear in the purchase request Ask AI menu, and customize the prompt each one receives.",
+    "loadError": "Failed to load Ask AI settings.",
+    "saved": "Ask AI settings saved",
+    "enabled": "Enabled",
+    "usingDefault": "Using default",
+    "customized": "Customized",
+    "promptLabel": "Prompt",
+    "promptPlaceholder": "Leave empty to use the default prompt",
+    "promptHintPrefix": "Write",
+    "promptHintSuffix": "where the item table should go; without it the table is appended after a blank line.",
+    "showDefault": "View default prompt",
+    "hideDefault": "Hide default prompt",
+    "resetPrompt": "Reset to default",
+    "empty": "No AI providers are available."
+  },
   "defaultSetting": {
     "pageDescription": "Operational default settings for the current business unit.",
     "loadError": "Failed to load business unit settings.",
@@ -6321,6 +6337,7 @@
     "dashboardDataset": "Dashboard Dataset",
     "companyProfile": "Company Profile",
     "defaultSetting": "Default Setting",
+    "askAi": "Ask AI",
     "vendorManagement": "Vendor Management",
     "priceList": "Price List",
     "priceListTemplate": "Price List Template",
