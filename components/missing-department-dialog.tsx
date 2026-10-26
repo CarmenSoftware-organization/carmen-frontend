@@ -14,45 +14,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useProfile } from "@/hooks/use-profile";
 
-const DISMISSED_KEY = "missing-department-dismissed-bu";
-
 /**
- * จำ BU ที่ปิด dialog แล้วไว้ใน sessionStorage — เดิมจำแค่ใน state จึงเด้งใหม่ทุก reload
- * ทั้งที่ผู้ใช้แก้เองไม่ได้ (ต้องรอ admin) และ header ก็บอก "No department" อยู่แล้ว
- * ใช้ session ไม่ใช่ local: เปิดแท็บ/ล็อกอินใหม่ยังเตือนอีกครั้ง ไม่เงียบไปตลอด
- * storage อาจโยน error (private mode / ถูกบล็อก) — ล้มแล้วถอยไปพฤติกรรมเดิม
+ * เด้งทุกครั้งที่โหลดหน้าโดยเจตนา — การปิดจำไว้แค่ใน state ห้ามย้ายไป sessionStorage /
+ * localStorage: ผู้ใช้ที่ไม่มีแผนกทำให้ workflow (การอนุมัติตามแผนก) ทำงานผิดได้ เจ้าของ
+ * ระบบต้องการให้ dialog กดดันจนกว่า admin จะ assign แผนกให้ (ตัดสินเมื่อ 2026-10-26)
  */
-const readDismissed = (): string | null => {
-  try {
-    return sessionStorage.getItem(DISMISSED_KEY);
-  } catch {
-    return null;
-  }
-};
-
-const writeDismissed = (buId: string) => {
-  try {
-    sessionStorage.setItem(DISMISSED_KEY, buId);
-  } catch {
-    // ไม่มี storage ก็ยังปิดได้ใน state
-  }
-};
-
 export function MissingDepartmentDialog() {
   const { isSuccess, defaultBu, hasDepartment } = useProfile();
   const t = useTranslations("profileError");
-  const [dismissedBuId, setDismissedBuId] = useState<string | null>(
-    readDismissed,
-  );
+  const [dismissedBuId, setDismissedBuId] = useState<string | null>(null);
 
   const shouldShow = isSuccess && !!defaultBu && !hasDepartment;
   const isDismissed = dismissedBuId !== null && dismissedBuId === defaultBu?.id;
-
-  const dismiss = () => {
-    const buId = defaultBu?.id ?? null;
-    setDismissedBuId(buId);
-    if (buId) writeDismissed(buId);
-  };
 
   return (
     <AlertDialog open={shouldShow && !isDismissed}>
@@ -71,7 +44,7 @@ export function MissingDepartmentDialog() {
         <AlertDialogFooter className="flex! justify-center">
           <AlertDialogAction
             size="sm"
-            onClick={dismiss}
+            onClick={() => setDismissedBuId(defaultBu?.id ?? null)}
           >
             {t("close")}
           </AlertDialogAction>
