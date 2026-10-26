@@ -512,7 +512,7 @@
     "loadError": "โหลดข้อมูลวิดเจ็ตไม่สำเร็จ: {message}",
     "empty": "ไม่มีข้อมูลวิดเจ็ต",
     "noData": "ไม่มีข้อมูล",
-    "deltaUnchanged": "ไม่เปลี่ยนแปลงจากรอบก่อน",
+    "aboutWidget": "เกี่ยวกับวิดเจ็ตนี้",
     "deltaCompare": "เทียบรอบก่อน",
     "sectionKpi": "ตัวชี้วัด",
     "sectionDistribution": "สัดส่วน",

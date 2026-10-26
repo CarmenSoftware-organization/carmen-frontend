@@ -512,7 +512,7 @@
     "loadError": "Failed to load widgets: {message}",
     "empty": "No widget data",
     "noData": "No data",
-    "deltaUnchanged": "Unchanged from previous period",
+    "aboutWidget": "About this widget",
     "deltaCompare": "vs. previous period",
     "sectionKpi": "Metrics",
     "sectionDistribution": "Distribution",
