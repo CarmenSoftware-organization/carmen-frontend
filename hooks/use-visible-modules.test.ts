@@ -190,6 +190,14 @@ describe("markAll — admin", () => {
 // @/hooks/use-profile ชั้นเดียว ตามแบบ route-guard.test.tsx เพื่อยืนยันว่า
 // useVisibleModules ต่อสาย isAdmin → markAll / non-admin → annotate ถูกจริง
 const profile = vi.fn();
+vi.mock("@/hooks/use-pos-status", () => ({
+  usePosStatus: () => ({
+    enabledBrands: [],
+    isEnabled: true,
+    isLoading: false,
+  }),
+}));
+
 vi.mock("@/hooks/use-profile", () => ({
   useProfile: () => profile(),
 }));

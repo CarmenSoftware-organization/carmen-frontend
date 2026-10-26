@@ -12,6 +12,8 @@ import {
   licenseFeatureOf,
   useLicense,
 } from "@/hooks/use-license";
+import { usePosStatus } from "@/hooks/use-pos-status";
+import { PosNotEnabled } from "@/components/pos-not-enabled";
 import type { DeniedReason } from "@/components/permission-denied-dialog";
 
 interface RouteGuardProps {
@@ -48,6 +50,7 @@ export function RouteGuard({ children }: RouteGuardProps) {
   const t = useTranslations("permissionDenied");
   // ต้องเรียกก่อน early return ทุกอัน — hook เรียกแบบมีเงื่อนไขไม่ได้
   const landing = useLandingPath();
+  const pos = usePosStatus();
 
   const leaf = findRouteLeaf(pathname);
 
@@ -75,6 +78,13 @@ export function RouteGuard({ children }: RouteGuardProps) {
         fallbackTo={landing}
       />
     );
+  }
+
+  // หน้าที่ต้องมี POS interface — รอผลก่อน (ไม่ render อะไร) กันหน้า "ยังไม่เปิด POS" วาบ
+  // ตอนที่แค่ยังโหลดไม่เสร็จ · ตรวจหลัง license เพื่อให้ข้อความ license มาก่อนเหมือนเดิม
+  if (leaf?.requiresPosInterface) {
+    if (pos.isLoading) return null;
+    if (!pos.isEnabled) return <PosNotEnabled />;
   }
 
   const denied = !!leaf?.permission && !isAdmin && !can(leaf.permission);

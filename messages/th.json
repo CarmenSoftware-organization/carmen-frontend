@@ -6033,6 +6033,8 @@
     "operationCuisine": "ประเภทอาหาร",
     "operationEquipment": "อุปกรณ์",
     "operationEquipmentCategory": "หมวดหมู่อุปกรณ์",
+    "importPos": "นำเข้ายอดขาย POS",
+    "salesConsumption": "ตัดสต็อกจากยอดขาย",
     "operationRecipe": "สูตรอาหาร",
     "recipePreparationStep": "ขั้นตอนการเตรียม",
     "procurement": "จัดซื้อจัดจ้าง",
@@ -6151,6 +6153,11 @@
     "accessDeniedTitle": "ไม่มีสิทธิ์เข้าถึง",
     "accessDeniedDesc": "คุณไม่มีสิทธิ์เข้าถึงข้อมูลนี้",
     "goBack": "กลับ"
+  },
+  "posNotEnabled": {
+    "title": "ยังไม่ได้เปิด POS interface",
+    "description": "หน่วยธุรกิจนี้ยังไม่ได้ตั้งค่า POS interface จึงใช้หน้านี้ไม่ได้",
+    "openInterface": "ไปที่หน้าตั้งค่า Interface"
   },
   "permissionDenied": {
     "eyebrow": "จำกัดสิทธิ์",

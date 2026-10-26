@@ -6033,6 +6033,8 @@
     "operationCuisine": "Cuisine Type",
     "operationEquipment": "Equipment",
     "operationEquipmentCategory": "Equipment Category",
+    "importPos": "Import POS",
+    "salesConsumption": "Sales Consumption",
     "operationRecipe": "Recipe",
     "recipePreparationStep": "Preparation Step",
     "procurement": "Procurement",
@@ -6151,6 +6153,11 @@
     "accessDeniedTitle": "Access Denied",
     "accessDeniedDesc": "You do not have permission to access this resource.",
     "goBack": "Go Back"
+  },
+  "posNotEnabled": {
+    "title": "POS interface is not enabled",
+    "description": "This business unit has no POS interface set up, so this page is unavailable.",
+    "openInterface": "Open Interface settings"
   },
   "permissionDenied": {
     "eyebrow": "Restricted",
