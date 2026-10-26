@@ -46,6 +46,7 @@ import {
   createBusinessSettingSchema,
   toFormValues,
   buildPatch,
+  toPatchPayload,
   type BusinessSettingFormValues,
 } from "./company-profile-form-schema";
 import {
@@ -197,9 +198,9 @@ export default function CompanyProfileComponent() {
       setEditing(false);
       return;
     }
-    // แนบ doc_version (optimistic lock) ไปกับ payload เพื่อกัน 409 version ค้าง
+    // แนบ doc_version (optimistic lock) + id ของ BU ที่โหลดมา (กันเขียนผิด BU) — ดู toPatchPayload
     update.mutate(
-      { ...patch, doc_version: data.doc_version },
+      toPatchPayload(patch, data),
       {
         onSuccess: () => {
           toast.success(t("saved"));

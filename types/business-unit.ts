@@ -162,4 +162,9 @@ interface BusinessUnitEditable {
 
 export type BusinessUnitPatch = Partial<BusinessUnitEditable> & {
   doc_version?: number;
+  /**
+   * BU ที่หน้าโหลดข้อมูลมา — backend เขียนลง BU default ของผู้ใช้เสมอ ถ้าไม่ตรงกัน (สลับ BU จากแท็บ/เครื่องอื่น)
+   * จะตอบ 409 `BUSINESS_UNIT_NOT_CURRENT` แทนการเขียนฟอร์มของ BU หนึ่งลงอีก BU
+   */
+  id?: string;
 };
