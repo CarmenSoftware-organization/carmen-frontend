@@ -35,8 +35,8 @@ import type {
   PosMicros3700OutletAction,
   PosMicros3700OutletCheck,
   PosMicros3700OutletResult,
-} from "./pos-sale-types";
-import { outletErrorMessage, useImportMicros3700 } from "./use-pos-sale";
+} from "@/types/pos-sale";
+import { outletErrorMessage, useImportMicros3700 } from "../shared/use-pos-sale";
 
 /** ข้อความที่อ่านจาก PDF พร้อมข้อมูลไฟล์ — ถือไว้ในหน่วยความจำจน dialog ปิด */
 export interface Micros3700Payload {
@@ -96,8 +96,8 @@ export function PosMicros3700ImportDialog({
   readonly payload: Micros3700Payload;
   readonly check: Micros3700Ready;
 }) {
-  const t = useTranslations("systemAdmin.interface.posSale.micros3700Upload");
-  const tStatus = useTranslations("systemAdmin.interface.posSale.importStatus");
+  const t = useTranslations("operationPlan.posSale.micros3700Upload");
+  const tStatus = useTranslations("operationPlan.posSale.importStatus");
   const tc = useTranslations("common");
   const tErr = useTranslations("errors");
   const { can } = useCan();
@@ -384,7 +384,7 @@ function OutletStatusCell({
   readonly disabled: boolean;
   readonly onChange: (d: Decision) => void;
 }) {
-  const t = useTranslations("systemAdmin.interface.posSale.micros3700Upload");
+  const t = useTranslations("operationPlan.posSale.micros3700Upload");
   const formatAmount = useAmountFormatter();
   const existing = outlet.existing;
 

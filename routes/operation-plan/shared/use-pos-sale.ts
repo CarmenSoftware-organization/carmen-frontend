@@ -15,7 +15,6 @@ import type { TranslationFn } from "@/lib/i18n-schema";
 import type { PaginatedResponse, ParamsDto } from "@/types/params";
 import type {
   PosBrand,
-  PosConfirmResult,
   PosImportDetail,
   PosImportListItem,
   PosImportSummary,
@@ -25,11 +24,9 @@ import type {
   PosMicros3700OutletResult,
   PosMicros3700Overwrite,
   PosOutlet,
-  PosPreview,
   PosSftpPullRun,
-  PosShortage,
   PosStore,
-} from "./pos-sale-types";
+} from "@/types/pos-sale";
 
 /**
  * GET แล้วคืน body ทั้งก้อน (`{ data, paginate? }`) — โยน `ApiError` เมื่อไม่ ok
@@ -136,24 +133,6 @@ export function usePosImport(id: string | undefined) {
       ).data,
     ...CACHE_DYNAMIC,
     enabled: !!buCode && !!id,
-  });
-}
-
-/** ตัวอย่างการตัดสต็อกของการนำเข้า (หนึ่งรายการต่อ Outlet) — ยอดคงเหลือเปลี่ยนได้ จึงไม่ cache นาน */
-export function usePosImportPreview(id: string | undefined, enabled = true) {
-  const buCode = useBuCode();
-  return useQuery<PosPreview>({
-    queryKey: [QUERY_KEYS.POS_SALE_PREVIEW, buCode, id],
-    queryFn: async () =>
-      (
-        await getJson<{ data: PosPreview }>(
-          API_ENDPOINTS.POS_SALE_IMPORT_PREVIEW(buCode!, id!),
-          "Failed to load POS preview",
-        )
-      ).data,
-    staleTime: 0,
-    // backend ตอบ 400 กับการนำเข้าที่ไม่ใช่ success — รอรู้สถานะก่อนค่อยยิง
-    enabled: !!buCode && !!id && enabled,
   });
 }
 
@@ -330,7 +309,6 @@ export function useImportMicros3700() {
     invalidate: () => [
       [QUERY_KEYS.POS_SALE_IMPORTS],
       [QUERY_KEYS.POS_SALE_IMPORT],
-      [QUERY_KEYS.POS_SALE_PREVIEW],
       [QUERY_KEYS.POS_SALE_STORES],
       [QUERY_KEYS.POS_SALE_OUTLETS],
       [QUERY_KEYS.POS_SALE_ITEMS],
@@ -370,27 +348,6 @@ export function useCancelPosImport() {
   });
 }
 
-/** ยืนยัน Outlet หนึ่งเป็น Stock Out — refetch ทั้งตอนสำเร็จและ error เพื่อให้ preview สด */
-export function useConfirmPosOutlet() {
-  return usePosMutation<
-    { importId: string; outletId: string },
-    PosConfirmResult
-  >({
-    call: (buCode, { importId, outletId }) =>
-      httpClient.post(
-        API_ENDPOINTS.POS_SALE_OUTLET_CONFIRM(buCode, importId, outletId),
-      ),
-    errorMessage: "Failed to confirm POS outlet",
-    invalidate: ({ importId }) => [
-      [QUERY_KEYS.POS_SALE_IMPORT],
-      [QUERY_KEYS.POS_SALE_PREVIEW],
-      [QUERY_KEYS.POS_SALE_IMPORTS],
-      // กันพลาดเมื่อ key ผูก id ในอนาคต
-      [QUERY_KEYS.POS_SALE_IMPORT, importId],
-    ],
-  });
-}
-
 /** ผูก/ล้าง Location ของ Outlet (`location_id: null` = ล้าง) */
 export function useUpdatePosOutlet() {
   return usePosMutation<
@@ -404,7 +361,6 @@ export function useUpdatePosOutlet() {
     errorMessage: "Failed to update POS outlet",
     invalidate: () => [
       [QUERY_KEYS.POS_SALE_OUTLETS],
-      [QUERY_KEYS.POS_SALE_PREVIEW],
       [QUERY_KEYS.POS_SALE_IMPORT],
     ],
   });
@@ -422,25 +378,7 @@ export function useUpdatePosItem() {
     invalidate: () => [
       [QUERY_KEYS.POS_SALE_ITEMS],
       [QUERY_KEYS.POS_SALE_STORES],
-      [QUERY_KEYS.POS_SALE_PREVIEW],
       [QUERY_KEYS.POS_SALE_IMPORT],
     ],
   });
-}
-
-/**
- * รายการสินค้าที่ไม่พอจาก error ของการยืนยัน
- *
- * @param err - error ที่ mutation โยนมา
- * @returns `details.shortages` เมื่อเป็น `POS_SALE_INSUFFICIENT_STOCK` ไม่งั้น `[]`
- */
-export function shortagesOf(err: unknown): PosShortage[] {
-  if (
-    !(err instanceof ApiError) ||
-    err.appCode !== "POS_SALE_INSUFFICIENT_STOCK"
-  )
-    return [];
-  const shortages = (err.details as { shortages?: unknown } | undefined)
-    ?.shortages;
-  return Array.isArray(shortages) ? (shortages as PosShortage[]) : [];
 }

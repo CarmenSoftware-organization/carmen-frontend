@@ -821,12 +821,6 @@ export const router = createBrowserRouter([
                 ),
               },
               {
-                // ต้องมาก่อน `interface/:category/:brand` — ความลึกต่างกันอยู่แล้ว แต่วางชิดกันให้อ่านง่าย
-                path: "interface/pos/:brand/imports/:importId",
-                lazy: () =>
-                  import("./system-admin/interface/pos/pos-import-review.route"),
-              },
-              {
                 path: "interface/:category/:brand",
                 lazy: () =>
                   import("./system-admin/interface/interface-detail.route"),

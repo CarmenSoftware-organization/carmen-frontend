@@ -2847,62 +2847,6 @@
       "showSecret": "Show",
       "hideSecret": "Hide",
       "posSale": {
-        "history": {
-          "columns": {
-            "docDate": "Sales date",
-            "store": "Store",
-            "source": "Source",
-            "file": "File",
-            "channel": "Channel",
-            "status": "Status",
-            "lines": "Lines",
-            "sales": "Sales amount",
-            "confirmation": "Stock-out"
-          },
-          "channel": {
-            "manual": "Manual",
-            "sftp": "SFTP"
-          },
-          "legacyWarning": "Legacy export format: some fields may be missing",
-          "confirmation": {
-            "replaced": "Overwritten",
-            "cancelled": "Cancelled",
-            "pending": "Pending",
-            "partial": "Partial",
-            "confirmed": "Confirmed"
-          },
-          "actions": {
-            "inspect": "Review",
-            "cancel": "Cancel import"
-          },
-          "cancelDialog": {
-            "title": "Cancel this import?",
-            "desc": "Cancelling lets you import the file for the same day again. Imports with confirmed lines cannot be cancelled.",
-            "confirm": "Cancel import",
-            "success": "Import cancelled"
-          }
-        },
-        "importStatus": {
-          "success": "Imported",
-          "rejected_duplicate": "Already imported for this date",
-          "missing_glid_header": "File is missing the GLID header",
-          "multi_day_glid_reject": "File contains more than one business day",
-          "rejected_multi_day": "File spans multiple business days",
-          "format_error": "Unsupported or unreadable file format"
-        },
-        "upload": {
-          "action": "Upload file",
-          "uploading": "Uploading…",
-          "tooLarge": "{name} is larger than 10 MB",
-          "success": "Import complete",
-          "successDesc": "Imported {count} lines, sales {amount}",
-          "legacyWarning": "Imported from a legacy export format"
-        },
-        "tabs": {
-          "history": "Import history",
-          "outlets": "Outlet mapping",
-          "items": "Item mapping"
-        },
         "simphony": {
           "title": "Oracle Simphony",
           "desc": "Receive daily POS sales from Oracle Simphony and post stock deductions.",
@@ -2923,214 +2867,14 @@
           "hostInvalid": "Enter a valid host name or IP address",
           "folderInvalid": "The folder path must not contain a \"..\" segment",
           "patternInvalid": "The pattern must be 100 characters or fewer and cannot contain /",
-          "lastPull": {
-            "title": "Latest automatic pull",
-            "never": "No automatic pull has run yet.",
-            "status": {
-              "running": "In progress",
-              "completed": "Completed",
-              "connect_failed": "Could not connect",
-              "host_key_mismatch": "Server key changed",
-              "failed": "Failed",
-              "abandoned": "Interrupted"
-            },
-            "summary": "Imported {imported} · Rejected {rejected} · Failed {failed} · Skipped {skipped}",
-            "trustedKey": "Trusted key (SHA-256): {fingerprint}",
-            "offeredKey": "Offered key (SHA-256): {fingerprint}",
-            "hostKeyHint": "Confirm the offered key with the SFTP administrator, then press Save on these settings again to trust it. Note: any save of these settings trusts the next key the server offers.",
-            "loadError": "Could not load the latest pull status.",
-            "someFailed": "Some files failed to import. They will be retried on the next pull while they are still within the look-back window.",
-            "error": {
-              "unreachable": "Could not reach the SFTP server. Check the host and port, and that the server is online.",
-              "dnsNotFound": "The SFTP host name could not be resolved. Check the host spelling.",
-              "authFailed": "The server rejected the login. Check the username and password.",
-              "hostNotAllowed": "The host points to a local or metadata address, which is not allowed. Use the SFTP server address instead.",
-              "hostKeyMismatch": "The server key differs from the one trusted before.",
-              "secretUnreadable": "The saved password cannot be decrypted. Ask IT to set SECRET_ENCRYPTION_KEY and then save the password again.",
-              "stale": "The pull was interrupted before it finished (the service may have restarted). It will be retried.",
-              "sessionLost": "The connection dropped mid-pull. The remaining files will be retried next hour.",
-              "listFailed": "Could not list the remote folder. Check the remote folder path.",
-              "runBudgetExceeded": "The pull took too long and stopped. The remaining files will be retried next hour.",
-              "unknown": "The pull failed. See the server logs for details."
-            }
-          }
+          "goToImport": "Go to Import POS"
         },
         "micros3700": {
           "title": "Micros 3700",
           "desc": "Receive daily POS sales from Micros 3700 and post stock deductions.",
           "general": "General",
-          "generalDesc": "Turn this brand on or off for the business unit. Upload the daily PDF report from the Import history tab. The file is read in your browser and is never sent to the server."
-        },
-        "store": {
-          "label": "Store",
-          "placeholder": "Select a store",
-          "emptyTitle": "No stores yet",
-          "emptyDesc": "Import a file for the first time to create one"
-        },
-        "outlets": {
-          "columns": {
-            "code": "Code",
-            "name": "Outlet",
-            "location": "Location"
-          },
-          "notMapped": "Not mapped",
-          "clear": "Clear location",
-          "saved": "Location saved"
-        },
-        "items": {
-          "columns": {
-            "code": "Code",
-            "desc1": "Description",
-            "desc2": "Description 2",
-            "department": "Department",
-            "recipe": "Recipe"
-          },
-          "unmappedOnly": "Unmapped only",
-          "allMapped": "Every item is mapped",
-          "recipeInactive": "Recipe inactive",
-          "clear": "Clear recipe",
-          "saved": "Recipe saved"
-        },
-        "review": {
-          "back": "Back to import history",
-          "notFound": "Import not found",
-          "titleFallback": "POS import",
-          "linesCount": "{count, plural, one {# line} other {# lines}}",
-          "salesAmount": "Sales {amount}",
-          "cancelledNotice": "This import was cancelled. Nothing can be confirmed.",
-          "replacedNotice": "This set was overwritten. Nothing can be confirmed here.",
-          "replacedLink": "Open the new import",
-          "sameFileOutlets": "Other outlets from the same file",
-          "periodClosed": "The sales date is not in an open inventory period, so stock-out cannot be confirmed.",
-          "noOutlets": "This import has no sales to review",
-          "summary": {
-            "outlets": "Outlets",
-            "outletsDetail": "{mapped} mapped · {pending} without location",
-            "items": "Menu items",
-            "itemsDetail": "{mapped} mapped · {pending} without recipe",
-            "ingredients": "Ingredients to deduct",
-            "ingredientsDetail": "{short} short of stock"
-          },
-          "outlet": {
-            "notMapped": "No location mapped",
-            "progress": "{confirmed}/{total} lines confirmed",
-            "stockOut": "Stock Out {n}",
-            "confirm": "Confirm stock-out",
-            "noPermission": "You don't have permission to create Stock Out",
-            "licenseLocked": "This interface's license has expired or your contract is read-only, so changes are not allowed",
-            "notInPreview": "Not included in the stock-out preview"
-          },
-          "tabs": {
-            "sales": "Sales",
-            "ingredients": "Ingredients to deduct",
-            "pending": "Pending mapping"
-          },
-          "columns": {
-            "item": "Menu item",
-            "qty": "Qty",
-            "unitPrice": "Unit price",
-            "total": "Total",
-            "state": "Status",
-            "product": "Product",
-            "deduct": "Deduct",
-            "available": "On hand",
-            "sources": "From menu",
-            "recipe": "Recipe",
-            "ingredient": "Ingredient",
-            "reason": "Reason"
-          },
-          "lineState": {
-            "confirmed": "Deducted",
-            "pending": "Pending"
-          },
-          "sourcesMore": "+{count}",
-          "shortLabel": "(short of stock)",
-          "emptyLines": "No sales lines",
-          "emptyIngredients": "No ingredients to deduct",
-          "emptyPending": "Everything is mapped",
-          "unmappedTitle": "Menu items without a recipe ({count})",
-          "unmappedHint": "These lines are skipped when you confirm and stay pending until mapped.",
-          "goMapItems": "Map items",
-          "unresolvedTitle": "Recipe problems ({count})",
-          "dialog": {
-            "title": "Confirm stock-out for {outlet}",
-            "desc": "One Stock Out is created and posted for this outlet's mapped sales.",
-            "location": "Location",
-            "date": "Document date",
-            "lines": "Sales lines",
-            "ingredients": "Ingredients",
-            "skipped": "{count, plural, one {# menu item has} other {# menu items have}} no recipe and will be skipped.",
-            "confirm": "Confirm stock-out",
-            "success": "Stock Out {soNo} created",
-            "successDesc": "{count, plural, one {# line} other {# lines}} deducted",
-            "open": "Open",
-            "shortTitle": "Not enough stock",
-            "shortDesc": "Stock on hand changed and these products no longer cover the deduction. Nothing was posted.",
-            "product": "Product",
-            "requested": "Required",
-            "available": "On hand"
-          },
-          "notImportedNotice": "This file was not imported ({status}), so there is nothing to confirm."
-        },
-        "blockReason": {
-          "location_not_mapped": "Outlet has no location mapped",
-          "nothing_to_confirm": "Nothing left to confirm",
-          "insufficient_stock": "Some ingredients are short of stock",
-          "unresolved_ingredients": "Some recipes can't be converted to ingredients",
-          "period_closed": "Sales date is not in an open inventory period",
-          "import_cancelled": "Import was cancelled",
-          "adjustment_type_missing": "No stock-out adjustment type is set up for POS"
-        },
-        "unresolvedReason": {
-          "no_conversion": "No conversion to the inventory unit",
-          "zero_yield": "Recipe yield is zero",
-          "too_deep": "Sub-recipes are nested too deeply",
-          "recipe_unusable": "Recipe is inactive or unusable",
-          "empty_recipe": "Recipe has no ingredients"
-        },
-        "micros3700Upload": {
-          "action": "Upload PDF",
-          "reading": "Reading PDF…",
-          "checking": "Checking…",
-          "tooLarge": "{name} is larger than 20 MB",
-          "pdfPassword": "This PDF is password-protected. Export the report again without a password.",
-          "pdfUnreadable": "Could not open this file. It is damaged or not a PDF.",
-          "title": "Import Micros 3700 report",
-          "resultTitle": "Import result",
-          "pages": "{count, plural, one {# page} other {# pages}}",
-          "footingOk": "Totals match the report (difference {diff})",
-          "columns": {
-            "outlet": "Outlet",
-            "lines": "Items",
-            "qty": "Qty",
-            "total": "Total",
-            "reported": "Report total",
-            "status": "Status",
-            "result": "Result"
-          },
-          "status": {
-            "new": "New",
-            "existing": "Already imported"
-          },
-          "existingTotal": "Previous total {amount}",
-          "existingConfirmed": "Confirmed {confirmed}/{total} lines",
-          "decision": {
-            "label": "What to do with {outlet}",
-            "skip": "Skip",
-            "overwrite": "Overwrite"
-          },
-          "voidWarning": "Will void {count, plural, one {# existing Stock Out} other {# existing Stock Outs}} and wait for confirmation again",
-          "noVoidPermission": "You need permission to delete Stock Out to overwrite this outlet",
-          "import": "Import",
-          "needsResolution": "Data for this date was added in the meantime. Choose again.",
-          "outcome": {
-            "imported": "Imported",
-            "overwritten": "Overwritten",
-            "skipped": "Skipped",
-            "failed": "Failed"
-          },
-          "voided": "Voided {count, plural, one {# Stock Out} other {# Stock Outs}}",
-          "review": "Review and confirm"
+          "generalDesc": "Turn this brand on or off for the business unit. Upload the daily PDF report from the Import history tab. The file is read in your browser and is never sent to the server.",
+          "goToImport": "Go to Import POS"
         }
       }
     },
@@ -4503,6 +4247,171 @@
       "marginBelowCategoryMin": "Below category minimum {pct}%",
       "marginCategoryTarget": "Category target {pct}%",
       "marginMeetsCategoryTarget": "Meets category target {pct}%"
+    },
+    "posSale": {
+      "history": {
+        "columns": {
+          "docDate": "Sales date",
+          "store": "Store",
+          "source": "Source",
+          "file": "File",
+          "channel": "Channel",
+          "status": "Status",
+          "lines": "Lines",
+          "sales": "Sales amount",
+          "confirmation": "Stock-out"
+        },
+        "channel": {
+          "manual": "Manual",
+          "sftp": "SFTP"
+        },
+        "legacyWarning": "Legacy export format: some fields may be missing",
+        "confirmation": {
+          "replaced": "Overwritten",
+          "cancelled": "Cancelled",
+          "pending": "Pending",
+          "partial": "Partial",
+          "confirmed": "Confirmed"
+        },
+        "actions": {
+          "inspect": "Review",
+          "cancel": "Cancel import"
+        },
+        "cancelDialog": {
+          "title": "Cancel this import?",
+          "desc": "Cancelling lets you import the file for the same day again. Imports with confirmed lines cannot be cancelled.",
+          "confirm": "Cancel import",
+          "success": "Import cancelled"
+        }
+      },
+      "importStatus": {
+        "success": "Imported",
+        "rejected_duplicate": "Already imported for this date",
+        "missing_glid_header": "File is missing the GLID header",
+        "multi_day_glid_reject": "File contains more than one business day",
+        "rejected_multi_day": "File spans multiple business days",
+        "format_error": "Unsupported or unreadable file format"
+      },
+      "upload": {
+        "action": "Upload file",
+        "uploading": "Uploading…",
+        "tooLarge": "{name} is larger than 10 MB",
+        "success": "Import complete",
+        "successDesc": "Imported {count} lines, sales {amount}",
+        "legacyWarning": "Imported from a legacy export format"
+      },
+      "tabs": {
+        "history": "Import history",
+        "outlets": "Outlet mapping",
+        "items": "Item mapping"
+      },
+      "store": {
+        "label": "Store",
+        "placeholder": "Select a store",
+        "emptyTitle": "No stores yet",
+        "emptyDesc": "Import a file for the first time to create one"
+      },
+      "outlets": {
+        "columns": {
+          "code": "Code",
+          "name": "Outlet",
+          "location": "Location"
+        },
+        "notMapped": "Not mapped",
+        "clear": "Clear location",
+        "saved": "Location saved"
+      },
+      "items": {
+        "columns": {
+          "code": "Code",
+          "desc1": "Description",
+          "desc2": "Description 2",
+          "department": "Department",
+          "recipe": "Recipe"
+        },
+        "unmappedOnly": "Unmapped only",
+        "allMapped": "Every item is mapped",
+        "recipeInactive": "Recipe inactive",
+        "clear": "Clear recipe",
+        "saved": "Recipe saved"
+      },
+      "micros3700Upload": {
+        "action": "Upload PDF",
+        "reading": "Reading PDF…",
+        "checking": "Checking…",
+        "tooLarge": "{name} is larger than 20 MB",
+        "pdfPassword": "This PDF is password-protected. Export the report again without a password.",
+        "pdfUnreadable": "Could not open this file. It is damaged or not a PDF.",
+        "title": "Import Micros 3700 report",
+        "resultTitle": "Import result",
+        "pages": "{count, plural, one {# page} other {# pages}}",
+        "footingOk": "Totals match the report (difference {diff})",
+        "columns": {
+          "outlet": "Outlet",
+          "lines": "Items",
+          "qty": "Qty",
+          "total": "Total",
+          "reported": "Report total",
+          "status": "Status",
+          "result": "Result"
+        },
+        "status": {
+          "new": "New",
+          "existing": "Already imported"
+        },
+        "existingTotal": "Previous total {amount}",
+        "existingConfirmed": "Confirmed {confirmed}/{total} lines",
+        "decision": {
+          "label": "What to do with {outlet}",
+          "skip": "Skip",
+          "overwrite": "Overwrite"
+        },
+        "voidWarning": "Will void {count, plural, one {# existing Stock Out} other {# existing Stock Outs}} and wait for confirmation again",
+        "noVoidPermission": "You need permission to delete Stock Out to overwrite this outlet",
+        "import": "Import",
+        "needsResolution": "Data for this date was added in the meantime. Choose again.",
+        "outcome": {
+          "imported": "Imported",
+          "overwritten": "Overwritten",
+          "skipped": "Skipped",
+          "failed": "Failed"
+        },
+        "voided": "Voided {count, plural, one {# Stock Out} other {# Stock Outs}}",
+        "review": "Review and confirm"
+      },
+      "simphony": {
+        "lastPull": {
+          "title": "Latest automatic pull",
+          "never": "No automatic pull has run yet.",
+          "status": {
+            "running": "In progress",
+            "completed": "Completed",
+            "connect_failed": "Could not connect",
+            "host_key_mismatch": "Server key changed",
+            "failed": "Failed",
+            "abandoned": "Interrupted"
+          },
+          "summary": "Imported {imported} · Rejected {rejected} · Failed {failed} · Skipped {skipped}",
+          "trustedKey": "Trusted key (SHA-256): {fingerprint}",
+          "offeredKey": "Offered key (SHA-256): {fingerprint}",
+          "hostKeyHint": "Confirm the offered key with the SFTP administrator, then press Save on these settings again to trust it. Note: any save of these settings trusts the next key the server offers.",
+          "loadError": "Could not load the latest pull status.",
+          "someFailed": "Some files failed to import. They will be retried on the next pull while they are still within the look-back window.",
+          "error": {
+            "unreachable": "Could not reach the SFTP server. Check the host and port, and that the server is online.",
+            "dnsNotFound": "The SFTP host name could not be resolved. Check the host spelling.",
+            "authFailed": "The server rejected the login. Check the username and password.",
+            "hostNotAllowed": "The host points to a local or metadata address, which is not allowed. Use the SFTP server address instead.",
+            "hostKeyMismatch": "The server key differs from the one trusted before.",
+            "secretUnreadable": "The saved password cannot be decrypted. Ask IT to set SECRET_ENCRYPTION_KEY and then save the password again.",
+            "stale": "The pull was interrupted before it finished (the service may have restarted). It will be retried.",
+            "sessionLost": "The connection dropped mid-pull. The remaining files will be retried next hour.",
+            "listFailed": "Could not list the remote folder. Check the remote folder path.",
+            "runBudgetExceeded": "The pull took too long and stopped. The remaining files will be retried next hour.",
+            "unknown": "The pull failed. See the server logs for details."
+          }
+        }
+      }
     }
   },
   "productManagement": {

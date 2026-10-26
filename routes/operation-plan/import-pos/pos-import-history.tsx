@@ -46,9 +46,9 @@ import {
 } from "./pos-import-status";
 import { PosMicros3700UploadButton } from "./pos-micros3700-upload-button";
 import { PosSimphonyUploadButton } from "./pos-simphony-upload-button";
-import type { PosBrand, PosImportListItem } from "./pos-sale-types";
-import { usePosWritable } from "./use-pos-writable";
-import { useCancelPosImport, usePosImports } from "./use-pos-sale";
+import type { PosBrand, PosImportListItem } from "@/types/pos-sale";
+import { usePosWritable } from "../shared/use-pos-writable";
+import { useCancelPosImport, usePosImports } from "../shared/use-pos-sale";
 
 const LEGACY_EXPORT_WARNING = "legacy_export_version";
 
@@ -69,8 +69,8 @@ const CONFIRMATION_CLASS: Record<ConfirmationState, string> = {
  */
 export function PosImportHistory({ brand }: { brand: PosBrand }) {
   "use no memo";
-  const t = useTranslations("systemAdmin.interface.posSale.history");
-  const tStatus = useTranslations("systemAdmin.interface.posSale.importStatus");
+  const t = useTranslations("operationPlan.posSale.history");
+  const tStatus = useTranslations("operationPlan.posSale.importStatus");
   const tc = useTranslations("common");
   const tErr = useTranslations("errors");
   const { canWrite } = usePosWritable(brand);

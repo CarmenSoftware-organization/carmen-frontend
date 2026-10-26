@@ -1,5 +1,5 @@
 import { setURLParams, useURL } from "@/hooks/use-url";
-import type { PosBrand } from "./pos-sale-types";
+import type { PosBrand } from "@/types/pos-sale";
 import { usePosStores } from "./use-pos-sale";
 
 /**

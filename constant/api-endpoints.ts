@@ -313,16 +313,8 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/pos-sales/imports/micros3700`,
   POS_SALE_IMPORT: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/pos-sales/imports/${encodeURIComponent(id)}`,
-  POS_SALE_IMPORT_PREVIEW: (buCode: string, id: string) =>
-    `/api/proxy/api/${buCode}/pos-sales/imports/${encodeURIComponent(id)}/preview`,
   POS_SALE_IMPORT_CANCEL: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/pos-sales/imports/${encodeURIComponent(id)}/cancel`,
-  POS_SALE_OUTLET_CONFIRM: (
-    buCode: string,
-    importId: string,
-    outletId: string,
-  ) =>
-    `/api/proxy/api/${buCode}/pos-sales/imports/${encodeURIComponent(importId)}/outlets/${encodeURIComponent(outletId)}/confirm`,
   POS_SALE_SFTP_PULL_LATEST: (buCode: string) =>
     `/api/proxy/api/${buCode}/pos-sales/sftp-pulls/latest`,
   POS_SALE_STORES: (buCode: string) =>

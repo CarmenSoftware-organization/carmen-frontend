@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { PosStore } from "./pos-sale-types";
+import type { PosStore } from "@/types/pos-sale";
 
 interface PosStoreFilterProps {
   readonly stores: PosStore[];
@@ -29,7 +29,7 @@ export function PosStoreFilter({
   storeId,
   onChange,
 }: PosStoreFilterProps) {
-  const t = useTranslations("systemAdmin.interface.posSale.store");
+  const t = useTranslations("operationPlan.posSale.store");
 
   if (stores.length === 0) {
     return (

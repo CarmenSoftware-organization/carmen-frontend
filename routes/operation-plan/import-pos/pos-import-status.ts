@@ -1,4 +1,4 @@
-import type { PosImportStatus } from "./pos-sale-types";
+import type { PosImportStatus } from "@/types/pos-sale";
 
 /** สีของ dot สถานะการนำเข้า */
 export type ImportStatusTone = "success" | "warning" | "destructive";

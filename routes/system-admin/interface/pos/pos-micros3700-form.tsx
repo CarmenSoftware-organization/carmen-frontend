@@ -3,13 +3,15 @@ import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Link } from "react-router";
 import { useTranslations } from "use-intl";
+import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { SettingSection } from "@/components/ui/setting-section";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useInterfaceConfig } from "../use-interface-config";
 import { InterfacePageLayout } from "../interface-page-layout";
 import { ToggleField } from "../interface-fields";
-import { PosOperations } from "./pos-operations";
 
 const micros3700Schema = z.object({ enabled: z.boolean() });
 type Micros3700FormValues = z.infer<typeof micros3700Schema>;
@@ -25,7 +27,7 @@ function toMicros3700FormValues(
 }
 
 /**
- * หน้าตั้งค่า Micros 3700 — สวิตช์เปิด/ปิดอย่างเดียว และแท็บงานนำเข้า/ผูกรหัส
+ * หน้าตั้งค่า Micros 3700 — สวิตช์เปิด/ปิดอย่างเดียว
  *
  * @returns React element ของหน้า Micros 3700
  */
@@ -48,7 +50,7 @@ export default function PosMicros3700Form() {
     (values) =>
       save(
         { ...values },
-        // อยู่หน้าเดิม — แท็บงานอยู่หน้านี้
+        // อยู่หน้าเดิมหลังบันทึก
         {
           onSuccess: () => {
             toast.success(t("saved"));
@@ -74,7 +76,13 @@ export default function PosMicros3700Form() {
       onRetry={refetch}
       errorMessage={t("loadError")}
       saveLabel={t("save")}
-      afterForm={<PosOperations brand="micros3700" />}
+      afterForm={
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/operation-plan/import-pos">
+            {tp("goToImport")} <ArrowRight />
+          </Link>
+        </Button>
+      }
     >
       <SettingSection
         first

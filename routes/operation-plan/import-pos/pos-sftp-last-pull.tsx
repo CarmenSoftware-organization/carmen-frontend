@@ -3,8 +3,8 @@ import { useInterfaceEntitlement } from "@/hooks/use-interface-entitlement";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
-import type { PosSftpPullStatus } from "./pos-sale-types";
-import { usePosSftpLatestPull } from "./use-pos-sale";
+import type { PosSftpPullStatus } from "@/types/pos-sale";
+import { usePosSftpLatestPull } from "../shared/use-pos-sale";
 
 /** สีข้อความของสถานะ — ใช้ token `-ink` / `text-destructive` ให้ผ่าน WCAG AA ทั้งสองธีม */
 const STATUS_TONE: Record<PosSftpPullStatus, string> = {
@@ -40,7 +40,7 @@ const ERROR_KEY: Record<string, string> = {
  * @returns React element ของสถานะ หรือ `null` เมื่อต้องซ่อน
  */
 export function PosSftpLastPull({ enabled }: { enabled: boolean }) {
-  const t = useTranslations("systemAdmin.interface.posSale.simphony.lastPull");
+  const t = useTranslations("operationPlan.posSale.simphony.lastPull");
   const { dateTimeFormat } = useProfile();
   const { entitlementOf } = useInterfaceEntitlement();
   const { data, isError, error, isLoading } = usePosSftpLatestPull(

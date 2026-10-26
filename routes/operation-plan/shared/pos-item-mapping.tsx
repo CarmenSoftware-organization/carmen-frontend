@@ -21,9 +21,9 @@ import { LookupRecipe } from "@/components/lookup/lookup-recipe";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { setURLParams, useURL } from "@/hooks/use-url";
 import { getUserErrorMessage } from "@/lib/error-message";
-import { clampPerpage } from "./pos-import-status";
+import { clampPerpage } from "../import-pos/pos-import-status";
 import { PosStoreFilter } from "./pos-store-filter";
-import type { PosBrand, PosItem } from "./pos-sale-types";
+import type { PosBrand, PosItem } from "@/types/pos-sale";
 import { usePosStoreFilter } from "./use-pos-store-filter";
 import { usePosWritable } from "./use-pos-writable";
 import { usePosItems, useUpdatePosItem } from "./use-pos-sale";
@@ -39,7 +39,7 @@ import { usePosItems, useUpdatePosItem } from "./use-pos-sale";
  */
 export function PosItemMapping({ brand }: { brand: PosBrand }) {
   "use no memo";
-  const t = useTranslations("systemAdmin.interface.posSale.items");
+  const t = useTranslations("operationPlan.posSale.items");
   const tErr = useTranslations("errors");
   const { canWrite } = usePosWritable(brand);
   const [unmappedRaw] = useURL("unmapped");

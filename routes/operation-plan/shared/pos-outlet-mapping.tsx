@@ -17,7 +17,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { LookupLocation } from "@/components/lookup/lookup-location";
 import { getUserErrorMessage } from "@/lib/error-message";
 import { PosStoreFilter } from "./pos-store-filter";
-import type { PosBrand, PosOutlet } from "./pos-sale-types";
+import type { PosBrand, PosOutlet } from "@/types/pos-sale";
 import { usePosStoreFilter } from "./use-pos-store-filter";
 import { usePosWritable } from "./use-pos-writable";
 import { usePosOutlets, useUpdatePosOutlet } from "./use-pos-sale";
@@ -30,7 +30,7 @@ import { usePosOutlets, useUpdatePosOutlet } from "./use-pos-sale";
  */
 export function PosOutletMapping({ brand }: { brand: PosBrand }) {
   "use no memo";
-  const t = useTranslations("systemAdmin.interface.posSale.outlets");
+  const t = useTranslations("operationPlan.posSale.outlets");
   const tErr = useTranslations("errors");
   const { canWrite } = usePosWritable(brand);
   const { stores, storeId, setStoreId } = usePosStoreFilter(brand);
