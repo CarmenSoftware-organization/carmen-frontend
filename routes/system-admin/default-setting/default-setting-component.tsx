@@ -26,6 +26,7 @@ import {
   createBusinessSettingSchema,
   toFormValues,
   buildPatch,
+  toPatchPayload,
   normalizeConfig,
   mergeSeededConfig,
   type BusinessSettingFormValues,
@@ -142,9 +143,9 @@ export default function DefaultSettingComponent() {
       setEditing(false);
       return;
     }
-    // แนบ doc_version (optimistic lock) กัน 409 version ค้าง
+    // แนบ doc_version (optimistic lock) + id ของ BU ที่โหลดมา (กันเขียนผิด BU) — ดู toPatchPayload
     update.mutate(
-      { ...patch, doc_version: data.doc_version },
+      toPatchPayload(patch, data),
       {
         onSuccess: () => {
           toast.success(t("saved"));

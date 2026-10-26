@@ -8,6 +8,7 @@ import {
   buildPatch,
   mergeSeededConfig,
   normalizeConfig,
+  toPatchPayload,
 } from "./company-profile-form-schema";
 
 const baseData: BusinessUnitDetail = {
@@ -203,6 +204,27 @@ describe("buildPatch — seeded config", () => {
           value: "true",
         },
       ],
+    });
+  });
+});
+
+// PATCH api/business-units ไม่มี bu_code — backend เขียนลง BU default ของผู้ใช้ ถ้ามีการสลับ BU จากที่อื่น
+// ระหว่างที่หน้านี้เปิดอยู่ id ที่แนบไปจะไม่ตรง แล้ว backend ตอบ 409 BUSINESS_UNIT_NOT_CURRENT แทนการเขียนผิด BU
+describe("toPatchPayload", () => {
+  it("sends the loaded BU id and its doc_version with the patch", () => {
+    const loaded = { ...baseData, id: "bu-loaded", doc_version: 7 };
+    expect(toPatchPayload({ name: "New name" }, loaded)).toEqual({
+      name: "New name",
+      id: "bu-loaded",
+      doc_version: 7,
+    });
+  });
+
+  it("takes the loaded BU over anything the patch carries", () => {
+    const loaded = { ...baseData, id: "bu-loaded", doc_version: 7 };
+    expect(toPatchPayload({ id: "bu-other", doc_version: 1 }, loaded)).toEqual({
+      id: "bu-loaded",
+      doc_version: 7,
     });
   });
 });

@@ -260,3 +260,21 @@ export function buildPatch(
 
   return patch as BusinessUnitPatch;
 }
+
+/**
+ * payload ที่ส่ง `PATCH api/business-units` จริง — patch + ตัวตนของ BU ที่หน้าโหลดมา
+ *
+ * `doc_version` คือ optimistic lock ของ BU นั้น ส่วน `id` บอก backend ว่าฟอร์มนี้เป็นของ BU ไหน
+ * route นี้ไม่มี bu_code และเขียนลง BU default ของผู้ใช้เสมอ ถ้าระหว่างนั้นมีการสลับ BU
+ * จากแท็บหรือเครื่องอื่น backend จะตอบ 409 `BUSINESS_UNIT_NOT_CURRENT` แทนการเขียนผิด BU
+ *
+ * @param patch - ผลจาก `buildPatch`
+ * @param loaded - BU ที่หน้าโหลดมา (`useBusinessUnit().data`)
+ * @returns payload สำหรับ `useUpdateBusinessUnit().mutate`
+ */
+export function toPatchPayload(
+  patch: BusinessUnitPatch,
+  loaded: Pick<BusinessUnitDetail, "id" | "doc_version">,
+): BusinessUnitPatch {
+  return { ...patch, id: loaded.id, doc_version: loaded.doc_version };
+}

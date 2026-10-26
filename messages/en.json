@@ -1086,7 +1086,8 @@
       "POS_SALE_IMPORT_TIME_BUDGET": "Outlet {outlet} was not imported because this upload ran out of time; upload the file again to finish the remaining outlets",
       "STOCK_OUT_DATE_NOT_CURRENT_PERIOD": "A stock-out can only be dated inside the current period ({period}: {start} to {end})",
       "STOCK_OUT_NO_OPEN_PERIOD": "No inventory period is open, so a stock-out cannot be recorded",
-      "STOCK_OUT_ALREADY_VOIDED": "Stock out is already voided"
+      "STOCK_OUT_ALREADY_VOIDED": "Stock out is already voided",
+      "BUSINESS_UNIT_NOT_CURRENT": "This page shows a business unit other than your current one — it was switched in another tab or device. Reload the page to see the current business unit, then make your change again."
     }
   },
   "validation": {
