@@ -187,7 +187,7 @@ user ต้องการแยกเป็นสองขั้นชัด �
   error catalog เดียวกันเมื่อ BU ไม่มี POS interface · Import POS แสดงปุ่มอัปโหลดเฉพาะแบรนด์ที่เปิด
 - **License**: ใช้ license feature ของ POS interface เดิม — **ไม่เพิ่ม key ใหม่** ไม่งั้นหน้าล็อกทันทีที่ deploy; builder ดูว่า
   `licenseFeature` ใน `module-list.ts` รับ key ของ interface ได้หรือไม่ ถ้าไม่ได้ ให้ไม่ใส่ `licenseFeature` แล้ว gate ด้วยเงื่อนไขข้างบน
-- SC ที่เกิดจากรอบ SFTP: `created_by` = system user แบบเดียวกับการนำเข้า SFTP
+- SC ที่เกิดจากรอบ SFTP: `created_by` = `user_id` ที่ตั้งไว้ใน cron job แบบเดียวกับการนำเข้า SFTP (ระบบไม่มี system user — ตรวจโค้ดแล้วตอนเขียนแผน)
 
 ### 4.3 ปฏิทิน — กติกาสถานะต่อวัน (ทั้ง BU)
 | สถานะ | เงื่อนไข | สี (token) |
