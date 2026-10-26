@@ -214,7 +214,11 @@ export function PosItemMapping() {
       {storeId && (
         <>
           <div className="flex flex-wrap items-center gap-4">
-            <SearchInput defaultValue={search} onSearch={setSearch} />
+            <SearchInput
+              key={search}
+              defaultValue={search}
+              onSearch={setSearch}
+            />
             <div
               role="group"
               aria-label={t("filter.label")}
