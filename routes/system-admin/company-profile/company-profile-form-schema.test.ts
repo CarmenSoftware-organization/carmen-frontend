@@ -162,6 +162,32 @@ describe("buildPatch — seeded config", () => {
     expect(buildPatch({ ...original }, original).config).toBeUndefined();
   });
 
+  // ค่าที่ handleSubmit ส่งมาผ่าน zod แล้ว key เรียงตาม configItemSchema ส่วนค่าเดิมมาจาก
+  // jsonb ซึ่ง Postgres เรียงตามความยาวชื่อ key (key, label, value, datatype)
+  it("does not send config when only the key order differs from the stored jsonb", () => {
+    const original = toFormValues({
+      ...baseData,
+      config: [
+        {
+          key: "si.cost-from",
+          label: "Default price",
+          value: "last_cost",
+          datatype: "enum",
+        },
+      ] as unknown as BusinessUnitDetail["config"],
+    });
+    const values = {
+      ...original,
+      config: original.config.map(({ key, label, datatype, value }) => ({
+        key,
+        label,
+        datatype,
+        value,
+      })),
+    };
+    expect(buildPatch(values, original).config).toBeUndefined();
+  });
+
   it("sends the whole config array when the PR switch is toggled on", () => {
     const original = toFormValues(baseData);
     const values = {

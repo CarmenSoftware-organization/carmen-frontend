@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { round2 } from "@/lib/currency-utils";
+import { stableStringify } from "@/lib/form-helpers";
 import type { TranslationFn } from "@/lib/i18n-schema";
 import type {
   GoodsReceiveNote,
@@ -362,6 +363,55 @@ export function mapDetailToPayload(
     description: item.description,
     note: item.note,
   };
+}
+
+/**
+ * แถวที่ผู้ใช้แก้จริง จาก `update` ที่ `buildItemChanges` คืนมา
+ *
+ * แถวที่ผู้ใช้ไม่ได้แตะ ห้ามนับเป็น update — GrnItemComputedSync เขียนค่า
+ * net/total/ส่วนลด/ภาษีที่คำนวณจาก unit_price (ซึ่งปัดจาก sub_total/qty ตอนโหลด)
+ * กลับลงฟอร์มทุกครั้งที่เปิด ค่าจึงคลาดจากของเดิมได้เป็นสตางค์ ถ้าส่งไป หลังบ้าน
+ * คิดราคาใหม่แล้วลงสต๊อกของใบ saved ใหม่ทั้งที่ไม่มีใครแก้อะไร (ราคาเก็บ 33.33333
+ * ถูกเขียนทับเป็น 33.33) · เทียบเฉพาะช่องที่คนกรอก (ส่วนลด/ภาษีนับเมื่อติ๊กปรับเองเท่านั้น)
+ * แต่ถ้าแถวไหนถูกแก้จริง ยังส่งทั้งแถว
+ *
+ * เทียบด้วย `stableStringify` ไม่ใช่ `JSON.stringify` — ค่าตอนกด Save ผ่าน zod แล้ว key
+ * เรียงตาม schema ส่วนค่าเดิมเรียงตาม `getDefaultValues` สองก้อนจึงไม่เคยเท่ากัน
+ * ตัวกรองนี้เลยไม่เคยตัดแถวไหนออกได้เลย
+ *
+ * @param update - `update` จาก `buildItemChanges`
+ * @param current - `values.items` ตอนกด Save
+ * @param original - `defaultValues.items` ที่โหลดมา
+ * @returns แถวที่แก้จริง หรือ undefined ถ้าไม่มีสักแถว
+ */
+export function pickTouchedLineUpdates<U extends { id: string }>(
+  update: U[],
+  current: GrnFormValues["items"],
+  original: GrnFormValues["items"],
+): U[] | undefined {
+  type Line = GrnFormValues["items"][number];
+  const inputOf = (list: Line[], id: string) => {
+    const item = list.find((i) => i.id === id);
+    if (!item) return "";
+    const {
+      net_amount: _net,
+      total_price: _total,
+      received_base_qty: _baseQty,
+      discount_amount,
+      tax_amount,
+      ...rest
+    } = item;
+    return stableStringify({
+      ...rest,
+      sequence: list.indexOf(item),
+      discount_amount: item.is_discount_adjustment ? discount_amount : null,
+      tax_amount: item.is_tax_adjustment ? tax_amount : null,
+    });
+  };
+  const touched = update.filter(
+    (u) => inputOf(current, u.id) !== inputOf(original, u.id),
+  );
+  return touched.length > 0 ? touched : undefined;
 }
 
 export function mapExtraCostToPayload(

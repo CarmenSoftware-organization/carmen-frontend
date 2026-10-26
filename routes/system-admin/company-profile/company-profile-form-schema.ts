@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { stableStringify } from "@/lib/form-helpers";
 import type { TranslationFn } from "@/lib/i18n-schema";
 import type {
   BusinessUnitConfigItem,
@@ -250,7 +251,10 @@ export function buildPatch(
     }
   }
 
-  if (JSON.stringify(values.config) !== JSON.stringify(original.config)) {
+  // ไม่สนลำดับ key: values ผ่าน zod แล้วเรียงตาม configItemSchema (key, label, datatype,
+  // value) ส่วน original มาจาก jsonb ซึ่ง Postgres เรียงตามความยาวชื่อ (key, label, value,
+  // datatype) — JSON.stringify ตรง ๆ จึงส่ง config ไปทุกครั้งที่กด Save
+  if (stableStringify(values.config) !== stableStringify(original.config)) {
     patch.config = values.config;
   }
 
