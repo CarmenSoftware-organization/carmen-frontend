@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { httpClient } from "@/lib/http-client";
-import { ApiError } from "@/lib/api-error";
+import { ApiError, ERROR_CODES } from "@/lib/api-error";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { QUERY_KEYS } from "@/constant/query-keys";
 
@@ -29,7 +29,14 @@ export function useAskAiProviders() {
         throw await ApiError.from(res, "Failed to fetch Ask AI providers");
       }
       const json = await res.json();
-      return Array.isArray(json.data) ? json.data : [];
+      if (!Array.isArray(json.data)) {
+        throw new ApiError(
+          ERROR_CODES.INTERNAL_ERROR,
+          "Invalid Ask AI providers response",
+          res.status,
+        );
+      }
+      return json.data;
     },
     enabled: !!buCode,
     staleTime: 60_000,

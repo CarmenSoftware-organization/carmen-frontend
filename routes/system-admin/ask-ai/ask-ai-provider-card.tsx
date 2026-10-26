@@ -42,7 +42,19 @@ export function AskAiProviderCard({
   return (
     <div className="space-y-3 py-4 first:pt-0 last:pb-0">
       <div className="flex items-center gap-3">
-        <ProviderIconMark iconKey={item.icon_key} className="size-5 shrink-0" />
+        {item.icon_url ? (
+          <img
+            src={item.icon_url}
+            alt=""
+            referrerPolicy="no-referrer"
+            className="size-5 shrink-0"
+          />
+        ) : (
+          <ProviderIconMark
+            iconKey={item.icon_key}
+            className="size-5 shrink-0"
+          />
+        )}
         <span className="text-sm font-medium">{item.label}</span>
         <Badge variant={customized ? "primary-light" : "secondary"}>
           {customized ? t("customized") : t("usingDefault")}

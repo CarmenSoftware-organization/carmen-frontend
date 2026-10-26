@@ -10,6 +10,7 @@ import {
   SettingSectionSkeleton,
 } from "@/components/ui/setting-section";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
+import { useBuCode } from "@/hooks/use-bu-code";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { AskAiProviderCard, type AskAiDraft } from "./ask-ai-provider-card";
 import {
@@ -39,7 +40,7 @@ function isChanged(item: AskAiConfigItem, draft: AskAiDraft): boolean {
   return base.enabled !== draft.enabled || base.prompt !== draft.prompt;
 }
 
-export default function AskAiComponent() {
+function AskAiForm() {
   const tm = useTranslations("modules");
   const t = useTranslations("askAi");
   const { data, isLoading, isError, refetch } = useAskAiConfig();
@@ -141,4 +142,10 @@ export default function AskAiComponent() {
       />
     </FormPageShell>
   );
+}
+
+/** key ด้วย buCode เพื่อรีเซ็ต editing/drafts เมื่อสลับ BU (กัน draft ของ BU เดิมถูกบันทึกลง BU ใหม่) */
+export default function AskAiComponent() {
+  const buCode = useBuCode();
+  return <AskAiForm key={buCode ?? ""} />;
 }

@@ -38,6 +38,7 @@ export function PrAskAiMenu({ items, disabled }: PrAskAiMenuProps) {
         )
         .catch(() => toast.error(t("askAiCopyFailed")));
     }
+    if (!url.startsWith("https://")) return;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
@@ -48,7 +49,7 @@ export function PrAskAiMenu({ items, disabled }: PrAskAiMenuProps) {
           type="button"
           variant="outline"
           size="sm"
-          disabled={disabled || isLoading || isError}
+          disabled={disabled || isLoading || isError || !providers}
         >
           <Sparkle />
           {t("askAi")}
@@ -63,7 +64,12 @@ export function PrAskAiMenu({ items, disabled }: PrAskAiMenuProps) {
               onClick={() => handlePick(provider)}
             >
               {provider.icon_url ? (
-                <img src={provider.icon_url} className="size-3.5" alt="" />
+                <img
+                  src={provider.icon_url}
+                  className="size-3.5"
+                  alt=""
+                  referrerPolicy="no-referrer"
+                />
               ) : (
                 <Icon className="size-3.5" />
               )}
