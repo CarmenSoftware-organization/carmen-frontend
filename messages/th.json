@@ -4331,11 +4331,22 @@
           "department": "แผนก",
           "recipe": "สูตร"
         },
-        "unmappedOnly": "เฉพาะที่ยังไม่ผูก",
         "allMapped": "ผูกครบทุกเมนูแล้ว",
         "recipeInactive": "สูตรปิดใช้",
         "clear": "ล้างสูตร",
-        "saved": "บันทึกสูตรแล้ว"
+        "saved": "บันทึกสูตรแล้ว",
+        "filter": {
+          "label": "สถานะเมนู",
+          "all": "ทั้งหมด",
+          "unmapped": "ต้องผูก",
+          "mapped": "ผูกแล้ว",
+          "ignored": "ไม่นับ"
+        },
+        "ignore": "ไม่นับ",
+        "unignore": "เลิกไม่นับ",
+        "ignored": "ไม่นับ",
+        "ignoredSaved": "ตั้งเมนูเป็นไม่นับแล้ว",
+        "unignored": "เลิกไม่นับเมนูแล้ว"
       },
       "micros3700Upload": {
         "action": "อัปโหลด PDF",
@@ -4441,6 +4452,64 @@
         "close": "ปิด"
       },
       "connectionSettings": "ตั้งค่าการเชื่อมต่อ Simphony SFTP"
+    },
+    "salesConsumption": {
+      "list": {
+        "description": "หนึ่งเอกสารต่อวันขาย: ดูสถานะของแต่ละวัน ตรวจเอกสาร และดูแลการผูกข้อมูลหลัก",
+        "views": {
+          "calendar": "ปฏิทิน",
+          "list": "ตาราง",
+          "mapping": "Mapping"
+        },
+        "status": {
+          "pending": "รอ post",
+          "posted": "Post แล้ว",
+          "voided": "Void แล้ว"
+        },
+        "outletWarning": "มี {count} Outlet ที่ยังไม่ผูก Location ยอดขายจาก Outlet เหล่านี้ยัง post ไม่ได้",
+        "outletWarningAction": "ไปที่ Mapping",
+        "summary": {
+          "pendingPost": "รอ post",
+          "needMapping": "บรรทัดที่ต้องผูก",
+          "posted": "Post แล้ว (เดือนนี้)",
+          "daysNoFile": "วันที่ไม่มีไฟล์"
+        },
+        "calendar": {
+          "prev": "เดือนก่อนหน้า",
+          "next": "เดือนถัดไป",
+          "status": {
+            "posted": "Post แล้ว",
+            "pending": "รอ post",
+            "no_sales": "ไม่มียอดขาย",
+            "no_file": "ไม่มีไฟล์",
+            "future": "ยังไม่ถึงวัน",
+            "before_start": "ก่อนเริ่มใช้"
+          },
+          "unresolved": "ต้องผูก {count}",
+          "late": "มี {count} บรรทัดขายเข้ามาหลัง post",
+          "incomplete": "ไฟล์ขาด {count} ร้าน",
+          "lateLegend": "ยอดขายเข้ามาหลัง post",
+          "incompleteLegend": "ไฟล์ไม่ครบ"
+        },
+        "table": {
+          "columns": {
+            "docNo": "เลขที่เอกสาร",
+            "saleDate": "วันที่ขาย",
+            "imports": "ไฟล์นำเข้า",
+            "locations": "Location",
+            "status": "สถานะ",
+            "lines": "บรรทัด",
+            "needMapping": "ต้องผูก",
+            "totalCost": "ต้นทุนรวม",
+            "stockOut": "Stock Out"
+          }
+        },
+        "mapping": {
+          "hint": "Mapping หลักคือค่าเริ่มต้นของบรรทัดที่ยังไม่ post บรรทัดที่ post แล้วคงค่าตอน post ไว้",
+          "outlets": "Outlet → Location",
+          "items": "เมนู POS → สูตร"
+        }
+      }
     }
   },
   "productManagement": {

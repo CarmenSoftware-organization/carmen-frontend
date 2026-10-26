@@ -138,11 +138,11 @@ export function usePosImport(id: string | undefined) {
 }
 
 /**
- * ร้าน POS ของแบรนด์ที่เลือก — endpoint ไม่มี filter จึงกรองฝั่ง client
+ * ร้าน POS — endpoint ไม่มี filter จึงกรองฝั่ง client
  *
- * @param brand - แบรนด์ที่ต้องการ
+ * @param brand - แบรนด์ที่ต้องการ — ไม่ส่ง = ทุกร้าน
  */
-export function usePosStores(brand: PosBrand) {
+export function usePosStores(brand?: PosBrand) {
   const buCode = useBuCode();
   return useQuery<PosStore[], ApiError, PosStore[]>({
     queryKey: [QUERY_KEYS.POS_SALE_STORES, buCode],
@@ -153,7 +153,8 @@ export function usePosStores(brand: PosBrand) {
           "Failed to load POS stores",
         )
       ).data,
-    select: (stores) => stores.filter((s) => s.brand === brand),
+    select: (stores) =>
+      brand ? stores.filter((s) => s.brand === brand) : stores,
     ...CACHE_DYNAMIC,
     enabled: !!buCode,
   });
@@ -162,7 +163,7 @@ export function usePosStores(brand: PosBrand) {
 /**
  * Outlet ของ POS พร้อม Location ที่ผูก
  *
- * @param storeId - กรองเฉพาะร้านนี้ (ไม่ส่ง = ทุกร้าน)
+ * @param storeId - กรองเฉพาะร้านนี้ (ไม่ส่ง = ทุกร้านของ BU)
  */
 export function usePosOutlets(storeId?: string) {
   const buCode = useBuCode();
@@ -178,7 +179,7 @@ export function usePosOutlets(storeId?: string) {
         )
       ).data,
     ...CACHE_DYNAMIC,
-    enabled: !!buCode && !!storeId,
+    enabled: !!buCode,
   });
 }
 
@@ -362,6 +363,10 @@ export function useUpdatePosOutlet() {
     invalidate: () => [
       [QUERY_KEYS.POS_SALE_OUTLETS],
       [QUERY_KEYS.POS_SALE_IMPORT],
+      // location ตั้งต้นเปลี่ยน = จำนวนบรรทัดค้างผูกของ SC และปฏิทินเปลี่ยนตาม
+      [QUERY_KEYS.SALES_CONSUMPTION],
+      [QUERY_KEYS.SALES_CONSUMPTIONS],
+      [QUERY_KEYS.SALES_CONSUMPTION_CALENDAR],
     ],
   });
 }
@@ -384,6 +389,8 @@ export function useUpdatePosItem() {
       [QUERY_KEYS.POS_SALE_IMPORT],
       // ค่าตั้งต้นของเมนูเปลี่ยน = บรรทัดใน Sales Consumption ที่ยังเป็น pending เปลี่ยนตาม
       [QUERY_KEYS.SALES_CONSUMPTION],
+      [QUERY_KEYS.SALES_CONSUMPTIONS],
+      [QUERY_KEYS.SALES_CONSUMPTION_CALENDAR],
     ],
   });
 }

@@ -4331,11 +4331,22 @@
           "department": "Department",
           "recipe": "Recipe"
         },
-        "unmappedOnly": "Unmapped only",
         "allMapped": "Every item is mapped",
         "recipeInactive": "Recipe inactive",
         "clear": "Clear recipe",
-        "saved": "Recipe saved"
+        "saved": "Recipe saved",
+        "filter": {
+          "label": "Item status",
+          "all": "All",
+          "unmapped": "Needs mapping",
+          "mapped": "Mapped",
+          "ignored": "Ignored"
+        },
+        "ignore": "Ignore",
+        "unignore": "Unignore",
+        "ignored": "Ignored",
+        "ignoredSaved": "Item ignored",
+        "unignored": "Item restored"
       },
       "micros3700Upload": {
         "action": "Upload PDF",
@@ -4441,6 +4452,64 @@
         "close": "Close"
       },
       "connectionSettings": "Simphony SFTP connection settings"
+    },
+    "salesConsumption": {
+      "list": {
+        "description": "One document per sale day: see each day's status, review the documents, and maintain master mapping.",
+        "views": {
+          "calendar": "Calendar",
+          "list": "List",
+          "mapping": "Mapping"
+        },
+        "status": {
+          "pending": "Pending",
+          "posted": "Posted",
+          "voided": "Voided"
+        },
+        "outletWarning": "{count, plural, one {# outlet has} other {# outlets have}} no location. Sales from them cannot be posted.",
+        "outletWarningAction": "Go to mapping",
+        "summary": {
+          "pendingPost": "Pending post",
+          "needMapping": "Lines need mapping",
+          "posted": "Posted (this month)",
+          "daysNoFile": "Days without file"
+        },
+        "calendar": {
+          "prev": "Previous month",
+          "next": "Next month",
+          "status": {
+            "posted": "Posted",
+            "pending": "Pending",
+            "no_sales": "No sales",
+            "no_file": "No file",
+            "future": "Not yet",
+            "before_start": "Before start"
+          },
+          "unresolved": "{count} to map",
+          "late": "{count} lines sold after posting",
+          "incomplete": "{count} store files missing",
+          "lateLegend": "Sales after post",
+          "incompleteLegend": "Files incomplete"
+        },
+        "table": {
+          "columns": {
+            "docNo": "Document #",
+            "saleDate": "Sale date",
+            "imports": "Imports",
+            "locations": "Locations",
+            "status": "Status",
+            "lines": "Lines",
+            "needMapping": "Need mapping",
+            "totalCost": "Total cost",
+            "stockOut": "Stock Out"
+          }
+        },
+        "mapping": {
+          "hint": "Master mapping is the default for lines that are not posted yet. Posted lines keep the values they were posted with.",
+          "outlets": "Outlet → Location",
+          "items": "POS item → Recipe"
+        }
+      }
     }
   },
   "productManagement": {
