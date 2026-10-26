@@ -18,7 +18,8 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, Hash, PieChart } from "lucide-react";
+import { BarChart3, Hash, PieChart, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useLocale, useTranslations } from "use-intl";
 import { toast } from "sonner";
 import { WidgetSkeletonCards } from "@/components/dashboard-widget/dashboard-widget-grid";
@@ -156,6 +157,8 @@ const SavedWidgetsSection = () => {
   );
   // dataset ที่เลือกมาแล้วแต่ยังไม่ได้ save — รอตั้งค่า param ก่อน
   const [pendingAdd, setPendingAdd] = useState<DashboardDataset | null>(null);
+  // picker "+ Add Widget" ที่หัว section — ปุ่มใน EmptyState เปิดตัวเดียวกันนี้
+  const [pickerOpen, setPickerOpen] = useState(false);
   // widget ที่ save แล้วและกำลังแก้ param
   const [pendingConfig, setPendingConfig] = useState<MyDashboardWidget | null>(
     null,
@@ -442,6 +445,8 @@ const SavedWidgetsSection = () => {
           shapes={SUPPORTED_SHAPES}
           disabled={createWidget.isPending}
           placeholder={`+ ${t("add")}`}
+          open={pickerOpen}
+          onOpenChange={setPickerOpen}
         />
       </div>
 
@@ -467,7 +472,12 @@ const SavedWidgetsSection = () => {
         !isError &&
         renderable.length === 0 &&
         groupItems.length === 0 &&
-        buEmpty && <EmptyState />}
+        buEmpty && (
+          <EmptyState
+            onAdd={() => setPickerOpen(true)}
+            disabled={createWidget.isPending}
+          />
+        )}
 
       {groupItems.length > 0 && (
         <div className="space-y-3">
@@ -557,7 +567,19 @@ const SavedWidgetsSection = () => {
   );
 };
 
-function EmptyState() {
+/**
+ * ปุ่มเพิ่มอยู่ในตัว empty state เอง แทนข้อความที่ชี้ทางไปปุ่ม "+ Add Widget" ด้านบน —
+ * ทั้งสองเปิด picker ตัวเดียวกัน (`pickerOpen` ของ SavedWidgetsSection)
+ *
+ * ประเภทกราฟเป็นแค่คำบอก ไม่ใช่ปุ่ม: เดิมวาดเป็นเม็ดยามีขอบซึ่งชวนให้กด แต่กดแล้วไม่เกิดอะไร
+ */
+function EmptyState({
+  onAdd,
+  disabled,
+}: {
+  readonly onAdd: () => void;
+  readonly disabled?: boolean;
+}) {
   const t = useTranslations("dashboard.savedWidget");
   const hints = [
     { Icon: Hash, label: t("emptyHintKpi"), color: "var(--chart-1)" },
@@ -577,11 +599,11 @@ function EmptyState() {
             {t("emptyDescription")}
           </p>
 
-          <ul className="mt-1 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+          <ul className="text-muted-foreground flex flex-wrap items-center justify-center gap-x-4 gap-y-1 sm:justify-start">
             {hints.map((h) => (
               <li
                 key={h.label}
-                className="bg-muted text-micro inline-flex items-center gap-1.5 rounded-full border px-2 py-1 font-semibold"
+                className="text-micro inline-flex items-center gap-1.5"
               >
                 <h.Icon
                   className="size-3"
@@ -592,6 +614,11 @@ function EmptyState() {
               </li>
             ))}
           </ul>
+
+          <Button size="sm" className="mt-2" onClick={onAdd} disabled={disabled}>
+            <Plus aria-hidden="true" />
+            {t("add")}
+          </Button>
         </div>
       </div>
     </div>

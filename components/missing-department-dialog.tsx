@@ -14,6 +14,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useProfile } from "@/hooks/use-profile";
 
+/**
+ * เด้งทุกครั้งที่โหลดหน้าโดยเจตนา — การปิดจำไว้แค่ใน state ห้ามย้ายไป sessionStorage /
+ * localStorage: ผู้ใช้ที่ไม่มีแผนกทำให้ workflow (การอนุมัติตามแผนก) ทำงานผิดได้ เจ้าของ
+ * ระบบต้องการให้ dialog กดดันจนกว่า admin จะ assign แผนกให้ (ตัดสินเมื่อ 2026-10-26)
+ */
 export function MissingDepartmentDialog() {
   const { isSuccess, defaultBu, hasDepartment } = useProfile();
   const t = useTranslations("profileError");

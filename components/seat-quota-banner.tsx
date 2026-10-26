@@ -27,8 +27,11 @@ interface SeatQuotaBannerProps {
  * ใด ๆ ผู้เรียกจริง (root-layout) ใช้ `SeatQuotaBannerHost` ด้านล่างซึ่งอ่าน `useLicense()`
  * และเช็ค `enforced` ให้ก่อนส่งต่อ props มาที่นี่
  *
- * สี: neutral bg + สีความหมายอยู่ที่ไอคอนจุดเดียว (docs/DESIGN.md "avoid neon" — ตัวเดียวกับ
- * `LicenseExpiredBanner` ที่อยู่ mount point เดียวกัน และ `Toaster` ที่ใช้ `-ink` กับไอคอน)
+ * สี: แถบเหลืองใช้ neutral bg + สีที่ไอคอนจุดเดียว (docs/DESIGN.md "avoid neon" — ตัวเดียวกับ
+ * `LicenseExpiredBanner` และ `Toaster`) แต่ **แถบแดงเป็นข้อยกเว้นโดยเจตนา: พื้นแดงทึบทั้งแถบ**
+ * (ตัดสิน 2026-10-26) — แบบเทาเดิมเงียบจนผู้ใช้มองข้าม ทั้งที่บันทึกอะไรไม่ได้ทั้ง cluster และคนที่
+ * แก้ได้คือ admin ของ BU / cluster ไม่ใช่ตัวผู้ใช้ แถบจึงต้องดังพอให้ผู้ใช้ไปกดดัน admin และบอกชื่อ
+ * คนที่ต้องไปหา สียังเป็นสัญญาณเดียว (พื้นแถบ) ตัวอักษร/ไอคอนใช้ `destructive-foreground`
  */
 export function SeatQuotaBanner({ seat, expiringSoon }: SeatQuotaBannerProps) {
   const t = useTranslations("license");
@@ -38,12 +41,15 @@ export function SeatQuotaBanner({ seat, expiringSoon }: SeatQuotaBannerProps) {
     return (
       <div
         role="alert"
-        className="bg-muted flex items-center justify-center gap-2 border-b px-4 py-2 text-xs"
+        className="bg-destructive text-destructive-foreground flex items-start justify-center gap-2.5 px-4 py-2.5 text-sm sm:items-center"
       >
-        <Users className="text-destructive size-4 shrink-0" aria-hidden />
-        <span className="text-muted-foreground">
-          {t("seatOverQuota", { used: seat.used, cap: seat.cap })}
-        </span>
+        <Users className="mt-0.5 size-4 shrink-0 sm:mt-0" aria-hidden />
+        <p className="min-w-0">
+          <span className="font-semibold">
+            {t("seatOverQuota", { used: seat.used, cap: seat.cap })}
+          </span>{" "}
+          <span>{t("seatOverQuotaAction")}</span>
+        </p>
       </div>
     );
   }
