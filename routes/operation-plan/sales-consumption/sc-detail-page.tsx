@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { FormPageShell } from "@/components/share/form-page-shell";
@@ -59,9 +59,13 @@ export function ScDetailPage({ id }: ScDetailPageProps) {
   const postMutation = usePostSalesConsumption(id);
   const voidMutation = useVoidSalesConsumption(id);
 
+  const isVoided = sc?.status === "voided";
+  // SC ที่ void ไม่มีบรรทัดยอดขายแล้ว — เปิดที่แท็บวัตถุดิบ
   const tab: DetailTab = TABS.includes(tabRaw as DetailTab)
     ? (tabRaw as DetailTab)
-    : "sales";
+    : isVoided
+      ? "ingredients"
+      : "sales";
   const backToList = () => navigate("/operation-plan/sales-consumption");
 
   if (error) {
@@ -146,7 +150,9 @@ export function ScDetailPage({ id }: ScDetailPageProps) {
     >
       <Tabs
         value={tab}
-        onValueChange={(v) => setURLParams({ tab: v === "sales" ? "" : v })}
+        onValueChange={(v) =>
+          setURLParams({ tab: v === (isVoided ? "ingredients" : "sales") ? "" : v })
+        }
       >
         <TabsList>
           {TABS.map((v) => (
@@ -156,7 +162,25 @@ export function ScDetailPage({ id }: ScDetailPageProps) {
           ))}
         </TabsList>
         <TabsContent value="sales" className="mt-4">
-          <ScSalesLines sc={sc} canWrite={canWrite} />
+          {isVoided ? (
+            <p className="text-muted-foreground text-sm">
+              {sc.replaced_by ? (
+                <>
+                  {t("hint.salesMovedPrefix")}{" "}
+                  <Link
+                    to={`/operation-plan/sales-consumption/${sc.replaced_by.id}`}
+                    className="text-primary hover:underline"
+                  >
+                    {sc.replaced_by.sc_no}
+                  </Link>
+                </>
+              ) : (
+                t("hint.salesMovedNone")
+              )}
+            </p>
+          ) : (
+            <ScSalesLines sc={sc} canWrite={canWrite} />
+          )}
         </TabsContent>
         <TabsContent value="ingredients" className="mt-4">
           <ScIngredients sc={sc} verify={liveVerify} />

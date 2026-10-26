@@ -195,13 +195,19 @@ export function ScDetailHeader({
         <Field label={t("header.saleDate")}>
           {formatDate(`${sc.sale_date.slice(0, 10)}T00:00:00`, dateFormat)}
         </Field>
-        <Field label={t("header.imports")}>
-          <span title={importNames}>
-            {t("header.importsCount", { count: sc.imports.length })}
-          </span>
-        </Field>
+        {sc.status !== "voided" && (
+          <Field label={t("header.imports")}>
+            <span title={importNames}>
+              {t("header.importsCount", { count: sc.imports.length })}
+            </span>
+          </Field>
+        )}
         <Field label={t("header.salesAmount")}>
-          <span className="tabular-nums">{formatAmount(sc.sales_amount)}</span>
+          {sc.sales_amount === null ? (
+            "—"
+          ) : (
+            <span className="tabular-nums">{formatAmount(sc.sales_amount)}</span>
+          )}
         </Field>
         <Field label={t("header.stockOuts")}>
           {sc.stock_outs.length === 0

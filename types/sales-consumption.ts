@@ -119,7 +119,8 @@ export interface ScDetail {
     store_name: string | null;
   }[];
   missing_stores: string[];
-  sales_amount: number;
+  /** null เมื่อ SC ถูก void (บรรทัดย้ายไปใบใหม่แล้ว) */
+  sales_amount: number | null;
   lines: ScLine[];
   ingredients: ScIngredientGroup[];
   ingredient_problems: ScIngredientProblem[];

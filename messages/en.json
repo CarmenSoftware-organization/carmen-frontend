@@ -4569,7 +4569,9 @@
           "stale": "Lines changed after the last check. Verify on-hand again",
           "short": "Some products are short. Fix the stock or the mapping, then verify again",
           "ready": "Ready to post. {count, plural, one {# Stock Out} other {# Stock Outs}} will be created",
-          "voidedNote": "This document is voided and cannot be changed"
+          "voidedNote": "This document is voided and cannot be changed",
+          "salesMovedPrefix": "Sales lines moved to",
+          "salesMovedNone": "Sales lines of this document are no longer kept here"
         },
         "lines": {
           "columns": {

@@ -265,9 +265,11 @@ function ScIngredientGroupCard({
         <h3 className="text-sm font-semibold">
           {group.location.code} · {group.location.name}
         </h3>
-        <span className="text-muted-foreground text-xs">
-          {t("outlets", { outlets: group.outlets.join(", ") })}
-        </span>
+        {group.outlets.length > 0 && (
+          <span className="text-muted-foreground text-xs">
+            {t("outlets", { outlets: group.outlets.join(", ") })}
+          </span>
+        )}
         <span className="text-muted-foreground text-xs">
           {t("productCount", { count: group.products.length })}
         </span>
