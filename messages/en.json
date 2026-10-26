@@ -1098,7 +1098,8 @@
       "SALES_CONSUMPTION_VOID_PERIOD_CLOSED": "Cannot void because the period of this document is already closed.",
       "SALES_CONSUMPTION_LINE_POSTED": "This line has already been posted and cannot be edited.",
       "SALES_CONSUMPTION_POS_NOT_ENABLED": "POS integration is not enabled for this business unit.",
-      "POS_SALE_OUTLET_IN_POSTED_SC": "Outlet {outlet} for {date} is already included in a posted Sales Consumption and cannot be overwritten."
+      "POS_SALE_OUTLET_IN_POSTED_SC": "Outlet {outlet} for {date} is already included in a posted Sales Consumption and cannot be overwritten.",
+      "STOCK_OUT_VOID_VIA_SALES_CONSUMPTION": "This Stock Out was created by Sales Consumption {sc_no}. Void it from the Sales Consumption instead."
     }
   },
   "validation": {
@@ -2862,7 +2863,7 @@
           "title": "Oracle Simphony",
           "desc": "Receive daily POS sales from Oracle Simphony and post stock deductions.",
           "sftp": "SFTP connection",
-          "sftpDesc": "Connection to the server holding the sales export files. Files are pulled automatically once a day at the time set below (business unit time zone, checked hourly). Pulled files always wait for the Cost Controller to confirm, and you can still import files manually from the Import history tab.",
+          "sftpDesc": "Connection to the server holding the sales export files. Files are pulled automatically once a day at the time set below (business unit time zone, checked hourly). Pulled files always wait for the Cost Controller to confirm, and you can still import files manually on the Import POS page.",
           "host": "SFTP host",
           "port": "Port",
           "username": "Username",
@@ -4390,8 +4391,8 @@
           "skip": "Skip",
           "overwrite": "Overwrite"
         },
-        "voidWarning": "Will void {count, plural, one {# existing Stock Out} other {# existing Stock Outs}} and wait for confirmation again",
-        "noVoidPermission": "You need permission to delete Stock Out to overwrite this outlet",
+        "inPostedSc": "Already deducted on a posted Sales Consumption. To overwrite, void the Sales Consumption of {date} first.",
+        "openSalesConsumption": "Open Sales Consumption",
         "import": "Import",
         "needsResolution": "Data for this date was added in the meantime. Choose again.",
         "outcome": {
@@ -4400,7 +4401,6 @@
           "skipped": "Skipped",
           "failed": "Failed"
         },
-        "voided": "Voided {count, plural, one {# Stock Out} other {# Stock Outs}}",
         "viewLines": "View lines"
       },
       "simphony": {
@@ -4532,7 +4532,9 @@
           "stockOuts": "Stock Outs",
           "none": "–",
           "missingStores": "No file yet for: {stores}",
-          "replacedBy": "Replaced by {sc}"
+          "replacedByPrefix": "Replaced by",
+          "stockOutVoided": "voided",
+          "lateLines": "{count, plural, one {# sale line} other {# sale lines}} arrived after this was posted and are not deducted. Void and post again to include them."
         },
         "cards": {
           "mapped": "Mapped",
@@ -4619,7 +4621,8 @@
           "shortBy": "Short {qty}",
           "dash": "–",
           "empty": "No ingredients to deduct",
-          "summaryVerifiedNoDetail": "On-hand was verified at {time}, but the per-product detail is not loaded. Re-verify on-hand to see it."
+          "summaryVerifiedNoDetail": "On-hand was verified at {time}, but the per-product detail is not loaded. Re-verify on-hand to see it.",
+          "stockOutVoided": "voided"
         },
         "problems": {
           "no_conversion": "unit conversion is missing",

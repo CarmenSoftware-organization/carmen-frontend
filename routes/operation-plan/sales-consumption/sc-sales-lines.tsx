@@ -87,7 +87,8 @@ export function ScSalesLines({ sc, canWrite }: ScSalesLinesProps) {
         header: t("columns.location"),
         cell: ({ row }) => {
           const line = row.original;
-          if (line.state === "not_counted") return <NotCounted t={t} />;
+          // BE ให้ not_counted ทั้ง qty <= 0 และบรรทัดที่ ignore — บรรทัดที่ ignore ยังต้องแก้/ยกเลิก ignore ได้
+          if (line.qty <= 0) return <NotCounted t={t} />;
           const loc = line.location;
           const hint = !loc
             ? t("outletNotMapped")
@@ -122,7 +123,7 @@ export function ScSalesLines({ sc, canWrite }: ScSalesLinesProps) {
               )}
               {editable && (
                 <div
-                  className={`text-xs ${loc ? "text-muted-foreground" : "text-warning-ink"}`}
+                  className={`text-xs ${loc || line.is_ignored ? "text-muted-foreground" : "text-warning-ink"}`}
                 >
                   {hint}
                 </div>
@@ -152,7 +153,7 @@ export function ScSalesLines({ sc, canWrite }: ScSalesLinesProps) {
         header: t("columns.recipe"),
         cell: ({ row }) => {
           const line = row.original;
-          if (line.state === "not_counted") return <NotCounted t={t} />;
+          if (line.qty <= 0) return <NotCounted t={t} />;
           const recipe = line.recipe;
           const fromLine = line.recipe_source === "line";
           const hint =
@@ -203,7 +204,8 @@ export function ScSalesLines({ sc, canWrite }: ScSalesLinesProps) {
                     {t("ignore")}
                   </Button>
                 )}
-                {(fromLine || line.is_ignored) && (
+                {/* ignore ที่มาจาก master ล้างที่บรรทัดไม่ได้ — ปุ่มคืนค่าจึงมีเฉพาะ override ของบรรทัด */}
+                {fromLine && (
                   <ResetButton
                     label={t("resetToMaster")}
                     onClick={() =>

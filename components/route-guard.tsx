@@ -14,6 +14,7 @@ import {
 } from "@/hooks/use-license";
 import { usePosStatus } from "@/hooks/use-pos-status";
 import { PosNotEnabled } from "@/components/pos-not-enabled";
+import { ErrorState } from "@/components/ui/error-state";
 import type { DeniedReason } from "@/components/permission-denied-dialog";
 
 interface RouteGuardProps {
@@ -84,6 +85,8 @@ export function RouteGuard({ children }: RouteGuardProps) {
   // ตอนที่แค่ยังโหลดไม่เสร็จ · ตรวจหลัง license เพื่อให้ข้อความ license มาก่อนเหมือนเดิม
   if (leaf?.requiresPosInterface) {
     if (pos.isLoading) return null;
+    // โหลดสถานะพลาด ≠ ยังไม่เปิด POS — แสดง error ปกติ ไม่งั้นค้างหน้า "ยังไม่เปิด" จน cache หมด
+    if (pos.error) return <ErrorState error={pos.error} onRetry={pos.refetch} />;
     if (!pos.isEnabled) return <PosNotEnabled />;
   }
 

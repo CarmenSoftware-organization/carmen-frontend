@@ -25,6 +25,8 @@ export interface ScStockOutRef {
   id: string;
   so_no: string | null;
   location_code: string | null;
+  /** ถูก void ไปพร้อม SC ที่ถูก void */
+  voided: boolean;
 }
 
 /** หนึ่งแถวของรายการ */
@@ -74,7 +76,7 @@ export interface ScIngredientGroup {
   outlets: string[];
   products: ScIngredientProduct[];
   total_cost: number;
-  stock_out: { id: string; so_no: string | null } | null;
+  stock_out: { id: string; so_no: string | null; voided: boolean } | null;
 }
 
 /** บรรทัดที่แตกสูตรไม่ได้ จึงไม่อยู่ในยอดวัตถุดิบ (เฉพาะ pending) */
@@ -123,6 +125,10 @@ export interface ScDetail {
   ingredient_problems: ScIngredientProblem[];
   stock_outs: ScStockOutRef[];
   verification: ScVerification | null;
+  /** เฉพาะ voided: SC ใบใหม่ของวันนั้นที่เปิดขึ้นตอน void */
+  replaced_by: { id: string; sc_no: string } | null;
+  /** เฉพาะ posted: บรรทัดขาย (qty > 0) ที่เข้ามาหลัง post จึงยังไม่ถูกตัด */
+  late_lines: number;
   history: ScHistoryEntry[];
 }
 

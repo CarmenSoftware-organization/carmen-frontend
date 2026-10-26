@@ -1,4 +1,6 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useAppConfigByKey, useUpsertAppConfig } from "@/hooks/use-app-config";
+import { QUERY_KEYS } from "@/constant/query-keys";
 import { ApiError } from "@/lib/api-error";
 
 export type UseInterfaceConfigResult = {
@@ -32,6 +34,7 @@ export function useInterfaceConfig(
 ): UseInterfaceConfigResult {
   const query = useAppConfigByKey(configKey);
   const upsert = useUpsertAppConfig();
+  const queryClient = useQueryClient();
 
   const isNotFound =
     query.error instanceof ApiError && query.error.statusCode === 404;
@@ -47,7 +50,20 @@ export function useInterfaceConfig(
     isError: query.isError && !isNotFound,
     refetch: () => void query.refetch(),
     save: (value, opts) =>
-      upsert.mutate({ key: configKey, value }, { onSuccess: opts?.onSuccess }),
+      upsert.mutate(
+        { key: configKey, value },
+        {
+          onSuccess: () => {
+            // เปิด/ปิด POS เปลี่ยนเมนูและหน้า Sales Consumption / Import POS — ให้ usePosStatus อ่านใหม่
+            if (configKey.startsWith("interface_pos")) {
+              void queryClient.invalidateQueries({
+                queryKey: [QUERY_KEYS.POS_SALE_STATUS],
+              });
+            }
+            opts?.onSuccess?.();
+          },
+        },
+      ),
     isSaving: upsert.isPending,
   };
 }

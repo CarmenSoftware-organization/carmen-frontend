@@ -15,19 +15,23 @@ import type { PosStatusResult } from "@/types/sales-consumption";
  * ยิงเฉพาะเมื่ออ่าน config POS ได้ (`canReadConfig` ของ simphony หรือ micros3700)
  * ไม่มีสิทธิ์อ่าน = `isEnabled: false` โดยไม่ยิง endpoint (กัน 403 เด้ง PermissionDeniedDialog)
  *
- * @returns `enabledBrands`, `isEnabled` (มีอย่างน้อยหนึ่งแบรนด์), `isLoading`
+ * โหลดพลาด = `error` (ไม่ใช่ "ยังไม่เปิด POS") ให้หน้าแสดง error ปกติพร้อมปุ่มลองใหม่
+ *
+ * @returns `enabledBrands`, `isEnabled` (มีอย่างน้อยหนึ่งแบรนด์), `isLoading`, `error`, `refetch`
  */
 export function usePosStatus(): {
   enabledBrands: PosBrand[];
   isEnabled: boolean;
   isLoading: boolean;
+  error: Error | null;
+  refetch: () => void;
 } {
   const buCode = useBuCode();
   const { canReadConfig, isLoading: licenseLoading } = useInterfaceEntitlement();
   const canRead =
     canReadConfig("pos", "simphony") || canReadConfig("pos", "micros3700");
 
-  const { data, isLoading } = useQuery<PosBrand[]>({
+  const { data, isLoading, error, refetch } = useQuery<PosBrand[]>({
     queryKey: [QUERY_KEYS.POS_SALE_STATUS, buCode],
     queryFn: async () => {
       const res = await httpClient.get(API_ENDPOINTS.POS_SALE_STATUS(buCode!));
@@ -45,5 +49,7 @@ export function usePosStatus(): {
     enabledBrands,
     isEnabled: enabledBrands.length > 0,
     isLoading: licenseLoading || (canRead && isLoading),
+    error: canRead ? error : null,
+    refetch: () => void refetch(),
   };
 }

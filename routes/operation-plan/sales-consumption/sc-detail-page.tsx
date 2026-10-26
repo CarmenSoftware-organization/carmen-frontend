@@ -112,10 +112,13 @@ export function ScDetailPage({ id }: ScDetailPageProps) {
     voidMutation.mutate(
       { void_reason: reason, doc_version: sc.doc_version },
       {
-        onSuccess: () => {
+        onSuccess: (res) => {
           setVoidOpen(false);
           setVerifyResult(null);
           toast.success(t("actions.voided"));
+          // ใบนี้ว่างแล้ว (บรรทัดย้ายไป SC ใบใหม่ของวัน) — พาไปใบใหม่เมื่อมี
+          const newId = res.data.new_sc_id;
+          if (newId) navigate(`/operation-plan/sales-consumption/${newId}`);
         },
         onError: (err) => toast.error(getUserErrorMessage(err, tErr)),
       },

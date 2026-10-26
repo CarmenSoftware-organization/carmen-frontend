@@ -1098,7 +1098,8 @@
       "SALES_CONSUMPTION_VOID_PERIOD_CLOSED": "ยกเลิกไม่ได้เพราะงวดของเอกสารนี้ปิดแล้ว",
       "SALES_CONSUMPTION_LINE_POSTED": "บรรทัดนี้ถูก Post แล้ว แก้ไขไม่ได้",
       "SALES_CONSUMPTION_POS_NOT_ENABLED": "หน่วยธุรกิจนี้ยังไม่ได้เปิดใช้การเชื่อมต่อ POS",
-      "POS_SALE_OUTLET_IN_POSTED_SC": "Outlet {outlet} ของวันที่ {date} ถูกรวมใน Sales Consumption ที่ Post แล้ว จึงเขียนทับไม่ได้"
+      "POS_SALE_OUTLET_IN_POSTED_SC": "Outlet {outlet} ของวันที่ {date} ถูกรวมใน Sales Consumption ที่ Post แล้ว จึงเขียนทับไม่ได้",
+      "STOCK_OUT_VOID_VIA_SALES_CONSUMPTION": "Stock Out นี้ถูกสร้างจาก Sales Consumption {sc_no} กรุณายกเลิกที่ Sales Consumption แทน"
     }
   },
   "validation": {
@@ -2862,7 +2863,7 @@
           "title": "Oracle Simphony",
           "desc": "รับยอดขายรายวันจาก Oracle Simphony และตัดสต็อก",
           "sftp": "การเชื่อมต่อ SFTP",
-          "sftpDesc": "การเชื่อมต่อไปยังเซิร์ฟเวอร์ที่เก็บไฟล์ยอดขาย ระบบดึงไฟล์อัตโนมัติวันละครั้งเมื่อถึงเวลาที่ตั้งไว้ด้านล่าง (ตามเขตเวลาของ BU ตรวจทุกชั่วโมง) ไฟล์ที่ดึงมาจะรอ Cost Controller ยืนยันเสมอ และยังนำเข้าไฟล์เองได้ที่แท็บประวัติการนำเข้า",
+          "sftpDesc": "การเชื่อมต่อไปยังเซิร์ฟเวอร์ที่เก็บไฟล์ยอดขาย ระบบดึงไฟล์อัตโนมัติวันละครั้งเมื่อถึงเวลาที่ตั้งไว้ด้านล่าง (ตามเขตเวลาของ BU ตรวจทุกชั่วโมง) ไฟล์ที่ดึงมาจะรอ Cost Controller ยืนยันเสมอ และยังนำเข้าไฟล์เองได้ที่หน้านำเข้ายอดขาย POS",
           "host": "โฮสต์ SFTP",
           "port": "พอร์ต",
           "username": "ชื่อผู้ใช้",
@@ -4390,8 +4391,8 @@
           "skip": "ข้าม",
           "overwrite": "เขียนทับ"
         },
-        "voidWarning": "จะยกเลิก Stock Out เดิม {count} ใบ แล้วรอยืนยันใหม่",
-        "noVoidPermission": "ต้องมีสิทธิ์ลบ Stock Out จึงจะเขียนทับ Outlet นี้ได้",
+        "inPostedSc": "ถูกตัดสต็อกไปกับ Sales Consumption ที่ Post แล้ว หากต้องการเขียนทับ ให้ยกเลิก (Void) Sales Consumption ของวันที่ {date} ก่อน",
+        "openSalesConsumption": "เปิด Sales Consumption",
         "import": "นำเข้า",
         "needsResolution": "มีข้อมูลเดิมเพิ่มระหว่างนี้ เลือกใหม่อีกครั้ง",
         "outcome": {
@@ -4400,7 +4401,6 @@
           "skipped": "ข้าม",
           "failed": "ไม่สำเร็จ"
         },
-        "voided": "ยกเลิก Stock Out {count} ใบ",
         "viewLines": "ดูบรรทัด"
       },
       "simphony": {
@@ -4532,7 +4532,9 @@
           "stockOuts": "ใบจ่ายออก",
           "none": "–",
           "missingStores": "ยังไม่มีไฟล์ของ: {stores}",
-          "replacedBy": "ถูกแทนที่ด้วย {sc}"
+          "replacedByPrefix": "ถูกแทนที่ด้วย",
+          "stockOutVoided": "ยกเลิกแล้ว",
+          "lateLines": "มีบรรทัดขาย {count} รายการเข้ามาหลัง Post จึงยังไม่ถูกตัดสต็อก ยกเลิก (Void) แล้ว Post ใหม่เพื่อรวมรายการเหล่านี้"
         },
         "cards": {
           "mapped": "ระบุแล้ว",
@@ -4619,7 +4621,8 @@
           "shortBy": "ขาด {qty}",
           "dash": "–",
           "empty": "ไม่มีวัตถุดิบที่ต้องตัด",
-          "summaryVerifiedNoDetail": "ตรวจยอดคงเหลือแล้วเมื่อ {time} แต่ยังไม่ได้โหลดรายละเอียดรายสินค้า กดตรวจยอดคงเหลืออีกครั้งเพื่อดู"
+          "summaryVerifiedNoDetail": "ตรวจยอดคงเหลือแล้วเมื่อ {time} แต่ยังไม่ได้โหลดรายละเอียดรายสินค้า กดตรวจยอดคงเหลืออีกครั้งเพื่อดู",
+          "stockOutVoided": "ยกเลิกแล้ว"
         },
         "problems": {
           "no_conversion": "ไม่มีการแปลงหน่วย",

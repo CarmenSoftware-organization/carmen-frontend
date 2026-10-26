@@ -16,13 +16,6 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { StatusDotBadge, type DotTone } from "@/components/ui/status-dot-badge";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { PERMISSIONS } from "@/constant/permissions";
-import { useCan } from "@/hooks/use-can";
-import {
   useAmountFormatter,
   useQuantityFormatter,
 } from "@/hooks/use-number-formatter";
@@ -74,8 +67,8 @@ const ACTION_TONE: Record<PosMicros3700OutletAction, DotTone> = {
  * dialog นำเข้ารายงาน Micros 3700 — สรุปต่อ Outlet + footing → เลือกข้าม/เขียนทับ Outlet
  * ที่มีอยู่แล้ว → นำเข้า → ผลต่อ Outlet
  *
- * เขียนทับ Outlet ที่ยืนยันแล้วต้องยกเลิก Stock Out เดิม จึงต้องมีสิทธิ์ `stock_out.delete`
- * (backend ตรวจซ้ำ) · การเขียนทับส่งชุด live + Stock Out ที่ผู้ใช้เห็นไปด้วย ·
+ * Outlet ที่ชุดเดิมถูกตัดสต็อกไปกับ Sales Consumption ที่ post แล้วเขียนทับไม่ได้ (backend ปฏิเสธเสมอ)
+ * ต้อง void Sales Consumption ของวันนั้นก่อน · การเขียนทับส่งชุด live + Stock Out ที่ผู้ใช้เห็นไปด้วย ·
  * `needs_resolution` = มีคนนำเข้า/ยืนยัน/เขียนทับวันเดียวกันระหว่างนี้ → แทนตารางด้วยชุดใหม่ และ
  * Outlet ที่ชุดเปลี่ยนกลับเป็น ข้าม ให้เลือกอีกครั้ง · parent unmount dialog เมื่อปิด state ทั้งหมดจึงล้างเอง
  *
@@ -100,12 +93,10 @@ export function PosMicros3700ImportDialog({
   const tStatus = useTranslations("operationPlan.posSale.importStatus");
   const tc = useTranslations("common");
   const tErr = useTranslations("errors");
-  const { can } = useCan();
   const { dateFormat } = useProfile();
   const formatAmount = useAmountFormatter();
   const formatQty = useQuantityFormatter();
   const importMutation = useImportMicros3700();
-  const canVoidStockOut = can(PERMISSIONS.inventory_management.stock_out.delete);
 
   const [outlets, setOutlets] = useState<PosMicros3700OutletCheck[]>(
     check.outlets,
@@ -121,9 +112,9 @@ export function PosMicros3700ImportDialog({
     check.footing.computed_total - check.footing.reported_total,
   );
 
-  /** เขียนทับได้ไหม — Outlet ที่มี Stock Out แล้วต้องมีสิทธิ์ยกเลิก Stock Out */
+  /** เขียนทับได้ไหม — ชุดเดิมที่มี Stock Out แล้ว (อยู่ใน SC ที่ post) ต้อง void SC ก่อน */
   const overwriteAllowed = (o: PosMicros3700OutletCheck) =>
-    canVoidStockOut || (o.existing?.stock_out_ids.length ?? 0) === 0;
+    (o.existing?.stock_out_ids.length ?? 0) === 0;
 
   /** ทางเลือกที่จะส่งจริง — ค่าเริ่ม ข้าม และตกเป็น ข้าม เมื่อเขียนทับไม่ได้ */
   const decisionOf = (o: PosMicros3700OutletCheck): Decision =>
@@ -234,13 +225,6 @@ export function PosMicros3700ImportDialog({
                           {outletErrorMessage(r.error, tErr)}
                         </p>
                       )}
-                      {r.voided_stock_out_ids.length > 0 && (
-                        <p className="text-muted-foreground">
-                          {t("voided", {
-                            count: r.voided_stock_out_ids.length,
-                          })}
-                        </p>
-                      )}
                     </td>
                     <td className="px-3 py-2 text-right">
                       {r.import_id && (
@@ -330,6 +314,8 @@ export function PosMicros3700ImportDialog({
                       outlet={o}
                       decision={decisionOf(o)}
                       overwriteAllowed={overwriteAllowed(o)}
+                      docDate={docDate}
+                      scLink={`/operation-plan/sales-consumption?view=calendar&month=${check.doc_date.slice(0, 7)}`}
                       disabled={pending}
                       onChange={(d) =>
                         setDecisions((prev) => ({ ...prev, [o.code]: d }))
@@ -366,7 +352,9 @@ export function PosMicros3700ImportDialog({
  *
  * @param props.outlet Outlet ที่ตรวจแล้ว
  * @param props.decision ทางเลือกปัจจุบัน
- * @param props.overwriteAllowed เขียนทับได้ไหม (ไม่มีสิทธิ์ยกเลิก Stock Out = ไม่ได้)
+ * @param props.overwriteAllowed เขียนทับได้ไหม (ชุดเดิมอยู่ใน SC ที่ post แล้ว = ไม่ได้)
+ * @param props.docDate วันขายที่จัดรูปแบบแล้ว
+ * @param props.scLink ลิงก์ไปปฏิทิน Sales Consumption ของเดือนนั้น
  * @param props.disabled ปิดทุกตัวเลือกระหว่างนำเข้า
  * @param props.onChange เรียกเมื่อเปลี่ยนทางเลือก
  * @returns React element ของช่องสถานะ
@@ -375,12 +363,16 @@ function OutletStatusCell({
   outlet,
   decision,
   overwriteAllowed,
+  docDate,
+  scLink,
   disabled,
   onChange,
 }: {
   readonly outlet: PosMicros3700OutletCheck;
   readonly decision: Decision;
   readonly overwriteAllowed: boolean;
+  readonly docDate: string;
+  readonly scLink: string;
   readonly disabled: boolean;
   readonly onChange: (d: Decision) => void;
 }) {
@@ -392,7 +384,6 @@ function OutletStatusCell({
     return <StatusDotBadge tone="success">{t("status.new")}</StatusDotBadge>;
   }
 
-  const stockOutCount = existing.stock_out_ids.length;
   const overwriteId = `m3700-${outlet.code}-overwrite`;
   const skipId = `m3700-${outlet.code}-skip`;
   const overwriteItem = (
@@ -431,20 +422,14 @@ function OutletStatusCell({
             {t("decision.skip")}
           </Label>
         </span>
-        {overwriteAllowed ? (
-          overwriteItem
-        ) : (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span tabIndex={0}>{overwriteItem}</span>
-            </TooltipTrigger>
-            <TooltipContent>{t("noVoidPermission")}</TooltipContent>
-          </Tooltip>
-        )}
+        {overwriteItem}
       </RadioGroup>
-      {decision === "overwrite" && stockOutCount > 0 && (
-        <p className="text-warning-ink">
-          {t("voidWarning", { count: stockOutCount })}
+      {!overwriteAllowed && (
+        <p className="text-muted-foreground">
+          {t("inPostedSc", { date: docDate })}{" "}
+          <Link to={scLink} className="text-primary hover:underline">
+            {t("openSalesConsumption")}
+          </Link>
         </p>
       )}
     </div>

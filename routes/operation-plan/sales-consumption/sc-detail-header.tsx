@@ -88,25 +88,6 @@ function statusHint(
 }
 
 /**
- * ชื่อ SC ที่เกิดใหม่หลังใบนี้ถูก void (ประวัติของวันรวมทุกใบของวันนั้น)
- */
-function replacementOf(sc: ScDetail): string | null {
-  const voided = sc.history.find(
-    (h) => h.action === "voided" && h.text_params.sc_no === sc.sc_no,
-  );
-  if (!voided) return null;
-  const next = sc.history
-    .filter(
-      (h) =>
-        h.action === "created" &&
-        h.text_params.sc_no !== sc.sc_no &&
-        h.at >= voided.at,
-    )
-    .sort((a, b) => a.at.localeCompare(b.at))[0];
-  return next ? String(next.text_params.sc_no) : null;
-}
-
-/**
  * หัวหน้า SC detail — ย้อนกลับ, เลขที่ + สถานะ, ปุ่ม Verify/Post/Void, ช่องข้อมูลสี่ช่อง
  * และแถวการ์ดสรุป (Mapped / Ignored / Need mapping / Ingredient cost)
  *
@@ -140,7 +121,7 @@ export function ScDetailHeader({
   ).length;
   const ignored = sc.lines.filter((l) => l.is_ignored).length;
   const ingredientCost = sc.ingredients.reduce((s, g) => s + g.total_cost, 0);
-  const replacement = sc.status === "voided" ? replacementOf(sc) : null;
+  const replacement = sc.status === "voided" ? sc.replaced_by : null;
   const importNames = sc.imports
     .map((i) => `${i.store_name ?? i.file_name} (${t(`brand.${i.brand}`)})`)
     .join("\n");
@@ -162,9 +143,19 @@ export function ScDetailHeader({
           )}
           {sc.status === "voided" && (
             <span className="text-muted-foreground text-sm">
-              {replacement
-                ? t("header.replacedBy", { sc: replacement })
-                : t("hint.voidedNote")}
+              {replacement ? (
+                <>
+                  {t("header.replacedByPrefix")}{" "}
+                  <Link
+                    to={`/operation-plan/sales-consumption/${replacement.id}`}
+                    className="text-primary hover:underline"
+                  >
+                    {replacement.sc_no}
+                  </Link>
+                </>
+              ) : (
+                t("hint.voidedNote")
+              )}
             </span>
           )}
           {isPending && canWrite && (
@@ -218,16 +209,32 @@ export function ScDetailHeader({
             : sc.stock_outs.map((s, i) => (
                 <span key={s.id}>
                   {i > 0 && ", "}
-                  <Link
-                    to={stockOutPath(s.id)}
-                    className="text-primary hover:underline"
-                  >
-                    {s.so_no ?? s.id.slice(0, 8)}
-                  </Link>
+                  {s.voided ? (
+                    // ใบที่ void แล้วถูกลบแบบ soft เปิดหน้า Stock Out ไม่ได้ — แสดงเป็นข้อความ
+                    <span className="text-muted-foreground">
+                      <span className="line-through">
+                        {s.so_no ?? s.id.slice(0, 8)}
+                      </span>{" "}
+                      ({t("header.stockOutVoided")})
+                    </span>
+                  ) : (
+                    <Link
+                      to={stockOutPath(s.id)}
+                      className="text-primary hover:underline"
+                    >
+                      {s.so_no ?? s.id.slice(0, 8)}
+                    </Link>
+                  )}
                 </span>
               ))}
         </Field>
       </dl>
+
+      {sc.status === "posted" && sc.late_lines > 0 && (
+        <p className="text-warning-ink text-sm" role="status">
+          {t("header.lateLines", { count: sc.late_lines })}
+        </p>
+      )}
 
       {sc.missing_stores.length > 0 && (
         <p className="text-warning-ink text-sm" role="status">

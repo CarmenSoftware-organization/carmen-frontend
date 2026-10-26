@@ -289,7 +289,14 @@ function ScIngredientGroupCard({
             </span>
           ))}
         <span className="ml-auto text-xs">
-          {group.stock_out ? (
+          {group.stock_out?.voided ? (
+            <span className="text-muted-foreground">
+              <span className="line-through">
+                {group.stock_out.so_no ?? group.stock_out.id.slice(0, 8)}
+              </span>{" "}
+              ({t("stockOutVoided")})
+            </span>
+          ) : group.stock_out ? (
             <Link
               to={stockOutPath(group.stock_out.id)}
               className="text-primary hover:underline"
