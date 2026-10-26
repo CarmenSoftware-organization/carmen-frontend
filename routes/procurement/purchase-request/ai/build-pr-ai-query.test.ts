@@ -1,5 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { buildPrAiQuery } from "./build-pr-ai-query";
+import { buildPrAiQuery as build } from "./build-pr-ai-query";
+
+const TEMPLATE = [
+  "You are helping a hotel purchasing officer in Thailand review a purchase request.",
+  "Prices are for wholesale / foodservice supply, not retail.",
+  "",
+  "For each item below, give a typical wholesale price range for that pack size and",
+  "say whether the quoted price looks reasonable. Answer as a short table.",
+  "If you are not confident about Thai market prices, say so instead of guessing.",
+  "Do not invent supplier names.",
+  "",
+  "{items}",
+].join("\n");
+
+const buildPrAiQuery = (items: Parameters<typeof build>[1]) =>
+  build(TEMPLATE, items);
 
 const ITEM = {
   productName: "Oseki Sake 1.8L",

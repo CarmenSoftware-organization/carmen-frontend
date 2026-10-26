@@ -1,5 +1,7 @@
 export const QUERY_KEYS = {
   ACCOUNT_MAPPING: "account-mapping",
+  ASK_AI_PROVIDERS: "ask-ai-providers",
+  ASK_AI_CONFIG: "ask-ai-config",
   ACTIVITY_LOGS: "activity-logs",
   ACTIVITY_LOGS_BY_RECORD: "activity-logs-by-record",
   ACTIVITY_LOG_DETAIL: "activity-log-detail",
