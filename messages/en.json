@@ -4618,7 +4618,8 @@
           "yes": "Yes",
           "shortBy": "Short {qty}",
           "dash": "–",
-          "empty": "No ingredients to deduct"
+          "empty": "No ingredients to deduct",
+          "summaryVerifiedNoDetail": "On-hand was verified at {time}, but the per-product detail is not loaded. Re-verify on-hand to see it."
         },
         "problems": {
           "no_conversion": "unit conversion is missing",

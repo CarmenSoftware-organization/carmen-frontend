@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { setURLParams, useURL } from "@/hooks/use-url";
 import { getUserErrorMessage } from "@/lib/error-message";
 import type { ScVerifyResult } from "@/types/sales-consumption";
+import { useCan } from "@/hooks/use-can";
+import { PERMISSIONS } from "@/constant/permissions";
 import { usePosWritable } from "../shared/use-pos-writable";
 import { ScDetailHeader } from "./sc-detail-header";
 import { ScHistory } from "./sc-history";
@@ -44,6 +46,10 @@ export function ScDetailPage({ id }: ScDetailPageProps) {
   const tErr = useTranslations("errors");
   const navigate = useNavigate();
   const { canWrite } = usePosWritable();
+  const { canWrite: contractWritable, can } = useCan();
+  // Void ไม่ผูกกับการเปิด POS — ปิด POS แล้วยังต้องคืนสต็อกได้
+  const canVoid =
+    contractWritable && can(PERMISSIONS.inventory_management.stock_out.delete);
   const { data: sc, isLoading, error, refetch } = useSalesConsumption(id);
   const [tabRaw] = useURL("tab");
   const [verifyResult, setVerifyResult] = useState<ScVerifyResult | null>(null);
@@ -122,6 +128,7 @@ export function ScDetailPage({ id }: ScDetailPageProps) {
         <ScDetailHeader
           sc={sc}
           canWrite={canWrite}
+          canVoid={canVoid}
           unresolvedLines={unresolvedLines}
           unresolvedCount={unresolvedCount}
           canPost={canPost}

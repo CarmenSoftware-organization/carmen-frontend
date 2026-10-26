@@ -173,25 +173,24 @@ export function ScSalesLines({ sc, canWrite }: ScSalesLinesProps) {
           return (
             <div className="min-w-56 space-y-0.5">
               <div className="flex items-center gap-1">
-                {line.is_ignored ? (
-                  <StatusDotBadge tone="neutral">{t("ignored")}</StatusDotBadge>
-                ) : (
-                  <LookupRecipe
-                    size="xs"
-                    value={recipe?.id ?? ""}
-                    defaultLabel={
-                      recipe ? `${recipe.code} · ${recipe.name}` : undefined
-                    }
-                    onValueChange={(id) =>
-                      id &&
-                      save({
-                        line_ids: [line.id],
-                        recipe_id: id,
-                        ...(line.is_ignored && { is_ignored: false }),
-                      })
-                    }
-                  />
-                )}
+                <LookupRecipe
+                  size="xs"
+                  value={line.is_ignored ? "" : (recipe?.id ?? "")}
+                  defaultLabel={
+                    recipe && !line.is_ignored
+                      ? `${recipe.code} · ${recipe.name}`
+                      : undefined
+                  }
+                  placeholder={line.is_ignored ? t("ignored") : undefined}
+                  onValueChange={(id) =>
+                    id &&
+                    save({
+                      line_ids: [line.id],
+                      recipe_id: id,
+                      ...(line.is_ignored && { is_ignored: false }),
+                    })
+                  }
+                />
                 {!line.is_ignored && (
                   <Button
                     type="button"
@@ -204,7 +203,7 @@ export function ScSalesLines({ sc, canWrite }: ScSalesLinesProps) {
                     {t("ignore")}
                   </Button>
                 )}
-                {fromLine && (
+                {(fromLine || line.is_ignored) && (
                   <ResetButton
                     label={t("resetToMaster")}
                     onClick={() =>

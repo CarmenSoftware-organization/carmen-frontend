@@ -26,6 +26,8 @@ import type {
   ScIngredientProduct,
   ScVerifyResult,
 } from "@/types/sales-consumption";
+import { useProfile } from "@/hooks/use-profile";
+import { formatDate } from "@/lib/date-utils";
 import { stockOutPath } from "../import-pos/pos-import-status";
 
 const RIGHT = {
@@ -58,6 +60,7 @@ export function ScIngredients({ sc, verify }: ScIngredientsProps) {
   const tProblem = useTranslations(
     "operationPlan.salesConsumption.detail.problems",
   );
+  const { dateTimeFormat } = useProfile();
   const isPending = sc.status === "pending";
 
   const checks = useMemo(() => {
@@ -93,9 +96,12 @@ export function ScIngredients({ sc, verify }: ScIngredientsProps) {
           ? t("summaryShort", { count: shortTotal })
           : t("summaryOk");
     } else {
-      summary = sc.verification?.stale
-        ? t("summaryStale")
-        : t("summaryNotChecked");
+      if (sc.verification?.stale) summary = t("summaryStale");
+      else if (sc.verification)
+        summary = t("summaryVerifiedNoDetail", {
+          time: formatDate(sc.verification.verified_at, dateTimeFormat),
+        });
+      else summary = t("summaryNotChecked");
     }
   }
 

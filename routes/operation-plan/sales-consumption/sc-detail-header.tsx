@@ -19,6 +19,8 @@ const STATUS_TONE: Record<ScStatus, DotTone> = {
 interface ScDetailHeaderProps {
   readonly sc: ScDetail;
   readonly canWrite: boolean;
+  /** Void ใช้สิทธิ์ stock_out.delete และไม่ผูกกับ POS ที่เปิดอยู่ */
+  readonly canVoid: boolean;
   /** บรรทัดขายที่ยังขาด Location/สูตร */
   readonly unresolvedLines: number;
   /** บรรทัดที่ค้าง + บรรทัดที่แตกสูตรไม่ได้ — ตัวนี้ที่บล็อก verify/post */
@@ -115,6 +117,7 @@ function replacementOf(sc: ScDetail): string | null {
 export function ScDetailHeader({
   sc,
   canWrite,
+  canVoid,
   unresolvedLines,
   unresolvedCount,
   canPost,
@@ -189,7 +192,7 @@ export function ScDetailHeader({
               </Button>
             </>
           )}
-          {sc.status === "posted" && canWrite && (
+          {sc.status === "posted" && canVoid && (
             <Button type="button" variant="outline" size="sm" onClick={onVoid}>
               {t("actions.void")}
             </Button>
