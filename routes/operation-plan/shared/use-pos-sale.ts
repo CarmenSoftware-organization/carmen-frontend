@@ -42,13 +42,13 @@ async function getJson<T>(url: string, fallback: string): Promise<T> {
  * ประวัติการนำเข้ายอดขาย POS ตามแบรนด์ (แบ่งหน้า)
  *
  * @param params - page / perpage / search / sort
- * @param brand - แบรนด์ที่ต้องการ
+ * @param brand - แบรนด์ที่ต้องการ — ไม่ส่ง = ทุกแบรนด์
  * @param options - ตัวเลือก UseQueryOptions เพิ่มเติม
  * @returns query ของ `PaginatedResponse<PosImportListItem>` — `useGridPagination` ใช้ได้
  */
 export function usePosImports(
   params: ParamsDto | undefined,
-  brand: PosBrand,
+  brand?: PosBrand,
   options?: Omit<
     UseQueryOptions<PaginatedResponse<PosImportListItem>>,
     "queryKey" | "queryFn"

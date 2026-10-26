@@ -246,10 +246,10 @@ export function PosMicros3700ImportDialog({
                       {r.import_id && (
                         <Button asChild variant="ghost" size="xs">
                           <Link
-                            to={`/system-admin/interface/pos/micros3700/imports/${r.import_id}`}
+                            to={`/operation-plan/import-pos?import=${r.import_id}`}
                             onClick={() => onOpenChange(false)}
                           >
-                            {t("review")}
+                            {t("viewLines")}
                           </Link>
                         </Button>
                       )}

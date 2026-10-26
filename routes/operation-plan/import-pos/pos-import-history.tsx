@@ -31,49 +31,48 @@ import {
 } from "@/components/ui/tooltip";
 import EmptyComponent from "@/components/empty-component";
 import { ErrorState } from "@/components/ui/error-state";
+import { cn } from "@/lib/utils";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { getUserErrorMessage } from "@/lib/error-message";
-import { cn } from "@/lib/utils";
 import {
   confirmationState,
   clampPerpage,
   importStatusLabel,
   importStatusTone,
-  type ConfirmationState,
 } from "./pos-import-status";
-import { PosMicros3700UploadButton } from "./pos-micros3700-upload-button";
-import { PosSimphonyUploadButton } from "./pos-simphony-upload-button";
 import type { PosBrand, PosImportListItem } from "@/types/pos-sale";
-import { usePosWritable } from "../shared/use-pos-writable";
+import { useCan } from "@/hooks/use-can";
+import { useInterfaceEntitlement } from "@/hooks/use-interface-entitlement";
+import { setURLParams } from "@/hooks/use-url";
 import { useCancelPosImport, usePosImports } from "../shared/use-pos-sale";
 
 const LEGACY_EXPORT_WARNING = "legacy_export_version";
 
-const CONFIRMATION_CLASS: Record<ConfirmationState, string> = {
-  replaced: "text-muted-foreground",
-  cancelled: "text-muted-foreground",
-  not_applicable: "text-muted-foreground",
-  pending: "text-muted-foreground",
-  partial: "text-warning-ink",
-  confirmed: "text-success-ink",
-};
-
 /**
- * แท็บประวัติการนำเข้ายอดขาย POS — ตาราง server-side pagination + อัปโหลด (Simphony / Micros 3700) + ยกเลิก
+ * ประวัติการนำเข้ายอดขาย POS — ตาราง server-side pagination + ลิงก์ Sales Consumption + ดูบรรทัด + ยกเลิก
  *
- * @param brand แบรนด์ POS ของหน้านี้
- * @returns React element ของแท็บ
+ * @param brand กรองแบรนด์ — ไม่ส่ง = ทุกแบรนด์
+ * @param selectedId id ของการนำเข้าที่กำลังดูบรรทัดอยู่ (ไฮไลต์ปุ่ม)
+ * @returns React element ของตาราง
  */
-export function PosImportHistory({ brand }: { brand: PosBrand }) {
+export function PosImportHistory({
+  brand,
+  selectedId,
+}: {
+  brand?: PosBrand;
+  selectedId?: string;
+}) {
   "use no memo";
   const t = useTranslations("operationPlan.posSale.history");
   const tStatus = useTranslations("operationPlan.posSale.importStatus");
   const tc = useTranslations("common");
   const tErr = useTranslations("errors");
-  const { canWrite } = usePosWritable(brand);
+  const { canWrite: contractWrite } = useCan();
+  const { entitlementOf } = useInterfaceEntitlement();
+  const tBrand = useTranslations("operationPlan.importPos.brand");
   const { dateFormat } = useProfile();
   const formatAmount = useAmountFormatter();
   const { params: rawParams, tableConfig } = useDataGridState({
@@ -103,16 +102,9 @@ export function PosImportHistory({ brand }: { brand: PosBrand }) {
         meta: { skeleton: columnSkeletons.text },
       },
       {
-        id: "store_name",
-        header: t("columns.store"),
-        cell: ({ row }) => row.original.store_name ?? "",
-        enableSorting: false,
-        meta: { skeleton: columnSkeletons.text },
-      },
-      {
-        id: "source",
-        header: t("columns.source"),
-        cell: ({ row }) => row.original.source ?? "",
+        id: "brand",
+        header: t("columns.pos"),
+        cell: ({ row }) => tBrand(row.original.brand),
         enableSorting: false,
         meta: { skeleton: columnSkeletons.textShort },
       },
@@ -203,18 +195,18 @@ export function PosImportHistory({ brand }: { brand: PosBrand }) {
         },
       },
       {
-        id: "confirmation",
-        header: t("columns.confirmation"),
+        id: "sales_consumption",
+        header: t("columns.salesConsumption"),
         cell: ({ row }) => {
-          const r = row.original;
-          const state = confirmationState(r);
-          if (state === "not_applicable") return "-";
+          const sc = row.original.sales_consumption;
+          if (!sc) return "-";
           return (
-            <span className={cn(CONFIRMATION_CLASS[state])}>
-              {t(`confirmation.${state}`)}
-              {state === "partial" &&
-                ` (${r.confirmed_line_count}/${r.line_count})`}
-            </span>
+            <Link
+              to={`/operation-plan/sales-consumption/${sc.id}`}
+              className="text-primary hover:underline"
+            >
+              {sc.sc_no}
+            </Link>
           );
         },
         enableSorting: false,
@@ -225,16 +217,22 @@ export function PosImportHistory({ brand }: { brand: PosBrand }) {
         header: "",
         cell: ({ row }) => {
           const r = row.original;
-          const canCancel = canWrite && confirmationState(r) === "pending";
+          const canCancel =
+            contractWrite &&
+            entitlementOf("pos", r.brand) !== "expired" &&
+            confirmationState(r) === "pending";
           return (
             <span className="flex items-center justify-end gap-1">
               {r.status === "success" && (
-                <Button asChild variant="ghost" size="xs">
-                  <Link
-                    to={`/system-admin/interface/pos/${brand}/imports/${r.id}`}
-                  >
-                    {t("actions.inspect")}
-                  </Link>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  aria-pressed={selectedId === r.id}
+                  className={cn(selectedId === r.id && "text-primary")}
+                  onClick={() => setURLParams({ import: r.id })}
+                >
+                  {t("actions.viewLines")}
                 </Button>
               )}
               {canCancel && (
@@ -260,7 +258,16 @@ export function PosImportHistory({ brand }: { brand: PosBrand }) {
         },
       },
     ],
-    [t, tStatus, dateFormat, formatAmount, brand, canWrite],
+    [
+      t,
+      tStatus,
+      tBrand,
+      dateFormat,
+      formatAmount,
+      contractWrite,
+      entitlementOf,
+      selectedId,
+    ],
   );
 
   const table = useReactTable({
@@ -291,15 +298,6 @@ export function PosImportHistory({ brand }: { brand: PosBrand }) {
 
   return (
     <div className="space-y-3 pt-4">
-      {canWrite && (brand === "simphony" || brand === "micros3700") && (
-        <div className="flex justify-end">
-          {brand === "simphony" ? (
-            <PosSimphonyUploadButton />
-          ) : (
-            <PosMicros3700UploadButton />
-          )}
-        </div>
-      )}
       <DataGrid
         table={table}
         recordCount={totalRecords}

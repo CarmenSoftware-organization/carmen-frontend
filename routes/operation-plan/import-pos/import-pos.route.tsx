@@ -1,3 +1,5 @@
+import { ImportPosPage } from "./import-pos-page";
+
 export function Component() {
-  return null;
+  return <ImportPosPage />;
 }

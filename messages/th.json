@@ -4259,7 +4259,9 @@
           "status": "สถานะ",
           "lines": "บรรทัด",
           "sales": "ยอดขาย",
-          "confirmation": "ตัดสต็อก"
+          "confirmation": "ตัดสต็อก",
+          "pos": "POS",
+          "salesConsumption": "Sales Consumption"
         },
         "channel": {
           "manual": "อัปโหลดเอง",
@@ -4274,8 +4276,8 @@
           "confirmed": "ยืนยันครบ"
         },
         "actions": {
-          "inspect": "ตรวจ",
-          "cancel": "ยกเลิก"
+          "cancel": "ยกเลิก",
+          "viewLines": "ดูบรรทัด"
         },
         "cancelDialog": {
           "title": "ยกเลิกการนำเข้านี้?",
@@ -4377,7 +4379,7 @@
           "failed": "ไม่สำเร็จ"
         },
         "voided": "ยกเลิก Stock Out {count} ใบ",
-        "review": "ตรวจและยืนยัน"
+        "viewLines": "ดูบรรทัด"
       },
       "simphony": {
         "lastPull": {
@@ -4412,6 +4414,33 @@
           }
         }
       }
+    },
+    "importPos": {
+      "description": "ยอดขายดิบตามที่รับมาจาก POS การผูกเมนูและตัดสต็อกทำที่ Sales Consumption",
+      "brand": {
+        "simphony": "Simphony",
+        "micros3700": "Micros 3700"
+      },
+      "history": {
+        "title": "ประวัติการนำเข้า"
+      },
+      "lines": {
+        "title": "รายการขายดิบ",
+        "search": "ค้นหาเมนูหรือ Outlet",
+        "empty": "ไม่มีบรรทัด",
+        "columns": {
+          "store": "ร้าน",
+          "outlet": "Outlet",
+          "department": "แผนก",
+          "itemCode": "รหัสเมนู",
+          "item": "เมนู",
+          "qty": "จำนวน",
+          "unitPrice": "ราคาต่อหน่วย",
+          "total": "รวม"
+        },
+        "close": "ปิด"
+      },
+      "connectionSettings": "ตั้งค่าการเชื่อมต่อ Simphony SFTP"
     }
   },
   "productManagement": {

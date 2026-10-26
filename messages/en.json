@@ -4259,7 +4259,9 @@
           "status": "Status",
           "lines": "Lines",
           "sales": "Sales amount",
-          "confirmation": "Stock-out"
+          "confirmation": "Stock-out",
+          "pos": "POS",
+          "salesConsumption": "Sales Consumption"
         },
         "channel": {
           "manual": "Manual",
@@ -4274,8 +4276,8 @@
           "confirmed": "Confirmed"
         },
         "actions": {
-          "inspect": "Review",
-          "cancel": "Cancel import"
+          "cancel": "Cancel import",
+          "viewLines": "View lines"
         },
         "cancelDialog": {
           "title": "Cancel this import?",
@@ -4377,7 +4379,7 @@
           "failed": "Failed"
         },
         "voided": "Voided {count, plural, one {# Stock Out} other {# Stock Outs}}",
-        "review": "Review and confirm"
+        "viewLines": "View lines"
       },
       "simphony": {
         "lastPull": {
@@ -4412,6 +4414,33 @@
           }
         }
       }
+    },
+    "importPos": {
+      "description": "Raw sales transactions as received from POS. Mapping and stock-out happen in Sales Consumption.",
+      "brand": {
+        "simphony": "Simphony",
+        "micros3700": "Micros 3700"
+      },
+      "history": {
+        "title": "Import history"
+      },
+      "lines": {
+        "title": "Raw transactions",
+        "search": "Search item or outlet",
+        "empty": "No lines",
+        "columns": {
+          "store": "Store",
+          "outlet": "Outlet",
+          "department": "Department",
+          "itemCode": "Item code",
+          "item": "Item",
+          "qty": "Qty",
+          "unitPrice": "Unit price",
+          "total": "Total"
+        },
+        "close": "Close"
+      },
+      "connectionSettings": "Simphony SFTP connection settings"
     }
   },
   "productManagement": {
