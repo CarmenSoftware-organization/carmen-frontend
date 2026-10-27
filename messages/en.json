@@ -154,10 +154,15 @@
     "promptPlaceholder": "Leave empty to use the default prompt",
     "promptHintPrefix": "Write",
     "promptHintSuffix": "where the item table should go; without it the table is appended after a blank line.",
-    "showDefault": "View default prompt",
-    "hideDefault": "Hide default prompt",
     "resetPrompt": "Reset to default",
-    "empty": "No AI providers are available."
+    "empty": "No AI providers are available.",
+    "providersTitle": "AI assistants",
+    "providersDescription": "Turn an assistant off to hide it from the menu. Open a row to see or change the prompt it receives.",
+    "on": "On",
+    "off": "Off",
+    "defaultPromptLabel": "Default prompt",
+    "customPromptLabel": "Custom prompt",
+    "startFromDefault": "Start from default"
   },
   "defaultSetting": {
     "pageDescription": "Operational default settings for the current business unit.",

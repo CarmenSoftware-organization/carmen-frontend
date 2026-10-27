@@ -47,6 +47,8 @@ function AskAiForm() {
   const save = useSaveAskAiConfig();
   const [editing, setEditing] = useState(false);
   const [drafts, setDrafts] = useState<Drafts>({});
+  /** ขยายได้ทีละแถว — null = ยุบหมด */
+  const [openCode, setOpenCode] = useState<string | null>(null);
 
   const items = data?.items ?? [];
   const hasUnsaved =
@@ -104,7 +106,13 @@ function AskAiForm() {
 
       {!isError && !isLoading && data && (
         <form id={FORM_ID} onSubmit={onSubmit}>
-          <SettingSection first plain title={tm("askAi")}>
+          <SettingSection
+            first
+            plain
+            title={t("providersTitle")}
+            description={t("providersDescription")}
+            count={items.length}
+          >
             {items.length === 0 ? (
               <p className="text-muted-foreground text-sm">{t("empty")}</p>
             ) : (
@@ -114,6 +122,8 @@ function AskAiForm() {
                     key={item.code}
                     item={item}
                     editing={editing}
+                    open={openCode === item.code}
+                    onOpenChange={(o) => setOpenCode(o ? item.code : null)}
                     draft={
                       editing
                         ? (drafts[item.code] ?? toDraft(item))
