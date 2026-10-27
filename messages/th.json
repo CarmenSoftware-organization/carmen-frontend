@@ -154,10 +154,15 @@
     "promptPlaceholder": "เว้นว่างเพื่อใช้ prompt มาตรฐาน",
     "promptHintPrefix": "ใส่",
     "promptHintSuffix": "ตรงจุดที่ต้องการให้แทนด้วยตารางรายการ ถ้าไม่ใส่จะต่อตารางท้าย prompt หลังบรรทัดว่าง",
-    "showDefault": "ดู prompt มาตรฐาน",
-    "hideDefault": "ซ่อน prompt มาตรฐาน",
     "resetPrompt": "กลับไปใช้ค่ามาตรฐาน",
-    "empty": "ไม่มี AI provider ให้ใช้งาน"
+    "empty": "ไม่มี AI provider ให้ใช้งาน",
+    "providersTitle": "ผู้ช่วย AI",
+    "providersDescription": "ปิดตัวไหนก็จะไม่ขึ้นในเมนู กดที่แถวเพื่อดูหรือแก้ prompt ที่ส่งให้ตัวนั้น",
+    "on": "เปิด",
+    "off": "ปิด",
+    "defaultPromptLabel": "Prompt มาตรฐาน",
+    "customPromptLabel": "Prompt ที่แก้เอง",
+    "startFromDefault": "เริ่มจาก prompt มาตรฐาน"
   },
   "defaultSetting": {
     "pageDescription": "การตั้งค่าเริ่มต้นการทำงานของหน่วยธุรกิจปัจจุบัน",
