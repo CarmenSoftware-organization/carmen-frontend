@@ -39,7 +39,9 @@ export type PrintDocumentType =
   // VENDOR_DETAIL_TEMPLATE_ID plus VendorFrom / VendorTo filters
   | "VENDOR"
   // master data as well — the category page passes PRODUCT_CATEGORY_TEMPLATE_ID plus the code ranges
-  | "PRODUCT_CATEGORY";
+  | "PRODUCT_CATEGORY"
+  // the recipe page passes RECIPE_CARD_TEMPLATE_ID with the recipe's own code as the range
+  | "RECIPE";
 
 /**
  * Vendor Detail Report — a form template (micro-report seed, id fixed across environments) printed from the
@@ -58,6 +60,15 @@ export const VENDOR_DETAIL_TEMPLATE_ID = "da3fff14-8000-4065-bc28-a734e5783814";
  */
 export const PRODUCT_CATEGORY_TEMPLATE_ID =
   "eda55615-08e0-4fc0-941e-c62dc8072e49";
+
+/**
+ * Recipe Card Report — the list template on the report list (micro-report seed, id fixed across environments), also
+ * printed from a recipe's page for that recipe alone. Its function f_recipe_card takes CategoryFrom / CategoryTo /
+ * RecipeFrom / RecipeTo / Status ("ALL" = no limit; Status ALL / Active / Inactive).
+ * Recipe Card Report — template แบบ list ที่อยู่ในหน้ารายการรายงาน พิมพ์จากหน้าสูตรได้ด้วย (เฉพาะสูตรนั้น)
+ * · ฟังก์ชัน f_recipe_card รับช่วง Category / รหัสสูตร และ Status ("ALL" = ไม่จำกัด)
+ */
+export const RECIPE_CARD_TEMPLATE_ID = "60bbb2b6-3aa5-4802-bf24-66357287c301";
 
 export interface ViewerResponse {
   data?: { url: string };
