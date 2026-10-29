@@ -65,7 +65,7 @@ interface FormToolbarProps {
 
 /**
  * ชุดปุ่มมาตรฐานของหัวฟอร์มทุกหน้า (spec 2026-10-01-form-page-shell-design.md §2.3):
- * Edit (primary) | Cancel · Save (primary) ; Delete (outline, view+edit) ; Activity ; children
+ * Edit (primary) | Cancel · Save (primary) ; Delete (outline, view+edit) ; children ; Comment · Activity
  *
  * ที่เดียวที่เช็ค license `canWrite` และ permission — permission gate เฉพาะ key ที่อยู่ใน
  * `PERMISSIONS` จริง (leaf ที่ใช้ permission ระดับโมดูลประกอบได้ key ผี เช่น
@@ -248,8 +248,10 @@ export function FormToolbar({
           {tc("delete")}
         </Button>
       )}
-      {/* ประวัติเป็นการ "ดู" อยู่ท้ายกลุ่มถัดจากปุ่มที่เปลี่ยนข้อมูล — ลำดับเดียว
-          กับทุกหน้าเอกสารในแอป: Edit · Delete · Comment · Activity · Print */}
+      {/* ปุ่มเฉพาะหน้า (Print, Duplicate, DocActions …) มาก่อน Comment · Activity
+          ซึ่งปิดท้ายแถบเสมอ — ลำดับเดียวกับทุกหน้าในแอป:
+          Edit · Delete · [ปุ่มของหน้า] · Comment · Activity */}
+      {children}
       {onComment && (
         <Button type="button" variant="outline" size="sm" onClick={onComment}>
           <MessageSquare />
@@ -267,7 +269,6 @@ export function FormToolbar({
           {tActivity("title")}
         </Button>
       )}
-      {children}
     </>
   );
 

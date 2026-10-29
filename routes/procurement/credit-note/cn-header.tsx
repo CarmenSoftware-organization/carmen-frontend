@@ -1,6 +1,6 @@
 import { useTranslations } from "use-intl";
 import { User } from "lucide-react";
-import { DocActionsMenu } from "@/components/share/doc-actions-menu";
+import { DocActions } from "@/components/share/doc-actions";
 import { useCreditNoteComments } from "./use-credit-note";
 import type { FormMode } from "@/types/form";
 import type { CreditNoteDetail } from "@/types/credit-note";
@@ -94,9 +94,9 @@ export function CnHeader({
       onDelete={!isView && creditNote && !isLocked ? onShowDelete : undefined}
       deleteIsPending={deleteIsPending}
     >
-      {/* comment / activity / print ยุบอยู่ในเมนู ⋯ — ไม่ส่ง activity ให้ toolbar ซ้ำ */}
+      {/* comment / activity / print อยู่ใน DocActions — ไม่ส่ง activity ให้ toolbar ซ้ำ */}
       {creditNote && (
-        <DocActionsMenu
+        <DocActions
           onComment={onShowComment}
           commentCount={commentCount}
           activity={{ id: creditNote.id, label: creditNote.cn_no }}

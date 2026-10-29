@@ -104,7 +104,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { WorkflowTrack } from "@/components/share/workflow-track";
-import { DocActionsMenu } from "@/components/share/doc-actions-menu";
+import { DocActions } from "@/components/share/doc-actions";
 import { DocFormHeader } from "@/components/share/doc-form-header";
 import {
   accountingDocumentFromPath,
@@ -1179,7 +1179,7 @@ export default function AccountingDocumentDetail() {
                   </Button>
                 )}
                 {isJournalVoucher ? (
-                  <DocActionsMenu
+                  <DocActions
                     onDuplicate={
                       !sourceGenerated ? () => void handleCopy() : undefined
                     }
@@ -1256,7 +1256,7 @@ export default function AccountingDocumentDetail() {
                   {tc("save")}
                 </Button>
                 {!isNew && isJournalVoucher && (
-                  <DocActionsMenu
+                  <DocActions
                     onComment={() => setUtilityPanel("comments")}
                     commentCount={comments.length}
                     activity={{ id: journal?.id ?? document.id, label: number }}
@@ -1473,7 +1473,7 @@ export default function AccountingDocumentDetail() {
               </>
             )}
             {isJournalVoucher && isView && (
-              <DocActionsMenu
+              <DocActions
                 onComment={() => setUtilityPanel("comments")}
                 commentCount={comments.length}
                 activity={{ id: journal?.id ?? document.id, label: number }}

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslations } from "use-intl";
 import { Building2, Lock, Mail, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DocActionsMenu } from "@/components/share/doc-actions-menu";
+import { DocActions } from "@/components/share/doc-actions";
 import { WorkflowTrack } from "@/components/share/workflow-track";
 import { WorkflowStepButton } from "@/components/share/workflow-step-button";
 import { usePurchaseOrderComments } from "../shared/use-purchase-order";
@@ -182,7 +182,7 @@ export function PoHeader({
         pendingLabel={tf("saving")}
       >
         {/* Close/Send email ต่อท้าย Delete (เดิม Close อยู่หน้าสุด — spec §3 ยอมรับ)
-            comment / activity / print ยุบอยู่ในเมนู ⋯ — ไม่ส่ง activity ให้ toolbar ซ้ำ */}
+            comment / activity / print อยู่ใน DocActions — ไม่ส่ง activity ให้ toolbar ซ้ำ */}
         {purchaseOrder && (
           <>
             {canClose &&
@@ -211,7 +211,7 @@ export function PoHeader({
                 {t("sendEmail.button")}
               </Button>
             )}
-            <DocActionsMenu
+            <DocActions
               onComment={onShowComment}
               commentCount={commentCount}
               activity={{ id: purchaseOrder.id, label: purchaseOrder.po_no }}
