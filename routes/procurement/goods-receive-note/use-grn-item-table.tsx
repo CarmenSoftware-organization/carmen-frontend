@@ -20,6 +20,7 @@ import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column
 import type { GrnStockLockReason } from "@/types/goods-receive-note";
 import type { GrnFormValues } from "./grn-form-schema";
 import {
+  ExpiryDateCell,
   GrnAmountCell,
   GrnItemDiscountCell,
   GrnItemTaxCell,
@@ -207,6 +208,15 @@ export function useGrnItemTable({
             unitField="foc_unit_id"
             disabled={disabled || isLocked(row.index)}
           />
+        ),
+      },
+      {
+        id: "expiry",
+        header: tfl("expiryDate"),
+        size: isView ? 110 : 150,
+        cell: ({ row }) => (
+          // บรรทัดที่ถูกล็อกยังแก้วันหมดอายุได้ — หลังบ้านล็อกเฉพาะสิ่งที่กระทบสต๊อก
+          <ExpiryDateCell form={form} index={row.index} disabled={disabled} />
         ),
       },
       {

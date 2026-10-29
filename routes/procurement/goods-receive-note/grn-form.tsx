@@ -24,6 +24,7 @@ import {
 import { getSessionItem, removeSessionItem } from "@/lib/safe-storage";
 import { GrnItemTable } from "./grn-item-table";
 import { GrnFormDialogs } from "./grn-form-dialogs";
+import { GrnExpiredItemsDialog } from "./grn-expired-items-dialog";
 import { useGrnFormActions } from "./use-grn-form-actions";
 import { useProfile } from "@/hooks/use-profile";
 import { FormPageShell } from "@/components/share/form-page-shell";
@@ -232,7 +233,7 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
           isView={mode === "view"}
           isCommitted={isCommitted}
           isVoid={isVoid}
-          onCommit={() => actions.setShowCommit(true)}
+          onCommit={actions.requestCommit}
           onVoid={() => actions.setShowVoid(true)}
         />
       }
@@ -300,6 +301,8 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
 
       <DiscardDialog {...actions.discardDialogProps} variant="warning" />
       <DiscardDialog {...actions.navDiscardDialogProps} variant="warning" />
+      {/* อยู่นอก GrnFormDialogs เพราะต้องขึ้นตอนสร้างใบใหม่ด้วย (ยังไม่มี goodsReceiveNote) */}
+      <GrnExpiredItemsDialog {...actions.expiryDialogProps} />
 
       {goodsReceiveNote && (
         <GrnFormDialogs

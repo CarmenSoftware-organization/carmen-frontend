@@ -5594,7 +5594,11 @@
       "commit": "Commit",
       "deleteProductLine": "Remove this line",
       "stockNotPosted": "Not posted to stock yet — the In and Total columns stay at zero until it is",
-      "editLockedByAp": "Already on AP invoice {docNos} — can no longer be edited"
+      "editLockedByAp": "Already on AP invoice {docNos} — can no longer be edited",
+      "lineExpired": "Expired",
+      "expiredItemsTitle": "Expired items",
+      "expiredItemsConfirm": "You entered items that have already expired. Do you want to continue?",
+      "expiredItemLine": "{product} — expired {date}"
     },
     "approval": {
       "entity": "Approval",

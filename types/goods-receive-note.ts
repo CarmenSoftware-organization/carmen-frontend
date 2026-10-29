@@ -53,6 +53,8 @@ interface GrnDetailItem extends TaxFields, DiscountFields, ItemMoneyFields {
   base_net_amount: number;
   base_total_price: number;
   note: string | null;
+  /** วันหมดอายุของล็อตที่รับเข้า (ISO) — ไม่บังคับ */
+  expired_at?: string | null;
   doc_version?: number;
 }
 
@@ -133,7 +135,6 @@ export interface GoodsReceiveNote {
   id: string;
   grn_no: string;
   grn_date: string | null;
-  expired_date?: string | null;
   invoice_no: string | null;
   invoice_date: string | null;
   description: string | null;
@@ -218,6 +219,8 @@ export interface GrnDetailPayload {
   total_price: number;
   description?: string;
   note?: string;
+  /** null = ล้างวันหมดอายุของบรรทัดนี้ */
+  expired_at?: string | null;
 }
 
 export interface ExtraCostDetailPayload {

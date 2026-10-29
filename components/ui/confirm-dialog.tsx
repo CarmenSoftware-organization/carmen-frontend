@@ -21,6 +21,8 @@ interface ConfirmDialogProps {
   readonly isPending?: boolean;
   readonly confirmText?: string;
   readonly confirmIcon?: React.ReactNode;
+  /** ป้ายปุ่มปฏิเสธ — ค่าเริ่มต้น "ยกเลิก" (ใช้ "ไม่" เมื่อเป็นคำถามแบบใช่/ไม่) */
+  readonly cancelText?: string;
   readonly variant?: "default" | "destructive";
 }
 
@@ -55,6 +57,7 @@ export function ConfirmDialog({
   isPending,
   confirmText,
   confirmIcon,
+  cancelText,
   variant = "default",
 }: ConfirmDialogProps) {
   const tc = useTranslations("common");
@@ -78,7 +81,7 @@ export function ConfirmDialog({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>
             <X />
-            {tc("cancel")}
+            {cancelText || tc("cancel")}
           </AlertDialogCancel>
           <AlertDialogAction
             variant={variant}
