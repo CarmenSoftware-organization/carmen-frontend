@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BackButton } from "@/components/share/back-button";
+import { PrintDocumentButton } from "@/components/print-document-button";
 import { EyeBrow } from "@/components/ui/eye-brow";
 import { useCan } from "@/hooks/use-can";
 import { useListReturn } from "@/hooks/use-list-return";
 import { useUnitById } from "@/hooks/use-unit";
 import { PERMISSIONS } from "@/constant/permissions";
 import { ALLERGEN_OPTIONS } from "@/constant/recipe";
+import { RECIPE_CARD_TEMPLATE_ID } from "@/lib/print-document";
 import { cn } from "@/lib/utils";
 import type { Recipe, RecipePreparationStep } from "@/types/recipe";
 import { activeSteps, normalizeEquipment } from "./recipe-steps-sync";
@@ -111,7 +113,23 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
             </div>
           </div>
         </div>
-        {canEdit && editLink}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Recipe Card Report ของสูตรนี้สูตรเดียว — template เดียวกับในหน้ารายการรายงาน */}
+          {recipe.code && (
+            <PrintDocumentButton
+              documentType="RECIPE"
+              templateId={RECIPE_CARD_TEMPLATE_ID}
+              filters={{
+                CategoryFrom: "ALL",
+                CategoryTo: "ALL",
+                RecipeFrom: recipe.code,
+                RecipeTo: recipe.code,
+                Status: "ALL",
+              }}
+            />
+          )}
+          {canEdit && editLink}
+        </div>
       </header>
 
       <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
