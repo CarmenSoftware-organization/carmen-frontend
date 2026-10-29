@@ -36,6 +36,7 @@ import {
   pickTouchedLineUpdates,
   type GrnFormValues,
 } from "./grn-form-schema";
+import { findExpiredLines } from "./grn-expiry";
 
 interface UseGrnFormActionsParams {
   form: UseFormReturn<GrnFormValues>;
@@ -115,6 +116,13 @@ export function useGrnFormActions({
   const [showCommit, setShowCommit] = useState(false);
   const [showVoid, setShowVoid] = useState(false);
   const [showComment, setShowComment] = useState(false);
+  // มีบรรทัดที่วันหมดอายุผ่านไปแล้ว → ถามก่อนสร้างใบ / ก่อน commit · ตอบใช่ก็ทำต่อ
+  // ไม่บล็อก (เก็บทางไปต่อของแต่ละปุ่มไว้ เพราะสองปุ่มไปต่อคนละทาง)
+  const [expiryPrompt, setExpiryPrompt] = useState<{
+    lines: GrnFormValues["items"];
+    onYes: () => void;
+    onNo: () => void;
+  } | null>(null);
 
   const isPending =
     createGrn.isPending || updateGrn.isPending || saveGrn.isPending;
@@ -177,8 +185,13 @@ export function useGrnFormActions({
   /**
    * @param onSaved - แทน `onSavedToList` ตอนขั้น "บันทึกแล้ว" สำเร็จ — ปุ่ม Commit
    *   ใช้ช่องนี้ยิง /commit ต่อ แทนที่จะเด้งกลับหน้ารายการ
+   * @param expiryConfirmed - ผู้ใช้ตอบ "ใช่" กับคำถามสินค้าหมดอายุแล้ว (ไม่ต้องถามซ้ำ)
    */
-  const onSubmit = async (values: GrnFormValues, onSaved?: () => void) => {
+  const onSubmit = async (
+    values: GrnFormValues,
+    onSaved?: () => void,
+    expiryConfirmed = false,
+  ) => {
     const isManual = values.doc_type === "manual";
     const finishSave = onSaved ?? onSavedToList;
 
@@ -388,6 +401,18 @@ export function useGrnFormActions({
         },
       );
     } else if (isAdd) {
+      // ถามตรงนี้ (หลังผ่าน validation แล้ว) ไม่ใช่ตอนกดปุ่ม — ไม่งั้นตอบใช่แล้วไปติด
+      // ช่องบังคับ แก้เสร็จกดใหม่ก็โดนถามซ้ำ · ครอบทั้งปุ่ม Save draft / Save และ
+      // การกด Enter ในฟอร์ม (draftSaveHandler) ที่เข้ามาทาง onSubmit ตรง ๆ
+      const expiredLines = findExpiredLines(values.items);
+      if (!expiryConfirmed && expiredLines.length > 0) {
+        setExpiryPrompt({
+          lines: expiredLines,
+          onYes: () => void onSubmit(values, onSaved, true),
+          onNo: finishAction,
+        });
+        return;
+      }
       createGrn.mutate(payload, {
         onSuccess: (res) => {
           removeSessionItem("grn-wizard-data");
@@ -568,6 +593,39 @@ export function useGrnFormActions({
     await runCommit();
   };
 
+  /**
+   * ปุ่ม Commit — มีบรรทัดที่หมดอายุแล้วถามก่อน ตอบใช่จึงเปิด dialog ยืนยัน commit เดิม
+   *
+   * อ่านจากฟอร์ม ไม่ใช่จากใบที่โหลดมา: ใบร่างกด Commit แล้ว PATCH ค่าในฟอร์มขึ้นไปก่อน
+   */
+  const requestCommit = () => {
+    const expiredLines = findExpiredLines(form.getValues("items"));
+    if (expiredLines.length === 0) {
+      setShowCommit(true);
+      return;
+    }
+    setExpiryPrompt({
+      lines: expiredLines,
+      onYes: () => setShowCommit(true),
+      onNo: () => {},
+    });
+  };
+
+  const expiryDialogProps = {
+    open: !!expiryPrompt,
+    lines: expiryPrompt?.lines ?? [],
+    onConfirm: () => {
+      const prompt = expiryPrompt;
+      setExpiryPrompt(null);
+      prompt?.onYes();
+    },
+    onCancel: () => {
+      const prompt = expiryPrompt;
+      setExpiryPrompt(null);
+      prompt?.onNo();
+    },
+  };
+
   const handleConfirmVoid = () => {
     if (!goodsReceiveNote) return;
     voidGrn.mutate(goodsReceiveNote.id, {
@@ -601,7 +659,9 @@ export function useGrnFormActions({
     handleBack,
     handleConfirmDelete,
     handleConfirmCommit,
+    requestCommit,
     handleConfirmVoid,
+    expiryDialogProps,
     discardDialogProps: discard.dialogProps,
     navDiscardDialogProps,
   };

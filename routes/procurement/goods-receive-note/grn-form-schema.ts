@@ -67,6 +67,9 @@ function createGrnDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     // Notes
     description: z.string().optional(),
     note: z.string().optional(),
+    // วันหมดอายุของล็อต (ISO) — ไม่บังคับ และกรอกวันที่ผ่านมาแล้วได้ (เตือนตอนสร้าง/commit
+    // แต่ไม่บล็อก) · optional ด้วยเพราะแถวจาก wizard ที่ค้างใน session รุ่นก่อนไม่มีฟิลด์นี้
+    expired_at: z.string().nullable().optional(),
   });
 
   // backend บังคับ received_price (= unit_price ของฟอร์ม) เมื่อ received_qty > 0
@@ -100,7 +103,6 @@ export function createGrnSchema(tv: TranslationFn, tf: TranslationFn) {
   return z.object({
     doc_version: z.coerce.number().optional(),
     grn_date: z.string().min(1, tv("required", { field: tf("grnDate") })),
-    expired_date: z.string().nullable(),
     invoice_no: z.string().min(1, tv("required", { field: tf("invoiceNo") })),
     invoice_date: z
       .string()
@@ -175,6 +177,7 @@ export const EMPTY_DETAIL: GrnFormValues["items"][number] = {
   total_price: 0,
   description: "",
   note: "",
+  expired_at: null,
 };
 
 // --- Default extra cost detail ---
@@ -204,7 +207,6 @@ export function getDefaultValues(
   if (!grn) {
     return {
       grn_date: new Date().toISOString(),
-      expired_date: null,
       invoice_no: "",
       invoice_date: null,
       description: "",
@@ -237,7 +239,6 @@ export function getDefaultValues(
   return {
     doc_version: grn.doc_version,
     grn_date: grn.grn_date ?? "",
-    expired_date: grn.expired_date ?? null,
     invoice_no: grn.invoice_no ?? "",
     invoice_date: grn.invoice_date,
     description: grn.description ?? "",
@@ -318,6 +319,7 @@ export function getDefaultValues(
           total_price: item?.total_price ?? 0,
           description: "",
           note: item?.note ?? "",
+          expired_at: item?.expired_at ?? null,
         };
       }) ?? [],
     extra_cost_details:
@@ -362,6 +364,9 @@ export function mapDetailToPayload(
     total_price: item.total_price,
     description: item.description,
     note: item.note,
+    // ส่ง null ไปด้วยเสมอ (ไม่ตัดทิ้ง) — แถวที่แก้ถูกส่งทั้งแถว null จึงแปลว่า "ล้างวันที่"
+    // ("" ก็เป็น null: หลังบ้านรับแค่ datetime หรือ null ส่งสตริงว่างไปได้ 400)
+    expired_at: item.expired_at || null,
   };
 }
 

@@ -153,6 +153,50 @@ describe("mapDetailToPayload", () => {
       mapDetailToPayload(item({ tax_profile_id: "tax-1" })).tax_profile_id,
     ).toBe("tax-1");
   });
+
+  it("วันหมดอายุส่งเป็น expired_at · ว่าง/ล้างแล้ว ส่ง null (หลังบ้านรับ datetime หรือ null เท่านั้น)", () => {
+    const iso = "2026-10-27T17:00:00.000Z";
+    expect(mapDetailToPayload(item({ expired_at: iso })).expired_at).toBe(iso);
+    expect(mapDetailToPayload(item({ expired_at: null })).expired_at).toBeNull();
+    expect(mapDetailToPayload(item({ expired_at: "" })).expired_at).toBeNull();
+    expect(
+      mapDetailToPayload(item({ expired_at: undefined })).expired_at,
+    ).toBeNull();
+  });
+});
+
+describe("วันหมดอายุของบรรทัด", () => {
+  it("ไม่บังคับ และกรอกวันที่ผ่านมาแล้วได้ (เตือนตอนสร้าง/commit ไม่บล็อก)", () => {
+    expect(paths({ ...valid(), items: [item({ expired_at: null })] })).toEqual(
+      [],
+    );
+    expect(
+      paths({
+        ...valid(),
+        items: [item({ expired_at: "2020-01-01T00:00:00.000Z" })],
+      }),
+    ).toEqual([]);
+  });
+
+  it("แถวใหม่เริ่มที่ไม่มีวันหมดอายุ", () => {
+    expect(EMPTY_DETAIL.expired_at).toBeNull();
+  });
+
+  it("แถวจาก wizard รุ่นก่อนที่ไม่มีฟิลด์นี้ยังผ่าน schema", () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { expired_at, ...legacy } = item();
+    expect(paths({ ...valid(), items: [legacy] })).toEqual([]);
+  });
+
+  it("แก้แค่วันหมดอายุนับเป็นการแก้แถว (ไม่งั้นค่าใหม่ไม่ถูกส่ง)", () => {
+    const original = [item({ id: "line-1", expired_at: null })];
+    const current = [
+      item({ id: "line-1", expired_at: "2027-03-30T17:00:00.000Z" }),
+    ];
+    expect(
+      pickTouchedLineUpdates([{ id: "line-1" }], current, original),
+    ).toEqual([{ id: "line-1" }]);
+  });
 });
 
 describe("pickTouchedLineUpdates", () => {
@@ -318,6 +362,7 @@ const detailFromResponse = {
       net_amount: 1223.6,
       total_price: 1313.76,
       note: "ของครบ",
+      expired_at: "2027-06-29T17:00:00.000Z",
       // doc_version ของ item เดินคนละเลขกับของ detail — ห้ามหยิบตัวนี้ไปส่ง
       doc_version: 9,
     },
@@ -341,6 +386,7 @@ describe("getDefaultValues ตาม response ใหม่", () => {
     expect(r.received_qty).toBe(23);
     expect(r.foc_qty).toBe(2);
     expect(r.note).toBe("ของครบ");
+    expect(r.expired_at).toBe("2027-06-29T17:00:00.000Z");
   });
 
   it("จำนวนที่สั่งของฟอร์มคือ order_qty ของ item — ฟอร์มเรียกว่า approved_qty", () => {

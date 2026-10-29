@@ -5594,7 +5594,11 @@
       "commit": "ยืนยันรับสินค้า",
       "deleteProductLine": "ลบรายการนี้",
       "stockNotPosted": "ยังไม่ได้เข้าสต๊อกจริง — ช่อง เข้า กับยอดรวมจะเป็นศูนย์จนกว่าจะเข้า",
-      "editLockedByAp": "ถูกดึงไปที่ AP Invoice {docNos} แล้ว — แก้ไขไม่ได้"
+      "editLockedByAp": "ถูกดึงไปที่ AP Invoice {docNos} แล้ว — แก้ไขไม่ได้",
+      "lineExpired": "หมดอายุแล้ว",
+      "expiredItemsTitle": "พบสินค้าหมดอายุ",
+      "expiredItemsConfirm": "คุณกรอกสินค้าที่หมดอายุไปแล้ว ต้องการดำเนินการต่อไหม ?",
+      "expiredItemLine": "{product} — หมดอายุ {date}"
     },
     "approval": {
       "entity": "การอนุมัติ",
