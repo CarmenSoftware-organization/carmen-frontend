@@ -73,6 +73,10 @@ function renderHeader(
   return handlers;
 }
 
+/** ปุ่มของ DocActions ที่อยู่บนแถบเสมอ (ไม่ยุบลงเมนู ⋯ แล้ว) */
+const VIEW_ACTIONS = [en.common.print, en.common.comment, en.activity.title];
+const EDIT_ACTIONS = [en.common.comment, en.activity.title];
+
 /** ชื่อปุ่มบนแถบหัว เรียงตาม DOM (ไม่รวมปุ่มย้อนกลับ) */
 function headerButtons() {
   const row = document.querySelector("h1")!.closest(".relative")!;
@@ -95,25 +99,25 @@ describe("CnHeader — characterization", () => {
     );
   });
 
-  it("[view, draft] Edit + เมนู More — ไม่มี Delete/Save/Activity บนแถบ", async () => {
+  it("[view, draft] Edit + ปุ่ม Actions — ไม่มี Delete/Save/Activity บนแถบ", async () => {
     const h = renderHeader("view");
-    expect(headerButtons()).toEqual([en.common.edit, en.common.more]);
+    expect(headerButtons()).toEqual([en.common.edit, ...VIEW_ACTIONS]);
     await userEvent.click(screen.getByRole("button", { name: en.common.edit }));
     expect(h.onEnterEdit).toHaveBeenCalledTimes(1);
   });
 
   it("[view, locked] ไม่มี Edit", () => {
     renderHeader("view", { isLocked: true });
-    expect(headerButtons()).toEqual([en.common.more]);
+    expect(headerButtons()).toEqual([...VIEW_ACTIONS]);
   });
 
-  it("[edit, draft] Cancel · Save(submit cn-form) · Delete · More", async () => {
+  it("[edit, draft] Cancel · Save(submit cn-form) · Delete · Actions", async () => {
     const h = renderHeader("edit");
     expect(headerButtons()).toEqual([
       en.common.cancel,
       en.common.save,
       en.common.delete,
-      en.common.more,
+      ...EDIT_ACTIONS,
     ]);
     const save = screen.getByRole("button", { name: en.common.save });
     expect(save).toHaveAttribute("type", "submit");
@@ -124,7 +128,7 @@ describe("CnHeader — characterization", () => {
     expect(h.onShowDelete).toHaveBeenCalledTimes(1);
   });
 
-  it("[add] Cancel · Create — ไม่มี Delete/More", () => {
+  it("[add] Cancel · Create — ไม่มี Delete/Actions", () => {
     renderHeader("add", { creditNote: undefined });
     expect(headerButtons()).toEqual([en.common.cancel, en.common.create]);
   });

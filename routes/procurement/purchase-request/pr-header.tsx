@@ -5,7 +5,7 @@ import { useTranslations } from "use-intl";
 import { useListReturn } from "@/hooks/use-list-return";
 import { useCreatableWorkflows } from "@/hooks/use-workflow";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
-import { DocActionsMenu } from "@/components/share/doc-actions-menu";
+import { DocActions } from "@/components/share/doc-actions";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { WorkflowTrack } from "@/components/share/workflow-track";
 import { WorkflowStepButton } from "@/components/share/workflow-step-button";
@@ -245,10 +245,10 @@ export function PrHeader({
       submitLabel={tc("save")}
       pendingLabel={tf("saving")}
     >
-      {/* comment / activity / duplicate / print ยุบอยู่ในเมนู ⋯ — ไม่ส่ง activity
+      {/* comment / activity / duplicate / print อยู่ใน DocActions — ไม่ส่ง activity
           ให้ toolbar ซ้ำ · Duplicate/Print เฉพาะ view (ตอน edit ค่าบนจออาจยังไม่ save) */}
       {purchaseRequest && (
-        <DocActionsMenu
+        <DocActions
           onDuplicate={isView && prId ? handleDuplicate : undefined}
           onComment={onComment}
           commentCount={commentCount}

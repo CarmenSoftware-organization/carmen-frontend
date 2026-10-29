@@ -83,6 +83,10 @@ function renderHeader(mode: FormMode, grn?: GoodsReceiveNote) {
   return handlers;
 }
 
+/** ปุ่มของ DocActions ที่อยู่บนแถบเสมอ (ไม่ยุบลงเมนู ⋯ แล้ว) */
+const VIEW_ACTIONS = [en.common.print, en.common.comment, en.activity.title];
+const EDIT_ACTIONS = [en.common.comment, en.activity.title];
+
 /** ชื่อปุ่มบนแถบหัว เรียงตาม DOM (ไม่รวมปุ่มย้อนกลับ) */
 function headerButtons() {
   const row = document.querySelector("h1")!.closest(".relative")!;
@@ -105,16 +109,16 @@ describe("GrnHeader — characterization", () => {
     );
   });
 
-  it("[view, draft] Edit + More", async () => {
+  it("[view, draft] Edit + Actions", async () => {
     const h = renderHeader("view", DRAFT);
-    expect(headerButtons()).toEqual([en.common.edit, en.common.more]);
+    expect(headerButtons()).toEqual([en.common.edit, ...VIEW_ACTIONS]);
     await userEvent.click(screen.getByRole("button", { name: en.common.edit }));
     expect(h.onEnterEdit).toHaveBeenCalledTimes(1);
   });
 
   it("[view, voided] ไม่มี Edit", () => {
     renderHeader("view", VOID);
-    expect(headerButtons()).toEqual([en.common.more]);
+    expect(headerButtons()).toEqual([...VIEW_ACTIONS]);
   });
 
   it("[view, committed + AP] Edit ถูกปิด", async () => {
@@ -125,14 +129,14 @@ describe("GrnHeader — characterization", () => {
     expect(h.onEnterEdit).not.toHaveBeenCalled();
   });
 
-  it("[edit, draft] Cancel · Save Draft · Save · Delete · More", async () => {
+  it("[edit, draft] Cancel · Save Draft · Save · Delete · Actions", async () => {
     const h = renderHeader("edit", DRAFT);
     expect(headerButtons()).toEqual([
       en.common.cancel,
       en.common.saveDraft,
       en.common.save,
       en.common.delete,
-      en.common.more,
+      ...EDIT_ACTIONS,
     ]);
     const save = screen.getByRole("button", { name: en.common.save });
     expect(save).toHaveAttribute("type", "button");
@@ -144,12 +148,12 @@ describe("GrnHeader — characterization", () => {
     expect(h.onSaveDraft).toHaveBeenCalledTimes(1);
   });
 
-  it("[edit, saved] Cancel · Save · More — ไม่มี Save Draft/Delete", () => {
+  it("[edit, saved] Cancel · Save · Actions — ไม่มี Save Draft/Delete", () => {
     renderHeader("edit", SAVED);
     expect(headerButtons()).toEqual([
       en.common.cancel,
       en.common.save,
-      en.common.more,
+      ...EDIT_ACTIONS,
     ]);
   });
 

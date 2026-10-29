@@ -8,7 +8,7 @@ import { useCreatableWorkflows } from "@/hooks/use-workflow";
 import { WORKFLOW_TYPE } from "@/types/workflows";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DocActionsMenu } from "@/components/share/doc-actions-menu";
+import { DocActions } from "@/components/share/doc-actions";
 import { useStoreRequisitionComments } from "./use-sr";
 import {
   Sheet,
@@ -274,9 +274,9 @@ export function SrHeader({
         }
       >
         {/* Duplicate/Print เฉพาะ view (ตอน edit ค่าบนจออาจยังไม่ save) ·
-            comment / activity ยุบอยู่ในเมนู ⋯ — ไม่ส่ง activity ให้ toolbar ซ้ำ */}
+            comment / activity อยู่ใน DocActions — ไม่ส่ง activity ให้ toolbar ซ้ำ */}
         {storeRequisition && (
-          <DocActionsMenu
+          <DocActions
             onDuplicate={isView ? handleDuplicate : undefined}
             onComment={onComment}
             commentCount={commentCount}

@@ -106,6 +106,15 @@ function renderHeader(
   return handlers;
 }
 
+/** ปุ่มของ DocActions ที่อยู่บนแถบเสมอ (ไม่ยุบลงเมนู ⋯ แล้ว) */
+const VIEW_ACTIONS = [
+  en.common.duplicate,
+  en.common.print,
+  en.common.comment,
+  en.activity.title,
+];
+const EDIT_ACTIONS = [en.common.comment, en.activity.title];
+
 /** ชื่อปุ่มบนแถบหัว เรียงตาม DOM (ไม่รวมปุ่มย้อนกลับ) */
 function headerButtons() {
   const row = document.querySelector("h1")!.closest(".relative")!;
@@ -129,25 +138,25 @@ describe("SrHeader — characterization", () => {
     );
   });
 
-  it("[view, role create] Edit · More", async () => {
+  it("[view, role create] Edit · Actions", async () => {
     const h = renderHeader("view", DRAFT);
-    expect(headerButtons()).toEqual([en.common.edit, en.common.more]);
+    expect(headerButtons()).toEqual([en.common.edit, ...VIEW_ACTIONS]);
     await userEvent.click(screen.getByRole("button", { name: en.common.edit }));
     expect(h.onEdit).toHaveBeenCalledTimes(1);
   });
 
   it("[view, role view_only] ไม่มี Edit", () => {
     renderHeader("view", VIEW_ONLY);
-    expect(headerButtons()).toEqual([en.common.more]);
+    expect(headerButtons()).toEqual([...VIEW_ACTIONS]);
   });
 
-  it("[edit, draft] Cancel · Save · Delete · More", async () => {
+  it("[edit, draft] Cancel · Save · Delete · Actions", async () => {
     const h = renderHeader("edit", DRAFT);
     expect(headerButtons()).toEqual([
       en.common.cancel,
       en.common.save,
       en.common.delete,
-      en.common.more,
+      ...EDIT_ACTIONS,
     ]);
     const save = screen.getByRole("button", { name: en.common.save });
     expect(save).toHaveAttribute("type", "submit");
@@ -166,7 +175,7 @@ describe("SrHeader — characterization", () => {
     expect(save).toHaveAttribute("title", tSr.noDepartment);
   });
 
-  it("[add] Cancel · Save — ไม่มี Delete/More · title = ชื่อหน้า", () => {
+  it("[add] Cancel · Save — ไม่มี Delete/Actions · title = ชื่อหน้า", () => {
     renderHeader("add");
     expect(headerButtons()).toEqual([en.common.cancel, en.common.save]);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(

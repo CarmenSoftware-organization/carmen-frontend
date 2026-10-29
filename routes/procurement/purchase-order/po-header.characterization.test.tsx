@@ -90,6 +90,10 @@ function renderHeader(
   return handlers;
 }
 
+/** ปุ่มของ DocActions ที่อยู่บนแถบเสมอ (ไม่ยุบลงเมนู ⋯ แล้ว) */
+const VIEW_ACTIONS = [en.common.print, en.common.comment, en.activity.title];
+const EDIT_ACTIONS = [en.common.comment, en.activity.title];
+
 /** ชื่อปุ่มบนแถบหัว เรียงตาม DOM (ไม่รวมปุ่มย้อนกลับ) */
 function headerButtons() {
   const row = document.querySelector("h1")!.closest(".relative")!;
@@ -115,12 +119,12 @@ describe("PoHeader — characterization", () => {
     );
   });
 
-  it("[view, draft] Edit · Delete · More", async () => {
+  it("[view, draft] Edit · Delete · Actions", async () => {
     const h = renderHeader("view", DRAFT);
     expect(headerButtons()).toEqual([
       en.common.edit,
       en.common.delete,
-      en.common.more,
+      ...VIEW_ACTIONS,
     ]);
     await userEvent.click(screen.getByRole("button", { name: en.common.edit }));
     expect(h.onEnterEdit).toHaveBeenCalledTimes(1);
@@ -130,14 +134,14 @@ describe("PoHeader — characterization", () => {
     expect(h.onShowDelete).toHaveBeenCalledTimes(1);
   });
 
-  it("[view, approved + canClose] Edit · Delete · Close · Send · More", async () => {
+  it("[view, approved + canClose] Edit · Delete · Close · Send · Actions", async () => {
     const h = renderHeader("view", APPROVED, { canClose: true });
     expect(headerButtons()).toEqual([
       en.common.edit,
       en.common.delete,
       en.common.close,
       SEND,
-      en.common.more,
+      ...VIEW_ACTIONS,
     ]);
     await userEvent.click(
       screen.getByRole("button", { name: en.common.close }),
@@ -147,21 +151,21 @@ describe("PoHeader — characterization", () => {
 
   it("[view, in_progress + canClose] ไม่มี Close (เฉพาะ approved/sent)", () => {
     renderHeader("view", IN_PROGRESS, { canEdit: false, canClose: true });
-    expect(headerButtons()).toEqual([en.common.more]);
+    expect(headerButtons()).toEqual([...VIEW_ACTIONS]);
   });
 
-  it("[view, completed + terminal] Send · More — ไม่มี Edit/Delete", () => {
+  it("[view, completed + terminal] Send · Actions — ไม่มี Edit/Delete", () => {
     renderHeader("view", COMPLETED, { canEdit: false, terminalStatus: true });
-    expect(headerButtons()).toEqual([SEND, en.common.more]);
+    expect(headerButtons()).toEqual([SEND, ...VIEW_ACTIONS]);
   });
 
-  it("[edit, draft] Cancel · Save · Delete · More", async () => {
+  it("[edit, draft] Cancel · Save · Delete · Actions", async () => {
     const h = renderHeader("edit", DRAFT);
     expect(headerButtons()).toEqual([
       en.common.cancel,
       en.common.save,
       en.common.delete,
-      en.common.more,
+      ...EDIT_ACTIONS,
     ]);
     const save = screen.getByRole("button", { name: en.common.save });
     expect(save).toHaveAttribute("type", "submit");
