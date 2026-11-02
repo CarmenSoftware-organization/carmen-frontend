@@ -91,7 +91,7 @@ Stock In, Stock Out) กดแล้วเปิด dialog รายการเ
 - **ลำดับ**: rank ของกลุ่มตามข้างบน (draft=0, in_progress=1, complete=2, cancelled=3)
   ตามด้วยวันที่เอกสาร**เก่า → ใหม่** (my call ใบที่ค้างนานสุดขึ้นก่อน) แล้วตามด้วย `id`
   เพื่อให้ลำดับนิ่งเวลาแบ่งหน้า
-- response มี paginate meta (total) ตามรูปแบบ list endpoint เดิม **และ** `group_counts` ของโมดูลนั้น
+- response มี paginate meta (total) ตามรูปแบบ list endpoint เดิม **และ** `summary: { draft, in_progress, complete, cancelled }` ของโมดูลนั้น (ใช้ชื่อ `summary` เพราะ envelope มาตรฐาน `StdResponse.fromResult` เก็บไว้แค่ `data` / `paginate` / `summary` คีย์อื่นที่ระดับบนสุดถูกทิ้ง)
   ซึ่งคำนวณใน request เดียวกับรายการ (my call) dialog ใช้ตัวเลขชุดนี้กับตัวกรองและหัว dialog
   ตัวเลขกับแถวจึงตรงกันเสมอ แม้เอกสารจะเปลี่ยนสถานะหลังโหลดหน้า review ไปแล้ว
 - gateway: controller ใหม่ใน `apps/backend-gateway/src/application/period-end/`
@@ -115,7 +115,7 @@ Stock In, Stock Out) กดแล้วเปิด dialog รายการเ
 - `usePeriodEndReview` เลิก map `documents`
 - `pe-documents-dialog.tsx`:
   - ตัวกรอง 4 ปุ่มเหนือตาราง เรียงตามนี้: ยังไม่เสร็จ (default) · เสร็จแล้ว · ยกเลิก/Void · ทั้งหมด
-    แต่ละปุ่มมีจำนวนจาก `group_counts` ของ**หน้าแรกที่ endpoint ใหม่ตอบกลับ** ไม่ใช่จาก review
+    แต่ละปุ่มมีจำนวนจาก `summary` ของ**หน้าแรกที่ endpoint ใหม่ตอบกลับ** ไม่ใช่จาก review
     (ยังไม่เสร็จ = draft + in_progress, ทั้งหมด = ผลรวม 4 กลุ่ม) ระหว่างหน้าแรกยังโหลด
     ใช้ตัวเลขจาก review เป็นค่าชั่วคราวได้
   - ทุกครั้งที่เปิด dialog ให้ refetch รายการ (และ invalidate key ของ review ให้การ์ดอัปเดตตาม)
@@ -159,7 +159,7 @@ Stock In, Stock Out) กดแล้วเปิด dialog รายการเ
 ตาม CLAUDE.md ของ user การรันตามแผนข้ามขั้นเขียน test ใหม่ แต่ต้องรัน typecheck/lint และ
 test suite เดิมต้องผ่าน การตรวจรับให้ทำด้วยมือดังนี้
 
-- curl endpoint ใหม่ทุก module × ทุก group: ลำดับถูก, ไม่มีแถวซ้ำหรือหายระหว่างหน้า, total ตรงกับ `group_counts`
+- curl endpoint ใหม่ทุก module × ทุก group: ลำดับถูก, ไม่มีแถวซ้ำหรือหายระหว่างหน้า, total ตรงกับ `summary`
 - เทียบ `complete_count` / `incomplete_count` / `is_complete` ก่อนและหลัง ต้องเท่าเดิม
 - ในเบราว์เซอร์: เปิด dialog ของโมดูลที่มีเอกสาร > 50 ใบ (ถ้า dev DB ไม่มีให้ลด `perpage` ชั่วคราว)
   แล้วเลื่อนให้โหลดต่อ, สลับตัวกรอง, กดลิงก์เอกสาร, ดูทั้ง light/dark

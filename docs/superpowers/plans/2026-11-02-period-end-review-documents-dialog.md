@@ -67,7 +67,7 @@
 - Consumes: ทุกอย่างจาก Task 1
 - Produces:
   - `PeriodEndReviewTransactionItem` เพิ่ม `group_counts: Record<ReviewDocumentGroup, number>` (ยังคงมี `documents`)
-  - `PeriodEndService.findReviewDocuments(user_id: string, tenant_id: string, module: ReviewModuleKey, group: ReviewGroupFilter, page: number, perpage: number): Promise<Result<{ data: { id: string; no: string; status: string; date: Date; group: ReviewDocumentGroup }[]; paginate: { total: number; page: number; perpage: number; pages: number }; group_counts: Record<ReviewDocumentGroup, number> }>>`
+  - `PeriodEndService.findReviewDocuments(user_id: string, tenant_id: string, module: ReviewModuleKey, group: ReviewGroupFilter, page: number, perpage: number): Promise<Result<{ data: { id: string; no: string; status: string; date: Date; group: ReviewDocumentGroup }[]; paginate: { total: number; page: number; perpage: number; pages: number }; summary: Record<ReviewDocumentGroup, number> }>>`
   - RPC `PeriodEnds.findReviewDocuments` (pattern `period-ends.find-review-documents`) payload `{ user_id, tenant_id, module, group, page, perpage }`
 
 - [ ] **Step 1: `findReview` ใส่ `group_counts`** ให้ `buildTx` รับ module key แล้วนับด้วย `reviewGroupOf` จาก documents ที่ดึงมาอยู่แล้ว (PR 1 ยังดึงทุกแถว ค่อยเปลี่ยนเป็น `groupBy` ใน Task 6) ค่าเดิมทุกฟิลด์ต้องไม่เปลี่ยน
@@ -77,7 +77,7 @@
   - where ของแต่ละกลุ่ม = `status in REVIEW_STATUS_GROUPS[module][g]` และกลุ่ม `draft` ของ PR/PO ให้ OR กับ `status: null` ด้วย
   - อัลกอริทึมการแบ่งหน้า (ฟังก์ชันล้วน ไม่ใช้ raw SQL):
     ```
-    counts = count ต่อกลุ่มทั้ง 4 (ส่งกลับเป็น group_counts เสมอ ไม่ขึ้นกับ filter)
+    counts = count ต่อกลุ่มทั้ง 4 (ส่งกลับเป็น `summary` เสมอ ไม่ขึ้นกับ filter)
     groups = REVIEW_FILTER_GROUPS[group] ตามลำดับ REVIEW_GROUP_ORDER
     total = sum(counts[g] for g in groups)
     offset = (page-1)*perpage; remaining = perpage; rows = []
@@ -106,7 +106,7 @@
 
 **Interfaces:**
 - Consumes: RPC `PeriodEnds.findReviewDocuments` จาก Task 2
-- Produces: `GET /api/:bu_code/period-ends/review/:module/documents?group=&page=&perpage=&version=` → envelope มาตรฐาน `{ data: ReviewDocumentRow[], paginate, group_counts }` (FE ใน Task 4 อ่านตามนี้)
+- Produces: `GET /api/:bu_code/period-ends/review/:module/documents?group=&page=&perpage=&version=` → envelope มาตรฐาน `{ data: ReviewDocumentRow[], paginate, summary }` (StdResponse เก็บแค่ data/paginate/summary) (FE ใน Task 4 อ่านตามนี้)
 
 - [ ] **Step 1: serializer** เพิ่ม `group_counts` (`z.object({draft,in_progress,complete,cancelled: z.number().int().nonnegative()})`) ใน transaction item schema และเพิ่ม `PeriodEndReviewDocumentsResponseSchema` (row = `{id, no, status, date, group: z.enum([...])}`) + paginate + group_counts
 - [ ] **Step 2: route** `@Get(':bu_code/period-ends/review/:module/documents')` + `@UseGuards(new AppIdGuard('period_end.findReviewDocuments'))` + `@Serialize(...)` + Swagger ครบเหมือน `findReview` · ตรวจ `:module` และ `group` ด้วย DTO/ParseEnum → ค่านอกชุดตอบ 400 · `page`/`perpage` ใช้ `PaginateQuery` เหมือน `findAll`
@@ -144,7 +144,7 @@
   - `export type ReviewGroupFilter = "incomplete" | "complete" | "cancelled" | "all"`
   - `export type ReviewGroupCounts = Record<ReviewDocumentGroup, number>`
   - `ReviewDocument` เพิ่ม `group: ReviewDocumentGroup` · `ReviewTransactionStat` เพิ่ม `group_counts: ReviewGroupCounts` และ**ถอด** `documents`
-  - `useReviewDocuments(module: ReviewTransactionKey | null, group: ReviewGroupFilter, enabled: boolean)` คืนค่า `UseInfiniteQueryResult` ที่แต่ละหน้าเป็น `PaginatedResponse<ReviewDocument> & { group_counts: ReviewGroupCounts }`
+  - `useReviewDocuments(module: ReviewTransactionKey | null, group: ReviewGroupFilter, enabled: boolean)` คืนค่า `UseInfiniteQueryResult` ที่แต่ละหน้าเป็น `PaginatedResponse<ReviewDocument> & { summary: ReviewGroupCounts }`
   - `REVIEW_DOCUMENTS_PERPAGE = 50` (export จากไฟล์ hook)
 
 - [ ] **Step 1: endpoint + types** ตาม Interfaces
@@ -174,7 +174,7 @@
 - [ ] **Step 2: dialog**
   - state `filter: ReviewGroupFilter` เริ่มที่ `"incomplete"` และ reset เป็น `"incomplete"` ทุกครั้งที่ `open` เปลี่ยนเป็น true หรือ `moduleKey` เปลี่ยน
   - ตัวกรองใช้ `components/ui/tabs.tsx` (หรือ toggle group ที่มีอยู่) ป้ายแต่ละอันแสดงจำนวน ลำดับ incomplete · complete · cancelled · all
-  - ตัวเลขใช้ `group_counts` ของหน้าแรกจาก `useReviewDocuments` และระหว่างที่ยังไม่มี ใช้ `stat.group_counts` แทน
+  - ตัวเลขใช้ `summary` ของหน้าแรกจาก `useReviewDocuments` และระหว่างที่ยังไม่มี ใช้ `stat.group_counts` แทน
   - ตอนเปิด dialog ให้ `refetch` รายการ และ `queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PERIOD_ENDS, buCode, "review"], exact: true })`
   - `data` ของตาราง = แบนทุกหน้า (memo) และ columns memo เหมือนเดิม คอลัมน์ `#` ใช้ `row.index + 1` ซึ่งต่อเนื่องข้ามหน้าเพราะแบนแล้ว ตรวจกับดักใน `routes/CLAUDE.md` แล้วใส่ `"use no memo";` ถ้าเข้าข่าย
   - sentinel `<div>` ท้าย `DataGridScrollArea` + IntersectionObserver (root = scroll area) → `fetchNextPage()` เมื่อ `hasNextPage && !isFetchingNextPage` · แถว loading ท้ายตารางขณะโหลด · error ของหน้าถัดไป → ข้อความ `loadMoreFailed` + ปุ่มลองใหม่ โดยแถวเดิมยังอยู่
