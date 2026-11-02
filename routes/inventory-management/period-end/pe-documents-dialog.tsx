@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/ui/error-state";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EmptyComponent from "@/components/empty-component";
 import {
@@ -100,6 +101,7 @@ export function PeDocumentsDialog({
   const locale = useLocale();
   const t = useTranslations("inventoryManagement.periodEnd");
   const tfl = useTranslations("field");
+  const te = useTranslations("errors");
 
   const buCode = useBuCode();
   const queryClient = useQueryClient();
@@ -294,14 +296,21 @@ export function PeDocumentsDialog({
             isLoading={query.isLoading}
             tableLayout={{ headerSticky: true, rowBorder: true }}
             emptyMessage={
-              <EmptyComponent
-                icon={FileText}
-                title={
-                  filter === "incomplete"
-                    ? t("noIncompleteDocuments")
-                    : t("noDocuments")
-                }
-              />
+              query.isError && documents.length === 0 ? (
+                <ErrorState
+                  error={query.error}
+                  onRetry={() => void query.refetch()}
+                />
+              ) : (
+                <EmptyComponent
+                  icon={FileText}
+                  title={
+                    filter === "incomplete"
+                      ? t("noIncompleteDocuments")
+                      : t("noDocuments")
+                  }
+                />
+              )
             }
           >
             <DataGridContainer className="flex max-h-[60vh] flex-col rounded-lg border">
@@ -324,7 +333,7 @@ export function PeDocumentsDialog({
                       size="sm"
                       onClick={() => void fetchNextPage()}
                     >
-                      {t("retry")}
+                      {te("tryAgain")}
                     </Button>
                   </div>
                 )}

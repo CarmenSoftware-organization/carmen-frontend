@@ -3799,7 +3799,6 @@
       },
       "noIncompleteDocuments": "No outstanding documents. Everything is done.",
       "loadMoreFailed": "Couldn't load more documents.",
-      "retry": "Try again",
       "noDocuments": "No documents in this period.",
       "openDocumentsLabel": "Open {module} documents",
       "historyCount": "{count} period(s)",

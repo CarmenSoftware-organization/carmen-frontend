@@ -3799,7 +3799,6 @@
       },
       "noIncompleteDocuments": "ไม่มีใบค้าง ทุกใบเสร็จแล้ว",
       "loadMoreFailed": "โหลดรายการเพิ่มไม่สำเร็จ",
-      "retry": "ลองใหม่",
       "noDocuments": "ไม่มีเอกสารในงวดนี้",
       "openDocumentsLabel": "เปิดรายการเอกสาร {module}",
       "historyCount": "{count} งวด",
