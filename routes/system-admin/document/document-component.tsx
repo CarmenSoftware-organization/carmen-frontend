@@ -96,9 +96,12 @@ export default function DocumentComponent() {
     sort: undefined,
     ...documentFiltersToParams(lf.values),
   };
-  const { data, isLoading, error, refetch } = useDocument(listParams, {
-    enabled: !useInfiniteScroll,
-  });
+  const { data, isLoading, isFetching, error, refetch } = useDocument(
+    listParams,
+    {
+      enabled: !useInfiniteScroll,
+    },
+  );
 
   const grid = useGridPagination<DocumentFile>({
     useListHook: useDocument as Parameters<
@@ -387,6 +390,7 @@ export default function DocumentComponent() {
         count={bulkCount}
         size={bulkSize}
         isPending={bulkDelete.isPending}
+        confirmDisabled={isFetching}
         error={bulkError}
         onConfirm={confirmBulkDelete}
       />

@@ -129,7 +129,11 @@ export function useBulkDeleteDocuments() {
     );
     if (!res.ok) throw await ApiError.from(res, "Failed to delete documents");
     const json = await res.json();
-    return (json.data ?? json) as BulkDeleteResult;
+    const payload = json?.data as BulkDeleteResult | undefined;
+    if (!payload || !Array.isArray(payload.failed)) {
+      throw new Error("Unexpected bulk-delete response shape");
+    }
+    return payload;
   };
 
   return useMutation<BulkDeleteResult, ApiError, BulkDeleteVariables>({
@@ -144,12 +148,27 @@ export function useBulkDeleteDocuments() {
         i < variables.file_tokens.length;
         i += BULK_DELETE_TOKEN_CHUNK
       ) {
-        const r = await post({
-          file_tokens: variables.file_tokens.slice(
-            i,
-            i + BULK_DELETE_TOKEN_CHUNK,
-          ),
-        });
+        const chunk = variables.file_tokens.slice(
+          i,
+          i + BULK_DELETE_TOKEN_CHUNK,
+        );
+        let r: BulkDeleteResult;
+        try {
+          r = await post({ file_tokens: chunk });
+        } catch (err) {
+          // ก้อนแรกพัง = ยังไม่มีอะไรถูกลบ → โยนต่อเหมือนเดิม
+          // ก้อนหลังพัง = ก้อนก่อนหน้าลบไปแล้ว: รายงานที่เหลือเป็น failed แล้วคืนผลรวม
+          // เพื่อให้ผู้ใช้เห็นว่าลบไปกี่ไฟล์ (toast บางส่วน) และล้างการเลือกที่ token หายไปแล้ว
+          if (total.deleted === 0 && total.failed.length === 0) throw err;
+          for (const fileToken of variables.file_tokens.slice(i)) {
+            total.failed.push({
+              fileToken,
+              fileName: fileToken,
+              reason: "DELETE_FAILED",
+            });
+          }
+          break;
+        }
         total.deleted += r.deleted;
         total.failed.push(...r.failed);
         total.freed_size += r.freed_size;

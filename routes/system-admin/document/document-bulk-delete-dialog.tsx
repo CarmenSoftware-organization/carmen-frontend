@@ -17,6 +17,8 @@ interface DocumentBulkDeleteDialogProps {
   readonly count: number;
   readonly size: number;
   readonly isPending: boolean;
+  /** ปิดปุ่มยืนยันระหว่าง refetch (กันส่ง expected_count เก่าหลัง 409) */
+  readonly confirmDisabled?: boolean;
   /** ข้อความ error จาก server (เช่น 409 จำนวนเปลี่ยน) — แสดงในกล่องโดยไม่ปิด */
   readonly error?: string;
   readonly onConfirm: () => void;
@@ -29,6 +31,7 @@ export function DocumentBulkDeleteDialog({
   count,
   size,
   isPending,
+  confirmDisabled,
   error,
   onConfirm,
 }: DocumentBulkDeleteDialogProps) {
@@ -83,7 +86,7 @@ export function DocumentBulkDeleteDialog({
               e.preventDefault();
               onConfirm();
             }}
-            disabled={isPending || count <= 0}
+            disabled={isPending || confirmDisabled || count <= 0}
           >
             <Trash2 />
             {isPending ? td("deleting") : tc("delete")}
