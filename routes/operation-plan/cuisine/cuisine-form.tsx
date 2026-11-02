@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "use-intl";
@@ -25,6 +25,14 @@ import { CuisineGeneralFields } from "./cuisine-general-fields";
 import { CuisineDetailFields } from "./cuisine-detail-fields";
 import { CuisineAdditionalFields } from "./cuisine-additional-fields";
 import { CuisineRecipes } from "./cuisine-recipes";
+import { recipeCuisineCommentCrud } from "./use-recipe-cuisine-comments";
+
+// sheet comment โหลดเมื่อกดเปิดครั้งแรก ไม่ต้องติดมากับหน้าฟอร์ม
+const EntityCommentSheet = lazy(() =>
+  import("@/components/share/entity-comment-sheet").then((m) => ({
+    default: m.EntityCommentSheet,
+  })),
+);
 
 interface CuisineFormProps {
   readonly cuisine?: Cuisine;
@@ -39,6 +47,7 @@ export function CuisineForm({ cuisine }: CuisineFormProps) {
   const updateCuisine = useUpdateCuisine();
   const deleteCuisine = useDeleteCuisine();
   const [showDelete, setShowDelete] = useState(false);
+  const [showComment, setShowComment] = useState(false);
 
   const f = useEntityForm<CuisineFormValues>({
     entity: cuisine,
@@ -96,6 +105,7 @@ export function CuisineForm({ cuisine }: CuisineFormProps) {
           onCancel={f.handleCancel}
           onDelete={cuisine ? () => setShowDelete(true) : undefined}
           activityId={cuisine?.id}
+          onComment={cuisine ? () => setShowComment(true) : undefined}
         />
       }
     >
@@ -123,6 +133,17 @@ export function CuisineForm({ cuisine }: CuisineFormProps) {
       </form>
 
       {cuisine && <CuisineRecipes cuisineId={cuisine.id} />}
+
+      {cuisine && (
+        <Suspense fallback={null}>
+          <EntityCommentSheet
+            crud={recipeCuisineCommentCrud}
+            entityId={cuisine.id}
+            open={showComment}
+            onOpenChange={setShowComment}
+          />
+        </Suspense>
+      )}
 
       <DiscardDialog {...f.discard.dialogProps} variant="warning" />
 

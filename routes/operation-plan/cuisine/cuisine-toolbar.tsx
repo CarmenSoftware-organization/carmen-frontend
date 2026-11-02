@@ -22,6 +22,8 @@ interface CuisineToolbarProps {
    * (ไม่ส่ง = โหมด add ที่ยังไม่มีประวัติให้ดู)
    */
   readonly activityId?: string;
+  /** เปิด sheet comment + ไฟล์แนบ (ไม่ส่ง = โหมด add ที่ยังไม่มี record ให้ comment) */
+  readonly onComment?: () => void;
 }
 
 export function CuisineToolbar({
@@ -34,6 +36,7 @@ export function CuisineToolbar({
   onCancel,
   onDelete,
   activityId,
+  onComment,
 }: CuisineToolbarProps) {
   const tr = useTranslations("operationPlan.cuisine");
   const ts = useTranslations("status");
@@ -64,6 +67,7 @@ export function CuisineToolbar({
       onEdit={onEdit}
       onDelete={onDelete}
       deleteIsPending={isDeleting}
+      onComment={onComment}
       activity={activityId ? { id: activityId, label: name } : undefined}
     />
   );
