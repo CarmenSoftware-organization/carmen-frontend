@@ -1120,7 +1120,10 @@
       "SALES_CONSUMPTION_LINE_POSTED": "This line has already been posted and cannot be edited.",
       "SALES_CONSUMPTION_POS_NOT_ENABLED": "POS integration is not enabled for this business unit.",
       "POS_SALE_OUTLET_IN_POSTED_SC": "Outlet {outlet} for {date} is already included in a posted Sales Consumption and cannot be overwritten.",
-      "STOCK_OUT_VOID_VIA_SALES_CONSUMPTION": "This Stock Out was created by Sales Consumption {sc_no}. Void it from the Sales Consumption instead."
+      "STOCK_OUT_VOID_VIA_SALES_CONSUMPTION": "This Stock Out was created by Sales Consumption {sc_no}. Void it from the Sales Consumption instead.",
+      "DOCUMENT_DELETE_UNSUPPORTED": "This file is attached to data the system cannot safely clean up yet, so it was not deleted.",
+      "DOCUMENT_BULK_DELETE_COUNT_CHANGED": "The number of matching files changed (was {expected}, now {actual}). Check the new count and delete again.",
+      "DOCUMENT_BULK_DELETE_TOO_MANY": "{count} files match. You can delete at most {max} at a time. Narrow the filter and try again."
     }
   },
   "validation": {
@@ -2296,7 +2299,32 @@
       "doc": "DOC",
       "code": "Code",
       "file": "File",
-      "searchType": "Search file type...",
+      "attachedFrom": "Attached from",
+      "uploadedBy": "Uploaded by",
+      "uploadedAt": "Uploaded on",
+      "referenceDeleted": "Document deleted",
+      "referenceUnknown": "Unknown source",
+      "filterModule": "Attached from module",
+      "filterCreatedBefore": "Uploaded before",
+      "selectedBar": "{count} files selected · {size}",
+      "allMatchingSelected": "All {count} files matching the filter are selected · {size}",
+      "selectAllMatching": "Select all matching the filter ({count} files · {size})",
+      "selectAllMatchingTooMany": "More than {max} files match. Narrow the filter first to select them all.",
+      "clearSelection": "Clear selection",
+      "bulkDelete": "Delete selected",
+      "bulkDeleteTitle": "Delete {count} files",
+      "bulkDeleteSummary": "{count} files · {size}",
+      "bulkDeletePermanent": "Permanent and cannot be undone. The file name in the source document attachment list will be replaced by a note that the file was deleted.",
+      "bulkDeleteSuccess": "Deleted {count} files",
+      "bulkDeletePartial": "Deleted {deleted} files, {failed} could not be deleted",
+      "bulkDeleteMore": "and {count} more",
+      "bulkDeleteFailed": "Could not delete the files. Try again.",
+      "bulkReason": {
+        "FILE_NOT_FOUND": "File not found (it may already be deleted)",
+        "UNSUPPORTED_REFERENCE_TYPE": "The file source does not support deletion yet",
+        "TOMBSTONE_FAILED": "Could not update the source document attachment list, so the file was kept",
+        "DELETE_FAILED": "Could not remove the file from storage. Try deleting again."
+      },
       "summary": {
         "title": "Storage by module",
         "description": "Total attachment size for this business unit, grouped by the module each file came from.",
@@ -6405,6 +6433,8 @@
     "assetCategory": "Asset Categories"
   },
   "commentSheet": {
+    "deletedFile": "File deleted · {date}",
+    "deletedFileBy": "File deleted · {date} by {name}",
     "title": "Comments ({count})",
     "noComments": "No Comments Yet",
     "noCommentsDesc": "You haven't created any comments yet.",

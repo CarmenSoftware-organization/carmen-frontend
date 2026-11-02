@@ -134,6 +134,8 @@ export const API_ENDPOINTS = {
   DOCUMENTS: (buCode: string) => `/api/proxy/api/${buCode}/documents`,
   DOCUMENTS_SUMMARY: (buCode: string) =>
     `/api/proxy/api/${buCode}/documents/summary`,
+  DOCUMENTS_BULK_DELETE: (buCode: string) =>
+    `/api/proxy/api/${buCode}/documents/bulk-delete`,
   EQUIPMENT_CATEGORIES: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/recipe-equipment-categories`,
   EXCHANGE_RATES: (buCode: string) =>
