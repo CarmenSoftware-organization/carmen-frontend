@@ -46,6 +46,7 @@ export const QUERY_KEYS = {
   RECIPES: "recipes",
   RECIPE_COMMENTS: "recipe-comments",
   RECIPE_CATEGORY_COMMENTS: "recipe-category-comments",
+  RECIPE_CUISINE_COMMENTS: "recipe-cuisine-comments",
   DELIVERY_POINTS: "delivery-points",
   DEPARTMENTS: "departments",
   DOCUMENTS: "documents",
