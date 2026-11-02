@@ -39,7 +39,7 @@ export function IdentityCard({
   return (
     <section className="bg-card overflow-hidden rounded-xl border shadow-sm">
       <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
           <BrandImage
             url={logoUrl}
             shape="landscape"
@@ -98,7 +98,7 @@ export function IdentityCardSkeleton() {
   return (
     <div className="bg-card overflow-hidden rounded-xl border shadow-sm">
       <div className="flex items-center gap-4 p-5 sm:p-6">
-        <Skeleton className="h-16 w-32 rounded-md" />
+        <Skeleton className="h-16 w-64 rounded-md" />
         <Skeleton className="size-16 rounded-full" />
         <div className="space-y-2">
           <Skeleton className="h-5 w-48" />
@@ -124,9 +124,15 @@ function BrandImage({
   readonly label: string;
 }) {
   const t = useTranslations("companyProfile");
+  // โลโก้ช่องว่างเป็น 4:1 (h-16 w-64) — มีรูปแล้วสูงเท่าเดิม กว้างตามสัดส่วนรูป ไม่เกิน 4:1
   const box =
-    shape === "landscape" ? "h-16 w-32 rounded-md" : "size-16 rounded-full";
-  const fit = shape === "landscape" ? "object-contain" : "object-cover";
+    shape === "landscape"
+      ? cn(url ? "h-16 w-auto min-w-16 max-w-64" : "h-16 w-64", "rounded-md")
+      : "size-16 rounded-full";
+  const imageClass =
+    shape === "landscape"
+      ? "h-full w-auto max-w-full object-contain"
+      : "absolute inset-0 size-full object-cover";
   return (
     <div
       className={cn(
@@ -139,7 +145,7 @@ function BrandImage({
         <img
           src={url}
           alt={label}
-          className={cn("absolute inset-0 size-full", fit)}
+          className={imageClass}
           loading="lazy"
         />
       ) : (
