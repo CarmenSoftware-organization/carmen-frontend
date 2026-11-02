@@ -152,21 +152,28 @@ function ImageUploadField({
   else if (hasImage) primaryButtonText = text.change;
   else primaryButtonText = text.upload;
 
+  // โลโก้ช่องว่างเป็น 4:1 (h-16 w-64) — มีรูปแล้วสูงเท่าเดิม กว้างตามสัดส่วนรูป ไม่เกิน 4:1
+  const landscapeBox = displayUrl ? "h-16 w-auto min-w-16 max-w-64" : "h-16 w-64";
   const boxClass = cn(
     "bg-muted/50 relative flex shrink-0 items-center justify-center overflow-hidden border",
-    shape === "landscape" ? "h-16 w-32 rounded-md" : "size-16 rounded-full",
+    shape === "landscape"
+      ? cn(landscapeBox, "rounded-md")
+      : "size-16 rounded-full",
   );
-  const imageFit = shape === "landscape" ? "object-contain" : "object-cover";
+  const imageClass =
+    shape === "landscape"
+      ? "h-full w-auto max-w-full object-contain"
+      : "absolute inset-0 size-full object-cover";
 
   return (
     <>
-      <div className="bg-background/50 flex items-center gap-3 rounded-lg border p-2">
+      <div className="bg-background/50 flex flex-wrap items-center gap-3 rounded-lg border p-2">
         <div className={boxClass}>
           {displayUrl ? (
             <img
               src={displayUrl}
               alt={text.title}
-              className={cn("absolute inset-0 size-full", imageFit)}
+              className={imageClass}
               loading={priority ? "eager" : "lazy"}
             />
           ) : (
