@@ -584,7 +584,15 @@ export const API_ENDPOINTS = {
   SPOT_CHECK_SUBMIT: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/spot-checks/${id}/submit`,
   STOCK_IN: (buCode: string) => `/api/proxy/api/${buCode}/stock-ins`,
+  STOCK_IN_COMMENT: (buCode: string, stockInId?: string) =>
+    stockInId
+      ? `/api/proxy/api/${buCode}/stock-in-comments/${stockInId}`
+      : `/api/proxy/api/${buCode}/stock-in-comments`,
   STOCK_OUT: (buCode: string) => `/api/proxy/api/${buCode}/stock-outs`,
+  STOCK_OUT_COMMENT: (buCode: string, stockOutId?: string) =>
+    stockOutId
+      ? `/api/proxy/api/${buCode}/stock-out-comments/${stockOutId}`
+      : `/api/proxy/api/${buCode}/stock-out-comments`,
   STOCK_REPLENISHMENT: (buCode: string) =>
     `/api/proxy/api/${buCode}/stock-replenishments`,
   WASTAGE_REPORTING: (buCode: string) =>

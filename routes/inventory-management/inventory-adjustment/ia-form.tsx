@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
@@ -45,6 +45,13 @@ import { AdjSummaryFooter } from "./ia-summary";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { IaFormHero } from "./ia-form-hero";
 import { Check } from "lucide-react";
+import { stockInCommentCrud, stockOutCommentCrud } from "./use-ia-comments";
+
+const EntityCommentSheet = lazy(() =>
+  import("@/components/share/entity-comment-sheet").then((mod) => ({
+    default: mod.EntityCommentSheet,
+  })),
+);
 
 interface InventoryAdjustmentFormProps {
   readonly adjustmentType: InventoryAdjustmentType;
@@ -70,6 +77,7 @@ export function InventoryAdjustmentForm({
   const voidAdj = useVoidInventoryAdjustment();
   const commitAdj = useCommitInventoryAdjustment();
   const [showDelete, setShowDelete] = useState(false);
+  const [showComment, setShowComment] = useState(false);
   const [showVoid, setShowVoid] = useState(false);
   const [showCommit, setShowCommit] = useState(false);
   const isPending =
@@ -353,6 +361,7 @@ export function InventoryAdjustmentForm({
           onCancel={handleCancel}
           onEdit={() => setMode("edit")}
           onDelete={() => setShowDelete(true)}
+          onComment={() => setShowComment(true)}
         />
       }
       footer={
@@ -412,6 +421,22 @@ export function InventoryAdjustmentForm({
         onCancel={navGuard.cancel}
         variant="warning"
       />
+
+      {inventoryAdjustment && (
+        <Suspense fallback={null}>
+          <EntityCommentSheet
+            key={adjustmentType}
+            crud={
+              adjustmentType === "stock-in"
+                ? stockInCommentCrud
+                : stockOutCommentCrud
+            }
+            entityId={inventoryAdjustment.id}
+            open={showComment}
+            onOpenChange={setShowComment}
+          />
+        </Suspense>
+      )}
 
       {inventoryAdjustment && (
         <DeleteDialog
