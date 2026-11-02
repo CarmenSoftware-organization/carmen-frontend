@@ -71,7 +71,12 @@ export default function DocumentComponent() {
   // ตัวกรองทั้งหมดส่งให้ server (reference_types / content_kinds / created_before) เพื่อให้
   // จำนวนหน้าและยอดรวมตรงกับแถวที่เห็น — ไม่กรองฝั่ง client อีกแล้ว
   // เรียกทุก render โดยตั้งใจ: lf.values เปลี่ยน reference เมื่อ URL เปลี่ยน, setter ห้ามอยู่ใน deps
-  const listParams = { ...params, ...documentFiltersToParams(lf.values) };
+  // sort: undefined - micro-file เรียง created_at DESC เสมอ ไม่รองรับ sort (ทุกคอลัมน์ปิด sort)
+  const listParams = {
+    ...params,
+    sort: undefined,
+    ...documentFiltersToParams(lf.values),
+  };
   const { data, isLoading, error, refetch } = useDocument(listParams, {
     enabled: !useInfiniteScroll,
   });

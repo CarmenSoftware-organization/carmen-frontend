@@ -2296,7 +2296,6 @@
       "doc": "DOC",
       "code": "Code",
       "file": "File",
-      "searchType": "Search file type...",
       "attachedFrom": "Attached from",
       "uploadedBy": "Uploaded by",
       "uploadedAt": "Uploaded on",

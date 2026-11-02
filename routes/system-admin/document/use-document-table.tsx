@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 import { useTranslations } from "use-intl";
-import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import {
   selectColumn,
   indexColumn,
@@ -119,8 +118,9 @@ export function useDocumentTable({
     indexColumn<DocumentFile>(params),
     {
       accessorKey: "originalName",
-      header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("fileName")} />
+      enableSorting: false,
+      header: () => (
+        <span className="text-xs font-medium">{tfl("fileName")}</span>
       ),
       cell: ({ row }) => (
         <span
@@ -134,9 +134,8 @@ export function useDocumentTable({
     },
     {
       accessorKey: "contentType",
-      header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("type")} />
-      ),
+      enableSorting: false,
+      header: () => <span className="text-xs font-medium">{tfl("type")}</span>,
       cell: ({ row }) => {
         const contentType: string = row.getValue("contentType");
         const {
@@ -155,9 +154,8 @@ export function useDocumentTable({
     },
     {
       accessorKey: "size",
-      header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("size")} />
-      ),
+      enableSorting: false,
+      header: () => <span className="text-xs font-medium">{tfl("size")}</span>,
       cell: ({ row }) => formatFileSize(row.getValue("size")),
       size: 100,
     },
