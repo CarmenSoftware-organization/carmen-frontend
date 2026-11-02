@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
@@ -43,6 +43,13 @@ import {
 import { PLGeneralCard } from "./pl-general-card";
 import { PlItemFields } from "./pl-item-fields";
 import { PlVoidBanner } from "./pl-void-banner";
+import { priceListCommentCrud } from "./use-pl-comments";
+
+const EntityCommentSheet = lazy(() =>
+  import("@/components/share/entity-comment-sheet").then((mod) => ({
+    default: mod.EntityCommentSheet,
+  })),
+);
 
 const FORM_ID = "pl-form";
 
@@ -66,6 +73,7 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
   const voidPriceList = useVoidPriceList();
   const restorePriceList = useRestorePriceList();
   const [showDelete, setShowDelete] = useState(false);
+  const [showComment, setShowComment] = useState(false);
   const [showVoid, setShowVoid] = useState(false);
   const [showRestore, setShowRestore] = useState(false);
   const { isAdmin } = useCan();
@@ -229,6 +237,7 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
           }
           deleteIsPending={deletePriceList.isPending}
           activity={priceList && { id: priceList.id, label: priceList.no }}
+          onComment={priceList ? () => setShowComment(true) : undefined}
           badges={
             <>
               {plNo && (
@@ -310,6 +319,17 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
         onCancel={f.navGuard.cancel}
         variant="warning"
       />
+
+      {priceList && (
+        <Suspense fallback={null}>
+          <EntityCommentSheet
+            crud={priceListCommentCrud}
+            entityId={priceList.id}
+            open={showComment}
+            onOpenChange={setShowComment}
+          />
+        </Suspense>
+      )}
 
       {priceList && (
         <DeleteDialog

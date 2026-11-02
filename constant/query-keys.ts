@@ -92,6 +92,7 @@ export const QUERY_KEYS = {
   SALES_CONSUMPTION: "sales-consumption",
   SALES_CONSUMPTION_CALENDAR: "sales-consumption-calendar",
   PRICE_LISTS: "price-lists",
+  PRICE_LIST_COMMENTS: "price-list-comments",
   PRICE_LIST_ACTIVE_BY_VENDOR: "price-list-active-by-vendor",
   PRICE_LIST_ACTIVE_VENDORS: "price-list-active-vendors",
   PRICE_LIST_COMPARE: "price-list-compare",
