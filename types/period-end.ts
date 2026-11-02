@@ -20,14 +20,15 @@ export interface PeriodEnd {
 
 type PeriodEndStatus = "open" | "closed" | "locked";
 
-export type ReviewTransactionKey = "pr" | "po" | "grn" | "cn" | "sr" | "si" | "so";
+export type ReviewTransactionKey =
+  "pr" | "po" | "grn" | "cn" | "sr" | "si" | "so";
 
 export type StartCountingBlockerKey = "grn" | "stock_in" | "stock_out" | "sr";
 
 export interface StartCountingBlockers {
   counts: Record<StartCountingBlockerKey, number>;
   total: number;
-  documents: Record<StartCountingBlockerKey, ReviewDocument[]>;
+  documents: Record<StartCountingBlockerKey, StartCountingDocument[]>;
 }
 
 export interface StartCountingResult {
@@ -37,11 +38,22 @@ export interface StartCountingResult {
   already_counting: boolean;
 }
 
-export interface ReviewDocument {
+export type ReviewDocumentGroup =
+  "draft" | "in_progress" | "complete" | "cancelled";
+
+export type ReviewGroupFilter = "incomplete" | "complete" | "cancelled" | "all";
+
+export type ReviewGroupCounts = Record<ReviewDocumentGroup, number>;
+
+export interface StartCountingDocument {
   id: string;
   no: string;
   status: string;
   date: string;
+}
+
+export interface ReviewDocument extends StartCountingDocument {
+  group: ReviewDocumentGroup;
 }
 
 export interface ReviewTransactionStat {
@@ -49,7 +61,7 @@ export interface ReviewTransactionStat {
   complete_count: number;
   incomplete_count: number;
   is_complete: boolean;
-  documents: ReviewDocument[];
+  group_counts: ReviewGroupCounts;
 }
 
 type ReviewPhysicalCountItem = PhysicalCountLocation;
@@ -88,4 +100,3 @@ export interface PeriodEndReview {
     physical_count: ReviewPhysicalCountItem[];
   };
 }
-

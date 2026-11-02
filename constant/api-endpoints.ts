@@ -1,3 +1,5 @@
+import type { ReviewTransactionKey } from "@/types/period-end";
+
 /**
  * แปลงค่า (เช่น id) ให้เป็น URL path segment ที่ปลอดภัย ก่อน interpolate ลงใน endpoint
  *
@@ -280,6 +282,8 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/period-ends/current`,
   PERIOD_END_REVIEW: (buCode: string) =>
     `/api/proxy/api/${buCode}/period-ends/review`,
+  PERIOD_END_REVIEW_DOCUMENTS: (buCode: string, module: ReviewTransactionKey) =>
+    `/api/proxy/api/${buCode}/period-ends/review/${module}/documents`,
   PERIOD_END_START_COUNTING: (buCode: string) =>
     `/api/proxy/api/${buCode}/period-ends/start-counting`,
   INVENTORY_PERIOD_NEXT: (buCode: string) =>

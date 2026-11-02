@@ -305,6 +305,7 @@ export default function PeReview() {
         />
 
         <PeDocumentsDialog
+          key={docsKey ?? "closed"}
           open={docsKey !== null}
           onOpenChange={(o) => !o && setDocsKey(null)}
           moduleKey={docsKey}

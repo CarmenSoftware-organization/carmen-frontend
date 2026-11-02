@@ -3790,7 +3790,15 @@
         "locked": "ล็อกแล้ว"
       },
       "documents": "เอกสาร",
-      "documentsSummary": "เสร็จ {complete} · ค้าง {incomplete} · รวม {total}",
+      "documentsSummary": "ร่าง {draft} · กำลังดำเนินการ {inProgress} · เสร็จ {complete} · ยกเลิก/Void {cancelled} · รวม {total}",
+      "documentsFilter": {
+        "incomplete": "ยังไม่เสร็จ",
+        "complete": "เสร็จแล้ว",
+        "cancelled": "ยกเลิก / Void",
+        "all": "ทั้งหมด"
+      },
+      "noIncompleteDocuments": "ไม่มีใบค้าง ทุกใบเสร็จแล้ว",
+      "loadMoreFailed": "โหลดรายการเพิ่มไม่สำเร็จ",
       "noDocuments": "ไม่มีเอกสารในงวดนี้",
       "openDocumentsLabel": "เปิดรายการเอกสาร {module}",
       "historyCount": "{count} งวด",

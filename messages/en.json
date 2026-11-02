@@ -3790,7 +3790,15 @@
         "locked": "Locked"
       },
       "documents": "Documents",
-      "documentsSummary": "{complete} complete · {incomplete} incomplete · {total} total",
+      "documentsSummary": "{draft} draft · {inProgress} in progress · {complete} complete · {cancelled} cancelled/void · {total} total",
+      "documentsFilter": {
+        "incomplete": "Incomplete",
+        "complete": "Complete",
+        "cancelled": "Cancelled / Void",
+        "all": "All"
+      },
+      "noIncompleteDocuments": "No outstanding documents. Everything is done.",
+      "loadMoreFailed": "Couldn't load more documents.",
       "noDocuments": "No documents in this period.",
       "openDocumentsLabel": "Open {module} documents",
       "historyCount": "{count} period(s)",

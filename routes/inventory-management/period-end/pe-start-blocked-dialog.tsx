@@ -17,9 +17,9 @@ import { GRN_STATUS_CONFIG } from "@/constant/goods-receive-note";
 import { SR_STATUS_CONFIG } from "@/constant/store-requisition";
 import type { StatusConfig } from "@/constant/status-config";
 import type {
-  ReviewDocument,
   StartCountingBlockerKey,
   StartCountingBlockers,
+  StartCountingDocument,
 } from "@/types/period-end";
 import { buildDocumentPath } from "./pe-document-paths";
 
@@ -126,7 +126,7 @@ export function PeStartBlockedDialog({ open, onOpenChange, blockers }: Props) {
 }
 
 interface BlockerRowProps {
-  readonly doc: ReviewDocument;
+  readonly doc: StartCountingDocument;
   readonly blockerKey: StartCountingBlockerKey;
   readonly locale: string;
   readonly onNavigate: () => void;
