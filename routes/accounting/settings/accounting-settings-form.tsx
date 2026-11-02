@@ -299,6 +299,7 @@ export function AccountingSettingsForm() {
           onEdit={writable && loaded ? handleEdit : undefined}
         />
       }
+      width="wide"
     >
       {isError && (
         <ErrorState message={t("loadError")} onRetry={() => query.refetch()} />
