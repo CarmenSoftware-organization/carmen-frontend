@@ -6433,6 +6433,8 @@
     "assetCategory": "Asset Categories"
   },
   "commentSheet": {
+    "deletedFile": "File deleted · {date}",
+    "deletedFileBy": "File deleted · {date} by {name}",
     "title": "Comments ({count})",
     "noComments": "No Comments Yet",
     "noCommentsDesc": "You haven't created any comments yet.",

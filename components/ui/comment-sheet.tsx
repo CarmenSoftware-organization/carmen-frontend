@@ -14,6 +14,12 @@ import {
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
+import {
+  isDeletedAttachment,
+  type CommentAttachment,
+  type LiveAttachment,
+} from "@/components/ui/comment-attachment";
+import { DeletedAttachmentChip } from "@/components/ui/deleted-attachment-chip";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Sheet,
@@ -40,13 +46,11 @@ import {
 } from "@/lib/attachment-policy";
 import { safeImageSrc, safeNavigationHref, sanitizeUrl } from "@/lib/utils";
 
-export interface CommentAttachment {
-  size: number;
-  fileUrl: string;
-  fileName: string;
-  fileToken: string;
-  contentType: string;
-}
+export type {
+  CommentAttachment,
+  DeletedAttachment,
+  LiveAttachment,
+} from "@/components/ui/comment-attachment";
 
 export interface CommentAudit {
   at: string;
@@ -91,7 +95,7 @@ interface CommentSheetProps {
   readonly isUpdating: boolean;
   readonly onDelete: (id: string) => Promise<void>;
   readonly isDeleting: boolean;
-  readonly onUploadFile?: (file: File) => Promise<CommentAttachment>;
+  readonly onUploadFile?: (file: File) => Promise<LiveAttachment>;
   readonly directFileUpload?: boolean;
   /** นโยบายไฟล์แนบของ BU — ไม่ส่ง = ค่าเริ่มต้น */
   readonly attachmentPolicy?: AttachmentPolicy;
@@ -308,7 +312,7 @@ export function CommentSheet({
   const t = useTranslations("commentSheet");
   const tc = useTranslations("common");
   const [message, setMessage] = useState("");
-  const [pendingFiles, setPendingFiles] = useState<CommentAttachment[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<LiveAttachment[]>([]);
   const [pendingRawFiles, setPendingRawFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -377,7 +381,7 @@ export function CommentSheet({
       );
       const uploaded = results
         .filter(
-          (r): r is PromiseFulfilledResult<CommentAttachment> =>
+          (r): r is PromiseFulfilledResult<LiveAttachment> =>
             r.status === "fulfilled",
         )
         .map((r) => r.value);
@@ -576,6 +580,10 @@ export function CommentSheet({
                         <div className="flex flex-wrap gap-1 pt-0.5 pl-6.5">
                           {(() => {
                             const imageAttachments = c.attachments
+                              .filter(
+                                (a): a is LiveAttachment =>
+                                  !isDeletedAttachment(a),
+                              )
                               .filter((a) => isImageType(a.contentType))
                               .map((a) => ({
                                 src:
@@ -588,7 +596,16 @@ export function CommentSheet({
                               }))
                               .filter((a) => a.src);
 
-                            return c.attachments.map((att) => {
+                            return c.attachments.map((att, attIdx) => {
+                              if (isDeletedAttachment(att)) {
+                                return (
+                                  <DeletedAttachmentChip
+                                    key={`deleted-${attIdx}`}
+                                    deletedAt={att.deleted_at}
+                                    dateFormat={dateFormat}
+                                  />
+                                );
+                              }
                               const safeUrl = resolveAttachmentUrl(
                                 att.fileUrl,
                                 att.fileToken,

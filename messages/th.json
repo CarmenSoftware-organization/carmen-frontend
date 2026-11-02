@@ -6433,6 +6433,8 @@
     "assetCategory": "หมวดหมู่สินทรัพย์"
   },
   "commentSheet": {
+    "deletedFile": "ไฟล์ถูกลบแล้ว · {date}",
+    "deletedFileBy": "ไฟล์ถูกลบแล้ว · {date} โดย {name}",
     "title": "ความคิดเห็น ({count})",
     "noComments": "ยังไม่มีความคิดเห็น",
     "noCommentsDesc": "คุณยังไม่ได้สร้างความคิดเห็น",

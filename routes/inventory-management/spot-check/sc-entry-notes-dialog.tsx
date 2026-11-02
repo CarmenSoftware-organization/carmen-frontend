@@ -1,6 +1,10 @@
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
 import {
+  isDeletedAttachment,
+  type LiveAttachment,
+} from "@/components/ui/comment-attachment";
+import {
   EntryNotesDialog,
   resolveServerImageUrl,
   type SavedNotePayload,
@@ -40,7 +44,11 @@ export function ScEntryNotesDialog({
   const defaultNote = latest?.message ?? "";
   const defaultServerImages: ServerEvidenceImage[] = (existingComments ?? [])
     .flatMap((c) => c.attachments)
-    .filter((a) => a.contentType.startsWith("image/"))
+    // tombstone (ไฟล์ถูกลบ) ไม่มี fileToken/fileName — ไม่แสดงเป็นรูป
+    .filter(
+      (a): a is LiveAttachment =>
+        !isDeletedAttachment(a) && a.contentType.startsWith("image/"),
+    )
     .map((a) => ({
       id: a.fileToken,
       url: resolveServerImageUrl(a.fileUrl, a.fileToken, a.fileName),
