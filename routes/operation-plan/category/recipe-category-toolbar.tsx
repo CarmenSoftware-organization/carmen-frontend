@@ -22,6 +22,8 @@ interface RecipeCategoryToolbarProps {
    * (ไม่ส่ง = โหมด add ที่ยังไม่มีประวัติให้ดู)
    */
   readonly activityId?: string;
+  /** เปิด sheet comment + ไฟล์แนบ (ไม่ส่ง = โหมด add ที่ยังไม่มี record ให้ comment) */
+  readonly onComment?: () => void;
 }
 
 export function RecipeCategoryToolbar({
@@ -34,6 +36,7 @@ export function RecipeCategoryToolbar({
   onCancel,
   onDelete,
   activityId,
+  onComment,
 }: RecipeCategoryToolbarProps) {
   const tr = useTranslations("operationPlan.recipeCategory");
 
@@ -73,6 +76,7 @@ export function RecipeCategoryToolbar({
       onEdit={onEdit}
       onDelete={onDelete}
       deleteIsPending={isDeleting}
+      onComment={onComment}
       activity={
         activityId ? { id: activityId, label: code || name } : undefined
       }

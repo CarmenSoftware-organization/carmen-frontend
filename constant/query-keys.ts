@@ -45,6 +45,7 @@ export const QUERY_KEYS = {
   RECIPE_EQUIPMENT_CATEGORIES: "recipe-equipment-categories",
   RECIPES: "recipes",
   RECIPE_COMMENTS: "recipe-comments",
+  RECIPE_CATEGORY_COMMENTS: "recipe-category-comments",
   DELIVERY_POINTS: "delivery-points",
   DEPARTMENTS: "departments",
   DOCUMENTS: "documents",

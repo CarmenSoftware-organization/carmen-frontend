@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "use-intl";
@@ -24,6 +24,14 @@ import { FormPageShell } from "@/components/share/form-page-shell";
 import { RecipeCategoryToolbar } from "./recipe-category-toolbar";
 import { RecipeCategoryGeneralFields } from "./recipe-category-general-fields";
 import { RecipeCategoryPricingFields } from "./recipe-category-pricing-fields";
+import { recipeCategoryCommentCrud } from "./use-recipe-category-comments";
+
+// sheet comment โหลดเมื่อกดเปิดครั้งแรก ไม่ต้องติดมากับหน้าฟอร์ม
+const EntityCommentSheet = lazy(() =>
+  import("@/components/share/entity-comment-sheet").then((m) => ({
+    default: m.EntityCommentSheet,
+  })),
+);
 
 interface RecipeCategoryFormProps {
   readonly category?: RecipeCategory;
@@ -39,6 +47,7 @@ export function RecipeCategoryForm({ category }: RecipeCategoryFormProps) {
   const updateCategory = useUpdateRecipeCategory();
   const deleteCategory = useDeleteRecipeCategory();
   const [showDelete, setShowDelete] = useState(false);
+  const [showComment, setShowComment] = useState(false);
   const isPending = createCategory.isPending || updateCategory.isPending;
 
   const f = useEntityForm<RecipeCategoryFormValues>({
@@ -107,6 +116,7 @@ export function RecipeCategoryForm({ category }: RecipeCategoryFormProps) {
           onCancel={f.handleCancel}
           onDelete={category ? () => setShowDelete(true) : undefined}
           activityId={category?.id}
+          onComment={category ? () => setShowComment(true) : undefined}
         />
       }
     >
@@ -141,6 +151,17 @@ export function RecipeCategoryForm({ category }: RecipeCategoryFormProps) {
           isPending={deleteCategory.isPending}
           onConfirm={handleDelete}
         />
+      )}
+
+      {category && (
+        <Suspense fallback={null}>
+          <EntityCommentSheet
+            crud={recipeCategoryCommentCrud}
+            entityId={category.id}
+            open={showComment}
+            onOpenChange={setShowComment}
+          />
+        </Suspense>
       )}
 
       <DiscardDialog {...f.discard.dialogProps} variant="warning" />
