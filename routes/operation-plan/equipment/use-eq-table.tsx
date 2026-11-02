@@ -146,5 +146,6 @@ export function useEquipmentTable({
         updated_at: false,
       },
     },
+    activity: { id: (r) => r.id, label: (r) => r.name },
   });
 }

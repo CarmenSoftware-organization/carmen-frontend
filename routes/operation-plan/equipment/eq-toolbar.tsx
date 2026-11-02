@@ -15,6 +15,13 @@ interface EqToolbarProps {
   readonly onEdit: () => void;
   readonly onCancel: () => void;
   readonly onDelete?: () => void;
+  /**
+   * id ของรายการที่บันทึกไว้แล้ว — เปิดปุ่ม Activity
+   * (ไม่ส่ง = โหมด add ที่ยังไม่มีประวัติให้ดู)
+   */
+  readonly activityId?: string;
+  /** เปิด sheet comment + ไฟล์แนบ (ไม่ส่ง = โหมด add ที่ยังไม่มี record ให้ comment) */
+  readonly onComment?: () => void;
 }
 
 export function EqToolbar({
@@ -26,6 +33,8 @@ export function EqToolbar({
   onEdit,
   onCancel,
   onDelete,
+  activityId,
+  onComment,
 }: EqToolbarProps) {
   const tr = useTranslations("operationPlan.equipment");
   const ts = useTranslations("status");
@@ -79,6 +88,10 @@ export function EqToolbar({
       onEdit={onEdit}
       onDelete={onDelete}
       deleteIsPending={isDeleting}
+      onComment={onComment}
+      activity={
+        activityId ? { id: activityId, label: code || name } : undefined
+      }
     />
   );
 }

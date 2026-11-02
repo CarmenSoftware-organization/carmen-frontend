@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "use-intl";
@@ -27,6 +27,14 @@ import { EqInstructionsSection } from "./eq-instructions-section";
 import { EqMaintenanceSection } from "./eq-maintenance-section";
 import { EqAdditionalSection } from "./eq-additional-section";
 import { EqSummary } from "./eq-summary";
+import { recipeEquipmentCommentCrud } from "./use-recipe-equipment-comments";
+
+// sheet comment โหลดเมื่อกดเปิดครั้งแรก ไม่ต้องติดมากับหน้าฟอร์ม
+const EntityCommentSheet = lazy(() =>
+  import("@/components/share/entity-comment-sheet").then((m) => ({
+    default: m.EntityCommentSheet,
+  })),
+);
 
 interface EquipmentFormProps {
   readonly equipment?: Equipment;
@@ -43,6 +51,7 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
   const updateEquipment = useUpdateEquipment();
   const deleteEquipment = useDeleteEquipment();
   const [showDelete, setShowDelete] = useState(false);
+  const [showComment, setShowComment] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageRemoved, setImageRemoved] = useState(false);
   const isPending = createEquipment.isPending || updateEquipment.isPending;
@@ -162,6 +171,8 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
           onEdit={f.handleEdit}
           onCancel={f.handleCancel}
           onDelete={equipment ? () => setShowDelete(true) : undefined}
+          activityId={equipment?.id}
+          onComment={equipment ? () => setShowComment(true) : undefined}
         />
       }
     >
@@ -206,6 +217,17 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
           isView={isView}
         />
       </form>
+
+      {equipment && (
+        <Suspense fallback={null}>
+          <EntityCommentSheet
+            crud={recipeEquipmentCommentCrud}
+            entityId={equipment.id}
+            open={showComment}
+            onOpenChange={setShowComment}
+          />
+        </Suspense>
+      )}
 
       <DiscardDialog {...f.discard.dialogProps} variant="warning" />
 
