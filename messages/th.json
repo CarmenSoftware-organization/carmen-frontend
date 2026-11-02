@@ -1120,7 +1120,10 @@
       "SALES_CONSUMPTION_LINE_POSTED": "บรรทัดนี้ถูก Post แล้ว แก้ไขไม่ได้",
       "SALES_CONSUMPTION_POS_NOT_ENABLED": "หน่วยธุรกิจนี้ยังไม่ได้เปิดใช้การเชื่อมต่อ POS",
       "POS_SALE_OUTLET_IN_POSTED_SC": "Outlet {outlet} ของวันที่ {date} ถูกรวมใน Sales Consumption ที่ Post แล้ว จึงเขียนทับไม่ได้",
-      "STOCK_OUT_VOID_VIA_SALES_CONSUMPTION": "Stock Out นี้ถูกสร้างจาก Sales Consumption {sc_no} กรุณายกเลิกที่ Sales Consumption แทน"
+      "STOCK_OUT_VOID_VIA_SALES_CONSUMPTION": "Stock Out นี้ถูกสร้างจาก Sales Consumption {sc_no} กรุณายกเลิกที่ Sales Consumption แทน",
+      "DOCUMENT_DELETE_UNSUPPORTED": "ไฟล์นี้แนบอยู่กับข้อมูลที่ระบบยังลบแบบปลอดภัยให้ไม่ได้ จึงไม่ได้ลบไฟล์",
+      "DOCUMENT_BULK_DELETE_COUNT_CHANGED": "จำนวนไฟล์ที่ตรงตัวกรองเปลี่ยนไป (เดิม {expected} ไฟล์ ตอนนี้ {actual} ไฟล์) ตรวจจำนวนใหม่แล้วกดลบอีกครั้ง",
+      "DOCUMENT_BULK_DELETE_TOO_MANY": "ตรงตัวกรอง {count} ไฟล์ ลบได้ครั้งละไม่เกิน {max} ไฟล์ กรองให้แคบลงแล้วลองใหม่"
     }
   },
   "validation": {
@@ -2303,6 +2306,25 @@
       "referenceUnknown": "ไม่ทราบที่มา",
       "filterModule": "แนบจากโมดูล",
       "filterCreatedBefore": "อัปโหลดก่อนวันที่",
+      "selectedBar": "เลือกแล้ว {count} ไฟล์ · {size}",
+      "allMatchingSelected": "เลือกทั้งหมดที่ตรงตัวกรองแล้ว {count} ไฟล์ · {size}",
+      "selectAllMatching": "เลือกทั้งหมดที่ตรงตัวกรอง ({count} ไฟล์ · {size})",
+      "selectAllMatchingTooMany": "ตรงตัวกรองมากกว่า {max} ไฟล์ กรองให้แคบลงก่อนจึงจะเลือกทั้งหมดได้",
+      "clearSelection": "ล้างการเลือก",
+      "bulkDelete": "ลบที่เลือก",
+      "bulkDeleteTitle": "ลบ {count} ไฟล์",
+      "bulkDeleteSummary": "{count} ไฟล์ · {size}",
+      "bulkDeletePermanent": "ลบถาวร กู้คืนไม่ได้ ชื่อไฟล์ในรายการแนบของเอกสารต้นทางจะถูกแทนด้วยข้อความ ไฟล์ถูกลบแล้ว",
+      "bulkDeleteSuccess": "ลบ {count} ไฟล์แล้ว",
+      "bulkDeletePartial": "ลบสำเร็จ {deleted} ไฟล์ ลบไม่ได้ {failed} ไฟล์",
+      "bulkDeleteMore": "และอีก {count} ไฟล์",
+      "bulkDeleteFailed": "ลบไฟล์ไม่สำเร็จ ลองอีกครั้ง",
+      "bulkReason": {
+        "FILE_NOT_FOUND": "ไม่พบไฟล์ (อาจถูกลบไปแล้ว)",
+        "UNSUPPORTED_REFERENCE_TYPE": "ที่มาของไฟล์ยังไม่รองรับการลบ",
+        "TOMBSTONE_FAILED": "แก้รายการแนบของเอกสารต้นทางไม่สำเร็จ จึงไม่ได้ลบไฟล์",
+        "DELETE_FAILED": "ลบไฟล์ออกจากที่เก็บไม่สำเร็จ ลองลบอีกครั้ง"
+      },
       "summary": {
         "title": "พื้นที่จัดเก็บแยกตามโมดูล",
         "description": "ขนาดไฟล์แนบรวมของหน่วยธุรกิจนี้ แยกตามโมดูลที่อัปโหลดไฟล์เข้ามา",

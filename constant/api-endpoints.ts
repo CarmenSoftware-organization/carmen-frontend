@@ -55,8 +55,7 @@ export const API_ENDPOINTS = {
   APP_CONFIGS: (buCode: string) => `/api/proxy/api/config/${buCode}/app-config`,
   APP_CONFIG_BY_KEY: (buCode: string, key: string) =>
     `/api/proxy/api/config/${buCode}/app-config/${key}`,
-  BU_API_KEY: (buCode: string) =>
-    `/api/proxy/api/config/${buCode}/bu-api-key`,
+  BU_API_KEY: (buCode: string) => `/api/proxy/api/config/${buCode}/bu-api-key`,
   APP_CONFIG_TEST_EMAIL: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/app-config/test-email`,
   APP_CONFIG_TEST_EMAIL_PROFILE: (buCode: string) =>
@@ -134,6 +133,8 @@ export const API_ENDPOINTS = {
   DOCUMENTS: (buCode: string) => `/api/proxy/api/${buCode}/documents`,
   DOCUMENTS_SUMMARY: (buCode: string) =>
     `/api/proxy/api/${buCode}/documents/summary`,
+  DOCUMENTS_BULK_DELETE: (buCode: string) =>
+    `/api/proxy/api/${buCode}/documents/bulk-delete`,
   EQUIPMENT_CATEGORIES: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/recipe-equipment-categories`,
   EXCHANGE_RATES: (buCode: string) =>

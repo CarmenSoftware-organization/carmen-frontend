@@ -1,7 +1,10 @@
 import { useTranslations } from "use-intl";
 import { DatePicker } from "@/components/ui/date-picker";
 import type { FilterFieldDef } from "@/types/list-filter";
-import type { DocumentListParams } from "@/types/document";
+import type {
+  DocumentBulkDeleteFilter,
+  DocumentListParams,
+} from "@/types/document";
 import { DOCUMENT_REFERENCE_MODULE_KEY } from "./document-reference-labels";
 
 /** ค่า sentinel ในตัวกรองโมดูล = ไฟล์ที่ไม่มี reference_type (อัปโหลดโดยตรง) */
@@ -136,5 +139,31 @@ export function documentFiltersToParams(
     content_kinds: kinds.length ? kinds.join(",") : undefined,
     created_before:
       before && /^\d{4}-\d{2}-\d{2}$/.test(before) ? before : undefined,
+  };
+}
+
+/**
+ * ตัวกรองเดียวกับที่ใช้ list แต่ในรูปของ body POST /documents/bulk-delete (ค่าหลายตัวเป็น array)
+ * server resolve เอง จึงต้องส่งชุดเดียวกับที่ตารางใช้ รวม search ไม่งั้นจำนวนที่ยืนยันกับที่ลบจะไม่ตรง
+ */
+export function documentListParamsToBulkFilter(
+  p: Pick<
+    DocumentListParams,
+    | "search"
+    | "reference_types"
+    | "content_kinds"
+    | "include_unreferenced"
+    | "created_before"
+  >,
+): DocumentBulkDeleteFilter {
+  const split = (v?: string) => csv(v);
+  const types = split(p.reference_types);
+  const kinds = split(p.content_kinds);
+  return {
+    ...(p.search ? { search: p.search } : {}),
+    ...(types.length ? { reference_types: types } : {}),
+    ...(kinds.length ? { content_kinds: kinds } : {}),
+    ...(p.include_unreferenced ? { include_unreferenced: true } : {}),
+    ...(p.created_before ? { created_before: p.created_before } : {}),
   };
 }

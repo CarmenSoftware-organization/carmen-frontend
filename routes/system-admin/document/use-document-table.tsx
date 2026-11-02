@@ -1,5 +1,7 @@
 import {
   type ColumnDef,
+  type OnChangeFn,
+  type RowSelectionState,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
@@ -34,6 +36,9 @@ interface UseDocumentTableOptions {
   params: ParamsDto;
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onDelete: (doc: DocumentFile) => void;
+  /** เลือกแถว — key ด้วย fileToken เพื่อให้การเลือกข้ามหน้าได้ */
+  rowSelection: RowSelectionState;
+  onRowSelectionChange: OnChangeFn<RowSelectionState>;
 }
 
 const getFileTypeInfo = (contentType: string) => {
@@ -104,6 +109,8 @@ export function useDocumentTable({
   params,
   tableConfig,
   onDelete,
+  rowSelection,
+  onRowSelectionChange,
 }: UseDocumentTableOptions) {
   "use no memo";
 
@@ -253,6 +260,10 @@ export function useDocumentTable({
     columns,
     getCoreRowModel: getCoreRowModel(),
     ...tableConfig,
+    getRowId: (row) => row.fileToken,
+    enableRowSelection: true,
+    onRowSelectionChange,
+    state: { ...tableConfig.state, rowSelection },
     pageCount: Math.ceil(totalRecords / (params.perpage as number)),
   });
 }

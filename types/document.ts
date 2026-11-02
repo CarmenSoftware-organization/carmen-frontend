@@ -47,6 +47,32 @@ export interface DocumentListResponse {
   };
 }
 
+/** ตัวกรองของ POST /documents/bulk-delete (ค่าหลายตัวเป็น array ไม่ใช่ csv เหมือน query ของ GET) */
+export interface DocumentBulkDeleteFilter {
+  search?: string;
+  reference_types?: string[];
+  include_unreferenced?: boolean;
+  content_kinds?: string[];
+  created_before?: string;
+}
+
+/** รหัสเหตุผลคงที่ของไฟล์ที่ลบไม่ได้ (failed[].reason) */
+export type DocumentBulkDeleteReason =
+  | "FILE_NOT_FOUND"
+  | "UNSUPPORTED_REFERENCE_TYPE"
+  | "TOMBSTONE_FAILED"
+  | "DELETE_FAILED";
+
+export interface BulkDeleteResult {
+  deleted: number;
+  failed: { fileToken: string; fileName: string; reason: string }[];
+  freed_size: number;
+}
+
+export type BulkDeleteVariables =
+  | { file_tokens: string[] }
+  | { filter: DocumentBulkDeleteFilter; expected_count: number };
+
 interface DocumentSummaryRow {
   reference_type: string | null;
   size: number;

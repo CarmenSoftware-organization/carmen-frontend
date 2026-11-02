@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { OnChangeFn, RowSelectionState } from "@tanstack/react-table";
 import { Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
@@ -15,6 +16,7 @@ import {
   useDocumentSummary,
   useUploadDocument,
   useDeleteDocument,
+  useBulkDeleteDocuments,
 } from "./use-document";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -38,7 +40,13 @@ import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import {
   DOCUMENT_FILTER_FIELDS,
   documentFiltersToParams,
+  documentListParamsToBulkFilter,
 } from "./document-filter-fields";
+import { DocumentSelectionBar } from "./document-selection-bar";
+import { DocumentBulkDeleteDialog } from "./document-bulk-delete-dialog";
+import { useDeleteGate } from "@/hooks/use-delete-gate";
+import { ApiError } from "@/lib/api-error";
+import { getUserErrorMessage } from "@/lib/error-message";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
 
@@ -46,6 +54,17 @@ export default function DocumentComponent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deleteTarget, setDeleteTarget] = useState<DocumentFile | null>(null);
   const deleteDocument = useDeleteDocument();
+  const bulkDelete = useBulkDeleteDocuments();
+  const deleteGate = useDeleteGate();
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
+  const [bulkError, setBulkError] = useState<string | undefined>();
+  // การเลือกผูกกับชุดตัวกรอง: key เปลี่ยน = ชุดผลลัพธ์เปลี่ยน → การเลือกเดิมเลิกใช้ (derive ตอน render
+  // ไม่ใช้ effect) sizes เก็บขนาดต่อ token เพื่อให้ยอดรวมถูกแม้เลือกข้ามหน้า
+  const [sel, setSel] = useState<{
+    key: string;
+    sizes: Record<string, number>;
+    allMatching: boolean;
+  }>({ key: "", sizes: {}, allMatching: false });
   const uploadDocument = useUploadDocument();
   const isMobile = useIsMobile();
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
@@ -90,11 +109,42 @@ export default function DocumentComponent() {
   });
   const t = useTranslations("systemAdmin.document");
   const tt = useTranslations("toast");
+  const terr = useTranslations("errors");
 
   const documents = useInfiniteScroll ? grid.items : (data?.data ?? []);
   const totalRecords = useInfiniteScroll
     ? grid.totalRecords
     : (data?.paginate?.total ?? 0);
+
+  const filterKey = JSON.stringify([
+    listParams.search,
+    listParams.reference_types,
+    listParams.content_kinds,
+    listParams.include_unreferenced,
+    listParams.created_before,
+  ]);
+  const selSizes = sel.key === filterKey ? sel.sizes : {};
+  const allMatching = sel.key === filterKey && sel.allMatching;
+  const selectedTokens = Object.keys(selSizes);
+  const selectedSize = Object.values(selSizes).reduce((a, b) => a + b, 0);
+  const matchingSize = data?.paginate?.total_size ?? 0;
+  const rowSelection: RowSelectionState = Object.fromEntries(
+    selectedTokens.map((k) => [k, true]),
+  );
+
+  const onRowSelectionChange: OnChangeFn<RowSelectionState> = (updater) => {
+    const next =
+      typeof updater === "function" ? updater(rowSelection) : updater;
+    const pageSizes = new Map(documents.map((d) => [d.fileToken, d.size]));
+    const sizes: Record<string, number> = {};
+    for (const id of Object.keys(next)) {
+      if (next[id]) sizes[id] = pageSizes.get(id) ?? selSizes[id] ?? 0;
+    }
+    // ติ๊กออกเองหลังเลือกทั้งหมด = ออกจากโหมดตัวกรอง (จำนวนที่จะลบต้องตรงกับที่เห็น)
+    setSel({ key: filterKey, sizes, allMatching: false });
+  };
+  const clearSelection = () =>
+    setSel({ key: filterKey, sizes: {}, allMatching: false });
 
   const table = useDocumentTable({
     documents,
@@ -102,7 +152,76 @@ export default function DocumentComponent() {
     params,
     tableConfig,
     onDelete: setDeleteTarget,
+    rowSelection,
+    onRowSelectionChange,
   });
+
+  const bulkCount = allMatching ? totalRecords : selectedTokens.length;
+  const bulkSize = allMatching ? matchingSize : selectedSize;
+  const showSelectionBar =
+    !isMobile &&
+    !deleteGate.deleteDenied &&
+    (selectedTokens.length > 0 || allMatching);
+
+  const confirmBulkDelete = () => {
+    // โหมดตัวกรองส่ง expected_count เสมอ (server บังคับ) = จำนวนที่ผู้ใช้เห็นในกล่องตอนกดยืนยัน
+    const variables = allMatching
+      ? {
+          filter: documentListParamsToBulkFilter(listParams),
+          expected_count: totalRecords,
+        }
+      : { file_tokens: selectedTokens };
+    setBulkError(undefined);
+    bulkDelete.mutate(variables, {
+      onSuccess: (result) => {
+        setBulkDialogOpen(false);
+        clearSelection();
+        if (result.failed.length === 0) {
+          toast.success(t("bulkDeleteSuccess", { count: result.deleted }));
+          return;
+        }
+        const shown = result.failed.slice(0, 5);
+        toast.warning(
+          t("bulkDeletePartial", {
+            deleted: result.deleted,
+            failed: result.failed.length,
+          }),
+          {
+            description: (
+              <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                {shown.map((f) => (
+                  <li key={f.fileToken}>
+                    <span className="font-medium">{f.fileName}</span>
+                    {" — "}
+                    {t.has(`bulkReason.${f.reason}`)
+                      ? t(`bulkReason.${f.reason}`)
+                      : t("bulkDeleteFailed")}
+                  </li>
+                ))}
+                {result.failed.length > shown.length && (
+                  <li>
+                    {t("bulkDeleteMore", {
+                      count: result.failed.length - shown.length,
+                    })}
+                  </li>
+                )}
+              </ul>
+            ),
+            duration: 15000,
+          },
+        );
+      },
+      // 409 (จำนวนเปลี่ยน) / 422 (เกินเพดาน): คงกล่องไว้ + แสดงข้อความ — onSettled ของ hook
+      // refetch รายการแล้ว totalRecords จึงเป็นจำนวนใหม่ที่จะถูกส่งเป็น expected_count รอบหน้า
+      onError: (err) => {
+        setBulkError(
+          err instanceof ApiError
+            ? getUserErrorMessage(err, terr)
+            : t("bulkDeleteFailed"),
+        );
+      },
+    });
+  };
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -162,6 +281,26 @@ export default function DocumentComponent() {
             fields={DOCUMENT_FILTER_FIELDS}
             onSaveViewClick={() => setSaveViewDialogOpen(true)}
           />
+
+          {showSelectionBar && (
+            <DocumentSelectionBar
+              selectedCount={selectedTokens.length}
+              selectedSize={selectedSize}
+              matchingCount={totalRecords}
+              matchingSize={matchingSize}
+              allMatching={allMatching}
+              onSelectAllMatching={() =>
+                setSel({ key: filterKey, sizes: selSizes, allMatching: true })
+              }
+              onClear={clearSelection}
+              onDelete={() => {
+                setBulkError(undefined);
+                setBulkDialogOpen(true);
+              }}
+              deleteDisabled={deleteGate.writeDisabled}
+              deleteDisabledTitle={deleteGate.writeDisabledTitle}
+            />
+          )}
         </>
       }
     >
@@ -240,6 +379,16 @@ export default function DocumentComponent() {
             },
           });
         }}
+      />
+
+      <DocumentBulkDeleteDialog
+        open={bulkDialogOpen}
+        onOpenChange={setBulkDialogOpen}
+        count={bulkCount}
+        size={bulkSize}
+        isPending={bulkDelete.isPending}
+        error={bulkError}
+        onConfirm={confirmBulkDelete}
       />
 
       {hasSummary && (
