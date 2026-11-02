@@ -77,7 +77,7 @@ FE comment sheet (and every other renderer of attachment arrays) shows a non-cli
 ### Delete flow (single and bulk share one path)
 1. Gateway receives either a list of `fileToken`s or a **filter** (same filter params as the list; bulk "select all matching" sends the filter, never thousands of tokens).
 2. Resolve the filter to tokens in micro-file (server-side, same WHERE as the list → count shown in confirm equals what gets deleted).
-3. **Tombstone first:** micro-business rewrites matching elements in the tenant tables (pick tables by `reference_type`; within a table match by `attachments @> '[{"fileToken": "<t>"}]'`). Files with null/unknown `reference_type` → scan all attachment tables.
+3. **Tombstone first:** micro-business rewrites matching elements in the tenant tables (pick tables by `reference_type`; within a table match by `attachments @> '[{"fileToken": "<t>"}]'`). Files with null/unknown `reference_type` → scan all attachment tables. (Amended: every token is scanned in all tables; see Amendments K.)
 4. **Then delete storage:** micro-file removes MinIO objects + soft-deletes `tb_file_tag` rows.
 5. Response reports `{ deleted, failed: [{fileToken, reason}] }`.
 
@@ -132,7 +132,7 @@ Script (backend, per BU): for every `attachments` element whose `fileToken` has 
   update logic, mobile) before implementing; this is a required task, not optional.
 - **reference_type → table map:** hand-built map in backend (reference_type → list of `{table, parentIdColumn}`
   incl. detail-comment and entity-owned tables) + a test that asserts every tenant model with an `attachments`
-  column appears in the map. Tombstoning uses the map; only null/unknown types fall back to scanning all tables.
+  column appears in the map. Tombstoning uses the map; only null/unknown types fall back to scanning all tables. (Amended: see Amendments K, H+P.)
 - **Scale:** process bulk deletes in chunks (e.g. 100 tokens) server-side; full-scan fallback is chunked too.
   Adding GIN indexes on `attachments` is not required up front — builder measures on dev data first.
 - **Entities without a document number** (vendor, recipe, certificate, eco label, unit, …): show the entity's
@@ -158,3 +158,13 @@ Script (backend, per BU): for every `attachments` element whose `fileToken` has 
 
 - New gateway endpoints (bulk delete, any new list params) need the **app allowlist** before FE ships — a missing api_name logs users out (401).
 - Order: micro-file → backend (micro-business + gateway) → allowlist → run cleanup/backfill script per env → FE.
+
+## Amendments during implementation (2026-11-03)
+
+- **J:** the tombstone stores `token_hash` (sha256 of the token), DB-only. The gateway strips it from responses. A resend whose hash matches is dropped.
+- **K:** tombstone scans all attachment tables for every token, regardless of `reference_type`.
+- **M:** the per-request cap is 1,000 tokens.
+- **H+P:** files referenced by news, `recipe_preparation_step`, or any plain `*file_token` column (product/recipe images, recipe category/cuisine/equipment images, GRN signature) are never deleted from the Document page; they come back as `UNSUPPORTED_REFERENCE_TYPE`.
+- **G:** `files.delete-many` requires `bu_code`.
+- The single DELETE and the bulk delete both require `system_admin.document:delete`.
+- The Document list has no column sort.
