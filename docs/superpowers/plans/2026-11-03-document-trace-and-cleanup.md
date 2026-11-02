@@ -47,7 +47,7 @@
 
 - [ ] **Step 1:** Add the two entries alphabetically and bump the version.
 - [ ] **Step 2:** Run `bun run --cwd packages/file-contract check-types && bun run --cwd packages/file-contract lint`. Expected: clean.
-- [ ] **Step 3:** Commit `feat(file-contract): เพิ่มคำสั่ง find-tokens และ delete-many`. It publishes on merge to `main` (`publish-packages.yml`). Task 2 depends on the published `1.1.0`, so this PR merges first.
+- [ ] **Step 3:** Commit `feat(file-contract): เพิ่มคำสั่ง find-tokens และ delete-many`. It publishes on merge to `main` (`publish-packages.yml`). Do **not** push or merge during execution. Task 2 uses a local `file:` link, and the publish happens at release time (Task 11).
 
 ### Task 2: micro-file — filters, doc-number search, find-tokens, delete-many (MF repo)
 
@@ -55,7 +55,7 @@
 - Create: `micro-file/src/files/file-search-where.ts`
 - Modify: `micro-file/src/files/files.service.ts` (`searchFiles` ~705, add `findTokens`, `deleteMany`)
 - Modify: `micro-file/src/files/files.controller.ts` (`ListFilesPayload` ~62, `listFiles` ~593, two new handlers)
-- Modify: `micro-file/package.json` (`@repo/file-contract` → `npm:@carmensoftware-organization/file-contract@1.1.0`)
+- Modify: `micro-file/package.json`. **During development (user decision 2026-11-03):** `@repo/file-contract` → `file:../carmen-turborepo-backend/packages/file-contract` (build it first with `bun run --cwd ../carmen-turborepo-backend/packages/file-contract build:package`). **Before the MF PR merges:** switch back to `npm:@carmensoftware-organization/file-contract@1.1.0`, after Task 1 has been merged and published. The MF PR body must say this.
 
 **Interfaces:**
 - Consumes: `Files.findTokens`, `Files.deleteMany` (Task 1).
@@ -237,6 +237,6 @@ export const ALL_ATTACHMENT_TABLES: AttachmentTableEntry[]; // deduped, used for
 
 ### Task 11: release order + docs
 
-- [ ] **Step 1:** Open the PRs (English) in merge order: BE Task 1 alone → MF (Tasks 2) → BE Tasks 3–7 → FE Tasks 8–10. Use stacked PRs without `--delete-branch` until the whole stack is merged.
+- [ ] **Step 1:** Open the PRs (English) in merge order: BE Task 1 alone (merge → wait for npm publish) → switch MF's `file:` link to `npm:…@1.1.0` → MF (Task 2) → BE Tasks 3–7 → FE Tasks 8–10. Use stacked PRs without `--delete-branch` until the whole stack is merged.
 - [ ] **Step 2:** Deploy dev: micro-file → micro-business + gateway → add `documents.bulkDelete` to the app allowlist on every env that is not `allow_all` → `script:document-attachments-cleanup --bu <each> --dry-run`, review the counts, then `--apply` → FE `vercel --prod`.
 - [ ] **Step 3:** Run `trail check` before each push. Save a learning if the detail-comment `reference_id` answer (Task 3) turned out non-obvious.
