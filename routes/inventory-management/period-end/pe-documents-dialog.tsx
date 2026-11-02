@@ -114,9 +114,14 @@ export function PeDocumentsDialog({
     [query.data],
   );
 
-  // ตัวเลขหน้าแรกของ endpoint รายการสดกว่า แต่ระหว่างรอใช้ของ review ไปก่อน
+  // ตัวเลขหน้าแรกของ endpoint รายการสดกว่า — จำค่าล่าสุดไว้ตอนสลับตัวกรองจะได้ไม่กระพริบ
+  // (dialog remount ทุกครั้งที่เปิด/เปลี่ยนโมดูลผ่าน key ค่าจึงไม่รั่วข้ามโมดูล)
+  const freshSummary = query.data?.pages[0]?.summary;
+  const [lastSummary, setLastSummary] = useState<ReviewGroupCounts>();
+  if (freshSummary && freshSummary !== lastSummary)
+    setLastSummary(freshSummary);
   const counts: ReviewGroupCounts | undefined =
-    query.data?.pages[0]?.summary ?? stat?.group_counts;
+    freshSummary ?? lastSummary ?? stat?.group_counts;
 
   // เปิด dialog = เห็นสถานะล่าสุด (ไปแก้เอกสารแล้วกลับมา) ทั้งรายการและตัวเลขในการ์ด
   useEffect(() => {
@@ -305,7 +310,9 @@ export function PeDocumentsDialog({
                 <EmptyComponent
                   icon={FileText}
                   title={
-                    filter === "incomplete"
+                    filter === "incomplete" &&
+                    counts &&
+                    countFor("all", counts) > 0
                       ? t("noIncompleteDocuments")
                       : t("noDocuments")
                   }
