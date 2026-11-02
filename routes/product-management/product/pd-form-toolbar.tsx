@@ -26,6 +26,7 @@ interface PdFormToolbarProps {
   readonly onEdit: () => void;
   readonly onCancel: () => void;
   readonly onDelete: () => void;
+  readonly onComment?: () => void;
 }
 
 function PdFormToolbarInner({
@@ -39,6 +40,7 @@ function PdFormToolbarInner({
   onEdit,
   onCancel,
   onDelete,
+  onComment,
 }: PdFormToolbarProps) {
   const tc = useTranslations("common");
   const tf = useTranslations("form");
@@ -159,6 +161,7 @@ function PdFormToolbarInner({
       onEdit={onEdit}
       onDelete={product ? onDelete : undefined}
       deleteIsPending={deleteIsPending}
+      onComment={product ? onComment : undefined}
       activity={product ? { id: product.id, label: product.code } : undefined}
     />
   );

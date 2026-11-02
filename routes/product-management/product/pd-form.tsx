@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { type FieldErrors, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useSearchParams } from "react-router";
@@ -33,6 +33,13 @@ import PdTabLocations from "./pd-tab-locations";
 import PdTabUnitConversion from "./pd-tab-unit-conversion";
 import TabArrayCount, { TabEcoLabelCount } from "./pd-tab-count";
 import { PdTabEco } from "./pd-tab-eco";
+import { productCommentCrud } from "./use-product-comments";
+
+const EntityCommentSheet = lazy(() =>
+  import("@/components/share/entity-comment-sheet").then((mod) => ({
+    default: mod.EntityCommentSheet,
+  })),
+);
 
 const getDefaultValues = (product?: ProductDetail): ProductFormValues => {
   if (!product) {
@@ -306,6 +313,7 @@ export function ProductForm({ product }: ProductFormProps) {
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const [showDelete, setShowDelete] = useState(false);
+  const [showComment, setShowComment] = useState(false);
   // รูปที่เลือกไว้แต่ยังไม่อัปโหลด — ค้างอยู่ในฟอร์มจนกว่าจะกด Save ถ้ากดยกเลิก
   // ก็หายไปพร้อมกัน ไม่มีรูปค้างบน backend
   const [pendingImages, setPendingImages] = useState<File[]>([]);
@@ -428,6 +436,7 @@ export function ProductForm({ product }: ProductFormProps) {
           onEdit={f.handleEdit}
           onCancel={f.handleCancel}
           onDelete={() => setShowDelete(true)}
+          onComment={() => setShowComment(true)}
         />
       }
     >
@@ -498,6 +507,17 @@ export function ProductForm({ product }: ProductFormProps) {
           )}
         </Tabs>
       </form>
+
+      {product && (
+        <Suspense fallback={null}>
+          <EntityCommentSheet
+            crud={productCommentCrud}
+            entityId={product.id}
+            open={showComment}
+            onOpenChange={setShowComment}
+          />
+        </Suspense>
+      )}
 
       {product && (
         <DeleteDialog

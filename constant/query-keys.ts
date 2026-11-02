@@ -97,6 +97,7 @@ export const QUERY_KEYS = {
   PRICE_LIST_COMPARE: "price-list-compare",
   PRICE_LIST_TEMPLATES: "price-list-templates",
   PRODUCTS: "products",
+  PRODUCT_COMMENTS: "product-comments",
   PRODUCTS_BY_LOCATION: "products-by-location",
   LOCATION_WORKFLOW_PRODUCTS: "location-workflow-products",
   PRODUCT_INVENTORY: "product-inventory",
