@@ -369,6 +369,10 @@ export const API_ENDPOINTS = {
   PRICE_LIST_TEMPLATES: (buCode: string) =>
     `/api/proxy/api/${buCode}/pricelist-templates`,
   PRODUCTS: (buCode: string) => `/api/proxy/api/config/${buCode}/products`,
+  PRODUCT_COMMENT: (buCode: string, productId?: string) =>
+    productId
+      ? `/api/proxy/api/config/${buCode}/product-comments/${productId}`
+      : `/api/proxy/api/config/${buCode}/product-comments`,
   PRODUCT_IMAGES: (buCode: string, productId: string) =>
     `/api/proxy/api/config/${buCode}/products/${productId}/images`,
   PRODUCT_IMAGE: (buCode: string, productId: string, imageId: string) =>
