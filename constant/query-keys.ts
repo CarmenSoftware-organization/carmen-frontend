@@ -61,6 +61,8 @@ export const QUERY_KEYS = {
   GOODS_RECEIVE_NOTE_LOCATION_PRODUCTS: "goods-receive-note-location-products",
   GOODS_RECEIVE_NOTE_COMMENTS: "goods-receive-note-comments",
   INVENTORY_ADJUSTMENTS: "inventory-adjustments",
+  STOCK_IN_COMMENTS: "stock-in-comments",
+  STOCK_OUT_COMMENTS: "stock-out-comments",
   TRANSACTIONS: "transactions",
   LICENSE: "license",
   LOCATIONS: "locations",

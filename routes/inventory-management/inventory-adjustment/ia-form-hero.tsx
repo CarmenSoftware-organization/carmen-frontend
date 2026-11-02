@@ -33,6 +33,7 @@ interface IaFormHeroProps {
   readonly onCancel: () => void;
   readonly onEdit: () => void;
   readonly onDelete: () => void;
+  readonly onComment?: () => void;
 }
 
 export function IaFormHero({
@@ -49,6 +50,7 @@ export function IaFormHero({
   onCancel,
   onEdit,
   onDelete,
+  onComment,
 }: IaFormHeroProps) {
   const tc = useTranslations("common");
   const isView = mode === "view";
@@ -119,6 +121,7 @@ export function IaFormHero({
       onEdit={isReadOnly ? undefined : onEdit}
       onDelete={canDelete ? onDelete : undefined}
       deleteIsPending={deleteIsPending}
+      onComment={inventoryAdjustment ? onComment : undefined}
       activity={
         inventoryAdjustment
           ? { id: inventoryAdjustment.id, label: docNo || undefined }
