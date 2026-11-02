@@ -530,6 +530,10 @@ export const API_ENDPOINTS = {
     recipeCuisineId
       ? `/api/proxy/api/config/${buCode}/recipe-cuisine-comments/${recipeCuisineId}`
       : `/api/proxy/api/config/${buCode}/recipe-cuisine-comments`,
+  RECIPE_EQUIPMENT_COMMENT: (buCode: string, recipeEquipmentId?: string) =>
+    recipeEquipmentId
+      ? `/api/proxy/api/config/${buCode}/recipe-equipment-comments/${recipeEquipmentId}`
+      : `/api/proxy/api/config/${buCode}/recipe-equipment-comments`,
   RECIPE_CATEGORIES: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/recipe-categories`,
   RECIPE_EQUIPMENT: (buCode: string) =>
