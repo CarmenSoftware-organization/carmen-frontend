@@ -347,6 +347,10 @@ export const API_ENDPOINTS = {
   SALES_CONSUMPTION_VOID: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/pos-sales/sales-consumptions/${encodeURIComponent(id)}/void`,
   PRICE_LISTS: (buCode: string) => `/api/proxy/api/config/${buCode}/pricelists`,
+  PRICE_LIST_COMMENT: (buCode: string, priceListId?: string) =>
+    priceListId
+      ? `/api/proxy/api/${buCode}/pricelist-comments/${priceListId}`
+      : `/api/proxy/api/${buCode}/pricelist-comments`,
   PRICE_LIST_VOID: (buCode: string, id: string) =>
     `/api/proxy/api/config/${buCode}/pricelists/${id}/void`,
   PRICE_LIST_RESTORE: (buCode: string, id: string) =>
