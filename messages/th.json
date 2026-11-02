@@ -2297,6 +2297,13 @@
       "code": "โค้ด",
       "file": "ไฟล์",
       "searchType": "ค้นหาประเภทไฟล์...",
+      "attachedFrom": "แนบจาก",
+      "uploadedBy": "ผู้อัปโหลด",
+      "uploadedAt": "วันที่อัปโหลด",
+      "referenceDeleted": "เอกสารถูกลบแล้ว",
+      "referenceUnknown": "ไม่ทราบที่มา",
+      "filterModule": "แนบจากโมดูล",
+      "filterCreatedBefore": "อัปโหลดก่อนวันที่",
       "summary": {
         "title": "พื้นที่จัดเก็บแยกตามโมดูล",
         "description": "ขนาดไฟล์แนบรวมของหน่วยธุรกิจนี้ แยกตามโมดูลที่อัปโหลดไฟล์เข้ามา",

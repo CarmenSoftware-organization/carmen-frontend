@@ -5,8 +5,11 @@ import { httpClient } from "@/lib/http-client";
 import { buildUrl } from "@/lib/build-query-string";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { QUERY_KEYS } from "@/constant/query-keys";
-import type { DocumentFile, DocumentSummary } from "@/types/document";
-import type { PaginatedResponse, ParamsDto } from "@/types/params";
+import type {
+  DocumentListParams,
+  DocumentListResponse,
+  DocumentSummary,
+} from "@/types/document";
 import { CACHE_DYNAMIC } from "@/lib/cache-config";
 
 /**
@@ -15,17 +18,17 @@ import { CACHE_DYNAMIC } from "@/lib/cache-config";
  * จะไม่ fetch ถ้า buCode ยังไม่พร้อม
  * @param params - พารามิเตอร์ pagination/filter/search
  * @param options - ตัวเลือก enabled เพื่อควบคุมการ fetch
- * @returns UseQueryResult ของ PaginatedResponse<DocumentFile>
+ * @returns UseQueryResult ของ DocumentListResponse (paginate.total_size = ขนาดรวมของทุกแถวที่ตรงตัวกรอง)
  * @example
  * const { data } = useDocument({ page: 1, perpage: 20 });
  */
 export function useDocument(
-  params?: ParamsDto,
+  params?: DocumentListParams,
   options?: { enabled?: boolean },
 ) {
   const buCode = useBuCode();
 
-  return useQuery<PaginatedResponse<DocumentFile>>({
+  return useQuery<DocumentListResponse>({
     queryKey: [QUERY_KEYS.DOCUMENTS, buCode, params],
     queryFn: async () => {
       if (!buCode) throw new Error("Missing buCode");

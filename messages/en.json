@@ -2297,6 +2297,13 @@
       "code": "Code",
       "file": "File",
       "searchType": "Search file type...",
+      "attachedFrom": "Attached from",
+      "uploadedBy": "Uploaded by",
+      "uploadedAt": "Uploaded on",
+      "referenceDeleted": "Document deleted",
+      "referenceUnknown": "Unknown source",
+      "filterModule": "Attached from module",
+      "filterCreatedBefore": "Uploaded before",
       "summary": {
         "title": "Storage by module",
         "description": "Total attachment size for this business unit, grouped by the module each file came from.",

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
@@ -26,7 +26,6 @@ import type { DocumentFile } from "@/types/document";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import EmptyComponent from "@/components/empty-component";
-import { MultiSelectFilter } from "@/components/ui/multi-select-filter";
 import { cn } from "@/lib/utils";
 import { useDocumentTable } from "./use-document-table";
 import { useGridPagination } from "@/hooks/use-grid-pagination";
@@ -36,34 +35,12 @@ import { useListFilters } from "@/hooks/use-list-filters";
 import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
-import type { FilterFieldDef } from "@/types/list-filter";
+import {
+  DOCUMENT_FILTER_FIELDS,
+  documentFiltersToParams,
+} from "./document-filter-fields";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
-
-type FileTypeKey = "pdf" | "xls" | "doc" | "image" | "txt" | "archive" | "code";
-
-const FILE_TYPE_MATCHERS: Record<FileTypeKey, (ct: string) => boolean> = {
-  pdf: (ct) => ct.includes("pdf"),
-  xls: (ct) =>
-    ct.includes("spreadsheet") || ct.includes("excel") || ct.includes("csv"),
-  doc: (ct) => ct.includes("word") || ct.includes("document"),
-  image: (ct) => ct.includes("image"),
-  txt: (ct) => ct.includes("text/plain"),
-  archive: (ct) =>
-    ct.includes("zip") || ct.includes("rar") || ct.includes("compressed"),
-  code: (ct) =>
-    ct.includes("json") || ct.includes("xml") || ct.includes("html"),
-};
-
-const TYPE_OPTIONS: { label: string; value: FileTypeKey }[] = [
-  { label: "PDF", value: "pdf" },
-  { label: "Excel / CSV", value: "xls" },
-  { label: "Word", value: "doc" },
-  { label: "Image", value: "image" },
-  { label: "Text", value: "txt" },
-  { label: "Archive", value: "archive" },
-  { label: "Code", value: "code" },
-];
 
 export default function DocumentComponent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -87,7 +64,15 @@ export default function DocumentComponent() {
   }, [hasSummary]);
   const { params, search, setSearch, tableConfig } = useDataGridState();
   const useInfiniteScroll = !!isMobile;
-  const { data, isLoading, error, refetch } = useDocument(params, {
+  const lf = useListFilters({
+    pageKey: LIST_PAGE_KEYS.DOCUMENT,
+    fields: DOCUMENT_FILTER_FIELDS,
+  });
+  // ตัวกรองทั้งหมดส่งให้ server (reference_types / content_kinds / created_before) เพื่อให้
+  // จำนวนหน้าและยอดรวมตรงกับแถวที่เห็น — ไม่กรองฝั่ง client อีกแล้ว
+  // เรียกทุก render โดยตั้งใจ: lf.values เปลี่ยน reference เมื่อ URL เปลี่ยน, setter ห้ามอยู่ใน deps
+  const listParams = { ...params, ...documentFiltersToParams(lf.values) };
+  const { data, isLoading, error, refetch } = useDocument(listParams, {
     enabled: !useInfiniteScroll,
   });
 
@@ -95,64 +80,16 @@ export default function DocumentComponent() {
     useListHook: useDocument as Parameters<
       typeof useGridPagination<DocumentFile>
     >[0]["useListHook"],
-    params,
+    params: listParams,
     enabled: useInfiniteScroll,
   });
   const t = useTranslations("systemAdmin.document");
-  const tfl = useTranslations("field");
   const tt = useTranslations("toast");
 
-  // type เป็น literal string จริง (ไม่ใช่ i18n key) จึงต้องใช้ control: "custom"
-  // ห่อ MultiSelectFilter ตรง ๆ แทน control: "multi-select" ทั่วไป — เหมือน
-  // pattern ของ PO_TYPE/CN_TYPE ใน Task 19 ค่า `type` ถูกใช้ client-side ล้วน
-  // (กรอง allDocuments ในเบราว์เซอร์ ไม่เคยส่งเป็น backend filter param) —
-  // toClause ปล่อย default (passthrough) เพราะ filterParam ไม่ถูกใช้เลย
-  const documentFilterFields = useMemo<FilterFieldDef[]>(
-    () => [
-      {
-        key: "type",
-        section: "listView.sectionDocument",
-        control: "custom",
-        labelKey: "field.type",
-        render: (value, onChange) => (
-          <MultiSelectFilter
-            value={value}
-            onChange={onChange}
-            placeholder={tfl("type")}
-            options={TYPE_OPTIONS}
-            searchable
-            searchPlaceholder={t("searchType")}
-            className="w-full"
-          />
-        ),
-      },
-    ],
-    [t, tfl],
-  );
-
-  const lf = useListFilters({
-    pageKey: LIST_PAGE_KEYS.DOCUMENT,
-    fields: documentFilterFields,
-  });
-
-  const typeFilter = lf.values.type;
-  const selectedTypes = new Set(typeFilter ? typeFilter.split(",") : []);
-
-  const allDocuments = useInfiniteScroll ? grid.items : (data?.data ?? []);
-  const documents =
-    selectedTypes.size === 0
-      ? allDocuments
-      : allDocuments.filter((doc) =>
-          Array.from(selectedTypes).some((key) =>
-            FILE_TYPE_MATCHERS[key as FileTypeKey]?.(doc.contentType),
-          ),
-        );
-  const totalRecords =
-    selectedTypes.size === 0
-      ? useInfiniteScroll
-        ? grid.totalRecords
-        : (data?.paginate?.total ?? 0)
-      : documents.length;
+  const documents = useInfiniteScroll ? grid.items : (data?.data ?? []);
+  const totalRecords = useInfiniteScroll
+    ? grid.totalRecords
+    : (data?.paginate?.total ?? 0);
 
   const table = useDocumentTable({
     documents,
@@ -217,7 +154,7 @@ export default function DocumentComponent() {
             search={search}
             onSearch={setSearch}
             lf={lf}
-            fields={documentFilterFields}
+            fields={DOCUMENT_FILTER_FIELDS}
             onSaveViewClick={() => setSaveViewDialogOpen(true)}
           />
         </>
@@ -238,7 +175,7 @@ export default function DocumentComponent() {
                 <DocumentCard key={doc.fileToken} item={doc} index={i} />
               ))}
             </div>
-            {grid.hasMore && selectedTypes.size === 0 && (
+            {grid.hasMore && (
               <div ref={grid.sentinelRef} className="flex justify-center py-4">
                 {grid.isLoadingMore && (
                   <Loader2 className="text-muted-foreground size-5 animate-spin" />
