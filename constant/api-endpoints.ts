@@ -537,6 +537,10 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/reports/schedules`,
   REPORT_SCHEDULE_BY_ID: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/reports/schedules/${id}`,
+  REQUEST_PRICE_LIST_COMMENT: (buCode: string, rfpId?: string) =>
+    rfpId
+      ? `/api/proxy/api/${buCode}/request-for-pricing-comments/${rfpId}`
+      : `/api/proxy/api/${buCode}/request-for-pricing-comments`,
   REQUEST_PRICE_LISTS: (buCode: string) =>
     `/api/proxy/api/${buCode}/request-for-pricings`,
   REQUEST_PRICE_LIST_SEND_EMAIL: (buCode: string, id: string) =>

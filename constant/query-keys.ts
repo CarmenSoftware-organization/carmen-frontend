@@ -142,6 +142,7 @@ export const QUERY_KEYS = {
   REPORT_SCHEDULES: "report-schedules",
   RUNNING_CODES: "running-codes",
   REQUEST_PRICE_LISTS: "request-price-lists",
+  REQUEST_PRICE_LIST_COMMENTS: "request-price-list-comments",
   SHELVES: "shelves",
   SPOT_CHECKS: "spot-checks",
   SPOT_CHECK_CURRENT: "spot-check-current",

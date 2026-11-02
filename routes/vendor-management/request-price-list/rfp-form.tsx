@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Controller, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
@@ -42,6 +42,13 @@ import {
 } from "./rfp-form-schema";
 import { RfpVendorFields } from "./rfp-vendor-fields";
 import { RfpWindowBadge } from "./rfp-list-cells";
+import { requestPriceListCommentCrud } from "./use-rfp-comments";
+
+const EntityCommentSheet = lazy(() =>
+  import("@/components/share/entity-comment-sheet").then((mod) => ({
+    default: mod.EntityCommentSheet,
+  })),
+);
 
 const FORM_ID = "rfp-form";
 
@@ -65,6 +72,7 @@ export function RequestPriceListForm({
   const updateRfp = useUpdateRequestPriceList();
   const deleteRfp = useDeleteRequestPriceList();
   const [showDelete, setShowDelete] = useState(false);
+  const [showComment, setShowComment] = useState(false);
   const isPending = createRfp.isPending || updateRfp.isPending;
 
   const defaultValues = getDefaultValues(requestPriceList);
@@ -169,6 +177,9 @@ export function RequestPriceListForm({
           onEdit={f.handleEdit}
           onDelete={requestPriceList ? () => setShowDelete(true) : undefined}
           deleteIsPending={deleteRfp.isPending}
+          onComment={
+            requestPriceList ? () => setShowComment(true) : undefined
+          }
           activity={
             requestPriceList && {
               id: requestPriceList.id,
@@ -363,6 +374,17 @@ export function RequestPriceListForm({
         onCancel={f.navGuard.cancel}
         variant="warning"
       />
+
+      {requestPriceList && (
+        <Suspense fallback={null}>
+          <EntityCommentSheet
+            crud={requestPriceListCommentCrud}
+            entityId={requestPriceList.id}
+            open={showComment}
+            onOpenChange={setShowComment}
+          />
+        </Suspense>
+      )}
 
       {requestPriceList && (
         <DeleteDialog
