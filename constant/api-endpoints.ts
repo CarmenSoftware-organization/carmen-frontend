@@ -370,6 +370,10 @@ export const API_ENDPOINTS = {
     `/api/external/api/check-pricelist/${toSafePathSegment(urlToken)}`,
   PRICE_LIST_EXTERNAL_TAX_PROFILES: (urlToken: string) =>
     `/api/external/api/check-pricelist/${toSafePathSegment(urlToken)}/tax-profiles`,
+  PRICE_LIST_TEMPLATE_COMMENT: (buCode: string, templateId?: string) =>
+    templateId
+      ? `/api/proxy/api/${buCode}/pricelist-template-comments/${templateId}`
+      : `/api/proxy/api/${buCode}/pricelist-template-comments`,
   PRICE_LIST_TEMPLATES: (buCode: string) =>
     `/api/proxy/api/${buCode}/pricelist-templates`,
   PRODUCTS: (buCode: string) => `/api/proxy/api/config/${buCode}/products`,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Controller, useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "use-intl";
@@ -37,6 +37,13 @@ import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 import { usePltFormActions } from "./use-plt-form-actions";
 import { useStepperLabels } from "./plt-form-labels";
+import { priceListTemplateCommentCrud } from "./use-plt-comments";
+
+const EntityCommentSheet = lazy(() =>
+  import("@/components/share/entity-comment-sheet").then((mod) => ({
+    default: mod.EntityCommentSheet,
+  })),
+);
 
 const FORM_ID = "plt-form";
 
@@ -52,6 +59,7 @@ export function PriceListTemplateForm({
   const tv = useTranslations("validation");
   const ts = useTranslations("status");
 
+  const [showComment, setShowComment] = useState(false);
   const [mode, setMode] = useState<FormMode>(
     priceListTemplate ? "view" : "add",
   );
@@ -125,6 +133,9 @@ export function PriceListTemplateForm({
             priceListTemplate ? () => actions.setShowDelete(true) : undefined
           }
           deleteIsPending={actions.isDeletePending}
+          onComment={
+            priceListTemplate ? () => setShowComment(true) : undefined
+          }
           activity={
             priceListTemplate && {
               id: priceListTemplate.id,
@@ -338,6 +349,17 @@ export function PriceListTemplateForm({
         onCancel={navGuard.cancel}
         variant="warning"
       />
+
+      {priceListTemplate && (
+        <Suspense fallback={null}>
+          <EntityCommentSheet
+            crud={priceListTemplateCommentCrud}
+            entityId={priceListTemplate.id}
+            open={showComment}
+            onOpenChange={setShowComment}
+          />
+        </Suspense>
+      )}
 
       {priceListTemplate && (
         <DeleteDialog
