@@ -5688,7 +5688,9 @@
         "today": "วันนี้",
         "3days": "3 วันล่าสุด",
         "7days": "7 วันล่าสุด",
-        "1month": "1 เดือนล่าสุด"
+        "1month": "1 เดือนล่าสุด",
+        "current_period": "งวดปัจจุบัน",
+        "previous_period": "งวดที่แล้ว"
       },
       "chartTypeAria": "เปลี่ยนชนิดกราฟของ {title}",
       "chartType": {
