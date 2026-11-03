@@ -41,6 +41,18 @@ export interface DatasetMeta {
 // Dataset parameters — descriptors drive the widget param form,
 // values are stored on the widget (`params` jsonb) and sent to exec
 // -------------------------------------------------------------
+/**
+ * รายการของ BU ที่ param แบบเลือกจากรายการดึงมาให้เลือก — entity = resource ของ
+ * `GET /api/:bu_code/lookup/:resource` · `inventory_period` = รายการงวดของรายงาน
+ * (ปิดแล้ว + งวด active) ตรงกับ `Lookup*` ใน micro-data `service/dashboard/filters.go`
+ */
+export type DatasetLookup =
+  | "product_category"
+  | "location"
+  | "vendor"
+  | "department"
+  | "inventory_period";
+
 export interface DatasetParam {
   readonly name: string;
   readonly label: string;
@@ -48,6 +60,15 @@ export interface DatasetParam {
   readonly required: boolean;
   readonly default?: string | number;
   readonly options?: readonly string[];
+  /**
+   * มี = เลือกจากรายการของ BU แทน `options` · ค่าที่ส่งคือ id (งวด = รหัสงวดหรือ token)
+   * คั่น `,` ใน string เดียว — "" = ไม่กรอง
+   */
+  readonly lookup?: DatasetLookup;
+  /** เลือกได้หลายค่า (ไม่มี = ค่าเดียว) */
+  readonly multi?: boolean;
+  /** เลือกได้มากสุดกี่ค่า */
+  readonly max?: number;
 }
 
 export type WidgetParams = Record<string, string | number>;
@@ -83,7 +104,11 @@ interface RankedPoint {
   readonly extras?: Record<string, unknown>;
 }
 
-interface MatrixData {
+/**
+ * ตาราง 2 มิติ — `rows` = series (เช่น งวด) · `cols` = แกน x (location, สถานะ, วันที่ของงวด)
+ * · `values[row][col]` ช่องที่ไม่มีข้อมูลเป็น 0
+ */
+export interface MatrixData {
   readonly rows: readonly string[];
   readonly cols: readonly string[];
   readonly values: readonly (readonly number[])[];
@@ -293,6 +318,17 @@ export function isTimeSeriesData(
     (data.length === 0 ||
       (typeof (data[0] as TimeSeriesPoint).date === "string" &&
         typeof (data[0] as TimeSeriesPoint).value === "number"))
+  );
+}
+
+export function isMatrixData(data: unknown): data is MatrixData {
+  return (
+    !!data &&
+    typeof data === "object" &&
+    !Array.isArray(data) &&
+    Array.isArray((data as MatrixData).rows) &&
+    Array.isArray((data as MatrixData).cols) &&
+    Array.isArray((data as MatrixData).values)
   );
 }
 

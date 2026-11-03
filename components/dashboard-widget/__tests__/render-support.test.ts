@@ -42,8 +42,16 @@ describe("availableRenders", () => {
     ]);
   });
 
+  it("draws a matrix as grouped bars, lines or a table — not a heatmap", () => {
+    // เทียบงวด / เทียบ location — heatmap ยังไม่มีการ์ด
+    expect(
+      availableRenders("matrix", ["bar", "line", "table", "heatmap"]),
+    ).toEqual(["bar", "line", "table"]);
+    expect(availableRenders("matrix", ["heatmap", "table"])).toEqual(["table"]);
+  });
+
   it("returns nothing for a shape no card can draw", () => {
-    expect(availableRenders("matrix", ["heatmap", "table"])).toEqual([]);
+    expect(availableRenders("matrix", ["heatmap"])).toEqual([]);
     expect(availableRenders(undefined)).toEqual([]);
     expect(availableRenders("nonsense")).toEqual([]);
   });
@@ -59,6 +67,9 @@ describe("defaultRenderFor", () => {
     expect(defaultRenderFor("ranked", ["bar", "table"])).toBe("bar");
     expect(defaultRenderFor("time_series")).toBe("line");
     expect(defaultRenderFor("scalar_delta")).toBe("kpi");
+    expect(
+      defaultRenderFor("matrix", ["bar", "line", "table", "heatmap"]),
+    ).toBe("bar");
   });
 
   it("does not pick a preferred render the backend excluded", () => {

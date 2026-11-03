@@ -5701,6 +5701,25 @@
         "current_period": "งวดปัจจุบัน",
         "previous_period": "งวดที่แล้ว"
       },
+      "lookupAll": "ทั้งหมด",
+      "lookupPicked": "เลือกแล้ว {count} จาก {max}",
+      "option": {
+        "consumption": "ใช้ไป",
+        "issued": "เบิกออก",
+        "received": "รับเข้า",
+        "transfer_in": "โอนเข้า",
+        "transfer_out": "โอนออก",
+        "opening": "ยอดยกมา",
+        "closing": "ยอดยกไป"
+      },
+      "filterCount": {
+        "categories": "{count} หมวดหมู่",
+        "locations": "{count} คลัง",
+        "vendors": "{count} ผู้ขาย",
+        "departments": "{count} แผนก",
+        "from_locations": "จาก {count} คลัง",
+        "to_locations": "ไป {count} คลัง"
+      },
       "chartTypeAria": "เปลี่ยนชนิดกราฟของ {title}",
       "chartType": {
         "label": "ชนิดกราฟ",

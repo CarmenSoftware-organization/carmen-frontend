@@ -1,4 +1,7 @@
-import { defaultRenderFor } from "@/components/dashboard-widget/render-support";
+import {
+  availableRenders,
+  defaultRenderFor,
+} from "@/components/dashboard-widget/render-support";
 import type {
   DatasetParam,
   DatasetShape,
@@ -13,6 +16,7 @@ export const SUPPORTED_SHAPES = [
   "time_series",
   "categorical",
   "ranked",
+  "matrix",
   "table",
 ] as const satisfies readonly DatasetShape[];
 
@@ -25,6 +29,16 @@ export const SUPPORTED_SHAPES = [
  * @returns ชนิดกราฟเริ่มต้น
  */
 export function defaultWidgetTypeFor(dataset: DashboardDataset): WidgetType {
+  // dataset บอกเองว่าควรเริ่มเป็นอะไร — ใช้เมื่อการ์ดของชนิดนั้นมีจริงเท่านั้น
+  const preferred = dataset.default_render as WidgetType | undefined;
+  if (
+    preferred &&
+    availableRenders(dataset.shape, dataset.supported_renders).includes(
+      preferred,
+    )
+  ) {
+    return preferred;
+  }
   return defaultRenderFor(dataset.shape, dataset.supported_renders);
 }
 
@@ -36,6 +50,27 @@ export function defaultParamsFor(
     if (p.default !== undefined) out[p.name] = p.default;
   }
   return out;
+}
+
+/**
+ * ค่าของ param แบบเลือกจากรายการ (`lookup`) → id ที่เลือก · "" = ไม่ได้เลือก
+ * (backend ตัดช่องว่าง/ค่าซ้ำเองอยู่แล้ว ฝั่งนี้ตัดให้ UI นับถูก)
+ */
+export function splitPicked(value: string | number | undefined): string[] {
+  if (value === undefined || value === "") return [];
+  return [
+    ...new Set(
+      String(value)
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    ),
+  ];
+}
+
+/** id ที่เลือก → ค่าที่เก็บใน `params` (คั่น `,`) */
+export function joinPicked(ids: readonly string[]): string {
+  return ids.join(",");
 }
 
 /**

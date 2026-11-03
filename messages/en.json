@@ -5701,6 +5701,25 @@
         "current_period": "Current period",
         "previous_period": "Last period"
       },
+      "lookupAll": "All",
+      "lookupPicked": "{count} of {max} selected",
+      "option": {
+        "consumption": "Consumption",
+        "issued": "Issued",
+        "received": "Received",
+        "transfer_in": "Transfer in",
+        "transfer_out": "Transfer out",
+        "opening": "Opening balance",
+        "closing": "Closing balance"
+      },
+      "filterCount": {
+        "categories": "{count, plural, one {# category} other {# categories}}",
+        "locations": "{count, plural, one {# location} other {# locations}}",
+        "vendors": "{count, plural, one {# vendor} other {# vendors}}",
+        "departments": "{count, plural, one {# department} other {# departments}}",
+        "from_locations": "From {count, plural, one {# location} other {# locations}}",
+        "to_locations": "To {count, plural, one {# location} other {# locations}}"
+      },
       "chartTypeAria": "Change chart type for {title}",
       "chartType": {
         "label": "Chart type",

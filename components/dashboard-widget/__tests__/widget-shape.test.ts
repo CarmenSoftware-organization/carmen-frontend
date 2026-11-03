@@ -5,7 +5,9 @@ import {
   defaultParamsFor,
   defaultWidgetTypeFor,
   inferSubTile,
+  joinPicked,
   shouldShowAllOption,
+  splitPicked,
   SUPPORTED_SHAPES,
 } from "../widget-shape";
 
@@ -53,8 +55,9 @@ describe("defaultWidgetTypeFor", () => {
     }
   });
 
-  it("excludes matrix — no card renders it", () => {
-    expect(SUPPORTED_SHAPES).not.toContain("matrix");
+  // matrix มีการ์ดแล้ว (แท่งจัดกลุ่ม / หลายเส้น / ตาราง) — dataset เทียบงวดต้องเลือกได้
+  it("offers matrix in the picker now that cards draw it", () => {
+    expect(SUPPORTED_SHAPES).toContain("matrix");
   });
 });
 
@@ -158,5 +161,44 @@ describe("shouldShowAllOption", () => {
     expect(
       shouldShowAllOption(P({ required: true, default: "", options: ["a"] })),
     ).toBe(false);
+  });
+});
+
+describe("splitPicked / joinPicked", () => {
+  // ค่าของ param แบบเลือกจากรายการเดินทางเป็น string คั่น "," (template ฝั่ง platform รับแค่
+  // string|number) — UI ต้องนับจำนวนที่เลือกได้ถูกแม้ค่ามีช่องว่าง/ซ้ำ/ลงท้ายด้วย ","
+  it("splits, trims, drops empties and duplicates", () => {
+    expect(splitPicked(" a, b,,a,")).toEqual(["a", "b"]);
+    expect(splitPicked("")).toEqual([]);
+    expect(splitPicked(undefined)).toEqual([]);
+  });
+
+  it("round-trips through the stored value", () => {
+    expect(joinPicked(splitPicked("2602,@previous_period"))).toBe(
+      "2602,@previous_period",
+    );
+    expect(joinPicked([])).toBe("");
+  });
+});
+
+describe("defaultWidgetTypeFor with default_render", () => {
+  // เทียบงวดรายวัน = matrix ที่ควรเริ่มเป็นเส้นซ้อน ส่วน matrix อื่นเริ่มเป็นแท่งจัดกลุ่ม
+  it("starts where the dataset says when that card exists", () => {
+    const daily = {
+      ...ds("matrix", ["bar", "line", "table", "heatmap"]),
+      default_render: "line",
+    };
+    expect(defaultWidgetTypeFor(daily)).toBe("line");
+    expect(
+      defaultWidgetTypeFor(ds("matrix", ["bar", "line", "table", "heatmap"])),
+    ).toBe("bar");
+  });
+
+  it("ignores a default the frontend cannot draw", () => {
+    const heat = {
+      ...ds("matrix", ["bar", "line", "table", "heatmap"]),
+      default_render: "heatmap",
+    };
+    expect(defaultWidgetTypeFor(heat)).toBe("bar");
   });
 });

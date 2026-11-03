@@ -72,6 +72,7 @@ import {
 import { dashboardDatasetDataQueryOptions } from "@/hooks/use-dashboard-dataset";
 import {
   isCategoricalData,
+  isMatrixData,
   isScalarDeltaData,
   isTableData,
   isTimeSeriesData,
@@ -83,6 +84,7 @@ import {
   type DatasetData,
   type DatasetMeta,
   type DatasetShape,
+  type MatrixData,
   type TableColumn,
   type TableData,
   type TimeSeriesPoint,
@@ -376,7 +378,13 @@ export function WidgetRouter({
         />
       );
     case "bar":
-      return (
+      return widget.meta.shape === "matrix" ? (
+        <MatrixBarCard
+          widget={resolved}
+          moduleName={moduleName}
+          subTileFor={subTileFor}
+        />
+      ) : (
         <BarCard
           widget={resolved}
           moduleName={moduleName}
@@ -385,7 +393,13 @@ export function WidgetRouter({
       );
     case "line":
     case "area":
-      return (
+      return widget.meta.shape === "matrix" ? (
+        <MatrixLineCard
+          widget={resolved}
+          moduleName={moduleName}
+          subTileFor={subTileFor}
+        />
+      ) : (
         <LineCard
           widget={resolved}
           moduleName={moduleName}
@@ -852,6 +866,258 @@ export function LineCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
   );
 }
 
+interface MatrixSeries {
+  readonly key: string;
+  readonly name: string;
+  readonly color: string;
+  /** เกินจำนวนสีในชุด — วนสีเดิมแต่จางลง ให้ยังแยกจากรอบแรกได้ */
+  readonly faded: boolean;
+}
+
+/**
+ * matrix → ข้อมูลของ recharts: 1 จุดต่อคอลัมน์ (แกน x) ที่มีคีย์ `s<i>` ต่อ series
+ * (แถวของ matrix) — ใช้คีย์ลำดับแทนชื่อ series เพราะชื่อเช่นรหัสงวด "2026-05" หรือ
+ * ชื่อ location ที่มีจุด recharts จะอ่านเป็น path ของ object
+ *
+ * @param m - matrix จาก backend
+ * @returns series (ชื่อ + สี) กับจุดข้อมูล
+ */
+function matrixChartData(m: MatrixData) {
+  const series: MatrixSeries[] = m.rows.map((name, i) => ({
+    key: `s${i}`,
+    name,
+    color: CHART_COLORS[i % CHART_COLORS.length],
+    faded: i >= CHART_COLORS.length,
+  }));
+  const points = m.cols.map((col, ci) => {
+    const point: Record<string, string | number> = { name: col };
+    m.rows.forEach((_, ri) => {
+      point[`s${ri}`] = m.values[ri]?.[ci] ?? 0;
+    });
+    return point;
+  });
+  return { series, points };
+}
+
+/** รายการสีของ series เหนือกราฟ — ห่อบรรทัดได้ ไม่กินความสูงของกราฟแบบ <Legend> */
+function SeriesLegend({
+  series,
+}: {
+  readonly series: readonly MatrixSeries[];
+}) {
+  return (
+    <ul className="text-micro-legal text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5">
+      {series.map((s) => (
+        <li key={s.key} className="flex min-w-0 items-center gap-1">
+          <span
+            aria-hidden="true"
+            className="size-2 shrink-0 rounded-sm"
+            style={{ backgroundColor: s.color, opacity: s.faded ? 0.55 : 1 }}
+          />
+          <span className="truncate">{s.name}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function matrixValueFormatter(unit: string | undefined) {
+  const isCurrency = unit === "฿";
+  return (v: number) =>
+    `${isCurrency ? "฿" : ""}${formatValue(v, unit ?? "")}${
+      !isCurrency && unit ? ` ${unit}` : ""
+    }`;
+}
+
+/**
+ * แท่งจัดกลุ่มของ matrix — แกนตั้งเป็นกลุ่ม (location / สถานะ) แต่ละกลุ่มมี 1 แท่งต่อ
+ * series (งวด) เรียงแนวนอนแบบเดียวกับ `BarCard` ป้ายชื่อยาว ๆ จึงไม่ทับกัน
+ */
+export function MatrixBarCard({
+  widget,
+  moduleName,
+  subTileFor,
+}: WidgetCardProps) {
+  const t = useTranslations("dashboardWidget");
+  if (!isMatrixData(widget.data)) return null;
+  const { series, points } = matrixChartData(widget.data as MatrixData);
+  const fmt = matrixValueFormatter(widget.meta.unit);
+  // คงความหนาต่อแท่งแล้วให้กล่องเลื่อนแทนการบีบ เหมือน BarCard
+  const chartHeight = Math.max(
+    120,
+    points.length * Math.max(26, series.length * 12 + 10),
+  );
+
+  return (
+    <Card className="h-full min-h-0 gap-2 overflow-hidden py-4">
+      <CardHeader className="px-4">
+        <WidgetHeader
+          widget={widget}
+          moduleName={moduleName}
+          subTileFor={subTileFor}
+        />
+      </CardHeader>
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-1 px-4">
+        {points.length === 0 || series.length === 0 ? (
+          <p className="text-muted-foreground py-6 text-center text-xs">
+            {t("noData")}
+          </p>
+        ) : (
+          <>
+            <SeriesLegend series={series} />
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <ResponsiveContainer width="100%" height={chartHeight}>
+                <BarChart
+                  layout="vertical"
+                  data={points}
+                  margin={{ top: 0, right: 60, bottom: 0, left: 0 }}
+                  barCategoryGap="20%"
+                  barGap={1}
+                >
+                  <XAxis type="number" hide />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={<SingleLineTick width={BAR_LABEL_WIDTH} />}
+                    tickLine={false}
+                    axisLine={false}
+                    width={BAR_LABEL_WIDTH}
+                    interval={0}
+                  />
+                  <Tooltip
+                    formatter={(v: number, name: string) => [fmt(v), name]}
+                    contentStyle={{ fontSize: "0.6875rem" }}
+                    cursor={{ fill: "var(--muted)", opacity: 0.4 }}
+                  />
+                  {series.map((s) => (
+                    <Bar
+                      key={s.key}
+                      dataKey={s.key}
+                      name={s.name}
+                      fill={s.color}
+                      fillOpacity={s.faded ? 0.55 : 1}
+                      radius={[0, 3, 3, 0]}
+                      maxBarSize={14}
+                      isAnimationActive={false}
+                    >
+                      {/* ค่าปลายแท่ง — งวดที่เป็น 0 ไม่มีแท่งให้เห็น ตัวเลขบอกว่า "ไม่มี" ไม่ใช่ "หาย" */}
+                      <LabelList
+                        dataKey={s.key}
+                        position="right"
+                        // ตัวเลขล้วน (หน่วยอยู่ใน tooltip) — ต่อหน่วยแล้วป้ายตัดบรรทัดทับแท่งข้างล่าง
+                        formatter={(v: number) =>
+                          formatValue(v, widget.meta.unit ?? "")
+                        }
+                        style={{ fontSize: 9, fill: "var(--muted-foreground)" }}
+                      />
+                    </Bar>
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * หลายเส้นของ matrix — 1 เส้นต่อ series (งวด / vendor) บนแกน x เดียวกัน เช่นวันที่
+ * 01–31 ของงวด ซ้อนกันให้เห็นจังหวะของแต่ละงวด
+ */
+export function MatrixLineCard({
+  widget,
+  moduleName,
+  subTileFor,
+}: WidgetCardProps) {
+  const t = useTranslations("dashboardWidget");
+  if (!isMatrixData(widget.data)) return null;
+  const m = widget.data as MatrixData;
+  const { series, points } = matrixChartData(m);
+  const fmt = matrixValueFormatter(widget.meta.unit);
+  const all = m.values.flat();
+  const allIntegers = all.every((v) => Number.isInteger(v));
+  const yAxisWidth = lineAxisWidth(all);
+  // แกน x เป็นวันที่เต็มก็ตัดปีออกเหมือน LineCard · วันของงวด (01) / เดือน (2026-06) คงไว้
+  const tickOf = (v: string) =>
+    /^\d{4}-\d{2}-\d{2}$/.test(v) ? v.slice(5) : v;
+
+  return (
+    <Card className="h-full min-h-0 gap-2 overflow-hidden py-4">
+      <CardHeader className="px-4">
+        <WidgetHeader
+          widget={widget}
+          moduleName={moduleName}
+          subTileFor={subTileFor}
+        />
+      </CardHeader>
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-1 px-4">
+        {points.length === 0 || series.length === 0 ? (
+          <p className="text-muted-foreground py-6 text-center text-xs">
+            {t("noData")}
+          </p>
+        ) : (
+          <>
+            <SeriesLegend series={series} />
+            <div className="relative min-h-0 flex-1">
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                className="absolute inset-0"
+              >
+                <LineChart
+                  data={points}
+                  margin={{ top: 8, right: 16, bottom: 0, left: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="var(--border)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={tickOf}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={yAxisWidth}
+                    allowDecimals={!allIntegers}
+                  />
+                  <Tooltip
+                    formatter={(v: number, name: string) => [fmt(v), name]}
+                    contentStyle={{ fontSize: "0.6875rem" }}
+                    cursor={{ stroke: "var(--muted)", strokeWidth: 1 }}
+                  />
+                  {series.map((s) => (
+                    <Line
+                      key={s.key}
+                      type="monotone"
+                      dataKey={s.key}
+                      name={s.name}
+                      stroke={s.color}
+                      strokeOpacity={s.faded ? 0.55 : 1}
+                      strokeWidth={2}
+                      dot={{ r: 2, fill: s.color }}
+                      activeDot={{ r: 4 }}
+                      isAnimationActive={false}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 type TableRow = Record<string, unknown>;
 
 const TABLE_ICONS: Record<string, LucideIcon> = {
@@ -908,6 +1174,27 @@ function asTableData(
   labels: { label: string; value: string; rank: string },
 ): TableData | null {
   if (isTableData(raw)) return raw as TableData;
+  // matrix: 1 แถวต่อคอลัมน์ของ matrix (location / สถานะ) และ 1 คอลัมน์ต่อ series (งวด)
+  // — งวดมีไม่กี่ตัว จึงอ่านง่ายกว่าวางงวดเป็นแถว
+  if (isMatrixData(raw)) {
+    const m = raw as MatrixData;
+    return {
+      columns: [
+        { key: "label", label: labels.label, type: "text" },
+        ...m.rows.map((r, ri) => ({
+          key: `s${ri}`,
+          label: r,
+          type: "number" as const,
+        })),
+      ],
+      rows: m.cols.map((c, ci) => ({
+        label: c,
+        ...Object.fromEntries(
+          m.rows.map((_, ri) => [`s${ri}`, m.values[ri]?.[ci] ?? 0]),
+        ),
+      })),
+    };
+  }
   if (!isCategoricalData(raw)) return null;
 
   const points = raw as readonly CategoricalPoint[];
