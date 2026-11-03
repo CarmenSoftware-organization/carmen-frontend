@@ -8,7 +8,11 @@ import {
 import { SelectContent, SelectItem } from "@/components/ui/select";
 import type { DatasetParam, WidgetParams } from "@/types/dashboard-widget";
 import { WidgetLookupField } from "./widget-lookup-field";
-import { PARAM_EMPTY, shouldShowAllOption } from "./widget-shape";
+import {
+  OWNER_SCOPE_LABEL,
+  PARAM_EMPTY,
+  shouldShowAllOption,
+} from "./widget-shape";
 
 interface WidgetParamFieldsProps {
   readonly params: readonly DatasetParam[];
@@ -34,11 +38,14 @@ export function WidgetParamFields({
 
   /**
    * ป้ายที่อ่านง่ายของแต่ละ option โดยดูจาก "ค่า" ไม่ใช่ชื่อ param (ฟอร์มยังคง
-   * generic): token ขึ้นต้น "@" = time_range (@today→"Today"); ค่าที่มีคำแปลใน
-   * `option` (เช่น metric ของ movement: consumption→"Consumption"); ที่เหลือถือเป็น
-   * enum สถานะ (in_progress→"In Progress") fallback เป็นค่าดิบถ้าไม่มีคำแปล
+   * generic): token ขอบเขตเจ้าของ (@everyone / @current_user) → "ทั้งหมด / ของฉัน"
+   * คำเดียวกับ status group; token ขึ้นต้น "@" อื่น = time_range (@today→"Today");
+   * ค่าที่มีคำแปลใน `option` (เช่น metric ของ movement: consumption→"Consumption");
+   * ที่เหลือถือเป็น enum สถานะ (in_progress→"In Progress") fallback เป็นค่าดิบถ้าไม่มีคำแปล
    */
   const optionLabel = (value: string): string => {
+    const scope = OWNER_SCOPE_LABEL.get(value);
+    if (scope) return t(scope);
     if (value.startsWith("@")) {
       const key = value.slice(1);
       return tRange.has(key) ? tRange(key) : value;

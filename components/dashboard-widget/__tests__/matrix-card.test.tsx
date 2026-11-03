@@ -121,4 +121,15 @@ describe("WidgetParamsBadges", () => {
     );
     expect(container.innerHTML).toBe("");
   });
+
+  it("says Mine only when the owner scope is narrowed", () => {
+    const mine = render(
+      <WidgetParamsBadges params={{ owner_visibility: "@current_user" }} />,
+    );
+    expect(mine.container.textContent).toBe("visMine");
+    const all = render(
+      <WidgetParamsBadges params={{ owner_visibility: "@everyone" }} />,
+    );
+    expect(all.container.innerHTML).toBe("");
+  });
 });

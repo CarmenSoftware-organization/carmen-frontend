@@ -51,7 +51,8 @@ export function StatusTile({
  * แถบสรุป param ใต้ชื่อ tile — status เป็น label สี(canonical, ไอคอนไปอยู่ที่
  * StatusTile ตัวหลักแล้ว จึงไม่ซ้ำ) + ช่วงเวลา + งวดที่เทียบ + จำนวนที่กรอง. อ่านจาก
  * widget.params ล้วน: "@today"→time range, ที่เหลือ→status; periods / period +
- * compare_to → รายการงวด; ตัวกรอง (FILTER_KEYS) → "3 locations".
+ * compare_to → รายการงวด; ตัวกรอง (FILTER_KEYS) → "3 locations"; owner_visibility
+ * = @current_user → "ของฉัน" (ค่าเริ่มต้น ทั้งหมด ไม่ต้องบอก).
  */
 export function WidgetParamsBadges({
   params,
@@ -61,6 +62,7 @@ export function WidgetParamsBadges({
   const tStatus = useTranslations("status");
   const tRange = useTranslations("dashboard.savedWidget.timeRange");
   const tFilter = useTranslations("dashboard.savedWidget.filterCount");
+  const t = useTranslations("dashboard.savedWidget");
 
   const status = statusOf(params);
   const range =
@@ -82,7 +84,9 @@ export function WidgetParamsBadges({
     const count = splitPicked(params?.[key]).length;
     return count > 0 ? [tFilter(key, { count })] : [];
   });
-  if (!status && !range && !periodText && filters.length === 0) return null;
+  const mine = params?.owner_visibility === "@current_user";
+  if (!status && !range && !periodText && filters.length === 0 && !mine)
+    return null;
 
   const rangeKey = range?.replace(/^@/, "");
 
@@ -104,6 +108,11 @@ export function WidgetParamsBadges({
       {periodText && (
         <span className="text-muted-foreground bg-muted text-micro-legal inline-flex items-center rounded-md px-1.5 py-0.5 font-medium">
           {periodText}
+        </span>
+      )}
+      {mine && (
+        <span className="text-muted-foreground bg-muted text-micro-legal inline-flex items-center rounded-md px-1.5 py-0.5 font-medium">
+          {t("visMine")}
         </span>
       )}
       {filters.map((text) => (
