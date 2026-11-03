@@ -182,6 +182,8 @@ export const LICENSE_ERROR_CODES = {
   LICENSE_REQUIRED: "LICENSE_REQUIRED",
   LICENSE_EXPIRED: "LICENSE_EXPIRED",
   SEAT_LIMIT_EXCEEDED: "SEAT_LIMIT_EXCEEDED",
+  /** พื้นที่เก็บข้อมูลของ BU เต็มและพ้นช่วงผ่อนผัน — บล็อกเฉพาะการสร้าง/แนบไฟล์ */
+  STORAGE_QUOTA_EXCEEDED: "STORAGE_QUOTA_EXCEEDED",
 } as const;
 
 export type LicenseErrorCode =
@@ -215,7 +217,8 @@ export function licenseErrorCodeFrom(
   const code = (error as { code?: unknown }).code;
   return code === LICENSE_ERROR_CODES.LICENSE_REQUIRED ||
     code === LICENSE_ERROR_CODES.LICENSE_EXPIRED ||
-    code === LICENSE_ERROR_CODES.SEAT_LIMIT_EXCEEDED
+    code === LICENSE_ERROR_CODES.SEAT_LIMIT_EXCEEDED ||
+    code === LICENSE_ERROR_CODES.STORAGE_QUOTA_EXCEEDED
     ? code
     : undefined;
 }

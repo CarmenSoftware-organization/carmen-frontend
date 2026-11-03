@@ -16,6 +16,7 @@ import {
   Box,
   Tag,
   FileCheck,
+  HardDrive,
   FileInput,
   FileSpreadsheet,
   DollarSign,
@@ -909,6 +910,15 @@ export const moduleList: ModuleDto[] = [
         path: "/system-admin/document",
         licenseFeature: "system_admin.document", // app:documents
         icon: FileCheck,
+        permission: PERMISSIONS.system_admin.document.view,
+      },
+      {
+        name: "storage",
+        path: "/system-admin/storage",
+        licenseFeature: "system_admin.document", // อยู่ใต้สัญญาเดียวกับ Document
+        icon: HardDrive,
+        // ไม่ใช้ PERMISSIONS.system_admin.view: module-list.permission.test บังคับคีย์ระดับ
+        // resource (3 ส่วน) — ปุ่มวัดใหม่/ตาราง breakdown เช็ค system_admin.view ในหน้าเอง
         permission: PERMISSIONS.system_admin.document.view,
       },
       {

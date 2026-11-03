@@ -6419,6 +6419,7 @@
     "wastageReporting": "Wastage Reporting",
     "systemAdmin": "System Administration",
     "document": "Document Management",
+    "storage": "Storage",
     "role": "Roles",
     "user": "Users",
     "workflow": "Workflows",
@@ -6540,6 +6541,8 @@
     "expiredDescription": "Your subscription has expired or been suspended. You can still view data, but editing is disabled. Contact your administrator to renew.",
     "seatTitle": "Seat Limit Exceeded",
     "seatDescription": "This cluster has more users than the seats you've purchased. Contact your administrator to deactivate unused users, or purchase more seats.",
+    "storageTitle": "Can't create documents or attach files — storage is full",
+    "storageDescription": "You can still view and edit existing documents. Please contact your administrator.",
     "featureLabel": "Feature:",
     "buLabel": "Business unit:"
   },
@@ -7008,6 +7011,35 @@
     "outsideOpenPeriod": "This document is dated outside the open period ({from} – {to}). Pick the date it should carry.",
     "useOpenPeriodDate": "Move it into the open period ({date})",
     "useDocumentDate": "Keep the date on the document ({date})"
+  },
+  "storageQuota": {
+    "kind": {
+      "database": "database",
+      "attachment": "attachment"
+    },
+    "grace": "The {kind} storage is over quota. Creating new documents and attaching files will stop in {days} days ({date}).",
+    "blocked": "The {kind} storage is over quota. Creating new documents and attaching files has stopped.",
+    "warn": "The {kind} storage has {pct}% left.",
+    "actionDatabase": "Contact the Carmen team.",
+    "actionAttachment": "Delete unused files.",
+    "openStoragePage": "View storage",
+    "dismiss": "Dismiss",
+    "pageTitle": "Storage",
+    "pageDesc": "Database and attachment storage used by this business unit, against its quota.",
+    "usedOfQuota": "{used} of {quota} ({pct}%)",
+    "measuredAt": "Last measured {date}",
+    "measureNow": "Measure now",
+    "measureTooSoon": "Measured just now. Try again in 10 minutes.",
+    "loadFailed": "Could not load storage usage.",
+    "notMeasured": "This business unit has not been measured yet.",
+    "breakdownTitle": "Attachments by type",
+    "breakdownDesc": "View and delete unused files on the",
+    "openDocuments": "Documents page",
+    "breakdownEmpty": "No attachments.",
+    "colType": "Type",
+    "colCount": "Files",
+    "colSize": "Size",
+    "other": "Other"
   },
   "buCurrency": {
     "missing": "Business unit {bu} has no default currency set — amounts are shown in THB until one is set.",

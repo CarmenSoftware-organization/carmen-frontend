@@ -11,6 +11,7 @@ import { MissingDepartmentDialog } from "@/components/missing-department-dialog"
 import { Navbar } from "@/components/navbar/navbar";
 import { RouteGuard } from "@/components/route-guard";
 import { SeatQuotaBannerHost } from "@/components/seat-quota-banner";
+import { StorageQuotaBannerHost } from "@/components/storage-quota-banner";
 import { ActivitySheetHost } from "@/components/share/activity-sheet-host";
 import { OfflineBanner } from "@/components/share/offline-banner";
 import { ProfileGate } from "@/components/share/profile-gate";
@@ -53,6 +54,8 @@ export default function RootLayout() {
         {/* แดงเห็นทุกคน (ไม่ใช่แค่แอดมิน) เพราะคนที่บันทึกไม่ได้ต้องรู้ว่าทำไม — ดู
             SeatQuotaBannerHost ใน components/seat-quota-banner.tsx */}
         <SeatQuotaBannerHost />
+        {/* พื้นที่เก็บข้อมูลเต็ม: แดงทุกคน / เหลืองเฉพาะ system_admin.view — ดู storage-quota-banner.tsx */}
+        <StorageQuotaBannerHost />
         {/* ขึ้นทุกคนเมื่อ BU ไม่มี default currency ที่ใช้ได้ (ยอดเงิน fallback เป็น THB) */}
         <BuCurrencyBanner />
         <div

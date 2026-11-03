@@ -29,7 +29,8 @@ export const PERMISSION_DENIED_EVENT = "permission-denied";
  *   อ่านได้ เขียนไม่ได้เหมือน "expired" แต่ทางแก้มีสองทาง (ปิดผู้ใช้ที่ไม่ใช้งาน หรือซื้อ
  *   ที่นั่งเพิ่ม) ต่างจาก "license"/"expired" ที่มีทางแก้เดียว — คำอธิบายจึงบอกทั้งสองทาง
  */
-export type DeniedReason = "permission" | "license" | "expired" | "seat";
+export type DeniedReason =
+  "permission" | "license" | "expired" | "seat" | "storage";
 
 /**
  * รายละเอียดประกอบที่ backend ส่งมากับ 403 ของ license — คีย์ feature ที่ขาดและหน่วยงานที่ถูกบล็อก
@@ -112,7 +113,9 @@ export function PermissionDeniedDialog() {
         ? t("expiredTitle")
         : reason === "seat"
           ? t("seatTitle")
-          : t("title");
+          : reason === "storage"
+            ? t("storageTitle")
+            : t("title");
   const description =
     detail?.message ??
     (reason === "license"
@@ -121,7 +124,9 @@ export function PermissionDeniedDialog() {
         ? t("expiredDescription")
         : reason === "seat"
           ? t("seatDescription")
-          : t("description"));
+          : reason === "storage"
+            ? t("storageDescription")
+            : t("description"));
 
   return (
     <AlertDialog
