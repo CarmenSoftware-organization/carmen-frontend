@@ -69,7 +69,8 @@ export function McpTokenRevealPanel({ created, onDone }: McpTokenRevealPanelProp
         <pre className="bg-muted/40 overflow-x-auto rounded-md border p-3 text-xs select-all">
           <code className="font-mono">{snippet}</code>
         </pre>
-        <p className="text-muted-foreground text-xs">{t("snippetHint")}</p>
+        <p className="text-muted-foreground text-xs">{/* ปีกกาของ shell env expansion ใส่ในไฟล์แปลตรง ๆ ไม่ได้ (ICU อ่านเป็นตัวแปร → ขึ้นชื่อคีย์ดิบ) */}
+          {t("snippetHint", { envVar: "${CARMEN_MCP_TOKEN}" })}</p>
       </div>
 
       <div className="flex justify-end pt-2">
