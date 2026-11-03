@@ -7020,6 +7020,9 @@
     "grace": "The {kind} storage is over quota. Creating new documents and attaching files will stop in {days} days ({date}).",
     "blocked": "The {kind} storage is over quota. Creating new documents and attaching files has stopped.",
     "warn": "The {kind} storage has {pct}% left.",
+    "overQuota": "The {kind} storage is over quota. The grace period starts at the next measurement.",
+    "measureFailed": "Could not measure storage. Please try again.",
+    "directUpload": "Direct upload",
     "actionDatabase": "Contact the Carmen team.",
     "actionAttachment": "Delete unused files.",
     "openStoragePage": "View storage",
@@ -7038,8 +7041,7 @@
     "breakdownEmpty": "No attachments.",
     "colType": "Type",
     "colCount": "Files",
-    "colSize": "Size",
-    "other": "Other"
+    "colSize": "Size"
   },
   "buCurrency": {
     "missing": "Business unit {bu} has no default currency set — amounts are shown in THB until one is set.",

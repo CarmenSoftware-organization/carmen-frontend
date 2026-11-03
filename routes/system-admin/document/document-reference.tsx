@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import { useTranslations } from "use-intl";
 import { cn } from "@/lib/utils";
 import type { DocumentFile } from "@/types/document";
-import { documentReferenceLabel } from "./document-reference-labels";
+import { documentReferenceLabel } from "@/routes/system-admin/shared/document-reference-labels";
 import { documentReferenceHref } from "./document-reference-link";
 
 interface DocumentReferenceProps {

@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { toast } from "sonner";
 import { HardDrive, RefreshCw } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ import { useCan } from "@/hooks/use-can";
 import { useMeasureStorage, useStorageUsage } from "@/hooks/use-storage-usage";
 import { ApiError } from "@/lib/api-error";
 import { formatFileSize } from "@/lib/format-file-size";
-import { documentReferenceLabel } from "@/routes/system-admin/document/document-reference-labels";
+import { documentReferenceLabel } from "@/routes/system-admin/shared/document-reference-labels";
 import type { StorageKindUsage } from "@/types/storage-usage";
 
 function UsageBar({ usage }: { readonly usage: StorageKindUsage }) {
@@ -81,7 +82,15 @@ export function StorageUsageCard() {
       variant="outline"
       size="sm"
       disabled={measure.isPending || rateLimited}
-      onClick={() => measure.mutate()}
+      onClick={() =>
+        measure.mutate(undefined, {
+          onError: (error) => {
+            if (!(error instanceof ApiError && error.statusCode === 429)) {
+              toast.error(t("measureFailed"));
+            }
+          },
+        })
+      }
     >
       <RefreshCw
         className={measure.isPending ? "animate-spin" : undefined}
@@ -173,7 +182,7 @@ export function StorageUsageCard() {
                           {documentReferenceLabel(
                             row.reference_type,
                             tm,
-                            t("other"),
+                            t("directUpload"),
                           )}
                         </td>
                         <td className="py-2 text-right tabular-nums">

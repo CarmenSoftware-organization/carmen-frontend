@@ -38,6 +38,8 @@ interface StorageQuotaBannerProps {
   readonly usage: BuStorageUsage;
   /** ผู้ใช้มี `system_admin.view` — แถบเหลืองขึ้นเฉพาะคนกลุ่มนี้ */
   readonly canManage: boolean;
+  /** ผู้ใช้เปิด /system-admin/storage ได้ — ลิงก์ขึ้นเฉพาะคนกลุ่มนี้ */
+  readonly canOpenStorage: boolean;
   /** เวลาปัจจุบัน (ms) — ส่งจากผู้เรียกเพื่อให้ render บริสุทธิ์ */
   readonly now: number;
 }
@@ -57,19 +59,32 @@ interface StorageQuotaBannerProps {
 export function StorageQuotaBanner({
   usage,
   canManage,
+  canOpenStorage,
   now,
 }: StorageQuotaBannerProps) {
   const t = useTranslations("storageQuota");
   const [, setTick] = useState(0);
 
-  if (!usage.enforce || usage.exempt) return null;
+  if (!usage.enforce) return null;
 
-  const full = usage.kinds.filter((k) => k.blocking || k.step === 0);
+  // แดงเฉพาะ BU ที่ไม่ถูกยกเว้น และ kind ที่ไม่มี flag (BU แบบ shared/null schema backend ไม่เคยบล็อก)
+  // exempt/flagged ที่เต็มยังได้เหลืองให้แอดมิน
+  const redKinds = usage.exempt
+    ? []
+    : usage.kinds.filter(
+        (k) => k.flag === null && (k.blocking || k.step === 0),
+      );
+  const full = redKinds;
   if (full.length > 0) {
     return (
       <>
         {full.map((k) => (
-          <FullBar key={k.kind} usage={k} now={now} />
+          <FullBar
+            key={k.kind}
+            usage={k}
+            now={now}
+            canOpenStorage={canOpenStorage}
+          />
         ))}
       </>
     );
@@ -81,7 +96,7 @@ export function StorageQuotaBanner({
     .filter(
       (k) =>
         k.step !== null &&
-        k.step !== 0 &&
+        !redKinds.includes(k) &&
         !isDismissed(usage.bu_code, k.kind, k.step),
     )
     .sort(
@@ -100,7 +115,7 @@ export function StorageQuotaBanner({
       <TriangleAlert className="text-warning-ink size-4 shrink-0" aria-hidden />
       <span className="text-muted-foreground">
         {t("warn", { kind: t(`kind.${warn.kind}`), pct: step })}{" "}
-        <KindAction kind={warn.kind} />
+        <KindAction kind={warn.kind} canOpenStorage={canOpenStorage} />
       </span>
       <Button
         variant="ghost"
@@ -117,15 +132,26 @@ export function StorageQuotaBanner({
   );
 }
 
-function KindAction({ kind }: { readonly kind: StorageKindUsage["kind"] }) {
+function KindAction({
+  kind,
+  canOpenStorage,
+}: {
+  readonly kind: StorageKindUsage["kind"];
+  readonly canOpenStorage: boolean;
+}) {
   const t = useTranslations("storageQuota");
   if (kind === "database") return <span>{t("actionDatabase")}</span>;
   return (
     <span>
-      {t("actionAttachment")}{" "}
-      <Link to="/system-admin/storage" className="font-semibold underline">
-        {t("openStoragePage")}
-      </Link>
+      {t("actionAttachment")}
+      {canOpenStorage && (
+        <>
+          {" "}
+          <Link to="/system-admin/storage" className="font-semibold underline">
+            {t("openStoragePage")}
+          </Link>
+        </>
+      )}
     </span>
   );
 }
@@ -133,19 +159,25 @@ function KindAction({ kind }: { readonly kind: StorageKindUsage["kind"] }) {
 function FullBar({
   usage,
   now,
+  canOpenStorage,
 }: {
   readonly usage: StorageKindUsage;
   readonly now: number;
+  readonly canOpenStorage: boolean;
 }) {
   const t = useTranslations("storageQuota");
   const kind = t(`kind.${usage.kind}`);
 
   let message: string;
-  if (usage.blocking || !usage.grace_ends_at) {
+  if (usage.blocking) {
     message = t("blocked", { kind });
+  } else if (!usage.grace_ends_at) {
+    // เต็มแต่ยังไม่เริ่มนับผ่อนผัน (วัดตอนสวิตช์ enforce ปิด) — ห้ามบอกว่าหยุดแล้ว
+    message = t("overQuota", { kind });
   } else {
     const end = new Date(usage.grace_ends_at);
-    const days = Math.max(0, Math.ceil((end.getTime() - now) / DAY_MS));
+    // ยังไม่บล็อก = อย่างน้อย 1 วัน ไม่โชว์ "0 วัน"
+    const days = Math.max(1, Math.ceil((end.getTime() - now) / DAY_MS));
     message = t("grace", {
       kind,
       days,
@@ -165,7 +197,7 @@ function FullBar({
       <HardDrive className="mt-0.5 size-4 shrink-0 sm:mt-0" aria-hidden />
       <p className="min-w-0">
         <span className="font-semibold">{message}</span>{" "}
-        <KindAction kind={usage.kind} />
+        <KindAction kind={usage.kind} canOpenStorage={canOpenStorage} />
       </p>
     </div>
   );
@@ -176,16 +208,16 @@ function FullBar({
  * ต่อจาก `SeatQuotaBannerHost` · โหลดไม่สำเร็จ = ไม่แสดงอะไร
  */
 export function StorageQuotaBannerHost() {
-  const { data } = useStorageUsage();
+  const { data, dataUpdatedAt } = useStorageUsage();
   const { can } = useCan();
-  const [now] = useState(() => Date.now());
 
   if (!data) return null;
   return (
     <StorageQuotaBanner
       usage={data}
       canManage={can(PERMISSIONS.system_admin.view)}
-      now={now}
+      canOpenStorage={can(PERMISSIONS.system_admin.document.view)}
+      now={dataUpdatedAt}
     />
   );
 }
