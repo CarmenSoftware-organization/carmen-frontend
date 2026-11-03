@@ -67,13 +67,13 @@ export function StorageQuotaBanner({
 
   if (!usage.enforce) return null;
 
-  // แดงเฉพาะ BU ที่ไม่ถูกยกเว้น และ kind ที่ไม่มี flag (BU แบบ shared/null schema backend ไม่เคยบล็อก)
+  // แดงเฉพาะ BU ที่ไม่ถูกยกเว้นและไม่ถูก flag (shared/null schema backend ไม่เคยบล็อก) — ใช้ `flagged` ระดับ BU
+  // จาก backend ไม่ derive เอง · kind ที่ blocking จริงขึ้นแดงเสมอ (รวม measure_failed)
   // exempt/flagged ที่เต็มยังได้เหลืองให้แอดมิน
-  const redKinds = usage.exempt
-    ? []
-    : usage.kinds.filter(
-        (k) => k.flag === null && (k.blocking || k.step === 0),
-      );
+  const redKinds =
+    usage.exempt || usage.flagged
+      ? []
+      : usage.kinds.filter((k) => k.blocking || k.step === 0);
   const full = redKinds;
   if (full.length > 0) {
     return (

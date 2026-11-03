@@ -30,6 +30,8 @@ export interface StorageReferenceBreakdown {
 export interface BuStorageUsage {
   bu_code: string;
   exempt: boolean;
+  /** BU แบบ shared/null schema — backend ไม่บล็อก (ค่าเดียวกับที่ backend ใช้ตัดสิน blocking) */
+  flagged: boolean;
   enforce: boolean;
   kinds: StorageKindUsage[];
   by_reference_type: StorageReferenceBreakdown[];
