@@ -9,8 +9,8 @@ import type { DatasetShape, WidgetType } from "@/types/dashboard-widget";
  * ตัดกันแล้วได้สิ่งที่ "สมเหตุสมผล และวาดออกมาได้จริง" — เดิม frontend เก็บ map
  * ของ backend ไว้เองแล้ว drift (time_series ขาด bar, categorical ขาด table)
  *
- * ที่ยังไม่มี: `sparkline` `heatmap` (ไม่มีการ์ด) และ `matrix` ที่ยังไม่มีตัวแปลง
- * เป็น `{ columns, rows }` ให้ `TableCard`
+ * ที่ยังไม่มีการ์ด: `sparkline` `heatmap` · `matrix` วาดเป็นแท่งจัดกลุ่ม / หลายเส้น
+ * (1 series ต่อแถว) หรือตาราง
  */
 const RENDERERS: readonly {
   readonly type: WidgetType;
@@ -19,10 +19,10 @@ const RENDERERS: readonly {
   { type: "kpi", reads: ["scalar", "scalar_delta"] },
   { type: "gauge", reads: ["scalar", "scalar_delta"] },
   { type: "pie", reads: ["categorical", "ranked"] },
-  { type: "bar", reads: ["categorical", "ranked", "time_series"] },
-  { type: "line", reads: ["time_series"] },
+  { type: "bar", reads: ["categorical", "ranked", "time_series", "matrix"] },
+  { type: "line", reads: ["time_series", "matrix"] },
   { type: "area", reads: ["time_series"] },
-  { type: "table", reads: ["table", "categorical", "ranked"] },
+  { type: "table", reads: ["table", "categorical", "ranked", "matrix"] },
 ];
 
 export function availableRenders(
@@ -51,6 +51,8 @@ const PREFERRED_DEFAULT: Record<string, WidgetType> = {
   // ตั้งแต่ bar อ่าน time_series ได้ ตัวมันมาก่อน line ในลำดับของ RENDERERS
   // ซึ่งจะเปลี่ยน default ของกราฟเส้นทั้งหมดโดยไม่มีใครสั่ง
   time_series: "line",
+  // เทียบงวด / เทียบ location — แท่งจัดกลุ่มอ่านง่ายกว่าเส้นเมื่อแกน x เป็นกลุ่ม
+  matrix: "bar",
 };
 
 export function defaultRenderFor(

@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/field";
 import { SelectContent, SelectItem } from "@/components/ui/select";
 import type { DatasetParam, WidgetParams } from "@/types/dashboard-widget";
+import { WidgetLookupField } from "./widget-lookup-field";
 import { PARAM_EMPTY, shouldShowAllOption } from "./widget-shape";
 
 interface WidgetParamFieldsProps {
@@ -29,10 +30,12 @@ export function WidgetParamFields({
   const t = useTranslations("dashboard.savedWidget");
   const tStatus = useTranslations("status");
   const tRange = useTranslations("dashboard.savedWidget.timeRange");
+  const tOption = useTranslations("dashboard.savedWidget.option");
 
   /**
    * ป้ายที่อ่านง่ายของแต่ละ option โดยดูจาก "ค่า" ไม่ใช่ชื่อ param (ฟอร์มยังคง
-   * generic): token ขึ้นต้น "@" = time_range (@today→"Today"); ที่เหลือถือเป็น
+   * generic): token ขึ้นต้น "@" = time_range (@today→"Today"); ค่าที่มีคำแปลใน
+   * `option` (เช่น metric ของ movement: consumption→"Consumption"); ที่เหลือถือเป็น
    * enum สถานะ (in_progress→"In Progress") fallback เป็นค่าดิบถ้าไม่มีคำแปล
    */
   const optionLabel = (value: string): string => {
@@ -40,6 +43,7 @@ export function WidgetParamFields({
       const key = value.slice(1);
       return tRange.has(key) ? tRange(key) : value;
     }
+    if (tOption.has(value)) return tOption(value);
     return tStatus.has(value) ? tStatus(value) : value;
   };
 
@@ -48,6 +52,24 @@ export function WidgetParamFields({
       {params.map((p) => {
         const id = `widget-param-${p.name}`;
         const value = values[p.name] ?? "";
+
+        // เลือกจากรายการของ BU (category / location / vendor / แผนก / งวด)
+        if (p.lookup) {
+          return (
+            <Field key={p.name}>
+              <FieldLabel htmlFor={id} required={p.required}>
+                {p.label}
+              </FieldLabel>
+              <WidgetLookupField
+                id={id}
+                param={p}
+                value={String(value)}
+                onChange={(v) => onChange(p.name, v)}
+                disabled={disabled}
+              />
+            </Field>
+          );
+        }
 
         if (p.options?.length) {
           return (

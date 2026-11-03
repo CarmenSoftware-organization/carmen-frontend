@@ -11,6 +11,7 @@ export const SHAPES = [
   "categorical",
   "time_series",
   "ranked",
+  "matrix",
   "table",
 ] as const;
 
@@ -20,6 +21,7 @@ const DATA: Record<string, unknown> = {
   categorical: [{ label: "draft", value: 3 }],
   ranked: [{ rank: 1, label: "PR-1", value: 9 }],
   time_series: [{ date: "2026-01-01", value: 3 }],
+  matrix: { rows: ["2602", "2601"], cols: ["Main Store"], values: [[5], [3]] },
   table: {
     columns: [{ key: "a", label: "A", type: "text" }],
     rows: [{ a: "x" }],

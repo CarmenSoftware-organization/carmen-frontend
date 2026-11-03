@@ -1,6 +1,20 @@
 import { useTranslations } from "use-intl";
 import type { WidgetParams } from "@/types/dashboard-widget";
 import { statusMeta, statusOf } from "./status-meta";
+import { splitPicked } from "./widget-shape";
+
+/**
+ * param ตัวกรองของ micro-data (`service/dashboard/filters.go`) — badge บอกแค่ว่ากรอง
+ * กี่รายการ ชื่อจริงต้องยิง lookup ซึ่งแถบเล็ก ๆ ใต้หัวการ์ดไม่คุ้ม
+ */
+const FILTER_KEYS = [
+  "categories",
+  "locations",
+  "vendors",
+  "departments",
+  "from_locations",
+  "to_locations",
+] as const;
 
 /**
  * ไอคอนหลักของ tile แบบ custom ตาม document state (workflow status) — ใช้แทน
@@ -35,8 +49,9 @@ export function StatusTile({
 
 /**
  * แถบสรุป param ใต้ชื่อ tile — status เป็น label สี(canonical, ไอคอนไปอยู่ที่
- * StatusTile ตัวหลักแล้ว จึงไม่ซ้ำ) + ช่วงเวลา. อ่านจาก widget.params ล้วน ไม่รู้จัก
- * ชื่อ param เฉพาะตัว: "@today"→time range, ที่เหลือ→status.
+ * StatusTile ตัวหลักแล้ว จึงไม่ซ้ำ) + ช่วงเวลา + งวดที่เทียบ + จำนวนที่กรอง. อ่านจาก
+ * widget.params ล้วน: "@today"→time range, ที่เหลือ→status; periods / period +
+ * compare_to → รายการงวด; ตัวกรอง (FILTER_KEYS) → "3 locations".
  */
 export function WidgetParamsBadges({
   params,
@@ -45,13 +60,29 @@ export function WidgetParamsBadges({
 }) {
   const tStatus = useTranslations("status");
   const tRange = useTranslations("dashboard.savedWidget.timeRange");
+  const tFilter = useTranslations("dashboard.savedWidget.filterCount");
 
   const status = statusOf(params);
   const range =
     typeof params?.time_range === "string" && params.time_range
       ? params.time_range
       : null;
-  if (!status && !range) return null;
+  const periodLabel = (v: string) => {
+    const key = v.replace(/^@/, "");
+    return v.startsWith("@") && tRange.has(key) ? tRange(key) : v;
+  };
+  const periodPicks = splitPicked(params?.periods).map(periodLabel);
+  const vsPeriod =
+    params?.period || params?.compare_to
+      ? `${periodLabel(String(params?.period || "@current_period"))} vs ${periodLabel(String(params?.compare_to || "@previous_period"))}`
+      : null;
+  const periodText =
+    vsPeriod ?? (periodPicks.length ? periodPicks.join(" · ") : null);
+  const filters = FILTER_KEYS.flatMap((key) => {
+    const count = splitPicked(params?.[key]).length;
+    return count > 0 ? [tFilter(key, { count })] : [];
+  });
+  if (!status && !range && !periodText && filters.length === 0) return null;
 
   const rangeKey = range?.replace(/^@/, "");
 
@@ -70,6 +101,19 @@ export function WidgetParamsBadges({
           {rangeKey && tRange.has(rangeKey) ? tRange(rangeKey) : range}
         </span>
       )}
+      {periodText && (
+        <span className="text-muted-foreground bg-muted text-micro-legal inline-flex items-center rounded-md px-1.5 py-0.5 font-medium">
+          {periodText}
+        </span>
+      )}
+      {filters.map((text) => (
+        <span
+          key={text}
+          className="text-muted-foreground bg-muted text-micro-legal inline-flex items-center rounded-md px-1.5 py-0.5 font-medium"
+        >
+          {text}
+        </span>
+      ))}
     </div>
   );
 }
