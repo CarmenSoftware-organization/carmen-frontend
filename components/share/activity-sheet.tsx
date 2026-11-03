@@ -54,6 +54,7 @@ const ACTION_TITLE_KEY: Record<string, string> = {
   void: "actionVoided",
   print: "actionPrinted",
   comment: "actionCommented",
+  file_delete: "actionFileDeleted",
 };
 
 /**
@@ -67,7 +68,13 @@ const ACTION_TITLE_KEY: Record<string, string> = {
  * `send_back` ไม่อยู่ในเซตนี้เพราะไม่มีใน enum ของคอลัมน์ `action` จึงไม่มีทาง
  * ถูกบันทึก — การตีกลับถูกเก็บใน `workflow_history` ซึ่งมีหน้าเฉพาะของมันอยู่แล้ว
  */
-const ALERT_ACTIONS = new Set(["delete", "reject", "cancel", "void"]);
+const ALERT_ACTIONS = new Set([
+  "delete",
+  "reject",
+  "cancel",
+  "void",
+  "file_delete",
+]);
 
 /**
  * ฟิลด์ที่ไม่เอามาแสดง
@@ -170,6 +177,18 @@ function actorNameOf(log: ActivityLog): string {
     .filter(Boolean)
     .join(" ");
   return fullName || log.actor_username || "—";
+}
+
+/**
+ * ชื่อไฟล์ของ action `file_delete` — อ่านจาก `meta_data.file_name`
+ * ถ้า gateway ไม่ส่ง meta_data มาให้ตกไปใช้ description (ข้อความที่ backend เขียนไว้)
+ * action อื่นไม่แสดงอะไรเพิ่ม เพราะ description ของมันเผยชื่อตารางภายใน
+ */
+function fileNameOf(log: ActivityLog): string | null {
+  if (log.action?.toLowerCase() !== "file_delete") return null;
+  const name = log.meta_data?.file_name;
+  if (typeof name === "string" && name.trim()) return name;
+  return log.description?.trim() || null;
 }
 
 function FieldChangeRow({ change }: { change: ActivityFieldChange }) {
@@ -378,6 +397,7 @@ export function ActivitySheet({
       // action ที่ไม่รู้จักต้องไม่ไปยืมหัวข้อของ action อื่น
       title: titleKey ? tHistory(titleKey) : humanize(log.action ?? ""),
       actor: actorNameOf(log),
+      fileName: fileNameOf(log),
       marker,
       tone: ALERT_ACTIONS.has(action)
         ? ("alert" as const)
@@ -445,6 +465,9 @@ export function ActivitySheet({
                     expandable={<ActivityChanges logId={step.id} />}
                   >
                     {step.actor}
+                    {step.fileName && (
+                      <span className="block break-words">{step.fileName}</span>
+                    )}
                   </HistoryTimelineItem>
                 </Fragment>
               ))}

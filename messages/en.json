@@ -6945,7 +6945,8 @@
     "actionCancelled": "Cancelled",
     "actionVoided": "Voided",
     "actionPrinted": "Printed",
-    "actionCommented": "Commented"
+    "actionCommented": "Commented",
+    "actionFileDeleted": "File deleted"
   },
   "activity": {
     "title": "Activity",

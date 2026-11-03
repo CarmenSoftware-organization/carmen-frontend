@@ -6945,7 +6945,8 @@
     "actionCancelled": "ยกเลิกแล้ว",
     "actionVoided": "ยกเลิกใบแล้ว",
     "actionPrinted": "พิมพ์",
-    "actionCommented": "แสดงความเห็น"
+    "actionCommented": "แสดงความเห็น",
+    "actionFileDeleted": "ลบไฟล์"
   },
   "activity": {
     "title": "กิจกรรม",
