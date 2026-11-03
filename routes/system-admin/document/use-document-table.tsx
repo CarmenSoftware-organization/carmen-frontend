@@ -5,15 +5,6 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  FileSpreadsheet,
-  FileText,
-  FileImage,
-  File,
-  FileArchive,
-  FileCode,
-} from "lucide-react";
-import { Link } from "react-router";
 import { useTranslations } from "use-intl";
 import {
   selectColumn,
@@ -27,8 +18,8 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { formatFileSize } from "@/lib/format-file-size";
-import { documentReferenceLabel } from "./document-reference-labels";
-import { documentReferenceHref } from "./document-reference-link";
+import { DocumentReference } from "./document-reference";
+import { getFileTypeInfo } from "./document-file-type";
 
 interface UseDocumentTableOptions {
   documents: DocumentFile[];
@@ -40,68 +31,6 @@ interface UseDocumentTableOptions {
   rowSelection: RowSelectionState;
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
 }
-
-const getFileTypeInfo = (contentType: string) => {
-  if (
-    contentType.includes("spreadsheet") ||
-    contentType.includes("excel") ||
-    contentType.includes("csv")
-  )
-    return {
-      icon: FileSpreadsheet,
-      labelKey: "xls" as const,
-      className: "text-green-600",
-    };
-  if (contentType.includes("pdf"))
-    return {
-      icon: FileText,
-      labelKey: "pdf" as const,
-      className: "text-red-500",
-    };
-  if (contentType.includes("image"))
-    return {
-      icon: FileImage,
-      labelKey: "image" as const,
-      className: "text-blue-500",
-    };
-  if (
-    contentType.includes("zip") ||
-    contentType.includes("rar") ||
-    contentType.includes("compressed")
-  )
-    return {
-      icon: FileArchive,
-      labelKey: "archive" as const,
-      className: "text-amber-500",
-    };
-  if (contentType.includes("text/plain"))
-    return {
-      icon: FileText,
-      labelKey: "txt" as const,
-      className: "text-gray-500",
-    };
-  if (contentType.includes("word") || contentType.includes("document"))
-    return {
-      icon: FileText,
-      labelKey: "doc" as const,
-      className: "text-blue-600",
-    };
-  if (
-    contentType.includes("json") ||
-    contentType.includes("xml") ||
-    contentType.includes("html")
-  )
-    return {
-      icon: FileCode,
-      labelKey: "code" as const,
-      className: "text-purple-500",
-    };
-  return {
-    icon: File,
-    labelKey: "file" as const,
-    className: "text-muted-foreground",
-  };
-};
 
 export function useDocumentTable({
   documents,
@@ -117,7 +46,6 @@ export function useDocumentTable({
   const { dateFormat } = useProfile();
   const t = useTranslations("systemAdmin.document");
   const tfl = useTranslations("field");
-  const tm = useTranslations("modules");
   const deleteGate = useDeleteGate();
 
   const columns: ColumnDef<DocumentFile>[] = [
@@ -178,57 +106,7 @@ export function useDocumentTable({
         <span className="text-xs font-medium">{t("attachedFrom")}</span>
       ),
       enableSorting: false,
-      cell: ({ row }) => {
-        const doc = row.original;
-        const type = doc.reference_type ?? null;
-        // ตรวจ reference_type ก่อน: reference_exists เป็น null ทั้งตอนไม่มีที่มาและตอน lookup ล้มเหลว
-        if (type == null) {
-          return <span className="text-xs">{t("summary.directUpload")}</span>;
-        }
-        if (doc.reference_exists === false) {
-          return (
-            <span className="text-muted-foreground text-xs">
-              {t("referenceDeleted")}
-            </span>
-          );
-        }
-        const moduleLabel = documentReferenceLabel(
-          type,
-          tm,
-          t("summary.directUpload"),
-        );
-        const text = doc.reference_no
-          ? `${moduleLabel} · ${doc.reference_no}`
-          : moduleLabel;
-        const href = documentReferenceHref(
-          type,
-          doc.reference_parent_id ?? null,
-          doc.reference_id ?? null,
-        );
-        if (href) {
-          return (
-            <Link
-              to={href}
-              className="text-primary block max-w-64 truncate text-xs font-medium underline-offset-2 hover:underline"
-              title={text}
-            >
-              {text}
-            </Link>
-          );
-        }
-        if (!doc.reference_id) {
-          return (
-            <span className="text-muted-foreground text-xs">
-              {t("referenceUnknown")}
-            </span>
-          );
-        }
-        return (
-          <span className="block max-w-64 truncate text-xs" title={text}>
-            {text}
-          </span>
-        );
-      },
+      cell: ({ row }) => <DocumentReference doc={row.original} />,
       size: 220,
     },
     {

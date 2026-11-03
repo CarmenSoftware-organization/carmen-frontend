@@ -679,6 +679,7 @@
       "moreActions": "การทำงานเพิ่มเติม",
       "listView": "มุมมองรายการ",
       "gridView": "มุมมองตาราง",
+      "previewView": "มุมมองพรีวิว",
       "toggleColumns": "สลับคอลัมน์",
       "remove": "ลบ",
       "selectAll": "เลือกทั้งหมด",
@@ -2304,6 +2305,7 @@
       "uploadedAt": "วันที่อัปโหลด",
       "referenceDeleted": "เอกสารถูกลบแล้ว",
       "referenceUnknown": "ไม่ทราบที่มา",
+      "loadedOf": "แสดง {loaded} จาก {total}",
       "filterModule": "แนบจากโมดูล",
       "filterCreatedBefore": "อัปโหลดก่อนวันที่",
       "selectedBar": "เลือกแล้ว {count} ไฟล์ · {size}",
@@ -2324,6 +2326,13 @@
         "UNSUPPORTED_REFERENCE_TYPE": "ที่มาของไฟล์ยังไม่รองรับการลบ",
         "TOMBSTONE_FAILED": "แก้รายการแนบของเอกสารต้นทางไม่สำเร็จ จึงไม่ได้ลบไฟล์",
         "DELETE_FAILED": "ลบไฟล์ออกจากที่เก็บไม่สำเร็จ ลองลบอีกครั้ง"
+      },
+      "preview": {
+        "download": "ดาวน์โหลด",
+        "delete": "ลบ",
+        "unavailable": "ไฟล์ชนิดนี้แสดงตัวอย่างไม่ได้ ดาวน์โหลดเพื่อเปิดดู",
+        "failed": "โหลดไฟล์นี้ไม่สำเร็จ",
+        "truncated": "แสดงเฉพาะช่วงต้นของไฟล์ ดาวน์โหลดเพื่อดูทั้งหมด"
       },
       "summary": {
         "title": "พื้นที่จัดเก็บแยกตามโมดูล",
