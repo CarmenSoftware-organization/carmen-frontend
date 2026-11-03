@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { Progress } from "@/components/ui/progress";
 import { formatFileSize } from "@/lib/format-file-size";
-import { documentReferenceLabel } from "./document-reference-labels";
+import { documentReferenceLabel } from "@/routes/system-admin/shared/document-reference-labels";
 import type { DocumentSummary } from "@/types/document";
 
 interface DocumentSummarySheetProps {

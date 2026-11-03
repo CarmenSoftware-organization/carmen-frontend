@@ -51,6 +51,7 @@ export const QUERY_KEYS = {
   DELIVERY_POINTS: "delivery-points",
   DEPARTMENTS: "departments",
   DOCUMENTS: "documents",
+  STORAGE_USAGE: "storage-usage",
   EXCHANGE_RATES: "exchange-rates",
   EXTRA_COSTS: "extra-costs",
   GOODS_RECEIVE_NOTES: "goods-receive-notes",

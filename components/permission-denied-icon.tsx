@@ -1,4 +1,4 @@
-import { CalendarX, Lock, Users } from "lucide-react";
+import { CalendarX, HardDrive, Lock, Users } from "lucide-react";
 import type { DeniedReason } from "@/components/permission-denied-dialog";
 
 interface DeniedReasonIconProps {
@@ -26,6 +26,12 @@ interface DeniedReasonIconProps {
  */
 export function DeniedReasonIcon({ reason }: DeniedReasonIconProps) {
   const Icon =
-    reason === "license" ? Lock : reason === "seat" ? Users : CalendarX;
+    reason === "license"
+      ? Lock
+      : reason === "seat"
+        ? Users
+        : reason === "storage"
+          ? HardDrive
+          : CalendarX;
   return <Icon className="text-destructive" aria-hidden />;
 }

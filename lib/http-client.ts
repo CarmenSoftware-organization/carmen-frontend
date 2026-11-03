@@ -314,7 +314,9 @@ const handleClientErrors = async (
           ? "expired"
           : licenseCode === "SEAT_LIMIT_EXCEEDED"
             ? "seat"
-            : "license",
+            : licenseCode === "STORAGE_QUOTA_EXCEEDED"
+              ? "storage"
+              : "license",
         licenseContextFrom(body),
       );
     } else if (!silentForbidden) {

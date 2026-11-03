@@ -5,7 +5,7 @@ import type {
   DocumentBulkDeleteFilter,
   DocumentListParams,
 } from "@/types/document";
-import { DOCUMENT_REFERENCE_MODULE_KEY } from "./document-reference-labels";
+import { DOCUMENT_REFERENCE_MODULE_KEY } from "@/routes/system-admin/shared/document-reference-labels";
 
 /** ค่า sentinel ในตัวกรองโมดูล = ไฟล์ที่ไม่มี reference_type (อัปโหลดโดยตรง) */
 export const DIRECT_UPLOAD_VALUE = "__direct__";

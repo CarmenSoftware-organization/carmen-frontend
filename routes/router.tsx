@@ -761,6 +761,10 @@ export const router = createBrowserRouter([
                 lazy: () => import("./system-admin/document/document.route"),
               },
               {
+                path: "storage",
+                lazy: () => import("./system-admin/storage/storage.route"),
+              },
+              {
                 path: "activity-log",
                 lazy: () =>
                   import("./system-admin/activity-log/activity-log.route"),
