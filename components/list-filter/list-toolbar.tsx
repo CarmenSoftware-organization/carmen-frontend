@@ -26,6 +26,11 @@ interface ListToolbarProps {
   readonly onDisplayModeChange?: (mode: "list" | "grid") => void;
   readonly beforeViewSelector?: ReactNode;
   /**
+   * ปุ่มชิดขวาของแถบ (เช่นสลับมุมมองของหน้าที่ไม่มี `table`) — ต่างจาก `beforeViewSelector`
+   * ที่แทรกระหว่างช่องค้นกับตัวกรอง ทำให้ตัวกรองถูกดันห่างจากช่องค้น
+   */
+  readonly trailing?: ReactNode;
+  /**
    * ทรงของแถบซ้าย — `"wrap"` (ค่าตั้งต้น) ให้ช่องค้นกว้างเต็มบนจอแคบแล้วขึ้น
    * บรรทัดใหม่ ใช้กับหน้าที่มีปุ่มฝั่งขวาเยอะ · `"row"` บีบทุกอย่างไว้แถวเดียว
    * ช่องค้นยืดตามที่เหลือ ใช้กับหน้าที่ไม่มีปุ่มฝั่งขวา
@@ -63,6 +68,7 @@ export function ListToolbar({
   displayMode,
   onDisplayModeChange,
   beforeViewSelector,
+  trailing,
   variant = "wrap",
 }: ListToolbarProps) {
   // `table` เป็น TanStack instance ที่ ref คงที่แต่ state ข้างในเปลี่ยนเอง —
@@ -72,7 +78,7 @@ export function ListToolbar({
   // ฟังก์ชัน ใส่ที่ลูกไม่ช่วยเพราะลูกไม่ถูกเรียกเลย)
   "use no memo";
   const tc = useTranslations("common");
-  const showRight = !!table;
+  const showRight = !!table || !!trailing;
   const isRow = variant === "row";
 
   return (
@@ -113,25 +119,30 @@ export function ListToolbar({
         </div>
         {showRight && (
           <div className="hidden shrink-0 items-center gap-2 sm:flex">
-            <DataGridSortMenu table={table} />
-            <DataGridColumnVisibility
-              table={table}
-              trigger={
-                <Button
-                  size="icon-sm"
-                  variant="outline"
-                  aria-label={tc("aria.toggleColumns")}
-                >
-                  <Columns3 className="size-4" />
-                </Button>
-              }
-            />
+            {table && (
+              <>
+                <DataGridSortMenu table={table} />
+                <DataGridColumnVisibility
+                  table={table}
+                  trigger={
+                    <Button
+                      size="icon-sm"
+                      variant="outline"
+                      aria-label={tc("aria.toggleColumns")}
+                    >
+                      <Columns3 className="size-4" />
+                    </Button>
+                  }
+                />
+              </>
+            )}
             {displayMode && onDisplayModeChange && (
               <DisplayModeToggle
                 value={displayMode}
                 onChange={onDisplayModeChange}
               />
             )}
+            {trailing}
           </div>
         )}
       </div>

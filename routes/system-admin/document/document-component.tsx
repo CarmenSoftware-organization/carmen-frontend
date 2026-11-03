@@ -100,10 +100,10 @@ export default function DocumentComponent() {
   // ตัวกรองทั้งหมดส่งให้ server (reference_types / content_kinds / created_before) เพื่อให้
   // จำนวนหน้าและยอดรวมตรงกับแถวที่เห็น — ไม่กรองฝั่ง client อีกแล้ว
   // เรียกทุก render โดยตั้งใจ: lf.values เปลี่ยน reference เมื่อ URL เปลี่ยน, setter ห้ามอยู่ใน deps
-  // sort: undefined - micro-file เรียง created_at DESC เสมอ ไม่รองรับ sort (ทุกคอลัมน์ปิด sort)
+  // sort ส่งให้ server (micro-file buildFileSearchOrderBy whitelist คอลัมน์) — ไม่เรียงฝั่ง client
+  // เพราะ lazy load มีแค่บางส่วนในมือ เรียงเองจะได้ลำดับที่ผิดเมื่อโหลดเพิ่ม
   const listParams = {
     ...params,
-    sort: undefined,
     ...documentFiltersToParams(lf.values),
   };
   // lazy load ทุกมุมมอง (ตาราง/icon/preview และการ์ดบนมือถือ) — ไม่มีแถบเลขหน้าแล้ว
@@ -293,13 +293,12 @@ export default function DocumentComponent() {
           />
 
           <ListToolbar
-            variant="row"
             search={search}
             onSearch={setSearch}
             lf={lf}
             fields={DOCUMENT_FILTER_FIELDS}
             onSaveViewClick={() => setSaveViewDialogOpen(true)}
-            beforeViewSelector={
+            trailing={
               !isMobile && (
                 <DisplayModeToggle
                   value={displayMode}

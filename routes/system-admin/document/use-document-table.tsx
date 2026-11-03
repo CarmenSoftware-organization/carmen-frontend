@@ -18,6 +18,7 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { formatFileSize } from "@/lib/format-file-size";
+import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { DocumentReference } from "./document-reference";
 import { getFileTypeInfo } from "./document-file-type";
 
@@ -53,9 +54,8 @@ export function useDocumentTable({
     indexColumn<DocumentFile>(params),
     {
       accessorKey: "originalName",
-      enableSorting: false,
-      header: () => (
-        <span className="text-xs font-medium">{tfl("fileName")}</span>
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={tfl("fileName")} />
       ),
       cell: ({ row }) => (
         <span
@@ -69,8 +69,9 @@ export function useDocumentTable({
     },
     {
       accessorKey: "contentType",
-      enableSorting: false,
-      header: () => <span className="text-xs font-medium">{tfl("type")}</span>,
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={tfl("type")} />
+      ),
       cell: ({ row }) => {
         const contentType: string = row.getValue("contentType");
         const {
@@ -90,8 +91,9 @@ export function useDocumentTable({
     },
     {
       accessorKey: "size",
-      enableSorting: false,
-      header: () => <span className="text-xs font-medium">{tfl("size")}</span>,
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={tfl("size")} />
+      ),
       cell: ({ row }) => (
         <span className="text-xs tabular-nums">
           {formatFileSize(row.getValue("size"))}
@@ -102,10 +104,10 @@ export function useDocumentTable({
     },
     {
       id: "reference",
-      header: () => (
-        <span className="text-xs font-medium">{t("attachedFrom")}</span>
+      // เรียงตาม reference_type (คีย์ดิบ) ฝั่ง server ไม่ใช่ชื่อโมดูลที่แปลแล้ว — กลุ่มเดียวกันอยู่ติดกัน
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={t("attachedFrom")} />
       ),
-      enableSorting: false,
       cell: ({ row }) => <DocumentReference doc={row.original} />,
       size: 220,
     },
@@ -114,6 +116,7 @@ export function useDocumentTable({
       header: () => (
         <span className="text-xs font-medium">{t("uploadedBy")}</span>
       ),
+      // ชื่อผู้อัปโหลดอยู่นอก tb_file_tag (gateway เติมให้ทีหลัง) server จึงเรียงไม่ได้
       enableSorting: false,
       cell: ({ row }) => (
         <span className="text-xs">
@@ -125,10 +128,9 @@ export function useDocumentTable({
     {
       id: "createdAt",
       // วันที่อัปโหลดจริงอยู่ที่ audit.created.at (lastModified ของ storage เปลี่ยนตามการเขียนทับ)
-      // ปิด sort: ยังไม่ยืนยันว่า backend รับ sort key นี้
-      enableSorting: false,
-      header: () => (
-        <span className="text-xs font-medium">{t("uploadedAt")}</span>
+      // sort key createdAt = tb_file_tag.created_at (micro-file buildFileSearchOrderBy)
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={t("uploadedAt")} />
       ),
       cell: ({ row }) => {
         const at = row.original.audit?.created?.at ?? row.original.lastModified;
