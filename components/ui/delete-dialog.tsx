@@ -45,7 +45,7 @@ export function DeleteDialog({
               <AlertDialogTitle className="text-base">
                 {title || td("title")}
               </AlertDialogTitle>
-              <AlertDialogDescription className="mt-1 text-sm leading-relaxed">
+              <AlertDialogDescription className="mt-1 max-h-48 overflow-y-auto text-sm leading-relaxed wrap-anywhere">
                 {description || td("confirm")}
               </AlertDialogDescription>
             </div>
