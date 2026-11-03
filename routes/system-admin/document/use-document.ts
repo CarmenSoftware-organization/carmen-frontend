@@ -12,6 +12,7 @@ import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { QUERY_KEYS } from "@/constant/query-keys";
 import { ApiError } from "@/lib/api-error";
 import type {
+  BulkDeleteDryRunResult,
   BulkDeleteResult,
   BulkDeleteVariables,
   DocumentListParams,
@@ -256,5 +257,32 @@ export function useDocumentSummary() {
     ...CACHE_DYNAMIC,
     enabled: !!buCode,
     retry: false,
+  });
+}
+
+/**
+ * นับล่วงหน้าก่อนลบแบบตัวกรอง (dry_run: true) — endpoint + body เดียวกับลบจริง แต่ไม่ลบอะไร
+ * in_use / platform_blocked = null แปลว่า lookup ล้มเหลว (freed_size ประมาณ)
+ * ไม่ invalidate: ไม่มีอะไรเปลี่ยน
+ */
+export function useBulkDeleteDryRun() {
+  const buCode = useBuCode();
+  return useMutation<BulkDeleteDryRunResult, ApiError, BulkDeleteVariables>({
+    meta: { skipGlobalErrorToast: true },
+    mutationFn: async (variables) => {
+      if (!buCode)
+        throw new ApiError("MISSING_REQUIRED_FIELD", "Missing buCode");
+      const res = await httpClient.post(
+        API_ENDPOINTS.DOCUMENTS_BULK_DELETE(buCode),
+        { ...variables, dry_run: true },
+      );
+      if (!res.ok) throw await ApiError.from(res, "Failed to count documents");
+      const json = await res.json();
+      const payload = json?.data as BulkDeleteDryRunResult | undefined;
+      if (!payload || typeof payload.matched !== "number") {
+        throw new Error("Unexpected dry-run response shape");
+      }
+      return payload;
+    },
   });
 }

@@ -1,3 +1,4 @@
+import { DocumentUsageList } from "./document-usage-list";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import type { Table } from "@tanstack/react-table";
 import { Download, Loader2, Trash2 } from "lucide-react";
@@ -102,6 +103,7 @@ export function DocumentPreviewView({
             >
               {selectable && (
                 <Checkbox
+                  disabled={!row.getCanSelect()}
                   checked={row.getIsSelected()}
                   onCheckedChange={(v) => row.toggleSelected(!!v)}
                   aria-label={doc.originalName}
@@ -254,8 +256,14 @@ function PreviewPane({
                 variant="outline"
                 className="text-destructive"
                 onClick={() => onDelete(doc)}
-                disabled={deleteDisabled}
-                title={deleteDisabled ? deleteDisabledTitle : undefined}
+                disabled={deleteDisabled || !!doc.delete_blocked}
+                title={
+                  doc.delete_blocked
+                    ? t("deleteBlocked")
+                    : deleteDisabled
+                      ? deleteDisabledTitle
+                      : undefined
+                }
               >
                 <Trash2 />
                 {t("preview.delete")}
@@ -272,6 +280,14 @@ function PreviewPane({
           <dd className="min-w-0">
             <DocumentReference doc={doc} className="max-w-full" />
           </dd>
+          {!!doc.usages?.length && (
+            <>
+              <dt className="text-muted-foreground">{t("usedIn")}</dt>
+              <dd className="min-w-0">
+                <DocumentUsageList usages={doc.usages} />
+              </dd>
+            </>
+          )}
           <dt className="text-muted-foreground">{t("uploadedBy")}</dt>
           <dd className="truncate">{doc.audit?.created?.name || "—"}</dd>
           <dt className="text-muted-foreground">{t("uploadedAt")}</dt>
