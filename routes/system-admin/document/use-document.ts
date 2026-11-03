@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { httpClient } from "@/lib/http-client";
@@ -42,6 +47,46 @@ export function useDocument(
     },
     ...CACHE_DYNAMIC,
     enabled: !!buCode && (options?.enabled ?? true),
+  });
+}
+
+/** จำนวนไฟล์ต่อรอบที่เลื่อนถึงท้าย */
+export const DOCUMENT_PAGE_SIZE = 30;
+
+/**
+ * รายการไฟล์แบบ lazy load (โหลดเพิ่มทีละ DOCUMENT_PAGE_SIZE เมื่อเลื่อนถึงท้าย)
+ *
+ * ใช้ useInfiniteQuery แทน useGridPagination โดยตั้งใจ: ตัวนั้นต่อหน้าเข้า state เองและกันซ้ำ
+ * ด้วย `id` ซึ่ง DocumentFile ไม่มี — ลบไฟล์แล้ว invalidate หน้าเดิมจะถูกต่อท้ายซ้ำ และแถวที่ลบ
+ * ค้างอยู่ ส่วน useInfiniteQuery refetch ทุกหน้าที่โหลดไว้ใหม่ทั้งชุดเมื่อ invalidate
+ * key ขึ้นต้น QUERY_KEYS.DOCUMENTS → mutation เดิมทั้งหมด (upload/delete/bulk) invalidate ถึง
+ *
+ * @param params - ตัวกรอง/ค้นหา (page/perpage ถูกแทนด้วยค่าของ hook)
+ */
+export function useDocumentInfinite(params: DocumentListParams) {
+  const buCode = useBuCode();
+  const { page: _page, perpage: _perpage, ...filters } = params;
+
+  return useInfiniteQuery<DocumentListResponse>({
+    queryKey: [QUERY_KEYS.DOCUMENTS, buCode, "infinite", filters],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) => {
+      if (!buCode) throw new Error("Missing buCode");
+      const url = buildUrl(API_ENDPOINTS.DOCUMENTS(buCode), {
+        ...filters,
+        page: pageParam as number,
+        perpage: DOCUMENT_PAGE_SIZE,
+      });
+      const res = await httpClient.get(url);
+      if (!res.ok) throw new Error("Failed to fetch documents");
+      return res.json();
+    },
+    getNextPageParam: (last) => {
+      const { page, pages } = last.paginate ?? { page: 1, pages: 1 };
+      return page < pages ? page + 1 : undefined;
+    },
+    ...CACHE_DYNAMIC,
+    enabled: !!buCode,
   });
 }
 

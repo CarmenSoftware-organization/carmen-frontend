@@ -679,6 +679,7 @@
       "moreActions": "More actions",
       "listView": "List view",
       "gridView": "Grid view",
+      "previewView": "Preview view",
       "toggleColumns": "Toggle columns",
       "remove": "Remove",
       "selectAll": "Select all",
@@ -2304,6 +2305,7 @@
       "uploadedAt": "Uploaded on",
       "referenceDeleted": "Document deleted",
       "referenceUnknown": "Unknown source",
+      "loadedOf": "Showing {loaded} of {total}",
       "filterModule": "Attached from module",
       "filterCreatedBefore": "Uploaded before",
       "selectedBar": "{count, plural, one {# file} other {# files}} selected · {size}",
@@ -2324,6 +2326,13 @@
         "UNSUPPORTED_REFERENCE_TYPE": "The file source does not support deletion yet",
         "TOMBSTONE_FAILED": "Could not update the source document attachment list, so the file was kept",
         "DELETE_FAILED": "Could not remove the file from storage. Try deleting again."
+      },
+      "preview": {
+        "download": "Download",
+        "delete": "Delete",
+        "unavailable": "Preview isn't available for this file type. Download it to open.",
+        "failed": "Couldn't load this file.",
+        "truncated": "Showing the beginning of the file only. Download it to see the rest."
       },
       "summary": {
         "title": "Storage by module",

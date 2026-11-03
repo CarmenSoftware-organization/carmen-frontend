@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { OnChangeFn, RowSelectionState } from "@tanstack/react-table";
 import { Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -9,10 +9,10 @@ import {
   DataGridScrollArea,
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
-import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
 import { Button } from "@/components/ui/button";
 import {
-  useDocument,
+  DOCUMENT_PAGE_SIZE,
+  useDocumentInfinite,
   useDocumentSummary,
   useUploadDocument,
   useDeleteDocument,
@@ -30,8 +30,6 @@ import { ErrorState } from "@/components/ui/error-state";
 import EmptyComponent from "@/components/empty-component";
 import { cn } from "@/lib/utils";
 import { useDocumentTable } from "./use-document-table";
-import { useGridPagination } from "@/hooks/use-grid-pagination";
-import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useListFilters } from "@/hooks/use-list-filters";
 import { ListToolbar } from "@/components/list-filter/list-toolbar";
@@ -49,8 +47,20 @@ import { ApiError } from "@/lib/api-error";
 import { getUserErrorMessage } from "@/lib/error-message";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
+import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
+import { DocumentIconGrid } from "./document-icon-grid";
+import { DocumentPreviewView } from "./document-preview-view";
+import { DocumentLoadMore } from "./document-load-more";
+
+type DocumentDisplayMode = "list" | "grid" | "preview";
+const DOCUMENT_DISPLAY_MODES: readonly DocumentDisplayMode[] = [
+  "list",
+  "grid",
+  "preview",
+];
 
 export default function DocumentComponent() {
+  "use no memo";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deleteTarget, setDeleteTarget] = useState<DocumentFile | null>(null);
   const deleteDocument = useDeleteDocument();
@@ -68,6 +78,8 @@ export default function DocumentComponent() {
   const uploadDocument = useUploadDocument();
   const isMobile = useIsMobile();
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
+  const [displayMode, setDisplayMode] = useState<DocumentDisplayMode>("list");
+  const [previewToken, setPreviewToken] = useState<string | null>(null);
   const [summarySheetOpen, setSummarySheetOpen] = useState(false);
   const { data: summary, isLoading: isSummaryLoading } = useDocumentSummary();
   const hasSummary = !!summary && summary.total_count > 0;
@@ -77,12 +89,10 @@ export default function DocumentComponent() {
 
   // สลับ BU แล้ว summary หายไปกลางอากาศ (query key เปลี่ยน) ทำให้ Sheet unmount โดยไม่เคยเรียก
   // onOpenChange(false) — ถ้าไม่รีเซ็ตตรงนี้ summarySheetOpen จะค้างเป็น true แล้วพอสลับไป BU
-  // ที่มีไฟล์ Sheet จะเด้งเปิดเองโดยไม่มีใครกด
-  useEffect(() => {
-    if (!hasSummary) setSummarySheetOpen(false);
-  }, [hasSummary]);
+  // ที่มีไฟล์ Sheet จะเด้งเปิดเองโดยไม่มีใครกด · รีเซ็ตระหว่าง render (ไม่ใช่ effect) ตาม pattern
+  // "adjusting state when a prop changes" ของ React — มีเงื่อนไขกันวนจึงตั้งค่าได้ครั้งเดียว
+  if (!hasSummary && summarySheetOpen) setSummarySheetOpen(false);
   const { params, search, setSearch, tableConfig } = useDataGridState();
-  const useInfiniteScroll = !!isMobile;
   const lf = useListFilters({
     pageKey: LIST_PAGE_KEYS.DOCUMENT,
     fields: DOCUMENT_FILTER_FIELDS,
@@ -96,28 +106,33 @@ export default function DocumentComponent() {
     sort: undefined,
     ...documentFiltersToParams(lf.values),
   };
-  const { data, isLoading, isFetching, error, refetch } = useDocument(
-    listParams,
-    {
-      enabled: !useInfiniteScroll,
-    },
-  );
-
-  const grid = useGridPagination<DocumentFile>({
-    useListHook: useDocument as Parameters<
-      typeof useGridPagination<DocumentFile>
-    >[0]["useListHook"],
-    params: listParams,
-    enabled: useInfiniteScroll,
-  });
+  // lazy load ทุกมุมมอง (ตาราง/icon/preview และการ์ดบนมือถือ) — ไม่มีแถบเลขหน้าแล้ว
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useDocumentInfinite(listParams);
   const t = useTranslations("systemAdmin.document");
   const tt = useTranslations("toast");
   const terr = useTranslations("errors");
 
-  const documents = useInfiniteScroll ? grid.items : (data?.data ?? []);
-  const totalRecords = useInfiniteScroll
-    ? grid.totalRecords
-    : (data?.paginate?.total ?? 0);
+  const documents = data?.pages.flatMap((p) => p.data ?? []) ?? [];
+  const firstPage = data?.pages[0]?.paginate;
+  const totalRecords = firstPage?.total ?? 0;
+  const loadMore = (
+    <DocumentLoadMore
+      loaded={documents.length}
+      total={totalRecords}
+      hasMore={!!hasNextPage}
+      isLoadingMore={isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
+    />
+  );
 
   const filterKey = JSON.stringify([
     listParams.search,
@@ -130,7 +145,7 @@ export default function DocumentComponent() {
   const allMatching = sel.key === filterKey && sel.allMatching;
   const selectedTokens = Object.keys(selSizes);
   const selectedSize = Object.values(selSizes).reduce((a, b) => a + b, 0);
-  const matchingSize = data?.paginate?.total_size ?? 0;
+  const matchingSize = firstPage?.total_size ?? 0;
   const rowSelection: RowSelectionState = Object.fromEntries(
     selectedTokens.map((k) => [k, true]),
   );
@@ -152,7 +167,8 @@ export default function DocumentComponent() {
   const table = useDocumentTable({
     documents,
     totalRecords,
-    params,
+    // ทุกแถวที่โหลดมาอยู่ใน "หน้าเดียว" — เลขลำดับนับต่อเนื่อง ไม่บวก offset ของหน้า
+    params: { ...params, page: 1, perpage: Math.max(documents.length, 1) },
     tableConfig,
     onDelete: setDeleteTarget,
     rowSelection,
@@ -283,6 +299,15 @@ export default function DocumentComponent() {
             lf={lf}
             fields={DOCUMENT_FILTER_FIELDS}
             onSaveViewClick={() => setSaveViewDialogOpen(true)}
+            beforeViewSelector={
+              !isMobile && (
+                <DisplayModeToggle
+                  value={displayMode}
+                  onChange={setDisplayMode}
+                  modes={DOCUMENT_DISPLAY_MODES}
+                />
+              )
+            }
           />
 
           {showSelectionBar && (
@@ -308,13 +333,8 @@ export default function DocumentComponent() {
       }
     >
       {isMobile ? (
-        grid.isLoading ? (
+        isLoading ? (
           <CardSkeletonGrid />
-        ) : grid.error ? (
-          <ErrorState
-            message={grid.error.message}
-            onRetry={() => grid.refetch?.()}
-          />
         ) : documents.length > 0 ? (
           <>
             <div className="grid grid-cols-1 gap-3">
@@ -322,18 +342,12 @@ export default function DocumentComponent() {
                 <DocumentCard key={doc.fileToken} item={doc} index={i} />
               ))}
             </div>
-            {grid.hasMore && (
-              <div ref={grid.sentinelRef} className="flex justify-center py-4">
-                {grid.isLoadingMore && (
-                  <Loader2 className="text-muted-foreground size-5 animate-spin" />
-                )}
-              </div>
-            )}
+            {loadMore}
           </>
         ) : (
           <EmptyComponent />
         )
-      ) : (
+      ) : displayMode === "list" ? (
         <DataGrid
           table={table}
           recordCount={totalRecords}
@@ -358,9 +372,45 @@ export default function DocumentComponent() {
           >
             <DataGridScrollArea>
               <DataGridTable />
+              {documents.length > 0 && loadMore}
             </DataGridScrollArea>
-            <DataGridPagination />
           </DataGridContainer>
+        </DataGrid>
+      ) : documents.length === 0 && !isLoading ? (
+        <EmptyComponent />
+      ) : (
+        <DataGrid
+          table={table}
+          recordCount={totalRecords}
+          isLoading={isLoading}
+        >
+          <div className="flex flex-col gap-3">
+            {displayMode === "grid" ? (
+              <DocumentIconGrid
+                table={table}
+                isLoading={isLoading}
+                selectable={!deleteGate.deleteDenied}
+                perpage={DOCUMENT_PAGE_SIZE}
+                onOpen={(doc) => {
+                  setPreviewToken(doc.fileToken);
+                  setDisplayMode("preview");
+                }}
+              />
+            ) : (
+              <DocumentPreviewView
+                table={table}
+                isLoading={isLoading}
+                selectable={!deleteGate.deleteDenied}
+                activeToken={previewToken}
+                onActiveChange={setPreviewToken}
+                onDelete={setDeleteTarget}
+                deleteDisabled={deleteGate.writeDisabled}
+                deleteDisabledTitle={deleteGate.writeDisabledTitle}
+                footer={loadMore}
+              />
+            )}
+            {displayMode === "grid" && loadMore}
+          </div>
         </DataGrid>
       )}
 
