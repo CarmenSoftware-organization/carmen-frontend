@@ -338,7 +338,8 @@ export default function DocumentComponent() {
           table={table}
           recordCount={totalRecords}
           isLoading={isLoading}
-          tableLayout={{ headerSticky: true }}
+          // checkbox: true จำเป็น — DataGridTable ซ่อนคอลัมน์ id "select" ถ้าไม่เปิด (bulk delete ใช้ไม่ได้)
+          tableLayout={{ headerSticky: true, checkbox: true }}
           emptyMessage={<EmptyComponent />}
         >
           <DataGridContainer
