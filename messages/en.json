@@ -2306,7 +2306,7 @@
       "referenceUnknown": "Unknown source",
       "filterModule": "Attached from module",
       "filterCreatedBefore": "Uploaded before",
-      "selectedBar": "{count} files selected · {size}",
+      "selectedBar": "{count, plural, one {# file} other {# files}} selected · {size}",
       "allMatchingSelected": "All {count} files matching the filter are selected · {size}",
       "selectAllMatching": "Select all matching the filter ({count} files · {size})",
       "selectAllMatchingTooMany": "More than {max} files match. Narrow the filter first to select them all.",

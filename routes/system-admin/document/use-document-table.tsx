@@ -151,8 +151,9 @@ export function useDocumentTable({
           className,
         } = getFileTypeInfo(contentType);
         return (
-          <div className="flex items-center gap-1.5">
-            <Icon className={`h-3.5 w-3.5 ${className}`} />
+          // data-slot: ไม่งั้น wrapper ของ DataGridTable ใส่ line-clamp-2 ทับ flex → ไอคอนตกไปอยู่บนบรรทัดแยก
+          <div data-slot="cell-icon" className="flex items-center gap-1.5">
+            <Icon className={`size-3.5 shrink-0 ${className}`} />
             <span className="text-xs">{t(labelKey)}</span>
           </div>
         );
@@ -163,8 +164,13 @@ export function useDocumentTable({
       accessorKey: "size",
       enableSorting: false,
       header: () => <span className="text-xs font-medium">{tfl("size")}</span>,
-      cell: ({ row }) => formatFileSize(row.getValue("size")),
+      cell: ({ row }) => (
+        <span className="text-xs tabular-nums">
+          {formatFileSize(row.getValue("size"))}
+        </span>
+      ),
       size: 100,
+      meta: { headerClassName: "text-right", cellClassName: "text-right" },
     },
     {
       id: "reference",
@@ -248,7 +254,11 @@ export function useDocumentTable({
       ),
       cell: ({ row }) => {
         const at = row.original.audit?.created?.at ?? row.original.lastModified;
-        return at ? formatDate(at, dateFormat) : "—";
+        return (
+          <span className="text-xs tabular-nums">
+            {at ? formatDate(at, dateFormat) : "—"}
+          </span>
+        );
       },
       size: 120,
     },
