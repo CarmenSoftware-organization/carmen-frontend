@@ -104,6 +104,8 @@ export function useDocumentTable({
     },
     {
       id: "reference",
+      // คอลัมน์ที่มีแค่ id (ไม่มี accessor) TanStack ปิด sort ให้เอง — ต้องมี accessorFn หัวคอลัมน์จึงกดเรียงได้
+      accessorFn: (row) => row.reference_type ?? "",
       // เรียงตาม reference_type (คีย์ดิบ) ฝั่ง server ไม่ใช่ชื่อโมดูลที่แปลแล้ว — กลุ่มเดียวกันอยู่ติดกัน
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={t("attachedFrom")} />
@@ -127,6 +129,7 @@ export function useDocumentTable({
     },
     {
       id: "createdAt",
+      accessorFn: (row) => row.audit?.created?.at ?? row.lastModified,
       // วันที่อัปโหลดจริงอยู่ที่ audit.created.at (lastModified ของ storage เปลี่ยนตามการเขียนทับ)
       // sort key createdAt = tb_file_tag.created_at (micro-file buildFileSearchOrderBy)
       header: ({ column }) => (
