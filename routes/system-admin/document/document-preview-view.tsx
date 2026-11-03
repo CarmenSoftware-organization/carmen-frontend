@@ -1,4 +1,3 @@
-import { DocumentUsageList } from "./document-usage-list";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import type { Table } from "@tanstack/react-table";
 import { Download, Loader2, Trash2 } from "lucide-react";
@@ -11,6 +10,7 @@ import { formatDate } from "@/lib/date-utils";
 import { formatFileSize } from "@/lib/format-file-size";
 import { cn } from "@/lib/utils";
 import type { DocumentFile } from "@/types/document";
+import { DocumentUsageList } from "./document-usage-list";
 import { getFileTypeInfo, getPreviewKind } from "./document-file-type";
 import { DocumentReference } from "./document-reference";
 import { DocumentThumb } from "./document-thumb";

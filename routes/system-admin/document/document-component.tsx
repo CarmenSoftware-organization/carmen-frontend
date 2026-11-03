@@ -196,31 +196,14 @@ export default function DocumentComponent() {
         }
       : { file_tokens: selectedTokens };
 
-  // โหมดเลือกทีละไฟล์: สรุปจาก usages ของแถวที่โหลดอยู่ (ไฟล์ platform เลือกไม่ได้อยู่แล้ว)
-  // โหมดตัวกรอง: ใช้ผล dry-run — null = lookup ล้มเหลว
-  const selectedSet = new Set(selectedTokens);
-  const selectedRows = documents.filter((d) => selectedSet.has(d.fileToken));
-  const tokenInUse = selectedRows.filter((d) => !!d.usages?.length).length;
-  const tokenUnknown = selectedRows.some((d) => d.usages === null);
-  const bulkInUse = allMatching
-    ? dryRunResult?.in_use
-    : tokenInUse > 0
-      ? tokenInUse
-      : tokenUnknown
-        ? null
-        : 0;
-  const bulkPlatformBlocked = allMatching
-    ? dryRunResult?.platform_blocked
-    : 0;
+  // ทั้งสองโหมดใช้ผล dry-run (นับครอบคลุมไฟล์ที่เลือกข้ามหน้าด้วย) — null = lookup ล้มเหลว
+  const bulkInUse = dryRunResult?.in_use;
+  const bulkPlatformBlocked = dryRunResult?.platform_blocked;
 
   const openBulkDelete = () => {
     setBulkError(undefined);
     setDryRunResult(undefined);
-    if (!allMatching) {
-      setBulkDialogOpen(true);
-      return;
-    }
-    // โหมดตัวกรอง: นับก่อนเปิดกล่อง เพื่อบอกว่ากี่ไฟล์ยังถูกใช้/จะถูกข้าม
+    // นับก่อนเปิดกล่อง (ทั้งโหมดตัวกรองและเลือกทีละไฟล์) เพื่อบอกว่ากี่ไฟล์ยังถูกใช้/จะถูกข้าม
     dryRun.mutate(bulkVariables(), {
       onSuccess: (r) => {
         setDryRunResult(r);
