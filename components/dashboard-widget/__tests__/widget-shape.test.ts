@@ -6,6 +6,8 @@ import {
   defaultWidgetTypeFor,
   inferSubTile,
   joinPicked,
+  periodCodeOf,
+  selectablePeriods,
   shouldShowAllOption,
   splitPicked,
   SUPPORTED_SHAPES,
@@ -200,5 +202,48 @@ describe("defaultWidgetTypeFor with default_render", () => {
       default_render: "heatmap",
     };
     expect(defaultWidgetTypeFor(heat)).toBe("bar");
+  });
+});
+
+describe("selectablePeriods", () => {
+  const tokenCode = { "@current_period": "2610", "@previous_period": "2609" };
+  const options = [
+    "@current_period",
+    "@previous_period",
+    "2610",
+    "2609",
+    "2608",
+  ];
+
+  it("hides the codes the picked tokens point at", () => {
+    expect(
+      selectablePeriods(
+        options,
+        ["@current_period", "@previous_period"],
+        tokenCode,
+      ),
+    ).toEqual(["2608"]);
+  });
+
+  it("hides the token when its code is picked", () => {
+    expect(selectablePeriods(options, ["2610"], tokenCode)).toEqual([
+      "@previous_period",
+      "2609",
+      "2608",
+    ]);
+  });
+
+  it("offers everything when nothing is picked", () => {
+    expect(selectablePeriods(options, [], tokenCode)).toEqual(options);
+  });
+
+  it("only hides the token itself while its code is still loading", () => {
+    expect(selectablePeriods(options, ["@current_period"], {})).toEqual([
+      "@previous_period",
+      "2610",
+      "2609",
+      "2608",
+    ]);
+    expect(periodCodeOf("@current_period", {})).toBe("@current_period");
   });
 });

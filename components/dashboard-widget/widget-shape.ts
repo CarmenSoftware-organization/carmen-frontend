@@ -74,6 +74,37 @@ export function joinPicked(ids: readonly string[]): string {
 }
 
 /**
+ * รหัสงวดที่ค่าหนึ่งชี้ถึง — token (`@current_period` / `@previous_period`) คืนรหัสที่ token
+ * ชี้อยู่ตอนนี้ (จาก `tokenCode`) รหัสงวดคืนตัวเอง · token ที่ยังไม่รู้รหัส (รายการงวดยังโหลด
+ * ไม่เสร็จ) คืนตัว token เอง จึงเท่ากับแค่ตัวมันเอง
+ */
+export function periodCodeOf(
+  value: string,
+  tokenCode: Readonly<Record<string, string | undefined>>,
+): string {
+  return (value.startsWith("@") ? tokenCode[value] : value) ?? value;
+}
+
+/**
+ * งวดที่ยังติ๊กเพิ่มได้ในช่องเลือกหลายงวด — ตัดทั้งค่าที่เลือกแล้ว และค่าที่ชี้งวดเดียวกับที่เลือก
+ * แล้ว: เลือก "งวดปัจจุบัน · 2610" แล้วไม่มี "2610" ให้ติ๊กซ้ำ และกลับกัน (backend รวมงวดซ้ำเป็น
+ * แถวเดียวอยู่แล้ว แต่ซ้ำแล้วเปลืองโควตา `max` กับงวดเดิม)
+ *
+ * @param options - token + รหัสงวดทั้งหมด ตามลำดับที่จะแสดง
+ * @param picked - ค่าที่เลือกอยู่
+ * @param tokenCode - token → รหัสงวดที่ชี้อยู่ตอนนี้
+ * @returns ค่าที่ยังเลือกเพิ่มได้ ลำดับเดิม
+ */
+export function selectablePeriods(
+  options: readonly string[],
+  picked: readonly string[],
+  tokenCode: Readonly<Record<string, string | undefined>>,
+): string[] {
+  const taken = new Set(picked.map((v) => periodCodeOf(v, tokenCode)));
+  return options.filter((v) => !taken.has(periodCodeOf(v, tokenCode)));
+}
+
+/**
  * ป้ายของ token ขอบเขตเจ้าของเอกสาร (param `owner_visibility` ของ micro-data:
  * `@everyone` = ทั้ง BU, `@current_user` = เอกสารที่ฉันสร้าง) → key ใน
  * `dashboard.savedWidget` คำเดียวกับ badge ทั้งหมด / ของฉัน ของ status group
