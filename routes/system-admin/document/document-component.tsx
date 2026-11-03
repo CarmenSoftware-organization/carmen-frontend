@@ -17,6 +17,7 @@ import {
   useUploadDocument,
   useDeleteDocument,
   useBulkDeleteDocuments,
+  useBulkDeleteDryRun,
 } from "./use-document";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -24,7 +25,7 @@ import { CardSkeletonGrid } from "@/components/loader/card-skeleton";
 import DocumentCard from "./document-card";
 import DocumentSummaryBar from "./document-summary-bar";
 import DocumentSummarySheet from "./document-summary-sheet";
-import type { DocumentFile } from "@/types/document";
+import type { BulkDeleteDryRunResult, DocumentFile } from "@/types/document";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import EmptyComponent from "@/components/empty-component";
@@ -41,6 +42,7 @@ import {
   documentListParamsToBulkFilter,
 } from "./document-filter-fields";
 import { DocumentSelectionBar } from "./document-selection-bar";
+import { DocumentUsageList } from "./document-usage-list";
 import { DocumentBulkDeleteDialog } from "./document-bulk-delete-dialog";
 import { useDeleteGate } from "@/hooks/use-delete-gate";
 import { ApiError } from "@/lib/api-error";
@@ -65,6 +67,10 @@ export default function DocumentComponent() {
   const [deleteTarget, setDeleteTarget] = useState<DocumentFile | null>(null);
   const deleteDocument = useDeleteDocument();
   const bulkDelete = useBulkDeleteDocuments();
+  const dryRun = useBulkDeleteDryRun();
+  const [dryRunResult, setDryRunResult] = useState<
+    BulkDeleteDryRunResult | undefined
+  >();
   const deleteGate = useDeleteGate();
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [bulkError, setBulkError] = useState<string | undefined>();
@@ -182,14 +188,42 @@ export default function DocumentComponent() {
     !deleteGate.deleteDenied &&
     (selectedTokens.length > 0 || allMatching);
 
-  const confirmBulkDelete = () => {
-    // โหมดตัวกรองส่ง expected_count เสมอ (server บังคับ) = จำนวนที่ผู้ใช้เห็นในกล่องตอนกดยืนยัน
-    const variables = allMatching
+  const bulkVariables = () =>
+    allMatching
       ? {
           filter: documentListParamsToBulkFilter(listParams),
           expected_count: totalRecords,
         }
       : { file_tokens: selectedTokens };
+
+  // ทั้งสองโหมดใช้ผล dry-run (นับครอบคลุมไฟล์ที่เลือกข้ามหน้าด้วย) — null = lookup ล้มเหลว
+  const bulkInUse = dryRunResult?.in_use;
+  const bulkPlatformBlocked = dryRunResult?.platform_blocked;
+
+  const openBulkDelete = () => {
+    setBulkError(undefined);
+    setDryRunResult(undefined);
+    // นับก่อนเปิดกล่อง (ทั้งโหมดตัวกรองและเลือกทีละไฟล์) เพื่อบอกว่ากี่ไฟล์ยังถูกใช้/จะถูกข้าม
+    dryRun.mutate(bulkVariables(), {
+      onSuccess: (r) => {
+        setDryRunResult(r);
+        setBulkDialogOpen(true);
+      },
+      // 409/422 ฯลฯ: เปิดกล่องพร้อมข้อความ ให้ผู้ใช้เห็นเหตุผลเดียวกับลบจริง
+      onError: (err) => {
+        setBulkError(
+          err instanceof ApiError
+            ? getUserErrorMessage(err, terr)
+            : t("bulkDeleteFailed"),
+        );
+        setBulkDialogOpen(true);
+      },
+    });
+  };
+
+  const confirmBulkDelete = () => {
+    // โหมดตัวกรองส่ง expected_count เสมอ (server บังคับ) = จำนวนที่ผู้ใช้เห็นในกล่องตอนกดยืนยัน
+    const variables = bulkVariables();
     setBulkError(undefined);
     bulkDelete.mutate(variables, {
       onSuccess: (result) => {
@@ -320,11 +354,8 @@ export default function DocumentComponent() {
                 setSel({ key: filterKey, sizes: selSizes, allMatching: true })
               }
               onClear={clearSelection}
-              onDelete={() => {
-                setBulkError(undefined);
-                setBulkDialogOpen(true);
-              }}
-              deleteDisabled={deleteGate.writeDisabled}
+              onDelete={openBulkDelete}
+              deleteDisabled={deleteGate.writeDisabled || dryRun.isPending}
               deleteDisabledTitle={deleteGate.writeDisabledTitle}
             />
           )}
@@ -419,9 +450,22 @@ export default function DocumentComponent() {
           !open && !deleteDocument.isPending && setDeleteTarget(null)
         }
         title={t("deleteTitle")}
-        description={t("deleteConfirm", {
-          name: deleteTarget?.originalName ?? "",
-        })}
+        description={
+          <>
+            {t("deleteConfirm", { name: deleteTarget?.originalName ?? "" })}
+            {!!deleteTarget?.usages?.length && (
+              <span className="mt-3 block">
+                <span className="text-foreground block font-medium">
+                  {t("usedIn")}
+                </span>
+                <DocumentUsageList usages={deleteTarget.usages} />
+                <span className="text-warning-ink mt-2 block">
+                  {t("deleteInUseWarning")}
+                </span>
+              </span>
+            )}
+          </>
+        }
         isPending={deleteDocument.isPending}
         onConfirm={() => {
           if (!deleteTarget) return;
@@ -442,6 +486,8 @@ export default function DocumentComponent() {
         isPending={bulkDelete.isPending}
         confirmDisabled={isFetching}
         error={bulkError}
+        inUse={bulkInUse}
+        platformBlocked={bulkPlatformBlocked}
         onConfirm={confirmBulkDelete}
       />
 

@@ -22,6 +22,10 @@ interface DocumentBulkDeleteDialogProps {
   /** ข้อความ error จาก server (เช่น 409 จำนวนเปลี่ยน) — แสดงในกล่องโดยไม่ปิด */
   readonly error?: string;
   readonly onConfirm: () => void;
+  /** จำนวนไฟล์ที่ยังถูกใช้อยู่ — null = ไม่ทราบแต่น่าจะมี (lookup ล้มเหลว) · undefined/0 = ไม่แสดง */
+  readonly inUse?: number | null;
+  /** จำนวนไฟล์ของ platform ที่จะถูกข้าม */
+  readonly platformBlocked?: number | null;
 }
 
 /** ยืนยันลบหลายไฟล์ — จำนวน + ขนาดรวม + "ลบถาวร กู้คืนไม่ได้" · ปุ่มยืนยันเป็น destructive */
@@ -34,6 +38,8 @@ export function DocumentBulkDeleteDialog({
   confirmDisabled,
   error,
   onConfirm,
+  inUse,
+  platformBlocked,
 }: DocumentBulkDeleteDialogProps) {
   const t = useTranslations("systemAdmin.document");
   const td = useTranslations("delete");
@@ -63,6 +69,23 @@ export function DocumentBulkDeleteDialog({
                 </span>
                 {t("bulkDeletePermanent")}
               </AlertDialogDescription>
+              {inUse === null && (
+                <p className="text-warning-ink mt-2 text-sm">
+                  {t("bulkInUseUnknown")}
+                </p>
+              )}
+              {!!inUse && (
+                <p className="text-warning-ink mt-2 text-sm">
+                  {t("bulkInUse", { count: inUse })}
+                  <br />
+                  {t("deleteInUseWarning")}
+                </p>
+              )}
+              {!!platformBlocked && (
+                <p className="text-muted-foreground mt-2 text-sm">
+                  {t("bulkPlatformBlocked", { count: platformBlocked })}
+                </p>
+              )}
               {error && (
                 <p
                   role="alert"

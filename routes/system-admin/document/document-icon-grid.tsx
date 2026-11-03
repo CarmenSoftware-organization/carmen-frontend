@@ -89,7 +89,7 @@ export function DocumentIconGrid({
                 </span>
               </span>
             </button>
-            {selectable && (
+            {selectable && row.getCanSelect() && (
               <Checkbox
                 checked={selected}
                 onCheckedChange={(v) => row.toggleSelected(!!v)}

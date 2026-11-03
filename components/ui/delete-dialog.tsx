@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Trash2, X } from "lucide-react";
 import { useTranslations } from "use-intl";
 import {
@@ -14,7 +15,7 @@ interface DeleteDialogProps {
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
   readonly title: string;
-  readonly description?: string;
+  readonly description?: ReactNode;
   readonly onConfirm: () => void;
   readonly isPending?: boolean;
 }

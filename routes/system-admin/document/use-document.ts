@@ -12,6 +12,7 @@ import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { QUERY_KEYS } from "@/constant/query-keys";
 import { ApiError } from "@/lib/api-error";
 import type {
+  BulkDeleteDryRunResult,
   BulkDeleteResult,
   BulkDeleteVariables,
   DocumentListParams,
@@ -256,5 +257,66 @@ export function useDocumentSummary() {
     ...CACHE_DYNAMIC,
     enabled: !!buCode,
     retry: false,
+  });
+}
+
+/**
+ * นับล่วงหน้าก่อนลบแบบตัวกรอง (dry_run: true) — endpoint + body เดียวกับลบจริง แต่ไม่ลบอะไร
+ * in_use / platform_blocked = null แปลว่า lookup ล้มเหลว (freed_size ประมาณ)
+ * ไม่ invalidate: ไม่มีอะไรเปลี่ยน
+ */
+export function useBulkDeleteDryRun() {
+  const buCode = useBuCode();
+  return useMutation<BulkDeleteDryRunResult, ApiError, BulkDeleteVariables>({
+    meta: { skipGlobalErrorToast: true },
+    mutationFn: async (variables) => {
+      if (!buCode)
+        throw new ApiError("MISSING_REQUIRED_FIELD", "Missing buCode");
+      const post = async (body: unknown) => {
+        const res = await httpClient.post(
+          API_ENDPOINTS.DOCUMENTS_BULK_DELETE(buCode),
+          { ...(body as object), dry_run: true },
+        );
+        if (!res.ok)
+          throw await ApiError.from(res, "Failed to count documents");
+        const json = await res.json();
+        const payload = json?.data as BulkDeleteDryRunResult | undefined;
+        if (!payload || typeof payload.matched !== "number") {
+          throw new Error("Unexpected dry-run response shape");
+        }
+        return payload;
+      };
+      if ("filter" in variables) return post(variables);
+      // เลือกทีละไฟล์: แบ่งก้อนเท่าลบจริง แล้วรวมผล (null ในก้อนใดก้อนหนึ่ง = ไม่ทราบทั้งหมด)
+      const total: BulkDeleteDryRunResult = {
+        matched: 0,
+        in_use: 0,
+        platform_blocked: 0,
+        freed_size: 0,
+      };
+      for (
+        let i = 0;
+        i < variables.file_tokens.length;
+        i += BULK_DELETE_TOKEN_CHUNK
+      ) {
+        const r = await post({
+          file_tokens: variables.file_tokens.slice(
+            i,
+            i + BULK_DELETE_TOKEN_CHUNK,
+          ),
+        });
+        total.matched += r.matched;
+        total.freed_size += r.freed_size;
+        total.in_use =
+          total.in_use === null || r.in_use === null
+            ? null
+            : total.in_use + r.in_use;
+        total.platform_blocked =
+          total.platform_blocked === null || r.platform_blocked === null
+            ? null
+            : total.platform_blocked + r.platform_blocked;
+      }
+      return total;
+    },
   });
 }

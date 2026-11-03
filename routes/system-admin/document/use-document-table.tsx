@@ -145,7 +145,11 @@ export function useDocumentTable({
       },
       size: 120,
     },
-    actionColumn<DocumentFile>(onDelete, deleteGate),
+    actionColumn<DocumentFile>(onDelete, {
+      ...deleteGate,
+      deleteDisabledTitle: (doc) =>
+        doc.delete_blocked ? t("deleteBlocked") : undefined,
+    }),
   ];
 
   return useReactTable({
@@ -154,7 +158,8 @@ export function useDocumentTable({
     getCoreRowModel: getCoreRowModel(),
     ...tableConfig,
     getRowId: (row) => row.fileToken,
-    enableRowSelection: true,
+    // ไฟล์ที่ยังถูกใช้ติ๊กไม่ได้ — ไม่งั้นลบหลายรายการแล้วได้ผล "ลบไม่ได้" กลับมาเป็นก้อน
+    enableRowSelection: (row) => !row.original.delete_blocked,
     onRowSelectionChange,
     state: { ...tableConfig.state, rowSelection },
     pageCount: Math.ceil(totalRecords / (params.perpage as number)),
