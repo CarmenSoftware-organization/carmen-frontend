@@ -74,6 +74,17 @@ export function joinPicked(ids: readonly string[]): string {
 }
 
 /**
+ * ป้ายของ token ขอบเขตเจ้าของเอกสาร (param `owner_visibility` ของ micro-data:
+ * `@everyone` = ทั้ง BU, `@current_user` = เอกสารที่ฉันสร้าง) → key ใน
+ * `dashboard.savedWidget` คำเดียวกับ badge ทั้งหมด / ของฉัน ของ status group
+ */
+export const OWNER_SCOPE_LABEL: ReadonlyMap<string, "visAll" | "visMine"> =
+  new Map([
+    ["@everyone", "visAll"],
+    ["@current_user", "visMine"],
+  ]);
+
+/**
  * Radix SelectItem ห้าม value="" — param ที่ไม่บังคับและใช้ "" แปลว่า "ทั้งหมด"
  * (เช่น status) จึงต้องมี sentinel แล้ว map กลับเป็น "" ตอนส่งขึ้น API
  */
