@@ -2079,7 +2079,26 @@ export default function AccountingDocumentDetail() {
                   : "min-h-0 flex-1 overflow-auto border-y"
               }
             >
-              <table className="w-full min-w-5xl text-xs">
+              <table
+                className={`w-full min-w-5xl text-xs ${isGlVoucher ? "table-fixed" : ""}`}
+              >
+                {/* ความกว้างคอลัมน์คงที่ — เดิม auto layout แจกพื้นที่ตามเนื้อหา คอลัมน์
+                    Rate ที่มีแค่ "1" เลยกว้างเท่า Debit/Credit ส่วน Comment ยืดกินที่ว่าง
+                    ตัวเลข (Rate/Debit/Credit) กว้างตายตัว ส่วนข้อความแบ่งที่เหลือ
+                    บัญชีกับ cost center ได้ 18% เท่ากัน comment รับที่เหลือ */}
+                {isGlVoucher && (
+                  <colgroup>
+                    <col className="w-16" />
+                    <col className="w-[18%]" />
+                    <col className="w-[18%]" />
+                    <col />
+                    <col className="w-20" />
+                    <col className="w-24" />
+                    <col className="w-36" />
+                    <col className="w-36" />
+                    <col className="w-16" />
+                  </colgroup>
+                )}
                 <thead className="bg-muted sticky top-0 z-10 border-b">
                   <tr>
                     <th className="h-10 w-16 px-2">
@@ -2182,7 +2201,10 @@ export default function AccountingDocumentDetail() {
                                   getLabel={(option) => option.label}
                                   placeholder={t("selectAccount")}
                                   searchPlaceholder={t("searchAccount")}
-                                  className="min-w-52"
+                                  className="w-full min-w-0"
+                                  // คอลัมน์แคบ (18%) — เมนูกว้างตามชื่อที่ยาวสุด ไม่ถูกตัดเท่าช่อง
+                                  // แต่ไม่แคบกว่าช่อง และไม่เกินจอ
+                                  fitContent
                                 />
                               )
                             ) : isView ? (
@@ -2245,7 +2267,10 @@ export default function AccountingDocumentDetail() {
                                   getLabel={(option) => option.label}
                                   placeholder={t("selectCostCenter")}
                                   searchPlaceholder={t("searchCostCenter")}
-                                  className="min-w-44"
+                                  className="w-full min-w-0"
+                                  // คอลัมน์แคบ (18%) — เมนูกว้างตามชื่อที่ยาวสุด ไม่ถูกตัดเท่าช่อง
+                                  // แต่ไม่แคบกว่าช่อง และไม่เกินจอ
+                                  fitContent
                                 />
                               )
                             ) : isView ? (
@@ -2278,7 +2303,9 @@ export default function AccountingDocumentDetail() {
                                     comment: event.target.value,
                                   })
                                 }
-                                className="min-w-48"
+                                className={
+                                  isGlVoucher ? "w-full min-w-0" : "min-w-48"
+                                }
                               />
                             )}
                           </td>
@@ -2308,7 +2335,7 @@ export default function AccountingDocumentDetail() {
                                     exchangeRate: Number(event.target.value),
                                   })
                                 }
-                                className="min-w-24 text-right tabular-nums"
+                                className={`${isGlVoucher ? "w-full min-w-0" : "min-w-24"} text-right tabular-nums`}
                               />
                             ) : (
                               (line.exchangeRate ?? 1)
@@ -2339,7 +2366,7 @@ export default function AccountingDocumentDetail() {
                                     }
                                   }
                                 }}
-                                className="min-w-28 text-right tabular-nums"
+                                className={`${isGlVoucher ? "w-full min-w-0" : "min-w-28"} text-right tabular-nums`}
                               />
                             )}
                           </td>
@@ -2368,7 +2395,7 @@ export default function AccountingDocumentDetail() {
                                     }
                                   }
                                 }}
-                                className="min-w-28 text-right tabular-nums"
+                                className={`${isGlVoucher ? "w-full min-w-0" : "min-w-28"} text-right tabular-nums`}
                               />
                             )}
                           </td>
