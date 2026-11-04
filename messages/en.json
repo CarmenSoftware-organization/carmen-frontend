@@ -274,21 +274,6 @@
         "description": "All general journal entries",
         "single": "Journal Voucher"
       },
-      "templateVoucher": {
-        "title": "Template Voucher Directory",
-        "description": "Reusable journal entry templates",
-        "single": "Template Voucher"
-      },
-      "recurringVoucher": {
-        "title": "Recurring Voucher Directory",
-        "description": "Scheduled recurring journal entries",
-        "single": "Recurring Voucher"
-      },
-      "allocationVoucher": {
-        "title": "Allocation Voucher Directory",
-        "description": "Cost and revenue allocation entries",
-        "single": "Allocation Voucher"
-      },
       "financialReports": {
         "title": "Financial Reports",
         "description": "Financial statements and management reports",

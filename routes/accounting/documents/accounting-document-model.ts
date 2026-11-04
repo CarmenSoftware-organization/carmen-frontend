@@ -1,8 +1,5 @@
 export type AccountingDocumentKind =
   | "journalVoucher"
-  | "templateVoucher"
-  | "recurringVoucher"
-  | "allocationVoucher"
   | "financialReports"
   | "arInvoice"
   | "arReceipt"
@@ -33,21 +30,6 @@ export const ACCOUNTING_DOCUMENTS: Record<
     kind: "journalVoucher",
     path: "/accounting/journal-voucher",
     prefix: "JV",
-  },
-  templateVoucher: {
-    kind: "templateVoucher",
-    path: "/accounting/template-voucher",
-    prefix: "TV",
-  },
-  recurringVoucher: {
-    kind: "recurringVoucher",
-    path: "/accounting/recurring-voucher",
-    prefix: "RV",
-  },
-  allocationVoucher: {
-    kind: "allocationVoucher",
-    path: "/accounting/allocation-voucher",
-    prefix: "AV",
   },
   financialReports: {
     kind: "financialReports",
