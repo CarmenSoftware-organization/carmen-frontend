@@ -196,6 +196,12 @@ export const PERMISSIONS = {
     schedule: crud("report.schedule"),
     history: viewOnly("report.history"),
   },
+  accounting: {
+    gl_jv_template: {
+      ...crud("accounting.gl.jv_template"),
+      generate: "accounting.gl.jv_template.generate",
+    },
+  },
   operation_plan: {
     view: "operation_plan.view",
     recipe: crud("operation_plan.recipe"),

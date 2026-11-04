@@ -6,6 +6,9 @@
 export const LIST_PAGE_KEYS = {
   // accounting
   JOURNAL_VOUCHER: "journal_voucher",
+  JV_TEMPLATE: "jv_template",
+  JV_TEMPLATE_RECURRING: "jv_template_recurring",
+  JV_TEMPLATE_ALLOCATION: "jv_template_allocation",
   // config
   ADJUSTMENT_TYPE: "adjustment_type",
   BUSINESS_TYPE: "business_type",

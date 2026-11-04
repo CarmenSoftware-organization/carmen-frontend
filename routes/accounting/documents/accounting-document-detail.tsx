@@ -257,11 +257,7 @@ export default function AccountingDocumentDetail() {
   const errorToast = useErrorToast();
   const config = accountingDocumentFromPath(pathname);
   const isJournalVoucher = config.kind === "journalVoucher";
-  const isGlVoucher =
-    isJournalVoucher ||
-    config.kind === "templateVoucher" ||
-    config.kind === "recurringVoucher" ||
-    config.kind === "allocationVoucher";
+  const isGlVoucher = isJournalVoucher;
   const buCode = useBuCode();
   const dimensionQuery = useGlDimensions(isGlVoucher);
   const dimensionValuesQuery = useGlDimensionValues(isGlVoucher);
@@ -293,8 +289,6 @@ export default function AccountingDocumentDetail() {
     (config.kind === "journalVoucher" && !sourceGenerated) ||
     config.kind === "arInvoice" ||
     config.kind === "arReceipt";
-  const hasInlineApproval =
-    config.kind === "recurringVoucher" || config.kind === "allocationVoucher";
   const documents = useMemo(() => documentsFor(config), [config]);
   const document = documents.find((item) => item.id === id) ?? documents[0];
   const isNew = id === "new";
@@ -1728,23 +1722,6 @@ export default function AccountingDocumentDetail() {
 
                   <span
                     className="bg-border hidden h-8 w-px lg:block"
-                    aria-hidden="true"
-                  />
-                </>
-              )}
-
-              {hasInlineApproval && (
-                <>
-                  <div className="flex min-h-8 items-center gap-3 text-xs">
-                    <span className="text-muted-foreground">
-                      {t("approval")}
-                    </span>
-                    <span className="font-medium">
-                      {t("pendingController")}
-                    </span>
-                  </div>
-                  <span
-                    className="bg-border hidden h-8 w-px xl:block"
                     aria-hidden="true"
                   />
                 </>
