@@ -1,4 +1,4 @@
-import type { ApDashboardSnapshot } from "@/types/accounts-payable-mock";
+import type { ApDashboardSnapshot } from "./ap-dashboard-types";
 import type {
   AccountingDashboardModule,
   AccountingDashboardSnapshot,
@@ -684,7 +684,7 @@ export function buildApDashboardSnapshot(
           {
             format: "currency",
             tone: "primary",
-            href: "/accounting/accounts-payable/invoice?lifecycle=posted&settlement=open",
+            href: "/accounting/accounts-payable/invoice?filter=doc_status%7Cstring%3Aposted",
           },
         ),
         metric(
@@ -708,7 +708,7 @@ export function buildApDashboardSnapshot(
           {
             format: "currency",
             tone: "success",
-            href: "/accounting/accounts-payable/payment?execution=executed",
+            href: "/accounting/accounts-payable/payment",
           },
         ),
         metric(
@@ -718,7 +718,7 @@ export function buildApDashboardSnapshot(
           text("Prioritize before payment run", "จัดลำดับก่อนรอบจ่าย"),
           {
             tone: "destructive",
-            href: "/accounting/accounts-payable/invoice?due_bucket=overdue",
+            href: "/accounting/accounts-payable/invoice",
           },
         ),
       ],
@@ -758,7 +758,7 @@ export function buildApDashboardSnapshot(
           text("Assigned workflow queue", "คิวงานตาม workflow"),
           data?.approvals.invoice ?? 5,
           "warning",
-          "/accounting/accounts-payable/invoice?lifecycle=submitted",
+          "/accounting/accounts-payable/invoice?filter=doc_status%7Cstring%3Ain_review",
         ),
         task(
           "approval-payment",
@@ -766,7 +766,7 @@ export function buildApDashboardSnapshot(
           text("Review before release", "ตรวจสอบก่อนปล่อยจ่าย"),
           data?.approvals.payment ?? 3,
           "warning",
-          "/accounting/accounts-payable/payment?lifecycle=submitted",
+          "/accounting/accounts-payable/payment?filter=doc_status%7Cstring%3Ain_review",
         ),
         task(
           "tax",
@@ -778,7 +778,7 @@ export function buildApDashboardSnapshot(
           (data?.tax.missing_documents ?? 2) +
             (data?.tax.pending_corrections ?? 2),
           "destructive",
-          "/accounting/accounts-payable/invoice?tax=pending",
+          "/accounting/accounts-payable/invoice",
         ),
       ],
     },

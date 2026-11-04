@@ -973,7 +973,7 @@ export const router = createBrowserRouter([
                 path: "accounts-payable/payment-approvals",
                 element: (
                   <Navigate
-                    to="/accounting/accounts-payable/payment?lifecycle=submitted"
+                    to="/accounting/accounts-payable/payment?filter=doc_status%7Cstring%3Ain_review"
                     replace
                   />
                 ),
