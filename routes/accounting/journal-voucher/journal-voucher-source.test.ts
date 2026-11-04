@@ -93,8 +93,8 @@ describe("Journal Voucher source policy", () => {
     expect(draftCapabilities.can_edit_accounting_fields).toBe(false);
     expect(draftCapabilities.can_submit).toBe(false);
     expect(
-      journalVoucherCapabilities({ ...generated, jv_status: "post_failed" })
-        .can_retry_post,
+      journalVoucherCapabilities({ ...generated, jv_status: "in_review" })
+        .can_approve,
     ).toBe(false);
   });
 

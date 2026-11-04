@@ -79,6 +79,7 @@ export function WfStageGeneral({
   // ฟีเจอร์ซ่อนราคาไม่มีผลกับใบเบิก (SR ไม่มียอด) และ stage create/purchase (ไม่ถูกซ่อนเสมอ)
   const hideFieldsApplicable =
     workflowType !== WORKFLOW_TYPE.SR &&
+    workflowType !== WORKFLOW_TYPE.JV &&
     currentRole !== "create" &&
     currentRole !== "purchase";
 

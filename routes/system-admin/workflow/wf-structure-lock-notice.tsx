@@ -11,7 +11,10 @@ import { cn } from "@/lib/utils";
 
 // หน้ารายการเอกสารของแต่ละชนิด กับคอลัมน์สถานะที่ backend ใช้นับ in_progress
 // (workflows.service.ts → countDocumentsByStatus) — ต้องตรงกันไม่งั้นลิงก์พาไปเจอจำนวนไม่เท่าแบนเนอร์
-const DOCUMENT_LIST: Record<WORKFLOW_TYPE, { path: string; status: string }> = {
+const DOCUMENT_LIST: Record<
+  WORKFLOW_TYPE,
+  { path: string; status: string; value?: string }
+> = {
   [WORKFLOW_TYPE.PR]: {
     path: "/procurement/purchase-request",
     status: "pr_status",
@@ -23,6 +26,12 @@ const DOCUMENT_LIST: Record<WORKFLOW_TYPE, { path: string; status: string }> = {
   [WORKFLOW_TYPE.SR]: {
     path: "/store-operation/store-requisition",
     status: "doc_status",
+  },
+  // JV ใช้ชื่อสถานะ in_review สำหรับใบที่อยู่ระหว่าง workflow (ไม่มี in_progress)
+  [WORKFLOW_TYPE.JV]: {
+    path: "/accounting/journal-voucher",
+    status: "jv_status",
+    value: "in_review",
   },
 };
 
@@ -44,7 +53,7 @@ export function getInProgressDocumentsHref(
   if (!target) return undefined;
   const params = new URLSearchParams({
     view: "all-document",
-    filter: `${target.status}|string:in_progress`,
+    filter: `${target.status}|string:${target.value ?? "in_progress"}`,
     workflow: `workflow_id|string:${workflowId}`,
   });
   return `${target.path}?${params.toString()}`;

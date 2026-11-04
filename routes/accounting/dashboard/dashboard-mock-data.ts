@@ -56,7 +56,7 @@ const gl: AccountingDashboardSnapshot = {
         text("8 require review", "8 รายการต้องตรวจสอบ"),
         {
           tone: "warning",
-          href: "/accounting/journal-voucher?status=submitted",
+          href: "/accounting/journal-voucher?status=in_review",
         },
       ),
       metric(
@@ -66,7 +66,7 @@ const gl: AccountingDashboardSnapshot = {
         text("Interface balance errors", "ยอดจาก interface ไม่สมดุล"),
         {
           tone: "destructive",
-          href: "/accounting/journal-voucher?status=post_failed",
+          href: "/accounting/journal-voucher?status=draft",
         },
       ),
       metric(
@@ -130,7 +130,7 @@ const gl: AccountingDashboardSnapshot = {
         ),
         2,
         "destructive",
-        "/accounting/journal-voucher?status=post_failed",
+        "/accounting/journal-voucher?status=draft",
       ),
       task(
         "accrual",

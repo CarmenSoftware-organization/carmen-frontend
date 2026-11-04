@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   Ban,
   Boxes,
+  Check,
   ChevronDown,
   ChevronUp,
   CircleDollarSign,
@@ -32,6 +33,7 @@ import {
   Send,
   ShieldCheck,
   Trash2,
+  Undo2,
   WandSparkles,
   X,
 } from "lucide-react";
@@ -42,7 +44,6 @@ import { toast } from "sonner";
 import type { FormMode } from "@/types/form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Card,
   CardAction,
@@ -104,6 +105,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { WorkflowTrack } from "@/components/share/workflow-track";
+import { JvRejectDialog } from "./jv-reject-dialog";
+import { JvReverseDialog } from "./jv-reverse-dialog";
+import { JvVoidDialog } from "./jv-void-dialog";
 import { DocActions } from "@/components/share/doc-actions";
 import { DocFormHeader } from "@/components/share/doc-form-header";
 import {
@@ -276,6 +280,9 @@ export default function AccountingDocumentDetail() {
   const submitJournal = useJournalVoucherAction("submit");
   const voidJournal = useJournalVoucherAction("void");
   const reverseJournal = useJournalVoucherAction("reverse");
+  const approveJournal = useJournalVoucherAction("approve");
+  const rejectJournal = useJournalVoucherAction("reject");
+  const [rejectOpen, setRejectOpen] = useState(false);
   const copyJournal = useCopyJournalVoucher();
   const journal = journalQuery.data;
   const sourceGenerated = journal ? isSourceGenerated(journal) : false;
@@ -286,7 +293,7 @@ export default function AccountingDocumentDetail() {
     ? sourceLinksForJournal(journal).find((link) => link.href)
     : undefined;
   const hasWorkflowApproval =
-    (config.kind === "journalVoucher" && !sourceGenerated) ||
+    (config.kind === "journalVoucher" && Boolean(journal?.workflow_id)) ||
     config.kind === "arInvoice" ||
     config.kind === "arReceipt";
   const documents = useMemo(() => documentsFor(config), [config]);
@@ -941,13 +948,24 @@ export default function AccountingDocumentDetail() {
         if (!targetId || targetId === "undefined") {
           throw new Error("Invalid voucher ID received from server");
         }
+        let submittedStatus: string | undefined;
         if (intent === "submit")
-          await submitJournal.mutateAsync({
-            id: targetId,
-            doc_version: saved.doc_version,
-          });
+          submittedStatus = (
+            await submitJournal.mutateAsync({
+              id: targetId,
+              doc_version: saved.doc_version,
+            })
+          ).data.jv_status;
         setMode("view");
-        toast.success(intent === "draft" ? t("draftSaved") : t("submitted"));
+        toast.success(
+          intent === "draft"
+            ? t("draftSaved")
+            : submittedStatus === "posted"
+              ? t("submittedPosted")
+              : submittedStatus === "scheduled"
+                ? t("submittedScheduled")
+                : t("submittedInReview"),
+        );
         navigate(`${config.path}/${targetId}`, { replace: true });
       } catch (error) {
         if (error instanceof ApiError && isAppStatusErrorCode(error.appCode)) {
@@ -1094,6 +1112,48 @@ export default function AccountingDocumentDetail() {
       : (journal?.source_no ?? journal?.source_id ?? "—")
     : "AP-102934";
 
+  const onJournalActionError = (error: Error) =>
+    error instanceof ApiError && isAppStatusErrorCode(error.appCode)
+      ? errorToast(error)
+      : toast.error(error.message);
+
+  function handleJournalApprove() {
+    if (!journal) return;
+    approveJournal.mutate(
+      { id: journal.id, doc_version: journal.doc_version },
+      {
+        // อนุมัติขั้นสุดท้ายคืน posted / scheduled — ขั้นอื่นยังเป็น in_review
+        onSuccess: ({ data }) =>
+          toast.success(
+            data?.jv_status === "posted"
+              ? t("approvedPosted")
+              : data?.jv_status === "scheduled"
+                ? t("submittedScheduled")
+                : t("approved"),
+          ),
+        onError: onJournalActionError,
+      },
+    );
+  }
+
+  function handleJournalReject(reason: string) {
+    if (!journal) return;
+    rejectJournal.mutate(
+      {
+        id: journal.id,
+        doc_version: journal.doc_version,
+        reason: reason || undefined,
+      },
+      {
+        onSuccess: () => {
+          setRejectOpen(false);
+          toast.success(t("rejected"));
+        },
+        onError: onJournalActionError,
+      },
+    );
+  }
+
   if (isJournalVoucher && journalQuery.isLoading) {
     return <Skeleton className="h-[70vh] rounded-lg" />;
   }
@@ -1139,6 +1199,28 @@ export default function AccountingDocumentDetail() {
                     {tc("edit")}
                   </Button>
                 )}
+                {isJournalVoucher && journalCapabilities?.can_approve && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={approveJournal.isPending}
+                    onClick={handleJournalApprove}
+                  >
+                    <Check className="size-4" aria-hidden="true" />
+                    {tc("approve")}
+                  </Button>
+                )}
+                {isJournalVoucher && journalCapabilities?.can_reject && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setRejectOpen(true)}
+                  >
+                    <Undo2 className="size-4" aria-hidden="true" />
+                    {tc("reject")}
+                  </Button>
+                )}
                 {isJournalVoucher && journalCapabilities?.can_void && (
                   <Button
                     type="button"
@@ -1156,7 +1238,7 @@ export default function AccountingDocumentDetail() {
                     variant="ghost"
                     onClick={() => setJournalConfirmation("reverse")}
                   >
-                    Reverse
+                    {t("reverse")}
                   </Button>
                 )}
                 {!isJournalVoucher && documentStatus !== "Voided" && (
@@ -1727,7 +1809,27 @@ export default function AccountingDocumentDetail() {
                 </>
               )}
 
-              {hasWorkflowApproval && (
+              {hasWorkflowApproval && isJournalVoucher && journal && (
+                <div
+                  className="w-full max-w-80 min-w-0"
+                  aria-label={t("workflowStageStrip")}
+                >
+                  <WorkflowTrack
+                    previousStage={journal.workflow_previous_stage ?? undefined}
+                    currentStage={
+                      journal.workflow_current_stage ??
+                      journal.workflow_name ??
+                      "—"
+                    }
+                    nextStage={journal.workflow_next_stage ?? undefined}
+                    terminalState={
+                      journal.jv_status === "void" ? "voided" : undefined
+                    }
+                  />
+                </div>
+              )}
+
+              {hasWorkflowApproval && !isJournalVoucher && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -2522,38 +2624,55 @@ export default function AccountingDocumentDetail() {
         </Card>
       </form>
 
-      <ConfirmDialog
-        open={journalConfirmation !== null}
+      <JvReverseDialog
+        open={journalConfirmation === "reverse"}
         onOpenChange={(open) => !open && setJournalConfirmation(null)}
-        title={
-          journalConfirmation === "reverse"
-            ? "Reverse Journal Voucher?"
-            : "Void Journal Voucher?"
-        }
-        description="This action changes the Journal Voucher status."
-        confirmText={journalConfirmation === "reverse" ? "Reverse" : "Void"}
-        isPending={voidJournal.isPending || reverseJournal.isPending}
-        onConfirm={() => {
-          if (!journal || !journalConfirmation) return;
-          const action = journalConfirmation;
-          const mutation = action === "void" ? voidJournal : reverseJournal;
-          mutation.mutate(
-            { id: journal.id, doc_version: journal.doc_version },
+        isPending={reverseJournal.isPending}
+        onConfirm={(jvDate) => {
+          if (!journal) return;
+          reverseJournal.mutate(
+            // backend บังคับ jv_date (วันที่ของใบกลับ) — ไม่ส่ง = Invalid Date ฝั่ง micro
+            { id: journal.id, doc_version: journal.doc_version, jv_date: jvDate },
             {
-              onSuccess: () => {
+              onSuccess: ({ data }) => {
                 setJournalConfirmation(null);
+                // reverse ผ่าน workflow = ใบกลับรายการเป็น draft รอส่งอนุมัติ → พาไปหน้าใบใหม่
+                const isDraft = data.jv_status === "draft";
                 toast.success(
-                  action === "void" ? t("voided") : "Journal Voucher reversed",
+                  isDraft ? t("reversedDraft") : t("reversedPosted"),
                 );
+                if (isDraft && data.id && data.id !== journal.id)
+                  navigate(`${config.path}/${data.id}`);
               },
               // รหัสสถานะแอปต้องแปลผ่าน errorToast — message เป็นประโยค default ของ gateway
-              onError: (error) =>
-                error instanceof ApiError && isAppStatusErrorCode(error.appCode)
-                  ? errorToast(error)
-                  : toast.error(error.message),
+              onError: onJournalActionError,
             },
           );
         }}
+      />
+      <JvVoidDialog
+        open={journalConfirmation === "void"}
+        onOpenChange={(open) => !open && setJournalConfirmation(null)}
+        isPending={voidJournal.isPending}
+        onConfirm={(reason) => {
+          if (!journal) return;
+          voidJournal.mutate(
+            { id: journal.id, doc_version: journal.doc_version, reason },
+            {
+              onSuccess: () => {
+                setJournalConfirmation(null);
+                toast.success(t("voided"));
+              },
+              onError: onJournalActionError,
+            },
+          );
+        }}
+      />
+      <JvRejectDialog
+        open={rejectOpen}
+        onOpenChange={setRejectOpen}
+        isPending={rejectJournal.isPending}
+        onConfirm={handleJournalReject}
       />
       <Sheet
         open={!isGlVoucher && !!selectedLine}

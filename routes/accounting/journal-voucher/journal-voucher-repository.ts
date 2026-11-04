@@ -9,8 +9,6 @@ export type JournalVoucherCommand =
   | "submit"
   | "approve"
   | "reject"
-  | "return-to-draft"
-  | "retry-post"
   | "reschedule"
   | "reverse"
   | "void";

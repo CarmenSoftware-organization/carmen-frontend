@@ -116,7 +116,7 @@ export default function WfInsights({
         },
       ];
     }),
-    ...(productCount === 0
+    ...(productCount === 0 && workflowType !== WORKFLOW_TYPE.JV
       ? [
           {
             key: "products",
@@ -154,7 +154,12 @@ export default function WfInsights({
     [t("statHod"), insights.stats.hodStages.toLocaleString()],
     [t("statTotalUsers"), insights.stats.totalUsers.toLocaleString()],
     [t("statRoutingRules"), routingRules.length.toLocaleString()],
-    [t("statProducts"), productCount.toLocaleString()],
+    ...(workflowType === WORKFLOW_TYPE.JV
+      ? []
+      : ([[t("statProducts"), productCount.toLocaleString()]] as [
+          string,
+          string,
+        ][])),
     ...(workflowType === WORKFLOW_TYPE.PO
       ? ([
           [

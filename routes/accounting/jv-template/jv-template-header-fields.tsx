@@ -20,7 +20,7 @@ import { LookupCurrency } from "@/components/lookup/lookup-currency";
 import { formatCurrency } from "@/lib/currency-utils";
 import { formatDate } from "@/lib/date-utils";
 import { useProfile } from "@/hooks/use-profile";
-import { useGlJvPrefixOptions } from "../shared/use-gl-jv-prefix-options";
+import { useGlJvPrefixOptions } from "@/hooks/use-gl-jv-prefix-options";
 import type { JvTemplateType } from "./jv-template-types";
 import {
   ymdFromPicker,

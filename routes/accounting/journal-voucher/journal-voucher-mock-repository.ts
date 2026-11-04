@@ -1,3 +1,4 @@
+import type { JournalVoucherStatus } from "@/types/journal-voucher";
 import type { PaginatedResponse, ParamsDto } from "@/types/params";
 import { addDecimal, compareDecimal } from "../accounts-payable/shared/ap-decimal";
 import type {
@@ -81,7 +82,6 @@ const seed = (): JournalVoucher[] => [
     reverse_date: null,
     total_debit: "12500.00",
     total_credit: "12500.00",
-    workflow_enabled_snapshot: false,
     lines: [
       line("1", "6100", "Expense", "11682.24", "0"),
       line("2", "1150", "Input VAT", "817.76", "0"),
@@ -118,7 +118,6 @@ const seed = (): JournalVoucher[] => [
     reverse_date: null,
     total_debit: "3200.00",
     total_credit: "3200.00",
-    workflow_enabled_snapshot: false,
     lines: [
       line("1", "6200", "Office supplies", "3200.00", "0"),
       line("2", "1100", "Cash", "0", "3200.00"),
@@ -165,17 +164,13 @@ function assertCommandAllowed(
       ? capability.can_submit
       : command === "approve"
         ? capability.can_approve
-        : command === "return-to-draft"
-          ? capability.can_return
-          : command === "reject"
-            ? capability.can_reject
-            : command === "retry-post"
-              ? capability.can_retry_post
-              : command === "void"
-                ? capability.can_void
-                : command === "reverse"
-                  ? capability.can_reverse
-                  : journal.jv_status === "scheduled";
+        : command === "reject"
+          ? capability.can_reject
+          : command === "void"
+            ? capability.can_void
+            : command === "reverse"
+              ? capability.can_reverse
+              : journal.jv_status === "scheduled";
   if (!allowed) throw new Error(`Cannot ${command} this Journal Voucher`);
 }
 
@@ -250,7 +245,6 @@ export const journalVoucherMockRepository: JournalVoucherRepository = {
       jv_type: input.journal_type,
       base_currency_id: input.functional_currency_id,
       ...journalTotals(toJournalLines(input)),
-      workflow_enabled_snapshot: false,
       is_source_generated: isSourceGenerated({
         source_type: input.source_type,
         is_source_generated: undefined,
@@ -291,20 +285,15 @@ export const journalVoucherMockRepository: JournalVoucherRepository = {
         compareDecimal(current.total_debit, current.total_credit) !== 0)
     )
       throw new Error("Journal Voucher must be balanced before Submit");
-    const status =
-      command === "submit"
-        ? current.workflow_enabled_snapshot
-          ? "submitted"
-          : "posted"
-        : command === "approve" || command === "retry-post"
-          ? "posted"
-          : command === "return-to-draft" || command === "reject"
-            ? "draft"
-            : command === "reverse"
-              ? "reversed"
-              : command === "void"
-                ? "voided"
-                : current.jv_status;
+    // mock ไม่มี workflow — submit แล้วลงบัญชีทันที
+    const status: JournalVoucherStatus =
+      command === "submit" || command === "approve"
+        ? "posted"
+        : command === "reject"
+          ? "draft"
+          : command === "void"
+            ? "void"
+            : current.jv_status;
     const next = {
       ...current,
       jv_status: status,

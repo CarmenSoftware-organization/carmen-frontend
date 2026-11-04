@@ -2,6 +2,7 @@ export enum WORKFLOW_TYPE {
   PR = "purchase_request",
   PO = "purchase_order",
   SR = "store_requisition",
+  JV = "gl_jv",
 }
 
 enum enum_sla_unit {
@@ -18,11 +19,7 @@ type OperatorType = "eq" | "lt" | "gt" | "lte" | "gte" | "between";
 type ActionType = "SKIP_STAGE" | "NEXT_STAGE";
 type NotificationChannel = "Email" | "System";
 type NotificationEventTrigger =
-  | "onSubmit"
-  | "onApprove"
-  | "onReject"
-  | "onSendBack"
-  | "onSLA";
+  "onSubmit" | "onApprove" | "onReject" | "onSendBack" | "onSLA";
 
 export interface Product {
   id: string;
@@ -229,4 +226,16 @@ interface WorkflowData {
   notifications: WorkflowNotification[];
   notification_templates: Template[];
   products: Product[];
+  /** เฉพาะ workflow ชนิด JV — ว่างทั้งสองกลุ่ม = ครอบคลุมทุกใบ */
+  jv_scope?: {
+    prefix_ids: string[];
+    sources: (
+      | "manual"
+      | "recurring"
+      | "allocation"
+      | "amortize"
+      | "reversal"
+      | "closing"
+    )[];
+  };
 }

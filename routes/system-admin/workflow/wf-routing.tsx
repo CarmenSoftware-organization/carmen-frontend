@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { WORKFLOW_TYPE } from "@/types/workflows";
 import { useDepartment } from "@/hooks/use-department";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { PagedChecklist } from "@/components/lookup/paged-checklist";
@@ -374,6 +375,10 @@ function RuleDetail({
   const t = useTranslations("systemAdmin.workflow");
   const tfl = useTranslations("field");
   const tl = useTranslations("lookup");
+  // JV มีแค่ยอดรวม — ไม่มี department/category ให้ตัดสินใจ (mapper ส่ง department เป็น null)
+  const isJv =
+    useWatch({ control: form.control, name: "workflow_type" }) ===
+    WORKFLOW_TYPE.JV;
 
   const rule = useWatch({
     control: form.control,
@@ -498,11 +503,13 @@ function RuleDetail({
                 <SelectValue placeholder={t("selectField")} />
               </SelectTrigger>
               <SelectContent>
-                {conditionFieldValues.map((value) => (
-                  <SelectItem key={value} value={value}>
-                    {t(conditionFieldKeys[value])}
-                  </SelectItem>
-                ))}
+                {conditionFieldValues
+                  .filter((value) => !isJv || value === "total_amount")
+                  .map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {t(conditionFieldKeys[value])}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
 
