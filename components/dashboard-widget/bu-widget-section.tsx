@@ -15,16 +15,15 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
 import { WidgetSkeletonCards } from "@/components/dashboard-widget/dashboard-widget-grid";
 import { SortableWidgetItem } from "@/components/dashboard-widget/sortable-widget-item";
+import { AddWidgetDialog } from "@/components/dashboard-widget/add-widget-dialog";
 import { WidgetConfigDialog } from "@/components/dashboard-widget/widget-config-dialog";
-import {
-  defaultWidgetTypeFor,
-  SUPPORTED_SHAPES,
-} from "@/components/dashboard-widget/widget-shape";
-import { LookupDataset } from "@/components/lookup/lookup-dataset";
+import { defaultWidgetTypeFor } from "@/components/dashboard-widget/widget-shape";
+import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { cn } from "@/lib/utils";
 import { PERMISSIONS } from "@/constant/permissions";
@@ -88,7 +87,7 @@ export function BuWidgetSection({
   const [pendingDelete, setPendingDelete] = useState<BuDashboardWidget | null>(
     null,
   );
-  const [pendingAdd, setPendingAdd] = useState<DashboardDataset | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const titleOf = useWidgetTitle();
   const [pendingConfig, setPendingConfig] = useState<BuDashboardWidget | null>(
     null,
@@ -144,37 +143,16 @@ export function BuWidgetSection({
   // คนเพิ่มไม่ได้: ไม่โชว์หัว/skeleton ระหว่างโหลด จนกว่าจะรู้ว่ามี widget จริง
   if (items.length === 0 && !canCreate) return null;
 
-  const handleAdd = (ds: DashboardDataset) => {
-    if (ds.params?.length) {
-      setPendingAdd(ds);
-      return;
-    }
-    createWidget.mutate(
-      {
-        dataset_id: ds.id,
-        widget_type: defaultWidgetTypeFor(ds),
-        module: wireModule,
-        order_index: nextOrder,
-      },
-      {
-        onSuccess: () => {
-          warnOnce();
-          toast.success(tt("createSuccess", { entity: t("entity") }));
-        },
-      },
-    );
-  };
-
-  const handleCreateWithParams = (
+  const handleAdd = (
+    ds: DashboardDataset,
     params: WidgetParams,
     display: WidgetDisplay,
     titleI18n: LocalizedTitle | null,
   ) => {
-    if (!pendingAdd) return;
     createWidget.mutate(
       {
-        dataset_id: pendingAdd.id,
-        widget_type: defaultWidgetTypeFor(pendingAdd),
+        dataset_id: ds.id,
+        widget_type: defaultWidgetTypeFor(ds),
         // title คู่กับ title_i18n เป็น fallback ของ backend รุ่นเก่า (backend ใหม่ใช้ title_i18n เป็นหลัก)
         ...(titleI18n ? { title: titleI18n.en, title_i18n: titleI18n } : {}),
         params,
@@ -186,7 +164,7 @@ export function BuWidgetSection({
         onSuccess: () => {
           warnOnce();
           toast.success(tt("createSuccess", { entity: t("entity") }));
-          setPendingAdd(null);
+          setPickerOpen(false);
         },
       },
     );
@@ -280,14 +258,15 @@ export function BuWidgetSection({
           {title}
         </h2>
         {canCreate && (
-          <LookupDataset
-            value=""
-            onValueChange={() => {}}
-            onItemChange={handleAdd}
-            shapes={SUPPORTED_SHAPES}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPickerOpen(true)}
             disabled={createWidget.isPending}
-            placeholder={`+ ${t("add")}`}
-          />
+          >
+            <Plus aria-hidden="true" />
+            {t("add")}
+          </Button>
         )}
       </div>
 
@@ -341,13 +320,12 @@ export function BuWidgetSection({
         isPending={deleteWidget.isPending}
       />
 
-      {pendingAdd && (
-        <WidgetConfigDialog
-          open
-          onOpenChange={(o) => !o && setPendingAdd(null)}
-          dataset={pendingAdd}
+      {canCreate && (
+        <AddWidgetDialog
+          open={pickerOpen}
+          onOpenChange={setPickerOpen}
           isPending={createWidget.isPending}
-          onSubmit={handleCreateWithParams}
+          onAdd={handleAdd}
         />
       )}
 

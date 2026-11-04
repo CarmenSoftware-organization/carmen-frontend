@@ -5773,6 +5773,26 @@
           "chart-1": "Blue",
           "destructive": "Red"
         }
+      },
+      "addTitle": "Add widget",
+      "addDescription": "Pick a widget by module, preview it and adjust its settings before adding it to the dashboard",
+      "addSubmit": "Add widget",
+      "searchWidgets": "Search widgets...",
+      "pickHint": "Pick a widget from the list to preview it and adjust its settings",
+      "backToList": "Back to list",
+      "module": {
+        "document": "Documents",
+        "procurement": "Procurement",
+        "inventory": "Inventory",
+        "product": "Products",
+        "recipe": "Recipes",
+        "vendor": "Vendors",
+        "pricelist": "Price lists",
+        "rfp": "RFP",
+        "equipment": "Equipment",
+        "config": "Master data",
+        "workflow": "Workflow",
+        "lab": "Lab"
       }
     },
     "greeting": {

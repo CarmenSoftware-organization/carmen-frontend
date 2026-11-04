@@ -5773,6 +5773,26 @@
           "chart-1": "น้ำเงิน",
           "destructive": "แดง"
         }
+      },
+      "addTitle": "เพิ่มวิดเจ็ต",
+      "addDescription": "เลือกวิดเจ็ตตามหมวด ดูหน้าตาและปรับค่าก่อนเพิ่มลง dashboard",
+      "addSubmit": "เพิ่มวิดเจ็ต",
+      "searchWidgets": "ค้นหาวิดเจ็ต...",
+      "pickHint": "เลือกวิดเจ็ตจากรายการเพื่อดูหน้าตาและปรับค่า",
+      "backToList": "กลับไปที่รายการ",
+      "module": {
+        "document": "เอกสาร",
+        "procurement": "จัดซื้อ",
+        "inventory": "คลังสินค้า",
+        "product": "สินค้า",
+        "recipe": "สูตรอาหาร",
+        "vendor": "ผู้ขาย",
+        "pricelist": "ใบราคา",
+        "rfp": "RFP",
+        "equipment": "อุปกรณ์",
+        "config": "ข้อมูลหลัก",
+        "workflow": "Workflow",
+        "lab": "Lab"
       }
     },
     "greeting": {

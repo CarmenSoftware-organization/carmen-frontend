@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { useLocale, useTranslations } from "use-intl";
 import { toast } from "sonner";
 import { WidgetSkeletonCards } from "@/components/dashboard-widget/dashboard-widget-grid";
-import { LookupDataset } from "@/components/lookup/lookup-dataset";
+import { AddWidgetDialog } from "@/components/dashboard-widget/add-widget-dialog";
 import { AnimationStyles, Reveal } from "@/components/share/reveal";
 import { AppTile } from "@/components/icons/tiles";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
@@ -56,6 +56,7 @@ import type {
 import { SortableWidgetItem } from "@/components/dashboard-widget/sortable-widget-item";
 import {
   GROUP_DATASETS,
+  GROUP_PREFIX,
   groupCreateParams,
   groupStatusesOfPreset,
   groupVisibilityOfPreset,
@@ -66,10 +67,7 @@ import {
 } from "./status-group";
 import { StatusGroupCard } from "./status-group-card";
 import { WidgetConfigDialog } from "@/components/dashboard-widget/widget-config-dialog";
-import {
-  defaultWidgetTypeFor,
-  SUPPORTED_SHAPES,
-} from "@/components/dashboard-widget/widget-shape";
+import { defaultWidgetTypeFor } from "@/components/dashboard-widget/widget-shape";
 
 const greetingKeyFor = (hour: number): "morning" | "afternoon" | "evening" => {
   if (hour < 12) return "morning";
@@ -155,9 +153,7 @@ const SavedWidgetsSection = () => {
   const [pendingDelete, setPendingDelete] = useState<MyDashboardWidget | null>(
     null,
   );
-  // dataset ที่เลือกมาแล้วแต่ยังไม่ได้ save — รอตั้งค่า param ก่อน
-  const [pendingAdd, setPendingAdd] = useState<DashboardDataset | null>(null);
-  // picker "+ Add Widget" ที่หัว section — ปุ่มใน EmptyState เปิดตัวเดียวกันนี้
+  // pop up "+ Add Widget" ที่หัว section — ปุ่มใน EmptyState เปิดตัวเดียวกันนี้
   const [pickerOpen, setPickerOpen] = useState(false);
   // widget ที่ save แล้วและกำลังแก้ param
   const [pendingConfig, setPendingConfig] = useState<MyDashboardWidget | null>(
@@ -178,7 +174,7 @@ const SavedWidgetsSection = () => {
   const markVisible = useCallback((id: string) => {
     setVisibleIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
   }, []);
-  // catalogue ใช้ query key เดียวกับ LookupDataset — ดึงตรงนี้ = warm cache ให้ picker ด้วย
+  // catalogue ใช้ query key เดียวกับ AddWidgetDialog — ดึงตรงนี้ = warm cache ให้ pop up ด้วย
   const { data: catalogue } = useDashboardDatasets();
   const createWidget = useCreateMyDashboardWidget();
   const updateWidget = useUpdateMyDashboardWidget();
@@ -229,8 +225,17 @@ const SavedWidgetsSection = () => {
     .map((widget, i) => ({ widget, query: detailQueries[i] }))
     .filter(({ query }) => !query?.isError);
 
-  const handleAdd = (ds: DashboardDataset) => {
-    // group widget → สร้างด้วย params ยืนพื้น (ไม่เปิด config dialog)
+  const handleAdd = (
+    ds: DashboardDataset,
+    params: WidgetParams,
+    display: WidgetDisplay,
+    titleI18n: LocalizedTitle | null,
+  ) => {
+    const onSuccess = () => {
+      toast.success(tt("createSuccess", { entity: t("entity") }));
+      setPickerOpen(false);
+    };
+    // group widget → สร้างด้วย params ยืนพื้น (pop up โชว์แค่ preview ไม่มีฟอร์ม)
     if (isGroupDatasetId(ds.id)) {
       createWidget.mutate(
         {
@@ -242,52 +247,32 @@ const SavedWidgetsSection = () => {
             groupStatusesOfPreset(ds.id),
           ),
         },
-        {
-          onSuccess: () =>
-            toast.success(tt("createSuccess", { entity: t("entity") })),
-        },
+        { onSuccess },
       );
-      return;
-    }
-    // มี param → ให้ตั้งค่าก่อน; ไม่มี → POST เลยเหมือนเดิม
-    if (ds.params?.length) {
-      setPendingAdd(ds);
       return;
     }
     createWidget.mutate(
       {
         dataset_id: ds.id,
         widget_type: defaultWidgetTypeFor(ds),
-      },
-      {
-        onSuccess: () =>
-          toast.success(tt("createSuccess", { entity: t("entity") })),
-      },
-    );
-  };
-
-  const handleCreateWithParams = (
-    params: WidgetParams,
-    display: WidgetDisplay,
-    titleI18n: LocalizedTitle | null,
-  ) => {
-    if (!pendingAdd) return;
-    createWidget.mutate(
-      {
-        dataset_id: pendingAdd.id,
-        widget_type: defaultWidgetTypeFor(pendingAdd),
         ...(titleI18n ? { title: titleI18n.en, title_i18n: titleI18n } : {}),
         params,
         display,
       },
-      {
-        onSuccess: () => {
-          toast.success(tt("createSuccess", { entity: t("entity") }));
-          setPendingAdd(null);
-        },
-      },
+      { onSuccess },
     );
   };
+
+  // preset group ไม่ใช่ dataset ที่ backend exec ได้ — preview ด้วยการ์ดจริงของมัน
+  const renderGroupPreview = (ds: DashboardDataset) =>
+    isGroupDatasetId(ds.id) ? (
+      <StatusGroupCard
+        title={ds.name}
+        datasetId={normalizeGroupDatasetId(ds.id).slice(GROUP_PREFIX.length)}
+        statuses={groupStatusesOfPreset(ds.id)}
+        ownerVisibility={groupVisibilityOfPreset(ds.id)}
+      />
+    ) : undefined;
 
   const handleUpdateParams = (
     params: WidgetParams,
@@ -436,18 +421,15 @@ const SavedWidgetsSection = () => {
             </span>
           )}
         </div>
-        <LookupDataset
-          value=""
-          onValueChange={() => {}}
-          onItemChange={handleAdd}
-          excludeIds={excludeIds}
-          extraItems={GROUP_DATASETS}
-          shapes={SUPPORTED_SHAPES}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setPickerOpen(true)}
           disabled={createWidget.isPending}
-          placeholder={`+ ${t("add")}`}
-          open={pickerOpen}
-          onOpenChange={setPickerOpen}
-        />
+        >
+          <Plus aria-hidden="true" />
+          {t("add")}
+        </Button>
       </div>
 
       {isError && (
@@ -540,15 +522,15 @@ const SavedWidgetsSection = () => {
         isPending={deleteWidget.isPending}
       />
 
-      {pendingAdd && (
-        <WidgetConfigDialog
-          open
-          onOpenChange={(o) => !o && setPendingAdd(null)}
-          dataset={pendingAdd}
-          isPending={createWidget.isPending}
-          onSubmit={handleCreateWithParams}
-        />
-      )}
+      <AddWidgetDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        extraItems={GROUP_DATASETS}
+        excludeIds={excludeIds}
+        isPending={createWidget.isPending}
+        renderPreview={renderGroupPreview}
+        onAdd={handleAdd}
+      />
 
       {pendingConfig && configDataset && (
         <WidgetConfigDialog
@@ -569,7 +551,7 @@ const SavedWidgetsSection = () => {
 
 /**
  * ปุ่มเพิ่มอยู่ในตัว empty state เอง แทนข้อความที่ชี้ทางไปปุ่ม "+ Add Widget" ด้านบน —
- * ทั้งสองเปิด picker ตัวเดียวกัน (`pickerOpen` ของ SavedWidgetsSection)
+ * ทั้งสองเปิด pop up ตัวเดียวกัน (`pickerOpen` ของ SavedWidgetsSection)
  *
  * ประเภทกราฟเป็นแค่คำบอก ไม่ใช่ปุ่ม: เดิมวาดเป็นเม็ดยามีขอบซึ่งชวนให้กด แต่กดแล้วไม่เกิดอะไร
  */
