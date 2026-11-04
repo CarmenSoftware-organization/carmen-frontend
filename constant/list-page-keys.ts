@@ -5,6 +5,8 @@
  */
 export const LIST_PAGE_KEYS = {
   // accounting
+  AP_INVOICE: "ap_invoice",
+  AP_PAYMENT: "ap_payment",
   JOURNAL_VOUCHER: "journal_voucher",
   JV_TEMPLATE: "jv_template",
   JV_TEMPLATE_RECURRING: "jv_template_recurring",

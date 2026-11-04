@@ -154,6 +154,20 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/gl-jv/${toSafePathSegment(id)}`,
   JOURNAL_VOUCHER_ACTION: (buCode: string, id: string, action: string) =>
     `/api/proxy/api/${buCode}/gl-jv/${toSafePathSegment(id)}/${toSafePathSegment(action)}`,
+  AP_INVOICE_LIST: (buCode: string) => `/api/proxy/api/${buCode}/ap-invoice`,
+  AP_INVOICE_DETAIL: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/ap-invoice/${toSafePathSegment(id)}`,
+  AP_INVOICE_ACTION: (buCode: string, id: string, command: string) =>
+    `/api/proxy/api/${buCode}/ap-invoice/${toSafePathSegment(id)}/${toSafePathSegment(command)}`,
+  AP_PAYMENT_LIST: (buCode: string) => `/api/proxy/api/${buCode}/ap-payment`,
+  AP_PAYMENT_DETAIL: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/ap-payment/${toSafePathSegment(id)}`,
+  AP_PAYMENT_ACTION: (buCode: string, id: string, command: string) =>
+    `/api/proxy/api/${buCode}/ap-payment/${toSafePathSegment(id)}/${toSafePathSegment(command)}`,
+  AP_PAYMENT_OUTSTANDING: (buCode: string) =>
+    `/api/proxy/api/${buCode}/ap-payment/outstanding-documents`,
+  AP_PAYMENT_WHT_PREVIEW: (buCode: string) =>
+    `/api/proxy/api/${buCode}/ap-payment/wht-preview`,
   GL_JV_LIST: (buCode: string) => `/api/proxy/api/${buCode}/gl-jv`,
   GL_JV_DETAIL: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/gl-jv/${toSafePathSegment(id)}`,

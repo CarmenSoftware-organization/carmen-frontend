@@ -658,6 +658,302 @@
       "deleteTitle": "Delete journal voucher?",
       "deleteConfirm": "Delete {jvNo}? This cannot be undone.",
       "deleteDraftOnly": "Only a draft journal voucher can be deleted"
+    },
+    "accountsPayable": {
+      "invoice": {
+        "title": "AP Invoice Directory",
+        "desc": "Supplier invoices, debit and credit notes, and what is still owed.",
+        "add": "New Invoice",
+        "docNo": "AP No.",
+        "docDate": "Doc Date",
+        "vendor": "Vendor",
+        "vendorInvoiceNo": "Vendor Invoice",
+        "docType": "Type",
+        "total": "Total",
+        "outstanding": "Outstanding",
+        "settlement": "Settlement",
+        "source": "Source",
+        "fromGrn": "From GRN",
+        "loadError": "Unable to load AP invoices",
+        "docTypes": {
+          "invoice": "Invoice",
+          "debit_note": "Debit Note",
+          "credit_note": "Credit Note",
+          "deposit": "Deposit"
+        },
+        "statuses": {
+          "draft": "Draft",
+          "in_review": "In Review",
+          "posted": "Posted",
+          "void": "Void"
+        },
+        "settlements": {
+          "unpaid": "Unpaid",
+          "partially_paid": "Partially Paid",
+          "paid": "Paid"
+        },
+        "detail": {
+          "newTitle": "New AP Invoice",
+          "subtitle": "Supplier invoice",
+          "back": "Back to AP Invoice Directory",
+          "loadError": "Unable to load AP invoice",
+          "notFound": "AP invoice not found",
+          "invoiceDate": "Invoice Date",
+          "creditTerm": "Credit Term",
+          "dueDate": "Due Date",
+          "currency": "Currency",
+          "exchangeRate": "Exchange Rate",
+          "description": "Description",
+          "days": "{count} days",
+          "edit": "Edit",
+          "save": "Save",
+          "cancel": "Cancel",
+          "saved": "Invoice saved",
+          "fixErrors": "Please complete the required fields",
+          "pay": "Pay invoice",
+          "journal": "Journal voucher",
+          "openJournal": "Open journal voucher",
+          "voidReason": "Void reason",
+          "fromGrnBanner": "Created automatically from GRN - edit it at the GRN.",
+          "openGrn": "Open GRN",
+          "linesTitle": "Lines",
+          "addLine": "Add line",
+          "actions": {
+            "submit": "Submit",
+            "approve": "Approve",
+            "return": "Return",
+            "reject": "Reject",
+            "void": "Void",
+            "delete": "Delete"
+          },
+          "done": {
+            "submit": "Invoice submitted",
+            "approve": "Invoice approved",
+            "return": "Invoice returned",
+            "reject": "Invoice rejected",
+            "void": "Invoice voided",
+            "delete": "Invoice deleted"
+          },
+          "confirmDelete": {
+            "title": "Delete this draft?",
+            "description": "The draft invoice will be removed."
+          },
+          "reasonDialog": {
+            "required": "A reason is required.",
+            "optional": "You can add a reason (optional).",
+            "label": "Reason",
+            "void": {
+              "title": "Void invoice"
+            },
+            "reject": {
+              "title": "Reject invoice"
+            },
+            "return": {
+              "title": "Return invoice"
+            }
+          },
+          "summary": {
+            "subtotal": "Subtotal",
+            "discount": "Discount",
+            "vat": "VAT",
+            "wht": "WHT (est.)",
+            "total": "Total"
+          },
+          "errors": {
+            "vendor": "Select a vendor",
+            "vendorInvoiceNo": "Enter the vendor invoice number (max 100 characters)",
+            "docDate": "Select the document date",
+            "invoiceDate": "Select the invoice date",
+            "exchangeRate": "Exchange rate must be greater than 0",
+            "lines": "Add at least one line",
+            "account": "Every line needs a debit account",
+            "quantity": "Quantity must be greater than 0",
+            "unitPrice": "Unit price cannot be negative"
+          },
+          "lines": {
+            "grnNo": "GRN No.",
+            "product": "Product",
+            "description": "Description",
+            "unit": "Unit",
+            "quantity": "Qty",
+            "unitPrice": "Unit Price",
+            "discount": "Discount",
+            "net": "Net",
+            "account": "Debit Account",
+            "costCenter": "Cost Center",
+            "vat": "VAT",
+            "vatAmount": "VAT Amount",
+            "wht": "WHT",
+            "total": "Total",
+            "vatProfile": "VAT profile",
+            "whtProfile": "WHT profile",
+            "clearTax": "Clear tax profile",
+            "required": "Required",
+            "empty": "No lines.",
+            "moveUp": "Move line up",
+            "moveDown": "Move line down",
+            "remove": "Remove line"
+          },
+          "reloaded": "The document was reloaded with the latest data."
+        }
+      },
+      "payment": {
+        "title": "AP Payment Directory",
+        "desc": "Supplier payments and the invoices they settle.",
+        "add": "New Payment",
+        "docNo": "PV No.",
+        "paymentDate": "Payment Date",
+        "vendor": "Vendor",
+        "bankAccount": "Bank Account",
+        "method": "Method",
+        "netPaid": "Net Paid",
+        "referenceNo": "Reference",
+        "loadError": "Unable to load AP payments",
+        "statuses": {
+          "draft": "Draft",
+          "in_review": "In Review",
+          "posted": "Posted",
+          "void": "Void"
+        },
+        "methods": {
+          "bank_transfer": "Bank transfer",
+          "cheque": "Cheque",
+          "cash": "Cash",
+          "credit_card": "Credit card",
+          "promptpay": "PromptPay"
+        },
+        "detail": {
+          "newTitle": "New AP Payment",
+          "subtitle": "Supplier payment",
+          "back": "Back to AP Payment Directory",
+          "loadError": "Unable to load AP payment",
+          "notFound": "AP payment not found",
+          "paidDate": "Paid Date",
+          "selectBank": "Select bank account",
+          "chequeNo": "Cheque No.",
+          "chequeDate": "Cheque Date",
+          "currency": "Currency",
+          "exchangeRate": "Exchange Rate",
+          "exchangeRateAuto": "Auto (system rate)",
+          "description": "Description",
+          "edit": "Edit",
+          "save": "Save",
+          "cancel": "Cancel",
+          "saved": "Payment saved",
+          "fixErrors": "Please complete the required fields",
+          "reloaded": "The document was reloaded with the latest data.",
+          "prefillNone": "Every line of the selected invoice is already reserved by other payments, so nothing could be filled in.",
+          "journal": "Journal voucher",
+          "openJournal": "Open journal voucher",
+          "voidReason": "Void reason",
+          "allocations": {
+            "title": "Invoices to pay",
+            "selectVendor": "Select a vendor to see its outstanding invoices.",
+            "empty": "This vendor has no outstanding invoices.",
+            "emptyRead": "No allocations.",
+            "loadError": "Unable to load outstanding invoices",
+            "dueDate": "Due",
+            "otherCurrency": "Different currency from the selected invoices",
+            "invoiceAllocated": "Paying",
+            "payFull": "Pay in full",
+            "clear": "Clear",
+            "line": "Line",
+            "description": "Description",
+            "unpaid": "Unpaid",
+            "available": "Available",
+            "payAmount": "Pay Amount",
+            "overAvailable": "Exceeds the available amount",
+            "openInvoice": "Open invoice",
+            "realizedFx": "Realized FX"
+          },
+          "wht": {
+            "title": "Withholding tax",
+            "recalculate": "Recalculate from invoices",
+            "calculating": "Calculating...",
+            "empty": "No withholding tax for the selected lines.",
+            "profile": "Tax Profile",
+            "rate": "Rate",
+            "base": "Base",
+            "amount": "WHT Amount",
+            "override": "(edited)",
+            "stale": "The withholding tax no longer matches the amounts above. Press Recalculate before saving.",
+            "staleBlocksSave": "Recalculate the withholding tax before saving",
+            "previewFailed": "Withholding tax could not be recalculated: {message}",
+            "errors": {
+              "amount": "Enter a WHT amount for every row"
+            }
+          },
+          "expenses": {
+            "title": "Other expenses",
+            "add": "Add expense",
+            "empty": "No expenses.",
+            "account": "Account",
+            "costCenter": "Cost Center",
+            "description": "Description",
+            "amount": "Amount",
+            "remove": "Remove expense",
+            "error": "Every expense needs an account and an amount greater than 0"
+          },
+          "taxInvoices": {
+            "title": "Tax invoices of paid documents",
+            "invoice": "Invoice",
+            "taxInvoiceNo": "Tax Invoice No.",
+            "date": "Date",
+            "base": "Base",
+            "vat": "VAT"
+          },
+          "summary": {
+            "applied": "Applied",
+            "wht": "WHT",
+            "expenses": "Expenses",
+            "realizedFx": "Realized FX",
+            "net": "Net Paid"
+          },
+          "actions": {
+            "submit": "Submit",
+            "approve": "Approve",
+            "return": "Return",
+            "reject": "Reject",
+            "void": "Void",
+            "delete": "Delete"
+          },
+          "done": {
+            "submit": "Payment submitted",
+            "approve": "Payment approved",
+            "return": "Payment returned",
+            "reject": "Payment rejected",
+            "void": "Payment voided",
+            "delete": "Payment deleted"
+          },
+          "confirmDelete": {
+            "title": "Delete this draft?",
+            "description": "The draft payment will be removed."
+          },
+          "reasonDialog": {
+            "required": "A reason is required.",
+            "optional": "You can add a reason (optional).",
+            "label": "Reason",
+            "void": {
+              "title": "Void payment"
+            },
+            "reject": {
+              "title": "Reject payment"
+            },
+            "return": {
+              "title": "Return payment"
+            }
+          },
+          "errors": {
+            "vendor": "Select a vendor",
+            "paymentDate": "Select the payment date",
+            "bank": "Select a bank account in the invoice currency",
+            "exchangeRate": "Exchange rate must be greater than 0",
+            "allocations": "Enter an amount for at least one invoice line",
+            "overAllocated": "A line exceeds its available amount",
+            "netPositive": "Net paid must be greater than 0"
+          }
+        }
+      }
     }
   },
   "dashboardWidget": {
@@ -1259,7 +1555,31 @@
       "STOCK_OUT_VOID_VIA_SALES_CONSUMPTION": "This Stock Out was created by Sales Consumption {sc_no}. Void it from the Sales Consumption instead.",
       "DOCUMENT_DELETE_UNSUPPORTED": "This file is shared across business units and is managed in carmen-backstage, so it was not deleted.",
       "DOCUMENT_BULK_DELETE_COUNT_CHANGED": "The number of matching files changed (was {expected}, now {actual}). Check the new count and delete again.",
-      "DOCUMENT_BULK_DELETE_TOO_MANY": "{count} files match. You can delete at most {max} at a time. Narrow the filter and try again."
+      "DOCUMENT_BULK_DELETE_TOO_MANY": "{count} files match. You can delete at most {max} at a time. Narrow the filter and try again.",
+      "AP_INVOICE_NOT_FOUND": "This AP invoice no longer exists. Someone may have deleted it.",
+      "AP_INVOICE_IMMUTABLE": "This AP invoice was changed by someone else or can no longer be edited in its current status. The page has been reloaded with the latest data.",
+      "AP_VENDOR_INVOICE_NO_DUPLICATE": "Vendor invoice number {vendor_invoice_no} already exists for this vendor. Check the number or open the existing invoice.",
+      "AP_VENDOR_CURRENCY_MISMATCH": "A referenced document must have the same vendor and currency as this invoice.",
+      "AP_GRN_NOT_COMMITTED": "Goods receive note {grn_no} is not committed yet, so it cannot be matched.",
+      "AP_GRN_OVER_MATCHED": "The matched quantity is more than what remains on goods receive note {grn_no}.",
+      "AP_REFERENCE_NOT_POSTED": "Referenced document {doc_no} is not posted yet.",
+      "AP_REFERENCE_OVER_APPLIED": "The amount applied is more than the remaining balance of {doc_no}.",
+      "AP_INVOICE_HAS_PAYMENT": "This AP invoice already has payments, so it cannot be voided. Cancel the payments first.",
+      "AP_INVOICE_IS_REFERENCED": "This AP invoice is referenced by another document, so it cannot be voided.",
+      "AP_ACCOUNT_NOT_POSTABLE": "Account {account_id} is inactive or cannot be posted to. Pick another account.",
+      "AP_COST_CENTER_REQUIRED": "Account {account_code} requires a cost center. Select one on the line.",
+      "AP_INVOICE_LINE_INVALID": "Line {sequence_no}: {reason}",
+      "AP_VENDOR_NOT_FOUND": "The vendor was not found or is inactive. Pick another vendor.",
+      "AP_TAX_PROFILE_INVALID": "Tax profile {tax_profile_id} was not found or is the wrong type for this line.",
+      "AP_INVOICE_FROM_GRN_LOCKED": "This AP invoice was created from a goods receive note, so it can only be changed from that note.",
+      "AP_GRN_TOTAL_MISMATCH": "The AP invoice total {ap_total} does not match the total {grn_total} of goods receive note {grn_no}.",
+      "AP_AUTO_FROM_GRN_SETUP_INCOMPLETE": "Set up gl_setting.{missing} before turning on automatic AP invoices from goods receive notes.",
+      "AP_PAYMENT_NOT_FOUND": "This payment voucher no longer exists. Someone may have deleted it.",
+      "AP_PAYMENT_IMMUTABLE": "This payment voucher was changed by someone else or can no longer be edited in its current status. The page has been reloaded with the latest data.",
+      "AP_PAYMENT_OVER_ALLOCATED": "The amount paid is more than the unpaid balance of {doc_no} line {sequence_no}. Lower the amount.",
+      "AP_PAYMENT_EMPTY": "The total amount paid must be greater than zero.",
+      "AP_PAYMENT_BANK_CURRENCY_MISMATCH": "The bank account currency must match the payment currency or the base currency.",
+      "AP_PAYMENT_INVOICE_NOT_POSTED": "Invoice {doc_no} is not posted yet, so it cannot be paid."
     }
   },
   "validation": {

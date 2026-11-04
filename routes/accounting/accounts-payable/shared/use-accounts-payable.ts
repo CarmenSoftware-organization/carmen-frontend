@@ -1,170 +1,199 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useBuCode } from "@/hooks/use-bu-code";
 import type {
-  ApInvoiceFilters,
+  ApActionInput,
+  ApCommand,
   ApInvoiceInput,
-  ApPaymentFilters,
+  ApListParams,
   ApPaymentInput,
+  ApUiAction,
+  ApWhtPreviewInput,
 } from "@/types/accounts-payable";
-import { createApMockRepository } from "./ap-mock-repository";
+import { httpApRepository } from "./ap-http-repository";
+
+const repository = httpApRepository;
 
 export const AP_QUERY_KEYS = {
   root: (bu: string) => ["accounts-payable", bu] as const,
-  dashboard: (bu: string, asOf: string, paidFrom: string, paidTo: string) =>
-    [...AP_QUERY_KEYS.root(bu), "dashboard", asOf, paidFrom, paidTo] as const,
-  invoices: (bu: string, filters?: ApInvoiceFilters) =>
-    [...AP_QUERY_KEYS.root(bu), "invoices", filters] as const,
+  invoices: (bu: string, params?: ApListParams) =>
+    [...AP_QUERY_KEYS.root(bu), "invoices", params] as const,
   invoice: (bu: string, id?: string) =>
     [...AP_QUERY_KEYS.root(bu), "invoice", id] as const,
-  payments: (bu: string, filters?: ApPaymentFilters) =>
-    [...AP_QUERY_KEYS.root(bu), "payments", filters] as const,
+  payments: (bu: string, params?: ApListParams) =>
+    [...AP_QUERY_KEYS.root(bu), "payments", params] as const,
   payment: (bu: string, id?: string) =>
     [...AP_QUERY_KEYS.root(bu), "payment", id] as const,
-  approvals: (bu: string, filters?: ApPaymentFilters) =>
-    [...AP_QUERY_KEYS.root(bu), "approvals", filters] as const,
+  outstanding: (bu: string, vendorId?: string) =>
+    [...AP_QUERY_KEYS.root(bu), "outstanding", vendorId] as const,
 };
 
-function useRepository() {
-  const bu = useBuCode() ?? "BU-MOCK";
-  return { bu, repository: createApMockRepository(bu) };
+/** UI "return" = คำสั่ง `review` ของ backend */
+export function toApCommand(action: Exclude<ApUiAction, "delete">): ApCommand {
+  return action === "return" ? "review" : action;
 }
 
-export function useApDashboard(asOf: string, paidFrom: string, paidTo: string) {
-  const { bu, repository } = useRepository();
-  return useQuery({
-    queryKey: AP_QUERY_KEYS.dashboard(bu, asOf, paidFrom, paidTo),
-    queryFn: () => repository.dashboard(asOf, paidFrom, paidTo),
-  });
+function useBu() {
+  return useBuCode() ?? "";
 }
 
-export function useApInvoices(filters?: ApInvoiceFilters) {
-  const { bu, repository } = useRepository();
+function useInvalidateAll() {
+  const bu = useBu();
+  const client = useQueryClient();
+  return () =>
+    client.invalidateQueries({ queryKey: AP_QUERY_KEYS.root(bu) });
+}
+
+const isId = (id?: string): id is string =>
+  !!id && id !== "new" && id !== "undefined";
+
+export function useApInvoices(
+  params?: ApListParams,
+  options?: { enabled?: boolean },
+) {
+  const bu = useBu();
   return useQuery({
-    queryKey: AP_QUERY_KEYS.invoices(bu, filters),
-    queryFn: () => repository.listInvoices(filters),
+    queryKey: AP_QUERY_KEYS.invoices(bu, params),
+    queryFn: () => repository.listInvoices(bu, params),
+    enabled: !!bu && (options?.enabled ?? true),
   });
 }
 
 export function useApInvoice(id?: string) {
-  const { bu, repository } = useRepository();
+  const bu = useBu();
   return useQuery({
     queryKey: AP_QUERY_KEYS.invoice(bu, id),
-    queryFn: () => repository.getInvoice(id!),
-    enabled: !!id && id !== "new",
+    queryFn: () => repository.getInvoice(bu, id!),
+    enabled: !!bu && isId(id),
   });
 }
 
+/** create เมื่อไม่มี `id`, update (ต้องมี `docVersion`) เมื่อมี */
 export function useSaveApInvoice() {
-  const { bu, repository } = useRepository();
-  const client = useQueryClient();
+  const bu = useBu();
+  const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: ({
-      input,
       id,
       docVersion,
-    }: {
-      input: ApInvoiceInput;
-      id?: string;
-      docVersion?: number;
-    }) => repository.saveInvoice(input, id, docVersion),
-    onSuccess: (invoice) => {
-      client.setQueryData(AP_QUERY_KEYS.invoice(bu, invoice.id), invoice);
-      client.invalidateQueries({ queryKey: AP_QUERY_KEYS.root(bu) });
-    },
+      input,
+    }:
+      | { id?: undefined; docVersion?: undefined; input: ApInvoiceInput }
+      | { id: string; docVersion: number; input: Partial<ApInvoiceInput> }) =>
+      id
+        ? repository.updateInvoice(bu, id, docVersion, input)
+        : repository.createInvoice(bu, input as ApInvoiceInput),
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeleteApInvoice() {
+  const bu = useBu();
+  const invalidate = useInvalidateAll();
+  return useMutation({
+    mutationFn: (id: string) => repository.deleteInvoice(bu, id),
+    onSuccess: invalidate,
   });
 }
 
 export function useApInvoiceAction() {
-  const { bu, repository } = useRepository();
-  const client = useQueryClient();
+  const bu = useBu();
+  const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: ({
       id,
       action,
-      docVersion,
-    }: {
+      ...input
+    }: ApActionInput & {
       id: string;
-      action: "submit" | "approve" | "return" | "reject" | "void";
-      docVersion: number;
-    }) => repository.invoiceAction(id, action, docVersion),
-    onSuccess: (invoice) => {
-      client.setQueryData(AP_QUERY_KEYS.invoice(bu, invoice.id), invoice);
-      client.invalidateQueries({ queryKey: AP_QUERY_KEYS.root(bu) });
-    },
+      action: Exclude<ApUiAction, "delete">;
+    }) => repository.invoiceAction(bu, id, toApCommand(action), input),
+    onSuccess: invalidate,
   });
 }
 
-export function useApPayments(filters?: ApPaymentFilters) {
-  const { bu, repository } = useRepository();
+export function useApPayments(
+  params?: ApListParams,
+  options?: { enabled?: boolean },
+) {
+  const bu = useBu();
   return useQuery({
-    queryKey: AP_QUERY_KEYS.payments(bu, filters),
-    queryFn: () => repository.listPayments(filters),
-  });
-}
-
-export function useApPaymentApprovals(filters?: ApPaymentFilters) {
-  const { bu, repository } = useRepository();
-  return useQuery({
-    queryKey: AP_QUERY_KEYS.approvals(bu, filters),
-    queryFn: () => repository.listApprovals(filters),
+    queryKey: AP_QUERY_KEYS.payments(bu, params),
+    queryFn: () => repository.listPayments(bu, params),
+    enabled: !!bu && (options?.enabled ?? true),
   });
 }
 
 export function useApPayment(id?: string) {
-  const { bu, repository } = useRepository();
+  const bu = useBu();
   return useQuery({
     queryKey: AP_QUERY_KEYS.payment(bu, id),
-    queryFn: () => repository.getPayment(id!),
-    enabled: !!id && id !== "new",
+    queryFn: () => repository.getPayment(bu, id!),
+    enabled: !!bu && isId(id),
   });
 }
 
+/** create เมื่อไม่มี `id`, update (ต้องมี `docVersion`) เมื่อมี */
 export function useSaveApPayment() {
-  const { bu, repository } = useRepository();
-  const client = useQueryClient();
+  const bu = useBu();
+  const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: ({
-      input,
       id,
       docVersion,
-    }: {
-      input: ApPaymentInput;
-      id?: string;
-      docVersion?: number;
-    }) => repository.savePayment(input, id, docVersion),
-    onSuccess: (payment) => {
-      client.setQueryData(AP_QUERY_KEYS.payment(bu, payment.id), payment);
-      client.invalidateQueries({ queryKey: AP_QUERY_KEYS.root(bu) });
-    },
+      input,
+    }:
+      | { id?: undefined; docVersion?: undefined; input: ApPaymentInput }
+      | {
+          id: string;
+          docVersion: number;
+          input: Partial<Omit<ApPaymentInput, "vendor_id">>;
+        }) =>
+      id
+        ? repository.updatePayment(bu, id, docVersion, input)
+        : repository.createPayment(bu, input as ApPaymentInput),
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeleteApPayment() {
+  const bu = useBu();
+  const invalidate = useInvalidateAll();
+  return useMutation({
+    mutationFn: (id: string) => repository.deletePayment(bu, id),
+    onSuccess: invalidate,
   });
 }
 
 export function useApPaymentAction() {
-  const { bu, repository } = useRepository();
-  const client = useQueryClient();
+  const bu = useBu();
+  const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: ({
       id,
       action,
-      docVersion,
-      idempotencyKey,
-      reason,
-    }: {
+      ...input
+    }: ApActionInput & {
       id: string;
-      action:
-        | "submit"
-        | "approve"
-        | "return"
-        | "reject"
-        | "void"
-        | "clarify";
-      docVersion: number;
-      idempotencyKey?: string;
-      reason?: string;
-    }) => repository.paymentAction(id, action, docVersion, idempotencyKey, reason),
-    onSuccess: (payment) => {
-      client.setQueryData(AP_QUERY_KEYS.payment(bu, payment.id), payment);
-      client.invalidateQueries({ queryKey: AP_QUERY_KEYS.root(bu) });
-    },
+      action: Exclude<ApUiAction, "delete">;
+    }) => repository.paymentAction(bu, id, toApCommand(action), input),
+    onSuccess: invalidate,
+  });
+}
+
+export function useApOutstandingDocuments(vendorId?: string) {
+  const bu = useBu();
+  return useQuery({
+    queryKey: AP_QUERY_KEYS.outstanding(bu, vendorId),
+    queryFn: () => repository.outstandingDocuments(bu, vendorId!),
+    enabled: !!bu && !!vendorId,
+  });
+}
+
+export function useApWhtPreview() {
+  const bu = useBu();
+  return useMutation({
+    mutationFn: (body: ApWhtPreviewInput) => repository.whtPreview(bu, body),
+    // error แสดงinline ที่หน้า payment เอง (WHT ค้างต้องเห็นเหตุผลถาวร ไม่ใช่ toast ที่หายไป)
+    meta: { skipGlobalErrorToast: true },
   });
 }

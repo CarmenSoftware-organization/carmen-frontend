@@ -7,12 +7,14 @@ import {
   useInvalidateLookup,
   useLookupResource,
 } from "@/hooks/use-lookup-resource";
-import { lookupLabel } from "@/types/lookup";
+import { lookupLabel, type LookupItem } from "@/types/lookup";
 import { LookupCombobox } from "./lookup-combobox";
 
 interface LookupUnitProps {
   readonly value: string;
   readonly onValueChange: (value: string) => void;
+  /** ส่งแถว lookup ของหน่วยที่เลือก (ใช้เก็บชื่อหน่วยลงเอกสาร) — ไม่ถูกเรียกตอนสร้างหน่วยใหม่ inline */
+  readonly onItemChange?: (unit: LookupItem) => void;
   readonly disabled?: boolean;
   readonly placeholder?: string;
   readonly className?: string;
@@ -47,6 +49,7 @@ interface LookupUnitProps {
 export function LookupUnit({
   value,
   onValueChange,
+  onItemChange,
   disabled,
   placeholder,
   className,
@@ -84,7 +87,10 @@ export function LookupUnit({
       <LookupCombobox
         resizeKey="unit"
         value={value}
-        onValueChange={(id) => onValueChange(id)}
+        onValueChange={(id, item) => {
+          onValueChange(id);
+          if (item) onItemChange?.(item);
+        }}
         onOpenChange={(open) => {
           if (open) setHasOpened(true);
         }}
