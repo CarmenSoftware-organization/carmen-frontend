@@ -691,6 +691,109 @@
           "unpaid": "Unpaid",
           "partially_paid": "Partially Paid",
           "paid": "Paid"
+        },
+        "detail": {
+          "newTitle": "New AP Invoice",
+          "subtitle": "Supplier invoice",
+          "back": "Back to AP Invoice Directory",
+          "loadError": "Unable to load AP invoice",
+          "notFound": "AP invoice not found",
+          "invoiceDate": "Invoice Date",
+          "creditTerm": "Credit Term",
+          "dueDate": "Due Date",
+          "currency": "Currency",
+          "exchangeRate": "Exchange Rate",
+          "description": "Description",
+          "days": "{count} days",
+          "edit": "Edit",
+          "save": "Save",
+          "cancel": "Cancel",
+          "saved": "Invoice saved",
+          "fixErrors": "Please complete the required fields",
+          "pay": "Pay invoice",
+          "journal": "Journal voucher",
+          "openJournal": "Open journal voucher",
+          "voidReason": "Void reason",
+          "fromGrnBanner": "Created automatically from GRN - edit it at the GRN.",
+          "openGrn": "Open GRN",
+          "linesTitle": "Lines",
+          "addLine": "Add line",
+          "actions": {
+            "submit": "Submit",
+            "approve": "Approve",
+            "return": "Return",
+            "reject": "Reject",
+            "void": "Void",
+            "delete": "Delete"
+          },
+          "done": {
+            "submit": "Invoice submitted",
+            "approve": "Invoice approved",
+            "return": "Invoice returned",
+            "reject": "Invoice rejected",
+            "void": "Invoice voided",
+            "delete": "Invoice deleted"
+          },
+          "confirmDelete": {
+            "title": "Delete this draft?",
+            "description": "The draft invoice will be removed."
+          },
+          "reasonDialog": {
+            "required": "A reason is required.",
+            "optional": "You can add a reason (optional).",
+            "label": "Reason",
+            "void": {
+              "title": "Void invoice"
+            },
+            "reject": {
+              "title": "Reject invoice"
+            },
+            "return": {
+              "title": "Return invoice"
+            }
+          },
+          "summary": {
+            "subtotal": "Subtotal",
+            "discount": "Discount",
+            "vat": "VAT",
+            "wht": "WHT (est.)",
+            "total": "Total"
+          },
+          "errors": {
+            "vendor": "Select a vendor",
+            "vendorInvoiceNo": "Enter the vendor invoice number (max 100 characters)",
+            "docDate": "Select the document date",
+            "invoiceDate": "Select the invoice date",
+            "exchangeRate": "Exchange rate must be greater than 0",
+            "lines": "Add at least one line",
+            "account": "Every line needs a debit account",
+            "quantity": "Quantity must be greater than 0",
+            "unitPrice": "Unit price cannot be negative"
+          },
+          "lines": {
+            "grnNo": "GRN No.",
+            "product": "Product",
+            "description": "Description",
+            "unit": "Unit",
+            "quantity": "Qty",
+            "unitPrice": "Unit Price",
+            "discount": "Discount",
+            "net": "Net",
+            "account": "Debit Account",
+            "costCenter": "Cost Center",
+            "vat": "VAT",
+            "vatAmount": "VAT Amount",
+            "wht": "WHT",
+            "total": "Total",
+            "vatProfile": "VAT profile",
+            "whtProfile": "WHT profile",
+            "clearTax": "Clear tax profile",
+            "required": "Required",
+            "empty": "No lines.",
+            "moveUp": "Move line up",
+            "moveDown": "Move line down",
+            "remove": "Remove line"
+          }
         }
       }
     }
