@@ -658,6 +658,41 @@
       "deleteTitle": "Delete journal voucher?",
       "deleteConfirm": "Delete {jvNo}? This cannot be undone.",
       "deleteDraftOnly": "Only a draft journal voucher can be deleted"
+    },
+    "accountsPayable": {
+      "invoice": {
+        "title": "AP Invoice Directory",
+        "desc": "Supplier invoices, debit and credit notes, and what is still owed.",
+        "add": "New Invoice",
+        "docNo": "AP No.",
+        "docDate": "Doc Date",
+        "vendor": "Vendor",
+        "vendorInvoiceNo": "Vendor Invoice",
+        "docType": "Type",
+        "total": "Total",
+        "outstanding": "Outstanding",
+        "settlement": "Settlement",
+        "source": "Source",
+        "fromGrn": "From GRN",
+        "loadError": "Unable to load AP invoices",
+        "docTypes": {
+          "invoice": "Invoice",
+          "debit_note": "Debit Note",
+          "credit_note": "Credit Note",
+          "deposit": "Deposit"
+        },
+        "statuses": {
+          "draft": "Draft",
+          "in_review": "In Review",
+          "posted": "Posted",
+          "void": "Void"
+        },
+        "settlements": {
+          "unpaid": "Unpaid",
+          "partially_paid": "Partially Paid",
+          "paid": "Paid"
+        }
+      }
     }
   },
   "dashboardWidget": {

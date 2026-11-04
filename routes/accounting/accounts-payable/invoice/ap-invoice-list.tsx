@@ -1,384 +1,292 @@
 import { useMemo, useState } from "react";
-import type { ColumnDef } from "@tanstack/react-table";
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { Columns3, CreditCard, Plus, RefreshCw } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router";
-import SearchInput from "@/components/search-input";
-import EmptyComponent from "@/components/empty-component";
-import { ListPageShell } from "@/components/share/list-page-shell";
-import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
-import { listGridMaxH } from "@/components/share/list-grid-max-h";
-import { ListCard, ListCardRow } from "@/components/share/list-card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { CellAction } from "@/components/ui/cell-action";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useNavigate } from "react-router";
+import { useTranslations } from "use-intl";
+import { Plus, RefreshCw } from "lucide-react";
+import { listReturnState } from "@/hooks/use-list-return";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useDataGridState } from "@/hooks/use-data-grid-state";
+import { useListFilters } from "@/hooks/use-list-filters";
+import { useAmountFormatter } from "@/hooks/use-number-formatter";
+import { useProfile } from "@/hooks/use-profile";
 import {
   DataGrid,
   DataGridContainer,
+  DataGridScrollArea,
 } from "@/components/ui/data-grid/data-grid";
-import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { DataGridColumnVisibility } from "@/components/ui/data-grid/data-grid-column-visibility";
-import { DataGridSortMenu } from "@/components/ui/data-grid/data-grid-sort-menu";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
+import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
+import { MultiSelectFilter } from "@/components/ui/multi-select-filter";
 import { ErrorState } from "@/components/ui/error-state";
-import { Skeleton } from "@/components/ui/skeleton";
-import { StatusFilter } from "@/components/ui/status-filter";
-import { useIsMobile } from "@/hooks/use-mobile";
-import type { ApInvoice } from "@/types/accounts-payable-mock";
-import { ApStatusBadge, Money } from "../shared/ap-ui";
-import { useApInvoices } from "../shared/use-accounts-payable-mock";
+import { Button } from "@/components/ui/button";
+import EmptyComponent from "@/components/empty-component";
+import { ListPageShell } from "@/components/share/list-page-shell";
+import { listGridMaxH } from "@/components/share/list-grid-max-h";
+import {
+  ListCard,
+  ListCardRow,
+  ListCardSkeleton,
+  ListCardStatusRow,
+} from "@/components/share/list-card";
+import { ListToolbar } from "@/components/list-filter/list-toolbar";
+import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
+import { VENDOR_ENTITY } from "@/components/filter/entity-sources";
+import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
+import { formatDate } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
+import type { FilterFieldDef } from "@/types/list-filter";
+import type {
+  ApInvoice,
+  ApDocStatus,
+  ApDocType,
+} from "@/types/accounts-payable";
+import { useApInvoices } from "../shared/use-accounts-payable";
+import { ApFromGrnBadge, ApSettlementBadge } from "./ap-invoice-badges";
+import { useApInvoiceTable } from "./use-ap-invoice-table";
 
-const lifecycleOptions = [
-  "draft",
-  "submitted",
-  "posted",
-  "post_failed",
-  "voided",
+/** ใหม่สุดขึ้นก่อน */
+const DEFAULT_SORT = "doc_date:desc";
+
+const STATUSES: ApDocStatus[] = ["draft", "in_review", "posted", "void"];
+const DOC_TYPES: ApDocType[] = [
+  "invoice",
+  "debit_note",
+  "credit_note",
+  "deposit",
 ];
-const settlementOptions = ["unpaid", "partially_paid", "paid"];
-const matchOptions = ["matched", "variance", "not_required", "pending"];
 
+/**
+ * หน้ารายการ AP invoice (backend จริง) — โครงเดียวกับหน้า list ของ JV
+ *
+ * ตัวกรองส่งเป็น clause ของ `filter` (`doc_status|string:...`) · param เก่าของ
+ * หน้า mock (lifecycle, settlement, due_bucket, as_of, tax, hold, match …)
+ * ไม่มีใครอ่าน จึงถูกข้ามเงียบ ๆ
+ */
 export default function ApInvoiceList() {
+  const t = useTranslations("accounting.accountsPayable.invoice");
+  const tc = useTranslations("common");
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [params, setParams] = useSearchParams();
+  const { dateFormat } = useProfile();
+  const formatAmount = useAmountFormatter();
   const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
-  const [selected, setSelected] = useState<string[]>([]);
-  const filters = {
-    search: params.get("search") ?? "",
-    lifecycle: params.get("lifecycle") ?? "",
-    settlement: params.get("settlement") ?? "",
-    match: params.get("match") ?? "",
-    due_bucket: params.get("due_bucket") ?? "",
-    as_of: params.get("as_of") ?? undefined,
-    hold: params.get("hold") === "true",
-    reserved: params.get("reserved") === "true",
-    tax: params.get("tax") ?? "",
-  };
-  const query = useApInvoices(filters);
-  const rows = useMemo(() => query.data?.data ?? [], [query.data?.data]);
-  const setFilter = (key: string, value: string) =>
-    setParams(
-      (current) => {
-        const next = new URLSearchParams(current);
-        if (value) next.set(key, value);
-        else next.delete(key);
-        return next;
-      },
-      { replace: true },
-    );
-  const eligible = selected
-    .map((id) => rows.find((item) => item.id === id))
-    .filter(
-      (item): item is ApInvoice =>
-        !!item &&
-        item.lifecycle === "posted" &&
-        item.settlement_status !== "paid" &&
-        item.reserved_amount === "0.00",
-    );
-  const toggle = (id: string, checked: boolean) =>
-    setSelected((current) =>
-      checked
-        ? [...new Set([...current, id])]
-        : current.filter((item) => item !== id),
-    );
+  const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
+  const isGridMode = isMobile || displayMode === "grid";
 
-  const columns = useMemo<ColumnDef<ApInvoice>[]>(
-    () => [
-      {
-        id: "select",
-        header: () => (
-          <Checkbox
-            aria-label="Select all eligible invoices"
-            checked={
-              rows.length > 0 &&
-              rows.every((item) => selected.includes(item.id))
-            }
-            onCheckedChange={(checked) =>
-              setSelected(checked ? rows.map((item) => item.id) : [])
-            }
-          />
-        ),
-        cell: ({ row }) => (
-          <Checkbox
-            aria-label={`Select ${row.original.ap_no}`}
-            checked={selected.includes(row.original.id)}
-            onCheckedChange={(checked) =>
-              toggle(row.original.id, checked === true)
-            }
-          />
-        ),
-        enableHiding: false,
-      },
-      {
-        accessorKey: "ap_no",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="AP No." />
-        ),
-        cell: ({ row }) => (
-          <CellAction
-            onClick={() =>
-              navigate(
-                `/accounting/accounts-payable/invoice/${row.original.id}`,
-              )
-            }
-          >
-            {row.original.ap_no}
-          </CellAction>
-        ),
-        enableHiding: false,
-        meta: { headerTitle: "AP No." },
-      },
-      {
-        accessorKey: "input_date",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Input Date" />
-        ),
-        meta: { headerTitle: "Input Date", cellClassName: "tabular-nums" },
-      },
-      {
-        accessorKey: "vendor_invoice_no",
-        header: "Vendor Invoice",
-        meta: { headerTitle: "Vendor Invoice" },
-      },
-      {
-        accessorKey: "vendor_name",
-        header: "Vendor",
-        cell: ({ row }) => (
-          <span
-            className="block max-w-56 truncate"
-            title={row.original.vendor_name}
-          >
-            {row.original.vendor_name}
-          </span>
-        ),
-        meta: { headerTitle: "Vendor" },
-      },
-      {
-        accessorKey: "due_date",
-        header: "Due Date",
-        cell: ({ row }) => row.original.due_date ?? "—",
-        meta: { headerTitle: "Due Date", cellClassName: "tabular-nums" },
-      },
-      {
-        accessorKey: "total_amount",
-        header: "Original",
-        cell: ({ row }) => (
-          <Money
-            value={row.original.total_amount}
-            currency={row.original.currency_code}
-          />
-        ),
-        meta: {
-          headerTitle: "Original",
-          headerClassName: "text-right",
-          cellClassName: "text-right",
-        },
-      },
-      {
-        accessorKey: "open_amount",
-        header: "Open",
-        cell: ({ row }) => (
-          <Money
-            value={row.original.open_amount}
-            currency={row.original.currency_code}
-            className="font-medium"
-          />
-        ),
-        meta: {
-          headerTitle: "Open",
-          headerClassName: "text-right",
-          cellClassName: "text-right",
-        },
-      },
-      {
-        accessorKey: "lifecycle",
-        header: "Lifecycle",
-        cell: ({ row }) => <ApStatusBadge value={row.original.lifecycle} />,
-        meta: { headerTitle: "Lifecycle" },
-      },
-      {
-        accessorKey: "settlement_status",
-        header: "Settlement",
-        cell: ({ row }) => (
-          <ApStatusBadge value={row.original.settlement_status} />
-        ),
-        meta: { headerTitle: "Settlement" },
-      },
-      {
-        accessorKey: "match_status",
-        header: "Match",
-        cell: ({ row }) => <ApStatusBadge value={row.original.match_status} />,
-        meta: { headerTitle: "Match" },
-      },
-    ],
-    [navigate, rows, selected],
-  );
-  const table = useReactTable({
-    data: rows,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
+  const { params, search, setSearch, tableConfig } = useDataGridState({
+    defaultSort: DEFAULT_SORT,
   });
 
-  if (query.isError)
+  const filterFields = useMemo<FilterFieldDef[]>(
+    () => [
+      {
+        key: "filter",
+        control: "custom",
+        labelKey: "common.status",
+        section: "listView.sectionDocument",
+        render: (value, onChange) => (
+          <MultiSelectFilter
+            value={value}
+            onChange={onChange}
+            options={STATUSES.map((s) => ({
+              value: `doc_status|string:${s}`,
+              label: t(`statuses.${s}`),
+              statusKey: s,
+            }))}
+            className="w-full"
+          />
+        ),
+      },
+      {
+        key: "doc_type",
+        control: "custom",
+        labelKey: "accounting.accountsPayable.invoice.docType",
+        section: "listView.sectionDocument",
+        render: (value, onChange) => (
+          <MultiSelectFilter
+            value={value}
+            onChange={onChange}
+            options={DOC_TYPES.map((d) => ({
+              value: `doc_type|string:${d}`,
+              label: t(`docTypes.${d}`),
+            }))}
+            className="w-full"
+          />
+        ),
+      },
+      {
+        key: "source",
+        control: "custom",
+        labelKey: "accounting.accountsPayable.invoice.source",
+        section: "listView.sectionDocument",
+        render: (value, onChange) => (
+          <MultiSelectFilter
+            value={value}
+            onChange={onChange}
+            options={[
+              { value: "doc_source|string:grn_auto", label: t("fromGrn") },
+            ]}
+            className="w-full"
+          />
+        ),
+      },
+      {
+        key: "vendor_id",
+        control: "entity",
+        entity: VENDOR_ENTITY,
+        labelKey: "accounting.accountsPayable.invoice.vendor",
+        section: "listView.sectionDocument",
+      },
+    ],
+    [t],
+  );
+
+  const lf = useListFilters({
+    pageKey: LIST_PAGE_KEYS.AP_INVOICE,
+    fields: filterFields,
+    defaultSort: DEFAULT_SORT,
+  });
+
+  const queryParams = { ...params, filter: lf.filterParam };
+  const { data, isLoading, error, refetch } = useApInvoices(queryParams);
+  const invoices = data?.data ?? [];
+  const totalRecords = data?.paginate?.total ?? 0;
+
+  const openInvoice = (invoice: ApInvoice) =>
+    navigate(
+      `/accounting/accounts-payable/invoice/${invoice.id}`,
+      listReturnState(),
+    );
+
+  const table = useApInvoiceTable({
+    invoices,
+    totalRecords,
+    params,
+    tableConfig,
+    onOpen: openInvoice,
+  });
+
+  if (error)
     return (
       <ErrorState
-        error={query.error}
-        message="Unable to load AP invoices"
-        onRetry={() => void query.refetch()}
+        error={error}
+        message={t("loadError")}
+        onRetry={() => refetch()}
       />
     );
+
   return (
     <ListPageShell
-      title="AP Invoice Directory"
-      mock
-      description="Supplier invoices, matching and open liabilities"
+      title={t("title")}
+      description={t("desc")}
+      count={totalRecords}
       actions={
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={eligible.length === 0}
-            onClick={() =>
-              navigate(
-                `/accounting/accounts-payable/payment/new?invoice_ids=${eligible.map((item) => item.id).join(",")}`,
-              )
-            }
-          >
-            <CreditCard className="size-4" /> Pay Selected
-            {eligible.length ? ` (${eligible.length})` : ""}
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => navigate("/accounting/accounts-payable/invoice/new")}
-          >
-            <Plus className="size-4" /> New Invoice
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          onClick={() => navigate("/accounting/accounts-payable/invoice/new")}
+        >
+          <Plus className="size-4" /> {t("add")}
+        </Button>
       }
       toolbar={
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex w-full flex-1 flex-wrap items-center gap-2 sm:w-auto">
-            <div className="min-w-52 flex-1 sm:flex-initial">
-              <SearchInput
-                defaultValue={filters.search}
-                onSearch={(value) => setFilter("search", value)}
-                onInputChange={(value) => setFilter("search", value)}
-              />
-            </div>
-            <StatusFilter
-              value={filters.lifecycle}
-              onChange={(value) => setFilter("lifecycle", value)}
-              placeholder="Lifecycle"
-              defaultLabel="All lifecycle"
-              options={lifecycleOptions.map((value) => ({
-                value,
-                label: value.replaceAll("_", " "),
-              }))}
-              className="w-36"
-            />
-            <StatusFilter
-              value={filters.settlement}
-              onChange={(value) => setFilter("settlement", value)}
-              placeholder="Settlement"
-              defaultLabel="All settlement"
-              options={settlementOptions.map((value) => ({
-                value,
-                label: value.replaceAll("_", " "),
-              }))}
-              className="w-36"
-            />
-            <StatusFilter
-              value={filters.match}
-              onChange={(value) => setFilter("match", value)}
-              placeholder="Match"
-              defaultLabel="All match"
-              options={matchOptions.map((value) => ({
-                value,
-                label: value.replaceAll("_", " "),
-              }))}
-              className="w-36"
-            />
-            {filters.due_bucket && (
-              <Badge variant="secondary">
-                Due: {filters.due_bucket.replaceAll("_", " ")}
-              </Badge>
-            )}
-          </div>
-          <div className="hidden items-center gap-2 sm:flex">
-            <DataGridSortMenu table={table} />
-            {displayMode === "list" && (
-              <DataGridColumnVisibility
-                table={table}
-                trigger={
-                  <Button
-                    size="icon-sm"
-                    variant="outline"
-                    aria-label="Toggle columns"
-                  >
-                    <Columns3 className="size-4" />
-                  </Button>
-                }
-              />
-            )}
-            <DisplayModeToggle value={displayMode} onChange={setDisplayMode} />
+        <ListToolbar
+          search={search}
+          onSearch={setSearch}
+          lf={lf}
+          fields={filterFields}
+          onSaveViewClick={() => setSaveViewDialogOpen(true)}
+          table={table}
+          displayMode={displayMode}
+          onDisplayModeChange={setDisplayMode}
+          trailing={
             <Button
-              size="icon-sm"
               variant="ghost"
-              onClick={() => query.refetch()}
-              aria-label="Refresh"
+              size="icon-sm"
+              onClick={() => refetch()}
+              aria-label={tc("refresh")}
+              title={tc("refresh")}
             >
               <RefreshCw className="size-4" />
             </Button>
-          </div>
-        </div>
+          }
+        />
       }
     >
-      <div className="mt-3">
-        {query.isLoading ? (
-          <Skeleton className="h-80 rounded-lg" />
-        ) : !(isMobile || displayMode === "grid") ? (
-          <DataGrid
-            table={table}
-            recordCount={rows.length}
-            tableLayout={{ headerSticky: true, width: "auto" }}
-            tableClassNames={{ bodyRow: "h-10" }}
-            emptyMessage={<EmptyComponent />}
+      {!isGridMode && (
+        <DataGrid
+          table={table}
+          recordCount={totalRecords}
+          isLoading={isLoading}
+          tableLayout={{ headerSticky: true, columnsResizable: true }}
+          emptyMessage={<EmptyComponent />}
+        >
+          <DataGridContainer
+            className={cn(
+              "flex flex-col",
+              listGridMaxH(lf.activeFilters.length > 0),
+            )}
           >
-            <DataGridContainer className={listGridMaxH(false)}>
+            <DataGridScrollArea>
               <DataGridTable />
-            </DataGridContainer>
-          </DataGrid>
-        ) : rows.length === 0 ? (
+            </DataGridScrollArea>
+            <DataGridPagination />
+          </DataGridContainer>
+        </DataGrid>
+      )}
+
+      {isGridMode &&
+        (isLoading ? (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <ListCardSkeleton key={`skeleton-${i}`} />
+            ))}
+          </div>
+        ) : invoices.length === 0 ? (
           <EmptyComponent />
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {rows.map((invoice) => (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {invoices.map((invoice) => (
               <ListCard
                 key={invoice.id}
-                title={invoice.ap_no}
-                badge={<ApStatusBadge value={invoice.lifecycle} />}
-                onOpen={() =>
-                  navigate(`/accounting/accounts-payable/invoice/${invoice.id}`)
-                }
+                title={invoice.doc_no}
+                badge={<ApFromGrnBadge invoice={invoice} />}
+                onOpen={() => openInvoice(invoice)}
               >
-                <ListCardRow label="Vendor">{invoice.vendor_name}</ListCardRow>
-                <ListCardRow label="Due">{invoice.due_date ?? "—"}</ListCardRow>
-                <ListCardRow label="Open">
-                  <Money
-                    value={invoice.open_amount}
-                    currency={invoice.currency_code}
-                  />
+                <ListCardStatusRow
+                  status={invoice.doc_status}
+                  label={t(`statuses.${invoice.doc_status}`)}
+                />
+                <ListCardRow label={t("vendor")}>
+                  {invoice.vendor_name}
                 </ListCardRow>
-                <ListCardRow label="Settlement">
-                  <ApStatusBadge value={invoice.settlement_status} />
+                <ListCardRow label={t("docDate")}>
+                  <span className="tabular-nums">
+                    {formatDate(invoice.doc_date, dateFormat)}
+                  </span>
+                </ListCardRow>
+                <ListCardRow label={t("docType")}>
+                  {t(`docTypes.${invoice.doc_type}`)}
+                </ListCardRow>
+                <ListCardRow label={t("outstanding")}>
+                  <span className="tabular-nums">
+                    {formatAmount(Number(invoice.outstanding_amount))}{" "}
+                    {invoice.currency_code}
+                  </span>
+                </ListCardRow>
+                <ListCardRow label={t("settlement")}>
+                  <ApSettlementBadge invoice={invoice} />
                 </ListCardRow>
               </ListCard>
             ))}
           </div>
-        )}
-      </div>
+        ))}
+
+      <SaveViewDialog
+        open={saveViewDialogOpen}
+        onOpenChange={setSaveViewDialogOpen}
+        canManageBu={lf.view.canManageBu}
+        existingNames={lf.view.existingNames}
+        onSave={lf.view.saveOrUpdate}
+      />
     </ListPageShell>
   );
 }

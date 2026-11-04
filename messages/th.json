@@ -658,6 +658,41 @@
       "deleteTitle": "ลบใบสำคัญลงบัญชี?",
       "deleteConfirm": "ลบ {jvNo} ใช่ไหม? ลบแล้วกู้คืนไม่ได้",
       "deleteDraftOnly": "ลบได้เฉพาะใบที่ยังเป็นฉบับร่าง"
+    },
+    "accountsPayable": {
+      "invoice": {
+        "title": "รายการใบแจ้งหนี้เจ้าหนี้ (AP Invoice)",
+        "desc": "ใบแจ้งหนี้ผู้ขาย ใบเพิ่มหนี้ ใบลดหนี้ และยอดที่ยังค้างจ่าย",
+        "add": "สร้างใบแจ้งหนี้",
+        "docNo": "เลขที่ AP",
+        "docDate": "วันที่เอกสาร",
+        "vendor": "ผู้ขาย",
+        "vendorInvoiceNo": "เลขที่ใบแจ้งหนี้ผู้ขาย",
+        "docType": "ประเภท",
+        "total": "ยอดรวม",
+        "outstanding": "ยอดค้างจ่าย",
+        "settlement": "การชำระ",
+        "source": "ที่มา",
+        "fromGrn": "จาก GRN",
+        "loadError": "โหลดรายการ AP Invoice ไม่สำเร็จ",
+        "docTypes": {
+          "invoice": "ใบแจ้งหนี้",
+          "debit_note": "ใบเพิ่มหนี้",
+          "credit_note": "ใบลดหนี้",
+          "deposit": "เงินมัดจำ"
+        },
+        "statuses": {
+          "draft": "ฉบับร่าง",
+          "in_review": "รอตรวจสอบ",
+          "posted": "ลงบัญชีแล้ว",
+          "void": "ยกเลิก"
+        },
+        "settlements": {
+          "unpaid": "ยังไม่จ่าย",
+          "partially_paid": "จ่ายบางส่วน",
+          "paid": "จ่ายครบ"
+        }
+      }
     }
   },
   "dashboardWidget": {
