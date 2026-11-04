@@ -842,6 +842,7 @@
           "saved": "Payment saved",
           "fixErrors": "Please complete the required fields",
           "reloaded": "The document was reloaded with the latest data.",
+          "prefillNone": "Every line of the selected invoice is already reserved by other payments, so nothing could be filled in.",
           "journal": "Journal voucher",
           "openJournal": "Open journal voucher",
           "voidReason": "Void reason",
@@ -875,6 +876,9 @@
             "base": "Base",
             "amount": "WHT Amount",
             "override": "(edited)",
+            "stale": "The withholding tax no longer matches the amounts above. Press Recalculate before saving.",
+            "staleBlocksSave": "Recalculate the withholding tax before saving",
+            "previewFailed": "Withholding tax could not be recalculated: {message}",
             "errors": {
               "amount": "Enter a WHT amount for every row"
             }
@@ -1551,7 +1555,31 @@
       "STOCK_OUT_VOID_VIA_SALES_CONSUMPTION": "This Stock Out was created by Sales Consumption {sc_no}. Void it from the Sales Consumption instead.",
       "DOCUMENT_DELETE_UNSUPPORTED": "This file is shared across business units and is managed in carmen-backstage, so it was not deleted.",
       "DOCUMENT_BULK_DELETE_COUNT_CHANGED": "The number of matching files changed (was {expected}, now {actual}). Check the new count and delete again.",
-      "DOCUMENT_BULK_DELETE_TOO_MANY": "{count} files match. You can delete at most {max} at a time. Narrow the filter and try again."
+      "DOCUMENT_BULK_DELETE_TOO_MANY": "{count} files match. You can delete at most {max} at a time. Narrow the filter and try again.",
+      "AP_INVOICE_NOT_FOUND": "This AP invoice no longer exists. Someone may have deleted it.",
+      "AP_INVOICE_IMMUTABLE": "This AP invoice was changed by someone else or can no longer be edited in its current status. The page has been reloaded with the latest data.",
+      "AP_VENDOR_INVOICE_NO_DUPLICATE": "Vendor invoice number {vendor_invoice_no} already exists for this vendor. Check the number or open the existing invoice.",
+      "AP_VENDOR_CURRENCY_MISMATCH": "A referenced document must have the same vendor and currency as this invoice.",
+      "AP_GRN_NOT_COMMITTED": "Goods receive note {grn_no} is not committed yet, so it cannot be matched.",
+      "AP_GRN_OVER_MATCHED": "The matched quantity is more than what remains on goods receive note {grn_no}.",
+      "AP_REFERENCE_NOT_POSTED": "Referenced document {doc_no} is not posted yet.",
+      "AP_REFERENCE_OVER_APPLIED": "The amount applied is more than the remaining balance of {doc_no}.",
+      "AP_INVOICE_HAS_PAYMENT": "This AP invoice already has payments, so it cannot be voided. Cancel the payments first.",
+      "AP_INVOICE_IS_REFERENCED": "This AP invoice is referenced by another document, so it cannot be voided.",
+      "AP_ACCOUNT_NOT_POSTABLE": "Account {account_id} is inactive or cannot be posted to. Pick another account.",
+      "AP_COST_CENTER_REQUIRED": "Account {account_code} requires a cost center. Select one on the line.",
+      "AP_INVOICE_LINE_INVALID": "Line {sequence_no}: {reason}",
+      "AP_VENDOR_NOT_FOUND": "The vendor was not found or is inactive. Pick another vendor.",
+      "AP_TAX_PROFILE_INVALID": "Tax profile {tax_profile_id} was not found or is the wrong type for this line.",
+      "AP_INVOICE_FROM_GRN_LOCKED": "This AP invoice was created from a goods receive note, so it can only be changed from that note.",
+      "AP_GRN_TOTAL_MISMATCH": "The AP invoice total {ap_total} does not match the total {grn_total} of goods receive note {grn_no}.",
+      "AP_AUTO_FROM_GRN_SETUP_INCOMPLETE": "Set up gl_setting.{missing} before turning on automatic AP invoices from goods receive notes.",
+      "AP_PAYMENT_NOT_FOUND": "This payment voucher no longer exists. Someone may have deleted it.",
+      "AP_PAYMENT_IMMUTABLE": "This payment voucher was changed by someone else or can no longer be edited in its current status. The page has been reloaded with the latest data.",
+      "AP_PAYMENT_OVER_ALLOCATED": "The amount paid is more than the unpaid balance of {doc_no} line {sequence_no}. Lower the amount.",
+      "AP_PAYMENT_EMPTY": "The total amount paid must be greater than zero.",
+      "AP_PAYMENT_BANK_CURRENCY_MISMATCH": "The bank account currency must match the payment currency or the base currency.",
+      "AP_PAYMENT_INVOICE_NOT_POSTED": "Invoice {doc_no} is not posted yet, so it cannot be paid."
     }
   },
   "validation": {

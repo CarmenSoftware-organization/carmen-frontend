@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import type { PaymentErrorKey, PaymentExpenseRow } from "./ap-payment-form";
 
-const DECIMAL_RE = /^\d*(\.\d*)?$/;
+// เงินบาทไม่เกิน 2 ตำแหน่ง — backend ปัดเศษเงียบ ๆ ถ้าให้พิมพ์เกิน ยอดบนจอจะไม่ตรงที่บันทึก
+const DECIMAL_RE = /^\d*(\.\d{0,2})?$/;
 const TH = "px-2 py-1.5 text-xs font-medium whitespace-nowrap";
 const TD = "px-2 py-1.5 text-xs align-middle";
 

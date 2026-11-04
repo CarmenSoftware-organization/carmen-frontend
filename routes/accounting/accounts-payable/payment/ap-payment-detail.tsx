@@ -24,6 +24,7 @@ import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useBankAccounts } from "@/hooks/use-accounting-master";
 import { useProfile } from "@/hooks/use-profile";
 import { ApiError } from "@/lib/api-error";
+import { getUserErrorMessage } from "@/lib/error-message";
 import { formatDate } from "@/lib/date-utils";
 import type {
   ApPayment,
@@ -255,6 +256,13 @@ function ApPaymentEditor({
     if (ids.length === 0) return;
     const wanted = docs.filter((d) => ids.includes(d.ap_invoice_id));
     if (wanted.length === 0) return;
+    // ทุกบรรทัดถูกใบจ่ายอื่นจองหมด = ไม่มียอดให้เติม บอกผู้ใช้แทนที่จะปล่อยฟอร์มว่างเงียบ ๆ
+    if (
+      !wanted.some((d) =>
+        d.lines.some((l) => compareDecimal(lineCap(l, ownReserved), "0") > 0),
+      )
+    )
+      toast.info(td("prefillNone"));
     setForm((current) => {
       const allocations = { ...current.allocations };
       const currency = wanted[0].currency_code;
@@ -271,34 +279,56 @@ function ApPaymentEditor({
   }, [isNew, docs, searchParams, ownReserved]);
 
   // WHT: คำนวณใหม่จาก allocations (หน่วง 600ms) — แถวที่ผู้ใช้ override ไว้คงยอดเดิม
+  // `calcSig` = ลายเซ็น allocations ที่ WHT บนจอสอดคล้องด้วย · null = ใบเดิมที่ยังรอรายการค้างจ่ายโหลด
+  // (เทียบกับค่าตอนโหลดเสร็จ ไม่ใช่ตอน mount เพราะ docs ยังไม่มา) · signature ≠ calcSig = WHT ค้าง
   const signature = sortedSignature(allocationInputs);
-  const lastCalculated = useRef(signature);
+  const [calcSig, setCalcSig] = useState<string | null>(
+    loaded ? null : signature,
+  );
+  const [whtError, setWhtError] = useState<string | null>(null);
   const requestId = useRef(0);
+  const tErr = useTranslations("errors");
+  const tField = useTranslations("field");
   useEffect(() => {
-    if (!editable || lastCalculated.current === signature) return;
+    if (calcSig === null && docs) setCalcSig(signature);
+  }, [calcSig, docs, signature]);
+  const whtStale = editable && calcSig !== null && signature !== calcSig;
+  const calcReady = calcSig !== null;
+  // WHT ค้าง (allocations เปลี่ยนแต่ยังไม่คำนวณ / กำลังคำนวณ / คำนวณล้มเหลว) = ห้ามบันทึก
+  // เกินเพดานให้ validation ของฟอร์มบอกเอง
+  const whtBlocked = whtStale && !overCap;
+  useEffect(() => {
+    if (!editable || calcSig === null || calcSig === signature) return;
+    // เกินเพดาน = ค่ายังไม่ถูกต้อง ไม่ยิง preview (backend 422 อยู่แล้ว) · ผู้ใช้แก้แล้ว effect นี้รันใหม่เอง
+    if (overCap) return;
     const inputs = JSON.parse(signature) as typeof allocationInputs;
     if (inputs.length === 0) {
       requestId.current += 1;
       setCalculating(false);
-      lastCalculated.current = signature;
+      setWhtError(null);
+      setCalcSig(signature);
       setForm((current) => ({ ...current, wht: [] }));
       return;
     }
     const handle = setTimeout(() => {
       const id = ++requestId.current;
       setCalculating(true);
+      setWhtError(null);
       whtPreview
-        .mutateAsync({ allocations: inputs })
+        .mutateAsync({ allocations: inputs, ap_payment_id: loaded?.id })
         .then((rows) => {
           // ผลของคำขอเก่าที่ถูกแทนที่แล้วต้องไม่ทับผลล่าสุด
           if (id !== requestId.current) return;
-          lastCalculated.current = signature;
+          setCalcSig(signature);
           setForm((current) => ({
             ...current,
             wht: mergeWhtPreview(current.wht, rows, true),
           }));
         })
-        .catch(() => undefined)
+        .catch((error: unknown) => {
+          if (id === requestId.current)
+            setWhtError(getUserErrorMessage(error, tErr, tField));
+        })
         .finally(() => {
           if (id === requestId.current) setCalculating(false);
         });
@@ -311,30 +341,37 @@ function ApPaymentEditor({
     };
     // whtPreview.mutateAsync เปลี่ยนตัวทุก render — พึ่ง signature อย่างเดียว
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editable, signature]);
+  }, [editable, signature, calcReady, overCap]);
 
   const recalculateWht = async () => {
     if (allocationInputs.length === 0) return;
     const id = ++requestId.current;
     setCalculating(true);
+    setWhtError(null);
     try {
       const rows = await whtPreview.mutateAsync({
         allocations: allocationInputs,
+        ap_payment_id: loaded?.id,
       });
       if (id !== requestId.current) return;
-      lastCalculated.current = signature;
+      setCalcSig(signature);
       setForm((current) => ({
         ...current,
         wht: mergeWhtPreview(current.wht, rows, false),
       }));
-    } catch {
-      // toast กลางแสดงข้อผิดพลาดแล้ว
+    } catch (error) {
+      if (id === requestId.current)
+        setWhtError(getUserErrorMessage(error, tErr, tField));
     } finally {
       if (id === requestId.current) setCalculating(false);
     }
   };
 
-  /** 409 ไม่มีรหัส catalog = doc_version ชน: โหลดข้อมูลล่าสุดแทนการทับ แล้วบอกว่าโหลดใหม่แล้ว */
+  /**
+   * 409 = doc_version ชน: โหลดข้อมูลล่าสุดแทนการทับ · AP รายงานเป็น `AP_PAYMENT_IMMUTABLE` เสมอ
+   * ข้อความ `errors.byCode` ของรหัสนั้นบอกว่าโหลดใหม่แล้วอยู่ในตัว (toast กลาง) — toast เพิ่มอีกจะซ้ำ
+   * ส่วน 409 เปล่า ๆ (ไม่มีรหัส) toast กลางพูดแค่ "มีคนแก้" ที่นี่จึงเติม "โหลดใหม่แล้ว"
+   */
   const onFailure = (error: unknown) => {
     if (error instanceof ApiError && error.statusCode === 409) {
       refetch();
@@ -466,15 +503,19 @@ function ApPaymentEditor({
                       setShowErrors(false);
                       const restored = initialPaymentForm(loaded);
                       setForm(restored);
-                      lastCalculated.current = sortedSignature(
-                        toAllocationInputs([], restored.allocations, loaded),
-                      );
+                      setCalcSig(null);
+                      setWhtError(null);
                     }
                   }}
                 >
                   {td("cancel")}
                 </Button>
-                <Button size="sm" disabled={busy} onClick={() => void save()}>
+                <Button
+                  size="sm"
+                  disabled={busy || whtBlocked}
+                  title={whtBlocked ? td("wht.staleBlocksSave") : undefined}
+                  onClick={() => void save()}
+                >
                   <Save className="size-4" />
                   {td("save")}
                 </Button>
@@ -645,6 +686,8 @@ function ApPaymentEditor({
         rows={form.wht}
         editable={editable}
         calculating={calculating}
+        stale={whtStale && !overCap}
+        error={whtError}
         errors={errors}
         onChangeAmount={(key, amount) =>
           setForm((current) => ({

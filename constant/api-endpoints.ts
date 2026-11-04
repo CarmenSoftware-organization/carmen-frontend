@@ -159,8 +159,6 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/ap-invoice/${toSafePathSegment(id)}`,
   AP_INVOICE_ACTION: (buCode: string, id: string, command: string) =>
     `/api/proxy/api/${buCode}/ap-invoice/${toSafePathSegment(id)}/${toSafePathSegment(command)}`,
-  AP_INVOICE_REFERENCE_CANDIDATES: (buCode: string, id: string) =>
-    `/api/proxy/api/${buCode}/ap-invoice/${toSafePathSegment(id)}/reference-candidates`,
   AP_PAYMENT_LIST: (buCode: string) => `/api/proxy/api/${buCode}/ap-payment`,
   AP_PAYMENT_DETAIL: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/ap-payment/${toSafePathSegment(id)}`,

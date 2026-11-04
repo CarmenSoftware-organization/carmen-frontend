@@ -7,7 +7,8 @@ import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import type { DecimalString } from "@/types/accounts-payable";
 import type { PaymentErrorKey, PaymentWhtRow } from "./ap-payment-form";
 
-const DECIMAL_RE = /^\d*(\.\d*)?$/;
+// เงินบาทไม่เกิน 2 ตำแหน่ง — backend ปัดเศษเงียบ ๆ ถ้าให้พิมพ์เกิน ยอดบนจอจะไม่ตรงที่บันทึก
+const DECIMAL_RE = /^\d*(\.\d{0,2})?$/;
 const TH = "px-2 py-1.5 text-xs font-medium whitespace-nowrap";
 const TD = "px-2 py-1.5 text-xs align-middle";
 
@@ -16,6 +17,8 @@ export function PaymentWhtSection({
   rows,
   editable,
   calculating,
+  stale,
+  error,
   errors,
   onChangeAmount,
   onRecalculate,
@@ -23,6 +26,10 @@ export function PaymentWhtSection({
   readonly rows: readonly PaymentWhtRow[];
   readonly editable: boolean;
   readonly calculating: boolean;
+  /** allocations เปลี่ยนแล้วแต่ WHT ยังไม่ได้คำนวณใหม่ (รอ/กำลังคำนวณ/ล้มเหลว) */
+  readonly stale: boolean;
+  /** ข้อความ error ของ wht-preview รอบล่าสุด */
+  readonly error: string | null;
   readonly errors: ReadonlySet<PaymentErrorKey>;
   readonly onChangeAmount: (key: string, amount: DecimalString) => void;
   readonly onRecalculate: () => void;
@@ -47,6 +54,16 @@ export function PaymentWhtSection({
         )}
       </CardHeader>
       <CardContent>
+        {editable && error && (
+          <p role="alert" className="text-destructive mb-2 text-xs">
+            {t("previewFailed", { message: error })}
+          </p>
+        )}
+        {editable && stale && !calculating && (
+          <p role="status" className="text-warning-ink mb-2 text-xs">
+            {t("stale")}
+          </p>
+        )}
         {rows.length === 0 ? (
           <p className="text-muted-foreground text-sm">{t("empty")}</p>
         ) : (

@@ -12,7 +12,6 @@ import type {
   ApInvoiceLineInput,
   ApInvoiceLineSource,
   ApInvoiceReference,
-  ApInvoiceReferenceCandidate,
   ApInvoiceTax,
   ApMutationResult,
   ApOutstandingDocument,
@@ -527,26 +526,6 @@ export const httpApRepository: ApRepository = {
     );
   },
 
-  async referenceCandidates(buCode, id) {
-    const res = await httpClient.get(
-      API_ENDPOINTS.AP_INVOICE_REFERENCE_CANDIDATES(buCode, id),
-    );
-    const data = await unwrap(res, "Failed to fetch reference candidates");
-    return arr(data).map(
-      (r): ApInvoiceReferenceCandidate => ({
-        id: String(r.id),
-        doc_no: String(r.doc_no),
-        doc_type: r.doc_type as ApInvoiceReferenceCandidate["doc_type"],
-        doc_date: String(r.doc_date),
-        total_amount: toDecimal(r.total_amount),
-        reference_applied_amount: toDecimal(r.reference_applied_amount),
-        outstanding_amount: toDecimal(r.outstanding_amount),
-        exchange_rate: toDecimal(r.exchange_rate),
-        remaining_amount: toDecimal(r.remaining_amount),
-      }),
-    );
-  },
-
   // ---- payment ----
   async listPayments(buCode, params) {
     const res = await httpClient.get(
@@ -639,6 +618,7 @@ export const httpApRepository: ApRepository = {
           ap_invoice_detail_id: a.ap_invoice_detail_id,
           applied_amount: toNumber(a.applied_amount),
         })),
+        ...(body.ap_payment_id ? { ap_payment_id: body.ap_payment_id } : {}),
       },
     );
     const data = await unwrap(res, "Failed to preview WHT");

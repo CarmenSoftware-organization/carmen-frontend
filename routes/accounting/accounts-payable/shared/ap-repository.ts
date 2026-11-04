@@ -3,7 +3,6 @@ import type {
   ApCommand,
   ApInvoice,
   ApInvoiceInput,
-  ApInvoiceReferenceCandidate,
   ApListParams,
   ApMutationResult,
   ApOutstandingDocument,
@@ -35,10 +34,6 @@ export interface ApRepository {
     command: ApCommand,
     input: ApActionInput,
   ): Promise<ApMutationResult>;
-  referenceCandidates(
-    buCode: string,
-    id: string,
-  ): Promise<ApInvoiceReferenceCandidate[]>;
 
   listPayments(
     buCode: string,

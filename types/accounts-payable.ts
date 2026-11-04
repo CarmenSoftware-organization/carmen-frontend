@@ -240,18 +240,6 @@ export interface ApInvoiceInput {
   references?: ApInvoiceReferenceInput[] | null;
 }
 
-export interface ApInvoiceReferenceCandidate {
-  id: string;
-  doc_no: string;
-  doc_type: ApDocType;
-  doc_date: string;
-  total_amount: DecimalString;
-  reference_applied_amount: DecimalString;
-  outstanding_amount: DecimalString;
-  exchange_rate: DecimalString;
-  remaining_amount: DecimalString;
-}
-
 export interface ApPaymentAllocation {
   id: string;
   ap_invoice_id: string;
@@ -420,6 +408,8 @@ export interface ApWhtPreviewRow {
 
 export interface ApWhtPreviewInput {
   allocations: ApPaymentAllocationInput[];
+  /** แก้ใบร่างเดิม — backend ใช้ตัดยอดจองของใบนี้เองออกจากการคำนวณ */
+  ap_payment_id?: string;
 }
 
 /** ผลของ create/update/action — backend คืนแค่ id/doc_no/doc_status/doc_version/gl_jv_no */

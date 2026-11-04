@@ -19,8 +19,6 @@ export const AP_QUERY_KEYS = {
     [...AP_QUERY_KEYS.root(bu), "invoices", params] as const,
   invoice: (bu: string, id?: string) =>
     [...AP_QUERY_KEYS.root(bu), "invoice", id] as const,
-  referenceCandidates: (bu: string, id?: string) =>
-    [...AP_QUERY_KEYS.root(bu), "reference-candidates", id] as const,
   payments: (bu: string, params?: ApListParams) =>
     [...AP_QUERY_KEYS.root(bu), "payments", params] as const,
   payment: (bu: string, id?: string) =>
@@ -113,15 +111,6 @@ export function useApInvoiceAction() {
   });
 }
 
-export function useApInvoiceReferenceCandidates(id?: string) {
-  const bu = useBu();
-  return useQuery({
-    queryKey: AP_QUERY_KEYS.referenceCandidates(bu, id),
-    queryFn: () => repository.referenceCandidates(bu, id!),
-    enabled: !!bu && isId(id),
-  });
-}
-
 export function useApPayments(
   params?: ApListParams,
   options?: { enabled?: boolean },
@@ -204,5 +193,7 @@ export function useApWhtPreview() {
   const bu = useBu();
   return useMutation({
     mutationFn: (body: ApWhtPreviewInput) => repository.whtPreview(bu, body),
+    // error แสดงinline ที่หน้า payment เอง (WHT ค้างต้องเห็นเหตุผลถาวร ไม่ใช่ toast ที่หายไป)
+    meta: { skipGlobalErrorToast: true },
   });
 }

@@ -154,7 +154,11 @@ function ApInvoiceEditor({
     [],
   );
 
-  /** 409 ไม่มีรหัส catalog = doc_version ชน: toast กลางบอกว่ามีคนแก้ ที่นี่โหลดข้อมูลล่าสุดแทนการทับ แล้วบอกว่าโหลดใหม่แล้ว */
+  /**
+   * 409 = doc_version ชน: โหลดข้อมูลล่าสุดแทนการทับ · AP รายงานเป็น `AP_INVOICE_IMMUTABLE` เสมอ
+   * ข้อความ `errors.byCode` ของรหัสนั้นบอกว่าโหลดใหม่แล้วอยู่ในตัว (toast กลาง) — toast เพิ่มอีกจะซ้ำ
+   * ส่วน 409 เปล่า ๆ (ไม่มีรหัส) toast กลางพูดแค่ "มีคนแก้" ที่นี่จึงเติม "โหลดใหม่แล้ว"
+   */
   const onFailure = (error: unknown) => {
     if (error instanceof ApiError && error.statusCode === 409) {
       refetch();
@@ -384,6 +388,8 @@ function ApInvoiceEditor({
             {loaded &&
               !editing &&
               loaded.doc_status === "posted" &&
+              // credit note ไม่ใช่เอกสารที่จ่ายเงินได้ (ใช้หักยอดผ่าน reference)
+              loaded.doc_type !== "credit_note" &&
               Number(loaded.outstanding_amount) > 0 &&
               !primaryIsSubmit && (
                 <Button
