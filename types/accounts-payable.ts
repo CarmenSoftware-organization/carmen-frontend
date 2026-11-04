@@ -205,6 +205,12 @@ export interface ApInvoiceLineInput {
   vat_is_override?: boolean;
   wht_tax_profile_id?: string | null;
   dimensions?: { gl_dimension_id: string; gl_dimension_value_id: string }[] | null;
+  /** ฟิลด์ที่ UI ไม่ได้แก้ — ส่งกลับตามเดิมตอน PUT (กันถูกล้าง) */
+  vat_chart_of_accounts_id?: string | null;
+  vat_cost_center_id?: string | null;
+  cr_chart_of_accounts_id?: string | null;
+  cr_cost_center_id?: string | null;
+  sources?: { good_received_note_detail_item_id: string; matched_qty: DecimalString }[] | null;
 }
 
 export interface ApInvoiceReferenceInput {

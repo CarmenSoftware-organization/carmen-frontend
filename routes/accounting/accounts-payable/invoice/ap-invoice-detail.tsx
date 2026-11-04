@@ -154,9 +154,12 @@ function ApInvoiceEditor({
     [],
   );
 
-  /** 409 = มีคนแก้ใบนี้ไปแล้ว: toast กลางแจ้งแล้ว ที่นี่โหลดข้อมูลล่าสุดแทนการทับ */
+  /** 409 ไม่มีรหัส catalog = doc_version ชน: toast กลางบอกว่ามีคนแก้ ที่นี่โหลดข้อมูลล่าสุดแทนการทับ แล้วบอกว่าโหลดใหม่แล้ว */
   const onFailure = (error: unknown) => {
-    if (error instanceof ApiError && error.statusCode === 409) refetch();
+    if (error instanceof ApiError && error.statusCode === 409) {
+      refetch();
+      if (!error.appCode) toast.info(td("reloaded"));
+    }
   };
 
   const save = async () => {
@@ -169,7 +172,10 @@ function ApInvoiceEditor({
     const input = toInvoiceInput(form);
     try {
       if (loaded) {
-        if (loaded.doc_version == null) return refetch();
+        if (loaded.doc_version == null) {
+          toast.error(td("reloaded"));
+          return refetch();
+        }
         await saveMutation.mutateAsync({
           id: loaded.id,
           docVersion: loaded.doc_version,
@@ -193,7 +199,10 @@ function ApInvoiceEditor({
     actionReason?: string,
   ) => {
     if (!loaded) return;
-    if (loaded.doc_version == null) return refetch();
+    if (loaded.doc_version == null) {
+      toast.error(td("reloaded"));
+      return refetch();
+    }
     try {
       await actionMutation.mutateAsync({
         id: loaded.id,

@@ -333,6 +333,14 @@ function lineBody(line: ApInvoiceLineInput): Raw {
     unit_price: toNumber(line.unit_price),
     discount_amount: toNumberOrNull(line.discount_amount),
     vat_amount: toNumberOrNull(line.vat_amount),
+    ...(line.sources
+      ? {
+          sources: line.sources.map((s) => ({
+            ...s,
+            matched_qty: toNumber(s.matched_qty),
+          })),
+        }
+      : {}),
   };
 }
 

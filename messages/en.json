@@ -793,7 +793,8 @@
             "moveUp": "Move line up",
             "moveDown": "Move line down",
             "remove": "Remove line"
-          }
+          },
+          "reloaded": "The document was reloaded with the latest data."
         }
       }
     }

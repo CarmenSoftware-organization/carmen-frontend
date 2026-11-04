@@ -41,6 +41,16 @@ export interface InvoiceFormLine {
   /** เลข GRN ที่ใบนี้อ้างถึง (อ่านอย่างเดียว) */
   grn_no: string | null;
   grn_id: string | null;
+  /** ฟิลด์ของบรรทัดเดิมที่ UI ไม่แก้ (dimension / cr_* / vat_* account / sources) — ส่งกลับตามเดิมตอน PUT; บรรทัดใหม่ไม่มี */
+  carry: Pick<
+    ApInvoiceLineInput,
+    | "dimensions"
+    | "sources"
+    | "vat_chart_of_accounts_id"
+    | "vat_cost_center_id"
+    | "cr_chart_of_accounts_id"
+    | "cr_cost_center_id"
+  > | null;
 }
 
 export interface InvoiceForm {
@@ -95,6 +105,7 @@ export const emptyLine = (): InvoiceFormLine => ({
   wht_rate: "0",
   grn_no: null,
   grn_id: null,
+  carry: null,
 });
 
 function fromDocLine(line: ApInvoiceLine): InvoiceFormLine {
@@ -121,6 +132,20 @@ function fromDocLine(line: ApInvoiceLine): InvoiceFormLine {
     wht_rate: line.wht_rate ?? "0",
     grn_no: source?.grn_no ?? null,
     grn_id: source?.good_received_note_id ?? null,
+    carry: {
+      dimensions: line.dimensions.map((d) => ({
+        gl_dimension_id: d.gl_dimension_id,
+        gl_dimension_value_id: d.gl_dimension_value_id,
+      })),
+      sources: line.sources.map((src) => ({
+        good_received_note_detail_item_id: src.good_received_note_detail_item_id,
+        matched_qty: src.matched_qty,
+      })),
+      vat_chart_of_accounts_id: line.vat_chart_of_accounts_id,
+      vat_cost_center_id: line.vat_cost_center_id,
+      cr_chart_of_accounts_id: line.cr_chart_of_accounts_id,
+      cr_cost_center_id: line.cr_cost_center_id,
+    },
   };
 }
 
@@ -258,6 +283,7 @@ function toLineInput(line: InvoiceFormLine, index: number): ApInvoiceLineInput {
     // ไม่ override = ให้ backend คำนวณเอง
     vat_amount: line.vat_is_override ? num(line.vat_amount) : null,
     wht_tax_profile_id: line.wht_tax_profile_id,
+    ...(line.carry ?? {}),
   };
 }
 
