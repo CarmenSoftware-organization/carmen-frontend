@@ -276,7 +276,7 @@ function ApPaymentEditor({
       }
       return { ...current, allocations };
     });
-  }, [isNew, docs, searchParams, ownReserved]);
+  }, [isNew, docs, searchParams, ownReserved, td]);
 
   // WHT: คำนวณใหม่จาก allocations (หน่วง 600ms) — แถวที่ผู้ใช้ override ไว้คงยอดเดิม
   // `calcSig` = ลายเซ็น allocations ที่ WHT บนจอสอดคล้องด้วย · null = ใบเดิมที่ยังรอรายการค้างจ่ายโหลด
