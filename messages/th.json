@@ -5730,6 +5730,8 @@
       "jvEmptyNoInvoice": "ใบรับสินค้านี้ยังไม่มี AP invoice จึงยังไม่มีใบสำคัญสมุดรายวัน",
       "jvCreateApInvoice": "สร้าง AP Invoice",
       "jvCreateSuccess": "สร้าง AP invoice แล้ว",
+      "jvEmptyInvoiceNoJv": "AP invoice {docNos} ยังไม่มีใบสำคัญสมุดรายวัน",
+      "jvLoadError": "โหลดใบสำคัญสมุดรายวันไม่สำเร็จ",
       "tabStock": "ความเคลื่อนไหวสต๊อก",
       "refDocs": "เอกสารต้นทาง",
       "refDocsComingSoon": "ยังดูเอกสารต้นทางของรายการนี้ไม่ได้ กำลังทำอยู่",

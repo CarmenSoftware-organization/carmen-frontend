@@ -5730,6 +5730,8 @@
       "jvEmptyNoInvoice": "No AP invoice has been created for this goods receive note yet, so there is no journal voucher.",
       "jvCreateApInvoice": "Create AP Invoice",
       "jvCreateSuccess": "AP invoice created",
+      "jvEmptyInvoiceNoJv": "AP invoice {docNos} has no journal voucher yet.",
+      "jvLoadError": "Could not load the journal voucher",
       "tabStock": "Stock Movement",
       "refDocs": "Source documents",
       "refDocsComingSoon": "Source documents for this line are not available yet",

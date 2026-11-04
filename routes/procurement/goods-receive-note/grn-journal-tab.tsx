@@ -19,6 +19,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { ErrorState } from "@/components/ui/error-state";
 import { Spinner } from "@/components/ui/spinner";
 import { useCan } from "@/hooks/use-can";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
@@ -143,7 +144,7 @@ export function GrnJournalTab({
 }) {
   const t = useTranslations("procurement.goodsReceiveNote");
   const { can, canWrite } = useCan();
-  const { active, reversed, isLoading } =
+  const { active, reversed, isLoading, isError } =
     useGrnJournalVouchers(goodsReceiveNote);
   const createApInvoice = useCreateGrnApInvoice(goodsReceiveNote.id);
 
@@ -160,6 +161,12 @@ export function GrnJournalTab({
       <div className="flex justify-center py-10">
         <Spinner />
       </div>
+    );
+  }
+
+  if (isError && active.length === 0 && reversed.length === 0) {
+    return (
+      <ErrorState message={t("jvLoadError")} />
     );
   }
 
@@ -197,11 +204,18 @@ export function GrnJournalTab({
 
   const isCommitted = goodsReceiveNote.doc_status === "committed";
   let description = t("jvEmptyNotCommitted");
+  const linked = goodsReceiveNote.ap_invoices ?? [];
   if (isCommitted) {
-    description =
-      goodsReceiveNote.post_type === "ap"
-        ? t("jvEmptyNoInvoice")
-        : t("jvEmptyNotAp");
+    if (linked.length > 0) {
+      description = t("jvEmptyInvoiceNoJv", {
+        docNos: linked.map((inv) => inv.doc_no).join(", "),
+      });
+    } else {
+      description =
+        goodsReceiveNote.post_type === "ap"
+          ? t("jvEmptyNoInvoice")
+          : t("jvEmptyNotAp");
+    }
   }
 
   return (

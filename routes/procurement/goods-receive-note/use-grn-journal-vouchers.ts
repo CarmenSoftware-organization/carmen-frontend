@@ -115,6 +115,7 @@ export function useGrnJournalVouchers(grn: GoodsReceiveNote | undefined): {
   active: GrnJvView[];
   reversed: GrnJvView[];
   isLoading: boolean;
+  isError: boolean;
 } {
   const buCode = useBuCode();
   const targets = collectTargets(grn);
@@ -137,7 +138,9 @@ export function useGrnJournalVouchers(grn: GoodsReceiveNote | undefined): {
     (t.kind === "active" ? active : reversed).push(view);
   });
 
-  return { active, reversed, isLoading: results.some((r) => r.isLoading) };
+  return { active, reversed, isLoading: results.some((r) => r.isLoading),
+    isError: results.some((r) => r.isError),
+  };
 }
 
 /** สร้าง AP invoice จาก GRN ที่ commit แล้ว — สำเร็จแล้ว refetch ใบ GRN ให้แท็บ JV ขึ้น */
