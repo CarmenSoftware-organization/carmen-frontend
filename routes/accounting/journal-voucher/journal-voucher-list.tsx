@@ -1,249 +1,303 @@
 import { useMemo, useState } from "react";
-import type { ColumnDef } from "@tanstack/react-table";
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { RefreshCw, Columns3 } from "lucide-react";
 import { useNavigate } from "react-router";
-import { ListPageShell } from "@/components/share/list-page-shell";
-import { listGridMaxH } from "@/components/share/list-grid-max-h";
-import { DocumentListActions } from "@/components/share/document-list-actions";
-import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
+import { useTranslations } from "use-intl";
+import { Loader2, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import { listReturnState } from "@/hooks/use-list-return";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useGridPagination } from "@/hooks/use-grid-pagination";
+import { useDataGridState } from "@/hooks/use-data-grid-state";
+import { useListFilters } from "@/hooks/use-list-filters";
+import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import {
   DataGrid,
   DataGridContainer,
+  DataGridScrollArea,
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
-import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { DataGridSortMenu } from "@/components/ui/data-grid/data-grid-sort-menu";
-import { DataGridColumnVisibility } from "@/components/ui/data-grid/data-grid-column-visibility";
-import { CellAction } from "@/components/ui/cell-action";
-import { Badge } from "@/components/ui/badge";
+import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
+import { MultiSelectFilter } from "@/components/ui/multi-select-filter";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
+import { ErrorState } from "@/components/ui/error-state";
 import { Button } from "@/components/ui/button";
-import SearchInput from "@/components/search-input";
-import { StatusFilter } from "@/components/ui/status-filter";
-import { useJournalVouchers } from "./use-journal-voucher";
-import type {
-  JournalVoucher,
-  JournalVoucherStatus,
-} from "@/types/journal-voucher";
-import { ListCard, ListCardRow } from "@/components/share/list-card";
+import EmptyComponent from "@/components/empty-component";
+import { ListPageShell } from "@/components/share/list-page-shell";
+import { listGridMaxH } from "@/components/share/list-grid-max-h";
+import { DocumentListActions } from "@/components/share/document-list-actions";
+import { ListToolbar } from "@/components/list-filter/list-toolbar";
+import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
+import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
+import { cn } from "@/lib/utils";
+import type { FilterFieldDef } from "@/types/list-filter";
+import type { JournalVoucher } from "@/types/journal-voucher";
+import {
+  useDeleteJournalVoucher,
+  useExportJournalVoucher,
+  useJournalVouchers,
+} from "./use-journal-voucher";
+import { useJvTable } from "./use-jv-table";
+import JvCardList from "./jv-card-list";
+import {
+  JV_SOURCE_OPTIONS,
+  JV_STATUS_OPTIONS,
+  jvSourceLabel,
+  jvStatusLabel,
+} from "./jv-status";
 
-const statuses: JournalVoucherStatus[] = [
-  "draft",
-  "submitted",
-  "posting",
-  "scheduled",
-  "posted",
-  "post_failed",
-  "voided",
-  "reversed",
-];
-const statusClass: Record<string, string> = {
-  draft: "bg-muted text-muted-foreground",
-  submitted: "bg-amber-100 text-amber-900",
-  posted: "bg-emerald-100 text-emerald-900",
-  post_failed: "bg-red-100 text-red-900",
-  reversed: "bg-slate-200 text-slate-700",
-};
+/** ใหม่สุดขึ้นก่อน — ตรงกับค่าเรียงเริ่มต้นของ backend (`jv_date:desc`) */
+const DEFAULT_SORT = "jv_date:desc";
 
+/**
+ * หน้ารายการใบสำคัญลงบัญชี (JV) — โครงเดียวกับหน้า list ของ PO
+ * (`routes/procurement/purchase-order/po-component.tsx`) ตัดส่วนที่ JV ไม่มีออก:
+ * ไม่มีแท็บ "รอฉันดำเนินการ" (ไม่มี endpoint my-pending) และไม่มีคอลัมน์ audit
+ */
 export default function JournalVoucherList() {
+  const t = useTranslations("accounting.journalVoucher");
+  const tc = useTranslations("common");
+  const tfl = useTranslations("field");
+  const tt = useTranslations("toast");
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
+  const exportErrorToast = useExportErrorToast();
+  const [deleteTarget, setDeleteTarget] = useState<JournalVoucher | null>(null);
   const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
-  const query = useJournalVouchers({
-    perpage: 25,
-    search,
-    filter: status ? `status:${status}` : undefined,
+  const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
+  const isGridMode = isMobile || displayMode === "grid";
+  const useInfiniteScroll = !!isMobile;
+  const deleteJv = useDeleteJournalVoucher();
+  const { exportJournalVoucher, isExporting } = useExportJournalVoucher();
+
+  const { params, search, setSearch, tableConfig } = useDataGridState({
+    defaultSort: DEFAULT_SORT,
   });
-  const rows = query.data?.data ?? [];
-  const columns = useMemo<ColumnDef<JournalVoucher>[]>(
+
+  const filterFields = useMemo<FilterFieldDef[]>(
     () => [
       {
-        accessorKey: "display_no",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Number" />
+        key: "filter",
+        control: "custom",
+        labelKey: "common.status",
+        section: "listView.sectionDocument",
+        render: (value, onChange) => (
+          <MultiSelectFilter
+            value={value}
+            onChange={onChange}
+            options={JV_STATUS_OPTIONS}
+            className="w-full"
+          />
         ),
-        cell: ({ row }) => (
-          <CellAction
-            onClick={() =>
-              navigate(`/accounting/journal-voucher/${row.original.id}`)
-            }
-          >
-            {row.original.display_no}
-          </CellAction>
-        ),
-        enableHiding: false,
-        meta: { headerTitle: "Number" },
       },
       {
-        accessorKey: "jv_date",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Date" />
+        key: "source",
+        control: "custom",
+        labelKey: "accounting.journalVoucher.source",
+        section: "listView.sectionDocument",
+        render: (value, onChange) => (
+          <MultiSelectFilter
+            value={value}
+            onChange={onChange}
+            options={JV_SOURCE_OPTIONS}
+            className="w-full"
+          />
         ),
-        cell: ({ row }) => (
-          <span className="tabular-nums">
-            {row.original.jv_date.slice(0, 10)}
-          </span>
-        ),
-        meta: { headerTitle: "Date" },
       },
       {
-        accessorKey: "description",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Description" />
-        ),
-        cell: ({ row }) => (
-          <span
-            className="block max-w-80 truncate"
-            title={row.original.description}
-          >
-            {row.original.description}
-          </span>
-        ),
-        meta: { headerTitle: "Description" },
-      },
-      {
-        accessorKey: "source_type",
-        header: "Source",
-        cell: ({ row }) => row.original.source_type ?? "Manual",
-        meta: { headerTitle: "Source" },
-      },
-      {
-        accessorKey: "jv_status",
-        header: "Status",
-        cell: ({ row }) => (
-          <Badge
-            size="xs"
-            className={statusClass[row.original.jv_status] ?? "bg-muted"}
-          >
-            {row.original.jv_status.replaceAll("_", " ")}
-          </Badge>
-        ),
-        meta: { headerTitle: "Status" },
-      },
-      {
-        accessorKey: "total_debit",
-        header: "Debit",
-        cell: ({ row }) => (
-          <span className="block text-right tabular-nums">
-            {row.original.total_debit}
-          </span>
-        ),
-        meta: { headerTitle: "Debit", cellClassName: "text-right" },
-      },
-      {
-        accessorKey: "total_credit",
-        header: "Credit",
-        cell: ({ row }) => (
-          <span className="block text-right tabular-nums">
-            {row.original.total_credit}
-          </span>
-        ),
-        meta: { headerTitle: "Credit", cellClassName: "text-right" },
+        key: "jv_date",
+        control: "date-range",
+        labelKey: "accounting.journalVoucher.jvDate",
+        fieldKey: "jv_date",
+        section: "listView.sectionDate",
       },
     ],
-    [navigate],
+    [],
   );
-  const table = useReactTable({
-    data: rows,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
+
+  const lf = useListFilters({
+    pageKey: LIST_PAGE_KEYS.JOURNAL_VOUCHER,
+    fields: filterFields,
+    defaultSort: DEFAULT_SORT,
   });
+
+  const queryParams = { ...params, filter: lf.filterParam };
+
+  const { data, isLoading, error, refetch } = useJournalVouchers(queryParams, {
+    enabled: !useInfiniteScroll,
+  });
+
+  const grid = useGridPagination<JournalVoucher>({
+    useListHook: useJournalVouchers,
+    params: queryParams,
+    enabled: useInfiniteScroll,
+  });
+
+  const journals = useInfiniteScroll ? grid.items : (data?.data ?? []);
+  const totalRecords = useInfiniteScroll
+    ? grid.totalRecords
+    : (data?.paginate?.total ?? 0);
+
+  const openJournal = (journal: JournalVoucher) =>
+    navigate(`/accounting/journal-voucher/${journal.id}`, listReturnState());
+
+  const handleExport = async () => {
+    try {
+      const count = await exportJournalVoucher({
+        params: queryParams,
+        columns: [
+          { header: t("jvNo"), value: (r) => r.display_no, width: 20 },
+          {
+            header: t("jvDate"),
+            value: (r) => r.jv_date.slice(0, 10),
+            width: 12,
+          },
+          {
+            header: tfl("description"),
+            value: (r) => r.description ?? "",
+            width: 40,
+          },
+          {
+            header: t("source"),
+            value: (r) => jvSourceLabel(r.source_type),
+            width: 12,
+          },
+          {
+            header: tfl("status"),
+            value: (r) => jvStatusLabel(r.jv_status),
+            width: 12,
+          },
+          { header: t("debit"), value: (r) => r.total_debit, width: 16 },
+          { header: t("credit"), value: (r) => r.total_credit, width: 16 },
+        ],
+      });
+      if (count === 0) {
+        toast.warning(tc("exportNoData"));
+        return;
+      }
+      toast.success(tc("exportSuccess", { count }));
+    } catch (err) {
+      exportErrorToast(err);
+    }
+  };
+
+  const table = useJvTable({
+    journals,
+    totalRecords,
+    params,
+    tableConfig,
+    onEdit: openJournal,
+    onDelete: setDeleteTarget,
+  });
+
+  if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
+
   return (
     <ListPageShell
-      title="Journal Voucher"
-      description="General Ledger entries, workflow and posting history"
+      title={t("title")}
+      description={t("desc")}
+      count={totalRecords}
       actions={
         <DocumentListActions
+          onExport={handleExport}
+          isExporting={isExporting}
           onAdd={() => navigate("/accounting/journal-voucher/new")}
-          addLabel="New JV"
-          hideExportPrint
+          addLabel={t("add")}
         />
       }
       toolbar={
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex w-full flex-1 items-center gap-2 sm:w-auto">
-            <SearchInput
-              defaultValue={search}
-              onSearch={setSearch}
-              onInputChange={setSearch}
-            />
-            <span className="bg-border hidden h-4 w-px sm:block" />
-            <StatusFilter
-              value={status}
-              onChange={setStatus}
-              placeholder="Status"
-              defaultLabel="All statuses"
-              options={statuses.map((item) => ({
-                value: item,
-                label: item.replaceAll("_", " "),
-              }))}
-              className="w-36 text-xs"
-            />
-          </div>
-          <div className="hidden shrink-0 items-center gap-2 sm:flex">
-            <DataGridSortMenu table={table} />
-            {displayMode === "list" && (
-              <DataGridColumnVisibility
-                table={table}
-                trigger={
-                  <Button
-                    size="icon-sm"
-                    variant="outline"
-                    aria-label="Toggle columns"
-                  >
-                    <Columns3 className="size-4" />
-                  </Button>
-                }
-              />
-            )}
-            <DisplayModeToggle value={displayMode} onChange={setDisplayMode} />
+        <ListToolbar
+          search={search}
+          onSearch={setSearch}
+          lf={lf}
+          fields={filterFields}
+          onSaveViewClick={() => setSaveViewDialogOpen(true)}
+          table={table}
+          displayMode={displayMode}
+          onDisplayModeChange={setDisplayMode}
+          trailing={
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={() => query.refetch()}
-              aria-label="Refresh"
+              onClick={() => (useInfiniteScroll ? grid.refetch?.() : refetch())}
+              aria-label={tc("refresh")}
+              title={tc("refresh")}
             >
               <RefreshCw className="size-4" />
             </Button>
-          </div>
-        </div>
+          }
+        />
       }
     >
-      {displayMode === "list" ? (
+      {!isGridMode && (
         <DataGrid
           table={table}
-          recordCount={rows.length}
-          tableLayout={{ headerSticky: true, width: "auto" }}
-          tableClassNames={{ bodyRow: "h-10" }}
+          recordCount={totalRecords}
+          isLoading={isLoading}
+          tableLayout={{ headerSticky: true, columnsResizable: true }}
+          emptyMessage={<EmptyComponent />}
         >
-          <DataGridContainer className={listGridMaxH(false)}>
-            <DataGridTable />
+          <DataGridContainer
+            className={cn(
+              "flex flex-col",
+              listGridMaxH(lf.activeFilters.length > 0),
+            )}
+          >
+            <DataGridScrollArea>
+              <DataGridTable />
+            </DataGridScrollArea>
+            <DataGridPagination />
           </DataGridContainer>
         </DataGrid>
-      ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {rows.map((row) => (
-            <ListCard
-              key={row.id}
-              title={row.display_no}
-              badge={
-                <Badge
-                  size="xs"
-                  className={statusClass[row.jv_status] ?? "bg-muted"}
-                >
-                  {row.jv_status}
-                </Badge>
-              }
-              onOpen={() => navigate(`/accounting/journal-voucher/${row.id}`)}
-            >
-              <ListCardRow label="Date">{row.jv_date.slice(0, 10)}</ListCardRow>
-              <ListCardRow label="Description">{row.description}</ListCardRow>
-              <ListCardRow label="Total">{row.total_debit}</ListCardRow>
-            </ListCard>
-          ))}
-        </div>
       )}
+
+      {isGridMode && (
+        <>
+          <JvCardList
+            items={journals}
+            isLoading={useInfiniteScroll ? grid.isLoading : isLoading}
+            onEdit={openJournal}
+            onDelete={setDeleteTarget}
+          />
+          {useInfiniteScroll && grid.hasMore && (
+            <div ref={grid.sentinelRef} className="flex justify-center py-4">
+              {grid.isLoadingMore && (
+                <Loader2 className="text-muted-foreground size-5 animate-spin" />
+              )}
+            </div>
+          )}
+        </>
+      )}
+
+      <DeleteDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) =>
+          !open && !deleteJv.isPending && setDeleteTarget(null)
+        }
+        title={t("deleteTitle")}
+        description={t("deleteConfirm", {
+          jvNo: deleteTarget?.display_no ?? "",
+        })}
+        isPending={deleteJv.isPending}
+        onConfirm={() => {
+          if (!deleteTarget) return;
+          deleteJv.mutate(deleteTarget.id, {
+            onSuccess: () => {
+              toast.success(tt("deleteSuccess", { entity: t("entity") }));
+              setDeleteTarget(null);
+            },
+            onError: (err) => {
+              toast.error(err instanceof Error ? err.message : String(err));
+            },
+          });
+        }}
+      />
+
+      <SaveViewDialog
+        open={saveViewDialogOpen}
+        onOpenChange={setSaveViewDialogOpen}
+        canManageBu={lf.view.canManageBu}
+        existingNames={lf.view.existingNames}
+        onSave={lf.view.saveOrUpdate}
+      />
     </ListPageShell>
   );
 }

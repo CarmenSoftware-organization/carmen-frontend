@@ -4,6 +4,8 @@
  * ห้ามเปลี่ยนค่าที่ ship แล้ว — จะทำให้ view ที่บันทึกไว้หายทั้งลูกค้า
  */
 export const LIST_PAGE_KEYS = {
+  // accounting
+  JOURNAL_VOUCHER: "journal_voucher",
   // config
   ADJUSTMENT_TYPE: "adjustment_type",
   BUSINESS_TYPE: "business_type",

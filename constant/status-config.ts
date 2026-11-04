@@ -59,6 +59,11 @@ const STATUS_CLASSNAMES: Record<string, string> = {
   closed: `${DOT} before:bg-[var(--status-closed)]`,
   locked: `${DOT} before:bg-[var(--status-locked)]`,
   voided: `${DOT} before:bg-[var(--status-voided)]`,
+  /* ใบสำคัญ GL (JV) — สีเดียวกับไอคอนใน status-icon-label.tsx */
+  in_review: `${DOT} before:bg-[var(--status-in-progress)]`,
+  scheduled: `${DOT} before:bg-[var(--status-pending)]`,
+  posted: `${DOT} before:bg-[var(--status-committed)]`,
+  void: `${DOT} before:bg-[var(--status-voided)]`,
   /* Workflow action badges */
   reviewed: `${DOT} before:bg-[var(--status-review)]`,
   sent_back: `${DOT} before:bg-[var(--status-review)]`,

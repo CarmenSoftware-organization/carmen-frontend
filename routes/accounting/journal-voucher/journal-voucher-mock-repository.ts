@@ -332,6 +332,17 @@ export const journalVoucherMockRepository: JournalVoucherRepository = {
       lines: current.lines,
     });
   },
+
+  async remove(buCode, id) {
+    const current = state(buCode).find((item) => item.id === id);
+    if (!current) throw new Error("Journal Voucher not found");
+    if (current.jv_status !== "draft")
+      throw new Error("Only a draft Journal Voucher can be deleted");
+    stateByBu.set(
+      buCode,
+      state(buCode).filter((item) => item.id !== id),
+    );
+  },
 };
 
 export function clearJournalVoucherMockState(): void {

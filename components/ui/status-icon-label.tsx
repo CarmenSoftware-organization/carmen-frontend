@@ -73,6 +73,11 @@ const STATUS_ICON: Record<
   /* รอบบัญชี — เปิดรับรายการ → ปิดรอบ → ล็อกถาวร */
   open: { icon: Unlock, color: "var(--status-open)" },
   locked: { icon: Lock, color: "var(--status-locked)" },
+  /* ใบสำคัญ GL (JV) — ร่าง → ตรวจ → ตั้งเวลา post → post แล้ว (ล็อก) · void ใช้ร่วมกับ voided */
+  in_review: { icon: Clock, color: "var(--status-in-progress)" },
+  scheduled: { icon: Hourglass, color: "var(--status-pending)" },
+  posted: { icon: Lock, color: "var(--status-committed)" },
+  void: { icon: Ban, color: "var(--status-voided)" },
   /* งานเบื้องหลัง (ออกรายงาน) — เข้าคิว → กำลังทำ → เสร็จ/ล้มเหลว */
   queued: { icon: Hourglass, color: "var(--status-pending)" },
   processing: { icon: Clock, color: "var(--status-in-progress)" },

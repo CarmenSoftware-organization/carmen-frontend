@@ -37,6 +37,8 @@ interface UseConfigTableOptions<T> {
   activity?: ActionColumnActivity<T>;
   /** เมนู Edit ในแถว (บนสุดของเมนู ⋯) — ไม่ส่ง = ไม่มีเมนู · ผู้เรียกคุมสิทธิ์เอง */
   edit?: ActionColumnEdit<T>;
+  /** คืนเหตุผลเมื่อแถวนี้ลบไม่ได้ (ปุ่มลบปิด + title) · คืน undefined = ลบได้ */
+  deleteDisabledTitle?: (item: T) => string | undefined;
 }
 
 /**
@@ -76,6 +78,7 @@ export function useConfigTable<T>({
   initialState,
   activity,
   edit,
+  deleteDisabledTitle,
 }: UseConfigTableOptions<T>) {
   // "use no memo" opts out of React Compiler's automatic memoization.
   // TanStack Table creates new column/row objects each render; memoizing them
@@ -93,7 +96,14 @@ export function useConfigTable<T>({
     ...columns,
     ...(hideStatus ? [] : [statusColumn<T>(tfl)]),
     ...(onDelete
-      ? [actionColumn<T>(onDelete, { ...deleteGate, activity, edit })]
+      ? [
+          actionColumn<T>(onDelete, {
+            ...deleteGate,
+            activity,
+            edit,
+            deleteDisabledTitle,
+          }),
+        ]
       : []),
   ];
 

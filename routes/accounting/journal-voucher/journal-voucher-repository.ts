@@ -35,4 +35,6 @@ export interface JournalVoucherRepository {
     input: JournalVoucherAction,
   ): Promise<JournalVoucher>;
   copy(buCode: string, id: string): Promise<JournalVoucher>;
+  /** ลบใบ draft (backend soft-delete; ใบที่พ้น draft ตอบ 409) */
+  remove(buCode: string, id: string): Promise<void>;
 }

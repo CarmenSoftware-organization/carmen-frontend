@@ -527,6 +527,20 @@
         "apPosting": "Used by AP Invoice posting. The External export takes accounts from the Chart of Account mapping only.",
         "allowPostToClosedPeriod": "When on, documents dated in a closed period can still be posted."
       }
+    },
+    "journalVoucher": {
+      "title": "Journal Voucher",
+      "desc": "General ledger entries — drafts, review, and what has been posted.",
+      "add": "New JV",
+      "entity": "Journal Voucher",
+      "jvNo": "JV No.",
+      "jvDate": "JV Date",
+      "source": "Source",
+      "debit": "Debit",
+      "credit": "Credit",
+      "deleteTitle": "Delete journal voucher?",
+      "deleteConfirm": "Delete {jvNo}? This cannot be undone.",
+      "deleteDraftOnly": "Only a draft journal voucher can be deleted"
     }
   },
   "dashboardWidget": {
