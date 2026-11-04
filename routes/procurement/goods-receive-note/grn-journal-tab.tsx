@@ -22,6 +22,8 @@ import {
 import { ErrorState } from "@/components/ui/error-state";
 import { Spinner } from "@/components/ui/spinner";
 import { useCan } from "@/hooks/use-can";
+import { useProfile } from "@/hooks/use-profile";
+import { formatDate } from "@/lib/date-utils";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { PERMISSIONS } from "@/constant/permissions";
 import type { GoodsReceiveNote } from "@/types/goods-receive-note";
@@ -32,7 +34,7 @@ import {
 } from "./use-grn-journal-vouchers";
 
 /** ปุ่ม Create AP Invoice โชว์เมื่อ GRN พร้อม post และยังไม่มีใบที่ระบบสร้าง (ใบคนสร้างไม่นับ) */
-export function canCreateGrnApInvoice(grn: GoodsReceiveNote): boolean {
+function canCreateGrnApInvoice(grn: GoodsReceiveNote): boolean {
   return (
     grn.doc_status === "committed" &&
     grn.post_type === "ap" &&
@@ -44,7 +46,11 @@ export function canCreateGrnApInvoice(grn: GoodsReceiveNote): boolean {
 function JvCard({ view }: { readonly view: GrnJvView }) {
   const t = useTranslations("procurement.goodsReceiveNote");
   const formatAmount = useAmountFormatter();
+  const { dateFormat } = useProfile();
   const { jv, apInvoice, kind } = view;
+  // ค่าตาม enum_jv_status ของ backend · ค่าที่ไม่รู้จักแสดงค่าดิบ
+  const statusKey = `jvStatus.${jv.jv_status}`;
+  const statusLabel = t.has(statusKey) ? t(statusKey) : jv.jv_status;
   const totalDebit = jv.lines.reduce((s, l) => s + l.debit, 0);
   const totalCredit = jv.lines.reduce((s, l) => s + l.credit, 0);
 
@@ -59,7 +65,7 @@ function JvCard({ view }: { readonly view: GrnJvView }) {
             {jv.jv_no ?? t("jvNoNumber")}
           </Link>
           <Badge variant="secondary" size="xs">
-            {jv.jv_status}
+            {statusLabel}
           </Badge>
           {kind === "voided" && (
             <Badge variant="destructive-outline" size="xs">
@@ -73,14 +79,9 @@ function JvCard({ view }: { readonly view: GrnJvView }) {
           )}
         </CardTitle>
         <CardAction className="text-muted-foreground text-sm">
-          {t("jvApInvoice")}:{" "}
-          <Link
-            to={`/accounting/accounts-payable/invoice/${apInvoice.id}`}
-            className="text-primary hover:underline"
-          >
-            {apInvoice.doc_no}
-          </Link>
-          {jv.jv_date ? ` · ${jv.jv_date.slice(0, 10)}` : ""}
+          {/* ข้อความธรรมดา ไม่ใช่ลิงก์ — หน้า AP invoice ยังเป็น mock บน localStorage */}
+          {t("jvApInvoice")}: {apInvoice.doc_no}
+          {jv.jv_date ? ` · ${formatDate(jv.jv_date, dateFormat)}` : ""}
         </CardAction>
       </CardHeader>
       <CardContent>
@@ -165,9 +166,7 @@ export function GrnJournalTab({
   }
 
   if (isError && active.length === 0 && reversed.length === 0) {
-    return (
-      <ErrorState message={t("jvLoadError")} />
-    );
+    return <ErrorState message={t("jvLoadError")} />;
   }
 
   if (active.length > 0 || reversed.length > 0) {

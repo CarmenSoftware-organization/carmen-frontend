@@ -138,7 +138,10 @@ export function useGrnJournalVouchers(grn: GoodsReceiveNote | undefined): {
     (t.kind === "active" ? active : reversed).push(view);
   });
 
-  return { active, reversed, isLoading: results.some((r) => r.isLoading),
+  return {
+    active,
+    reversed,
+    isLoading: results.some((r) => r.isLoading),
     isError: results.some((r) => r.isError),
   };
 }

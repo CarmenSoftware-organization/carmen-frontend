@@ -5732,6 +5732,13 @@
       "jvCreateSuccess": "สร้าง AP invoice แล้ว",
       "jvEmptyInvoiceNoJv": "AP invoice {docNos} ยังไม่มีใบสำคัญสมุดรายวัน",
       "jvLoadError": "โหลดใบสำคัญสมุดรายวันไม่สำเร็จ",
+      "jvStatus": {
+        "draft": "ร่าง",
+        "in_review": "รอตรวจ",
+        "scheduled": "ตั้งเวลาไว้",
+        "posted": "ลงบัญชีแล้ว",
+        "void": "ยกเลิก"
+      },
       "tabStock": "ความเคลื่อนไหวสต๊อก",
       "refDocs": "เอกสารต้นทาง",
       "refDocsComingSoon": "ยังดูเอกสารต้นทางของรายการนี้ไม่ได้ กำลังทำอยู่",

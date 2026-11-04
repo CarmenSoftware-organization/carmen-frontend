@@ -5732,6 +5732,13 @@
       "jvCreateSuccess": "AP invoice created",
       "jvEmptyInvoiceNoJv": "AP invoice {docNos} has no journal voucher yet.",
       "jvLoadError": "Could not load the journal voucher",
+      "jvStatus": {
+        "draft": "Draft",
+        "in_review": "In review",
+        "scheduled": "Scheduled",
+        "posted": "Posted",
+        "void": "Void"
+      },
       "tabStock": "Stock Movement",
       "refDocs": "Source documents",
       "refDocsComingSoon": "Source documents for this line are not available yet",
