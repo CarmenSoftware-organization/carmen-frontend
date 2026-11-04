@@ -907,7 +907,7 @@ export const router = createBrowserRouter([
               {
                 path: "template-voucher",
                 lazy: () =>
-                  import("./accounting/documents/accounting-document-list.route"),
+                  import("./accounting/jv-template/template-voucher-list.route"),
               },
               {
                 path: "template-voucher/:id",
@@ -917,7 +917,7 @@ export const router = createBrowserRouter([
               {
                 path: "recurring-voucher",
                 lazy: () =>
-                  import("./accounting/documents/accounting-document-list.route"),
+                  import("./accounting/jv-template/recurring-voucher-list.route"),
               },
               {
                 path: "recurring-voucher/:id",
@@ -927,7 +927,7 @@ export const router = createBrowserRouter([
               {
                 path: "allocation-voucher",
                 lazy: () =>
-                  import("./accounting/documents/accounting-document-list.route"),
+                  import("./accounting/jv-template/allocation-voucher-list.route"),
               },
               {
                 path: "allocation-voucher/:id",

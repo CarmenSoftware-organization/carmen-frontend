@@ -176,6 +176,7 @@ export const accountingModuleSections: ModuleDto[] = [
       {
         name: "templateVoucher",
         path: "/accounting/template-voucher",
+        permission: PERMISSIONS.accounting.gl_jv_template.view,
         licenseFeature: "accounting.gl.jv_template",
         icon: FileSpreadsheet,
       },

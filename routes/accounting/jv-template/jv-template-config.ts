@@ -2,7 +2,7 @@ import {
   createStatusConfig,
   createStatusFilterOptions,
 } from "@/constant/status-config";
-import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
+import { LIST_PAGE_KEYS, type ListPageKey } from "@/constant/list-page-keys";
 import type { JvTemplateType } from "./jv-template-types";
 
 export type JvTemplatePageKind = "all" | "recurring" | "allocation";
@@ -13,7 +13,7 @@ export const JV_TEMPLATE_PAGES: Record<
     path: string;
     fixedType: JvTemplateType | null;
     creatableTypes: JvTemplateType[];
-    listPageKey: string;
+    listPageKey: ListPageKey;
     /** คีย์ใต้ namespace `accounting.jvTemplate` */
     titleKey: string;
   }
