@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
-import { Plus, RefreshCw } from "lucide-react";
+import { Loader2, Plus, RefreshCw } from "lucide-react";
 import { listReturnState } from "@/hooks/use-list-return";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useGridPagination } from "@/hooks/use-grid-pagination";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useListFilters } from "@/hooks/use-list-filters";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
@@ -71,6 +72,7 @@ export default function ApInvoiceList() {
   const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
   const isGridMode = isMobile || displayMode === "grid";
+  const useInfiniteScroll = !!isMobile;
 
   const { params, search, setSearch, tableConfig } = useDataGridState({
     defaultSort: DEFAULT_SORT,
@@ -147,9 +149,19 @@ export default function ApInvoiceList() {
   });
 
   const queryParams = { ...params, filter: lf.filterParam };
-  const { data, isLoading, error, refetch } = useApInvoices(queryParams);
-  const invoices = data?.data ?? [];
-  const totalRecords = data?.paginate?.total ?? 0;
+  const { data, isLoading, error, refetch } = useApInvoices(queryParams, {
+    enabled: !useInfiniteScroll,
+  });
+  const grid = useGridPagination<ApInvoice>({
+    useListHook: useApInvoices,
+    params: queryParams,
+    enabled: useInfiniteScroll,
+  });
+  const invoices = useInfiniteScroll ? grid.items : (data?.data ?? []);
+  const totalRecords = useInfiniteScroll
+    ? grid.totalRecords
+    : (data?.paginate?.total ?? 0);
+  const cardsLoading = useInfiniteScroll ? grid.isLoading : isLoading;
 
   const openInvoice = (invoice: ApInvoice) =>
     navigate(
@@ -201,7 +213,7 @@ export default function ApInvoiceList() {
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={() => refetch()}
+              onClick={() => (useInfiniteScroll ? grid.refetch?.() : refetch())}
               aria-label={tc("refresh")}
               title={tc("refresh")}
             >
@@ -234,7 +246,7 @@ export default function ApInvoiceList() {
       )}
 
       {isGridMode &&
-        (isLoading ? (
+        (cardsLoading ? (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <ListCardSkeleton key={`skeleton-${i}`} />
@@ -279,6 +291,14 @@ export default function ApInvoiceList() {
             ))}
           </div>
         ))}
+
+      {isGridMode && useInfiniteScroll && grid.hasMore && (
+        <div ref={grid.sentinelRef} className="flex justify-center py-4">
+          {grid.isLoadingMore && (
+            <Loader2 className="text-muted-foreground size-5 animate-spin" />
+          )}
+        </div>
+      )}
 
       <SaveViewDialog
         open={saveViewDialogOpen}
