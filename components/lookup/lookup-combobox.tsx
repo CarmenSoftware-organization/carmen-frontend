@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Check,
   ChevronsUpDown,
@@ -120,6 +120,14 @@ interface LookupComboboxProps<T> {
    * เช่น `"product"` ไม่ใช่ตามหน้า ไม่ส่ง = ยังลากปรับได้แต่ปิดแล้วกลับขนาดเดิม
    */
   readonly resizeKey?: string;
+  /**
+   * ให้ popup กว้างตามชื่อที่ยาวที่สุดใน `items` (ไม่แคบกว่าช่อง · ไม่เกิน 40rem/จอ)
+   * แทนการเท่าความกว้างช่อง — ใช้กับช่องในตารางที่คอลัมน์แคบกว่าชื่อจริง
+   *
+   * ต้องวัดเองด้วย canvas เพราะ `VirtualCommandList` วางแถวแบบ absolute
+   * `w-max` ของ CSS จึงมองไม่เห็นความกว้างของแถว · ใช้ไม่ได้กับ `renderItem`
+   */
+  readonly fitContent?: boolean;
 }
 
 export function LookupCombobox<T>({
@@ -164,6 +172,7 @@ export function LookupCombobox<T>({
   estimateSize,
   maxHeight,
   resizeKey,
+  fitContent = false,
 }: LookupComboboxProps<T>) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(
     defaultOpen ?? false,
@@ -179,6 +188,23 @@ export function LookupCombobox<T>({
     reset: resetSize,
     onClose: onResizeClose,
   } = useLookupResize(resizeKey, maxHeight ?? 300);
+
+  // ความกว้างของชื่อที่ยาวสุด (px) — วัดเฉพาะตอนเปิด เพราะ items อาจมีหลายร้อยแถว
+  const fitContentWidth = useMemo(() => {
+    if (!fitContent || !open || renderItem || typeof document === "undefined")
+      return null;
+    const ctx = document.createElement("canvas").getContext("2d");
+    if (!ctx) return null;
+    // ฟอนต์ของแอปตัวเดียวทั้งหน้า — อ่านจาก body (อ่าน ref ระหว่าง render ไม่ได้)
+    const family = getComputedStyle(document.body).fontFamily;
+    ctx.font = `12px ${family}`; // แถวในเมนูเป็น text-xs
+    let widest = 0;
+    for (const item of items) {
+      widest = Math.max(widest, ctx.measureText(getLabel(item)).width);
+    }
+    // px-2 ×2 · gap-2 · ไอคอน check · padding ของรายการ · scrollbar · ขอบ
+    return Math.ceil(widest) + 64;
+  }, [fitContent, open, renderItem, items, getLabel]);
   const [search, setSearch] = useState("");
 
   const t = useTranslations("lookup");
@@ -337,7 +363,11 @@ export function LookupCombobox<T>({
             ? {
                 width: `clamp(var(--radix-popover-trigger-width), ${resizedSize.width}px, var(--radix-popover-content-available-width))`,
               }
-            : undefined
+            : fitContentWidth
+              ? {
+                  width: `clamp(var(--radix-popover-trigger-width), ${fitContentWidth}px, min(var(--radix-popover-content-available-width), 40rem))`,
+                }
+              : undefined
         }
         align={popoverAlign ?? autoAlign}
         onOpenAutoFocus={onOpened}
