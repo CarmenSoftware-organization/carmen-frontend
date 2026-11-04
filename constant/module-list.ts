@@ -182,13 +182,15 @@ export const accountingModuleSections: ModuleDto[] = [
       {
         name: "recurringVoucher",
         path: "/accounting/recurring-voucher",
-        licenseFeature: "accounting.gl",
+        permission: PERMISSIONS.accounting.gl_jv_template.view,
+        licenseFeature: "accounting.gl.jv_template",
         icon: Clock,
       },
       {
         name: "allocationVoucher",
         path: "/accounting/allocation-voucher",
-        licenseFeature: "accounting.gl",
+        permission: PERMISSIONS.accounting.gl_jv_template.view,
+        licenseFeature: "accounting.gl.jv_template",
         icon: ArrowLeftRight,
       },
       {
