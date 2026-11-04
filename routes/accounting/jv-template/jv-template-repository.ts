@@ -81,9 +81,11 @@ function toLinePayload(
 }
 
 function toPayload(input: JvTemplateInput): Record<string, unknown> {
-  const { lines, ...header } = input;
+  const { lines, frequency_months, ...header } = input;
   return {
     ...header,
+    // DTO: `.optional()` แต่ไม่ `.nullable()` — null = 400 จึงต้องตัดคีย์ทิ้ง
+    ...(frequency_months != null ? { frequency_months } : {}),
     start_date: toIsoDate(header.start_date),
     end_date: toIsoDate(header.end_date),
     details: { add: lines.map((l) => toLinePayload(header.template_type, l)) },
