@@ -147,6 +147,8 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/config/${buCode}/extra-cost-types`,
   GOODS_RECEIVE_NOTE: (buCode: string) =>
     `/api/proxy/api/${buCode}/good-received-notes`,
+  GRN_CREATE_AP_INVOICE: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/good-received-notes/${toSafePathSegment(id)}/ap-invoice`,
   JOURNAL_VOUCHERS: (buCode: string) => `/api/proxy/api/${buCode}/gl-jv`,
   JOURNAL_VOUCHER: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/gl-jv/${toSafePathSegment(id)}`,

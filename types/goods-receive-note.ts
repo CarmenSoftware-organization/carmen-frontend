@@ -129,6 +129,13 @@ export interface GrnApInvoiceRef {
   id: string;
   doc_no: string;
   doc_status: string;
+  /** `grn_auto` = ระบบสร้างจาก GRN · อื่น ๆ (`grn`/`manual`/…) = คนสร้าง — optional: backend รุ่นก่อนไม่ส่ง */
+  doc_source?: string | null;
+  gl_jv_id?: string | null;
+  gl_jv_no?: string | null;
+  /** JV กลับรายการ — มีเฉพาะใบ grn_auto ที่ถูก void */
+  void_gl_jv_id?: string | null;
+  has_live_payment?: boolean;
 }
 
 export interface GoodsReceiveNote {
@@ -177,6 +184,10 @@ export interface GoodsReceiveNote {
   // AP Invoice ที่ยังไม่ void ซึ่งดึงใบนี้ไปแล้ว — มีสักใบ = ใบ committed แก้ไม่ได้
   // (optional: backend รุ่นก่อนไม่ส่งมา)
   ap_invoices?: GrnApInvoiceRef[];
+  // ใบ grn_auto ที่ถูก void ของ GRN นี้ (มี gl_jv_id เดิม + void_gl_jv_id กลับรายการ)
+  ap_invoices_voided?: GrnApInvoiceRef[];
+  // สวิตช์ของ BU: commit GRN แล้วสร้าง AP invoice อัตโนมัติ
+  ap_auto_from_grn?: boolean;
   // list/detail response omit raw created/updated fields — gateway enrich เป็น audit object
   audit?: Audit;
   // Detail items (nested: detail → items[])

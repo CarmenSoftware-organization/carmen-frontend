@@ -520,6 +520,7 @@
         "reversalPrefix": "Reversal JV prefix",
         "autoJvPrefix": "Auto JV prefix",
         "allowPostToClosedPeriod": "Allow posting to closed periods",
+        "apAutoFromGrn": "Create AP invoice automatically from GRN",
         "apControlAccount": "AP control account",
         "inputVatAccount": "Input VAT account",
         "whtPayableAccount": "WHT payable account",
@@ -534,7 +535,9 @@
       "hints": {
         "fiscalYear": "Changing this after GL periods exist shifts every period boundary.",
         "apPosting": "Used by AP Invoice posting. The External export takes accounts from the Chart of Account mapping only.",
-        "allowPostToClosedPeriod": "When on, documents dated in a closed period can still be posted."
+        "allowPostToClosedPeriod": "When on, documents dated in a closed period can still be posted.",
+        "apAutoFromGrn": "When on, committing a GRN creates its AP invoice automatically.",
+        "apAutoFromGrnSetup": "Set the AP control account, AP JV prefix and reversal prefix first to turn this on."
       }
     },
     "jvTemplate": {
@@ -5711,6 +5714,31 @@
       "tabDetail": "Detail",
       "tabPayment": "Payment",
       "tabExtraCost": "Extra Cost",
+      "tabJournal": "Journal Voucher",
+      "jvNoNumber": "Journal voucher",
+      "jvApInvoice": "AP invoice",
+      "jvAccount": "Account",
+      "jvDescription": "Description",
+      "jvDebit": "Debit",
+      "jvCredit": "Credit",
+      "jvTotal": "Total",
+      "jvReversed": "Reversed",
+      "jvReversal": "Reversal entry",
+      "jvReversedSection": "Reversed entries",
+      "jvEmptyNotCommitted": "A journal voucher is created when this goods receive note is committed.",
+      "jvEmptyNotAp": "Only goods receive notes posted to accounts payable have a journal voucher.",
+      "jvEmptyNoInvoice": "No AP invoice has been created for this goods receive note yet, so there is no journal voucher.",
+      "jvCreateApInvoice": "Create AP Invoice",
+      "jvCreateSuccess": "AP invoice created",
+      "jvEmptyInvoiceNoJv": "AP invoice {docNos} has no journal voucher yet.",
+      "jvLoadError": "Could not load the journal voucher",
+      "jvStatus": {
+        "draft": "Draft",
+        "in_review": "In review",
+        "scheduled": "Scheduled",
+        "posted": "Posted",
+        "void": "Void"
+      },
       "tabStock": "Stock Movement",
       "refDocs": "Source documents",
       "refDocsComingSoon": "Source documents for this line are not available yet",

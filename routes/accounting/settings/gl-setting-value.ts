@@ -27,6 +27,8 @@ export type GlUuidField = (typeof GL_UUID_FIELDS)[number];
 export type GlSettingForm = {
   fiscal_year_start_month: number;
   allow_post_to_closed_period: boolean;
+  /** สร้าง AP invoice อัตโนมัติจาก GRN — backend ต้องมี ap_jv_prefix_id, ap_control_account_id, reversal_prefix_id ครบจึงเปิดได้ */
+  ap_auto_from_grn: boolean;
 } & Record<GlUuidField, string | null>;
 
 /**
@@ -57,6 +59,7 @@ export function toGlSettingForm(
       ? month
       : DEFAULT_FISCAL_YEAR_START_MONTH,
     allow_post_to_closed_period: value?.allow_post_to_closed_period === true,
+    ap_auto_from_grn: value?.ap_auto_from_grn === true,
   } as GlSettingForm;
   for (const key of GL_UUID_FIELDS) {
     const v = value?.[key];
@@ -88,5 +91,6 @@ export function toGlSettingValue(
   }
   next.fiscal_year_start_month = form.fiscal_year_start_month;
   next.allow_post_to_closed_period = form.allow_post_to_closed_period;
+  next.ap_auto_from_grn = form.ap_auto_from_grn;
   return next;
 }

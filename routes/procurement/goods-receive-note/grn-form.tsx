@@ -11,6 +11,7 @@ import { DiscardDialog } from "@/components/ui/discard-dialog";
 import type { FormMode } from "@/types/form";
 import { GrnExtraCostFields } from "./grn-extra-cost-fields";
 import { GrnStockTable } from "./grn-stock-table";
+import { GrnJournalTab } from "./grn-journal-tab";
 import {
   createGrnSchema,
   type GrnFormValues,
@@ -274,6 +275,9 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
               )}
             </TabsTrigger>
             <TabsTrigger value="stock">{t("tabStock")}</TabsTrigger>
+            {goodsReceiveNote && (
+              <TabsTrigger value="journal">{t("tabJournal")}</TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value="general">
             <GrnItemTable
@@ -299,6 +303,11 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
               docStatus={goodsReceiveNote?.doc_status}
             />
           </TabsContent>
+          {goodsReceiveNote && (
+            <TabsContent value="journal">
+              <GrnJournalTab goodsReceiveNote={goodsReceiveNote} />
+            </TabsContent>
+          )}
         </Tabs>
       </form>
 

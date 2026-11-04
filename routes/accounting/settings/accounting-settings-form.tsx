@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   Controller,
   useForm,
+  useWatch,
   type Control,
   type Resolver,
 } from "react-hook-form";
@@ -78,6 +79,7 @@ function createSchema(tv: Translate, monthLabel: string) {
       .min(1, { error: monthMessage })
       .max(12, { error: monthMessage }),
     allow_post_to_closed_period: z.boolean(),
+    ap_auto_from_grn: z.boolean(),
     ...uuidShape,
   });
 }
@@ -276,6 +278,20 @@ export function AccountingSettingsForm() {
   });
 
   const control = form.control;
+  const [apJvPrefixId, apControlAccountId, reversalPrefixId, apAutoFromGrn] =
+    useWatch({
+      control,
+      name: [
+        "ap_jv_prefix_id",
+        "ap_control_account_id",
+        "reversal_prefix_id",
+        "ap_auto_from_grn",
+      ],
+    });
+  // ตั้งไม่ครบ = เปิดไม่ได้ (backend ตอบ AP_AUTO_FROM_GRN_SETUP_INCOMPLETE) · ที่เปิดอยู่แล้วต้องปิดได้เสมอ
+  const apAutoSetupIncomplete =
+    !apJvPrefixId || !apControlAccountId || !reversalPrefixId;
+  const apAutoLocked = apAutoSetupIncomplete && !apAutoFromGrn;
   const monthError = form.formState.errors.fiscal_year_start_month?.message;
   const prefixProps = {
     options: prefixes.options,
@@ -439,6 +455,33 @@ export function AccountingSettingsForm() {
               label={t("fields.apJvPrefix")}
               editing={editing}
               {...prefixProps}
+            />
+            <Controller
+              control={control}
+              name="ap_auto_from_grn"
+              render={({ field }) => (
+                <Field orientation="horizontal" className="sm:col-span-2">
+                  <Switch
+                    id="ap_auto_from_grn"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={!editing || apAutoLocked}
+                  />
+                  <FieldContent>
+                    <FieldLabel htmlFor="ap_auto_from_grn">
+                      {t("fields.apAutoFromGrn")}
+                    </FieldLabel>
+                    <FieldDescription>
+                      {t("hints.apAutoFromGrn")}
+                    </FieldDescription>
+                    {apAutoSetupIncomplete && (
+                      <FieldDescription>
+                        {t("hints.apAutoFromGrnSetup")}
+                      </FieldDescription>
+                    )}
+                  </FieldContent>
+                </Field>
+              )}
             />
           </SettingSection>
 
