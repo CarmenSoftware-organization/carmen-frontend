@@ -39,7 +39,7 @@ export function JvTemplateGenerateDialog({
   const t = useTranslations("accounting.jvTemplate");
   const tc = useTranslations("common");
   const navigate = useNavigate();
-  const { periods, isLoading } = useOpenGlPeriods();
+  const { periods, isLoading, error: periodsError } = useOpenGlPeriods();
   const generate = useGenerateJvTemplate();
   const [periodId, setPeriodId] = useState("");
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -98,7 +98,11 @@ export function JvTemplateGenerateDialog({
 
         <div className="space-y-2">
           <span className="text-sm font-medium">{t("period")}</span>
-          {!isLoading && inRange.length === 0 ? (
+          {periodsError ? (
+            <p role="alert" className="text-destructive text-sm">
+              {t("errors.UNKNOWN")}
+            </p>
+          ) : !isLoading && inRange.length === 0 ? (
             <p className="text-muted-foreground text-sm">{t("noOpenPeriod")}</p>
           ) : (
             <Select value={periodId} onValueChange={setPeriodId}>

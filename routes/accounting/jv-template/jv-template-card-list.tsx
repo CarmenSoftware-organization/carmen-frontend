@@ -80,11 +80,12 @@ export default function JvTemplateCardList({
                 </span>
               </ListCardRow>
             )}
-            {kind !== "allocation" && item.frequency_months !== null && (
-              <ListCardRow label={t("frequencyMonths")}>
-                <span className="tabular-nums">{item.frequency_months}</span>
-              </ListCardRow>
-            )}
+            {item.template_type === "recurring" &&
+              item.frequency_months !== null && (
+                <ListCardRow label={t("frequencyMonths")}>
+                  <span className="tabular-nums">{item.frequency_months}</span>
+                </ListCardRow>
+              )}
           </ListCard>
         );
       })}

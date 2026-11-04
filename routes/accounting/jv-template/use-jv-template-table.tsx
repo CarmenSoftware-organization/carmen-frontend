@@ -147,7 +147,9 @@ export function useJvTemplateTable({
             ),
             cell: ({ row }) => (
               <span className="tabular-nums">
-                {row.original.frequency_months ?? "—"}
+                {row.original.template_type === "recurring"
+                  ? (row.original.frequency_months ?? "—")
+                  : "—"}
               </span>
             ),
             size: 130,

@@ -168,7 +168,10 @@ const numOrNull = z.number().nullable();
  * @param t - `accounting.jvTemplate`
  * @param tv - `validation`
  */
-export function createJvTemplateFormSchema(t: TranslationFn, tv: TranslationFn) {
+export function createJvTemplateFormSchema(
+  t: TranslationFn,
+  tv: TranslationFn,
+) {
   const required = (field: string) => tv("required", { field });
   const yearOk = (n: number) => Number.isInteger(n) && n >= 1900 && n <= 2200;
   const periodOk = (n: number) => Number.isInteger(n) && n >= 1 && n <= 12;
@@ -186,8 +189,15 @@ export function createJvTemplateFormSchema(t: TranslationFn, tv: TranslationFn) 
   return z
     .object({
       template_type: z.enum(["recurring", "allocation", "amortize", ""]),
-      code: z.string().trim().min(1, required(t("code"))).max(50),
-      name: z.string().trim().min(1, required(t("name"))),
+      code: z
+        .string()
+        .trim()
+        .min(1, required(t("code")))
+        .max(50),
+      name: z
+        .string()
+        .trim()
+        .min(1, required(t("name"))),
       description: z.string(),
       prefix_id: z.string().min(1, required(t("prefix"))),
       from_fiscal_year: intOrNaN,
@@ -217,24 +227,23 @@ export function createJvTemplateFormSchema(t: TranslationFn, tv: TranslationFn) 
       // ---- ทุกชนิด: งวด 1–12 · ปี 1900–2200 · from ≤ to ----
       const fyMsg = tv("required", { field: t("fiscalYear") });
       const pMsg = t("errPeriodNo");
-      if (!yearOk(v.from_fiscal_year)) issue(["from_fiscal_year"], fyMsg);
-      if (!yearOk(v.to_fiscal_year)) issue(["to_fiscal_year"], fyMsg);
+      const fyErr = (n: number) =>
+        Number.isFinite(n) ? t("errFiscalYearRange") : fyMsg;
+      if (!yearOk(v.from_fiscal_year)) {
+        issue(["from_fiscal_year"], fyErr(v.from_fiscal_year));
+      }
+      if (!yearOk(v.to_fiscal_year)) {
+        issue(["to_fiscal_year"], fyErr(v.to_fiscal_year));
+      }
       if (!periodOk(v.from_period_no)) issue(["from_period_no"], pMsg);
       if (!periodOk(v.to_period_no)) issue(["to_period_no"], pMsg);
       const from = v.from_fiscal_year * 100 + v.from_period_no;
       const to = v.to_fiscal_year * 100 + v.to_period_no;
-      if (
-        yearOk(v.from_fiscal_year) &&
-        yearOk(v.to_fiscal_year) &&
-        from > to
-      ) {
+      if (yearOk(v.from_fiscal_year) && yearOk(v.to_fiscal_year) && from > to) {
         issue(["to_period_no"], t("errPeriodOrder"));
       }
       if (v.exchange_rate != null && !(v.exchange_rate > 0)) {
-        issue(
-          ["exchange_rate"],
-          tv("positive", { field: t("exchangeRate") }),
-        );
+        issue(["exchange_rate"], tv("positive", { field: t("exchangeRate") }));
       }
       if (v.lines.length === 0) {
         issue(["lines"], t("errAtLeastOneLine"));
@@ -258,7 +267,7 @@ export function createJvTemplateFormSchema(t: TranslationFn, tv: TranslationFn) 
         v.lines.forEach((l, i) => {
           const d = moneyUnits(l.debit);
           const c = moneyUnits(l.credit);
-          if ((d > 0) === (c > 0) || d < 0 || c < 0) {
+          if (d > 0 === c > 0 || d < 0 || c < 0) {
             issue(["lines", i, "debit"], t("errDebitOrCredit"));
           }
           debit += d;
@@ -325,7 +334,9 @@ const trimOrNull = (s: string): string | null => s.trim() || null;
  * ค่าฟอร์ม → payload — ส่ง**ทุกบรรทัด**เสมอ (update = แทนที่ทั้งชุด) · sequence_no = ลำดับบนจอ
  * ฟิลด์ของชนิดอื่นส่ง null (DTO รับ null ได้ทุกตัว ยกเว้น frequency_months ที่ repository ตัดทิ้งให้)
  */
-export function toJvTemplateInput(values: JvTemplateFormValues): JvTemplateInput {
+export function toJvTemplateInput(
+  values: JvTemplateFormValues,
+): JvTemplateInput {
   const type = values.template_type as JvTemplateType;
   return {
     template_type: type,

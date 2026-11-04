@@ -595,6 +595,7 @@
       "addLine": "เพิ่มบรรทัด",
       "balanced": "สมดุล",
       "unbalanced": "ไม่สมดุล",
+      "errFiscalYearRange": "ปีบัญชีต้องอยู่ระหว่าง 1900 ถึง 2200",
       "errPeriodNo": "งวดต้องอยู่ระหว่าง 1 ถึง 12",
       "errPeriodOrder": "งวดเริ่มต้นต้องไม่อยู่หลังงวดสิ้นสุด",
       "errAtLeastOneLine": "เพิ่มอย่างน้อยหนึ่งบรรทัด",
@@ -607,7 +608,13 @@
         "GL_JV_TEMPLATE_ALREADY_RUN": "สร้างสำหรับงวดนี้ไปแล้ว",
         "GL_JV_TEMPLATE_NOT_DUE": "ยังไม่ถึงกำหนดในงวดนี้",
         "GL_JV_TEMPLATE_PERIOD_OUT_OF_RANGE": "งวดนี้อยู่นอกช่วงงวดของแม่แบบ",
-        "PERIODS_INCOMPLETE": "ตั้งค่างวดบัญชียังไม่ครบ",
+        "GL_JV_TEMPLATE_INVALID": "แม่แบบไม่ถูกต้องตามชนิดของมัน",
+        "GL_JV_TEMPLATE_INACTIVE": "แม่แบบถูกปิดใช้งานหรือถูกลบแล้ว",
+        "GL_PERIOD_NOT_OPEN": "งวดบัญชีไม่ได้เปิดอยู่",
+        "GL_JV_PREFIX_NOT_FOUND": "ไม่พบ prefix ของ JV",
+        "CHART_OF_ACCOUNTS_NOT_FOUND": "ไม่พบรายการผังบัญชี",
+        "COST_CENTER_NOT_FOUND": "ไม่พบศูนย์ต้นทุน",
+        "GL_JV_TEMPLATE_PERIODS_INCOMPLETE": "ตั้งค่างวดบัญชียังไม่ครบ",
         "UNKNOWN": "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง"
       }
     },

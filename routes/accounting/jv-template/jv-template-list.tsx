@@ -201,7 +201,8 @@ export default function JvTemplateList({
             : []),
           {
             header: t("frequencyMonths"),
-            value: (r) => r.frequency_months ?? "",
+            value: (r) =>
+              r.template_type === "recurring" ? (r.frequency_months ?? "") : "",
             width: 14,
           },
           {

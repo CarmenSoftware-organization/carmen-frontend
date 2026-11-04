@@ -3,7 +3,7 @@ import type { JvTemplate } from "./jv-template-types";
 
 type Translate = (key: string) => string;
 
-/** ป้ายชนิด template ที่แปลแล้ว — ค่าที่ไม่รู้จักแสดงค่าดิบ */
+/** ป้ายชนิด template ที่แปลแล้ว (`type_<ชนิด>`) — ชนิดต้องเป็นหนึ่งใน recurring/allocation/amortize */
 export function jvTemplateTypeLabel(t: Translate, type: string): string {
   return t(`type_${type}`);
 }
@@ -60,6 +60,10 @@ export function jvTemplateErrorText(t: ErrorTranslate, error: unknown): string {
   if (code && t.has(`errors.${code}`)) return t(`errors.${code}`);
   if (error instanceof ApiError && error.userFacingServerMessage) {
     return error.userFacingServerMessage;
+  }
+  // รหัสจาก string ที่ไม่มีคำแปล — แสดงรหัสดิบต่อท้ายเพื่อให้ผู้ใช้แจ้งปัญหาได้
+  if (typeof error === "string" && error) {
+    return `${t("errors.UNKNOWN")} (${error})`;
   }
   return t("errors.UNKNOWN");
 }

@@ -12,6 +12,10 @@ export interface JvTemplateLine {
   credit: number;
   side: JvTemplateSide | null;
   allocation_ratio: number | null;
+  /** ไม่แสดงใน UI — เก็บไว้ส่งกลับเพื่อไม่ให้การบันทึกล้างค่าที่สร้างผ่าน API */
+  dimension?: unknown;
+  currency_id?: string | null;
+  exchange_rate?: number | null;
 }
 
 export interface JvTemplate {
@@ -40,7 +44,10 @@ export interface JvTemplate {
   lines: JvTemplateLine[];
 }
 
-export type JvTemplateInput = Omit<JvTemplate, "id" | "doc_version" | "lines"> & {
+export type JvTemplateInput = Omit<
+  JvTemplate,
+  "id" | "doc_version" | "lines"
+> & {
   lines: JvTemplateLine[];
 };
 

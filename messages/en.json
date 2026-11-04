@@ -595,6 +595,7 @@
       "addLine": "Add line",
       "balanced": "Balanced",
       "unbalanced": "Not balanced",
+      "errFiscalYearRange": "Fiscal year must be between 1900 and 2200",
       "errPeriodNo": "Period must be between 1 and 12",
       "errPeriodOrder": "The start period must not be after the end period",
       "errAtLeastOneLine": "Add at least one line",
@@ -607,7 +608,13 @@
         "GL_JV_TEMPLATE_ALREADY_RUN": "Already generated for this period",
         "GL_JV_TEMPLATE_NOT_DUE": "Not due in this period",
         "GL_JV_TEMPLATE_PERIOD_OUT_OF_RANGE": "The period is outside the template's period range",
-        "PERIODS_INCOMPLETE": "Accounting periods are not set up completely",
+        "GL_JV_TEMPLATE_INVALID": "The template is not valid for its type",
+        "GL_JV_TEMPLATE_INACTIVE": "The template is inactive or deleted",
+        "GL_PERIOD_NOT_OPEN": "The accounting period is not open",
+        "GL_JV_PREFIX_NOT_FOUND": "JV prefix not found",
+        "CHART_OF_ACCOUNTS_NOT_FOUND": "Chart of accounts entry not found",
+        "COST_CENTER_NOT_FOUND": "Cost center not found",
+        "GL_JV_TEMPLATE_PERIODS_INCOMPLETE": "Accounting periods are not set up completely",
         "UNKNOWN": "Something went wrong. Please try again."
       }
     },

@@ -92,7 +92,11 @@ export function JvTemplateHeaderFields({
 
   return (
     <>
-      <SettingSection first title={tfl("general")} description={t("generalDesc")}>
+      <SettingSection
+        first
+        title={tfl("general")}
+        description={t("generalDesc")}
+      >
         <Field>
           <FieldLabel>
             {t("type")}
@@ -288,9 +292,7 @@ function ScheduleSection({
       label={t(side === "from" ? "fromPeriod" : "toPeriod")}
       isView={isView}
       required
-      view={
-        v[fy] != null && v[no] != null ? periodLabel(v[fy], v[no]) : ""
-      }
+      view={v[fy] != null && v[no] != null ? periodLabel(v[fy], v[no]) : ""}
     >
       <div className="grid grid-cols-[1fr_5rem] gap-2">
         <FieldInput
@@ -341,7 +343,10 @@ function ScheduleSection({
   );
 
   return (
-    <SettingSection title={t("sectionSchedule")} description={t(`scheduleDesc_${type}`)}>
+    <SettingSection
+      title={t("sectionSchedule")}
+      description={t(`scheduleDesc_${type}`)}
+    >
       {periodPair("from", "from_fiscal_year", "from_period_no")}
       {periodPair("to", "to_fiscal_year", "to_period_no")}
 
@@ -468,7 +473,7 @@ function ScheduleSection({
         isView={isView}
         view={v.exchange_rate == null ? "" : String(v.exchange_rate)}
       >
-        {nullableAmount("exchange_rate", 6)}
+        {nullableAmount("exchange_rate", 5)}
       </Item>
     </SettingSection>
   );

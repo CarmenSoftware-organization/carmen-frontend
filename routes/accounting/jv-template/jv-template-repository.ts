@@ -30,6 +30,14 @@ function mapLine(raw: Raw, idx: number): JvTemplateLine {
     credit: num(raw.credit),
     side: (raw.side as JvTemplateLine["side"]) ?? null,
     allocation_ratio: numOrNull(raw.allocation_ratio),
+    // ไม่มี UI แก้ — อ่านแล้วส่งกลับตามเดิม (ไม่มีค่า = ไม่ส่งคีย์)
+    ...(raw.dimension != null ? { dimension: raw.dimension } : {}),
+    ...(raw.currency_id != null
+      ? { currency_id: String(raw.currency_id) }
+      : {}),
+    ...(raw.exchange_rate != null
+      ? { exchange_rate: numOrNull(raw.exchange_rate) }
+      : {}),
   };
 }
 
@@ -136,14 +144,18 @@ export const jvTemplateRepository = {
     return mapTemplate((await unwrap(res)) as Raw);
   },
 
-  async create(buCode: string, input: JvTemplateInput): Promise<{ id: string }> {
+  async create(
+    buCode: string,
+    input: JvTemplateInput,
+  ): Promise<{ id: string }> {
     const res = await httpClient.post(
       API_ENDPOINTS.GL_JV_TEMPLATES(buCode),
       toPayload(input),
     );
     if (!res.ok) throw await ApiError.from(res, "Failed to create JV template");
     const data = (await unwrap(res)) as Raw | null;
-    if (!data?.id) throw new Error("Backend did not return an ID for the JV template");
+    if (!data?.id)
+      throw new Error("Backend did not return an ID for the JV template");
     return { id: String(data.id) };
   },
 

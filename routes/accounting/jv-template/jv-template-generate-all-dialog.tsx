@@ -66,7 +66,7 @@ export function JvTemplateGenerateAllDialog({
 }) {
   const t = useTranslations("accounting.jvTemplate");
   const tc = useTranslations("common");
-  const { periods, isLoading } = useOpenGlPeriods();
+  const { periods, isLoading, error: periodsError } = useOpenGlPeriods();
   const generateAll = useGenerateAllDueJvTemplates();
   const [periodId, setPeriodId] = useState("");
   const [result, setResult] = useState<JvGenerateAllResult | null>(null);
@@ -113,15 +113,19 @@ export function JvTemplateGenerateAllDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{t("generateAll")}</DialogTitle>
-          {!result && (
-            <DialogDescription>{t("generateAllHint")}</DialogDescription>
-          )}
+          <DialogDescription className={result ? "sr-only" : undefined}>
+            {result ? t("generateAll") : t("generateAllHint")}
+          </DialogDescription>
         </DialogHeader>
 
         {!result ? (
           <div className="space-y-2">
             <span className="text-sm font-medium">{t("period")}</span>
-            {!isLoading && periods.length === 0 ? (
+            {periodsError ? (
+              <p role="alert" className="text-destructive text-sm">
+                {t("errors.UNKNOWN")}
+              </p>
+            ) : !isLoading && periods.length === 0 ? (
               <p className="text-muted-foreground text-sm">
                 {t("noOpenPeriod")}
               </p>
@@ -195,7 +199,7 @@ export function JvTemplateGenerateAllDialog({
                 {result.failed.map((r) => (
                   <li
                     key={r.template_id}
-                    className="flex items-center justify-between gap-2"
+                    className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5"
                   >
                     <Link
                       to={jvTemplateDetailPath(kind, r.template_id)}
@@ -204,7 +208,7 @@ export function JvTemplateGenerateAllDialog({
                     >
                       {nameOf(r.template_id)}
                     </Link>
-                    <span className="text-destructive shrink-0">
+                    <span className="text-destructive">
                       {jvTemplateErrorText(t, r.code)}
                     </span>
                   </li>
