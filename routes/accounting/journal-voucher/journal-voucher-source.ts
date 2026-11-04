@@ -11,7 +11,6 @@ import {
 } from "@/types/chart-of-accounts";
 
 const editableStatuses = new Set(["draft"]);
-const voidableStatuses = new Set(["draft", "in_review", "scheduled"]);
 
 /** Keep manual journals away from inactive, header, and subledger-owned accounts. */
 export function canUseAccountForManualJournal(
@@ -78,7 +77,9 @@ export function journalVoucherCapabilities(
     can_submit: !generated && journal.jv_status === "draft",
     can_approve: canAct && flags.approve,
     can_reject: canAct && flags.reject,
-    can_void: !generated && voidableStatuses.has(journal.jv_status),
+    // backend voidJv รับเฉพาะใบ posted ที่ยังไม่ถูกกลับรายการ
+    can_void:
+      !generated && journal.jv_status === "posted" && !journal.reversed_by_jv_id,
     can_reverse: !generated && journal.jv_status === "posted",
     can_open_source: sourceLinksForJournal(journal).some((link) => link.href),
   };

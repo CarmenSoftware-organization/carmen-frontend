@@ -583,7 +583,9 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
           ? { post_at: input.post_at }
           : action === "reject"
             ? { reason: input.reason }
-            : input;
+            : action === "void"
+              ? { reason: input.reason }
+              : input;
       const res = await httpClient.post(endpoint, body);
       if (!res.ok) {
         throw await ApiError.from(

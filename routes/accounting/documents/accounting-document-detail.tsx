@@ -14,8 +14,8 @@ import {
   AlertTriangle,
   Ban,
   Boxes,
-  ChevronDown,
   Check,
+  ChevronDown,
   ChevronUp,
   CircleDollarSign,
   Copy,
@@ -107,6 +107,7 @@ import {
 } from "@/components/ui/tooltip";
 import { WorkflowTrack } from "@/components/share/workflow-track";
 import { JvRejectDialog } from "./jv-reject-dialog";
+import { JvVoidDialog } from "./jv-void-dialog";
 import { DocActions } from "@/components/share/doc-actions";
 import { DocFormHeader } from "@/components/share/doc-form-header";
 import {
@@ -2614,29 +2615,19 @@ export default function AccountingDocumentDetail() {
       </form>
 
       <ConfirmDialog
-        open={journalConfirmation !== null}
+        open={journalConfirmation === "reverse"}
         onOpenChange={(open) => !open && setJournalConfirmation(null)}
-        title={
-          journalConfirmation === "reverse"
-            ? "Reverse Journal Voucher?"
-            : "Void Journal Voucher?"
-        }
+        title="Reverse Journal Voucher?"
         description="This action changes the Journal Voucher status."
-        confirmText={journalConfirmation === "reverse" ? "Reverse" : "Void"}
-        isPending={voidJournal.isPending || reverseJournal.isPending}
+        confirmText="Reverse"
+        isPending={reverseJournal.isPending}
         onConfirm={() => {
-          if (!journal || !journalConfirmation) return;
-          const action = journalConfirmation;
-          const mutation = action === "void" ? voidJournal : reverseJournal;
-          mutation.mutate(
+          if (!journal) return;
+          reverseJournal.mutate(
             { id: journal.id, doc_version: journal.doc_version },
             {
               onSuccess: ({ data }) => {
                 setJournalConfirmation(null);
-                if (action === "void") {
-                  toast.success(t("voided"));
-                  return;
-                }
                 // reverse ผ่าน workflow = ใบกลับรายการเป็น draft รอส่งอนุมัติ → พาไปหน้าใบใหม่
                 const isDraft = data.jv_status === "draft";
                 toast.success(
@@ -2646,10 +2637,25 @@ export default function AccountingDocumentDetail() {
                   navigate(`${config.path}/${data.id}`);
               },
               // รหัสสถานะแอปต้องแปลผ่าน errorToast — message เป็นประโยค default ของ gateway
-              onError: (error) =>
-                error instanceof ApiError && isAppStatusErrorCode(error.appCode)
-                  ? errorToast(error)
-                  : toast.error(error.message),
+              onError: onJournalActionError,
+            },
+          );
+        }}
+      />
+      <JvVoidDialog
+        open={journalConfirmation === "void"}
+        onOpenChange={(open) => !open && setJournalConfirmation(null)}
+        isPending={voidJournal.isPending}
+        onConfirm={(reason) => {
+          if (!journal) return;
+          voidJournal.mutate(
+            { id: journal.id, doc_version: journal.doc_version, reason },
+            {
+              onSuccess: () => {
+                setJournalConfirmation(null);
+                toast.success(t("voided"));
+              },
+              onError: onJournalActionError,
             },
           );
         }}

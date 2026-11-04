@@ -245,7 +245,7 @@ export const journalVoucherMockRepository: JournalVoucherRepository = {
       jv_type: input.journal_type,
       base_currency_id: input.functional_currency_id,
       ...journalTotals(toJournalLines(input)),
-        is_source_generated: isSourceGenerated({
+      is_source_generated: isSourceGenerated({
         source_type: input.source_type,
         is_source_generated: undefined,
       }),

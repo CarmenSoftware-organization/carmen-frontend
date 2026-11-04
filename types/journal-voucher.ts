@@ -99,6 +99,7 @@ export interface JournalVoucher extends JournalVoucherInput {
   base_currency_id: string;
   total_debit: string;
   total_credit: string;
+  reversed_by_jv_id?: string | null;
   /** จาก workflow orchestrator — "approve" เมื่อผู้ใช้ลงมือได้ที่ขั้นปัจจุบัน */
   role?: string;
   stage_actions?: StageActionFlags | null;
