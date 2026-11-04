@@ -72,7 +72,8 @@ export default function ApInvoiceList() {
   const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
   const isGridMode = isMobile || displayMode === "grid";
-  const useInfiniteScroll = !!isMobile;
+  // โหมด grid ทั้งมือถือและ desktop ไม่มี pager จึงโหลดต่อด้วย infinite scroll
+  const useInfiniteScroll = isGridMode;
 
   const { params, search, setSearch, tableConfig } = useDataGridState({
     defaultSort: DEFAULT_SORT,
