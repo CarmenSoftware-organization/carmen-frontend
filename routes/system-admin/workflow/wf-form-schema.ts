@@ -93,6 +93,14 @@ const recipientsSchema = z.object({
   previous_step: recipientNotificationSchema.optional(),
 });
 
+// lookup ผู้ใช้ (`users`) ส่ง middlename เป็น null ได้จริงทั้งที่ type `User` ประกาศเป็น string —
+// ตัวเลือกผู้ใช้ของ stage ยัดอ็อบเจ็กต์นั้นลงฟอร์มตรง ๆ ถ้าบังคับ z.string() กด Save แล้วจะติด
+// "Some stage fields are invalid" โดยไม่มีช่องไหนขึ้นแดง จึงรับ null แล้วเก็บเป็น ""
+const nullableName = z
+  .string()
+  .nullish()
+  .transform((v) => v ?? "");
+
 const actionSchema = z.object({
   is_active: z.boolean(),
   recipients: recipientsSchema,
@@ -142,10 +150,10 @@ export const wfFormSchema = z.object({
           .array(
             z.object({
               user_id: z.string(),
-              firstname: z.string(),
-              middlename: z.string(),
-              lastname: z.string(),
-              email: z.string(),
+              firstname: nullableName,
+              middlename: nullableName,
+              lastname: nullableName,
+              email: nullableName,
               department: z
                 .object({
                   id: z.string().optional(),
