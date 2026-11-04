@@ -1,329 +1,296 @@
 import { useMemo, useState } from "react";
-import type { ColumnDef } from "@tanstack/react-table";
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { Columns3, RefreshCw } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router";
-import EmptyComponent from "@/components/empty-component";
-import SearchInput from "@/components/search-input";
-import { ListPageShell } from "@/components/share/list-page-shell";
-import { listGridMaxH } from "@/components/share/list-grid-max-h";
-import { DocumentListActions } from "@/components/share/document-list-actions";
-import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
-import { ListCard, ListCardRow } from "@/components/share/list-card";
-import { Button } from "@/components/ui/button";
-import { CellAction } from "@/components/ui/cell-action";
+import { useNavigate } from "react-router";
+import { useTranslations } from "use-intl";
+import { Loader2, Plus, RefreshCw } from "lucide-react";
+import { listReturnState } from "@/hooks/use-list-return";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useGridPagination } from "@/hooks/use-grid-pagination";
+import { useDataGridState } from "@/hooks/use-data-grid-state";
+import { useListFilters } from "@/hooks/use-list-filters";
+import { useAmountFormatter } from "@/hooks/use-number-formatter";
+import { useProfile } from "@/hooks/use-profile";
 import {
   DataGrid,
   DataGridContainer,
+  DataGridScrollArea,
 } from "@/components/ui/data-grid/data-grid";
-import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { DataGridColumnVisibility } from "@/components/ui/data-grid/data-grid-column-visibility";
-import { DataGridSortMenu } from "@/components/ui/data-grid/data-grid-sort-menu";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
+import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
+import { MultiSelectFilter } from "@/components/ui/multi-select-filter";
 import { ErrorState } from "@/components/ui/error-state";
-import { Skeleton } from "@/components/ui/skeleton";
-import { StatusFilter } from "@/components/ui/status-filter";
-import { multiplyDecimal } from "../shared/ap-decimal";
-import { useIsMobile } from "@/hooks/use-mobile";
-import type { ApPayment } from "@/types/accounts-payable-mock";
-import { ApStatusBadge, Money } from "../shared/ap-ui";
-import { useApPayments } from "../shared/use-accounts-payable-mock";
+import { Button } from "@/components/ui/button";
+import EmptyComponent from "@/components/empty-component";
+import { ListPageShell } from "@/components/share/list-page-shell";
+import { listGridMaxH } from "@/components/share/list-grid-max-h";
+import {
+  ListCard,
+  ListCardRow,
+  ListCardSkeleton,
+  ListCardStatusRow,
+} from "@/components/share/list-card";
+import { ListToolbar } from "@/components/list-filter/list-toolbar";
+import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
+import { VENDOR_ENTITY } from "@/components/filter/entity-sources";
+import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
+import { formatDate } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
+import type { FilterFieldDef } from "@/types/list-filter";
+import type {
+  ApPayment,
+  ApDocStatus,
+  ApPaymentMethod,
+} from "@/types/accounts-payable";
+import { useApPayments } from "../shared/use-accounts-payable";
+import { useApPaymentTable } from "./use-ap-payment-table";
 
+/** ใหม่สุดขึ้นก่อน */
+const DEFAULT_SORT = "payment_date:desc";
+
+const STATUSES: ApDocStatus[] = ["draft", "in_review", "posted", "void"];
+const METHODS: ApPaymentMethod[] = [
+  "bank_transfer",
+  "cheque",
+  "cash",
+  "credit_card",
+  "promptpay",
+];
+
+/**
+ * หน้ารายการ AP payment (backend จริง) — โครงเดียวกับหน้า list ของ JV
+ *
+ * ตัวกรองส่งเป็น clause ของ `filter` (`doc_status|string:...`) · param เก่าของ
+ * หน้า mock (lifecycle, execution, release, urgent, method …)
+ * ไม่มีใครอ่าน จึงถูกข้ามเงียบ ๆ
+ */
 export default function ApPaymentList() {
+  const t = useTranslations("accounting.accountsPayable.payment");
+  const tc = useTranslations("common");
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [params, setParams] = useSearchParams();
-  const [mode, setMode] = useState<"list" | "grid">("list");
-  const filters = {
-    search: params.get("search") ?? "",
-    lifecycle: params.get("lifecycle") ?? "",
-    execution: params.get("execution") ?? "",
-    method: params.get("method") ?? "",
-    urgent: params.get("urgent") === "true",
-  };
-  const query = useApPayments(filters);
-  const rows = useMemo(() => query.data?.data ?? [], [query.data?.data]);
-  const setFilter = (key: string, value: string) =>
-    setParams(
-      (current) => {
-        const next = new URLSearchParams(current);
-        if (value) next.set(key, value);
-        else next.delete(key);
-        return next;
-      },
-      { replace: true },
-    );
-  const columns = useMemo<ColumnDef<ApPayment>[]>(
+  const { dateFormat } = useProfile();
+  const formatAmount = useAmountFormatter();
+  const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
+  const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
+  const isGridMode = isMobile || displayMode === "grid";
+  // โหมด grid ทั้งมือถือและ desktop ไม่มี pager จึงโหลดต่อด้วย infinite scroll
+  const useInfiniteScroll = isGridMode;
+
+  const { params, search, setSearch, tableConfig } = useDataGridState({
+    defaultSort: DEFAULT_SORT,
+  });
+
+  const filterFields = useMemo<FilterFieldDef[]>(
     () => [
       {
-        accessorKey: "pv_no",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="PV No." />
-        ),
-        cell: ({ row }) => (
-          <CellAction
-            onClick={() =>
-              navigate(
-                `/accounting/accounts-payable/payment/${row.original.id}`,
-              )
-            }
-          >
-            {row.original.pv_no}
-          </CellAction>
-        ),
-        enableHiding: false,
-        meta: { headerTitle: "PV No." },
-      },
-      {
-        accessorKey: "payment_date",
-        header: "Payment Date",
-        meta: { headerTitle: "Payment Date", cellClassName: "tabular-nums" },
-      },
-      {
-        accessorKey: "vendor_name",
-        header: "Vendor",
-        meta: { headerTitle: "Vendor" },
-      },
-      {
-        id: "paid_date",
-        header: "Paid Date",
-        cell: ({ row }) => row.original.paid_date ?? "—",
-      },
-      { accessorKey: "description", header: "Description" },
-      {
-        accessorKey: "payment_method",
-        header: "Method / Reference",
-        cell: ({ row }) => (
-          <div>
-            <p>{row.original.payment_method.replaceAll("_", " ")}</p>
-            <p className="text-muted-foreground text-xs">
-              {row.original.payment_reference || "—"}
-            </p>
-          </div>
-        ),
-        meta: { headerTitle: "Method / Reference" },
-      },
-      {
-        accessorKey: "currency_code",
-        header: "Currency",
-        meta: { headerTitle: "Currency" },
-      },
-      {
-        accessorKey: "applied_amount",
-        header: "Applied",
-        cell: ({ row }) => (
-          <Money
-            value={row.original.applied_amount}
-            currency={row.original.currency_code}
+        key: "filter",
+        control: "custom",
+        labelKey: "common.status",
+        section: "listView.sectionDocument",
+        render: (value, onChange) => (
+          <MultiSelectFilter
+            value={value}
+            onChange={onChange}
+            options={STATUSES.map((s) => ({
+              value: `doc_status|string:${s}`,
+              label: t(`statuses.${s}`),
+              statusKey: s,
+            }))}
+            className="w-full"
           />
         ),
-        meta: {
-          headerTitle: "Applied",
-          headerClassName: "text-right",
-          cellClassName: "text-right",
-        },
       },
       {
-        accessorKey: "wht_amount",
-        header: "WHT",
-        cell: ({ row }) => (
-          <Money
-            value={row.original.wht_amount}
-            currency={row.original.currency_code}
+        key: "method",
+        control: "custom",
+        labelKey: "accounting.accountsPayable.payment.method",
+        section: "listView.sectionDocument",
+        render: (value, onChange) => (
+          <MultiSelectFilter
+            value={value}
+            onChange={onChange}
+            options={METHODS.map((m) => ({
+              value: `payment_method|string:${m}`,
+              label: t(`methods.${m}`),
+            }))}
+            className="w-full"
           />
         ),
-        meta: {
-          headerTitle: "WHT",
-          headerClassName: "text-right",
-          cellClassName: "text-right",
-        },
       },
       {
-        accessorKey: "net_pay",
-        header: "Net Pay",
-        cell: ({ row }) => (
-          <Money
-            value={row.original.net_pay}
-            currency={row.original.currency_code}
-          />
-        ),
-        meta: {
-          headerTitle: "Net Pay",
-          headerClassName: "text-right",
-          cellClassName: "text-right",
-        },
-      },
-      {
-        accessorKey: "lifecycle",
-        header: "Workflow",
-        cell: ({ row }) => <ApStatusBadge value={row.original.lifecycle} />,
-        meta: { headerTitle: "Workflow" },
-      },
-      {
-        id: "base",
-        header: "Base Amt. (THB)",
-        cell: ({ row }) => (
-          <Money
-            value={
-              row.original.net_pay_base ??
-              multiplyDecimal(row.original.net_pay, row.original.exchange_rate)
-            }
-            className="text-primary font-semibold"
-          />
-        ),
-        meta: { cellClassName: "text-right" },
-      },
-      {
-        accessorKey: "execution_status",
-        header: "Execution",
-        cell: ({ row }) => (
-          <ApStatusBadge value={row.original.execution_status} />
-        ),
-        meta: { headerTitle: "Execution" },
+        key: "vendor_id",
+        control: "entity",
+        entity: VENDOR_ENTITY,
+        labelKey: "accounting.accountsPayable.payment.vendor",
+        section: "listView.sectionDocument",
       },
     ],
-    [navigate],
+    [t],
   );
-  const table = useReactTable({
-    data: rows,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
+
+  const lf = useListFilters({
+    pageKey: LIST_PAGE_KEYS.AP_PAYMENT,
+    fields: filterFields,
+    defaultSort: DEFAULT_SORT,
   });
-  if (query.isError)
+
+  const queryParams = { ...params, filter: lf.filterParam };
+  const { data, isLoading, error, refetch } = useApPayments(queryParams, {
+    enabled: !useInfiniteScroll,
+  });
+  const grid = useGridPagination<ApPayment>({
+    useListHook: useApPayments,
+    params: queryParams,
+    enabled: useInfiniteScroll,
+  });
+  const payments = useInfiniteScroll ? grid.items : (data?.data ?? []);
+  const totalRecords = useInfiniteScroll
+    ? grid.totalRecords
+    : (data?.paginate?.total ?? 0);
+  const cardsLoading = useInfiniteScroll ? grid.isLoading : isLoading;
+
+  const openPayment = (payment: ApPayment) =>
+    navigate(
+      `/accounting/accounts-payable/payment/${payment.id}`,
+      listReturnState(),
+    );
+
+  const table = useApPaymentTable({
+    payments,
+    totalRecords,
+    params,
+    tableConfig,
+    onOpen: openPayment,
+  });
+
+  if (error)
     return (
       <ErrorState
-        error={query.error}
-        message="Unable to load AP payments"
-        onRetry={() => void query.refetch()}
+        error={error}
+        message={t("loadError")}
+        onRetry={() => refetch()}
       />
     );
+
   return (
     <ListPageShell
-      title="Payment Voucher Directory"
-      mock
-      description="Supplier payment workflow and execution"
+      title={t("title")}
+      description={t("desc")}
+      count={totalRecords}
       actions={
-        <DocumentListActions
-          onAdd={() => navigate("/accounting/accounts-payable/payment/new")}
-          addLabel="New Payment"
-          hideExportPrint
-        />
+        <Button
+          size="sm"
+          onClick={() => navigate("/accounting/accounts-payable/payment/new")}
+        >
+          <Plus className="size-4" /> {t("add")}
+        </Button>
       }
       toolbar={
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-1 flex-wrap gap-3">
-            <div className="min-w-52 flex-1 sm:flex-initial">
-              <SearchInput
-                defaultValue={filters.search}
-                onSearch={(value) => setFilter("search", value)}
-                onInputChange={(value) => setFilter("search", value)}
-              />
-            </div>
-            <StatusFilter
-              value={filters.lifecycle}
-              onChange={(value) => setFilter("lifecycle", value)}
-              placeholder="Workflow"
-              defaultLabel="All workflow"
-              options={["draft", "submitted", "posted", "voided"].map(
-                (value) => ({ value, label: value.replaceAll("_", " ") }),
-              )}
-              className="w-40"
-            />
-            <StatusFilter
-              value={filters.execution}
-              onChange={(value) => setFilter("execution", value)}
-              placeholder="Execution"
-              defaultLabel="All execution"
-              options={["not_released", "executed", "failed"].map((value) => ({
-                value,
-                label: value.replaceAll("_", " "),
-              }))}
-              className="w-40"
-            />
-            <StatusFilter
-              value={filters.method}
-              onChange={(value) => setFilter("method", value)}
-              placeholder="Method"
-              defaultLabel="All methods"
-              options={["bank_transfer", "direct_debit", "cheque"].map(
-                (value) => ({ value, label: value.replaceAll("_", " ") }),
-              )}
-              className="w-40"
-            />
-          </div>
-          <div className="hidden items-center gap-2 sm:flex">
-            <DataGridSortMenu table={table} />
-            {mode === "list" && (
-              <DataGridColumnVisibility
-                table={table}
-                trigger={
-                  <Button
-                    size="icon-sm"
-                    variant="outline"
-                    aria-label="Toggle columns"
-                  >
-                    <Columns3 className="size-4" />
-                  </Button>
-                }
-              />
-            )}
-            <DisplayModeToggle value={mode} onChange={setMode} />
+        <ListToolbar
+          search={search}
+          onSearch={setSearch}
+          lf={lf}
+          fields={filterFields}
+          onSaveViewClick={() => setSaveViewDialogOpen(true)}
+          table={table}
+          displayMode={displayMode}
+          onDisplayModeChange={setDisplayMode}
+          trailing={
             <Button
-              size="icon-sm"
               variant="ghost"
-              onClick={() => void query.refetch()}
-              aria-label="Refresh"
+              size="icon-sm"
+              onClick={() => (useInfiniteScroll ? grid.refetch?.() : refetch())}
+              aria-label={tc("refresh")}
+              title={tc("refresh")}
             >
               <RefreshCw className="size-4" />
             </Button>
-          </div>
-        </div>
+          }
+        />
       }
     >
-      {query.isLoading ? (
-        <Skeleton className="h-80 rounded-lg" />
-      ) : !(isMobile || mode === "grid") ? (
+      {!isGridMode && (
         <DataGrid
           table={table}
-          recordCount={rows.length}
-          tableLayout={{ headerSticky: true, width: "auto" }}
-          tableClassNames={{ bodyRow: "h-10" }}
+          recordCount={totalRecords}
+          isLoading={isLoading}
+          tableLayout={{ headerSticky: true, columnsResizable: true }}
           emptyMessage={<EmptyComponent />}
         >
-          <DataGridContainer className={listGridMaxH(false)}>
-            <DataGridTable />
+          <DataGridContainer
+            className={cn(
+              "flex flex-col",
+              listGridMaxH(lf.activeFilters.length > 0),
+            )}
+          >
+            <DataGridScrollArea>
+              <DataGridTable />
+            </DataGridScrollArea>
+            <DataGridPagination />
           </DataGridContainer>
         </DataGrid>
-      ) : rows.length === 0 ? (
-        <EmptyComponent />
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {rows.map((payment) => (
-            <ListCard
-              key={payment.id}
-              title={payment.pv_no}
-              badge={<ApStatusBadge value={payment.lifecycle} />}
-              onOpen={() =>
-                navigate(`/accounting/accounts-payable/payment/${payment.id}`)
-              }
-            >
-              <ListCardRow label="Vendor">{payment.vendor_name}</ListCardRow>
-              <ListCardRow label="Method">
-                {payment.payment_method.replaceAll("_", " ")}
-              </ListCardRow>
-              <ListCardRow label="Net pay">
-                <Money
-                  value={payment.net_pay}
-                  currency={payment.currency_code}
+      )}
+
+      {isGridMode &&
+        (cardsLoading ? (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <ListCardSkeleton key={`skeleton-${i}`} />
+            ))}
+          </div>
+        ) : payments.length === 0 ? (
+          <EmptyComponent />
+        ) : (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {payments.map((payment) => (
+              <ListCard
+                key={payment.id}
+                title={payment.doc_no}
+                onOpen={() => openPayment(payment)}
+              >
+                <ListCardStatusRow
+                  status={payment.doc_status}
+                  label={t(`statuses.${payment.doc_status}`)}
                 />
-              </ListCardRow>
-              <ListCardRow label="Execution">
-                <ApStatusBadge value={payment.execution_status} />
-              </ListCardRow>
-            </ListCard>
-          ))}
+                <ListCardRow label={t("vendor")}>
+                  {payment.vendor_name}
+                </ListCardRow>
+                <ListCardRow label={t("paymentDate")}>
+                  <span className="tabular-nums">
+                    {formatDate(payment.payment_date, dateFormat)}
+                  </span>
+                </ListCardRow>
+                <ListCardRow label={t("bankAccount")}>
+                  {payment.bank_account_name}
+                </ListCardRow>
+                <ListCardRow label={t("method")}>
+                  {t(`methods.${payment.payment_method}`)}
+                </ListCardRow>
+                <ListCardRow label={t("netPaid")}>
+                  <span className="tabular-nums">
+                    {formatAmount(Number(payment.net_paid_amount))}{" "}
+                    {payment.currency_code}
+                  </span>
+                </ListCardRow>
+              </ListCard>
+            ))}
+          </div>
+        ))}
+
+      {isGridMode && useInfiniteScroll && grid.hasMore && (
+        <div ref={grid.sentinelRef} className="flex justify-center py-4">
+          {grid.isLoadingMore && (
+            <Loader2 className="text-muted-foreground size-5 animate-spin" />
+          )}
         </div>
       )}
+
+      <SaveViewDialog
+        open={saveViewDialogOpen}
+        onOpenChange={setSaveViewDialogOpen}
+        canManageBu={lf.view.canManageBu}
+        existingNames={lf.view.existingNames}
+        onSave={lf.view.saveOrUpdate}
+      />
     </ListPageShell>
   );
 }

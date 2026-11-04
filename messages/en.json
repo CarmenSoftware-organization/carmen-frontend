@@ -796,6 +796,32 @@
           },
           "reloaded": "The document was reloaded with the latest data."
         }
+      },
+      "payment": {
+        "title": "AP Payment Directory",
+        "desc": "Supplier payments and the invoices they settle.",
+        "add": "New Payment",
+        "docNo": "PV No.",
+        "paymentDate": "Payment Date",
+        "vendor": "Vendor",
+        "bankAccount": "Bank Account",
+        "method": "Method",
+        "netPaid": "Net Paid",
+        "referenceNo": "Reference",
+        "loadError": "Unable to load AP payments",
+        "statuses": {
+          "draft": "Draft",
+          "in_review": "In Review",
+          "posted": "Posted",
+          "void": "Void"
+        },
+        "methods": {
+          "bank_transfer": "Bank transfer",
+          "cheque": "Cheque",
+          "cash": "Cash",
+          "credit_card": "Credit card",
+          "promptpay": "PromptPay"
+        }
       }
     }
   },
