@@ -1237,7 +1237,13 @@ export default function AccountingDocumentDetail() {
   }
 
   return (
-    <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4">
+    // หัวแบบ flush + gutter px-4 ที่ตัวหน้า (ทรงเดียวกับ FormPageShell) — เดิมหัวมี
+    // px-4 ของตัวเองแต่ฟอร์มไม่มี ปุ่มขวาของหัวจึงเยื้องเข้าใน 1rem จากขอบฟอร์ม/ตาราง
+    <div
+      className={`flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 ${
+        usesVoucherDetailPattern ? "px-4" : ""
+      }`}
+    >
       {usesVoucherDetailPattern ? (
         <DocFormHeader
           // ใบใหม่ใช้ชื่อชนิดเอกสารเป็นหัว (ทรงเดียวกับ PO: po_no ?? entity) —
@@ -1247,6 +1253,7 @@ export default function AccountingDocumentDetail() {
           }
           // JV อ่าน API จริง (useJournalVoucher) — ชนิดอื่นยังเป็น documentsFor()
           mock={!isJournalVoucher}
+          flush
           badges={jvBadges}
           subtitle={jvWorkflowStep}
           backLabel={t("back")}
