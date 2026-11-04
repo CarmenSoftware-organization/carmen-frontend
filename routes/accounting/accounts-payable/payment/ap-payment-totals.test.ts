@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ApPaymentInput } from "@/types/accounts-payable";
+import type { ApPaymentInput } from "@/types/accounts-payable-mock";
 import { addDecimal, divideDecimal } from "../shared/ap-decimal";
 import { paymentSummary } from "./ap-payment-totals";
 

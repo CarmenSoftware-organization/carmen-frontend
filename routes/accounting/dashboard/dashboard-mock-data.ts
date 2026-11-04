@@ -1,4 +1,4 @@
-import type { ApDashboardSnapshot } from "@/types/accounts-payable";
+import type { ApDashboardSnapshot } from "@/types/accounts-payable-mock";
 import type {
   AccountingDashboardModule,
   AccountingDashboardSnapshot,

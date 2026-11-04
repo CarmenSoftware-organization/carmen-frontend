@@ -25,9 +25,9 @@ import { ErrorState } from "@/components/ui/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusFilter } from "@/components/ui/status-filter";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { ApInvoice } from "@/types/accounts-payable";
+import type { ApInvoice } from "@/types/accounts-payable-mock";
 import { ApStatusBadge, Money } from "../shared/ap-ui";
-import { useApInvoices } from "../shared/use-accounts-payable";
+import { useApInvoices } from "../shared/use-accounts-payable-mock";
 
 const lifecycleOptions = [
   "draft",

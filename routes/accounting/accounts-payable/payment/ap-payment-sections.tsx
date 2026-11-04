@@ -38,7 +38,7 @@ import type {
   ApPaymentApplication,
   ApPaymentInput,
   ApPaymentMethodLine,
-} from "@/types/accounts-payable";
+} from "@/types/accounts-payable-mock";
 import {
   addDecimal,
   compareDecimal,

@@ -1,4 +1,4 @@
-import type { ApPaymentInput } from "@/types/accounts-payable";
+import type { ApPaymentInput } from "@/types/accounts-payable-mock";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {

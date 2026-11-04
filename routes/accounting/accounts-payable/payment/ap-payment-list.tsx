@@ -25,9 +25,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusFilter } from "@/components/ui/status-filter";
 import { multiplyDecimal } from "../shared/ap-decimal";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { ApPayment } from "@/types/accounts-payable";
+import type { ApPayment } from "@/types/accounts-payable-mock";
 import { ApStatusBadge, Money } from "../shared/ap-ui";
-import { useApPayments } from "../shared/use-accounts-payable";
+import { useApPayments } from "../shared/use-accounts-payable-mock";
 
 export default function ApPaymentList() {
   const navigate = useNavigate();

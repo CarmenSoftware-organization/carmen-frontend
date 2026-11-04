@@ -12,7 +12,7 @@ import type {
   ApPaymentFilters,
   ApPaymentInput,
   ApPaymentListResponse,
-} from "@/types/accounts-payable";
+} from "@/types/accounts-payable-mock";
 import {
   addDecimal,
   compareDecimal,

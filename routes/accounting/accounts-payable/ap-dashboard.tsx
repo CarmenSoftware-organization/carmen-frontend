@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AccountingDashboardPage } from "../dashboard/accounting-dashboard-page";
 import { buildApDashboardSnapshot } from "../dashboard/dashboard-mock-data";
-import { useApDashboard } from "./shared/use-accounts-payable";
+import { useApDashboard } from "./shared/use-accounts-payable-mock";
 
 const isoToday = () => new Date().toISOString().slice(0, 10);
 const monthStart = (date: string) => `${date.slice(0, 7)}-01`;

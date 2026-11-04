@@ -6,7 +6,7 @@ import {
   createApMockRepository,
   clearApMockStorage,
 } from "../shared/ap-mock-repository";
-import type { ApPayment } from "@/types/accounts-payable";
+import type { ApPayment } from "@/types/accounts-payable-mock";
 import { IntlProvider } from "use-intl";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import messages from "@/messages/en.json";
@@ -16,7 +16,7 @@ const state = vi.hoisted(() => ({
   loading: false,
   error: false,
 }));
-vi.mock("../shared/use-accounts-payable", () => ({
+vi.mock("../shared/use-accounts-payable-mock", () => ({
   useApPayment: () => ({
     data: state.payment,
     isLoading: state.loading,

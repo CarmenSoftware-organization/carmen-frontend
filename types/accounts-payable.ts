@@ -1,359 +1,432 @@
-import type { PaginatedResponse } from "@/types/params";
+/**
+ * รูปข้อมูล AP invoice / AP payment ตาม backend จริง
+ * (`api/:bu_code/ap-invoice` และ `api/:bu_code/ap-payment`)
+ *
+ * เงินจาก backend เป็น number — repository แปลงเป็น `DecimalString` ที่ขอบเขตเท่านั้น
+ * ชื่อลูกที่ backend ส่งเป็น `tb_ap_*` ถูก map เป็นชื่อสั้นที่ repository
+ * (`lines`, `references`, `tax`, `allocations`, `wht`, `expenses`, `tax_invoices`)
+ */
+import type { ParamsDto } from "@/types/params";
 
 export type DecimalString = string;
-export type ApLifecycle =
-  | "draft"
-  | "submitted"
-  | "ready_to_release"
-  | "processing"
-  | "executed"
-  | "posting"
-  | "posted"
-  | "post_failed"
-  | "voided"
-  | "reversed";
-export type ApSettlementStatus = "unpaid" | "partially_paid" | "paid";
+
+export type ApDocStatus = "draft" | "in_review" | "posted" | "void";
+export type ApDocType = "invoice" | "debit_note" | "credit_note" | "deposit";
+export type ApDocSource =
+  | "manual"
+  | "grn"
+  | "grn_auto"
+  | "copy"
+  | "excel"
+  | "ai"
+  | "interface";
+/** สถานะการชำระ — คำนวณจาก outstanding เทียบ total (ไม่มีคอลัมน์ใน backend) */
+export type ApSettlement = "unpaid" | "partially_paid" | "paid";
+export type ApPaymentMethod =
+  | "bank_transfer"
+  | "cheque"
+  | "cash"
+  | "credit_card"
+  | "promptpay";
 export type ApTaxStatus =
   | "pending"
-  | "confirmed"
   | "on_review"
-  | "filed"
-  | "unclaimable"
-  | "not_applicable";
-export type ApMatchStatus =
-  "not_required" | "pending" | "matched" | "variance" | "overridden";
-export type ApExecutionStatus =
-  | "not_released"
-  | "released"
-  | "processing"
-  | "executed"
-  | "failed"
-  | "cancelled"
-  | "reconciled";
+  | "unclaim"
+  | "confirmed"
+  | "submitted"
+  | "void";
 
-export interface ApDocumentCapabilities {
-  can_edit: boolean;
-  can_submit: boolean;
-  can_approve: boolean;
-  can_return: boolean;
-  can_reject: boolean;
-  can_void: boolean;
-  can_release: boolean;
-}
+/** คำสั่ง workflow ที่ backend รับ (UI "return" = `review`) */
+export type ApCommand = "submit" | "approve" | "review" | "reject" | "void";
+/** ชื่อ action ฝั่ง UI */
+export type ApUiAction =
+  | "submit"
+  | "approve"
+  | "return"
+  | "reject"
+  | "void"
+  | "delete";
 
-export interface ApActivity {
-  id: string;
-  action: string;
-  detail: string;
-  actor: string;
-  at: string;
-}
+export type ApListParams = ParamsDto;
 
 export interface ApAttachment {
-  id: string;
-  name: string;
-  kind: "invoice" | "tax" | "evidence";
-  added_at: string;
+  originalName: string;
+  fileToken: string;
+  contentType: string;
 }
 
-export interface ApJournalPreviewLine {
-  id: string;
-  account: string;
-  description: string;
-  debit: DecimalString;
-  credit: DecimalString;
+export interface ApWorkflowFields {
+  workflow_id?: string | null;
+  workflow_name?: string | null;
+  workflow_current_stage?: string | null;
+  workflow_previous_stage?: string | null;
+  workflow_next_stage?: string | null;
+  workflow_history?: unknown;
+  /** `{ execute: [{ user_id, ... }] }` — ผู้ที่ลงมือที่ขั้นปัจจุบันได้ */
+  user_action?: { execute?: { user_id: string }[] } | null;
+  last_action?: string | null;
+  last_action_at_date?: string | null;
+  last_action_by_id?: string | null;
+  last_action_by_name?: string | null;
+}
+
+export interface ApDimensionRef {
+  gl_dimension_id: string;
+  gl_dimension_value_id: string;
+  dimension_code?: string;
+  value_code?: string;
+}
+
+export interface ApInvoiceLineSource {
+  good_received_note_id: string;
+  grn_no: string;
+  good_received_note_detail_item_id: string;
+  matched_qty: DecimalString;
+  grn_unit_price: DecimalString;
+  matched_amount: DecimalString;
+  variance_amount: DecimalString;
 }
 
 export interface ApInvoiceLine {
   id: string;
-  description: string;
-  unit: string;
+  sequence_no: number;
+  description: string | null;
+  product_id: string | null;
+  product_name: string | null;
+  unit_id: string | null;
+  unit_name: string | null;
   quantity: DecimalString;
   unit_price: DecimalString;
-  subtotal: DecimalString;
-  discount: DecimalString;
+  sub_total_amount: DecimalString;
+  discount_amount: DecimalString;
   net_amount: DecimalString;
+  dr_chart_of_accounts_id: string;
+  dr_account_code: string | null;
+  dr_cost_center_id: string | null;
+  dr_cost_center_code: string | null;
+  vat_tax_profile_id: string | null;
   vat_rate: DecimalString;
   vat_amount: DecimalString;
-  wht_rate: DecimalString;
-  wht_eligible_amount: DecimalString;
-  account: string;
-  department: string;
-  dimension: string;
-  po_no: string | null;
-  grn_no: string | null;
-  match_status: ApMatchStatus;
+  vat_is_override: boolean;
+  vat_chart_of_accounts_id: string | null;
+  vat_cost_center_id: string | null;
+  wht_tax_profile_id: string | null;
+  wht_rate: DecimalString | null;
+  wht_estimate_amount: DecimalString;
+  cr_chart_of_accounts_id: string;
+  cr_account_code: string | null;
+  cr_cost_center_id: string | null;
+  total_amount: DecimalString;
+  unpaid_amount: DecimalString;
+  base_total_amount: DecimalString;
+  base_unpaid_amount: DecimalString;
+  dimensions: ApDimensionRef[];
+  sources: ApInvoiceLineSource[];
 }
 
-export interface ApInvoicePaymentHistory {
-  payment_id: string;
-  payment_no: string;
-  payment_date: string;
+export interface ApInvoiceReference {
+  ref_ap_invoice_id: string;
+  ref_doc_type: ApDocType;
   applied_amount: DecimalString;
-  status: ApExecutionStatus | "posted";
+  realized_fx_amount: DecimalString;
 }
 
-export interface ApInvoice {
+export interface ApInvoiceTax {
+  tax_invoice_no: string;
+  tax_invoice_date: string;
+  base_amount: DecimalString;
+  vat_amount: DecimalString;
+  tax_status: ApTaxStatus;
+  expiry_claim_date: string;
+}
+
+export interface ApInvoice extends ApWorkflowFields {
   id: string;
-  doc_version: number;
-  ap_no: string;
-  input_date: string;
-  vendor_invoice_no: string;
-  tax_invoice_no?: string | null;
-  tax_invoice_date?: string | null;
+  doc_version: number | null;
+  doc_no: string;
+  doc_type: ApDocType;
+  doc_status: ApDocStatus;
+  doc_source: ApDocSource;
+  doc_date: string;
+  description: string | null;
   vendor_id: string;
   vendor_name: string;
+  vendor_invoice_no: string;
   invoice_date: string;
-  due_date: string | null;
-  credit_days: number;
+  credit_term_id: string | null;
+  credit_term_name: string | null;
+  credit_term_days: number;
+  due_date: string;
+  currency_id: string;
   currency_code: string;
   exchange_rate: DecimalString;
-  description: string;
-  lifecycle: ApLifecycle;
-  workflow_enabled: boolean;
-  current_stage: string | null;
-  settlement_status: ApSettlementStatus;
-  tax_status: ApTaxStatus;
-  match_status: ApMatchStatus;
-  match_acknowledged: boolean;
-  is_on_hold: boolean;
-  subtotal: DecimalString;
-  discount: DecimalString;
+  base_currency_id: string;
+  base_currency_code: string;
+  sub_total_amount: DecimalString;
+  discount_amount: DecimalString;
   net_amount: DecimalString;
   vat_amount: DecimalString;
-  estimated_wht: DecimalString;
   total_amount: DecimalString;
-  open_amount: DecimalString;
-  reserved_amount: DecimalString;
-  claimed_vat_base?: DecimalString;
-  lines: ApInvoiceLine[];
-  payments: ApInvoicePaymentHistory[];
-  journal: ApJournalPreviewLine[];
-  attachments: ApAttachment[];
-  activity: ApActivity[];
-  capabilities: ApDocumentCapabilities;
+  base_total_amount: DecimalString;
+  wht_estimate_amount: DecimalString;
+  outstanding_amount: DecimalString;
+  reference_applied_amount: DecimalString;
+  gl_jv_id: string | null;
+  gl_jv_no: string | null;
+  posted_at: string | null;
+  void_at: string | null;
+  void_reason: string | null;
+  void_gl_jv_id: string | null;
+  attachments?: ApAttachment[];
+  created_at: string | null;
+  created_by_id: string | null;
+  updated_at: string | null;
+  updated_by_id: string | null;
+  /** เฉพาะ detail (list ไม่มี) */
+  lines?: ApInvoiceLine[];
+  references?: ApInvoiceReference[];
+  tax?: ApInvoiceTax | null;
 }
 
+export interface ApInvoiceLineInput {
+  sequence_no: number;
+  description?: string | null;
+  product_id?: string | null;
+  product_name?: string | null;
+  unit_id?: string | null;
+  unit_name?: string | null;
+  quantity: DecimalString;
+  unit_price: DecimalString;
+  discount_amount?: DecimalString | null;
+  dr_chart_of_accounts_id: string;
+  dr_cost_center_id?: string | null;
+  vat_tax_profile_id?: string | null;
+  vat_amount?: DecimalString | null;
+  vat_is_override?: boolean;
+  wht_tax_profile_id?: string | null;
+  dimensions?: { gl_dimension_id: string; gl_dimension_value_id: string }[] | null;
+}
+
+export interface ApInvoiceReferenceInput {
+  ref_ap_invoice_id: string;
+  applied_amount: DecimalString;
+}
+
+/**
+ * ข้อมูลสร้าง/แก้ใบ AP invoice — ตอนแก้ repository ตัด `doc_type`, `doc_source`,
+ * `vendor_id`, `currency_id` ออก (backend ห้ามแก้หลังสร้าง) และส่ง `doc_version` แยก
+ */
 export interface ApInvoiceInput {
-  input_date: string;
-  vendor_invoice_no: string;
+  doc_type: ApDocType;
+  doc_source?: Exclude<ApDocSource, "grn" | "grn_auto">;
+  /** YYYY-MM-DD */
+  doc_date: string;
   vendor_id: string;
-  vendor_name: string;
+  vendor_invoice_no: string;
+  /** YYYY-MM-DD */
   invoice_date: string;
-  due_date: string | null;
-  credit_days: number;
-  currency_code: string;
-  exchange_rate: DecimalString;
-  description: string;
-  workflow_enabled: boolean;
-  tax_status: ApTaxStatus;
-  match_status: ApMatchStatus;
-  match_acknowledged: boolean;
-  lines: ApInvoiceLine[];
+  credit_term_days?: number | null;
+  currency_id?: string | null;
+  exchange_rate?: DecimalString | null;
+  description?: string | null;
+  attachments?: ApAttachment[] | null;
+  lines: ApInvoiceLineInput[];
+  references?: ApInvoiceReferenceInput[] | null;
 }
 
-export interface ApPaymentApplication {
+export interface ApInvoiceReferenceCandidate {
   id: string;
-  invoice_id: string;
-  invoice_no: string;
-  vendor_invoice_no: string;
-  po_no: string | null;
-  grn_no: string | null;
-  original_amount: DecimalString;
-  open_amount: DecimalString;
-  apply_amount: DecimalString;
-  wht_base: DecimalString;
+  doc_no: string;
+  doc_type: ApDocType;
+  doc_date: string;
+  total_amount: DecimalString;
+  reference_applied_amount: DecimalString;
+  outstanding_amount: DecimalString;
+  exchange_rate: DecimalString;
+  remaining_amount: DecimalString;
+}
+
+export interface ApPaymentAllocation {
+  id: string;
+  ap_invoice_id: string;
+  ap_invoice_detail_id: string;
+  doc_type: ApDocType;
+  applied_amount: DecimalString;
+  invoice_exchange_rate: DecimalString;
+  base_applied_at_invoice_rate: DecimalString;
+  base_applied_at_payment_rate: DecimalString;
+  realized_fx_amount: DecimalString;
+}
+
+export interface ApPaymentWht {
+  id: string;
+  wht_tax_profile_id: string;
+  wht_tax_profile_name: string;
+  pnd_form?: string | null;
+  income_type?: string | null;
+  base_amount: DecimalString;
   wht_rate: DecimalString;
   wht_amount: DecimalString;
-  net_cash: DecimalString;
-  match_status: ApMatchStatus;
-  invoice_date?: string;
-  due_date?: string;
-  description?: string;
-  original_rate?: DecimalString;
-  net_amount?: DecimalString;
-  vat_amount?: DecimalString;
-  tax_status?: ApTaxStatus;
-  wht_override_reason?: string;
-  undue_vat_base?: DecimalString;
-}
-
-export interface ApPaymentMethodLine {
-  id: string;
-  method: ApPayment["payment_method"];
-  bank_account: string;
-  payee: string;
-  reference: string;
-  account: string;
-  cost_center: string;
-  dimensions: string;
-  amount: DecimalString;
+  is_override: boolean;
 }
 
 export interface ApPaymentExpense {
   id: string;
-  description: string;
-  account: string;
-  cost_center: string;
-  dimensions: string;
+  chart_of_accounts_id: string;
+  cost_center_id: string | null;
+  description: string | null;
+  amount: DecimalString;
   base_amount: DecimalString;
 }
 
 export interface ApPaymentTaxInvoice {
-  id: string;
-  document_no: string;
-  date: string;
-  tax_id: string;
-  branch: string;
-  profile: string;
-  filing_period: string;
-  status: ApTaxStatus;
+  ap_invoice_id: string;
+  doc_no: string;
+  tax_invoice_no: string;
+  tax_invoice_date: string;
   base_amount: DecimalString;
   vat_amount: DecimalString;
 }
 
-export interface ApDepositOffset {
+export interface ApPayment extends ApWorkflowFields {
   id: string;
-  deposit_no: string;
-  deposit_date: string;
-  original_deposit_amount: DecimalString;
-  remaining_deposit_amount: DecimalString;
-  offset_amount: DecimalString;
-  note?: string;
-}
-
-export interface ApPaymentDetails {
-  wht_services?: ApPaymentApplication[];
-  tax_allocations?: { invoice_id: string; tax_invoice_id: string; claim_amount: DecimalString }[];
-  paid_date?: string;
-  payment_methods?: ApPaymentMethodLine[];
-  deposit_offsets?: ApDepositOffset[];
-  other_expenses?: ApPaymentExpense[];
+  doc_version: number | null;
+  doc_no: string;
+  doc_status: ApDocStatus;
+  payment_date: string;
+  paid_date: string | null;
+  description: string | null;
+  reference_no: string | null;
+  vendor_id: string;
+  vendor_name: string;
+  payee_name: string;
+  payee_tax_no: string | null;
+  payee_branch_no: string | null;
+  payee_address: string | null;
+  bank_account_id: string;
+  bank_account_code: string;
+  bank_account_name: string;
+  payment_method: ApPaymentMethod;
+  cheque_no: string | null;
+  cheque_date: string | null;
+  currency_id: string;
+  currency_code: string;
+  exchange_rate: DecimalString;
+  base_currency_id: string;
+  base_currency_code: string;
+  total_applied_amount: DecimalString;
+  total_wht_amount: DecimalString;
+  total_expense_amount: DecimalString;
+  net_paid_amount: DecimalString;
+  base_total_applied_amount: DecimalString;
+  base_total_wht_amount: DecimalString;
+  base_total_expense_amount: DecimalString;
+  base_net_paid_amount: DecimalString;
+  realized_fx_amount: DecimalString;
+  gl_jv_id: string | null;
+  gl_jv_no: string | null;
+  posted_at: string | null;
+  void_at: string | null;
+  void_reason: string | null;
+  attachments?: ApAttachment[];
+  created_at: string | null;
+  updated_at: string | null;
+  /** เฉพาะ detail (list ไม่มี) */
+  allocations?: ApPaymentAllocation[];
+  wht?: ApPaymentWht[];
+  expenses?: ApPaymentExpense[];
   tax_invoices?: ApPaymentTaxInvoice[];
-  wht_form?: string;
-  wht_no?: string;
-  wht_account?: string;
-  wht_cost_center?: string;
-  wht_dimensions?: string;
-  wht_payee_name?: string;
-  wht_tax_id?: string;
-  wht_branch?: string;
-  wht_address?: string;
 }
 
-export interface ApPayment extends ApPaymentDetails {
-  id: string;
-  doc_version: number;
-  pv_no: string;
-  vendor_id: string;
-  vendor_name: string;
-  payment_date: string;
-  due_date: string;
-  currency_code: string;
-  exchange_rate: DecimalString;
-  payment_method: "bank_transfer" | "direct_debit" | "cheque";
-  bank_account_masked: string;
-  payment_reference: string;
-  description: string;
-  urgent: boolean;
-  lifecycle: ApLifecycle;
-  workflow_enabled: boolean;
-  current_stage: string | null;
-  execution_status: ApExecutionStatus;
+export interface ApPaymentAllocationInput {
+  ap_invoice_detail_id: string;
+  /** บวก = invoice/debit note/deposit · ลบ = credit note */
   applied_amount: DecimalString;
-  wht_amount: DecimalString;
-  net_pay: DecimalString;
-  net_pay_base?: DecimalString;
-  realized_fx: DecimalString;
-  applications: ApPaymentApplication[];
-  journal: ApJournalPreviewLine[];
-  attachments: ApAttachment[];
-  activity: ApActivity[];
-  capabilities: ApDocumentCapabilities;
-  clarification_note: string | null;
 }
 
-export interface ApPaymentInput extends ApPaymentDetails {
+export interface ApPaymentWhtInput {
+  wht_tax_profile_id: string;
+  base_amount: DecimalString;
+  wht_amount: DecimalString;
+  is_override?: boolean;
+}
+
+export interface ApPaymentExpenseInput {
+  chart_of_accounts_id: string;
+  cost_center_id?: string | null;
+  description?: string | null;
+  amount: DecimalString;
+}
+
+/** ตอนแก้ repository ตัด `vendor_id` ออก (backend ห้ามแก้หลังสร้าง) */
+export interface ApPaymentInput {
   vendor_id: string;
-  vendor_name: string;
+  /** YYYY-MM-DD */
   payment_date: string;
+  paid_date?: string | null;
+  bank_account_id: string;
+  payment_method?: ApPaymentMethod;
+  cheque_no?: string | null;
+  cheque_date?: string | null;
+  reference_no?: string | null;
+  description?: string | null;
+  exchange_rate?: DecimalString | null;
+  attachments?: ApAttachment[] | null;
+  allocations: ApPaymentAllocationInput[];
+  wht?: ApPaymentWhtInput[] | null;
+  expenses?: ApPaymentExpenseInput[] | null;
+}
+
+export interface ApOutstandingLine {
+  ap_invoice_detail_id: string;
+  doc_type: ApDocType;
+  sequence_no: number;
+  description: string | null;
+  total_amount: DecimalString;
+  unpaid_amount: DecimalString;
+  /** ยอดที่ยังจ่ายได้ หลังหักที่ใบจ่าย draft/in_review จองไว้ */
+  available_amount: DecimalString;
+  wht_tax_profile_id: string | null;
+}
+
+export interface ApOutstandingDocument {
+  ap_invoice_id: string;
+  doc_no: string;
+  doc_type: ApDocType;
+  doc_date: string;
   due_date: string;
+  currency_id: string;
   currency_code: string;
   exchange_rate: DecimalString;
-  payment_method: ApPayment["payment_method"];
-  bank_account_masked: string;
-  payment_reference: string;
-  description: string;
-  urgent: boolean;
-  workflow_enabled: boolean;
-  applications: ApPaymentApplication[];
-}
-
-export interface ApAgingBucket {
-  code:
-    | "not_due"
-    | "due_today"
-    | "overdue_1_30"
-    | "overdue_31_60"
-    | "overdue_61_90"
-    | "overdue_90_plus"
-    | "missing_due_date";
-  amount: DecimalString;
-  item_count: number;
-  vendor_count: number;
-}
-
-export interface ApDashboardSnapshot {
-  bu_code: string;
-  as_of_date: string;
-  paid_from: string;
-  paid_to: string;
-  functional_currency: string;
-  generated_at: string;
   outstanding_amount: DecimalString;
-  outstanding_count: number;
-  prepaid_amount: DecimalString;
-  prepaid_count: number;
-  paid_out_amount: DecimalString;
-  payment_count: number;
-  aging: ApAgingBucket[];
-  due: { overdue: number; on_hold: number; reserved: number };
-  approvals: { invoice: number; payment: number };
-  tax: {
-    pending_vat: DecimalString;
-    missing_documents: number;
-    pending_corrections: number;
-  };
-  reconciliation_variance: DecimalString;
-  widget_errors: string[];
+  lines: ApOutstandingLine[];
 }
 
-export interface ApInvoiceFilters {
-  search?: string;
-  lifecycle?: string;
-  settlement?: string;
-  match?: string;
-  due_bucket?: string;
-  as_of?: string;
-  hold?: boolean;
-  reserved?: boolean;
-  tax?: string;
+export interface ApWhtPreviewRow {
+  wht_tax_profile_id: string;
+  wht_tax_profile_name: string;
+  pnd_form?: string | null;
+  income_type?: string | null;
+  wht_rate: DecimalString;
+  base_amount: DecimalString;
+  wht_amount: DecimalString;
 }
 
-export interface ApPaymentFilters {
-  search?: string;
-  lifecycle?: string;
-  execution?: string;
-  method?: string;
-  urgent?: boolean;
+export interface ApWhtPreviewInput {
+  allocations: ApPaymentAllocationInput[];
 }
 
-export type ApInvoiceListResponse = PaginatedResponse<ApInvoice>;
-export type ApPaymentListResponse = PaginatedResponse<ApPayment>;
+/** ผลของ create/update/action — backend คืนแค่ id/doc_no/doc_status/doc_version/gl_jv_no */
+export interface ApMutationResult {
+  id: string;
+  doc_no?: string;
+  doc_status?: ApDocStatus;
+  doc_version?: number | null;
+  gl_jv_no?: string | null;
+}
 
-export interface ApMockState {
-  version: 1;
-  invoices: ApInvoice[];
-  payments: ApPayment[];
-  idempotency_keys: string[];
+export interface ApActionInput {
+  docVersion?: number | null;
+  reason?: string | null;
+  stage?: string | null;
 }

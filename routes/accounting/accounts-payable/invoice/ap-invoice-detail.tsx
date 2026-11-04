@@ -51,7 +51,7 @@ import type {
   ApInvoice,
   ApInvoiceInput,
   ApInvoiceLine,
-} from "@/types/accounts-payable";
+} from "@/types/accounts-payable-mock";
 import {
   addDecimal,
   compareDecimal,
@@ -65,7 +65,7 @@ import {
   useApInvoice,
   useApInvoiceAction,
   useSaveApInvoice,
-} from "../shared/use-accounts-payable";
+} from "../shared/use-accounts-payable-mock";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const emptyLine = (): ApInvoiceLine => ({

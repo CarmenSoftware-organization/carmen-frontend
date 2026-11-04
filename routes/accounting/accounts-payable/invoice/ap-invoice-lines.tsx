@@ -20,7 +20,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import type { ApInvoiceLine } from "@/types/accounts-payable";
+import type { ApInvoiceLine } from "@/types/accounts-payable-mock";
 import { ApDetailGrid } from "../shared/ap-detail-grid";
 import { Money, ApStatusBadge } from "../shared/ap-ui";
 import { addDecimal, multiplyDecimal } from "../shared/ap-decimal";

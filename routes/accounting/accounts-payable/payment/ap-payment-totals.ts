@@ -1,4 +1,4 @@
-import type { ApPaymentInput } from "@/types/accounts-payable";
+import type { ApPaymentInput } from "@/types/accounts-payable-mock";
 import {
   addDecimal,
   compareDecimal,
