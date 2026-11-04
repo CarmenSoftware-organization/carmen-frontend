@@ -1,783 +1,800 @@
-import { useState } from "react";
-import {
-  Ban,
-  Check,
-  FileClock,
-  MoreHorizontal,
-  Paperclip,
-  Plus,
-  Save,
-  Send,
-  Undo2,
-  X,
-} from "lucide-react";
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Check, Pencil, Save, Send, Trash2, Undo2, X } from "lucide-react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
+import { useTranslations } from "use-intl";
 import { DocFormHeader } from "@/components/share/doc-form-header";
-import { WorkflowTrack } from "@/components/share/workflow-track";
 import { Button } from "@/components/ui/button";
-import { SummaryFooterBar } from "@/components/ui/summary-bar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DatePicker } from "@/components/ui/date-picker";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ErrorState } from "@/components/ui/error-state";
-import { Input } from "@/components/ui/input";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { SummaryFooterBar } from "@/components/ui/summary-bar";
+import { Textarea } from "@/components/ui/textarea";
+import { useAmountFormatter } from "@/hooks/use-number-formatter";
+import { useBankAccounts } from "@/hooks/use-accounting-master";
+import { useProfile } from "@/hooks/use-profile";
+import { ApiError } from "@/lib/api-error";
+import { formatDate } from "@/lib/date-utils";
 import type {
-  ApInvoice,
   ApPayment,
-  ApPaymentApplication,
-  ApPaymentInput,
-} from "@/types/accounts-payable-mock";
+  ApUiAction,
+  DecimalString,
+} from "@/types/accounts-payable";
+import { compareDecimal } from "../shared/ap-decimal";
+import { apActions, apCanEdit } from "../shared/ap-status";
 import {
-  addDecimal,
-  compareDecimal,
-  divideDecimal,
-  multiplyDecimal,
-  percentOf,
-  subtractDecimal,
-} from "../shared/ap-decimal";
-import { PaymentSections } from "./ap-payment-sections";
-import { paymentSummary } from "./ap-payment-totals";
-import { ApStatusBadge, Money } from "../shared/ap-ui";
-import {
-  useApInvoices,
+  useApOutstandingDocuments,
   useApPayment,
   useApPaymentAction,
+  useApWhtPreview,
+  useDeleteApPayment,
   useSaveApPayment,
-} from "../shared/use-accounts-payable-mock";
+} from "../shared/use-accounts-payable";
+import {
+  PaymentAllocationsEditor,
+  PaymentAllocationsReadOnly,
+} from "./ap-payment-allocations";
+import { PaymentExpensesSection } from "./ap-payment-expenses";
+import {
+  allocatedLines,
+  emptyExpense,
+  formTotals,
+  initialPaymentForm,
+  lineCap,
+  mergeWhtPreview,
+  toAllocationInputs,
+  toPaymentInput,
+  validatePaymentForm,
+  type PaymentErrorKey,
+  type PaymentForm,
+} from "./ap-payment-form";
+import { PaymentHeader } from "./ap-payment-header";
+import { PaymentWhtSection } from "./ap-payment-wht";
 
-const today = () => new Date().toISOString().slice(0, 10);
-const Field = ({
-  label,
-  children,
-  className = "",
-}: {
-  label: string;
-  children: React.ReactNode;
-  className?: string;
-}) => (
-  <label className={`grid gap-1 text-sm ${className}`}>
-    <span className="text-muted-foreground text-xs">{label}</span>
-    {children}
-  </label>
-);
-const applicationFromInvoice = (invoice: ApInvoice): ApPaymentApplication => {
-  const rate = invoice.lines[0]?.wht_rate ?? "3";
-  const whtBase = divideDecimal(
-    multiplyDecimal(invoice.net_amount, invoice.open_amount),
-    invoice.total_amount,
-  );
-  const whtAmount = percentOf(whtBase, rate);
-  return {
-    id: crypto.randomUUID(),
-    invoice_id: invoice.id,
-    invoice_no: invoice.ap_no,
-    vendor_invoice_no: invoice.vendor_invoice_no,
-    po_no: invoice.lines[0]?.po_no ?? null,
-    grn_no: invoice.lines[0]?.grn_no ?? null,
-    original_amount: invoice.total_amount,
-    open_amount: invoice.open_amount,
-    apply_amount: invoice.open_amount,
-    wht_base: whtBase,
-    wht_rate: rate,
-    wht_amount: whtAmount,
-    net_cash: subtractDecimal(invoice.open_amount, whtAmount),
-    match_status: invoice.match_status,
-    invoice_date: invoice.invoice_date,
-    due_date: invoice.due_date ?? undefined,
-    description: invoice.description,
-    original_rate: invoice.exchange_rate,
-    net_amount: invoice.net_amount,
-    vat_amount: invoice.vat_amount,
-    tax_status: invoice.tax_status,
-    undue_vat_base:
-      invoice.tax_status === "confirmed" || invoice.tax_status === "filed"
-        ? "0"
-        : subtractDecimal(
-            multiplyDecimal(invoice.vat_amount, invoice.exchange_rate),
-            invoice.claimed_vat_base ?? "0",
-          ),
-  };
-};
-const initialPaymentForm = (
-  loaded: ApPayment | null | undefined,
-  invoices: ApInvoice[],
-  selectedIds: string[],
-): ApPaymentInput => {
-  const invoiceById = new Map(invoices.map((invoice) => [invoice.id, invoice]));
-  if (loaded)
-    return {
-      vendor_id: loaded.vendor_id,
-      vendor_name: loaded.vendor_name,
-      payment_date: loaded.payment_date,
-      due_date: loaded.due_date,
-      currency_code: loaded.currency_code,
-      exchange_rate: loaded.exchange_rate,
-      payment_method: loaded.payment_method,
-      bank_account_masked: loaded.bank_account_masked,
-      payment_reference: loaded.payment_reference,
-      description: loaded.description,
-      urgent: loaded.urgent,
-      workflow_enabled: loaded.workflow_enabled,
-      applications: loaded.applications.map((item) => {
-        const invoice = invoiceById.get(item.invoice_id);
-        return invoice ? { ...applicationFromInvoice(invoice), ...item } : item;
-      }),
-      wht_services: loaded.wht_services,
-      paid_date: loaded.paid_date ?? loaded.payment_date,
-      payment_methods: loaded.payment_methods,
-      other_expenses: loaded.other_expenses ?? [],
-      tax_invoices: loaded.tax_invoices ?? [],
-      tax_allocations: loaded.tax_allocations ?? [],
-      wht_form: loaded.wht_form ?? "PND53",
-      wht_tax_id: loaded.wht_tax_id ?? "",
-      wht_branch: loaded.wht_branch ?? "00000",
-      wht_address: loaded.wht_address ?? "",
-    };
-  const selection = new Set(selectedIds);
-  const selected = invoices.filter((invoice) => selection.has(invoice.id));
-  const first = selected[0];
-  const grouped = first
-    ? selected.filter(
-        (invoice) =>
-          invoice.vendor_id === first.vendor_id &&
-          invoice.currency_code === first.currency_code,
-      )
-    : [];
-  return {
-    vendor_id: first?.vendor_id ?? "",
-    vendor_name: first?.vendor_name ?? "",
-    payment_date: today(),
-    paid_date: today(),
-    due_date: today(),
-    currency_code: first?.currency_code ?? "THB",
-    exchange_rate: first?.exchange_rate ?? "1",
-    payment_method: "bank_transfer",
-    bank_account_masked: "•••• 8821",
-    payment_reference: "",
-    description: "",
-    urgent: false,
-    workflow_enabled: true,
-    applications: grouped.map(applicationFromInvoice),
-    wht_services: grouped.map(applicationFromInvoice),
-  };
-};
+const LIST_PATH = "/accounting/accounts-payable/payment";
+const NO_ERRORS: ReadonlySet<PaymentErrorKey> = new Set();
 
 export default function ApPaymentDetail() {
+  const t = useTranslations("accounting.accountsPayable.payment.detail");
   const { id = "new" } = useParams<{ id: string }>();
-  const [params] = useSearchParams();
   const query = useApPayment(id);
-  const invoices = useApInvoices();
-  if (query.isLoading || invoices.isLoading)
+  if (id !== "new" && query.isLoading)
     return <Skeleton className="h-[70vh] rounded-lg" />;
   if (query.isError)
     return (
       <ErrorState
         error={query.error}
-        message="Unable to load AP payment"
+        message={t("loadError")}
         onRetry={() => void query.refetch()}
       />
     );
   if (id !== "new" && !query.data)
-    return (
-      <ErrorState
-        notFoundMessage="Payment not found"
-        backTo="/accounting/accounts-payable/payment"
-      />
-    );
-  if (invoices.isError)
-    return (
-      <ErrorState
-        error={invoices.error}
-        message="Unable to load eligible invoices"
-        onRetry={() => void invoices.refetch()}
-      />
-    );
-  const selectedIds = (params.get("invoice_ids") ?? "")
-    .split(",")
-    .filter(Boolean);
+    return <ErrorState message={t("notFound")} />;
   return (
     <ApPaymentEditor
-      key={`${id}:${query.data?.doc_version ?? 0}:${selectedIds.join(",")}`}
-      id={id}
-      loaded={query.data}
-      eligibleInvoices={invoices.data?.data ?? []}
-      selectedIds={selectedIds}
-      approvalContext={params.get("context") === "approval"}
+      // เปลี่ยน version = โหลดใหม่ → ฟอร์มเริ่มจากข้อมูลล่าสุดเสมอ
+      key={`${id}:${query.data?.doc_version ?? 0}`}
+      loaded={id === "new" ? null : query.data}
+      refetch={() => void query.refetch()}
     />
   );
 }
 
+type ReasonAction = Extract<ApUiAction, "void" | "reject" | "return">;
+
+function sortedSignature(
+  inputs: readonly { ap_invoice_detail_id: string; applied_amount: string }[],
+): string {
+  return JSON.stringify(
+    [...inputs].sort((a, b) =>
+      a.ap_invoice_detail_id.localeCompare(b.ap_invoice_detail_id),
+    ),
+  );
+}
+
 function ApPaymentEditor({
-  id,
   loaded,
-  eligibleInvoices,
-  selectedIds,
-  approvalContext,
+  refetch,
 }: {
-  id: string;
-  loaded?: ApPayment | null;
-  eligibleInvoices: ApInvoice[];
-  selectedIds: string[];
-  approvalContext: boolean;
+  readonly loaded: ApPayment | null | undefined;
+  readonly refetch: () => void;
 }) {
+  const t = useTranslations("accounting.accountsPayable.payment");
+  const td = useTranslations("accounting.accountsPayable.payment.detail");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { userId, dateFormat, defaultCurrencyCode } = useProfile();
+  const format = useAmountFormatter();
   const saveMutation = useSaveApPayment();
   const actionMutation = useApPaymentAction();
-  const [editing, setEditing] = useState(id === "new");
-  const [activeTab, setActiveTab] = useState("invoices");
-  const [confirmation, setConfirmation] = useState<
-    "submit" | "approve" | "void" | "reject" | "clarify" | null
-  >(null);
-  const [reason, setReason] = useState("");
-  const busy = saveMutation.isPending || actionMutation.isPending;
-  const [sheet, setSheet] = useState<"attachments" | "activity" | null>(null);
-  const [form, setForm] = useState<ApPaymentInput>(() =>
-    initialPaymentForm(loaded, eligibleInvoices, selectedIds),
+  const deleteMutation = useDeleteApPayment();
+  const whtPreview = useApWhtPreview();
+
+  const isNew = !loaded;
+  const [editing, setEditing] = useState(isNew);
+  const [showErrors, setShowErrors] = useState(false);
+  const [form, setForm] = useState<PaymentForm>(() =>
+    initialPaymentForm(loaded, {
+      vendorId: searchParams.get("vendor_id") ?? undefined,
+    }),
   );
-  const applications = form.applications;
-  const applied = addDecimal(applications.map((item) => item.apply_amount));
-  const wht = addDecimal(applications.map((item) => item.wht_amount));
-  const summary = paymentSummary(form);
-  const journalDebit = addDecimal(summary.journal.map((row) => row.debit));
-  const journalCredit = addDecimal(summary.journal.map((row) => row.credit));
-  const journalVariance = subtractDecimal(journalDebit, journalCredit);
-  const netCash = summary.net_cash;
-  const editable = id === "new" || (loaded?.capabilities.can_edit && editing);
-  const addInvoice = (invoiceId: string) => {
-    const invoice = eligibleInvoices.find((item) => item.id === invoiceId);
-    if (!invoice || applications.some((item) => item.invoice_id === invoice.id))
-      return;
-    if (
-      applications.length &&
-      (invoice.vendor_id !== form.vendor_id ||
-        invoice.currency_code !== form.currency_code)
-    )
-      return toast.error("Payments are grouped by vendor and currency");
-    setForm({
-      ...form,
-      vendor_id: invoice.vendor_id,
-      vendor_name: invoice.vendor_name,
-      currency_code: invoice.currency_code,
-      exchange_rate: applications.length
-        ? form.exchange_rate
-        : invoice.exchange_rate,
-      applications: [...applications, applicationFromInvoice(invoice)],
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [reasonAction, setReasonAction] = useState<ReasonAction | null>(null);
+  const [reason, setReason] = useState("");
+  const [calculating, setCalculating] = useState(false);
+
+  const editable = editing && (isNew || (!!loaded && apCanEdit(loaded)));
+  const actions = loaded ? apActions(loaded, userId) : [];
+  const busy =
+    saveMutation.isPending ||
+    actionMutation.isPending ||
+    deleteMutation.isPending;
+
+  // รายการค้างจ่ายของ vendor — โหลดเฉพาะตอนแก้ไข
+  const outstanding = useApOutstandingDocuments(
+    editable && form.vendor_id ? form.vendor_id : undefined,
+  );
+  const docs = outstanding.data;
+
+  // ยอดที่ใบนี้จองไว้เอง (ต่อบรรทัด): available ของ backend หักการจองของทุกใบ draft/in_review รวมใบนี้
+  const ownReserved = useMemo(() => {
+    const map: Record<string, DecimalString> = {};
+    if (loaded?.doc_status === "draft")
+      for (const a of loaded.allocations ?? [])
+        map[a.ap_invoice_detail_id] = a.applied_amount.replace(/^-/, "");
+    return map;
+  }, [loaded]);
+
+  const allocationInputs = useMemo(
+    () => toAllocationInputs(docs ?? [], form.allocations, loaded),
+    [docs, form.allocations, loaded],
+  );
+  const overCap = useMemo(
+    () =>
+      (docs ?? []).some((doc) =>
+        doc.lines.some((line) => {
+          const value = form.allocations[line.ap_invoice_detail_id];
+          return (
+            !!value?.trim() &&
+            compareDecimal(value, lineCap(line, ownReserved)) > 0
+          );
+        }),
+      ),
+    [docs, form.allocations, ownReserved],
+  );
+
+  const lockedCurrency = docs
+    ? (allocatedLines(docs, form.allocations)[0]?.doc.currency_code ?? null)
+    : (loaded?.currency_code ?? null);
+
+  // บัญชีธนาคารที่สกุลไม่ตรงกับเอกสารที่เลือกจ่าย (backend ปฏิเสธ) นับเป็นยังไม่ได้เลือก
+  const banks = useBankAccounts().data;
+  const bankMismatch =
+    !!lockedCurrency &&
+    !!banks?.find(
+      (b) =>
+        b.id === form.bank_account_id &&
+        !!b.currency_code &&
+        b.currency_code !== lockedCurrency,
+    );
+  const effectiveForm = bankMismatch ? { ...form, bank_account_id: "" } : form;
+
+  const errors = showErrors
+    ? validatePaymentForm(
+        effectiveForm,
+        isNew ? "create" : "update",
+        allocationInputs,
+        overCap,
+      )
+    : NO_ERRORS;
+
+  const patchForm = useCallback(
+    (patch: Partial<PaymentForm>) =>
+      setForm((current) =>
+        patch.vendor_id !== undefined && patch.vendor_id !== current.vendor_id
+          ? // เปลี่ยน vendor = รายการจ่าย/WHT เดิมไม่เกี่ยวแล้ว
+            { ...current, ...patch, allocations: {}, wht: [], bank_account_id: "" }
+          : { ...current, ...patch },
+      ),
+    [],
+  );
+
+  const setLine = useCallback((lineId: string, value: DecimalString) => {
+    setForm((current) => {
+      const allocations = { ...current.allocations };
+      if (value === "") delete allocations[lineId];
+      else allocations[lineId] = value;
+      return { ...current, allocations };
     });
+  }, []);
+
+  /** ใส่ยอดเต็ม (เพดาน) ให้ทุกบรรทัดของ invoice นั้น */
+  const payFull = useCallback(
+    (doc: NonNullable<typeof docs>[number]) =>
+      setForm((current) => {
+        const allocations = { ...current.allocations };
+        for (const line of doc.lines) {
+          const cap = lineCap(line, ownReserved);
+          if (compareDecimal(cap, "0") > 0)
+            allocations[line.ap_invoice_detail_id] = cap;
+          else delete allocations[line.ap_invoice_detail_id];
+        }
+        return { ...current, allocations };
+      }),
+    [ownReserved],
+  );
+  const clearDoc = useCallback((doc: NonNullable<typeof docs>[number]) => {
+    setForm((current) => {
+      const allocations = { ...current.allocations };
+      for (const line of doc.lines) delete allocations[line.ap_invoice_detail_id];
+      return { ...current, allocations };
+    });
+  }, []);
+
+  // จาก "จ่าย invoice" ในหน้า AP invoice: เติมเต็มทุกบรรทัดของ invoice ที่ระบุหนึ่งครั้งหลังรายการค้างจ่ายโหลด
+  const prefilled = useRef(false);
+  useEffect(() => {
+    if (!isNew || prefilled.current || !docs) return;
+    prefilled.current = true;
+    const ids = (searchParams.get("invoice_ids") ?? "")
+      .split(",")
+      .filter(Boolean);
+    if (ids.length === 0) return;
+    const wanted = docs.filter((d) => ids.includes(d.ap_invoice_id));
+    if (wanted.length === 0) return;
+    setForm((current) => {
+      const allocations = { ...current.allocations };
+      const currency = wanted[0].currency_code;
+      for (const doc of wanted) {
+        if (doc.currency_code !== currency) continue;
+        for (const line of doc.lines) {
+          const cap = lineCap(line, ownReserved);
+          if (compareDecimal(cap, "0") > 0)
+            allocations[line.ap_invoice_detail_id] = cap;
+        }
+      }
+      return { ...current, allocations };
+    });
+  }, [isNew, docs, searchParams, ownReserved]);
+
+  // WHT: คำนวณใหม่จาก allocations (หน่วง 600ms) — แถวที่ผู้ใช้ override ไว้คงยอดเดิม
+  const signature = sortedSignature(allocationInputs);
+  const lastCalculated = useRef(signature);
+  useEffect(() => {
+    if (!editable || lastCalculated.current === signature) return;
+    const inputs = JSON.parse(signature) as typeof allocationInputs;
+    if (inputs.length === 0) {
+      lastCalculated.current = signature;
+      setForm((current) => ({ ...current, wht: [] }));
+      return;
+    }
+    const handle = setTimeout(() => {
+      lastCalculated.current = signature;
+      setCalculating(true);
+      whtPreview
+        .mutateAsync({ allocations: inputs })
+        .then((rows) =>
+          setForm((current) => ({
+            ...current,
+            wht: mergeWhtPreview(current.wht, rows, true),
+          })),
+        )
+        .catch(() => undefined)
+        .finally(() => setCalculating(false));
+    }, 600);
+    return () => clearTimeout(handle);
+    // whtPreview.mutateAsync เปลี่ยนตัวทุก render — พึ่ง signature อย่างเดียว
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editable, signature]);
+
+  const recalculateWht = async () => {
+    if (allocationInputs.length === 0) return;
+    setCalculating(true);
+    try {
+      const rows = await whtPreview.mutateAsync({
+        allocations: allocationInputs,
+      });
+      lastCalculated.current = signature;
+      setForm((current) => ({
+        ...current,
+        wht: mergeWhtPreview(current.wht, rows, false),
+      }));
+    } catch {
+      // toast กลางแสดงข้อผิดพลาดแล้ว
+    } finally {
+      setCalculating(false);
+    }
   };
+
+  /** 409 ไม่มีรหัส catalog = doc_version ชน: โหลดข้อมูลล่าสุดแทนการทับ แล้วบอกว่าโหลดใหม่แล้ว */
+  const onFailure = (error: unknown) => {
+    if (error instanceof ApiError && error.statusCode === 409) {
+      refetch();
+      if (!error.appCode) toast.info(td("reloaded"));
+    }
+  };
+
   const save = async () => {
-    try {
-      const result = await saveMutation.mutateAsync({
-        input: form,
-        id: id === "new" ? undefined : id,
-        docVersion: loaded?.doc_version,
-      });
-      toast.success("Payment saved");
-      navigate(`/accounting/accounts-payable/payment/${result.id}`, {
-        replace: true,
-      });
-      setEditing(false);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Unable to save payment",
-      );
+    const found = validatePaymentForm(
+      effectiveForm,
+      isNew ? "create" : "update",
+      allocationInputs,
+      overCap,
+    );
+    if (found.size > 0) {
+      setShowErrors(true);
+      toast.error(td("fixErrors"));
+      return;
     }
-  };
-  const runAction = async (
-    action: "submit" | "approve" | "return" | "reject" | "void" | "clarify",
-  ) => {
+    const input = toPaymentInput(effectiveForm, allocationInputs);
     try {
-      let target = loaded;
-      if (!target || (action === "submit" && editing))
-        target = await saveMutation.mutateAsync({
-          input: form,
-          id: loaded?.id,
-          docVersion: loaded?.doc_version,
+      if (loaded) {
+        if (loaded.doc_version == null) {
+          toast.error(td("reloaded"));
+          return refetch();
+        }
+        // vendor_id แก้หลังสร้างไม่ได้
+        const update: Partial<typeof input> = { ...input };
+        delete update.vendor_id;
+        await saveMutation.mutateAsync({
+          id: loaded.id,
+          docVersion: loaded.doc_version,
+          input: update,
         });
-      const result = await actionMutation.mutateAsync({
-        id: target.id,
-        action,
-        docVersion: target.doc_version,
-        reason,
-        idempotencyKey:
-          action === "submit" || action === "approve"
-            ? `${action}:${target.id}:${target.doc_version}`
-            : undefined,
-      });
-      toast.success(`Payment ${action} completed`);
-      navigate(`/accounting/accounts-payable/payment/${result.id}`, {
-        replace: true,
-      });
-      setEditing(false);
+        toast.success(td("saved"));
+        setEditing(false);
+        setShowErrors(false);
+      } else {
+        const result = await saveMutation.mutateAsync({ input });
+        toast.success(td("saved"));
+        navigate(`${LIST_PATH}/${result.id}`, { replace: true });
+      }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : `Unable to ${action}`,
-      );
+      onFailure(error);
     }
   };
+
+  const runAction = async (
+    action: Exclude<ApUiAction, "delete">,
+    actionReason?: string,
+  ) => {
+    if (!loaded) return;
+    if (loaded.doc_version == null) {
+      toast.error(td("reloaded"));
+      return refetch();
+    }
+    try {
+      await actionMutation.mutateAsync({
+        id: loaded.id,
+        action,
+        docVersion: loaded.doc_version,
+        reason: actionReason,
+      });
+      toast.success(td(`done.${action}`));
+      setReasonAction(null);
+      setReason("");
+    } catch (error) {
+      onFailure(error);
+    }
+  };
+
+  const remove = async () => {
+    if (!loaded) return;
+    try {
+      // ไปหน้า list ก่อน กัน detail ที่ถูกลบ refetch แล้วเจอ 404
+      await deleteMutation.mutateAsync(loaded.id);
+      toast.success(td("done.delete"));
+      navigate(LIST_PATH, { replace: true });
+    } catch (error) {
+      setConfirmDelete(false);
+      onFailure(error);
+    }
+  };
+
+  const preview = useMemo(
+    () => formTotals(allocationInputs, form),
+    [allocationInputs, form],
+  );
+  const view = !editable && loaded;
+  const summary = view
+    ? {
+        applied: loaded.total_applied_amount,
+        wht: loaded.total_wht_amount,
+        expenses: loaded.total_expense_amount,
+        net: loaded.net_paid_amount,
+      }
+    : preview;
+  const money = (value: string) => format(Number(value || 0));
+  const currencyCode = view ? loaded.currency_code : lockedCurrency;
+  const needsReason = reasonAction === "void";
+
   return (
-    <div className="flex w-full min-w-0 shrink-0 grow flex-col gap-5">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       <DocFormHeader
-        title={loaded?.pv_no ?? "New Payment Voucher"}
-        mock
-        subtitle={approvalContext ? "Approval review" : "Supplier disbursement"}
-        backLabel="Back to AP Payment Directory"
-        onBack={() => navigate("/accounting/accounts-payable/payment")}
+        title={loaded?.doc_no || td("newTitle")}
+        subtitle={td("subtitle")}
+        backLabel={td("back")}
+        onBack={() => navigate(LIST_PATH)}
+        badges={
+          loaded ? (
+            <StatusIconLabel
+              status={loaded.doc_status}
+              label={t(`statuses.${loaded.doc_status}`)}
+            />
+          ) : undefined
+        }
         actions={
           <>
-            {loaded?.lifecycle === "submitted" && (
-              <>
-                <Button
-                  size="sm"
-                  disabled={busy || !loaded.capabilities.can_approve}
-                  onClick={() => setConfirmation("approve")}
-                >
-                  <Check className="size-4" />
-                  Approve & post
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={busy || !loaded.capabilities.can_return}
-                  onClick={() => setConfirmation("clarify")}
-                >
-                  <Undo2 className="size-4" />
-                  Request clarification
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={busy || !loaded.capabilities.can_reject}
-                  onClick={() => setConfirmation("reject")}
-                >
-                  <X className="size-4" />
-                  Reject
-                </Button>
-              </>
-            )}
-            {loaded?.capabilities.can_edit && !editing && (
-              <Button size="sm" onClick={() => setEditing(true)}>
-                Edit
-              </Button>
-            )}
             {editing && (
               <>
                 <Button
                   variant="outline"
                   size="sm"
+                  disabled={busy}
                   onClick={() => {
-                    if (id === "new")
-                      navigate("/accounting/accounts-payable/payment");
+                    if (isNew) navigate(LIST_PATH);
                     else {
-                      setForm(
-                        initialPaymentForm(
-                          loaded,
-                          eligibleInvoices,
-                          selectedIds,
-                        ),
-                      );
                       setEditing(false);
+                      setShowErrors(false);
+                      const restored = initialPaymentForm(loaded);
+                      setForm(restored);
+                      lastCalculated.current = sortedSignature(
+                        toAllocationInputs([], restored.allocations, loaded),
+                      );
                     }
                   }}
                 >
-                  Cancel
+                  {td("cancel")}
                 </Button>
                 <Button size="sm" disabled={busy} onClick={() => void save()}>
-                  <Save className="size-4" /> Save
+                  <Save className="size-4" />
+                  {td("save")}
                 </Button>
               </>
             )}
-            {loaded?.capabilities.can_void && (
+            {loaded && !editing && apCanEdit(loaded) && (
               <Button
-                variant="ghost"
                 size="sm"
+                variant="outline"
                 disabled={busy}
-                onClick={() => setConfirmation("void")}
+                onClick={() => setEditing(true)}
               >
-                <Ban className="size-4" /> Void
+                <Pencil className="size-4" />
+                {td("edit")}
               </Button>
             )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <MoreHorizontal className="size-4" />
-                  More
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onSelect={() =>
-                    navigate("/accounting/accounts-payable/payment/new")
-                  }
-                >
-                  <Plus className="size-4" />
-                  New
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => setSheet("attachments")}>
-                  <Paperclip className="size-4" />
-                  Attachments
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => setSheet("activity")}>
-                  <FileClock className="size-4" />
-                  Log
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {!editing && actions.includes("submit") && (
+              <Button
+                size="sm"
+                disabled={busy}
+                onClick={() => void runAction("submit")}
+              >
+                <Send className="size-4" />
+                {td("actions.submit")}
+              </Button>
+            )}
+            {!editing && actions.includes("approve") && (
+              <Button
+                size="sm"
+                disabled={busy}
+                onClick={() => void runAction("approve")}
+              >
+                <Check className="size-4" />
+                {td("actions.approve")}
+              </Button>
+            )}
+            {!editing && actions.includes("return") && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() => setReasonAction("return")}
+              >
+                <Undo2 className="size-4" />
+                {td("actions.return")}
+              </Button>
+            )}
+            {!editing && actions.includes("reject") && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() => setReasonAction("reject")}
+              >
+                <X className="size-4" />
+                {td("actions.reject")}
+              </Button>
+            )}
+            {!editing && actions.includes("void") && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() => setReasonAction("void")}
+              >
+                {td("actions.void")}
+              </Button>
+            )}
+            {!editing && actions.includes("delete") && (
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={busy}
+                onClick={() => setConfirmDelete(true)}
+              >
+                <Trash2 className="size-4" />
+                {td("actions.delete")}
+              </Button>
+            )}
           </>
         }
       />
-      {loaded?.lifecycle === "submitted" && (
-        <div className="border-b pb-3">
-          <WorkflowTrack
-            previousStage="Prepared"
-            currentStage={loaded.current_stage ?? "Approval"}
-            nextStage="Posted"
-          />
+
+      {loaded?.doc_status === "posted" && loaded.gl_jv_id && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+          <span className="text-muted-foreground">{td("journal")}</span>
+          <Link
+            className="font-medium underline"
+            to={`/accounting/journal-voucher/${loaded.gl_jv_id}`}
+          >
+            {loaded.gl_jv_no ?? td("openJournal")}
+          </Link>
         </div>
       )}
-      <section className="space-y-4 border-b pb-4">
-        <div>
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold">Payment details</h2>
-            <div className="flex gap-2">
-              {loaded && (
-                <>
-                  <ApStatusBadge value={loaded.lifecycle} />
-                  <ApStatusBadge value={loaded.execution_status} />
-                </>
-              )}
-            </div>
-          </div>
+      {loaded?.doc_status === "void" && loaded.void_reason && (
+        <div className="rounded-lg border px-3 py-2 text-sm">
+          <span className="text-muted-foreground">{td("voidReason")}: </span>
+          {loaded.void_reason}
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-          <Field label="PV no." className="order-1">
-            <Input readOnly value={loaded?.pv_no ?? "Auto-generated"} />
-          </Field>
-          <Field label="Vendor" className="order-2 lg:col-span-2">
-            <Input
-              readOnly
-              value={form.vendor_name || "Select invoice(s) below"}
-            />
-          </Field>
-          <Field label="Payment date" className="order-3">
-            <DatePicker
-              value={form.payment_date}
-              onValueChange={(value) =>
-                setForm({ ...form, payment_date: value.slice(0, 10) })
-              }
-              readOnly={!editable}
-            />
-          </Field>
-          <Field label="Currency" className="order-5">
-            <Input readOnly value={form.currency_code} />
-          </Field>
-          <Field label="Paid date / GL posting date" className="order-4">
-            <DatePicker
-              value={form.paid_date ?? form.payment_date}
-              readOnly={!editable}
-              onValueChange={(value) =>
-                setForm({ ...form, paid_date: value.slice(0, 10) })
-              }
-            />
-            <span
-              className={
-                (form.paid_date ?? form.payment_date).slice(0, 7) ===
-                today().slice(0, 7)
-                  ? "text-xs text-emerald-600 dark:text-emerald-400"
-                  : "text-destructive text-xs"
-              }
-            >
-              {(form.paid_date ?? form.payment_date).slice(0, 7) ===
-              today().slice(0, 7)
-                ? "Period open (mock)"
-                : "Period closed (mock)"}
-            </span>
-          </Field>
-          <Field
-            label="Exchange rate"
-            className="order-6 lg:col-start-6 lg:row-start-2"
-          >
-            <Input
-              disabled={!editable || form.currency_code === "THB"}
-              value={form.exchange_rate}
-              onChange={(event) =>
-                /^\d*(\.\d*)?$/.test(event.target.value) &&
-                setForm({ ...form, exchange_rate: event.target.value })
-              }
-            />
-          </Field>
-          <Field
-            label="Method"
-            className="order-7 lg:col-start-1 lg:row-start-2"
-          >
-            <Select
-              disabled={!editable}
-              value={form.payment_method}
-              onValueChange={(value: ApPaymentInput["payment_method"]) =>
-                setForm({ ...form, payment_method: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="bank_transfer">Bank transfer</SelectItem>
-                <SelectItem value="direct_debit">Direct debit</SelectItem>
-                <SelectItem value="cheque">Cheque</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field
-            label="Beneficiary account"
-            className="order-8 lg:col-span-2 lg:col-start-2 lg:row-start-2"
-          >
-            <Input
-              disabled={!editable}
-              value={form.bank_account_masked}
-              onChange={(event) =>
-                setForm({ ...form, bank_account_masked: event.target.value })
-              }
-            />
-          </Field>
-          <Field
-            label="Reference"
-            className="order-9 lg:col-start-4 lg:row-start-2"
-          >
-            <Input
-              disabled={!editable}
-              value={form.payment_reference}
-              onChange={(event) =>
-                setForm({ ...form, payment_reference: event.target.value })
-              }
-            />
-          </Field>
-          <Field
-            label="Description"
-            className="order-10 sm:col-span-2 lg:col-start-5 lg:row-start-2"
-          >
-            <Input
-              disabled={!editable}
-              value={form.description}
-              onChange={(event) =>
-                setForm({ ...form, description: event.target.value })
-              }
-            />
-          </Field>
-          <label className="order-11 flex items-center gap-2 self-end pb-2 text-sm">
-            <Checkbox
-              disabled={!editable}
-              checked={form.urgent}
-              onCheckedChange={(checked) =>
-                setForm({ ...form, urgent: checked === true })
-              }
-            />
-            Urgent payment
-          </label>
-        </div>
-      </section>
-      <PaymentSections
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        form={form}
-        onChange={setForm}
-        editable={Boolean(editable)}
-        invoices={eligibleInvoices.filter(
-          (invoice) =>
-            invoice.lifecycle === "posted" &&
-            !invoice.is_on_hold &&
-            compareDecimal(invoice.open_amount, "0") > 0,
-        )}
-        onAddInvoice={addInvoice}
+      )}
+
+      <PaymentHeader
+        form={effectiveForm}
+        onChange={patchForm}
+        isNew={isNew}
+        editable={editable}
+        errors={errors}
+        currencyCode={currencyCode}
+        baseCurrencyCode={loaded?.base_currency_code ?? defaultCurrencyCode}
+        bankLabel={
+          view
+            ? [loaded.bank_account_code, loaded.bank_account_name]
+                .filter(Boolean)
+                .join(" · ")
+            : undefined
+        }
       />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{td("allocations.title")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {errors.has("allocations") && (
+            <p className="text-destructive mb-2 text-xs">
+              {td("errors.allocations")}
+            </p>
+          )}
+          {errors.has("overAllocated") && (
+            <p className="text-destructive mb-2 text-xs">
+              {td("errors.overAllocated")}
+            </p>
+          )}
+          {errors.has("netPositive") && (
+            <p className="text-destructive mb-2 text-xs">
+              {td("errors.netPositive")}
+            </p>
+          )}
+          {!editable ? (
+            <PaymentAllocationsReadOnly allocations={loaded?.allocations ?? []} />
+          ) : !form.vendor_id ? (
+            <p className="text-muted-foreground text-sm">
+              {td("allocations.selectVendor")}
+            </p>
+          ) : outstanding.isLoading ? (
+            <Skeleton className="h-32 rounded-lg" />
+          ) : outstanding.isError ? (
+            <ErrorState
+              error={outstanding.error}
+              message={td("allocations.loadError")}
+              onRetry={() => void outstanding.refetch()}
+            />
+          ) : (
+            <PaymentAllocationsEditor
+              docs={docs ?? []}
+              allocations={form.allocations}
+              ownReserved={ownReserved}
+              lockedCurrency={lockedCurrency}
+              onChangeLine={setLine}
+              onPayFull={payFull}
+              onClear={clearDoc}
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      <PaymentWhtSection
+        rows={form.wht}
+        editable={editable}
+        calculating={calculating}
+        errors={errors}
+        onChangeAmount={(key, amount) =>
+          setForm((current) => ({
+            ...current,
+            wht: current.wht.map((row) =>
+              row.key === key
+                ? { ...row, wht_amount: amount, is_override: true }
+                : row,
+            ),
+          }))
+        }
+        onRecalculate={() => void recalculateWht()}
+      />
+
+      <PaymentExpensesSection
+        rows={form.expenses}
+        editable={editable}
+        errors={errors}
+        onAdd={() =>
+          setForm((current) => ({
+            ...current,
+            expenses: [...current.expenses, emptyExpense()],
+          }))
+        }
+        onChange={(key, patch) =>
+          setForm((current) => ({
+            ...current,
+            expenses: current.expenses.map((row) =>
+              row.key === key ? { ...row, ...patch } : row,
+            ),
+          }))
+        }
+        onRemove={(key) =>
+          setForm((current) => ({
+            ...current,
+            expenses: current.expenses.filter((row) => row.key !== key),
+          }))
+        }
+      />
+
+      {!editable && (loaded?.tax_invoices?.length ?? 0) > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{td("taxInvoices.title")}</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full min-w-[32rem] text-left text-xs">
+              <thead>
+                <tr className="border-b">
+                  <th className="px-2 py-1.5 font-medium">{td("taxInvoices.invoice")}</th>
+                  <th className="px-2 py-1.5 font-medium">{td("taxInvoices.taxInvoiceNo")}</th>
+                  <th className="px-2 py-1.5 font-medium">{td("taxInvoices.date")}</th>
+                  <th className="px-2 py-1.5 text-right font-medium">{td("taxInvoices.base")}</th>
+                  <th className="px-2 py-1.5 text-right font-medium">{td("taxInvoices.vat")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loaded?.tax_invoices?.map((row) => (
+                  <tr
+                    key={`${row.ap_invoice_id}:${row.tax_invoice_no}`}
+                    className="border-b last:border-b-0"
+                  >
+                    <td className="px-2 py-1.5">{row.doc_no}</td>
+                    <td className="px-2 py-1.5">{row.tax_invoice_no}</td>
+                    <td className="px-2 py-1.5">
+                      {formatDate(row.tax_invoice_date, dateFormat)}
+                    </td>
+                    <td className="px-2 py-1.5 text-right tabular-nums">
+                      {money(row.base_amount)}
+                    </td>
+                    <td className="px-2 py-1.5 text-right tabular-nums">
+                      {money(row.vat_amount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+
       <SummaryFooterBar
         hasRecord
-        items={
-          activeTab === "journal"
+        items={[
+          { key: "applied", label: td("summary.applied"), value: money(summary.applied) },
+          { key: "wht", label: td("summary.wht"), value: money(summary.wht) },
+          { key: "expenses", label: td("summary.expenses"), value: money(summary.expenses) },
+          ...(view && Number(loaded.realized_fx_amount) !== 0
             ? [
-                { key: "rows", label: "Rows", value: summary.journal.length },
-                {
-                  key: "balance",
-                  label: "Base Balance",
-                  value:
-                    compareDecimal(journalVariance, "0") === 0
-                      ? "Balanced"
-                      : "Variance",
-                },
-                {
-                  key: "debit",
-                  label: "Base Debit",
-                  value: <Money value={journalDebit} currency="THB" />,
-                  emphasis: true,
-                },
-                {
-                  key: "credit",
-                  label: "Base Credit",
-                  value: <Money value={journalCredit} currency="THB" />,
-                  emphasis: true,
-                },
-                {
-                  key: "variance",
-                  label: "Variance",
-                  value: <Money value={journalVariance} currency="THB" />,
-                },
-              ]
-            : [
-                {
-                  key: "applied",
-                  label: "Applied",
-                  value: (
-                    <Money value={applied} currency={form.currency_code} />
-                  ),
-                },
-                {
-                  key: "wht",
-                  label: "WHT",
-                  value: <Money value={wht} currency={form.currency_code} />,
-                },
-                {
-                  key: "net",
-                  label: "Net cash",
-                  value: (
-                    <Money value={netCash} currency={form.currency_code} />
-                  ),
-                  emphasis: true,
-                },
                 {
                   key: "fx",
-                  label: "Realized FX",
-                  value: <Money value={summary.fx} currency="THB" />,
+                  label: td("summary.realizedFx"),
+                  value: money(loaded.realized_fx_amount),
                 },
               ]
-        }
+            : []),
+          {
+            key: "net",
+            label: td("summary.net"),
+            value: money(summary.net),
+            emphasis: true,
+            suffix: currencyCode ?? undefined,
+          },
+        ]}
+      />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title={td("confirmDelete.title")}
+        description={td("confirmDelete.description")}
+        confirmText={td("actions.delete")}
+        variant="destructive"
+        isPending={deleteMutation.isPending}
+        onConfirm={() => void remove()}
+      />
+
+      <Dialog
+        open={reasonAction !== null}
+        onOpenChange={(open) => {
+          if (!open && !actionMutation.isPending) {
+            setReasonAction(null);
+            setReason("");
+          }
+        }}
       >
-        {editing && (
-          <Button
-            size="sm"
-            disabled={busy || !applications.length}
-            onClick={() =>
-              form.workflow_enabled
-                ? void runAction("submit")
-                : setConfirmation("submit")
-            }
-          >
-            <Send className="size-4" />
-            {form.workflow_enabled ? "Submit" : "Submit & post"}
-          </Button>
-        )}
-      </SummaryFooterBar>
-      <Sheet
-        open={sheet !== null}
-        onOpenChange={(open) => !open && setSheet(null)}
-      >
-        <SheetContent className="sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>
-              {sheet === "attachments" ? "Attachments" : "Activity log"}
-            </SheetTitle>
-            <SheetDescription>Seeded view-only information.</SheetDescription>
-          </SheetHeader>
-          <div className="space-y-3 overflow-y-auto px-4">
-            {sheet === "attachments" &&
-              (loaded?.attachments.map((item) => (
-                <div key={item.id} className="rounded-lg border p-3 text-sm">
-                  {item.name}
-                </div>
-              )) ?? (
-                <p className="text-muted-foreground text-sm">No attachments.</p>
-              ))}
-            {sheet === "activity" &&
-              loaded?.activity.map((item) => (
-                <div key={item.id} className="rounded-lg border p-3 text-sm">
-                  <p className="font-medium">{item.action}</p>
-                  <p>{item.detail}</p>
-                  <p className="text-muted-foreground">
-                    {item.actor} · {item.at}
-                  </p>
-                </div>
-              ))}
-          </div>
-        </SheetContent>
-      </Sheet>
-      <AlertDialog
-        open={confirmation !== null}
-        onOpenChange={(open) => !open && setConfirmation(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {confirmation === "approve" || confirmation === "submit"
-                ? "Post payment?"
-                : `Confirm ${confirmation ?? "action"}`}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {loaded?.pv_no} · {form.vendor_name}.{" "}
-              {confirmation === "approve" || confirmation === "submit"
-                ? `Post the mock payment using paid date ${form.paid_date ?? form.payment_date} and apply ${applied} ${form.currency_code} to the selected invoices. No real bank transfer is made.`
-                : "This action will be recorded in the document activity log."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          {confirmation &&
-            ["void", "reject", "clarify"].includes(confirmation) && (
-              <Field label="Reason">
-                <Input
-                  value={reason}
-                  onChange={(event) => setReason(event.target.value)}
-                  placeholder="Required reason"
-                />
-              </Field>
-            )}
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={
-                busy ||
-                Boolean(
-                  confirmation &&
-                  ["void", "reject", "clarify"].includes(confirmation) &&
-                  !reason.trim(),
-                )
-              }
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {reasonAction ? td(`reasonDialog.${reasonAction}.title`) : ""}
+            </DialogTitle>
+            <DialogDescription>
+              {needsReason
+                ? td("reasonDialog.required")
+                : td("reasonDialog.optional")}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            rows={3}
+            value={reason}
+            aria-label={td("reasonDialog.label")}
+            onChange={(event) => setReason(event.target.value)}
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              disabled={actionMutation.isPending}
               onClick={() => {
-                const action = confirmation;
-                setConfirmation(null);
-                if (action) void runAction(action);
+                setReasonAction(null);
+                setReason("");
               }}
             >
-              Confirm
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {td("cancel")}
+            </Button>
+            <Button
+              disabled={
+                actionMutation.isPending || (needsReason && !reason.trim())
+              }
+              onClick={() =>
+                reasonAction &&
+                void runAction(reasonAction, reason.trim() || undefined)
+              }
+            >
+              {reasonAction ? td(`actions.${reasonAction}`) : ""}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

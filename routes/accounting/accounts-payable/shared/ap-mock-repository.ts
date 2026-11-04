@@ -20,7 +20,7 @@ import {
   percentOf,
   subtractDecimal,
 } from "./ap-decimal";
-import { paymentSummary } from "../payment/ap-payment-totals";
+import { paymentSummary } from "./ap-payment-totals-mock";
 
 const STORAGE_PREFIX = "carmen-ap-mock-v1";
 const memory = new Map<string, string>();

@@ -821,6 +821,133 @@
           "cash": "Cash",
           "credit_card": "Credit card",
           "promptpay": "PromptPay"
+        },
+        "detail": {
+          "newTitle": "New AP Payment",
+          "subtitle": "Supplier payment",
+          "back": "Back to AP Payment Directory",
+          "loadError": "Unable to load AP payment",
+          "notFound": "AP payment not found",
+          "paidDate": "Paid Date",
+          "selectBank": "Select bank account",
+          "chequeNo": "Cheque No.",
+          "chequeDate": "Cheque Date",
+          "currency": "Currency",
+          "exchangeRate": "Exchange Rate",
+          "exchangeRateAuto": "Auto (system rate)",
+          "description": "Description",
+          "edit": "Edit",
+          "save": "Save",
+          "cancel": "Cancel",
+          "saved": "Payment saved",
+          "fixErrors": "Please complete the required fields",
+          "reloaded": "The document was reloaded with the latest data.",
+          "journal": "Journal voucher",
+          "openJournal": "Open journal voucher",
+          "voidReason": "Void reason",
+          "allocations": {
+            "title": "Invoices to pay",
+            "selectVendor": "Select a vendor to see its outstanding invoices.",
+            "empty": "This vendor has no outstanding invoices.",
+            "emptyRead": "No allocations.",
+            "loadError": "Unable to load outstanding invoices",
+            "dueDate": "Due",
+            "otherCurrency": "Different currency from the selected invoices",
+            "invoiceAllocated": "Paying",
+            "payFull": "Pay in full",
+            "clear": "Clear",
+            "line": "Line",
+            "description": "Description",
+            "unpaid": "Unpaid",
+            "available": "Available",
+            "payAmount": "Pay Amount",
+            "overAvailable": "Exceeds the available amount",
+            "openInvoice": "Open invoice",
+            "realizedFx": "Realized FX"
+          },
+          "wht": {
+            "title": "Withholding tax",
+            "recalculate": "Recalculate from invoices",
+            "calculating": "Calculating...",
+            "empty": "No withholding tax for the selected lines.",
+            "profile": "Tax Profile",
+            "rate": "Rate",
+            "base": "Base",
+            "amount": "WHT Amount",
+            "override": "(edited)",
+            "errors": {
+              "amount": "Enter a WHT amount for every row"
+            }
+          },
+          "expenses": {
+            "title": "Other expenses",
+            "add": "Add expense",
+            "empty": "No expenses.",
+            "account": "Account",
+            "costCenter": "Cost Center",
+            "description": "Description",
+            "amount": "Amount",
+            "remove": "Remove expense",
+            "error": "Every expense needs an account and an amount greater than 0"
+          },
+          "taxInvoices": {
+            "title": "Tax invoices of paid documents",
+            "invoice": "Invoice",
+            "taxInvoiceNo": "Tax Invoice No.",
+            "date": "Date",
+            "base": "Base",
+            "vat": "VAT"
+          },
+          "summary": {
+            "applied": "Applied",
+            "wht": "WHT",
+            "expenses": "Expenses",
+            "realizedFx": "Realized FX",
+            "net": "Net Paid"
+          },
+          "actions": {
+            "submit": "Submit",
+            "approve": "Approve",
+            "return": "Return",
+            "reject": "Reject",
+            "void": "Void",
+            "delete": "Delete"
+          },
+          "done": {
+            "submit": "Payment submitted",
+            "approve": "Payment approved",
+            "return": "Payment returned",
+            "reject": "Payment rejected",
+            "void": "Payment voided",
+            "delete": "Payment deleted"
+          },
+          "confirmDelete": {
+            "title": "Delete this draft?",
+            "description": "The draft payment will be removed."
+          },
+          "reasonDialog": {
+            "required": "A reason is required.",
+            "optional": "You can add a reason (optional).",
+            "label": "Reason",
+            "void": {
+              "title": "Void payment"
+            },
+            "reject": {
+              "title": "Reject payment"
+            },
+            "return": {
+              "title": "Return payment"
+            }
+          },
+          "errors": {
+            "vendor": "Select a vendor",
+            "paymentDate": "Select the payment date",
+            "bank": "Select a bank account in the invoice currency",
+            "exchangeRate": "Exchange rate must be greater than 0",
+            "allocations": "Enter an amount for at least one invoice line",
+            "overAllocated": "A line exceeds its available amount",
+            "netPositive": "Net paid must be greater than 0"
+          }
         }
       }
     }
