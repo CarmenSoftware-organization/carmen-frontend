@@ -1,5 +1,6 @@
 import { useTranslations } from "use-intl";
 import type { WorkflowDto } from "@/types/workflows";
+import { WORKFLOW_TYPE } from "@/types/workflows";
 import { cn } from "@/lib/utils";
 
 interface WfScopeLineProps {
@@ -19,6 +20,8 @@ export default function WfScopeLine({ workflow, className }: WfScopeLineProps) {
   const t = useTranslations("systemAdmin.workflow");
   const products = workflow.data?.products?.length ?? 0;
   const rules = workflow.data?.routing_rules?.length ?? 0;
+  const isJv = workflow.workflow_type === WORKFLOW_TYPE.JV;
+  const jvScope = workflow.data?.jv_scope;
 
   return (
     <span
@@ -27,7 +30,15 @@ export default function WfScopeLine({ workflow, className }: WfScopeLineProps) {
         className,
       )}
     >
-      {t("listProductCount", { count: products })}
+      {isJv ? (
+        <>
+          {t("listJvPrefixCount", { count: jvScope?.prefix_ids?.length ?? 0 })}
+          <span aria-hidden="true"> · </span>
+          {t("listJvSourceCount", { count: jvScope?.sources?.length ?? 0 })}
+        </>
+      ) : (
+        t("listProductCount", { count: products })
+      )}
       {rules > 0 && (
         <>
           <span aria-hidden="true"> · </span>

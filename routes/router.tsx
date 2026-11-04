@@ -796,6 +796,11 @@ export const router = createBrowserRouter([
                   import("./system-admin/workflow/workflow-doc-type.route"),
               },
               {
+                path: "workflow/journal-voucher",
+                lazy: () =>
+                  import("./system-admin/workflow/workflow-doc-type.route"),
+              },
+              {
                 path: "workflow/new",
                 lazy: () =>
                   import("./system-admin/workflow/workflow-new.route"),

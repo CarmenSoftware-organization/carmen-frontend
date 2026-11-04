@@ -52,7 +52,7 @@ import {
 import {
   useGlJvPrefixOptions,
   type GlJvPrefixOption,
-} from "../shared/use-gl-jv-prefix-options";
+} from "@/hooks/use-gl-jv-prefix-options";
 
 const FORM_ID = "accounting-settings-form";
 

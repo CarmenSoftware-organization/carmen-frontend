@@ -88,6 +88,7 @@ export function computeWorkflowInsights(
     // stage create/purchase ไม่ถูกซ่อนราคาเสมอ และ SR ไม่มียอด — ค่าเก่าที่ค้างอยู่ไม่มีผล
     const canHide =
       workflowType !== WORKFLOW_TYPE.SR &&
+      workflowType !== WORKFLOW_TYPE.JV &&
       stage.role !== "create" &&
       stage.role !== "purchase";
     const actions = Object.fromEntries(

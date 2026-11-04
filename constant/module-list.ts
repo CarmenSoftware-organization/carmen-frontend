@@ -848,6 +848,13 @@ export const moduleList: ModuleDto[] = [
               PERMISSIONS.system_admin.workflow.store_requisition.view,
           },
           {
+            name: "workflowJournalVoucher",
+            path: "/system-admin/workflow/journal-voucher",
+            licenseFeature: "system_admin.workflow",
+            icon: BookOpen,
+            permission: PERMISSIONS.system_admin.workflow.view,
+          },
+          {
             name: "notificationTemplate",
             path: "/system-admin/notification-template",
             licenseFeature: "configuration.notification_template", // config:notification-templates

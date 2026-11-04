@@ -16,6 +16,7 @@ export const WORKFLOW_DOC_TYPES = [
   "purchase-request",
   "purchase-order",
   "store-requisition",
+  "journal-voucher",
 ] as const;
 
 export type WorkflowDocType = (typeof WORKFLOW_DOC_TYPES)[number];
@@ -27,6 +28,7 @@ export const WORKFLOW_TYPE_BY_DOC_TYPE: Record<WorkflowDocType, WORKFLOW_TYPE> =
     "purchase-request": WORKFLOW_TYPE.PR,
     "purchase-order": WORKFLOW_TYPE.PO,
     "store-requisition": WORKFLOW_TYPE.SR,
+    "journal-voucher": WORKFLOW_TYPE.JV,
   };
 
 /**
@@ -81,6 +83,11 @@ const useStoreRequisitionWorkflows = (
   options?: { enabled?: boolean },
 ) => useWorkflowsByDocType("store-requisition", params, options);
 
+const useJournalVoucherWorkflows = (
+  params?: ParamsDto,
+  options?: { enabled?: boolean },
+) => useWorkflowsByDocType("journal-voucher", params, options);
+
 export const WORKFLOW_LIST_HOOKS: Record<
   WorkflowDocType,
   typeof usePurchaseRequestWorkflows
@@ -88,6 +95,7 @@ export const WORKFLOW_LIST_HOOKS: Record<
   "purchase-request": usePurchaseRequestWorkflows,
   "purchase-order": usePurchaseOrderWorkflows,
   "store-requisition": useStoreRequisitionWorkflows,
+  "journal-voucher": useJournalVoucherWorkflows,
 };
 
 /**

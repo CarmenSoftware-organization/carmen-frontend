@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { JV_WORKFLOW_SOURCES } from "@/constant/workflow";
 import type { TranslationFn } from "@/lib/i18n-schema";
 import {
   WORKFLOW_TYPE,
@@ -110,6 +111,14 @@ export const wfFormSchema = z.object({
     // ต้องประกาศไว้ตรงนี้ ไม่งั้น zod ตัดทิ้งตอน `parseWorkflowData` แล้วหน้านี้ PUT `data` ทั้งก้อน
     // กลับไป (รวมถึงปุ่ม toggle/duplicate ในหน้า list) ค่าที่เปิดไว้จะโดนปิดเงียบ ๆ ทุกครั้งที่มีคนกดเซฟ
     inherit_signature_from_pr: z.boolean().optional(),
+    // เฉพาะ workflow ของ JV — ขอบเขต prefix + ที่มาของใบ (ว่างทั้งคู่ = ทุกใบ)
+    // ต้องประกาศไว้ ไม่งั้น zod ตัดทิ้งแล้ว PUT ทับขอบเขตหายเงียบ ๆ (เหตุผลเดียวกับ inherit_signature_from_pr)
+    jv_scope: z
+      .object({
+        prefix_ids: z.array(z.string()),
+        sources: z.array(z.enum(JV_WORKFLOW_SOURCES)),
+      })
+      .optional(),
     stages: z.array(
       z.object({
         name: z.string().min(1).max(100),
@@ -395,6 +404,9 @@ export function mapToPayload(values: WorkflowFormValues): WorkflowCreateModel {
       notifications: [],
       notification_templates: [],
       products: [],
+      ...(values.workflow_type === WORKFLOW_TYPE.JV
+        ? { jv_scope: { prefix_ids: [], sources: [] } }
+        : {}),
     },
   };
 }

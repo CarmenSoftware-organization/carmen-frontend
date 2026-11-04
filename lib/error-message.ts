@@ -28,6 +28,9 @@ const APP_CODE_TO_KEY: Record<string, string> = {
   WORKFLOW_HAS_IN_PROGRESS_DOCUMENTS: "workflowInProgress",
   WORKFLOW_STAGE_CHANGE_BLOCKED: "workflowInProgress",
   WORKFLOW_STAGE_WOULD_HAVE_NO_ACTOR: "workflowStageNoActor",
+  // ขอบเขต JV ทับกับ workflow อื่น / รูปแบบไม่ถูกต้อง — แก้ได้ที่แท็บขอบเขต
+  WORKFLOW_JV_SCOPE_OVERLAP: "workflowJvScopeOverlap",
+  WORKFLOW_JV_SCOPE_INVALID: "workflowJvScopeInvalid",
   // วันที่รับของอยู่นอกงวดที่เปิดอยู่ — ผู้ใช้แก้เองได้ (เปลี่ยนวันที่ หรือให้ฝ่าย
   // บัญชีเปิดงวด) ปล่อยตกไปข้อความกลางจะกลายเป็น "กรอกไม่ถูกต้อง" แล้วไล่ตรวจ
   // ทั้งฟอร์มโดยไม่มีอะไรผิดสักช่อง

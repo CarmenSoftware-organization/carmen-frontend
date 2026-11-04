@@ -5,7 +5,11 @@ import { ApiError } from "@/lib/api-error";
 import { httpClient } from "@/lib/http-client";
 import type { JvPrefixMaster } from "@/types/accounting-master";
 
-export type GlJvPrefixOption = { value: string; label: string };
+export type GlJvPrefixOption = {
+  value: string;
+  label: string;
+  isActive: boolean;
+};
 
 /**
  * ตัวเลือก JV prefix ของ BU (ชุดเดียวกับที่จัดการใน `/config/jv-prefix`)
@@ -34,6 +38,7 @@ export function useGlJvPrefixOptions(): {
       rows.map((row) => ({
         value: row.id,
         label: `${row.code} — ${row.description}`,
+        isActive: row.is_active,
       })),
   });
   return { options: query.data ?? [], isLoading: query.isPending };

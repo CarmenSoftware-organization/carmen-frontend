@@ -17,7 +17,13 @@ import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { cn } from "@/lib/utils";
-import type { Workflow, User, Product, Stage } from "@/types/workflows";
+import {
+  WORKFLOW_TYPE,
+  type Workflow,
+  type User,
+  type Product,
+  type Stage,
+} from "@/types/workflows";
 import {
   wfFormSchema,
   getWorkflowFormDefaults,
@@ -31,6 +37,7 @@ import { WfGeneral } from "./wf-general";
 import { WfStages } from "./wf-stages";
 import { WfRouting } from "./wf-routing";
 import { WfProducts } from "./wf-products";
+import { WfJvScope } from "./wf-jv-scope";
 import { validateWorkflow } from "./wf-validate";
 import WfInsights from "./wf-insights";
 import { WfStageList } from "./wf-stage-list";
@@ -137,6 +144,15 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
     control: form.control,
     name: "data.routing_rules",
   });
+
+  const isJv = watchedType === WORKFLOW_TYPE.JV;
+  const watchedJvScope = useWatch({
+    control: form.control,
+    name: "data.jv_scope",
+  });
+  const jvScopeCount =
+    (watchedJvScope?.prefix_ids.length ?? 0) +
+    (watchedJvScope?.sources.length ?? 0);
 
   const hasStages = !!watchedStages && watchedStages.length > 0;
 
@@ -260,18 +276,33 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                       <div className="bg-destructive absolute top-2 right-0 size-2 rounded-full" />
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="products" className="py-2.5">
-                    {t("products")}
-                    {watchedProducts && watchedProducts.length > 0 && (
-                      <Badge
-                        variant="secondary"
-                        size="xs"
-                        className="ml-2 tabular-nums"
-                      >
-                        {watchedProducts.length}
-                      </Badge>
-                    )}
-                  </TabsTrigger>
+                  {isJv ? (
+                    <TabsTrigger value="scope" className="py-2.5">
+                      {t("jvScopeTab")}
+                      {jvScopeCount > 0 && (
+                        <Badge
+                          variant="secondary"
+                          size="xs"
+                          className="ml-2 tabular-nums"
+                        >
+                          {jvScopeCount}
+                        </Badge>
+                      )}
+                    </TabsTrigger>
+                  ) : (
+                    <TabsTrigger value="products" className="py-2.5">
+                      {t("products")}
+                      {watchedProducts && watchedProducts.length > 0 && (
+                        <Badge
+                          variant="secondary"
+                          size="xs"
+                          className="ml-2 tabular-nums"
+                        >
+                          {watchedProducts.length}
+                        </Badge>
+                      )}
+                    </TabsTrigger>
+                  )}
                 </TabsList>
               </div>
 
@@ -321,14 +352,20 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                   />
                 </TabsContent>
 
-                <TabsContent value="products" className="mt-0 outline-none">
-                  <WfProducts
-                    form={form}
-                    allProducts={products}
-                    isDisabled={isDisabled}
-                    readOnly={!isEditing}
-                  />
-                </TabsContent>
+                {isJv ? (
+                  <TabsContent value="scope" className="mt-0 outline-none">
+                    <WfJvScope form={form} isDisabled={isDisabled} />
+                  </TabsContent>
+                ) : (
+                  <TabsContent value="products" className="mt-0 outline-none">
+                    <WfProducts
+                      form={form}
+                      allProducts={products}
+                      isDisabled={isDisabled}
+                      readOnly={!isEditing}
+                    />
+                  </TabsContent>
+                )}
               </div>
             </Tabs>
           </form>
