@@ -112,7 +112,8 @@ export function getJvTemplateDefaultValues(
       to_period_no: 12,
       frequency_months: 1,
       currency_id: "",
-      exchange_rate: null,
+      // backend ตั้งต้นเป็น 1 — ช่องว่าง (0) จะถูกส่งเป็น null อยู่แล้ว
+      exchange_rate: 1,
       allocate_amount: null,
       amortize_type: type === "amortize" ? "monthly" : null,
       start_date: "",
@@ -135,7 +136,7 @@ export function getJvTemplateDefaultValues(
     to_period_no: template.to_period_no,
     frequency_months: template.frequency_months ?? 1,
     currency_id: template.currency_id ?? "",
-    exchange_rate: template.exchange_rate,
+    exchange_rate: template.exchange_rate ?? 1,
     allocate_amount: template.allocate_amount,
     amortize_type: template.amortize_type,
     start_date: template.start_date?.slice(0, 10) ?? "",
@@ -193,7 +194,9 @@ export function createJvTemplateFormSchema(t: TranslationFn, tv: TranslationFn) 
       from_period_no: intOrNaN,
       to_fiscal_year: intOrNaN,
       to_period_no: intOrNaN,
-      frequency_months: numOrNull,
+      // ช่องว่าง + valueAsNumber = NaN — ต้องผ่านชั้น object ให้ superRefine ขึ้นข้อความแปลเอง
+      // (ถ้า zod ตีตกที่นี่ superRefine ทั้งก้อนไม่รัน ข้อความสมดุล/อัตราส่วนหายไปด้วย)
+      frequency_months: intOrNaN.nullable(),
       currency_id: z.string(),
       exchange_rate: numOrNull,
       allocate_amount: numOrNull,

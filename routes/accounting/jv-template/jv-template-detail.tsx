@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams, useSearchParams } from "react-router";
@@ -124,6 +124,14 @@ function JvTemplateForm({
   });
   const { form, isAdd, isEdit, isView, isDisabled } = f;
 
+  // doc_version ที่ผู้ใช้เริ่มแก้ — จับไว้ตอนกด Edit ไม่อ่านจาก prop ตอน save เพราะ refetch
+  // ระหว่างแก้ (focus/invalidate) จะยื่นเวอร์ชันใหม่ให้เงียบ ๆ แล้วเขียนทับงานของคนอื่นได้
+  const editVersionRef = useRef<number | null>(null);
+  const handleEdit = () => {
+    editVersionRef.current = template?.doc_version ?? null;
+    f.handleEdit();
+  };
+
   // หลัง save สำเร็จ detail ถูก refetch — doc_version ใหม่มาที่ prop · โหมดดูต้องตามค่าจาก
   // server ไม่งั้น Edit รอบถัดไปเริ่มจากค่าที่ normalize ไม่ตรงกับที่ backend เก็บ
   useEffect(() => {
@@ -154,7 +162,11 @@ function JvTemplateForm({
       // doc_version จากใบที่โหลดมา — ใบถูกแก้จากที่อื่นแล้ว backend ตอบ 409 ซึ่ง toast กลาง
       // แปลเป็น "มีคนแก้เอกสารนี้" · ค่าในฟอร์มอยู่ครบเพราะไม่ reset ตอน error
       updateTemplate.mutate(
-        { id: template.id, doc_version: template.doc_version, ...input },
+        {
+          id: template.id,
+          doc_version: editVersionRef.current ?? template.doc_version,
+          ...input,
+        },
         {
           onSuccess: () => {
             toast.success(tt("updateSuccess", { entity: t("entity") }));
@@ -204,7 +216,7 @@ function JvTemplateForm({
           title={isAdd ? undefined : watchedName || template?.name}
           onBack={f.handleBack}
           onCancel={f.handleCancel}
-          onEdit={f.handleEdit}
+          onEdit={handleEdit}
           onDelete={template ? () => setShowDelete(true) : undefined}
           deleteIsPending={deleteTemplate.isPending}
           permissionPrefix={PERMISSION_PREFIX}

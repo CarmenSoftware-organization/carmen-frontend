@@ -19,6 +19,7 @@ import { InputAmount } from "@/components/ui/input/input-amount";
 import { StatusDotBadge } from "@/components/ui/status-dot-badge";
 import { LookupChartOfAccountById } from "@/components/lookup/lookup-chart-of-account-by-id";
 import { LookupCostCenter } from "@/components/lookup/lookup-cost-center";
+import { useCostCenterById } from "@/hooks/use-cost-center";
 import { formatCurrency } from "@/lib/currency-utils";
 import { cn } from "@/lib/utils";
 import type { JvTemplateType } from "./jv-template-types";
@@ -135,15 +136,18 @@ export function JvTemplateLines({
                   <Controller
                     control={control}
                     name={`lines.${i}.cost_center_id`}
-                    render={({ field }) => (
-                      <LookupCostCenter
-                        value={field.value}
-                        onValueChange={(id) => field.onChange(id)}
-                        disabled={readOnly}
-                        modal={false}
-                        allowDeselect
-                      />
-                    )}
+                    render={({ field }) =>
+                      readOnly ? (
+                        <CostCenterText id={field.value} />
+                      ) : (
+                        <LookupCostCenter
+                          value={field.value}
+                          onValueChange={(id) => field.onChange(id)}
+                          modal={false}
+                          allowDeselect
+                        />
+                      )
+                    }
                   />
                 </td>
                 <td className={TD}>
@@ -338,6 +342,16 @@ export function JvTemplateLines({
         </Button>
       )}
     </div>
+  );
+}
+
+/** โหมดดู — ชื่อ cost center เป็นข้อความ (ว่าง = "—") ไม่ใช่ combobox ที่ disabled */
+function CostCenterText({ id }: { readonly id: string | null }) {
+  const { data } = useCostCenterById(id || undefined);
+  return (
+    <FieldPlainText>
+      {id && data && data.id === id ? `${data.code} · ${data.name}` : null}
+    </FieldPlainText>
   );
 }
 
