@@ -36,7 +36,7 @@
   - **committed: แก้ได้แค่หัวใบ** (`HEADER_EDITABLE_KEYS`: post_type, credit_term_*, invoice_no, invoice_date, payment_due_date, description, note) — บรรทัด/ราคา/จำนวนแก้ไม่ได้อยู่แล้ว
   - committed + มี AP invoice ที่ยังไม่ void → `GRN_AP_LINKED_NOT_EDITABLE` (ล็อกทั้งใบ)
   - GET GRN detail คืน `ap_invoices: { id, doc_no, doc_status }[]` (`good-received-note.service.ts:359`)
-- ยังไม่มีโค้ดใดทำให้ GRN ไปถึง `voided`
+- void GRN มีเฉพาะใบ draft/saved (`voidGrnById`, `good-received-note.service.ts:2342`); ใบ committed void ไม่ได้ (`GRN_COMMITTED_NOT_VOIDABLE`)
 - AP payment post JV ของตัวเอง (`ap/ap-payment/ap-payment.posting.ts:226`) — ไม่เกี่ยวกับงานนี้
 - FE: แท็บของ GRN อยู่ที่ `routes/procurement/goods-receive-note/grn-form.tsx:261` (Items / Extra cost / Stock)
   · GL JV API ต่อไว้แล้ว: `API_ENDPOINTS.GL_JV_DETAIL` + `journal-voucher-http-repository.ts:298 get()`
