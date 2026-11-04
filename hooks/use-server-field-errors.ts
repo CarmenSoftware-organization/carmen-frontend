@@ -14,6 +14,37 @@ export type ServerFieldErrorMap<TValues extends FieldValues> = Readonly<
   Partial<Record<string, Path<TValues> | readonly Path<TValues>[]>>
 >;
 
+/** รอช่องเปิดได้นานสุดเท่านี้ (50ms × 40 = 2 วินาที) — เผื่อเรนเดอร์หลัง mutation จบช้า */
+const FOCUS_RETRY_MS = 50;
+const FOCUS_RETRIES = 40;
+
+/**
+ * focus ช่องที่ผิดเมื่อมันเปิดให้กรอกได้แล้ว
+ *
+ * ตัวรับ error ถูกเรียกจาก `MutationCache.onError` ซึ่งรันก่อน state ของ mutation เปลี่ยน —
+ * ฟอร์มที่ปิดช่องระหว่างบันทึก (`disabled={isPending}`) ช่องจึงยัง disabled อยู่ตอนนั้น และ
+ * browser ไม่ focus input ที่ disabled (เจอที่ฟอร์ม GRN: ขึ้นแดงแต่ cursor ไม่ไปที่ช่อง
+ * tooltip ข้อความของ `FieldInput` ที่เปิดตอน focus เลยไม่ขึ้น) จึงลองใหม่จนช่องเปิด
+ */
+function focusWhenEnabled(
+  name: string,
+  focus: () => void,
+  retries = FOCUS_RETRIES,
+) {
+  const el = document.getElementsByName(name)[0];
+  if (!el) return;
+  if (!el.matches(":disabled")) {
+    focus();
+    return;
+  }
+  if (retries > 0) {
+    window.setTimeout(
+      () => focusWhenEnabled(name, focus, retries - 1),
+      FOCUS_RETRY_MS,
+    );
+  }
+}
+
 /**
  * แสดง error ที่ backend ตีกลับไว้ใต้ช่องที่เป็นต้นเหตุ แทน toast
  *
@@ -55,7 +86,7 @@ export function useServerFieldErrors<TValues extends FieldValues>(
       for (const field of fields) {
         form.setError(field, { type: "server", message });
       }
-      form.setFocus(fields[0]);
+      focusWhenEnabled(fields[0], () => form.setFocus(fields[0]));
       return true;
     });
   }, [enabled]);

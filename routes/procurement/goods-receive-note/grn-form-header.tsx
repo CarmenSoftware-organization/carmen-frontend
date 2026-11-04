@@ -3,6 +3,7 @@ import { useTranslations } from "use-intl";
 import {
   Field,
   FieldDatePicker,
+  FieldError,
   FieldInput,
   FieldLabel,
   FieldSelect,
@@ -213,6 +214,11 @@ export function GrnFormHeader({
             error={errors.invoice_no?.message}
             {...form.register("invoice_no")}
           />
+          {/* เลขซ้ำที่ backend ตีกลับ (useServerFieldErrors ใน grn-form) บอกเลขใบที่ชน — ต้องเห็นทันที
+              ไม่ซ่อนใน tooltip เพราะไม่มี toast แล้ว · error ของ schema ยังเป็น tooltip เหมือนช่องอื่น */}
+          {errors.invoice_no?.type === "server" && (
+            <FieldError>{errors.invoice_no.message}</FieldError>
+          )}
         </Field>
 
         <Field className={viewFieldGap}>
