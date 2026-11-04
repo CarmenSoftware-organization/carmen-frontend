@@ -520,6 +520,7 @@
         "reversalPrefix": "prefix ใบสำคัญกลับรายการ",
         "autoJvPrefix": "prefix ใบสำคัญอัตโนมัติ",
         "allowPostToClosedPeriod": "อนุญาตให้ลงบัญชีในงวดที่ปิดแล้ว",
+        "apAutoFromGrn": "สร้าง AP invoice อัตโนมัติจาก GRN",
         "apControlAccount": "บัญชีคุมเจ้าหนี้",
         "inputVatAccount": "บัญชีภาษีซื้อ",
         "whtPayableAccount": "บัญชีภาษีหัก ณ ที่จ่ายค้างจ่าย",
@@ -534,7 +535,9 @@
       "hints": {
         "fiscalYear": "ถ้าเปลี่ยนหลังจากมีงวดบัญชีแล้ว ขอบเขตของทุกงวดจะเลื่อนตาม",
         "apPosting": "ใช้ตอนลงบัญชี AP Invoice — การส่งออก External ใช้บัญชีจาก Chart of Account mapping อย่างเดียว",
-        "allowPostToClosedPeriod": "เปิดไว้ = เอกสารที่ลงวันที่ในงวดที่ปิดแล้วยังลงบัญชีได้"
+        "allowPostToClosedPeriod": "เปิดไว้ = เอกสารที่ลงวันที่ในงวดที่ปิดแล้วยังลงบัญชีได้",
+        "apAutoFromGrn": "เปิดไว้ = เมื่อ commit GRN ระบบสร้าง AP invoice ให้อัตโนมัติ",
+        "apAutoFromGrnSetup": "ต้องตั้งบัญชีคุมเจ้าหนี้ prefix ใบสำคัญ AP และ prefix ใบกลับรายการให้ครบก่อนจึงเปิดได้"
       }
     },
     "jvTemplate": {

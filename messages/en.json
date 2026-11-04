@@ -520,6 +520,7 @@
         "reversalPrefix": "Reversal JV prefix",
         "autoJvPrefix": "Auto JV prefix",
         "allowPostToClosedPeriod": "Allow posting to closed periods",
+        "apAutoFromGrn": "Create AP invoice automatically from GRN",
         "apControlAccount": "AP control account",
         "inputVatAccount": "Input VAT account",
         "whtPayableAccount": "WHT payable account",
@@ -534,7 +535,9 @@
       "hints": {
         "fiscalYear": "Changing this after GL periods exist shifts every period boundary.",
         "apPosting": "Used by AP Invoice posting. The External export takes accounts from the Chart of Account mapping only.",
-        "allowPostToClosedPeriod": "When on, documents dated in a closed period can still be posted."
+        "allowPostToClosedPeriod": "When on, documents dated in a closed period can still be posted.",
+        "apAutoFromGrn": "When on, committing a GRN creates its AP invoice automatically.",
+        "apAutoFromGrnSetup": "Set the AP control account, AP JV prefix and reversal prefix first to turn this on."
       }
     },
     "jvTemplate": {
