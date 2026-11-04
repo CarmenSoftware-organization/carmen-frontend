@@ -16,7 +16,12 @@ import { useLookupResource } from "@/hooks/use-lookup-resource";
 import { cn } from "@/lib/utils";
 import type { DatasetParam } from "@/types/dashboard-widget";
 import { lookupLabel, type LookupResource } from "@/types/lookup";
-import { joinPicked, shouldShowAllOption, splitPicked } from "./widget-shape";
+import {
+  joinPicked,
+  selectablePeriods,
+  shouldShowAllOption,
+  splitPicked,
+} from "./widget-shape";
 
 interface WidgetLookupFieldProps {
   readonly id: string;
@@ -85,8 +90,8 @@ export function WidgetLookupField({
     isPeriod && (open || picked.length > 0),
   );
 
-  // token บอกรหัสงวดที่ชี้อยู่ตอนนี้ด้วย ("งวดปัจจุบัน · 2610") — ไม่งั้นผู้ใช้เลือกทั้ง
-  // token และรหัสเดียวกันซ้ำโดยไม่รู้ตัว
+  // token บอกรหัสงวดที่ชี้อยู่ตอนนี้ด้วย ("งวดปัจจุบัน · 2610") และช่องหลายงวดซ่อนค่าที่ชี้
+  // งวดเดียวกับที่เลือกแล้ว (selectablePeriods) — ไม่งั้นเลือกทั้ง token และรหัสเดียวกันซ้ำได้
   const tokenCode: Record<string, string | undefined> = {
     "@current_period": periods.data?.current,
     "@previous_period": periods.data?.previous,
@@ -103,14 +108,15 @@ export function WidgetLookupField({
   let isLoading: boolean;
   if (isPeriod) {
     const q = search.trim().toLowerCase();
-    const all = [...PERIOD_TOKENS, ...(periods.data?.codes ?? [])].map((v) => ({
-      id: v,
-      label: periodLabel(v),
-    }));
+    const all = [...PERIOD_TOKENS, ...(periods.data?.codes ?? [])];
+    // เลือกค่าเดียว = กดแถวอื่นเพื่อสลับ (token ↔ รหัสงวดเดียวกันได้) จึงตัดแค่ตัวที่เลือกอยู่
+    const choices = multi
+      ? selectablePeriods(all, picked, tokenCode)
+      : all.filter((v) => !pickedSet.has(v));
     selectedRows = picked.map((v) => ({ id: v, label: periodLabel(v) }));
-    rows = all.filter(
-      (r) => !pickedSet.has(r.id) && (!q || r.label.toLowerCase().includes(q)),
-    );
+    rows = choices
+      .map((v) => ({ id: v, label: periodLabel(v) }))
+      .filter((r) => !q || r.label.toLowerCase().includes(q));
     isLoading = periods.isLoading && open;
   } else {
     const toRow = (it: {
