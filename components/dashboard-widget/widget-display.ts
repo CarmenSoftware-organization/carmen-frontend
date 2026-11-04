@@ -167,6 +167,27 @@ export function gridSize(
 }
 
 /**
+ * ปรับค่าการแสดงผลตอนสลับชนิดกราฟในฟอร์ม — ขนาดที่ไม่อยู่ในตัวเลือกของชนิดใหม่ถูกล้างทิ้ง
+ * ให้กลับไปใช้ขนาดตั้งต้นของชนิดนั้น (`gridSize` บังคับขอบล่างตอนวาดอยู่แล้ว แต่ค่าที่บันทึก
+ * จะค้างเป็นขนาดที่ชนิดใหม่เลือกไม่ได้) · ค่าอื่น (ทศนิยม · min/max ของ gauge) เก็บไว้
+ *
+ * @param display - ค่าการแสดงผลปัจจุบัน
+ * @param widgetType - ชนิดกราฟใหม่
+ * @returns ค่าการแสดงผลที่ใช้กับชนิดใหม่ได้
+ */
+export function fitDisplayToType(
+  display: WidgetDisplay,
+  widgetType: string,
+): WidgetDisplay {
+  const { width, height, ...rest } = display;
+  if (width === undefined && height === undefined) return display;
+  const isOffered = sizeOptionsFor(widgetType).some(
+    ([w, h]) => w === width && h === height,
+  );
+  return isOffered ? display : rest;
+}
+
+/**
  * class ของช่องที่ widget กินบนกริด
  *
  * `row-span` คือหัวใจ: การ์ดสูงเท่าที่ประกาศ ไม่ยืดตามการ์ดที่สูงที่สุดในแถว

@@ -67,7 +67,6 @@ import {
 } from "./status-group";
 import { StatusGroupCard } from "./status-group-card";
 import { WidgetConfigDialog } from "@/components/dashboard-widget/widget-config-dialog";
-import { defaultWidgetTypeFor } from "@/components/dashboard-widget/widget-shape";
 
 const greetingKeyFor = (hour: number): "morning" | "afternoon" | "evening" => {
   if (hour < 12) return "morning";
@@ -230,6 +229,7 @@ const SavedWidgetsSection = () => {
     params: WidgetParams,
     display: WidgetDisplay,
     titleI18n: LocalizedTitle | null,
+    widgetType: WidgetType,
   ) => {
     const onSuccess = () => {
       toast.success(tt("createSuccess", { entity: t("entity") }));
@@ -254,7 +254,7 @@ const SavedWidgetsSection = () => {
     createWidget.mutate(
       {
         dataset_id: ds.id,
-        widget_type: defaultWidgetTypeFor(ds),
+        widget_type: widgetType,
         ...(titleI18n ? { title: titleI18n.en, title_i18n: titleI18n } : {}),
         params,
         display,

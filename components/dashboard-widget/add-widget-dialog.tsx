@@ -29,7 +29,9 @@ import type {
   LocalizedTitle,
   WidgetDisplay,
   WidgetParams,
+  WidgetType,
 } from "@/types/dashboard-widget";
+import { availableRenders } from "./render-support";
 import { getShapeBadge } from "./shape-badge";
 import { useDatasetLabel } from "./use-widget-title";
 import { useWidgetConfigState } from "./use-widget-config-state";
@@ -42,6 +44,7 @@ type AddWidgetHandler = (
   params: WidgetParams,
   display: WidgetDisplay,
   titleI18n: LocalizedTitle | null,
+  widgetType: WidgetType,
 ) => void;
 
 interface AddWidgetDialogProps {
@@ -270,6 +273,14 @@ function AddWidgetDetail({
 }) {
   const t = useTranslations("dashboard.savedWidget");
   const state = useWidgetConfigState({ dataset });
+  // เริ่มที่ชนิดตั้งต้นของ dataset แล้วให้ผู้ใช้เปลี่ยนได้ในส่วนการแสดงผล — จบในที่เดียว ไม่ต้องไปกดบนการ์ดทีหลัง
+  const [widgetType, setWidgetType] = useState<WidgetType>(() =>
+    defaultWidgetTypeFor(dataset),
+  );
+  const widgetTypes = availableRenders(
+    dataset.shape,
+    dataset.supported_renders,
+  );
   const badge = getShapeBadge(dataset.shape);
   const isCustom = custom !== undefined;
 
@@ -312,7 +323,9 @@ function AddWidgetDetail({
           <WidgetConfigFields
             dataset={dataset}
             state={state}
-            widgetType={defaultWidgetTypeFor(dataset)}
+            widgetType={widgetType}
+            widgetTypes={widgetTypes}
+            onWidgetTypeChange={setWidgetType}
             disabled={isPending}
           />
         )}
@@ -323,8 +336,14 @@ function AddWidgetDetail({
         isPending={isPending}
         onSubmit={() =>
           isCustom
-            ? onAdd(dataset, {}, {}, null)
-            : onAdd(dataset, state.values, state.display, state.titleI18n)
+            ? onAdd(dataset, {}, {}, null, widgetType)
+            : onAdd(
+                dataset,
+                state.values,
+                state.display,
+                state.titleI18n,
+                widgetType,
+              )
         }
         isInvalid={!isCustom && state.isTitleInvalid}
       />
