@@ -27,6 +27,7 @@ import { GrnFormDialogs } from "./grn-form-dialogs";
 import { GrnExpiredItemsDialog } from "./grn-expired-items-dialog";
 import { useGrnFormActions } from "./use-grn-form-actions";
 import { useProfile } from "@/hooks/use-profile";
+import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { GrnHeader } from "./grn-header";
 import { GrnSummaryFooter } from "./grn-summary-footer";
@@ -123,6 +124,8 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
     mode: "onChange",
     reValidateMode: "onChange",
   });
+  // เลขใบแจ้งหนี้ซ้ำกับใบอื่นของผู้ขายเดียวกัน (409 จาก backend) → แดงใต้ช่องพร้อมเลขใบที่ชน แทน toast
+  useServerFieldErrors(form, { GRN_INVOICE_NO_DUPLICATE: "invoice_no" });
 
   // validation ไม่ผ่าน → บอกว่าติดกี่รายการ แล้วพาไปที่ช่องแรกที่ผิด · ไม่ต้อง
   // กางอะไรก่อนแล้ว ทุกช่องอยู่บนแถวเดียวกันตั้งแต่ตารางเลิกจัดกลุ่มสินค้า
