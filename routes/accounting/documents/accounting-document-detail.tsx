@@ -44,7 +44,6 @@ import { toast } from "sonner";
 import type { FormMode } from "@/types/form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Card,
   CardAction,
@@ -107,6 +106,7 @@ import {
 } from "@/components/ui/tooltip";
 import { WorkflowTrack } from "@/components/share/workflow-track";
 import { JvRejectDialog } from "./jv-reject-dialog";
+import { JvReverseDialog } from "./jv-reverse-dialog";
 import { JvVoidDialog } from "./jv-void-dialog";
 import { DocActions } from "@/components/share/doc-actions";
 import { DocFormHeader } from "@/components/share/doc-form-header";
@@ -962,7 +962,9 @@ export default function AccountingDocumentDetail() {
             ? t("draftSaved")
             : submittedStatus === "posted"
               ? t("submittedPosted")
-              : t("submittedInReview"),
+              : submittedStatus === "scheduled"
+                ? t("submittedScheduled")
+                : t("submittedInReview"),
         );
         navigate(`${config.path}/${targetId}`, { replace: true });
       } catch (error) {
@@ -1120,7 +1122,15 @@ export default function AccountingDocumentDetail() {
     approveJournal.mutate(
       { id: journal.id, doc_version: journal.doc_version },
       {
-        onSuccess: () => toast.success(t("approved")),
+        // อนุมัติขั้นสุดท้ายคืน posted / scheduled — ขั้นอื่นยังเป็น in_review
+        onSuccess: ({ data }) =>
+          toast.success(
+            data?.jv_status === "posted"
+              ? t("approvedPosted")
+              : data?.jv_status === "scheduled"
+                ? t("submittedScheduled")
+                : t("approved"),
+          ),
         onError: onJournalActionError,
       },
     );
@@ -1228,7 +1238,7 @@ export default function AccountingDocumentDetail() {
                     variant="ghost"
                     onClick={() => setJournalConfirmation("reverse")}
                   >
-                    Reverse
+                    {t("reverse")}
                   </Button>
                 )}
                 {!isJournalVoucher && documentStatus !== "Voided" && (
@@ -2614,17 +2624,15 @@ export default function AccountingDocumentDetail() {
         </Card>
       </form>
 
-      <ConfirmDialog
+      <JvReverseDialog
         open={journalConfirmation === "reverse"}
         onOpenChange={(open) => !open && setJournalConfirmation(null)}
-        title="Reverse Journal Voucher?"
-        description="This action changes the Journal Voucher status."
-        confirmText="Reverse"
         isPending={reverseJournal.isPending}
-        onConfirm={() => {
+        onConfirm={(jvDate) => {
           if (!journal) return;
           reverseJournal.mutate(
-            { id: journal.id, doc_version: journal.doc_version },
+            // backend บังคับ jv_date (วันที่ของใบกลับ) — ไม่ส่ง = Invalid Date ฝั่ง micro
+            { id: journal.id, doc_version: journal.doc_version, jv_date: jvDate },
             {
               onSuccess: ({ data }) => {
                 setJournalConfirmation(null);

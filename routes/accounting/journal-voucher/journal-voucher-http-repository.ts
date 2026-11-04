@@ -17,7 +17,10 @@ import type {
   JournalVoucherRepository,
 } from "./journal-voucher-repository";
 import { journalVoucherMockRepository } from "./journal-voucher-mock-repository";
-import { journalVoucherCapabilities } from "./journal-voucher-source";
+import {
+  isSubledgerJournal,
+  journalVoucherCapabilities,
+} from "./journal-voucher-source";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -253,7 +256,13 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
         displayNo = shortId ? `Draft (${shortId})` : "—";
       }
 
-      return {
+      const sourceType =
+        (raw.source as JournalVoucherSourceType) ??
+        (raw.source_type as JournalVoucherSourceType) ??
+        "manual";
+      const sourceRefType =
+        typeof raw.source_ref_type === "string" ? raw.source_ref_type : null;
+      const mapped: JournalVoucher = {
         ...item,
         id: rawId,
         prefix: rawPrefix ?? (typeof raw.prefix === "string" ? raw.prefix : "JV"),
@@ -264,9 +273,15 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
         jv_date: typeof raw.jv_date === "string" ? raw.jv_date : new Date().toISOString(),
         total_debit: String(raw.total_debit ?? 0),
         total_credit: String(raw.total_credit ?? 0),
-        source_type: (raw.source as JournalVoucherSourceType) ?? (raw.source_type as JournalVoucherSourceType) ?? "manual",
-        capabilities: journalVoucherCapabilities(item),
+        source_type: sourceType,
+        source_ref_type: sourceRefType,
+        is_source_generated: isSubledgerJournal({
+          source_type: sourceType,
+          source_ref_type: sourceRefType,
+        }),
       };
+      // คำนวณจากแถวที่ map แล้ว — แถวดิบมี `source` ไม่ใช่ `source_type` จะดูเป็นใบ manual ทุกใบ
+      return { ...mapped, capabilities: journalVoucherCapabilities(mapped) };
     });
 
     return {
@@ -395,6 +410,13 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
       workflow_history: raw.workflow_history,
       source_system: "general_ledger",
       source_type: (raw.source as JournalVoucherSourceType) ?? "manual",
+      source_ref_type:
+        typeof raw.source_ref_type === "string" ? raw.source_ref_type : null,
+      is_source_generated: isSubledgerJournal({
+        source_type: (raw.source as string | undefined) ?? "manual",
+        source_ref_type:
+          typeof raw.source_ref_type === "string" ? raw.source_ref_type : null,
+      }),
       source_id: raw.source_id ?? null,
       source_no: raw.source_no ?? null,
       schedule_post: false,
@@ -403,8 +425,9 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
       reverse_date: null,
       is_adjustment: Boolean(raw.is_adjustment),
       lines: mappedLines,
-      capabilities: journalVoucherCapabilities(raw),
     };
+    // จากเอกสารที่ map แล้ว ไม่ใช่ raw — raw มี `source` ไม่ใช่ `source_type`
+    doc.capabilities = journalVoucherCapabilities(doc);
 
     return doc;
   },

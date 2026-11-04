@@ -111,6 +111,8 @@ export interface JournalVoucher extends JournalVoucherInput {
   /** backend ไม่ระบุชนิด และ default ใน DB เป็น `{}` — ใช้ต้องเช็ก Array.isArray */
   workflow_history?: unknown;
   is_source_generated?: boolean;
+  /** ชนิดเอกสารต้นทางที่ subledger ผูกไว้ — มีค่า = ใบของ subledger (ดู `isSubledgerVoucher` ฝั่ง backend) */
+  source_ref_type?: string | null;
   posting_event_id?: string | null;
   generated_revision?: number | null;
   source_links?: JournalVoucherSourceLink[];
@@ -126,4 +128,6 @@ export interface JournalVoucherAction {
   scheduled_post_at?: string;
   reverse_date?: string;
   post_at?: string;
+  /** วันที่ของใบกลับรายการ (ISO 8601 UTC) — บังคับสำหรับ reverse */
+  jv_date?: string;
 }

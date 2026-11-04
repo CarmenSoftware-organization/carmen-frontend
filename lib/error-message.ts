@@ -40,6 +40,21 @@ const APP_CODE_TO_KEY: Record<string, string> = {
 };
 
 /**
+ * รหัสที่ข้อความของเราเติม param จาก backend (`body.params`) — ถ้า param หายไปใช้ `fallbackKey`
+ *
+ * `WORKFLOW_JV_SCOPE_OVERLAP` ส่ง `{workflow}` = ชื่อ workflow ที่ชน (spec: ผู้ใช้ต้องรู้ว่าชนกับตัวไหน)
+ */
+const APP_CODE_REQUIRED_PARAM: Record<
+  string,
+  { param: string; fallbackKey: string }
+> = {
+  WORKFLOW_JV_SCOPE_OVERLAP: {
+    param: "workflow",
+    fallbackKey: "workflowJvScopeOverlapUnnamed",
+  },
+};
+
+/**
  * ชื่อ field ของ backend → คีย์ใน namespace `field` (ชื่อที่คนหน้างานเรียกจริง)
  *
  * ใส่เฉพาะ field ที่ฟอร์มของเราส่งไปเองและมีป้ายชื่อบนจอให้อ้างถึงได้ — ตัวที่ไม่รู้จัก
@@ -146,7 +161,15 @@ export function getUserErrorMessage(
   // เป็น 404/400 เหมือนกันทั้งคู่
   if (err.appCode) {
     const mapped = APP_CODE_TO_KEY[err.appCode];
-    if (mapped) return t(mapped, err.appParams);
+    if (mapped) {
+      // ข้อความที่ต้องมี param ที่ backend ส่งมา (เช่นชื่อ workflow ที่ชน) — ถ้าไม่มีมา
+      // ใช้ฉบับไม่ระบุชื่อ ดีกว่าให้ ICU โชว์ placeholder ดิบ
+      const required = APP_CODE_REQUIRED_PARAM[err.appCode];
+      if (required && err.appParams?.[required.param] === undefined) {
+        return t(required.fallbackKey);
+      }
+      return t(mapped, err.appParams);
+    }
     // คีย์ตรงตามชื่อรหัส — ไม่ต้องตั้งชื่อกลางให้ทุกตัว เติม catalog ใหม่ = เติม
     // `errors.byCode.<CODE>` ใน messages/{en,th}.json อย่างเดียว ไม่มีตารางให้ลืมซิงก์
     const byCode = `byCode.${err.appCode}`;
