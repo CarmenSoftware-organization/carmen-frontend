@@ -1,13 +1,12 @@
+import type { StageActionFlags } from "@/lib/workflow-stage-actions";
+
+/** ตรงกับ `enum_jv_status` ของ backend */
 export type JournalVoucherStatus =
   | "draft"
-  | "submitted"
-  | "posting"
+  | "in_review"
   | "scheduled"
   | "posted"
-  | "post_failed"
-  | "voided"
-  | "reversal_scheduled"
-  | "reversed";
+  | "void";
 
 export type JournalVoucherSourceType =
   | "manual"
@@ -29,9 +28,7 @@ export interface JournalVoucherCapabilities {
   can_edit_accounting_fields: boolean;
   can_submit: boolean;
   can_approve: boolean;
-  can_return: boolean;
   can_reject: boolean;
-  can_retry_post: boolean;
   can_void: boolean;
   can_reverse: boolean;
   can_open_source: boolean;
@@ -102,7 +99,16 @@ export interface JournalVoucher extends JournalVoucherInput {
   base_currency_id: string;
   total_debit: string;
   total_credit: string;
-  workflow_enabled_snapshot: boolean;
+  /** จาก workflow orchestrator — "approve" เมื่อผู้ใช้ลงมือได้ที่ขั้นปัจจุบัน */
+  role?: string;
+  stage_actions?: StageActionFlags | null;
+  workflow_id?: string | null;
+  workflow_name?: string | null;
+  workflow_current_stage?: string | null;
+  workflow_previous_stage?: string | null;
+  workflow_next_stage?: string | null;
+  /** backend ไม่ระบุชนิด และ default ใน DB เป็น `{}` — ใช้ต้องเช็ก Array.isArray */
+  workflow_history?: unknown;
   is_source_generated?: boolean;
   posting_event_id?: string | null;
   generated_revision?: number | null;
@@ -118,4 +124,5 @@ export interface JournalVoucherAction {
   destination_stage?: string;
   scheduled_post_at?: string;
   reverse_date?: string;
+  post_at?: string;
 }

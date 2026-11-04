@@ -3,18 +3,15 @@ import type {
   JournalVoucherCapabilities,
   JournalVoucherSourceLink,
 } from "@/types/journal-voucher";
+import { getStageActionFlags } from "@/lib/workflow-stage-actions";
+import { STAGE_ROLE } from "@/types/stage-role";
 import {
   CHART_OF_ACCOUNT_TYPE,
   type ChartOfAccount,
 } from "@/types/chart-of-accounts";
 
 const editableStatuses = new Set(["draft"]);
-const voidableStatuses = new Set([
-  "draft",
-  "submitted",
-  "scheduled",
-  "post_failed",
-]);
+const voidableStatuses = new Set(["draft", "in_review", "scheduled"]);
 
 /** Keep manual journals away from inactive, header, and subledger-owned accounts. */
 export function canUseAccountForManualJournal(
@@ -69,15 +66,18 @@ export function journalVoucherCapabilities(
 ): JournalVoucherCapabilities {
   if (journal.capabilities) return journal.capabilities;
   const generated = isSourceGenerated(journal);
-  const submitted = journal.jv_status === "submitted";
+  // อนุมัติ/ตีกลับได้ต่อเมื่อ backend บอกว่าผู้ใช้ลงมือที่ขั้นนี้ได้ (role) และขั้นนั้นเปิดปุ่ม
+  const canAct =
+    !generated &&
+    journal.jv_status === "in_review" &&
+    journal.role === STAGE_ROLE.APPROVE;
+  const flags = getStageActionFlags(journal.stage_actions);
   return {
     can_edit_accounting_fields:
       !generated && editableStatuses.has(journal.jv_status),
     can_submit: !generated && journal.jv_status === "draft",
-    can_approve: submitted && journal.workflow_enabled_snapshot && !generated,
-    can_return: submitted && journal.workflow_enabled_snapshot && !generated,
-    can_reject: submitted && journal.workflow_enabled_snapshot && !generated,
-    can_retry_post: !generated && journal.jv_status === "post_failed",
+    can_approve: canAct && flags.approve,
+    can_reject: canAct && flags.reject,
     can_void: !generated && voidableStatuses.has(journal.jv_status),
     can_reverse: !generated && journal.jv_status === "posted",
     can_open_source: sourceLinksForJournal(journal).some((link) => link.href),

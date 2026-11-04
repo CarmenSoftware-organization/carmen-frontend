@@ -385,7 +385,14 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
       base_currency_id: raw.currency_id ?? "THB",
       total_debit: String(raw.total_debit ?? 0),
       total_credit: String(raw.total_credit ?? 0),
-      workflow_enabled_snapshot: true,
+      role: typeof raw.role === "string" ? raw.role : undefined,
+      stage_actions: raw.stage_actions ?? null,
+      workflow_id: raw.workflow_id ?? null,
+      workflow_name: raw.workflow_name ?? null,
+      workflow_current_stage: raw.workflow_current_stage ?? null,
+      workflow_previous_stage: raw.workflow_previous_stage ?? null,
+      workflow_next_stage: raw.workflow_next_stage ?? null,
+      workflow_history: raw.workflow_history,
       source_system: "general_ledger",
       source_type: (raw.source as JournalVoucherSourceType) ?? "manual",
       source_id: raw.source_id ?? null,
@@ -477,7 +484,6 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
       total_credit: (input.lines ?? [])
         .reduce((s, l) => s + (Number(l.credit) || 0), 0)
         .toFixed(2),
-      workflow_enabled_snapshot: true,
       source_system: "general_ledger",
       source_type: "manual",
       source_id: null,
@@ -567,19 +573,26 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
     if (action === "submit") endpoint = API_ENDPOINTS.GL_JV_SUBMIT(buCode, id);
     else if (action === "approve") endpoint = API_ENDPOINTS.GL_JV_APPROVE(buCode, id);
     else if (action === "reject") endpoint = API_ENDPOINTS.GL_JV_REJECT(buCode, id);
-    else if (action === "retry-post") endpoint = API_ENDPOINTS.GL_POSTING_POST(buCode, id);
     else if (action === "void") endpoint = API_ENDPOINTS.GL_POSTING_VOID(buCode, id);
     else if (action === "reverse") endpoint = API_ENDPOINTS.GL_POSTING_REVERSE(buCode, id);
 
     if (endpoint) {
-      const res = await httpClient.post(endpoint, input);
+      // approve/reject รับ body เฉพาะของตัวเอง (post_at / reason) — ไม่ส่ง doc_version
+      const body =
+        action === "approve"
+          ? { post_at: input.post_at }
+          : action === "reject"
+            ? { reason: input.reason }
+            : input;
+      const res = await httpClient.post(endpoint, body);
       if (!res.ok) {
         throw await ApiError.from(
           res,
           `Failed to perform action ${action} on journal voucher ${id}`,
         );
       }
-      const data: JournalVoucher = await res.json();
+      const json = await res.json();
+      const data: JournalVoucher = json?.data ?? json;
       return {
         ...data,
         capabilities: journalVoucherCapabilities(data),
