@@ -2,19 +2,11 @@ import { useEffect } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  AreaChart,
-  BarChart3,
-  Gauge,
   Check,
   CircleAlert,
   GripVertical,
-  Hash,
-  LineChart,
-  PieChart,
   Settings2,
-  Table,
   Trash2,
-  type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "use-intl";
 import {
@@ -34,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useInViewport } from "@/hooks/use-in-viewport";
+import { RenderIcon } from "./render-icon";
 import { useWidgetTitle } from "./use-widget-title";
 import { cn } from "@/lib/utils";
 import type { DashboardDataset } from "@/types/dashboard-dataset";
@@ -68,16 +61,6 @@ interface SortableWidgetItemProps {
   /** false = อ่านอย่างเดียว: ไม่มีปุ่มลาก ลบ ตั้งค่า และเปลี่ยนชนิดกราฟ (BU widget สำหรับผู้ไม่มีสิทธิ์แก้) */
   readonly editable?: boolean;
 }
-
-const RENDER_ICON: Record<string, LucideIcon> = {
-  kpi: Hash,
-  gauge: Gauge,
-  pie: PieChart,
-  bar: BarChart3,
-  line: LineChart,
-  area: AreaChart,
-  table: Table,
-};
 
 export function SortableWidgetItem({
   widget,
@@ -120,7 +103,6 @@ export function SortableWidgetItem({
     dataset?.shape ?? detail?.meta.shape,
     dataset?.supported_renders,
   );
-  const CurrentIcon = RENDER_ICON[widget.widget_type] ?? BarChart3;
 
   return (
     <li
@@ -157,27 +139,24 @@ export function SortableWidgetItem({
                   aria-label={t("chartTypeAria", { title: displayTitle })}
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  <CurrentIcon className="size-3.5" aria-hidden="true" />
+                  <RenderIcon type={widget.widget_type} className="size-3.5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-36">
                 <DropdownMenuLabel>{t("chartType.label")}</DropdownMenuLabel>
-                {renders.map((r) => {
-                  const Icon = RENDER_ICON[r] ?? BarChart3;
-                  return (
-                    <DropdownMenuItem
-                      key={r}
-                      onSelect={() => onChangeType(r)}
-                      className="gap-2"
-                    >
-                      <Icon className="size-3.5" aria-hidden="true" />
-                      <span className="flex-1">{t(`chartType.${r}`)}</span>
-                      {r === widget.widget_type && (
-                        <Check className="size-3.5" aria-hidden="true" />
-                      )}
-                    </DropdownMenuItem>
-                  );
-                })}
+                {renders.map((r) => (
+                  <DropdownMenuItem
+                    key={r}
+                    onSelect={() => onChangeType(r)}
+                    className="gap-2"
+                  >
+                    <RenderIcon type={r} className="size-3.5" />
+                    <span className="flex-1">{t(`chartType.${r}`)}</span>
+                    {r === widget.widget_type && (
+                      <Check className="size-3.5" aria-hidden="true" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           )}

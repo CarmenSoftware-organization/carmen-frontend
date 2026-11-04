@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   applyDecimals,
+  fitDisplayToType,
   gaugeRange,
   gridClasses,
   gridSize,
@@ -53,7 +54,15 @@ describe("gridSize", () => {
 
 describe("sizeOptionsFor / minSizeFor", () => {
   it("offers a per-type list whose first entry is the minimum", () => {
-    for (const type of ["kpi", "gauge", "pie", "bar", "line", "area", "table"]) {
+    for (const type of [
+      "kpi",
+      "gauge",
+      "pie",
+      "bar",
+      "line",
+      "area",
+      "table",
+    ]) {
       const options = sizeOptionsFor(type);
       expect(options.length).toBeGreaterThan(1);
       expect(minSizeFor(type)).toEqual(options[0]);
@@ -105,7 +114,15 @@ describe("gridClasses", () => {
 
   // row-span คือตัวที่กันการ์ดบวมตามเพื่อนร่วมแถว
   it("always pins a row span so a card cannot stretch to its tallest neighbour", () => {
-    for (const type of ["kpi", "gauge", "pie", "bar", "line", "area", "table"]) {
+    for (const type of [
+      "kpi",
+      "gauge",
+      "pie",
+      "bar",
+      "line",
+      "area",
+      "table",
+    ]) {
       expect(gridClasses(type)).toMatch(/row-span-\d/);
     }
   });
@@ -153,8 +170,12 @@ describe("gaugeRange", () => {
 
 describe("thresholdColor", () => {
   it("uses the fallback until a threshold is crossed", () => {
-    expect(thresholdColor(10, { thresholds: [{ value: 80, color: "red" }] }, "blue")).toBe("blue");
-    expect(thresholdColor(80, { thresholds: [{ value: 80, color: "red" }] }, "blue")).toBe("red");
+    expect(
+      thresholdColor(10, { thresholds: [{ value: 80, color: "red" }] }, "blue"),
+    ).toBe("blue");
+    expect(
+      thresholdColor(80, { thresholds: [{ value: 80, color: "red" }] }, "blue"),
+    ).toBe("red");
   });
 
   it("picks the highest crossed threshold, whatever order they are stored in", () => {
@@ -166,5 +187,24 @@ describe("thresholdColor", () => {
     };
     expect(thresholdColor(95, display, "blue")).toBe("red");
     expect(thresholdColor(60, display, "blue")).toBe("amber");
+  });
+});
+
+describe("fitDisplayToType", () => {
+  // KPI 3×2 เลือกไม่ได้ในกราฟเกจ (ต่ำสุด 3×3) — ล้างให้เกจใช้ขนาดตั้งต้นของมัน
+  it("drops a size the new chart type does not offer, keeping the rest", () => {
+    expect(
+      fitDisplayToType({ width: 3, height: 2, decimals: 1 }, "gauge"),
+    ).toEqual({ decimals: 1 });
+  });
+
+  it("keeps a size the new chart type also offers", () => {
+    const display = { width: 6, height: 3, min: 0, max: 10 };
+    expect(fitDisplayToType(display, "gauge")).toBe(display);
+  });
+
+  it("leaves a display without a size untouched", () => {
+    const display = { decimals: 2 };
+    expect(fitDisplayToType(display, "table")).toBe(display);
   });
 });

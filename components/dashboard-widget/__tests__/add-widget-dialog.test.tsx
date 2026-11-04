@@ -37,7 +37,8 @@ const CATALOGUE: DashboardDataset[] = [
     id: "lab.fixture-sql",
     name: "Fixture SQL",
     description: "",
-    shape: "scalar",
+    // table วาดได้แบบเดียว — ใช้เช็คว่าตัวเลือกชนิดกราฟไม่โผล่
+    shape: "table",
     category: "workflow",
     unit: "items",
   },
@@ -72,15 +73,15 @@ vi.mock("@/hooks/use-dashboard-dataset", () => ({
   },
 }));
 
-// การ์ดจริงลาก recharts มาทั้งชุด — ที่นี่สนใจแค่ว่า preview ได้ dataset/ชื่อไหน
+// การ์ดจริงลาก recharts มาทั้งชุด — ที่นี่สนใจแค่ว่า preview ได้ dataset/ชื่อ/ชนิดไหน
 vi.mock("@/components/dashboard-widget/dashboard-widget-grid", () => ({
   WidgetRouter: ({
     widget,
   }: {
-    widget: { dataset_id: string; title: string };
+    widget: { dataset_id: string; title: string; widget_type: string };
   }) => (
     <div data-testid="preview">
-      {widget.dataset_id}|{widget.title}
+      {widget.dataset_id}|{widget.title}|{widget.widget_type}
     </div>
   ),
   WidgetSkeleton: () => <div data-testid="preview-skeleton" />,
@@ -168,6 +169,7 @@ describe("AddWidgetDialog", () => {
       { days: 30 },
       {},
       { en: "My POs" },
+      "line",
     );
   });
 
@@ -181,7 +183,7 @@ describe("AddWidgetDialog", () => {
       "vendor.fixture-active",
     );
     await user.click(screen.getByRole("button", { name: sw.addSubmit }));
-    expect(onAdd).toHaveBeenCalledWith(CATALOGUE[0], {}, {}, null);
+    expect(onAdd).toHaveBeenCalledWith(CATALOGUE[0], {}, {}, null, "kpi");
   });
 
   it("starts from the new dataset's defaults when switching selection", async () => {
@@ -211,6 +213,55 @@ describe("AddWidgetDialog", () => {
     expect(previewSpy).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole("button", { name: sw.addSubmit }));
-    expect(onAdd).toHaveBeenCalledWith(PRESET, {}, {}, null);
+    expect(onAdd).toHaveBeenCalledWith(PRESET, {}, {}, null, "kpi");
+  });
+
+  it("lets the user pick the chart type; the preview and the new widget follow it", async () => {
+    const user = userEvent.setup();
+    const { onAdd } = renderDialog();
+
+    await user.click(screen.getByRole("button", { name: /Fixture PO trend/ }));
+    const types = screen.getByRole("group", { name: sw.chartType.label });
+    // time_series วาดได้ แท่ง · เส้น · พื้นที่ — เริ่มที่เส้นตามค่าตั้งต้นของ shape
+    expect(
+      within(types)
+        .getAllByRole("button")
+        .map((b) => b.textContent),
+    ).toEqual([sw.chartType.bar, sw.chartType.line, sw.chartType.area]);
+    expect(
+      within(types).getByRole("button", { name: sw.chartType.line }),
+    ).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(
+      within(types).getByRole("button", { name: sw.chartType.bar }),
+    );
+    expect(screen.getByTestId("preview")).toHaveTextContent(
+      "document.fixture-po|Fixture PO trend|bar",
+    );
+    // กดตัวที่เลือกอยู่ซ้ำ ไม่ยกเลิกการเลือก
+    await user.click(
+      within(types).getByRole("button", { name: sw.chartType.bar }),
+    );
+    expect(screen.getByTestId("preview")).toHaveTextContent("|bar");
+
+    await user.click(screen.getByRole("button", { name: sw.addSubmit }));
+    expect(onAdd).toHaveBeenCalledWith(
+      CATALOGUE[1],
+      { days: 30 },
+      {},
+      null,
+      "bar",
+    );
+  });
+
+  it("hides the chart type choice when the dataset has only one", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.click(screen.getByRole("button", { name: /Fixture SQL/ }));
+    expect(screen.getByTestId("preview")).toHaveTextContent("|table");
+    expect(
+      screen.queryByRole("group", { name: sw.chartType.label }),
+    ).not.toBeInTheDocument();
   });
 });

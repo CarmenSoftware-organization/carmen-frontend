@@ -22,7 +22,6 @@ import { WidgetSkeletonCards } from "@/components/dashboard-widget/dashboard-wid
 import { SortableWidgetItem } from "@/components/dashboard-widget/sortable-widget-item";
 import { AddWidgetDialog } from "@/components/dashboard-widget/add-widget-dialog";
 import { WidgetConfigDialog } from "@/components/dashboard-widget/widget-config-dialog";
-import { defaultWidgetTypeFor } from "@/components/dashboard-widget/widget-shape";
 import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { cn } from "@/lib/utils";
@@ -148,11 +147,12 @@ export function BuWidgetSection({
     params: WidgetParams,
     display: WidgetDisplay,
     titleI18n: LocalizedTitle | null,
+    widgetType: WidgetType,
   ) => {
     createWidget.mutate(
       {
         dataset_id: ds.id,
-        widget_type: defaultWidgetTypeFor(ds),
+        widget_type: widgetType,
         // title คู่กับ title_i18n เป็น fallback ของ backend รุ่นเก่า (backend ใหม่ใช้ title_i18n เป็นหลัก)
         ...(titleI18n ? { title: titleI18n.en, title_i18n: titleI18n } : {}),
         params,

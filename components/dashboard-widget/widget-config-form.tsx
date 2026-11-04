@@ -3,7 +3,10 @@ import {
   WidgetRouter,
   WidgetSkeleton,
 } from "@/components/dashboard-widget/dashboard-widget-grid";
-import { gridSize } from "@/components/dashboard-widget/widget-display";
+import {
+  fitDisplayToType,
+  gridSize,
+} from "@/components/dashboard-widget/widget-display";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDashboardDatasetPreview } from "@/hooks/use-dashboard-dataset";
@@ -15,12 +18,19 @@ import { resolveWidgetTitle } from "./widget-title";
 import { WidgetDisplayFields } from "./widget-display-fields";
 import { WidgetParamFields } from "./widget-param-fields";
 import { inferModuleName, inferSubTile } from "./widget-shape";
+import { WidgetTypeField } from "./widget-type-field";
 
 interface WidgetConfigFieldsProps {
   readonly dataset: DashboardDataset;
   readonly state: WidgetConfigState;
   /** ชนิดกราฟที่ใช้ — คุมทั้ง preview และฟิลด์ที่โผล่ (min/max เฉพาะ gauge) */
   readonly widgetType: WidgetType;
+  /**
+   * ส่งมา = ให้เลือกชนิดกราฟในส่วนการแสดงผล (โผล่เมื่อ `widgetTypes` มีมากกว่า 1 แบบ)
+   * ไม่ส่ง = ชนิดตายตัวตาม `widgetType` (dialog แก้ widget — เปลี่ยนชนิดที่ปุ่มบนการ์ด)
+   */
+  readonly onWidgetTypeChange?: (widgetType: WidgetType) => void;
+  readonly widgetTypes?: readonly WidgetType[];
   readonly disabled?: boolean;
   /** ส่ง false เพื่อหยุดยิง preview เช่นตอน dialog กำลังปิด */
   readonly previewEnabled?: boolean;
@@ -31,6 +41,8 @@ export function WidgetConfigFields({
   dataset,
   state,
   widgetType,
+  onWidgetTypeChange,
+  widgetTypes = [],
   disabled,
   previewEnabled = true,
 }: WidgetConfigFieldsProps) {
@@ -122,12 +134,26 @@ export function WidgetConfigFields({
         <h3 className="text-muted-foreground text-micro-legal font-bold tracking-[0.16em] uppercase">
           {t("display.section")}
         </h3>
-        <WidgetDisplayFields
-          widgetType={widgetType}
-          value={display}
-          onChange={setDisplay}
-          disabled={disabled}
-        />
+        <div className="space-y-3">
+          {onWidgetTypeChange && widgetTypes.length > 1 && (
+            <WidgetTypeField
+              options={widgetTypes}
+              value={widgetType}
+              onChange={(next) => {
+                // ขนาดที่เลือกไว้อาจไม่อยู่ในตัวเลือกของชนิดใหม่ — ล้างให้กลับไปขนาดตั้งต้นของมัน
+                setDisplay(fitDisplayToType(display, next));
+                onWidgetTypeChange(next);
+              }}
+              disabled={disabled}
+            />
+          )}
+          <WidgetDisplayFields
+            widgetType={widgetType}
+            value={display}
+            onChange={setDisplay}
+            disabled={disabled}
+          />
+        </div>
       </div>
 
       <div className="space-y-1.5">
