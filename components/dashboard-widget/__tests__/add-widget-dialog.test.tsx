@@ -93,12 +93,17 @@ function renderDialog(
   props: Partial<React.ComponentProps<typeof AddWidgetDialog>> = {},
 ) {
   const onAdd = vi.fn();
-  render(
+  const ui = (p: Partial<React.ComponentProps<typeof AddWidgetDialog>>) => (
     <IntlProvider locale="en" messages={en} timeZone="Asia/Bangkok">
-      <AddWidgetDialog open onOpenChange={vi.fn()} onAdd={onAdd} {...props} />
-    </IntlProvider>,
+      <AddWidgetDialog open onOpenChange={vi.fn()} onAdd={onAdd} {...p} />
+    </IntlProvider>
   );
-  return { onAdd };
+  const { rerender } = render(ui(props));
+  return {
+    onAdd,
+    rerender: (p: Partial<React.ComponentProps<typeof AddWidgetDialog>>) =>
+      rerender(ui(p)),
+  };
 }
 
 const sectionNames = () =>
@@ -263,5 +268,30 @@ describe("AddWidgetDialog", () => {
     expect(
       screen.queryByRole("group", { name: sw.chartType.label }),
     ).not.toBeInTheDocument();
+  });
+
+  // Seen on the live site 2026-11-04: one double click on Add created two identical widgets —
+  // the second click landed before the mutation's isPending reached the button.
+  it("submits once on a double click, before the parent reports pending", async () => {
+    const user = userEvent.setup();
+    const { onAdd } = renderDialog();
+
+    await user.click(screen.getByRole("button", { name: /Fixture vendors/ }));
+    await user.dblClick(screen.getByRole("button", { name: sw.addSubmit }));
+
+    expect(onAdd).toHaveBeenCalledTimes(1);
+  });
+
+  it("lets the user try again once a failed save is no longer pending", async () => {
+    const user = userEvent.setup();
+    const { onAdd, rerender } = renderDialog();
+
+    await user.click(screen.getByRole("button", { name: /Fixture vendors/ }));
+    await user.click(screen.getByRole("button", { name: sw.addSubmit }));
+    rerender({ isPending: true });
+    rerender({ isPending: false });
+    await user.click(screen.getByRole("button", { name: sw.addSubmit }));
+
+    expect(onAdd).toHaveBeenCalledTimes(2);
   });
 });

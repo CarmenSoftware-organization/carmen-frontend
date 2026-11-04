@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
   DatabaseIcon,
@@ -365,6 +365,17 @@ function AddWidgetFooter({
 }) {
   const t = useTranslations("dashboard.savedWidget");
   const tc = useTranslations("common");
+  // ดับเบิลคลิกปุ่มเพิ่ม = คลิกที่สองมาถึงก่อน isPending ของ mutation จะปิดปุ่ม ได้ widget ซ้ำสองใบ
+  // (เจอบนเว็บจริง 2026-11-04) — กันด้วย ref แล้วปลดเมื่อ pending จบ บันทึกไม่ผ่านก็กดใหม่ได้
+  const isSubmittingRef = useRef(false);
+  useEffect(() => {
+    if (!isPending) isSubmittingRef.current = false;
+  }, [isPending]);
+  const submitOnce = () => {
+    if (!onSubmit || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    onSubmit();
+  };
   return (
     <DialogFooter className="border-t px-6 py-4">
       <Button
@@ -378,7 +389,7 @@ function AddWidgetFooter({
       </Button>
       <Button
         type="button"
-        onClick={onSubmit}
+        onClick={submitOnce}
         disabled={!onSubmit || isPending || isInvalid}
       >
         <Plus />
