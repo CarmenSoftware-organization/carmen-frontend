@@ -60,7 +60,8 @@ function useMutationContext() {
 export function useCreateJvTemplate() {
   const ctx = useMutationContext();
   return useMutation({
-    mutationFn: (input: JvTemplateInput) => repository.create(ctx.buCode, input),
+    mutationFn: (input: JvTemplateInput) =>
+      repository.create(ctx.buCode, input),
     onSuccess: ctx.invalidate,
   });
 }
@@ -91,6 +92,8 @@ export function useGenerateJvTemplate() {
   return useMutation({
     mutationFn: ({ id, glPeriodId }: { id: string; glPeriodId: string }) =>
       repository.generate(ctx.buCode, id, glPeriodId),
+    // dialog แสดงข้อผิดพลาดเองจากรหัส catalog ของ template
+    meta: { skipGlobalErrorToast: true },
     onSuccess: ctx.invalidateWithJv,
   });
 }
@@ -100,6 +103,7 @@ export function useGenerateAllDueJvTemplates() {
   return useMutation({
     mutationFn: (glPeriodId: string) =>
       repository.generateAllDue(ctx.buCode, glPeriodId),
+    meta: { skipGlobalErrorToast: true },
     onSuccess: ctx.invalidateWithJv,
   });
 }

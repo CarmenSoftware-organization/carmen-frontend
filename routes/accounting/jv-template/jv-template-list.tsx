@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, Play, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { listReturnState } from "@/hooks/use-list-return";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -52,6 +52,7 @@ import {
   useJvTemplates,
 } from "./use-jv-template";
 import { useJvTemplateTable } from "./use-jv-template-table";
+import { JvTemplateGenerateAllDialog } from "./jv-template-generate-all-dialog";
 import JvTemplateCardList from "./jv-template-card-list";
 
 const DEFAULT_SORT = "code:asc";
@@ -85,6 +86,8 @@ export default function JvTemplateList({
   const perms = PERMISSIONS.accounting.gl_jv_template;
   const canCreate = canWrite && can(perms.create);
   const canDelete = canWrite && can(perms.delete);
+  const canGenerate = canWrite && can(perms.generate);
+  const [generateAllOpen, setGenerateAllOpen] = useState(false);
 
   const { params, search, setSearch, tableConfig } = useDataGridState({
     defaultSort: DEFAULT_SORT,
@@ -246,7 +249,18 @@ export default function JvTemplateList({
           onAdd={addTemplate}
           addLabel={t("add")}
           addDisabled={!canCreate}
-          // Task 4: ปุ่ม "Generate all due" วางผ่าน extraActions ตรงนี้
+          extraActions={
+            canGenerate ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setGenerateAllOpen(true)}
+              >
+                <Play className="size-4" />
+                {t("generateAll")}
+              </Button>
+            ) : undefined
+          }
         />
       }
       toolbar={
@@ -335,6 +349,14 @@ export default function JvTemplateList({
           });
         }}
       />
+
+      {canGenerate && (
+        <JvTemplateGenerateAllDialog
+          open={generateAllOpen}
+          onOpenChange={setGenerateAllOpen}
+          kind={kind}
+        />
+      )}
 
       <SaveViewDialog
         open={saveViewDialogOpen}
