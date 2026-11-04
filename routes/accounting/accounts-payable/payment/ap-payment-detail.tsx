@@ -177,7 +177,8 @@ function ApPaymentEditor({
     ? (allocatedLines(docs, form.allocations)[0]?.doc.currency_code ?? null)
     : (loaded?.currency_code ?? null);
 
-  // บัญชีธนาคารที่สกุลไม่ตรงกับเอกสารที่เลือกจ่าย (backend ปฏิเสธ) นับเป็นยังไม่ได้เลือก
+  const baseCurrencyCode = loaded?.base_currency_code ?? defaultCurrencyCode;
+  // บัญชีธนาคารที่สกุลไม่ใช่สกุลใบจ่ายหรือสกุลฐาน (backend ปฏิเสธ) นับเป็นยังไม่ได้เลือก
   const banks = useBankAccounts().data;
   const bankMismatch =
     !!lockedCurrency &&
@@ -185,7 +186,9 @@ function ApPaymentEditor({
       (b) =>
         b.id === form.bank_account_id &&
         !!b.currency_code &&
-        b.currency_code !== lockedCurrency,
+        b.currency_code !== lockedCurrency &&
+        // backend รับบัญชีสกุลเดียวกับใบจ่าย หรือสกุลฐานของ BU
+        b.currency_code !== baseCurrencyCode,
     );
   const effectiveForm = bankMismatch ? { ...form, bank_account_id: "" } : form;
 
@@ -270,40 +273,55 @@ function ApPaymentEditor({
   // WHT: คำนวณใหม่จาก allocations (หน่วง 600ms) — แถวที่ผู้ใช้ override ไว้คงยอดเดิม
   const signature = sortedSignature(allocationInputs);
   const lastCalculated = useRef(signature);
+  const requestId = useRef(0);
   useEffect(() => {
     if (!editable || lastCalculated.current === signature) return;
     const inputs = JSON.parse(signature) as typeof allocationInputs;
     if (inputs.length === 0) {
+      requestId.current += 1;
+      setCalculating(false);
       lastCalculated.current = signature;
       setForm((current) => ({ ...current, wht: [] }));
       return;
     }
     const handle = setTimeout(() => {
-      lastCalculated.current = signature;
+      const id = ++requestId.current;
       setCalculating(true);
       whtPreview
         .mutateAsync({ allocations: inputs })
-        .then((rows) =>
+        .then((rows) => {
+          // ผลของคำขอเก่าที่ถูกแทนที่แล้วต้องไม่ทับผลล่าสุด
+          if (id !== requestId.current) return;
+          lastCalculated.current = signature;
           setForm((current) => ({
             ...current,
             wht: mergeWhtPreview(current.wht, rows, true),
-          })),
-        )
+          }));
+        })
         .catch(() => undefined)
-        .finally(() => setCalculating(false));
+        .finally(() => {
+          if (id === requestId.current) setCalculating(false);
+        });
     }, 600);
-    return () => clearTimeout(handle);
+    return () => {
+      clearTimeout(handle);
+      // ตอบกลับของคำขอที่ค้างอยู่ถือว่าเก่าแล้ว
+      requestId.current += 1;
+      setCalculating(false);
+    };
     // whtPreview.mutateAsync เปลี่ยนตัวทุก render — พึ่ง signature อย่างเดียว
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editable, signature]);
 
   const recalculateWht = async () => {
     if (allocationInputs.length === 0) return;
+    const id = ++requestId.current;
     setCalculating(true);
     try {
       const rows = await whtPreview.mutateAsync({
         allocations: allocationInputs,
       });
+      if (id !== requestId.current) return;
       lastCalculated.current = signature;
       setForm((current) => ({
         ...current,
@@ -312,7 +330,7 @@ function ApPaymentEditor({
     } catch {
       // toast กลางแสดงข้อผิดพลาดแล้ว
     } finally {
-      setCalculating(false);
+      if (id === requestId.current) setCalculating(false);
     }
   };
 
@@ -565,7 +583,7 @@ function ApPaymentEditor({
         editable={editable}
         errors={errors}
         currencyCode={currencyCode}
-        baseCurrencyCode={loaded?.base_currency_code ?? defaultCurrencyCode}
+        baseCurrencyCode={baseCurrencyCode}
         bankLabel={
           view
             ? [loaded.bank_account_code, loaded.bank_account_name]

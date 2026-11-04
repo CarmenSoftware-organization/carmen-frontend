@@ -51,7 +51,10 @@ export function PaymentHeader({
   const banks = (bankAccounts ?? []).filter(
     (b) =>
       (b.is_active || b.id === form.bank_account_id) &&
-      (!currencyCode || !b.currency_code || b.currency_code === currencyCode),
+      (!currencyCode ||
+        !b.currency_code ||
+        b.currency_code === currencyCode ||
+        b.currency_code === baseCurrencyCode),
   );
   const err = (key: PaymentErrorKey) =>
     errors.has(key) ? <FieldError>{td(`errors.${key}`)}</FieldError> : null;
