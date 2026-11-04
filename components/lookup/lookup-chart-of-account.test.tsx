@@ -9,11 +9,11 @@ vi.mock("use-intl", () => ({
   },
 }));
 
+// ต้องคืน reference เดิมทุก render เหมือน react-query — ไม่งั้น effect ต่อหน้าของ
+// useLookupPagination (deps = data) วนไม่รู้จบ
+const EMPTY_RESULT = { data: { data: [] }, isLoading: false };
 vi.mock("@/hooks/use-chart-of-account", () => ({
-  useChartOfAccount: () => ({
-    data: { data: [] },
-    isLoading: false,
-  }),
+  useChartOfAccount: () => EMPTY_RESULT,
 }));
 
 describe("LookupChartOfAccount", () => {

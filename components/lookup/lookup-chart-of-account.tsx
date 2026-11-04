@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "use-intl";
 import { useChartOfAccount } from "@/hooks/use-chart-of-account";
+import {
+  ACTIVE_ONLY_FILTER,
+  useLookupPagination,
+} from "@/hooks/use-lookup-pagination";
 import { LookupCombobox } from "./lookup-combobox";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -315,7 +319,7 @@ export interface LookupChartOfAccountProps {
    * ของมัน แต่ popover ถูก portal ออกไปที่ body → ถ้าไม่ modal รายการจะเลื่อนไม่ได้
    */
   readonly modal?: boolean;
-  /** รายการที่ผู้เรียกรู้จักอยู่แล้ว — ให้ combobox แสดงป้ายของค่าที่เลือกได้แม้อยู่นอก 100 แถวแรก */
+  /** รายการที่ผู้เรียกรู้จักอยู่แล้ว — ให้ combobox แสดงป้ายของค่าที่เลือกได้แม้อยู่นอกหน้าที่โหลดมา */
   readonly selectedItems?: ChartOfAccount[];
   /** default `true` — ปิดเมื่อ value เป็น uuid จริง (ข้อมูลตัวอย่างใช้ id ที่ไม่ใช่ uuid) */
   readonly demoFallback?: boolean;
@@ -338,34 +342,67 @@ export function LookupChartOfAccount({
 }: LookupChartOfAccountProps) {
   const tl = useTranslations("lookup");
   const tfl = useTranslations("field");
+  const [search, setSearch] = useState("");
   const [hasOpened, setHasOpened] = useState(false);
-  const { data, isLoading } = useChartOfAccount(
-    { perpage: 100 },
-    { enabled: hasOpened || !!value },
+
+  const categories = useMemo(() => {
+    if (!category) return null;
+    return Array.isArray(category) ? category : [category];
+  }, [category]);
+
+  // หลายเงื่อนไขคั่น "," (AND) — หลายค่าของคอลัมน์เดียวคั่น "," ในเงื่อนไขนั้น (IN)
+  const serverFilter = useMemo(() => {
+    const parts: string[] = [];
+    if (activeOnly) parts.push(ACTIVE_ONLY_FILTER);
+    if (categories && categories.length > 0)
+      parts.push(`category|string:${categories.join(",")}`);
+    return parts.length > 0 ? parts.join(",") : undefined;
+  }, [activeOnly, categories]);
+
+  const lookup = useLookupPagination<ChartOfAccount>({
+    useListHook: useChartOfAccount,
+    search,
+    perpage: 100,
+    enabled: hasOpened || !!value,
+    serverFilter,
+    // value ของ picker นี้คือ code ไม่ใช่ uuid
+    selectedIds: value ? [value] : [],
+    getId: (acc) => acc.code,
+    idFilterKey: "code",
+  });
+
+  const { items: fetched, isLoading } = lookup;
+  // ผลกรองว่างไม่ได้แปลว่าผังว่าง (เช่น category เป็น null ทั้งผัง) — ถามหาแถวใดก็ได้ของ BU
+  // ก่อนจะยอมใช้ข้อมูลตัวอย่าง ไม่งั้นบัญชี id ปลอมจะหลุดเข้าฟอร์มของ BU จริง
+  const needProbe =
+    demoFallback &&
+    (hasOpened || !!value) &&
+    fetched.length === 0 &&
+    !search &&
+    !isLoading;
+  const { data: probe, isLoading: probing } = useChartOfAccount(
+    { perpage: 1 },
+    { enabled: needProbe },
   );
-
-  const rows = data?.data;
+  const chartIsEmpty = !!probe && (probe.data?.length ?? 0) === 0;
   const accounts = useMemo(() => {
-    const list =
-      rows && rows.length > 0
-        ? rows
-        : demoFallback
-          ? DEFAULT_CHART_OF_ACCOUNTS
-          : [];
+    // ผังว่างจริง (ไม่ได้ค้นอะไร) → ข้อมูลตัวอย่างเหมือนเดิม; ค้นแล้วไม่เจอต้องว่าง
+    if (needProbe && !probing && chartIsEmpty) {
+      return DEFAULT_CHART_OF_ACCOUNTS.filter(
+        (acc) =>
+          (!activeOnly || acc.is_active) &&
+          (!categories || (!!acc.category && categories.includes(acc.category))),
+      );
+    }
+    return fetched;
+  }, [fetched, needProbe, probing, chartIsEmpty, activeOnly, categories]);
 
-    const categories = category
-      ? Array.isArray(category)
-        ? category
-        : [category]
-      : null;
-
-    return list.filter((acc) => {
-      if (activeOnly && !acc.is_active) return false;
-      if (categories && (!acc.category || !categories.includes(acc.category)))
-        return false;
-      return true;
-    });
-  }, [rows, category, activeOnly, demoFallback]);
+  const mergedSelected = useMemo(() => {
+    const byCode = new Map<string, ChartOfAccount>();
+    for (const acc of lookup.selectedItems) byCode.set(acc.code, acc);
+    for (const acc of selectedItems ?? []) byCode.set(acc.code, acc);
+    return [...byCode.values()];
+  }, [lookup.selectedItems, selectedItems]);
 
   const resolvedPlaceholder =
     placeholder ?? tl("select", { entity: tfl("glAccount") });
@@ -380,7 +417,7 @@ export function LookupChartOfAccount({
         if (open) setHasOpened(true);
       }}
       items={accounts}
-      selectedItems={selectedItems}
+      selectedItems={mergedSelected}
       getId={(acc) => acc.code}
       getLabel={(acc) => `${acc.code} - ${acc.description_1}`}
       getSearchValue={(acc) =>
@@ -406,6 +443,11 @@ export function LookupChartOfAccount({
       searchPlaceholder={tl("search", { entity: tfl("glAccount") })}
       disabled={disabled}
       readOnly={readOnly}
+      serverSideSearch
+      onSearchChange={setSearch}
+      onLoadMore={lookup.loadMore}
+      hasMore={lookup.hasMore}
+      isLoadingMore={lookup.isLoadingMore}
       isLoading={isLoading}
       className={className}
       error={error}
