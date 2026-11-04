@@ -1240,7 +1240,11 @@ export default function AccountingDocumentDetail() {
     <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4">
       {usesVoucherDetailPattern ? (
         <DocFormHeader
-          title={number}
+          // ใบใหม่ใช้ชื่อชนิดเอกสารเป็นหัว (ทรงเดียวกับ PO: po_no ?? entity) —
+          // "Auto-generated" เป็นค่าของช่องเลขที่ใบ ไม่ใช่ชื่อหน้า
+          title={
+            isJournalVoucher && isNew ? t("journalVoucher.single") : number
+          }
           // JV อ่าน API จริง (useJournalVoucher) — ชนิดอื่นยังเป็น documentsFor()
           mock={!isJournalVoucher}
           badges={jvBadges}
@@ -1931,13 +1935,14 @@ export default function AccountingDocumentDetail() {
                 </div>
               )}
 
-              {isJournalVoucher && journal ? (
+              {isJournalVoucher ? (
                 // Source │ Ref. Doc │ Status เรียงตาม mockup v2.14 — ใบที่ไม่มีเอกสาร
                 // อ้างอิงโชว์ "—" ไม่ซ่อนช่อง ผู้ตรวจต้องเห็นว่า "ไม่มี" ไม่ใช่ "หาย"
                 <div className="ml-auto flex min-h-8 flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                   <span className="text-muted-foreground">{t("source")}</span>
                   <span className="font-medium">
-                    {jvSourceLabel(journal.source_type)}
+                    {/* ใบใหม่ยังไม่มี journal — ที่มาคือคนคีย์เอง (manual) สถานะ draft */}
+                    {jvSourceLabel(journal?.source_type)}
                   </span>
                   <span className="bg-border h-4 w-px" aria-hidden="true" />
                   <span className="text-muted-foreground">{t("refDoc")}</span>
@@ -1947,14 +1952,14 @@ export default function AccountingDocumentDetail() {
                     </CellAction>
                   ) : (
                     <span className="font-medium tabular-nums">
-                      {sourceLink?.label ?? journal.source_no ?? "—"}
+                      {sourceLink?.label ?? journal?.source_no ?? "—"}
                     </span>
                   )}
                   <span className="bg-border h-4 w-px" aria-hidden="true" />
                   <span className="text-muted-foreground">{t("status")}</span>
                   <StatusIconLabel
-                    status={journal.jv_status}
-                    label={jvStatusLabel(journal.jv_status)}
+                    status={journal?.jv_status ?? "draft"}
+                    label={jvStatusLabel(journal?.jv_status ?? "draft")}
                   />
                 </div>
               ) : (
