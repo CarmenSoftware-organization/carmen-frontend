@@ -9,6 +9,7 @@ import type {
   JournalVoucherStatus,
 } from "@/types/journal-voucher";
 import { httpClient } from "@/lib/http-client";
+import { buildUrl } from "@/lib/build-query-string";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { ApiError } from "@/lib/api-error";
 import type {
@@ -201,13 +202,9 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
     buCode: string,
     params?: ParamsDto,
   ): Promise<PaginatedResponse<JournalVoucher>> {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.set("page", String(params.page));
-    if (params?.perpage) queryParams.set("limit", String(params.perpage));
-    if (params?.search) queryParams.set("search", params.search);
-
-    const queryStr = queryParams.toString();
-    const url = `${API_ENDPOINTS.GL_JV_LIST(buCode)}${queryStr ? `?${queryStr}` : ""}`;
+    // ส่ง page/perpage/search/filter/sort ตรงตามชื่อที่ PaginateQuery ของ gateway อ่าน
+    // — เดิมส่ง `limit` (backend ไม่รู้จัก) และไม่ส่ง filter/sort เลย ตัวกรองจึงไม่เคยมีผล
+    const url = buildUrl(API_ENDPOINTS.GL_JV_LIST(buCode), params);
     const res = await httpClient.get(url);
 
     if (!res.ok) {
@@ -609,5 +606,15 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
       description: `Copy of ${current.description}`,
       lines: current.lines,
     });
+  },
+
+  async remove(buCode: string, id: string): Promise<void> {
+    if (id.startsWith("mock-")) {
+      return journalVoucherMockRepository.remove(buCode, id);
+    }
+    const res = await httpClient.delete(API_ENDPOINTS.GL_JV_DETAIL(buCode, id));
+    if (!res.ok) {
+      throw await ApiError.from(res, "Failed to delete journal voucher");
+    }
   },
 };

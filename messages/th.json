@@ -527,6 +527,20 @@
         "apPosting": "ใช้ตอนลงบัญชี AP Invoice — การส่งออก External ใช้บัญชีจาก Chart of Account mapping อย่างเดียว",
         "allowPostToClosedPeriod": "เปิดไว้ = เอกสารที่ลงวันที่ในงวดที่ปิดแล้วยังลงบัญชีได้"
       }
+    },
+    "journalVoucher": {
+      "title": "ใบสำคัญลงบัญชี",
+      "desc": "รายการบันทึกบัญชีแยกประเภท — ฉบับร่าง รอตรวจ และที่ลงบัญชีแล้ว",
+      "add": "สร้าง JV",
+      "entity": "ใบสำคัญลงบัญชี",
+      "jvNo": "เลขที่ JV",
+      "jvDate": "วันที่ JV",
+      "source": "ที่มา",
+      "debit": "เดบิต",
+      "credit": "เครดิต",
+      "deleteTitle": "ลบใบสำคัญลงบัญชี?",
+      "deleteConfirm": "ลบ {jvNo} ใช่ไหม? ลบแล้วกู้คืนไม่ได้",
+      "deleteDraftOnly": "ลบได้เฉพาะใบที่ยังเป็นฉบับร่าง"
     }
   },
   "dashboardWidget": {

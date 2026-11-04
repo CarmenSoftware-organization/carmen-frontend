@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useBuCode } from "@/hooks/use-bu-code";
+import { useXlsxExport, type XlsxColumn } from "@/hooks/use-xlsx-export";
 import type { ParamsDto } from "@/types/params";
 import type {
+  JournalVoucher,
   JournalVoucherAction,
   JournalVoucherInput,
 } from "@/types/journal-voucher";
@@ -23,12 +25,50 @@ function useRepositoryContext() {
   return { buCode: useBuCode() ?? "BU-MOCK", repository };
 }
 
-export function useJournalVouchers(params?: ParamsDto) {
+/**
+ * รายการ JV แบบแบ่งหน้า — `options.enabled` ให้หน้า list ปิด query นี้ตอนมือถือ
+ * ใช้ `useGridPagination` (เลื่อนโหลดต่อ) แทน
+ */
+export function useJournalVouchers(
+  params?: ParamsDto,
+  options?: { enabled?: boolean },
+) {
   const context = useRepositoryContext();
   return useQuery({
     queryKey: JOURNAL_VOUCHER_QUERY_KEYS.list(context.buCode, params),
     queryFn: () => context.repository.list(context.buCode, params),
+    enabled: options?.enabled ?? true,
   });
+}
+
+/** ลบใบ JV ที่ยังเป็น draft แล้วรีเฟรชรายการ */
+export function useDeleteJournalVoucher() {
+  const context = useMutationContext();
+  return useMutation({
+    mutationFn: (id: string) => context.repository.remove(context.buCode, id),
+    onSuccess: context.invalidate,
+  });
+}
+
+/** Export รายการ JV ตามตัวกรองปัจจุบันเป็น Excel (ท่าเดียวกับ PO) */
+export function useExportJournalVoucher() {
+  const context = useRepositoryContext();
+  const { exportToXlsx, isExporting } = useXlsxExport();
+  const exportJournalVoucher = ({
+    params,
+    columns,
+  }: {
+    params?: ParamsDto;
+    columns: XlsxColumn<JournalVoucher>[];
+  }) =>
+    exportToXlsx<JournalVoucher>({
+      fetch: async () =>
+        (await context.repository.list(context.buCode, params)).data,
+      columns,
+      sheetName: "Journal Vouchers",
+      fileNamePrefix: "journal-voucher",
+    });
+  return { exportJournalVoucher, isExporting };
 }
 
 export function useJournalVoucher(id?: string) {
