@@ -32,6 +32,7 @@ import {
   Save,
   Send,
   ShieldCheck,
+  ThumbsDown,
   Trash2,
   Undo2,
   WandSparkles,
@@ -105,6 +106,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { WorkflowTrack } from "@/components/share/workflow-track";
+import { WorkflowStepButton } from "@/components/share/workflow-step-button";
+import {
+  WorkflowHistoryTimeline,
+  type WorkflowHistoryTimelineEntry,
+} from "@/components/share/workflow-history-timeline";
+import { StatusIconLabel } from "@/components/ui/status-icon-label";
+// action ของ workflow ใช้คำชุดเดียวกับ PR/PO (workflow engine ตัวเดียวกัน)
+import { PR_WORKFLOW_ACTION_CONFIG } from "@/constant/purchase-request";
+import { jvSourceLabel, jvStatusLabel } from "../journal-voucher/jv-status";
 import { JvRejectDialog } from "./jv-reject-dialog";
 import { JvReverseDialog } from "./jv-reverse-dialog";
 import { JvVoidDialog } from "./jv-void-dialog";
@@ -258,6 +268,7 @@ export default function AccountingDocumentDetail() {
   const { id } = useParams<{ id: string }>();
   const t = useTranslations("accounting.documents");
   const tc = useTranslations("common");
+  const tfl = useTranslations("field");
   const errorToast = useErrorToast();
   const config = accountingDocumentFromPath(pathname);
   const isJournalVoucher = config.kind === "journalVoucher";
@@ -283,6 +294,7 @@ export default function AccountingDocumentDetail() {
   const approveJournal = useJournalVoucherAction("approve");
   const rejectJournal = useJournalVoucherAction("reject");
   const [rejectOpen, setRejectOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const copyJournal = useCopyJournalVoucher();
   const journal = journalQuery.data;
   const sourceGenerated = journal ? isSourceGenerated(journal) : false;
@@ -1112,6 +1124,55 @@ export default function AccountingDocumentDetail() {
       : (journal?.source_no ?? journal?.source_id ?? "—")
     : "AP-102934";
 
+  // หัวเอกสารทรงเดียวกับ PR/PO/GRN: เลขที่ใบ │ สถานะ · ที่มา · รุ่น แล้วแถบ
+  // workflow อยู่ใต้เลขที่ใบ (กดเปิดประวัติได้) — เดิมสถานะ/ที่มาไปอยู่ขวาสุดของ
+  // แถบ Schedule Post และ workflow track ปนอยู่กลางแถบเดียวกัน
+  const jvHistory: WorkflowHistoryTimelineEntry[] = Array.isArray(
+    journal?.workflow_history,
+  )
+    ? (journal.workflow_history as WorkflowHistoryTimelineEntry[])
+    : [];
+  const hasJvHistory = jvHistory.length > 0;
+  const jvBadges =
+    isJournalVoucher && journal ? (
+      <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3">
+        <StatusIconLabel
+          status={journal.jv_status}
+          label={jvStatusLabel(journal.jv_status)}
+          className="text-muted-foreground text-micro [&>svg]:size-3"
+        />
+        {journal.doc_version != null && (
+          <span className="text-muted-foreground text-micro">
+            {tfl("version")} {journal.doc_version}
+          </span>
+        )}
+      </div>
+    ) : undefined;
+  const jvWorkflowStep =
+    isJournalVoucher && journal && hasWorkflowApproval ? (
+      <WorkflowStepButton
+        onShowHistory={hasJvHistory ? () => setShowHistory(true) : undefined}
+      >
+        <WorkflowTrack
+          previousStage={journal.workflow_previous_stage ?? undefined}
+          currentStage={
+            journal.workflow_current_stage ?? journal.workflow_name ?? "—"
+          }
+          nextStage={journal.workflow_next_stage ?? undefined}
+          terminalState={journal.jv_status === "void" ? "voided" : undefined}
+        />
+      </WorkflowStepButton>
+    ) : undefined;
+  // ปุ่มตัดสินของผู้อนุมัติอยู่ที่ footer ข้างยอดรวม (ทรงเดียวกับ PoFooterAction)
+  // ไม่ใช่บนหัว — หัวเหลือแค่ปุ่มจัดการเอกสาร
+  // แถบตัวเลือกใต้หัวใบ: Schedule Post · Auto-Reverse │ Source · Ref. Doc · Status
+  // โชว์ทุกใบ ทุกโหมด — ข้อมูลต้องครบบนจอตาม mockup v2.14 แม้จะไม่ได้ตั้งค่าไว้
+  const showOptionsStrip = config.kind !== "financialReports";
+  const jvCanApprove =
+    isJournalVoucher && isView && !!journalCapabilities?.can_approve;
+  const jvCanReject =
+    isJournalVoucher && isView && !!journalCapabilities?.can_reject;
+
   const onJournalActionError = (error: Error) =>
     error instanceof ApiError && isAppStatusErrorCode(error.appCode)
       ? errorToast(error)
@@ -1182,6 +1243,8 @@ export default function AccountingDocumentDetail() {
           title={number}
           // JV อ่าน API จริง (useJournalVoucher) — ชนิดอื่นยังเป็น documentsFor()
           mock={!isJournalVoucher}
+          badges={jvBadges}
+          subtitle={jvWorkflowStep}
           backLabel={t("back")}
           onBack={() => navigate(config.path)}
           actions={
@@ -1192,6 +1255,10 @@ export default function AccountingDocumentDetail() {
                   <Button
                     type="button"
                     size="sm"
+                    // ปุ่มหลักตัวเดียวต่อหน้า — ถ้า footer มีปุ่มตัดสิน Edit ถอยเป็น outline
+                    variant={
+                      jvCanApprove || jvCanReject ? "outline" : "default"
+                    }
                     disabled={documentStatus === "Voided"}
                     onClick={startEdit}
                   >
@@ -1199,35 +1266,16 @@ export default function AccountingDocumentDetail() {
                     {tc("edit")}
                   </Button>
                 )}
-                {isJournalVoucher && journalCapabilities?.can_approve && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    disabled={approveJournal.isPending}
-                    onClick={handleJournalApprove}
-                  >
-                    <Check className="size-4" aria-hidden="true" />
-                    {tc("approve")}
-                  </Button>
-                )}
-                {isJournalVoucher && journalCapabilities?.can_reject && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setRejectOpen(true)}
-                  >
-                    <Undo2 className="size-4" aria-hidden="true" />
-                    {tc("reject")}
-                  </Button>
-                )}
+                {/* Void / Reverse = ปุ่มจัดการเอกสารรองแบบ outline มีไอคอน (ทรงเดียวกับ
+                    Close / Send email ของ PO) — Approve / Reject ย้ายไป footer แล้ว */}
                 {isJournalVoucher && journalCapabilities?.can_void && (
                   <Button
                     type="button"
                     size="sm"
-                    variant="ghost"
+                    variant="outline"
                     onClick={() => setJournalConfirmation("void")}
                   >
+                    <Ban aria-hidden="true" />
                     {t("void")}
                   </Button>
                 )}
@@ -1235,9 +1283,10 @@ export default function AccountingDocumentDetail() {
                   <Button
                     type="button"
                     size="sm"
-                    variant="ghost"
+                    variant="outline"
                     onClick={() => setJournalConfirmation("reverse")}
                   >
+                    <Undo2 aria-hidden="true" />
                     {t("reverse")}
                   </Button>
                 )}
@@ -1731,7 +1780,7 @@ export default function AccountingDocumentDetail() {
               </>
             )}
           </CardContent>
-          {config.kind !== "financialReports" && (
+          {showOptionsStrip && (
             <CardContent
               className={`flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-3 ${
                 usesVoucherDetailPattern ? "px-0" : "px-4"
@@ -1759,7 +1808,10 @@ export default function AccountingDocumentDetail() {
                       <DatePicker
                         value={values.scheduleDate}
                         onValueChange={(scheduleDate) =>
-                          setValues((current) => ({ ...current, scheduleDate }))
+                          setValues((current) => ({
+                            ...current,
+                            scheduleDate,
+                          }))
                         }
                         readOnly={isView}
                         hideClear
@@ -1793,7 +1845,10 @@ export default function AccountingDocumentDetail() {
                       <DatePicker
                         value={values.reverseDate}
                         onValueChange={(reverseDate) =>
-                          setValues((current) => ({ ...current, reverseDate }))
+                          setValues((current) => ({
+                            ...current,
+                            reverseDate,
+                          }))
                         }
                         readOnly={isView}
                         hideClear
@@ -1807,26 +1862,6 @@ export default function AccountingDocumentDetail() {
                     aria-hidden="true"
                   />
                 </>
-              )}
-
-              {hasWorkflowApproval && isJournalVoucher && journal && (
-                <div
-                  className="w-full max-w-80 min-w-0"
-                  aria-label={t("workflowStageStrip")}
-                >
-                  <WorkflowTrack
-                    previousStage={journal.workflow_previous_stage ?? undefined}
-                    currentStage={
-                      journal.workflow_current_stage ??
-                      journal.workflow_name ??
-                      "—"
-                    }
-                    nextStage={journal.workflow_next_stage ?? undefined}
-                    terminalState={
-                      journal.jv_status === "void" ? "voided" : undefined
-                    }
-                  />
-                </div>
               )}
 
               {hasWorkflowApproval && !isJournalVoucher && (
@@ -1870,7 +1905,7 @@ export default function AccountingDocumentDetail() {
                 </Tooltip>
               )}
 
-              {hasWorkflowApproval && (
+              {hasWorkflowApproval && !isJournalVoucher && (
                 <span
                   className="bg-border hidden h-8 w-px xl:block"
                   aria-hidden="true"
@@ -1896,31 +1931,59 @@ export default function AccountingDocumentDetail() {
                 </div>
               )}
 
-              <div className="ml-auto flex min-h-8 items-center gap-3 text-xs">
-                <span className="text-muted-foreground">{t("source")}</span>
-                {sourceLink?.href ? (
-                  <CellAction onClick={() => navigate(sourceLink.href!)}>
-                    {sourceLabel}
-                  </CellAction>
-                ) : (
-                  <span className="font-medium tabular-nums">
-                    {sourceLabel}
+              {isJournalVoucher && journal ? (
+                // Source │ Ref. Doc │ Status เรียงตาม mockup v2.14 — ใบที่ไม่มีเอกสาร
+                // อ้างอิงโชว์ "—" ไม่ซ่อนช่อง ผู้ตรวจต้องเห็นว่า "ไม่มี" ไม่ใช่ "หาย"
+                <div className="ml-auto flex min-h-8 flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  <span className="text-muted-foreground">{t("source")}</span>
+                  <span className="font-medium">
+                    {jvSourceLabel(journal.source_type)}
                   </span>
-                )}
-                <span className="bg-border h-4 w-px" aria-hidden="true" />
-                <span className="text-muted-foreground">{t("status")}</span>
-                <Badge
-                  variant={
-                    documentStatus === "Voided"
-                      ? "destructive"
-                      : documentStatus === "Pending"
-                        ? "secondary"
-                        : "outline"
-                  }
-                >
-                  {documentStatus}
-                </Badge>
-              </div>
+                  <span className="bg-border h-4 w-px" aria-hidden="true" />
+                  <span className="text-muted-foreground">{t("refDoc")}</span>
+                  {sourceLink?.href ? (
+                    <CellAction onClick={() => navigate(sourceLink.href!)}>
+                      {sourceLink.label}
+                    </CellAction>
+                  ) : (
+                    <span className="font-medium tabular-nums">
+                      {sourceLink?.label ?? journal.source_no ?? "—"}
+                    </span>
+                  )}
+                  <span className="bg-border h-4 w-px" aria-hidden="true" />
+                  <span className="text-muted-foreground">{t("status")}</span>
+                  <StatusIconLabel
+                    status={journal.jv_status}
+                    label={jvStatusLabel(journal.jv_status)}
+                  />
+                </div>
+              ) : (
+                <div className="ml-auto flex min-h-8 items-center gap-3 text-xs">
+                  <span className="text-muted-foreground">{t("source")}</span>
+                  {sourceLink?.href ? (
+                    <CellAction onClick={() => navigate(sourceLink.href!)}>
+                      {sourceLabel}
+                    </CellAction>
+                  ) : (
+                    <span className="font-medium tabular-nums">
+                      {sourceLabel}
+                    </span>
+                  )}
+                  <span className="bg-border h-4 w-px" aria-hidden="true" />
+                  <span className="text-muted-foreground">{t("status")}</span>
+                  <Badge
+                    variant={
+                      documentStatus === "Voided"
+                        ? "destructive"
+                        : documentStatus === "Pending"
+                          ? "secondary"
+                          : "outline"
+                    }
+                  >
+                    {documentStatus}
+                  </Badge>
+                </div>
+              )}
             </CardContent>
           )}
         </Card>
@@ -1938,63 +2001,79 @@ export default function AccountingDocumentDetail() {
                 : "h-[calc(100dvh-21rem)] min-h-80"
           }`}
         >
-          <CardHeader className={usesVoucherDetailPattern ? "px-0" : "px-4"}>
-            <div className="flex flex-wrap items-center gap-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <ListTree className="text-primary size-4" aria-hidden="true" />
-                {entryTitle}
-              </CardTitle>
-              {isPeriodLocked && (
-                <Badge variant="destructive" className="gap-1 text-xs">
-                  🔒 งวดบัญชี {currentPeriod?.fiscal_year}-P
-                  {currentPeriod?.period_number} ปิดแล้ว (
-                  {currentPeriod?.status})
-                </Badge>
-              )}
-            </div>
-            {!isView && (
-              <CardAction className="flex flex-wrap items-center gap-2">
-                {!isBalanced && (!isGlVoucher || transactionCount > 0) && (
+          {/* JV ไม่มีหัวตาราง "Journal Entry Details" แล้ว (PR/PO/GRN ไม่มีหัวก้อน
+              รายการ — เส้นคั่นใต้ฟอร์มหัวใบบอกจังหวะเอง) แถบนี้เหลือไว้เฉพาะเมื่อมี
+              ป้ายงวดปิด หรือปุ่มแก้แถวตอนแก้ไข */}
+          {(!isJournalVoucher || isPeriodLocked || !isView) && (
+            <CardHeader className={usesVoucherDetailPattern ? "px-0" : "px-4"}>
+              <div className="flex flex-wrap items-center gap-2">
+                {!isJournalVoucher && (
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                    <ListTree
+                      className="text-primary size-4"
+                      aria-hidden="true"
+                    />
+                    {entryTitle}
+                  </CardTitle>
+                )}
+                {isPeriodLocked && (
+                  <Badge variant="destructive" className="gap-1 text-xs">
+                    🔒 งวดบัญชี {currentPeriod?.fiscal_year}-P
+                    {currentPeriod?.period_number} ปิดแล้ว (
+                    {currentPeriod?.status})
+                  </Badge>
+                )}
+              </div>
+              {!isView && (
+                <CardAction className="flex flex-wrap items-center gap-2">
+                  {!isBalanced && (!isGlVoucher || transactionCount > 0) && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={autoBalanceEntry}
+                      title="ปรับยอดให้สมดุลอัตโนมัติ (Alt+B)"
+                    >
+                      Auto Balance
+                      <kbd className="bg-muted-foreground/20 text-micro-legal ml-1 rounded px-1">
+                        Alt+B
+                      </kbd>
+                    </Button>
+                  )}
                   <Button
                     type="button"
-                    variant="secondary"
+                    variant="outline"
                     size="sm"
-                    onClick={autoBalanceEntry}
-                    title="ปรับยอดให้สมดุลอัตโนมัติ (Alt+B)"
+                    disabled={selectedLineIds.length === 0}
+                    onClick={deleteSelectedLines}
                   >
-                    Auto Balance
-                    <kbd className="bg-muted-foreground/20 text-micro-legal ml-1 rounded px-1">
-                      Alt+B
+                    <Trash2 className="size-4" aria-hidden="true" />
+                    {tc("delete")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={addLine}
+                    title={t("addRowShortcut")}
+                  >
+                    <Plus className="size-4" aria-hidden="true" />
+                    {t("addRow")}
+                    <kbd className="bg-primary-foreground/15 text-micro-legal rounded px-1">
+                      Alt+A
                     </kbd>
                   </Button>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={selectedLineIds.length === 0}
-                  onClick={deleteSelectedLines}
-                >
-                  <Trash2 className="size-4" aria-hidden="true" />
-                  {tc("delete")}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={addLine}
-                  title={t("addRowShortcut")}
-                >
-                  <Plus className="size-4" aria-hidden="true" />
-                  {t("addRow")}
-                  <kbd className="bg-primary-foreground/15 text-micro-legal rounded px-1">
-                    Alt+A
-                  </kbd>
-                </Button>
-              </CardAction>
-            )}
-          </CardHeader>
+                </CardAction>
+              )}
+            </CardHeader>
+          )}
           <CardContent className="flex min-h-0 flex-1 flex-col px-0">
-            <div className="min-h-0 flex-1 overflow-auto border-y">
+            <div
+              className={
+                isJournalVoucher
+                  ? "bg-card max-h-full min-h-0 overflow-auto rounded-lg border"
+                  : "min-h-0 flex-1 overflow-auto border-y"
+              }
+            >
               <table className="w-full min-w-5xl text-xs">
                 <thead className="bg-muted sticky top-0 z-10 border-b">
                   <tr>
@@ -2524,7 +2603,11 @@ export default function AccountingDocumentDetail() {
               </table>
             </div>
             {usesVoucherDetailPattern ? (
-              <div id="journal-balance-status" aria-live="polite">
+              <div
+                id="journal-balance-status"
+                aria-live="polite"
+                className={isJournalVoucher ? "mt-auto" : undefined}
+              >
                 <SummaryFooterBar
                   hasRecord
                   className={
@@ -2576,6 +2659,34 @@ export default function AccountingDocumentDetail() {
                         <Send className="size-4" aria-hidden="true" />
                         {t("submit")}
                       </Button>
+                    </div>
+                  )}
+                  {(jvCanApprove || jvCanReject) && (
+                    <div className="flex shrink-0 gap-2">
+                      {jvCanApprove && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="success"
+                          disabled={approveJournal.isPending}
+                          onClick={handleJournalApprove}
+                        >
+                          <Check aria-hidden="true" />
+                          {tc("approve")}
+                        </Button>
+                      )}
+                      {jvCanReject && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="destructive"
+                          disabled={rejectJournal.isPending}
+                          onClick={() => setRejectOpen(true)}
+                        >
+                          <ThumbsDown aria-hidden="true" />
+                          {tc("reject")}
+                        </Button>
+                      )}
                     </div>
                   )}
                 </SummaryFooterBar>
@@ -2632,7 +2743,11 @@ export default function AccountingDocumentDetail() {
           if (!journal) return;
           reverseJournal.mutate(
             // backend บังคับ jv_date (วันที่ของใบกลับ) — ไม่ส่ง = Invalid Date ฝั่ง micro
-            { id: journal.id, doc_version: journal.doc_version, jv_date: jvDate },
+            {
+              id: journal.id,
+              doc_version: journal.doc_version,
+              jv_date: jvDate,
+            },
             {
               onSuccess: ({ data }) => {
                 setJournalConfirmation(null);
@@ -2668,6 +2783,25 @@ export default function AccountingDocumentDetail() {
           );
         }}
       />
+      {isJournalVoucher && hasJvHistory && (
+        <Sheet open={showHistory} onOpenChange={setShowHistory}>
+          <SheetContent side="right" className="overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>{t("workflowHistory")}</SheetTitle>
+              <SheetDescription className="sr-only">
+                {t("workflowHistory")}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="px-4 pb-4">
+              <WorkflowHistoryTimeline
+                history={jvHistory}
+                statusConfig={PR_WORKFLOW_ACTION_CONFIG}
+                emptyLabel={t("noWorkflowHistory")}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
       <JvRejectDialog
         open={rejectOpen}
         onOpenChange={setRejectOpen}
