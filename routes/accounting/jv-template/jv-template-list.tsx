@@ -28,7 +28,6 @@ import { DocumentListActions } from "@/components/share/document-list-actions";
 import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { PERMISSIONS } from "@/constant/permissions";
-import { formatCurrency } from "@/lib/currency-utils";
 import { cn } from "@/lib/utils";
 import type { FilterFieldDef } from "@/types/list-filter";
 import {
@@ -42,6 +41,7 @@ import type { JvTemplate } from "./jv-template-types";
 import {
   jvTemplateActiveLabel,
   jvTemplateAmount,
+  jvTemplateAmountLabelKey,
   jvTemplatePeriodRange,
   jvTemplateTypeLabel,
   translateOptionLabels,
@@ -91,9 +91,8 @@ export default function JvTemplateList({
   });
 
   const filterFields = useMemo<FilterFieldDef[]>(() => {
-    const typeOptions = translateOptionLabels(
-      JV_TEMPLATE_TYPE_OPTIONS,
-      (k) => t(`type_${k}`),
+    const typeOptions = translateOptionLabels(JV_TEMPLATE_TYPE_OPTIONS, (k) =>
+      t(`type_${k}`),
     );
     const activeOptions = translateOptionLabels(
       JV_TEMPLATE_ACTIVE_OPTIONS,
@@ -188,14 +187,15 @@ export default function JvTemplateList({
             value: (r) => jvTemplatePeriodRange(r),
             width: 20,
           },
-          {
-            header: t("allocateAmount"),
-            value: (r) => {
-              const amount = jvTemplateAmount(r);
-              return amount === null ? "" : formatCurrency(amount);
-            },
-            width: 16,
-          },
+          ...(kind !== "recurring"
+            ? [
+                {
+                  header: t(jvTemplateAmountLabelKey(kind)),
+                  value: (r: JvTemplate) => jvTemplateAmount(r) ?? "",
+                  width: 16,
+                },
+              ]
+            : []),
           {
             header: t("frequencyMonths"),
             value: (r) => r.frequency_months ?? "",

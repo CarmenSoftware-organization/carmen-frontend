@@ -543,6 +543,7 @@
       "periodRange": "Period range",
       "frequency": "Frequency",
       "frequencyMonths": "Every (months)",
+      "amount": "Amount",
       "allocateAmount": "Amount to allocate",
       "amortizeType": "Amortize method",
       "startDate": "Start date",

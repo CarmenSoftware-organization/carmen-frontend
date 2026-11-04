@@ -13,6 +13,7 @@ import type { JvTemplate } from "./jv-template-types";
 import {
   jvTemplateActiveLabel,
   jvTemplateAmount,
+  jvTemplateAmountLabelKey,
   jvTemplatePeriodRange,
   jvTemplateTypeLabel,
 } from "./jv-template-labels";
@@ -101,34 +102,38 @@ export function useJvTemplateTable({
       size: 170,
       meta: { headerTitle: t("periodRange"), skeleton: columnSkeletons.text },
     },
-    {
-      id: "amount",
-      accessorFn: (row) => jvTemplateAmount(row),
-      enableSorting: false,
-      header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={t("allocateAmount")}
-          className="justify-end"
-        />
-      ),
-      cell: ({ row }) => {
-        const amount = jvTemplateAmount(row.original);
-        return amount === null ? (
-          <span className="text-muted-foreground">—</span>
-        ) : (
-          <span className="font-medium whitespace-nowrap tabular-nums">
-            {formatCurrency(amount)}
-          </span>
-        );
-      },
-      size: 140,
-      meta: {
-        headerTitle: t("allocateAmount"),
-        skeleton: columnSkeletons.text,
-        cellClassName: "text-right",
-      },
-    },
+    ...(kind !== "recurring"
+      ? [
+          {
+            id: "amount",
+            accessorFn: (row) => jvTemplateAmount(row),
+            enableSorting: false,
+            header: ({ column }) => (
+              <DataGridColumnHeader
+                column={column}
+                title={t(jvTemplateAmountLabelKey(kind))}
+                className="justify-end"
+              />
+            ),
+            cell: ({ row }) => {
+              const amount = jvTemplateAmount(row.original);
+              return amount === null ? (
+                <span className="text-muted-foreground">—</span>
+              ) : (
+                <span className="font-medium whitespace-nowrap tabular-nums">
+                  {formatCurrency(amount)}
+                </span>
+              );
+            },
+            size: 140,
+            meta: {
+              headerTitle: t(jvTemplateAmountLabelKey(kind)),
+              skeleton: columnSkeletons.text,
+              cellClassName: "text-right",
+            },
+          } satisfies ColumnDef<JvTemplate>,
+        ]
+      : []),
     ...(kind !== "allocation"
       ? [
           {

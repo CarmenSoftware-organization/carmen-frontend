@@ -543,6 +543,7 @@
       "periodRange": "ช่วงงวด",
       "frequency": "ความถี่",
       "frequencyMonths": "ทุก (เดือน)",
+      "amount": "จำนวนเงิน",
       "allocateAmount": "ยอดที่ปันส่วน",
       "amortizeType": "วิธีทยอยตัด",
       "startDate": "วันที่เริ่ม",

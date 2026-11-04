@@ -12,6 +12,7 @@ import type { JvTemplate } from "./jv-template-types";
 import {
   jvTemplateActiveLabel,
   jvTemplateAmount,
+  jvTemplateAmountLabelKey,
   jvTemplatePeriodRange,
   jvTemplateTypeLabel,
 } from "./jv-template-labels";
@@ -68,10 +69,12 @@ export default function JvTemplateCardList({
               </ListCardRow>
             )}
             <ListCardRow label={t("periodRange")}>
-              <span className="tabular-nums">{jvTemplatePeriodRange(item)}</span>
+              <span className="tabular-nums">
+                {jvTemplatePeriodRange(item)}
+              </span>
             </ListCardRow>
             {amount !== null && (
-              <ListCardRow label={t("allocateAmount")}>
+              <ListCardRow label={t(jvTemplateAmountLabelKey(kind))}>
                 <span className="font-semibold tabular-nums">
                   {formatCurrency(amount)}
                 </span>
