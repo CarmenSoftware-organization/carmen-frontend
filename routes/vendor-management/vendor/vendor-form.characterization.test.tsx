@@ -158,7 +158,12 @@ describe("VendorForm — characterization", () => {
     expect(print).toHaveBeenCalledWith("VENDOR", {
       documentId: undefined,
       templateId: "da3fff14-8000-4065-bc28-a734e5783814",
-      filters: { VendorFrom: "V-001", VendorTo: "V-001", Status: "ALL" },
+      filters: {
+        VendorFrom: "V-001",
+        VendorTo: "V-001",
+        Status: "ALL",
+        PrintSingle: true,
+      },
     });
   });
 

@@ -114,7 +114,8 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {/* Recipe Card Report ของสูตรนี้สูตรเดียว — template เดียวกับในหน้ารายการรายงาน */}
+          {/* Recipe Card Report ของสูตรนี้สูตรเดียว — template เดียวกับในหน้ารายการรายงาน
+              PrintSingle: ใบเดียว micro-report ไม่พิมพ์บล็อกตัวกรองบนหัวรายงาน (หน้ารายการรายงานยังพิมพ์) */}
           {recipe.code && (
             <PrintDocumentButton
               documentType="RECIPE"
@@ -125,6 +126,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                 RecipeFrom: recipe.code,
                 RecipeTo: recipe.code,
                 Status: "ALL",
+                PrintSingle: true,
               }}
             />
           )}
