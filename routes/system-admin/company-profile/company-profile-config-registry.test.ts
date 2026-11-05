@@ -180,17 +180,19 @@ describe("PO config registry", () => {
 
 describe("Print Form config registry", () => {
   const section = CONFIG_SECTIONS.find((s) => s.id === "printForm");
+  // แถวเลือก template ต่อชนิดเอกสาร — แถว Recipe ต่อท้ายเป็นตัวเลือกตายตัว (ดู describe ข้างล่าง)
+  const templateItems = section?.items.filter((i) => i.optionsGroup);
 
   it("registers one enum item per printable document type", () => {
     expect(section).toBeDefined();
-    expect(section?.items).toHaveLength(PRINT_FORM_DOCUMENT_TYPES.length);
-    expect(section?.items.map((i) => i.key)).toEqual(
+    expect(templateItems).toHaveLength(PRINT_FORM_DOCUMENT_TYPES.length);
+    expect(templateItems?.map((i) => i.key)).toEqual(
       PRINT_FORM_DOCUMENT_TYPES.map(printFormConfigKey),
     );
   });
 
   it("defaults every item to empty (use the system default) with no static options", () => {
-    for (const item of section?.items ?? []) {
+    for (const item of templateItems ?? []) {
       expect(item.datatype).toBe("enum");
       expect(item.defaultValue).toBe("");
       expect(item.options).toBeUndefined();
@@ -198,7 +200,7 @@ describe("Print Form config registry", () => {
   });
 
   it("points each item at its report_group and its own label key", () => {
-    expect(section?.items.map((i) => [i.optionsGroup, i.labelKey])).toEqual([
+    expect(templateItems?.map((i) => [i.optionsGroup, i.labelKey])).toEqual([
       ["PR", "config.printFormPr"],
       ["PO", "config.printFormPo"],
       ["GRN", "config.printFormGrn"],
@@ -225,39 +227,32 @@ describe("Print Form config registry", () => {
 });
 
 describe("Recipe config registry", () => {
-  const recipe = CONFIG_SECTIONS.find((s) => s.id === "recipe");
+  const printForm = CONFIG_SECTIONS.find((s) => s.id === "printForm");
+  const recipe = printForm?.items.filter((i) => i.key.startsWith("recipe."));
 
-  it("registers the recipe page's print options under section 'recipe'", () => {
+  it("puts the recipe page's two print dropdowns at the end of Print Forms", () => {
+    expect(CONFIG_SECTIONS.some((s) => s.id === "recipe")).toBe(false);
     expect(
-      recipe?.items.map((i) => [i.key, i.datatype, i.defaultValue]),
+      printForm?.items
+        .slice(-2)
+        .map((i) => [i.key, i.datatype, i.defaultValue]),
     ).toEqual([
       ["recipe.print-orientation", "enum", "portrait"],
-      ["recipe.print-preparation", "boolean", "true"],
-      ["recipe.print-ingredients", "boolean", "true"],
+      ["recipe.print-content", "enum", "all"],
     ]);
-    expect(recipe?.items.map((i) => i.labelKey)).toEqual([
-      "config.recipePrintOrientation",
-      "config.recipePrintPreparation",
-      "config.recipePrintIngredients",
+    expect(recipe?.map((i) => [i.labelKey, i.code, i.optionsGroup])).toEqual([
+      ["config.recipePrintOrientation", "Recipe", undefined],
+      ["config.recipePrintContent", "Recipe", undefined],
     ]);
   });
 
-  it("offers portrait then landscape, neither gated", () => {
-    const orientation = recipe?.items.find(
-      (i) => i.key === "recipe.print-orientation",
-    );
-    expect(orientation?.options?.map((o) => o.value)).toEqual([
-      "portrait",
-      "landscape",
+  it("offers fixed options, none gated by calculation method", () => {
+    expect(recipe?.map((i) => i.options?.map((o) => o.value))).toEqual([
+      ["portrait", "landscape"],
+      ["all", "preparation", "ingredients"],
     ]);
-    expect(orientation?.options?.every((o) => !o.visibleWhenCalcMethod)).toBe(
-      true,
-    );
-    // booleans carry no options
     expect(
-      recipe?.items
-        .filter((i) => i.datatype === "boolean")
-        .every((i) => i.options === undefined),
+      recipe?.every((i) => i.options?.every((o) => !o.visibleWhenCalcMethod)),
     ).toBe(true);
   });
 });

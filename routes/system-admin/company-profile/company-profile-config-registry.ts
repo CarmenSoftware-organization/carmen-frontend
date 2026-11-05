@@ -37,6 +37,50 @@ export interface ConfigSection {
   items: SeededConfigItem[];
 }
 
+/**
+ * ปุ่ม Print ในหน้าสูตร (Recipe Card) — อ่านที่ use-recipe-print-format.ts
+ * อยู่ท้ายหมวด Print Forms แต่ตัวเลือกตายตัว (`options`) ไม่ใช่ template จาก API
+ */
+const RECIPE_PRINT_ITEMS: SeededConfigItem[] = [
+  {
+    key: "recipe.print-orientation",
+    datatype: "enum",
+    defaultValue: "portrait",
+    label: "Recipe Card orientation",
+    labelKey: "config.recipePrintOrientation",
+    code: "Recipe",
+    options: [
+      {
+        value: "portrait",
+        labelKey: "config.recipePrintOrientationOptions.portrait",
+      },
+      {
+        value: "landscape",
+        labelKey: "config.recipePrintOrientationOptions.landscape",
+      },
+    ],
+  },
+  {
+    key: "recipe.print-content",
+    datatype: "enum",
+    defaultValue: "all",
+    label: "Recipe Card content",
+    labelKey: "config.recipePrintContent",
+    code: "Recipe",
+    options: [
+      { value: "all", labelKey: "config.recipePrintContentOptions.all" },
+      {
+        value: "preparation",
+        labelKey: "config.recipePrintContentOptions.preparation",
+      },
+      {
+        value: "ingredients",
+        labelKey: "config.recipePrintContentOptions.ingredients",
+      },
+    ],
+  },
+];
+
 export const CONFIG_SECTIONS: readonly ConfigSection[] = [
   {
     id: "pr",
@@ -102,70 +146,32 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
     id: "printForm",
     titleKey: "sections.printForm",
     descKey: "sections.printFormDesc",
-    items: (
-      [
-        ["PR", "PR - Purchase Request", "config.printFormPr"],
-        ["PO", "PO - Purchase Order", "config.printFormPo"],
-        ["GRN", "GRN - Good Received Note", "config.printFormGrn"],
-        ["SR", "SR - Store Requisition", "config.printFormSr"],
-        ["CN", "CN - Credit Note", "config.printFormCn"],
-        ["SI", "SI - Stock In", "config.printFormSi"],
-        ["SO", "SO - Stock Out", "config.printFormSo"],
-        ["IA", "IA - Inventory Adjustment", "config.printFormIa"],
-        ["PC", "PC - Physical Count", "config.printFormPc"],
-        ["SC", "SC - Spot Check", "config.printFormSc"],
-        ["RFP", "RFP - Request For Pricing", "config.printFormRfp"],
-        ["EOP", "EOP - End Of Period", "config.printFormEop"],
-      ] as [PrintDocumentType, string, string][]
-    ).map(([type, label, labelKey]) => ({
-      key: printFormConfigKey(type),
-      datatype: "enum",
-      defaultValue: "",
-      label,
-      labelKey,
-      code: type,
-      optionsGroup: type,
-    })),
-  },
-  {
-    // ปุ่ม Print ในหน้าสูตร (Recipe Card) — อ่านที่ use-recipe-print-format.ts
-    id: "recipe",
-    titleKey: "sections.recipe",
-    descKey: "sections.recipeDesc",
     items: [
-      {
-        key: "recipe.print-orientation",
+      ...(
+        [
+          ["PR", "PR - Purchase Request", "config.printFormPr"],
+          ["PO", "PO - Purchase Order", "config.printFormPo"],
+          ["GRN", "GRN - Good Received Note", "config.printFormGrn"],
+          ["SR", "SR - Store Requisition", "config.printFormSr"],
+          ["CN", "CN - Credit Note", "config.printFormCn"],
+          ["SI", "SI - Stock In", "config.printFormSi"],
+          ["SO", "SO - Stock Out", "config.printFormSo"],
+          ["IA", "IA - Inventory Adjustment", "config.printFormIa"],
+          ["PC", "PC - Physical Count", "config.printFormPc"],
+          ["SC", "SC - Spot Check", "config.printFormSc"],
+          ["RFP", "RFP - Request For Pricing", "config.printFormRfp"],
+          ["EOP", "EOP - End Of Period", "config.printFormEop"],
+        ] as [PrintDocumentType, string, string][]
+      ).map(([type, label, labelKey]) => ({
+        key: printFormConfigKey(type),
         datatype: "enum",
-        defaultValue: "portrait",
-        label: "Recipe card page orientation",
-        labelKey: "config.recipePrintOrientation",
-        options: [
-          {
-            value: "portrait",
-            labelKey: "config.recipePrintOrientationOptions.portrait",
-          },
-          {
-            value: "landscape",
-            labelKey: "config.recipePrintOrientationOptions.landscape",
-          },
-        ],
-      },
-      {
-        key: "recipe.print-preparation",
-        datatype: "boolean",
-        defaultValue: "true",
-        label: "Print preparation",
-        labelKey: "config.recipePrintPreparation",
-        descKey: "config.recipePrintPreparationDesc",
-      },
-      {
-        key: "recipe.print-ingredients",
-        datatype: "boolean",
-        defaultValue: "true",
-        label: "Print ingredients",
-        labelKey: "config.recipePrintIngredients",
-        descKey: "config.recipePrintIngredientsDesc",
-      },
+        defaultValue: "",
+        label,
+        labelKey,
+        code: type,
+        optionsGroup: type,
+      })),
+      ...RECIPE_PRINT_ITEMS,
     ],
   },
 ];

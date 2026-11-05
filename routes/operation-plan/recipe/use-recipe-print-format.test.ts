@@ -10,7 +10,7 @@ const item = (key: string, value: string) =>
   ({ key, value, datatype: "string", label: key }) as BusinessUnitConfigItem;
 
 describe("recipePrintFormat", () => {
-  it("prints portrait with preparation and ingredients when the BU has set nothing", () => {
+  it("prints portrait with everything when the BU has set nothing", () => {
     for (const config of [undefined, {}, []]) {
       expect(recipePrintFormat(config as never)).toEqual({
         templateId: RECIPE_CARD_TEMPLATE_ID,
@@ -19,22 +19,28 @@ describe("recipePrintFormat", () => {
     }
   });
 
-  it("picks the landscape template and hides what the BU turned off", () => {
-    const config = [
-      item("recipe.print-orientation", "landscape"),
-      item("recipe.print-preparation", "false"),
-      item("recipe.print-ingredients", "true"),
-    ];
-    expect(recipePrintFormat(config)).toEqual({
-      templateId: RECIPE_CARD_LANDSCAPE_TEMPLATE_ID,
-      filters: { ShowPreparation: "N", ShowIngredients: "Y" },
-    });
-  });
+  it.each([
+    ["all", "Y", "Y"],
+    ["preparation", "Y", "N"],
+    ["ingredients", "N", "Y"],
+  ] as const)(
+    "content %s → ShowPreparation %s · ShowIngredients %s",
+    (content, sp, si) => {
+      const config = [
+        item("recipe.print-orientation", "landscape"),
+        item("recipe.print-content", content),
+      ];
+      expect(recipePrintFormat(config)).toEqual({
+        templateId: RECIPE_CARD_LANDSCAPE_TEMPLATE_ID,
+        filters: { ShowPreparation: sp, ShowIngredients: si },
+      });
+    },
+  );
 
-  it("treats an empty value as unset (portrait, printed)", () => {
+  it("treats an empty value as unset (portrait, everything)", () => {
     const config = [
       item("recipe.print-orientation", ""),
-      item("recipe.print-ingredients", ""),
+      item("recipe.print-content", ""),
     ];
     expect(recipePrintFormat(config)).toEqual({
       templateId: RECIPE_CARD_TEMPLATE_ID,
