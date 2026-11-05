@@ -13,11 +13,11 @@ import { useListReturn } from "@/hooks/use-list-return";
 import { useUnitById } from "@/hooks/use-unit";
 import { PERMISSIONS } from "@/constant/permissions";
 import { ALLERGEN_OPTIONS } from "@/constant/recipe";
-import { RECIPE_CARD_TEMPLATE_ID } from "@/lib/print-document";
 import { cn } from "@/lib/utils";
 import type { Recipe, RecipePreparationStep } from "@/types/recipe";
 import { activeSteps, normalizeEquipment } from "./recipe-steps-sync";
 import { activeIngredients, formatQty } from "./recipe-ingredients-cost";
+import { useRecipePrintFormat } from "./use-recipe-print-format";
 import { useWakeLock } from "./use-wake-lock";
 
 const LIST_PATH = "/operation-plan/recipe";
@@ -34,6 +34,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
   const { can, canWrite } = useCan();
   const { toList, returnState } = useListReturn(LIST_PATH);
   const { data: yieldUnit } = useUnitById(recipe.base_yield_unit || undefined);
+  const printFormat = useRecipePrintFormat();
   useWakeLock(true);
 
   const steps = activeSteps(recipe.preparation_steps);
@@ -114,12 +115,12 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {/* Recipe Card Report ของสูตรนี้สูตรเดียว — template เดียวกับในหน้ารายการรายงาน
+          {/* Recipe Card Report ของสูตรนี้สูตรเดียว — แนวกระดาษ / พิมพ์วิธีทำ / พิมพ์วัตถุดิบ ตาม Default Setting → Recipe
               PrintSingle: ใบเดียว micro-report ไม่พิมพ์บล็อกตัวกรองบนหัวรายงาน (หน้ารายการรายงานยังพิมพ์) */}
           {recipe.code && (
             <PrintDocumentButton
               documentType="RECIPE"
-              templateId={RECIPE_CARD_TEMPLATE_ID}
+              templateId={printFormat.templateId}
               filters={{
                 CategoryFrom: "ALL",
                 CategoryTo: "ALL",
@@ -127,6 +128,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                 RecipeTo: recipe.code,
                 Status: "ALL",
                 PrintSingle: true,
+                ...printFormat.filters,
               }}
             />
           )}

@@ -41,8 +41,22 @@ export function resolvePrintFormTemplateId(
   config: BusinessUnitDetail["config"] | undefined,
   type: PrintDocumentType,
 ): string | undefined {
+  return resolveBuConfigValue(config, printFormConfigKey(type));
+}
+
+/**
+ * อ่านค่า config ของ BU ตาม key — ค่าว่างหรือไม่มี key = ยังไม่ได้ตั้ง → undefined
+ * (ผู้เรียกใช้ค่าเริ่มต้นของ registry เอง) · GET อาจคืน config เป็น `{}` จึงต้องเช็ค isArray
+ *
+ * @param config - `config` จาก BusinessUnitDetail
+ * @param key - config key เช่น `print-form.pr`, `recipe.print-orientation`
+ * @returns ค่าที่ตั้งไว้ หรือ undefined
+ */
+export function resolveBuConfigValue(
+  config: BusinessUnitDetail["config"] | undefined,
+  key: string,
+): string | undefined {
   if (!Array.isArray(config)) return undefined;
-  const key = printFormConfigKey(type);
   const value = (config as BusinessUnitConfigItem[]).find(
     (i) => i.key === key,
   )?.value;

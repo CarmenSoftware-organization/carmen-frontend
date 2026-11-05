@@ -70,6 +70,16 @@ export const PRODUCT_CATEGORY_TEMPLATE_ID =
  */
 export const RECIPE_CARD_TEMPLATE_ID = "60bbb2b6-3aa5-4802-bf24-66357287c301";
 
+/**
+ * Recipe Card Report Landscape — the same card on a landscape page, a form template (micro-report seed, id fixed
+ * across environments) printed from a recipe's page when the BU's Default Setting → Recipe says landscape; not on
+ * the report list. Same function and filters as RECIPE_CARD_TEMPLATE_ID.
+ * Recipe Card Report แนวนอน — template แบบ form พิมพ์จากหน้าสูตรเมื่อ BU ตั้ง Default Setting → Recipe เป็นแนวนอน
+ * · ฟังก์ชันและตัวกรองเดียวกับตัวแนวตั้ง
+ */
+export const RECIPE_CARD_LANDSCAPE_TEMPLATE_ID =
+  "bc4735ff-bfdf-4eae-93f6-95a6c7737454";
+
 export interface ViewerResponse {
   data?: { url: string };
   url?: string;
