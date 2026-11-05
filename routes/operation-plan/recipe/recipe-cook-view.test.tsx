@@ -62,7 +62,7 @@ describe("RecipeCookView — ปุ่ม Print", () => {
 
     expect(print).toHaveBeenCalledWith("RECIPE", {
       documentId: undefined,
-      templateId: "60bbb2b6-3aa5-4802-bf24-66357287c301",
+      templateId: "4f71576d-397e-43d4-8394-d475f6ad9520",
       filters: {
         CategoryFrom: "ALL",
         CategoryTo: "ALL",
