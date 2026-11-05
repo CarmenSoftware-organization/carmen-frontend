@@ -714,6 +714,7 @@
           "journal": "Journal voucher",
           "openJournal": "Open journal voucher",
           "voidReason": "Void reason",
+          "reversalJournal": "Reversal journal voucher",
           "fromGrnBanner": "Created automatically from GRN - edit it at the GRN.",
           "openGrn": "Open GRN",
           "linesTitle": "Lines",

@@ -21,6 +21,7 @@ import {
   type PaymentErrorKey,
   type PaymentForm,
 } from "./ap-payment-form";
+import { ApReadValue } from "../shared/ap-read-value";
 
 const DECIMAL_RE = /^\d*(\.\d*)?$/;
 
@@ -140,44 +141,57 @@ export function PaymentHeader({
         </Field>
         <Field>
           <FieldLabel>{t("method")}</FieldLabel>
-          <Select
-            value={form.payment_method}
-            disabled={!editable}
-            onValueChange={(value) =>
-              onChange({ payment_method: value as ApPaymentMethod })
-            }
-          >
-            <SelectTrigger size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PAYMENT_METHODS.map((method) => (
-                <SelectItem key={method} value={method}>
-                  {t(`methods.${method}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {editable ? (
+            <Select
+              value={form.payment_method}
+              onValueChange={(value) =>
+                onChange({ payment_method: value as ApPaymentMethod })
+              }
+            >
+              <SelectTrigger size="sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAYMENT_METHODS.map((method) => (
+                  <SelectItem key={method} value={method}>
+                    {t(`methods.${method}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <ApReadValue>{t(`methods.${form.payment_method}`)}</ApReadValue>
+          )}
         </Field>
         <Field>
           <FieldLabel>{t("referenceNo")}</FieldLabel>
-          <Input
-            value={form.reference_no}
-            maxLength={100}
-            readOnly={!editable}
-            onChange={(event) => onChange({ reference_no: event.target.value })}
-          />
+          {editable ? (
+            <Input
+              value={form.reference_no}
+              maxLength={100}
+              onChange={(event) =>
+                onChange({ reference_no: event.target.value })
+              }
+            />
+          ) : (
+            <ApReadValue>{form.reference_no}</ApReadValue>
+          )}
         </Field>
         {form.payment_method === "cheque" && (
           <>
             <Field>
               <FieldLabel>{td("chequeNo")}</FieldLabel>
-              <Input
-                value={form.cheque_no}
-                maxLength={50}
-                readOnly={!editable}
-                onChange={(event) => onChange({ cheque_no: event.target.value })}
-              />
+              {editable ? (
+                <Input
+                  value={form.cheque_no}
+                  maxLength={50}
+                  onChange={(event) =>
+                    onChange({ cheque_no: event.target.value })
+                  }
+                />
+              ) : (
+                <ApReadValue>{form.cheque_no}</ApReadValue>
+              )}
             </Field>
             <Field>
               <FieldLabel>{td("chequeDate")}</FieldLabel>
@@ -201,29 +215,39 @@ export function PaymentHeader({
         {(foreign || (!isNew && form.exchange_rate)) && (
           <Field>
             <FieldLabel>{td("exchangeRate")}</FieldLabel>
-            <Input
-              inputMode="decimal"
-              className="text-right tabular-nums"
-              value={form.exchange_rate}
-              readOnly={!editable}
-              placeholder={td("exchangeRateAuto")}
-              aria-invalid={errors.has("exchangeRate") || undefined}
-              onChange={(event) => {
-                if (DECIMAL_RE.test(event.target.value))
-                  onChange({ exchange_rate: event.target.value });
-              }}
-            />
+            {editable ? (
+              <Input
+                inputMode="decimal"
+                className="text-right tabular-nums"
+                value={form.exchange_rate}
+                placeholder={td("exchangeRateAuto")}
+                aria-invalid={errors.has("exchangeRate") || undefined}
+                onChange={(event) => {
+                  if (DECIMAL_RE.test(event.target.value))
+                    onChange({ exchange_rate: event.target.value });
+                }}
+              />
+            ) : (
+              <ApReadValue className="tabular-nums">
+                {form.exchange_rate}
+              </ApReadValue>
+            )}
             {err("exchangeRate")}
           </Field>
         )}
         <Field className="sm:col-span-2 lg:col-span-4">
           <FieldLabel>{td("description")}</FieldLabel>
-          <Textarea
-            rows={2}
-            value={form.description}
-            readOnly={!editable}
-            onChange={(event) => onChange({ description: event.target.value })}
-          />
+          {editable ? (
+            <Textarea
+              rows={2}
+              value={form.description}
+              onChange={(event) =>
+                onChange({ description: event.target.value })
+              }
+            />
+          ) : (
+            <ApReadValue multiline>{form.description}</ApReadValue>
+          )}
         </Field>
       </CardContent>
     </Card>

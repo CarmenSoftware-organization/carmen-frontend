@@ -714,6 +714,7 @@
           "journal": "สมุดรายวัน",
           "openJournal": "เปิดสมุดรายวัน",
           "voidReason": "เหตุผลที่ยกเลิก",
+          "reversalJournal": "สมุดรายวันกลับรายการ",
           "fromGrnBanner": "สร้างอัตโนมัติจาก GRN — แก้ที่ GRN",
           "openGrn": "เปิด GRN",
           "linesTitle": "รายการ",

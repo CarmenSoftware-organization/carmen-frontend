@@ -22,6 +22,7 @@ import {
   type InvoiceErrorKey,
   type InvoiceForm,
 } from "./ap-invoice-form";
+import { ApReadValue } from "../shared/ap-read-value";
 
 const DOC_TYPES: ApDocType[] = [
   "invoice",
@@ -64,22 +65,28 @@ export function InvoiceHeader({
       <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Field>
           <FieldLabel required>{t("docType")}</FieldLabel>
-          <Select
-            value={form.doc_type}
-            disabled={!isNew || !editable}
-            onValueChange={(value) => onChange({ doc_type: value as ApDocType })}
-          >
-            <SelectTrigger size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {DOC_TYPES.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {t(`docTypes.${type}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {editable ? (
+            <Select
+              value={form.doc_type}
+              disabled={!isNew}
+              onValueChange={(value) =>
+                onChange({ doc_type: value as ApDocType })
+              }
+            >
+              <SelectTrigger size="sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DOC_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {t(`docTypes.${type}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <ApReadValue>{t(`docTypes.${form.doc_type}`)}</ApReadValue>
+          )}
         </Field>
         <Field>
           <FieldLabel required>{t("docDate")}</FieldLabel>
@@ -112,15 +119,18 @@ export function InvoiceHeader({
         </Field>
         <Field>
           <FieldLabel required>{t("vendorInvoiceNo")}</FieldLabel>
-          <Input
-            value={form.vendor_invoice_no}
-            maxLength={100}
-            readOnly={!editable}
-            aria-invalid={errors.has("vendorInvoiceNo") || undefined}
-            onChange={(event) =>
-              onChange({ vendor_invoice_no: event.target.value })
-            }
-          />
+          {editable ? (
+            <Input
+              value={form.vendor_invoice_no}
+              maxLength={100}
+              aria-invalid={errors.has("vendorInvoiceNo") || undefined}
+              onChange={(event) =>
+                onChange({ vendor_invoice_no: event.target.value })
+              }
+            />
+          ) : (
+            <ApReadValue>{form.vendor_invoice_no}</ApReadValue>
+          )}
           {err("vendorInvoiceNo")}
         </Field>
         <Field>
@@ -186,27 +196,37 @@ export function InvoiceHeader({
         </Field>
         <Field>
           <FieldLabel>{t("detail.exchangeRate")}</FieldLabel>
-          <Input
-            inputMode="decimal"
-            className="text-right tabular-nums"
-            value={form.exchange_rate}
-            readOnly={!editable}
-            aria-invalid={errors.has("exchangeRate") || undefined}
-            onChange={(event) => {
-              if (DECIMAL_RE.test(event.target.value))
-                onChange({ exchange_rate: event.target.value });
-            }}
-          />
+          {editable ? (
+            <Input
+              inputMode="decimal"
+              className="text-right tabular-nums"
+              value={form.exchange_rate}
+              aria-invalid={errors.has("exchangeRate") || undefined}
+              onChange={(event) => {
+                if (DECIMAL_RE.test(event.target.value))
+                  onChange({ exchange_rate: event.target.value });
+              }}
+            />
+          ) : (
+            <ApReadValue className="tabular-nums">
+              {form.exchange_rate}
+            </ApReadValue>
+          )}
           {err("exchangeRate")}
         </Field>
         <Field className="sm:col-span-2 lg:col-span-4">
           <FieldLabel>{t("detail.description")}</FieldLabel>
-          <Textarea
-            rows={2}
-            value={form.description}
-            readOnly={!editable}
-            onChange={(event) => onChange({ description: event.target.value })}
-          />
+          {editable ? (
+            <Textarea
+              rows={2}
+              value={form.description}
+              onChange={(event) =>
+                onChange({ description: event.target.value })
+              }
+            />
+          ) : (
+            <ApReadValue multiline>{form.description}</ApReadValue>
+          )}
         </Field>
       </CardContent>
     </Card>
