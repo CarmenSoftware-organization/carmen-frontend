@@ -184,7 +184,9 @@
       "printForm": "Print Forms",
       "printFormDesc": "Report form used when printing each document type.",
       "documents": "Document behavior",
-      "documentsDesc": "Defaults applied when staff create purchasing and stock documents."
+      "documentsDesc": "Defaults applied when staff create purchasing and stock documents.",
+      "recipe": "Recipe",
+      "recipeDesc": "How the Print button on a recipe's page prints its Recipe Card."
     },
     "config": {
       "prAllowDuplicateProduct": "Allow selecting duplicate products",
@@ -215,7 +217,16 @@
       "prAllowDuplicateProductDesc": "Let one purchase request list the same product on more than one line.",
       "siCostFromDesc": "Unit cost filled in when a line is added to a stock-in.",
       "poGroupByPrCommentDesc": "When purchase requests become a purchase order, group lines by their PR comment.",
-      "printFormCustomCount": "{n} of {total} customised"
+      "printFormCustomCount": "{n} of {total} customised",
+      "recipePrintOrientation": "Recipe card page orientation",
+      "recipePrintOrientationOptions": {
+        "portrait": "Portrait",
+        "landscape": "Landscape"
+      },
+      "recipePrintPreparation": "Print preparation",
+      "recipePrintPreparationDesc": "Include the preparation steps with the preparation and cooking times.",
+      "recipePrintIngredients": "Print ingredients",
+      "recipePrintIngredientsDesc": "Include the ingredient table with its sub total."
     }
   },
   "accounting": {

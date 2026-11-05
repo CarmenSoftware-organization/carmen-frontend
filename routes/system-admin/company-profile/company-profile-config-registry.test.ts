@@ -223,3 +223,41 @@ describe("Print Form config registry", () => {
     ).toBe("PR");
   });
 });
+
+describe("Recipe config registry", () => {
+  const recipe = CONFIG_SECTIONS.find((s) => s.id === "recipe");
+
+  it("registers the recipe page's print options under section 'recipe'", () => {
+    expect(
+      recipe?.items.map((i) => [i.key, i.datatype, i.defaultValue]),
+    ).toEqual([
+      ["recipe.print-orientation", "enum", "portrait"],
+      ["recipe.print-preparation", "boolean", "true"],
+      ["recipe.print-ingredients", "boolean", "true"],
+    ]);
+    expect(recipe?.items.map((i) => i.labelKey)).toEqual([
+      "config.recipePrintOrientation",
+      "config.recipePrintPreparation",
+      "config.recipePrintIngredients",
+    ]);
+  });
+
+  it("offers portrait then landscape, neither gated", () => {
+    const orientation = recipe?.items.find(
+      (i) => i.key === "recipe.print-orientation",
+    );
+    expect(orientation?.options?.map((o) => o.value)).toEqual([
+      "portrait",
+      "landscape",
+    ]);
+    expect(orientation?.options?.every((o) => !o.visibleWhenCalcMethod)).toBe(
+      true,
+    );
+    // booleans carry no options
+    expect(
+      recipe?.items
+        .filter((i) => i.datatype === "boolean")
+        .every((i) => i.options === undefined),
+    ).toBe(true);
+  });
+});

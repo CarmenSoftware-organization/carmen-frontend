@@ -17,6 +17,19 @@ let canWrite = true;
 vi.mock("@/hooks/use-can", () => ({
   useCan: () => ({ can: () => canWrite, canWrite }),
 }));
+// รูปแบบการพิมพ์อ่านจาก config ของ BU (Default Setting → Recipe) — ป้อน config เองแทน query
+let buConfig: {
+  key: string;
+  label: string;
+  datatype: string;
+  value: string;
+}[] = [];
+vi.mock("@/hooks/use-profile", () => ({
+  useProfile: () => ({ defaultBu: { id: "bu-1" } }),
+}));
+vi.mock("@/hooks/use-business-unit", () => ({
+  useBusinessUnit: () => ({ data: { config: buConfig } }),
+}));
 
 const { RecipeCookView } = await import("./recipe-cook-view");
 
@@ -37,6 +50,7 @@ const RECIPE = {
 beforeEach(() => {
   vi.clearAllMocks();
   canWrite = true;
+  buConfig = [];
 });
 
 describe("RecipeCookView — ปุ่ม Print", () => {
@@ -56,8 +70,44 @@ describe("RecipeCookView — ปุ่ม Print", () => {
         RecipeTo: "RCP-001",
         Status: "ALL",
         PrintSingle: true,
+        ShowPreparation: "Y",
+        ShowIngredients: "Y",
       },
     });
+  });
+
+  it("พิมพ์ตาม Default Setting ของ BU — แนวนอน ไม่พิมพ์วิธีทำ", async () => {
+    buConfig = [
+      {
+        key: "recipe.print-orientation",
+        label: "",
+        datatype: "enum",
+        value: "landscape",
+      },
+      {
+        key: "recipe.print-preparation",
+        label: "",
+        datatype: "boolean",
+        value: "false",
+      },
+    ];
+    renderForm(<RecipeCookView recipe={RECIPE} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: en.common.print }));
+    });
+
+    expect(print).toHaveBeenCalledWith(
+      "RECIPE",
+      expect.objectContaining({
+        templateId: "bc4735ff-bfdf-4eae-93f6-95a6c7737454",
+        filters: expect.objectContaining({
+          RecipeFrom: "RCP-001",
+          PrintSingle: true,
+          ShowPreparation: "N",
+          ShowIngredients: "Y",
+        }),
+      }),
+    );
   });
 
   it("คนที่แก้สูตรไม่ได้ก็ยังพิมพ์ได้ (ไม่มีปุ่ม Edit)", () => {

@@ -127,6 +127,47 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
       optionsGroup: type,
     })),
   },
+  {
+    // ปุ่ม Print ในหน้าสูตร (Recipe Card) — อ่านที่ use-recipe-print-format.ts
+    id: "recipe",
+    titleKey: "sections.recipe",
+    descKey: "sections.recipeDesc",
+    items: [
+      {
+        key: "recipe.print-orientation",
+        datatype: "enum",
+        defaultValue: "portrait",
+        label: "Recipe card page orientation",
+        labelKey: "config.recipePrintOrientation",
+        options: [
+          {
+            value: "portrait",
+            labelKey: "config.recipePrintOrientationOptions.portrait",
+          },
+          {
+            value: "landscape",
+            labelKey: "config.recipePrintOrientationOptions.landscape",
+          },
+        ],
+      },
+      {
+        key: "recipe.print-preparation",
+        datatype: "boolean",
+        defaultValue: "true",
+        label: "Print preparation",
+        labelKey: "config.recipePrintPreparation",
+        descKey: "config.recipePrintPreparationDesc",
+      },
+      {
+        key: "recipe.print-ingredients",
+        datatype: "boolean",
+        defaultValue: "true",
+        label: "Print ingredients",
+        labelKey: "config.recipePrintIngredients",
+        descKey: "config.recipePrintIngredientsDesc",
+      },
+    ],
+  },
 ];
 
 export const SEEDED_ITEMS: readonly SeededConfigItem[] =
