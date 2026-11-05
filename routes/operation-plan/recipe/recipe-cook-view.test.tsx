@@ -55,6 +55,7 @@ describe("RecipeCookView — ปุ่ม Print", () => {
         RecipeFrom: "RCP-001",
         RecipeTo: "RCP-001",
         Status: "ALL",
+        PrintSingle: true,
       },
     });
   });

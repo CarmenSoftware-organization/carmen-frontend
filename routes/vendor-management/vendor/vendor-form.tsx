@@ -264,12 +264,18 @@ export function VendorForm({ vendor }: VendorFormProps) {
             </>
           }
         >
-          {/* Vendor Detail Report ของผู้ขายรายนี้ — ไม่อยู่ในหน้ารายการรายงาน */}
+          {/* Vendor Detail Report ของผู้ขายรายนี้ — ไม่อยู่ในหน้ารายการรายงาน
+              PrintSingle: ใบเดียว micro-report ไม่พิมพ์บล็อกตัวกรองบนหัวรายงาน */}
           {f.mode === "view" && vendor?.code && (
             <PrintDocumentButton
               documentType="VENDOR"
               templateId={VENDOR_DETAIL_TEMPLATE_ID}
-              filters={{ VendorFrom: vendor.code, VendorTo: vendor.code, Status: "ALL" }}
+              filters={{
+                VendorFrom: vendor.code,
+                VendorTo: vendor.code,
+                Status: "ALL",
+                PrintSingle: true,
+              }}
             />
           )}
         </FormToolbar>
