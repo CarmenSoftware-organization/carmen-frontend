@@ -33,13 +33,19 @@ export function defaultWidgetTypeFor(dataset: DashboardDataset): WidgetType {
   const preferred = dataset.default_render as WidgetType | undefined;
   if (
     preferred &&
-    availableRenders(dataset.shape, dataset.supported_renders).includes(
-      preferred,
-    )
+    availableRenders(
+      dataset.shape,
+      dataset.supported_renders,
+      dataset.dimension,
+    ).includes(preferred)
   ) {
     return preferred;
   }
-  return defaultRenderFor(dataset.shape, dataset.supported_renders);
+  return defaultRenderFor(
+    dataset.shape,
+    dataset.supported_renders,
+    dataset.dimension,
+  );
 }
 
 export function defaultParamsFor(

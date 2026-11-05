@@ -35,6 +35,15 @@ export interface DatasetMeta {
   readonly shape: DatasetShape;
   readonly category: DatasetCategory;
   readonly unit?: string;
+  /**
+   * แกนป้ายเก็บอะไร — `label` ของ categorical/ranked, `cols` ของ matrix, `date` ของ
+   * time series (เช่น "status" "vendor" "day") · token ชุดปิดของ micro-data
+   * (`service/dashboard/dimension.go`) ไม่มี = backend รุ่นเก่า → ป้ายกลางเดิม
+   * ดู `components/dashboard-widget/widget-labels.ts`
+   */
+  readonly dimension?: string;
+  /** แถว (series) ของ matrix เก็บอะไร — "period" ของชุดเทียบงวด, "vendor" ของยอด vendor × เดือน */
+  readonly series_dimension?: string;
 }
 
 // -------------------------------------------------------------
@@ -137,6 +146,11 @@ export interface TableColumn {
   readonly label: string;
   readonly type?: TableColumnType;
   readonly link?: TableColumnLink;
+  /**
+   * หน่วยของค่าในคอลัมน์ (ทศนิยมตามหน่วย ดู `formatMetric`) — มีแค่ตารางที่ frontend
+   * ประกอบเองจาก categorical/ranked/matrix · ตาราง `table` ของ backend ไม่ส่ง
+   */
+  readonly unit?: string;
 }
 
 export interface TableData {

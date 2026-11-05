@@ -280,6 +280,7 @@ function AddWidgetDetail({
   const widgetTypes = availableRenders(
     dataset.shape,
     dataset.supported_renders,
+    dataset.dimension,
   );
   const badge = getShapeBadge(dataset.shape);
   const isCustom = custom !== undefined;
