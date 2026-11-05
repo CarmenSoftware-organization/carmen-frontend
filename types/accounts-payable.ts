@@ -322,6 +322,7 @@ export interface ApPayment extends ApWorkflowFields {
   posted_at: string | null;
   void_at: string | null;
   void_reason: string | null;
+  void_gl_jv_id: string | null;
   attachments?: ApAttachment[];
   created_at: string | null;
   updated_at: string | null;

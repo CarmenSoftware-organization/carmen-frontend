@@ -607,6 +607,7 @@ function ApPaymentEditor({
           status={loaded.doc_status}
           jvId={loaded.gl_jv_id}
           jvNo={loaded.gl_jv_no}
+          reversalJvId={loaded.void_gl_jv_id}
           voidReason={loaded.void_reason}
         />
       )}

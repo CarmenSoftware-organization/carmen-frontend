@@ -256,6 +256,7 @@ export function mapPayment(raw: Raw): ApPayment {
     posted_at: iso(raw.posted_at),
     void_at: iso(raw.void_at),
     void_reason: str(raw.void_reason),
+    void_gl_jv_id: str(raw.void_gl_jv_id),
     attachments: attachments(raw.attachments),
     created_at: iso(raw.created_at),
     updated_at: iso(raw.updated_at),
