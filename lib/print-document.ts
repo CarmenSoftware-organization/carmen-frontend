@@ -40,7 +40,8 @@ export type PrintDocumentType =
   | "VENDOR"
   // master data as well — the category page passes PRODUCT_CATEGORY_TEMPLATE_ID plus the code ranges
   | "PRODUCT_CATEGORY"
-  // the recipe page passes RECIPE_CARD_TEMPLATE_ID with the recipe's own code as the range
+  // the recipe page passes RECIPE_CARD_PORTRAIT_TEMPLATE_ID / RECIPE_CARD_LANDSCAPE_TEMPLATE_ID with the recipe's
+  // own code as the range
   | "RECIPE";
 
 /**
@@ -62,19 +63,22 @@ export const PRODUCT_CATEGORY_TEMPLATE_ID =
   "eda55615-08e0-4fc0-941e-c62dc8072e49";
 
 /**
- * Recipe Card Report — the list template on the report list (micro-report seed, id fixed across environments), also
- * printed from a recipe's page for that recipe alone. Its function f_recipe_card takes CategoryFrom / CategoryTo /
- * RecipeFrom / RecipeTo / Status ("ALL" = no limit; Status ALL / Active / Inactive).
- * Recipe Card Report — template แบบ list ที่อยู่ในหน้ารายการรายงาน พิมพ์จากหน้าสูตรได้ด้วย (เฉพาะสูตรนั้น)
- * · ฟังก์ชัน f_recipe_card รับช่วง Category / รหัสสูตร และ Status ("ALL" = ไม่จำกัด)
+ * Recipe Card Report Portrait — the recipe page's own card, a form template (micro-report seed, id fixed across
+ * environments) printed from a recipe's page for that recipe alone; not on the report list. It is a separate row
+ * from the report list's "Recipe Card Report" (60bbb2b6) so either can be edited without touching the other. Its
+ * function f_recipe_card takes CategoryFrom / CategoryTo / RecipeFrom / RecipeTo / Status ("ALL" = no limit), plus
+ * ShowPreparation / ShowIngredients ("N" = leave that part out).
+ * Recipe Card Report แนวตั้งของหน้าสูตร — template แบบ form แยกจากตัวในหน้ารายการรายงาน (60bbb2b6) แก้ตัวไหนก็ไม่กระทบอีกตัว
+ * · ฟังก์ชัน f_recipe_card รับช่วง Category / รหัสสูตร / Status + ShowPreparation / ShowIngredients
  */
-export const RECIPE_CARD_TEMPLATE_ID = "60bbb2b6-3aa5-4802-bf24-66357287c301";
+export const RECIPE_CARD_PORTRAIT_TEMPLATE_ID =
+  "4f71576d-397e-43d4-8394-d475f6ad9520";
 
 /**
- * Recipe Card Report Landscape — the same card on a landscape page, a form template (micro-report seed, id fixed
- * across environments) printed from a recipe's page when the BU's Default Setting → Recipe says landscape; not on
- * the report list. Same function and filters as RECIPE_CARD_TEMPLATE_ID.
- * Recipe Card Report แนวนอน — template แบบ form พิมพ์จากหน้าสูตรเมื่อ BU ตั้ง Default Setting → Recipe เป็นแนวนอน
+ * Recipe Card Report Landscape — the recipe page's card on a landscape page, a form template (micro-report seed, id
+ * fixed across environments) printed when the BU's Default Setting → Print Forms → Recipe Card says landscape; not on
+ * the report list. Same function and filters as RECIPE_CARD_PORTRAIT_TEMPLATE_ID.
+ * Recipe Card Report แนวนอน — template แบบ form พิมพ์จากหน้าสูตรเมื่อ BU ตั้ง Default Setting → Print Forms เป็นแนวนอน
  * · ฟังก์ชันและตัวกรองเดียวกับตัวแนวตั้ง
  */
 export const RECIPE_CARD_LANDSCAPE_TEMPLATE_ID =

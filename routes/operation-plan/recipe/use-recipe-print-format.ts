@@ -2,13 +2,16 @@ import { useBusinessUnit } from "@/hooks/use-business-unit";
 import { useProfile } from "@/hooks/use-profile";
 import {
   RECIPE_CARD_LANDSCAPE_TEMPLATE_ID,
-  RECIPE_CARD_TEMPLATE_ID,
+  RECIPE_CARD_PORTRAIT_TEMPLATE_ID,
 } from "@/lib/print-document";
 import { resolveBuConfigValue } from "@/lib/print-form-config";
 import type { BusinessUnitDetail } from "@/types/business-unit";
 
 export interface RecipePrintFormat {
-  /** แนวตั้ง = Recipe Card Report (ตัวเดียวกับหน้ารายการรายงาน) · แนวนอน = Recipe Card Report Landscape */
+  /**
+   * แนวตั้ง = Recipe Card Report Portrait · แนวนอน = Recipe Card Report Landscape — คู่นี้เป็นของหน้าสูตรเท่านั้น
+   * แยกจาก Recipe Card Report ของหน้ารายการรายงาน แก้ template ของฝั่งไหนก็ไม่กระทบอีกฝั่ง
+   */
   templateId: string;
   /** micro-report ใส่ค่านี้ลงทุกแถว · "N" = template ไม่พิมพ์ส่วนนั้น */
   filters: { ShowPreparation: "Y" | "N"; ShowIngredients: "Y" | "N" };
@@ -32,7 +35,7 @@ export function recipePrintFormat(
     templateId:
       resolveBuConfigValue(config, "recipe.print-orientation") === "landscape"
         ? RECIPE_CARD_LANDSCAPE_TEMPLATE_ID
-        : RECIPE_CARD_TEMPLATE_ID,
+        : RECIPE_CARD_PORTRAIT_TEMPLATE_ID,
     filters: {
       ShowPreparation: content === "ingredients" ? "N" : "Y",
       ShowIngredients: content === "preparation" ? "N" : "Y",

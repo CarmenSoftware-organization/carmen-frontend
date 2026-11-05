@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   RECIPE_CARD_LANDSCAPE_TEMPLATE_ID,
-  RECIPE_CARD_TEMPLATE_ID,
+  RECIPE_CARD_PORTRAIT_TEMPLATE_ID,
 } from "@/lib/print-document";
 import type { BusinessUnitConfigItem } from "@/types/business-unit";
 import { recipePrintFormat } from "./use-recipe-print-format";
@@ -13,7 +13,7 @@ describe("recipePrintFormat", () => {
   it("prints portrait with everything when the BU has set nothing", () => {
     for (const config of [undefined, {}, []]) {
       expect(recipePrintFormat(config as never)).toEqual({
-        templateId: RECIPE_CARD_TEMPLATE_ID,
+        templateId: RECIPE_CARD_PORTRAIT_TEMPLATE_ID,
         filters: { ShowPreparation: "Y", ShowIngredients: "Y" },
       });
     }
@@ -43,7 +43,7 @@ describe("recipePrintFormat", () => {
       item("recipe.print-content", ""),
     ];
     expect(recipePrintFormat(config)).toEqual({
-      templateId: RECIPE_CARD_TEMPLATE_ID,
+      templateId: RECIPE_CARD_PORTRAIT_TEMPLATE_ID,
       filters: { ShowPreparation: "Y", ShowIngredients: "Y" },
     });
   });

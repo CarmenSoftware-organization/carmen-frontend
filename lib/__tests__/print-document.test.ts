@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { printDocument, RECIPE_CARD_TEMPLATE_ID, VENDOR_DETAIL_TEMPLATE_ID } from "../print-document";
+import { printDocument, RECIPE_CARD_PORTRAIT_TEMPLATE_ID, VENDOR_DETAIL_TEMPLATE_ID } from "../print-document";
 
 vi.mock("@/lib/http-client", () => ({
   httpClient: {
@@ -128,11 +128,11 @@ describe("printDocument", () => {
     } as unknown as Response);
     const filters = { CategoryFrom: "ALL", CategoryTo: "ALL", RecipeFrom: "RCP-001", RecipeTo: "RCP-001", Status: "ALL" };
 
-    const result = await printDocument(BU, "RECIPE", { templateId: RECIPE_CARD_TEMPLATE_ID, filters, target: null });
+    const result = await printDocument(BU, "RECIPE", { templateId: RECIPE_CARD_PORTRAIT_TEMPLATE_ID, filters, target: null });
 
     expect(httpClient.get).not.toHaveBeenCalled();
     expect(httpClient.post).toHaveBeenCalledWith(`/api/proxy/api/${BU}/reports/viewer`, {
-      template_id: RECIPE_CARD_TEMPLATE_ID,
+      template_id: RECIPE_CARD_PORTRAIT_TEMPLATE_ID,
       filters,
     });
     expect(result.url).toBe(VIEWER_URL);
