@@ -43,6 +43,7 @@ import {
 } from "./ap-invoice-form";
 import { InvoiceHeader } from "./ap-invoice-header";
 import { InvoiceLines } from "./ap-invoice-lines";
+import { ApPostingBanner } from "../shared/ap-posting-banner";
 
 const LIST_PATH = "/accounting/accounts-payable/invoice";
 const NO_ERRORS: ReadonlySet<InvoiceErrorKey> = new Set();
@@ -408,22 +409,14 @@ function ApInvoiceEditor({
         }
       />
 
-      {loaded?.doc_status === "posted" && loaded.gl_jv_id && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm">
-          <span className="text-muted-foreground">{td("journal")}</span>
-          <Link
-            className="font-medium underline"
-            to={`/accounting/journal-voucher/${loaded.gl_jv_id}`}
-          >
-            {loaded.gl_jv_no ?? td("openJournal")}
-          </Link>
-        </div>
-      )}
-      {loaded?.doc_status === "void" && loaded.void_reason && (
-        <div className="rounded-lg border px-3 py-2 text-sm">
-          <span className="text-muted-foreground">{td("voidReason")}: </span>
-          {loaded.void_reason}
-        </div>
+      {loaded && (
+        <ApPostingBanner
+          status={loaded.doc_status}
+          jvId={loaded.gl_jv_id}
+          jvNo={loaded.gl_jv_no}
+          reversalJvId={loaded.void_gl_jv_id}
+          voidReason={loaded.void_reason}
+        />
       )}
 
       <InvoiceHeader

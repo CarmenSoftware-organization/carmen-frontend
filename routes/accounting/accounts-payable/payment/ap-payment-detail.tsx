@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, Pencil, Save, Send, Trash2, Undo2, X } from "lucide-react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { DocFormHeader } from "@/components/share/doc-form-header";
@@ -61,6 +61,7 @@ import {
 } from "./ap-payment-form";
 import { PaymentHeader } from "./ap-payment-header";
 import { PaymentWhtSection } from "./ap-payment-wht";
+import { ApPostingBanner } from "../shared/ap-posting-banner";
 
 const LIST_PATH = "/accounting/accounts-payable/payment";
 const NO_ERRORS: ReadonlySet<PaymentErrorKey> = new Set();
@@ -310,10 +311,12 @@ function ApPaymentEditor({
       setForm((current) => ({ ...current, wht: [] }));
       return;
     }
+    // ถือว่ากำลังคำนวณตั้งแต่เริ่มหน่วง ไม่งั้นช่วง 600ms แรก (เช่นตอนเติมใบจากปุ่ม Pay invoice)
+    // จะโชว์ "WHT ไม่ตรง กด Recalculate" ทั้งที่ระบบกำลังจะคำนวณให้เอง
+    setCalculating(true);
+    setWhtError(null);
     const handle = setTimeout(() => {
       const id = ++requestId.current;
-      setCalculating(true);
-      setWhtError(null);
       whtPreview
         .mutateAsync({ allocations: inputs, ap_payment_id: loaded?.id })
         .then((rows) => {
@@ -599,22 +602,13 @@ function ApPaymentEditor({
         }
       />
 
-      {loaded?.doc_status === "posted" && loaded.gl_jv_id && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm">
-          <span className="text-muted-foreground">{td("journal")}</span>
-          <Link
-            className="font-medium underline"
-            to={`/accounting/journal-voucher/${loaded.gl_jv_id}`}
-          >
-            {loaded.gl_jv_no ?? td("openJournal")}
-          </Link>
-        </div>
-      )}
-      {loaded?.doc_status === "void" && loaded.void_reason && (
-        <div className="rounded-lg border px-3 py-2 text-sm">
-          <span className="text-muted-foreground">{td("voidReason")}: </span>
-          {loaded.void_reason}
-        </div>
+      {loaded && (
+        <ApPostingBanner
+          status={loaded.doc_status}
+          jvId={loaded.gl_jv_id}
+          jvNo={loaded.gl_jv_no}
+          voidReason={loaded.void_reason}
+        />
       )}
 
       <PaymentHeader
