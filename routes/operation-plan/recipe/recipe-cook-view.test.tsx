@@ -76,7 +76,7 @@ describe("RecipeCookView — ปุ่ม Print", () => {
     });
   });
 
-  it("พิมพ์ตาม Default Setting ของ BU — แนวนอน ไม่พิมพ์วิธีทำ", async () => {
+  it("พิมพ์ตาม Default Setting ของ BU — แนวนอน แสดงแค่ข้อมูล + วัตถุดิบ", async () => {
     buConfig = [
       {
         key: "recipe.print-orientation",
@@ -85,10 +85,10 @@ describe("RecipeCookView — ปุ่ม Print", () => {
         value: "landscape",
       },
       {
-        key: "recipe.print-preparation",
+        key: "recipe.print-content",
         label: "",
-        datatype: "boolean",
-        value: "false",
+        datatype: "enum",
+        value: "ingredients",
       },
     ];
     renderForm(<RecipeCookView recipe={RECIPE} />);

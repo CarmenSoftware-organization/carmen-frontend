@@ -15,8 +15,11 @@ export interface RecipePrintFormat {
 }
 
 /**
- * รูปแบบการพิมพ์ Recipe Card จาก Default Setting ของ BU (หมวด Recipe) — ยังไม่ได้ตั้ง = ค่าเริ่มต้นของ registry
- * (แนวตั้ง พิมพ์วิธีทำและวัตถุดิบครบ)
+ * รูปแบบการพิมพ์ Recipe Card จาก Default Setting ของ BU (หมวด Print Forms แถว Recipe) — ยังไม่ได้ตั้ง =
+ * ค่าเริ่มต้นของ registry (แนวตั้ง แสดงครบ)
+ *
+ * `recipe.print-content`: `all` แสดงครบ · `preparation` ข้อมูล + วิธีทำ · `ingredients` ข้อมูล + วัตถุดิบ
+ * (ส่วนข้อมูลสูตร รูป ต้นทุน และ Remark พิมพ์ทุกแบบ)
  *
  * @param config - `config` จาก BusinessUnitDetail
  * @returns template ที่จะพิมพ์ และตัวเลือกที่ส่งไปกับ filters
@@ -24,16 +27,15 @@ export interface RecipePrintFormat {
 export function recipePrintFormat(
   config: BusinessUnitDetail["config"] | undefined,
 ): RecipePrintFormat {
-  const shown = (key: string) =>
-    resolveBuConfigValue(config, key) === "false" ? "N" : "Y";
+  const content = resolveBuConfigValue(config, "recipe.print-content");
   return {
     templateId:
       resolveBuConfigValue(config, "recipe.print-orientation") === "landscape"
         ? RECIPE_CARD_LANDSCAPE_TEMPLATE_ID
         : RECIPE_CARD_TEMPLATE_ID,
     filters: {
-      ShowPreparation: shown("recipe.print-preparation"),
-      ShowIngredients: shown("recipe.print-ingredients"),
+      ShowPreparation: content === "ingredients" ? "N" : "Y",
+      ShowIngredients: content === "preparation" ? "N" : "Y",
     },
   };
 }

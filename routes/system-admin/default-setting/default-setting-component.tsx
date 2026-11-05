@@ -116,6 +116,9 @@ export default function DefaultSettingComponent() {
     : { sections: [], other: [] };
   const docSections = configGroups.sections.filter((s) => s.id !== "printForm");
   const printSection = configGroups.sections.find((s) => s.id === "printForm");
+  // แถวเลือก template (มี optionsGroup) — แถว Recipe ท้ายหมวดเป็นตัวเลือกตายตัว ไม่นับเป็น "ตั้งเอง"
+  const printFormEntries =
+    printSection?.entries.filter((e) => e.optionsGroup) ?? [];
   const isBusy = !isProfileReady || isLoading;
 
   // มีการแก้ค้าง (dirty) ระหว่างโหมด edit → กัน discard โดยไม่ได้ตั้งใจ
@@ -245,46 +248,64 @@ export default function DefaultSettingComponent() {
                 ) : (
                   <p className="text-muted-foreground text-xs tabular-nums">
                     {t("config.printFormCustomCount", {
-                      n: printSection.entries.filter((e) => e.item.value !== "")
+                      n: printFormEntries.filter((e) => e.item.value !== "")
                         .length,
-                      total: printSection.entries.length,
+                      total: printFormEntries.length,
                     })}
                   </p>
                 )
               }
             >
               <div className="divide-y">
-                {printSection.entries.map((entry) => (
-                  <ConfigField
-                    key={entry.item.key}
-                    editing={editing}
-                    form={form}
-                    index={entry.index}
-                    item={entry.item}
-                    code={entry.code}
-                    label={t(entry.labelKey)}
-                    yesLabel={t("yes")}
-                    noLabel={t("no")}
-                    emptyIsDefault
-                    options={buildPrintFormOptions({
-                      current: entry.item.value,
-                      list: entry.optionsGroup
-                        ? formTemplates.data?.get(entry.optionsGroup)
-                        : undefined,
-                      isLoading: formTemplates.isLoading,
-                      isError: formTemplates.isError,
-                      unknownLabel: t("config.printFormUnknown", {
-                        id: entry.item.value,
-                      }),
-                      loadingLabel: t("config.printFormLoading"),
-                      unavailableLabel: t("config.printFormUnavailable", {
-                        id: entry.item.value,
-                      }),
-                      systemDefaultLabel: t("config.printFormSystemDefault"),
-                    })}
-                    disabled={formTemplates.isLoading}
-                  />
-                ))}
+                {printSection.entries.map((entry) =>
+                  entry.options ? (
+                    <ConfigField
+                      key={entry.item.key}
+                      editing={editing}
+                      form={form}
+                      index={entry.index}
+                      item={entry.item}
+                      code={entry.code}
+                      label={t(entry.labelKey)}
+                      yesLabel={t("yes")}
+                      noLabel={t("no")}
+                      options={entry.options.map((o) => ({
+                        value: o.value,
+                        label: t(o.labelKey),
+                      }))}
+                    />
+                  ) : (
+                    <ConfigField
+                      key={entry.item.key}
+                      editing={editing}
+                      form={form}
+                      index={entry.index}
+                      item={entry.item}
+                      code={entry.code}
+                      label={t(entry.labelKey)}
+                      yesLabel={t("yes")}
+                      noLabel={t("no")}
+                      emptyIsDefault
+                      options={buildPrintFormOptions({
+                        current: entry.item.value,
+                        list: entry.optionsGroup
+                          ? formTemplates.data?.get(entry.optionsGroup)
+                          : undefined,
+                        isLoading: formTemplates.isLoading,
+                        isError: formTemplates.isError,
+                        unknownLabel: t("config.printFormUnknown", {
+                          id: entry.item.value,
+                        }),
+                        loadingLabel: t("config.printFormLoading"),
+                        unavailableLabel: t("config.printFormUnavailable", {
+                          id: entry.item.value,
+                        }),
+                        systemDefaultLabel: t("config.printFormSystemDefault"),
+                      })}
+                      disabled={formTemplates.isLoading}
+                    />
+                  ),
+                )}
               </div>
             </SettingSection>
           )}

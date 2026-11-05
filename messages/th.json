@@ -184,9 +184,7 @@
       "printForm": "แบบฟอร์มการพิมพ์",
       "printFormDesc": "แบบฟอร์มรายงานที่ใช้พิมพ์สำหรับเอกสารแต่ละประเภท",
       "documents": "การทำงานของเอกสาร",
-      "documentsDesc": "ค่าตั้งต้นที่ใช้ตอนสร้างเอกสารจัดซื้อและเอกสารคลัง",
-      "recipe": "Recipe",
-      "recipeDesc": "รูปแบบการพิมพ์ Recipe Card จากปุ่ม Print ในหน้าสูตร"
+      "documentsDesc": "ค่าตั้งต้นที่ใช้ตอนสร้างเอกสารจัดซื้อและเอกสารคลัง"
     },
     "config": {
       "prAllowDuplicateProduct": "อนุญาตให้เลือกสินค้าซ้ำกันได้",
@@ -223,10 +221,12 @@
         "portrait": "แนวตั้ง",
         "landscape": "แนวนอน"
       },
-      "recipePrintPreparation": "พิมพ์วิธีทำ",
-      "recipePrintPreparationDesc": "พิมพ์ขั้นตอนวิธีทำ พร้อมเวลาเตรียมและเวลาปรุง",
-      "recipePrintIngredients": "พิมพ์วัตถุดิบ",
-      "recipePrintIngredientsDesc": "พิมพ์ตารางวัตถุดิบ พร้อม Sub Total"
+      "recipePrintContent": "เนื้อหาที่พิมพ์ของ Recipe Card",
+      "recipePrintContentOptions": {
+        "all": "แสดงครบ",
+        "preparation": "แสดงแค่ข้อมูล + วิธีทำ",
+        "ingredients": "แสดงแค่ข้อมูล + วัตถุดิบ"
+      }
     }
   },
   "accounting": {
