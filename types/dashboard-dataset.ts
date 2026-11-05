@@ -22,4 +22,8 @@ export interface DashboardDataset {
    * = เส้นซ้อน ไม่ใช่แท่ง 31 กลุ่ม) — ไม่มี = ตามปกติของ shape
    */
   readonly default_render?: string;
+  /** แกนป้ายเก็บอะไร — ตัวเดียวกับ `DatasetMeta.dimension` (catalogue รู้ก่อนโหลดข้อมูล) */
+  readonly dimension?: string;
+  /** แถว (series) ของ matrix เก็บอะไร — ตัวเดียวกับ `DatasetMeta.series_dimension` */
+  readonly series_dimension?: string;
 }

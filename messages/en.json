@@ -983,7 +983,51 @@
       "label": "Name",
       "value": "Value",
       "rank": "#"
-    }
+    },
+    "dimension": {
+      "status": "Status",
+      "priority": "Priority",
+      "vendor": "Vendor",
+      "department": "Department",
+      "location": "Location",
+      "product": "Product",
+      "product_category": "Product category",
+      "item_group": "Item group",
+      "unit": "Unit",
+      "business_type": "Business type",
+      "reason": "Reason",
+      "tax_rate": "Tax rate",
+      "currency": "Currency",
+      "cuisine": "Cuisine",
+      "recipe_category": "Recipe category",
+      "recipe": "Recipe",
+      "equipment_category": "Equipment category",
+      "document": "Document no.",
+      "period": "Period",
+      "day": "Day",
+      "month": "Month",
+      "date": "Date"
+    },
+    "unitHeader": {
+      "items": "Count",
+      "baht": "Amount (฿)",
+      "days": "Days",
+      "transactions": "Transactions",
+      "qty": "Quantity",
+      "rate": "Rate"
+    },
+    "unitSuffix": {
+      "items": "items",
+      "days": "days",
+      "transactions": "transactions"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "unknown": "Not specified"
   },
   "profileGate": {
     "loadingTitle": "Loading your workspace",
@@ -1216,7 +1260,10 @@
     "committed": "Committed",
     "stockIn": "Stock In",
     "stockOut": "Stock Out",
-    "allType": "All Type"
+    "allType": "All Type",
+    "discontinued": "Discontinued",
+    "open": "Open",
+    "resolved": "Resolved"
   },
   "auth": {
     "welcomeBack": "Welcome back",

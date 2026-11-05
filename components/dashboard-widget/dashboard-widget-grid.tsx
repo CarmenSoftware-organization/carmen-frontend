@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { useTranslations } from "use-intl";
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -71,6 +73,13 @@ import {
 } from "@/components/dashboard-widget/widget-display";
 import { dashboardDatasetDataQueryOptions } from "@/hooks/use-dashboard-dataset";
 import {
+  CURRENCY_UNIT,
+  formatMetric,
+  useWidgetLabels,
+  type WidgetLabels,
+} from "@/components/dashboard-widget/widget-labels";
+import { TIME_DIMENSIONS } from "@/components/dashboard-widget/render-support";
+import {
   isCategoricalData,
   isMatrixData,
   isScalarDeltaData,
@@ -114,19 +123,6 @@ const WIDGET_TYPE_ORDER: Record<string, number> = {
   table: 5,
   heatmap: 6,
 };
-
-function humanizeLabel(label: string): string {
-  return label.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatValue(value: number, unit: string): string {
-  if (unit === "฿") {
-    return new Intl.NumberFormat("th-TH", {
-      maximumFractionDigits: 0,
-    }).format(value);
-  }
-  return value.toLocaleString();
-}
 
 export interface DashboardWidgetGridProps {
   readonly title: string;
@@ -352,6 +348,22 @@ export function WidgetRouter({
 }) {
   if (!widget.meta || !widget.data) return null;
   const resolved = widget as ResolvedWidget;
+  // เส้น/พื้นที่ของ matrix ที่แกน x ไม่ใช่เวลา (สถานะ / คลัง) ไม่มีให้เลือกแล้ว
+  // (`availableRenders`) — widget ที่บันทึกไว้ก่อนหน้าวาดเป็นแท่งแทนเส้นที่สื่อผิด
+  const lineOverCategories =
+    (widget.widget_type === "line" || widget.widget_type === "area") &&
+    widget.meta.shape === "matrix" &&
+    !!widget.meta.dimension &&
+    !TIME_DIMENSIONS.has(widget.meta.dimension);
+  if (lineOverCategories) {
+    return (
+      <MatrixBarCard
+        widget={resolved}
+        moduleName={moduleName}
+        subTileFor={subTileFor}
+      />
+    );
+  }
   switch (widget.widget_type) {
     case "kpi":
       return (
@@ -474,10 +486,12 @@ function WidgetHeader({ widget, moduleName, subTileFor }: WidgetCardProps) {
 }
 
 export function KpiCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
+  const labels = useWidgetLabels();
   if (!isScalarDeltaData(widget.data)) return null;
   const { value: raw, prev } = widget.data;
   const value = applyDecimals(raw, widget.display);
   const hasDelta = widget.meta.shape === "scalar_delta" && prev !== undefined;
+  const suffix = labels.unitSuffix(widget.meta.unit);
 
   return (
     <Card className="h-full min-h-0 gap-2 overflow-hidden py-4">
@@ -493,10 +507,8 @@ export function KpiCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
           <span className="text-3xl font-bold tabular-nums">
             {value.toLocaleString()}
           </span>
-          {widget.meta.unit && widget.meta.unit !== "฿" && (
-            <span className="text-muted-foreground text-xs">
-              {widget.meta.unit}
-            </span>
+          {suffix && (
+            <span className="text-muted-foreground text-xs">{suffix}</span>
           )}
         </div>
         {hasDelta && <DeltaIndicator value={raw} prev={prev} />}
@@ -516,7 +528,9 @@ export function KpiCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
  */
 export function GaugeCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
   const t = useTranslations("dashboardWidget");
+  const labels = useWidgetLabels();
   if (!isScalarDeltaData(widget.data)) return null;
+  const suffix = labels.unitSuffix(widget.meta.unit);
   const raw = widget.data.value;
   const value = applyDecimals(raw, widget.display);
   const { min, max, isEstimated } = gaugeRange(raw, widget.display);
@@ -567,10 +581,8 @@ export function GaugeCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
             <span className="text-3xl font-bold tabular-nums" style={{ color }}>
               {value.toLocaleString()}
             </span>
-            {widget.meta.unit && widget.meta.unit !== "฿" && (
-              <span className="text-muted-foreground text-xs">
-                {widget.meta.unit}
-              </span>
+            {suffix && (
+              <span className="text-muted-foreground text-xs">{suffix}</span>
             )}
           </div>
           <div className="text-muted-foreground text-micro mt-1 flex w-full max-w-[12rem] justify-between tabular-nums">
@@ -588,11 +600,13 @@ export function GaugeCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
 
 export function PieCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
   const t = useTranslations("dashboardWidget");
+  const labels = useWidgetLabels();
   if (!isCategoricalData(widget.data)) return null;
   const data = widget.data as readonly CategoricalPoint[];
   const total = data.reduce((acc, d) => acc + d.value, 0);
+  const { unit, dimension } = widget.meta;
   const chartData = data.map((d) => ({
-    name: humanizeLabel(d.label),
+    name: labels.category(dimension, d.label),
     value: d.value,
   }));
 
@@ -637,10 +651,7 @@ export function PieCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(v: number) => [
-                      `${formatValue(v, widget.meta.unit ?? "")} ${widget.meta.unit ?? ""}`,
-                      "",
-                    ]}
+                    formatter={(v: number) => [labels.withUnit(v, unit), ""]}
                     contentStyle={{ fontSize: "0.6875rem" }}
                   />
                 </PieChart>
@@ -669,7 +680,7 @@ export function PieCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
                       {item.name}
                     </span>
                     <span className="text-micro font-semibold tabular-nums">
-                      {item.value.toLocaleString()}
+                      {formatMetric(item.value, unit)}
                     </span>
                     <span className="text-muted-foreground text-micro w-9 text-right tabular-nums">
                       {pct}%
@@ -688,12 +699,14 @@ export function PieCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
 
 export function BarCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
   const t = useTranslations("dashboardWidget");
+  const labels = useWidgetLabels();
   // time_series วาดเป็นแท่งได้ (backend ประกาศไว้) — แกนเป็นวันที่ จึงต้องคงลำดับเวลา
   // ไม่ใช่เรียงตามค่าเหมือน categorical
   const isSeries = widget.meta.shape === "time_series";
   if (!isSeries && !isCategoricalData(widget.data)) return null;
   if (isSeries && !isTimeSeriesData(widget.data)) return null;
 
+  const { unit, dimension } = widget.meta;
   const sorted = isSeries
     ? (widget.data as readonly TimeSeriesPoint[]).map((d) => ({
         name: d.date,
@@ -702,8 +715,11 @@ export function BarCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
     : (widget.data as readonly CategoricalPoint[])
         .slice()
         .sort((a, b) => b.value - a.value)
-        .map((d) => ({ name: d.label, value: d.value }));
-  const isCurrency = widget.meta.unit === "฿";
+        .map((d) => ({
+          name: labels.category(dimension, d.label),
+          value: d.value,
+        }));
+  const isCurrency = unit === CURRENCY_UNIT;
   // แท่งบางเกินไปเมื่อบีบให้พอดีกล่อง — คงความสูงต่อแท่งไว้แล้วให้กล่องเลื่อนแทน
   const chartHeight = Math.max(120, sorted.length * 26);
 
@@ -741,12 +757,7 @@ export function BarCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
                   interval={0}
                 />
                 <Tooltip
-                  formatter={(v: number) => [
-                    `${isCurrency ? "฿" : ""}${formatValue(v, widget.meta.unit ?? "")}${
-                      !isCurrency ? ` ${widget.meta.unit ?? ""}` : ""
-                    }`,
-                    "",
-                  ]}
+                  formatter={(v: number) => [labels.withUnit(v, unit), ""]}
                   contentStyle={{ fontSize: "0.6875rem" }}
                   cursor={{ fill: "var(--muted)", opacity: 0.4 }}
                 />
@@ -766,10 +777,11 @@ export function BarCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
                   <LabelList
                     dataKey="value"
                     position="right"
+                    // ตัวเลขล้วน (หน่วยอยู่ใน tooltip) · เงินคง ฿ นำหน้าเหมือนเดิม
                     formatter={(v: number) =>
                       isCurrency
-                        ? `฿${formatValue(v, "฿")}`
-                        : formatValue(v, "")
+                        ? `${CURRENCY_UNIT}${formatMetric(v, unit)}`
+                        : formatMetric(v, unit)
                     }
                     style={{ fontSize: 10, fill: "var(--foreground)" }}
                   />
@@ -783,12 +795,22 @@ export function BarCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
   );
 }
 
+/**
+ * ระบายใต้เส้นของ area — โปร่งพอให้เส้นตาราง/เส้นอื่นยังเห็น (matrix หลาย series ไม่ stack:
+ * ค่าแต่ละงวดคือยอดของงวดนั้น ไม่ใช่ส่วนหนึ่งของยอดรวม)
+ */
+const AREA_FILL_OPACITY = 0.18;
+
 export function LineCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
   const t = useTranslations("dashboardWidget");
+  const labels = useWidgetLabels();
   if (!isTimeSeriesData(widget.data)) return null;
   const data = widget.data as readonly TimeSeriesPoint[];
   const points = data.map((p) => ({ date: p.date, value: p.value }));
-  const isCurrency = widget.meta.unit === "฿";
+  const unit = widget.meta.unit;
+  // line กับ area เคยวาดเป็นเส้นเหมือนกันเป๊ะ — ปุ่ม Area ไม่มีผลอะไรเลย
+  const isArea = widget.widget_type === "area";
+  const Chart = isArea ? AreaChart : LineChart;
   const allIntegers = points.every((p) => Number.isInteger(p.value));
   const yAxisWidth = lineAxisWidth(points.map((p) => p.value));
 
@@ -813,7 +835,7 @@ export function LineCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
               height="100%"
               className="absolute inset-0"
             >
-              <LineChart
+              <Chart
                 data={points}
                 margin={{ top: 8, right: 16, bottom: 0, left: 0 }}
               >
@@ -839,25 +861,34 @@ export function LineCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
                   allowDecimals={!allIntegers}
                 />
                 <Tooltip
-                  formatter={(v: number) => [
-                    `${isCurrency ? "฿" : ""}${formatValue(v, widget.meta.unit ?? "")}${
-                      !isCurrency ? ` ${widget.meta.unit ?? ""}` : ""
-                    }`,
-                    "",
-                  ]}
+                  formatter={(v: number) => [labels.withUnit(v, unit), ""]}
                   contentStyle={{ fontSize: "0.6875rem" }}
                   cursor={{ stroke: "var(--muted)", strokeWidth: 1 }}
                 />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="var(--chart-1)"
-                  strokeWidth={2}
-                  dot={{ r: 2, fill: "var(--chart-1)" }}
-                  activeDot={{ r: 4 }}
-                  isAnimationActive={false}
-                />
-              </LineChart>
+                {isArea ? (
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="var(--chart-1)"
+                    fill="var(--chart-1)"
+                    fillOpacity={AREA_FILL_OPACITY}
+                    strokeWidth={2}
+                    dot={{ r: 2, fill: "var(--chart-1)" }}
+                    activeDot={{ r: 4 }}
+                    isAnimationActive={false}
+                  />
+                ) : (
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="var(--chart-1)"
+                    strokeWidth={2}
+                    dot={{ r: 2, fill: "var(--chart-1)" }}
+                    activeDot={{ r: 4 }}
+                    isAnimationActive={false}
+                  />
+                )}
+              </Chart>
             </ResponsiveContainer>
           </div>
         )}
@@ -879,18 +910,29 @@ interface MatrixSeries {
  * (แถวของ matrix) — ใช้คีย์ลำดับแทนชื่อ series เพราะชื่อเช่นรหัสงวด "2026-05" หรือ
  * ชื่อ location ที่มีจุด recharts จะอ่านเป็น path ของ object
  *
+ * ชื่อ series และชื่อบนแกนผ่าน `labels.category` — สถานะแปลแล้ว (เดิมโชว์รหัสดิบ
+ * `in_progress` ทั้งที่วงกลมโชว์ "In Progress")
+ *
  * @param m - matrix จาก backend
+ * @param meta - meta ของ dataset (มิติของแถว/คอลัมน์)
+ * @param labels - ป้ายตาม locale
  * @returns series (ชื่อ + สี) กับจุดข้อมูล
  */
-function matrixChartData(m: MatrixData) {
+function matrixChartData(
+  m: MatrixData,
+  meta: DatasetMeta,
+  labels: WidgetLabels,
+) {
   const series: MatrixSeries[] = m.rows.map((name, i) => ({
     key: `s${i}`,
-    name,
+    name: labels.category(meta.series_dimension, name),
     color: CHART_COLORS[i % CHART_COLORS.length],
     faded: i >= CHART_COLORS.length,
   }));
   const points = m.cols.map((col, ci) => {
-    const point: Record<string, string | number> = { name: col };
+    const point: Record<string, string | number> = {
+      name: labels.category(meta.dimension, col),
+    };
     m.rows.forEach((_, ri) => {
       point[`s${ri}`] = m.values[ri]?.[ci] ?? 0;
     });
@@ -921,13 +963,11 @@ function SeriesLegend({
   );
 }
 
-function matrixValueFormatter(unit: string | undefined) {
-  const isCurrency = unit === "฿";
-  return (v: number) =>
-    `${isCurrency ? "฿" : ""}${formatValue(v, unit ?? "")}${
-      !isCurrency && unit ? ` ${unit}` : ""
-    }`;
-}
+/**
+ * กลุ่มแท่งเกินนี้ถือว่าแน่น — ป้าย "0" ใต้ทุกกลุ่ม (เช่นรายวัน 31 กลุ่ม × 2 งวด) กลบตัวเลข
+ * ที่มีความหมาย ส่วนรายการสั้น (สถานะ 5 ตัว) ยังโชว์ 0 ให้รู้ว่า "ไม่มี" ไม่ใช่ "หาย"
+ */
+const DENSE_BAR_GROUPS = 12;
 
 /**
  * แท่งจัดกลุ่มของ matrix — แกนตั้งเป็นกลุ่ม (location / สถานะ) แต่ละกลุ่มมี 1 แท่งต่อ
@@ -939,9 +979,16 @@ export function MatrixBarCard({
   subTileFor,
 }: WidgetCardProps) {
   const t = useTranslations("dashboardWidget");
+  const labels = useWidgetLabels();
   if (!isMatrixData(widget.data)) return null;
-  const { series, points } = matrixChartData(widget.data as MatrixData);
-  const fmt = matrixValueFormatter(widget.meta.unit);
+  const { series, points } = matrixChartData(
+    widget.data as MatrixData,
+    widget.meta,
+    labels,
+  );
+  const unit = widget.meta.unit;
+  const fmt = (v: number) => labels.withUnit(v, unit);
+  const dense = points.length > DENSE_BAR_GROUPS;
   // คงความหนาต่อแท่งแล้วให้กล่องเลื่อนแทนการบีบ เหมือน BarCard
   const chartHeight = Math.max(
     120,
@@ -1000,13 +1047,14 @@ export function MatrixBarCard({
                       maxBarSize={14}
                       isAnimationActive={false}
                     >
-                      {/* ค่าปลายแท่ง — งวดที่เป็น 0 ไม่มีแท่งให้เห็น ตัวเลขบอกว่า "ไม่มี" ไม่ใช่ "หาย" */}
+                      {/* ค่าปลายแท่ง — งวดที่เป็น 0 ไม่มีแท่งให้เห็น ตัวเลขบอกว่า "ไม่มี" ไม่ใช่ "หาย"
+                          ยกเว้นกราฟแน่น (DENSE_BAR_GROUPS) ที่ 0 เต็มจอจนอ่านค่าจริงไม่ออก */}
                       <LabelList
                         dataKey={s.key}
                         position="right"
                         // ตัวเลขล้วน (หน่วยอยู่ใน tooltip) — ต่อหน่วยแล้วป้ายตัดบรรทัดทับแท่งข้างล่าง
                         formatter={(v: number) =>
-                          formatValue(v, widget.meta.unit ?? "")
+                          dense && v === 0 ? "" : formatMetric(v, unit)
                         }
                         style={{ fontSize: 9, fill: "var(--muted-foreground)" }}
                       />
@@ -1032,10 +1080,14 @@ export function MatrixLineCard({
   subTileFor,
 }: WidgetCardProps) {
   const t = useTranslations("dashboardWidget");
+  const labels = useWidgetLabels();
   if (!isMatrixData(widget.data)) return null;
   const m = widget.data as MatrixData;
-  const { series, points } = matrixChartData(m);
-  const fmt = matrixValueFormatter(widget.meta.unit);
+  const { series, points } = matrixChartData(m, widget.meta, labels);
+  const unit = widget.meta.unit;
+  const fmt = (v: number) => labels.withUnit(v, unit);
+  const isArea = widget.widget_type === "area";
+  const Chart = isArea ? AreaChart : LineChart;
   const all = m.values.flat();
   const allIntegers = all.every((v) => Number.isInteger(v));
   const yAxisWidth = lineAxisWidth(all);
@@ -1066,7 +1118,7 @@ export function MatrixLineCard({
                 height="100%"
                 className="absolute inset-0"
               >
-                <LineChart
+                <Chart
                   data={points}
                   margin={{ top: 8, right: 16, bottom: 0, left: 0 }}
                 >
@@ -1094,21 +1146,38 @@ export function MatrixLineCard({
                     contentStyle={{ fontSize: "0.6875rem" }}
                     cursor={{ stroke: "var(--muted)", strokeWidth: 1 }}
                   />
-                  {series.map((s) => (
-                    <Line
-                      key={s.key}
-                      type="monotone"
-                      dataKey={s.key}
-                      name={s.name}
-                      stroke={s.color}
-                      strokeOpacity={s.faded ? 0.55 : 1}
-                      strokeWidth={2}
-                      dot={{ r: 2, fill: s.color }}
-                      activeDot={{ r: 4 }}
-                      isAnimationActive={false}
-                    />
-                  ))}
-                </LineChart>
+                  {series.map((s) =>
+                    isArea ? (
+                      <Area
+                        key={s.key}
+                        type="monotone"
+                        dataKey={s.key}
+                        name={s.name}
+                        stroke={s.color}
+                        strokeOpacity={s.faded ? 0.55 : 1}
+                        fill={s.color}
+                        fillOpacity={AREA_FILL_OPACITY}
+                        strokeWidth={2}
+                        dot={{ r: 2, fill: s.color }}
+                        activeDot={{ r: 4 }}
+                        isAnimationActive={false}
+                      />
+                    ) : (
+                      <Line
+                        key={s.key}
+                        type="monotone"
+                        dataKey={s.key}
+                        name={s.name}
+                        stroke={s.color}
+                        strokeOpacity={s.faded ? 0.55 : 1}
+                        strokeWidth={2}
+                        dot={{ r: 2, fill: s.color }}
+                        activeDot={{ r: 4 }}
+                        isAnimationActive={false}
+                      />
+                    ),
+                  )}
+                </Chart>
               </ResponsiveContainer>
             </div>
           </>
@@ -1129,10 +1198,14 @@ function isNumericColumn(type?: TableColumn["type"]): boolean {
   return type === "number" || type === "currency";
 }
 
-function formatTableCell(value: unknown, type?: TableColumn["type"]): string {
+function formatTableCell(
+  value: unknown,
+  type?: TableColumn["type"],
+  unit?: string,
+): string {
   if (value === null || value === undefined || value === "") return "—";
   if (isNumericColumn(type) && typeof value === "number") {
-    const n = value.toLocaleString();
+    const n = unit ? formatMetric(value, unit) : value.toLocaleString();
     return type === "currency" ? `฿${n}` : n;
   }
   return String(value);
@@ -1141,6 +1214,7 @@ function formatTableCell(value: unknown, type?: TableColumn["type"]): string {
 function renderTableCell(
   value: unknown,
   type?: TableColumn["type"],
+  unit?: string,
 ): ReactNode {
   if (type === "icon") {
     const Icon = typeof value === "string" ? TABLE_ICONS[value] : undefined;
@@ -1148,7 +1222,7 @@ function renderTableCell(
       <Icon className="text-muted-foreground size-4" aria-hidden="true" />
     ) : null;
   }
-  return formatTableCell(value, type);
+  return formatTableCell(value, type, unit);
 }
 
 /**
@@ -1163,38 +1237,24 @@ function renderTableCell(
  * ถูกสร้างใหม่ทุก render ที่ `buildFullWidget` ถ้าเอามาเป็น dependency ตรง ๆ
  * `useReactTable` จะได้ data/columns ชุดใหม่ทุกรอบแล้ววนไม่จบ
  *
+ * หัวคอลัมน์มาจาก `meta.dimension` / `unit` ("สถานะ | จำนวน") แทนหัวกลาง "รายการ | ค่า (items)"
+ * ที่เคยได้ทุกตาราง และชื่อในแถวผ่าน `labels.category` (สถานะแปล ชื่อจริงคงเดิม)
+ *
  * @param raw - `widget.data` ดิบ
- * @param unit - หน่วยของ dataset สำหรับเติมในหัวคอลัมน์ค่า
- * @param labels - หัวคอลัมน์ที่แปลแล้ว
+ * @param meta - meta ของ dataset (มิติ + หน่วย)
+ * @param labels - ป้ายตาม locale
+ * @param rankHeader - หัวคอลัมน์อันดับของ ranked
  * @returns TableData หรือ null เมื่อรูปข้อมูลใช้ไม่ได้
  */
 function asTableData(
   raw: unknown,
-  unit: string | undefined,
-  labels: { label: string; value: string; rank: string },
+  meta: Pick<DatasetMeta, "unit" | "dimension" | "series_dimension">,
+  labels: WidgetLabels,
+  rankHeader: string,
 ): TableData | null {
   if (isTableData(raw)) return raw as TableData;
-  // matrix: 1 แถวต่อคอลัมน์ของ matrix (location / สถานะ) และ 1 คอลัมน์ต่อ series (งวด)
-  // — งวดมีไม่กี่ตัว จึงอ่านง่ายกว่าวางงวดเป็นแถว
-  if (isMatrixData(raw)) {
-    const m = raw as MatrixData;
-    return {
-      columns: [
-        { key: "label", label: labels.label, type: "text" },
-        ...m.rows.map((r, ri) => ({
-          key: `s${ri}`,
-          label: r,
-          type: "number" as const,
-        })),
-      ],
-      rows: m.cols.map((c, ci) => ({
-        label: c,
-        ...Object.fromEntries(
-          m.rows.map((_, ri) => [`s${ri}`, m.values[ri]?.[ci] ?? 0]),
-        ),
-      })),
-    };
-  }
+  const { unit, dimension } = meta;
+  if (isMatrixData(raw)) return matrixAsTable(raw as MatrixData, meta, labels);
   if (!isCategoricalData(raw)) return null;
 
   const points = raw as readonly CategoricalPoint[];
@@ -1213,13 +1273,14 @@ function asTableData(
   const columns: TableColumn[] = [
     ...(hasId ? [{ key: "id", label: "", type: "id" as const }] : []),
     ...(isRanked
-      ? [{ key: "rank", label: labels.rank, type: "number" as const }]
+      ? [{ key: "rank", label: rankHeader, type: "number" as const }]
       : []),
-    { key: "label", label: labels.label, type: "text" },
+    { key: "label", label: labels.dimension(dimension), type: "text" },
     {
       key: "value",
-      label: unit ? `${labels.value} (${unit})` : labels.value,
+      label: labels.valueHeader(unit),
       type: "number",
+      unit,
     },
   ];
 
@@ -1228,8 +1289,46 @@ function asTableData(
     rows: points.map((p, i) => ({
       ...(hasId ? { id: extraId(p) ?? "" } : {}),
       ...(isRanked ? { rank: (p as { rank?: number }).rank ?? i + 1 } : {}),
-      label: humanizeLabel(p.label),
+      label: labels.category(dimension, p.label),
       value: p.value,
+    })),
+  };
+}
+
+/**
+ * matrix เป็นตาราง — ด้านที่มีหลายค่าเป็นแถว อีกด้านเป็นคอลัมน์ ตารางจึงยาวลงไม่กว้างออก
+ *
+ * เดิมสมมติว่า series มีไม่กี่ตัว (งวด) แล้ววาง series เป็นคอลัมน์เสมอ ใช้ได้กับชุดเทียบงวด
+ * (2 งวด × สถานะ/วัน) แต่ vendor × เดือน / location × เดือน มี series 10 ตัวกับเดือนเดียว
+ * กลายเป็นตารางกว้าง 10 คอลัมน์ 1 แถว · เท่ากัน = แบบเดิม (cols เป็นแถว)
+ */
+function matrixAsTable(
+  m: MatrixData,
+  meta: Pick<DatasetMeta, "unit" | "dimension" | "series_dimension">,
+  labels: WidgetLabels,
+): TableData {
+  const seriesAsRows = m.rows.length > m.cols.length;
+  const rowNames = seriesAsRows ? m.rows : m.cols;
+  const colNames = seriesAsRows ? m.cols : m.rows;
+  const rowDim = seriesAsRows ? meta.series_dimension : meta.dimension;
+  const colDim = seriesAsRows ? meta.dimension : meta.series_dimension;
+  const valueAt = (ri: number, ci: number) =>
+    (seriesAsRows ? m.values[ri]?.[ci] : m.values[ci]?.[ri]) ?? 0;
+  return {
+    columns: [
+      { key: "label", label: labels.dimension(rowDim), type: "text" },
+      ...colNames.map((name, ci) => ({
+        key: `c${ci}`,
+        label: labels.category(colDim, name),
+        type: "number" as const,
+        unit: meta.unit,
+      })),
+    ],
+    rows: rowNames.map((name, ri) => ({
+      label: labels.category(rowDim, name),
+      ...Object.fromEntries(
+        colNames.map((_, ci) => [`c${ci}`, valueAt(ri, ci)]),
+      ),
     })),
   };
 }
@@ -1237,19 +1336,21 @@ function asTableData(
 export function TableCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
   "use no memo";
   const t = useTranslations("dashboardWidget");
-  const colLabel = t("tableCol.label");
-  const colValue = t("tableCol.value");
+  const labels = useWidgetLabels();
   const colRank = t("tableCol.rank");
+  const { unit, dimension, series_dimension } = widget.meta;
   // ต้อง memo: categorical/ranked ถูกแปลงเป็นตารางใหม่ทุก render ถ้าไม่ตรึงไว้
   // `useReactTable` จะเห็น data/columns เป็นของใหม่ทุกรอบ แล้ว set state วนจนหน้าค้าง
+  // (`labels` คงที่เพราะ use-intl memo translator ไว้ — เทสต์ที่ mock ต้องคืน t ตัวเดิม)
   const data = useMemo(
     () =>
-      asTableData(widget.data, widget.meta.unit, {
-        label: colLabel,
-        value: colValue,
-        rank: colRank,
-      }),
-    [widget.data, widget.meta.unit, colLabel, colValue, colRank],
+      asTableData(
+        widget.data,
+        { unit, dimension, series_dimension },
+        labels,
+        colRank,
+      ),
+    [widget.data, unit, dimension, series_dimension, labels, colRank],
   );
 
   const columns = useMemo<ColumnDef<TableRow>[]>(
@@ -1262,7 +1363,7 @@ export function TableCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
           accessorFn: (row: TableRow) => row[col.key],
           header: col.label,
           cell: ({ getValue, row }) => {
-            const content = renderTableCell(getValue(), col.type);
+            const content = renderTableCell(getValue(), col.type, col.unit);
             const href = col.link ? cellDocHref(row.original, col.link) : null;
             if (!col.link || !href) return content;
             const title = col.link.title ? row.original[col.link.title] : undefined;

@@ -983,7 +983,51 @@
       "label": "รายการ",
       "value": "ค่า",
       "rank": "อันดับ"
-    }
+    },
+    "dimension": {
+      "status": "สถานะ",
+      "priority": "ความสำคัญ",
+      "vendor": "ผู้ขาย",
+      "department": "แผนก",
+      "location": "สถานที่",
+      "product": "สินค้า",
+      "product_category": "หมวดสินค้า",
+      "item_group": "กลุ่มสินค้า",
+      "unit": "หน่วย",
+      "business_type": "ประเภทธุรกิจ",
+      "reason": "เหตุผล",
+      "tax_rate": "อัตราภาษี",
+      "currency": "สกุลเงิน",
+      "cuisine": "ประเภทอาหาร",
+      "recipe_category": "หมวดสูตร",
+      "recipe": "สูตรอาหาร",
+      "equipment_category": "หมวดอุปกรณ์",
+      "document": "เลขที่เอกสาร",
+      "period": "งวด",
+      "day": "วันที่",
+      "month": "เดือน",
+      "date": "วันที่"
+    },
+    "unitHeader": {
+      "items": "จำนวน",
+      "baht": "ยอดเงิน (฿)",
+      "days": "วัน",
+      "transactions": "จำนวนรายการ",
+      "qty": "ปริมาณ",
+      "rate": "อัตรา"
+    },
+    "unitSuffix": {
+      "items": "รายการ",
+      "days": "วัน",
+      "transactions": "รายการ"
+    },
+    "priority": {
+      "low": "ต่ำ",
+      "medium": "ปานกลาง",
+      "high": "สูง",
+      "critical": "วิกฤต"
+    },
+    "unknown": "ไม่ระบุ"
   },
   "profileGate": {
     "loadingTitle": "กำลังโหลดพื้นที่ทำงาน",
@@ -1216,7 +1260,10 @@
     "committed": "ยืนยันแล้ว",
     "stockIn": "รับเข้า",
     "stockOut": "จ่ายออก",
-    "allType": "ทุกประเภท"
+    "allType": "ทุกประเภท",
+    "discontinued": "เลิกจำหน่าย",
+    "open": "เปิด",
+    "resolved": "แก้ไขแล้ว"
   },
   "auth": {
     "welcomeBack": "ยินดีต้อนรับกลับ",

@@ -102,6 +102,7 @@ export function SortableWidgetItem({
   const renders = availableRenders(
     dataset?.shape ?? detail?.meta.shape,
     dataset?.supported_renders,
+    dataset?.dimension ?? detail?.meta.dimension,
   );
 
   return (

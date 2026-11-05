@@ -25,16 +25,45 @@ const RENDERERS: readonly {
   { type: "table", reads: ["table", "categorical", "ranked", "matrix"] },
 ];
 
+/**
+ * แกนเวลา (มีลำดับ) ของ `meta.dimension` — token ของ micro-data `dimension.go`
+ * เส้น/พื้นที่สื่อว่า "ต่อเนื่องไปตามแกน" จึงอ่านถูกเฉพาะแกนพวกนี้
+ */
+export const TIME_DIMENSIONS: ReadonlySet<string> = new Set([
+  "period",
+  "day",
+  "month",
+  "date",
+]);
+
+/** ชนิดที่ลากเส้นต่อจุด — ใช้กับ matrix เฉพาะเมื่อแกน x เป็นเวลา */
+const CONTINUOUS_TYPES: ReadonlySet<WidgetType> = new Set(["line", "area"]);
+
+/**
+ * ชนิดกราฟที่ dataset นี้เลือกได้
+ *
+ * matrix ที่แกน x เป็นสถานะ / คลัง / แผนก ไม่มีเส้นให้เลือก — เส้นที่ลากข้ามหมวดที่ไม่มีลำดับ
+ * ทำให้ดูเหมือนมีแนวโน้มทั้งที่ไม่มี (เจอจริงที่ "PR by status — by period") · ไม่รู้แกน
+ * (`dimension` ไม่มี = backend รุ่นเก่า) คงพฤติกรรมเดิม
+ *
+ * @param shape - shape ของ dataset
+ * @param supportedRenders - `supported_renders` จาก backend (ว่าง = ไม่จำกัด)
+ * @param dimension - `dimension` ของ dataset
+ */
 export function availableRenders(
   shape: string | undefined,
   supportedRenders?: readonly string[],
+  dimension?: string,
 ): WidgetType[] {
   if (!shape) return [];
   const allowed = supportedRenders?.length ? new Set(supportedRenders) : null;
+  const notOverTime =
+    shape === "matrix" && !!dimension && !TIME_DIMENSIONS.has(dimension);
   return RENDERERS.filter(
     (r) =>
       r.reads.includes(shape as DatasetShape) &&
-      (!allowed || allowed.has(r.type)),
+      (!allowed || allowed.has(r.type)) &&
+      !(notOverTime && CONTINUOUS_TYPES.has(r.type)),
   ).map((r) => r.type);
 }
 
@@ -58,8 +87,9 @@ const PREFERRED_DEFAULT: Record<string, WidgetType> = {
 export function defaultRenderFor(
   shape: string | undefined,
   supportedRenders?: readonly string[],
+  dimension?: string,
 ): WidgetType {
-  const options = availableRenders(shape, supportedRenders);
+  const options = availableRenders(shape, supportedRenders, dimension);
   const preferred = shape ? PREFERRED_DEFAULT[shape] : undefined;
   if (preferred && options.includes(preferred)) return preferred;
   return options[0] ?? "kpi";

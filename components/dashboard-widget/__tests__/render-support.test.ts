@@ -55,6 +55,30 @@ describe("availableRenders", () => {
     expect(availableRenders(undefined)).toEqual([]);
     expect(availableRenders("nonsense")).toEqual([]);
   });
+
+  // เส้นที่ลากข้ามสถานะ / คลัง สื่อว่ามีแนวโน้มทั้งที่แกนไม่มีลำดับ ("PR by status — by period")
+  it("offers a line for a matrix only when its axis is time", () => {
+    const all = ["bar", "line", "area", "table"];
+    expect(availableRenders("matrix", all, "status")).toEqual(["bar", "table"]);
+    expect(availableRenders("matrix", all, "location")).toEqual([
+      "bar",
+      "table",
+    ]);
+    expect(availableRenders("matrix", all, "day")).toEqual([
+      "bar",
+      "line",
+      "table",
+    ]);
+    expect(availableRenders("matrix", all, "month")).toContain("line");
+    // ไม่รู้แกน (backend รุ่นเก่า) = เหมือนเดิม
+    expect(availableRenders("matrix", all)).toContain("line");
+    // time series เป็นแกนเวลาเสมอ
+    expect(availableRenders("time_series", undefined, "date")).toEqual([
+      "bar",
+      "line",
+      "area",
+    ]);
+  });
 });
 
 describe("defaultRenderFor", () => {
