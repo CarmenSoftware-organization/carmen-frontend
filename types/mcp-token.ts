@@ -1,3 +1,15 @@
+/** กลุ่มสิทธิ์ของโทเค็น — ต้องตรงกับ MCP_SCOPES ใน backend (packages/prisma-shared-schema-backstage/src/mcp-token.ts) */
+export type McpTokenScope =
+  | "read:master"
+  | "read:procurement"
+  | "read:recipe"
+  | "read:inventory"
+  | "write:master"
+  | "write:recipe"
+  | "write:inventory"
+  | "read:api"
+  | "write:api";
+
 /** แถวโทเค็น MCP ตามที่ GET /api/user/mcp-tokens คืน — ไม่มีโทเค็นดิบ */
 export interface McpToken {
   id: string;
@@ -8,6 +20,7 @@ export interface McpToken {
   revoked_at: string | null;
   created_at: string | null;
   doc_version: number;
+  scopes: McpTokenScope[];
 }
 
 /** response ของ POST — `token` ปรากฏที่นี่ครั้งเดียว */
@@ -18,6 +31,7 @@ export interface McpTokenCreated {
   token: string;
   expires_at: string;
   doc_version: number;
+  scopes: McpTokenScope[];
 }
 
 export type McpTokenStatus = "active" | "expired" | "revoked";

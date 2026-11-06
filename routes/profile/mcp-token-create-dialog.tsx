@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm, type Resolver } from "react-hook-form";
+import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ import {
   type McpTokenFormValues,
 } from "./mcp-token-form-schema";
 import { McpTokenRevealPanel } from "./mcp-token-reveal-panel";
+import { McpTokenScopePicker } from "./mcp-token-scope-picker";
 
 interface McpTokenCreateDialogProps {
   readonly open: boolean;
@@ -73,7 +74,7 @@ export function McpTokenCreateDialog({ open, onOpenChange }: McpTokenCreateDialo
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="border-border/60 bg-background gap-6 rounded-xl border p-6 shadow-md sm:max-w-[520px] sm:rounded-2xl"
+        className="border-border/60 bg-background gap-6 rounded-xl border p-6 shadow-md max-h-[90vh] overflow-y-auto sm:max-w-[560px] sm:rounded-2xl"
         showCloseButton={false}
       >
         <div className="flex flex-col gap-5">
@@ -105,6 +106,23 @@ export function McpTokenCreateDialog({ open, onOpenChange }: McpTokenCreateDialo
                     {...form.register("name")}
                   />
                   <FieldError className="mt-1">{form.formState.errors.name?.message}</FieldError>
+                </Field>
+                <Field data-invalid={!!form.formState.errors.scopes}>
+                  <FieldLabel required className="text-foreground/80 mb-1.5 font-medium">
+                    {t("scopes")}
+                  </FieldLabel>
+                  <Controller
+                    control={form.control}
+                    name="scopes"
+                    render={({ field }) => (
+                      <McpTokenScopePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        disabled={createToken.isPending}
+                      />
+                    )}
+                  />
+                  <FieldError className="mt-1">{form.formState.errors.scopes?.message}</FieldError>
                 </Field>
               </FieldGroup>
               <div className="flex justify-end gap-3 pt-2">
