@@ -20,7 +20,8 @@ export function McpTokenScopePicker({ value, onChange, disabled }: McpTokenScope
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    // text-foreground: Field ที่ invalid ทาสีแดงทั้งกลุ่ม — ให้แดงแค่ FieldError ไม่ใช่ชื่อ scope ทุกตัว
+    <div className="text-foreground flex flex-col gap-4">
       {MCP_SCOPE_GROUPS.map((group) => (
         <fieldset key={group.key} className="flex flex-col gap-2">
           <legend className="text-foreground/80 mb-1 text-xs font-semibold">
