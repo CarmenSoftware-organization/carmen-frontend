@@ -6,6 +6,7 @@ import { httpClient } from "@/lib/http-client";
 import type {
   McpToken,
   McpTokenCreated,
+  McpTokenScope,
   McpTokenStatus,
 } from "@/types/mcp-token";
 
@@ -35,7 +36,7 @@ export function useMcpTokens() {
 
 export function useCreateMcpToken() {
   const queryClient = useQueryClient();
-  return useMutation<McpTokenCreated, ApiError, { name: string }>({
+  return useMutation<McpTokenCreated, ApiError, { name: string; scopes: McpTokenScope[] }>({
     mutationFn: async (body) => {
       const res = await httpClient.post(API_ENDPOINTS.MCP_TOKENS, body);
       if (!res.ok) throw await ApiError.from(res, "Failed to create MCP token");

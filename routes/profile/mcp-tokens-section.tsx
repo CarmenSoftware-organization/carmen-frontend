@@ -10,6 +10,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import type { McpToken, McpTokenStatus } from "@/types/mcp-token";
 import { McpTokenCreateDialog } from "./mcp-token-create-dialog";
+import { getMcpScopeMessageKey } from "./mcp-token-scopes";
 import { getMcpTokenStatus, useMcpTokens, useRevokeMcpToken } from "./use-mcp-tokens";
 
 const STATUS_VARIANT: Record<McpTokenStatus, "success-light" | "warning-light" | "destructive-light"> = {
@@ -81,6 +82,7 @@ export function McpTokensSection() {
                 <tr>
                   <th className="p-2 text-left">{t("name")}</th>
                   <th className="p-2 text-left">{t("tokenPrefix")}</th>
+                  <th className="p-2 text-left">{t("scopes")}</th>
                   <th className="p-2 text-left">{t("createdAt")}</th>
                   <th className="p-2 text-left">{t("expiresAt")}</th>
                   <th className="p-2 text-left">{t("lastUsedAt")}</th>
@@ -96,6 +98,20 @@ export function McpTokensSection() {
                     <tr key={row.id} className={muted ? "text-muted-foreground" : undefined}>
                       <td className="p-2 font-medium">{row.name}</td>
                       <td className="p-2 font-mono">{row.token_prefix}…</td>
+                      <td className="p-2">
+                        <div className="flex max-w-[260px] flex-wrap gap-1">
+                          {(row.scopes ?? []).map((scope) => (
+                            <Badge
+                              key={scope}
+                              variant={scope.startsWith("write:") ? "warning-light" : "invert-light"}
+                              size="xs"
+                              title={t(`scope_${getMcpScopeMessageKey(scope)}`)}
+                            >
+                              {scope}
+                            </Badge>
+                          ))}
+                        </div>
+                      </td>
                       <td className="p-2">{fmt(row.created_at, "—")}</td>
                       <td className="p-2">{fmt(row.expires_at, "—")}</td>
                       <td className="p-2">{fmt(row.last_used_at, t("never"))}</td>
