@@ -225,7 +225,8 @@ export default function UserProfileSetting() {
     <div className="animate-in fade-in mx-auto w-full max-w-5xl space-y-10 pb-[max(2rem,env(safe-area-inset-bottom))] duration-150">
       {/* Header — ไม่มีปุ่ม Save ที่นี่ เพราะ Save บันทึกแค่ข้อมูลส่วนตัว
           ส่วนรูป ลายเซ็น และโทเค็นบันทึกทันที ปุ่มจึงอยู่ท้ายฟอร์มนั้นแทน */}
-      <div className="sticky top-0 z-20 flex items-center gap-2 py-1 sm:static sm:py-0">
+      {/* พื้นหลังทึบจำเป็นเพราะ sticky บนมือถือ — ไม่มีแล้วหัวข้อ section เลื่อนทะลุมาทับชื่อหน้า */}
+      <div className="bg-background/95 sticky top-0 z-20 flex items-center gap-2 py-1 backdrop-blur-sm sm:static sm:bg-transparent sm:py-0 sm:backdrop-blur-none">
         {/* touch target 44px บนมือถือ — header นี้ sticky อยู่บนสุดของหน้าโปรไฟล์
             ซึ่งเป็นหน้าที่เปิดจากมือถือบ่อย จงใจใหญ่กว่า icon-sm ปกติ */}
         <BackButton onClick={handleBack} className="h-11 w-11 sm:h-8 sm:w-8" />

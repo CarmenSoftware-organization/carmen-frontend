@@ -124,8 +124,14 @@ export function McpTokensSection() {
 }
 
 /**
- * ตารางโทเค็น — ชื่อกับ prefix ซ้อนกันในคอลัมน์เดียว (ชื่อซ้ำกันได้ prefix คือตัวแยก)
- * วันที่แสดงแบบ relative และใส่เวลาเต็มไว้ใน `title` เพื่อไม่ให้คอลัมน์วันที่ตัดบรรทัด
+ * รายการโทเค็น — ตารางเมื่อกรอบกว้างพอ, การ์ดทีละใบเมื่อแคบ
+ *
+ * สลับด้วย container query (`@container` + `@[600px]:`) ไม่ใช่ breakpoint ของ viewport
+ * เพราะกรอบนี้แชร์แถวกับคอลัมน์ป้าย 220px — ที่ viewport 768–1100px กรอบยังแคบกว่า
+ * ความกว้างขั้นต่ำของตาราง (~588px) อยู่ ถ้าใช้ `md:` ปุ่ม Revoke จะหลุดขอบขวาต้องปัดดู
+ *
+ * ชื่อกับ prefix อยู่ด้วยกันเสมอ (ชื่อซ้ำกันได้ prefix คือตัวแยก) และวันที่เป็น relative
+ * พร้อม `title` เวลาเต็ม
  */
 function TokenTable({
   rows,
@@ -147,9 +153,82 @@ function TokenTable({
   };
   const absolute = (iso: string | null) => (iso ? formatDate(iso, dateTimeFormat) : undefined);
 
+  const items = rows.map((row) => {
+    const status = getMcpTokenStatus(row);
+    return {
+      row,
+      status,
+      isMuted: status !== "active",
+      lastUsed: row.last_used_at ? formatRelativeTime(row.last_used_at, locale) : t("never"),
+      // โทเค็นที่เพิกถอนแล้ว "หมดอายุอีก 3 เดือน" อ่านเหมือนยังใช้ได้
+      expires: status === "revoked" ? "—" : formatRelativeTime(row.expires_at, locale),
+    };
+  });
+
+  const renderName = (row: McpToken) => (
+    <>
+      <div className="font-medium break-words">{row.name}</div>
+      <div className="text-muted-foreground font-mono text-[11px] whitespace-nowrap">{row.token_prefix}…</div>
+    </>
+  );
+  const renderScopes = (row: McpToken) =>
+    (row.scopes ?? []).map((scope) => (
+      <Badge
+        key={scope}
+        variant={scope.startsWith("write:") ? "warning-light" : "invert-light"}
+        size="xs"
+        title={t(`scope_${getMcpScopeMessageKey(scope)}`)}
+      >
+        {scope}
+      </Badge>
+    ));
+  const renderStatus = (status: McpTokenStatus) => (
+    <Badge variant={STATUS_VARIANT[status]} size="xs">{statusLabel[status]}</Badge>
+  );
+  const renderRevoke = (row: McpToken) =>
+    onRevoke && (
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => onRevoke(row)}
+        className="text-muted-foreground hover:text-destructive"
+      >
+        <Ban className="size-3.5" aria-hidden="true" />
+        {t("revoke")}
+      </Button>
+    );
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-xs">
+    <div className="@container">
+      {/* แคบ: การ์ดทีละโทเค็น */}
+      <ul className="divide-y text-xs @[600px]:hidden">
+        {items.map(({ row, status, isMuted, lastUsed, expires }) => (
+          <li key={row.id} className={isMuted ? "text-muted-foreground space-y-2 px-4 py-3" : "space-y-2 px-4 py-3"}>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0" title={absolute(row.created_at)}>{renderName(row)}</div>
+              {showStatus && renderStatus(status)}
+            </div>
+            <div className="flex flex-wrap gap-1">{renderScopes(row)}</div>
+            <div className="flex items-center justify-between gap-2">
+              <dl className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-0.5">
+                <div className="flex gap-1" title={absolute(row.last_used_at)}>
+                  <dt>{t("lastUsedAt")}</dt>
+                  <dd className="text-foreground">{lastUsed}</dd>
+                </div>
+                <div className="flex gap-1" title={absolute(row.expires_at)}>
+                  <dt>{t("expiresAt")}</dt>
+                  <dd className="text-foreground">{expires}</dd>
+                </div>
+              </dl>
+              {renderRevoke(row)}
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {/* กว้าง: ตาราง */}
+      <table className="hidden w-full text-xs @[600px]:table">
         <thead className="bg-muted/50 text-muted-foreground border-b">
           <tr>
             <th className="px-4 py-2 text-left font-medium">{t("name")}</th>
@@ -161,60 +240,18 @@ function TokenTable({
           </tr>
         </thead>
         <tbody className="divide-y">
-          {rows.map((row) => {
-            const status = getMcpTokenStatus(row);
-            const isMuted = status !== "active";
-            return (
-              <tr key={row.id} className={isMuted ? "text-muted-foreground" : undefined}>
-                <td className="px-4 py-2.5 align-top" title={absolute(row.created_at)}>
-                  <div className="font-medium break-words">{row.name}</div>
-                  <div className="text-muted-foreground font-mono text-[11px] whitespace-nowrap">
-                    {row.token_prefix}…
-                  </div>
-                </td>
-                <td className="px-2 py-2.5 align-top">
-                  <div className="flex min-w-[180px] flex-wrap gap-1">
-                    {(row.scopes ?? []).map((scope) => (
-                      <Badge
-                        key={scope}
-                        variant={scope.startsWith("write:") ? "warning-light" : "invert-light"}
-                        size="xs"
-                        title={t(`scope_${getMcpScopeMessageKey(scope)}`)}
-                      >
-                        {scope}
-                      </Badge>
-                    ))}
-                  </div>
-                </td>
-                <td className="px-2 py-2.5 align-top whitespace-nowrap" title={absolute(row.last_used_at)}>
-                  {row.last_used_at ? formatRelativeTime(row.last_used_at, locale) : t("never")}
-                </td>
-                <td className="px-2 py-2.5 align-top whitespace-nowrap" title={absolute(row.expires_at)}>
-                  {/* โทเค็นที่เพิกถอนแล้ว "หมดอายุอีก 3 เดือน" อ่านเหมือนยังใช้ได้ */}
-                  {status === "revoked" ? "—" : formatRelativeTime(row.expires_at, locale)}
-                </td>
-                {showStatus && (
-                  <td className="px-2 py-2.5 align-top">
-                    <Badge variant={STATUS_VARIANT[status]} size="xs">{statusLabel[status]}</Badge>
-                  </td>
-                )}
-                {onRevoke && (
-                  <td className="px-4 py-1.5 text-right align-top">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onRevoke(row)}
-                      className="text-muted-foreground hover:text-destructive"
-                    >
-                      <Ban className="size-3.5" aria-hidden="true" />
-                      {t("revoke")}
-                    </Button>
-                  </td>
-                )}
-              </tr>
-            );
-          })}
+          {items.map(({ row, status, isMuted, lastUsed, expires }) => (
+            <tr key={row.id} className={isMuted ? "text-muted-foreground" : undefined}>
+              <td className="px-4 py-2.5 align-top" title={absolute(row.created_at)}>{renderName(row)}</td>
+              <td className="px-2 py-2.5 align-top">
+                <div className="flex min-w-[180px] flex-wrap gap-1">{renderScopes(row)}</div>
+              </td>
+              <td className="px-2 py-2.5 align-top whitespace-nowrap" title={absolute(row.last_used_at)}>{lastUsed}</td>
+              <td className="px-2 py-2.5 align-top whitespace-nowrap" title={absolute(row.expires_at)}>{expires}</td>
+              {showStatus && <td className="px-2 py-2.5 align-top">{renderStatus(status)}</td>}
+              {onRevoke && <td className="px-4 py-1.5 text-right align-top">{renderRevoke(row)}</td>}
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
