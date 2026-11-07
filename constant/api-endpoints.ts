@@ -489,6 +489,10 @@ export const API_ENDPOINTS = {
   MCP_TOKENS: "/api/proxy/api/user/mcp-tokens",
   MCP_TOKEN_REVOKE: (id: string, docVersion: number) =>
     `/api/proxy/api/user/mcp-tokens/${toSafePathSegment(id)}?doc_version=${docVersion}`,
+  // ลบ (soft-delete) ได้เฉพาะใบที่เพิกถอน/หมดอายุแล้ว — คนละ route กับ revoke ที่ใช้ DELETE /:id อยู่
+  MCP_TOKEN_DELETE: (id: string, docVersion: number) =>
+    `/api/proxy/api/user/mcp-tokens/inactive/${toSafePathSegment(id)}?doc_version=${docVersion}`,
+  MCP_TOKENS_DELETE_INACTIVE: "/api/proxy/api/user/mcp-tokens/inactive",
   PURCHASE_ORDER: (buCode: string) =>
     `/api/proxy/api/${buCode}/purchase-orders`,
   PURCHASE_ORDER_COMMENT: (buCode: string, poId?: string) =>

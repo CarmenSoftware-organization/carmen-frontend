@@ -6695,7 +6695,15 @@
       "scopeDesc_read_api": "ค้นหาและเรียก endpoint แบบอ่านอย่างเดียว",
       "scope_write_api": "เขียนผ่าน API ใดก็ได้",
       "scopeDesc_write_api": "เรียก endpoint ที่เปลี่ยนแปลงข้อมูล",
-      "inactiveTokens": "เพิกถอนและหมดอายุ ({count})"
+      "inactiveTokens": "เพิกถอนและหมดอายุ ({count})",
+      "delete": "ลบ",
+      "deleteAll": "ลบทั้งหมด",
+      "deleteTitle": "ลบโทเค็นนี้?",
+      "deleteConfirm": "\"{name}\" จะถูกลบออกจากรายการ โทเค็นนี้ใช้งานไม่ได้อยู่แล้ว",
+      "deleteAllTitle": "ลบโทเค็นที่เพิกถอนและหมดอายุทั้งหมด?",
+      "deleteAllConfirm": "โทเค็นที่ใช้งานไม่ได้แล้ว {count} ใบจะถูกลบออกจากรายการ โทเค็นที่ยังใช้งานได้ไม่ได้รับผลกระทบ",
+      "deleted": "ลบโทเค็นแล้ว",
+      "deletedMany": "ลบโทเค็นแล้ว {count} ใบ"
     },
     "cancel": "ยกเลิก",
     "changeAvatar": "เปลี่ยนรูปโปรไฟล์",

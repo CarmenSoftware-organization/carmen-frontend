@@ -6695,7 +6695,15 @@
       "scopeDesc_read_api": "Search and call read-only endpoints",
       "scope_write_api": "Write any API",
       "scopeDesc_write_api": "Call endpoints that change data",
-      "inactiveTokens": "Revoked & expired ({count})"
+      "inactiveTokens": "Revoked & expired ({count})",
+      "delete": "Delete",
+      "deleteAll": "Delete all",
+      "deleteTitle": "Delete this token?",
+      "deleteConfirm": "\"{name}\" will be removed from your list. It already no longer works.",
+      "deleteAllTitle": "Delete all revoked & expired tokens?",
+      "deleteAllConfirm": "{count} tokens that no longer work will be removed from your list. Active tokens are not affected.",
+      "deleted": "Token deleted",
+      "deletedMany": "Deleted {count} tokens"
     },
     "cancel": "Cancel",
     "changeAvatar": "Change avatar",

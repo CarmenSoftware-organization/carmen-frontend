@@ -70,3 +70,38 @@ export function useRevokeMcpToken() {
     },
   });
 }
+
+/** ลบ (soft-delete) โทเค็นที่เพิกถอน/หมดอายุแล้วหนึ่งใบ — ใบที่ยังใช้ได้ backend ตอบ 409 MCP_TOKEN_STILL_ACTIVE */
+export function useDeleteMcpToken() {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, ApiError, { id: string; doc_version: number }>({
+    mutationFn: async ({ id, doc_version }) => {
+      const res = await httpClient.delete(
+        API_ENDPOINTS.MCP_TOKEN_DELETE(id, doc_version),
+      );
+      if (!res.ok) throw await ApiError.from(res, "Failed to delete MCP token");
+      return res.json().catch(() => ({}));
+    },
+    meta: { preferServerMessage: true },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: mcpTokensQueryKey });
+    },
+  });
+}
+
+/** ลบ (soft-delete) โทเค็นที่เพิกถอน/หมดอายุแล้วทุกใบ — โทเค็นที่ยังใช้ได้ไม่ถูกแตะ */
+export function useDeleteInactiveMcpTokens() {
+  const queryClient = useQueryClient();
+  return useMutation<{ deleted_count: number }, ApiError, void>({
+    mutationFn: async () => {
+      const res = await httpClient.delete(API_ENDPOINTS.MCP_TOKENS_DELETE_INACTIVE);
+      if (!res.ok) throw await ApiError.from(res, "Failed to delete MCP tokens");
+      const json = await res.json();
+      return json.data ?? { deleted_count: 0 };
+    },
+    meta: { preferServerMessage: true },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: mcpTokensQueryKey });
+    },
+  });
+}
