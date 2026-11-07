@@ -7,6 +7,7 @@ export type McpTokenScope =
   | "write:master"
   | "write:recipe"
   | "write:inventory"
+  | "write:workflow"
   | "read:api"
   | "write:api";
 

@@ -6689,6 +6689,8 @@
       "scopeDesc_write_recipe": "Create draft recipes",
       "scope_write_inventory": "Record counts",
       "scopeDesc_write_inventory": "Save counted quantities on your physical counts",
+      "scope_write_workflow": "Approve / reject documents",
+      "scopeDesc_write_workflow": "Approve or reject whole purchase requests, purchase orders and store requisitions waiting for you",
       "scope_read_api": "Read any API",
       "scopeDesc_read_api": "Search and call read-only endpoints",
       "scope_write_api": "Write any API",
