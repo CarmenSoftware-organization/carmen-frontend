@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "use-intl";
 import { toast } from "sonner";
-import { Ban, ChevronRight, Plus } from "lucide-react";
+import { Ban, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +17,13 @@ import { formatRelativeTime } from "@/lib/relative-time";
 import type { McpToken, McpTokenStatus } from "@/types/mcp-token";
 import { McpTokenCreateDialog } from "./mcp-token-create-dialog";
 import { getMcpScopeMessageKey } from "./mcp-token-scopes";
-import { getMcpTokenStatus, useMcpTokens, useRevokeMcpToken } from "./use-mcp-tokens";
+import {
+  getMcpTokenStatus,
+  useDeleteInactiveMcpTokens,
+  useDeleteMcpToken,
+  useMcpTokens,
+  useRevokeMcpToken,
+} from "./use-mcp-tokens";
 
 const STATUS_VARIANT: Record<McpTokenStatus, "success-light" | "warning-light" | "destructive-light"> = {
   active: "success-light",
@@ -31,14 +37,21 @@ const STATUS_VARIANT: Record<McpTokenStatus, "success-light" | "warning-light" |
  * แยกโทเค็นที่ใช้งานได้ออกจากที่เพิกถอน/หมดอายุ — ของที่ตายแล้วสะสมไปเรื่อย ๆ
  * (ถือ active ได้แค่ 10 ใบ แต่ revoked ไม่มีเพดาน) ถ้าปนกันในตารางเดียว
  * แถวที่ต้องดูแลจริงจะจมอยู่ใต้ประวัติ จึงยุบส่วนที่ไม่ active ไว้ใน Collapsible
+ *
+ * การลบมีเฉพาะในส่วนที่ไม่ active — ใบที่ยังใช้ได้ต้องเพิกถอนก่อนเสมอ
+ * ลบจึงไม่มีทางทำให้ client ที่ต่ออยู่หลุดโดยไม่ตั้งใจ (backend บังคับซ้ำด้วย 409)
  */
 export function McpTokensSection() {
   const t = useTranslations("profile.mcpTokens");
   const tc = useTranslations("common");
   const tokens = useMcpTokens();
   const revoke = useRevokeMcpToken();
+  const deleteOne = useDeleteMcpToken();
+  const deleteInactive = useDeleteInactiveMcpTokens();
   const [createOpen, setCreateOpen] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<McpToken | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<McpToken | null>(null);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
 
   const rows = tokens.data ?? [];
   const activeRows = rows.filter((row) => getMcpTokenStatus(row) === "active");
@@ -57,6 +70,30 @@ export function McpTokensSection() {
         onError: () => setRevokeTarget(null),
       },
     );
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteOne.mutate(
+      { id: deleteTarget.id, doc_version: deleteTarget.doc_version },
+      {
+        onSuccess: () => {
+          toast.success(t("deleted"));
+          setDeleteTarget(null);
+        },
+        onError: () => setDeleteTarget(null),
+      },
+    );
+  };
+
+  const handleConfirmDeleteAll = () => {
+    deleteInactive.mutate(undefined, {
+      onSuccess: (data) => {
+        toast.success(t("deletedMany", { count: data.deleted_count }));
+        setDeleteAllOpen(false);
+      },
+      onError: () => setDeleteAllOpen(false),
+    });
   };
 
   return (
@@ -91,15 +128,29 @@ export function McpTokensSection() {
             )}
             {inactiveRows.length > 0 && (
               <Collapsible className="border-t">
-                <CollapsibleTrigger className="group text-muted-foreground hover:text-foreground hover:bg-muted/30 focus-visible:ring-ring/50 flex w-full items-center gap-1.5 px-4 py-2.5 text-left text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none">
-                  <ChevronRight
-                    className="size-3.5 transition-transform group-data-[state=open]:rotate-90"
-                    aria-hidden="true"
-                  />
-                  {t("inactiveTokens", { count: inactiveRows.length })}
-                </CollapsibleTrigger>
+                {/* ปุ่ม Delete all อยู่ข้าง trigger ไม่ใช่ข้างใน — button ซ้อน button ไม่ได้ */}
+                <div className="flex items-center gap-2 pr-3">
+                  <CollapsibleTrigger className="group text-muted-foreground hover:text-foreground hover:bg-muted/30 focus-visible:ring-ring/50 flex min-w-0 flex-1 items-center gap-1.5 px-4 py-2.5 text-left text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none">
+                    <ChevronRight
+                      className="size-3.5 shrink-0 transition-transform group-data-[state=open]:rotate-90"
+                      aria-hidden="true"
+                    />
+                    {t("inactiveTokens", { count: inactiveRows.length })}
+                  </CollapsibleTrigger>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    disabled={deleteInactive.isPending}
+                    onClick={() => setDeleteAllOpen(true)}
+                    className="text-muted-foreground hover:text-destructive shrink-0"
+                  >
+                    <Trash2 className="size-3" aria-hidden="true" />
+                    {t("deleteAll")}
+                  </Button>
+                </div>
                 <CollapsibleContent className="border-t">
-                  <TokenTable rows={inactiveRows} showStatus />
+                  <TokenTable rows={inactiveRows} showStatus onDelete={setDeleteTarget} />
                 </CollapsibleContent>
               </Collapsible>
             )}
@@ -119,6 +170,28 @@ export function McpTokensSection() {
         isPending={revoke.isPending}
         onConfirm={handleConfirmRevoke}
       />
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title={t("deleteTitle")}
+        description={deleteTarget ? t("deleteConfirm", { name: deleteTarget.name }) : ""}
+        confirmText={t("delete")}
+        confirmIcon={<Trash2 className="size-3.5" aria-hidden="true" />}
+        variant="destructive"
+        isPending={deleteOne.isPending}
+        onConfirm={handleConfirmDelete}
+      />
+      <ConfirmDialog
+        open={deleteAllOpen}
+        onOpenChange={setDeleteAllOpen}
+        title={t("deleteAllTitle")}
+        description={t("deleteAllConfirm", { count: inactiveRows.length })}
+        confirmText={t("deleteAll")}
+        confirmIcon={<Trash2 className="size-3.5" aria-hidden="true" />}
+        variant="destructive"
+        isPending={deleteInactive.isPending}
+        onConfirm={handleConfirmDeleteAll}
+      />
     </div>
   );
 }
@@ -137,10 +210,14 @@ function TokenTable({
   rows,
   showStatus,
   onRevoke,
+  onDelete,
 }: {
   readonly rows: McpToken[];
   readonly showStatus?: boolean;
+  /** ปุ่มเพิกถอน — ใช้กับรายการ active */
   readonly onRevoke?: (row: McpToken) => void;
+  /** ปุ่มลบ — ใช้กับรายการที่เพิกถอน/หมดอายุแล้ว */
+  readonly onDelete?: (row: McpToken) => void;
 }) {
   const t = useTranslations("profile.mcpTokens");
   const locale = useLocale();
@@ -185,19 +262,38 @@ function TokenTable({
   const renderStatus = (status: McpTokenStatus) => (
     <Badge variant={STATUS_VARIANT[status]} size="xs">{statusLabel[status]}</Badge>
   );
-  const renderRevoke = (row: McpToken) =>
-    onRevoke && (
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={() => onRevoke(row)}
-        className="text-muted-foreground hover:text-destructive"
-      >
-        <Ban className="size-3.5" aria-hidden="true" />
-        {t("revoke")}
-      </Button>
-    );
+  const hasAction = Boolean(onRevoke || onDelete);
+  const renderAction = (row: McpToken) => {
+    if (onRevoke) {
+      return (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onRevoke(row)}
+          className="text-muted-foreground hover:text-destructive"
+        >
+          <Ban className="size-3.5" aria-hidden="true" />
+          {t("revoke")}
+        </Button>
+      );
+    }
+    if (onDelete) {
+      return (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onDelete(row)}
+          className="text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 className="size-3.5" aria-hidden="true" />
+          {t("delete")}
+        </Button>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="@container">
@@ -221,7 +317,7 @@ function TokenTable({
                   <dd className="text-foreground">{expires}</dd>
                 </div>
               </dl>
-              {renderRevoke(row)}
+              {renderAction(row)}
             </div>
           </li>
         ))}
@@ -236,7 +332,7 @@ function TokenTable({
             <th className="px-2 py-2 text-left font-medium whitespace-nowrap">{t("lastUsedAt")}</th>
             <th className="px-2 py-2 text-left font-medium whitespace-nowrap">{t("expiresAt")}</th>
             {showStatus && <th className="px-2 py-2 text-left font-medium">{t("status")}</th>}
-            {onRevoke && <th className="px-4 py-2" />}
+            {hasAction && <th className="px-4 py-2" />}
           </tr>
         </thead>
         <tbody className="divide-y">
@@ -249,7 +345,7 @@ function TokenTable({
               <td className="px-2 py-2.5 align-top whitespace-nowrap" title={absolute(row.last_used_at)}>{lastUsed}</td>
               <td className="px-2 py-2.5 align-top whitespace-nowrap" title={absolute(row.expires_at)}>{expires}</td>
               {showStatus && <td className="px-2 py-2.5 align-top">{renderStatus(status)}</td>}
-              {onRevoke && <td className="px-4 py-1.5 text-right align-top">{renderRevoke(row)}</td>}
+              {hasAction && <td className="px-4 py-1.5 text-right align-top">{renderAction(row)}</td>}
             </tr>
           ))}
         </tbody>
