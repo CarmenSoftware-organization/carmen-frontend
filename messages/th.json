@@ -6689,6 +6689,8 @@
       "scopeDesc_write_recipe": "สร้างสูตรอาหารแบบร่าง",
       "scope_write_inventory": "บันทึกยอดนับ",
       "scopeDesc_write_inventory": "บันทึกจำนวนที่นับได้ลงใบนับสต็อกของคุณ",
+      "scope_write_workflow": "อนุมัติ / ปฏิเสธเอกสาร",
+      "scopeDesc_write_workflow": "อนุมัติหรือปฏิเสธใบขอซื้อ ใบสั่งซื้อ และใบเบิกสินค้าทั้งใบที่รอคุณอยู่",
       "scope_read_api": "อ่านผ่าน API ใดก็ได้",
       "scopeDesc_read_api": "ค้นหาและเรียก endpoint แบบอ่านอย่างเดียว",
       "scope_write_api": "เขียนผ่าน API ใดก็ได้",
