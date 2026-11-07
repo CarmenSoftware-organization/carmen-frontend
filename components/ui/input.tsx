@@ -11,15 +11,23 @@ function Input({
   // ทำให้ Input/Select สูงกว่า LookupCombobox/DatePicker (ที่ default เป็น sm)
   // อยู่ 4px ในฟอร์มเดียวกัน ใครลืมระบุ size ก็ได้ช่องเตี้ยสูงสลับกันทันที
   size = "sm",
+  hideCounter = false,
   ref: forwardedRef,
   ...props
 }: Omit<React.ComponentProps<"input">, "size"> & {
   size?: "xs" | "sm" | "default";
+  /**
+   * ปิดตัวนับ `n/max` ใต้ช่อง — สำหรับรหัสความยาวตายตัว (เช่นชื่อย่อ 2 ตัว)
+   * ที่การกรอกครบ max คือสถานะปกติ ไม่ใช่ใกล้ล้น ตัวนับจะเป็นสีแดงตลอดเวลา
+   * จนดูเหมือน error ทั้งที่ค่าถูกต้อง
+   */
+  hideCounter?: boolean;
 }) {
   const [length, setLength] = React.useState(0);
   const [focused, setFocused] = React.useState(false);
   const innerRef = React.useRef<HTMLInputElement | null>(null);
-  const showCounter = (type === "text" || !type) && maxLength != null;
+  const showCounter =
+    !hideCounter && (type === "text" || !type) && maxLength != null;
 
   const handleRef = React.useCallback(
     (el: HTMLInputElement | null) => {

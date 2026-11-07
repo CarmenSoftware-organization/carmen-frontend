@@ -6694,9 +6694,14 @@
       "scope_read_api": "อ่านผ่าน API ใดก็ได้",
       "scopeDesc_read_api": "ค้นหาและเรียก endpoint แบบอ่านอย่างเดียว",
       "scope_write_api": "เขียนผ่าน API ใดก็ได้",
-      "scopeDesc_write_api": "เรียก endpoint ที่เปลี่ยนแปลงข้อมูล"
+      "scopeDesc_write_api": "เรียก endpoint ที่เปลี่ยนแปลงข้อมูล",
+      "inactiveTokens": "เพิกถอนและหมดอายุ ({count})"
     },
-    "cancel": "ยกเลิก"
+    "cancel": "ยกเลิก",
+    "changeAvatar": "เปลี่ยนรูปโปรไฟล์",
+    "signatureSet": "ตั้งลายเซ็นแล้ว",
+    "signatureNotSet": "ยังไม่มีลายเซ็น",
+    "signatureEmptyHint": "ยังไม่มีลายเซ็น คลิกเพื่อวาดหรืออัปโหลด"
   },
   "report": {
     "entity": "รายงาน",
