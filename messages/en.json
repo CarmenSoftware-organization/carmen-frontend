@@ -6694,9 +6694,14 @@
       "scope_read_api": "Read any API",
       "scopeDesc_read_api": "Search and call read-only endpoints",
       "scope_write_api": "Write any API",
-      "scopeDesc_write_api": "Call endpoints that change data"
+      "scopeDesc_write_api": "Call endpoints that change data",
+      "inactiveTokens": "Revoked & expired ({count})"
     },
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "changeAvatar": "Change avatar",
+    "signatureSet": "Signature set",
+    "signatureNotSet": "No signature",
+    "signatureEmptyHint": "No signature yet. Click to draw or upload one."
   },
   "report": {
     "entity": "Report",

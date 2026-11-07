@@ -210,26 +210,26 @@ export default function UserProfileSetting() {
     .filter(Boolean)
     .map((n) => n!.charAt(0).toUpperCase())
     .join("");
+  const fullName = [
+    profile.user_info?.firstname,
+    profile.user_info?.middlename,
+    profile.user_info?.lastname,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const hasAvatar = Boolean(avatarPreview || profile.avatar_url);
+  const hasSignature = Boolean(profile.signature_url);
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto w-full max-w-5xl space-y-10 pb-[max(2rem,env(safe-area-inset-bottom))] duration-500">
-      {/* Header */}
+    // ไม่มี slide-in: หน้าตั้งค่าเปิดซ้ำบ่อย แอนิเมชัน 500ms ทำให้รู้สึกช้า
+    <div className="animate-in fade-in mx-auto w-full max-w-5xl space-y-10 pb-[max(2rem,env(safe-area-inset-bottom))] duration-150">
+      {/* Header — ไม่มีปุ่ม Save ที่นี่ เพราะ Save บันทึกแค่ข้อมูลส่วนตัว
+          ส่วนรูป ลายเซ็น และโทเค็นบันทึกทันที ปุ่มจึงอยู่ท้ายฟอร์มนั้นแทน */}
       <div className="sticky top-0 z-20 flex items-center gap-2 py-1 sm:static sm:py-0">
         {/* touch target 44px บนมือถือ — header นี้ sticky อยู่บนสุดของหน้าโปรไฟล์
             ซึ่งเป็นหน้าที่เปิดจากมือถือบ่อย จงใจใหญ่กว่า icon-sm ปกติ */}
         <BackButton onClick={handleBack} className="h-11 w-11 sm:h-8 sm:w-8" />
         <h1 className="text-lg font-semibold tracking-tight">{t("title")}</h1>
-        <div className="ml-auto">
-          <Button
-            type="submit"
-            form="profile-form"
-            size="sm"
-            disabled={updateProfile.isPending}
-            className="h-9 shadow-sm"
-          >
-            {updateProfile.isPending ? t("saving") : tc("save")}
-          </Button>
-        </div>
       </div>
 
       {/* Account Info — read-only hero */}
@@ -267,30 +267,19 @@ export default function UserProfileSetting() {
                     </AvatarFallback>
                   </Avatar>
                   <span className="bg-foreground/55 pointer-events-none absolute inset-0 flex items-center justify-center rounded-full opacity-0 transition-opacity group-hover:opacity-100">
-                    <Camera
-                      className="text-background size-4"
-                      aria-hidden="true"
-                    />
+                    {isUploadingAvatar ? (
+                      <Loader2
+                        className="text-background size-4 animate-spin"
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <Camera
+                        className="text-background size-4"
+                        aria-hidden="true"
+                      />
+                    )}
                   </span>
                 </button>
-                {(avatarPreview || profile.avatar_url) &&
-                  !isUploadingAvatar && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon-xs"
-                      disabled={isDeletingAvatar}
-                      onClick={handleRemoveAvatar}
-                      aria-label={t("removeAvatar")}
-                      className="absolute -top-1 -right-1 size-5 rounded-full shadow"
-                    >
-                      {isDeletingAvatar ? (
-                        <Loader2 aria-hidden="true" className="animate-spin" />
-                      ) : (
-                        <Trash2 aria-hidden="true" />
-                      )}
-                    </Button>
-                  )}
                 <input
                   ref={avatarInputRef}
                   type="file"
@@ -302,25 +291,66 @@ export default function UserProfileSetting() {
               </div>
               <div className="min-w-0 flex-1 space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-lg font-bold tracking-tight">
-                    {t("accountInfo")}
+                  <span className="truncate text-lg font-bold tracking-tight">
+                    {fullName || profile.email || "-"}
+                  </span>
+                  {/* platform_role ว่างได้ (ผู้ใช้ระดับ BU) — badge เปล่าดูเหมือนบั๊ก */}
+                  {profile.platform_role && (
+                    <Badge variant="primary-light" size="sm">
+                      {profile.platform_role}
+                    </Badge>
+                  )}
+                </div>
+                <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <Mail
+                      className="text-primary/60 size-3.5 shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="truncate font-medium">
+                      {profile.email || "-"}
+                    </span>
                   </span>
                   <Badge
-                    variant="primary-light"
-                    size="sm"
-                    className="shadow-primary/10 border-primary/20 text-xs shadow-sm"
+                    variant={hasSignature ? "success-light" : "warning-light"}
+                    size="xs"
                   >
-                    {profile.platform_role}
+                    {hasSignature ? t("signatureSet") : t("signatureNotSet")}
                   </Badge>
                 </div>
-                <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
-                  <Mail
-                    className="text-primary/60 size-3.5 shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span className="truncate font-medium">
-                    {profile.email || "-"}
-                  </span>
+                {/* ปุ่มรูปแบบข้อความแทน hover-overlay + ถังขยะแดงติดมุมรูป:
+                    hover ไม่มีบนมือถือ และปุ่มลบ 20px ที่ขอบรูปกดพลาดง่าย */}
+                <div className="flex items-center gap-1 pt-0.5">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    disabled={isUploadingAvatar}
+                    onClick={() => avatarInputRef.current?.click()}
+                  >
+                    <Camera className="size-3" aria-hidden="true" />
+                    {hasAvatar ? t("changeAvatar") : t("uploadAvatar")}
+                  </Button>
+                  {hasAvatar && !isUploadingAvatar && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="xs"
+                      disabled={isDeletingAvatar}
+                      onClick={handleRemoveAvatar}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      {isDeletingAvatar ? (
+                        <Loader2
+                          className="size-3 animate-spin"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <Trash2 className="size-3" aria-hidden="true" />
+                      )}
+                      {t("removeAvatar")}
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -444,6 +474,7 @@ export default function UserProfileSetting() {
                       placeholder={t("aliasPlaceholder")}
                       className="h-9 uppercase transition-colors"
                       maxLength={2}
+                      hideCounter
                       disabled={updateProfile.isPending}
                       aria-invalid={!!form.formState.errors.alias_name}
                       {...form.register("alias_name")}
@@ -454,6 +485,18 @@ export default function UserProfileSetting() {
                   </Field>
                 </div>
               </FieldGroup>
+            </div>
+            <div className="bg-muted/10 flex justify-end border-t px-5 py-3 sm:px-6">
+              <Button
+                type="submit"
+                size="sm"
+                disabled={!form.formState.isDirty || updateProfile.isPending}
+              >
+                {updateProfile.isPending && (
+                  <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                )}
+                {updateProfile.isPending ? t("saving") : tc("save")}
+              </Button>
             </div>
           </form>
         </section>
@@ -467,7 +510,13 @@ export default function UserProfileSetting() {
           </h2>
         </div>
         <section className="bg-card overflow-hidden rounded-xl border shadow-sm">
-          <div className="bg-muted/10 flex items-center justify-end border-b px-4 py-3">
+          <div className="bg-muted/10 flex items-center justify-between gap-2 border-b px-4 py-3">
+            <Badge
+              variant={hasSignature ? "success-light" : "warning-light"}
+              size="xs"
+            >
+              {hasSignature ? t("signatureSet") : t("signatureNotSet")}
+            </Badge>
             <div className="flex gap-2">
               {profile.signature_url && !isUploadingSignature && (
                 <Button
@@ -500,23 +549,32 @@ export default function UserProfileSetting() {
               </Button>
             </div>
           </div>
-          <div className="flex min-h-32 items-center justify-center p-6">
+          <div className="flex min-h-32 items-center justify-center p-4 sm:p-6">
             {profile.signature_url ? (
               <img
                 key={profile.signature_url}
                 src={profile.signature_url}
                 alt={t("signature")}
-                className="max-h-36 max-w-full object-contain drop-shadow-md transition-transform hover:scale-105"
+                className="max-h-36 max-w-full object-contain"
               />
             ) : (
-              <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
-                <div className="bg-muted/30 border-border/30 flex size-12 items-center justify-center rounded-full border shadow-sm">
-                  <IdCard className="text-muted-foreground size-5" />
-                </div>
-                <p className="text-muted-foreground text-sm font-medium">
-                  {t("signatureUploadHint")}
-                </p>
-              </div>
+              // พื้นที่ว่างทั้งก้อนเป็นปุ่ม — ข้อความเดิมบอกให้ "คลิก" แต่คลิกแล้วไม่มีอะไรเกิดขึ้น
+              <button
+                type="button"
+                disabled={isUploadingSignature}
+                onClick={() => setSignatureDialogOpen(true)}
+                className="border-border hover:border-primary/50 hover:bg-muted/30 focus-visible:ring-ring/50 flex w-full flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-8 text-center transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-wait disabled:opacity-60"
+              >
+                <span className="bg-muted/40 flex size-12 items-center justify-center rounded-full border">
+                  <IdCard
+                    className="text-muted-foreground size-5"
+                    aria-hidden="true"
+                  />
+                </span>
+                <span className="text-muted-foreground text-sm font-medium">
+                  {t("signatureEmptyHint")}
+                </span>
+              </button>
             )}
           </div>
         </section>
