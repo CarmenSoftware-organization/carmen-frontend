@@ -37,6 +37,9 @@ const APP_CODE_TO_KEY: Record<string, string> = {
   GRN_DATE_OUTSIDE_OPEN_PERIOD: "dateOutsideOpenPeriod",
   // เรื่องเดียวกับ GRN แต่คนละคำในประโยค — ใบเบิกพูดถึง "วันที่เบิก" ไม่ใช่ "วันที่รับของ"
   SR_DATE_OUTSIDE_OPEN_PERIOD: "srDateOutsideOpenPeriod",
+  // doc_version ชนกัน — backend ติดรหัสนี้ให้แล้ว (เดิม 409 ไม่มีรหัส ต้องเดาจากข้อความ
+  // ใน fallbackKey) ใช้ข้อความ "มีคนแก้ใบนี้" ของเราเหมือนเดิม ไม่ใช่ข้อความ catalog
+  COMMON_DOC_VERSION_CONFLICT: "documentChanged",
 };
 
 /**
