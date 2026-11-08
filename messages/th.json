@@ -207,6 +207,7 @@
       "printFormSc": "ตรวจสอบเฉพาะจุด",
       "printFormRfp": "ขอราคา",
       "printFormEop": "สิ้นงวด",
+      "printFormRecipe": "การ์ดสูตรอาหาร",
       "printFormLoading": "กำลังโหลดแบบฟอร์ม…",
       "printFormUnknown": "⚠ ไม่พบเทมเพลต ({id})",
       "printFormUnavailable": "แบบฟอร์มที่บันทึกไว้ ({id})",
@@ -215,18 +216,7 @@
       "prAllowDuplicateProductDesc": "ให้ใบขอซื้อหนึ่งใบมีสินค้าตัวเดียวกันได้มากกว่าหนึ่งบรรทัด",
       "siCostFromDesc": "ต้นทุนต่อหน่วยที่เติมให้เมื่อเพิ่มบรรทัดในใบรับเข้า",
       "poGroupByPrCommentDesc": "ตอนสร้างใบสั่งซื้อจากใบขอซื้อ จัดกลุ่มบรรทัดตามหมายเหตุของใบขอซื้อ",
-      "printFormCustomCount": "ตั้งเอง {n} จาก {total}",
-      "recipePrintOrientation": "แนวกระดาษของ Recipe Card",
-      "recipePrintOrientationOptions": {
-        "portrait": "แนวตั้ง",
-        "landscape": "แนวนอน"
-      },
-      "recipePrintContent": "เนื้อหาที่พิมพ์ของ Recipe Card",
-      "recipePrintContentOptions": {
-        "all": "แสดงครบ",
-        "preparation": "แสดงแค่ข้อมูล + วิธีทำ",
-        "ingredients": "แสดงแค่ข้อมูล + วัตถุดิบ"
-      }
+      "printFormCustomCount": "ตั้งเอง {n} จาก {total}"
     }
   },
   "accounting": {

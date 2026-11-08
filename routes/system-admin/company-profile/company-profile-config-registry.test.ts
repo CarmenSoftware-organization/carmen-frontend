@@ -180,8 +180,8 @@ describe("PO config registry", () => {
 
 describe("Print Form config registry", () => {
   const section = CONFIG_SECTIONS.find((s) => s.id === "printForm");
-  // แถวเลือก template ต่อชนิดเอกสาร — แถว Recipe ต่อท้ายเป็นตัวเลือกตายตัว (ดู describe ข้างล่าง)
-  const templateItems = section?.items.filter((i) => i.optionsGroup);
+  // ทุกแถวเลือก template จาก platform ตาม report_group — รวม Recipe (ไม่มีตัวเลือกตายตัวแล้ว)
+  const templateItems = section?.items;
 
   it("registers one enum item per printable document type", () => {
     expect(section).toBeDefined();
@@ -213,6 +213,7 @@ describe("Print Form config registry", () => {
       ["SC", "config.printFormSc"],
       ["RFP", "config.printFormRfp"],
       ["EOP", "config.printFormEop"],
+      ["RECIPE", "config.printFormRecipe"],
     ]);
   });
 
@@ -226,33 +227,19 @@ describe("Print Form config registry", () => {
   });
 });
 
-describe("Recipe config registry", () => {
-  const printForm = CONFIG_SECTIONS.find((s) => s.id === "printForm");
-  const recipe = printForm?.items.filter((i) => i.key.startsWith("recipe."));
-
-  it("puts the recipe page's two print dropdowns at the end of Print Forms", () => {
-    expect(CONFIG_SECTIONS.some((s) => s.id === "recipe")).toBe(false);
-    expect(
-      printForm?.items
-        .slice(-2)
-        .map((i) => [i.key, i.datatype, i.defaultValue]),
-    ).toEqual([
-      ["recipe.print-orientation", "enum", "portrait"],
-      ["recipe.print-content", "enum", "all"],
-    ]);
-    expect(recipe?.map((i) => [i.labelKey, i.code, i.optionsGroup])).toEqual([
-      ["config.recipePrintOrientation", "Recipe", undefined],
-      ["config.recipePrintContent", "Recipe", undefined],
-    ]);
-  });
-
-  it("offers fixed options, none gated by calculation method", () => {
-    expect(recipe?.map((i) => i.options?.map((o) => o.value))).toEqual([
-      ["portrait", "landscape"],
-      ["all", "preparation", "ingredients"],
-    ]);
-    expect(
-      recipe?.every((i) => i.options?.every((o) => !o.visibleWhenCalcMethod)),
-    ).toBe(true);
+// เดิมหน้าสูตรมี dropdown แนวกระดาษ / เนื้อหาของตัวเอง — ผู้ใช้ 2026-11-08: ให้เลือก template ที่ admin
+// ทำใน platform เหมือนแถวอื่น แบบไม่พิมพ์วิธีทำ / วัตถุดิบไปทำเป็น template แยกเอา
+describe("Recipe print form", () => {
+  it("is a platform template picker like the other documents, with no fixed options", () => {
+    const recipe = SEEDED_ITEMS.find((i) => i.key === "print-form.recipe");
+    expect(recipe).toMatchObject({
+      datatype: "enum",
+      defaultValue: "",
+      optionsGroup: "RECIPE",
+      code: "RECIPE",
+    });
+    expect(recipe?.options).toBeUndefined();
+    expect(SEEDED_KEYS.has("recipe.print-orientation")).toBe(false);
+    expect(SEEDED_KEYS.has("recipe.print-content")).toBe(false);
   });
 });
