@@ -1,8 +1,14 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import {
   ArrowLeft,
+  ArrowRight,
   DatabaseIcon,
-  LayoutGrid,
   Plus,
   Search,
   X,
@@ -37,6 +43,7 @@ import { useDatasetLabel } from "./use-widget-title";
 import { useWidgetConfigState } from "./use-widget-config-state";
 import { WidgetConfigFields } from "./widget-config-form";
 import { groupDatasetsByModule } from "./widget-module";
+import { WidgetSampleThumb } from "./widget-sample-thumb";
 import { defaultWidgetTypeFor, SUPPORTED_SHAPES } from "./widget-shape";
 
 type AddWidgetHandler = (
@@ -65,8 +72,12 @@ interface AddWidgetDialogProps {
 }
 
 /**
- * pop up เพิ่ม widget — ซ้าย: รายการ widget จัดตามโมดูล + ค้นหา · ขวา: ฟอร์มตั้งค่า
- * ชุดเดียวกับ `WidgetConfigDialog` พร้อม preview สด · จอแคบแสดงทีละฝั่ง
+ * pop up เพิ่ม widget — 2 หน้า
+ *
+ * 1. **เลือก** — แกลเลอรีการ์ดจัดตามโมดูล + ค้นหา การ์ดทุกใบมีรูปตัวอย่างจากข้อมูลสมมติ
+ *    (`WidgetSampleThumb` — ไม่ยิง API) เลือกแล้วกด "ถัดไป" (ดับเบิลคลิก / Enter = ไปเลย)
+ * 2. **ปรับแต่ง** — ตัวอย่างจริงจากข้อมูลของ BU อยู่บนสุด ฟอร์มตั้งค่าชุดเดียวกับ
+ *    `WidgetConfigDialog` อยู่ข้างล่าง · "ย้อนกลับ" กลับแกลเลอรีที่เดิม (คำค้น ตัวที่เลือก ตำแหน่ง scroll)
  */
 export function AddWidgetDialog({
   open,
@@ -99,6 +110,7 @@ function AddWidgetBody({
   readonly onCancel: () => void;
 }) {
   const t = useTranslations("dashboard.savedWidget");
+  const tc = useTranslations("common");
   const tm = useTranslations("dashboard.savedWidget.module");
   const tl = useTranslations("lookup");
   const tfl = useTranslations("field");
@@ -107,6 +119,7 @@ function AddWidgetBody({
   const { data, isLoading, isError, error, refetch } = useDashboardDatasets();
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [step, setStep] = useState<"pick" | "customize">("pick");
 
   const shapes: readonly string[] = SUPPORTED_SHAPES;
   const datasets = [...(extraItems ?? []), ...(data?.items ?? [])].filter(
@@ -121,15 +134,29 @@ function AddWidgetBody({
     query,
     locale,
   });
-  // หาจากทั้งหมด ไม่ใช่จากผลค้นหา — พิมพ์คำค้นใหม่แล้วตัวที่เลือกอยู่ไม่หลุดจากฝั่งขวา
+  // หาจากทั้งหมด ไม่ใช่จากผลค้นหา — พิมพ์คำค้นใหม่แล้วตัวที่เลือกอยู่ไม่หลุด
   const selected = datasets.find((d) => d.id === selectedId);
+  const customizing = step === "customize" && !!selected;
+
+  const openCustomize = (id: string) => {
+    setSelectedId(id);
+    setStep("customize");
+  };
+  const onCardKeyDown = (e: KeyboardEvent<HTMLButtonElement>, id: string) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    openCustomize(id);
+  };
 
   let list: ReactNode;
   if (isLoading) {
     list = (
-      <div aria-busy="true" className="space-y-2 p-3">
-        {Array.from({ length: 8 }, (_, i) => (
-          <Skeleton key={i} className="h-9 w-full" />
+      <div
+        aria-busy="true"
+        className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        {Array.from({ length: 6 }, (_, i) => (
+          <Skeleton key={i} className="h-52 w-full" />
         ))}
       </div>
     );
@@ -150,7 +177,7 @@ function AddWidgetBody({
           {moduleLabelOf(g.module)}{" "}
           <span className="tabular-nums">· {g.items.length}</span>
         </h3>
-        <ul className="space-y-0.5 px-1.5 pb-2">
+        <ul className="grid grid-cols-1 gap-3 px-3 pt-1 pb-4 sm:grid-cols-2 lg:grid-cols-3">
           {g.items.map((d) => {
             const badge = getShapeBadge(d.shape);
             const isSelected = d.id === selectedId;
@@ -160,13 +187,18 @@ function AddWidgetBody({
                   type="button"
                   aria-pressed={isSelected}
                   onClick={() => setSelectedId(d.id)}
+                  onDoubleClick={() => openCustomize(d.id)}
+                  onKeyDown={(e) => onCardKeyDown(e, d.id)}
                   className={cn(
-                    "hover:bg-accent focus-visible:ring-ring flex w-full flex-col gap-0.5 rounded-md px-2 py-1.5 text-left outline-none focus-visible:ring-2",
-                    isSelected && "bg-accent",
+                    "hover:border-primary/60 focus-visible:ring-ring flex h-full w-full flex-col gap-2 rounded-lg border p-3 text-left transition-colors outline-none focus-visible:ring-2",
+                    isSelected &&
+                      "border-primary ring-primary bg-accent/40 ring-1",
                   )}
                 >
-                  {/* badge อยู่บรรทัดล่าง — ชื่อ dataset ยาว ถ้าแบ่งบรรทัดกับ badge จะโดนตัดจนแยกตัวที่ชื่อคล้ายกันไม่ออก */}
-                  <span className="line-clamp-2 text-sm">{labelOf(d)}</span>
+                  <span className="line-clamp-2 text-sm font-medium">
+                    {labelOf(d)}
+                  </span>
+                  {/* badge อยู่บรรทัดของมันเอง — ชื่อยาว ถ้าแบ่งบรรทัดกับ badge จะโดนตัดจนแยกตัวที่ชื่อคล้ายกันไม่ออก */}
                   <span className="flex min-w-0 items-center gap-1.5">
                     <Badge
                       variant={badge.variant}
@@ -181,6 +213,7 @@ function AddWidgetBody({
                       </span>
                     )}
                   </span>
+                  <WidgetSampleThumb dataset={d} />
                 </button>
               </li>
             );
@@ -194,65 +227,60 @@ function AddWidgetBody({
     <>
       <DialogHeader className="border-b px-6 pt-6 pb-4">
         <DialogTitle>{t("addTitle")}</DialogTitle>
-        <DialogDescription>{t("addDescription")}</DialogDescription>
+        <DialogDescription>
+          {customizing ? t("customizeDescription") : t("addDescription")}
+        </DialogDescription>
       </DialogHeader>
 
-      <div className="flex min-h-0 flex-1">
-        <div
-          className={cn(
-            "min-h-0 w-full flex-col md:flex md:w-72 md:shrink-0 md:border-r",
-            selected ? "hidden" : "flex",
-          )}
-        >
-          <div className="relative border-b p-3">
-            <Search className="text-muted-foreground absolute top-1/2 left-5.5 size-3.5 -translate-y-1/2" />
-            <Input
-              size="sm"
-              className="w-full pl-8"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("searchWidgets")}
-              aria-label={t("searchWidgets")}
-            />
-          </div>
-          <div className="min-h-0 flex-1 overflow-y-auto">{list}</div>
+      {/* แกลเลอรีซ่อนไว้ ไม่ unmount ตอนอยู่หน้าปรับแต่ง — ย้อนกลับมาแล้ว scroll / รูปที่วาดแล้วยังอยู่
+          (attribute `hidden` — preflight ของ Tailwind บังคับ display:none ชนะ class `flex`) */}
+      <div hidden={customizing} className="flex min-h-0 flex-1 flex-col">
+        <div className="relative border-b p-3">
+          <Search className="text-muted-foreground absolute top-1/2 left-5.5 size-3.5 -translate-y-1/2" />
+          <Input
+            size="sm"
+            className="w-full pl-8"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("searchWidgets")}
+            aria-label={t("searchWidgets")}
+          />
         </div>
-
-        <div
-          className={cn(
-            "min-h-0 min-w-0 flex-1 flex-col md:flex",
-            selected ? "flex" : "hidden",
-          )}
-        >
-          {selected ? (
-            <AddWidgetDetail
-              key={selected.id}
-              dataset={selected}
-              label={labelOf(selected)}
-              custom={renderPreview?.(selected)}
-              isPending={isPending}
-              onAdd={onAdd}
-              onBack={() => setSelectedId(null)}
-              onCancel={onCancel}
-            />
-          ) : (
-            <>
-              <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center text-sm">
-                <LayoutGrid className="size-6" aria-hidden="true" />
-                <p>{t("pickHint")}</p>
-              </div>
-              <AddWidgetFooter onCancel={onCancel} isPending={isPending} />
-            </>
-          )}
-        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto">{list}</div>
+        <DialogFooter className="border-t px-6 py-4">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            <X />
+            {tc("cancel")}
+          </Button>
+          <Button
+            type="button"
+            disabled={!selected}
+            onClick={() => selected && openCustomize(selected.id)}
+          >
+            {tc("next")}
+            <ArrowRight />
+          </Button>
+        </DialogFooter>
       </div>
+
+      {customizing && (
+        <AddWidgetDetail
+          key={selected.id}
+          dataset={selected}
+          label={labelOf(selected)}
+          custom={renderPreview?.(selected)}
+          isPending={isPending}
+          onAdd={onAdd}
+          onBack={() => setStep("pick")}
+        />
+      )}
     </>
   );
 }
 
 /**
- * ฝั่งขวาของตัวที่เลือก — ถือ state ของฟอร์มเอง ผู้เรียกใส่ `key={dataset.id}`
- * สลับตัวแล้วจึงเริ่มจากค่าตั้งต้นของ dataset ใหม่ ไม่พกค่าของตัวก่อนมา
+ * หน้าปรับแต่งของตัวที่เลือก — ถือ state ของฟอร์มเอง ผู้เรียกใส่ `key={dataset.id}`
+ * กลับไปเลือกตัวอื่นแล้วจึงเริ่มจากค่าตั้งต้นของ dataset ใหม่ ไม่พกค่าของตัวก่อนมา
  */
 function AddWidgetDetail({
   dataset,
@@ -261,7 +289,6 @@ function AddWidgetDetail({
   isPending,
   onAdd,
   onBack,
-  onCancel,
 }: {
   readonly dataset: DashboardDataset;
   readonly label: string;
@@ -269,7 +296,6 @@ function AddWidgetDetail({
   readonly isPending?: boolean;
   readonly onAdd: AddWidgetHandler;
   readonly onBack: () => void;
-  readonly onCancel: () => void;
 }) {
   const t = useTranslations("dashboard.savedWidget");
   const state = useWidgetConfigState({ dataset });
@@ -288,17 +314,6 @@ function AddWidgetDetail({
   return (
     <>
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-6">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="-ml-2 md:hidden"
-          onClick={onBack}
-        >
-          <ArrowLeft />
-          {t("backToList")}
-        </Button>
-
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-foreground text-base font-semibold">{label}</h3>
@@ -316,7 +331,7 @@ function AddWidgetDetail({
         {isCustom ? (
           <div className="space-y-1.5">
             <h3 className="text-muted-foreground text-micro-legal font-bold tracking-[0.16em] uppercase">
-              {t("preview")}
+              {t("livePreview")}
             </h3>
             {custom}
           </div>
@@ -333,7 +348,7 @@ function AddWidgetDetail({
       </div>
 
       <AddWidgetFooter
-        onCancel={onCancel}
+        onBack={onBack}
         isPending={isPending}
         onSubmit={() =>
           isCustom
@@ -353,14 +368,13 @@ function AddWidgetDetail({
 }
 
 function AddWidgetFooter({
-  onCancel,
+  onBack,
   onSubmit,
   isPending,
   isInvalid,
 }: {
-  readonly onCancel: () => void;
-  /** ไม่ส่ง = ยังไม่ได้เลือก widget ปุ่มเพิ่มกดไม่ได้ */
-  readonly onSubmit?: () => void;
+  readonly onBack: () => void;
+  readonly onSubmit: () => void;
   readonly isPending?: boolean;
   readonly isInvalid?: boolean;
 }) {
@@ -373,7 +387,7 @@ function AddWidgetFooter({
     if (!isPending) isSubmittingRef.current = false;
   }, [isPending]);
   const submitOnce = () => {
-    if (!onSubmit || isSubmittingRef.current) return;
+    if (isSubmittingRef.current) return;
     isSubmittingRef.current = true;
     onSubmit();
   };
@@ -382,16 +396,16 @@ function AddWidgetFooter({
       <Button
         type="button"
         variant="outline"
-        onClick={onCancel}
+        onClick={onBack}
         disabled={isPending}
       >
-        <X />
-        {tc("cancel")}
+        <ArrowLeft />
+        {tc("back")}
       </Button>
       <Button
         type="button"
         onClick={submitOnce}
-        disabled={!onSubmit || isPending || isInvalid}
+        disabled={isPending || isInvalid}
       >
         <Plus />
         {t("addSubmit")}
