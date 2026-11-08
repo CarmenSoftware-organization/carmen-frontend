@@ -207,6 +207,7 @@
       "printFormSc": "Spot Check",
       "printFormRfp": "Request For Pricing",
       "printFormEop": "End Of Period",
+      "printFormRecipe": "Recipe Card",
       "printFormLoading": "Loading forms…",
       "printFormUnknown": "⚠ Unknown template ({id})",
       "printFormUnavailable": "Saved form ({id})",
@@ -215,18 +216,7 @@
       "prAllowDuplicateProductDesc": "Let one purchase request list the same product on more than one line.",
       "siCostFromDesc": "Unit cost filled in when a line is added to a stock-in.",
       "poGroupByPrCommentDesc": "When purchase requests become a purchase order, group lines by their PR comment.",
-      "printFormCustomCount": "{n} of {total} customised",
-      "recipePrintOrientation": "Recipe Card orientation",
-      "recipePrintOrientationOptions": {
-        "portrait": "Portrait",
-        "landscape": "Landscape"
-      },
-      "recipePrintContent": "Recipe Card content",
-      "recipePrintContentOptions": {
-        "all": "Everything",
-        "preparation": "Details + preparation",
-        "ingredients": "Details + ingredients"
-      }
+      "printFormCustomCount": "{n} of {total} customised"
     }
   },
   "accounting": {

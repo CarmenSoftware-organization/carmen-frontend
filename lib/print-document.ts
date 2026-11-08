@@ -40,8 +40,9 @@ export type PrintDocumentType =
   | "VENDOR"
   // master data as well — the category page passes PRODUCT_CATEGORY_TEMPLATE_ID plus the code ranges
   | "PRODUCT_CATEGORY"
-  // the recipe page passes RECIPE_CARD_PORTRAIT_TEMPLATE_ID / RECIPE_CARD_LANDSCAPE_TEMPLATE_ID with the recipe's
-  // own code as the range
+  // the recipe page passes the BU's print form for Recipe (Default Setting → Print Forms, a template the platform
+  // admin made in report_group "Recipe") — or RECIPE_CARD_PORTRAIT_TEMPLATE_ID when none is picked — with the
+  // recipe's own code as the range
   | "RECIPE";
 
 /**
@@ -63,26 +64,15 @@ export const PRODUCT_CATEGORY_TEMPLATE_ID =
   "eda55615-08e0-4fc0-941e-c62dc8072e49";
 
 /**
- * Recipe Card Report Portrait — the recipe page's own card, a form template (micro-report seed, id fixed across
- * environments) printed from a recipe's page for that recipe alone; not on the report list. It is a separate row
- * from the report list's "Recipe Card Report" (60bbb2b6) so either can be edited without touching the other. Its
- * function f_recipe_card takes CategoryFrom / CategoryTo / RecipeFrom / RecipeTo / Status ("ALL" = no limit), plus
- * ShowPreparation / ShowIngredients ("N" = leave that part out).
- * Recipe Card Report แนวตั้งของหน้าสูตร — template แบบ form แยกจากตัวในหน้ารายการรายงาน (60bbb2b6) แก้ตัวไหนก็ไม่กระทบอีกตัว
- * · ฟังก์ชัน f_recipe_card รับช่วง Category / รหัสสูตร / Status + ShowPreparation / ShowIngredients
+ * Recipe Card Report Portrait — the system's recipe card for the recipe page's Print button when the BU has not picked
+ * a Recipe print form in Default Setting (a form template, micro-report seed, id fixed across environments; not on
+ * the report list). Other Recipe forms — landscape, without preparation, … — are templates the platform admin makes
+ * in report_group "Recipe"; they reach the BU through the print-form picker, not through constants here. Its
+ * function f_recipe_card takes CategoryFrom / CategoryTo / RecipeFrom / RecipeTo / Status ("ALL" = no limit).
+ * Recipe Card แนวตั้งของระบบ — ใช้เมื่อ BU ยังไม่เลือกแบบฟอร์ม Recipe · แบบอื่นเป็น template ที่ admin ทำใน platform
  */
 export const RECIPE_CARD_PORTRAIT_TEMPLATE_ID =
   "4f71576d-397e-43d4-8394-d475f6ad9520";
-
-/**
- * Recipe Card Report Landscape — the recipe page's card on a landscape page, a form template (micro-report seed, id
- * fixed across environments) printed when the BU's Default Setting → Print Forms → Recipe Card says landscape; not on
- * the report list. Same function and filters as RECIPE_CARD_PORTRAIT_TEMPLATE_ID.
- * Recipe Card Report แนวนอน — template แบบ form พิมพ์จากหน้าสูตรเมื่อ BU ตั้ง Default Setting → Print Forms เป็นแนวนอน
- * · ฟังก์ชันและตัวกรองเดียวกับตัวแนวตั้ง
- */
-export const RECIPE_CARD_LANDSCAPE_TEMPLATE_ID =
-  "bc4735ff-bfdf-4eae-93f6-95a6c7737454";
 
 export interface ViewerResponse {
   data?: { url: string };

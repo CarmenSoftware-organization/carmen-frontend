@@ -21,6 +21,8 @@ export const PRINT_FORM_DOCUMENT_TYPES: readonly PrintDocumentType[] = [
   "SC",
   "RFP",
   "EOP",
+  // ปุ่ม Print ในหน้าสูตร — template กลุ่ม "Recipe" ที่ admin สร้างใน platform
+  "RECIPE",
 ] as const;
 
 export function printFormConfigKey(type: PrintDocumentType): string {
@@ -49,7 +51,7 @@ export function resolvePrintFormTemplateId(
  * (ผู้เรียกใช้ค่าเริ่มต้นของ registry เอง) · GET อาจคืน config เป็น `{}` จึงต้องเช็ค isArray
  *
  * @param config - `config` จาก BusinessUnitDetail
- * @param key - config key เช่น `print-form.pr`, `recipe.print-orientation`
+ * @param key - config key เช่น `print-form.pr`, `print-form.recipe`
  * @returns ค่าที่ตั้งไว้ หรือ undefined
  */
 export function resolveBuConfigValue(

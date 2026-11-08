@@ -70,25 +70,17 @@ describe("RecipeCookView — ปุ่ม Print", () => {
         RecipeTo: "RCP-001",
         Status: "ALL",
         PrintSingle: true,
-        ShowPreparation: "Y",
-        ShowIngredients: "Y",
       },
     });
   });
 
-  it("พิมพ์ตาม Default Setting ของ BU — แนวนอน แสดงแค่ข้อมูล + วัตถุดิบ", async () => {
+  it("พิมพ์ด้วย template ที่ BU เลือกใน Default Setting → แบบฟอร์มการพิมพ์ → Recipe", async () => {
     buConfig = [
       {
-        key: "recipe.print-orientation",
+        key: "print-form.recipe",
         label: "",
         datatype: "enum",
-        value: "landscape",
-      },
-      {
-        key: "recipe.print-content",
-        label: "",
-        datatype: "enum",
-        value: "ingredients",
+        value: "1553adcf-admin-made-form",
       },
     ];
     renderForm(<RecipeCookView recipe={RECIPE} />);
@@ -99,12 +91,10 @@ describe("RecipeCookView — ปุ่ม Print", () => {
     expect(print).toHaveBeenCalledWith(
       "RECIPE",
       expect.objectContaining({
-        templateId: "bc4735ff-bfdf-4eae-93f6-95a6c7737454",
+        templateId: "1553adcf-admin-made-form",
         filters: expect.objectContaining({
           RecipeFrom: "RCP-001",
           PrintSingle: true,
-          ShowPreparation: "N",
-          ShowIngredients: "Y",
         }),
       }),
     );
