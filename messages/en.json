@@ -6277,7 +6277,6 @@
       "titleEnRequired": "Enter the English title before the Thai one",
       "configureAria": "Configure widget {title}",
       "paramsAll": "All",
-      "preview": "Preview",
       "previewError": "Preview failed: {message}",
       "visAll": "All",
       "visMine": "Mine",
@@ -6337,11 +6336,9 @@
         }
       },
       "addTitle": "Add widget",
-      "addDescription": "Pick a widget by module, preview it and adjust its settings before adding it to the dashboard",
+      "addDescription": "Pick a widget by module — the pictures use sample data. Next, adjust it with a live preview of your own data.",
       "addSubmit": "Add widget",
       "searchWidgets": "Search widgets...",
-      "pickHint": "Pick a widget from the list to preview it and adjust its settings",
-      "backToList": "Back to list",
       "module": {
         "document": "Documents",
         "procurement": "Procurement",
@@ -6355,7 +6352,10 @@
         "config": "Master data",
         "workflow": "Workflow",
         "lab": "Lab"
-      }
+      },
+      "customizeDescription": "The live preview at the top uses your business unit's data — adjust the settings below to see it change.",
+      "sampleBadge": "Sample",
+      "livePreview": "Live preview"
     },
     "greeting": {
       "morning": "Good Morning",

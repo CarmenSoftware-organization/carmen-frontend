@@ -36,7 +36,10 @@ interface WidgetConfigFieldsProps {
   readonly previewEnabled?: boolean;
 }
 
-/** ฟิลด์ตั้งค่า widget (ชื่อ en/th · param · การแสดงผล) + preview สดตามค่าที่กรอก */
+/**
+ * ตัวอย่างจริง (preview สดตามค่าที่กรอก ขนาดตามคอลัมน์ × แถวที่เลือก) อยู่บนสุด แล้วตามด้วย
+ * ฟิลด์ตั้งค่า widget (ชื่อ en/th · param · การแสดงผล)
+ */
 export function WidgetConfigFields({
   dataset,
   state,
@@ -62,8 +65,14 @@ export function WidgetConfigFields({
     isTitleInvalid,
   } = state;
   // 1 แถว = 4rem (64px) + gap 0.75rem (12px) ระหว่างแถว — ตรงกับ auto-rows ของกริดจริง
-  const previewRows = gridSize(widgetType, display).height;
+  const { width: previewCols, height: previewRows } = gridSize(
+    widgetType,
+    display,
+  );
   const previewHeight = previewRows * 64 + (previewRows - 1) * 12;
+  // กว้างตามคอลัมน์ที่เลือก (จาก 12) ให้เห็นสัดส่วนจริงบน dashboard — ต่ำสุด 18rem
+  // ไม่งั้น KPI 3 คอลัมน์ใน pop up แคบจนตัวเลขตกขอบ
+  const previewWidth = `max(18rem, ${(previewCols / 12) * 100}%)`;
 
   const {
     data: preview,
@@ -80,6 +89,56 @@ export function WidgetConfigFields({
 
   return (
     <div className="space-y-4">
+      {/* ตัวอย่างจริงอยู่บนสุด — เห็นสิ่งที่จะได้ก่อน แล้วค่อยปรับค่าข้างล่าง (เดิมอยู่ล่างสุด
+          ตกใต้จอเมื่อ param เยอะ) · ใช้ทั้ง pop up เพิ่มและ dialog แก้ widget */}
+      <div className="space-y-1.5">
+        <h3 className="text-muted-foreground text-micro-legal font-bold tracking-[0.16em] uppercase">
+          {t("livePreview")}
+        </h3>
+        <div
+          data-testid="widget-live-preview"
+          className="bg-muted/40 flex justify-center rounded-lg p-3"
+        >
+          {/* การ์ดกิน 100% ของช่องกริด — ใน dialog ไม่มีกริด ต้องกำหนดความสูงให้
+              ตามขนาดที่เลือก ไม่งั้นพื้นที่กราฟยุบเป็น 0 แล้ว preview ว่างเปล่า */}
+          {isError ? (
+            <p role="alert" className="text-destructive w-full text-sm">
+              {t("previewError", {
+                message: error?.message ?? "Unknown error",
+              })}
+            </p>
+          ) : isLoading || !preview ? (
+            <div
+              className="max-w-full"
+              style={{ width: previewWidth, height: previewHeight }}
+            >
+              <WidgetSkeleton />
+            </div>
+          ) : (
+            <div
+              className="max-w-full"
+              style={{ width: previewWidth, height: previewHeight }}
+            >
+              <WidgetRouter
+                widget={{
+                  id: "preview",
+                  dataset_id: dataset.id,
+                  widget_type: widgetType,
+                  title: previewTitle,
+                  order_index: 0,
+                  params: values,
+                  display,
+                  meta: preview.meta,
+                  data: preview.data,
+                }}
+                moduleName={inferModuleName(dataset.id)}
+                subTileFor={inferSubTile}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="space-y-1.5">
         <h3 className="text-muted-foreground text-micro-legal font-bold tracking-[0.16em] uppercase">
           {t("titleSection")}
@@ -154,43 +213,6 @@ export function WidgetConfigFields({
             disabled={disabled}
           />
         </div>
-      </div>
-
-      <div className="space-y-1.5">
-        <h3 className="text-muted-foreground text-micro-legal font-bold tracking-[0.16em] uppercase">
-          {t("preview")}
-        </h3>
-        {/* การ์ดกิน 100% ของช่องกริด — ใน dialog ไม่มีกริด ต้องกำหนดความสูงให้
-            ตามขนาดที่เลือก ไม่งั้นพื้นที่กราฟยุบเป็น 0 แล้ว preview ว่างเปล่า */}
-        {isError ? (
-          <p role="alert" className="text-destructive text-sm">
-            {t("previewError", {
-              message: error?.message ?? "Unknown error",
-            })}
-          </p>
-        ) : isLoading || !preview ? (
-          <div style={{ height: previewHeight }}>
-            <WidgetSkeleton />
-          </div>
-        ) : (
-          <div style={{ height: previewHeight }}>
-            <WidgetRouter
-              widget={{
-                id: "preview",
-                dataset_id: dataset.id,
-                widget_type: widgetType,
-                title: previewTitle,
-                order_index: 0,
-                params: values,
-                display,
-                meta: preview.meta,
-                data: preview.data,
-              }}
-              moduleName={inferModuleName(dataset.id)}
-              subTileFor={inferSubTile}
-            />
-          </div>
-        )}
       </div>
     </div>
   );
