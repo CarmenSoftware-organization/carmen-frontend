@@ -7620,6 +7620,13 @@
     "groupThisWeek": "This week",
     "groupEarlier": "Earlier"
   },
+  "qrLink": {
+    "invalidLink": "This QR code doesn't point to a document in the system.",
+    "noAccess": "This document is in business unit {bu}, which your account can't open.",
+    "switchTitle": "Open in another business unit?",
+    "switchDescription": "This document is in {target}. You're working in {current} — switch business unit and open it?",
+    "switchAndOpen": "Switch and open"
+  },
   "period": {
     "outsideOpenPeriod": "This document is dated outside the open period ({from} – {to}). Pick the date it should carry.",
     "useOpenPeriodDate": "Move it into the open period ({date})",

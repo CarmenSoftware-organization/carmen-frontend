@@ -163,6 +163,9 @@ describe("VendorForm — characterization", () => {
         VendorTo: "V-001",
         Status: "ALL",
         PrintSingle: true,
+        // QR บนกระดาษพากลับมาหน้าผู้ขายรายนี้
+        RecordType: "vendor",
+        RecordId: "ven-1",
       },
     });
   });

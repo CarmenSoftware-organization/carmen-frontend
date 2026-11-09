@@ -7620,6 +7620,13 @@
     "groupThisWeek": "สัปดาห์นี้",
     "groupEarlier": "ก่อนหน้านี้"
   },
+  "qrLink": {
+    "invalidLink": "QR นี้ไม่ได้ชี้ไปที่เอกสารในระบบ",
+    "noAccess": "เอกสารนี้อยู่ใน BU {bu} ซึ่งบัญชีของคุณเปิดไม่ได้",
+    "switchTitle": "เปิดเอกสารใน BU อื่น?",
+    "switchDescription": "เอกสารนี้อยู่ใน {target} ตอนนี้คุณอยู่ที่ {current} — สลับ BU แล้วเปิดเอกสาร?",
+    "switchAndOpen": "สลับแล้วเปิด"
+  },
   "period": {
     "outsideOpenPeriod": "วันที่บนเอกสารอยู่นอกงวดที่เปิดอยู่ ({from} – {to}) เลือกว่าจะลงวันที่ไหน",
     "useOpenPeriodDate": "ย้ายเข้างวดที่เปิดอยู่ ({date})",
