@@ -221,7 +221,7 @@ export function PrItemExpand({
           ตารางไม่ได้ (ความกว้างคอลัมน์ล็อกจากหัวตาราง) แถวกางจะล้นออกไปพ้นขอบ
           ตารางแทน — กว้างเท่า `<td>` พอ ผลรวมความกว้างขั้นต่ำ ~71rem ยังน้อยกว่า
           ตารางหลักอยู่แล้ว */}
-      <div className="grid grid-cols-[9.375rem_12rem_5rem_minmax(4.5rem,1fr)_minmax(7rem,1fr)_minmax(4rem,0.7fr)_minmax(9rem,1.4fr)_minmax(4rem,0.7fr)_minmax(11rem,2fr)_minmax(5rem,1fr)] gap-x-2 gap-y-3 [&>[data-slot=field]]:gap-0.5">
+      <div className="grid grid-cols-[9.375rem_12rem_5rem_minmax(9.5rem,1.2fr)_minmax(7rem,1fr)_minmax(4rem,0.7fr)_minmax(9rem,1.4fr)_minmax(4rem,0.7fr)_minmax(11rem,2fr)_minmax(5rem,1fr)] gap-x-2 gap-y-3 [&>[data-slot=field]]:gap-0.5">
         {/* Pricelist */}
         <Field>
           <FieldLabel className="text-muted-foreground flex min-h-6 items-center text-xs tracking-wide">
@@ -311,7 +311,9 @@ export function PrItemExpand({
         <Field>
           <FieldLabel
             htmlFor={`items-${index}-pricelist-price`}
-            className="text-muted-foreground flex min-h-6 items-center justify-end gap-1 text-xs tracking-wide"
+            // nowrap + คอลัมน์ 9.5rem: โหมดแก้มีช่องติ๊ก Inc VAT มาต่อท้ายป้าย ที่ 4.5rem
+            // เดิม "Unit Price" กับ "Inc VAT" หักเป็นสองบรรทัดทั้งคู่ แถวป้ายสูงไม่เท่าเพื่อน
+            className="text-muted-foreground flex min-h-6 items-center justify-end gap-1 text-xs tracking-wide whitespace-nowrap"
           >
             {tfl("unitPrice")}
             {!hidePrice && (
@@ -440,7 +442,10 @@ export function PrItemExpand({
               {hideTotal ? (
                 <HiddenValue />
               ) : (
-                <span className="tabular-nums">
+                // ส่วนลด 0 = ไม่มีส่วนลด — จางลงให้ตาไปหยุดที่ยอดที่มีค่าจริง
+                <span
+                  className={`tabular-nums ${discountAmount === 0 ? "text-muted-foreground font-normal" : ""}`}
+                >
                   {formatCurrency(discountAmount)}
                 </span>
               )}
@@ -488,7 +493,10 @@ export function PrItemExpand({
           {isFieldDisabled ? (
             <p className="flex min-h-6 items-center justify-end gap-1.5 truncate text-xs font-medium">
               {taxProfileName ? (
-                <>
+                // ภาษี 0 (เช่น profile "None") ทั้งชื่อและยอดจางลง เหมือนส่วนลด 0
+                <span
+                  className={`flex min-w-0 items-center gap-1.5 ${taxAmount === 0 ? "text-muted-foreground font-normal" : ""}`}
+                >
                   <span className="truncate">{taxProfileName}</span>
                   <span className="text-muted-foreground">·</span>
                   {hideTotal ? (
@@ -498,7 +506,7 @@ export function PrItemExpand({
                       {formatCurrency(taxAmount)}
                     </span>
                   )}
-                </>
+                </span>
               ) : (
                 "—"
               )}
