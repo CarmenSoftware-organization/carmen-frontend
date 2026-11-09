@@ -249,7 +249,14 @@ function ApInvoiceEditor({
   const view = !editable && loaded;
   const summary = view
     ? {
-        subtotal: loaded.sub_total_amount,
+        // แถวที่ติ๊ก Inc VAT: BE sub_total = qty × price (รวม VAT) → ใช้ net + ส่วนลด ให้แถบ foot เหมือนโหมดแก้ไข
+        subtotal: addDecimal(
+          (loaded.lines ?? []).map((l) =>
+            l.vat_is_included
+              ? addDecimal([l.net_amount, l.discount_amount])
+              : l.sub_total_amount,
+          ),
+        ),
         discount: loaded.discount_amount,
         vat: loaded.vat_amount,
         wht: loaded.wht_estimate_amount,

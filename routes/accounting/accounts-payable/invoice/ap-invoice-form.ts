@@ -214,7 +214,7 @@ export function lineAmounts(line: InvoiceFormLine): LineAmounts {
       ? num(line.vat_amount)
       : divideDecimal(
           multiplyDecimal(afterDiscount, rate, 6),
-          addDecimal(["100", rate]),
+          addDecimal(["100", rate], 6),
         );
     const net = subtractDecimal(afterDiscount, vat);
     return {
