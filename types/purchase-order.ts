@@ -276,6 +276,8 @@ export interface PoGrnDetail {
   received_qty: number;
   cancelled_qty: number;
   price: number;
+  /** ติ๊ก Inc VAT ที่ PO — price รวม VAT แล้ว (คัดลอกคู่กับราคาเข้า GRN) */
+  is_tax_included?: boolean;
   net_amount: number;
   is_foc: boolean;
   locations: PoGrnDetailLocation[];

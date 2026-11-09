@@ -56,6 +56,9 @@ function createGrnDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     tax_rate: z.coerce.number(),
     tax_amount: z.coerce.number(),
     is_tax_adjustment: z.boolean(),
+    // Inc VAT — ราคารับที่กรอกรวม VAT แล้ว (ถอด VAT ออกแทนการบวก) · optional เพราะแถวจาก
+    // wizard ที่ค้างใน session รุ่นก่อนไม่มีฟิลด์นี้
+    is_tax_included: z.boolean().optional(),
     // Discount
     discount_rate: z.coerce.number(),
     discount_amount: z.coerce.number(),
@@ -169,6 +172,7 @@ export const EMPTY_DETAIL: GrnFormValues["items"][number] = {
   tax_rate: 0,
   tax_amount: 0,
   is_tax_adjustment: false,
+  is_tax_included: false,
   discount_rate: 0,
   discount_amount: 0,
   is_discount_adjustment: false,
@@ -308,6 +312,7 @@ export function getDefaultValues(
           tax_rate: item?.tax_rate ?? 0,
           tax_amount: item?.tax_amount ?? 0,
           is_tax_adjustment: item?.is_tax_adjustment ?? false,
+          is_tax_included: item?.is_tax_included ?? false,
           discount_rate: item?.discount_rate ?? 0,
           discount_amount: item?.discount_amount ?? 0,
           is_discount_adjustment: item?.is_discount_adjustment ?? false,
@@ -357,6 +362,8 @@ export function mapDetailToPayload(
     tax_rate: item.tax_rate,
     tax_amount: item.tax_amount,
     is_tax_adjustment: item.is_tax_adjustment,
+    // ส่งทุกแถว — หลังบ้านคิดยอดใหม่ตามค่านี้ ไม่ส่ง = ถือว่าคงค่าที่เก็บไว้
+    is_tax_included: item.is_tax_included ?? false,
     discount_rate: item.discount_rate,
     discount_amount: item.discount_amount,
     is_discount_adjustment: item.is_discount_adjustment,

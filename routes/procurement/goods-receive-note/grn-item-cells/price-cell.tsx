@@ -5,6 +5,8 @@ import {
   type Control,
   type UseFormReturn,
 } from "react-hook-form";
+import { useTranslations } from "use-intl";
+import { Checkbox } from "@/components/ui/checkbox";
 import { InputAmount } from "@/components/ui/input/input-amount";
 import { formatCurrency } from "@/lib/currency-utils";
 import { cn } from "@/lib/utils";
@@ -19,9 +21,17 @@ const UnitPricePlain = memo(function UnitPricePlain({
 }) {
   "use no memo";
   const price = useWatch({ control, name: `items.${index}.unit_price` });
+  const isTaxIncluded =
+    useWatch({ control, name: `items.${index}.is_tax_included` }) ?? false;
+  const tc = useTranslations("common");
   return (
     <span className="text-foreground text-xs font-medium tabular-nums">
       {formatCurrency(Number(price) || 0)}
+      {isTaxIncluded && (
+        <span className="text-muted-foreground text-micro-legal ml-1 font-normal">
+          {tc("incVat")}
+        </span>
+      )}
     </span>
   );
 });
@@ -55,6 +65,7 @@ export const UnitPriceCell = memo(function UnitPriceCell({
 }) {
   "use no memo";
   const ref = useRef<HTMLInputElement>(null);
+  const tc = useTranslations("common");
 
   // autoFocus ของ React ทำงานตอน mount เท่านั้น แต่ cell ตัวนี้ mount ไปแล้ว
   // ตั้งแต่แถวเกิด จังหวะที่ต้องโฟกัสคือตอน "เพิ่งเลือกสินค้า" ซึ่งมาทีหลัง
@@ -67,30 +78,49 @@ export const UnitPriceCell = memo(function UnitPriceCell({
   }
 
   return (
-    <Controller
-      control={form.control}
-      name={`items.${index}.unit_price`}
-      render={({ field, fieldState }) => (
-        <InputAmount
-          ref={ref}
-          // ไอคอน error อยู่ซ้าย (ตัวเลขชิดขวา) — เว้นที่ให้ด้วย pl-7 ไม่งั้นทับเลข
-          className={cn(
-            "h-8 w-full text-right text-xs",
-            fieldState.error && "pl-7",
-          )}
-          error={fieldState.error?.message}
-          errorIconAlign="left"
-          // Enter = กรอกเสร็จแล้ว ไปเลือกคลังต่อ · preventDefault กัน Enter ใน
-          // ฟอร์มไปกด submit แทน (ทั้งใบยังกรอกไม่ครบด้วยซ้ำ)
-          onKeyDown={(e) => {
-            if (e.key !== "Enter") return;
-            e.preventDefault();
-            onCommit?.();
-          }}
-          value={Number(field.value ?? 0)}
-          onValueChange={field.onChange}
-        />
-      )}
-    />
+    <div className="flex flex-col gap-1">
+      <Controller
+        control={form.control}
+        name={`items.${index}.unit_price`}
+        render={({ field, fieldState }) => (
+          <InputAmount
+            ref={ref}
+            // ไอคอน error อยู่ซ้าย (ตัวเลขชิดขวา) — เว้นที่ให้ด้วย pl-7 ไม่งั้นทับเลข
+            className={cn(
+              "h-8 w-full text-right text-xs",
+              fieldState.error && "pl-7",
+            )}
+            error={fieldState.error?.message}
+            errorIconAlign="left"
+            // Enter = กรอกเสร็จแล้ว ไปเลือกคลังต่อ · preventDefault กัน Enter ใน
+            // ฟอร์มไปกด submit แทน (ทั้งใบยังกรอกไม่ครบด้วยซ้ำ)
+            onKeyDown={(e) => {
+              if (e.key !== "Enter") return;
+              e.preventDefault();
+              onCommit?.();
+            }}
+            value={Number(field.value ?? 0)}
+            onValueChange={field.onChange}
+          />
+        )}
+      />
+      {/* Inc VAT — แก้ได้เท่ากับช่องราคา (ใบ commit แล้ว/แถวที่ถูกล็อก = อ่านอย่างเดียว) */}
+      <Controller
+        control={form.control}
+        name={`items.${index}.is_tax_included`}
+        render={({ field }) => (
+          <label className="flex cursor-pointer items-center justify-end gap-1">
+            <Checkbox
+              checked={field.value ?? false}
+              onCheckedChange={field.onChange}
+              className="size-3.5"
+            />
+            <span className="text-muted-foreground text-micro-legal font-normal select-none">
+              {tc("incVat")}
+            </span>
+          </label>
+        )}
+      />
+    </div>
   );
 });
