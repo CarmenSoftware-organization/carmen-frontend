@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useId,
   useRef,
   useState,
   type KeyboardEvent,
@@ -8,6 +9,7 @@ import {
 import {
   ArrowLeft,
   ArrowRight,
+  ChevronRight,
   DatabaseIcon,
   Plus,
   Search,
@@ -76,6 +78,7 @@ interface AddWidgetDialogProps {
  *
  * 1. **เลือก** — แกลเลอรีการ์ดจัดตามโมดูล + ค้นหา การ์ดทุกใบมีรูปตัวอย่างจากข้อมูลสมมติ
  *    (`WidgetSampleThumb` — ไม่ยิง API) เลือกแล้วกด "ถัดไป" (ดับเบิลคลิก / Enter = ไปเลย)
+ *    หมวดพับ/กางได้: เปิดมาพับทุกหมวด (เห็นแค่ชื่อหมวด + จำนวน) · ค้นหาแล้วกางทุกหมวดที่เจอ
  * 2. **ปรับแต่ง** — ตัวอย่างจริงจากข้อมูลของ BU อยู่บนสุด ฟอร์มตั้งค่าชุดเดียวกับ
  *    `WidgetConfigDialog` อยู่ข้างล่าง · "ย้อนกลับ" กลับแกลเลอรีที่เดิม (คำค้น ตัวที่เลือก ตำแหน่ง scroll)
  */
@@ -120,6 +123,29 @@ function AddWidgetBody({
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [step, setStep] = useState<"pick" | "customize">("pick");
+  // พับ/กางหมวด แยกสองชุด — ตอนเลื่อนดู เริ่มพับทุกหมวด (12 หมวดเต็มไปด้วยการ์ดมันลายตา)
+  // ตอนค้นหา เริ่มกางทุกหมวดที่เจอ และเริ่มใหม่ทุกครั้งที่คำค้นเปลี่ยน · ล้างคำค้นแล้ว
+  // หมวดที่ผู้ใช้กางไว้เองก่อนค้นยังกางอยู่เหมือนเดิม
+  const [browseOpen, setBrowseOpen] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const [searchClosed, setSearchClosed] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const panelIdPrefix = useId();
+  const isSearching = query.trim() !== "";
+  const isModuleOpen = (module: string) =>
+    isSearching ? !searchClosed.has(module) : browseOpen.has(module);
+  const toggleModule = (module: string) => {
+    const flip = (prev: ReadonlySet<string>) => {
+      const next = new Set(prev);
+      if (next.has(module)) next.delete(module);
+      else next.add(module);
+      return next;
+    };
+    if (isSearching) setSearchClosed(flip);
+    else setBrowseOpen(flip);
+  };
 
   const shapes: readonly string[] = SUPPORTED_SHAPES;
   const datasets = [...(extraItems ?? []), ...(data?.items ?? [])].filter(
@@ -171,56 +197,85 @@ function AddWidgetBody({
       />
     );
   } else {
-    list = groups.map((g) => (
-      <section key={g.module} aria-label={moduleLabelOf(g.module)}>
-        <h3 className="bg-background text-muted-foreground text-micro-legal sticky top-0 z-10 px-3 py-1.5 font-bold tracking-[0.16em] uppercase">
-          {moduleLabelOf(g.module)}{" "}
-          <span className="tabular-nums">· {g.items.length}</span>
-        </h3>
-        <ul className="grid grid-cols-1 gap-3 px-3 pt-1 pb-4 sm:grid-cols-2 lg:grid-cols-3">
-          {g.items.map((d) => {
-            const badge = getShapeBadge(d.shape);
-            const isSelected = d.id === selectedId;
-            return (
-              <li key={d.id}>
-                <button
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => setSelectedId(d.id)}
-                  onDoubleClick={() => openCustomize(d.id)}
-                  onKeyDown={(e) => onCardKeyDown(e, d.id)}
-                  className={cn(
-                    "hover:border-primary/60 focus-visible:ring-ring flex h-full w-full flex-col gap-2 rounded-lg border p-3 text-left transition-colors outline-none focus-visible:ring-2",
-                    isSelected &&
-                      "border-primary ring-primary bg-accent/40 ring-1",
-                  )}
-                >
-                  <span className="line-clamp-2 text-sm font-medium">
-                    {labelOf(d)}
-                  </span>
-                  {/* badge อยู่บรรทัดของมันเอง — ชื่อยาว ถ้าแบ่งบรรทัดกับ badge จะโดนตัดจนแยกตัวที่ชื่อคล้ายกันไม่ออก */}
-                  <span className="flex min-w-0 items-center gap-1.5">
-                    <Badge
-                      variant={badge.variant}
-                      size="xs"
-                      className="shrink-0"
-                    >
-                      {badge.label}
-                    </Badge>
-                    {d.description && (
-                      <span className="text-muted-foreground text-micro truncate">
-                        {d.description}
-                      </span>
+    list = groups.map((g) => {
+      const label = moduleLabelOf(g.module);
+      const isOpen = isModuleOpen(g.module);
+      const panelId = `${panelIdPrefix}-${g.module}`;
+      return (
+        <section
+          key={g.module}
+          aria-label={label}
+          className="border-b last:border-b-0"
+        >
+          <h3 className="bg-background sticky top-0 z-10">
+            <button
+              type="button"
+              aria-expanded={isOpen}
+              aria-controls={panelId}
+              onClick={() => toggleModule(g.module)}
+              className="text-muted-foreground hover:text-foreground focus-visible:ring-ring text-micro-legal flex w-full items-center gap-1.5 px-3 py-2 text-left font-bold tracking-[0.16em] uppercase outline-none focus-visible:ring-2 focus-visible:ring-inset"
+            >
+              <ChevronRight
+                aria-hidden
+                className={cn(
+                  "size-3.5 shrink-0 transition-transform",
+                  isOpen && "rotate-90",
+                )}
+              />
+              {label} <span className="tabular-nums">· {g.items.length}</span>
+            </button>
+          </h3>
+          {/* พับด้วย attribute `hidden` ไม่ unmount — กางกลับมาแล้วรูปตัวอย่างที่วาดไว้ยังอยู่
+              (หมวดที่ไม่เคยกาง รูปไม่ถูกวาดเพราะไม่เคยเข้า viewport) */}
+          <ul
+            id={panelId}
+            hidden={!isOpen}
+            className="grid grid-cols-1 gap-3 px-3 pt-1 pb-4 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {g.items.map((d) => {
+              const badge = getShapeBadge(d.shape);
+              const isSelected = d.id === selectedId;
+              return (
+                <li key={d.id}>
+                  <button
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedId(d.id)}
+                    onDoubleClick={() => openCustomize(d.id)}
+                    onKeyDown={(e) => onCardKeyDown(e, d.id)}
+                    className={cn(
+                      "hover:border-primary/60 focus-visible:ring-ring flex h-full w-full flex-col gap-2 rounded-lg border p-3 text-left transition-colors outline-none focus-visible:ring-2",
+                      isSelected &&
+                        "border-primary ring-primary bg-accent/40 ring-1",
                     )}
-                  </span>
-                  <WidgetSampleThumb dataset={d} />
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-    ));
+                  >
+                    <span className="line-clamp-2 text-sm font-medium">
+                      {labelOf(d)}
+                    </span>
+                    {/* badge อยู่บรรทัดของมันเอง — ชื่อยาว ถ้าแบ่งบรรทัดกับ badge จะโดนตัดจนแยกตัวที่ชื่อคล้ายกันไม่ออก */}
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      <Badge
+                        variant={badge.variant}
+                        size="xs"
+                        className="shrink-0"
+                      >
+                        {badge.label}
+                      </Badge>
+                      {d.description && (
+                        <span className="text-muted-foreground text-micro truncate">
+                          {d.description}
+                        </span>
+                      )}
+                    </span>
+                    <WidgetSampleThumb dataset={d} />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      );
+    });
   }
 
   return (
@@ -241,7 +296,10 @@ function AddWidgetBody({
             size="sm"
             className="w-full pl-8"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSearchClosed(new Set());
+            }}
             placeholder={t("searchWidgets")}
             aria-label={t("searchWidgets")}
           />
