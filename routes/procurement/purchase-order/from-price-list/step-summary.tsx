@@ -22,6 +22,7 @@ import { useWorkflowById } from "@/hooks/use-workflow";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { round2 } from "@/lib/currency-utils";
+import { computeLineAmounts } from "@/lib/line-pricing";
 import type {
   FromPriceListFormValues,
   FromPriceListSelectedItem,
@@ -107,11 +108,22 @@ export function StepSummary({ form, onEditStep }: StepSummaryProps) {
     let tax = 0;
     let grand = 0;
     for (const item of items) {
-      const itemSubTotal = round2((Number(item.order_qty) || 0) * item.price);
-      const itemTax = round2((itemSubTotal * (item.tax_rate ?? 0)) / 100);
-      subTotal += itemSubTotal;
-      tax += itemTax;
-      grand += itemSubTotal + itemTax;
+      // Inc VAT: ราคา × จำนวน รวม VAT แล้ว — Subtotal ใช้ net (ไม่มีส่วนลดใน wizard)
+      // เพื่อให้ Subtotal + Tax = Total
+      const line = computeLineAmounts({
+        price: item.price,
+        qty: Number(item.order_qty) || 0,
+        discRate: 0,
+        isDiscAdj: false,
+        discAmt: 0,
+        taxRate: item.tax_rate ?? 0,
+        isTaxAdj: false,
+        taxAmt: 0,
+        isTaxIncluded: item.is_tax_included ?? false,
+      });
+      subTotal += line.netAmount;
+      tax += line.taxAmount;
+      grand += line.totalPrice;
     }
     return {
       subTotal: round2(subTotal),

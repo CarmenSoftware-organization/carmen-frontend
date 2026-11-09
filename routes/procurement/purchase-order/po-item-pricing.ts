@@ -22,6 +22,7 @@ export function computeItemPricing(
     taxRate: Number(item?.tax_rate) || 0,
     isTaxAdj: item?.is_tax_adjustment ?? false,
     taxAmt: Number(item?.tax_amount) || 0,
+    isTaxIncluded: item?.is_tax_included ?? false,
   });
 
   return {

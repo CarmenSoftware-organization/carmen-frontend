@@ -1,4 +1,6 @@
 import { memo } from "react";
+import { useTranslations } from "use-intl";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Controller, useWatch, type UseFormReturn } from "react-hook-form";
 import { InputAmount } from "@/components/ui/input/input-amount";
 import { formatCurrency } from "@/lib/currency-utils";
@@ -25,7 +27,20 @@ const PricePlain = memo(function PricePlain({
   "use no memo";
   const price =
     useWatch({ control: form.control, name: `items.${index}.price` }) ?? 0;
-  return <span className="tabular-nums">{formatCurrency(price)}</span>;
+  const isTaxIncluded =
+    useWatch({ control: form.control, name: `items.${index}.is_tax_included` }) ??
+    false;
+  const tc = useTranslations("common");
+  return (
+    <span className="tabular-nums">
+      {formatCurrency(price)}
+      {isTaxIncluded && (
+        <span className="text-muted-foreground text-micro-legal ml-1 font-normal">
+          {tc("incVat")}
+        </span>
+      )}
+    </span>
+  );
 });
 
 export const PriceCell = memo(function PriceCell({
@@ -36,6 +51,7 @@ export const PriceCell = memo(function PriceCell({
   isHidden = false,
 }: CellProps) {
   "use no memo";
+  const tc = useTranslations("common");
   if (isHidden) {
     return (
       <span className="flex justify-end">
@@ -46,6 +62,38 @@ export const PriceCell = memo(function PriceCell({
   if (disabled || readOnly) {
     return <PricePlain form={form} index={index} />;
   }
+  return (
+    <div className="flex flex-col gap-1">
+      <PriceInput form={form} index={index} />
+      {/* Inc VAT — แก้ได้เท่ากับช่องราคา (ซ่อน/อ่านอย่างเดียว = ติ๊กไม่ได้) */}
+      <Controller
+        control={form.control}
+        name={`items.${index}.is_tax_included`}
+        render={({ field }) => (
+          <label className="flex cursor-pointer items-center justify-end gap-1">
+            <Checkbox
+              checked={field.value ?? false}
+              onCheckedChange={field.onChange}
+              className="size-3.5"
+            />
+            <span className="text-muted-foreground text-micro-legal font-normal select-none">
+              {tc("incVat")}
+            </span>
+          </label>
+        )}
+      />
+    </div>
+  );
+});
+
+function PriceInput({
+  form,
+  index,
+}: {
+  readonly form: UseFormReturn<PoFormValues>;
+  readonly index: number;
+}) {
+  "use no memo";
   return (
     <Controller
       control={form.control}
@@ -75,4 +123,4 @@ export const PriceCell = memo(function PriceCell({
       )}
     />
   );
-});
+}
