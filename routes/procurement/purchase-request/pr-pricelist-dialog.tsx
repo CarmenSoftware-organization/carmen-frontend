@@ -29,7 +29,8 @@ import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { formatCurrency } from "@/lib/currency-utils";
 import { formatDate } from "@/lib/date-utils";
 import { LastPriceChip } from "@/components/share/last-price-chip";
-import { IncVatTag } from "@/components/share/inc-vat";
+import { PriceWithIncVat } from "@/components/share/inc-vat";
+import { cn } from "@/lib/utils";
 import type { LastPrice } from "@/types/last-price";
 import { resolveApprovedQty } from "./pr-form-schema";
 import {
@@ -59,6 +60,12 @@ export interface PricelistEntry {
   effective_date: { from: string; to: string };
   is_preferred?: boolean;
 }
+
+/** ราคาก่อน VAT (backend คำนวณให้) · ไม่มีค่า = ราคาที่กรอกไม่รวม VAT อยู่แล้ว */
+const netPriceOf = (l: PricelistEntry) =>
+  l.price_without_tax != null && l.price_without_tax > 0
+    ? l.price_without_tax
+    : l.price;
 
 const buildColumns = (
   dateFormat: string,
@@ -124,38 +131,54 @@ const buildColumns = (
         headerClassName: "text-right",
         cellClassName: "text-right",
       },
-      size: 160,
+      size: 150,
+      // ราคาตามที่ vendor กรอก (อาจรวม VAT) — ป้าย Inc VAT หน้าตัวเลขตามแบบกลาง
+      cell: ({ row }) => (
+        <div className="flex justify-end">
+          <PriceWithIncVat
+            isTaxIncluded={row.original.is_tax_included}
+            className="text-muted-foreground"
+          >
+            {formatCurrency(row.original.price)}
+          </PriceWithIncVat>
+        </div>
+      ),
+    },
+    {
+      id: "net_price",
+      header: t("netPrice"),
+      meta: {
+        headerClassName: "text-right",
+        cellClassName: "text-right",
+      },
+      size: 170,
+      // ราคาสุทธิก่อน VAT = ตัวที่ใช้เรียงอันดับ/ตัดสิน Best — ราคาที่กรอกรวม VAT
+      // เทียบกับราคาไม่รวมตรง ๆ ไม่ได้ จึงเป็นคอลัมน์หลักของการเทียบ
       cell: ({ row }) => {
-        const { price, is_tax_included: incVat } = row.original;
-        // อันดับเรียงด้วยราคาก่อน VAT เสมอ — ราคาที่กรอกรวม VAT เทียบกับราคาไม่รวมตรง ๆ ไม่ได้
-        const pwt = row.original.price_without_tax;
-        const ranked = pwt != null && pwt > 0 ? pwt : price;
-        const isBest = ranked === minPrice && minPrice > 0;
+        const net = netPriceOf(row.original);
+        const isBest = net === minPrice && minPrice > 0;
         return (
-          <div className="flex flex-col items-end gap-0.5">
-            <div className="flex items-center justify-end gap-1.5">
-              {isBest && (
-                <Badge
-                  variant="success-light"
-                  size="xs"
-                  className="text-micro-legal"
-                >
-                  {t("best")}
-                </Badge>
-              )}
-              {incVat && <IncVatTag />}
-              <span className="font-semibold tabular-nums">
-                {formatCurrency(price)}
-              </span>
-              <span className="text-muted-foreground">
-                {row.original.currency}
-              </span>
-            </div>
-            {incVat && (
-              <span className="text-muted-foreground text-micro tabular-nums">
-                {formatCurrency(ranked)} {tc("beforeVatShort")}
-              </span>
+          <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
+            {isBest && (
+              <Badge
+                variant="success-light"
+                size="xs"
+                className="text-micro-legal"
+              >
+                {t("best")}
+              </Badge>
             )}
+            <span
+              className={cn(
+                "font-semibold tabular-nums",
+                isBest && "text-success-ink",
+              )}
+            >
+              {formatCurrency(net)}
+            </span>
+            <span className="text-muted-foreground">
+              {row.original.currency}
+            </span>
           </div>
         );
       },
@@ -314,13 +337,7 @@ export function PrPricelistDialog({
   const minPrice =
     rows.length > 0
       ? Math.min(
-          ...rows
-            .map((l) =>
-              l.price_without_tax != null && l.price_without_tax > 0
-                ? l.price_without_tax
-                : l.price,
-            )
-            .filter((p) => p > 0),
+          ...rows.map(netPriceOf).filter((p) => p > 0),
         )
       : 0;
 
