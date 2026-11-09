@@ -5775,7 +5775,16 @@
       },
       "asOfDate": "ณ วันที่ {date}",
       "availableToIssue": "ตัดได้",
-      "availableToIssueHint": "น้อยกว่ายอดคงเหลือ เพราะเอกสารที่ลงวันที่หลังวันนี้นับของส่วนหนึ่งไว้แล้ว"
+      "availableToIssueHint": "น้อยกว่ายอดคงเหลือ เพราะเอกสารที่ลงวันที่หลังวันนี้นับของส่วนหนึ่งไว้แล้ว",
+      "betterUnit": {
+        "title": "สั่งเป็นหน่วยอื่นถูกกว่า",
+        "offer": "{qty} {unit} จาก {vendor} ({pricelistNo})",
+        "price": "{price} {currency} ต่อ {unit} · รวม {total} {currency}",
+        "perBase": "= {price} {currency} ต่อ {baseUnit}",
+        "saving": "ถูกลง {saving} {currency} ต่อ {baseUnit}",
+        "extra": "ได้มากกว่าที่ขอ {extra} {baseUnit}",
+        "hint": "ถ้าจะใช้ ให้เปลี่ยนหน่วยและจำนวนของรายการนี้ — ตารางด้านล่างยังเป็นราคาในหน่วยเดิม"
+      }
     },
     "purchaseRequestTemplate": {
       "entity": "แม่แบบใบขอซื้อ",

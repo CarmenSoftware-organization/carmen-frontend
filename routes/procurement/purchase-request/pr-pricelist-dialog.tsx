@@ -31,6 +31,10 @@ import { formatDate } from "@/lib/date-utils";
 import { LastPriceChip } from "@/components/share/last-price-chip";
 import type { LastPrice } from "@/types/last-price";
 import { resolveApprovedQty } from "./pr-form-schema";
+import {
+  PrBetterUnitNotice,
+  type BetterUnitOffer,
+} from "./pr-better-unit-notice";
 
 export interface PricelistEntry {
   vendor_id: string;
@@ -216,6 +220,8 @@ export function PrPricelistDialog({
   // pricelist ที่ถูกเลือกอยู่ (data.selected) — แยกจาก lists จึงต้องรวมมาแสดงเอง
   const [selected, setSelected] = useState<PricelistEntry | null>(null);
   const [lastPrice, setLastPrice] = useState<LastPrice | null>(null);
+  // ซื้อจำนวนเดิมด้วยหน่วยอื่นที่ถูกกว่าต่อหน่วยฐาน (suggests.better_unit) — แสดงอย่างเดียว
+  const [betterUnit, setBetterUnit] = useState<BetterUnitOffer[]>([]);
 
   useEffect(() => {
     if (!open || !productId || !unitId || !currencyId || !buCode) return;
@@ -225,6 +231,7 @@ export function PrPricelistDialog({
       setLists([]);
       setSelected(null);
       setLastPrice(null);
+      setBetterUnit([]);
       try {
         const url = buildUrl(API_ENDPOINTS.PRICE_LIST_COMPARE(buCode), {
           product_id: productId,
@@ -247,6 +254,7 @@ export function PrPricelistDialog({
         setLists(json.data?.lists ?? []);
         setSelected(json.data?.selected ?? null);
         setLastPrice(json.data?.last_price ?? null);
+        setBetterUnit(json.data?.suggests?.better_unit ?? []);
       } catch {
         toast.error(t("priceListLoadFailed"));
       } finally {
@@ -355,6 +363,7 @@ export function PrPricelistDialog({
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col px-6 pb-6">
+          <PrBetterUnitNotice offers={betterUnit} />
           <DataGrid
             table={table}
             recordCount={rows.length}

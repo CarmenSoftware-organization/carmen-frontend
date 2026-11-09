@@ -5775,7 +5775,16 @@
       },
       "asOfDate": "As of {date}",
       "availableToIssue": "Can issue",
-      "availableToIssueHint": "Less than on hand: documents dated after this day already count on part of this stock."
+      "availableToIssueHint": "Less than on hand: documents dated after this day already count on part of this stock.",
+      "betterUnit": {
+        "title": "Cheaper in another unit",
+        "offer": "{qty} {unit} from {vendor} ({pricelistNo})",
+        "price": "{price} {currency} per {unit} · total {total} {currency}",
+        "perBase": "= {price} {currency} per {baseUnit}",
+        "saving": "{saving} {currency} less per {baseUnit}",
+        "extra": "{extra} {baseUnit} more than ordered",
+        "hint": "To take it, change this line's unit and quantity — the table below stays in the line's unit."
+      }
     },
     "purchaseRequestTemplate": {
       "entity": "Purchase Request Template",
