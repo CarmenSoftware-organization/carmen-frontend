@@ -43,6 +43,7 @@ import {
 import { PLGeneralCard } from "./pl-general-card";
 import { PlItemFields } from "./pl-item-fields";
 import { PlVoidBanner } from "./pl-void-banner";
+import { PlValidityTag } from "./pl-period-cell";
 import { priceListCommentCrud } from "./use-pl-comments";
 
 const EntityCommentSheet = lazy(() =>
@@ -252,6 +253,11 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
                 // ประกอบ เหลือสีไว้ที่ไอคอนจุดเดียว (ท่าเดียวกับหัวฟอร์ม PR/PO)
                 className="text-muted-foreground text-micro uppercase [&>svg]:size-3"
               />
+              {/* ช่วงราคาหมด/ยังไม่เริ่ม/ใกล้หมด — อยู่ข้างสถานะเอกสาร เพราะใบ ACTIVE
+                  ที่หมดช่วงแล้วใช้ออก PO ไม่ได้ ต้องเห็นตั้งแต่หัวใบ · ใบโมฆะไม่ต้องบอก */}
+              {!isVoided && (
+                <PlValidityTag from={watchedFrom} to={watchedTo} />
+              )}
             </>
           }
         >

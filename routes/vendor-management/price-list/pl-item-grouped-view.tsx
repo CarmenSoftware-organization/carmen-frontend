@@ -34,13 +34,15 @@ export function PLItemGroupedView({
         <thead>
           <tr className="bg-muted/60 text-muted-foreground border-border/60 border-b">
             <Th className="w-14 text-center">#</Th>
-            <Th className="text-left">{tfl("product")}</Th>
+            {/* Product มีเพดานกว้าง — ไม่งั้นมันกินที่ว่างทั้งหมด ดันตัวเลขไปกองกลางจอ
+                และเหลือ Note แคบติดขอบขวา · ที่เหลือยกให้ Note (คอลัมน์เดียวที่ไม่มีความกว้าง) */}
+            <Th className="w-[28%] min-w-56 text-left">{tfl("product")}</Th>
             <Th className="w-36 text-left">{tfl("moq")}</Th>
             <Th className="w-24 text-right">{tfl("price")}</Th>
             <Th className="w-20 text-right">{tfl("taxRate")}</Th>
             <Th className="w-20 text-right">{tfl("tax")}</Th>
             <Th className="w-24 text-right">{tfl("total")}</Th>
-            {showNote && <Th className="w-96 text-left">{tfl("note")}</Th>}
+            {showNote && <Th className="min-w-40 text-left">{tfl("note")}</Th>}
           </tr>
         </thead>
         <tbody>
@@ -76,11 +78,7 @@ export function PLItemGroupedView({
                       >
                         <NameWithSubtext
                           primary={tier.product_name ?? ""}
-                          secondary={
-                            tier.product_local_name ??
-                            tier.product_code ??
-                            undefined
-                          }
+                          secondary={productSubtext(tier)}
                         />
                       </Td>
                     </>
@@ -199,4 +197,15 @@ function Td({
       {children}
     </td>
   );
+}
+
+/**
+ * บรรทัดรองใต้ชื่อสินค้า — ชื่อท้องถิ่นเมื่อต่างจากชื่อหลัก ไม่งั้นรหัสสินค้า
+ * (ข้อมูลจริงหลายตัวกรอก local_name ซ้ำกับ name ทำให้ชื่อเดียวขึ้นสองบรรทัด)
+ */
+function productSubtext(tier: GroupableDetail): string | undefined {
+  const name = tier.product_name?.trim().toLowerCase();
+  const local = tier.product_local_name?.trim();
+  if (local && local.toLowerCase() !== name) return local;
+  return tier.product_code ?? undefined;
 }

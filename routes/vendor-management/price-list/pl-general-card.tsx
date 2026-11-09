@@ -17,6 +17,7 @@ import { SettingSection } from "@/components/ui/setting-section";
 import type { PriceList, PriceListStatus } from "@/types/price-list";
 import type { PriceListFormValues } from "./pl-form-schema";
 import { PlPeriodCell } from "./pl-period-cell";
+import { cn } from "@/lib/utils";
 
 type PlStatus = PriceListStatus;
 
@@ -43,6 +44,17 @@ export function PLGeneralCard({
   t,
   ts,
 }: PLGeneralCardProps) {
+  // โหมดดู: ข้อมูลหัวใบมีแค่ 3–4 ช่อง จึงยุบเป็นแถบเดียวเหนือตาราง แทนโครง 2 คอลัมน์
+  // (ป้ายซ้าย + การ์ดขวา) ที่กินครึ่งจอแรก — ตารางราคาซึ่งเป็นตัวเอกขึ้นมาอยู่ในจอแรก
+  if (isView)
+    return (
+      <PlViewSummary
+        priceList={priceList}
+        from={watchedFrom}
+        to={watchedTo}
+        tfl={tfl}
+      />
+    );
   return (
     <SettingSection
       first
@@ -234,5 +246,66 @@ export function PLGeneralCard({
         </Field>
       )}
     </SettingSection>
+  );
+}
+
+function PlViewSummary({
+  priceList,
+  from,
+  to,
+  tfl,
+}: {
+  readonly priceList?: PriceList;
+  readonly from: string;
+  readonly to: string;
+  readonly tfl: (key: string) => string;
+}) {
+  const description = priceList?.description?.trim();
+  return (
+    <section className="bg-card rounded-xl border px-5 py-4 shadow-sm">
+      <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,2fr)]">
+        <SummaryItem label={tfl("vendor")}>
+          {priceList?.vendor?.name || "—"}
+        </SummaryItem>
+        <SummaryItem label={tfl("currency")}>
+          {priceList?.currency?.code || "—"}
+        </SummaryItem>
+        <SummaryItem label={tfl("effectivePeriod")}>
+          {from && to ? (
+            // สถานะช่วง (หมดแล้ว/ใกล้หมด) อยู่ที่หัวใบแล้ว — ตรงนี้เหลือแค่วันที่
+            <PlPeriodCell period={`${from} - ${to}`} showNote={false} />
+          ) : (
+            "—"
+          )}
+        </SummaryItem>
+        {/* คำอธิบายว่าง = ไม่แสดงทั้งแถว (เดิมกินหนึ่งแถวเต็มเพื่อโชว์ "—") */}
+        {description && (
+          <SummaryItem label={tfl("description")} className="sm:col-span-3">
+            <span className="font-normal whitespace-pre-wrap">
+              {description}
+            </span>
+          </SummaryItem>
+        )}
+      </dl>
+    </section>
+  );
+}
+
+function SummaryItem({
+  label,
+  className,
+  children,
+}: {
+  readonly label: string;
+  readonly className?: string;
+  readonly children: React.ReactNode;
+}) {
+  return (
+    <div className={cn("min-w-0 space-y-1", className)}>
+      <dt className="text-muted-foreground text-xs">{label}</dt>
+      <dd className="text-foreground truncate text-sm font-medium">
+        {children}
+      </dd>
+    </div>
   );
 }

@@ -228,35 +228,45 @@ export function PriceCell({
     );
 
   return (
-    <div className="flex items-center justify-end gap-2">
+    <FieldInput
+      errorIconAlign="left"
+      type="number"
+      step="0.01"
+      inputMode="decimal"
+      min={0}
+      disabled={isDisabled}
+      placeholder="0.00"
+      error={errors?.price?.message}
+      className="border-border/60 h-8 w-full rounded-md text-right text-xs tabular-nums"
+      {...form.register(`pricelist_detail.${index}.price`, {
+        valueAsNumber: true,
+      })}
+    />
+  );
+}
+
+/**
+ * Inc VAT — คอลัมน์ของตัวเองข้าง Price (โหมดแก้ไขเท่านั้น โหมดดูใช้ grouped view)
+ * เดิมซ้อน checkbox ไว้เหนือช่องราคาในเซลล์เดียว แถวสูงขึ้นและช่องราคาต่ำกว่าช่องอื่น
+ */
+export function IncVatCell({ form, index, isDisabled }: CellProps) {
+  "use no memo";
+  const tc = useTranslations("common");
+  return (
+    <div className="flex justify-center">
       <Controller
         control={form.control}
         name={`pricelist_detail.${index}.is_tax_included`}
         render={({ field }) => (
-          <label className="text-muted-foreground text-micro flex shrink-0 items-center gap-1">
-            <Checkbox
-              checked={!!field.value}
-              onCheckedChange={(v) => field.onChange(v === true)}
-              disabled={isDisabled}
-              aria-label={tc("incVat")}
-            />
-            {tc("incVat")}
-          </label>
+          <Checkbox
+            checked={!!field.value}
+            onCheckedChange={(v) => field.onChange(v === true)}
+            disabled={isDisabled}
+            aria-label={tc("incVat")}
+            // พื้นทึบ — บนแถวสลับสี (striped) กรอบโปร่งจางจนดูเหมือนถูกปิดใช้
+            className="bg-background"
+          />
         )}
-      />
-      <FieldInput
-        errorIconAlign="left"
-        type="number"
-        step="0.01"
-        inputMode="decimal"
-        min={0}
-        disabled={isDisabled}
-        placeholder="0.00"
-        error={errors?.price?.message}
-        className="text-right"
-        {...form.register(`pricelist_detail.${index}.price`, {
-          valueAsNumber: true,
-        })}
       />
     </div>
   );
@@ -359,6 +369,7 @@ export function PreferredCell({
             onCheckedChange={(v) => field.onChange(v === true)}
             disabled={isDisabled}
             aria-label="preferred"
+            className="bg-background"
           />
         )}
       />
