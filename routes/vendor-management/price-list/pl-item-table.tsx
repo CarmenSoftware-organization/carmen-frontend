@@ -108,6 +108,10 @@ function PLItemEditTable({
           // โหมดอ่านชิดบน — ชื่อสินค้ามีบรรทัดรอง เซลล์อื่นไม่มี
           cellAlign: isView ? "top" : "middle",
         }}
+        // คอลัมน์แบ่งเป็น % ของ size — จอแคบเลยบีบ 13 คอลัมน์จนหัวทับกัน ช่องกรอกยุบ
+        // ล็อกขั้นต่ำไว้ให้เลื่อนแนวนอนแทน · ไม่ใช้ meta.grow เพราะผลรวม size (~1,500px)
+        // กว้างกว่าพื้นที่ desktop ทั่วไป ตารางจะเลื่อนแนวนอนบน desktop ด้วย
+        tableClassNames={{ base: "min-w-[1100px]" }}
       >
         <DataGridContainer>
           <DataGridTable />
