@@ -1,6 +1,5 @@
 import { memo } from "react";
-import { useTranslations } from "use-intl";
-import { Checkbox } from "@/components/ui/checkbox";
+import { IncVatToggle, PriceWithIncVat } from "@/components/share/inc-vat";
 import { Controller, useWatch, type UseFormReturn } from "react-hook-form";
 import { InputAmount } from "@/components/ui/input/input-amount";
 import { formatCurrency } from "@/lib/currency-utils";
@@ -30,16 +29,10 @@ const PricePlain = memo(function PricePlain({
   const isTaxIncluded =
     useWatch({ control: form.control, name: `items.${index}.is_tax_included` }) ??
     false;
-  const tc = useTranslations("common");
   return (
-    <span className="tabular-nums">
+    <PriceWithIncVat isTaxIncluded={isTaxIncluded}>
       {formatCurrency(price)}
-      {isTaxIncluded && (
-        <span className="text-muted-foreground text-micro-legal ml-1 font-normal">
-          {tc("incVat")}
-        </span>
-      )}
-    </span>
+    </PriceWithIncVat>
   );
 });
 
@@ -51,7 +44,6 @@ export const PriceCell = memo(function PriceCell({
   isHidden = false,
 }: CellProps) {
   "use no memo";
-  const tc = useTranslations("common");
   if (isHidden) {
     return (
       <span className="flex justify-end">
@@ -70,16 +62,10 @@ export const PriceCell = memo(function PriceCell({
         control={form.control}
         name={`items.${index}.is_tax_included`}
         render={({ field }) => (
-          <label className="flex cursor-pointer items-center justify-end gap-1">
-            <Checkbox
-              checked={field.value ?? false}
-              onCheckedChange={field.onChange}
-              className="size-3.5"
-            />
-            <span className="text-muted-foreground text-micro-legal font-normal select-none">
-              {tc("incVat")}
-            </span>
-          </label>
+          <IncVatToggle
+            checked={field.value ?? false}
+            onCheckedChange={field.onChange}
+          />
         )}
       />
     </div>

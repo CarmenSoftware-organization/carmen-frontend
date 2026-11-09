@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useTranslations } from "use-intl";
 import { Crown } from "lucide-react";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
+import { PriceWithIncVat } from "@/components/share/inc-vat";
 import { formatTaxRate, priceListTaxParts } from "@/lib/price-list-tax";
 import { cn } from "@/lib/utils";
 import {
@@ -122,20 +123,16 @@ export function PLItemGroupedView({
                       tierClass,
                     )}
                   >
-                    <span
+                    <PriceWithIncVat
+                      isTaxIncluded={tier.is_tax_included}
                       title={
                         tier.is_tax_included
-                          ? priceWithoutTax.toFixed(2)
+                          ? `${priceWithoutTax.toFixed(2)} ${tc("beforeVatShort")}`
                           : undefined
                       }
                     >
-                      {tier.is_tax_included && (
-                        <span className="text-muted-foreground text-micro mr-1.5">
-                          {tc("incVat")}
-                        </span>
-                      )}
                       {price.toFixed(2)}
-                    </span>
+                    </PriceWithIncVat>
                   </Td>
                   {/* Tax rate = อ่านอย่างเดียว ตาม tax profile */}
                   <Td

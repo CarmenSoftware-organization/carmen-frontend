@@ -9,6 +9,7 @@ import {
   type Updater,
 } from "@tanstack/react-table";
 import { AlertTriangle, FilterX } from "lucide-react";
+import { PriceWithIncVat } from "@/components/share/inc-vat";
 import { Badge } from "@/components/ui/badge";
 import {
   DataGrid,
@@ -402,17 +403,17 @@ export function StepSelectItems({ form }: StepSelectItemsProps) {
           skeleton: columnSkeletons.textShort,
         },
         cell: ({ row }) => (
-          <span className={dim(row.original)}>
-            {row.original.detail.price.toLocaleString()}{" "}
-            <span className="text-muted-foreground text-micro">
-              {row.original.currency?.code}
-            </span>
-            {row.original.detail.is_tax_included && (
-              <span className="text-muted-foreground text-micro-legal ml-1">
-                {tc("incVat")}
+          <PriceWithIncVat
+            isTaxIncluded={row.original.detail.is_tax_included}
+            className={dim(row.original)}
+          >
+            <span>
+              {row.original.detail.price.toLocaleString()}{" "}
+              <span className="text-muted-foreground text-micro">
+                {row.original.currency?.code}
               </span>
-            )}
-          </span>
+            </span>
+          </PriceWithIncVat>
         ),
       },
       {
@@ -491,7 +492,6 @@ export function StepSelectItems({ form }: StepSelectItemsProps) {
     patchItem,
     workflowId,
     t,
-    tc,
     tfl,
   ]);
 
