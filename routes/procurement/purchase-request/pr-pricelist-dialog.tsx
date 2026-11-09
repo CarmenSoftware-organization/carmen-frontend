@@ -51,6 +51,10 @@ export interface PricelistEntry {
   base_price: number;
   base_currency: string;
   exchange_rate: number;
+  /** ภาษีมากับราคาเสมอ — อัตราเป็นของ price list รายการนี้ ไม่ใช่ของ tax profile เดิมในบรรทัด PR */
+  tax_profile_id?: string | null;
+  tax_profile_name?: string | null;
+  tax_rate?: number;
   effective_date: { from: string; to: string };
   is_preferred?: boolean;
 }
@@ -123,7 +127,8 @@ const buildColumns = (
       cell: ({ row }) => {
         const { price, is_tax_included: incVat } = row.original;
         // อันดับเรียงด้วยราคาก่อน VAT เสมอ — ราคาที่กรอกรวม VAT เทียบกับราคาไม่รวมตรง ๆ ไม่ได้
-        const ranked = row.original.price_without_tax ?? price;
+        const pwt = row.original.price_without_tax;
+        const ranked = pwt != null && pwt > 0 ? pwt : price;
         const isBest = ranked === minPrice && minPrice > 0;
         return (
           <div className="flex flex-col items-end gap-0.5">
@@ -313,7 +318,11 @@ export function PrPricelistDialog({
     rows.length > 0
       ? Math.min(
           ...rows
-            .map((l) => l.price_without_tax ?? l.price)
+            .map((l) =>
+              l.price_without_tax != null && l.price_without_tax > 0
+                ? l.price_without_tax
+                : l.price,
+            )
             .filter((p) => p > 0),
         )
       : 0;

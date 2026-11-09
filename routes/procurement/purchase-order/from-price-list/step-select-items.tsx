@@ -491,6 +491,7 @@ export function StepSelectItems({ form }: StepSelectItemsProps) {
     patchItem,
     workflowId,
     t,
+    tc,
     tfl,
   ]);
 

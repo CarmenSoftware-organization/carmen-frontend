@@ -13,6 +13,7 @@ import { STAGE_ROLE } from "@/types/stage-role";
 import { PR_ITEM_PRICELIST_COMPARE_TYPE } from "@/types/purchase-request";
 import { formatDate } from "@/lib/date-utils";
 import type { PrFormValues } from "./pr-form-schema";
+import { applyDerivedAmounts } from "./pr-auto-allocate";
 import type { PricelistEntry } from "./pr-pricelist-dialog";
 
 const PrPricelistDialog = lazy(() =>
@@ -76,6 +77,15 @@ export function PrPricelistCompare({
       `items.${index}.is_tax_included`,
       entry.is_tax_included ?? false,
     );
+    // อัตราภาษีเดินทางมากับราคา — ไม่งั้นราคารวม VAT จะถูกถอดด้วยอัตราของ tax profile เดิม
+    if (entry.tax_profile_id !== undefined) {
+      form.setValue(`items.${index}.tax_profile_id`, entry.tax_profile_id);
+      form.setValue(
+        `items.${index}.tax_profile_name`,
+        entry.tax_profile_name ?? "",
+      );
+      form.setValue(`items.${index}.tax_rate`, entry.tax_rate ?? 0);
+    }
     form.setValue(
       `items.${index}.pricelist_detail_id`,
       entry.pricelist_detail_id,
@@ -84,6 +94,14 @@ export function PrPricelistCompare({
     form.setValue(
       `items.${index}.pricelist_type`,
       PR_ITEM_PRICELIST_COMPARE_TYPE.MANUAL_SELECT,
+    );
+    applyDerivedAmounts(
+      form,
+      index,
+      form.getValues(`items.${index}`),
+      entry.price,
+      Number(form.getValues(`items.${index}.tax_rate`)) || 0,
+      entry.is_tax_included ?? false,
     );
   };
 
