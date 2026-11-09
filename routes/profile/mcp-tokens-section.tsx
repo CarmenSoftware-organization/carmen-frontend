@@ -245,7 +245,7 @@ function TokenTable({
   const renderName = (row: McpToken) => (
     <>
       <div className="font-medium break-words">{row.name}</div>
-      <div className="text-muted-foreground font-mono text-[11px] whitespace-nowrap">{row.token_prefix}…</div>
+      <div className="text-muted-foreground font-mono text-micro whitespace-nowrap">{row.token_prefix}…</div>
     </>
   );
   const renderScopes = (row: McpToken) =>

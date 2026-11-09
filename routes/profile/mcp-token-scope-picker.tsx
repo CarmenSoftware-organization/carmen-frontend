@@ -28,7 +28,7 @@ export function McpTokenScopePicker({ value, onChange, disabled }: McpTokenScope
             {t(`scopeGroup_${group.key}`)}
           </legend>
           {group.key !== "read" && (
-            <p className="text-warning-ink flex items-start gap-1.5 text-[11px]">
+            <p className="text-warning-ink flex items-start gap-1.5 text-micro">
               <TriangleAlert className="mt-px size-3 shrink-0" aria-hidden="true" />
               {t(`scopeGroupHint_${group.key}`)}
             </p>
@@ -47,9 +47,9 @@ export function McpTokenScopePicker({ value, onChange, disabled }: McpTokenScope
                 <span className="flex flex-col">
                   <span className="text-xs font-medium">
                     {t(`scope_${getMcpScopeMessageKey(scope)}`)}{" "}
-                    <code className="text-muted-foreground font-mono text-[10px]">{scope}</code>
+                    <code className="text-muted-foreground font-mono text-micro-legal">{scope}</code>
                   </span>
-                  <span className="text-muted-foreground text-[11px]">
+                  <span className="text-muted-foreground text-micro">
                     {t(`scopeDesc_${getMcpScopeMessageKey(scope)}`)}
                   </span>
                 </span>

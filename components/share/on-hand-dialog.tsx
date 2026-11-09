@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { distinctLocalName } from "@/lib/distinct-local-name";
 import { Link } from "react-router";
 import { useTranslations } from "use-intl";
 import { FileText, Handshake, Truck, Warehouse } from "lucide-react";
@@ -115,7 +116,10 @@ export function OnHandDialog({ open, onOpenChange, productId, atDate }: Props) {
             // (display:-webkit-box) ให้ลูกทุกตัวของเซลล์ — มันทับ flex ทิ้ง
             // ไอคอนเลยตกไปอยู่คนละบรรทัดกับข้อความ (ตัว badge/checkbox ของ
             // design system รอดมาได้เพราะมี data-slot ติดมาเอง)
-            <div data-slot="location-type" className="flex items-center gap-1.5">
+            <div
+              data-slot="location-type"
+              className="flex items-center gap-1.5"
+            >
               {Icon && (
                 <Icon
                   className="text-muted-foreground size-3.5 shrink-0"
@@ -172,12 +176,14 @@ export function OnHandDialog({ open, onOpenChange, productId, atDate }: Props) {
                     <span className="text-foreground text-sm font-semibold">
                       {data?.product_name ?? "—"}
                     </span>
-                    {data?.product_local_name &&
-                      data.product_local_name !== data.product_name && (
-                        <p className="text-muted-foreground text-xs">
-                          {data.product_local_name}
-                        </p>
-                      )}
+                    {distinctLocalName(
+                      data?.product_name,
+                      data?.product_local_name,
+                    ) && (
+                      <p className="text-muted-foreground text-xs">
+                        {data?.product_local_name}
+                      </p>
+                    )}
                     <LastPriceChip
                       lastPrice={data?.last_price}
                       className="pt-0.5"

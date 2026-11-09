@@ -15,11 +15,9 @@ import { LookupProductInLocation } from "@/components/lookup/lookup-product-in-l
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
 import { OnHandDialog } from "@/components/share/on-hand-dialog";
 import { OnOrderDialog } from "@/components/share/on-order-dialog";
+import { distinctLocalName } from "@/lib/distinct-local-name";
 import type { PrFormValues } from "../pr-form-schema";
 import { InventoryDialogCell, useIsRowLocked } from "./helpers";
-
-/** `\s` ใน JS ครอบ NBSP ด้วย — ใช้เทียบชื่อที่ตาเห็นเหมือนกัน */
-const squashSpaces = (v: string) => v.replace(/\s+/g, " ").trim();
 
 export const ProductCell = memo(function ProductCell({
   control,
@@ -92,14 +90,7 @@ export const ProductCell = memo(function ProductCell({
             primary={productName || "—"}
             // ชื่อรองซ้ำกับชื่อหลัก (สินค้าที่ไม่ได้ตั้งชื่อท้องถิ่นแยก) = บรรทัดเปล่าประโยชน์
             // ที่ทำให้ทุกแถวดูหนาเป็นสองเท่า — ซ่อนไปเลย กติกาเดียวกับหน้า Price List
-            // เทียบหลังยุบช่องว่าง — ชื่อท้องถิ่นใน master บางตัวใช้ NBSP (U+00A0)
-            // แทนเว้นวรรค ตาเห็นเหมือนกันทุกตัวอักษรแต่ !== กันตรง ๆ
-            secondary={
-              productLocalName &&
-              squashSpaces(productLocalName) !== squashSpaces(productName)
-                ? productLocalName
-                : undefined
-            }
+            secondary={distinctLocalName(productName, productLocalName)}
           />
         </div>
         {inventoryTooltip}
@@ -166,10 +157,7 @@ export const ProductCell = memo(function ProductCell({
                 </div>
               </TooltipTrigger>
               {(productCode || productName) && (
-                <TooltipContent
-                  side="top"
-                  className="max-w-[20rem]"
-                >
+                <TooltipContent side="top" className="max-w-[20rem]">
                   <div className="space-y-1">
                     <p className="text-foreground/60 text-micro font-semibold">
                       {productCode}
