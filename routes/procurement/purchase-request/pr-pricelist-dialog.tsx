@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from "use-intl";
-import { Crown, FileText, Package, Receipt } from "lucide-react";
+import { Check, Crown, FileText, Package, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import {
   type ColumnDef,
@@ -29,7 +29,6 @@ import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { formatCurrency } from "@/lib/currency-utils";
 import { formatDate } from "@/lib/date-utils";
 import { LastPriceChip } from "@/components/share/last-price-chip";
-import { PriceWithIncVat } from "@/components/share/inc-vat";
 import { cn } from "@/lib/utils";
 import type { LastPrice } from "@/types/last-price";
 import { resolveApprovedQty } from "./pr-form-schema";
@@ -125,23 +124,40 @@ const buildColumns = (
       size: 80,
     },
     {
+      // คอลัมน์ของตัวเองให้เห็นทุกแถว — ป้ายหน้าตัวเลขโผล่เฉพาะแถวที่ติ๊ก
+      // แถวที่ไม่ติ๊กจึงอ่านไม่ออกว่า "ไม่รวม" หรือ "ไม่มีข้อมูล"
+      id: "inc_vat",
+      header: tc("incVat"),
+      meta: {
+        headerClassName: "text-center",
+        cellClassName: "text-center",
+      },
+      size: 80,
+      cell: ({ row }) =>
+        row.original.is_tax_included ? (
+          <Check
+            className="text-success-ink mx-auto size-4"
+            aria-label={tc("incVat")}
+          />
+        ) : (
+          <span className="text-muted-foreground" aria-hidden>
+            —
+          </span>
+        ),
+    },
+    {
       accessorKey: "price",
       header: tfl("price"),
       meta: {
         headerClassName: "text-right",
         cellClassName: "text-right",
       },
-      size: 150,
-      // ราคาตามที่ vendor กรอก (อาจรวม VAT) — ป้าย Inc VAT หน้าตัวเลขตามแบบกลาง
+      size: 120,
+      // ราคาตามที่ vendor กรอก (รวม VAT หรือไม่ ดูคอลัมน์ Inc VAT ก่อนหน้า)
       cell: ({ row }) => (
-        <div className="flex justify-end">
-          <PriceWithIncVat
-            isTaxIncluded={row.original.is_tax_included}
-            className="text-muted-foreground"
-          >
-            {formatCurrency(row.original.price)}
-          </PriceWithIncVat>
-        </div>
+        <span className="text-muted-foreground tabular-nums">
+          {formatCurrency(row.original.price)}
+        </span>
       ),
     },
     {
