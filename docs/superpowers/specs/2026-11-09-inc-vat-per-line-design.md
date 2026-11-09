@@ -66,8 +66,8 @@ tax profile ที่มี rate = net × rate ÷ 100 บวกทับ ผู�
 เพราะ none/add ซ้อนกับ tax profile อยู่แล้ว (ผู้ใช้ต้องการให้แยก) boolean เดียวจึงพอ
 
 **Price List:** `price` = ที่กรอก, `price_without_tax` = ก่อน VAT **จริง** (ติ๊ก: price × 100 ÷ (100+rate);
-ไม่ติ๊ก: = price ตามเดิม), `tax_amt` = ภาษีต่อหน่วย. migration ไม่ต้อง backfill
-เพราะแถวเดิมทุกแถว `price_without_tax = price` อยู่แล้ว (ผู้สร้างควร verify บน dev ก่อน — ดูข้อเสี่ยง)
+ไม่ติ๊ก: = price ตามเดิม), `tax_amt` = ภาษีต่อหน่วย. migration **มี backfill แบบ idempotent**:
+ตั้ง `price_without_tax = price` ให้แถวที่ไม่ติ๊กและสองค่านี้ต่างกัน (รันซ้ำได้ ไม่กระทบแถวที่ตรงกันอยู่แล้ว)
 
 ลำดับ deploy: migration → backend → FE (ตามธรรมเนียมรีโป; FE ส่ง field ใหม่ก่อน BE รับ = field ถูกทิ้งเงียบ)
 
@@ -106,7 +106,6 @@ Price List → PR (ตอนเลือกจาก compare) → PO (สร้�
 
 ## ความเสี่ยง / สิ่งที่ต้องยืนยันก่อน merge
 
-- verify บน dev ว่า `tb_pricelist_detail.price_without_tax = price` ทุกแถวจริง (ถ้าไม่ จะต้อง backfill ก่อนเปลี่ยน orderBy)
 - print form / report (micro-report) ที่แสดงราคาต่อหน่วย อาจต้องแสดงป้าย Inc VAT — ไม่อยู่ในขอบเขตรอบนี้ แต่ต้องตรวจว่าไม่คิดภาษีซ้ำเอง
 - allowlist: ไม่มี endpoint ใหม่ คาดว่าไม่ต้องเพิ่ม api_name
 
@@ -119,13 +118,17 @@ Price List → PR (ตอนเลือกจาก compare) → PO (สร้�
 2. **รวม/แยกบรรทัด:** จุดที่รวมหลายบรรทัดต้นทางเป็นบรรทัดเดียว (PR→PO, PO→GRN, GRN→AP auto)
    ให้ `is_tax_included` เป็นส่วนหนึ่งของ key ที่ใช้จัดกลุ่ม — บรรทัดที่ติ๊กต่างกันไม่ถูกรวม
    ถ้าโค้ดเดิมรวมโดยไม่ดูราคาอยู่แล้ว ให้ผู้สร้างรายงานก่อนเปลี่ยน
-3. **AP variance:** ไม่เพิ่มคอลัมน์ ใช้ราคาก่อน VAT ต่อหน่วยที่ derive จาก GRN item
-   (`net_amount ÷ received_qty` ในหน่วยเดียวกับ matched_qty) เทียบกับ `net_amount` ของ AP → net เทียบ net
+3. **AP variance:** ไม่เพิ่มคอลัมน์ บรรทัด GRN ที่ติ๊กใช้ `received_price × 100 ÷ (100 + tax_rate)`
+   (ก่อน VAT ก่อนส่วนลด ทศนิยม 5 ตำแหน่ง) เพื่อให้บรรทัดติ๊กและไม่ติ๊กใช้ความหมาย variance เดียวกับวันนี้
+   (ส่วนลดจึงโผล่เป็น variance); บรรทัดไม่ติ๊กไม่เปลี่ยน (ใช้ `received_price`)
 4. **สกุลเงิน:** Compare เทียบในสกุลของ price list เหมือนวันนี้ การเทียบข้ามสกุลอยู่นอกขอบเขต
 5. **Excel / portal ไฟล์เก่า:** ไม่มีคอลัมน์ Inc VAT หรือช่องว่าง = **คงค่าเดิม** (ตามกติกาเดิมของ
    `price-list-external-excel.ts` ที่ "ไม่รู้จัก/ว่าง = คงเดิม") แถวใหม่ = false
 6. **ความละเอียด:** `price_without_tax` เก็บ 5 ตำแหน่ง (ตามคอลัมน์) ไม่ round2; round2 ใช้กับยอดเงิน
    ในเอกสารเท่านั้น Compare เรียงด้วยค่า 5 ตำแหน่ง
+7. **GRN รับและเก็บ `is_tax_adjustment`:** เพื่อให้ภาษีที่ผู้ใช้กรอกเองชนะการคำนวณอัตโนมัติบนบรรทัดที่ติ๊ก
+8. **แถบสรุปยอด (totals strips):** บรรทัดที่ติ๊กนับ Subtotal ในแถบสรุป = net + ส่วนลด เพื่อให้
+   Subtotal − Discount = Net; ส่วนเซลล์ Subtotal รายแถวยังแสดง price × qty ตามเดิม
 
 ## ที่ปล่อยให้ผู้สร้าง
 
