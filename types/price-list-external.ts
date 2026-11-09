@@ -45,6 +45,8 @@ export type PricelistExternalDetailDto = {
   tax_profile_id: string;
   tax_profile_name: string | null;
   tax_rate: number;
+  /** ราคาที่กรอกรวม VAT แล้ว (Inc VAT) */
+  is_tax_included?: boolean;
   lead_time_days: number;
   is_active: boolean;
   is_preferred: boolean;

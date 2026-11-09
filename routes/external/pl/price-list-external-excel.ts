@@ -18,6 +18,8 @@ const H = {
   moq: "MOQ Qty",
   price: "Price",
   tax: "Tax Profile",
+  // = common.incVat (en) — portal เป็น public อังกฤษล้วน · ค่า Y/N
+  incVat: "Inc VAT",
   lead: "Lead Time (days)",
   note: "Note",
   rowId: "Row ID",
@@ -25,6 +27,8 @@ const H = {
 
 // ตำแหน่งคอลัมน์ Tax Profile (1-based) — ใช้ผูก data validation
 const TAX_COL = 7;
+// ตำแหน่งคอลัมน์ Inc VAT (ถัดจาก Tax Profile)
+const INC_VAT_COL = 8;
 
 function triggerDownload(buffer: ArrayBuffer, fileName: string) {
   const blob = new Blob([buffer], {
@@ -60,6 +64,7 @@ export async function downloadExternalPricelistXlsx(
     { header: H.moq, key: "moq", width: 10 },
     { header: H.price, key: "price", width: 12 },
     { header: H.tax, key: "tax", width: 22 },
+    { header: H.incVat, key: "incVat", width: 10 },
     { header: H.lead, key: "lead", width: 16 },
     { header: H.note, key: "note", width: 32 },
     { header: H.rowId, key: "rowId", width: 38, hidden: true },
@@ -75,6 +80,7 @@ export async function downloadExternalPricelistXlsx(
       moq: d.moq_qty,
       price: d.price,
       tax: d.tax_profile_name ?? "",
+      incVat: d.is_tax_included ? "Y" : "N",
       lead: d.lead_time_days,
       note: d.note ?? "",
       rowId: d.id,
@@ -114,11 +120,39 @@ export async function downloadExternalPricelistXlsx(
     }
   }
 
+  // Inc VAT = dropdown Y/N
+  for (let r = 2; r <= data.tb_pricelist_detail.length + 1; r++) {
+    ws.getCell(r, INC_VAT_COL).dataValidation = {
+      type: "list",
+      allowBlank: true,
+      formulae: ['"Y,N"'],
+      showErrorMessage: true,
+      errorStyle: "warning",
+      error: "Please enter Y or N.",
+    };
+  }
+
   const buf = await wb.xlsx.writeBuffer();
   triggerDownload(
     buf as ArrayBuffer,
     `${buildXlsxFileName(data.pricelist_no || "price-list")}.xlsx`,
   );
+}
+
+/**
+ * อ่านค่า Inc VAT จากช่อง excel — Y/N (ไม่สนตัวพิมพ์) หรือ true/false/1/0
+ * ว่าง/ไม่รู้จัก = undefined (ผู้เรียกคงค่าเดิมของแถว)
+ */
+function parseIncVat(v: unknown): boolean | undefined {
+  if (typeof v === "boolean") return v;
+  if (typeof v === "number")
+    return v === 1 ? true : v === 0 ? false : undefined;
+  const s = String(v ?? "")
+    .trim()
+    .toLowerCase();
+  if (["y", "yes", "true", "1"].includes(s)) return true;
+  if (["n", "no", "false", "0"].includes(s)) return false;
+  return undefined;
 }
 
 function toNum(v: unknown, fallback: number): number {
@@ -155,8 +189,8 @@ const norm = (v: unknown) =>
  *    code ที่ไม่ซ้ำ ·
  *    ไม่มีแถวไหน match เลย = ไฟล์ไม่ใช่ของเอกสารนี้ → reject
  *
- * ช่องว่างคงค่าเดิม · Tax Profile (ชื่อ) map กลับเป็น id + rate จาก taxProfiles
- * (ไม่รู้จัก/ว่าง = คงเดิม) แล้วคำนวณ tax_amt ใหม่แบบ add VAT (price = ก่อนภาษี)
+ * ช่องว่างคงค่าเดิม · Inc VAT (Y/N) ไม่มีคอลัมน์/ว่าง = คงเดิม · Tax Profile (ชื่อ) map กลับเป็น id + rate จาก taxProfiles
+ * (ไม่รู้จัก/ว่าง = คงเดิม) แล้วคำนวณ tax_amt ใหม่ตาม Inc VAT (ไม่ติ๊ก: price = ก่อนภาษี)
  */
 export function applyExcelRows(
   rows: Record<string, unknown>[],
@@ -223,7 +257,13 @@ export function applyExcelRows(
         rate = prof.tax_rate;
       }
     }
-    const { priceWithoutTax, taxAmt } = priceListTaxParts(price, rate);
+    const isTaxIncluded =
+      parseIncVat(row[H.incVat]) ?? d.is_tax_included ?? false;
+    const { priceWithoutTax, taxAmt } = priceListTaxParts(
+      price,
+      rate,
+      isTaxIncluded,
+    );
     const noteCell = row[H.note];
     updated[idx] = {
       ...d,
@@ -232,6 +272,7 @@ export function applyExcelRows(
       tax_profile_id: taxProfileId,
       tax_profile_name: taxProfileName,
       tax_rate: rate,
+      is_tax_included: isTaxIncluded,
       price_without_tax: priceWithoutTax,
       tax_amt: taxAmt,
       lead_time_days: toNum(row[H.lead], d.lead_time_days),

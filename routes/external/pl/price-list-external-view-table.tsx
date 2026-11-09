@@ -24,6 +24,7 @@ export default function PriceListExternalViewTable({
   details,
 }: PriceListExternalViewTableProps) {
   const t = useTranslations("priceListPortal");
+  const tc = useTranslations("common");
   return (
     <div className="border-border/60 bg-card w-full overflow-x-auto rounded-lg border">
       <table className="text-foreground w-full border-collapse text-sm">
@@ -45,9 +46,10 @@ export default function PriceListExternalViewTable({
           {details.map((d) => {
             const {
               price: p,
+              priceWithoutTax,
               taxAmt,
               total,
-            } = priceListTaxParts(d.price, d.tax_rate);
+            } = priceListTaxParts(d.price, d.tax_rate, d.is_tax_included);
             return (
               <tr key={d.id} className="border-border/50 border-b">
                 <Td className="text-muted-foreground text-center tabular-nums">
@@ -67,7 +69,20 @@ export default function PriceListExternalViewTable({
                 <Td className="text-right tabular-nums">
                   {Number(d.moq_qty) || 0}
                 </Td>
-                <Td className="text-right tabular-nums">{fmtMoney(p)}</Td>
+                <Td className="text-right tabular-nums">
+                  <span
+                    title={
+                      d.is_tax_included ? fmtMoney(priceWithoutTax) : undefined
+                    }
+                  >
+                    {d.is_tax_included && (
+                      <span className="text-muted-foreground text-micro mr-1.5">
+                        {tc("incVat")}
+                      </span>
+                    )}
+                    {fmtMoney(p)}
+                  </span>
+                </Td>
                 <Td>{d.tax_profile_name || "—"}</Td>
                 <Td className="text-muted-foreground text-right tabular-nums">
                   {formatTaxRate(d.tax_rate, !!d.tax_profile_id)}

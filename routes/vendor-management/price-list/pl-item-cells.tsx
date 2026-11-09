@@ -6,6 +6,7 @@ import {
   type UseFormReturn,
 } from "react-hook-form";
 import { Crown } from "lucide-react";
+import { useTranslations } from "use-intl";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FieldInput, FieldPlainText } from "@/components/ui/field";
 import { LookupProduct } from "@/components/lookup/lookup-product";
@@ -211,17 +212,38 @@ export function PriceCell({
   detailRef,
 }: CellProps) {
   "use no memo";
+  const tc = useTranslations("common");
   const errors = useRowErrors(form, index);
 
   if (isView)
     return (
-      <span className="text-foreground text-xs font-semibold tabular-nums">
+      <span className="text-foreground inline-flex items-center justify-end gap-1.5 text-xs font-semibold tabular-nums">
+        {detailRef?.is_tax_included && (
+          <span className="text-muted-foreground text-micro font-normal">
+            {tc("incVat")}
+          </span>
+        )}
         {(Number(detailRef?.price) || 0).toFixed(2)}
       </span>
     );
 
   return (
-    <div className="text-right">
+    <div className="flex items-center justify-end gap-2">
+      <Controller
+        control={form.control}
+        name={`pricelist_detail.${index}.is_tax_included`}
+        render={({ field }) => (
+          <label className="text-muted-foreground text-micro flex shrink-0 items-center gap-1">
+            <Checkbox
+              checked={!!field.value}
+              onCheckedChange={(v) => field.onChange(v === true)}
+              disabled={isDisabled}
+              aria-label={tc("incVat")}
+            />
+            {tc("incVat")}
+          </label>
+        )}
+      />
       <FieldInput
         errorIconAlign="left"
         type="number"
@@ -246,18 +268,24 @@ function useRowPriceParts(
   isView: boolean,
   detailRef?: DetailRef,
 ) {
-  const [priceWatch, rateWatch, profileWatch] = useWatch({
+  const [priceWatch, rateWatch, profileWatch, incVatWatch] = useWatch({
     control: form.control,
     name: [
       `pricelist_detail.${index}.price`,
       `pricelist_detail.${index}.tax_rate`,
       `pricelist_detail.${index}.tax_profile_id`,
+      `pricelist_detail.${index}.is_tax_included`,
     ],
   });
-  // price = ก่อนภาษี (add VAT) — สูตรเดียวกับ portal vendor ผ่าน priceListTaxParts
+  // price = เลขที่กรอก (ก่อนภาษี หรือรวม VAT ถ้าติ๊ก Inc VAT) — สูตรเดียวกับ portal vendor ผ่าน priceListTaxParts
   const rate = isView ? detailRef?.tax_rate : rateWatch;
+  const isTaxIncluded = isView ? !!detailRef?.is_tax_included : !!incVatWatch;
   return {
-    ...priceListTaxParts(isView ? detailRef?.price : priceWatch, rate),
+    ...priceListTaxParts(
+      isView ? detailRef?.price : priceWatch,
+      rate,
+      isTaxIncluded,
+    ),
     rate,
     // view ไม่มี tax_profile_id ใน detailRef — ถือว่ามีเสมอ (rate มาจาก profile)
     hasProfile: isView ? true : !!profileWatch,
@@ -277,9 +305,17 @@ export function TaxRateCell({ form, index, isView, detailRef }: CellProps) {
 
 export function TaxAmountCell({ form, index, isView, detailRef }: CellProps) {
   "use no memo";
-  const { taxAmt } = useRowPriceParts(form, index, isView, detailRef);
+  const { taxAmt, priceWithoutTax } = useRowPriceParts(
+    form,
+    index,
+    isView,
+    detailRef,
+  );
   return (
-    <span className="text-muted-foreground text-xs tabular-nums">
+    <span
+      className="text-muted-foreground text-xs tabular-nums"
+      title={priceWithoutTax.toFixed(2)}
+    >
       {taxAmt.toFixed(2)}
     </span>
   );

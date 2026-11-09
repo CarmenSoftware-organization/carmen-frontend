@@ -25,6 +25,7 @@ export function PLItemGroupedView({
   showNote = false,
 }: PLItemGroupedViewProps) {
   const tfl = useTranslations("field");
+  const tc = useTranslations("common");
   const groups = useMemo(() => buildProductGroups(detailRefs), [detailRefs]);
 
   return (
@@ -51,12 +52,14 @@ export function PLItemGroupedView({
                 "py-1",
                 isLast && "border-border/50 border-b",
               );
-              // price = ก่อนภาษี (add VAT) · Tax = price × rate · Total = price + Tax
+              // price = เลขที่กรอก · ไม่ติ๊ก Inc VAT: Tax = price × rate, Total = price + Tax · ติ๊ก: Total = price, Tax ถอดจาก price
               // — สูตรเดียวกับตารางแก้ไขและ portal vendor (priceListTaxParts)
-              const { price, taxAmt, total } = priceListTaxParts(
-                tier.price ?? tier.price_without_tax,
-                tier.tax_rate,
-              );
+              const { price, priceWithoutTax, taxAmt, total } =
+                priceListTaxParts(
+                  tier.price ?? tier.price_without_tax,
+                  tier.tax_rate,
+                  tier.is_tax_included,
+                );
               return (
                 <tr key={tier.id ?? `${group.productId}-${ti}`}>
                   {isFirst && (
@@ -99,14 +102,27 @@ export function PLItemGroupedView({
                       </span>
                     </span>
                   </Td>
-                  {/* Price = ราคาก่อนภาษี */}
+                  {/* Price = เลขที่กรอก · ติ๊ก Inc VAT แสดงป้ายกำกับ + ราคาก่อน VAT ใน tooltip */}
                   <Td
                     className={cn(
                       "text-foreground text-right align-middle tabular-nums",
                       tierClass,
                     )}
                   >
-                    {price.toFixed(2)}
+                    <span
+                      title={
+                        tier.is_tax_included
+                          ? priceWithoutTax.toFixed(2)
+                          : undefined
+                      }
+                    >
+                      {tier.is_tax_included && (
+                        <span className="text-muted-foreground text-micro mr-1.5">
+                          {tc("incVat")}
+                        </span>
+                      )}
+                      {price.toFixed(2)}
+                    </span>
                   </Td>
                   {/* Tax rate = อ่านอย่างเดียว ตาม tax profile */}
                   <Td

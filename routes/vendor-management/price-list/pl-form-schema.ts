@@ -19,6 +19,7 @@ function createPriceListDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     tax_rate: z.coerce.number().min(0),
     tax_amt: z.coerce.number().min(0),
     lead_time_days: z.coerce.number().min(0),
+    is_tax_included: z.boolean().default(false),
     is_preferred: z.boolean(),
   });
 }
@@ -145,6 +146,7 @@ export function getDefaultValues(
           tax_profile_id: d.tax_profile?.id ?? "",
           tax_rate: d.tax_rate ?? 0,
           tax_amt: d.tax_amt,
+          is_tax_included: d.is_tax_included ?? false,
           lead_time_days: d.lead_time_days,
           is_preferred: d.is_preferred ?? false,
         })) ?? [],
@@ -166,6 +168,7 @@ export const PRICE_LIST_DETAIL_EMPTY = {
   tax_profile_id: "",
   tax_rate: 0,
   tax_amt: 0,
+  is_tax_included: false,
   lead_time_days: 0,
   is_preferred: false,
 } satisfies PriceListFormValues["pricelist_detail"][number];
@@ -174,11 +177,13 @@ export function mapDetailToPayload(
   d: PriceListFormValues["pricelist_detail"][number],
   index: number,
 ) {
-  // Input คือ price ก่อนภาษี (add VAT) — derive tax_amt ที่ submit
-  // (cell ไม่ sync field พวกนี้ระหว่างพิมพ์) · price_without_tax = price
+  // price คือเลขที่กรอก — ไม่ติ๊ก Inc VAT = ก่อนภาษี (add VAT), ติ๊ก = รวม VAT แล้ว
+  // derive tax_amt ที่ submit (cell ไม่ sync field พวกนี้ระหว่างพิมพ์) ·
+  // backend คำนวณค่าที่บันทึกเองจาก price + rate + flag แต่ยังส่งไว้เพื่อ compat
   const { price, priceWithoutTax, taxAmt } = priceListTaxParts(
     d.price,
     d.tax_rate,
+    d.is_tax_included,
   );
   return {
     ...(d.doc_version != null ? { doc_version: d.doc_version } : {}),
@@ -190,6 +195,7 @@ export function mapDetailToPayload(
     tax_profile_id: d.tax_profile_id || "",
     tax_rate: d.tax_rate,
     tax_amt: taxAmt,
+    is_tax_included: d.is_tax_included,
     lead_time_days: d.lead_time_days,
     moq_qty: d.moq_qty,
     is_preferred: d.is_preferred,

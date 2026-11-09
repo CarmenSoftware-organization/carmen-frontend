@@ -2,11 +2,7 @@ import type { Audit } from "@/types/audit";
 import type { EntityRef } from "@/types/entity-ref";
 
 export type PriceListStatus =
-  | "draft"
-  | "submitted"
-  | "active"
-  | "inactive"
-  | "voided";
+  "draft" | "submitted" | "active" | "inactive" | "voided";
 
 export interface PriceListActiveVendor {
   id: string;
@@ -29,6 +25,8 @@ export interface PriceListDetailItem {
   tax_profile: EntityRef | null;
   tax_rate: number;
   tax_amt: number;
+  /** ราคาที่กรอกรวม VAT แล้ว (Inc VAT) */
+  is_tax_included?: boolean;
   lead_time_days: number;
   is_preferred: boolean;
   is_active: boolean;
@@ -81,6 +79,7 @@ export interface CreatePriceListDto {
       tax_profile_id: string;
       tax_rate: number;
       tax_amt: number;
+      is_tax_included?: boolean;
       lead_time_days: number;
       moq_qty: number;
       is_preferred: boolean;
@@ -95,6 +94,7 @@ export interface CreatePriceListDto {
       tax_profile_id: string;
       tax_rate: number;
       tax_amt: number;
+      is_tax_included?: boolean;
       lead_time_days: number;
       moq_qty: number;
       is_preferred: boolean;
