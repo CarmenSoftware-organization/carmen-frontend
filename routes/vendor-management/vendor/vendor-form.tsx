@@ -265,7 +265,8 @@ export function VendorForm({ vendor }: VendorFormProps) {
           }
         >
           {/* Vendor Detail Report ของผู้ขายรายนี้ — ไม่อยู่ในหน้ารายการรายงาน
-              PrintSingle: ใบเดียว micro-report ไม่พิมพ์บล็อกตัวกรองบนหัวรายงาน */}
+              PrintSingle: ใบเดียว micro-report ไม่พิมพ์บล็อกตัวกรองบนหัวรายงาน
+              RecordType/RecordId: QR มุมขวาบนที่สแกนแล้วกลับมาหน้าผู้ขายรายนี้ (/qr/vendor/<id>) */}
           {f.mode === "view" && vendor?.code && (
             <PrintDocumentButton
               documentType="VENDOR"
@@ -275,6 +276,8 @@ export function VendorForm({ vendor }: VendorFormProps) {
                 VendorTo: vendor.code,
                 Status: "ALL",
                 PrintSingle: true,
+                RecordType: "vendor",
+                RecordId: vendor.id,
               }}
             />
           )}

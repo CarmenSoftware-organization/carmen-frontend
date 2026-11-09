@@ -70,6 +70,9 @@ describe("RecipeCookView — ปุ่ม Print", () => {
         RecipeTo: "RCP-001",
         Status: "ALL",
         PrintSingle: true,
+        // QR บนกระดาษพากลับมาหน้าสูตรนี้
+        RecordType: "recipe",
+        RecordId: "rec-1",
       },
     });
   });

@@ -116,7 +116,8 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {/* สูตรนี้สูตรเดียว ด้วย template ที่ BU เลือกใน Default Setting → แบบฟอร์มการพิมพ์ → Recipe
-              PrintSingle: ใบเดียว micro-report ไม่พิมพ์บล็อกตัวกรองบนหัวรายงาน (หน้ารายการรายงานยังพิมพ์) */}
+              PrintSingle: ใบเดียว micro-report ไม่พิมพ์บล็อกตัวกรองบนหัวรายงาน (หน้ารายการรายงานยังพิมพ์)
+              RecordType/RecordId: QR มุมขวาบนที่สแกนแล้วกลับมาหน้าสูตรนี้ (/qr/recipe/<id>) */}
           {recipe.code && (
             <PrintDocumentButton
               documentType="RECIPE"
@@ -128,6 +129,8 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                 RecipeTo: recipe.code,
                 Status: "ALL",
                 PrintSingle: true,
+                RecordType: "recipe",
+                RecordId: recipe.id,
               }}
             />
           )}

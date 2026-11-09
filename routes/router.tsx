@@ -87,6 +87,14 @@ export const router = createBrowserRouter([
             lazy: () => import("./notifications/notifications.route"),
             ErrorBoundary: RouteErrorBoundaryAdapter,
           },
+          // ปลายทางของ QR บนเอกสารที่พิมพ์ใบเดียว (micro-report) — route ชื่อคงที่ที่พาไปหน้าจริงของเอกสาร
+          // กระดาษที่พิมพ์ไปแล้วจึงยังสแกนได้แม้วันหลังย้าย route ของหน้าเอกสาร · ไม่อยู่ใน module-list
+          // (ไม่ขึ้นเมนู ไม่ผูก permission เอง — หน้าเอกสารปลายทางเช็คเอง)
+          {
+            path: "qr/:type/:id",
+            lazy: () => import("./qr/qr-redirect.route"),
+            ErrorBoundary: RouteErrorBoundaryAdapter,
+          },
           // หน้าอ้างอิง design system — เครื่องมือของทีมพัฒนา ไม่ใช่โมดูลใช้งาน
           // จึงไม่อยู่ใน constant/module-list.ts (ไม่ขึ้นเมนู ไม่ผูก permission
           // และไม่ผูก license feature) แต่ยังอยู่หลัง auth เพราะไม่มีเหตุให้เปิด public
