@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { IntlProvider } from "use-intl";
 import en from "@/messages/en.json";
@@ -109,8 +109,17 @@ const sw = en.dashboard.savedWidget;
 const next = en.common.next;
 const back = en.common.back;
 
+/** หัวหมวด (ปุ่มพับ/กาง) — ชื่อเข้าถึงได้เป็น "<หมวด> · <จำนวน>" */
+const moduleHeader = (label: string) =>
+  screen.getByRole("button", { name: new RegExp(`^${label} ·`) });
+
+/**
+ * pop up เปิดมาพับทุกหมวด — เทสต์ที่สนใจการ์ด/หน้าปรับแต่งกางทุกหมวดก่อน (`expandAll`)
+ * เทสต์ของการพับ/กางเองส่ง `expandAll: false`
+ */
 function renderDialog(
   props: Partial<React.ComponentProps<typeof AddWidgetDialog>> = {},
+  { expandAll = true }: { expandAll?: boolean } = {},
 ) {
   const onAdd = vi.fn();
   const ui = (p: Partial<React.ComponentProps<typeof AddWidgetDialog>>) => (
@@ -119,6 +128,10 @@ function renderDialog(
     </IntlProvider>
   );
   const { rerender } = render(ui(props));
+  if (expandAll) {
+    for (const header of screen.queryAllByRole("button", { expanded: false }))
+      fireEvent.click(header);
+  }
   return {
     onAdd,
     rerender: (p: Partial<React.ComponentProps<typeof AddWidgetDialog>>) =>
@@ -152,12 +165,112 @@ describe("AddWidgetDialog", () => {
     const documents = screen.getByRole("region", { name: sw.module.document });
     expect(
       within(documents)
-        .getAllByRole("button")
+        .getAllByRole("button", { pressed: false })
         .map((b) => b.textContent),
     ).toEqual([
       expect.stringContaining("Fixture pipeline"),
       expect.stringContaining("Fixture PO trend"),
     ]);
+  });
+
+  // 12 หมวดเต็มไปด้วยการ์ดมันลายตา — เปิดมาเห็นแค่หัวหมวดกับจำนวน
+  it("starts with every module folded, showing only its name and count", () => {
+    renderDialog({ extraItems: [PRESET] }, { expandAll: false });
+
+    expect(
+      screen
+        .getAllByRole("button", { expanded: false })
+        .map((b) => b.textContent),
+    ).toEqual([
+      `${sw.module.document} · 2`,
+      `${sw.module.vendor} · 1`,
+      `${sw.module.lab} · 1`,
+    ]);
+    expect(
+      screen.queryByRole("button", { name: /Fixture vendors/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: next })).toBeDisabled();
+  });
+
+  it("opens and folds a module from its header", async () => {
+    const user = userEvent.setup();
+    renderDialog({}, { expandAll: false });
+
+    await user.click(moduleHeader(sw.module.vendor));
+    expect(moduleHeader(sw.module.vendor)).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    expect(
+      screen.getByRole("button", { name: /Fixture vendors/ }),
+    ).toBeVisible();
+    // หมวดอื่นยังพับอยู่
+    expect(
+      screen.queryByRole("button", { name: /Fixture PO trend/ }),
+    ).not.toBeInTheDocument();
+
+    await user.click(moduleHeader(sw.module.vendor));
+    expect(moduleHeader(sw.module.vendor)).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    expect(
+      screen.queryByRole("button", { name: /Fixture vendors/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("opens every module a search finds, and clearing it restores the folds from before", async () => {
+    const user = userEvent.setup();
+    renderDialog({}, { expandAll: false });
+    const search = screen.getByRole("textbox", { name: sw.searchWidgets });
+
+    await user.click(moduleHeader(sw.module.lab));
+    await user.type(search, "issued");
+    expect(sectionNames()).toEqual([sw.module.document]);
+    expect(
+      screen.getByRole("button", { name: /Fixture PO trend/ }),
+    ).toBeVisible();
+
+    // พับระหว่างค้นได้ — มีผลกับการค้นนี้เท่านั้น
+    await user.click(moduleHeader(sw.module.document));
+    expect(
+      screen.queryByRole("button", { name: /Fixture PO trend/ }),
+    ).not.toBeInTheDocument();
+
+    await user.clear(search);
+    expect(moduleHeader(sw.module.lab)).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    expect(moduleHeader(sw.module.document)).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    expect(moduleHeader(sw.module.vendor)).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+
+    // คำค้นใหม่เริ่มกางใหม่ ไม่จำการพับของคำค้นก่อน
+    await user.type(search, "issued");
+    expect(
+      screen.getByRole("button", { name: /Fixture PO trend/ }),
+    ).toBeVisible();
+  });
+
+  it("keeps the pick when its module is folded", async () => {
+    const user = userEvent.setup();
+    renderDialog({}, { expandAll: false });
+
+    await user.click(moduleHeader(sw.module.vendor));
+    await user.click(screen.getByRole("button", { name: /Fixture vendors/ }));
+    await user.click(moduleHeader(sw.module.vendor));
+
+    expect(screen.getByRole("button", { name: next })).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: next }));
+    expect(screen.getByTestId("preview")).toHaveTextContent(
+      "vendor.fixture-active",
+    );
   });
 
   it("hides excluded datasets and modules left empty by the search", async () => {
