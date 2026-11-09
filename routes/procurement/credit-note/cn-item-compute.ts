@@ -68,6 +68,7 @@ export function computeCnItemAmounts(
     taxRate: Number(item.tax_rate) || 0,
     isTaxAdj: !!item.is_tax_adjustment,
     taxAmt: Number(item.tax_amount) || 0,
+    isTaxIncluded: false,
   });
   return {
     sub_total: line.subtotal,

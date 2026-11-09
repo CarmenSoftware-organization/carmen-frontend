@@ -27,6 +27,7 @@ import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column
 import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { FieldInput, FieldSelect } from "@/components/ui/field";
 import { SelectContent, SelectItem } from "@/components/ui/select";
@@ -134,14 +135,42 @@ function useRowTaxParts(
   form: UseFormReturn<PricelistExternalDto>,
   index: number,
 ) {
-  const [price, rate] = useWatch({
+  const [price, rate, isTaxIncluded] = useWatch({
     control: form.control,
     name: [
       `tb_pricelist_detail.${index}.price`,
       `tb_pricelist_detail.${index}.tax_rate`,
+      `tb_pricelist_detail.${index}.is_tax_included`,
     ],
   });
-  return priceListTaxParts(price, rate);
+  return priceListTaxParts(price, rate, !!isTaxIncluded);
+}
+
+function IncVatCheckbox({
+  form,
+  index,
+}: {
+  form: UseFormReturn<PricelistExternalDto>;
+  index: number;
+}) {
+  "use no memo";
+  const tc = useTranslations("common");
+  return (
+    <Controller
+      control={form.control}
+      name={`tb_pricelist_detail.${index}.is_tax_included`}
+      render={({ field }) => (
+        <label className="text-muted-foreground text-micro flex shrink-0 items-center gap-1">
+          <Checkbox
+            checked={!!field.value}
+            onCheckedChange={(v) => field.onChange(v === true)}
+            aria-label={tc("incVat")}
+          />
+          {tc("incVat")}
+        </label>
+      )}
+    />
+  );
 }
 
 function RowTaxAmount({
@@ -358,16 +387,19 @@ export default function PriceListExternalProductTable({
         cell: ({ row }) => {
           const fieldIndex = fields.findIndex((f) => f.id === row.original.id);
           return (
-            <FieldInput
-              type="number"
-              inputMode="decimal"
-              min={0}
-              placeholder="0.00"
-              className="border-border/60 h-9 w-full rounded-md text-right text-sm tabular-nums"
-              {...form.register(`tb_pricelist_detail.${fieldIndex}.price`, {
-                valueAsNumber: true,
-              })}
-            />
+            <div className="flex items-center justify-end gap-2">
+              <IncVatCheckbox form={form} index={fieldIndex} />
+              <FieldInput
+                type="number"
+                inputMode="decimal"
+                min={0}
+                placeholder="0.00"
+                className="border-border/60 h-9 w-full rounded-md text-right text-sm tabular-nums"
+                {...form.register(`tb_pricelist_detail.${fieldIndex}.price`, {
+                  valueAsNumber: true,
+                })}
+              />
+            </div>
           );
         },
         size: 148,

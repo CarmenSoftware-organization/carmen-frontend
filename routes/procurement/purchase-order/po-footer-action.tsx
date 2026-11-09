@@ -104,7 +104,11 @@ export function PoFooterAction({
           totalPrice: Number(item?.total_price) || 0,
         }
       : computeItemPricing(item);
-    subtotal += line.subtotal;
+    // Inc VAT: price × qty รวม VAT อยู่ จึงไม่ foot กับ Net — ใช้ net + discount แทน
+    // เพื่อให้ Subtotal − Discount = Net และ Net + Tax = Total
+    subtotal += item?.is_tax_included
+      ? line.netAmount + line.discountAmount
+      : line.subtotal;
     totalDiscount += line.discountAmount;
     totalNet += line.netAmount;
     totalTax += line.taxAmount;

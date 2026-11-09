@@ -20,6 +20,9 @@ export interface PrSummary {
  * /total อ่านยอดที่แถวคำนวณไว้แล้ว — คิดสูตรเองซ้ำที่นี่เมื่อไหร่ Subtotal −
  * Discount ก็ไม่เท่ากับ Net ทันทีที่ผู้อนุมัติหั่นจำนวนลง
  *
+ * แถว Inc VAT (`is_tax_included`) ใช้ net + discount เป็น subtotal ของแถวนั้น (ไม่ใช่ราคา × จำนวน
+ * ซึ่งรวม VAT อยู่) แถบสรุปจึง foot เสมอ · แถวที่ไม่ติ๊กคิดเหมือนเดิม
+ *
  * @param items - items จากฟอร์ม PR
  * @param useStored - ซ่อนเฉพาะราคาต่อหน่วย: pricelist_price เป็น 0 ปลอม จึงคิด subtotal จาก
  *   net + discount ที่ backend ส่งมาแทนราคา × จำนวน
@@ -44,9 +47,12 @@ export function computePrSummary(
       approved_qty: item.approved_qty ?? 0,
       requested_qty: item.requested_qty ?? 0,
     });
-    subtotal += useStored
-      ? storedSubtotal(item.net_amount, item.discount_amount) * rate
-      : Number(item.pricelist_price ?? 0) * qty * rate;
+    // Inc VAT: ราคาที่กรอกรวม VAT แล้ว price × qty จึงไม่ใช่ Subtotal ที่ foot กับ Net —
+    // ใช้ net + discount แทน เพื่อให้ Subtotal − Discount = Net และ Net + Tax = Total
+    subtotal +=
+      useStored || item.is_tax_included
+        ? storedSubtotal(item.net_amount, item.discount_amount) * rate
+        : Number(item.pricelist_price ?? 0) * qty * rate;
     totalDiscount += Number(item.discount_amount ?? 0) * rate;
     totalNet += Number(item.net_amount ?? 0) * rate;
     totalTax += Number(item.tax_amount ?? 0) * rate;

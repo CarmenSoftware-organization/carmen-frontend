@@ -32,7 +32,16 @@ function useItemLine(form: UseFormReturn<PoFormValues>, itemIndex: number) {
   const price = Number(
     useWatch({ control, name: `items.${itemIndex}.price` }) ?? 0,
   );
-  const [qty, discRate, discAmt, isDiscAdj, taxRate, taxAmt, isTaxAdj] =
+  const [
+    qty,
+    discRate,
+    discAmt,
+    isDiscAdj,
+    taxRate,
+    taxAmt,
+    isTaxAdj,
+    isTaxIncluded,
+  ] =
     useWatch({
       control,
       name: [
@@ -43,6 +52,7 @@ function useItemLine(form: UseFormReturn<PoFormValues>, itemIndex: number) {
         `${base}.tax_rate`,
         `${base}.tax_amount`,
         `${base}.is_tax_adjustment`,
+        `${base}.is_tax_included`,
       ] as const,
     });
   return computeLineAmounts({
@@ -54,6 +64,7 @@ function useItemLine(form: UseFormReturn<PoFormValues>, itemIndex: number) {
     taxRate: Number(taxRate) || 0,
     isTaxAdj: !!isTaxAdj,
     taxAmt: Number(taxAmt) || 0,
+    isTaxIncluded: !!isTaxIncluded,
   });
 }
 

@@ -44,6 +44,7 @@ import {
 import { InvoiceHeader } from "./ap-invoice-header";
 import { InvoiceLines } from "./ap-invoice-lines";
 import { ApPostingBanner } from "../shared/ap-posting-banner";
+import { addDecimal } from "../shared/ap-decimal";
 
 const LIST_PATH = "/accounting/accounts-payable/invoice";
 const NO_ERRORS: ReadonlySet<InvoiceErrorKey> = new Set();
@@ -236,11 +237,27 @@ function ApInvoiceEditor({
     }
   };
 
-  const totals = useMemo(() => invoiceTotals(form.lines), [form.lines]);
+  const deposit = form.doc_type === "deposit";
+  // deposit ไม่มี Inc VAT — ล้าง flag ที่อาจค้างจากก่อนเปลี่ยนประเภทเอกสาร
+  const lines = useMemo(
+    () =>
+      deposit
+        ? form.lines.map((l) => ({ ...l, vat_is_included: false }))
+        : form.lines,
+    [deposit, form.lines],
+  );
+  const totals = useMemo(() => invoiceTotals(lines), [lines]);
   const view = !editable && loaded;
   const summary = view
     ? {
-        subtotal: loaded.sub_total_amount,
+        // แถวที่ติ๊ก Inc VAT: BE sub_total = qty × price (รวม VAT) → ใช้ net + ส่วนลด ให้แถบ foot เหมือนโหมดแก้ไข
+        subtotal: addDecimal(
+          (loaded.lines ?? []).map((l) =>
+            l.vat_is_included
+              ? addDecimal([l.net_amount, l.discount_amount])
+              : l.sub_total_amount,
+          ),
+        ),
         discount: loaded.discount_amount,
         vat: loaded.vat_amount,
         wht: loaded.wht_estimate_amount,
@@ -463,7 +480,8 @@ function ApInvoiceEditor({
               ),
           )}
           <InvoiceLines
-            lines={form.lines}
+            lines={lines}
+            deposit={deposit}
             editable={editable}
             showErrors={showErrors}
             onChange={patchLine}

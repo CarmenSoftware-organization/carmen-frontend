@@ -30,7 +30,7 @@ import SearchInput from "@/components/search-input";
 import { ListFilter } from "@/components/list-filter/list-filter";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/date-utils";
-import { round2 } from "@/lib/currency-utils";
+import { computeLineAmounts } from "@/lib/line-pricing";
 import { useCurrency } from "@/hooks/use-currency";
 import { useEntitiesByIds } from "@/hooks/use-entities-by-ids";
 import type { Currency } from "@/types/currency";
@@ -96,8 +96,19 @@ function filterRows(rows: PlRow[], q: string): PlRow[] {
 function detailToItem(row: PlRow): FromPriceListSelectedItem {
   const { detail } = row;
   const qty = detail.moq_qty || 1;
-  const subTotal = round2(qty * detail.price);
-  const taxAmt = round2((subTotal * (detail.tax_rate ?? 0)) / 100);
+  // ราคากับ flag มาจากบรรทัดเดียวกันเสมอ — ติ๊ก Inc VAT แล้วถอด VAT ออกจากราคา
+  const isTaxIncluded = detail.is_tax_included ?? false;
+  const line = computeLineAmounts({
+    price: detail.price,
+    qty,
+    discRate: 0,
+    isDiscAdj: false,
+    discAmt: 0,
+    taxRate: detail.tax_rate ?? 0,
+    isTaxAdj: false,
+    taxAmt: 0,
+    isTaxIncluded,
+  });
   return {
     ...WIZARD_ITEM_TEMPLATE,
     pricelist_detail_id: detail.id,
@@ -115,13 +126,14 @@ function detailToItem(row: PlRow): FromPriceListSelectedItem {
     base_unit_name: detail.unit?.name ?? "",
     base_qty: qty,
     price: detail.price,
-    sub_total_price: subTotal,
-    net_amount: subTotal,
-    total_price: subTotal + taxAmt,
+    is_tax_included: isTaxIncluded,
+    sub_total_price: line.subtotal,
+    net_amount: line.netAmount,
+    total_price: line.totalPrice,
     tax_profile_id: detail.tax_profile?.id ?? null,
     tax_profile_name: detail.tax_profile?.name ?? "",
     tax_rate: detail.tax_rate ?? 0,
-    tax_amount: taxAmt,
+    tax_amount: line.taxAmount,
   };
 }
 
@@ -226,8 +238,21 @@ export function StepSelectItems({ form }: StepSelectItemsProps) {
 
   const hasUnusableRow = rows.some((r) => !r.canUse);
 
+  // "Total" = รวม VAT ทุกแถว (แถวที่ติ๊ก Inc VAT = ราคา × จำนวน · ไม่ติ๊ก = บวก VAT)
   const totalAmount = items.reduce(
-    (sum, item) => sum + round2((Number(item.order_qty) || 0) * item.price),
+    (sum, item) =>
+      sum +
+      computeLineAmounts({
+        price: item.price,
+        qty: Number(item.order_qty) || 0,
+        discRate: 0,
+        isDiscAdj: false,
+        discAmt: 0,
+        taxRate: item.tax_rate ?? 0,
+        isTaxAdj: false,
+        taxAmt: 0,
+        isTaxIncluded: item.is_tax_included ?? false,
+      }).totalPrice,
     0,
   );
 
@@ -382,6 +407,11 @@ export function StepSelectItems({ form }: StepSelectItemsProps) {
             <span className="text-muted-foreground text-micro">
               {row.original.currency?.code}
             </span>
+            {row.original.detail.is_tax_included && (
+              <span className="text-muted-foreground text-micro-legal ml-1">
+                {tc("incVat")}
+              </span>
+            )}
           </span>
         ),
       },
@@ -461,6 +491,7 @@ export function StepSelectItems({ form }: StepSelectItemsProps) {
     patchItem,
     workflowId,
     t,
+    tc,
     tfl,
   ]);
 

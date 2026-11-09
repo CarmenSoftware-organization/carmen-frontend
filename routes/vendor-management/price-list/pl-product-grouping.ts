@@ -18,6 +18,7 @@ export interface GroupableDetail {
   readonly price_without_tax: number | string;
   readonly tax_rate: number | string;
   readonly lead_time_days?: number | string | null;
+  readonly is_tax_included?: boolean;
   readonly is_preferred?: boolean;
   readonly note?: string | null;
 }
@@ -43,6 +44,7 @@ export function toGroupableDetail(
     price: d.price,
     price_without_tax: d.price_without_tax,
     tax_rate: d.tax_rate,
+    is_tax_included: d.is_tax_included,
     lead_time_days: d.lead_time_days,
     is_preferred: d.is_preferred,
     note: d.note,

@@ -43,6 +43,8 @@ interface PurchaseOrderDetail extends ItemMoneyFields {
   discount_rate: number;
   discount_amount: number;
   is_tax_adjustment?: boolean;
+  /** ราคา (price) รวม VAT แล้ว (ติ๊ก Inc VAT) */
+  is_tax_included?: boolean;
   is_discount_adjustment?: boolean;
   sequence_no?: number;
   /**
@@ -139,6 +141,7 @@ export interface PoDetailPayload {
   tax_rate: number;
   tax_amount: number;
   is_tax_adjustment: boolean;
+  is_tax_included?: boolean;
   discount_rate: number;
   discount_amount: number;
   is_discount_adjustment: boolean;
@@ -273,6 +276,8 @@ export interface PoGrnDetail {
   received_qty: number;
   cancelled_qty: number;
   price: number;
+  /** ติ๊ก Inc VAT ที่ PO — price รวม VAT แล้ว (คัดลอกคู่กับราคาเข้า GRN) */
+  is_tax_included?: boolean;
   net_amount: number;
   is_foc: boolean;
   locations: PoGrnDetailLocation[];

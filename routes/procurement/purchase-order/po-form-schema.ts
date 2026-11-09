@@ -50,6 +50,8 @@ export function createPoDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     tax_rate: z.coerce.number().optional(),
     tax_amount: z.coerce.number().optional(),
     is_tax_adjustment: z.boolean().optional(),
+    /** ราคา (price) รวม VAT แล้ว — คู่กับราคาเสมอ */
+    is_tax_included: z.boolean().optional(),
     discount_rate: z.coerce.number().optional(),
     discount_amount: z.coerce.number().optional(),
     is_discount_adjustment: z.boolean().optional(),
@@ -172,6 +174,7 @@ export const PO_ITEM: PoFormValues["items"][number] = {
   foc_unit_id: null as string | null,
   foc_unit_name: "",
   is_tax_adjustment: false,
+  is_tax_included: false,
   is_discount_adjustment: false,
 };
 
@@ -293,6 +296,7 @@ export function getDefaultValues(
           // เพิ่มฟิลด์นี้ยังไม่มีมันบน wire ปล่อย undefined เข้าฟอร์มแล้วจะโชว์ NaN
           foc_received_qty: d.foc_received_qty ?? 0,
           is_tax_adjustment: d.is_tax_adjustment ?? false,
+          is_tax_included: d.is_tax_included ?? false,
           is_discount_adjustment: d.is_discount_adjustment ?? false,
         })) ?? [],
     };
@@ -325,6 +329,7 @@ export function mapItemToPayload(
       taxRate: item.tax_rate ?? 0,
       isTaxAdj: item.is_tax_adjustment ?? false,
       taxAmt: item.tax_amount ?? 0,
+      isTaxIncluded: item.is_tax_included ?? false,
     });
 
   return {
@@ -351,6 +356,8 @@ export function mapItemToPayload(
     tax_rate: item.tax_rate ?? 0,
     tax_amount: taxAmount,
     is_tax_adjustment: item.is_tax_adjustment ?? false,
+    // ส่งทุกแถวเสมอ — verify-save ฝั่ง BE อ่านค่านี้จาก payload อย่างเดียว
+    is_tax_included: item.is_tax_included ?? false,
     is_foc: item.is_foc ?? false,
     foc_qty: item.foc_qty ?? 0,
     // ไม่ได้เลือกหน่วยแถมไว้ = ใช้หน่วยสั่งซื้อของแถว ปลายทางจะได้ไม่ได้จำนวนลอย ๆ

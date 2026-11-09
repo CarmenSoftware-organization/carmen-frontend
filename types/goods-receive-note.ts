@@ -46,6 +46,8 @@ interface GrnDetailItem extends TaxFields, DiscountFields, ItemMoneyFields {
   foc_unit: EntityRef | null;
   foc_unit_conversion_factor: number;
   foc_base_qty: number;
+  /** ติ๊ก Inc VAT — received_price รวม VAT แล้ว */
+  is_tax_included?: boolean;
   base_tax_amount: number;
   base_discount_amount: number;
   base_price: number;
@@ -223,6 +225,7 @@ export interface GrnDetailPayload {
   tax_rate: number;
   tax_amount: number;
   is_tax_adjustment: boolean;
+  is_tax_included: boolean;
   discount_rate: number;
   discount_amount: number;
   is_discount_adjustment: boolean;

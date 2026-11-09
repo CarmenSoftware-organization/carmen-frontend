@@ -22,6 +22,7 @@ import { useWorkflowById } from "@/hooks/use-workflow";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { round2 } from "@/lib/currency-utils";
+import { computeLineAmounts } from "@/lib/line-pricing";
 import type {
   FromPriceListFormValues,
   FromPriceListSelectedItem,
@@ -107,11 +108,22 @@ export function StepSummary({ form, onEditStep }: StepSummaryProps) {
     let tax = 0;
     let grand = 0;
     for (const item of items) {
-      const itemSubTotal = round2((Number(item.order_qty) || 0) * item.price);
-      const itemTax = round2((itemSubTotal * (item.tax_rate ?? 0)) / 100);
-      subTotal += itemSubTotal;
-      tax += itemTax;
-      grand += itemSubTotal + itemTax;
+      // Inc VAT: ราคา × จำนวน รวม VAT แล้ว — Subtotal ใช้ net (ไม่มีส่วนลดใน wizard)
+      // เพื่อให้ Subtotal + Tax = Total
+      const line = computeLineAmounts({
+        price: item.price,
+        qty: Number(item.order_qty) || 0,
+        discRate: 0,
+        isDiscAdj: false,
+        discAmt: 0,
+        taxRate: item.tax_rate ?? 0,
+        isTaxAdj: false,
+        taxAmt: 0,
+        isTaxIncluded: item.is_tax_included ?? false,
+      });
+      subTotal += line.netAmount;
+      tax += line.taxAmount;
+      grand += line.totalPrice;
     }
     return {
       subTotal: round2(subTotal),
@@ -279,7 +291,17 @@ export function StepSummary({ form, onEditStep }: StepSummaryProps) {
                 <tbody className="divide-border/40 divide-y">
                   {items.map((item, index) => {
                     const qty = Number(item.order_qty) || 0;
-                    const lineTotal = round2(qty * item.price);
+                    const lineTotal = computeLineAmounts({
+                      price: item.price,
+                      qty,
+                      discRate: 0,
+                      isDiscAdj: false,
+                      discAmt: 0,
+                      taxRate: item.tax_rate ?? 0,
+                      isTaxAdj: false,
+                      taxAmt: 0,
+                      isTaxIncluded: item.is_tax_included ?? false,
+                    }).totalPrice;
                     const locationId = item.location_id ?? "";
                     const locationName = locationId
                       ? (locationMap.get(locationId) ??
@@ -323,6 +345,11 @@ export function StepSummary({ form, onEditStep }: StepSummaryProps) {
                           <span className="text-muted-foreground text-micro">
                             {values.currency_code || "—"}
                           </span>
+                          {item.is_tax_included && (
+                            <span className="text-muted-foreground text-micro-legal ml-1">
+                              {tc("incVat")}
+                            </span>
+                          )}
                         </td>
                         <td className="px-3 py-1.5 text-right font-semibold tabular-nums">
                           {lineTotal.toLocaleString()}

@@ -10,6 +10,7 @@ import { LookupProduct } from "@/components/lookup/lookup-product";
 import { LookupTaxProfile } from "@/components/lookup/lookup-tax-profile";
 import { LookupUnit } from "@/components/lookup/lookup-unit";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { ApDetailGrid } from "../shared/ap-detail-grid";
@@ -188,12 +189,14 @@ function RowActions({
 export function InvoiceLines({
   lines,
   editable,
+  deposit,
   showErrors,
   onChange,
   onMove,
   onRemove,
 }: {
   readonly lines: InvoiceFormLine[];
+  readonly deposit: boolean;
   readonly editable: boolean;
   readonly showErrors: boolean;
   readonly onChange: (key: string, patch: Patch) => void;
@@ -201,6 +204,7 @@ export function InvoiceLines({
   readonly onRemove: (key: string) => void;
 }) {
   const t = useTranslations("accounting.accountsPayable.invoice.detail.lines");
+  const tc = useTranslations("common");
   const hasGrn = lines.some((line) => line.grn_no);
   const required = t("required");
 
@@ -305,14 +309,40 @@ export function InvoiceLines({
         id: "unit_price",
         header: () => <Label k="unitPrice" />,
         cell: ({ row }) => (
-          <DecimalCell
-            value={row.original.unit_price}
-            editable={editable}
-            label={`unit price ${row.index + 1}`}
-            onChange={(unit_price) =>
-              onChange(row.original.key, { unit_price })
-            }
-          />
+          <div className="flex flex-col gap-1">
+            <DecimalCell
+              value={row.original.unit_price}
+              editable={editable}
+              label={`unit price ${row.index + 1}`}
+              onChange={(unit_price) =>
+                onChange(row.original.key, { unit_price })
+              }
+            />
+            {/* Inc VAT — แก้ได้เท่ากับช่องราคา · deposit ไม่มี flag (BE ปฏิเสธ) */}
+            {!deposit &&
+              (editable ? (
+                <label className="flex cursor-pointer items-center justify-end gap-1">
+                  <Checkbox
+                    checked={row.original.vat_is_included}
+                    onCheckedChange={(checked) =>
+                      onChange(row.original.key, {
+                        vat_is_included: checked === true,
+                      })
+                    }
+                    className="size-3.5"
+                  />
+                  <span className="text-muted-foreground text-micro-legal font-normal select-none">
+                    {tc("incVat")}
+                  </span>
+                </label>
+              ) : (
+                row.original.vat_is_included && (
+                  <span className="text-muted-foreground text-micro-legal block text-right font-normal">
+                    {tc("incVat")}
+                  </span>
+                )
+              ))}
+          </div>
         ),
       },
       {
@@ -434,7 +464,7 @@ export function InvoiceLines({
         ),
       });
     return cols;
-  }, [editable, hasGrn, showErrors, required, onChange, onMove, onRemove]);
+  }, [editable, deposit, hasGrn, showErrors, required, tc, onChange, onMove, onRemove]);
 
   return <ApDetailGrid rows={lines} columns={columns} empty={t("empty")} />;
 }

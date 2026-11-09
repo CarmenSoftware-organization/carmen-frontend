@@ -28,6 +28,8 @@ export type MoqTierDto = {
   minimum_quantity: number;
   price: number;
   lead_time_days?: number;
+  /** flag ที่เก็บไว้ของ tier เดิม (มาจาก server) — tier ใหม่ไม่มี = สืบทอดจากแถวแม่ตอนบันทึก */
+  is_tax_included?: boolean;
 };
 
 export type PricelistExternalDetailDto = {
@@ -45,6 +47,8 @@ export type PricelistExternalDetailDto = {
   tax_profile_id: string;
   tax_profile_name: string | null;
   tax_rate: number;
+  /** ราคาที่กรอกรวม VAT แล้ว (Inc VAT) */
+  is_tax_included?: boolean;
   lead_time_days: number;
   is_active: boolean;
   is_preferred: boolean;

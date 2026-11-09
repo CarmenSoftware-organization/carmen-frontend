@@ -7,8 +7,17 @@ export function useGrnItemLine(
   index: number,
 ) {
   "use no memo";
-  const [price, qty, discRate, discAmt, isDiscAdj, taxRate, taxAmt, isTaxAdj] =
-    useWatch({
+  const [
+    price,
+    qty,
+    discRate,
+    discAmt,
+    isDiscAdj,
+    taxRate,
+    taxAmt,
+    isTaxAdj,
+    isTaxIncluded,
+  ] = useWatch({
       control: form.control,
       name: [
         `items.${index}.unit_price`,
@@ -19,6 +28,7 @@ export function useGrnItemLine(
         `items.${index}.tax_rate`,
         `items.${index}.tax_amount`,
         `items.${index}.is_tax_adjustment`,
+        `items.${index}.is_tax_included`,
       ] as const,
     });
   return computeLineAmounts({
@@ -30,5 +40,6 @@ export function useGrnItemLine(
     taxRate: Number(taxRate) || 0,
     isTaxAdj: !!isTaxAdj,
     taxAmt: Number(taxAmt) || 0,
+    isTaxIncluded: !!isTaxIncluded,
   });
 }

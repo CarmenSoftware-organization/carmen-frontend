@@ -90,6 +90,7 @@ function createDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     tax_rate: z.coerce.number().optional(),
     tax_amount: z.coerce.number().optional(),
     is_tax_adjustment: z.boolean().optional(),
+    is_tax_included: z.boolean().optional(),
     discount_rate: z.coerce.number().optional(),
     discount_amount: z.coerce.number().optional(),
     is_discount_adjustment: z.boolean().optional(),
@@ -254,6 +255,7 @@ export const PR_ITEM = {
   tax_rate: 0,
   tax_amount: 0,
   is_tax_adjustment: false,
+  is_tax_included: false,
   discount_rate: 0,
   discount_amount: 0,
   is_discount_adjustment: false,
@@ -344,6 +346,7 @@ export function getDefaultValues(
           tax_rate: d.tax_rate ?? 0,
           tax_amount: d.tax_amount ?? 0,
           is_tax_adjustment: d.is_tax_adjustment ?? false,
+          is_tax_included: d.is_tax_included ?? false,
           discount_rate: d.discount_rate ?? 0,
           discount_amount: d.discount_amount ?? 0,
           is_discount_adjustment: d.is_discount_adjustment ?? false,
@@ -441,6 +444,8 @@ function freshItem(d: FreshItemSource): PrFormValues["items"][number] {
     tax_rate: d.tax_rate ?? 0,
     tax_amount: d.tax_amount ?? 0,
     is_tax_adjustment: d.is_tax_adjustment ?? false,
+    // ราคาถูกรีเป็น 0 (ไม่มีแหล่งราคา) จึงรีธงคู่กัน
+    is_tax_included: false,
     discount_rate: d.discount_rate ?? 0,
     discount_amount: d.discount_amount ?? 0,
     is_discount_adjustment: d.is_discount_adjustment ?? false,
@@ -520,6 +525,8 @@ export interface PrItemAmountInput {
   readonly taxRate: number;
   readonly isTaxAdj: boolean;
   readonly taxAmt: number;
+  /** ราคาที่กรอกรวม VAT แล้ว (ติ๊ก Inc VAT) — สกัด VAT ออกแทนการบวกเพิ่ม */
+  readonly isTaxIncluded?: boolean;
 }
 
 /**
@@ -599,6 +606,8 @@ export function prepareApproveDetails(
         // item ที่ถูก reject มักยังไม่มี tax/location/pricelist → ต้องไม่ส่ง null
         pricelist_detail_id: item.pricelist_detail_id || undefined,
         pricelist_price: Number(item.pricelist_price),
+        // คู่กับ pricelist_price เสมอ — backend ตรวจยอดด้วยธงจาก payload
+        is_tax_included: item.is_tax_included ?? false,
         pricelist_no: item.pricelist_no,
         pricelist_type: item.pricelist_type || null,
         currency_id: item.currency_id || undefined,
@@ -650,15 +659,23 @@ export function preparePurchaseDetails(
       const taxRate = Number(item.tax_rate ?? 0);
       const taxAmt = Number(item.tax_amount ?? 0);
       const isTaxAdj = item.is_tax_adjustment ?? false;
+      const isTaxIncluded = item.is_tax_included ?? false;
       const exchangeRate = Number(item.exchange_rate ?? 1);
 
       const subTotal = round2(price * approvedQty);
       const discount = isDiscAdj
         ? discAmt
         : round2((subTotal * discRate) / 100);
-      const net = round2(subTotal - discount);
-      const tax = isTaxAdj ? taxAmt : round2((net * taxRate) / 100);
-      const total = round2(net + tax);
+      // สูตรเดียวกับ computeLineAmounts: Inc VAT = สกัด VAT ออกจากยอดหลังส่วนลด
+      // (net = ก่อน VAT · total = รวม VAT) · ไม่ติ๊ก = บวก VAT เพิ่มเหมือนเดิม
+      const gross = round2(subTotal - discount);
+      const tax = isTaxAdj
+        ? taxAmt
+        : isTaxIncluded
+          ? round2((gross * taxRate) / (100 + taxRate))
+          : round2((gross * taxRate) / 100);
+      const net = isTaxIncluded ? round2(gross - tax) : gross;
+      const total = isTaxIncluded ? gross : round2(net + tax);
 
       return {
         id: item.id!,
@@ -666,6 +683,7 @@ export function preparePurchaseDetails(
         stage_status: resolveApproveStageStatus(item),
         stage_message: item.stage_message || null,
         is_tax_adjustment: isTaxAdj,
+        is_tax_included: isTaxIncluded,
         description: item.description || null,
         approved_qty: approvedQty,
         approved_unit_id: item.approved_unit_id || item.requested_unit_id,
@@ -735,6 +753,7 @@ export function mapItemToPayload(
     tax_rate: item.tax_rate ?? 0,
     tax_amount: item.tax_amount ?? 0,
     is_tax_adjustment: item.is_tax_adjustment ?? false,
+    is_tax_included: item.is_tax_included ?? false,
     discount_rate: item.discount_rate ?? 0,
     discount_amount: item.discount_amount ?? 0,
     is_discount_adjustment: item.is_discount_adjustment ?? false,

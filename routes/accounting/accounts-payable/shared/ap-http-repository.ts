@@ -86,6 +86,7 @@ function mapLine(raw: Raw): ApInvoiceLine {
     unit_name: str(raw.unit_name),
     quantity: toDecimal(raw.quantity),
     unit_price: toDecimal(raw.unit_price),
+    vat_is_included: Boolean(raw.vat_is_included),
     sub_total_amount: toDecimal(raw.sub_total_amount),
     discount_amount: toDecimal(raw.discount_amount),
     net_amount: toDecimal(raw.net_amount),

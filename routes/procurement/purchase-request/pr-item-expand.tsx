@@ -50,6 +50,7 @@ export function PrItemExpand({
   hideTotal = false,
 }: PrItemExpandProps) {
   const tfl = useTranslations("field");
+  const tc = useTranslations("common");
   const index = itemFields.findIndex((f) => f.id === item.id);
 
   const i = Math.max(index, 0);
@@ -78,6 +79,7 @@ export function PrItemExpand({
     watchTaxProfileName,
     watchNetAmt,
     watchTotalPrice,
+    watchIsTaxIncluded,
   ] = useWatch({
     control: form.control,
     name: [
@@ -98,6 +100,7 @@ export function PrItemExpand({
       `items.${i}.tax_profile_name`,
       `items.${i}.net_amount`,
       `items.${i}.total_price`,
+      `items.${i}.is_tax_included`,
     ] as const,
   });
 
@@ -107,6 +110,7 @@ export function PrItemExpand({
   const isTaxAdj = watchIsTaxAdj ?? false;
   const taxAmt = watchTaxAmt ?? 0;
   const discRate = watchDiscRate ?? 0;
+  const isTaxIncluded = watchIsTaxIncluded ?? false;
   const isDiscAdj = watchIsDiscAdj ?? false;
   const discAmt = watchDiscAmt ?? 0;
   const calcQty = resolveApprovedQty({
@@ -127,6 +131,7 @@ export function PrItemExpand({
     taxRate,
     isTaxAdj,
     taxAmt,
+    isTaxIncluded,
   });
   const subtotal = useStored
     ? storedSubtotal(watchNetAmt, discAmt)
@@ -316,10 +321,40 @@ export function PrItemExpand({
                 buCode={buCode}
               />
             )}
+            {/* Inc VAT — แก้ได้ภายใต้เงื่อนไขเดียวกับช่องราคา (ราคาซ่อน/อ่านอย่างเดียว = ติ๊กไม่ได้) */}
+            {!isFieldDisabled && (
+              <Controller
+                control={form.control}
+                name={`items.${index}.is_tax_included`}
+                render={({ field }) => (
+                  <label className="flex cursor-pointer items-center gap-1">
+                    <Checkbox
+                      checked={field.value ?? false}
+                      onCheckedChange={field.onChange}
+                      className="size-3.5"
+                    />
+                    <span className="text-muted-foreground text-xs font-normal select-none">
+                      {tc("incVat")}
+                    </span>
+                  </label>
+                )}
+              />
+            )}
           </FieldLabel>
           {isFieldDisabled ? (
-            <p className="flex min-h-6 items-center justify-end text-xs font-semibold tabular-nums">
-              {hidePrice ? <HiddenValue /> : formatCurrency(price)}
+            <p className="flex min-h-6 items-center justify-end gap-1.5 text-xs font-semibold tabular-nums">
+              {hidePrice ? (
+                <HiddenValue />
+              ) : (
+                <>
+                  {formatCurrency(price)}
+                  {isTaxIncluded && (
+                    <span className="text-muted-foreground text-micro-legal font-normal">
+                      {tc("incVat")}
+                    </span>
+                  )}
+                </>
+              )}
             </p>
           ) : (
             <InputAmount

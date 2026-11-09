@@ -28,13 +28,29 @@ const buildPayload = (formData: PricelistExternalDto) => {
   const add: Record<string, unknown>[] = [];
   let seq = 0;
 
-  const derive = (net: number | string, rate: number) => {
-    const { price, priceWithoutTax, taxAmt } = priceListTaxParts(net, rate);
-    return { price, price_without_tax: priceWithoutTax, tax_amt: taxAmt };
+  const derive = (
+    entered: number | string,
+    rate: number,
+    isTaxIncluded: boolean,
+  ) => {
+    const { price, priceWithoutTax, taxAmt } = priceListTaxParts(
+      entered,
+      rate,
+      isTaxIncluded,
+    );
+    return {
+      price,
+      price_without_tax: priceWithoutTax,
+      tax_amt: taxAmt,
+      is_tax_included: isTaxIncluded,
+    };
   };
 
   for (const d of formData.tb_pricelist_detail) {
     const rate = Number(d.tax_rate) || 0;
+    // Inc VAT ของ MOQ tier: tier เดิม (มี id server) ส่งค่าที่เก็บไว้ของตัวเอง
+    // (ไม่ตีความใหม่ตามแถวแม่) · tier ใหม่สืบทอดจากแถวแม่ · ไม่มีช่องติ๊กต่อ tier
+    const incVat = !!d.is_tax_included;
 
     // base row (ตัว item เอง) — มี id server เสมอ → update
     // unit_id/tax_profile_id เป็น uuid: ถ้าว่าง (item ยังไม่มี unit) ให้ "ละไว้"
@@ -44,7 +60,7 @@ const buildPayload = (formData: PricelistExternalDto) => {
       sequence_no: ++seq,
       product_id: d.product_id,
       ...(d.unit_id ? { unit_id: d.unit_id } : {}),
-      ...derive(d.price, rate),
+      ...derive(d.price, rate, incVat),
       ...(d.tax_profile_id ? { tax_profile_id: d.tax_profile_id } : {}),
       tax_rate: d.tax_rate,
       lead_time_days: d.lead_time_days,
@@ -59,7 +75,11 @@ const buildPayload = (formData: PricelistExternalDto) => {
         product_id: d.product_id,
         ...(d.unit_id ? { unit_id: d.unit_id } : {}),
         moq_qty: t.minimum_quantity,
-        ...derive(t.price, rate),
+        ...derive(
+          t.price,
+          rate,
+          isNewTierId(t.id) ? incVat : (t.is_tax_included ?? incVat),
+        ),
         ...(d.tax_profile_id ? { tax_profile_id: d.tax_profile_id } : {}),
         tax_rate: d.tax_rate,
         lead_time_days: t.lead_time_days ?? 0,

@@ -10,6 +10,7 @@ import type {
 import {
   addDecimal,
   compareDecimal,
+  divideDecimal,
   multiplyDecimal,
   percentOf,
   subtractDecimal,
@@ -25,6 +26,8 @@ export interface InvoiceFormLine {
   unit_name: string | null;
   quantity: DecimalString;
   unit_price: DecimalString;
+  /** ติ๊ก = unit_price เป็นราคารวม VAT แล้ว (ถอด VAT ออก ไม่บวกเพิ่ม) — ไม่ใช้กับ deposit */
+  vat_is_included: boolean;
   discount_amount: DecimalString;
   dr_chart_of_accounts_id: string | null;
   /** รหัสบัญชี/cost center สำหรับโหมดอ่านอย่างเดียว (ไม่ส่งกลับ backend) */
@@ -92,6 +95,7 @@ export const emptyLine = (): InvoiceFormLine => ({
   unit_name: null,
   quantity: "1",
   unit_price: "0",
+  vat_is_included: false,
   discount_amount: "0",
   dr_chart_of_accounts_id: null,
   dr_account_code: null,
@@ -119,6 +123,7 @@ function fromDocLine(line: ApInvoiceLine): InvoiceFormLine {
     unit_name: line.unit_name,
     quantity: line.quantity,
     unit_price: line.unit_price,
+    vat_is_included: line.vat_is_included,
     discount_amount: line.discount_amount,
     dr_chart_of_accounts_id: line.dr_chart_of_accounts_id,
     dr_account_code: line.dr_account_code,
@@ -198,14 +203,40 @@ export interface LineAmounts {
 
 const num = (value: DecimalString): DecimalString => value.trim() || "0";
 
+/** สูตรเดียวกับ BE computeLine — ติ๊ก Inc VAT: gross = ยอดหลังส่วนลด, vat ถอดจาก gross, net = gross − vat, total = gross */
 export function lineAmounts(line: InvoiceFormLine): LineAmounts {
-  const subtotal = multiplyDecimal(num(line.quantity), num(line.unit_price));
-  const net = subtractDecimal(subtotal, num(line.discount_amount));
+  const rawSubtotal = multiplyDecimal(num(line.quantity), num(line.unit_price));
+  const afterDiscount = subtractDecimal(rawSubtotal, num(line.discount_amount));
+  const wht = (net: DecimalString) => percentOf(net, num(line.wht_rate));
+  if (line.vat_is_included) {
+    const rate = num(line.vat_rate);
+    const vat = line.vat_is_override
+      ? num(line.vat_amount)
+      : divideDecimal(
+          multiplyDecimal(afterDiscount, rate, 6),
+          addDecimal(["100", rate], 6),
+        );
+    const net = subtractDecimal(afterDiscount, vat);
+    return {
+      // Subtotal ของแถวที่ติ๊ก = net + ส่วนลด ให้แถบสรุป foot (Subtotal − ส่วนลด = net)
+      subtotal: addDecimal([net, num(line.discount_amount)]),
+      net,
+      vat,
+      wht: wht(net),
+      total: afterDiscount,
+    };
+  }
+  const net = afterDiscount;
   const vat = line.vat_is_override
     ? num(line.vat_amount)
     : percentOf(net, num(line.vat_rate));
-  const wht = percentOf(net, num(line.wht_rate));
-  return { subtotal, net, vat, wht, total: addDecimal([net, vat]) };
+  return {
+    subtotal: rawSubtotal,
+    net,
+    vat,
+    wht: wht(net),
+    total: addDecimal([net, vat]),
+  };
 }
 
 export interface InvoiceTotals {
@@ -265,7 +296,11 @@ export function validateInvoiceForm(
   return errors;
 }
 
-function toLineInput(line: InvoiceFormLine, index: number): ApInvoiceLineInput {
+function toLineInput(
+  line: InvoiceFormLine,
+  index: number,
+  deposit: boolean,
+): ApInvoiceLineInput {
   return {
     sequence_no: index + 1,
     description: line.description.trim() || null,
@@ -275,6 +310,8 @@ function toLineInput(line: InvoiceFormLine, index: number): ApInvoiceLineInput {
     unit_name: line.unit_name,
     quantity: num(line.quantity),
     unit_price: num(line.unit_price),
+    // deposit ห้ามมี flag (BE ปฏิเสธ) — ไม่ส่งเลย
+    ...(deposit ? {} : { vat_is_included: line.vat_is_included }),
     discount_amount: num(line.discount_amount),
     dr_chart_of_accounts_id: line.dr_chart_of_accounts_id ?? "",
     dr_cost_center_id: line.dr_cost_center_id,
@@ -299,6 +336,8 @@ export function toInvoiceInput(form: InvoiceForm): ApInvoiceInput {
     currency_id: form.currency_id || null,
     exchange_rate: form.exchange_rate.trim() || null,
     description: form.description.trim() || null,
-    lines: form.lines.map(toLineInput),
+    lines: form.lines.map((line, index) =>
+      toLineInput(line, index, form.doc_type === "deposit"),
+    ),
   };
 }

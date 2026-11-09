@@ -1042,6 +1042,8 @@
     "footer": "© {year} CARMEN BLUE · ระบบ ERP สำหรับธุรกิจโรงแรม"
   },
   "common": {
+    "incVat": "รวม VAT",
+    "beforeVatShort": "ก่อน VAT",
     "hiddenValue": "ซ่อน",
     "hiddenValueHint": "ซ่อนตามการตั้งค่า workflow ของขั้นตอนนี้",
     "yes": "ใช่",

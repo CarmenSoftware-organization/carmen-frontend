@@ -54,6 +54,8 @@ export const mapPoDetailToItems = (
         // net/total ปล่อยศูนย์ ให้ตัว sync เป็นคนคำนวณที่เดียว — seed ค่ามาจาก
         // PO ก็ถูกเขียนทับอยู่ดี มีแต่จะเห็นตัวเลขเก่าแวบหนึ่งตอนโหลด
         unit_price: d.price,
+        // ราคากับ flag มาจาก PO detail เดียวกันเสมอ — ราคารวม VAT แต่ flag หาย = VAT ซ้อน
+        is_tax_included: d.is_tax_included ?? false,
         net_amount: 0,
         total_price: 0,
       },
@@ -87,6 +89,7 @@ export const mapPoDetailToItems = (
       // ราคาต่อหน่วยมาจาก PO ใบเดียวกัน ทุกบรรทัดที่แตกมาจากรายการเดียวจึงเริ่มที่
       // ราคาเดียวกัน — แก้รายบรรทัดทีหลังได้ (ของที่รับจริงอาจต่อรองราคาใหม่)
       unit_price: d.price,
+      is_tax_included: d.is_tax_included ?? false,
       net_amount: 0,
       total_price: 0,
     }));
