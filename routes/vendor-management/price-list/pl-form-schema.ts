@@ -74,8 +74,14 @@ export function createPriceListSchema(tv: TranslationFn, tf: TranslationFn) {
               message: tv("moqDuplicate"),
               path: ["pricelist_detail", sorted[k], "moq_qty"],
             });
-          } else if (cur.price > prev.price) {
-            // เทียบ price (gross) ที่ vendor กรอกจริง — MOQ สูงกว่าต้องราคาไม่แพงกว่า
+          } else if (
+            // เทียบราคาก่อน VAT (priceWithoutTax) — แถวที่ติ๊ก Inc VAT กับไม่ติ๊กเทียบกันตรง ๆ ไม่ได้
+            // MOQ สูงกว่าต้องราคาไม่แพงกว่า
+            priceListTaxParts(cur.price, cur.tax_rate, cur.is_tax_included)
+              .priceWithoutTax >
+            priceListTaxParts(prev.price, prev.tax_rate, prev.is_tax_included)
+              .priceWithoutTax
+          ) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
               message: tv("moqTierPrice"),

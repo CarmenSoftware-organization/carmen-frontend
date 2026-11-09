@@ -2,7 +2,11 @@ import type { Audit } from "@/types/audit";
 import type { EntityRef } from "@/types/entity-ref";
 
 export type PriceListStatus =
-  "draft" | "submitted" | "active" | "inactive" | "voided";
+  | "draft"
+  | "submitted"
+  | "active"
+  | "inactive"
+  | "voided";
 
 export interface PriceListActiveVendor {
   id: string;

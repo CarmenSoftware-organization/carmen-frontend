@@ -48,7 +48,8 @@ const buildPayload = (formData: PricelistExternalDto) => {
 
   for (const d of formData.tb_pricelist_detail) {
     const rate = Number(d.tax_rate) || 0;
-    // MOQ tier สืบทอดสถานะ Inc VAT จากแถวแม่ (ช่องติ๊กมีที่แถวแม่ที่เดียว)
+    // Inc VAT ของ MOQ tier: tier เดิม (มี id server) ส่งค่าที่เก็บไว้ของตัวเอง
+    // (ไม่ตีความใหม่ตามแถวแม่) · tier ใหม่สืบทอดจากแถวแม่ · ไม่มีช่องติ๊กต่อ tier
     const incVat = !!d.is_tax_included;
 
     // base row (ตัว item เอง) — มี id server เสมอ → update
@@ -74,7 +75,11 @@ const buildPayload = (formData: PricelistExternalDto) => {
         product_id: d.product_id,
         ...(d.unit_id ? { unit_id: d.unit_id } : {}),
         moq_qty: t.minimum_quantity,
-        ...derive(t.price, rate, incVat),
+        ...derive(
+          t.price,
+          rate,
+          isNewTierId(t.id) ? incVat : (t.is_tax_included ?? incVat),
+        ),
         ...(d.tax_profile_id ? { tax_profile_id: d.tax_profile_id } : {}),
         tax_rate: d.tax_rate,
         lead_time_days: t.lead_time_days ?? 0,
