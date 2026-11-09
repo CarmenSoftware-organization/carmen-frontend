@@ -9,19 +9,27 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
- * ไอคอนในวงกลมสีทึบ — สีจาก semantic token ใน globals.css
+ * ไอคอนในวงกลมพื้นสีอ่อน + ขอบ + ไอคอนสี ink — สีจาก semantic token ใน globals.css
  *
- * bg สว่าง (info/success/warning) ใช้ไอคอนสีดำ อ่านชัดกว่า `*-foreground`
- * ซึ่งถูกจูนไว้สำหรับพื้นเข้ม
+ * เดิมเป็นพื้นทึบ + ไอคอนดำ: บน `--info` (น้ำเงินกลาง) ไอคอนดำแทบหายไป จุดทั้งเม็ด
+ * อ่านเป็นก้อนสีเดียว แยกนาฬิกา/ถูก/กากบาทไม่ออก · `*-ink` ถูกจูนให้ผ่าน AA บน
+ * พื้นสว่าง (มีชุดของ .dark แยก) จึงอ่านออกทั้งสองธีม ส่วน destructive ไม่มี ink
+ * แยก ตัวมันเองเข้มพอแล้ว
  */
 const STATUS_STYLE: Record<string, { icon: LucideIcon; className: string }> = {
-  pending: { icon: Clock, className: "bg-info text-black" },
-  approved: { icon: Check, className: "bg-success text-black" },
+  pending: { icon: Clock, className: "bg-info/15 text-info-ink ring-info/50" },
+  approved: {
+    icon: Check,
+    className: "bg-success/15 text-success-ink ring-success/50",
+  },
   rejected: {
     icon: X,
-    className: "bg-destructive text-destructive-foreground",
+    className: "bg-destructive/15 text-destructive ring-destructive/50",
   },
-  review: { icon: Eye, className: "bg-warning text-black" },
+  review: {
+    icon: Eye,
+    className: "bg-warning/15 text-warning-ink ring-warning/50",
+  },
 };
 
 /**
@@ -54,7 +62,7 @@ export function ItemStatusDot({
         <TooltipTrigger asChild>
           <span
             className={cn(
-              "flex size-4 shrink-0 items-center justify-center rounded-full",
+              "flex size-4 shrink-0 items-center justify-center rounded-full ring-1 ring-inset",
               style.className,
             )}
             aria-label={label}

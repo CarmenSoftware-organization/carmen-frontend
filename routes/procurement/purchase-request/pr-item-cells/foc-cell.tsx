@@ -49,6 +49,11 @@ export const FocCell = memo(function FocCell({
         value={
           qty === null ? (
             <span className="text-muted-foreground">—</span>
+          ) : Number(qty) === 0 ? (
+            // FOC เป็น 0 แทบทุกแถว — ตัวหนาเท่าจำนวนที่ขอ/อนุมัติจริงแย่งสายตาเปล่า ๆ
+            <span className="text-muted-foreground font-normal">
+              {formatQty(qty)}
+            </span>
           ) : (
             formatQty(qty)
           )

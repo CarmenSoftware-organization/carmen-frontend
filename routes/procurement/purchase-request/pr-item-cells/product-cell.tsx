@@ -18,6 +18,9 @@ import { OnOrderDialog } from "@/components/share/on-order-dialog";
 import type { PrFormValues } from "../pr-form-schema";
 import { InventoryDialogCell, useIsRowLocked } from "./helpers";
 
+/** `\s` ใน JS ครอบ NBSP ด้วย — ใช้เทียบชื่อที่ตาเห็นเหมือนกัน */
+const squashSpaces = (v: string) => v.replace(/\s+/g, " ").trim();
+
 export const ProductCell = memo(function ProductCell({
   control,
   form,
@@ -81,11 +84,22 @@ export const ProductCell = memo(function ProductCell({
       // ไอคอนอยู่ **นอก** stack สองบรรทัด จัดกลางเทียบทั้งก้อน — ทรงเดียวกับ SR
       // (sr-item-table.tsx) ปุ่ม icon-xs 24px จึงไม่ไปดันบรรทัดแรกให้สูงกว่าตัวหนังสือ
       // ซึ่งเป็นต้นเหตุที่คอลัมน์นี้กับ Location เคยมีระยะไม่เท่ากัน
+      // ไอคอนสต็อกชิดท้ายชื่อ ไม่ใช่ขอบขวาของคอลัมน์ — คอลัมน์ Product กว้าง ไอคอนที่
+      // ถูก flex-1 ดันไปสุดขอบลอยอยู่กลางช่องว่าง อ่านไม่ออกว่าเป็นของแถวไหน/ช่องไหน
       <div className="flex items-center gap-0.5">
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0">
           <NameWithSubtext
             primary={productName || "—"}
-            secondary={productLocalName || "—"}
+            // ชื่อรองซ้ำกับชื่อหลัก (สินค้าที่ไม่ได้ตั้งชื่อท้องถิ่นแยก) = บรรทัดเปล่าประโยชน์
+            // ที่ทำให้ทุกแถวดูหนาเป็นสองเท่า — ซ่อนไปเลย กติกาเดียวกับหน้า Price List
+            // เทียบหลังยุบช่องว่าง — ชื่อท้องถิ่นใน master บางตัวใช้ NBSP (U+00A0)
+            // แทนเว้นวรรค ตาเห็นเหมือนกันทุกตัวอักษรแต่ !== กันตรง ๆ
+            secondary={
+              productLocalName &&
+              squashSpaces(productLocalName) !== squashSpaces(productName)
+                ? productLocalName
+                : undefined
+            }
           />
         </div>
         {inventoryTooltip}
