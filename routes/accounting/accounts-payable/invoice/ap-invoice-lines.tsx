@@ -10,7 +10,7 @@ import { LookupProduct } from "@/components/lookup/lookup-product";
 import { LookupTaxProfile } from "@/components/lookup/lookup-tax-profile";
 import { LookupUnit } from "@/components/lookup/lookup-unit";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { IncVatToggle, PriceWithIncVat } from "@/components/share/inc-vat";
 import { Input } from "@/components/ui/input";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { ApDetailGrid } from "../shared/ap-detail-grid";
@@ -45,17 +45,22 @@ function DecimalCell({
   editable,
   label,
   onChange,
+  isTaxIncluded = false,
 }: {
   readonly value: string;
   readonly editable: boolean;
   readonly label: string;
   readonly onChange: (value: string) => void;
+  /** โหมดอ่าน: ป้าย Inc VAT หน้าตัวเลข (แถวเดียวกัน ทศนิยมตรงกับแถวอื่น) */
+  readonly isTaxIncluded?: boolean;
 }) {
   const format = useAmountFormatter();
   if (!editable)
     return (
-      <span className="block text-right tabular-nums">
-        {format(Number(value || 0))}
+      <span className="flex justify-end">
+        <PriceWithIncVat isTaxIncluded={isTaxIncluded}>
+          {format(Number(value || 0))}
+        </PriceWithIncVat>
       </span>
     );
   return (
@@ -204,7 +209,6 @@ export function InvoiceLines({
   readonly onRemove: (key: string) => void;
 }) {
   const t = useTranslations("accounting.accountsPayable.invoice.detail.lines");
-  const tc = useTranslations("common");
   const hasGrn = lines.some((line) => line.grn_no);
   const required = t("required");
 
@@ -314,34 +318,20 @@ export function InvoiceLines({
               value={row.original.unit_price}
               editable={editable}
               label={`unit price ${row.index + 1}`}
+              isTaxIncluded={!deposit && row.original.vat_is_included}
               onChange={(unit_price) =>
                 onChange(row.original.key, { unit_price })
               }
             />
             {/* Inc VAT — แก้ได้เท่ากับช่องราคา · deposit ไม่มี flag (BE ปฏิเสธ) */}
-            {!deposit &&
-              (editable ? (
-                <label className="flex cursor-pointer items-center justify-end gap-1">
-                  <Checkbox
-                    checked={row.original.vat_is_included}
-                    onCheckedChange={(checked) =>
-                      onChange(row.original.key, {
-                        vat_is_included: checked === true,
-                      })
-                    }
-                    className="size-3.5"
-                  />
-                  <span className="text-muted-foreground text-micro-legal font-normal select-none">
-                    {tc("incVat")}
-                  </span>
-                </label>
-              ) : (
-                row.original.vat_is_included && (
-                  <span className="text-muted-foreground text-micro-legal block text-right font-normal">
-                    {tc("incVat")}
-                  </span>
-                )
-              ))}
+            {!deposit && editable && (
+              <IncVatToggle
+                checked={row.original.vat_is_included}
+                onCheckedChange={(vat_is_included) =>
+                  onChange(row.original.key, { vat_is_included })
+                }
+              />
+            )}
           </div>
         ),
       },
@@ -464,7 +454,7 @@ export function InvoiceLines({
         ),
       });
     return cols;
-  }, [editable, deposit, hasGrn, showErrors, required, tc, onChange, onMove, onRemove]);
+  }, [editable, deposit, hasGrn, showErrors, required, onChange, onMove, onRemove]);
 
   return <ApDetailGrid rows={lines} columns={columns} empty={t("empty")} />;
 }

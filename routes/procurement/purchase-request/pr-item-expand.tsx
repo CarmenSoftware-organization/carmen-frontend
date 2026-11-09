@@ -13,6 +13,7 @@ import { formatCurrency, EXCHANGE_RATE_DECIMALS } from "@/lib/currency-utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LookupVendor } from "@/components/lookup/lookup-vendor";
 import { HiddenValue } from "@/components/share/hidden-value";
+import { IncVatToggle, PriceWithIncVat } from "@/components/share/inc-vat";
 import {
   computePrItemAmounts,
   resolveApprovedQty,
@@ -50,7 +51,6 @@ export function PrItemExpand({
   hideTotal = false,
 }: PrItemExpandProps) {
   const tfl = useTranslations("field");
-  const tc = useTranslations("common");
   const index = itemFields.findIndex((f) => f.id === item.id);
 
   const i = Math.max(index, 0);
@@ -329,16 +329,11 @@ export function PrItemExpand({
                 control={form.control}
                 name={`items.${index}.is_tax_included`}
                 render={({ field }) => (
-                  <label className="flex cursor-pointer items-center gap-1">
-                    <Checkbox
-                      checked={field.value ?? false}
-                      onCheckedChange={field.onChange}
-                      className="size-3.5"
-                    />
-                    <span className="text-muted-foreground text-xs font-normal select-none">
-                      {tc("incVat")}
-                    </span>
-                  </label>
+                  <IncVatToggle
+                    checked={field.value ?? false}
+                    onCheckedChange={field.onChange}
+                    className="ml-1"
+                  />
                 )}
               />
             )}
@@ -348,14 +343,9 @@ export function PrItemExpand({
               {hidePrice ? (
                 <HiddenValue />
               ) : (
-                <>
+                <PriceWithIncVat isTaxIncluded={isTaxIncluded}>
                   {formatCurrency(price)}
-                  {isTaxIncluded && (
-                    <span className="text-muted-foreground text-micro-legal font-normal">
-                      {tc("incVat")}
-                    </span>
-                  )}
-                </>
+                </PriceWithIncVat>
               )}
             </p>
           ) : (

@@ -12,6 +12,7 @@ import {
   User,
   Workflow as WorkflowIcon,
 } from "lucide-react";
+import { PriceWithIncVat } from "@/components/share/inc-vat";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -341,15 +342,16 @@ export function StepSummary({ form, onEditStep }: StepSummaryProps) {
                           </span>
                         </td>
                         <td className="px-3 py-1.5 text-right tabular-nums">
-                          {item.price.toLocaleString()}{" "}
-                          <span className="text-muted-foreground text-micro">
-                            {values.currency_code || "—"}
-                          </span>
-                          {item.is_tax_included && (
-                            <span className="text-muted-foreground text-micro-legal ml-1">
-                              {tc("incVat")}
+                          <PriceWithIncVat
+                            isTaxIncluded={item.is_tax_included}
+                          >
+                            <span>
+                              {item.price.toLocaleString()}{" "}
+                              <span className="text-muted-foreground text-micro">
+                                {values.currency_code || "—"}
+                              </span>
                             </span>
-                          )}
+                          </PriceWithIncVat>
                         </td>
                         <td className="px-3 py-1.5 text-right font-semibold tabular-nums">
                           {lineTotal.toLocaleString()}

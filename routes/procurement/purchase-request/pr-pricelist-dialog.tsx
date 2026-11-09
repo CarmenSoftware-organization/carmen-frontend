@@ -29,6 +29,7 @@ import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { formatCurrency } from "@/lib/currency-utils";
 import { formatDate } from "@/lib/date-utils";
 import { LastPriceChip } from "@/components/share/last-price-chip";
+import { IncVatTag } from "@/components/share/inc-vat";
 import type { LastPrice } from "@/types/last-price";
 import { resolveApprovedQty } from "./pr-form-schema";
 import {
@@ -142,14 +143,10 @@ const buildColumns = (
                   {t("best")}
                 </Badge>
               )}
+              {incVat && <IncVatTag />}
               <span className="font-semibold tabular-nums">
                 {formatCurrency(price)}
               </span>
-              {incVat && (
-                <Badge variant="outline" size="xs" className="text-micro-legal">
-                  {tc("incVat")}
-                </Badge>
-              )}
               <span className="text-muted-foreground">
                 {row.original.currency}
               </span>

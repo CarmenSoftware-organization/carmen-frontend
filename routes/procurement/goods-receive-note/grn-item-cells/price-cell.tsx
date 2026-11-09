@@ -5,8 +5,7 @@ import {
   type Control,
   type UseFormReturn,
 } from "react-hook-form";
-import { useTranslations } from "use-intl";
-import { Checkbox } from "@/components/ui/checkbox";
+import { IncVatToggle, PriceWithIncVat } from "@/components/share/inc-vat";
 import { InputAmount } from "@/components/ui/input/input-amount";
 import { formatCurrency } from "@/lib/currency-utils";
 import { cn } from "@/lib/utils";
@@ -23,16 +22,13 @@ const UnitPricePlain = memo(function UnitPricePlain({
   const price = useWatch({ control, name: `items.${index}.unit_price` });
   const isTaxIncluded =
     useWatch({ control, name: `items.${index}.is_tax_included` }) ?? false;
-  const tc = useTranslations("common");
   return (
-    <span className="text-foreground text-xs font-medium tabular-nums">
+    <PriceWithIncVat
+      isTaxIncluded={isTaxIncluded}
+      className="text-foreground text-xs font-medium"
+    >
       {formatCurrency(Number(price) || 0)}
-      {isTaxIncluded && (
-        <span className="text-muted-foreground text-micro-legal ml-1 font-normal">
-          {tc("incVat")}
-        </span>
-      )}
-    </span>
+    </PriceWithIncVat>
   );
 });
 
@@ -65,7 +61,6 @@ export const UnitPriceCell = memo(function UnitPriceCell({
 }) {
   "use no memo";
   const ref = useRef<HTMLInputElement>(null);
-  const tc = useTranslations("common");
 
   // autoFocus ของ React ทำงานตอน mount เท่านั้น แต่ cell ตัวนี้ mount ไปแล้ว
   // ตั้งแต่แถวเกิด จังหวะที่ต้องโฟกัสคือตอน "เพิ่งเลือกสินค้า" ซึ่งมาทีหลัง
@@ -109,16 +104,10 @@ export const UnitPriceCell = memo(function UnitPriceCell({
         control={form.control}
         name={`items.${index}.is_tax_included`}
         render={({ field }) => (
-          <label className="flex cursor-pointer items-center justify-end gap-1">
-            <Checkbox
-              checked={field.value ?? false}
-              onCheckedChange={field.onChange}
-              className="size-3.5"
-            />
-            <span className="text-muted-foreground text-micro-legal font-normal select-none">
-              {tc("incVat")}
-            </span>
-          </label>
+          <IncVatToggle
+            checked={field.value ?? false}
+            onCheckedChange={field.onChange}
+          />
         )}
       />
     </div>

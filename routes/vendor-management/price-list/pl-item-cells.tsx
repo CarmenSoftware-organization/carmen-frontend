@@ -18,6 +18,7 @@ import type { EntityRef } from "@/types/entity-ref";
 import type { PriceList } from "@/types/price-list";
 import type { PriceListFormValues } from "./pl-form-schema";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
+import { PriceWithIncVat } from "@/components/share/inc-vat";
 
 export type DetailField = FieldArrayWithId<
   PriceListFormValues,
@@ -216,19 +217,16 @@ export function PriceCell({
   detailRef,
 }: CellProps) {
   "use no memo";
-  const tc = useTranslations("common");
   const errors = useRowErrors(form, index);
 
   if (isView)
     return (
-      <span className="text-foreground inline-flex items-center justify-end gap-1.5 text-xs font-semibold tabular-nums">
-        {detailRef?.is_tax_included && (
-          <span className="text-muted-foreground text-micro font-normal">
-            {tc("incVat")}
-          </span>
-        )}
+      <PriceWithIncVat
+        isTaxIncluded={detailRef?.is_tax_included}
+        className="text-foreground text-xs font-semibold"
+      >
         {(Number(detailRef?.price) || 0).toFixed(2)}
-      </span>
+      </PriceWithIncVat>
     );
 
   return (

@@ -1,6 +1,7 @@
 import { useTranslations } from "use-intl";
 import { formatTaxRate, priceListTaxParts } from "@/lib/price-list-tax";
 import { cn } from "@/lib/utils";
+import { PriceWithIncVat } from "@/components/share/inc-vat";
 import type { PricelistExternalDetailDto } from "@/types/price-list-external";
 
 const fmtMoney = (n: number) =>
@@ -70,18 +71,16 @@ export default function PriceListExternalViewTable({
                   {Number(d.moq_qty) || 0}
                 </Td>
                 <Td className="text-right tabular-nums">
-                  <span
+                  <PriceWithIncVat
+                    isTaxIncluded={d.is_tax_included}
                     title={
-                      d.is_tax_included ? fmtMoney(priceWithoutTax) : undefined
+                      d.is_tax_included
+                        ? `${fmtMoney(priceWithoutTax)} ${tc("beforeVatShort")}`
+                        : undefined
                     }
                   >
-                    {d.is_tax_included && (
-                      <span className="text-muted-foreground text-micro mr-1.5">
-                        {tc("incVat")}
-                      </span>
-                    )}
                     {fmtMoney(p)}
-                  </span>
+                  </PriceWithIncVat>
                 </Td>
                 <Td>{d.tax_profile_name || "—"}</Td>
                 <Td className="text-muted-foreground text-right tabular-nums">
