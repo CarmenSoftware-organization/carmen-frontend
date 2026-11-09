@@ -71,6 +71,11 @@ export function PrPricelistCompare({
     form.setValue(`items.${index}.vendor_id`, entry.vendor_id);
     form.setValue(`items.${index}.vendor_name`, entry.vendor_name);
     form.setValue(`items.${index}.pricelist_price`, entry.price);
+    // ราคากับธง Inc VAT ต้องมาจาก entry เดียวกันเสมอ
+    form.setValue(
+      `items.${index}.is_tax_included`,
+      entry.is_tax_included ?? false,
+    );
     form.setValue(
       `items.${index}.pricelist_detail_id`,
       entry.pricelist_detail_id,

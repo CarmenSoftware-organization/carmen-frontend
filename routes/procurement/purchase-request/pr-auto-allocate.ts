@@ -23,6 +23,7 @@ export function applyDerivedAmounts(
   item: PrFormValues["items"][number],
   price: number,
   taxRate: number,
+  isTaxIncluded = false,
 ) {
   const qty = resolveApprovedQty(item);
   const isDiscAdj = item.is_discount_adjustment ?? false;
@@ -36,6 +37,7 @@ export function applyDerivedAmounts(
     taxRate,
     isTaxAdj,
     taxAmt: Number(item.tax_amount) || 0,
+    isTaxIncluded,
   });
   if (!isDiscAdj) {
     form.setValue(`items.${index}.discount_amount`, amounts.discountAmount);
@@ -100,6 +102,8 @@ export async function runPrAutoAllocate(
         form.setValue(`items.${index}.vendor_id`, null);
         form.setValue(`items.${index}.vendor_name`, "");
         form.setValue(`items.${index}.pricelist_price`, 0);
+        // ราคากับธง Inc VAT มาจากแหล่งเดียวกันเสมอ — ไม่มีราคา ธงก็รีเป็นปิด
+        form.setValue(`items.${index}.is_tax_included`, false);
         form.setValue(`items.${index}.pricelist_type`, null);
         form.setValue(`items.${index}.pricelist_detail_id`, null);
         form.setValue(`items.${index}.pricelist_no`, null);
@@ -111,6 +115,10 @@ export async function runPrAutoAllocate(
       form.setValue(`items.${index}.vendor_id`, selected.vendor_id);
       form.setValue(`items.${index}.vendor_name`, selected.vendor_name);
       form.setValue(`items.${index}.pricelist_price`, selected.price);
+      form.setValue(
+        `items.${index}.is_tax_included`,
+        selected.is_tax_included ?? false,
+      );
       form.setValue(
         `items.${index}.pricelist_type`,
         PR_ITEM_PRICELIST_COMPARE_TYPE.AUTOMATIC,
@@ -133,6 +141,7 @@ export async function runPrAutoAllocate(
         item,
         selected.price,
         Number(selected.tax_rate) || 0,
+        selected.is_tax_included ?? false,
       );
       allocated++;
     }),

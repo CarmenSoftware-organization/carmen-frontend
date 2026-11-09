@@ -54,6 +54,8 @@ interface PurchaseRequestDetail
   pricelist_no: string | null;
   pricelist_unit: string | null;
   pricelist_price: number;
+  /** ราคา pricelist_price รวม VAT แล้ว (ติ๊ก Inc VAT) — คู่กับราคาเสมอ */
+  is_tax_included?: boolean;
   pricelist_type: string;
   currency: EntityRef | null;
   currency_decimal_places?: number;
@@ -276,6 +278,7 @@ export interface PurchaseRequestDetailPayload {
   tax_rate: number;
   tax_amount: number;
   is_tax_adjustment: boolean;
+  is_tax_included?: boolean;
   discount_rate: number;
   discount_amount: number;
   is_discount_adjustment: boolean;
@@ -327,6 +330,7 @@ export interface ApproveDetail {
   tax_rate?: number;
   tax_amount?: number;
   is_tax_adjustment?: boolean;
+  is_tax_included?: boolean;
   discount_rate?: number;
   discount_amount?: number;
   is_discount_adjustment?: boolean;
@@ -342,6 +346,7 @@ export interface PurchaseApproveDetail {
   stage_status: string;
   stage_message: string | null;
   is_tax_adjustment: boolean;
+  is_tax_included?: boolean;
   description?: string | null;
   approved_qty: number;
   approved_unit_id: string | null;

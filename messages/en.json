@@ -1043,6 +1043,7 @@
   },
   "common": {
     "incVat": "Inc VAT",
+    "beforeVatShort": "before VAT",
     "hiddenValue": "Hidden",
     "hiddenValueHint": "Hidden by the workflow at this stage",
     "yes": "Yes",

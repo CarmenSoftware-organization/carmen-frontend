@@ -131,7 +131,8 @@ describe("PrItemExpand — numeric correctness on events", () => {
     renderExpand({ requested_qty: 3, tax_rate: 10 });
     setNum(priceInput(), "10"); // sub 30
     // toggle discount override (checkbox[0])
-    fireEvent.click(screen.getAllByRole("checkbox")[0]);
+    // checkbox[0] = Inc VAT (ข้างช่องราคา) · [1] = discount override · [2] = tax override
+    fireEvent.click(screen.getAllByRole("checkbox")[1]);
     setNum(discAmtInput(), "5"); // disc 5 -> net 25; tax 10% -> 2.50; total 27.50
     expect(fieldValue("Net")).toBe(money(25));
     expect(fieldValue("Total")).toBe(money(27.5));
@@ -140,7 +141,7 @@ describe("PrItemExpand — numeric correctness on events", () => {
   it("tax override → tax amount verbatim, total = net + taxAmt", () => {
     renderExpand({ requested_qty: 3 });
     setNum(priceInput(), "10"); // sub 30, net 30
-    fireEvent.click(screen.getAllByRole("checkbox")[1]); // tax override
+    fireEvent.click(screen.getAllByRole("checkbox")[2]); // tax override
     setNum(taxAmtInput(), "4.56"); // total round2(34.56)=34.56
     expect(fieldValue("Total")).toBe(money(34.56));
   });
@@ -160,7 +161,7 @@ describe("PrItemExpand — numeric correctness on events", () => {
     fireEvent.blur(priceInput());
     expect(priceInput().value).toBe("10.00");
     // discount override amount: type 5.5 → 5.50 after blur
-    fireEvent.click(screen.getAllByRole("checkbox")[0]);
+    fireEvent.click(screen.getAllByRole("checkbox")[1]);
     fireEvent.change(discAmtInput(), { target: { value: "5.5" } });
     fireEvent.blur(discAmtInput());
     expect(discAmtInput().value).toBe("5.50");
@@ -168,7 +169,7 @@ describe("PrItemExpand — numeric correctness on events", () => {
 
   it("amount field trims decimals beyond currency places on type", () => {
     renderExpand({ requested_qty: 1, currency_decimal_places: 2 });
-    fireEvent.click(screen.getAllByRole("checkbox")[1]); // tax override
+    fireEvent.click(screen.getAllByRole("checkbox")[2]); // tax override
     fireEvent.focus(taxAmtInput());
     fireEvent.change(taxAmtInput(), { target: { value: "1.239" } });
     // typed value trimmed to 2 dp while focused

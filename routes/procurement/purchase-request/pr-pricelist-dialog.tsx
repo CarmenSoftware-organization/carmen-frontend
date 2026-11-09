@@ -41,7 +41,11 @@ export interface PricelistEntry {
   vendor_name: string;
   pricelist_detail_id: string;
   pricelist_no: string;
+  /** ราคาตามที่กรอกใน price list (อาจรวม VAT) */
   price: number;
+  is_tax_included?: boolean;
+  /** ราคาก่อน VAT — ตัวที่ backend ใช้เรียงอันดับ */
+  price_without_tax?: number;
   currency: string;
   unit_name: string;
   base_price: number;
@@ -117,25 +121,39 @@ const buildColumns = (
       },
       size: 160,
       cell: ({ row }) => {
-        const price = row.original.price;
-        const isBest = price === minPrice && minPrice > 0;
+        const { price, is_tax_included: incVat } = row.original;
+        // อันดับเรียงด้วยราคาก่อน VAT เสมอ — ราคาที่กรอกรวม VAT เทียบกับราคาไม่รวมตรง ๆ ไม่ได้
+        const ranked = row.original.price_without_tax ?? price;
+        const isBest = ranked === minPrice && minPrice > 0;
         return (
-          <div className="flex items-center justify-end gap-1.5">
-            {isBest && (
-              <Badge
-                variant="success-light"
-                size="xs"
-                className="text-micro-legal"
-              >
-                {t("best")}
-              </Badge>
+          <div className="flex flex-col items-end gap-0.5">
+            <div className="flex items-center justify-end gap-1.5">
+              {isBest && (
+                <Badge
+                  variant="success-light"
+                  size="xs"
+                  className="text-micro-legal"
+                >
+                  {t("best")}
+                </Badge>
+              )}
+              <span className="font-semibold tabular-nums">
+                {formatCurrency(price)}
+              </span>
+              {incVat && (
+                <Badge variant="outline" size="xs" className="text-micro-legal">
+                  {tc("incVat")}
+                </Badge>
+              )}
+              <span className="text-muted-foreground">
+                {row.original.currency}
+              </span>
+            </div>
+            {incVat && (
+              <span className="text-muted-foreground text-micro tabular-nums">
+                {formatCurrency(ranked)} {tc("beforeVatShort")}
+              </span>
             )}
-            <span className="font-semibold tabular-nums">
-              {formatCurrency(price)}
-            </span>
-            <span className="text-muted-foreground">
-              {row.original.currency}
-            </span>
           </div>
         );
       },
@@ -293,7 +311,11 @@ export function PrPricelistDialog({
 
   const minPrice =
     rows.length > 0
-      ? Math.min(...rows.map((l) => l.price).filter((p) => p > 0))
+      ? Math.min(
+          ...rows
+            .map((l) => l.price_without_tax ?? l.price)
+            .filter((p) => p > 0),
+        )
       : 0;
 
   const pricelistColumns = buildColumns(
