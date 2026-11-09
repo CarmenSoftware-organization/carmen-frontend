@@ -44,6 +44,7 @@ import {
 import { InvoiceHeader } from "./ap-invoice-header";
 import { InvoiceLines } from "./ap-invoice-lines";
 import { ApPostingBanner } from "../shared/ap-posting-banner";
+import { addDecimal } from "../shared/ap-decimal";
 
 const LIST_PATH = "/accounting/accounts-payable/invoice";
 const NO_ERRORS: ReadonlySet<InvoiceErrorKey> = new Set();
