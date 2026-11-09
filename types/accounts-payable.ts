@@ -97,6 +97,8 @@ export interface ApInvoiceLine {
   unit_name: string | null;
   quantity: DecimalString;
   unit_price: DecimalString;
+  /** ติ๊ก Inc VAT — unit_price รวม VAT แล้ว */
+  vat_is_included: boolean;
   sub_total_amount: DecimalString;
   discount_amount: DecimalString;
   net_amount: DecimalString;
@@ -197,6 +199,8 @@ export interface ApInvoiceLineInput {
   unit_name?: string | null;
   quantity: DecimalString;
   unit_price: DecimalString;
+  /** ไม่ส่งสำหรับ deposit (BE ปฏิเสธ) */
+  vat_is_included?: boolean;
   discount_amount?: DecimalString | null;
   dr_chart_of_accounts_id: string;
   dr_cost_center_id?: string | null;

@@ -236,7 +236,16 @@ function ApInvoiceEditor({
     }
   };
 
-  const totals = useMemo(() => invoiceTotals(form.lines), [form.lines]);
+  const deposit = form.doc_type === "deposit";
+  // deposit ไม่มี Inc VAT — ล้าง flag ที่อาจค้างจากก่อนเปลี่ยนประเภทเอกสาร
+  const lines = useMemo(
+    () =>
+      deposit
+        ? form.lines.map((l) => ({ ...l, vat_is_included: false }))
+        : form.lines,
+    [deposit, form.lines],
+  );
+  const totals = useMemo(() => invoiceTotals(lines), [lines]);
   const view = !editable && loaded;
   const summary = view
     ? {
@@ -463,7 +472,8 @@ function ApInvoiceEditor({
               ),
           )}
           <InvoiceLines
-            lines={form.lines}
+            lines={lines}
+            deposit={deposit}
             editable={editable}
             showErrors={showErrors}
             onChange={patchLine}
