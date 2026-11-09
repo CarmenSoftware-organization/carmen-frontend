@@ -17,7 +17,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmptyComponent from "@/components/empty-component";
 import { cn } from "@/lib/utils";
-import { formatCurrency, round2 } from "@/lib/currency-utils";
+import { formatCurrency } from "@/lib/currency-utils";
+import { cnUnitPriceFromGrnLine } from "./cn-grn-unit-price";
 import { useGoodsReceiveNoteById } from "@/hooks/use-goods-receive-note";
 import type { GoodsReceiveNote } from "@/types/goods-receive-note";
 import { useGrnCreditedProducts } from "./use-grn-credited-products";
@@ -64,7 +65,7 @@ function toLines(grn: GoodsReceiveNote | undefined): CnGrnLine[] {
         unit_id: item.received_unit?.id ?? "",
         unit_name: item.received_unit?.name ?? "",
         quantity: qty,
-        unit_price: qty > 0 ? round2(item.sub_total_price / qty) : 0,
+        unit_price: cnUnitPriceFromGrnLine(item),
         // seed discount %/tax profile จาก GRN — rate scale ตาม qty ที่คืน
         discount_rate: Number(item.discount_rate) || 0,
         tax_profile_id: item.tax_profile?.id ?? null,
