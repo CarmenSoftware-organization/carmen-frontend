@@ -11,7 +11,7 @@ import {
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import EmptyComponent from "@/components/empty-component";
-import { round2 } from "@/lib/currency-utils";
+import { cnUnitPriceFromGrnLine } from "./cn-grn-unit-price";
 import { useGoodsReceiveNoteById } from "@/hooks/use-goods-receive-note";
 import { getDeleteDescription } from "@/lib/form-utils";
 import type { CnFormValues } from "./cn-form-schema";
@@ -137,9 +137,8 @@ export function CnItem({ form, disabled }: Props) {
       const subTotal = Number(line.sub_total_price) || 0;
       grnByLine.set(key, {
         received,
-        // GRN เก็บแต่ยอดรวมย่อย ไม่มีราคาต่อหน่วยของบรรทัดที่รับ — ถอดกลับด้วย
-        // สูตรเดียวกับ dialog เลือกรายการ ตัวเลขสองที่จะได้ตรงกัน
-        price: received > 0 ? round2(subTotal / received) : 0,
+        // ถอดราคาด้วยสูตรเดียวกับ dialog เลือกรายการ (ถอด VAT ถ้าติ๊ก Inc VAT)
+        price: cnUnitPriceFromGrnLine(line),
         subTotal,
         discount: Number(line.discount_amount) || 0,
         net: Number(line.net_amount) || 0,
