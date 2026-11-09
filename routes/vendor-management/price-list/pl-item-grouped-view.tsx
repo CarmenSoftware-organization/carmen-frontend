@@ -38,7 +38,7 @@ export function PLItemGroupedView({
                 และเหลือ Note แคบติดขอบขวา · ที่เหลือยกให้ Note (คอลัมน์เดียวที่ไม่มีความกว้าง) */}
             <Th className="w-[28%] min-w-40 text-left sm:min-w-56">{tfl("product")}</Th>
             <Th className="w-36 text-left">{tfl("moq")}</Th>
-            <Th className="w-24 text-right">{tfl("price")}</Th>
+            <Th className="w-32 text-right">{tfl("price")}</Th>
             <Th className="w-20 text-right">{tfl("taxRate")}</Th>
             <Th className="w-20 text-right">{tfl("tax")}</Th>
             {/* Total รวม VAT เสมอ (ไม่ติ๊ก = price + tax · ติ๊ก = price) บอกที่หัวคอลัมน์ครั้งเดียว */}
@@ -118,7 +118,7 @@ export function PLItemGroupedView({
                   {/* Price = เลขที่กรอก · ติ๊ก Inc VAT แสดงป้ายกำกับ + ราคาก่อน VAT ใน tooltip */}
                   <Td
                     className={cn(
-                      "text-foreground text-right align-middle tabular-nums",
+                      "text-foreground text-right align-middle whitespace-nowrap tabular-nums",
                       tierClass,
                     )}
                   >
