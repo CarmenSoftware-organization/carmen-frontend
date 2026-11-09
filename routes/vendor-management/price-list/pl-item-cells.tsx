@@ -5,6 +5,7 @@ import {
   type FieldArrayWithId,
   type UseFormReturn,
 } from "react-hook-form";
+import { distinctLocalName } from "@/lib/distinct-local-name";
 import { Crown } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -71,7 +72,10 @@ export function ProductCell({
     return (
       <NameWithSubtext
         primary={detailRef?.product?.name ?? ""}
-        secondary={detailRef?.product?.local_name ?? undefined}
+        secondary={distinctLocalName(
+          detailRef?.product?.name,
+          detailRef?.product?.local_name,
+        )}
       />
     );
   return (

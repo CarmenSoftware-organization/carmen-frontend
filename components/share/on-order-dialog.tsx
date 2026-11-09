@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { distinctLocalName } from "@/lib/distinct-local-name";
 import { Link } from "react-router";
 import { useTranslations } from "use-intl";
 import { Building2, FileText } from "lucide-react";
@@ -207,12 +208,14 @@ export function OnOrderDialog({ open, onOpenChange, productId }: Props) {
                     <span className="text-foreground text-sm font-semibold">
                       {data?.product_name ?? "—"}
                     </span>
-                    {data?.product_local_name &&
-                      data.product_local_name !== data.product_name && (
-                        <p className="text-muted-foreground text-xs">
-                          {data.product_local_name}
-                        </p>
-                      )}
+                    {distinctLocalName(
+                      data?.product_name,
+                      data?.product_local_name,
+                    ) && (
+                      <p className="text-muted-foreground text-xs">
+                        {data?.product_local_name}
+                      </p>
+                    )}
                     <LastPriceChip
                       lastPrice={data?.last_price}
                       className="pt-0.5"
