@@ -36,7 +36,7 @@ export function PLItemGroupedView({
             <Th className="w-14 text-center">#</Th>
             {/* Product มีเพดานกว้าง — ไม่งั้นมันกินที่ว่างทั้งหมด ดันตัวเลขไปกองกลางจอ
                 และเหลือ Note แคบติดขอบขวา · ที่เหลือยกให้ Note (คอลัมน์เดียวที่ไม่มีความกว้าง) */}
-            <Th className="w-[28%] min-w-56 text-left">{tfl("product")}</Th>
+            <Th className="w-[28%] min-w-40 text-left sm:min-w-56">{tfl("product")}</Th>
             <Th className="w-36 text-left">{tfl("moq")}</Th>
             <Th className="w-24 text-right">{tfl("price")}</Th>
             <Th className="w-20 text-right">{tfl("taxRate")}</Th>
@@ -94,7 +94,7 @@ export function PLItemGroupedView({
                   )}
                   {/* MOQ tier + lead time (ราคาย้ายไปเป็นคอลัมน์ Price/Total) */}
                   <Td className={cn("align-middle", tierClass)}>
-                    <span className="flex items-center gap-1.5 text-xs tabular-nums">
+                    <span className="flex items-center gap-1.5 text-xs whitespace-nowrap tabular-nums">
                       {tier.is_preferred && (
                         <Crown
                           className="text-warning-ink size-3 shrink-0"

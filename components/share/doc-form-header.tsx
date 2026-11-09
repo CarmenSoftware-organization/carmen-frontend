@@ -100,8 +100,10 @@ export function DocFormHeader({
             {mock && <MockBadge />}
             {badges}
           </div>
-          {/* shrink-0 กันปุ่มถูกบีบจนตกบรรทัด — ให้ title เป็นฝ่ายย่อแทน */}
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {/* shrink-0 กันปุ่มถูกบีบจนตกบรรทัด — ให้ title เป็นฝ่ายย่อแทน
+              max-w-full: จอแคบที่ปุ่มยาวกว่าทั้งแถว ให้ปุ่มขึ้นบรรทัดใหม่ในกลุ่มตัวเอง
+              (ไม่ใส่ = กว้างเท่าเนื้อหา ปุ่มท้าย ๆ อย่าง Activity ล้นออกนอกจอ) */}
+          <div className="flex max-w-full shrink-0 flex-wrap items-center gap-2">
             {actions}
           </div>
         </div>
