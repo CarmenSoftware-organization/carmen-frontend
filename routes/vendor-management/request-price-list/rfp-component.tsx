@@ -58,6 +58,10 @@ const TEMPLATE_ENTITY = defineEntitySource<PriceListTemplate>({
   serverFilter: null,
 });
 
+// รอบเปิดรับราคาล่าสุดขึ้นก่อน — งานหน้านี้คือรอบที่กำลังเปิด/เพิ่งเปิด ไม่ใช่รอบเก่า
+// start_date = คอลัมน์เดียวกับหัว Effective Period (sort ฝั่ง server ด้วยชื่อคอลัมน์จริง)
+const DEFAULT_SORT = "start_date:desc";
+
 export default function RequestPriceListComponent() {
   const navigate = useNavigate();
   const t = useTranslations("vendorManagement.requestPriceList");
@@ -74,7 +78,9 @@ export default function RequestPriceListComponent() {
   const isMobile = useIsMobile();
   const deleteRequestPriceList = useDeleteRequestPriceList();
   const { exportRequestPriceList, isExporting } = useExportRequestPriceList();
-  const { params, search, setSearch, tableConfig } = useDataGridState();
+  const { params, search, setSearch, tableConfig } = useDataGridState({
+    defaultSort: DEFAULT_SORT,
+  });
 
   // มีแค่ template (control "entity") กับช่วงวันที่
   const rfpFilterFields = useMemo<FilterFieldDef[]>(
@@ -101,6 +107,7 @@ export default function RequestPriceListComponent() {
   const lf = useListFilters({
     pageKey: LIST_PAGE_KEYS.REQUEST_PRICE_LIST,
     fields: rfpFilterFields,
+    defaultSort: DEFAULT_SORT,
   });
 
   const queryParams = { ...params, filter: lf.filterParam };
