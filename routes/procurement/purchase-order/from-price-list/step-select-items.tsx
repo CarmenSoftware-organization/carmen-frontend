@@ -30,7 +30,6 @@ import SearchInput from "@/components/search-input";
 import { ListFilter } from "@/components/list-filter/list-filter";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/date-utils";
-import { round2 } from "@/lib/currency-utils";
 import { computeLineAmounts } from "@/lib/line-pricing";
 import { useCurrency } from "@/hooks/use-currency";
 import { useEntitiesByIds } from "@/hooks/use-entities-by-ids";
@@ -239,8 +238,21 @@ export function StepSelectItems({ form }: StepSelectItemsProps) {
 
   const hasUnusableRow = rows.some((r) => !r.canUse);
 
+  // "Total" = รวม VAT ทุกแถว (แถวที่ติ๊ก Inc VAT = ราคา × จำนวน · ไม่ติ๊ก = บวก VAT)
   const totalAmount = items.reduce(
-    (sum, item) => sum + round2((Number(item.order_qty) || 0) * item.price),
+    (sum, item) =>
+      sum +
+      computeLineAmounts({
+        price: item.price,
+        qty: Number(item.order_qty) || 0,
+        discRate: 0,
+        isDiscAdj: false,
+        discAmt: 0,
+        taxRate: item.tax_rate ?? 0,
+        isTaxAdj: false,
+        taxAmt: 0,
+        isTaxIncluded: item.is_tax_included ?? false,
+      }).totalPrice,
     0,
   );
 
@@ -395,6 +407,11 @@ export function StepSelectItems({ form }: StepSelectItemsProps) {
             <span className="text-muted-foreground text-micro">
               {row.original.currency?.code}
             </span>
+            {row.original.detail.is_tax_included && (
+              <span className="text-muted-foreground text-micro-legal ml-1">
+                {tc("incVat")}
+              </span>
+            )}
           </span>
         ),
       },

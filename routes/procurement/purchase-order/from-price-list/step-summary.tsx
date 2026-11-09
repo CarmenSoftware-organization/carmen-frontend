@@ -291,7 +291,17 @@ export function StepSummary({ form, onEditStep }: StepSummaryProps) {
                 <tbody className="divide-border/40 divide-y">
                   {items.map((item, index) => {
                     const qty = Number(item.order_qty) || 0;
-                    const lineTotal = round2(qty * item.price);
+                    const lineTotal = computeLineAmounts({
+                      price: item.price,
+                      qty,
+                      discRate: 0,
+                      isDiscAdj: false,
+                      discAmt: 0,
+                      taxRate: item.tax_rate ?? 0,
+                      isTaxAdj: false,
+                      taxAmt: 0,
+                      isTaxIncluded: item.is_tax_included ?? false,
+                    }).totalPrice;
                     const locationId = item.location_id ?? "";
                     const locationName = locationId
                       ? (locationMap.get(locationId) ??
@@ -335,6 +345,11 @@ export function StepSummary({ form, onEditStep }: StepSummaryProps) {
                           <span className="text-muted-foreground text-micro">
                             {values.currency_code || "—"}
                           </span>
+                          {item.is_tax_included && (
+                            <span className="text-muted-foreground text-micro-legal ml-1">
+                              {tc("incVat")}
+                            </span>
+                          )}
                         </td>
                         <td className="px-3 py-1.5 text-right font-semibold tabular-nums">
                           {lineTotal.toLocaleString()}
