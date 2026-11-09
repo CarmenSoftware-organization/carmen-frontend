@@ -1042,6 +1042,7 @@
     "footer": "© {year} CARMEN BLUE · ERP for Hospitality"
   },
   "common": {
+    "incVat": "Inc VAT",
     "hiddenValue": "Hidden",
     "hiddenValueHint": "Hidden by the workflow at this stage",
     "yes": "Yes",
