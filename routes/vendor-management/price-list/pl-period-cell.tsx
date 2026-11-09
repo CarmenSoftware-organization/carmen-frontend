@@ -41,7 +41,7 @@ export function PlPeriodCell({
   className,
   compact = false,
   quietExpired = false,
-  showNote = true,
+  detail = false,
 }: {
   readonly period: string;
   readonly className?: string;
@@ -49,8 +49,11 @@ export function PlPeriodCell({
   readonly compact?: boolean;
   /** แท็บที่กรองเฉพาะใบหมดช่วงแล้ว — แดงซ้ำทุกแถวเป็นแค่เสียงรบกวน บอกจำนวนวันแบบเทาแทน */
   readonly quietExpired?: boolean;
-  /** หน้า detail ย้ายสถานะช่วงขึ้นไปไว้ที่หัวใบ (PlValidityTag) — ตรงนี้เหลือแค่วันที่ */
-  readonly showNote?: boolean;
+  /**
+   * แถบสรุปหน้า detail — หัวใบมีป้าย "Expired" อยู่แล้ว ตรงนี้จึงบอกระยะ
+   * ("หมดมา N วัน") แทนคำเดิมซ้ำ แต่ยังแดงเพราะเป็นข้อมูลที่ต้องเห็นก่อนออก PO
+   */
+  readonly detail?: boolean;
 }) {
   const t = useTranslations("vendorManagement.priceList");
   const { dateFormat } = useProfile();
@@ -68,8 +71,9 @@ export function PlPeriodCell({
 
   let note: string | null = null;
   if (validity?.kind === "expired")
-    note = quietExpired
-      ? t("periodEndedAgo", { count: validity.days })
+    note =
+      quietExpired || detail
+        ? t("periodEndedAgo", { count: validity.days })
       : t("periodExpired");
   else if (validity?.kind === "upcoming")
     note = t("periodStartsIn", { count: validity.days });
@@ -92,7 +96,7 @@ export function PlPeriodCell({
       >
         {from} - {to}
       </span>
-      {note && showNote && (
+      {note && (
         <span
           className={cn(
             "block text-xs whitespace-nowrap",
