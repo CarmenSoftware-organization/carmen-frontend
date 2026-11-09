@@ -41,6 +41,7 @@ export function PlPeriodCell({
   className,
   compact = false,
   quietExpired = false,
+  showNote = true,
 }: {
   readonly period: string;
   readonly className?: string;
@@ -48,6 +49,8 @@ export function PlPeriodCell({
   readonly compact?: boolean;
   /** แท็บที่กรองเฉพาะใบหมดช่วงแล้ว — แดงซ้ำทุกแถวเป็นแค่เสียงรบกวน บอกจำนวนวันแบบเทาแทน */
   readonly quietExpired?: boolean;
+  /** หน้า detail ย้ายสถานะช่วงขึ้นไปไว้ที่หัวใบ (PlValidityTag) — ตรงนี้เหลือแค่วันที่ */
+  readonly showNote?: boolean;
 }) {
   const t = useTranslations("vendorManagement.priceList");
   const { dateFormat } = useProfile();
@@ -89,7 +92,7 @@ export function PlPeriodCell({
       >
         {from} - {to}
       </span>
-      {note && (
+      {note && showNote && (
         <span
           className={cn(
             "block text-xs whitespace-nowrap",
@@ -106,5 +109,52 @@ export function PlPeriodCell({
         </span>
       )}
     </div>
+  );
+}
+
+/**
+ * ป้ายสถานะช่วงราคาบนแถบหัวใบ — วางข้างสถานะเอกสาร (DRAFT/ACTIVE) ให้เห็นสองเรื่อง
+ * ในจุดเดียว: ใบ DRAFT/ACTIVE ที่หมดช่วงแล้วเคยบอก "Expired" ไว้ลึกในการ์ด General
+ * แสดงเฉพาะเมื่อมีเรื่องต้องรู้ (หมดแล้ว · ยังไม่เริ่ม · ใกล้หมด) — ช่วงปกติเงียบ
+ */
+export function PlValidityTag({
+  from,
+  to,
+}: {
+  readonly from?: string;
+  readonly to?: string;
+}) {
+  const t = useTranslations("vendorManagement.priceList");
+  if (!from || !to) return null;
+  const validity = periodValidity(`${from} - ${to}`, new Date());
+  if (!validity) return null;
+
+  let label: string;
+  let tone: string;
+  if (validity.kind === "expired") {
+    label = t("periodExpired");
+    tone = "text-destructive border-destructive/30 bg-destructive/5";
+  } else if (validity.kind === "upcoming") {
+    label = t("periodStartsIn", { count: validity.days });
+    tone = "text-muted-foreground border-border";
+  } else if (validity.days <= ENDING_SOON_DAYS) {
+    label =
+      validity.days === 0
+        ? t("periodEndsToday")
+        : t("periodDaysLeft", { count: validity.days });
+    tone = "text-warning-ink border-warning/40 bg-warning/5";
+  } else {
+    return null;
+  }
+
+  return (
+    <span
+      className={cn(
+        "text-micro shrink-0 rounded-full border px-2 py-0.5 font-medium whitespace-nowrap",
+        tone,
+      )}
+    >
+      {label}
+    </span>
   );
 }

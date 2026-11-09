@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import type { PriceList } from "@/types/price-list";
 import type { PriceListFormValues } from "./pl-form-schema";
 import {
+  IncVatCell,
   LeadCell,
   MoqCell,
   PreferredCell,
@@ -25,6 +26,7 @@ interface BuildColumnsOptions {
   readonly isDisabled: boolean;
   readonly onRequestRemove: (idx: number) => void;
   readonly tfl: (key: string) => string;
+  readonly incVatLabel: string;
   readonly removeLabel: string;
   readonly confirmDuplicate: (action: () => void, productName?: string) => void;
 }
@@ -36,6 +38,7 @@ export function buildPlItemColumns({
   isDisabled,
   onRequestRemove,
   tfl,
+  incVatLabel,
   removeLabel,
   confirmDuplicate,
 }: BuildColumnsOptions): ColumnDef<DetailField>[] {
@@ -78,7 +81,6 @@ export function buildPlItemColumns({
           detailRef={detailRefs?.[row.index]}
         />
       ),
-      meta: { headerClassName: "text-center", cellClassName: "text-center" },
     },
     {
       id: "moq",
@@ -111,6 +113,24 @@ export function buildPlItemColumns({
       meta: { headerClassName: "text-right", cellClassName: "text-right" },
     },
     {
+      id: "inc_vat",
+      size: 72,
+      header: () => incVatLabel,
+      cell: ({ row }) => (
+        <IncVatCell
+          form={form}
+          index={row.index}
+          isView={isView}
+          isDisabled={isDisabled}
+          detailRef={detailRefs?.[row.index]}
+        />
+      ),
+      meta: {
+        headerClassName: "text-center whitespace-nowrap",
+        cellClassName: "text-center",
+      },
+    },
+    {
       id: "tax_profile",
       header: () => tfl("taxProfile"),
       cell: ({ row }) => (
@@ -125,7 +145,7 @@ export function buildPlItemColumns({
     },
     {
       id: "tax_rate",
-      size: 96,
+      size: 112,
       header: () => tfl("taxRate"),
       cell: ({ row }) => (
         <TaxRateCell
@@ -136,7 +156,10 @@ export function buildPlItemColumns({
           detailRef={detailRefs?.[row.index]}
         />
       ),
-      meta: { headerClassName: "text-right", cellClassName: "text-right" },
+      meta: {
+        headerClassName: "text-right whitespace-nowrap",
+        cellClassName: "text-right",
+      },
     },
     {
       id: "tax_amount",

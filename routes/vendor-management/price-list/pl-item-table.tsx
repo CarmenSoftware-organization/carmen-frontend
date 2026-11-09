@@ -56,7 +56,9 @@ function PLItemEditTable({
   "use no memo";
   const tfl = useTranslations("field");
   const t = useTranslations("vendorManagement.priceList");
+  const tc = useTranslations("common");
   const removeLabel = t("detail.removeItem");
+  const incVatLabel = tc("incVat");
   const dupConfirm = useDuplicateProductConfirm();
   const columns = useMemo<ColumnDef<DetailField>[]>(
     () =>
@@ -67,11 +69,21 @@ function PLItemEditTable({
         isDisabled,
         onRequestRemove,
         tfl,
+        incVatLabel,
         removeLabel,
         confirmDuplicate: dupConfirm.confirm,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- dupConfirm.confirm is stable
-    [form, isView, isDisabled, tfl, onRequestRemove, removeLabel, detailRefs],
+    [
+      form,
+      isView,
+      isDisabled,
+      tfl,
+      onRequestRemove,
+      removeLabel,
+      incVatLabel,
+      detailRefs,
+    ],
   );
 
   const table = useReactTable({
