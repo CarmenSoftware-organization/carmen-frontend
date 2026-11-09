@@ -52,6 +52,8 @@ export function PlItemFields({
   return (
     <>
       <SettingSection
+        // โหมดดู: แถบสรุปข้างบนเป็นการ์ดแยกอยู่แล้ว เส้นคั่นตรงนี้ไม่ได้แบ่งอะไร
+        first={isView}
         wide
         frameless
         title={t("detail.title")}

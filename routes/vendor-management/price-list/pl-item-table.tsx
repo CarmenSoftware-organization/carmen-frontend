@@ -35,13 +35,16 @@ interface PLItemTableProps {
  * ฝั่งเรียกแบบ unconditional (ไม่ชน rules-of-hooks) และ edit path ไม่เปลี่ยน
  */
 export function PLItemTable(props: PLItemTableProps) {
-  if (props.isView)
+  if (props.isView) {
+    const details = (props.detailRefs ?? []).map(toGroupableDetail);
     return (
       <PLItemGroupedView
-        detailRefs={(props.detailRefs ?? []).map(toGroupableDetail)}
-        showNote
+        detailRefs={details}
+        // คอลัมน์ Note กินที่ว่างทั้งหมดของตาราง — ไม่มีโน้ตสักแถวก็ไม่ต้องโชว์ "—" ทั้งคอลัมน์
+        showNote={details.some((d) => d.note?.trim())}
       />
     );
+  }
   return <PLItemEditTable {...props} />;
 }
 

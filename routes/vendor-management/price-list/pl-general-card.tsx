@@ -262,9 +262,11 @@ function PlViewSummary({
 }) {
   const description = priceList?.description?.trim();
   return (
-    <section className="bg-card rounded-xl border px-5 py-4 shadow-sm">
-      <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,2fr)]">
-        <SummaryItem label={tfl("vendor")}>
+    // mb-8 = ระยะถึงหัวข้อ Products (section นั้นไม่มีเส้นคั่นในโหมดดู)
+    <section className="bg-card mb-8 rounded-xl border px-5 py-4 shadow-sm">
+      {/* กว้างตามเนื้อหา ชิดซ้าย — เดิมแบ่ง 3 คอลัมน์เต็มจอ ข้อมูลสั้นจึงห่างกันเกือบครึ่งจอ */}
+      <dl className="flex flex-wrap gap-x-12 gap-y-4">
+        <SummaryItem label={tfl("vendor")} className="max-w-md">
           {priceList?.vendor?.name || "—"}
         </SummaryItem>
         <SummaryItem label={tfl("currency")}>
@@ -272,15 +274,14 @@ function PlViewSummary({
         </SummaryItem>
         <SummaryItem label={tfl("effectivePeriod")}>
           {from && to ? (
-            // สถานะช่วง (หมดแล้ว/ใกล้หมด) อยู่ที่หัวใบแล้ว — ตรงนี้เหลือแค่วันที่
-            <PlPeriodCell period={`${from} - ${to}`} showNote={false} />
+            <PlPeriodCell period={`${from} - ${to}`} detail />
           ) : (
             "—"
           )}
         </SummaryItem>
         {/* คำอธิบายว่าง = ไม่แสดงทั้งแถว (เดิมกินหนึ่งแถวเต็มเพื่อโชว์ "—") */}
         {description && (
-          <SummaryItem label={tfl("description")} className="sm:col-span-3">
+          <SummaryItem label={tfl("description")} className="basis-full">
             <span className="font-normal whitespace-pre-wrap">
               {description}
             </span>

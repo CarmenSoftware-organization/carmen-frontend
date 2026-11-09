@@ -41,8 +41,17 @@ export function PLItemGroupedView({
             <Th className="w-24 text-right">{tfl("price")}</Th>
             <Th className="w-20 text-right">{tfl("taxRate")}</Th>
             <Th className="w-20 text-right">{tfl("tax")}</Th>
-            <Th className="w-24 text-right">{tfl("total")}</Th>
-            {showNote && <Th className="min-w-40 text-left">{tfl("note")}</Th>}
+            {/* Total รวม VAT เสมอ (ไม่ติ๊ก = price + tax · ติ๊ก = price) บอกที่หัวคอลัมน์ครั้งเดียว */}
+            <Th className="w-28 text-right">
+              {tfl("total")}{" "}
+              <span className="text-micro font-normal">({tc("incVat")})</span>
+            </Th>
+            {/* ไม่มี Note = คอลัมน์ว่างรับที่เหลือแทน ไม่งั้นตัวเลขกระจายเต็มจอ */}
+            {showNote ? (
+              <Th className="min-w-40 text-left">{tfl("note")}</Th>
+            ) : (
+              <th aria-hidden />
+            )}
           </tr>
         </thead>
         <tbody>
@@ -95,9 +104,15 @@ export function PLItemGroupedView({
                       <span className="text-foreground font-medium">
                         {Number(tier.moq_qty) || 0}+ {tier.unit_name ?? "—"}
                       </span>
-                      <span className="text-muted-foreground text-micro">
-                        · {Number(tier.lead_time_days) || 0}d
-                      </span>
+                      {/* lead time 0 = ส่งทันที/ไม่ได้กรอก — ไม่ต้องขึ้น "· 0d" ทุกขั้น */}
+                      {Number(tier.lead_time_days) > 0 && (
+                        <span
+                          className="text-muted-foreground text-micro"
+                          title={tfl("leadTime")}
+                        >
+                          · {Number(tier.lead_time_days)}d
+                        </span>
+                      )}
                     </span>
                   </Td>
                   {/* Price = เลขที่กรอก · ติ๊ก Inc VAT แสดงป้ายกำกับ + ราคาก่อน VAT ใน tooltip */}
@@ -149,7 +164,7 @@ export function PLItemGroupedView({
                   >
                     {total.toFixed(2)}
                   </Td>
-                  {showNote && (
+                  {showNote ? (
                     <Td
                       className={cn(
                         "text-muted-foreground align-middle",
@@ -158,6 +173,8 @@ export function PLItemGroupedView({
                     >
                       {tier.note || "—"}
                     </Td>
+                  ) : (
+                    <td aria-hidden className={tierClass} />
                   )}
                 </tr>
               );
