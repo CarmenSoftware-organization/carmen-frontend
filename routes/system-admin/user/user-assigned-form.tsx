@@ -136,7 +136,11 @@ export function UserAssignedForm({ user }: UserAssignedFormProps) {
           isPending={isPending}
           title={fullName}
           leading={
-            <UserAvatar first={user.user.firstname} last={user.user.lastname} />
+            <UserAvatar
+              first={user.user.firstname}
+              last={user.user.lastname}
+              avatarUrl={user.user.avatar_url}
+            />
           }
           badges={
             <StatusBadge active={user.user.is_active} className="shrink-0" />

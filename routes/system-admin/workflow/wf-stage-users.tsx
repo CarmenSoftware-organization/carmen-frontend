@@ -5,7 +5,7 @@ import { Crown, Search, UserRoundCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { PersonAvatar } from "@/components/share/person-avatar";
 import {
   Field,
   FieldContent,
@@ -17,7 +17,6 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import type { User } from "@/types/workflows";
-import { formatName } from "@/lib/name";
 import { cn } from "@/lib/utils";
 import type { WorkflowCreateModel } from "./wf-form-schema";
 
@@ -112,11 +111,13 @@ function WfStageUsersView({
     <ul className="divide-y rounded-lg border">
       {people.map((user) => (
         <li key={user.user_id} className="flex items-center gap-3 px-3 py-2">
-          <Avatar className="size-7 shrink-0">
-            <AvatarFallback className="bg-muted text-foreground text-micro font-medium">
-              {formatName(user.firstname, user.lastname)}
-            </AvatarFallback>
-          </Avatar>
+          <PersonAvatar
+            firstname={user.firstname}
+            lastname={user.lastname}
+            avatarUrl={user.avatar_url}
+            className="size-7 shrink-0"
+            fallbackClassName="bg-muted text-foreground text-micro font-medium"
+          />
           <span className="flex min-w-0 flex-col">
             <span className="text-foreground truncate text-sm leading-tight font-medium">
               {user.firstname} {user.lastname}
@@ -338,18 +339,18 @@ function WfStageUsersEditor({
                           onCheckedChange={() => toggleUser(user)}
                           disabled={isDisabled}
                         />
-                        <Avatar className="size-7 shrink-0">
-                          <AvatarFallback
-                            className={cn(
-                              "text-micro font-medium",
-                              isAssigned
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted text-foreground",
-                            )}
-                          >
-                            {formatName(user.firstname, user.lastname)}
-                          </AvatarFallback>
-                        </Avatar>
+                        <PersonAvatar
+                          firstname={user.firstname}
+                          lastname={user.lastname}
+                          avatarUrl={user.avatar_url}
+                          className="size-7 shrink-0"
+                          fallbackClassName={cn(
+                            "text-micro font-medium",
+                            isAssigned
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-foreground",
+                          )}
+                        />
                         <span className="flex min-w-0 flex-col">
                           <span className="text-foreground truncate text-xs leading-tight font-medium">
                             {user.firstname} {user.lastname}

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { formatName } from "@/lib/name";
+import { PersonAvatar } from "@/components/share/person-avatar";
 import { cn } from "@/lib/utils";
 
 /* Re-export shared admin primitives so existing imports from this file
@@ -90,15 +90,17 @@ export function AssignSection({
 interface UserAvatarProps {
   readonly first: string;
   readonly last: string;
+  readonly avatarUrl?: string | null;
 }
 
-export function UserAvatar({ first, last }: UserAvatarProps) {
+export function UserAvatar({ first, last, avatarUrl }: UserAvatarProps) {
   return (
-    <div
-      className="border-border/60 bg-muted text-foreground flex size-16 shrink-0 items-center justify-center rounded-full border text-lg font-semibold tracking-wide"
-      aria-hidden="true"
-    >
-      {formatName(first, last)}
-    </div>
+    <PersonAvatar
+      firstname={first}
+      lastname={last}
+      avatarUrl={avatarUrl}
+      className="border-border/60 size-16 shrink-0 border"
+      fallbackClassName="bg-muted text-foreground text-lg font-semibold tracking-wide"
+    />
   );
 }
