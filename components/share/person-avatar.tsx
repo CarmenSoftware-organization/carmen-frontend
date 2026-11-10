@@ -15,6 +15,12 @@ interface PersonAvatarProps {
   readonly className?: string;
   /** พื้น/สีตัวอักษรของ fallback จาก call site เดิม */
   readonly fallbackClassName?: string;
+  /**
+   * คลาสของไอคอน fallback (ค่าเริ่มต้น size-1/2 ของวง)
+   * ไอคอนเปล่า ๆ ไม่มีวง (เช่น header เอกสาร/status bar):
+   * className="size-3" fallbackClassName="bg-transparent text-inherit" iconClassName="size-full"
+   */
+  readonly iconClassName?: string;
 }
 
 function resolveInitials(
@@ -29,8 +35,11 @@ function resolveInitials(
     first = head;
     last = rest.length > 0 ? rest[rest.length - 1] : "";
   }
-  if (!first.trim() && !last.trim()) return "";
-  return formatName(first, last);
+  if (!first.trim()) return "";
+  const result = formatName(first, last);
+  // formatName คืน "U" เป็น placeholder เมื่อชื่อว่างหลังตัดสระไทย
+  if (result === "U" && !/^u/i.test(first.trim())) return "";
+  return result;
 }
 
 export function PersonAvatar({
@@ -41,6 +50,7 @@ export function PersonAvatar({
   fallback = "initials",
   className,
   fallbackClassName,
+  iconClassName,
 }: PersonAvatarProps) {
   const initials =
     fallback === "initials" ? resolveInitials(name, firstname, lastname) : "";
@@ -48,8 +58,8 @@ export function PersonAvatar({
   return (
     <Avatar key={avatarUrl ?? "fallback"} className={className}>
       {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
-      <AvatarFallback className={cn(fallbackClassName)}>
-        {initials || <User className="size-1/2" aria-hidden="true" />}
+      <AvatarFallback className={fallbackClassName}>
+        {initials || <User className={cn("size-1/2", iconClassName)} aria-hidden="true" />}
       </AvatarFallback>
     </Avatar>
   );
