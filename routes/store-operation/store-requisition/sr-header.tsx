@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useListReturn } from "@/hooks/use-list-return";
 import { useTranslations } from "use-intl";
-import { Building2, CalendarDays, Save, User } from "lucide-react";
+import { Building2, CalendarDays, Save } from "lucide-react";
+import { PersonAvatar } from "@/components/share/person-avatar";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
 import { useCreatableWorkflows } from "@/hooks/use-workflow";
 import { WORKFLOW_TYPE } from "@/types/workflows";
@@ -42,6 +43,7 @@ interface SrHeaderProps {
   readonly srDate?: string;
   readonly dateFormat: string;
   readonly requesterName: string;
+  readonly requesterAvatar?: string | null;
   readonly departmentName: string;
   readonly departmentCode: string;
   readonly isLoading?: boolean;
@@ -62,6 +64,7 @@ export function SrHeader({
   srDate,
   dateFormat,
   requesterName,
+  requesterAvatar,
   departmentName,
   departmentCode,
   isLoading,
@@ -192,7 +195,13 @@ export function SrHeader({
   const docMeta = (
     <span className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
       <span className="flex items-center gap-1">
-        <User className="size-3 shrink-0" aria-hidden="true" />
+        <PersonAvatar
+          fallback="icon"
+          avatarUrl={requesterAvatar}
+          className="size-3 shrink-0"
+          fallbackClassName="bg-transparent text-inherit"
+          iconClassName="size-full"
+        />
         {isLoading ? "—" : requesterName || "—"}
       </span>
       <span

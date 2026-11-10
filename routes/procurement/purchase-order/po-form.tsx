@@ -66,7 +66,12 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
   const tc = useTranslations("common");
   const tv = useTranslations("validation");
   const tfl = useTranslations("field");
-  const { defaultCurrencyId, defaultBu, data: profileData } = useProfile();
+  const {
+    defaultCurrencyId,
+    defaultBu,
+    data: profileData,
+    avatarUrl,
+  } = useProfile();
   const [mode, setMode] = useState<FormMode>(purchaseOrder ? "view" : "add");
   const isView = mode === "view";
   const isEditMode = mode === "edit";
@@ -238,6 +243,7 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
           deletePoIsPending={deletePo.isPending}
           departmentName={departmentName}
           buyerName={purchaseOrder?.buyer_name || buyerName}
+          buyerAvatar={purchaseOrder ? purchaseOrder.buyer_avatar : avatarUrl}
           onBack={handleBack}
           onCancel={handleCancel}
           onEnterEdit={() => setMode("edit")}

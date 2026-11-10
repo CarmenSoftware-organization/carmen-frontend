@@ -56,10 +56,16 @@ export function PersonAvatar({
     fallback === "initials" ? resolveInitials(name, firstname, lastname) : "";
 
   return (
-    <Avatar key={avatarUrl ?? "fallback"} className={className}>
+    <Avatar
+      key={avatarUrl ?? "fallback"}
+      className={className}
+      aria-hidden="true"
+    >
       {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
       <AvatarFallback className={fallbackClassName}>
-        {initials || <User className={cn("size-1/2", iconClassName)} aria-hidden="true" />}
+        {initials || (
+          <User className={cn("size-1/2", iconClassName)} aria-hidden="true" />
+        )}
       </AvatarFallback>
     </Avatar>
   );

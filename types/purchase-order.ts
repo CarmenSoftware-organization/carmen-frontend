@@ -223,6 +223,8 @@ export interface PurchaseOrder {
   base_total_amount?: number;
   // detail endpoint (`GET /api/{bu}/purchase-orders/{id}`) เท่านั้น — list ไม่ส่ง
   buyer?: EntityRef | null;
+  // รูปโปรไฟล์ผู้ซื้อ — detail เท่านั้น, ไม่มีฟิลด์ = ไม่มีรูป
+  buyer_avatar?: string;
   workflow?: EntityRef | null;
   credit_term?: EntityRef | null;
   credit_term_value?: number;

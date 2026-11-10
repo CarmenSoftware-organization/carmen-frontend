@@ -1,5 +1,5 @@
 import { useTranslations } from "use-intl";
-import { User } from "lucide-react";
+import { PersonAvatar } from "@/components/share/person-avatar";
 import { DocActions } from "@/components/share/doc-actions";
 import { useCreditNoteComments } from "./use-credit-note";
 import type { FormMode } from "@/types/form";
@@ -15,6 +15,7 @@ interface CnHeaderProps {
   readonly deleteIsPending: boolean;
   readonly isLocked: boolean;
   readonly createdByName: string;
+  readonly createdByAvatar?: string | null;
   readonly onBack: () => void;
   readonly onEnterEdit: () => void;
   readonly onCancel: () => void;
@@ -29,6 +30,7 @@ export function CnHeader({
   deleteIsPending,
   isLocked,
   createdByName,
+  createdByAvatar,
   onBack,
   onEnterEdit,
   onCancel,
@@ -71,7 +73,13 @@ export function CnHeader({
     <span className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
       {createdByName && (
         <span className="flex items-center gap-1">
-          <User className="size-3 shrink-0" aria-hidden="true" />
+          <PersonAvatar
+            fallback="icon"
+            avatarUrl={createdByAvatar}
+            className="size-3 shrink-0"
+            fallbackClassName="bg-transparent text-inherit"
+            iconClassName="size-full"
+          />
           {createdByName}
         </span>
       )}

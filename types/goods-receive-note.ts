@@ -69,7 +69,8 @@ interface GrnDetailItem extends TaxFields, DiscountFields, ItemMoneyFields {
  * - `credit_note` — มีใบลดหนี้ที่ยังไม่ยกเลิกอ้างบรรทัดนี้ (รวมใบร่าง)
  * - `legacy_posting` — ใบลงสต๊อกแบบเก่าที่การแก้ไขลงใหม่ให้ไม่ได้
  */
-export type GrnStockLockReason = "stock_consumed" | "credit_note" | "legacy_posting";
+export type GrnStockLockReason =
+  "stock_consumed" | "credit_note" | "legacy_posting";
 
 interface GoodsReceiveNoteDetail {
   id: string;
@@ -153,6 +154,8 @@ export interface GoodsReceiveNote {
   post_type: GrnPostType | null;
   signature_image_url: string | null;
   received_by: EntityRef | null;
+  // รูปโปรไฟล์ผู้รับ — detail เท่านั้น, ไม่มีฟิลด์ = ไม่มีรูป
+  received_by_avatar?: string;
   credit_term: EntityRef | null;
   credit_term_days: number | null;
   payment_due_date: string | null;
