@@ -72,6 +72,8 @@ export interface StoreRequisition {
   // detail endpoint เท่านั้น
   workflow?: EntityRef | null;
   requestor?: EntityRef | null;
+  // รูปโปรไฟล์ผู้ขอ — detail เท่านั้น, ไม่มีฟิลด์ = ไม่มีรูป
+  requestor_avatar?: string;
   department?: EntityRef | null;
   from_location?: EntityRef | null;
   to_location?: EntityRef | null;

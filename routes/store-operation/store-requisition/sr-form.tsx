@@ -53,7 +53,13 @@ export function StoreRequisitionForm({
   const t = useTranslations("storeOperation.storeRequisition");
   const tfl = useTranslations("field");
   const tv = useTranslations("validation");
-  const { data: profile, defaultBu, hasDepartment, dateFormat } = useProfile();
+  const {
+    data: profile,
+    defaultBu,
+    hasDepartment,
+    dateFormat,
+    avatarUrl,
+  } = useProfile();
 
   const [mode, setMode] = useState<FormMode>(storeRequisition ? "view" : "add");
   const isView = mode === "view";
@@ -241,6 +247,9 @@ export function StoreRequisitionForm({
           srDate={srDate}
           dateFormat={dateFormat}
           requesterName={reqName}
+          requesterAvatar={
+            storeRequisition ? storeRequisition.requestor_avatar : avatarUrl
+          }
           departmentName={departmentName}
           departmentCode={departmentCode}
           isLoading={!profile}

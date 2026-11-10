@@ -1,4 +1,5 @@
-import { CalendarDays, User, Globe, Monitor } from "lucide-react";
+import { CalendarDays, Globe, Monitor } from "lucide-react";
+import { PersonAvatar } from "@/components/share/person-avatar";
 import { useProfile } from "@/hooks/use-profile";
 import { ActivityActionLabel } from "../shared/activity-action-label";
 import { formatDate } from "@/lib/date-utils";
@@ -58,9 +59,12 @@ export function UserActivityCard({
       {/* Body */}
       <div className="space-y-1.5">
         <div className="flex min-w-0 items-center gap-1.5">
-          <User
-            className="text-muted-foreground size-3 shrink-0"
-            aria-hidden="true"
+          <PersonAvatar
+            fallback="icon"
+            avatarUrl={log.actor_avatar}
+            className="size-3 shrink-0"
+            fallbackClassName="bg-transparent text-muted-foreground"
+            iconClassName="size-full"
           />
           <span className="truncate text-xs font-semibold">{actorName}</span>
           {log.actor_username && actorName !== log.actor_username && (
