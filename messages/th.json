@@ -1676,7 +1676,8 @@
     "fileTooLarge": "ไฟล์ {size} ใหญ่กว่าที่รับได้ {max}",
     "filesRejected": "ข้ามไป {count} ไฟล์ — {first}",
     "maxCnAmount": "ลดหนี้ได้ไม่เกินยอดสุทธิที่รับมา",
-    "maxFoodCostBelowTarget": "เพดานต้นทุนอาหารต้องไม่ต่ำกว่าเป้า"
+    "maxFoodCostBelowTarget": "เพดานต้นทุนอาหารต้องไม่ต่ำกว่าเป้า",
+    "youtubeLink": "ต้องเป็นลิงก์วิดีโอ YouTube เช่น https://www.youtube.com/watch?v=… หรือ https://youtu.be/…"
   },
   "field": {
     "field": "ฟิลด์",
@@ -4879,7 +4880,10 @@
       "categoryRatio": "(หมวด {pct}%)",
       "marginBelowCategoryMin": "ต่ำกว่าขั้นต่ำของหมวด {pct}%",
       "marginCategoryTarget": "เป้าของหมวด {pct}%",
-      "marginMeetsCategoryTarget": "ถึงเป้าของหมวด {pct}% แล้ว"
+      "marginMeetsCategoryTarget": "ถึงเป้าของหมวด {pct}% แล้ว",
+      "videoUrl": "ลิงก์วิดีโอ (YouTube)",
+      "videoUrlDesc": "วางลิงก์วิดีโอ YouTube — วิดีโอจะเล่นบนสุดของหน้าสูตร",
+      "videoTitle": "วิดีโอ: {name}"
     },
     "posSale": {
       "history": {

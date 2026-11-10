@@ -1676,7 +1676,8 @@
     "fileTooLarge": "{size} is over the {max} limit",
     "filesRejected": "{count} files skipped — {first}",
     "maxCnAmount": "Cannot credit more than the net amount received",
-    "maxFoodCostBelowTarget": "Max food cost must be at least the target"
+    "maxFoodCostBelowTarget": "Max food cost must be at least the target",
+    "youtubeLink": "Must be a YouTube video link, e.g. https://www.youtube.com/watch?v=… or https://youtu.be/…"
   },
   "field": {
     "field": "Field",
@@ -4879,7 +4880,10 @@
       "categoryRatio": "(category {pct}%)",
       "marginBelowCategoryMin": "Below category minimum {pct}%",
       "marginCategoryTarget": "Category target {pct}%",
-      "marginMeetsCategoryTarget": "Meets category target {pct}%"
+      "marginMeetsCategoryTarget": "Meets category target {pct}%",
+      "videoUrl": "Video link (YouTube)",
+      "videoUrlDesc": "Paste a YouTube video link — it plays at the top of the recipe page",
+      "videoTitle": "Video: {name}"
     },
     "posSale": {
       "history": {

@@ -365,6 +365,7 @@ function buildRecipePayload(values: RecipeFormValues) {
     name: values.name,
     description: values.description || null,
     note: values.note || null,
+    video_url: values.video_url.trim() || null,
     status: values.status,
     difficulty: values.difficulty,
     cuisine_id: values.cuisine_id!,

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { youtubeEmbedUrl } from "@/lib/youtube";
 
 /**
  * Guard ของ security headers — ค่าชุดเดียวกันถูกประกาศไว้ 4 ที่ ที่ไม่มีอะไรผูกกันเลย
@@ -110,6 +111,17 @@ describe("security headers", () => {
       expect(source).toMatch(header);
     }
   });
+
+  it.each(HOSTING_CONFIGS)(
+    "%s ให้ฝัง player ของ YouTube (nocookie) ได้ — วิดีโอบนหน้าสูตร",
+    (file) => {
+      // ต้องตรงกับโดเมนใน lib/youtube.ts youtubeEmbedUrl() ไม่งั้น iframe ว่างเฉพาะ production
+      const frameSrc = /frame-src[^;"]*/.exec(read(file))?.[0] ?? "";
+      expect(frameSrc, file).toContain(
+        new URL(youtubeEmbedUrl("dQw4w9WgXcQ")).origin,
+      );
+    },
+  );
 
   it("CSP ไม่มี 'unsafe-inline' ใน script-src", () => {
     // style-src ต้องมี 'unsafe-inline' (React ใส่ style attribute + chart.tsx inject

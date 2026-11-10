@@ -145,6 +145,8 @@ export interface Recipe {
   description: string | null;
   note: string | null;
   is_active: boolean;
+  /** ลิงก์วิดีโอ YouTube 1 ลิงก์ (backend เก็บรูปแบบ watch?v=<id>) — เล่นบนสุดของหน้าสูตร · backend เก่าไม่ส่งฟิลด์นี้ */
+  video_url?: string | null;
   category_id: string;
   cuisine_id: string;
   difficulty: string;
