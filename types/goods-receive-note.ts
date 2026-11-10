@@ -69,8 +69,7 @@ interface GrnDetailItem extends TaxFields, DiscountFields, ItemMoneyFields {
  * - `credit_note` — มีใบลดหนี้ที่ยังไม่ยกเลิกอ้างบรรทัดนี้ (รวมใบร่าง)
  * - `legacy_posting` — ใบลงสต๊อกแบบเก่าที่การแก้ไขลงใหม่ให้ไม่ได้
  */
-export type GrnStockLockReason =
-  "stock_consumed" | "credit_note" | "legacy_posting";
+export type GrnStockLockReason = "stock_consumed" | "credit_note" | "legacy_posting";
 
 interface GoodsReceiveNoteDetail {
   id: string;
