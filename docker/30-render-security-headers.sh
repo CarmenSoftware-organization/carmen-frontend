@@ -20,7 +20,7 @@ SCRIPT_HASH="sha256-0k0itUkfTj7bMCkHluURmLkIOOj6e8nXNyXCiHJ+vS8="
 CONNECT_SRC="'self'"
 [ -z "${WS_URL:-}" ] || CONNECT_SRC="${CONNECT_SRC} ${WS_URL}"
 
-CSP="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' '${SCRIPT_HASH}'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src ${CONNECT_SRC}; worker-src 'self' blob:; frame-src 'self' blob:"
+CSP="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' '${SCRIPT_HASH}'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src ${CONNECT_SRC}; worker-src 'self' blob:; frame-src 'self' blob: https://www.youtube-nocookie.com"
 
 cat > "$OUT" <<HEADERS
 # GENERATED โดย /docker-entrypoint.d/30-render-security-headers.sh — อย่าแก้ในไฟล์นี้

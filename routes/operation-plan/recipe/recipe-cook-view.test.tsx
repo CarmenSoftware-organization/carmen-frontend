@@ -110,3 +110,48 @@ describe("RecipeCookView — ปุ่ม Print", () => {
     expect(screen.queryByText(en.operationPlan.recipe.editRecipe)).toBeNull();
   });
 });
+
+describe("RecipeCookView — วิดีโอของสูตร", () => {
+  const playerTitle = en.operationPlan.recipe.videoTitle.replace(
+    "{name}",
+    RECIPE.name,
+  );
+
+  it("มีลิงก์ YouTube → ฝัง player ของ youtube-nocookie บนสุดของคอลัมน์ขั้นตอน", () => {
+    renderForm(
+      <RecipeCookView
+        recipe={{
+          ...RECIPE,
+          video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        }}
+      />,
+    );
+    const player = screen.getByTitle(playerTitle);
+    expect(player.tagName).toBe("IFRAME");
+    expect(player).toHaveAttribute(
+      "src",
+      "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0",
+    );
+    // YouTube ต้องรู้ origin ของหน้าที่ฝัง ไม่งั้น player ขึ้น Error 153
+    expect(player).toHaveAttribute(
+      "referrerpolicy",
+      "strict-origin-when-cross-origin",
+    );
+    // ก่อนกล่อง "ยังไม่มีขั้นตอน" — วิดีโอเห็นก่อนเสมอ
+    const steps = screen.getByRole("region", {
+      name: en.operationPlan.recipe.stepsSection,
+    });
+    expect(steps.firstElementChild).toContainElement(player);
+  });
+
+  it.each([
+    ["ไม่มีฟิลด์ (backend เก่า)", undefined],
+    ["null", null],
+    ["ไม่ใช่ลิงก์ YouTube", "https://vimeo.com/76979871"],
+  ])("%s → ไม่มี player", (_label, videoUrl) => {
+    const { container } = renderForm(
+      <RecipeCookView recipe={{ ...RECIPE, video_url: videoUrl }} />,
+    );
+    expect(container.querySelector("iframe")).toBeNull();
+  });
+});

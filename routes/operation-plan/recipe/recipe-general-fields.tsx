@@ -1,6 +1,7 @@
 import {
   Controller,
   useFormState,
+  useWatch,
   type Control,
   type FieldPath,
   type UseFormReturn,
@@ -18,6 +19,7 @@ import { LookupCuisine } from "@/components/lookup/lookup-cuisine";
 import { LookupRecipeCategory } from "@/components/lookup/lookup-recipe-category";
 import { LookupUnit } from "@/components/lookup/lookup-unit";
 import { useUnitById } from "@/hooks/use-unit";
+import { parseYoutubeVideoId, youtubeThumbnailUrl } from "@/lib/youtube";
 import { SettingSection } from "@/components/ui/setting-section";
 import type { Recipe } from "@/types/recipe";
 import type { RecipeFormValues } from "./recipe-form-schema";
@@ -46,6 +48,8 @@ export function RecipeGeneralFields({
   const tfl = useTranslations("field");
   // subscribe เอง — อ่าน form.formState.errors ตรง ๆ ไม่ re-render เมื่อ error เปลี่ยน
   const { errors } = useFormState({ control: form.control });
+  const videoUrl = useWatch({ control: form.control, name: "video_url" });
+  const videoId = parseYoutubeVideoId(videoUrl);
 
   return (
     <SettingSection
@@ -141,6 +145,36 @@ export function RecipeGeneralFields({
             {...form.register("note")}
           />
           <FieldDescription>{t("internalNoteDesc")}</FieldDescription>
+        </Field>
+
+        {/* วิดีโอ 1 ลิงก์ต่อสูตร — เล่นบนสุดของหน้าสูตร (/operation-plan/recipe/:id) */}
+        <Field>
+          <FieldLabel htmlFor="recipe-video-url">{t("videoUrl")}</FieldLabel>
+          <FieldInput
+            id="recipe-video-url"
+            size="sm"
+            // ไม่ใช้ type="url" — form ไม่มี noValidate เบราว์เซอร์จะเด้ง bubble ของมันเองก่อน zod
+            inputMode="url"
+            autoComplete="off"
+            placeholder="https://www.youtube.com/watch?v=…"
+            disabled={isDisabled}
+            maxLength={2048}
+            error={errors.video_url?.message}
+            {...form.register("video_url")}
+          />
+          {videoId ? (
+            <div className="flex items-center gap-3">
+              <img
+                src={youtubeThumbnailUrl(videoId)}
+                alt=""
+                loading="lazy"
+                className="aspect-video w-32 shrink-0 rounded-md border object-cover"
+              />
+              <FieldDescription>{t("videoUrlDesc")}</FieldDescription>
+            </div>
+          ) : (
+            <FieldDescription>{t("videoUrlDesc")}</FieldDescription>
+          )}
         </Field>
 
         {/* Time + yield */}

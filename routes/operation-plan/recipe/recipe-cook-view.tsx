@@ -19,6 +19,7 @@ import { activeSteps, normalizeEquipment } from "./recipe-steps-sync";
 import { activeIngredients, formatQty } from "./recipe-ingredients-cost";
 import { useRecipePrintTemplateId } from "./use-recipe-print-template";
 import { useWakeLock } from "./use-wake-lock";
+import { RecipeVideoPlayer } from "./recipe-video-player";
 
 const LIST_PATH = "/operation-plan/recipe";
 const ALLERGEN_LABEL = new Map<string, string>(
@@ -141,6 +142,8 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
       <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         {/* ขั้นตอน */}
         <section aria-label={t("stepsSection")} className="min-w-0">
+          {/* วิดีโอของสูตร (ถ้ามี) อยู่บนสุดของคอลัมน์ขั้นตอน — เห็นก่อนลงมือ */}
+          <RecipeVideoPlayer url={recipe.video_url} recipeName={recipe.name} />
           {total === 0 || !current ? (
             <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
               <p>{t("cookNoSteps")}</p>
