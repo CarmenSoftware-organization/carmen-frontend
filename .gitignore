@@ -20,3 +20,7 @@ docs/investor/deck/*.html
 .DS_Store
 
 .superpowers/
+
+# trail hooks ของ Cursor มี absolute path ของเครื่อง local
+.cursor/hooks/
+.cursor/hooks.json
