@@ -6494,6 +6494,10 @@
         "3days": "Last 3 days",
         "7days": "Last 7 days",
         "1month": "Last month",
+        "14days": "Last 14 days",
+        "30days": "Last 30 days",
+        "90days": "Last 90 days",
+        "all": "All time",
         "current_period": "Current period",
         "previous_period": "Last period"
       },
@@ -6506,7 +6510,12 @@
         "transfer_in": "Transfer in",
         "transfer_out": "Transfer out",
         "opening": "Opening balance",
-        "closing": "Closing balance"
+        "closing": "Closing balance",
+        "requests": "Times requested",
+        "qty": "Quantity requested",
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
       },
       "filterCount": {
         "categories": "{count, plural, one {# category} other {# categories}}",
