@@ -28,7 +28,6 @@ import { ListCard, ListCardRow } from "@/components/share/list-card";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { CellAction } from "@/components/ui/cell-action";
 import {
   DataGrid,
@@ -47,6 +46,7 @@ import { useListFilters } from "@/hooks/use-list-filters";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
+import { setURLParams } from "@/hooks/use-url";
 import { formatDate } from "@/lib/date-utils";
 import { buildXlsxFileName, downloadXlsx } from "@/lib/xlsx-utils";
 import type { FilterFieldDef } from "@/types/list-filter";
@@ -57,7 +57,6 @@ import {
 } from "./ar-folio-actions";
 import {
   filterFolios,
-  folioSummary,
   readFolioSamples,
   saveFolioSamples,
   type ArFolio,
@@ -158,11 +157,28 @@ function FolioList({ bu }: { readonly bu: string }) {
   useEffect(() => {
     if (!status) setValue("status", "pending");
   }, [status, setValue]);
+  // An empty status defaults to Pending; clearing must explicitly select all.
+  const folioFilters = {
+    ...lf,
+    activeFilters: lf.activeFilters
+      .filter((filter) => filter.key !== "status" || status !== "all")
+      .map((filter) =>
+        filter.key === "status"
+          ? { ...filter, onRemove: () => setValue("status", "all") }
+          : filter,
+      ),
+    clearAll: () =>
+      setURLParams({
+        ...Object.fromEntries(fields.map((field) => [field.key, ""])),
+        status: "all",
+        sv: "",
+        page: "",
+      }),
+  };
   const rows = useMemo(
     () => filterFolios(records, search, lf.values),
     [records, search, lf.values],
   );
-  const summary = folioSummary(rows);
   const open = (folio: ArFolio, next: FolioAction = "invoices") =>
     setAction({ folio, action: next });
   const column = (
@@ -369,7 +385,7 @@ function FolioList({ bu }: { readonly bu: string }) {
         <ListToolbar
           search={search}
           onSearch={setSearch}
-          lf={lf}
+          lf={folioFilters}
           fields={localizedFields}
           table={table}
           onSaveViewClick={() => setSaveView(true)}
@@ -394,20 +410,6 @@ function FolioList({ bu }: { readonly bu: string }) {
         />
       }
     >
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {(["count", "total", "unbilled", "billed"] as const).map((key) => (
-          <Card key={key}>
-            <CardContent className="space-y-1 p-3">
-              <div className="text-muted-foreground text-xs">
-                {t(`summary.${key}`)}
-              </div>
-              <div className="text-base font-semibold tabular-nums">
-                {key === "count" ? summary[key] : money(summary[key])}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
       <DataGrid
         table={table}
         recordCount={rows.length}

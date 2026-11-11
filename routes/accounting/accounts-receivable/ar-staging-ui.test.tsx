@@ -8,11 +8,12 @@ import messages from "@/messages/en.json";
 import { setURLParams } from "@/hooks/use-url";
 import { act } from "react";
 import { Component as FolioList } from "./ar-folio.route";
+import { Component as ArDashboard } from "./ar-dashboard.route";
 import { Component as ContractList } from "./ar-contract.route";
 import { ContractDialog } from "./ar-contract-dialog";
 import { FolioDialog } from "./ar-folio-actions";
 import { readContractSamples } from "./ar-contract-model";
-import { FOLIO_SAMPLES } from "./ar-folio-model";
+import { FOLIO_SAMPLES, saveFolioSamples } from "./ar-folio-model";
 import { Component as AccountingList } from "../documents/accounting-document-list.route";
 import { downloadXlsx } from "@/lib/xlsx-utils";
 
@@ -142,8 +143,10 @@ it("uses working client sorting and search for the GL financial report list", ()
   expect(within(table).getAllByRole("row")[1]).toHaveTextContent("FR2607-0008");
 });
 
-it("renders the Folio table with Pending as default and updates filtered KPIs for All", async () => {
+it("keeps the Folio list focused on the table with working Pending and All filters", () => {
   setup(<FolioList />);
+  expect(screen.queryByText("Total Folios")).not.toBeInTheDocument();
+  expect(screen.queryByText("Total Folio Amount")).not.toBeInTheDocument();
   const table = screen.getByRole("table");
   expect(within(table).getByText("SAMPLE-PMS-0105")).toBeVisible();
   expect(within(table).queryByText("SAMPLE-POS-0107")).not.toBeInTheDocument();
@@ -151,10 +154,71 @@ it("renders the Folio table with Pending as default and updates filtered KPIs fo
   expect(within(table).getByText("Un-Bill")).toBeVisible();
   act(() => setURLParams({ status: "all" }));
   expect(within(table).getByText("SAMPLE-POS-0107")).toBeVisible();
-  expect(screen.getByText("19,260.00")).toBeVisible();
   act(() => setURLParams({ search: "G:1040" }));
   expect(within(table).queryByText("SAMPLE-PMS-0105")).not.toBeInTheDocument();
   expect(within(table).getByText("SAMPLE-POS-0107")).toBeVisible();
+});
+
+it("clears Folio filters to all statuses instead of restoring Pending", async () => {
+  setup(<FolioList />);
+  act(() =>
+    setURLParams({
+      type: "city_ledger",
+      date: "folio_date|date_range:2026-08-25,2026-08-25",
+    }),
+  );
+  expect(within(screen.getByRole("table")).getAllByRole("row")).toHaveLength(2);
+  await userEvent.click(screen.getByRole("button", { name: "Clear" }));
+  expect(
+    screen.queryByRole("button", { name: "Remove Status filter" }),
+  ).not.toBeInTheDocument();
+  expect(within(screen.getByRole("table")).getAllByRole("row")).toHaveLength(5);
+  const params = new URLSearchParams(window.location.search);
+  expect(params.get("status")).toBe("all");
+  expect(params.has("type")).toBe(false);
+  expect(params.has("date")).toBe(false);
+});
+
+it("removes the Folio status chip and keeps all statuses after remounting", async () => {
+  const view = setup(<FolioList />);
+  await userEvent.click(
+    screen.getByRole("button", { name: "Remove Status filter" }),
+  );
+  expect(
+    screen.queryByRole("button", { name: "Remove Status filter" }),
+  ).not.toBeInTheDocument();
+  expect(within(screen.getByRole("table")).getAllByRole("row")).toHaveLength(5);
+  view.unmount();
+  setup(<FolioList />);
+  expect(
+    screen.queryByRole("button", { name: "Remove Status filter" }),
+  ).not.toBeInTheDocument();
+  expect(within(screen.getByRole("table")).getAllByRole("row")).toHaveLength(5);
+});
+
+it("shows all BU folios on the AR dashboard and refreshes their session totals", () => {
+  saveFolioSamples("TEST", FOLIO_SAMPLES);
+  saveFolioSamples("OTHER-BU", []);
+  setup(<ArDashboard />);
+  const folioCount = screen.getByRole("button", { name: /Total Folios/ });
+  const total = screen.getByRole("button", { name: /Total Folio Amount/ });
+  const unbilled = screen.getByRole("button", { name: /Total Un-Bill/ });
+  const billed = screen.getByRole("button", { name: /Total Billed/ });
+  expect(folioCount).toHaveTextContent("4");
+  expect(total).toHaveTextContent("19,260");
+  expect(unbilled).toHaveTextContent("7,490");
+  expect(billed).toHaveTextContent("10,700");
+  expect(screen.getByText("AR outstanding")).toBeVisible();
+  try {
+    saveFolioSamples("TEST", [FOLIO_SAMPLES[0]]);
+    fireEvent.click(screen.getByRole("button", { name: "Refresh dashboard" }));
+    expect(folioCount).toHaveTextContent("1");
+    expect(total).toHaveTextContent("2,140");
+    expect(unbilled).toHaveTextContent("2,140");
+    expect(billed).toHaveTextContent("0");
+  } finally {
+    saveFolioSamples("TEST", FOLIO_SAMPLES);
+  }
 });
 
 it("blocks switching a partly billed Folio even if its dialog is opened directly", async () => {

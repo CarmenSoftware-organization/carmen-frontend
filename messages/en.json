@@ -1096,8 +1096,10 @@
         "count": "Total Folios",
         "total": "Total Folio Amount",
         "unbilled": "Total Un-Bill",
-        "billed": "Total Billed"
+        "billed": "Total Billed",
+        "scope": "All folios in this business unit"
       },
+      "loadError": "Could not load the folio summary. Please refresh and try again.",
       "linkedInvoices": "Linked Invoices",
       "switch": "Switch A/R",
       "void": "Void Folio",
