@@ -264,7 +264,6 @@ const ar: AccountingDashboardSnapshot = {
         {
           format: "currency",
           tone: "primary",
-          href: "/accounting/accounts-receivable/invoice?settlement=open",
         },
       ),
       metric(
@@ -275,7 +274,6 @@ const ar: AccountingDashboardSnapshot = {
         {
           format: "currency",
           tone: "destructive",
-          href: "/accounting/accounts-receivable/invoice?due=overdue",
         },
       ),
       metric(
@@ -286,7 +284,6 @@ const ar: AccountingDashboardSnapshot = {
         {
           format: "currency",
           tone: "warning",
-          href: "/accounting/accounts-receivable/receipt?allocation=unapplied",
         },
       ),
       metric(
@@ -342,7 +339,6 @@ const ar: AccountingDashboardSnapshot = {
         ),
         7,
         "destructive",
-        "/accounting/accounts-receivable/invoice?due=overdue",
       ),
       task(
         "allocation",
@@ -353,7 +349,6 @@ const ar: AccountingDashboardSnapshot = {
         ),
         6,
         "warning",
-        "/accounting/accounts-receivable/receipt?allocation=unapplied",
       ),
     ],
   },
@@ -766,7 +761,7 @@ export function buildApDashboardSnapshot(
           text("Review before release", "ตรวจสอบก่อนปล่อยจ่าย"),
           data?.approvals.payment ?? 3,
           "warning",
-          "/accounting/accounts-payable/payment?filter=doc_status%7Cstring%3Ain_review",
+          "/accounting/accounts-payable/payment-approvals",
         ),
         task(
           "tax",

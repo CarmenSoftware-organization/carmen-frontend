@@ -74,7 +74,13 @@ import {
   FieldPlainText,
   FieldSelect,
 } from "@/components/ui/field";
-import { SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LookupCombobox } from "@/components/lookup/lookup-combobox";
@@ -481,9 +487,6 @@ export default function AccountingDocumentDetail() {
 
   const [selectedLineIds, setSelectedLineIds] = useState<string[]>([]);
   const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
-  const [dimensionDraft, setDimensionDraft] = useState<
-    JournalLineDimensionInput[]
-  >([]);
   const lineAccountIds = [
     ...new Set(
       lines
@@ -750,13 +753,6 @@ export default function AccountingDocumentDetail() {
   };
 
   const openLineDetail = (lineId: string, section: LineDetailSection) => {
-    if (isGlVoucher && section === "dimension") {
-      setDimensionDraft(
-        structuredClone(
-          lines.find((line) => line.id === lineId)?.dimensions ?? [],
-        ),
-      );
-    }
     setSelectedLineId(lineId);
     setLineDetailSection(section);
   };
@@ -2028,6 +2024,11 @@ export default function AccountingDocumentDetail() {
                     {entryTitle}
                   </CardTitle>
                 )}
+                {isGlVoucher && !isNew && !isView && (
+                  <p className="text-muted-foreground text-xs">
+                    {t("savedDimensionsReadOnly")}
+                  </p>
+                )}
                 {isPeriodLocked && (
                   <Badge variant="destructive" className="gap-1 text-xs">
                     🔒 งวดบัญชี {currentPeriod?.fiscal_year}-P
@@ -2443,18 +2444,23 @@ export default function AccountingDocumentDetail() {
                                   />
                                 </Button>
                               )}
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon-xs"
-                                aria-label={t("allDimensions")}
-                                title={t("allDimensions")}
-                                onClick={() =>
-                                  openLineDetail(line.id, "dimension")
-                                }
-                              >
-                                <Boxes className="size-4" aria-hidden="true" />
-                              </Button>
+                              {(!isGlVoucher || isView) && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-xs"
+                                  aria-label={t("allDimensions")}
+                                  title={t("allDimensions")}
+                                  onClick={() =>
+                                    openLineDetail(line.id, "dimension")
+                                  }
+                                >
+                                  <Boxes
+                                    className="size-4"
+                                    aria-hidden="true"
+                                  />
+                                </Button>
+                              )}
                               {!isView && lines.length > 1 && (
                                 <Button
                                   type="button"
@@ -2547,6 +2553,84 @@ export default function AccountingDocumentDetail() {
                                   const selected = values.find(
                                     (value) => value.id === selectedValue,
                                   );
+                                  if (isNew && !isView) {
+                                    return (
+                                      <Select
+                                        key={dimension.id}
+                                        value={selectedValue ?? "none"}
+                                        disabled={
+                                          dimensionQuery.isPending ||
+                                          dimensionQuery.isError ||
+                                          dimensionValuesQuery.isPending ||
+                                          dimensionValuesQuery.isError ||
+                                          !values.length
+                                        }
+                                        onValueChange={(valueId) =>
+                                          updateLine(line.id, {
+                                            dimensions: [
+                                              ...(line.dimensions ?? []).filter(
+                                                (item) =>
+                                                  item.dimension_id !==
+                                                  dimension.id,
+                                              ),
+                                              ...(valueId === "none"
+                                                ? []
+                                                : [
+                                                    {
+                                                      dimension_id:
+                                                        dimension.id,
+                                                      dimension_value_id:
+                                                        valueId,
+                                                    },
+                                                  ]),
+                                            ],
+                                          })
+                                        }
+                                      >
+                                        <SelectTrigger
+                                          size="xs"
+                                          aria-label={t("lineDimensionLabel", {
+                                            name: dimension.name,
+                                            row: lineIndex + 1,
+                                          })}
+                                        >
+                                          <span className="text-muted-foreground">
+                                            {dimension.code}:
+                                          </span>
+                                          <SelectValue>
+                                            {selected?.code ?? "—"}
+                                          </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                          <SelectItem value="none">
+                                            {t("clearLineDimension")}
+                                          </SelectItem>
+                                          {values.map((value) => (
+                                            <SelectItem
+                                              key={value.id}
+                                              value={value.id}
+                                            >
+                                              {value.code === value.name
+                                                ? value.code
+                                                : `${value.code} — ${value.name}`}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    );
+                                  }
+                                  if (!isView) {
+                                    return (
+                                      <Badge
+                                        key={dimension.id}
+                                        variant="outline"
+                                        size="sm"
+                                      >
+                                        {dimension.code}:{" "}
+                                        {selected?.code ?? "—"}
+                                      </Badge>
+                                    );
+                                  }
                                   return (
                                     <Button
                                       key={dimension.id}
@@ -3187,14 +3271,14 @@ export default function AccountingDocumentDetail() {
       </Sheet>
 
       <Dialog
-        open={isGlVoucher && !!selectedLine}
+        open={isGlVoucher && isView && !!selectedLine}
         onOpenChange={(open) => !open && setSelectedLineId(null)}
       >
         <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{t("allDimensions")}</DialogTitle>
             <DialogDescription>
-              Select accounting dimensions for this journal line.
+              {t("lineDetailsDescription")}
             </DialogDescription>
           </DialogHeader>
           {selectedLine && (
@@ -3203,9 +3287,9 @@ export default function AccountingDocumentDetail() {
                 dimensionQuery.data ?? [],
                 accountById.get(selectedLine.account),
                 dimensionRules,
-                dimensionDraft,
+                selectedLine.dimensions ?? [],
               ).map((dimension) => {
-                const selectedValue = dimensionDraft.find(
+                const selectedValue = selectedLine.dimensions?.find(
                   (item) => item.dimension_id === dimension.id,
                 )?.dimension_value_id;
                 const options = (dimensionValuesQuery.data ?? []).filter(
@@ -3218,40 +3302,10 @@ export default function AccountingDocumentDetail() {
                     <FieldLabel>
                       {dimension.code} — {dimension.name}
                     </FieldLabel>
-                    {isView ? (
-                      <FieldPlainText>
-                        {options.find((value) => value.id === selectedValue)
-                          ?.name ?? "—"}
-                      </FieldPlainText>
-                    ) : (
-                      <FieldSelect
-                        value={selectedValue ?? "none"}
-                        onValueChange={(valueId) =>
-                          setDimensionDraft((current) => [
-                            ...current.filter(
-                              (item) => item.dimension_id !== dimension.id,
-                            ),
-                            ...(valueId === "none"
-                              ? []
-                              : [
-                                  {
-                                    dimension_id: dimension.id,
-                                    dimension_value_id: valueId,
-                                  },
-                                ]),
-                          ])
-                        }
-                      >
-                        <SelectContent>
-                          <SelectItem value="none">—</SelectItem>
-                          {options.map((value) => (
-                            <SelectItem key={value.id} value={value.id}>
-                              {value.code} — {value.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </FieldSelect>
-                    )}
+                    <FieldPlainText>
+                      {options.find((value) => value.id === selectedValue)
+                        ?.name ?? "—"}
+                    </FieldPlainText>
                   </Field>
                 );
               })}
@@ -3263,19 +3317,8 @@ export default function AccountingDocumentDetail() {
               variant="outline"
               onClick={() => setSelectedLineId(null)}
             >
-              {tc("cancel")}
+              {tc("close")}
             </Button>
-            {!isView && selectedLine && (
-              <Button
-                type="button"
-                onClick={() => {
-                  updateLine(selectedLine.id, { dimensions: dimensionDraft });
-                  setSelectedLineId(null);
-                }}
-              >
-                Apply
-              </Button>
-            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

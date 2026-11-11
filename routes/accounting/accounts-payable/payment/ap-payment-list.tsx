@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
 import { Loader2, Plus, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { listReturnState } from "@/hooks/use-list-return";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGridPagination } from "@/hooks/use-grid-pagination";
@@ -9,6 +10,7 @@ import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useListFilters } from "@/hooks/use-list-filters";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
+import { setURLParams, useURL } from "@/hooks/use-url";
 import {
   DataGrid,
   DataGridContainer,
@@ -19,6 +21,8 @@ import { DataGridPagination } from "@/components/ui/data-grid/data-grid-paginati
 import { MultiSelectFilter } from "@/components/ui/multi-select-filter";
 import { ErrorState } from "@/components/ui/error-state";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EmptyComponent from "@/components/empty-component";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
@@ -40,8 +44,12 @@ import type {
   ApDocStatus,
   ApPaymentMethod,
 } from "@/types/accounts-payable";
-import { useApPayments } from "../shared/use-accounts-payable";
+import {
+  useApPaymentAction,
+  useApPayments,
+} from "../shared/use-accounts-payable";
 import { useApPaymentTable } from "./use-ap-payment-table";
+import { canBatchApprovePayment } from "./ap-payment-approval";
 
 /** ใหม่สุดขึ้นก่อน */
 const DEFAULT_SORT = "payment_date:desc";
@@ -62,15 +70,25 @@ const METHODS: ApPaymentMethod[] = [
  * หน้า mock (lifecycle, execution, release, urgent, method …)
  * ไม่มีใครอ่าน จึงถูกข้ามเงียบ ๆ
  */
-export default function ApPaymentList() {
+export default function ApPaymentList({
+  approvalQueue = false,
+}: {
+  approvalQueue?: boolean;
+}) {
+  "use no memo";
   const t = useTranslations("accounting.accountsPayable.payment");
   const tc = useTranslations("common");
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { dateFormat } = useProfile();
+  const { dateFormat, userId } = useProfile();
   const formatAmount = useAmountFormatter();
   const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
+  const [approvalBatch, setApprovalBatch] = useState<ApPayment[]>([]);
+  const [approvalTabParam] = useURL("approval");
+  const approvalTab = approvalTabParam === "posted" ? "posted" : "pending";
+  const [approving, setApproving] = useState(false);
+  const approval = useApPaymentAction();
   const isGridMode = isMobile || displayMode === "grid";
   // โหมด grid ทั้งมือถือและ desktop ไม่มี pager จึงโหลดต่อด้วย infinite scroll
   const useInfiniteScroll = isGridMode;
@@ -80,60 +98,77 @@ export default function ApPaymentList() {
   });
 
   const filterFields = useMemo<FilterFieldDef[]>(
-    () => [
-      {
-        key: "filter",
-        control: "custom",
-        labelKey: "common.status",
-        section: "listView.sectionDocument",
-        render: (value, onChange) => (
-          <MultiSelectFilter
-            value={value}
-            onChange={onChange}
-            options={STATUSES.map((s) => ({
-              value: `doc_status|string:${s}`,
-              label: t(`statuses.${s}`),
-              statusKey: s,
-            }))}
-            className="w-full"
-          />
-        ),
-      },
-      {
-        key: "method",
-        control: "custom",
-        labelKey: "accounting.accountsPayable.payment.method",
-        section: "listView.sectionDocument",
-        render: (value, onChange) => (
-          <MultiSelectFilter
-            value={value}
-            onChange={onChange}
-            options={METHODS.map((m) => ({
-              value: `payment_method|string:${m}`,
-              label: t(`methods.${m}`),
-            }))}
-            className="w-full"
-          />
-        ),
-      },
-      {
-        key: "vendor_id",
-        control: "entity",
-        entity: VENDOR_ENTITY,
-        labelKey: "accounting.accountsPayable.payment.vendor",
-        section: "listView.sectionDocument",
-      },
-    ],
-    [t],
+    () =>
+      (
+        [
+          {
+            key: "filter",
+            control: "custom",
+            labelKey: "common.status",
+            section: "listView.sectionDocument",
+            render: (value, onChange) => (
+              <MultiSelectFilter
+                value={value}
+                onChange={onChange}
+                options={STATUSES.map((s) => ({
+                  value: `doc_status|string:${s}`,
+                  label: t(`statuses.${s}`),
+                  statusKey: s,
+                }))}
+                className="w-full"
+              />
+            ),
+          },
+          {
+            key: "method",
+            control: "custom",
+            labelKey: "accounting.accountsPayable.payment.method",
+            section: "listView.sectionDocument",
+            render: (value, onChange) => (
+              <MultiSelectFilter
+                value={value}
+                onChange={onChange}
+                options={METHODS.map((m) => ({
+                  value: `payment_method|string:${m}`,
+                  label: t(`methods.${m}`),
+                }))}
+                className="w-full"
+              />
+            ),
+          },
+          {
+            key: "vendor_id",
+            control: "entity",
+            entity: VENDOR_ENTITY,
+            labelKey: "accounting.accountsPayable.payment.vendor",
+            section: "listView.sectionDocument",
+          },
+        ] satisfies FilterFieldDef[]
+      ).filter((field) => !approvalQueue || field.key !== "filter"),
+    [approvalQueue, t],
   );
 
   const lf = useListFilters({
-    pageKey: LIST_PAGE_KEYS.AP_PAYMENT,
+    pageKey: approvalQueue
+      ? LIST_PAGE_KEYS.AP_PAYMENT_APPROVALS
+      : LIST_PAGE_KEYS.AP_PAYMENT,
     fields: filterFields,
     defaultSort: DEFAULT_SORT,
   });
 
-  const queryParams = { ...params, filter: lf.filterParam };
+  const queryParams = {
+    ...params,
+    filter:
+      [
+        approvalQueue &&
+          (approvalTab === "pending"
+            ? "doc_status|string:in_review"
+            : "doc_status|string:posted;last_action|string:approved"),
+        lf.filterParam,
+      ]
+        .filter(Boolean)
+        .join(";") || undefined,
+  };
   const { data, isLoading, error, refetch } = useApPayments(queryParams, {
     enabled: !useInfiniteScroll,
   });
@@ -161,6 +196,44 @@ export default function ApPaymentList() {
     tableConfig,
     onOpen: openPayment,
   });
+  const selectedPayments =
+    approvalQueue && approvalTab === "pending" && !isGridMode && !isLoading
+      ? table.getSelectedRowModel().flatRows.map((row) => row.original)
+      : [];
+  const canApprove = (payment: ApPayment) =>
+    canBatchApprovePayment(payment, userId);
+  const approveBatch = async () => {
+    setApproving(true);
+    let succeeded = 0;
+    try {
+      for (const payment of approvalBatch) {
+        if (!canApprove(payment)) continue;
+        try {
+          await approval.mutateAsync({
+            id: payment.id,
+            action: "approve",
+            docVersion: payment.doc_version,
+          });
+          succeeded++;
+        } catch {
+          // Other selected documents can still be approved.
+        }
+      }
+      if (succeeded === approvalBatch.length)
+        toast.success(t("approvalCompleted", { count: succeeded }));
+      else
+        toast.error(
+          t("approvalPartial", {
+            count: succeeded,
+            total: approvalBatch.length,
+          }),
+        );
+    } finally {
+      table.resetRowSelection();
+      setApprovalBatch([]);
+      setApproving(false);
+    }
+  };
 
   if (error)
     return (
@@ -173,39 +246,82 @@ export default function ApPaymentList() {
 
   return (
     <ListPageShell
-      title={t("title")}
-      description={t("desc")}
+      title={t(approvalQueue ? "approvalTitle" : "title")}
+      description={t(approvalQueue ? "approvalDescription" : "desc")}
       count={totalRecords}
       actions={
-        <Button
-          size="sm"
-          onClick={() => navigate("/accounting/accounts-payable/payment/new")}
-        >
-          <Plus className="size-4" /> {t("add")}
-        </Button>
+        approvalQueue ? (
+          approvalTab === "pending" &&
+          !isGridMode && (
+            <Button
+              size="sm"
+              disabled={
+                approving ||
+                !selectedPayments.length ||
+                !selectedPayments.every(canApprove)
+              }
+              onClick={() => setApprovalBatch(selectedPayments)}
+            >
+              {t("approveSelected")}
+            </Button>
+          )
+        ) : (
+          <Button
+            size="sm"
+            onClick={() => navigate("/accounting/accounts-payable/payment/new")}
+          >
+            <Plus className="size-4" /> {t("add")}
+          </Button>
+        )
       }
       toolbar={
-        <ListToolbar
-          search={search}
-          onSearch={setSearch}
-          lf={lf}
-          fields={filterFields}
-          onSaveViewClick={() => setSaveViewDialogOpen(true)}
-          table={table}
-          displayMode={displayMode}
-          onDisplayModeChange={setDisplayMode}
-          trailing={
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => (useInfiniteScroll ? grid.refetch?.() : refetch())}
-              aria-label={tc("refresh")}
-              title={tc("refresh")}
+        <>
+          {approvalQueue && (
+            <Tabs
+              value={approvalTab}
+              onValueChange={(value) => {
+                if (value !== "pending" && value !== "posted") return;
+                table.resetRowSelection();
+                setURLParams({
+                  approval: value === "posted" ? "posted" : "",
+                  page: "",
+                });
+              }}
             >
-              <RefreshCw className="size-4" />
-            </Button>
-          }
-        />
+              <TabsList variant="line" aria-label={t("approvalTitle")}>
+                <TabsTrigger value="pending">
+                  {t("statuses.in_review")}
+                </TabsTrigger>
+                <TabsTrigger value="posted">
+                  {t("approvedAndPosted")}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
+          <ListToolbar
+            search={search}
+            onSearch={setSearch}
+            lf={lf}
+            fields={filterFields}
+            onSaveViewClick={() => setSaveViewDialogOpen(true)}
+            table={table}
+            displayMode={displayMode}
+            onDisplayModeChange={setDisplayMode}
+            trailing={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() =>
+                  useInfiniteScroll ? grid.refetch?.() : refetch()
+                }
+                aria-label={tc("refresh")}
+                title={tc("refresh")}
+              >
+                <RefreshCw className="size-4" />
+              </Button>
+            }
+          />
+        </>
       }
     >
       {!isGridMode && (
@@ -213,7 +329,11 @@ export default function ApPaymentList() {
           table={table}
           recordCount={totalRecords}
           isLoading={isLoading}
-          tableLayout={{ headerSticky: true, columnsResizable: true }}
+          tableLayout={{
+            headerSticky: true,
+            columnsResizable: true,
+            checkbox: approvalQueue && approvalTab === "pending",
+          }}
           emptyMessage={<EmptyComponent />}
         >
           <DataGridContainer
@@ -284,6 +404,19 @@ export default function ApPaymentList() {
         </div>
       )}
 
+      <ConfirmDialog
+        open={approvalBatch.length > 0}
+        onOpenChange={(open) => {
+          if (!open) setApprovalBatch([]);
+        }}
+        title={t("approveSelected")}
+        description={t("approvalConfirm", {
+          documents: approvalBatch.map((payment) => payment.doc_no).join(", "),
+        })}
+        confirmText={t("approveSelected")}
+        isPending={approving}
+        onConfirm={() => void approveBatch()}
+      />
       <SaveViewDialog
         open={saveViewDialogOpen}
         onOpenChange={setSaveViewDialogOpen}

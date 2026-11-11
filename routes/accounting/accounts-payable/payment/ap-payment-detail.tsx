@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, Pencil, Save, Send, Trash2, Undo2, X } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useListReturn } from "@/hooks/use-list-return";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { DocFormHeader } from "@/components/share/doc-form-header";
@@ -64,6 +65,10 @@ import { PaymentWhtSection } from "./ap-payment-wht";
 import { ApPostingBanner } from "../shared/ap-posting-banner";
 
 const LIST_PATH = "/accounting/accounts-payable/payment";
+const RETURN_PATHS = [
+  LIST_PATH,
+  "/accounting/accounts-payable/payment-approvals",
+];
 const NO_ERRORS: ReadonlySet<PaymentErrorKey> = new Set();
 
 export default function ApPaymentDetail() {
@@ -114,6 +119,7 @@ function ApPaymentEditor({
   const t = useTranslations("accounting.accountsPayable.payment");
   const td = useTranslations("accounting.accountsPayable.payment.detail");
   const navigate = useNavigate();
+  const { toList } = useListReturn(RETURN_PATHS);
   const [searchParams] = useSearchParams();
   const { userId, dateFormat, defaultCurrencyCode } = useProfile();
   const format = useAmountFormatter();
@@ -208,7 +214,13 @@ function ApPaymentEditor({
       setForm((current) =>
         patch.vendor_id !== undefined && patch.vendor_id !== current.vendor_id
           ? // เปลี่ยน vendor = รายการจ่าย/WHT เดิมไม่เกี่ยวแล้ว
-            { ...current, ...patch, allocations: {}, wht: [], bank_account_id: "" }
+            {
+              ...current,
+              ...patch,
+              allocations: {},
+              wht: [],
+              bank_account_id: "",
+            }
           : { ...current, ...patch },
       ),
     [],
@@ -241,7 +253,8 @@ function ApPaymentEditor({
   const clearDoc = useCallback((doc: NonNullable<typeof docs>[number]) => {
     setForm((current) => {
       const allocations = { ...current.allocations };
-      for (const line of doc.lines) delete allocations[line.ap_invoice_detail_id];
+      for (const line of doc.lines)
+        delete allocations[line.ap_invoice_detail_id];
       return { ...current, allocations };
     });
   }, []);
@@ -482,7 +495,7 @@ function ApPaymentEditor({
         title={loaded?.doc_no || td("newTitle")}
         subtitle={td("subtitle")}
         backLabel={td("back")}
-        onBack={() => navigate(LIST_PATH)}
+        onBack={() => toList()}
         badges={
           loaded ? (
             <StatusIconLabel
@@ -533,16 +546,6 @@ function ApPaymentEditor({
               >
                 <Pencil className="size-4" />
                 {td("edit")}
-              </Button>
-            )}
-            {!editing && actions.includes("submit") && (
-              <Button
-                size="sm"
-                disabled={busy}
-                onClick={() => void runAction("submit")}
-              >
-                <Send className="size-4" />
-                {td("actions.submit")}
               </Button>
             )}
             {!editing && actions.includes("approve") && (
@@ -629,11 +632,11 @@ function ApPaymentEditor({
         }
       />
 
-      <Card>
-        <CardHeader>
+      <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0">
+        <CardHeader className="px-0">
           <CardTitle>{td("allocations.title")}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           {errors.has("allocations") && (
             <p className="text-destructive mb-2 text-xs">
               {td("errors.allocations")}
@@ -650,7 +653,9 @@ function ApPaymentEditor({
             </p>
           )}
           {!editable ? (
-            <PaymentAllocationsReadOnly allocations={loaded?.allocations ?? []} />
+            <PaymentAllocationsReadOnly
+              allocations={loaded?.allocations ?? []}
+            />
           ) : !form.vendor_id ? (
             <p className="text-muted-foreground text-sm">
               {td("allocations.selectVendor")}
@@ -724,19 +729,29 @@ function ApPaymentEditor({
       />
 
       {!editable && (loaded?.tax_invoices?.length ?? 0) > 0 && (
-        <Card>
-          <CardHeader>
+        <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0">
+          <CardHeader className="px-0">
             <CardTitle>{td("taxInvoices.title")}</CardTitle>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent className="overflow-x-auto px-0">
             <table className="w-full min-w-[32rem] text-left text-xs">
               <thead>
                 <tr className="border-b">
-                  <th className="px-2 py-1.5 font-medium">{td("taxInvoices.invoice")}</th>
-                  <th className="px-2 py-1.5 font-medium">{td("taxInvoices.taxInvoiceNo")}</th>
-                  <th className="px-2 py-1.5 font-medium">{td("taxInvoices.date")}</th>
-                  <th className="px-2 py-1.5 text-right font-medium">{td("taxInvoices.base")}</th>
-                  <th className="px-2 py-1.5 text-right font-medium">{td("taxInvoices.vat")}</th>
+                  <th className="px-2 py-1.5 font-medium">
+                    {td("taxInvoices.invoice")}
+                  </th>
+                  <th className="px-2 py-1.5 font-medium">
+                    {td("taxInvoices.taxInvoiceNo")}
+                  </th>
+                  <th className="px-2 py-1.5 font-medium">
+                    {td("taxInvoices.date")}
+                  </th>
+                  <th className="px-2 py-1.5 text-right font-medium">
+                    {td("taxInvoices.base")}
+                  </th>
+                  <th className="px-2 py-1.5 text-right font-medium">
+                    {td("taxInvoices.vat")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -767,9 +782,17 @@ function ApPaymentEditor({
       <SummaryFooterBar
         hasRecord
         items={[
-          { key: "applied", label: td("summary.applied"), value: money(summary.applied) },
+          {
+            key: "applied",
+            label: td("summary.applied"),
+            value: money(summary.applied),
+          },
           { key: "wht", label: td("summary.wht"), value: money(summary.wht) },
-          { key: "expenses", label: td("summary.expenses"), value: money(summary.expenses) },
+          {
+            key: "expenses",
+            label: td("summary.expenses"),
+            value: money(summary.expenses),
+          },
           ...(view && Number(loaded.realized_fx_amount) !== 0
             ? [
                 {
@@ -787,7 +810,18 @@ function ApPaymentEditor({
             suffix: currencyCode ?? undefined,
           },
         ]}
-      />
+      >
+        {!editing && actions.includes("submit") && (
+          <Button
+            size="sm"
+            disabled={busy}
+            onClick={() => void runAction("submit")}
+          >
+            <Send className="size-4" />
+            {td("actions.submit")}
+          </Button>
+        )}
+      </SummaryFooterBar>
 
       <ConfirmDialog
         open={confirmDelete}

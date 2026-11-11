@@ -25,6 +25,7 @@ import EmptyComponent from "@/components/empty-component";
 import DisplayTemplate from "@/components/display-template";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
 import { CellAction } from "@/components/ui/cell-action";
 import {
@@ -425,7 +426,7 @@ export function DimensionDialog({
   const buCode = useBuCode();
   const queryClient = useQueryClient();
   const [savedItem, setSavedItem] = useState(item);
-  const [subValues, setSubValues] = useState(() =>
+  const [subValues, setSubValues] = useState<DimensionValueDraft[]>(() =>
     (item?.values ?? []).map((value) => ({
       ...value,
       key: value.id,
@@ -583,7 +584,10 @@ export function DimensionDialog({
                         : {}),
                     },
                     savedItem,
-                    subValues: dataType === "lookup" ? subValues : [],
+                    subValues:
+                      dataType === "lookup"
+                        ? subValues
+                        : subValues.filter((value) => value.deleted),
                     onSave,
                     setSavedItem,
                     setSubValues,
@@ -873,6 +877,7 @@ function DimensionValuesDialog({
 interface DimensionValueDraft extends DimensionValueMaster {
   key: string;
   dirty: boolean;
+  deleted?: boolean;
 }
 function DimensionSubValues({
   readOnly,
@@ -885,45 +890,76 @@ function DimensionSubValues({
   subValues: DimensionValueDraft[];
   setSubValues: React.Dispatch<React.SetStateAction<DimensionValueDraft[]>>;
 }) {
+  const [selected, setSelected] = useState<string[]>([]);
+  const selectedKeys = new Set(selected);
+  const visibleValues = subValues.filter((value) => !value.deleted);
   return (
     <fieldset disabled={readOnly} className="space-y-3 border-t pt-4">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">List Master Items</h3>
         {!readOnly && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setSubValues((current) => [
-                ...current,
-                {
-                  key: crypto.randomUUID(),
-                  id: "",
-                  dimension_id: savedId ?? "",
-                  doc_version: 0,
-                  code: "",
-                  name: "",
-                  name_local: "",
-                  is_active: true,
-                  dirty: true,
-                },
-              ])
-            }
-          >
-            <Plus className="size-4" /> Add Value
-          </Button>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setSubValues((current) => [
+                  ...current,
+                  {
+                    key: crypto.randomUUID(),
+                    id: "",
+                    dimension_id: savedId ?? "",
+                    doc_version: 0,
+                    code: "",
+                    name: "",
+                    name_local: "",
+                    is_active: true,
+                    dirty: true,
+                  },
+                ])
+              }
+            >
+              <Plus className="size-4" /> Add Value
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!selected.length}
+              onClick={() => {
+                setSubValues((current) =>
+                  current.flatMap((row) =>
+                    !selectedKeys.has(row.key)
+                      ? [row]
+                      : row.id
+                        ? [{ ...row, deleted: true }]
+                        : [],
+                  ),
+                );
+                setSelected([]);
+              }}
+            >
+              <Trash2 className="size-4" /> Delete
+              {selected.length ? ` (${selected.length})` : ""}
+            </Button>
+          </div>
         )}
       </div>
       <p className="text-muted-foreground text-xs">
         Manage the values available for this dimension in Journal Vouchers.
       </p>
-      {!subValues.length && (
+      {subValues.some((value) => value.deleted) && (
+        <p className="text-muted-foreground text-xs">
+          Selected items will be deleted when you save.
+        </p>
+      )}
+      {!visibleValues.length && (
         <p className="text-muted-foreground text-xs">
           No list master items defined yet.
         </p>
       )}
-      {subValues.map((value, index) => {
+      {visibleValues.map((value, index) => {
         const update = (patch: Partial<DimensionValueMaster>) =>
           setSubValues((current) =>
             current.map((row) =>
@@ -933,8 +969,22 @@ function DimensionSubValues({
         return (
           <div
             key={value.key}
-            className="grid gap-3 border-b pb-4 sm:grid-cols-[1fr_1fr_1fr_auto]"
+            className={`grid gap-3 border-b pb-4 ${readOnly ? "sm:grid-cols-3" : "sm:grid-cols-[auto_1fr_1fr_1fr]"}`}
           >
+            {!readOnly && (
+              <Checkbox
+                className="mb-2 self-end"
+                aria-label={`Select sub-value ${index + 1}`}
+                checked={selectedKeys.has(value.key)}
+                onCheckedChange={(checked) =>
+                  setSelected((current) =>
+                    checked === true
+                      ? [...current, value.key]
+                      : current.filter((key) => key !== value.key),
+                  )
+                }
+              />
+            )}
             <Field>
               <FieldLabel htmlFor={`sub-code-${value.key}`} required>
                 Code
@@ -969,23 +1019,6 @@ function DimensionSubValues({
                 onChange={(e) => update({ name_local: e.target.value })}
               />
             </Field>
-            <div className="flex items-end">
-              {!readOnly && !value.id && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={`Remove sub-value ${index + 1}`}
-                  onClick={() =>
-                    setSubValues((current) =>
-                      current.filter((row) => row.key !== value.key),
-                    )
-                  }
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              )}
-            </div>
           </div>
         );
       })}
@@ -1013,8 +1046,9 @@ async function saveDimensionWithValues({
   setSavedItem: (value: DimensionMaster) => void;
   setSubValues: React.Dispatch<React.SetStateAction<DimensionValueDraft[]>>;
 }) {
+  const visibleValues = subValues.filter((value) => !value.deleted);
   const codes = subValues.map((value) => value.code.trim().toUpperCase());
-  if (subValues.some((value) => !value.code.trim() || !value.name.trim())) {
+  if (visibleValues.some((value) => !value.code.trim() || !value.name.trim())) {
     throw new Error("Sub-value Code and Name (EN) are required.");
   }
   if (new Set(codes).size !== codes.length) {
@@ -1027,8 +1061,25 @@ async function saveDimensionWithValues({
   setSavedItem(master);
   const results = await Promise.allSettled(
     subValues
-      .filter((row) => row.dirty)
+      .filter((row) => row.dirty || row.deleted)
       .map(async (value) => {
+        if (value.deleted) {
+          const response = await httpClient.delete(
+            `${API_ENDPOINTS.GL_DIMENSION_VALUES(buCode)}/${value.id}`,
+          );
+          if (!response.ok)
+            throw await ApiError.from(
+              response,
+              "Unable to delete dimension value",
+            );
+          const body = await response.json().catch(() => null);
+          if (body?.success === false)
+            throw new Error(body.message || "Unable to delete dimension value");
+          setSubValues((current) =>
+            current.filter((row) => row.key !== value.key),
+          );
+          return;
+        }
         const changes = {
           name: value.name.trim(),
           name_local: value.name_local?.trim() || null,

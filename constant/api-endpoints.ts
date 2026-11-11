@@ -103,6 +103,7 @@ export const API_ENDPOINTS = {
   CUISINES: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/recipe-cuisines`,
   CURRENCIES: (buCode: string) => `/api/proxy/api/config/${buCode}/currencies`,
+  CUSTOMERS: (buCode: string) => `/api/proxy/api/config/${buCode}/customers`,
   // widget ระดับ BU (ทุกคนใน BU เห็น) — คนละความหมายกับ DASHBOARD_WIDGETS(buCode, "bu")
   DASHBOARD_BU_WIDGETS: (buCode: string, module?: string) =>
     `/api/proxy/api/${buCode}/dashboard-widgets/bu${module ? `?module=${encodeURIComponent(module)}` : ""}`,
@@ -160,6 +161,7 @@ export const API_ENDPOINTS = {
   AP_INVOICE_ACTION: (buCode: string, id: string, command: string) =>
     `/api/proxy/api/${buCode}/ap-invoice/${toSafePathSegment(id)}/${toSafePathSegment(command)}`,
   AP_PAYMENT_LIST: (buCode: string) => `/api/proxy/api/${buCode}/ap-payment`,
+  AR_INVOICE_LIST: (buCode: string) => `/api/proxy/api/${buCode}/ar-invoice`,
   AP_PAYMENT_DETAIL: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/ap-payment/${toSafePathSegment(id)}`,
   AP_PAYMENT_ACTION: (buCode: string, id: string, command: string) =>

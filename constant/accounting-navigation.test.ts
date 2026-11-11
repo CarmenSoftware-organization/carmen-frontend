@@ -17,6 +17,10 @@ describe("accounting launcher navigation", () => {
     ["/accounting/journal-voucher/jv-1", "generalLedger"],
     ["/accounting/accounts-payable/invoice/ap-1", "accountsPayable"],
     ["/accounting/accounts-receivable/receipt/rc-1", "accountsReceivable"],
+    ["/accounting/accounts-receivable/preview/invoice/ar-1", "accountsReceivable"],
+    ["/accounting/accounts-receivable/profile", "accountsReceivable"],
+    ["/accounting/accounts-receivable/preview/profiles", "accountsReceivable"],
+    ["/accounting/accounts-receivable/preview/contracts", "accountsReceivable"],
     ["/accounting/asset/disposal/fd-1", "asset"],
   ])("maps %s to %s", (pathname, expected) => {
     expect(findAccountingSection(pathname).name).toBe(expected);
@@ -31,6 +35,7 @@ describe("accounting launcher navigation", () => {
       "apDashboard",
       "apInvoice",
       "apPayment",
+      "apPaymentApprovals",
     ]);
   });
 });

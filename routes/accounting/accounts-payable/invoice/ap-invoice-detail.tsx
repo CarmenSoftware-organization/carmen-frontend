@@ -1,5 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
-import { Check, Pencil, Plus, Save, Send, Trash2, Undo2, X } from "lucide-react";
+import {
+  Check,
+  Pencil,
+  Plus,
+  Save,
+  Send,
+  Trash2,
+  Undo2,
+  X,
+} from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
@@ -340,16 +349,6 @@ function ApInvoiceEditor({
                 {td("edit")}
               </Button>
             )}
-            {!editing && actions.includes("submit") && (
-              <Button
-                size="sm"
-                disabled={busy}
-                onClick={() => void runAction("submit")}
-              >
-                <Send className="size-4" />
-                {td("actions.submit")}
-              </Button>
-            )}
             {!editing && actions.includes("approve") && (
               <Button
                 size="sm"
@@ -445,8 +444,8 @@ function ApInvoiceEditor({
         dueDate={loaded?.due_date}
       />
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">
+      <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0">
+        <CardHeader className="flex flex-wrap items-center justify-between px-0">
           <CardTitle>{td("linesTitle")}</CardTitle>
           {editable && (
             <Button
@@ -465,7 +464,7 @@ function ApInvoiceEditor({
             </Button>
           )}
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           {errors.has("lines") && (
             <p className="text-destructive mb-2 text-xs">
               {td("errors.lines")}
@@ -494,8 +493,16 @@ function ApInvoiceEditor({
       <SummaryFooterBar
         hasRecord
         items={[
-          { key: "subtotal", label: td("summary.subtotal"), value: money(summary.subtotal) },
-          { key: "discount", label: td("summary.discount"), value: money(summary.discount) },
+          {
+            key: "subtotal",
+            label: td("summary.subtotal"),
+            value: money(summary.subtotal),
+          },
+          {
+            key: "discount",
+            label: td("summary.discount"),
+            value: money(summary.discount),
+          },
           { key: "vat", label: td("summary.vat"), value: money(summary.vat) },
           { key: "wht", label: td("summary.wht"), value: money(summary.wht) },
           {
@@ -506,7 +513,18 @@ function ApInvoiceEditor({
             suffix: form.currency_code,
           },
         ]}
-      />
+      >
+        {!editing && actions.includes("submit") && (
+          <Button
+            size="sm"
+            disabled={busy}
+            onClick={() => void runAction("submit")}
+          >
+            <Send className="size-4" />
+            {td("actions.submit")}
+          </Button>
+        )}
+      </SummaryFooterBar>
 
       <ConfirmDialog
         open={confirmDelete}
@@ -534,7 +552,9 @@ function ApInvoiceEditor({
               {reasonAction ? td(`reasonDialog.${reasonAction}.title`) : ""}
             </DialogTitle>
             <DialogDescription>
-              {needsReason ? td("reasonDialog.required") : td("reasonDialog.optional")}
+              {needsReason
+                ? td("reasonDialog.required")
+                : td("reasonDialog.optional")}
             </DialogDescription>
           </DialogHeader>
           <Textarea

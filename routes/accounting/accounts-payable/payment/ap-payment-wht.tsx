@@ -37,8 +37,8 @@ export function PaymentWhtSection({
   const t = useTranslations("accounting.accountsPayable.payment.detail.wht");
   const format = useAmountFormatter();
   return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
+    <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0">
+      <CardHeader className="flex flex-wrap items-center justify-between px-0">
         <CardTitle>{t("title")}</CardTitle>
         {editable && (
           <Button
@@ -53,7 +53,7 @@ export function PaymentWhtSection({
           </Button>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-0">
         {editable && error && (
           <p role="alert" className="text-destructive mb-2 text-xs">
             {t("previewFailed", { message: error })}
@@ -119,9 +119,7 @@ export function PaymentWhtSection({
           </div>
         )}
         {errors.has("whtAmount") && (
-          <p className="text-destructive mt-2 text-xs">
-            {t("errors.amount")}
-          </p>
+          <p className="text-destructive mt-2 text-xs">{t("errors.amount")}</p>
         )}
       </CardContent>
     </Card>

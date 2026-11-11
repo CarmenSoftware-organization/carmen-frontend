@@ -154,7 +154,10 @@ export function useApPaymentTable({
     columns,
     totalRecords,
     params,
-    tableConfig,
+    tableConfig: {
+      ...tableConfig,
+      ...{ getRowId: (payment: ApPayment) => payment.id },
+    },
     hideStatus: true,
   });
 }

@@ -68,7 +68,7 @@ export interface ArInvoice {
   receiptAmount: number;
 }
 
-export const AR_INVOICE_PATH = "/accounting/accounts-receivable/invoice";
+export const AR_INVOICE_PATH = "/accounting/accounts-receivable/preview/invoice";
 
 export const AR_INVOICES: ArInvoice[] = [
   {

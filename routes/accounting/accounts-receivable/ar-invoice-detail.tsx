@@ -39,9 +39,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { LookupChartOfAccount } from "@/components/lookup/lookup-chart-of-account";
-import { useTitles } from "@/hooks/use-accounting-master";
 import {
-  AR_INVOICES,
+  readPreviewInvoices,
+  savePreviewInvoice,
+} from "./ar-invoice-preview-store";
+import {
   AR_INVOICE_PATH,
   AR_DOC_TYPE_LABELS,
   dueDate,
@@ -54,6 +56,12 @@ import {
   type ArInvoiceLine,
   type ArDocumentType,
 } from "./ar-invoice-model";
+
+const titles = ["Mr.", "Ms.", "Mrs.", "Dr."].map((code) => ({
+  id: code,
+  code,
+  description: code,
+}));
 
 const Field = ({
   label,
@@ -99,12 +107,13 @@ export default function ArInvoiceDetail() {
   const { id = "new" } = useParams<{ id: string }>();
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const original = AR_INVOICES.find((item) => item.id === id);
+  const [documents] = useState(readPreviewInvoices);
+  const original = documents.find((item) => item.id === id);
   const [invoice, setInvoice] = useState<ArInvoice>(() => {
     const requestedType = (params.get("type") as ArDocumentType) || "ARIV";
     const source =
       id === "new"
-        ? AR_INVOICES.find((item) => item.id === params.get("copy"))
+        ? documents.find((item) => item.id === params.get("copy"))
         : undefined;
     return source
       ? {
@@ -129,7 +138,6 @@ export default function ArInvoiceDetail() {
   const [lineIndex, setLineIndex] = useState<number | null>(null);
   const [folioOpen, setFolioOpen] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
-  const { data: titles = [] } = useTitles();
   const totals = useMemo(() => invoiceTotals(invoice), [invoice]);
   const journalTotals = useMemo(() => journalPreviewTotals(invoice), [invoice]);
   const editable = invoice.status === "Draft" && editing;
@@ -177,65 +185,44 @@ export default function ArInvoiceDetail() {
 
   const availableOriginalInvoices = useMemo(
     () =>
-      AR_INVOICES.filter(
+      documents.filter(
         (inv) =>
           inv.id !== invoice.id && (inv.docType === "ARIV" || !inv.docType),
       ),
-    [invoice.id],
+    [documents, invoice.id],
   );
 
-  const handleSaveDraft = () => {
-    let docNo = invoice.docNo;
-    if (docNo === "Auto-generated" || !docNo) {
-      const type = invoice.docType ?? "ARIV";
-      const randomNum = Math.floor(1000 + Math.random() * 9000);
-      docNo = `${type}2609${randomNum}`;
+  const savePreview = (status: ArInvoice["status"]) => {
+    const recordId = id === "new" ? crypto.randomUUID() : id;
+    const next = {
+      ...invoice,
+      id: recordId,
+      docNo:
+        id === "new"
+          ? `MOCK-${invoice.docType ?? "ARIV"}-${recordId.slice(0, 8)}`
+          : invoice.docNo,
+      taxInvoiceNo:
+        status === "Submitted" && invoice.taxInvoice && !invoice.taxInvoiceNo
+          ? `MOCK-TAX-${recordId.slice(0, 8)}`
+          : invoice.taxInvoiceNo,
+      status,
+    };
+    try {
+      savePreviewInvoice(next);
+      setInvoice(next);
+      setEditing(false);
+      if (id === "new")
+        navigate(`${AR_INVOICE_PATH}/${recordId}`, { replace: true });
+      toast.success(`Mock saved: ${next.docNo}`);
+    } catch {
+      toast.error("Mock data could not be saved in this browser tab.");
     }
-    setInvoice((prev) => ({
-      ...prev,
-      docNo,
-      status: "Draft",
-    }));
-    setEditing(false);
-    toast.success(`Draft saved: ${docNo}`);
-  };
-
-  const handleSubmit = () => {
-    let docNo = invoice.docNo;
-    const type = invoice.docType ?? "ARIV";
-    if (docNo === "Auto-generated" || !docNo) {
-      const randomNum = Math.floor(1000 + Math.random() * 9000);
-      docNo = `${type}2609${randomNum}`;
-    }
-
-    let taxInvoiceNo = invoice.taxInvoiceNo;
-    if (invoice.taxInvoice && !taxInvoiceNo) {
-      const prefixMap: Record<ArDocumentType, string> = {
-        ARIV: "TXIV",
-        ARCN: "TXCN",
-        ARDN: "TXDN",
-        ARDP: "TXDP",
-        ARRC: "TXRC",
-      };
-      const prefix = prefixMap[type] ?? "TXIV";
-      const randomNum = Math.floor(1000 + Math.random() * 9000);
-      taxInvoiceNo = `${prefix}2609${randomNum}`;
-    }
-
-    setInvoice((prev) => ({
-      ...prev,
-      docNo,
-      taxInvoiceNo,
-      status: "Submitted",
-    }));
-    setEditing(false);
-    toast.success(`Document ${docNo} submitted successfully`);
   };
 
   if (id !== "new" && !original)
     return <p className="text-muted-foreground p-6">AR invoice not found.</p>;
   return (
-    <div className="flex w-full min-w-0 grow shrink-0 flex-col gap-4 text-xs">
+    <div className="flex w-full min-w-0 shrink-0 grow flex-col gap-4 text-xs">
       <DocFormHeader
         title={invoice.docNo}
         mock
@@ -266,12 +253,16 @@ export default function ArInvoiceDetail() {
                   onClick={() => {
                     setEditing(false);
                     if (id === "new") navigate(AR_INVOICE_PATH);
-                    else setInvoice(original!);
+                    else
+                      setInvoice(
+                        readPreviewInvoices().find((item) => item.id === id) ??
+                          original!,
+                      );
                   }}
                 >
                   Cancel
                 </Button>
-                <Button size="sm" variant="outline" onClick={handleSaveDraft}>
+                <Button size="sm" onClick={() => savePreview("Draft")}>
                   <Save className="size-4" />
                   Save Draft
                 </Button>
@@ -279,33 +270,20 @@ export default function ArInvoiceDetail() {
             )}
             {invoice.status === "Submitted" && (
               <>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    set("status", "Approved");
-                    toast.success(`Approved document ${invoice.docNo}`);
-                  }}
-                >
+                <Button size="sm" onClick={() => savePreview("Approved")}>
                   Approve
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => {
-                    set("status", "Draft");
-                    setEditing(true);
-                    toast.info(`Sent back document ${invoice.docNo} to Draft`);
-                  }}
+                  onClick={() => savePreview("Draft")}
                 >
                   Send Back
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => {
-                    set("status", "Void");
-                    toast.error(`Rejected document ${invoice.docNo}`);
-                  }}
+                  onClick={() => savePreview("Void")}
                 >
                   Reject
                 </Button>
@@ -315,10 +293,7 @@ export default function ArInvoiceDetail() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  set("status", "Void");
-                  toast.warning(`Document ${invoice.docNo} voided`);
-                }}
+                onClick={() => savePreview("Void")}
               >
                 <Ban className="size-4" />
                 Void
@@ -355,8 +330,8 @@ export default function ArInvoiceDetail() {
         }
       />
       <p className="text-muted-foreground text-xs">
-        ARIV interface preview · Save, Submit, tax numbering, approval and
-        posting require the AR backend contract.
+        Mock preview · Changes stay in this browser tab and never reach the AR
+        API.
       </p>
       <div role="group" aria-label="Document workflow">
         <WorkflowTrack {...workflow} />
@@ -870,7 +845,11 @@ export default function ArInvoiceDetail() {
         }
       >
         {invoice.status === "Draft" && (
-          <Button size="sm" disabled={!editable} onClick={handleSubmit}>
+          <Button
+            size="sm"
+            disabled={!editable}
+            onClick={() => savePreview("Submitted")}
+          >
             <Send className="size-4" />
             Submit
           </Button>

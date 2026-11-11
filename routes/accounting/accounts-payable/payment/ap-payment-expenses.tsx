@@ -29,12 +29,14 @@ export function PaymentExpensesSection({
   readonly onChange: (key: string, patch: Partial<PaymentExpenseRow>) => void;
   readonly onRemove: (key: string) => void;
 }) {
-  const t = useTranslations("accounting.accountsPayable.payment.detail.expenses");
+  const t = useTranslations(
+    "accounting.accountsPayable.payment.detail.expenses",
+  );
   const format = useAmountFormatter();
   if (!editable && rows.length === 0) return null;
   return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
+    <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0">
+      <CardHeader className="flex flex-wrap items-center justify-between px-0">
         <CardTitle>{t("title")}</CardTitle>
         {editable && (
           <Button type="button" size="sm" variant="outline" onClick={onAdd}>
@@ -43,7 +45,7 @@ export function PaymentExpensesSection({
           </Button>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-0">
         {rows.length === 0 ? (
           <p className="text-muted-foreground text-sm">{t("empty")}</p>
         ) : (

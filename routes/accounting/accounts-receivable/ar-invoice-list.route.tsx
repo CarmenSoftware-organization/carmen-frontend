@@ -1,341 +1,263 @@
-import { useMemo, useState } from "react";
-import type { ColumnDef, SortingState } from "@tanstack/react-table";
-import {
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { ChevronDown, Columns3, Plus } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
+import { useTranslations } from "use-intl";
+import { RefreshCw } from "lucide-react";
 import EmptyComponent from "@/components/empty-component";
-import SearchInput from "@/components/search-input";
-import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
-import { StatusFilter } from "@/components/ui/status-filter";
+import { ListToolbar } from "@/components/list-filter/list-toolbar";
+import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
+import { DocumentListActions } from "@/components/share/document-list-actions";
+import {
+  ListCard,
+  ListCardRow,
+  ListCardSkeleton,
+  ListCardStatusRow,
+} from "@/components/share/list-card";
 import { ListPageShell } from "@/components/share/list-page-shell";
-import { ListCard, ListCardRow } from "@/components/share/list-card";
-import { Badge } from "@/components/ui/badge";
+import { listGridMaxH } from "@/components/share/list-grid-max-h";
 import { Button } from "@/components/ui/button";
 import { CellAction } from "@/components/ui/cell-action";
 import {
   DataGrid,
   DataGridContainer,
+  DataGridScrollArea,
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { DataGridColumnVisibility } from "@/components/ui/data-grid/data-grid-column-visibility";
-import { DataGridSortMenu } from "@/components/ui/data-grid/data-grid-sort-menu";
+import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { StatusDotBadge, type DotTone } from "@/components/ui/status-dot-badge";
+import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
+import { ErrorState } from "@/components/ui/error-state";
+import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
+import { useCan } from "@/hooks/use-can";
+import { useDataGridState } from "@/hooks/use-data-grid-state";
+import { useListFilters } from "@/hooks/use-list-filters";
+import { listReturnState } from "@/hooks/use-list-return";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAmountFormatter } from "@/hooks/use-number-formatter";
+import { useProfile } from "@/hooks/use-profile";
+import { formatDate } from "@/lib/date-utils";
+import type { FilterFieldDef } from "@/types/list-filter";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  AR_INVOICES,
-  AR_INVOICE_PATH,
-  invoiceTotals,
-  money,
-  type ArInvoice,
-  type ArDocumentType,
-} from "./ar-invoice-model";
+  AR_REGISTER_PATH,
+  AR_STATUS,
+  AR_TYPES,
+  useArRegister,
+  type ArRegisterRow,
+} from "./use-ar-register";
 
-const statusTone: Record<ArInvoice["status"], DotTone> = {
-  Draft: "neutral",
-  Submitted: "warning",
-  Approved: "info",
-  Posted: "success",
-  Void: "neutral",
-};
-
-const docTypeTone: Record<
-  ArDocumentType,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  ARIV: "default",
-  ARCN: "destructive",
-  ARDN: "secondary",
-  ARDP: "outline",
-  ARRC: "secondary",
-};
-
-function InvoiceStatus({ status }: { status: ArInvoice["status"] }) {
-  return (
-    <StatusDotBadge tone={statusTone[status]} size="xs">
-      {status}
-    </StatusDotBadge>
-  );
-}
+const fields: FilterFieldDef[] = [
+  {
+    key: "status",
+    labelKey: "common.status",
+    control: "multi-select",
+    options: AR_STATUS.map((value) => ({
+      value,
+      labelKey: `accounting.arRegister.statuses.${value}`,
+    })),
+    toClause: (value) => `doc_status|string:${value}`,
+  },
+  {
+    key: "type",
+    labelKey: "accounting.arRegister.type",
+    control: "multi-select",
+    options: AR_TYPES.map((value) => ({
+      value,
+      labelKey: `accounting.arRegister.types.${value}`,
+    })),
+    toClause: (value) => `doc_type|string:${value}`,
+  },
+  {
+    key: "date",
+    labelKey: "accounting.arRegister.date",
+    control: "date-range",
+    fieldKey: "doc_date",
+  },
+];
 
 export function Component() {
+  "use no memo";
+  const t = useTranslations("accounting.arRegister");
+  const tc = useTranslations("common");
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const [search, setSearch] = useState("");
-  const [docTypeFilter, setDocTypeFilter] = useState("");
-  const [status, setStatus] = useState("");
-  const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const rows = useMemo(() => {
-    const term = search.toLowerCase();
-    return AR_INVOICES.filter((invoice) => {
-      const matchesSearch =
-        `${invoice.docNo} ${invoice.customerName} ${invoice.customerCode} ${invoice.sourceDoc} ${invoice.docType ?? ""}`
-          .toLowerCase()
-          .includes(term);
-      const matchesType =
-        !docTypeFilter || (invoice.docType ?? "ARIV") === docTypeFilter;
-      return (
-        matchesSearch && matchesType && (!status || invoice.status === status)
-      );
-    });
-  }, [search, docTypeFilter, status]);
-  const columns = useMemo<ColumnDef<ArInvoice>[]>(
-    () => [
-      {
-        accessorKey: "docType",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Type" />
-        ),
-        cell: ({ row }) => (
-          <Badge
-            variant={docTypeTone[row.original.docType ?? "ARIV"]}
-            size="xs"
-          >
-            {row.original.docType ?? "ARIV"}
-          </Badge>
-        ),
-        meta: { headerTitle: "Type" },
-      },
-      {
-        accessorKey: "docNo",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Doc No." />
-        ),
-        cell: ({ row }) => (
-          <CellAction
-            onClick={() => navigate(`${AR_INVOICE_PATH}/${row.original.id}`)}
-          >
-            {row.original.docNo}
-          </CellAction>
-        ),
-        enableHiding: false,
-        meta: { headerTitle: "Doc No." },
-      },
-      {
-        accessorKey: "inputDate",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Input Date" />
-        ),
-        meta: { headerTitle: "Input Date", cellClassName: "tabular-nums" },
-      },
-      {
-        accessorKey: "customerName",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Customer (AR)" />
-        ),
-        cell: ({ row }) => (
-          <div>
-            <span
-              className="block max-w-56 truncate"
-              title={row.original.customerName}
-            >
-              {row.original.customerName}
-            </span>
-            <span className="text-muted-foreground text-xs">
-              {row.original.customerCode}
-            </span>
-          </div>
-        ),
-        meta: { headerTitle: "Customer (AR)" },
-      },
-      {
-        accessorKey: "source",
-        header: "Source",
-        meta: { headerTitle: "Source" },
-      },
-      {
-        accessorKey: "status",
-        header: "Status",
-        cell: ({ row }) => <InvoiceStatus status={row.original.status} />,
-        meta: { headerTitle: "Status" },
-      },
-      {
-        id: "total",
-        header: "Grand Total",
-        accessorFn: (invoice) => invoiceTotals(invoice).total,
-        cell: ({ row }) => (
-          <span className="whitespace-nowrap tabular-nums">
-            {money(row.getValue<number>("total"))} {row.original.currency}
-          </span>
-        ),
-        meta: {
-          headerTitle: "Grand Total",
-          headerClassName: "text-right",
-          cellClassName: "text-right",
-        },
-      },
-      {
-        id: "unpaid",
-        header: "Unpaid",
-        accessorFn: (invoice) => invoiceTotals(invoice).unpaid,
-        cell: ({ row }) => (
-          <span className="whitespace-nowrap tabular-nums">
-            {money(row.getValue<number>("unpaid"))} {row.original.currency}
-          </span>
-        ),
-        meta: {
-          headerTitle: "Unpaid",
-          headerClassName: "text-right",
-          cellClassName: "text-right",
-        },
-      },
-    ],
-    [navigate],
-  );
-  const table = useReactTable({
+  const { canWrite } = useCan();
+  const mobile = useIsMobile();
+  const { dateFormat } = useProfile();
+  const money = useAmountFormatter();
+  const [display, setDisplay] = useState<"list" | "grid">("list");
+  const [saveView, setSaveView] = useState(false);
+  const { params, search, setSearch, tableConfig } = useDataGridState({
+    defaultSort: "doc_date:desc",
+  });
+  const lf = useListFilters({ pageKey: LIST_PAGE_KEYS.AR_INVOICE, fields });
+  const query = useArRegister({ ...params, filter: lf.filterParam });
+  const rows = query.data?.data ?? [];
+  const total = query.data?.paginate.total ?? 0;
+  const open = (row: ArRegisterRow) =>
+    navigate(`${AR_REGISTER_PATH}/${row.id}`, listReturnState());
+  const amount = (value: string | number, row: ArRegisterRow) =>
+    `${money(Number(value))} ${row.currency_code}`;
+  const column = (
+    id: keyof ArRegisterRow,
+    label: string,
+  ): ColumnDef<ArRegisterRow> => ({
+    accessorKey: id,
+    header: ({ column }) => (
+      <DataGridColumnHeader column={column} title={label} />
+    ),
+    meta: { headerTitle: label },
+  });
+  const columns: ColumnDef<ArRegisterRow>[] = [
+    {
+      ...column("doc_no", t("number")),
+      cell: ({ row }) => (
+        <CellAction onClick={() => open(row.original)}>
+          {row.original.doc_no}
+        </CellAction>
+      ),
+    },
+    {
+      ...column("doc_type", t("type")),
+      cell: ({ row }) => t(`types.${row.original.doc_type}`),
+    },
+    column("customer_name", t("customer")),
+    {
+      ...column("doc_date", t("date")),
+      cell: ({ row }) => formatDate(row.original.doc_date, dateFormat),
+    },
+    {
+      ...column("due_date", t("due")),
+      cell: ({ row }) => formatDate(row.original.due_date, dateFormat),
+    },
+    {
+      ...column("total_amount", t("total")),
+      cell: ({ row }) => amount(row.original.total_amount, row.original),
+    },
+    {
+      ...column("outstanding_amount", t("outstanding")),
+      cell: ({ row }) => amount(row.original.outstanding_amount, row.original),
+    },
+    {
+      ...column("doc_status", tc("status")),
+      cell: ({ row }) => (
+        <StatusIconLabel
+          status={row.original.doc_status}
+          label={t(`statuses.${row.original.doc_status}`)}
+        />
+      ),
+    },
+  ];
+  const table = useConfigTable({
     data: rows,
     columns,
-    state: { sorting },
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    totalRecords: total,
+    params,
+    tableConfig,
+    hideStatus: true,
   });
+  const cards = mobile || display === "grid";
 
   return (
     <ListPageShell
-      title="AR Document Directory"
-      mock
-      description="Invoices, Credit/Debit Notes, Deposits & Receipts"
-      count={rows.length}
+      title={t("title")}
+      description={t("description")}
+      count={query.data && total}
       actions={
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="sm">
-              <Plus className="size-4" /> New Document{" "}
-              <ChevronDown className="ml-1 size-3.5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {(
-              [
-                ["ARIV", "Invoice (ARIV)", "Invoice"],
-                ["ARCN", "Credit Note (ARCN)", "Credit Note"],
-                ["ARDN", "Debit Note (ARDN)", "Debit Note"],
-                ["ARDP", "Advance Deposit (ARDP)", "Deposit"],
-                ["ARRC", "Official Receipt (ARRC)", "Receipt"],
-              ] as const
-            ).map(([type, label]) => (
-              <DropdownMenuItem
-                key={type}
-                onSelect={() => navigate(`${AR_INVOICE_PATH}/new?type=${type}`)}
-              >
-                <Plus className="size-4" />
-                {label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <DocumentListActions
+          onAdd={() => navigate(`${AR_REGISTER_PATH}/new`, listReturnState())}
+          addLabel={t("newInvoice")}
+          addDisabled={!canWrite}
+          hideExportPrint
+        />
       }
       toolbar={
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex w-full flex-1 flex-wrap items-center gap-2 sm:w-auto">
-            <div className="w-full sm:w-auto sm:flex-initial">
-              <SearchInput
-                defaultValue={search}
-                onSearch={setSearch}
-                onInputChange={setSearch}
-              />
-            </div>
-            <span className="bg-border hidden h-4 w-px sm:block" />
-            <StatusFilter
-              value={status}
-              onChange={setStatus}
-              placeholder="Status"
-              defaultLabel="All Statuses"
-              options={Object.keys(statusTone).map((value) => ({
-                value,
-                label: value,
-              }))}
-              className="w-36 text-xs"
-            />
-            <StatusFilter
-              value={docTypeFilter}
-              onChange={setDocTypeFilter}
-              placeholder="Document Type"
-              defaultLabel="All Types"
-              options={Object.keys(docTypeTone).map((value) => ({
-                value,
-                label: value,
-              }))}
-              className="w-36 text-xs"
-            />
-          </div>
-          <div className="hidden items-center gap-2 sm:flex">
-            <DataGridSortMenu table={table} />
-            {displayMode === "list" && (
-              <DataGridColumnVisibility
-                table={table}
-                trigger={
-                  <Button
-                    size="icon-sm"
-                    variant="outline"
-                    aria-label="Toggle columns"
-                  >
-                    <Columns3 className="size-4" />
-                  </Button>
-                }
-              />
-            )}
-            <DisplayModeToggle value={displayMode} onChange={setDisplayMode} />
-          </div>
-        </div>
+        <ListToolbar
+          search={search}
+          onSearch={setSearch}
+          lf={lf}
+          fields={fields}
+          onSaveViewClick={() => setSaveView(true)}
+          table={table}
+          displayMode={display}
+          onDisplayModeChange={setDisplay}
+          trailing={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => void query.refetch()}
+              aria-label={tc("refresh")}
+            >
+              <RefreshCw className="size-4" />
+            </Button>
+          }
+        />
       }
     >
-      {isMobile || displayMode === "grid" ? (
-        rows.length ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {rows.map((invoice) => {
-              const totals = invoiceTotals(invoice);
-              return (
-                <ListCard
-                  key={invoice.id}
-                  title={`${invoice.docType ?? "ARIV"} · ${invoice.docNo}`}
-                  badge={<InvoiceStatus status={invoice.status} />}
-                  onOpen={() => navigate(`${AR_INVOICE_PATH}/${invoice.id}`)}
-                >
-                  <ListCardRow label="Customer">
-                    {invoice.customerName}
-                  </ListCardRow>
-                  <ListCardRow label="Input Date">
-                    {invoice.inputDate}
-                  </ListCardRow>
-                  <ListCardRow label="Grand Total">
-                    {money(totals.total)} {invoice.currency}
-                  </ListCardRow>
-                  <ListCardRow label="Unpaid">
-                    {money(totals.unpaid)} {invoice.currency}
-                  </ListCardRow>
-                </ListCard>
-              );
-            })}
-          </div>
-        ) : (
-          <EmptyComponent />
-        )
+      {query.error ? (
+        <ErrorState
+          error={query.error}
+          message={t("loadError")}
+          onRetry={() => query.refetch()}
+        />
       ) : (
         <DataGrid
           table={table}
-          recordCount={rows.length}
-          tableLayout={{ headerSticky: true, width: "auto" }}
-          tableClassNames={{ bodyRow: "h-10" }}
+          recordCount={total}
+          isLoading={query.isPending}
           emptyMessage={<EmptyComponent />}
+          tableLayout={{ headerSticky: true, columnsResizable: true }}
         >
-          <DataGridContainer className="max-h-[calc(100vh-13rem)]">
-            <DataGridTable />
+          <DataGridContainer
+            className={
+              cards ? undefined : listGridMaxH(lf.activeFilters.length > 0)
+            }
+          >
+            {cards ? (
+              query.isPending ? (
+                <ListCardSkeleton />
+              ) : rows.length === 0 ? (
+                <EmptyComponent />
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {rows.map((row) => (
+                    <ListCard
+                      key={row.id}
+                      title={row.doc_no}
+                      onOpen={() => open(row)}
+                    >
+                      <ListCardStatusRow
+                        status={row.doc_status}
+                        label={t(`statuses.${row.doc_status}`)}
+                      />
+                      <ListCardRow label={t("customer")}>
+                        {row.customer_name}
+                      </ListCardRow>
+                      <ListCardRow label={t("due")}>
+                        {formatDate(row.due_date, dateFormat)}
+                      </ListCardRow>
+                      <ListCardRow label={t("outstanding")}>
+                        {amount(row.outstanding_amount, row)}
+                      </ListCardRow>
+                    </ListCard>
+                  ))}
+                </div>
+              )
+            ) : (
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+            )}
+            <DataGridPagination />
           </DataGridContainer>
         </DataGrid>
       )}
+      <SaveViewDialog
+        open={saveView}
+        onOpenChange={setSaveView}
+        canManageBu={lf.view.canManageBu}
+        existingNames={lf.view.existingNames}
+        onSave={lf.view.saveOrUpdate}
+      />
     </ListPageShell>
   );
 }

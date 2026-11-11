@@ -228,6 +228,12 @@ export const accountingModuleSections: ModuleDto[] = [
         licenseFeature: "accounting.ap",
         icon: DollarSign,
       },
+      {
+        name: "apPaymentApprovals",
+        path: "/accounting/accounts-payable/payment-approvals",
+        licenseFeature: "accounting.ap",
+        icon: FileInput,
+      },
     ],
   },
   {
@@ -242,6 +248,18 @@ export const accountingModuleSections: ModuleDto[] = [
         icon: LayoutDashboard,
       },
       {
+        name: "arProfile",
+        path: "/accounting/accounts-receivable/profile",
+        licenseFeature: "accounting.ar",
+        icon: UserCheck,
+      },
+      {
+        name: "arFolio",
+        path: "/accounting/accounts-receivable/preview/folio",
+        licenseFeature: "accounting.ar",
+        icon: BookText,
+      },
+      {
         name: "arInvoice",
         path: "/accounting/accounts-receivable/invoice",
         licenseFeature: "accounting.ar",
@@ -252,6 +270,18 @@ export const accountingModuleSections: ModuleDto[] = [
         path: "/accounting/accounts-receivable/receipt",
         licenseFeature: "accounting.ar",
         icon: BadgeDollarSign,
+      },
+      {
+        name: "arContract",
+        path: "/accounting/accounts-receivable/preview/contracts",
+        licenseFeature: "accounting.ar",
+        icon: Handshake,
+      },
+      {
+        name: "arPreview",
+        path: "/accounting/accounts-receivable/preview",
+        licenseFeature: "accounting.ar",
+        icon: FileText,
       },
     ],
   },

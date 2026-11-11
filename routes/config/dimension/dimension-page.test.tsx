@@ -9,7 +9,7 @@ import { httpClient } from "@/lib/http-client";
 
 vi.mock("@/hooks/use-bu-code", () => ({ useBuCode: () => "BU" }));
 vi.mock("@/lib/http-client", () => ({
-  httpClient: { post: vi.fn(), put: vi.fn() },
+  httpClient: { post: vi.fn(), put: vi.fn(), delete: vi.fn() },
 }));
 
 describe("Dimension with sub-values", () => {
@@ -90,6 +90,52 @@ describe("Dimension with sub-values", () => {
       expect.objectContaining({ code: "B", gl_dimension_id: "dimension" }),
       expect.objectContaining({ code: "B", gl_dimension_id: "dimension" }),
     ]);
+  });
+  it("deletes a selected saved value only when saving the dimension", async () => {
+    const master = {
+      id: "dimension",
+      code: "project",
+      name: "Project",
+      sequence: 1,
+      is_active: true,
+      doc_version: 1,
+      data_type: "lookup" as const,
+    };
+    const value = {
+      id: "saved-value",
+      dimension_id: master.id,
+      doc_version: 1,
+      code: "A",
+      name: "First",
+      is_active: true,
+    };
+    const onOpenChange = vi.fn();
+    vi.mocked(httpClient.delete).mockResolvedValueOnce(
+      new Response(null, { status: 204 }),
+    );
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <IntlProvider locale="en" messages={en}>
+          <DimensionDialog
+            open
+            item={{ ...master, values: [value] }}
+            onSave={vi.fn().mockResolvedValue(master)}
+            onOpenChange={onOpenChange}
+          />
+        </IntlProvider>
+      </QueryClientProvider>,
+    );
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "Select sub-value 1" }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Delete (1)" }));
+    expect(screen.queryByDisplayValue("First")).toBeNull();
+    expect(httpClient.delete).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+    expect(httpClient.delete).toHaveBeenCalledWith(
+      expect.stringMatching(/\/saved-value$/),
+    );
   });
   it("shows list items only for List, and date format only for Date", async () => {
     const onSave = vi.fn();

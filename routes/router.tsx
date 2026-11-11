@@ -979,17 +979,18 @@ export const router = createBrowserRouter([
               },
               {
                 path: "accounts-payable/payment-approvals",
-                element: (
-                  <Navigate
-                    to="/accounting/accounts-payable/payment?filter=doc_status%7Cstring%3Ain_review"
-                    replace
-                  />
-                ),
+                lazy: () =>
+                  import("./accounting/accounts-payable/payment/ap-payment-approvals.route"),
               },
               {
                 path: "accounts-receivable",
                 lazy: () =>
-                  import("./accounting/dashboard/accounting-dashboard.route"),
+                  import("./accounting/accounts-receivable/ar-dashboard.route"),
+              },
+              {
+                path: "accounts-receivable/profile",
+                lazy: () =>
+                  import("./accounting/accounts-receivable/ar-profile.route"),
               },
               {
                 path: "accounts-receivable/invoice",
@@ -1000,6 +1001,26 @@ export const router = createBrowserRouter([
                 path: "accounts-receivable/invoice/:id",
                 lazy: () =>
                   import("./accounting/accounts-receivable/ar-invoice-detail.route"),
+              },
+              {
+                path: "accounts-receivable/preview",
+                lazy: () => import("./accounting/accounts-receivable/ar-preview.route"),
+              },
+              {
+                path: "accounts-receivable/preview/invoice",
+                lazy: () => import("./accounting/accounts-receivable/ar-invoice-preview-list.route"),
+              },
+              {
+                path: "accounts-receivable/preview/invoice/:id",
+                lazy: () => import("./accounting/accounts-receivable/ar-invoice-preview-detail.route"),
+              },
+              {
+                path: "accounts-receivable/preview/folio",
+                lazy: () => import("./accounting/accounts-receivable/ar-folio-preview.route"),
+              },
+              {
+                path: "accounts-receivable/preview/:directory",
+                lazy: () => import("./accounting/accounts-receivable/ar-customer-preview.route"),
               },
               {
                 path: "accounts-receivable/receipt",
