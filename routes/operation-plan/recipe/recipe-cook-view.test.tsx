@@ -155,3 +155,71 @@ describe("RecipeCookView — วิดีโอของสูตร", () => {
     expect(container.querySelector("iframe")).toBeNull();
   });
 });
+
+describe("RecipeCookView — วิดีโอของขั้นตอน", () => {
+  const step = (id: string, n: number, videos: unknown) => ({
+    id,
+    doc_version: 1,
+    sequence_no: n,
+    title: null,
+    description: `Step ${n} text`,
+    duration: null,
+    temperature: null,
+    temperature_unit: null,
+    equipment: [],
+    chef_notes: null,
+    safety_warnings: null,
+    videos,
+  });
+  const stepTitle = (n: number) =>
+    en.operationPlan.recipe.stepVideoTitle.replace("{n}", String(n));
+  const recipe = {
+    ...RECIPE,
+    preparation_steps: [
+      step("s1", 1, [
+        { provider: "youtube", token: "aqz-KE-bpKQ", sort_order: 0 },
+      ]),
+      step("s2", 2, []),
+    ],
+  } as unknown as Recipe;
+
+  it("ขั้นที่มีวิดีโอ → player อยู่ในการ์ดของขั้นนั้น ใต้คำอธิบาย", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    const player = screen.getByTitle(stepTitle(1));
+    expect(player).toHaveAttribute(
+      "src",
+      "https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ?rel=0",
+    );
+    const card = player.closest("article");
+    expect(card).not.toBeNull();
+    expect(card).toHaveTextContent("Step 1 text");
+  });
+
+  it("ไปขั้นที่ไม่มีวิดีโอ → ไม่มี player ของขั้น", () => {
+    const { container } = renderForm(<RecipeCookView recipe={recipe} />);
+    fireEvent.click(
+      screen.getAllByRole("button", {
+        name: en.operationPlan.recipe.cookNext,
+      })[0],
+    );
+    expect(screen.getByRole("article")).toHaveTextContent("Step 2 text");
+    expect(container.querySelector("iframe")).toBeNull();
+  });
+
+  it("มีทั้งวิดีโอของสูตรและของขั้น → แสดงทั้งสองตัว", () => {
+    renderForm(
+      <RecipeCookView
+        recipe={{
+          ...recipe,
+          video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        }}
+      />,
+    );
+    expect(
+      screen.getByTitle(
+        en.operationPlan.recipe.videoTitle.replace("{name}", RECIPE.name),
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByTitle(stepTitle(1))).toBeInTheDocument();
+  });
+});

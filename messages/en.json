@@ -5083,7 +5083,10 @@
       "marginMeetsCategoryTarget": "Meets category target {pct}%",
       "videoUrl": "Video link (YouTube)",
       "videoUrlDesc": "Paste a YouTube video link — it plays at the top of the recipe page",
-      "videoTitle": "Video: {name}"
+      "videoTitle": "Video: {name}",
+      "stepVideoUrl": "Step video (YouTube)",
+      "stepVideoUrlDesc": "Optional — plays inside this step on the recipe page",
+      "stepVideoTitle": "Video for step {n}"
     },
     "posSale": {
       "history": {

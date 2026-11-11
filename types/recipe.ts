@@ -43,6 +43,11 @@ export interface RecipePreparationStep {
   equipment: unknown;
   chef_notes: string | null;
   safety_warnings: string | null;
+  /**
+   * JSONB `[{ provider: "youtube", token: <รหัสวิดีโอ 11 ตัว>, title?, sort_order }]` — ไม่เกิน 1 ตัว
+   * ต่อขั้น (gateway บังคับ) · ไม่เคยตั้ง = `[]` · อ่านผ่าน stepVideoUrl() เท่านั้น
+   */
+  videos?: unknown;
   /** recipe detail ฝั่ง backend เคยคืนขั้นที่ลบแล้วปนมา — กรองทิ้งด้วย activeSteps() */
   deleted_at?: string | null;
 }

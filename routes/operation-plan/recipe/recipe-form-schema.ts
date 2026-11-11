@@ -71,6 +71,13 @@ function createStepSchema(tv: TranslationFn, tf: TranslationFn) {
     ),
     chef_notes: z.string().max(1000),
     safety_warnings: z.string().max(1000),
+    // วิดีโอของขั้น 1 ลิงก์ · ว่าง = ไม่มี · กติกาเดียวกับลิงก์วิดีโอของสูตร
+    video_url: z
+      .string()
+      .refine(
+        (v) => !v.trim() || parseYoutubeVideoId(v) !== null,
+        tv("youtubeLink"),
+      ),
   });
 }
 

@@ -15,7 +15,11 @@ import { PERMISSIONS } from "@/constant/permissions";
 import { ALLERGEN_OPTIONS } from "@/constant/recipe";
 import { cn } from "@/lib/utils";
 import type { Recipe, RecipePreparationStep } from "@/types/recipe";
-import { activeSteps, normalizeEquipment } from "./recipe-steps-sync";
+import {
+  activeSteps,
+  normalizeEquipment,
+  stepVideoUrl,
+} from "./recipe-steps-sync";
 import { activeIngredients, formatQty } from "./recipe-ingredients-cost";
 import { useRecipePrintTemplateId } from "./use-recipe-print-template";
 import { useWakeLock } from "./use-wake-lock";
@@ -143,7 +147,10 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
         {/* ขั้นตอน */}
         <section aria-label={t("stepsSection")} className="min-w-0">
           {/* วิดีโอของสูตร (ถ้ามี) อยู่บนสุดของคอลัมน์ขั้นตอน — เห็นก่อนลงมือ */}
-          <RecipeVideoPlayer url={recipe.video_url} recipeName={recipe.name} />
+          <RecipeVideoPlayer
+            url={recipe.video_url}
+            title={t("videoTitle", { name: recipe.name })}
+          />
           {total === 0 || !current ? (
             <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
               <p>{t("cookNoSteps")}</p>
@@ -386,6 +393,14 @@ function CookStep({
       <p className="text-foreground mt-2 text-xl leading-relaxed break-words whitespace-pre-line">
         {step.description}
       </p>
+      {/* วิดีโอของขั้นนี้ (ถ้ามี) ใต้คำอธิบาย — วิดีโอของทั้งสูตรยังอยู่บนสุดของคอลัมน์ตามเดิม */}
+      <RecipeVideoPlayer
+        // ขั้นใหม่ = iframe ใหม่ ไม่ค้างตำแหน่งเล่นของวิดีโอขั้นก่อน
+        key={step.id}
+        url={stepVideoUrl(step.videos)}
+        title={t("stepVideoTitle", { n })}
+        className="mt-4 mb-0"
+      />
       {step.safety_warnings && (
         <div className="border-warning/50 bg-warning/10 text-warning-ink mt-4 flex gap-2 rounded-md border p-3 text-sm">
           <AlertTriangle

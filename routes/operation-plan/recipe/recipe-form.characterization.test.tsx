@@ -203,3 +203,54 @@ describe("RecipeForm — ลิงก์วิดีโอ", () => {
     expect(videoInput()).toHaveAttribute("aria-invalid", "true");
   });
 });
+
+describe("RecipeForm — วิดีโอของขั้นตอน", () => {
+  const WATCH = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+  const STEP = {
+    id: "step-1",
+    doc_version: 2,
+    sequence_no: 1,
+    title: null,
+    description: "Boil the stock",
+    duration: null,
+    temperature: null,
+    temperature_unit: null,
+    equipment: [],
+    chef_notes: null,
+    safety_warnings: null,
+    videos: [{ provider: "youtube", token: "dQw4w9WgXcQ", sort_order: 0 }],
+  };
+  const withStep = { ...RECIPE, preparation_steps: [STEP] } as Recipe;
+  const stepVideoInput = () =>
+    screen.getByLabelText(en.operationPlan.recipe.stepVideoUrl);
+  const syncedDrafts = () =>
+    (firstPayload(syncStepsMut) as { drafts: { video_url: string }[] }).drafts;
+
+  it("โหลดวิดีโอของขั้นเป็นลิงก์ watch?v= แล้วส่งค่าเดิมให้ sync ขั้นตอน", async () => {
+    renderForm(<RecipeForm recipe={withStep} />);
+    expect(stepVideoInput()).toHaveValue(WATCH);
+    await act(async () => submitForm("recipe-form"));
+
+    expect(syncedDrafts()[0].video_url).toBe(WATCH);
+  });
+
+  it("ลิงก์ที่ไม่ใช่วิดีโอ YouTube → ไม่บันทึก ช่องของขั้นขึ้น error", async () => {
+    renderForm(<RecipeForm recipe={withStep} />);
+    fireEvent.change(stepVideoInput(), {
+      target: { value: "https://vimeo.com/76979871" },
+    });
+    await act(async () => submitForm("recipe-form"));
+
+    expect(updateMut.mutate).not.toHaveBeenCalled();
+    expect(syncStepsMut.mutate).not.toHaveBeenCalled();
+    expect(stepVideoInput()).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("ลบลิงก์ของขั้นออก → ส่งค่าว่างให้ sync (ไปเป็น videos: [])", async () => {
+    renderForm(<RecipeForm recipe={withStep} />);
+    fireEvent.change(stepVideoInput(), { target: { value: "" } });
+    await act(async () => submitForm("recipe-form"));
+
+    expect(syncedDrafts()[0].video_url).toBe("");
+  });
+});

@@ -5083,7 +5083,10 @@
       "marginMeetsCategoryTarget": "ถึงเป้าของหมวด {pct}% แล้ว",
       "videoUrl": "ลิงก์วิดีโอ (YouTube)",
       "videoUrlDesc": "วางลิงก์วิดีโอ YouTube — วิดีโอจะเล่นบนสุดของหน้าสูตร",
-      "videoTitle": "วิดีโอ: {name}"
+      "videoTitle": "วิดีโอ: {name}",
+      "stepVideoUrl": "วิดีโอของขั้นตอน (YouTube)",
+      "stepVideoUrlDesc": "ไม่บังคับ — วิดีโอจะเล่นในการ์ดของขั้นนี้บนหน้าสูตร",
+      "stepVideoTitle": "วิดีโอขั้นที่ {n}"
     },
     "posSale": {
       "history": {

@@ -1,4 +1,9 @@
 import { ApiError } from "@/lib/api-error";
+import {
+  isYoutubeVideoId,
+  parseYoutubeVideoId,
+  youtubeWatchUrl,
+} from "@/lib/youtube";
 import type { RecipeEquipmentRef, RecipePreparationStep } from "@/types/recipe";
 
 /**
@@ -37,6 +42,8 @@ export interface StepDraft {
   equipment: RecipeEquipmentRef[];
   chef_notes: string;
   safety_warnings: string;
+  /** ลิงก์วิดีโอ YouTube ของขั้นนี้ ("" = ไม่มี) — ฝั่ง API เก็บเป็น `videos[0].token` */
+  video_url: string;
 }
 
 export interface StepsDiff {
@@ -58,6 +65,27 @@ export function normalizeEquipment(raw: unknown): RecipeEquipmentRef[] {
     }
     return [];
   });
+}
+
+/**
+ * ลิงก์วิดีโอของขั้น จาก `videos` (JSONB) — ตัวแรกที่เป็น YouTube และรหัสถูกรูป · ไม่มี = ""
+ * ข้อมูลเก่า/ผิดรูปอ่านเป็น "" (ไม่มีวิดีโอ) — ไม่ PATCH ทับจนกว่าผู้ใช้จะแก้ช่องนี้เอง
+ */
+export function stepVideoUrl(videos: unknown): string {
+  if (!Array.isArray(videos)) return "";
+  for (const v of videos) {
+    if (!v || typeof v !== "object") continue;
+    const { provider, token } = v as { provider?: unknown; token?: unknown };
+    if (provider === "youtube" && isYoutubeVideoId(token))
+      return youtubeWatchUrl(token);
+  }
+  return "";
+}
+
+/** ลิงก์ในฟอร์ม → `videos` ของ API (ไม่เกิน 1 ตัว) · ว่าง = [] ซึ่งลบวิดีโอเดิมออก */
+function videoUrlToItems(url: string) {
+  const id = parseYoutubeVideoId(url);
+  return id ? [{ provider: "youtube", token: id, sort_order: 0 }] : [];
 }
 
 const toNum = (v: unknown): number | null => {
@@ -91,6 +119,7 @@ export function stepToDraft(s: RecipePreparationStep): StepDraft {
     equipment: normalizeEquipment(s.equipment),
     chef_notes: s.chef_notes ?? "",
     safety_warnings: s.safety_warnings ?? "",
+    video_url: stepVideoUrl(s.videos),
   };
 }
 
@@ -107,6 +136,7 @@ export function draftToItem(d: StepDraft): Record<string, unknown> {
     equipment: d.equipment.map(({ id, name }) => ({ id, name })),
     chef_notes: text(d.chef_notes),
     safety_warnings: text(d.safety_warnings),
+    videos: videoUrlToItems(d.video_url),
   };
 }
 
