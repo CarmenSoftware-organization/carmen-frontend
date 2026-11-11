@@ -1,5 +1,6 @@
 /**
- * ลิงก์วิดีโอ YouTube — ใช้กับช่องวิดีโอของสูตร (`recipe.video_url`)
+ * ลิงก์วิดีโอ YouTube — ใช้กับช่องวิดีโอของสูตร (`recipe.video_url`) และวิดีโอของแต่ละขั้นตอน
+ * (`preparation_step.videos[0].token` เก็บแค่รหัสวิดีโอ ไม่ใช่ลิงก์)
  *
  * กติกาเดียวกับ backend (`RecipeVideoUrlSchema` ใน gateway): รับลิงก์วิดีโอ YouTube ทุกรูปแบบ
  * (watch?v= · youtu.be · shorts · embed · live · m. · music. · youtube-nocookie) แล้ว backend
@@ -21,6 +22,11 @@ const PATH_HOSTS = new Set([
   "www.youtube-nocookie.com",
 ]);
 const PATH_PREFIXES = new Set(["shorts", "embed", "live", "v"]);
+
+/** เป็นรหัสวิดีโอ YouTube ที่ใช้ได้ (11 ตัวจาก [A-Za-z0-9_-]) — gateway บังคับรูปเดียวกัน */
+export function isYoutubeVideoId(id: unknown): id is string {
+  return typeof id === "string" && YOUTUBE_ID.test(id);
+}
 
 /** รหัสวิดีโอจากลิงก์ YouTube — ไม่ใช่ลิงก์วิดีโอ YouTube (หรือว่าง) คืน null */
 export function parseYoutubeVideoId(
@@ -51,7 +57,12 @@ export function parseYoutubeVideoId(
     PATH_PREFIXES.has(segments[0])
   )
     id = segments[1];
-  return id && YOUTUBE_ID.test(id) ? id : null;
+  return isYoutubeVideoId(id) ? id : null;
+}
+
+/** ลิงก์หน้าดูวิดีโอรูปแบบเดียวกับที่ backend เก็บใน `recipe.video_url` */
+export function youtubeWatchUrl(id: string): string {
+  return `https://www.youtube.com/watch?v=${id}`;
 }
 
 /**
