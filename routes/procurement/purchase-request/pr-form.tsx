@@ -58,6 +58,7 @@ export function PurchaseRequestForm({
     dateFormat,
     hasDepartment,
     userId,
+    avatarUrl,
   } = useProfile();
   const { isAdmin } = useCan();
 
@@ -265,6 +266,9 @@ export function PurchaseRequestForm({
           onDelete={handleDeleteClick}
           onComment={() => actions.setShowComment(true)}
           reqName={reqName}
+          reqAvatar={
+            purchaseRequest ? purchaseRequest.requestor_avatar : avatarUrl
+          }
           departmentName={departmentName ?? ""}
           prDateDisplay={prDateDisplay}
           description={descriptionReadOnly ? watchedDescription : undefined}

@@ -1,5 +1,6 @@
-import { Clock, Tag, User } from "lucide-react";
+import { Clock, Tag } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
+import { PersonAvatar } from "@/components/share/person-avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -103,6 +104,7 @@ export function StatusBar() {
     aliasName,
     buCode,
     currentPeriod,
+    avatarUrl,
     dateFormat,
     dateTimeFormat,
   } = useProfile();
@@ -140,7 +142,13 @@ export function StatusBar() {
         className="bg-muted/40 text-muted-foreground text-micro flex h-6 shrink-0 items-center justify-between border-t px-3"
       >
         <div className="flex min-w-0 items-center gap-1.5">
-          <User aria-hidden="true" className="h-3 w-3 shrink-0" />
+          <PersonAvatar
+            fallback="icon"
+            avatarUrl={avatarUrl}
+            className="size-3 shrink-0"
+            fallbackClassName="bg-transparent text-inherit"
+            iconClassName="size-full"
+          />
           <span className="truncate">{displayName}</span>
           {/* ซ่อน buCode ต่ำกว่า sm: แถบ 375px มีที่ไม่พอสำหรับทุกอย่าง และ buCode
               ยังอยู่บนตัวสลับ BU ที่ navbar ตลอดเวลา ต่างจากรอบบัญชีที่ไม่มีที่อื่น

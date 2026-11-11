@@ -9,6 +9,8 @@ export interface ActivityLog {
   entity_type: string;
   entity_id: string;
   actor_id: string | null;
+  // รูปโปรไฟล์ผู้กระทำ — ไม่มีฟิลด์ = ไม่มีรูป
+  actor_avatar?: string;
   actor_username: string | null;
   actor_firstname: string | null;
   actor_middlename: string | null;

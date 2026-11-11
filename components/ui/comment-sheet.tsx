@@ -8,11 +8,11 @@ import {
   PenBox,
   Send,
   Trash2,
-  User,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
+import { PersonAvatar } from "@/components/share/person-avatar";
 import { Button } from "@/components/ui/button";
 import {
   isDeletedAttachment,
@@ -56,6 +56,7 @@ export interface CommentAudit {
   at: string;
   id?: string;
   name?: string;
+  avatar?: string;
 }
 
 export interface CommentItem {
@@ -511,9 +512,12 @@ export function CommentSheet({
               {comments.map((c) => (
                 <div key={c.id} className="space-y-0.5 px-5 py-4">
                   <div className="flex items-center gap-1.5">
-                    <div className="bg-muted flex size-5 shrink-0 items-center justify-center rounded-full">
-                      <User className="text-muted-foreground size-3" />
-                    </div>
+                    <PersonAvatar
+                      fallback="icon"
+                      avatarUrl={c.audit?.created?.avatar}
+                      className="size-5 shrink-0"
+                      iconClassName="size-3"
+                    />
                     <span className="truncate text-xs font-semibold">
                       {getFullName(c)}
                     </span>

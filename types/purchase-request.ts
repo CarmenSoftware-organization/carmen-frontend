@@ -179,6 +179,8 @@ export interface PurchaseRequest {
   // จริง ยืนยัน live: ไม่มี requestor_id/department_name/workflow_id คู่กันเลย
   workflow?: EntityRef | null;
   requestor?: EntityRef | null;
+  // รูปโปรไฟล์ผู้ขอ — detail เท่านั้น, ไม่มีฟิลด์ = ไม่มีรูป
+  requestor_avatar?: string;
   department?: EntityRef | null;
   // ยืนยันจาก payload จริง (findOne) ว่า header ไม่มี vendor เลย (ของเดิม
   // vendor_id/vendor_code/vendor_name เป็นฟิลด์ที่ไม่เคยมีจริงบน wire — vendor

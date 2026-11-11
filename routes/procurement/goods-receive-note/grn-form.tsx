@@ -87,6 +87,7 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
     data: profileData,
     defaultCurrencyId,
     defaultCurrencyCode,
+    avatarUrl,
   } = useProfile();
 
   const defaultValues = useMemo(() => {
@@ -215,6 +216,11 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
           isVoid={isVoid}
           deleteIsPending={actions.deleteGrn.isPending}
           receivedByName={receivedByName}
+          receivedByAvatar={
+            goodsReceiveNote?.received_by
+              ? goodsReceiveNote.received_by_avatar
+              : avatarUrl
+          }
           departmentName={departmentName}
           onBack={actions.handleBack}
           onEnterEdit={() => setMode("edit")}

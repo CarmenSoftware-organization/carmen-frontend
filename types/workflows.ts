@@ -121,6 +121,7 @@ export interface User {
   email: string;
   department: Department;
   initials?: string;
+  avatar_url?: string | null;
 }
 
 export interface Stage {
@@ -166,6 +167,7 @@ export interface AuditEntry {
   at: string;
   id: string;
   name: string;
+  avatar?: string;
 }
 
 export interface AuditInfo {

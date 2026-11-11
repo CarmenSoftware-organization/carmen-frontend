@@ -248,7 +248,7 @@ export function CnForm({ creditNote }: CnFormProps) {
 
   // ชื่อผู้สร้างใต้เลขที่ใบ — แสดงอย่างเดียว ไม่เข้า payload · วันที่ย้ายไปเป็น
   // ช่องกรอกในฟอร์มแล้ว (cn_date) หัวใบจึงไม่ต้องโชว์ซ้ำ
-  const { data: profileData } = useProfile();
+  const { data: profileData, avatarUrl } = useProfile();
   const createdByName = creditNote
     ? (creditNote.audit?.created?.name ?? "")
     : [profileData?.user_info?.firstname, profileData?.user_info?.lastname]
@@ -398,6 +398,9 @@ export function CnForm({ creditNote }: CnFormProps) {
           deleteIsPending={deleteCn.isPending}
           isLocked={isLocked}
           createdByName={createdByName}
+          createdByAvatar={
+            creditNote ? creditNote.audit?.created?.avatar : avatarUrl
+          }
           onBack={handleBack}
           onEnterEdit={() => setMode("edit")}
           onCancel={handleCancel}

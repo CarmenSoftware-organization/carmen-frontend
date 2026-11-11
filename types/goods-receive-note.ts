@@ -153,6 +153,8 @@ export interface GoodsReceiveNote {
   post_type: GrnPostType | null;
   signature_image_url: string | null;
   received_by: EntityRef | null;
+  // รูปโปรไฟล์ผู้รับ — detail เท่านั้น, ไม่มีฟิลด์ = ไม่มีรูป
+  received_by_avatar?: string;
   credit_term: EntityRef | null;
   credit_term_days: number | null;
   payment_due_date: string | null;

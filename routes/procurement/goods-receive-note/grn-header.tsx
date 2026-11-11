@@ -1,5 +1,6 @@
 import { useTranslations } from "use-intl";
-import { Building2, FileText, Save, User } from "lucide-react";
+import { Building2, FileText, Save } from "lucide-react";
+import { PersonAvatar } from "@/components/share/person-avatar";
 import { Button } from "@/components/ui/button";
 import { DocActions } from "@/components/share/doc-actions";
 import { useGoodsReceiveNoteComments } from "@/hooks/use-goods-receive-note";
@@ -18,6 +19,7 @@ interface GrnHeaderProps {
   readonly isVoid: boolean;
   readonly deleteIsPending: boolean;
   readonly receivedByName: string;
+  readonly receivedByAvatar?: string | null;
   readonly departmentName: string;
   readonly onBack: () => void;
   readonly onEnterEdit: () => void;
@@ -36,6 +38,7 @@ export function GrnHeader({
   isVoid,
   deleteIsPending,
   receivedByName,
+  receivedByAvatar,
   departmentName,
   onBack,
   onEnterEdit,
@@ -112,7 +115,13 @@ export function GrnHeader({
     <span className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
       {receivedByName && (
         <span className="flex items-center gap-1">
-          <User className="size-3 shrink-0" aria-hidden="true" />
+          <PersonAvatar
+            fallback="icon"
+            avatarUrl={receivedByAvatar}
+            className="size-3 shrink-0"
+            fallbackClassName="bg-transparent text-inherit"
+            iconClassName="size-full"
+          />
           {receivedByName}
         </span>
       )}

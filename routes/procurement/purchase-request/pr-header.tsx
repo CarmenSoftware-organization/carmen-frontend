@@ -1,4 +1,5 @@
-import { Building2, CalendarDays, User } from "lucide-react";
+import { Building2, CalendarDays } from "lucide-react";
+import { PersonAvatar } from "@/components/share/person-avatar";
 import { type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
@@ -31,6 +32,7 @@ interface PrHeaderProps {
   readonly onDelete: () => void;
   readonly onComment: () => void;
   readonly reqName: string;
+  readonly reqAvatar?: string | null;
   readonly departmentName: string;
   readonly prDateDisplay: string;
   readonly workflowName?: string;
@@ -53,6 +55,7 @@ export function PrHeader({
   onDelete,
   onComment,
   reqName,
+  reqAvatar,
   departmentName,
   prDateDisplay,
   workflowName,
@@ -175,7 +178,13 @@ export function PrHeader({
       <span className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
         {reqName && (
           <span className="flex items-center gap-1">
-            <User className="size-3 shrink-0" aria-hidden="true" />
+            <PersonAvatar
+              fallback="icon"
+              avatarUrl={reqAvatar}
+              className="size-3 shrink-0"
+              fallbackClassName="bg-transparent text-inherit"
+              iconClassName="size-full"
+            />
             {reqName}
           </span>
         )}

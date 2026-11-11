@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslations } from "use-intl";
-import { Building2, Lock, Mail, User } from "lucide-react";
+import { Building2, Lock, Mail } from "lucide-react";
+import { PersonAvatar } from "@/components/share/person-avatar";
 import { Button } from "@/components/ui/button";
 import { DocActions } from "@/components/share/doc-actions";
 import { WorkflowTrack } from "@/components/share/workflow-track";
@@ -31,6 +32,7 @@ interface PoHeaderProps {
   readonly deletePoIsPending: boolean;
   readonly departmentName: string;
   readonly buyerName: string;
+  readonly buyerAvatar?: string | null;
   readonly onBack: () => void;
   readonly onCancel: () => void;
   readonly onEnterEdit: () => void;
@@ -51,6 +53,7 @@ export function PoHeader({
   deletePoIsPending,
   departmentName,
   buyerName,
+  buyerAvatar,
   onBack,
   onCancel,
   onEnterEdit,
@@ -122,7 +125,13 @@ export function PoHeader({
       <span className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
         {buyerName && (
           <span className="flex items-center gap-1">
-            <User className="size-3 shrink-0" aria-hidden="true" />
+            <PersonAvatar
+              fallback="icon"
+              avatarUrl={buyerAvatar}
+              className="size-3 shrink-0"
+              fallbackClassName="bg-transparent text-inherit"
+              iconClassName="size-full"
+            />
             {buyerName}
           </span>
         )}
