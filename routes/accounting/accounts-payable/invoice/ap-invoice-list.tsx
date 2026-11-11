@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
-import { Loader2, Plus, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import { DocumentListActions } from "@/components/share/document-list-actions";
+import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { listReturnState } from "@/hooks/use-list-return";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGridPagination } from "@/hooks/use-grid-pagination";
@@ -40,7 +43,10 @@ import type {
   ApDocStatus,
   ApDocType,
 } from "@/types/accounts-payable";
-import { useApInvoices } from "../shared/use-accounts-payable";
+import {
+  useApInvoices,
+  useExportApInvoices,
+} from "../shared/use-accounts-payable";
 import { ApFromGrnBadge, ApSettlementBadge } from "./ap-invoice-badges";
 import { useApInvoiceTable } from "./use-ap-invoice-table";
 
@@ -65,6 +71,9 @@ const DOC_TYPES: ApDocType[] = [
 export default function ApInvoiceList() {
   const t = useTranslations("accounting.accountsPayable.invoice");
   const tc = useTranslations("common");
+  const tfl = useTranslations("field");
+  const exportErrorToast = useExportErrorToast();
+  const { exportInvoices, isExporting } = useExportApInvoices();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { dateFormat } = useProfile();
@@ -170,6 +179,29 @@ export default function ApInvoiceList() {
       listReturnState(),
     );
 
+  async function handleExport() {
+    try {
+      const count = await exportInvoices(queryParams, [
+        { header: t("docNo"), value: (row) => row.doc_no },
+        { header: t("docDate"), value: (row) => row.doc_date },
+        { header: t("vendor"), value: (row) => row.vendor_name },
+        { header: t("vendorInvoiceNo"), value: (row) => row.vendor_invoice_no },
+        { header: t("docType"), value: (row) => t(`docTypes.${row.doc_type}`) },
+        { header: t("total"), value: (row) => row.total_amount },
+        { header: t("outstanding"), value: (row) => row.outstanding_amount },
+        {
+          header: tc("status"),
+          value: (row) => t(`statuses.${row.doc_status}`),
+        },
+        { header: tfl("currency"), value: (row) => row.currency_code },
+      ]);
+      if (!count) toast.warning(tc("exportNoData"));
+      else toast.success(tc("exportSuccess", { count }));
+    } catch (error) {
+      exportErrorToast(error);
+    }
+  }
+
   const table = useApInvoiceTable({
     invoices,
     totalRecords,
@@ -193,12 +225,17 @@ export default function ApInvoiceList() {
       description={t("desc")}
       count={totalRecords}
       actions={
-        <Button
-          size="sm"
-          onClick={() => navigate("/accounting/accounts-payable/invoice/new")}
-        >
-          <Plus className="size-4" /> {t("add")}
-        </Button>
+        <DocumentListActions
+          onAdd={() =>
+            navigate(
+              "/accounting/accounts-payable/invoice/new",
+              listReturnState(),
+            )
+          }
+          addLabel={t("add")}
+          onExport={() => void handleExport()}
+          isExporting={isExporting}
+        />
       }
       toolbar={
         <ListToolbar
@@ -229,7 +266,7 @@ export default function ApInvoiceList() {
           table={table}
           recordCount={totalRecords}
           isLoading={isLoading}
-          tableLayout={{ headerSticky: true, columnsResizable: true }}
+          tableLayout={{ headerSticky: true }}
           emptyMessage={<EmptyComponent />}
         >
           <DataGridContainer

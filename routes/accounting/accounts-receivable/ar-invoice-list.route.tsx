@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
 import { RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import EmptyComponent from "@/components/empty-component";
 import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
@@ -43,6 +45,7 @@ import {
   AR_STATUS,
   AR_TYPES,
   useArRegister,
+  useExportArRegister,
   type ArRegisterRow,
 } from "./use-ar-register";
 
@@ -79,6 +82,9 @@ export function Component() {
   "use no memo";
   const t = useTranslations("accounting.arRegister");
   const tc = useTranslations("common");
+  const tfl = useTranslations("field");
+  const exportErrorToast = useExportErrorToast();
+  const { exportInvoices, isExporting } = useExportArRegister();
   const navigate = useNavigate();
   const { canWrite } = useCan();
   const mobile = useIsMobile();
@@ -155,6 +161,31 @@ export function Component() {
     tableConfig,
     hideStatus: true,
   });
+  async function handleExport() {
+    try {
+      const count = await exportInvoices(
+        { ...params, filter: lf.filterParam },
+        [
+          { header: t("number"), value: (row) => row.doc_no },
+          { header: t("type"), value: (row) => t(`types.${row.doc_type}`) },
+          { header: t("customer"), value: (row) => row.customer_name },
+          { header: t("date"), value: (row) => row.doc_date },
+          { header: t("due"), value: (row) => row.due_date },
+          { header: t("total"), value: (row) => row.total_amount },
+          { header: t("outstanding"), value: (row) => row.outstanding_amount },
+          {
+            header: tc("status"),
+            value: (row) => t(`statuses.${row.doc_status}`),
+          },
+          { header: tfl("currency"), value: (row) => row.currency_code },
+        ],
+      );
+      if (!count) toast.warning(tc("exportNoData"));
+      else toast.success(tc("exportSuccess", { count }));
+    } catch (error) {
+      exportErrorToast(error);
+    }
+  }
   const cards = mobile || display === "grid";
 
   return (
@@ -167,7 +198,8 @@ export function Component() {
           onAdd={() => navigate(`${AR_REGISTER_PATH}/new`, listReturnState())}
           addLabel={t("newInvoice")}
           addDisabled={!canWrite}
-          hideExportPrint
+          onExport={() => void handleExport()}
+          isExporting={isExporting}
         />
       }
       toolbar={
@@ -205,7 +237,7 @@ export function Component() {
           recordCount={total}
           isLoading={query.isPending}
           emptyMessage={<EmptyComponent />}
-          tableLayout={{ headerSticky: true, columnsResizable: true }}
+          tableLayout={{ headerSticky: true }}
         >
           <DataGridContainer
             className={

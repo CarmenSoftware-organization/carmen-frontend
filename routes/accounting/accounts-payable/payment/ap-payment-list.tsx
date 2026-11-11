@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
-import { Loader2, Plus, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
+import { DocumentListActions } from "@/components/share/document-list-actions";
+import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { toast } from "sonner";
 import { listReturnState } from "@/hooks/use-list-return";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -47,6 +49,7 @@ import type {
 import {
   useApPaymentAction,
   useApPayments,
+  useExportApPayments,
 } from "../shared/use-accounts-payable";
 import { useApPaymentTable } from "./use-ap-payment-table";
 import { canBatchApprovePayment } from "./ap-payment-approval";
@@ -78,6 +81,9 @@ export default function ApPaymentList({
   "use no memo";
   const t = useTranslations("accounting.accountsPayable.payment");
   const tc = useTranslations("common");
+  const tfl = useTranslations("field");
+  const exportErrorToast = useExportErrorToast();
+  const { exportPayments, isExporting } = useExportApPayments();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { dateFormat, userId } = useProfile();
@@ -189,6 +195,31 @@ export default function ApPaymentList({
       listReturnState(),
     );
 
+  async function handleExport() {
+    try {
+      const count = await exportPayments(queryParams, [
+        { header: t("docNo"), value: (row) => row.doc_no },
+        { header: t("paymentDate"), value: (row) => row.payment_date },
+        { header: t("vendor"), value: (row) => row.vendor_name },
+        { header: t("bankAccount"), value: (row) => row.bank_account_name },
+        {
+          header: t("method"),
+          value: (row) => t(`methods.${row.payment_method}`),
+        },
+        { header: t("netPaid"), value: (row) => row.net_paid_amount },
+        {
+          header: tc("status"),
+          value: (row) => t(`statuses.${row.doc_status}`),
+        },
+        { header: tfl("currency"), value: (row) => row.currency_code },
+      ]);
+      if (!count) toast.warning(tc("exportNoData"));
+      else toast.success(tc("exportSuccess", { count }));
+    } catch (error) {
+      exportErrorToast(error);
+    }
+  }
+
   const table = useApPaymentTable({
     payments,
     totalRecords,
@@ -266,12 +297,17 @@ export default function ApPaymentList({
             </Button>
           )
         ) : (
-          <Button
-            size="sm"
-            onClick={() => navigate("/accounting/accounts-payable/payment/new")}
-          >
-            <Plus className="size-4" /> {t("add")}
-          </Button>
+          <DocumentListActions
+            onAdd={() =>
+              navigate(
+                "/accounting/accounts-payable/payment/new",
+                listReturnState(),
+              )
+            }
+            addLabel={t("add")}
+            onExport={() => void handleExport()}
+            isExporting={isExporting}
+          />
         )
       }
       toolbar={
@@ -331,7 +367,6 @@ export default function ApPaymentList({
           isLoading={isLoading}
           tableLayout={{
             headerSticky: true,
-            columnsResizable: true,
             checkbox: approvalQueue && approvalTab === "pending",
           }}
           emptyMessage={<EmptyComponent />}

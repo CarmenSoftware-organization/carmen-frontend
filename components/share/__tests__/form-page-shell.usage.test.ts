@@ -60,7 +60,6 @@ const ALLOWED: Record<string, number> = {
   // ── ชั่วคราว — accounting รอ spec accounting i18n (documents spec §0/§8)
   "routes/accounting/accounts-payable/invoice/ap-invoice-detail.tsx": 1,
   "routes/accounting/accounts-payable/payment/ap-payment-detail.tsx": 1,
-  "routes/accounting/accounts-receivable/ar-invoice-detail.tsx": 1,
   "routes/accounting/documents/accounting-document-detail.tsx": 1,
   // ── orphan: ไม่ได้ลงทะเบียนใน router (spec §8 — ลบหรือลงทะเบียนเป็นการตัดสินใจแยก)
   "routes/system-admin/config-email/config-email-component.tsx": 2,

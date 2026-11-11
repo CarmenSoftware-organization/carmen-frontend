@@ -245,7 +245,10 @@ export default function AccountingDocumentList() {
           <DataGrid
             table={table}
             recordCount={documents.length}
-            tableLayout={{ headerSticky: true, width: "auto" }}
+            tableLayout={{
+              headerSticky: true,
+              width: pathname.startsWith("/accounting/asset/") ? "auto" : "fixed",
+            }}
             tableClassNames={{ bodyRow: "h-10" }}
             emptyMessage={<EmptyComponent />}
           >

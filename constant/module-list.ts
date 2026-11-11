@@ -255,7 +255,7 @@ export const accountingModuleSections: ModuleDto[] = [
       },
       {
         name: "arFolio",
-        path: "/accounting/accounts-receivable/preview/folio",
+        path: "/accounting/accounts-receivable/folio",
         licenseFeature: "accounting.ar",
         icon: BookText,
       },
@@ -273,15 +273,9 @@ export const accountingModuleSections: ModuleDto[] = [
       },
       {
         name: "arContract",
-        path: "/accounting/accounts-receivable/preview/contracts",
+        path: "/accounting/accounts-receivable/contract",
         licenseFeature: "accounting.ar",
         icon: Handshake,
-      },
-      {
-        name: "arPreview",
-        path: "/accounting/accounts-receivable/preview",
-        licenseFeature: "accounting.ar",
-        icon: FileText,
       },
     ],
   },

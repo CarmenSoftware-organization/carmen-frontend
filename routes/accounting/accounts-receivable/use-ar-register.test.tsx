@@ -3,16 +3,69 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { PropsWithChildren } from "react";
 import { expect, it, vi } from "vitest";
 import { httpClient } from "@/lib/http-client";
+import { downloadXlsx } from "@/lib/xlsx-utils";
 import {
   draftLineFromRecord,
   draftLineToInput,
 } from "./ar-invoice-draft-model";
-import { useArRegister, useUpdateArInvoice } from "./use-ar-register";
+import {
+  useArRegister,
+  useUpdateArInvoice,
+  useExportArRegister,
+} from "./use-ar-register";
 
 vi.mock("@/hooks/use-bu-code", () => ({ useBuCode: () => "DEV" }));
 vi.mock("@/lib/http-client", () => ({
   httpClient: { get: vi.fn(), put: vi.fn() },
 }));
+vi.mock("@/lib/xlsx-utils", () => ({
+  downloadXlsx: vi.fn(),
+  buildXlsxFileName: (prefix: string) => prefix,
+}));
+
+it("exports AR invoices across all filtered pages without using the current pager offset", async () => {
+  vi.mocked(httpClient.get).mockClear();
+  const rows = Array.from({ length: 101 }, (_, index) => ({
+    id: String(index),
+    doc_no: `AR-${index}`,
+  }));
+  vi.mocked(httpClient.get)
+    .mockResolvedValueOnce(
+      Response.json({
+        data: rows.slice(0, 100),
+        paginate: { page: 1, perpage: 100, pages: 2, total: 101 },
+      }),
+    )
+    .mockResolvedValueOnce(
+      Response.json({
+        data: rows.slice(100),
+        paginate: { page: 2, perpage: 100, pages: 2, total: 101 },
+      }),
+    );
+  const { result } = renderHook(useExportArRegister);
+  await act(async () => {
+    expect(
+      await result.current.exportInvoices(
+        {
+          page: 4,
+          perpage: 10,
+          search: "Customer",
+          filter: "doc_status|string:draft",
+        },
+        [{ header: "Invoice", value: (row) => row.doc_no }],
+      ),
+    ).toBe(101);
+  });
+  expect(httpClient.get).toHaveBeenNthCalledWith(
+    1,
+    "/api/proxy/api/DEV/ar-invoice?page=1&perpage=100&search=Customer&filter=doc_status%7Cstring%3Adraft",
+  );
+  expect(httpClient.get).toHaveBeenNthCalledWith(
+    2,
+    "/api/proxy/api/DEV/ar-invoice?page=2&perpage=100&search=Customer&filter=doc_status%7Cstring%3Adraft",
+  );
+  expect(downloadXlsx).toHaveBeenCalledWith(expect.objectContaining({ rows }));
+});
 
 function setup() {
   const client = new QueryClient({

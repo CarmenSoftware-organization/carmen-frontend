@@ -1,11 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useBuCode } from "@/hooks/use-bu-code";
+import { useXlsxExport, type XlsxColumn } from "@/hooks/use-xlsx-export";
+import { fetchAllPages } from "@/lib/fetch-all-pages";
 import type {
   ApActionInput,
   ApCommand,
   ApInvoiceInput,
+  ApInvoice,
   ApListParams,
   ApPaymentInput,
+  ApPayment,
   ApUiAction,
   ApWhtPreviewInput,
 } from "@/types/accounts-payable";
@@ -39,8 +43,7 @@ function useBu() {
 function useInvalidateAll() {
   const bu = useBu();
   const client = useQueryClient();
-  return () =>
-    client.invalidateQueries({ queryKey: AP_QUERY_KEYS.root(bu) });
+  return () => client.invalidateQueries({ queryKey: AP_QUERY_KEYS.root(bu) });
 }
 
 const isId = (id?: string): id is string =>
@@ -56,6 +59,42 @@ export function useApInvoices(
     queryFn: () => repository.listInvoices(bu, params),
     enabled: !!bu && (options?.enabled ?? true),
   });
+}
+
+export function useExportApInvoices() {
+  const bu = useBu();
+  const { exportToXlsx, isExporting } = useXlsxExport();
+  return {
+    isExporting,
+    exportInvoices: (params: ApListParams, columns: XlsxColumn<ApInvoice>[]) =>
+      exportToXlsx({
+        fetch: () =>
+          fetchAllPages((page, perpage) =>
+            repository.listInvoices(bu, { ...params, page, perpage }),
+          ),
+        columns,
+        sheetName: "AP Invoices",
+        fileNamePrefix: "ap-invoice",
+      }),
+  };
+}
+
+export function useExportApPayments() {
+  const bu = useBu();
+  const { exportToXlsx, isExporting } = useXlsxExport();
+  return {
+    isExporting,
+    exportPayments: (params: ApListParams, columns: XlsxColumn<ApPayment>[]) =>
+      exportToXlsx({
+        fetch: () =>
+          fetchAllPages((page, perpage) =>
+            repository.listPayments(bu, { ...params, page, perpage }),
+          ),
+        columns,
+        sheetName: "AP Payments",
+        fileNamePrefix: "ap-payment",
+      }),
+  };
 }
 
 export function useApInvoice(id?: string) {

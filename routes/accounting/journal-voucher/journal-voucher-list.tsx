@@ -232,7 +232,7 @@ export default function JournalVoucherList() {
           table={table}
           recordCount={totalRecords}
           isLoading={isLoading}
-          tableLayout={{ headerSticky: true, columnsResizable: true }}
+          tableLayout={{ headerSticky: true }}
           emptyMessage={<EmptyComponent />}
         >
           <DataGridContainer

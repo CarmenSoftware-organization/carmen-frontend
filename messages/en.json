@@ -220,46 +220,6 @@
     }
   },
   "accounting": {
-    "arPreview": {
-      "title": "AR Mock Preview",
-      "description": "Sample data for review. This preview does not save to the accounting API.",
-      "invoice": "Invoice, Credit / Debit Note & Deposit",
-      "receipt": "Receipt preview",
-      "folio": "Folio preview",
-      "profiles": "AR Profiles",
-      "contracts": "Contracts",
-      "open": "Open preview",
-      "reference": "Reference",
-      "status": "Status",
-      "unbilled": "Unbilled",
-      "customer": "Customer",
-      "charges": "Charges",
-      "profileTab": "Profile",
-      "contractTab": "Contract",
-      "creditTerms": "Credit terms",
-      "creditDays": "{count} days",
-      "taxAddress": "Billing address",
-      "customerDirectoryDescription": "Changes are saved in this browser tab for the mock preview.",
-      "customerDirectoryNavigation": "AR mock directories",
-      "addProfile": "New Profile",
-      "addContract": "New Contract",
-      "code": "Code",
-      "name": "Name",
-      "taxId": "Tax ID",
-      "startDate": "Start date",
-      "endDate": "End date",
-      "amount": "Amount",
-      "active": "Active",
-      "inactive": "Inactive",
-      "requiredFields": "Enter a code and name.",
-      "duplicateCode": "This code is already in use.",
-      "selectProfile": "Select an AR Profile",
-      "dateOrder": "Enter an end date on or after the start date.",
-      "codeHint": "Use letters A–Z, numbers or hyphens.",
-      "taxIdHint": "Enter 13 digits.",
-      "profileInUse": "Remove or reassign linked contracts before deleting this profile.",
-      "storageError": "Unable to save changes in this browser tab."
-    },
     "arProfile": {
       "title": "AR Profiles",
       "desc": "Customer profiles for accounts receivable in this business unit",
@@ -578,7 +538,15 @@
       "logDescription": "Document activity and approval history.",
       "logCreated": "Voucher created by Accounting",
       "logUpdated": "Journal entries updated",
-      "logReviewed": "Submitted to Financial Controller"
+      "logReviewed": "Submitted to Financial Controller",
+      "statuses": {
+        "draft": "Draft",
+        "pending": "Pending",
+        "approved": "Approved",
+        "posted": "Posted",
+        "paid": "Paid",
+        "overdue": "Overdue"
+      }
     },
     "ap": {
       "dashboardTitle": "Accounts Payable Dashboard",
@@ -1100,6 +1068,92 @@
           }
         }
       }
+    },
+    "arFolio": {
+      "title": "Folio (PMS Sync)",
+      "description": "Imported folios awaiting invoicing · sample data saved for this browser session.",
+      "folioDate": "Folio & Date",
+      "date": "Folio Date",
+      "customer": "Customer",
+      "descriptionColumn": "Description",
+      "amount": "Amount",
+      "taxAmount": "Tax Amount",
+      "total": "Total",
+      "unbilled": "Un-Bill",
+      "source": "Source",
+      "type": "Folio Type",
+      "allTypes": "All Types",
+      "statuses": {
+        "pending": "Pending",
+        "billed": "Billed",
+        "void": "Void"
+      },
+      "types": {
+        "city_ledger": "City Ledger",
+        "credit_card": "Credit Card"
+      },
+      "summary": {
+        "count": "Total Folios",
+        "total": "Total Folio Amount",
+        "unbilled": "Total Un-Bill",
+        "billed": "Total Billed"
+      },
+      "linkedInvoices": "Linked Invoices",
+      "switch": "Switch A/R",
+      "void": "Void Folio",
+      "activityPending": "Activity history will be available when the Folio API is connected.",
+      "changeBlocked": "Only pending folios with the full amount unbilled and no linked invoices can be changed.",
+      "sampleActions": "Sample action only. Changes stay in this browser session and do not post to accounting.",
+      "invoiceNo": "Invoice No.",
+      "billedAmount": "Billed Amount",
+      "noInvoices": "No invoices have been created from this folio.",
+      "invoiceStatuses": {
+        "posted": "Posted"
+      },
+      "reason": "Void Reason",
+      "selectReason": "Select a reason",
+      "remark": "Remark",
+      "voidRequired": "Select a reason and enter a remark of at least 5 characters.",
+      "newCustomer": "New Customer",
+      "creditLimit": "Credit Limit",
+      "selectDifferentCustomer": "Select a different active customer.",
+      "creditPending": "Current credit usage is unavailable. Credit-limit validation requires the Folio API.",
+      "reasons": {
+        "PMS_POSTING_ERROR": "PMS posting error",
+        "SETTLEMENT_OFFSET": "Settlement offset",
+        "DISPUTED_CHARGE": "Disputed charge",
+        "WRONG_COMPANY": "Wrong company",
+        "OTHER": "Other"
+      },
+      "storageError": "Could not save sample data. Your changes are still open; reduce attachments or browser storage and retry.",
+      "exportError": "Could not export the list."
+    },
+    "arContract": {
+      "title": "Contract",
+      "description": "Recurring customer contracts · sample data saved for this browser session.",
+      "number": "Contract No.",
+      "descriptionColumn": "Description",
+      "customer": "Customer",
+      "currency": "Currency",
+      "rate": "Exchange Rate",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "chargeEvery": "Charge Every",
+      "months": "{count} month(s)",
+      "amount": "Amount",
+      "amountThb": "Amount (THB)",
+      "add": "New Contract",
+      "attachment": "Contract Document",
+      "noDocument": "No document attached",
+      "viewDocument": "View document",
+      "sampleForm": "Sample contract header. Saved for this browser session while the Contract API is being prepared.",
+      "requiredFields": "Select an active customer and enter a description.",
+      "dateOrder": "End date must be on or after the start date.",
+      "invalidAmounts": "Enter a positive rate, a non-negative amount and a whole billing interval of at least 1 month.",
+      "fileLimit": "PDF, PNG, JPEG or WebP · maximum 25 MB. Sample storage is limited by this browser.",
+      "fileReadError": "Could not read this document.",
+      "storageError": "Could not save sample data. Your changes are still open; remove a large attachment and retry.",
+      "exportError": "Could not export the list."
     }
   },
   "dashboardWidget": {
@@ -7243,7 +7297,6 @@
     "arInvoice": "Invoice",
     "arReceipt": "Receipt",
     "arContract": "Contract",
-    "arPreview": "Mock Preview",
     "asset": "Asset",
     "assetDashboard": "Dashboard",
     "assetRegister": "Register",

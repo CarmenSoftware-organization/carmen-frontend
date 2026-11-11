@@ -2,9 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useApiMutation } from "@/hooks/use-api-mutation";
+import { useXlsxExport, type XlsxColumn } from "@/hooks/use-xlsx-export";
 import { ApiError } from "@/lib/api-error";
 import { buildUrl } from "@/lib/build-query-string";
 import { httpClient } from "@/lib/http-client";
+import { fetchAllPages } from "@/lib/fetch-all-pages";
 import type { PaginatedResponse, ParamsDto } from "@/types/params";
 import type {
   ArAmount,
@@ -73,15 +75,38 @@ export function useArRegister(params: ParamsDto) {
   return useQuery({
     queryKey: [QUERY_KEY, bu, "list", params],
     enabled: !!bu,
-    queryFn: async (): Promise<PaginatedResponse<ArRegisterRow>> => {
-      const body = await readAr(
-        buildUrl(API_ENDPOINTS.AR_INVOICE_LIST(bu!), params),
-      );
-      if (!Array.isArray(body.data) || typeof body.paginate?.total !== "number")
-        throw new Error("Invalid AR invoice list response");
-      return body;
-    },
+    queryFn: () => fetchArRegister(bu!, params),
   });
+}
+
+async function fetchArRegister(
+  bu: string,
+  params: ParamsDto,
+): Promise<PaginatedResponse<ArRegisterRow>> {
+  const body = await readAr(
+    buildUrl(API_ENDPOINTS.AR_INVOICE_LIST(bu), params),
+  );
+  if (!Array.isArray(body.data) || typeof body.paginate?.total !== "number")
+    throw new Error("Invalid AR invoice list response");
+  return body;
+}
+
+export function useExportArRegister() {
+  const bu = useBuCode();
+  const { exportToXlsx, isExporting } = useXlsxExport();
+  return {
+    isExporting,
+    exportInvoices: (params: ParamsDto, columns: XlsxColumn<ArRegisterRow>[]) =>
+      exportToXlsx({
+        fetch: () =>
+          fetchAllPages((page, perpage) =>
+            fetchArRegister(bu!, { ...params, page, perpage }),
+          ),
+        columns,
+        sheetName: "AR Invoices",
+        fileNamePrefix: "ar-invoice",
+      }),
+  };
 }
 
 export function useArRegisterDocument(id?: string) {

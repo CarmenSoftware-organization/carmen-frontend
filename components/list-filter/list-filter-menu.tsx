@@ -366,9 +366,7 @@ export function ListFilterMenu({
                   }
                   chevron
                   active={activeKey === f.key}
-                  onClick={() =>
-                    setActiveKey(activeKey === f.key ? null : f.key)
-                  }
+                  onClick={() => openSubmenu(f.key)}
                 />
                 {activeKey === f.key && (
                   <Submenu control={f.control}>

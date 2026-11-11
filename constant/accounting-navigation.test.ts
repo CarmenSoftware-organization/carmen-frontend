@@ -17,10 +17,9 @@ describe("accounting launcher navigation", () => {
     ["/accounting/journal-voucher/jv-1", "generalLedger"],
     ["/accounting/accounts-payable/invoice/ap-1", "accountsPayable"],
     ["/accounting/accounts-receivable/receipt/rc-1", "accountsReceivable"],
-    ["/accounting/accounts-receivable/preview/invoice/ar-1", "accountsReceivable"],
     ["/accounting/accounts-receivable/profile", "accountsReceivable"],
-    ["/accounting/accounts-receivable/preview/profiles", "accountsReceivable"],
-    ["/accounting/accounts-receivable/preview/contracts", "accountsReceivable"],
+    ["/accounting/accounts-receivable/folio", "accountsReceivable"],
+    ["/accounting/accounts-receivable/contract", "accountsReceivable"],
     ["/accounting/asset/disposal/fd-1", "asset"],
   ])("maps %s to %s", (pathname, expected) => {
     expect(findAccountingSection(pathname).name).toBe(expected);
@@ -37,5 +36,20 @@ describe("accounting launcher navigation", () => {
       "apPayment",
       "apPaymentApprovals",
     ]);
+  });
+
+  it("opens AR features directly in document order without a preview hub", () => {
+    const ar = findAccountingSection("/accounting/accounts-receivable/folio");
+    expect(ar.subModules?.map(({ name }) => name)).toEqual([
+      "arDashboard",
+      "arProfile",
+      "arFolio",
+      "arInvoice",
+      "arReceipt",
+      "arContract",
+    ]);
+    expect(ar.subModules?.some(({ path }) => path.includes("/preview"))).toBe(
+      false,
+    );
   });
 });

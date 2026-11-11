@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import { LookupCombobox } from "@/components/lookup/lookup-combobox";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { Button } from "@/components/ui/button";
 import { CellAction } from "@/components/ui/cell-action";
@@ -15,10 +14,6 @@ import {
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  ACTIVE_ONLY_FILTER,
-  useLookupPagination,
-} from "@/hooks/use-lookup-pagination";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
@@ -32,7 +27,8 @@ import {
   type ArDraftLine,
 } from "./ar-invoice-draft-model";
 import { ArInvoiceLineDialog } from "./ar-invoice-line-dialog";
-import { useArCustomers, type ArCustomer } from "./use-ar-customer";
+import type { ArCustomer } from "./use-ar-customer";
+import { ArCustomerLookup } from "./ar-customer-lookup";
 import {
   useCreateArInvoice,
   useUpdateArInvoice,
@@ -177,7 +173,7 @@ export function ArInvoiceDraftForm({
                 {document.customer_code} · {document.customer_name}
               </FieldPlainText>
             ) : (
-              <InvoiceCustomerLookup
+              <ArCustomerLookup
                 customer={customer}
                 change={setCustomer}
                 disabled={saving || !canWrite}
@@ -311,53 +307,5 @@ export function ArInvoiceDraftForm({
         />
       )}
     </div>
-  );
-}
-
-function InvoiceCustomerLookup({
-  customer,
-  change,
-  disabled,
-}: {
-  readonly customer?: ArCustomer;
-  readonly change: (customer?: ArCustomer) => void;
-  readonly disabled: boolean;
-}) {
-  const t = useTranslations("accounting.arRegister");
-  const [search, setSearch] = useState("");
-  const [opened, setOpened] = useState(false);
-  const lookup = useLookupPagination({
-    useListHook: useArCustomers,
-    search,
-    enabled: opened,
-    serverFilter: ACTIVE_ONLY_FILTER,
-    filter: (item) => item.is_active !== false,
-  });
-  return (
-    <LookupCombobox
-      value={customer?.id ?? ""}
-      onValueChange={(_id, item) => change(item)}
-      items={lookup.items}
-      selectedItems={customer ? [customer] : undefined}
-      getId={(item) => item.id}
-      getLabel={(item) => `${item.code} · ${item.name}`}
-      onOpenChange={(open) => {
-        if (open) setOpened(true);
-      }}
-      serverSideSearch
-      onSearchChange={setSearch}
-      onLoadMore={lookup.loadMore}
-      hasMore={lookup.hasMore}
-      isLoading={lookup.isLoading}
-      isLoadingMore={lookup.isLoadingMore}
-      placeholder={t("selectCustomer")}
-      searchPlaceholder={t("searchCustomer")}
-      emptyTitle={
-        lookup.error ? t("customerLookupError") : t("noActiveCustomers")
-      }
-      className="w-full"
-      disabled={disabled}
-      allowDeselect={false}
-    />
   );
 }

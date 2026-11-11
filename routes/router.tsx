@@ -1004,23 +1004,35 @@ export const router = createBrowserRouter([
               },
               {
                 path: "accounts-receivable/preview",
-                lazy: () => import("./accounting/accounts-receivable/ar-preview.route"),
+                element: <Navigate to="/accounting/accounts-receivable" replace />,
               },
               {
                 path: "accounts-receivable/preview/invoice",
-                lazy: () => import("./accounting/accounts-receivable/ar-invoice-preview-list.route"),
+                element: <Navigate to="/accounting/accounts-receivable/invoice" replace />,
               },
               {
                 path: "accounts-receivable/preview/invoice/:id",
-                lazy: () => import("./accounting/accounts-receivable/ar-invoice-preview-detail.route"),
+                element: <Navigate to="/accounting/accounts-receivable/invoice" replace />,
               },
               {
                 path: "accounts-receivable/preview/folio",
-                lazy: () => import("./accounting/accounts-receivable/ar-folio-preview.route"),
+                element: <Navigate to="/accounting/accounts-receivable/folio" replace />,
               },
               {
-                path: "accounts-receivable/preview/:directory",
-                lazy: () => import("./accounting/accounts-receivable/ar-customer-preview.route"),
+                path: "accounts-receivable/preview/contracts",
+                element: <Navigate to="/accounting/accounts-receivable/contract" replace />,
+              },
+              {
+                path: "accounts-receivable/preview/profiles",
+                element: <Navigate to="/accounting/accounts-receivable/profile" replace />,
+              },
+              {
+                path: "accounts-receivable/folio",
+                lazy: () => import("./accounting/accounts-receivable/ar-folio.route"),
+              },
+              {
+                path: "accounts-receivable/contract",
+                lazy: () => import("./accounting/accounts-receivable/ar-contract.route"),
               },
               {
                 path: "accounts-receivable/receipt",
