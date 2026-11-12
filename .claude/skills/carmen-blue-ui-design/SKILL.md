@@ -51,7 +51,7 @@ description: ใช้เมื่อจัดหรือปรับ layout �
 - ตัวอย่างแถบของ shell: `components/footer/status-bar.tsx`
 
 หน้าที่ทำแล้ว (เปิดดูเป็นตัวอย่าง): company-profile #547 · default-setting #548 · ask-ai #549 ·
-inventory-period + footer #550 · interface (list) #552 · email-profile #553 · email-template
+inventory-period + footer #550 · interface (list) #552 · email-profile #553 · email-template #554 · role (list)
 
 ## กับดัก
 
