@@ -53,7 +53,6 @@ export interface DimensionMaster {
   code: string;
   name: string;
   name_local?: string | null;
-  sequence: number;
   is_active: boolean;
   values?: DimensionValueMaster[];
   doc_version: number;
@@ -277,7 +276,6 @@ const seed: AccountingMasterState = {
       code: "department",
       name: "Department Dimension",
       name_local: "มิติแผนกงาน",
-      sequence: 1,
       is_active: true,
       doc_version: 0,
       values: [
@@ -306,7 +304,6 @@ const seed: AccountingMasterState = {
       code: "market",
       name: "Market Segment",
       name_local: "กลุ่มตลาด",
-      sequence: 2,
       is_active: true,
       doc_version: 0,
       values: [
@@ -744,7 +741,6 @@ export function saveDimensionState(
                 ...item,
                 name: input.name.trim(),
                 name_local: input.name_local?.trim() || null,
-                sequence: input.sequence,
                 is_active: input.is_active,
                 doc_version: item.doc_version + 1,
               }

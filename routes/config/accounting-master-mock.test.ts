@@ -143,7 +143,6 @@ describe("accounting master mock guardrails", () => {
     const withDim = saveDimensionState(state, {
       code: "market",
       name: "Market",
-      sequence: 1,
       is_active: true,
     });
     expect(withDim.dimensions[0]).toMatchObject({ code: "market" });
