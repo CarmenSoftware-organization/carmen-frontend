@@ -12,6 +12,7 @@ import {
   DataGridScrollArea,
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
 import { Button } from "@/components/ui/button";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
@@ -305,6 +306,10 @@ export function ConfigListTemplate<TEntity extends { id: string }>({
     handleAdd();
   };
 
+  // ความกว้างของกล่องตาราง — ส่งให้ hook ของตารางที่อยากเลือกขนาด/ชุดคอลัมน์จากกล่องตัวเอง
+  // (skill carmen-blue-ui-design ข้อ 3) hook ที่ไม่อ่านค่านี้ทำงานเหมือนเดิมทุกอย่าง
+  // ลบ 2 = ขอบ 1px สองข้างของ DataGridContainer
+  const [setGridBox, gridBoxWidth] = useElementWidth();
   const table = useTable({
     data: entities,
     totalRecords,
@@ -313,6 +318,7 @@ export function ConfigListTemplate<TEntity extends { id: string }>({
     onEdit: handleEdit,
     onDelete: setDeleteTarget,
     permissionPrefix: prefix,
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
   });
 
   const pullRefresh = usePullToRefresh({
@@ -408,27 +414,29 @@ export function ConfigListTemplate<TEntity extends { id: string }>({
           grid,
         })
       ) : (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          tableLayout={{
-            headerSticky: true,
-            ...(fixedColumnWidths && { width: "fixed" }),
-          }}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              listGridMaxH(lf.activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            tableLayout={{
+              headerSticky: true,
+              ...(fixedColumnWidths && { width: "fixed" }),
+            }}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                listGridMaxH(lf.activeFilters.length > 0),
+              )}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       {renderDialog?.({

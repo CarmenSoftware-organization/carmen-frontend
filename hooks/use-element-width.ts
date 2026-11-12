@@ -12,7 +12,8 @@ export function useElementWidth<T extends HTMLElement = HTMLDivElement>() {
   const [width, setWidth] = useState<number | undefined>();
 
   useEffect(() => {
-    if (!element) return;
+    // เบราว์เซอร์เก่า/สภาพแวดล้อมที่ไม่มี ResizeObserver: width คงเป็น undefined ผู้เรียกใช้ layout ตั้งต้น
+    if (!element || typeof ResizeObserver === "undefined") return;
     // ResizeObserver ยิงครั้งแรกทันทีที่ observe จึงไม่ต้องวัดเองในเอฟเฟกต์
     const observer = new ResizeObserver(([entry]) => {
       setWidth(Math.round(entry.contentRect.width));

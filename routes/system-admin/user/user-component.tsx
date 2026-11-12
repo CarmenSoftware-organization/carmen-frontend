@@ -32,7 +32,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import EmptyComponent from "@/components/empty-component";
 import { cn } from "@/lib/utils";
 import { useUserTable } from "./use-user-table";
-import { useElementWidth } from "@/routes/system-admin/shared/use-element-width";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { defineEntitySource } from "@/components/filter/entity-filter-source";
 import { useDepartment } from "@/hooks/use-department";
 import type { Department } from "@/types/department";

@@ -14,6 +14,11 @@ export interface ConfigTableHookOptions<TEntity> {
   onEdit: (item: TEntity) => void;
   onDelete: (item: TEntity) => void;
   permissionPrefix?: string;
+  /**
+   * ความกว้างของกล่องตาราง (px) ที่ template วัดให้ — `undefined` = ยังไม่ได้วัด
+   * hook ที่ไม่ต้องเลือกขนาด/ชุดคอลัมน์ตามกล่องไม่ต้องอ่าน
+   */
+  containerWidth?: number;
 }
 
 export type UseTableFn<TEntity> = (

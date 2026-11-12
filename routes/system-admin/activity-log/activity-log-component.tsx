@@ -40,7 +40,7 @@ import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { ListPageShell } from "@/components/share/list-page-shell";
-import { useElementWidth } from "@/routes/system-admin/shared/use-element-width";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
 
 type DisplayMode = "list" | "grid";
