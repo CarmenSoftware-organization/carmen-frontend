@@ -53,11 +53,17 @@ description: ใช้เมื่อจัดหรือปรับ layout �
 
 ## ของที่มีอยู่แล้ว
 
-`Section`, `FieldGrid`, `SECTION_PAIR` อยู่ใน
-`routes/system-admin/company-profile/company-profile-component.tsx` และ `SettingField` (prop
-`specimen` ของข้อ 8) อยู่ใน `company-profile-ui.tsx` — **ยังเป็นของหน้านั้นหน้าเดียว**
-หน้าที่สองที่ต้องใช้ให้ยกขึ้น `components/` ก่อน อย่า import ข้ามโมดูล (ESLint ห้าม
-`routes/<A>/` → `routes/<B>/`) และอย่าคัดลอกไปวางเป็นชุดที่สอง
+- `components/share/compact-section.tsx` — `CompactSection`, `CompactSectionSkeleton`,
+  `FieldGrid`, `SECTION_PAIR` ใช้ตัวนี้ อย่าเขียนชุดที่สอง
+- `routes/system-admin/company-profile/company-profile-ui.tsx` — `SettingField` (prop `specimen`
+  ของข้อ 8) และ `ConfigField` (ช่อง config: รหัสเอกสาร + ป้ายบน ค่า/คอนโทรลล่าง) ยังเป็นของ
+  โมดูล system-admin โมดูลอื่นที่ต้องใช้ให้ยกขึ้น `components/` ก่อน (ESLint ห้าม
+  `routes/<A>/` → `routes/<B>/`)
+
+หน้าที่ใช้แล้ว: `/system-admin/company-profile` (PR #547), `/system-admin/default-setting`
+
+รายการตั้งค่าแบบ "ป้ายซ้าย ค่าขวา เต็มความกว้างแถว" ผิดกติกาข้อ 2 บนจอกว้าง — ให้เป็นช่องของ
+`FieldGrid` (ป้ายบน ค่าล่าง) แทน แบบที่ `ConfigField` ทำ
 
 ## กับดัก
 

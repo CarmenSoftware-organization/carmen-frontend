@@ -399,7 +399,7 @@ export function NumberFormatField({
 }
 
 /**
- * แถวของ config หนึ่งรายการ (หน้า Default Setting) — ป้าย + คำอธิบายซ้าย ค่า/คอนโทรลขวา
+ * config หนึ่งรายการ (หน้า Default Setting) — ช่องหนึ่งของ `FieldGrid`: ป้ายบน ค่า/คอนโทรลล่าง
  * value เก็บเป็น string เสมอ: boolean → Switch, enum (มี options) → Select, อื่นๆ → text input
  *
  * คีย์ดิบ (`item.key`) ไม่โชว์แล้ว — เป็นภาษา dev ผู้ใช้อ่านไม่ออก เหลือไว้ใน `title`
@@ -524,32 +524,35 @@ export function ConfigField({
     control = <Input id={name} {...form.register(name)} className="h-8" />;
   }
 
+  // ช่องหนึ่งของ `FieldGrid` — ป้ายบน ค่า/คอนโทรลล่าง (เดิมเป็นแถวเต็มความกว้าง ป้ายชิดซ้าย
+  // ค่าชิดขวา บนจอกว้างค่าจึงลอยห่างจากป้ายเป็นคืบ)
   return (
-    <div className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          {code && (
-            <span className="bg-muted text-muted-foreground text-micro w-10 shrink-0 rounded py-0.5 text-center font-mono font-semibold">
-              {code}
-            </span>
-          )}
-          <Label
-            htmlFor={editing ? name : undefined}
-            title={item.key}
-            className="text-foreground text-sm font-medium"
-          >
-            {displayLabel}
-          </Label>
-        </div>
-        {description && (
-          <p className="text-muted-foreground mt-0.5 text-xs leading-snug">
-            {description}
-          </p>
+    <div className="min-w-0">
+      <div className="flex items-center gap-1.5">
+        {code && (
+          <span className="bg-muted text-muted-foreground text-micro shrink-0 rounded px-1 py-0.5 text-center font-mono font-semibold">
+            {code}
+          </span>
         )}
+        <Label
+          htmlFor={editing ? name : undefined}
+          title={item.key}
+          className={cn(
+            "min-w-0 text-xs",
+            editing
+              ? "text-foreground font-semibold"
+              : "text-muted-foreground font-normal",
+          )}
+        >
+          {displayLabel}
+        </Label>
       </div>
-      <div className={cn("flex shrink-0 sm:justify-end", !isBool && "sm:w-64")}>
-        {control}
-      </div>
+      <div className={editing ? "mt-1" : "mt-0.5"}>{control}</div>
+      {description && (
+        <p className="text-muted-foreground/80 text-micro mt-1 leading-snug">
+          {description}
+        </p>
+      )}
     </div>
   );
 }

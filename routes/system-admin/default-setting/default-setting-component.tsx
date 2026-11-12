@@ -15,9 +15,10 @@ import {
   useUpdateBusinessUnit,
 } from "@/hooks/use-business-unit";
 import {
-  SettingSection,
-  SettingSectionSkeleton,
-} from "@/components/ui/setting-section";
+  CompactSection,
+  CompactSectionSkeleton,
+  FieldGrid,
+} from "@/components/share/compact-section";
 import {
   ConfigField,
   CONFIG_ENUM_EMPTY,
@@ -144,18 +145,15 @@ export default function DefaultSettingComponent() {
       return;
     }
     // แนบ doc_version (optimistic lock) + id ของ BU ที่โหลดมา (กันเขียนผิด BU) — ดู toPatchPayload
-    update.mutate(
-      toPatchPayload(patch, data),
-      {
-        onSuccess: () => {
-          toast.success(t("saved"));
-          setEditing(false);
-        },
-        // ไม่ต้อง onError เอง — mutation ตัวนี้ผ่าน MutationCache กลางซึ่ง toast
-        // ให้อยู่แล้ว เขียนซ้ำที่นี่ = เด้งสองใบ และใบนี้โยน err.message ดิบซึ่ง
-        // เป็นสตริงที่ dev เขียนไว้ ไม่ใช่ข้อความสำหรับผู้ใช้ (ดู lib/api-error.ts)
+    update.mutate(toPatchPayload(patch, data), {
+      onSuccess: () => {
+        toast.success(t("saved"));
+        setEditing(false);
       },
-    );
+      // ไม่ต้อง onError เอง — mutation ตัวนี้ผ่าน MutationCache กลางซึ่ง toast
+      // ให้อยู่แล้ว เขียนซ้ำที่นี่ = เด้งสองใบ และใบนี้โยน err.message ดิบซึ่ง
+      // เป็นสตริงที่ dev เขียนไว้ ไม่ใช่ข้อความสำหรับผู้ใช้ (ดู lib/api-error.ts)
+    });
   });
 
   return (
@@ -180,25 +178,23 @@ export default function DefaultSettingComponent() {
 
       {!isError && isBusy && (
         <div>
-          <SettingSectionSkeleton first fields={["full", "full", "full"]} />
-          <SettingSectionSkeleton
-            fields={["full", "full", "full", "full", "full", "full"]}
-          />
+          <CompactSectionSkeleton first className="h-20" />
+          <CompactSectionSkeleton className="h-36" />
         </div>
       )}
 
       {!isError && !isBusy && data && (
         <form id={FORM_ID} onSubmit={onSubmit}>
           {/* PR / SI / PO มีหมวดละ 1–2 ค่า — เดิมกินการ์ดใหญ่หมวดละใบ รวมเป็นรายการเดียว
-              แล้วใช้รหัสเอกสารหน้าแถวบอกว่าค่านั้นเป็นของเอกสารไหน */}
+              แล้วใช้รหัสเอกสารหน้าป้ายบอกว่าค่านั้นเป็นของเอกสารไหน
+              layout เต็มความกว้างจอ หลายคอลัมน์ตามความกว้างการ์ด — skill carmen-blue-ui-design */}
           {docSections.length > 0 && (
-            <SettingSection
+            <CompactSection
               first
-              plain
               title={t("sections.documents")}
               description={t("sections.documentsDesc")}
             >
-              <div className="divide-y">
+              <FieldGrid>
                 {docSections.flatMap((section) =>
                   section.entries.map((entry) => (
                     <ConfigField
@@ -227,14 +223,13 @@ export default function DefaultSettingComponent() {
                     />
                   )),
                 )}
-              </div>
-            </SettingSection>
+              </FieldGrid>
+            </CompactSection>
           )}
 
           {printSection && (
-            <SettingSection
+            <CompactSection
               first={docSections.length === 0}
-              plain
               title={t(printSection.titleKey)}
               description={t(printSection.descKey)}
               action={
@@ -253,7 +248,7 @@ export default function DefaultSettingComponent() {
                 )
               }
             >
-              <div className="divide-y">
+              <FieldGrid>
                 {printSection.entries.map((entry) => (
                   <ConfigField
                     key={entry.item.key}
@@ -285,8 +280,8 @@ export default function DefaultSettingComponent() {
                     disabled={formTemplates.isLoading}
                   />
                 ))}
-              </div>
-            </SettingSection>
+              </FieldGrid>
+            </CompactSection>
           )}
         </form>
       )}
