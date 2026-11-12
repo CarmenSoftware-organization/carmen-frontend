@@ -49,26 +49,30 @@ export default function DocumentSummaryBar({
     .join(" · ");
 
   return (
-    <div className="bg-muted/40 flex flex-col gap-1 rounded-md border px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-      <div className="flex items-baseline gap-2">
-        <span className="text-sm font-semibold tabular-nums">
-          {formatFileSize(summary.total_size)}
-        </span>
-        <span className="text-muted-foreground text-xs tabular-nums">
-          {t("fileCount", { count: summary.total_count })}
-        </span>
-      </div>
-      <div className="flex min-w-0 items-center gap-2">
-        <span className="text-muted-foreground truncate text-xs">{top}</span>
-        <Button
-          variant="link"
-          size="sm"
-          className="h-auto shrink-0 px-0"
-          onClick={onViewAll}
-        >
-          {t("viewAll")}
-          <ChevronRight />
-        </Button>
+    // ยอดรวมกับรายการแจกแจงอยู่ติดกันชิดซ้าย — เดิม justify-between บนจอ 4K ห่างกัน ~3,000px
+    // เรียงแนวนอนเมื่อ "แถบเอง" กว้างพอ (@xl ของ container) ไม่ใช่เมื่อจอกว้างพอ
+    <div className="@container">
+      <div className="bg-muted/40 flex flex-col gap-1 rounded-md border px-3 py-2 @xl:flex-row @xl:items-center @xl:gap-4">
+        <div className="flex shrink-0 items-baseline gap-2">
+          <span className="text-sm font-semibold tabular-nums">
+            {formatFileSize(summary.total_size)}
+          </span>
+          <span className="text-muted-foreground text-xs tabular-nums">
+            {t("fileCount", { count: summary.total_count })}
+          </span>
+        </div>
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="text-muted-foreground truncate text-xs">{top}</span>
+          <Button
+            variant="link"
+            size="sm"
+            className="h-auto shrink-0 px-0"
+            onClick={onViewAll}
+          >
+            {t("viewAll")}
+            <ChevronRight />
+          </Button>
+        </div>
       </div>
     </div>
   );

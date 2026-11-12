@@ -53,6 +53,7 @@ import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
 import { DocumentIconGrid } from "./document-icon-grid";
 import { DocumentPreviewView } from "./document-preview-view";
 import { DocumentLoadMore } from "./document-load-more";
+import { useElementWidth } from "./use-element-width";
 
 type DocumentDisplayMode = "list" | "grid" | "preview";
 const DOCUMENT_DISPLAY_MODES: readonly DocumentDisplayMode[] = [
@@ -87,6 +88,8 @@ export default function DocumentComponent() {
   const [displayMode, setDisplayMode] = useState<DocumentDisplayMode>("list");
   const [previewToken, setPreviewToken] = useState<string | null>(null);
   const [summarySheetOpen, setSummarySheetOpen] = useState(false);
+  // ตารางเลือกชุดคอลัมน์จากความกว้างของกล่องตัวเอง (ลบขอบ 1px สองข้างของ DataGridContainer)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
   const { data: summary, isLoading: isSummaryLoading } = useDocumentSummary();
   const hasSummary = !!summary && summary.total_count > 0;
   // ช่องแถบสรุปถือว่า "มีของ" ตั้งแต่ตอนโหลด (มี skeleton แสดงอยู่) ไม่ใช่แค่ตอนมีข้อมูลจริง
@@ -179,6 +182,7 @@ export default function DocumentComponent() {
     onDelete: setDeleteTarget,
     rowSelection,
     onRowSelectionChange,
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
   });
 
   const bulkCount = allMatching ? totalRecords : selectedTokens.length;
@@ -378,34 +382,36 @@ export default function DocumentComponent() {
           <EmptyComponent />
         )
       ) : displayMode === "list" ? (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          // checkbox: true จำเป็น — DataGridTable ซ่อนคอลัมน์ id "select" ถ้าไม่เปิด (bulk delete ใช้ไม่ได้)
-          tableLayout={{ headerSticky: true, checkbox: true }}
-          emptyMessage={<EmptyComponent />}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              // แถบสรุปสูงประมาณ 4rem รวมช่องไฟ (ทั้ง skeleton ตอนโหลดและแถบจริง) — สี่เคส
-              // ตามว่าช่องแถบสรุปมีของ (summarySlotVisible: กำลังโหลดหรือมีข้อมูลแล้ว) และมี
-              // active filter หรือไม่ ใช้ summarySlotVisible ไม่ใช่ hasSummary เพราะถ้ารอข้อมูล
-              // จริงก่อนค่อยเผื่อพื้นที่ ตารางจะกระตุกตอน skeleton สลับเป็นแถบจริง
-              summarySlotVisible
-                ? lf.activeFilters.length > 0
-                  ? "max-h-[calc(100vh-17rem-3rem)]"
-                  : "max-h-[calc(100vh-14rem-3rem)]"
-                : listGridMaxH(lf.activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            // checkbox: true จำเป็น — DataGridTable ซ่อนคอลัมน์ id "select" ถ้าไม่เปิด (bulk delete ใช้ไม่ได้)
+            tableLayout={{ headerSticky: true, checkbox: true }}
+            emptyMessage={<EmptyComponent />}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-              {documents.length > 0 && loadMore}
-            </DataGridScrollArea>
-          </DataGridContainer>
-        </DataGrid>
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                // แถบสรุปสูงประมาณ 4rem รวมช่องไฟ (ทั้ง skeleton ตอนโหลดและแถบจริง) — สี่เคส
+                // ตามว่าช่องแถบสรุปมีของ (summarySlotVisible: กำลังโหลดหรือมีข้อมูลแล้ว) และมี
+                // active filter หรือไม่ ใช้ summarySlotVisible ไม่ใช่ hasSummary เพราะถ้ารอข้อมูล
+                // จริงก่อนค่อยเผื่อพื้นที่ ตารางจะกระตุกตอน skeleton สลับเป็นแถบจริง
+                summarySlotVisible
+                  ? lf.activeFilters.length > 0
+                    ? "max-h-[calc(100vh-17rem-3rem)]"
+                    : "max-h-[calc(100vh-14rem-3rem)]"
+                  : listGridMaxH(lf.activeFilters.length > 0),
+              )}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+                {documents.length > 0 && loadMore}
+              </DataGridScrollArea>
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       ) : documents.length === 0 && !isLoading ? (
         <EmptyComponent />
       ) : (
