@@ -64,7 +64,8 @@ export function CompactSection({
   children,
 }: {
   readonly title: string;
-  readonly description?: string;
+  /** ข้อความล้วน หรือข้อความที่มีลิงก์ในตัว (เรนเดอร์ใน `<p>` — ห้ามส่ง block element) */
+  readonly description?: React.ReactNode;
   /** ตัวเลขต่อท้าย title (เช่นจำนวนรายการในหมวด) */
   readonly count?: number;
   readonly action?: React.ReactNode;

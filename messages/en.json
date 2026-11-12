@@ -7885,13 +7885,12 @@
     "measureTooSoon": "Measured just now. Try again in 10 minutes.",
     "loadFailed": "Could not load storage usage.",
     "notMeasured": "This business unit has not been measured yet.",
+    "usageTitle": "Usage",
+    "fileCount": "{count, plural, one {# file} other {# files}}",
     "breakdownTitle": "Attachments by type",
     "breakdownDesc": "View and delete unused files on the",
     "openDocuments": "Documents page",
-    "breakdownEmpty": "No attachments.",
-    "colType": "Type",
-    "colCount": "Files",
-    "colSize": "Size"
+    "breakdownEmpty": "No attachments."
   },
   "buCurrency": {
     "missing": "Business unit {bu} has no default currency set — amounts are shown in THB until one is set.",
