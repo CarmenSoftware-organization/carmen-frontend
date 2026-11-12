@@ -53,17 +53,25 @@ description: ใช้เมื่อจัดหรือปรับ layout �
 
 ## ของที่มีอยู่แล้ว
 
-- `components/share/compact-section.tsx` — `CompactSection`, `CompactSectionSkeleton`,
-  `FieldGrid`, `SECTION_PAIR` ใช้ตัวนี้ อย่าเขียนชุดที่สอง
+- `components/share/compact-section.tsx` — `CompactSection` (มี `count`, `action`),
+  `CompactSectionSkeleton`, `FieldGrid`, `SECTION_PAIR` ใช้ตัวนี้ อย่าเขียนชุดที่สอง
+  `FieldGrid size="item"` สำหรับรายการที่เนื้อหาหลายส่วน (ไอคอน ชื่อ ป้าย สถานะ ตัวอย่าง
+  ข้อความ) — แตกคอลัมน์ช้ากว่าหนึ่งขั้น: 1 / 2 / 2 / 4 / 6 ที่ mobile / tablet / 1366 /
+  Full HD / 4K
 - `routes/system-admin/company-profile/company-profile-ui.tsx` — `SettingField` (prop `specimen`
   ของข้อ 8) และ `ConfigField` (ช่อง config: รหัสเอกสาร + ป้ายบน ค่า/คอนโทรลล่าง) ยังเป็นของ
   โมดูล system-admin โมดูลอื่นที่ต้องใช้ให้ยกขึ้น `components/` ก่อน (ESLint ห้าม
   `routes/<A>/` → `routes/<B>/`)
 
 หน้าที่ใช้แล้ว: `/system-admin/company-profile` (PR #547), `/system-admin/default-setting`
+(PR #548), `/system-admin/ask-ai`
 
 รายการตั้งค่าแบบ "ป้ายซ้าย ค่าขวา เต็มความกว้างแถว" ผิดกติกาข้อ 2 บนจอกว้าง — ให้เป็นช่องของ
 `FieldGrid` (ป้ายบน ค่าล่าง) แทน แบบที่ `ConfigField` ทำ
+
+รายการที่ขยายดูรายละเอียดได้ (แบบ provider ของ Ask AI): ยุบ = ช่องหนึ่งของกริด ·
+ขยาย = `col-span-full` กินเต็มแถวของตัวเอง ขยายได้ทีละตัว ของสองก้อนที่ต้องเทียบกัน
+(prompt ที่แก้เอง กับค่ามาตรฐาน) วางเคียงกันด้วย `@3xl:grid-cols-2`
 
 ## กับดัก
 
