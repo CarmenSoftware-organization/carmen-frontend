@@ -157,6 +157,119 @@ export default function EmailProfileComponent() {
     );
   };
 
+  // ชิ้นส่วนของหนึ่งโปรไฟล์ — ใช้ทั้งในตาราง (กล่องกว้าง) และรายการแบบซ้อน (กล่องแคบ)
+  const rows = profiles.map((profile) => {
+    const isDefault = profile.id === default_profile_id;
+    // ลบตัวที่เป็นค่าเริ่มต้นไม่ได้ถ้ายังมีตัวอื่น — ต้องตั้งตัวใหม่ก่อน
+    const deleteDisabled = isDefault && profiles.length > 1;
+    const isRowTesting = isTesting && testingId === profile.id;
+    return {
+      profile,
+      name: (
+        // ตัดบรรทัดได้เฉพาะในรายการแบบซ้อน — ในตารางคอลัมน์กว้างเท่าเนื้อหา (`w-px`) ถ้ายอมให้
+        // ตัด คอลัมน์จะหดเหลือเท่าชิ้นที่กว้างสุดแล้วป้ายตกบรรทัดทั้งที่จอมีที่
+        <div className="flex flex-wrap items-center gap-1.5 @xl:flex-nowrap">
+          <span className="font-medium">{profile.name}</span>
+          {isDefault && (
+            <Badge variant="success-light" size="xs">
+              {t("defaultBadge")}
+            </Badge>
+          )}
+          {authTypeOf(profile) !== "password" && (
+            <Badge variant="secondary" size="xs">
+              {authTypeOf(profile) === "oauth2_app"
+                ? t("badgeMicrosoft365")
+                : t("badgeMicrosoft")}
+            </Badge>
+          )}
+          {authTypeOf(profile) === "oauth2_delegated" &&
+            !isOAuthConnected(profile) && (
+              <Badge variant="warning-light" size="xs">
+                {t("badgeNotConnected")}
+              </Badge>
+            )}
+        </div>
+      ),
+      status: (
+        <Badge variant={profile.enabled ? "default" : "secondary"}>
+          {profile.enabled ? t("statusEnabled") : t("statusDisabled")}
+        </Badge>
+      ),
+      actions: (
+        <div className="flex items-center justify-end gap-1">
+          {!isDefault && (
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={() => handleSetDefault(profile)}
+              disabled={isSaving}
+            >
+              <Star className="size-3" aria-hidden="true" />
+              {t("setDefault")}
+            </Button>
+          )}
+          {authTypeOf(profile) === "oauth2_delegated" && (
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={() => setConnectTarget(profile)}
+            >
+              <Link2 className="size-3" aria-hidden="true" />
+              {isOAuthConnected(profile) ? t("reconnect") : t("connect")}
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => handleTest(profile)}
+            disabled={isTesting}
+            aria-label={t("testSend")}
+          >
+            {isRowTesting ? (
+              <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+            ) : (
+              <Send className="size-3.5" aria-hidden="true" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => openEdit(profile)}
+            aria-label={tc("edit")}
+          >
+            <Pencil className="size-3.5" aria-hidden="true" />
+          </Button>
+          {deleteDisabled ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex" tabIndex={0}>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    disabled
+                    aria-label={tc("delete")}
+                  >
+                    <Trash2 className="size-3.5" aria-hidden="true" />
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{t("cannotDeleteDefaultTooltip")}</TooltipContent>
+            </Tooltip>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => setDeleteTarget(profile)}
+              aria-label={tc("delete")}
+            >
+              <Trash2 className="size-3.5" aria-hidden="true" />
+            </Button>
+          )}
+        </div>
+      ),
+    };
+  });
+
   return (
     <ListPageShell
       title={t("title")}
@@ -186,155 +299,63 @@ export default function EmailProfileComponent() {
       )}
 
       {!isError && !isLoading && profiles.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-xs">
-            <thead className="bg-muted border-b">
-              <tr>
-                <th className="h-9 px-3 text-left font-medium">
-                  {t("table.name")}
-                </th>
-                <th className="h-9 px-3 text-left font-medium">
-                  {t("table.from")}
-                </th>
-                <th className="h-9 px-3 text-left font-medium">
-                  {t("table.status")}
-                </th>
-                <th className="h-9 px-3 text-right font-medium">
-                  {tc("rowActions")}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {profiles.map((profile) => {
-                const isDefault = profile.id === default_profile_id;
-                // ลบตัวที่เป็นค่าเริ่มต้นไม่ได้ถ้ายังมีตัวอื่น — ต้องตั้งตัวใหม่ก่อน
-                const deleteDisabled = isDefault && profiles.length > 1;
-                const isRowTesting = isTesting && testingId === profile.id;
+        // `@container`: ตาราง ↔ รายการแบบซ้อน ตัดสินจากความกว้างของกล่องนี้ ไม่ใช่ของจอ
+        <div className="@container">
+          {/* กล่องแคบ (มือถือ): ซ้อนเป็นรายการ — ตาราง 4 คอลัมน์กว้างขั้นต่ำ ~610px ต้องเลื่อน
+              แนวนอนในกรอบ และปุ่มของแถวหลุดไปนอกจอ */}
+          <ul className="bg-card divide-y rounded-lg border @xl:hidden">
+            {rows.map(({ profile, name, status, actions }) => (
+              <li key={profile.id} className="space-y-1.5 p-3 text-xs">
+                {name}
+                <p className="text-muted-foreground break-all">
+                  {profile.from_email}
+                </p>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  {status}
+                  {actions}
+                </div>
+              </li>
+            ))}
+          </ul>
 
-                return (
+          <div className="hidden overflow-x-auto rounded-lg border @xl:block">
+            <table className="w-full text-xs">
+              {/* สามคอลัมน์แรกกว้างเท่าเนื้อหา (`w-px` + nowrap) คอลัมน์ปุ่มรับที่เหลือ — เดิมทั้ง
+                  สี่คอลัมน์แบ่งที่เท่ากัน บนจอกว้างชื่อ อีเมล และสถานะจึงห่างกันเป็นคืบ */}
+              <thead className="bg-muted border-b">
+                <tr>
+                  <th className="h-9 w-px px-3 pr-10 text-left font-medium whitespace-nowrap">
+                    {t("table.name")}
+                  </th>
+                  <th className="h-9 w-px px-3 pr-10 text-left font-medium whitespace-nowrap">
+                    {t("table.from")}
+                  </th>
+                  <th className="h-9 w-px px-3 pr-10 text-left font-medium whitespace-nowrap">
+                    {t("table.status")}
+                  </th>
+                  <th className="h-9 px-3 text-right font-medium">
+                    {tc("rowActions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(({ profile, name, status, actions }) => (
                   <tr key={profile.id} className="border-b last:border-0">
-                    <td className="px-3 py-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-medium">{profile.name}</span>
-                        {isDefault && (
-                          <Badge variant="success-light" size="xs">
-                            {t("defaultBadge")}
-                          </Badge>
-                        )}
-                        {authTypeOf(profile) !== "password" && (
-                          <Badge variant="secondary" size="xs">
-                            {authTypeOf(profile) === "oauth2_app"
-                              ? t("badgeMicrosoft365")
-                              : t("badgeMicrosoft")}
-                          </Badge>
-                        )}
-                        {authTypeOf(profile) === "oauth2_delegated" &&
-                          !isOAuthConnected(profile) && (
-                            <Badge variant="warning-light" size="xs">
-                              {t("badgeNotConnected")}
-                            </Badge>
-                          )}
-                      </div>
+                    <td className="px-3 py-2 pr-10 whitespace-nowrap">
+                      {name}
                     </td>
-                    <td className="text-muted-foreground px-3 py-2">
+                    <td className="text-muted-foreground px-3 py-2 pr-10 whitespace-nowrap">
                       {profile.from_email}
                     </td>
-                    <td className="px-3 py-2">
-                      <Badge
-                        variant={profile.enabled ? "default" : "secondary"}
-                      >
-                        {profile.enabled
-                          ? t("statusEnabled")
-                          : t("statusDisabled")}
-                      </Badge>
+                    <td className="px-3 py-2 pr-10 whitespace-nowrap">
+                      {status}
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="flex items-center justify-end gap-1">
-                        {!isDefault && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleSetDefault(profile)}
-                            disabled={isSaving}
-                          >
-                            <Star className="size-3" aria-hidden="true" />
-                            {t("setDefault")}
-                          </Button>
-                        )}
-                        {authTypeOf(profile) === "oauth2_delegated" && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => setConnectTarget(profile)}
-                          >
-                            <Link2 className="size-3" aria-hidden="true" />
-                            {isOAuthConnected(profile)
-                              ? t("reconnect")
-                              : t("connect")}
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={() => handleTest(profile)}
-                          disabled={isTesting}
-                          aria-label={t("testSend")}
-                        >
-                          {isRowTesting ? (
-                            <Loader2
-                              className="size-3.5 animate-spin"
-                              aria-hidden="true"
-                            />
-                          ) : (
-                            <Send className="size-3.5" aria-hidden="true" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={() => openEdit(profile)}
-                          aria-label={tc("edit")}
-                        >
-                          <Pencil className="size-3.5" aria-hidden="true" />
-                        </Button>
-                        {deleteDisabled ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex" tabIndex={0}>
-                                <Button
-                                  variant="ghost"
-                                  size="icon-xs"
-                                  disabled
-                                  aria-label={tc("delete")}
-                                >
-                                  <Trash2
-                                    className="size-3.5"
-                                    aria-hidden="true"
-                                  />
-                                </Button>
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {t("cannotDeleteDefaultTooltip")}
-                            </TooltipContent>
-                          </Tooltip>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            onClick={() => setDeleteTarget(profile)}
-                            aria-label={tc("delete")}
-                          >
-                            <Trash2 className="size-3.5" aria-hidden="true" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
+                    <td className="px-3 py-2">{actions}</td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
