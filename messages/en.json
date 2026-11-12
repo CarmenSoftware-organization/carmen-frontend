@@ -4,7 +4,6 @@
     "loadError": "Failed to load business unit settings.",
     "minDigits": "min {n} digits",
     "noImage": "No image",
-    "sectionNav": "Sections",
     "identity": {
       "lockedHint": "Set when the business unit was created — can't be changed here."
     },
@@ -39,8 +38,6 @@
       "clusterNameDesc": "The business group this business unit belongs to.",
       "description": "Description",
       "descriptionDesc": "Free-text notes about the business unit.",
-      "info": "Info",
-      "infoDesc": "Additional information about the business unit.",
       "calculationMethod": "Costing Method",
       "calculationMethodDesc": "Inventory costing method (average, FIFO, or average per location).",
       "calculationMethodOptions": {

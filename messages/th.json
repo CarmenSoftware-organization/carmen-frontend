@@ -4,7 +4,6 @@
     "loadError": "โหลดการตั้งค่าหน่วยธุรกิจไม่สำเร็จ",
     "minDigits": "อย่างน้อย {n} หลัก",
     "noImage": "ไม่มีรูป",
-    "sectionNav": "หมวด",
     "identity": {
       "lockedHint": "กำหนดตอนสร้างหน่วยธุรกิจ แก้จากหน้านี้ไม่ได้"
     },
@@ -39,8 +38,6 @@
       "clusterNameDesc": "กลุ่มธุรกิจที่หน่วยธุรกิจนี้สังกัด",
       "description": "คำอธิบาย",
       "descriptionDesc": "บันทึกข้อความอิสระเกี่ยวกับหน่วยธุรกิจ",
-      "info": "ข้อมูลเพิ่มเติม",
-      "infoDesc": "ข้อมูลเพิ่มเติมเกี่ยวกับหน่วยธุรกิจ",
       "calculationMethod": "วิธีคำนวณต้นทุน",
       "calculationMethodDesc": "วิธีคิดต้นทุนสินค้าคงคลัง (average, FIFO หรือเฉลี่ยแยกตาม Location)",
       "calculationMethodOptions": {
