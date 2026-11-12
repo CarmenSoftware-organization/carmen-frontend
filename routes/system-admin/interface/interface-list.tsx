@@ -108,8 +108,25 @@ export function interfaceGroups(
 }
 
 /** คอลัมน์ของแถว — ใช้ร่วมกับ skeleton ให้ความสูง/แนวตรงกันตอนโหลดเสร็จ */
+// `@xl:` = ตามความกว้างของการ์ดหมวด (576px ขึ้นไป) ไม่ใช่ของจอ — การ์ดอยู่ในกริดหลายคอลัมน์
+// การ์ดแคบจึงเกิดได้บนจอกว้างด้วย (ต้องมี `@container` ที่ตัวการ์ด)
 const ROW_GRID =
-  "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-3 sm:grid-cols-[auto_minmax(0,14rem)_minmax(0,1fr)_10rem_auto] sm:gap-x-4";
+  "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-3 @xl:grid-cols-[auto_minmax(0,14rem)_minmax(0,1fr)_10rem_auto] @xl:gap-x-4";
+
+/**
+ * กริดของหมวด — เต็มความกว้างจอ หมวดเรียงเป็นคอลัมน์เมื่อกว้างพอ (skill carmen-blue-ui-design)
+ * เดิมจำกัดไว้ที่ `max-w-5xl` บนจอกว้างจึงเหลือที่ว่างด้านขวาเกินครึ่งจอ แต่ละหมวดมี brand แค่
+ * 1–2 ตัว การยืดแถวให้เต็มจอจะทำให้ชื่อ ปลายทาง และเวลาแก้ไขห่างกันเป็นคืบ จึงเพิ่มคอลัมน์ของ
+ * หมวดแทน
+ *
+ * `auto-fit` ไม่ใช่จำนวนคอลัมน์ตายตัว: จำนวนหมวดต่างกันตาม BU (ใบอนุญาต) ถ้ากำหนด 4 คอลัมน์
+ * แล้ว BU มี 3 หมวด คอลัมน์ที่สี่จะว่างอยู่ด้านขวา `auto-fit` ยุบคอลัมน์ว่างแล้วให้หมวดที่มียืด
+ * เต็ม · ขั้นต่ำ 46rem (736px) ให้แถวยังโชว์ครบ (ต่ำกว่า 576px แถวยุบเป็นแบบมือถือ) ·
+ * `min(100%, …)` กันล้นเมื่อจอแคบกว่าขั้นต่ำ
+ * ผลกับ 3 หมวด: 1 / 1 / 1 / 2 / 3 คอลัมน์ที่ mobile / tablet / 1366 / Full HD / 4K
+ */
+const CATEGORY_GRID =
+  "grid grid-cols-[repeat(auto-fit,minmax(min(100%,46rem),1fr))] items-start gap-5";
 
 /** `on` เปิดอยู่ · `off` ตั้งค่าแล้วแต่ปิด · `unset` ยังไม่ได้ตั้งค่า · `none` ไม่รู้สถานะ */
 type DotState = "on" | "off" | "unset" | "none";
@@ -172,12 +189,12 @@ export default function InterfaceList() {
       )}
 
       {!isError && isLoading && (
-        <div className="max-w-5xl divide-y rounded-lg border">
+        <div className="@container divide-y rounded-lg border">
           {[0, 1].map((i) => (
             <div key={i} className={ROW_GRID}>
               <Skeleton className="size-2 rounded-full" />
               <Skeleton className="h-4 w-32" />
-              <Skeleton className="hidden h-3 w-48 sm:block" />
+              <Skeleton className="hidden h-3 w-48 @xl:block" />
             </div>
           ))}
         </div>
@@ -188,7 +205,7 @@ export default function InterfaceList() {
       )}
 
       {!isError && !isLoading && groups.length > 0 && (
-        <div className="max-w-5xl space-y-6">
+        <div className={CATEGORY_GRID}>
           {groups.map(({ category, brands }) => {
             const Icon = category.icon;
             // brand ที่ไม่มีสวิตช์ (enabled = null) ไม่นับทั้งตัวตั้งและตัวหาร
@@ -214,7 +231,7 @@ export default function InterfaceList() {
                     </span>
                   )}
                 </div>
-                <ul className="bg-card divide-y overflow-hidden rounded-lg border">
+                <ul className="bg-card @container divide-y overflow-hidden rounded-lg border">
                   {brands.map((row) => {
                     const { brand, entitlement, readable, target, updated } =
                       row;
@@ -284,10 +301,10 @@ export default function InterfaceList() {
                                 {statusLabel}
                               </span>
                             )}
-                            {/* จอแคบซ่อนคอลัมน์ปลายทาง — ย้ายมาเป็นบรรทัดล่าง เพราะเป็นตัวยืนยันว่าต่อถูกเครื่อง */}
+                            {/* การ์ดแคบซ่อนคอลัมน์ปลายทาง — ย้ายมาเป็นบรรทัดล่าง เพราะเป็นตัวยืนยันว่าต่อถูกเครื่อง */}
                             {detail && (
                               <span
-                                className="text-muted-foreground mt-0.5 truncate font-mono text-xs sm:hidden"
+                                className="text-muted-foreground mt-0.5 truncate font-mono text-xs @xl:hidden"
                                 title={detail}
                               >
                                 <span className="sr-only">{detailLabel}: </span>
@@ -297,7 +314,7 @@ export default function InterfaceList() {
                           </span>
                           <span
                             className={cn(
-                              "hidden min-w-0 truncate text-xs sm:block",
+                              "hidden min-w-0 truncate text-xs @xl:block",
                               detail
                                 ? "text-foreground font-mono"
                                 : "text-muted-foreground",
@@ -307,7 +324,7 @@ export default function InterfaceList() {
                             <span className="sr-only">{detailLabel}: </span>
                             {detailText ?? "—"}
                           </span>
-                          <span className="hidden min-w-0 sm:block">
+                          <span className="hidden min-w-0 @xl:block">
                             <span className="sr-only">{t("updated")}: </span>
                             <AuditCell
                               entry={updated}
