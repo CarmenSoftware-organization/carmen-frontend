@@ -17,6 +17,7 @@ description: ใช้เมื่อจัดหรือปรับ layout �
 | รายการที่ขยายดูรายละเอียดได้ | ยุบ = ช่องกริด · ขยาย = เต็มแถว | `values.md` §รายการ |
 | รายการแบ่งหมวด หมวดละไม่กี่แถว | หมวดเรียงเป็นคอลัมน์ด้วย `auto-fit` | `values.md` §รายการ |
 | list (`ListPageShell` + `DataGrid`) | **ไม่เปลี่ยนโครง** แก้เฉพาะตารางคอลัมน์น้อย | `values.md` §ตาราง |
+| list ที่เป็น `<table>` ธรรมดา | คอลัมน์ข้อมูลกว้างเท่าเนื้อหา + ซ้อนเป็นรายการเมื่อกล่องแคบ | `values.md` §ตาราง |
 | แถบของ shell (footer, toolbar, แถบสรุป) | ให้แถบตัดสินจากความกว้างของตัวเอง | `values.md` §แถบ |
 
 ทำเสร็จแล้วตรวจตาม `verify.md` ทุกครั้ง — กติกาข้อ 1–3 ผิดได้โดยไม่มี error
@@ -50,7 +51,7 @@ description: ใช้เมื่อจัดหรือปรับ layout �
 - ตัวอย่างแถบของ shell: `components/footer/status-bar.tsx`
 
 หน้าที่ทำแล้ว (เปิดดูเป็นตัวอย่าง): company-profile #547 · default-setting #548 · ask-ai #549 ·
-inventory-period + footer #550 · interface (list)
+inventory-period + footer #550 · interface (list) #552 · email-profile
 
 ## กับดัก
 
