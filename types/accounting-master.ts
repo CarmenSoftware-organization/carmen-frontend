@@ -57,7 +57,6 @@ export interface DimensionMaster {
   code: string;
   name: string;
   name_local?: string | null;
-  sequence: number;
   is_active: boolean;
   values?: DimensionValueMaster[];
   doc_version: number;
