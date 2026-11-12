@@ -3370,7 +3370,17 @@
       "insightsLegendActive": "เปิดใช้ action นี้",
       "notifyOff": "ปิด",
       "insightsLegendRecipients": "จำนวนผู้รับแจ้งเตือน",
-      "stageFormErrors": "มีช่องใน stage ที่ยังไม่ถูกต้อง"
+      "stageFormErrors": "มีช่องใน stage ที่ยังไม่ถูกต้อง",
+      "landing": {
+        "count": "{count, plural, =0 {ยังไม่มีลำดับขั้น} other {# ลำดับขั้น}}",
+        "cards": {
+          "workflowPurchaseRequest": "ขั้นอนุมัติที่ใบขอซื้อต้องผ่านก่อนออกใบสั่งซื้อ",
+          "workflowPurchaseOrder": "ขั้นอนุมัติก่อนส่งใบสั่งซื้อให้ผู้ขาย",
+          "workflowStoreRequisition": "ขั้นอนุมัติก่อนจ่ายของตามใบเบิก",
+          "workflowJournalVoucher": "ขั้นอนุมัติก่อนลงบัญชีใบสำคัญรายวัน",
+          "notificationTemplate": "ข้อความแจ้งเตือนที่ลำดับขั้นเหล่านี้ส่งออกไป"
+        }
+      }
     },
     "runningCode": {
       "entity": "รหัสลำดับ",
