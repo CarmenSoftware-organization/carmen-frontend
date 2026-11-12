@@ -41,6 +41,7 @@ import type { FilterFieldDef } from "@/types/list-filter";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
+import { useElementWidth } from "@/routes/system-admin/shared/use-element-width";
 
 type DisplayMode = "list" | "grid";
 
@@ -180,11 +181,14 @@ export default function UserActivityComponent() {
     }
   };
 
+  // ตารางเลือกชุดคอลัมน์จากความกว้างของกล่องตัวเอง (ลบขอบ 1px สองข้างของ DataGridContainer)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
   const table = useUserActivityTable({
     logs,
     totalRecords,
     params,
     tableConfig,
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
   });
 
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
@@ -262,26 +266,28 @@ export default function UserActivityComponent() {
     >
       {/* Content */}
       {!isMobile && displayMode === "list" && (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          tableLayout={{ headerSticky: true }}
-          emptyMessage={<EmptyComponent />}
-          onRowClick={setSelectedLog}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              listGridMaxH(lf.activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            tableLayout={{ headerSticky: true }}
+            emptyMessage={<EmptyComponent />}
+            onRowClick={setSelectedLog}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                listGridMaxH(lf.activeFilters.length > 0),
+              )}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       {useInfiniteScroll &&
