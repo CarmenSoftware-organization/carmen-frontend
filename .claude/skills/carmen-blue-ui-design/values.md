@@ -1,0 +1,100 @@
+# ค่าและสูตรตามชนิดของหน้า
+
+## ฟอร์ม (form / settings / detail)
+
+```tsx
+<FormPageShell width="wide" header={<FormToolbar … />}>
+  <form>
+    <CompactSection first title={…} description={…}>
+      <FieldGrid>{/* ช่อง */}</FieldGrid>
+    </CompactSection>
+    <div className={SECTION_PAIR}>
+      <CompactSection title={…}>…</CompactSection>
+      <CompactSection title={…} action={<Button size="sm" … />}>…</CompactSection>
+    </div>
+  </form>
+</FormPageShell>
+```
+
+| เรื่อง | ค่า |
+|---|---|
+| กริดของช่อง (`FieldGrid`) | `grid gap-x-5 gap-y-3 @md:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 @min-[96rem]:grid-cols-6` ใต้ wrapper `@container` |
+| ช่องที่ต้องกว้าง (textarea, ชื่อยาว) | `@md:col-span-2` — ไม่ใช่ `col-span-full` และไม่ใช่ `sm:col-span-2` |
+| หมวดคู่ (`SECTION_PAIR`) | `min-[1700px]:grid min-[1700px]:grid-cols-2 min-[1700px]:items-start min-[1700px]:gap-x-5` |
+| ระยะระหว่างหมวด | `mt-5` ไม่มีเส้นคั่น |
+| หัวข้อหมวด | `text-sm font-semibold` + คำอธิบาย `text-xs text-muted-foreground` บรรทัดเดียวกัน เหนือการ์ด, action ชิดขวา |
+| การ์ด | `bg-card rounded-xl border p-4 shadow-sm` |
+| ป้ายในโหมดดู | `text-muted-foreground text-xs` ตามด้วยค่า `text-sm` ห่าง `mt-0.5` |
+| ป้ายในโหมดแก้ | `text-foreground text-xs font-semibold` |
+| ค่าว่างในโหมดดู | `—` สี `text-muted-foreground/60` |
+
+จำนวนคอลัมน์ที่ได้ (sidebar กาง):
+
+| ขนาดจอ | หมวด | `FieldGrid` | `FieldGrid size="item"` |
+|---|---|---|---|
+| Mobile (390) | เรียงลงมา | 1 | 1 |
+| Tablet (768) | เรียงลงมา | 2 | 2 |
+| 1366 | เรียงลงมา | 3 | 2 |
+| Full HD (1920) | คู่ | การ์ดเต็ม 6 · การ์ดคู่ 3 | 4 |
+| 4K (3840) | คู่ | 6 | 6 |
+
+จับคู่หมวดเมื่อสองหมวดสูงใกล้กันและเป็นเรื่องคู่กัน (Hotel | Company) อย่าจับคู่หมวด 3 รายการ
+กับหมวด 13 รายการ
+
+## รายการ
+
+**รายการตั้งค่า "ป้ายซ้าย ค่าขวา เต็มความกว้างแถว"** ผิดกติกาข้อ 2 บนจอกว้าง ให้แต่ละรายการเป็น
+ช่องของ `FieldGrid`: รหัส/ป้ายบน ค่าหรือคอนโทรลล่าง คำอธิบาย (ถ้าบอกอะไรเพิ่ม) ใต้คอนโทรล —
+แบบ `ConfigField` ในหน้า default-setting
+
+**รายการที่เนื้อหาหลายส่วน** (ไอคอน ชื่อ ป้าย สถานะ ตัวอย่างข้อความ) ใช้ `FieldGrid size="item"`
+ตัวอย่างข้อความตัดด้วย `line-clamp-2`
+
+**รายการที่ขยายดูรายละเอียดได้** (provider ของ Ask AI): ยุบ = ช่องหนึ่งของกริด ·
+ขยาย = `col-span-full` กินเต็มแถวของตัวเอง ขยายได้ทีละตัว ของสองก้อนที่ต้องเทียบกันวางเคียงกัน
+ด้วย `@3xl:grid-cols-2` ใต้ `@container` ของตัวเอง
+
+```tsx
+<Collapsible open={open} onOpenChange={onOpenChange}
+  className={cn("min-w-0", open && "col-span-full")}>
+```
+
+## ตาราง (หน้า list)
+
+หน้า list เต็มความกว้างและกะทัดรัดอยู่แล้ว จุดเดียวที่ผิดกติกาข้อ 2 คือ **ตารางที่มีคอลัมน์สั้น ๆ
+ไม่กี่คอลัมน์**: `DataGrid` แบ่งความกว้างตามสัดส่วน `size` บนจอ 4K คอลัมน์จึงห่างกันเป็นพันพิกเซล
+
+```tsx
+{ accessorKey: "period", size: 240, … },
+{ accessorKey: "start_at", size: 195, … },
+// คอลัมน์สุดท้ายรับที่เหลือ → สองคอลัมน์ข้างหน้ากว้างคงที่ เนื้อหาชิดซ้ายจึงอยู่ติดกัน
+{ accessorKey: "status", size: 110, meta: { grow: true }, … },
+```
+
+ตารางที่มีคอลัมน์ข้อความยาว (description) ให้ติด `grow` ที่คอลัมน์นั้นแทน ตั้ง `size` ให้ผลรวมพอดี
+ที่ tablet (ดูกับดักใน `SKILL.md`)
+
+## แถบ (footer status bar, toolbar, แถบสรุป)
+
+แถบที่สองฝั่งชิดซ้าย–ชิดขวา (`justify-between`) ทับกันเมื่อเลือกของที่โชว์จากความกว้างของจอ
+
+```tsx
+<footer className="@container flex items-center justify-between gap-3 …">
+  <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+    <span className="truncate">{name}</span>
+    <span className="hidden shrink-0 @md:inline">{buCode}</span>
+  </div>
+  <div className="flex shrink-0 items-center gap-3">
+    <span className="hidden @md:flex">{time}</span>
+    <span className="hidden @4xl:flex">{apiVersion}</span>
+  </div>
+</footer>
+```
+
+- เรียงของตามความสำคัญ ของสำคัญน้อยโผล่เมื่อแถบกว้างขึ้น
+- ของที่ซ่อนต้องยังเข้าถึงได้ทางอื่น (tooltip, `aria-label`, หรือมีอยู่ที่อื่นของหน้า)
+- ข้อความที่ `truncate` จนเหลือไม่กี่ตัวอักษร ("Admi…") = ยังโชว์ของมากเกินไป ซ่อนเพิ่ม
+
+ขั้นของ `status-bar.tsx`: แคบกว่า 448px โชว์ชื่อ · รหัสรอบ · App v → เวลา + รหัส BU + ป้าย
+"Period" (`@md` 448px) → commit hash (`@2xl` 672px) → ป้าย "Inventory period" เต็ม + เวอร์ชัน
+API (`@4xl` 896px)
