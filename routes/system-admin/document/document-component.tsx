@@ -53,7 +53,7 @@ import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
 import { DocumentIconGrid } from "./document-icon-grid";
 import { DocumentPreviewView } from "./document-preview-view";
 import { DocumentLoadMore } from "./document-load-more";
-import { useElementWidth } from "@/routes/system-admin/shared/use-element-width";
+import { useElementWidth } from "@/hooks/use-element-width";
 
 type DocumentDisplayMode = "list" | "grid" | "preview";
 const DOCUMENT_DISPLAY_MODES: readonly DocumentDisplayMode[] = [

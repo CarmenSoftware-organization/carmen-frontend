@@ -60,34 +60,57 @@ export function indexColumn<T>(params: ParamsDto): ColumnDef<T> {
   };
 }
 
-function StatusColumnHeader<T>({ column }: { column: Column<T, unknown> }) {
+function StatusColumnHeader<T>({
+  column,
+  start,
+}: {
+  column: Column<T, unknown>;
+  start?: boolean;
+}) {
   const tfl = useTranslations("field");
   return (
     <DataGridColumnHeader
       column={column}
       title={tfl("status")}
-      className="justify-center"
+      className={start ? undefined : "justify-center"}
     />
   );
+}
+
+interface StatusColumnOptions {
+  /**
+   * `"start"` = ป้ายสถานะชิดซ้าย (ค่าตั้งต้นจัดกึ่งกลาง) — ใช้เมื่อคอลัมน์นี้อยู่ถัดจากชื่อและ
+   * ต้องอยู่ติดชื่อ: ป้ายที่จัดกึ่งกลางในคอลัมน์กว้างจะลอยห่างจากชื่อครึ่งคอลัมน์
+   */
+  align?: "center" | "start";
+  /** ให้คอลัมน์นี้รับความกว้างที่เหลือของตาราง (`meta.grow`) — ใช้คู่กับ `align: "start"` */
+  grow?: boolean;
 }
 
 type FieldTranslator = (key: "created" | "updated" | "status") => string;
 
 // tfl ใช้แค่ตั้ง headerTitle — เมนูเลือกคอลัมน์/เรียงลำดับอ่านจาก meta ไม่ได้อ่าน header
 // ไม่ส่งมาเมื่อไรเมนูจะโชว์ id ดิบ `is_active`
-export function statusColumn<T>(tfl: FieldTranslator): ColumnDef<T> {
+export function statusColumn<T>(
+  tfl: FieldTranslator,
+  options?: StatusColumnOptions,
+): ColumnDef<T> {
+  const start = options?.align === "start";
   return {
     accessorKey: "is_active",
-    header: ({ column }) => <StatusColumnHeader<T> column={column} />,
+    header: ({ column }) => (
+      <StatusColumnHeader<T> column={column} start={start} />
+    ),
     cell: ({ row }) => (
       <StatusBadge active={Boolean(row.getValue("is_active"))} />
     ),
     size: 100,
     meta: {
-      cellClassName: "text-center",
-      headerClassName: "text-center",
+      cellClassName: start ? undefined : "text-center",
+      headerClassName: start ? undefined : "text-center",
       headerTitle: tfl("status"),
       skeleton: columnSkeletons.badge,
+      ...(options?.grow && { grow: true }),
     },
   };
 }

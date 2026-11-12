@@ -41,7 +41,7 @@ import type { FilterFieldDef } from "@/types/list-filter";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
-import { useElementWidth } from "@/routes/system-admin/shared/use-element-width";
+import { useElementWidth } from "@/hooks/use-element-width";
 
 type DisplayMode = "list" | "grid";
 
