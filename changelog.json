@@ -1,7 +1,1099 @@
 {
-  "current": "2.5.28",
-  "generated_at": "2026-10-26T06:38:10.857Z",
+  "current": "2.5.60",
+  "generated_at": "2026-11-12T03:57:19.694Z",
   "versions": [
+    {
+      "version": "2.5.60",
+      "build": "2.5.60-build.20261112.1ffe25fc",
+      "date": "2026-11-12",
+      "commit": "1ffe25fc",
+      "changes": {
+        "added": [
+          {
+            "scope": "dashboard",
+            "summary": "ป้ายตัวเลือก rank_by ของ SR top products + เติมป้ายช่วงเวลา/ตัวเลือกที่ขาด",
+            "hash": "84dd0c80",
+            "author": "Khafang",
+            "pr": 545
+          },
+          {
+            "scope": "recipe",
+            "summary": "ฝังวิดีโอ YouTube ได้ 1 ตัวต่อขั้นตอน",
+            "hash": "ef5230fa",
+            "author": "Khafang",
+            "pr": 544
+          },
+          {
+            "scope": "avatar",
+            "summary": "รูปผู้ขอ/ผู้ซื้อ/ผู้รับ/ผู้สร้างบนหัวเอกสาร และ actor ใน activity log",
+            "hash": "63dc1f00",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "avatar",
+            "summary": "รูปโปรไฟล์ใน workflow config, ฟอร์มผู้ใช้, comment และ status bar",
+            "hash": "47c54a24",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "avatar",
+            "summary": "PersonAvatar component กลาง รูปโปรไฟล์ + fallback ตัวย่อ/ไอคอน",
+            "hash": "c34d7604",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "recipe",
+            "summary": "ลิงก์วิดีโอ YouTube ต่อสูตร — เล่นบนสุดของหน้าสูตร",
+            "hash": "b73d8a30",
+            "author": "Khafang",
+            "pr": 541
+          },
+          {
+            "scope": "pr",
+            "summary": "Price Comparison มีคอลัมน์ Inc VAT ของตัวเอง (✓/—) วางก่อน Price — ทุกแถวบอกชัดว่าราคารวม VAT หรือไม่",
+            "hash": "2fdad346",
+            "author": "Thammanoon Semapru",
+            "pr": 538
+          },
+          {
+            "scope": "pr",
+            "summary": "Price Comparison แสดงคอลัมน์ Net Price (ราคาก่อน VAT) — ป้าย Best ย้ายมาคอลัมน์นี้ ทุกแถวเทียบบนฐานเดียวกัน",
+            "hash": "bfca51b4",
+            "author": "Thammanoon Semapru",
+            "pr": 537
+          },
+          {
+            "scope": "price-list",
+            "summary": "ปรับหน้า detail ตามทิศทาง design — ช่วงราคาบอกหมดมากี่วัน, แถบสรุปชิดซ้าย, ตัดเส้นคั่นลอย, ซ่อน Note/lead time ที่ว่าง, หัว Total บอกรวม VAT",
+            "hash": "93716d6d",
+            "author": "Thammanoon Semapru",
+            "pr": 531
+          },
+          {
+            "scope": "rfp",
+            "summary": "รายการ Request for Pricing เรียงตามวันเริ่มเปิดรับราคา ล่าสุดก่อน เป็นค่าเริ่มต้น",
+            "hash": "678fe8de",
+            "author": "Thammanoon Semapru",
+            "pr": 530
+          },
+          {
+            "scope": "price-list",
+            "summary": "ปรับหน้า detail — ป้ายช่วงราคาที่หัวใบ, แถบสรุปโหมดดู, Inc VAT เป็นคอลัมน์",
+            "hash": "b6b92560",
+            "author": "Thammanoon Semapru",
+            "pr": 529
+          },
+          {
+            "scope": "ap",
+            "summary": "ช่องติ๊ก Inc VAT ต่อบรรทัด",
+            "hash": "ef514705",
+            "author": "Thammanoon Semapru",
+            "pr": 526
+          },
+          {
+            "scope": "grn",
+            "summary": "ช่องติ๊ก Inc VAT ต่อบรรทัด",
+            "hash": "23f833e6",
+            "author": "Thammanoon Semapru",
+            "pr": 526
+          },
+          {
+            "scope": "po",
+            "summary": "ช่องติ๊ก Inc VAT ต่อบรรทัด",
+            "hash": "d300c863",
+            "author": "Thammanoon Semapru",
+            "pr": 526
+          },
+          {
+            "scope": "pr",
+            "summary": "ช่องติ๊ก Inc VAT ต่อบรรทัด สืบค่าจาก price list",
+            "hash": "76ec45e4",
+            "author": "Thammanoon Semapru",
+            "pr": 526
+          },
+          {
+            "scope": "price-list",
+            "summary": "ช่องติ๊ก Inc VAT ต่อบรรทัด + คอลัมน์ Excel",
+            "hash": "77e3ee0d",
+            "author": "Thammanoon Semapru",
+            "pr": 526
+          },
+          {
+            "scope": "pricing",
+            "summary": "สูตรถอด VAT สำหรับบรรทัดที่ติ๊ก Inc VAT",
+            "hash": "564be7fc",
+            "author": "Thammanoon Semapru",
+            "pr": 526
+          },
+          {
+            "scope": "pr",
+            "summary": "หน้าต่างเทียบราคาแสดง \"สั่งเป็นหน่วยอื่นถูกกว่า\" จาก suggests.better_unit",
+            "hash": "a727bbe5",
+            "author": "Khafang",
+            "pr": 525
+          },
+          {
+            "scope": "dashboard",
+            "summary": "หมวดใน pop up เพิ่มวิดเจ็ตพับ/กางได้ — เปิดมาเห็นแค่ชื่อหมวด + จำนวน",
+            "hash": "7201eb69",
+            "author": "Khafang",
+            "pr": 524
+          },
+          {
+            "scope": "qr",
+            "summary": "หน้า /qr/<type>/<id>?bu= ปลายทางของ QR บนเอกสารที่พิมพ์ใบเดียว",
+            "hash": "81d9c2ec",
+            "author": "Khafang",
+            "pr": 523
+          },
+          {
+            "scope": "recipe",
+            "summary": "แบบฟอร์มพิมพ์ Recipe เลือกจาก template ใน platform เหมือนเอกสารอื่น — เลิก dropdown แนวกระดาษ/เนื้อหา",
+            "hash": "59438d99",
+            "author": "Khafang",
+            "pr": 522
+          },
+          {
+            "scope": "dashboard",
+            "summary": "pop up เพิ่ม widget แยก 2 หน้า — แกลเลอรีการ์ดมีรูปตัวอย่าง → หน้าปรับแต่งที่ตัวอย่างจริงอยู่บนสุด",
+            "hash": "91a5f604",
+            "author": "Khafang",
+            "pr": 521
+          },
+          {
+            "scope": "profile",
+            "summary": "ลบโทเค็น MCP ที่เพิกถอนหรือหมดอายุแล้ว ทั้งรายใบและทั้งหมด",
+            "hash": "7abbecc4",
+            "author": "Thammanoon Semapru",
+            "pr": 519
+          },
+          {
+            "scope": "profile",
+            "summary": "เพิ่ม scope write:workflow (อนุมัติ/ปฏิเสธเอกสาร) ในหน้าเลือก scope ของโทเค็น MCP",
+            "hash": "8bd9547e",
+            "author": "Thammanoon Semapru",
+            "pr": 516
+          },
+          {
+            "scope": "profile",
+            "summary": "เลือก scope ตอนสร้างโทเค็น MCP และแสดง scope ในตาราง",
+            "hash": "4a3b9006",
+            "author": "Thammanoon Semapru",
+            "pr": 514
+          },
+          {
+            "scope": "dashboard",
+            "summary": "ป้าย widget ตามชนิดมิติของ dataset — หัวตาราง/สถานะ/หน่วย/ทศนิยม · Area ระบายพื้นที่จริง · เส้นเฉพาะแกนเวลา",
+            "hash": "1bbd769a",
+            "author": "Khafang",
+            "pr": 513
+          },
+          {
+            "scope": "recipe",
+            "summary": "ปุ่ม Print หน้าสูตรใช้ template แนวตั้งของตัวเอง (Recipe Card Report Portrait) ไม่ใช้ร่วมกับหน้า Report list",
+            "hash": "825f7f55",
+            "author": "Khafang",
+            "pr": 512
+          },
+          {
+            "scope": "recipe",
+            "summary": "ย้ายตั้งค่าการพิมพ์ Recipe Card ไปหมวด Print Forms · รวมเหลือ 2 dropdown",
+            "hash": "0bde3de6",
+            "author": "Khafang",
+            "pr": 511
+          },
+          {
+            "scope": "recipe",
+            "summary": "ตั้งค่ารูปแบบการพิมพ์ Recipe Card ต่อ BU — แนวตั้ง/แนวนอน · พิมพ์วิธีทำ · พิมพ์วัตถุดิบ",
+            "hash": "7513fc0a",
+            "author": "Khafang",
+            "pr": 509
+          },
+          {
+            "scope": "ap",
+            "summary": "ลิงก์ JV กลับรายการของใบจ่ายที่ void (void_gl_jv_id จาก BE)",
+            "hash": "7b2f13c8",
+            "author": "Thammanoon Semapru",
+            "pr": 505
+          },
+          {
+            "scope": "ap",
+            "summary": "หน้า AP payment ต่อ backend จริง (allocation ต่อบรรทัด + WHT preview)",
+            "hash": "b5a0014c",
+            "author": "Thammanoon Semapru",
+            "pr": 503
+          },
+          {
+            "scope": "ap",
+            "summary": "หน้า list AP payment ใช้ข้อมูลจริง",
+            "hash": "4ac81c2b",
+            "author": "Thammanoon Semapru",
+            "pr": 503
+          },
+          {
+            "scope": "ap",
+            "summary": "หน้า AP invoice ต่อ backend จริง + ใบจาก GRN อ่านอย่างเดียว",
+            "hash": "f6ad2dc5",
+            "author": "Thammanoon Semapru",
+            "pr": 503
+          },
+          {
+            "scope": "ap",
+            "summary": "หน้า list AP invoice ใช้ข้อมูลจริง + ป้าย From GRN",
+            "hash": "72f326b9",
+            "author": "Thammanoon Semapru",
+            "pr": 503
+          },
+          {
+            "scope": "ap",
+            "summary": "repository HTTP ของ AP invoice/payment + type ตาม backend",
+            "hash": "476857f3",
+            "author": "Thammanoon Semapru",
+            "pr": 503
+          },
+          {
+            "scope": "grn",
+            "summary": "แท็บ Journal Voucher และปุ่มสร้าง AP invoice ในหน้า GRN",
+            "hash": "e8682abf",
+            "author": "Thammanoon Semapru",
+            "pr": 502
+          },
+          {
+            "scope": "accounting",
+            "summary": "สวิตช์สร้าง AP invoice อัตโนมัติจาก GRN ในหน้าตั้งค่าบัญชี",
+            "hash": "ce21f9e6",
+            "author": "Thammanoon Semapru",
+            "pr": 502
+          },
+          {
+            "scope": "accounting",
+            "summary": "จัดความกว้างคอลัมน์ตาราง JV และให้เมนู lookup กว้างตามชื่อที่ยาวสุด",
+            "hash": "d6d187e4",
+            "author": "Thammanoon Semapru",
+            "pr": 500
+          },
+          {
+            "scope": "accounting",
+            "summary": "หน้า JV detail ใช้ทรงเดียวกับ PR/PO/GRN และโชว์ข้อมูลครบตาม mockup v2.14",
+            "hash": "3837a216",
+            "author": "Thammanoon Semapru",
+            "pr": 497
+          },
+          {
+            "scope": "accounting",
+            "summary": "หน้า JV อนุมัติ/ตีกลับตาม workflow และแสดงขั้นจริง",
+            "hash": "e29bf133",
+            "author": "Thammanoon Semapru",
+            "pr": 495
+          },
+          {
+            "scope": "workflow",
+            "summary": "ตั้ง workflow ของ JV ได้ พร้อมแท็บขอบเขต prefix และที่มา",
+            "hash": "78ca3722",
+            "author": "Thammanoon Semapru",
+            "pr": 495
+          },
+          {
+            "scope": "grn",
+            "summary": "เลขใบแจ้งหนี้ซ้ำขึ้นแดงใต้ช่องพร้อมเลขใบที่ชน แทน toast",
+            "hash": "a3ea351c",
+            "author": "Khafang",
+            "pr": 493
+          },
+          {
+            "scope": "accounting",
+            "summary": "หน้ารายละเอียด GL JV template แยกตามชนิด recurring/allocation/amortize",
+            "hash": "54f0cb58",
+            "author": "Thammanoon Semapru",
+            "pr": 492
+          },
+          {
+            "scope": "accounting",
+            "summary": "dialog สร้าง JV จาก template ทีละตัวและรันทุกตัวที่ถึงกำหนด",
+            "hash": "4f33124a",
+            "author": "Thammanoon Semapru",
+            "pr": 492
+          },
+          {
+            "scope": "accounting",
+            "summary": "หน้า list template/recurring/allocation voucher ต่อ API จริง",
+            "hash": "9ea6cace",
+            "author": "Thammanoon Semapru",
+            "pr": 492
+          },
+          {
+            "scope": "accounting",
+            "summary": "ผูก recurring/allocation voucher กับ license jv_template + permission + คำแปล",
+            "hash": "17ea0f6f",
+            "author": "Thammanoon Semapru",
+            "pr": 492
+          },
+          {
+            "scope": "accounting",
+            "summary": "เพิ่ม data layer ของ GL JV template (types, repository, hooks)",
+            "hash": "a324ad52",
+            "author": "Thammanoon Semapru",
+            "pr": 492
+          },
+          {
+            "scope": "dashboard",
+            "summary": "เลือกชนิดกราฟใน pop up เพิ่ม widget ได้เลย",
+            "hash": "d6945a40",
+            "author": "Khafang",
+            "pr": 489
+          },
+          {
+            "scope": "accounting",
+            "summary": "ปรับหน้า list Journal Voucher ให้ใช้โครงเดียวกับ PO",
+            "hash": "e210066a",
+            "author": "Thammanoon Semapru",
+            "pr": 490
+          },
+          {
+            "scope": "dashboard",
+            "summary": "ปุ่ม Add widget เปิด pop up เลือก widget ตามหมวด พร้อม preview และตั้งค่า",
+            "hash": "ac1ad708",
+            "author": "Khafang",
+            "pr": 488
+          },
+          {
+            "scope": "storage-quota",
+            "summary": "แถบเตือน หน้าพื้นที่เก็บข้อมูล และ dialog เมื่อพื้นที่เต็ม",
+            "hash": "22805f11",
+            "author": "Thammanoon Semapru",
+            "pr": 485
+          },
+          {
+            "scope": "activity",
+            "summary": "แสดงรายการลบไฟล์ใน activity sheet",
+            "hash": "f4519256",
+            "author": "Thammanoon Semapru",
+            "pr": 482
+          },
+          {
+            "scope": "document",
+            "summary": "แสดงที่ใช้งานไฟล์ก่อนลบ และเปิดให้ลบไฟล์ของ BU ทุกชนิด",
+            "hash": "15a23ba2",
+            "author": "Thammanoon Semapru",
+            "pr": 482
+          },
+          {
+            "scope": "dashboard",
+            "summary": "ช่องเลือกหลายค่าจากรายการของ BU + กราฟเทียบหลาย series",
+            "hash": "4361bf11",
+            "author": "Khafang",
+            "pr": 478
+          },
+          {
+            "scope": "document",
+            "summary": "sort ตารางฝั่ง server และย้าย Filter มาติดช่องค้นหา",
+            "hash": "ebe6a4b9",
+            "author": "Thammanoon Semapru",
+            "pr": 480
+          },
+          {
+            "scope": "document",
+            "summary": "เพิ่มมุมมอง icon/preview และเปลี่ยนรายการเป็น lazy load",
+            "hash": "06ec48f5",
+            "author": "Thammanoon Semapru",
+            "pr": 479
+          },
+          {
+            "scope": "dashboard",
+            "summary": "ป้ายตัวเลือกช่วงเวลา \"งวดปัจจุบัน / งวดที่แล้ว\"",
+            "hash": "add11f81",
+            "author": "Khafang",
+            "pr": 473
+          },
+          {
+            "scope": "comment",
+            "summary": "แสดงไฟล์ที่ถูกลบเป็น placeholder",
+            "hash": "b1ce2cf9",
+            "author": "Thammanoon Semapru",
+            "pr": 472
+          },
+          {
+            "scope": "document",
+            "summary": "ลบหลายไฟล์ด้วยการเลือกหรือตามตัวกรอง",
+            "hash": "32195a0c",
+            "author": "Thammanoon Semapru",
+            "pr": 472
+          },
+          {
+            "scope": "document",
+            "summary": "แสดงที่มาของไฟล์ ผู้อัปโหลด และตัวกรองโมดูล/ชนิด/วันที่",
+            "hash": "2463c308",
+            "author": "Thammanoon Semapru",
+            "pr": 472
+          },
+          {
+            "scope": "accounting-settings",
+            "summary": "ขยายหน้าตั้งค่าบัญชีเป็นความกว้างแบบ wide",
+            "hash": "af1831e2",
+            "author": "Thammanoon Semapru",
+            "pr": 470
+          },
+          {
+            "scope": "recipe-equipment",
+            "summary": "comment + ไฟล์แนบ และ activity บนหน้าอุปกรณ์ครัว",
+            "hash": "2fc09308",
+            "author": "Thammanoon Semapru",
+            "pr": 469
+          },
+          {
+            "scope": "recipe-cuisine",
+            "summary": "comment + ไฟล์แนบบนหน้าประเภทอาหาร (cuisine)",
+            "hash": "c40f932a",
+            "author": "Thammanoon Semapru",
+            "pr": 468
+          },
+          {
+            "scope": "recipe-category",
+            "summary": "comment + ไฟล์แนบบนหน้าหมวดสูตรอาหาร",
+            "hash": "1ec4256e",
+            "author": "Thammanoon Semapru",
+            "pr": 467
+          },
+          {
+            "scope": "period-end",
+            "summary": "dialog เอกสาร review กรองใบค้าง เรียงตามกลุ่มสถานะ และโหลดทีละหน้า",
+            "hash": "02ac89d1",
+            "author": "Thammanoon Semapru",
+            "pr": 465
+          },
+          {
+            "scope": "inventory-adjustment",
+            "summary": "เพิ่ม Comment + ไฟล์แนบในหน้า Inventory Adjustment สำหรับจดประวัติ",
+            "hash": "c0b2884d",
+            "author": "Thammanoon Semapru",
+            "pr": 464
+          },
+          {
+            "scope": "request-price-list",
+            "summary": "เพิ่ม Comment + ไฟล์แนบในหน้า Request Price List สำหรับจดประวัติ",
+            "hash": "a8ba2aae",
+            "author": "Thammanoon Semapru",
+            "pr": 463
+          },
+          {
+            "scope": "price-list-template",
+            "summary": "เพิ่ม Comment + ไฟล์แนบในหน้า Price List Template สำหรับจดประวัติ",
+            "hash": "5312b833",
+            "author": "Thammanoon Semapru",
+            "pr": 462
+          },
+          {
+            "scope": "price-list",
+            "summary": "เพิ่ม Comment + ไฟล์แนบในหน้า Price List สำหรับจดประวัติ",
+            "hash": "2f9e346f",
+            "author": "Thammanoon Semapru",
+            "pr": 461
+          },
+          {
+            "scope": "product",
+            "summary": "เพิ่ม Comment + ไฟล์แนบในหน้าสินค้า สำหรับจดประวัติ",
+            "hash": "df8ed976",
+            "author": "Thammanoon Semapru",
+            "pr": 460
+          },
+          {
+            "scope": "branding",
+            "summary": "4:1 logo slot; uploaded logo keeps slot height, width follows image",
+            "hash": "8437896f",
+            "author": "Thammanoon Semapru",
+            "pr": 459
+          },
+          {
+            "scope": "recipe",
+            "summary": "ปุ่ม Print ในหน้าสูตร — Recipe Card Report ของสูตรนั้นสูตรเดียว",
+            "hash": "665f7957",
+            "author": "Khafang",
+            "pr": 458
+          },
+          {
+            "scope": "grn",
+            "summary": "วันหมดอายุรายบรรทัด + เตือนสินค้าหมดอายุตอนสร้างใบและ commit",
+            "hash": "ecac0e21",
+            "author": "Khafang",
+            "pr": 457
+          },
+          {
+            "scope": "doc",
+            "summary": "กางปุ่ม duplicate/print/comment/activity ออกจากเมนู ⋯ บนหัวเอกสารทุกหน้า",
+            "hash": "609a5c3f",
+            "author": "Thammanoon Semapru",
+            "pr": 456
+          },
+          {
+            "scope": "ask-ai",
+            "summary": "หน้าตั้งค่า Ask AI เป็นแถวกะทัดรัด แสดง prompt ที่ใช้จริง",
+            "hash": "a463c943",
+            "author": "Thammanoon Semapru",
+            "pr": 455
+          },
+          {
+            "scope": "ask-ai",
+            "summary": "หน้าตั้งค่า Ask AI ราย BU",
+            "hash": "318ebb47",
+            "author": "Thammanoon Semapru",
+            "pr": 454
+          },
+          {
+            "scope": "pr-ask-ai",
+            "summary": "ดึง provider และ prompt ของ Ask AI จาก backend",
+            "hash": "cc17a556",
+            "author": "Thammanoon Semapru",
+            "pr": 454
+          },
+          {
+            "scope": "sales-consumption",
+            "summary": "หน้า detail verify/post/void และแก้บรรทัด",
+            "hash": "f37b015d",
+            "author": "Thammanoon Semapru",
+            "pr": 453
+          },
+          {
+            "scope": "sales-consumption",
+            "summary": "หน้า list ปฏิทิน ตาราง และ mapping",
+            "hash": "4dbe73e1",
+            "author": "Thammanoon Semapru",
+            "pr": 453
+          },
+          {
+            "scope": "import-pos",
+            "summary": "หน้า Import POS แสดง raw transaction",
+            "hash": "eb8267fb",
+            "author": "Thammanoon Semapru",
+            "pr": 453
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "เมนู Import POS / Sales Consumption gate ด้วย POS interface",
+            "hash": "cab8ca08",
+            "author": "Thammanoon Semapru",
+            "pr": 453
+          },
+          {
+            "scope": "sales-consumption",
+            "summary": "endpoint, type และ hook",
+            "hash": "f75b4b2a",
+            "author": "Thammanoon Semapru",
+            "pr": 453
+          },
+          {
+            "scope": "category",
+            "summary": "ปุ่ม Print / Export ในหน้า category — Product Category Report",
+            "hash": "82e9c12d",
+            "author": "Khafang",
+            "pr": 452
+          },
+          {
+            "scope": "auth",
+            "summary": "login เสร็จแล้วกลับไปหน้าที่ขอไว้",
+            "hash": "bb74e650",
+            "author": "Thammanoon Semapru",
+            "pr": 451
+          },
+          {
+            "scope": "profile",
+            "summary": "dialog ไม่มีแผนกบอกผลกระทบ + ข้อมูลที่ admin ต้องใช้ + ทางไปต่อ",
+            "hash": "0a2f66e9",
+            "author": "Thammanoon Semapru",
+            "pr": 450
+          },
+          {
+            "scope": "license",
+            "summary": "แถบเกินโควตา seat เป็นแถบแดงทึบ + บอกให้ไปหา admin ของ BU/cluster",
+            "hash": "6f06418e",
+            "author": "Thammanoon Semapru",
+            "pr": 449
+          },
+          {
+            "scope": null,
+            "summary": "enhance AR dashboard with folio summary and error handling",
+            "hash": "7d5284bc",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "add accounts receivable folio model and UI components",
+            "hash": "83532a63",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "add accounts receivable profile management",
+            "hash": "fb412778",
+            "author": "llHorizonll",
+            "pr": null
+          }
+        ],
+        "fixed": [
+          {
+            "scope": "avatar",
+            "summary": "เพิ่ม iconClassName, ชื่อว่าง/นามสกุลอย่างเดียวแสดงไอคอนแทน U",
+            "hash": "f901a615",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "ui",
+            "summary": "ป้าย Inc VAT หน้าตาเดียวกันทุกหน้า — ชิปหน้าตัวเลข + ช่องติ๊กขนาดเดียว ผ่าน components/share/inc-vat.tsx",
+            "hash": "682b694a",
+            "author": "Thammanoon Semapru",
+            "pr": 536
+          },
+          {
+            "scope": "profile",
+            "summary": "ขนาดตัวอักษร MCP token ใช้ text-micro / text-micro-legal แทน px ดิบ — type-ladder test กลับมาเขียว",
+            "hash": "9fb54226",
+            "author": "Thammanoon Semapru",
+            "pr": 535
+          },
+          {
+            "scope": null,
+            "summary": "ชื่อท้องถิ่นของสินค้าที่ซ้ำกับชื่อหลัก (รวมกรณี NBSP) ไม่ขึ้นบรรทัดที่สอง — รวมเป็น distinctLocalName ใช้ใน PR, Price List, dialog on-hand/on-order",
+            "hash": "e0557d4a",
+            "author": "Thammanoon Semapru",
+            "pr": 535
+          },
+          {
+            "scope": "ui",
+            "summary": "จุดสถานะรายการ PR/PO เป็นพื้นสีอ่อน + ไอคอนสี ink — เดิมไอคอนดำบนพื้นน้ำเงินทึบอ่านไม่ออก",
+            "hash": "9d5ec10e",
+            "author": "Thammanoon Semapru",
+            "pr": 534
+          },
+          {
+            "scope": "purchase-request",
+            "summary": "หน้า PR detail — ซ่อนชื่อรองที่ซ้ำ, ไอคอนสต็อกชิดชื่อสินค้า, ค่าศูนย์จางลง และแก้โหมดแก้ไขที่ป้าย Unit Price/Inc VAT หักบรรทัดกับยอด Amount โดนตัด",
+            "hash": "5d452fd0",
+            "author": "Thammanoon Semapru",
+            "pr": 534
+          },
+          {
+            "scope": "price-list",
+            "summary": "ป้าย Inc VAT ในคอลัมน์ Price โหมดดูไม่ตัดบรรทัดกลางคำ — ขยายคอลัมน์เป็น w-32 และห้ามขึ้นบรรทัดใหม่",
+            "hash": "404cae8d",
+            "author": "Thammanoon Semapru",
+            "pr": 533
+          },
+          {
+            "scope": "price-list",
+            "summary": "โหมดแก้ไขและจอแคบ — ตารางแก้ไขเลื่อนแนวนอนแทนบีบคอลัมน์, ปุ่มหัวเอกสารขึ้นบรรทัดใหม่แทนล้นจอ, MOQ ไม่ตัดบรรทัด",
+            "hash": "76e229ea",
+            "author": "Thammanoon Semapru",
+            "pr": 532
+          },
+          {
+            "scope": "cn",
+            "summary": "ราคาจาก GRN ที่ติ๊ก Inc VAT ถอด VAT ก่อน ไม่ลดหนี้เกิน",
+            "hash": "81c733a5",
+            "author": "Thammanoon Semapru",
+            "pr": 527
+          },
+          {
+            "scope": "inc-vat",
+            "summary": "เลือกราคาจากหน้าเทียบราคา PR พาอัตราภาษีมาด้วยและคำนวณยอดใหม่, อันดับเทียบราคาถือ 0 เป็นไม่มีค่า, เติม tc ใน deps",
+            "hash": "2b4bf4b5",
+            "author": "Thammanoon Semapru",
+            "pr": 526
+          },
+          {
+            "scope": "ap",
+            "summary": "เพิ่ม import addDecimal ในหน้า detail",
+            "hash": "2f31a95a",
+            "author": "Thammanoon Semapru",
+            "pr": 526
+          },
+          {
+            "scope": "ap",
+            "summary": "แถบสรุปโหมดดูของแถว Inc VAT ใช้ net + ส่วนลดเป็น Subtotal + ตัวหารถอด VAT ใช้ 6 ทศนิยม",
+            "hash": "2c752a31",
+            "author": "Thammanoon Semapru",
+            "pr": 526
+          },
+          {
+            "scope": "po",
+            "summary": "ยอด Total ใน wizard price list รวม VAT ทุกแถว + ป้าย Inc VAT ที่ช่องราคา",
+            "hash": "225f7c81",
+            "author": "Thammanoon Semapru",
+            "pr": 526
+          },
+          {
+            "scope": "pr",
+            "summary": "แถบสรุปของแถว Inc VAT ใช้ net + ส่วนลดเป็น Subtotal ให้ยอด foot",
+            "hash": "fe32bc5c",
+            "author": "Thammanoon Semapru",
+            "pr": 526
+          },
+          {
+            "scope": "price-list",
+            "summary": "เทียบ MOQ ด้วยราคาก่อน VAT + tier เดิมคงค่า Inc VAT ของตัวเอง",
+            "hash": "8bcef63d",
+            "author": "Thammanoon Semapru",
+            "pr": 526
+          },
+          {
+            "scope": "errors",
+            "summary": "map COMMON_DOC_VERSION_CONFLICT ไปข้อความ documentChanged",
+            "hash": "a68ab313",
+            "author": "Thammanoon Semapru",
+            "pr": 520
+          },
+          {
+            "scope": "profile",
+            "summary": "header ทึบบนมือถือ และโทเค็น MCP เป็นการ์ดเมื่อกรอบแคบ",
+            "hash": "ba75665d",
+            "author": "Thammanoon Semapru",
+            "pr": 518
+          },
+          {
+            "scope": "profile",
+            "summary": "จัดหน้า Profile Settings ใหม่ — ชื่อจริงบนหัวการ์ด, Save ท้ายฟอร์ม, แยกโทเค็น MCP ที่ไม่ active",
+            "hash": "f805434f",
+            "author": "Thammanoon Semapru",
+            "pr": 517
+          },
+          {
+            "scope": "profile",
+            "summary": "ชื่อ scope ไม่กลายเป็นสีแดงทั้งหมดตอนยังไม่เลือก scope",
+            "hash": "c990273e",
+            "author": "Thammanoon Semapru",
+            "pr": 515
+          },
+          {
+            "scope": "grn",
+            "summary": "เลขใบแจ้งหนี้ซ้ำแสดงเป็นกรอบแดง + hover ไอคอนดูข้อความ ไม่วางข้อความใต้ช่อง",
+            "hash": "0c1c3a87",
+            "author": "Khafang",
+            "pr": 510
+          },
+          {
+            "scope": "print",
+            "summary": "ปุ่ม Print หน้าผู้ขาย / หน้าสูตรส่ง PrintSingle — ใบเดียวไม่ต้องมีบล็อกตัวกรองบนหัวรายงาน",
+            "hash": "12a66884",
+            "author": "Khafang",
+            "pr": 507
+          },
+          {
+            "scope": "dashboard",
+            "summary": "ดับเบิลคลิกปุ่มเพิ่มใน pop up Add widget ได้ widget ซ้ำสองใบ",
+            "hash": "1bd8b912",
+            "author": "Khafang",
+            "pr": 494
+          },
+          {
+            "scope": "ap",
+            "summary": "โชว์ลิงก์ JV หลัง void, หัวเอกสารโหมดอ่านเป็นข้อความ, ไม่เตือน WHT ค้างระหว่างรอคำนวณ",
+            "hash": "6980d954",
+            "author": "Thammanoon Semapru",
+            "pr": 505
+          },
+          {
+            "scope": "lookup",
+            "summary": "ค้นหาผังบัญชีที่ server แทนกรองแค่ 100 รายการแรก",
+            "hash": "5afd4a64",
+            "author": "Thammanoon Semapru",
+            "pr": 504
+          },
+          {
+            "scope": "ap",
+            "summary": "กัน save WHT ค้างใน payment + ข้อความ error ของ AP ครบ",
+            "hash": "f8f12ac8",
+            "author": "Thammanoon Semapru",
+            "pr": 503
+          },
+          {
+            "scope": "ap",
+            "summary": "payment เลือกบัญชีธนาคารสกุลฐานได้ + WHT preview ไม่ทับด้วยผลเก่า",
+            "hash": "dd0febfa",
+            "author": "Thammanoon Semapru",
+            "pr": 503
+          },
+          {
+            "scope": "ap",
+            "summary": "บันทึก AP invoice ไม่ทิ้ง dimension/source ของบรรทัดเดิม",
+            "hash": "7d74dcfc",
+            "author": "Thammanoon Semapru",
+            "pr": 503
+          },
+          {
+            "scope": "ap",
+            "summary": "list AP invoice ใช้ infinite scroll ในโหมด grid ทุกขนาดจอ",
+            "hash": "d74e9169",
+            "author": "Thammanoon Semapru",
+            "pr": 503
+          },
+          {
+            "scope": "ap",
+            "summary": "list AP invoice แบ่งหน้าในโหมด grid/mobile",
+            "hash": "56cc937f",
+            "author": "Thammanoon Semapru",
+            "pr": 503
+          },
+          {
+            "scope": "grn",
+            "summary": "แท็บ JV แปลสถานะ JV ใช้รูปแบบวันที่ของโปรไฟล์ และแสดงเลข AP invoice เป็นข้อความธรรมดา",
+            "hash": "f16b2ecc",
+            "author": "Thammanoon Semapru",
+            "pr": 502
+          },
+          {
+            "scope": "grn",
+            "summary": "แท็บ JV แยกข้อความกรณีใบแจ้งหนี้ยังไม่มี JV และแสดง error เมื่อโหลด JV ไม่สำเร็จ",
+            "hash": "180a3bf6",
+            "author": "Thammanoon Semapru",
+            "pr": 502
+          },
+          {
+            "scope": "accounting",
+            "summary": "ปุ่มขวาของหัวเอกสารบัญชีไม่ตรงขอบฟอร์ม — หัว flush + gutter px-4 ที่ตัวหน้า",
+            "hash": "ab1e4096",
+            "author": "Thammanoon Semapru",
+            "pr": 501
+          },
+          {
+            "scope": "accounting",
+            "summary": "หน้าสร้าง JV ใหม่ใช้หัว Journal Voucher และแถบ Source/Ref. Doc/Status แบบเดียวกับหน้า detail",
+            "hash": "86d3b5e5",
+            "author": "Thammanoon Semapru",
+            "pr": 499
+          },
+          {
+            "scope": "workflow",
+            "summary": "เลือกผู้ใช้ที่ middlename เป็น null เข้า stage แล้วเซฟไม่ได้",
+            "hash": "caca579c",
+            "author": "Thammanoon Semapru",
+            "pr": 496
+          },
+          {
+            "scope": "accounting",
+            "summary": "ใบ reversal/recurring ฯลฯ ไม่ถูกนับเป็นใบ subledger, ส่ง jv_date ตอนกลับรายการ และโชว์ชื่อ workflow ที่ขอบเขตชน",
+            "hash": "84c1c7cf",
+            "author": "Thammanoon Semapru",
+            "pr": 495
+          },
+          {
+            "scope": "accounting",
+            "summary": "void JV เฉพาะใบ posted พร้อมเหตุผลบังคับ และแก้ลิงก์/จัดรูปโค้ด",
+            "hash": "c12f369b",
+            "author": "Thammanoon Semapru",
+            "pr": 495
+          },
+          {
+            "scope": "accounting",
+            "summary": "แก้ผลรีวิวรอบสุดท้ายของ JV template (รหัส error generate, งวด 13, frequency เฉพาะ recurring, round-trip field ของบรรทัด, error โหลดงวด, ทศนิยม rate 5 ตำแหน่ง, layout ผลลัพธ์ 375px)",
+            "hash": "b4a038ed",
+            "author": "Thammanoon Semapru",
+            "pr": 492
+          },
+          {
+            "scope": "accounting",
+            "summary": "แก้ผลรีวิวหน้ารายละเอียด JV template (frequency ว่าง, cost center โหมดดู, อัตราแลกเปลี่ยนตั้งต้น 1, จับ doc_version ตอนเริ่มแก้)",
+            "hash": "e91871cb",
+            "author": "Thammanoon Semapru",
+            "pr": 492
+          },
+          {
+            "scope": "accounting",
+            "summary": "คอลัมน์ยอดของ list template แยกตามชนิด (recurring ไม่มี, allocation=ยอดปันส่วน, หน้ารวม=ยอดตามชนิด)",
+            "hash": "8c72e25e",
+            "author": "Thammanoon Semapru",
+            "pr": 492
+          },
+          {
+            "scope": "accounting",
+            "summary": "ไม่ส่ง frequency_months เมื่อเป็น null เพราะ DTO ไม่รับ null",
+            "hash": "28e2e9eb",
+            "author": "Thammanoon Semapru",
+            "pr": 492
+          },
+          {
+            "scope": "dashboard",
+            "summary": "ช่องเลือกหลายงวดไม่ให้ติ๊กงวดเดียวกันซ้ำ",
+            "hash": "4a3c13ce",
+            "author": "Khafang",
+            "pr": 484
+          },
+          {
+            "scope": "storage-quota",
+            "summary": "แถบแดงใช้ flagged ระดับ BU จาก backend แทนการเดาเองต่อ kind",
+            "hash": "d2593018",
+            "author": "Thammanoon Semapru",
+            "pr": 485
+          },
+          {
+            "scope": "storage-quota",
+            "summary": "แก้ข้อความแถบแดงไม่ให้อ้างว่าบล็อกแล้วเมื่อยังไม่บล็อก และเก็บรายละเอียดตามรีวิว",
+            "hash": "a0a725d4",
+            "author": "Thammanoon Semapru",
+            "pr": 485
+          },
+          {
+            "scope": "dashboard",
+            "summary": "ตัวเลือก \"สร้างโดย\" ทั้งหมด / ของฉัน ในฟอร์ม widget",
+            "hash": "1a89e7c9",
+            "author": "Khafang",
+            "pr": 483
+          },
+          {
+            "scope": "document",
+            "summary": "นับไฟล์ที่ยังถูกใช้ด้วย dry-run ทั้งโหมดเลือกทีละไฟล์และโหมดตัวกรอง",
+            "hash": "a4ca8375",
+            "author": "Thammanoon Semapru",
+            "pr": 482
+          },
+          {
+            "scope": "document",
+            "summary": "คอลัมน์ Attached from / Uploaded on กดเรียงได้",
+            "hash": "d189abbd",
+            "author": "Thammanoon Semapru",
+            "pr": 481
+          },
+          {
+            "scope": "document",
+            "summary": "เปิดช่องติ๊กเลือกไฟล์ให้ลบหลายรายการได้ และแก้คอลัมน์ Type/ป้ายที่มา",
+            "hash": "4c75e6d9",
+            "author": "Thammanoon Semapru",
+            "pr": 475
+          },
+          {
+            "scope": "dialog",
+            "summary": "กันเนื้อหายาวดัน dialog ทะลุกรอบ และแก้ snippetHint ขึ้นชื่อคีย์ดิบ",
+            "hash": "a63b1d6b",
+            "author": "Thammanoon Semapru",
+            "pr": 474
+          },
+          {
+            "scope": "document",
+            "summary": "ลบหลายไฟล์ รายงานผลบางส่วนเมื่อก้อนหลังพัง และกันยืนยันขณะ refetch",
+            "hash": "952f575e",
+            "author": "Thammanoon Semapru",
+            "pr": 472
+          },
+          {
+            "scope": "document",
+            "summary": "ปิดการเรียงคอลัมน์ที่ server ไม่รองรับ",
+            "hash": "76d97f7f",
+            "author": "Thammanoon Semapru",
+            "pr": 472
+          },
+          {
+            "scope": "period-end",
+            "summary": "ตัวเลขบนแท็บไม่กระพริบตอนสลับตัวกรอง และโมดูลที่ไม่มีเอกสารแสดงข้อความไม่มีเอกสาร",
+            "hash": "d1efcfae",
+            "author": "Thammanoon Semapru",
+            "pr": 465
+          },
+          {
+            "scope": "period-end",
+            "summary": "แสดง error state เมื่อโหลดรายการเอกสารหน้าแรกไม่สำเร็จ และใช้คีย์ errors.tryAgain แทน retry ใหม่",
+            "hash": "cbbdf817",
+            "author": "Thammanoon Semapru",
+            "pr": 465
+          },
+          {
+            "scope": "ask-ai",
+            "summary": "ตอบผิดรูปแบบแสดงปุ่มปิด, กัน URL ไม่ใช่ https, แสดง icon_url ในการ์ด, รีเซ็ต draft เมื่อสลับ BU",
+            "hash": "aeaa61a8",
+            "author": "Thammanoon Semapru",
+            "pr": 454
+          },
+          {
+            "scope": "sales-consumption",
+            "summary": "SC ที่ void แสดงเฉพาะ Stock Out และวัตถุดิบที่ตัดจริง",
+            "hash": "27eaf276",
+            "author": "Thammanoon Semapru",
+            "pr": 453
+          },
+          {
+            "scope": "sales-consumption",
+            "summary": "แก้จาก final review — แก้บรรทัดที่ ignore ได้, ไป SC ใหม่หลัง void, ข้อความเขียนทับ Micros",
+            "hash": "b5bc0ee6",
+            "author": "Thammanoon Semapru",
+            "pr": 453
+          },
+          {
+            "scope": "sales-consumption",
+            "summary": "void ใช้สิทธิ์ stock_out.delete + เปลี่ยน recipe บรรทัดที่ ignore ได้",
+            "hash": "6477b6df",
+            "author": "Thammanoon Semapru",
+            "pr": 453
+          },
+          {
+            "scope": "sales-consumption",
+            "summary": "ลบ import ที่ไม่ใช้ในแท็บประวัติ",
+            "hash": "3d4bb2d4",
+            "author": "Thammanoon Semapru",
+            "pr": 453
+          },
+          {
+            "scope": "sales-consumption",
+            "summary": "ล้างช่องค้นหาเมื่อ search ใน URL ถูกล้าง",
+            "hash": "d013aeb9",
+            "author": "Thammanoon Semapru",
+            "pr": 453
+          },
+          {
+            "scope": "sales-consumption",
+            "summary": "แก้ mapping ต้องมีสิทธิ์ stock_out.create",
+            "hash": "ca3d40a1",
+            "author": "Thammanoon Semapru",
+            "pr": 453
+          },
+          {
+            "scope": "dashboard",
+            "summary": "empty state มีปุ่มเพิ่มวิดเจ็ตจริง + dialog ไม่มีแผนกไม่เด้งทุก reload",
+            "hash": "aa8c8689",
+            "author": "Thammanoon Semapru",
+            "pr": 449
+          },
+          {
+            "scope": "dashboard",
+            "summary": "กราฟวิดเจ็ตอ่านออกทุกขนาดการ์ด + การ์ดตัวเลขเงียบเมื่อไม่ขยับ",
+            "hash": "44d451fa",
+            "author": "Thammanoon Semapru",
+            "pr": 448
+          },
+          {
+            "scope": "business-unit",
+            "summary": "Company Profile / Default Setting ส่ง id ของ BU ที่โหลดมากับ PATCH",
+            "hash": "9e63781f",
+            "author": "Khafang",
+            "pr": 447
+          }
+        ],
+        "changed": [
+          {
+            "scope": "ap",
+            "summary": "ลบ mock repository ของ AP",
+            "hash": "f4ce9149",
+            "author": "Thammanoon Semapru",
+            "pr": 503
+          },
+          {
+            "scope": "accounting",
+            "summary": "ถอดข้อมูลปลอมของ template/recurring/allocation voucher",
+            "hash": "3b02ff7b",
+            "author": "Thammanoon Semapru",
+            "pr": 492
+          },
+          {
+            "scope": "pos",
+            "summary": "ย้ายโค้ด POS ไป operation-plan และให้หน้า Interface เหลือตั้งค่า",
+            "hash": "f447132b",
+            "author": "Thammanoon Semapru",
+            "pr": 453
+          }
+        ]
+      }
+    },
     {
       "version": "2.5.28",
       "build": "2.5.28-build.20261026.c4d52f12",

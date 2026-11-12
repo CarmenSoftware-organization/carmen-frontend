@@ -4,6 +4,168 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.5.60] - 2026-11-12
+
+### Added
+- **dashboard:** ป้ายตัวเลือก rank_by ของ SR top products + เติมป้ายช่วงเวลา/ตัวเลือกที่ขาด (#545) — Khafang `84dd0c80`
+- **recipe:** ฝังวิดีโอ YouTube ได้ 1 ตัวต่อขั้นตอน (#544) — Khafang `ef5230fa`
+- **avatar:** รูปผู้ขอ/ผู้ซื้อ/ผู้รับ/ผู้สร้างบนหัวเอกสาร และ actor ใน activity log — Thammanoon Semapru `63dc1f00`
+- **avatar:** รูปโปรไฟล์ใน workflow config, ฟอร์มผู้ใช้, comment และ status bar — Thammanoon Semapru `47c54a24`
+- **avatar:** PersonAvatar component กลาง รูปโปรไฟล์ + fallback ตัวย่อ/ไอคอน — Thammanoon Semapru `c34d7604`
+- **recipe:** ลิงก์วิดีโอ YouTube ต่อสูตร — เล่นบนสุดของหน้าสูตร (#541) — Khafang `b73d8a30`
+- **pr:** Price Comparison มีคอลัมน์ Inc VAT ของตัวเอง (✓/—) วางก่อน Price — ทุกแถวบอกชัดว่าราคารวม VAT หรือไม่ (#538) — Thammanoon Semapru `2fdad346`
+- **pr:** Price Comparison แสดงคอลัมน์ Net Price (ราคาก่อน VAT) — ป้าย Best ย้ายมาคอลัมน์นี้ ทุกแถวเทียบบนฐานเดียวกัน (#537) — Thammanoon Semapru `bfca51b4`
+- **price-list:** ปรับหน้า detail ตามทิศทาง design — ช่วงราคาบอกหมดมากี่วัน, แถบสรุปชิดซ้าย, ตัดเส้นคั่นลอย, ซ่อน Note/lead time ที่ว่าง, หัว Total บอกรวม VAT (#531) — Thammanoon Semapru `93716d6d`
+- **rfp:** รายการ Request for Pricing เรียงตามวันเริ่มเปิดรับราคา ล่าสุดก่อน เป็นค่าเริ่มต้น (#530) — Thammanoon Semapru `678fe8de`
+- **price-list:** ปรับหน้า detail — ป้ายช่วงราคาที่หัวใบ, แถบสรุปโหมดดู, Inc VAT เป็นคอลัมน์ (#529) — Thammanoon Semapru `b6b92560`
+- **ap:** ช่องติ๊ก Inc VAT ต่อบรรทัด (#526) — Thammanoon Semapru `ef514705`
+- **grn:** ช่องติ๊ก Inc VAT ต่อบรรทัด (#526) — Thammanoon Semapru `23f833e6`
+- **po:** ช่องติ๊ก Inc VAT ต่อบรรทัด (#526) — Thammanoon Semapru `d300c863`
+- **pr:** ช่องติ๊ก Inc VAT ต่อบรรทัด สืบค่าจาก price list (#526) — Thammanoon Semapru `76ec45e4`
+- **price-list:** ช่องติ๊ก Inc VAT ต่อบรรทัด + คอลัมน์ Excel (#526) — Thammanoon Semapru `77e3ee0d`
+- **pricing:** สูตรถอด VAT สำหรับบรรทัดที่ติ๊ก Inc VAT (#526) — Thammanoon Semapru `564be7fc`
+- **pr:** หน้าต่างเทียบราคาแสดง "สั่งเป็นหน่วยอื่นถูกกว่า" จาก suggests.better_unit (#525) — Khafang `a727bbe5`
+- **dashboard:** หมวดใน pop up เพิ่มวิดเจ็ตพับ/กางได้ — เปิดมาเห็นแค่ชื่อหมวด + จำนวน (#524) — Khafang `7201eb69`
+- **qr:** หน้า /qr/<type>/<id>?bu= ปลายทางของ QR บนเอกสารที่พิมพ์ใบเดียว (#523) — Khafang `81d9c2ec`
+- **recipe:** แบบฟอร์มพิมพ์ Recipe เลือกจาก template ใน platform เหมือนเอกสารอื่น — เลิก dropdown แนวกระดาษ/เนื้อหา (#522) — Khafang `59438d99`
+- **dashboard:** pop up เพิ่ม widget แยก 2 หน้า — แกลเลอรีการ์ดมีรูปตัวอย่าง → หน้าปรับแต่งที่ตัวอย่างจริงอยู่บนสุด (#521) — Khafang `91a5f604`
+- **profile:** ลบโทเค็น MCP ที่เพิกถอนหรือหมดอายุแล้ว ทั้งรายใบและทั้งหมด (#519) — Thammanoon Semapru `7abbecc4`
+- **profile:** เพิ่ม scope write:workflow (อนุมัติ/ปฏิเสธเอกสาร) ในหน้าเลือก scope ของโทเค็น MCP (#516) — Thammanoon Semapru `8bd9547e`
+- **profile:** เลือก scope ตอนสร้างโทเค็น MCP และแสดง scope ในตาราง (#514) — Thammanoon Semapru `4a3b9006`
+- **dashboard:** ป้าย widget ตามชนิดมิติของ dataset — หัวตาราง/สถานะ/หน่วย/ทศนิยม · Area ระบายพื้นที่จริง · เส้นเฉพาะแกนเวลา (#513) — Khafang `1bbd769a`
+- **recipe:** ปุ่ม Print หน้าสูตรใช้ template แนวตั้งของตัวเอง (Recipe Card Report Portrait) ไม่ใช้ร่วมกับหน้า Report list (#512) — Khafang `825f7f55`
+- **recipe:** ย้ายตั้งค่าการพิมพ์ Recipe Card ไปหมวด Print Forms · รวมเหลือ 2 dropdown (#511) — Khafang `0bde3de6`
+- **recipe:** ตั้งค่ารูปแบบการพิมพ์ Recipe Card ต่อ BU — แนวตั้ง/แนวนอน · พิมพ์วิธีทำ · พิมพ์วัตถุดิบ (#509) — Khafang `7513fc0a`
+- **ap:** ลิงก์ JV กลับรายการของใบจ่ายที่ void (void_gl_jv_id จาก BE) (#505) — Thammanoon Semapru `7b2f13c8`
+- **ap:** หน้า AP payment ต่อ backend จริง (allocation ต่อบรรทัด + WHT preview) (#503) — Thammanoon Semapru `b5a0014c`
+- **ap:** หน้า list AP payment ใช้ข้อมูลจริง (#503) — Thammanoon Semapru `4ac81c2b`
+- **ap:** หน้า AP invoice ต่อ backend จริง + ใบจาก GRN อ่านอย่างเดียว (#503) — Thammanoon Semapru `f6ad2dc5`
+- **ap:** หน้า list AP invoice ใช้ข้อมูลจริง + ป้าย From GRN (#503) — Thammanoon Semapru `72f326b9`
+- **ap:** repository HTTP ของ AP invoice/payment + type ตาม backend (#503) — Thammanoon Semapru `476857f3`
+- **grn:** แท็บ Journal Voucher และปุ่มสร้าง AP invoice ในหน้า GRN (#502) — Thammanoon Semapru `e8682abf`
+- **accounting:** สวิตช์สร้าง AP invoice อัตโนมัติจาก GRN ในหน้าตั้งค่าบัญชี (#502) — Thammanoon Semapru `ce21f9e6`
+- **accounting:** จัดความกว้างคอลัมน์ตาราง JV และให้เมนู lookup กว้างตามชื่อที่ยาวสุด (#500) — Thammanoon Semapru `d6d187e4`
+- **accounting:** หน้า JV detail ใช้ทรงเดียวกับ PR/PO/GRN และโชว์ข้อมูลครบตาม mockup v2.14 (#497) — Thammanoon Semapru `3837a216`
+- **accounting:** หน้า JV อนุมัติ/ตีกลับตาม workflow และแสดงขั้นจริง (#495) — Thammanoon Semapru `e29bf133`
+- **workflow:** ตั้ง workflow ของ JV ได้ พร้อมแท็บขอบเขต prefix และที่มา (#495) — Thammanoon Semapru `78ca3722`
+- **grn:** เลขใบแจ้งหนี้ซ้ำขึ้นแดงใต้ช่องพร้อมเลขใบที่ชน แทน toast (#493) — Khafang `a3ea351c`
+- **accounting:** หน้ารายละเอียด GL JV template แยกตามชนิด recurring/allocation/amortize (#492) — Thammanoon Semapru `54f0cb58`
+- **accounting:** dialog สร้าง JV จาก template ทีละตัวและรันทุกตัวที่ถึงกำหนด (#492) — Thammanoon Semapru `4f33124a`
+- **accounting:** หน้า list template/recurring/allocation voucher ต่อ API จริง (#492) — Thammanoon Semapru `9ea6cace`
+- **accounting:** ผูก recurring/allocation voucher กับ license jv_template + permission + คำแปล (#492) — Thammanoon Semapru `17ea0f6f`
+- **accounting:** เพิ่ม data layer ของ GL JV template (types, repository, hooks) (#492) — Thammanoon Semapru `a324ad52`
+- **dashboard:** เลือกชนิดกราฟใน pop up เพิ่ม widget ได้เลย (#489) — Khafang `d6945a40`
+- **accounting:** ปรับหน้า list Journal Voucher ให้ใช้โครงเดียวกับ PO (#490) — Thammanoon Semapru `e210066a`
+- **dashboard:** ปุ่ม Add widget เปิด pop up เลือก widget ตามหมวด พร้อม preview และตั้งค่า (#488) — Khafang `ac1ad708`
+- **storage-quota:** แถบเตือน หน้าพื้นที่เก็บข้อมูล และ dialog เมื่อพื้นที่เต็ม (#485) — Thammanoon Semapru `22805f11`
+- **activity:** แสดงรายการลบไฟล์ใน activity sheet (#482) — Thammanoon Semapru `f4519256`
+- **document:** แสดงที่ใช้งานไฟล์ก่อนลบ และเปิดให้ลบไฟล์ของ BU ทุกชนิด (#482) — Thammanoon Semapru `15a23ba2`
+- **dashboard:** ช่องเลือกหลายค่าจากรายการของ BU + กราฟเทียบหลาย series (#478) — Khafang `4361bf11`
+- **document:** sort ตารางฝั่ง server และย้าย Filter มาติดช่องค้นหา (#480) — Thammanoon Semapru `ebe6a4b9`
+- **document:** เพิ่มมุมมอง icon/preview และเปลี่ยนรายการเป็น lazy load (#479) — Thammanoon Semapru `06ec48f5`
+- **dashboard:** ป้ายตัวเลือกช่วงเวลา "งวดปัจจุบัน / งวดที่แล้ว" (#473) — Khafang `add11f81`
+- **comment:** แสดงไฟล์ที่ถูกลบเป็น placeholder (#472) — Thammanoon Semapru `b1ce2cf9`
+- **document:** ลบหลายไฟล์ด้วยการเลือกหรือตามตัวกรอง (#472) — Thammanoon Semapru `32195a0c`
+- **document:** แสดงที่มาของไฟล์ ผู้อัปโหลด และตัวกรองโมดูล/ชนิด/วันที่ (#472) — Thammanoon Semapru `2463c308`
+- **accounting-settings:** ขยายหน้าตั้งค่าบัญชีเป็นความกว้างแบบ wide (#470) — Thammanoon Semapru `af1831e2`
+- **recipe-equipment:** comment + ไฟล์แนบ และ activity บนหน้าอุปกรณ์ครัว (#469) — Thammanoon Semapru `2fc09308`
+- **recipe-cuisine:** comment + ไฟล์แนบบนหน้าประเภทอาหาร (cuisine) (#468) — Thammanoon Semapru `c40f932a`
+- **recipe-category:** comment + ไฟล์แนบบนหน้าหมวดสูตรอาหาร (#467) — Thammanoon Semapru `1ec4256e`
+- **period-end:** dialog เอกสาร review กรองใบค้าง เรียงตามกลุ่มสถานะ และโหลดทีละหน้า (#465) — Thammanoon Semapru `02ac89d1`
+- **inventory-adjustment:** เพิ่ม Comment + ไฟล์แนบในหน้า Inventory Adjustment สำหรับจดประวัติ (#464) — Thammanoon Semapru `c0b2884d`
+- **request-price-list:** เพิ่ม Comment + ไฟล์แนบในหน้า Request Price List สำหรับจดประวัติ (#463) — Thammanoon Semapru `a8ba2aae`
+- **price-list-template:** เพิ่ม Comment + ไฟล์แนบในหน้า Price List Template สำหรับจดประวัติ (#462) — Thammanoon Semapru `5312b833`
+- **price-list:** เพิ่ม Comment + ไฟล์แนบในหน้า Price List สำหรับจดประวัติ (#461) — Thammanoon Semapru `2f9e346f`
+- **product:** เพิ่ม Comment + ไฟล์แนบในหน้าสินค้า สำหรับจดประวัติ (#460) — Thammanoon Semapru `df8ed976`
+- **branding:** 4:1 logo slot; uploaded logo keeps slot height, width follows image (#459) — Thammanoon Semapru `8437896f`
+- **recipe:** ปุ่ม Print ในหน้าสูตร — Recipe Card Report ของสูตรนั้นสูตรเดียว (#458) — Khafang `665f7957`
+- **grn:** วันหมดอายุรายบรรทัด + เตือนสินค้าหมดอายุตอนสร้างใบและ commit (#457) — Khafang `ecac0e21`
+- **doc:** กางปุ่ม duplicate/print/comment/activity ออกจากเมนู ⋯ บนหัวเอกสารทุกหน้า (#456) — Thammanoon Semapru `609a5c3f`
+- **ask-ai:** หน้าตั้งค่า Ask AI เป็นแถวกะทัดรัด แสดง prompt ที่ใช้จริง (#455) — Thammanoon Semapru `a463c943`
+- **ask-ai:** หน้าตั้งค่า Ask AI ราย BU (#454) — Thammanoon Semapru `318ebb47`
+- **pr-ask-ai:** ดึง provider และ prompt ของ Ask AI จาก backend (#454) — Thammanoon Semapru `cc17a556`
+- **sales-consumption:** หน้า detail verify/post/void และแก้บรรทัด (#453) — Thammanoon Semapru `f37b015d`
+- **sales-consumption:** หน้า list ปฏิทิน ตาราง และ mapping (#453) — Thammanoon Semapru `4dbe73e1`
+- **import-pos:** หน้า Import POS แสดง raw transaction (#453) — Thammanoon Semapru `eb8267fb`
+- **operation-plan:** เมนู Import POS / Sales Consumption gate ด้วย POS interface (#453) — Thammanoon Semapru `cab8ca08`
+- **sales-consumption:** endpoint, type และ hook (#453) — Thammanoon Semapru `f75b4b2a`
+- **category:** ปุ่ม Print / Export ในหน้า category — Product Category Report (#452) — Khafang `82e9c12d`
+- **auth:** login เสร็จแล้วกลับไปหน้าที่ขอไว้ (#451) — Thammanoon Semapru `bb74e650`
+- **profile:** dialog ไม่มีแผนกบอกผลกระทบ + ข้อมูลที่ admin ต้องใช้ + ทางไปต่อ (#450) — Thammanoon Semapru `0a2f66e9`
+- **license:** แถบเกินโควตา seat เป็นแถบแดงทึบ + บอกให้ไปหา admin ของ BU/cluster (#449) — Thammanoon Semapru `6f06418e`
+- enhance AR dashboard with folio summary and error handling — llHorizonll `7d5284bc`
+- add accounts receivable folio model and UI components — llHorizonll `83532a63`
+- add accounts receivable profile management — llHorizonll `fb412778`
+
+### Fixed
+- **avatar:** เพิ่ม iconClassName, ชื่อว่าง/นามสกุลอย่างเดียวแสดงไอคอนแทน U — Thammanoon Semapru `f901a615`
+- **ui:** ป้าย Inc VAT หน้าตาเดียวกันทุกหน้า — ชิปหน้าตัวเลข + ช่องติ๊กขนาดเดียว ผ่าน components/share/inc-vat.tsx (#536) — Thammanoon Semapru `682b694a`
+- **profile:** ขนาดตัวอักษร MCP token ใช้ text-micro / text-micro-legal แทน px ดิบ — type-ladder test กลับมาเขียว (#535) — Thammanoon Semapru `9fb54226`
+- ชื่อท้องถิ่นของสินค้าที่ซ้ำกับชื่อหลัก (รวมกรณี NBSP) ไม่ขึ้นบรรทัดที่สอง — รวมเป็น distinctLocalName ใช้ใน PR, Price List, dialog on-hand/on-order (#535) — Thammanoon Semapru `e0557d4a`
+- **ui:** จุดสถานะรายการ PR/PO เป็นพื้นสีอ่อน + ไอคอนสี ink — เดิมไอคอนดำบนพื้นน้ำเงินทึบอ่านไม่ออก (#534) — Thammanoon Semapru `9d5ec10e`
+- **purchase-request:** หน้า PR detail — ซ่อนชื่อรองที่ซ้ำ, ไอคอนสต็อกชิดชื่อสินค้า, ค่าศูนย์จางลง และแก้โหมดแก้ไขที่ป้าย Unit Price/Inc VAT หักบรรทัดกับยอด Amount โดนตัด (#534) — Thammanoon Semapru `5d452fd0`
+- **price-list:** ป้าย Inc VAT ในคอลัมน์ Price โหมดดูไม่ตัดบรรทัดกลางคำ — ขยายคอลัมน์เป็น w-32 และห้ามขึ้นบรรทัดใหม่ (#533) — Thammanoon Semapru `404cae8d`
+- **price-list:** โหมดแก้ไขและจอแคบ — ตารางแก้ไขเลื่อนแนวนอนแทนบีบคอลัมน์, ปุ่มหัวเอกสารขึ้นบรรทัดใหม่แทนล้นจอ, MOQ ไม่ตัดบรรทัด (#532) — Thammanoon Semapru `76e229ea`
+- **cn:** ราคาจาก GRN ที่ติ๊ก Inc VAT ถอด VAT ก่อน ไม่ลดหนี้เกิน (#527) — Thammanoon Semapru `81c733a5`
+- **inc-vat:** เลือกราคาจากหน้าเทียบราคา PR พาอัตราภาษีมาด้วยและคำนวณยอดใหม่, อันดับเทียบราคาถือ 0 เป็นไม่มีค่า, เติม tc ใน deps (#526) — Thammanoon Semapru `2b4bf4b5`
+- **ap:** เพิ่ม import addDecimal ในหน้า detail (#526) — Thammanoon Semapru `2f31a95a`
+- **ap:** แถบสรุปโหมดดูของแถว Inc VAT ใช้ net + ส่วนลดเป็น Subtotal + ตัวหารถอด VAT ใช้ 6 ทศนิยม (#526) — Thammanoon Semapru `2c752a31`
+- **po:** ยอด Total ใน wizard price list รวม VAT ทุกแถว + ป้าย Inc VAT ที่ช่องราคา (#526) — Thammanoon Semapru `225f7c81`
+- **pr:** แถบสรุปของแถว Inc VAT ใช้ net + ส่วนลดเป็น Subtotal ให้ยอด foot (#526) — Thammanoon Semapru `fe32bc5c`
+- **price-list:** เทียบ MOQ ด้วยราคาก่อน VAT + tier เดิมคงค่า Inc VAT ของตัวเอง (#526) — Thammanoon Semapru `8bcef63d`
+- **errors:** map COMMON_DOC_VERSION_CONFLICT ไปข้อความ documentChanged (#520) — Thammanoon Semapru `a68ab313`
+- **profile:** header ทึบบนมือถือ และโทเค็น MCP เป็นการ์ดเมื่อกรอบแคบ (#518) — Thammanoon Semapru `ba75665d`
+- **profile:** จัดหน้า Profile Settings ใหม่ — ชื่อจริงบนหัวการ์ด, Save ท้ายฟอร์ม, แยกโทเค็น MCP ที่ไม่ active (#517) — Thammanoon Semapru `f805434f`
+- **profile:** ชื่อ scope ไม่กลายเป็นสีแดงทั้งหมดตอนยังไม่เลือก scope (#515) — Thammanoon Semapru `c990273e`
+- **grn:** เลขใบแจ้งหนี้ซ้ำแสดงเป็นกรอบแดง + hover ไอคอนดูข้อความ ไม่วางข้อความใต้ช่อง (#510) — Khafang `0c1c3a87`
+- **print:** ปุ่ม Print หน้าผู้ขาย / หน้าสูตรส่ง PrintSingle — ใบเดียวไม่ต้องมีบล็อกตัวกรองบนหัวรายงาน (#507) — Khafang `12a66884`
+- **dashboard:** ดับเบิลคลิกปุ่มเพิ่มใน pop up Add widget ได้ widget ซ้ำสองใบ (#494) — Khafang `1bd8b912`
+- **ap:** โชว์ลิงก์ JV หลัง void, หัวเอกสารโหมดอ่านเป็นข้อความ, ไม่เตือน WHT ค้างระหว่างรอคำนวณ (#505) — Thammanoon Semapru `6980d954`
+- **lookup:** ค้นหาผังบัญชีที่ server แทนกรองแค่ 100 รายการแรก (#504) — Thammanoon Semapru `5afd4a64`
+- **ap:** กัน save WHT ค้างใน payment + ข้อความ error ของ AP ครบ (#503) — Thammanoon Semapru `f8f12ac8`
+- **ap:** payment เลือกบัญชีธนาคารสกุลฐานได้ + WHT preview ไม่ทับด้วยผลเก่า (#503) — Thammanoon Semapru `dd0febfa`
+- **ap:** บันทึก AP invoice ไม่ทิ้ง dimension/source ของบรรทัดเดิม (#503) — Thammanoon Semapru `7d74dcfc`
+- **ap:** list AP invoice ใช้ infinite scroll ในโหมด grid ทุกขนาดจอ (#503) — Thammanoon Semapru `d74e9169`
+- **ap:** list AP invoice แบ่งหน้าในโหมด grid/mobile (#503) — Thammanoon Semapru `56cc937f`
+- **grn:** แท็บ JV แปลสถานะ JV ใช้รูปแบบวันที่ของโปรไฟล์ และแสดงเลข AP invoice เป็นข้อความธรรมดา (#502) — Thammanoon Semapru `f16b2ecc`
+- **grn:** แท็บ JV แยกข้อความกรณีใบแจ้งหนี้ยังไม่มี JV และแสดง error เมื่อโหลด JV ไม่สำเร็จ (#502) — Thammanoon Semapru `180a3bf6`
+- **accounting:** ปุ่มขวาของหัวเอกสารบัญชีไม่ตรงขอบฟอร์ม — หัว flush + gutter px-4 ที่ตัวหน้า (#501) — Thammanoon Semapru `ab1e4096`
+- **accounting:** หน้าสร้าง JV ใหม่ใช้หัว Journal Voucher และแถบ Source/Ref. Doc/Status แบบเดียวกับหน้า detail (#499) — Thammanoon Semapru `86d3b5e5`
+- **workflow:** เลือกผู้ใช้ที่ middlename เป็น null เข้า stage แล้วเซฟไม่ได้ (#496) — Thammanoon Semapru `caca579c`
+- **accounting:** ใบ reversal/recurring ฯลฯ ไม่ถูกนับเป็นใบ subledger, ส่ง jv_date ตอนกลับรายการ และโชว์ชื่อ workflow ที่ขอบเขตชน (#495) — Thammanoon Semapru `84c1c7cf`
+- **accounting:** void JV เฉพาะใบ posted พร้อมเหตุผลบังคับ และแก้ลิงก์/จัดรูปโค้ด (#495) — Thammanoon Semapru `c12f369b`
+- **accounting:** แก้ผลรีวิวรอบสุดท้ายของ JV template (รหัส error generate, งวด 13, frequency เฉพาะ recurring, round-trip field ของบรรทัด, error โหลดงวด, ทศนิยม rate 5 ตำแหน่ง, layout ผลลัพธ์ 375px) (#492) — Thammanoon Semapru `b4a038ed`
+- **accounting:** แก้ผลรีวิวหน้ารายละเอียด JV template (frequency ว่าง, cost center โหมดดู, อัตราแลกเปลี่ยนตั้งต้น 1, จับ doc_version ตอนเริ่มแก้) (#492) — Thammanoon Semapru `e91871cb`
+- **accounting:** คอลัมน์ยอดของ list template แยกตามชนิด (recurring ไม่มี, allocation=ยอดปันส่วน, หน้ารวม=ยอดตามชนิด) (#492) — Thammanoon Semapru `8c72e25e`
+- **accounting:** ไม่ส่ง frequency_months เมื่อเป็น null เพราะ DTO ไม่รับ null (#492) — Thammanoon Semapru `28e2e9eb`
+- **dashboard:** ช่องเลือกหลายงวดไม่ให้ติ๊กงวดเดียวกันซ้ำ (#484) — Khafang `4a3c13ce`
+- **storage-quota:** แถบแดงใช้ flagged ระดับ BU จาก backend แทนการเดาเองต่อ kind (#485) — Thammanoon Semapru `d2593018`
+- **storage-quota:** แก้ข้อความแถบแดงไม่ให้อ้างว่าบล็อกแล้วเมื่อยังไม่บล็อก และเก็บรายละเอียดตามรีวิว (#485) — Thammanoon Semapru `a0a725d4`
+- **dashboard:** ตัวเลือก "สร้างโดย" ทั้งหมด / ของฉัน ในฟอร์ม widget (#483) — Khafang `1a89e7c9`
+- **document:** นับไฟล์ที่ยังถูกใช้ด้วย dry-run ทั้งโหมดเลือกทีละไฟล์และโหมดตัวกรอง (#482) — Thammanoon Semapru `a4ca8375`
+- **document:** คอลัมน์ Attached from / Uploaded on กดเรียงได้ (#481) — Thammanoon Semapru `d189abbd`
+- **document:** เปิดช่องติ๊กเลือกไฟล์ให้ลบหลายรายการได้ และแก้คอลัมน์ Type/ป้ายที่มา (#475) — Thammanoon Semapru `4c75e6d9`
+- **dialog:** กันเนื้อหายาวดัน dialog ทะลุกรอบ และแก้ snippetHint ขึ้นชื่อคีย์ดิบ (#474) — Thammanoon Semapru `a63b1d6b`
+- **document:** ลบหลายไฟล์ รายงานผลบางส่วนเมื่อก้อนหลังพัง และกันยืนยันขณะ refetch (#472) — Thammanoon Semapru `952f575e`
+- **document:** ปิดการเรียงคอลัมน์ที่ server ไม่รองรับ (#472) — Thammanoon Semapru `76d97f7f`
+- **period-end:** ตัวเลขบนแท็บไม่กระพริบตอนสลับตัวกรอง และโมดูลที่ไม่มีเอกสารแสดงข้อความไม่มีเอกสาร (#465) — Thammanoon Semapru `d1efcfae`
+- **period-end:** แสดง error state เมื่อโหลดรายการเอกสารหน้าแรกไม่สำเร็จ และใช้คีย์ errors.tryAgain แทน retry ใหม่ (#465) — Thammanoon Semapru `cbbdf817`
+- **ask-ai:** ตอบผิดรูปแบบแสดงปุ่มปิด, กัน URL ไม่ใช่ https, แสดง icon_url ในการ์ด, รีเซ็ต draft เมื่อสลับ BU (#454) — Thammanoon Semapru `aeaa61a8`
+- **sales-consumption:** SC ที่ void แสดงเฉพาะ Stock Out และวัตถุดิบที่ตัดจริง (#453) — Thammanoon Semapru `27eaf276`
+- **sales-consumption:** แก้จาก final review — แก้บรรทัดที่ ignore ได้, ไป SC ใหม่หลัง void, ข้อความเขียนทับ Micros (#453) — Thammanoon Semapru `b5bc0ee6`
+- **sales-consumption:** void ใช้สิทธิ์ stock_out.delete + เปลี่ยน recipe บรรทัดที่ ignore ได้ (#453) — Thammanoon Semapru `6477b6df`
+- **sales-consumption:** ลบ import ที่ไม่ใช้ในแท็บประวัติ (#453) — Thammanoon Semapru `3d4bb2d4`
+- **sales-consumption:** ล้างช่องค้นหาเมื่อ search ใน URL ถูกล้าง (#453) — Thammanoon Semapru `d013aeb9`
+- **sales-consumption:** แก้ mapping ต้องมีสิทธิ์ stock_out.create (#453) — Thammanoon Semapru `ca3d40a1`
+- **dashboard:** empty state มีปุ่มเพิ่มวิดเจ็ตจริง + dialog ไม่มีแผนกไม่เด้งทุก reload (#449) — Thammanoon Semapru `aa8c8689`
+- **dashboard:** กราฟวิดเจ็ตอ่านออกทุกขนาดการ์ด + การ์ดตัวเลขเงียบเมื่อไม่ขยับ (#448) — Thammanoon Semapru `44d451fa`
+- **business-unit:** Company Profile / Default Setting ส่ง id ของ BU ที่โหลดมากับ PATCH (#447) — Khafang `9e63781f`
+
+### Changed
+- **ap:** ลบ mock repository ของ AP (#503) — Thammanoon Semapru `f4ce9149`
+- **accounting:** ถอดข้อมูลปลอมของ template/recurring/allocation voucher (#492) — Thammanoon Semapru `3b02ff7b`
+- **pos:** ย้ายโค้ด POS ไป operation-plan และให้หน้า Interface เหลือตั้งค่า (#453) — Thammanoon Semapru `f447132b`
+
 ## [2.5.28] - 2026-10-26
 
 ### Added
