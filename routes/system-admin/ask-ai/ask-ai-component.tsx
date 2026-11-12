@@ -6,9 +6,10 @@ import { FormToolbar } from "@/components/share/form-toolbar";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import {
-  SettingSection,
-  SettingSectionSkeleton,
-} from "@/components/ui/setting-section";
+  CompactSection,
+  CompactSectionSkeleton,
+  FieldGrid,
+} from "@/components/share/compact-section";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
@@ -101,14 +102,13 @@ function AskAiForm() {
       )}
 
       {!isError && isLoading && (
-        <SettingSectionSkeleton first fields={["full", "full"]} />
+        <CompactSectionSkeleton first className="h-32" />
       )}
 
       {!isError && !isLoading && data && (
         <form id={FORM_ID} onSubmit={onSubmit}>
-          <SettingSection
+          <CompactSection
             first
-            plain
             title={t("providersTitle")}
             description={t("providersDescription")}
             count={items.length}
@@ -116,7 +116,9 @@ function AskAiForm() {
             {items.length === 0 ? (
               <p className="text-muted-foreground text-sm">{t("empty")}</p>
             ) : (
-              <div className="divide-y">
+              // เต็มความกว้างจอ: provider เป็นช่องในกริด แถวที่ขยายกินเต็มแถวของตัวเอง
+              // (skill carmen-blue-ui-design) — ยังขยายได้ทีละตัวเหมือนเดิม
+              <FieldGrid size="item">
                 {items.map((item) => (
                   <AskAiProviderCard
                     key={item.code}
@@ -134,9 +136,9 @@ function AskAiForm() {
                     }
                   />
                 ))}
-              </div>
+              </FieldGrid>
             )}
-          </SettingSection>
+          </CompactSection>
         </form>
       )}
 

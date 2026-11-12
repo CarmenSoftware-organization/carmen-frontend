@@ -17,14 +17,30 @@ import { cn } from "@/lib/utils";
 export const SECTION_PAIR =
   "min-[1700px]:grid min-[1700px]:grid-cols-2 min-[1700px]:items-start min-[1700px]:gap-x-5";
 
+/**
+ * กริดของช่องในการ์ด — จำนวนคอลัมน์ตามความกว้างการ์ด
+ *
+ * @param size - `field` (ค่าเริ่มต้น) = ช่องกรอก/ค่าตั้งสั้น ๆ กว้างราว 220px ขึ้นไป ·
+ *   `item` = รายการที่มีเนื้อหาหลายส่วน (ไอคอน ชื่อ ป้าย สถานะ ตัวอย่างข้อความ) ต้องการราว
+ *   300px ขึ้นไป จึงแตกคอลัมน์ช้ากว่าหนึ่งขั้น
+ */
 export function FieldGrid({
+  size = "field",
   children,
 }: {
+  readonly size?: "field" | "item";
   readonly children: React.ReactNode;
 }) {
   return (
     <div className="@container">
-      <div className="grid gap-x-5 gap-y-3 @md:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 @min-[96rem]:grid-cols-6">
+      <div
+        className={cn(
+          "grid gap-x-5 gap-y-3",
+          size === "field"
+            ? "@md:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 @min-[96rem]:grid-cols-6"
+            : "@xl:grid-cols-2 @5xl:grid-cols-3 @min-[96rem]:grid-cols-4 @min-[128rem]:grid-cols-6",
+        )}
+      >
         {children}
       </div>
     </div>
@@ -42,12 +58,15 @@ export function FieldGrid({
 export function CompactSection({
   title,
   description,
+  count,
   action,
   first,
   children,
 }: {
   readonly title: string;
   readonly description?: string;
+  /** ตัวเลขต่อท้าย title (เช่นจำนวนรายการในหมวด) */
+  readonly count?: number;
   readonly action?: React.ReactNode;
   readonly first?: boolean;
   readonly children: React.ReactNode;
@@ -57,6 +76,11 @@ export function CompactSection({
       <div className="mb-2 flex min-h-7 flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-2">
           <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
+          {count !== undefined && (
+            <span className="text-muted-foreground text-xs font-semibold tabular-nums">
+              {count}
+            </span>
+          )}
           {description && (
             <p className="text-muted-foreground text-xs">{description}</p>
           )}
