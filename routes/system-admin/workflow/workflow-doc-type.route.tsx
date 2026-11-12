@@ -16,6 +16,6 @@ export function Component() {
   const docType = WORKFLOW_DOC_TYPES.find((t) => t === slug) as
     WorkflowDocType | undefined;
   if (!docType)
-    return <Navigate to="/system-admin/workflow/purchase-request" replace />;
+    return <Navigate to="/system-admin/workflow" replace />;
   return <WorkflowComponent docType={docType} />;
 }

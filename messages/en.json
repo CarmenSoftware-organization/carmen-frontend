@@ -3370,7 +3370,17 @@
       "insightsLegendActive": "Action enabled",
       "notifyOff": "Off",
       "insightsLegendRecipients": "Recipients notified",
-      "stageFormErrors": "Some stage fields are invalid"
+      "stageFormErrors": "Some stage fields are invalid",
+      "landing": {
+        "count": "{count, plural, =0 {No workflows yet} one {# workflow} other {# workflows}}",
+        "cards": {
+          "workflowPurchaseRequest": "Approval steps a purchase request passes before it becomes an order.",
+          "workflowPurchaseOrder": "Approval steps before a purchase order goes to the vendor.",
+          "workflowStoreRequisition": "Approval steps before stock is issued against a store requisition.",
+          "workflowJournalVoucher": "Approval steps before a journal voucher is posted.",
+          "notificationTemplate": "Wording of the notifications these workflows send."
+        }
+      }
     },
     "runningCode": {
       "entity": "Running Code",
