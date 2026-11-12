@@ -38,64 +38,64 @@ function fieldError(form: Form, name: FormName): string | undefined {
 }
 
 /**
- * กรอบของค่าในโหมดดู — ขนาด/เส้นเท่า input ของโหมดแก้ กด Edit แล้ว layout ไม่กระโดด
- */
-const VIEW_BOX_CLASS =
-  "bg-muted/50 min-h-8 w-full rounded-md border px-3 py-1.5 text-sm";
-
-/**
- * ช่องแบบอ่านอย่างเดียว — ค่าอยู่ในกรอบ `VIEW_BOX_CLASS`
+ * ช่องแบบอ่านอย่างเดียว — ป้ายเงียบ ค่าเป็นตัวเด่น ไม่มีกรอบ
+ *
+ * เดิมค่าอยู่ในกล่องสีเทามีเส้นขอบหน้าตาเหมือน input ที่ถูก disable ทั้งหน้าจึงอ่านเป็น
+ * "ฟอร์มที่แก้ไม่ได้" แทนที่จะเป็นข้อมูล และผู้ใช้แยกโหมดดูกับโหมดแก้ไม่ออกในแวบแรก
+ * ตอนนี้กรอบมีเฉพาะช่องที่กรอกได้จริง
  *
  * @param example - ตัวอย่างผลลัพธ์ของค่า (เช่น pattern วันที่ → วันนี้ในรูปแบบนั้น)
- *   แสดงจาง ๆ ต่อท้ายค่า
+ * @param specimen - true = ตัวอย่างคือสิ่งที่ผู้ใช้อยากรู้ (วันที่/ตัวเลขจะออกมาหน้าตา
+ *   ยังไง) จึงขึ้นเป็นค่าหลัก ส่วนค่าตั้งดิบ (`yyyy-MM-dd`, `th-TH`) ลงไปเป็นบรรทัดรอง
+ *   ไม่มีตัวอย่าง (pattern/locale ใช้ไม่ได้) → ค่าดิบกลับมาเป็นค่าหลัก
  */
 export function SettingField({
   label,
   value,
-  description,
   mono,
   fullWidth,
   example,
-  children,
+  specimen,
 }: {
   readonly label: string;
   readonly value?: string | number | null;
-  readonly description?: string;
   readonly mono?: boolean;
   readonly fullWidth?: boolean;
   readonly example?: string | null;
-  readonly children?: React.ReactNode;
+  readonly specimen?: boolean;
 }) {
-  const isEmpty =
-    children == null && (value === null || value === undefined || value === "");
+  const isEmpty = value === null || value === undefined || value === "";
+  const lead = specimen && example ? example : value;
+  const caption = specimen && example ? value : example;
+  // บรรทัดรองเป็น mono เมื่อมันคือ pattern ดิบ (specimen) — ตัวอย่างธรรมดาใช้ฟอนต์ปกติ
+  const captionMono = specimen && mono;
+  const leadMono = mono && !(specimen && example);
   return (
-    <div className={cn("min-w-0 space-y-1", fullWidth && "sm:col-span-2")}>
-      <div className="text-foreground text-xs font-semibold">{label}</div>
-      {description && (
-        <p className="text-muted-foreground/80 text-micro leading-snug">
-          {description}
-        </p>
-      )}
-      {children ?? (
-        <FieldPlainText
-          className={cn(
-            VIEW_BOX_CLASS,
-            "flex flex-wrap items-center gap-x-2 break-words",
-            mono && "font-mono text-xs",
-            isEmpty && "text-muted-foreground/60",
-          )}
-        >
-          {isEmpty ? null : (
-            <>
-              <span className="min-w-0">{value}</span>
-              {example && (
-                <span className="text-muted-foreground font-sans text-xs font-normal tabular-nums">
-                  → {example}
-                </span>
+    <div className={cn("min-w-0", fullWidth && "@md:col-span-2")}>
+      <div className="text-muted-foreground text-xs">{label}</div>
+      {isEmpty ? (
+        <div className="text-muted-foreground/60 mt-0.5 text-sm">—</div>
+      ) : (
+        <>
+          <FieldPlainText
+            className={cn(
+              "mt-0.5 block min-h-0 text-sm break-words tabular-nums",
+              leadMono && "font-mono text-xs",
+            )}
+          >
+            {lead}
+          </FieldPlainText>
+          {caption && (
+            <div
+              className={cn(
+                "text-muted-foreground mt-0.5 text-xs break-words tabular-nums",
+                captionMono && "font-mono",
               )}
-            </>
+            >
+              {caption}
+            </div>
           )}
-        </FieldPlainText>
+        </>
       )}
     </div>
   );
@@ -127,7 +127,7 @@ function EditShell({
     </p>
   );
   return (
-    <div className={cn("min-w-0 space-y-1", fullWidth && "sm:col-span-2")}>
+    <div className={cn("min-w-0 space-y-1", fullWidth && "@md:col-span-2")}>
       <Label
         htmlFor={htmlFor}
         className="text-foreground text-xs font-semibold"
@@ -305,6 +305,8 @@ export function SelectField({
         fullWidth={fullWidth}
         mono={mono}
         example={displayValue ? exampleOf?.(displayValue) : null}
+        // ช่อง pattern (mono) = โชว์ผลลัพธ์เป็นหลัก · timezone ชื่อโซนคือค่าหลักอยู่แล้ว
+        specimen={mono}
       />
     );
   }
@@ -364,7 +366,12 @@ export function NumberFormatField({
 }) {
   if (!editing) {
     return (
-      <SettingField label={label} value={displayValue} example={example} />
+      <SettingField
+        label={label}
+        value={displayValue}
+        example={example}
+        specimen
+      />
     );
   }
   return (

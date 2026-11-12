@@ -61,7 +61,7 @@ export function AddressView({
   const hasContact = present(address.email) || present(address.tel);
 
   return (
-    <div className="space-y-3 sm:col-span-2">
+    <div className="space-y-2">
       {printed && <EyeBrow>{t("address.printedOn")}</EyeBrow>}
       <div className="space-y-0.5">
         <p className="text-sm font-semibold break-words">
@@ -104,7 +104,7 @@ export function AddressView({
         </dl>
       )}
       {hasContact && (
-        <div className="flex flex-wrap gap-x-6 gap-y-1 border-t pt-3 text-sm">
+        <div className="flex flex-wrap gap-x-6 gap-y-1 border-t pt-2 text-sm">
           {present(address.email) && (
             <a
               href={`mailto:${address.email}`}
