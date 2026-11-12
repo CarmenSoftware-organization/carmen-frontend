@@ -3385,6 +3385,7 @@
       "init": "Init Running Code",
       "initializing": "Initializing...",
       "initSuccess": "Running code initialized successfully",
+      "example": "Example",
       "previewLabel": "Document numbers will look like this",
       "addPart": "Add part",
       "partText": "Fixed text",

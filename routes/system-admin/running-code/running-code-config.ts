@@ -162,3 +162,17 @@ export function previewCode(parts: CodePart[], now: Date, seq = 1): string {
     })
     .join("");
 }
+
+/**
+ * ตัวอย่างเลขที่เอกสารจาก config ดิบของแถว — ใช้ในตาราง/การ์ดของหน้า list
+ *
+ * คืน `null` เมื่อ config ว่างหรือตัวช่วยอ่านไม่ออก (ผู้เรียกโชว์ — แทนการเดา)
+ */
+export function exampleCode(
+  config: Record<string, unknown> | undefined | null,
+  now: Date,
+): string | null {
+  const parsed = parseConfig(config);
+  if (!parsed || parsed.parts.length === 0) return null;
+  return previewCode(parsed.parts, now);
+}
