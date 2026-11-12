@@ -32,6 +32,10 @@ interface WfStageUsersProps {
   readonly readOnly?: boolean;
 }
 
+// setValue ไม่ติดธง dirty ให้เอง — ไม่ใส่ = ติ๊กเพิ่ม/เอาคนออกอย่างเดียวแล้วออกจากหน้า ฟอร์มไม่รู้ว่าแก้
+// คำเตือน "ยังไม่ได้บันทึก" จึงไม่ขึ้นและการแก้หายเงียบ ๆ (เจอจริงบนหน้าแก้ workflow)
+const DIRTY = { shouldDirty: true } as const;
+
 const matchesQuery = (u: User, q: string) =>
   u.firstname.toLowerCase().includes(q) ||
   u.lastname.toLowerCase().includes(q) ||
@@ -177,6 +181,7 @@ function WfStageUsersEditor({
       assignedUserIds.has(user.user_id)
         ? current.filter((u) => u.user_id !== user.user_id)
         : [...current, user],
+      DIRTY,
     );
   };
 
@@ -190,13 +195,15 @@ function WfStageUsersEditor({
       form.setValue(
         path,
         current.filter((u) => !removeIds.has(u.user_id)),
+        DIRTY,
       );
     } else {
       const currentIds = new Set(current.map((u) => u.user_id));
-      form.setValue(path, [
-        ...current,
-        ...visibleUsers.filter((u) => !currentIds.has(u.user_id)),
-      ]);
+      form.setValue(
+        path,
+        [...current, ...visibleUsers.filter((u) => !currentIds.has(u.user_id))],
+        DIRTY,
+      );
     }
   };
 
@@ -214,7 +221,7 @@ function WfStageUsersEditor({
                   checked={field.value ?? false}
                   onCheckedChange={(checked) => {
                     field.onChange(checked);
-                    if (checked) form.setValue(path, []);
+                    if (checked) form.setValue(path, [], DIRTY);
                   }}
                   disabled={isDisabled}
                 />
