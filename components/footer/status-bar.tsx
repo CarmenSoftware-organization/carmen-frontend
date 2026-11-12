@@ -139,9 +139,15 @@ export function StatusBar() {
       <footer
         role="contentinfo"
         data-slot="status-bar"
-        className="bg-muted/40 text-muted-foreground text-micro flex h-6 shrink-0 items-center justify-between border-t px-3"
+        // `@container`: ของที่โชว์ในแถบตัดสินจาก **ความกว้างของแถบเอง** ไม่ใช่ของจอ —
+        // แถบกว้างเท่าจอลบ sidebar ซึ่งพับ/กางได้ breakpoint ของจอ (`sm:`/`md:`) จึงเปิดของ
+        // เพิ่มทั้งที่แถบยังไม่มีที่ เช่นจอ 768px แถบเหลือ ~705px แต่ `md:` เปิดทั้งป้าย
+        // "Inventory period" เต็มและเวอร์ชัน API (~230px) จนสองฝั่งทับกัน
+        // ลำดับที่ของโผล่เมื่อแถบกว้างขึ้น: เวลา + buCode + ป้าย "Period" (@md 448px) → commit hash
+        // (@2xl 672px) → ป้าย "Inventory period" เต็ม + เวอร์ชัน API (@4xl 896px)
+        className="bg-muted/40 text-muted-foreground text-micro @container flex h-6 shrink-0 items-center justify-between gap-3 border-t px-3"
       >
-        <div className="flex min-w-0 items-center gap-1.5">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
           <PersonAvatar
             fallback="icon"
             avatarUrl={avatarUrl}
@@ -150,18 +156,18 @@ export function StatusBar() {
             iconClassName="size-full"
           />
           <span className="truncate">{displayName}</span>
-          {/* ซ่อน buCode ต่ำกว่า sm: แถบ 375px มีที่ไม่พอสำหรับทุกอย่าง และ buCode
+          {/* ซ่อน buCode เมื่อแถบแคบกว่า @md: แถบ 375px มีที่ไม่พอสำหรับทุกอย่าง และ buCode
               ยังอยู่บนตัวสลับ BU ที่ navbar ตลอดเวลา ต่างจากรอบบัญชีที่ไม่มีที่อื่น
               ให้ดูเลย — ถ้าปล่อยไว้ ชื่อผู้ใช้จะถูกบีบจนเหลือความกว้างศูนย์ */}
           {buCode && (
             <>
               <span
                 aria-hidden="true"
-                className="hidden shrink-0 opacity-50 sm:inline"
+                className="hidden shrink-0 opacity-50 @md:inline"
               >
                 ·
               </span>
-              <span className="hidden shrink-0 sm:inline">{buCode}</span>
+              <span className="hidden shrink-0 @md:inline">{buCode}</span>
             </>
           )}
           {currentPeriod && periodLabel && (
@@ -183,12 +189,12 @@ export function StatusBar() {
                     )}
                   />
                   {/* ป้ายชื่อกำกับ: ตัวเลข `2026-09` ลอย ๆ ไม่บอกว่าเป็นรอบอะไร
-                      ย่อลงตามที่ว่าง — เต็มที่ md, เหลือ "Period" ที่ sm, และหายไป
+                      ย่อลงตามที่ว่าง — เต็มที่ @4xl, เหลือ "Period" ที่ @md, และหายไป
                       ต่ำกว่านั้นเพราะบนจอ 375px ป้ายนี้กินที่จนชื่อผู้ใช้เหลือ 33px
                       (จุดสี + aria-label ยังบอกครบว่าคือรอบอะไร สถานะไหน) */}
-                  <span className="text-muted-foreground/70 hidden sm:inline">
-                    <span className="hidden md:inline">Inventory period</span>
-                    <span className="md:hidden">Period</span>
+                  <span className="text-muted-foreground/70 hidden @md:inline">
+                    <span className="hidden @4xl:inline">Inventory period</span>
+                    <span className="@4xl:hidden">Period</span>
                   </span>
                   <span className="tabular-nums">{periodLabel}</span>
                 </span>
@@ -208,7 +214,9 @@ export function StatusBar() {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          <div className="flex items-center gap-1.5">
+          {/* เวลา server ซ่อนเมื่อแถบแคบกว่า @md (มือถือ): มันกิน ~125px จนชื่อผู้ใช้เหลือ
+              37px ("Admi…") ทั้งที่เวลามีให้ดูบนเครื่องอยู่แล้ว ส่วนชื่อกับรอบบัญชีไม่มี */}
+          <div className="hidden items-center gap-1.5 @md:flex">
             <Clock aria-hidden="true" className="h-3 w-3" />
             <time
               dateTime={now ? now.toISOString() : undefined}
@@ -232,7 +240,10 @@ export function StatusBar() {
                   <Tag aria-hidden="true" className="h-3 w-3" />
                   <span className="font-mono tabular-nums">
                     <span className="opacity-70">App</span> v{APP_VERSION}
-                    <span className="ml-2">{APP_COMMIT}</span>
+                    {/* commit hash อยู่ใน tooltip และ aria-label เสมอ — ในแถบโชว์เมื่อมีที่ */}
+                    <span className="ml-2 hidden @2xl:inline">
+                      {APP_COMMIT}
+                    </span>
                   </span>
                 </button>
               </TooltipTrigger>
@@ -258,10 +269,10 @@ export function StatusBar() {
               </TooltipContent>
             </Tooltip>
             {/* รูปแบบเดียวกับ `AppVersionLabel` ของหน้า auth: `App v… <commit> · API v<เต็ม>`
-                เวลา build อยู่ใน tooltip — ซ่อน API ต่ำกว่า md: สตริงเต็มยาว ~35 ตัว
+                เวลา build อยู่ใน tooltip — ซ่อน API เมื่อแถบแคบกว่า @4xl: สตริงเต็มยาว ~35 ตัว
                 แถบ 24px บนจอแคบรับไม่ไหว และเป็นของที่ใช้ตอนแจ้งปัญหา ไม่ใช่ตอนทำงาน */}
             {backend && (
-              <span className="hidden items-center gap-1.5 md:flex">
+              <span className="hidden items-center gap-1.5 @4xl:flex">
                 <span aria-hidden="true" className="opacity-50">
                   ·
                 </span>
