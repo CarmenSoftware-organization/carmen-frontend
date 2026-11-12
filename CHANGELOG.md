@@ -4,6 +4,33 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.5.61] - 2026-11-12
+
+### Added
+- **dimension:** ลบ sequence ออกจากหน้า Dimension เพิ่มคอลัมน์ลำดับแถว # และเปลี่ยนหัวคอลัมน์เป็น Code (#563) — Thammanoon Semapru `4f5361ed`
+- **extra-cost:** ตาราง Extra Cost ชื่อกว้างคงที่ สถานะชิดซ้ายติดชื่อ และ ConfigListTemplate ส่งความกว้างกล่องให้ตาราง (#562) — Thammanoon Semapru `e94a4516`
+- **activity-log:** ตาราง Activity Monitor คอลัมน์สั้นกว้างคงที่ และซ่อนคอลัมน์รองตามความกว้างกล่อง (#561) — Thammanoon Semapru `02ce4b48`
+- **user-activity:** ตาราง User Activity คอลัมน์สั้นกว้างคงที่ และซ่อนคอลัมน์รองตามความกว้างกล่อง (#560) — Thammanoon Semapru `49318859`
+- **user:** ขนาดคอลัมน์ตามความกว้างกล่อง แถบค้นหาให้ View/Filter ติดช่องค้น และกติกาใหม่ใน skill carmen-blue-ui-design (#559) — Thammanoon Semapru `58dab640`
+- **user:** ตาราง Users ชื่อ/อีเมลกว้างคงที่ ปุ่ม View และ Filter อยู่ติดช่องค้น และบันทึกกติกาลง skill (#559) — Thammanoon Semapru `030409a6`
+- **storage:** หน้า Storage เต็มความกว้างจอ แถบการใช้งานวางเคียงกัน และไฟล์แนบแยกตามประเภทเป็นกริด (#558) — Thammanoon Semapru `26ab753e`
+- **document:** ตาราง Document คอลัมน์สั้นกว้างคงที่ ซ่อนคอลัมน์รองตามความกว้างกล่อง และแถบสรุปชิดซ้าย (#557) — Thammanoon Semapru `6b728815`
+- **running-code:** ตาราง Running Code คอลัมน์ชื่อกว้างคงที่ เพิ่มคอลัมน์ตัวอย่างเลขที่เอกสาร และหมายเหตุยืดตามจอ (#556) — Thammanoon Semapru `9fc53e9e`
+- **role:** ตาราง Roles คอลัมน์ชื่อกว้างคงที่ จำนวนสิทธิ์อยู่ติดชื่อบนจอกว้าง (#555) — Thammanoon Semapru `bf5793ea`
+- **email-template:** ตารางให้หัวเรื่องยืดหดคอลัมน์เดียว และซ้อนเป็นรายการบนกล่องแคบ (#554) — Thammanoon Semapru `6f2ec9c7`
+- **email-profile:** ตารางคอลัมน์กว้างเท่าเนื้อหา และซ้อนเป็นรายการบนกล่องแคบ (#553) — Thammanoon Semapru `e862457f`
+- **interface:** หน้ารายการ Interfaces เต็มความกว้างจอ หมวดเรียงเป็นคอลัมน์ (#552) — Thammanoon Semapru `1648735b`
+- **ask-ai:** จัดหน้าเต็มความกว้างจอ provider เป็นช่องในกริด ตัวที่ขยายกินเต็มแถว (#549) — Thammanoon Semapru `8a51ba38`
+- **default-setting:** จัดหน้าเต็มความกว้างจอแบบกะทัดรัด ค่าตั้งเป็นช่องในกริดหลายคอลัมน์ (#548) — Thammanoon Semapru `112cb746`
+- **company-profile:** ฟอร์มเต็มความกว้างจอแบบกะทัดรัด ปรับคอลัมน์ตามขนาดจอ (#547) — Thammanoon Semapru `c5f77c97`
+
+### Fixed
+- **layout:** footer ไม่ทับกันที่ mobile/tablet และตาราง Inventory Period ไม่กระจายบนจอกว้าง (#550) — Thammanoon Semapru `8e74391a`
+- **workflow:** ติ๊กเพิ่ม/เอาผู้ใช้ออกใน stage ต้องนับเป็นการแก้ฟอร์ม (#546) — Khafang `77f49131`
+
+### Changed
+- remove trail context graph configurations and rules (#552) — Thammanoon Semapru `d18ea87d`
+
 ## [2.5.60] - 2026-11-12
 
 ### Added
