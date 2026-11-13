@@ -97,18 +97,20 @@ describe("sizeOptionsFor / minSizeFor", () => {
 
 describe("gridClasses", () => {
   it("emits full literal classes (Tailwind scans source, not runtime strings)", () => {
-    expect(gridClasses("kpi")).toBe("md:col-span-2 lg:col-span-3 row-span-2");
+    expect(gridClasses("kpi")).toBe(
+      "@min-[38rem]:col-span-2 @5xl:col-span-3 row-span-2",
+    );
     expect(gridClasses("table")).toBe(
-      "md:col-span-6 lg:col-span-12 row-span-4",
+      "@min-[38rem]:col-span-6 @5xl:col-span-12 row-span-4",
     );
   });
 
   it("halves the width on the medium 6-column grid, rounding up", () => {
     expect(gridClasses("bar", { width: 4, height: 3 })).toContain(
-      "md:col-span-2",
+      "@min-[38rem]:col-span-2",
     );
     expect(gridClasses("bar", { width: 9, height: 3 })).toContain(
-      "md:col-span-5",
+      "@min-[38rem]:col-span-5",
     );
   });
 

@@ -47,7 +47,7 @@ export default function ConfigDashboard() {
   const hasAny = kpis.length + pies.length + bars.length > 0;
 
   return (
-    <div className="space-y-4 p-3">
+    <div className="@container space-y-4 p-3">
       <header className="flex items-center gap-3">
         <AppTile name={MODULE_NAME} size={40} />
         <div className="min-w-0">
@@ -73,7 +73,7 @@ export default function ConfigDashboard() {
         <div
           aria-busy="true"
           aria-live="polite"
-          className="grid auto-rows-[4rem] grid-cols-1 gap-3 md:grid-cols-6 lg:grid-cols-12"
+          className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12"
         >
           {Array.from({ length: 4 }).map((_, i) => (
             <WidgetSkeleton key={`cd-skeleton-${i}`} />
@@ -89,7 +89,7 @@ export default function ConfigDashboard() {
 
       {kpis.length > 0 && (
         <Section heading={td("sectionKpi")}>
-          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 md:grid-cols-6 lg:grid-cols-12">
+          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
             {kpis.map((w) => (
               <LazyWidget
                 key={w.dataset_id}
@@ -111,7 +111,7 @@ export default function ConfigDashboard() {
 
       {bars.length > 0 && (
         <Section heading={td("sectionComparison")}>
-          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 md:grid-cols-6 lg:grid-cols-12">
+          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
             {bars.map((w) => (
               <LazyWidget
                 key={w.dataset_id}
@@ -133,7 +133,7 @@ export default function ConfigDashboard() {
 
       {pies.length > 0 && (
         <Section heading={td("sectionDistribution")}>
-          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 md:grid-cols-6 lg:grid-cols-12">
+          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
             {pies.map((w) => (
               <LazyWidget
                 key={w.dataset_id}

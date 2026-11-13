@@ -252,7 +252,7 @@ export function BuWidgetSection({
     : undefined;
 
   return (
-    <section className={cn("space-y-3", className)}>
+    <section className={cn("@container space-y-3", className)}>
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-muted-foreground text-micro-legal font-bold tracking-[0.16em] uppercase">
           {title}
@@ -274,7 +274,7 @@ export function BuWidgetSection({
         <div
           aria-busy="true"
           aria-live="polite"
-          className="grid auto-rows-[4rem] grid-cols-1 gap-3 md:grid-cols-6 lg:grid-cols-12"
+          className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12"
         >
           <WidgetSkeletonCards />
         </div>
@@ -291,7 +291,7 @@ export function BuWidgetSection({
           onDragEnd={canEdit ? handleDragEnd : undefined}
         >
           <SortableContext items={ids} strategy={rectSortingStrategy}>
-            <ul className="grid auto-rows-[4rem] grid-cols-1 gap-3 md:grid-cols-6 lg:grid-cols-12">
+            <ul className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
               {items.map((w, i) => (
                 <SortableWidgetItem
                   key={w.id}
