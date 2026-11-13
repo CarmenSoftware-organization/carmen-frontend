@@ -84,7 +84,9 @@ export function useInventoryPeriodTable({
           {formatDate(row.original.end_at, dateFormat)}
         </span>
       ),
-      size: 260,
+      // 195 ไม่ใช่ 220: คอลัมน์สถานะ (grow) กว้างขั้นต่ำ ~165px ที่จอ tablet (เนื้อที่ตาราง 662px)
+      // 60 + 240 + 195 + 165 = 660 พอดี ถ้ากว้างกว่านี้ตารางล้นแนวนอน
+      size: 195,
     },
     {
       accessorKey: "status",
@@ -97,7 +99,13 @@ export function useInventoryPeriodTable({
           INVENTORY_PERIOD_STATUS_CONFIG[status] ?? INVENTORY_PERIOD_STATUS_CONFIG.open;
         return <StatusIconLabel status={status} label={config.label} />;
       },
-      size: 120,
+      size: 110,
+      // คอลัมน์สุดท้ายรับความกว้างที่เหลือ — `meta.grow` ทำให้สองคอลัมน์ข้างหน้ากว้างคงที่ตาม
+      // `size` ตารางนี้มีข้อมูลแค่ 3 คอลัมน์สั้น ๆ ถ้าปล่อยแบ่งตามสัดส่วน บนจอกว้างรหัสรอบ
+      // ช่วงวันที่ และสถานะจะห่างกันเป็นคืบ (จอ 4K ห่างกันราว 1,300px) เนื้อหาชิดซ้ายจึงยัง
+      // อยู่ติดช่วงวันที่ (skill carmen-blue-ui-design ข้อ 2)
+      // ลองคอลัมน์ว่างต่อท้ายแล้วไม่ได้: มันกว้างขั้นต่ำ 75px ตารางจึงล้นบนจอ tablet
+      meta: { grow: true },
     },
   ];
 

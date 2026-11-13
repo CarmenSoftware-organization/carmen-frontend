@@ -24,7 +24,6 @@ describe("Dimension with sub-values", () => {
       id: "dimension",
       code: "project",
       name: "Project",
-      sequence: 1,
       is_active: true,
       doc_version: 1,
     };
@@ -96,7 +95,6 @@ describe("Dimension with sub-values", () => {
       id: "dimension",
       code: "project",
       name: "Project",
-      sequence: 1,
       is_active: true,
       doc_version: 1,
       data_type: "lookup" as const,

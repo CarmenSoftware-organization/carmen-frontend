@@ -33,7 +33,8 @@ interface ListToolbarProps {
   /**
    * ทรงของแถบซ้าย — `"wrap"` (ค่าตั้งต้น) ให้ช่องค้นกว้างเต็มบนจอแคบแล้วขึ้น
    * บรรทัดใหม่ ใช้กับหน้าที่มีปุ่มฝั่งขวาเยอะ · `"row"` บีบทุกอย่างไว้แถวเดียว
-   * ช่องค้นยืดตามที่เหลือ ใช้กับหน้าที่ไม่มีปุ่มฝั่งขวา
+   * ช่องค้นยืดตามที่เหลือบนจอแคบ ตั้งแต่ md ปุ่ม View/Filter อยู่ติดช่องค้น
+   * ใช้กับหน้าที่ไม่มีปุ่มฝั่งขวา
    */
   readonly variant?: "wrap" | "row";
 }
@@ -97,8 +98,15 @@ export function ListToolbar({
               : "flex w-full flex-1 flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap"
           }
         >
+          {/* row: ช่องค้นยืดเฉพาะจอแคบ (ต่ำกว่า md ที่ SearchInput เป็น w-full) — ตั้งแต่ md
+              SearchInput กว้างคงที่ ถ้ากล่องนี้ยังยืด ปุ่ม View/Filter จะถูกดันไปขวาสุดของแถว
+              ห่างจากช่องค้นทั้งจอ */}
           <div
-            className={isRow ? "flex-1" : "w-full sm:w-auto sm:flex-initial"}
+            className={
+              isRow
+                ? "flex-1 md:flex-initial"
+                : "w-full sm:w-auto sm:flex-initial"
+            }
           >
             <SearchInput defaultValue={search} onSearch={onSearch} />
           </div>

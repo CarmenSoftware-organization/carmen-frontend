@@ -24,7 +24,6 @@ import { toast } from "sonner";
 import SearchInput from "@/components/search-input";
 import EmptyComponent from "@/components/empty-component";
 import DisplayTemplate from "@/components/display-template";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
@@ -121,18 +120,28 @@ export default function DimensionPage() {
             .includes(search.toLowerCase()),
         )
         .filter((item) => !status || item.is_active === (status === "active"))
-        .sort(
-          (a, b) => a.sequence - b.sequence || a.code.localeCompare(b.code),
-        ),
+        .sort((a, b) => a.code.localeCompare(b.code)),
     [search, status, dimensions],
   );
 
   const columns = useMemo<ColumnDef<DimensionMaster>[]>(
     () => [
       {
+        id: "index",
+        header: "#",
+        cell: ({ row }) => row.index + 1,
+        enableSorting: false,
+        enableHiding: false,
+        size: 60,
+        meta: {
+          headerClassName: "text-center",
+          cellClassName: "text-center",
+        },
+      },
+      {
         accessorKey: "code",
         header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Dimension Code" />
+          <DataGridColumnHeader column={column} title="Code" />
         ),
         cell: ({ row }) => (
           <CellAction
@@ -168,15 +177,6 @@ export default function DimensionPage() {
           <span className="text-muted-foreground">
             {row.original.name_local || "—"}
           </span>
-        ),
-      },
-      {
-        accessorKey: "sequence",
-        header: "Sequence",
-        cell: ({ row }) => (
-          <Badge data-standard-chip="" variant="outline" size="sm">
-            Seq {row.original.sequence}
-          </Badge>
         ),
       },
       {
@@ -432,7 +432,6 @@ export function DimensionDialog({
   const [code, setCode] = useState(initial.code);
   const [name, setName] = useState(initial.name);
   const [nameLocal, setNameLocal] = useState(initial.name_local);
-  const [sequence, setSequence] = useState(initial.sequence);
   const [active, setActive] = useState(initial.is_active);
   const [dataType, setDataType] = useState<DimensionDataType>(
     initial.data_type,
@@ -505,23 +504,6 @@ export function DimensionDialog({
               onChange={(e) => setNameLocal(e.target.value)}
             />
           </Field>
-          <Field>
-            <FieldLabel htmlFor="dim-seq" required>
-              Sequence (1–10)
-            </FieldLabel>
-            <FieldInput
-              id="dim-seq"
-              type="number"
-              min={1}
-              max={10}
-              value={sequence}
-              onChange={(e) =>
-                setSequence(
-                  Math.max(1, Math.min(10, Number(e.target.value) || 1)),
-                )
-              }
-            />
-          </Field>
           <DimensionTypeFields
             dataType={dataType}
             dateFormat={dateFormat}
@@ -569,7 +551,6 @@ export function DimensionDialog({
                       code: code.trim(),
                       name: name.trim(),
                       name_local: nameLocal.trim() || null,
-                      sequence,
                       is_active: active,
                       data_type: dataType,
                       ...(dataType === "date"
@@ -1194,7 +1175,6 @@ function getDimensionFormDefaults(item: DimensionMaster | null) {
     code: item?.code ?? "",
     name: item?.name ?? "",
     name_local: item?.name_local ?? "",
-    sequence: item?.sequence ?? 1,
     is_active: item?.is_active ?? true,
     data_type: item ? (item.data_type ?? "lookup") : "string",
     date_format: item?.date_format ?? "DD/MM/YYYY",

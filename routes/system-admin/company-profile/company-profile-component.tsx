@@ -4,6 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CopyPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
+import {
+  CompactSection as Section,
+  CompactSectionSkeleton as SectionSkeleton,
+  FieldGrid,
+  SECTION_PAIR,
+} from "@/components/share/compact-section";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { Button } from "@/components/ui/button";
@@ -22,17 +28,12 @@ import type {
   BusinessUnitNumberFormat,
 } from "@/types/business-unit";
 import {
-  SettingSection,
-  SettingSectionSkeleton,
-} from "@/components/ui/setting-section";
-import {
   EditableField,
   SelectField,
   NumberFormatField,
 } from "./company-profile-ui";
 import { IdentityCard, IdentityCardSkeleton } from "./company-profile-identity";
 import { AddressView, type AddressParts } from "./company-profile-address";
-import { SectionNav } from "./company-profile-nav";
 import {
   TIMEZONES,
   DATE_FORMATS,
@@ -72,15 +73,6 @@ const CALCULATION_METHOD_LABEL_KEYS: Readonly<Record<string, string>> = {
   fifo: "calculationMethodOptions.fifo",
   average_per_location: "calculationMethodOptions.averagePerLocation",
 };
-
-/** id ของ section (anchor ของ SectionNav) */
-const SECTION_IDS = {
-  general: "cp-general",
-  hotel: "cp-hotel",
-  company: "cp-company",
-  dateTime: "cp-date-time",
-  numberFormats: "cp-number-formats",
-} as const;
 
 /** ช่องที่อยู่/ติดต่อที่ "คัดลอกจากโรงแรม" เขียนทับให้ฝั่งบริษัท (ไม่รวมชื่อ — ชื่อนิติบุคคลคนละชื่อกับโรงแรม) */
 const COPYABLE_ADDRESS_SUFFIXES = [
@@ -122,7 +114,8 @@ function addressOf(
  * (จาก `useProfile().defaultBu`)
  *
  * โครงหน้า: การ์ดตัวตน (โลโก้ · ชื่อ · ค่าที่ล็อก) อยู่บนสุด แล้วตามด้วย section
- * ที่แก้ได้ เมนูข้าม section อยู่ด้านซ้ายบนจอกว้าง ที่อยู่โรงแรม/บริษัทในโหมดดู
+ * ที่แก้ได้ เต็มความกว้างจอ (ไม่มีเมนูข้าม section — ถอดออกตามคำขอ 2026-11-12
+ * หน้าสั้นลงจนไม่ต้องใช้แล้วเมื่อช่องเรียงหลายคอลัมน์) ที่อยู่โรงแรม/บริษัทในโหมดดู
  * จัดเป็นบล็อกแบบหัวจดหมาย กด Edit แล้วค่อยแตกเป็นช่องกรอก
  *
  * Save ส่งเฉพาะ field ที่เปลี่ยน (`PATCH` partial). ดึงข้อมูลจาก
@@ -199,28 +192,22 @@ export default function CompanyProfileComponent() {
       return;
     }
     // แนบ doc_version (optimistic lock) + id ของ BU ที่โหลดมา (กันเขียนผิด BU) — ดู toPatchPayload
-    update.mutate(
-      toPatchPayload(patch, data),
-      {
-        onSuccess: () => {
-          toast.success(t("saved"));
-          setEditing(false);
-        },
-        // ไม่ต้อง onError เอง — mutation ตัวนี้ผ่าน MutationCache กลางซึ่ง toast
-        // ให้อยู่แล้ว เขียนซ้ำที่นี่ = เด้งสองใบ และใบนี้โยน err.message ดิบซึ่ง
-        // เป็นสตริงที่ dev เขียนไว้ ไม่ใช่ข้อความสำหรับผู้ใช้ (ดู lib/api-error.ts)
+    update.mutate(toPatchPayload(patch, data), {
+      onSuccess: () => {
+        toast.success(t("saved"));
+        setEditing(false);
       },
-    );
+      // ไม่ต้อง onError เอง — mutation ตัวนี้ผ่าน MutationCache กลางซึ่ง toast
+      // ให้อยู่แล้ว เขียนซ้ำที่นี่ = เด้งสองใบ และใบนี้โยน err.message ดิบซึ่ง
+      // เป็นสตริงที่ dev เขียนไว้ ไม่ใช่ข้อความสำหรับผู้ใช้ (ดู lib/api-error.ts)
+    });
   });
 
-  const sections = [
-    { id: SECTION_IDS.general, title: t("sections.general") },
-    { id: SECTION_IDS.hotel, title: t("sections.hotel") },
-    { id: SECTION_IDS.company, title: t("sections.company") },
-    { id: SECTION_IDS.dateTime, title: t("sections.dateTime") },
-    { id: SECTION_IDS.numberFormats, title: t("sections.numberFormats") },
-  ];
-
+  /**
+   * ไม่ส่ง description ให้ช่องที่อยู่/ชื่อ — ข้อความพวกนั้นแค่ทวนป้าย ("Hotel Email:
+   * Contact email of the hotel") แต่กินความสูงเพิ่มหนึ่งบรรทัดต่อช่อง × 22 ช่อง
+   * ช่องที่คำอธิบายบอกอะไรเพิ่มจริง (เลขภาษี/สาขา, รูปแบบวันที่/ตัวเลข) ยังมีอยู่
+   */
   /** ช่องกรอกที่อยู่/ติดต่อของ hotel หรือ company — ลำดับและความกว้างเดียวกันทั้งสองชุด */
   const addressFields = (prefix: AddressPrefix) => {
     const cap = prefix === "hotel" ? "hotel" : "company";
@@ -234,7 +221,6 @@ export default function CompanyProfileComponent() {
         form={form}
         name={`${prefix}_${suffix}` as keyof BusinessSettingFormValues}
         label={t(`fields.${cap}${key}`)}
-        description={t(`fields.${cap}${key}Desc`)}
         {...opts}
       />
     );
@@ -281,76 +267,67 @@ export default function CompanyProfileComponent() {
       )}
 
       {!isError && isBusy && (
-        <div className="space-y-8">
+        // โครงเดียวกับตอนโหลดเสร็จ (การ์ดเต็มความกว้าง) ไม่ให้เนื้อหากระโดดตอนข้อมูลมา
+        <div className="space-y-5">
           <IdentityCardSkeleton />
-          {/* mirror each real section's field layout so the skeleton is as tall */}
-          <div>
-            <SettingSectionSkeleton
-              first
-              fields={["full", "half", "half", "tall", "full"]}
-            />
-            <SettingSectionSkeleton fields={["tall"]} />
-            <SettingSectionSkeleton fields={["tall"]} />
-            <SettingSectionSkeleton
-              fields={["half", "half", "half", "half", "half", "half"]}
-            />
-            <SettingSectionSkeleton fields={["half", "half", "half"]} />
+          <SectionSkeleton first className="h-16" />
+          <div className={SECTION_PAIR}>
+            <SectionSkeleton className="h-28" />
+            <SectionSkeleton className="h-28" />
+          </div>
+          <div className={SECTION_PAIR}>
+            <SectionSkeleton className="h-28" />
+            <SectionSkeleton className="h-28" />
           </div>
         </div>
       )}
 
       {!isError && !isBusy && data && (
-        <div className="lg:grid lg:grid-cols-[10rem_minmax(0,1fr)] lg:gap-10">
-          <SectionNav sections={sections} label={t("sectionNav")} />
+        <div className="min-w-0 space-y-5">
+          <IdentityCard
+            name={data.name}
+            alias={data.alias_name}
+            logoUrl={data.logo?.url}
+            avatarUrl={data.avatar?.url}
+            facts={[
+              { label: t("fields.clusterName"), value: data.cluster_name },
+              {
+                label: t("fields.calculationMethod"),
+                value:
+                  data.calculation_method &&
+                  CALCULATION_METHOD_LABEL_KEYS[data.calculation_method]
+                    ? tf(CALCULATION_METHOD_LABEL_KEYS[data.calculation_method])
+                    : data.calculation_method,
+              },
+              {
+                // default currency: read-only เสมอ — ไม่อยู่ในฟอร์ม buildPatch จึงไม่ส่งไป backend
+                label: t("fields.defaultCurrencyId"),
+                value: data.default_currency_id ? (
+                  <LookupCurrency
+                    value={data.default_currency_id}
+                    onValueChange={() => {}}
+                    readOnly
+                    className="min-h-0 p-0 text-sm font-medium"
+                  />
+                ) : null,
+              },
+            ]}
+          />
 
-          <div className="min-w-0 space-y-8">
-            <IdentityCard
-              name={data.name}
-              alias={data.alias_name}
-              logoUrl={data.logo?.url}
-              avatarUrl={data.avatar?.url}
-              facts={[
-                { label: t("fields.clusterName"), value: data.cluster_name },
-                {
-                  label: t("fields.calculationMethod"),
-                  value:
-                    data.calculation_method &&
-                    CALCULATION_METHOD_LABEL_KEYS[data.calculation_method]
-                      ? tf(
-                          CALCULATION_METHOD_LABEL_KEYS[
-                            data.calculation_method
-                          ],
-                        )
-                      : data.calculation_method,
-                },
-                {
-                  // default currency: read-only เสมอ — ไม่อยู่ในฟอร์ม buildPatch จึงไม่ส่งไป backend
-                  label: t("fields.defaultCurrencyId"),
-                  value: data.default_currency_id ? (
-                    <LookupCurrency
-                      value={data.default_currency_id}
-                      onValueChange={() => {}}
-                      readOnly
-                      className="min-h-0 p-0 text-sm font-medium"
-                    />
-                  ) : null,
-                },
-              ]}
-            />
-
-            <form id={FORM_ID} onSubmit={onSubmit}>
-              {/* General — costing method / currency / business group ย้ายไปการ์ดตัวตน (ล็อก)
+          <form id={FORM_ID} onSubmit={onSubmit}>
+            {/* General — costing method / currency / business group ย้ายไปการ์ดตัวตน (ล็อก)
                   "Max license users" ถูกถอดออกจากหน้านี้ — ที่นั่งไม่ใช่เลขตัวเดียวบน BU อีกแล้ว แต่เป็น
                   ผลรวมของใบ license ที่ยังคุ้มครองอยู่ (tb_business_unit_license → v_business_unit_seat)
                   และจัดการที่ carmen-backstage เท่านั้น
                   "Max license users" is gone: seats are no longer a single number on the BU but the
                   sum of the licences currently in effect, managed only in carmen-backstage. */}
-              <div id={SECTION_IDS.general}>
-                <SettingSection
-                  first
-                  title={t("sections.general")}
-                  description={t("sections.generalDesc")}
-                >
+            <div>
+              <Section
+                first
+                title={t("sections.general")}
+                description={t("sections.generalDesc")}
+              >
+                <FieldGrid>
                   <EditableField
                     editing={editing}
                     form={form}
@@ -377,46 +354,37 @@ export default function CompanyProfileComponent() {
                     displayValue={data.description}
                     fullWidth
                   />
-                  <EditableField
-                    editing={editing}
-                    form={form}
-                    name="info"
-                    label={t("fields.info")}
-                    description={t("fields.infoDesc")}
-                    displayValue={data.info}
-                    maxLength={256}
-                    fullWidth
-                  />
-                </SettingSection>
-              </div>
+                </FieldGrid>
+              </Section>
+            </div>
 
+            <div className={SECTION_PAIR}>
               {/* Hotel */}
-              <div id={SECTION_IDS.hotel}>
-                <SettingSection
+              <div>
+                <Section
                   title={t("sections.hotel")}
                   description={t("sections.hotelDesc")}
                 >
                   {editing ? (
-                    <>
+                    <FieldGrid>
                       <EditableField
                         editing
                         form={form}
                         name="hotel_name"
                         label={t("fields.hotelName")}
-                        description={t("fields.hotelNameDesc")}
                         fullWidth
                       />
                       {addressFields("hotel")}
-                    </>
+                    </FieldGrid>
                   ) : (
                     <AddressView address={addressOf(data, "hotel")} />
                   )}
-                </SettingSection>
+                </Section>
               </div>
 
               {/* Company — ข้อมูลที่ไปขึ้นหัวเอกสาร/ใบกำกับ */}
-              <div id={SECTION_IDS.company}>
-                <SettingSection
+              <div>
+                <Section
                   title={t("sections.company")}
                   description={t("sections.companyDesc")}
                   action={
@@ -434,13 +402,12 @@ export default function CompanyProfileComponent() {
                   }
                 >
                   {editing ? (
-                    <>
+                    <FieldGrid>
                       <EditableField
                         editing
                         form={form}
                         name="company_name"
                         label={t("fields.companyName")}
-                        description={t("fields.companyNameDesc")}
                         fullWidth
                       />
                       <EditableField
@@ -458,155 +425,164 @@ export default function CompanyProfileComponent() {
                         description={t("fields.branchNoDesc")}
                       />
                       {addressFields("company")}
-                    </>
+                    </FieldGrid>
                   ) : (
                     <AddressView
                       printed
                       address={addressOf(data, "company")}
                       legal={[
                         { label: t("fields.taxNo"), value: data.tax_no },
-                        { label: t("fields.branchNo"), value: data.branch_no },
+                        {
+                          label: t("fields.branchNo"),
+                          value: data.branch_no,
+                        },
                       ]}
                     />
                   )}
-                </SettingSection>
+                </Section>
               </div>
+            </div>
 
+            <div className={SECTION_PAIR}>
               {/* Date & Time */}
-              <div id={SECTION_IDS.dateTime}>
-                <SettingSection
+              <div>
+                <Section
                   title={t("sections.dateTime")}
                   description={t("sections.dateTimeDesc")}
                 >
-                  <SelectField
-                    editing={editing}
-                    form={form}
-                    name="timezone"
-                    options={TIMEZONES}
-                    label={t("fields.timezone")}
-                    description={t("fields.timezoneDesc")}
-                    placeholder={t("fields.timezone")}
-                    displayValue={data.timezone}
-                    exampleOf={(tz) => timezoneExample(tz, now)}
-                  />
-                  <SelectField
-                    editing={editing}
-                    form={form}
-                    name="date_format"
-                    options={DATE_FORMATS}
-                    label={t("fields.dateFormat")}
-                    description={t("fields.dateFormatDesc")}
-                    placeholder={t("fields.dateFormat")}
-                    displayValue={data.date_format}
-                    exampleOf={dateExample}
-                    mono
-                  />
-                  <SelectField
-                    editing={editing}
-                    form={form}
-                    name="date_time_format"
-                    options={DATE_TIME_FORMATS}
-                    label={t("fields.dateTimeFormat")}
-                    description={t("fields.dateTimeFormatDesc")}
-                    placeholder={t("fields.dateTimeFormat")}
-                    displayValue={data.date_time_format}
-                    exampleOf={dateExample}
-                    mono
-                  />
-                  <SelectField
-                    editing={editing}
-                    form={form}
-                    name="time_format"
-                    options={TIME_FORMATS}
-                    label={t("fields.timeFormat")}
-                    description={t("fields.timeFormatDesc")}
-                    placeholder={t("fields.timeFormat")}
-                    displayValue={data.time_format}
-                    exampleOf={dateExample}
-                    mono
-                  />
-                  <SelectField
-                    editing={editing}
-                    form={form}
-                    name="short_time_format"
-                    options={SHORT_TIME_FORMATS}
-                    label={t("fields.shortTimeFormat")}
-                    description={t("fields.shortTimeFormatDesc")}
-                    placeholder={t("fields.shortTimeFormat")}
-                    displayValue={data.short_time_format}
-                    exampleOf={dateExample}
-                    mono
-                  />
-                  <SelectField
-                    editing={editing}
-                    form={form}
-                    name="long_time_format"
-                    options={LONG_TIME_FORMATS}
-                    label={t("fields.longTimeFormat")}
-                    description={t("fields.longTimeFormatDesc")}
-                    placeholder={t("fields.longTimeFormat")}
-                    displayValue={data.long_time_format}
-                    exampleOf={dateExample}
-                    mono
-                  />
-                </SettingSection>
+                  <FieldGrid>
+                    <SelectField
+                      editing={editing}
+                      form={form}
+                      name="timezone"
+                      options={TIMEZONES}
+                      label={t("fields.timezone")}
+                      description={t("fields.timezoneDesc")}
+                      placeholder={t("fields.timezone")}
+                      displayValue={data.timezone}
+                      exampleOf={(tz) => timezoneExample(tz, now)}
+                    />
+                    <SelectField
+                      editing={editing}
+                      form={form}
+                      name="date_format"
+                      options={DATE_FORMATS}
+                      label={t("fields.dateFormat")}
+                      description={t("fields.dateFormatDesc")}
+                      placeholder={t("fields.dateFormat")}
+                      displayValue={data.date_format}
+                      exampleOf={dateExample}
+                      mono
+                    />
+                    <SelectField
+                      editing={editing}
+                      form={form}
+                      name="date_time_format"
+                      options={DATE_TIME_FORMATS}
+                      label={t("fields.dateTimeFormat")}
+                      description={t("fields.dateTimeFormatDesc")}
+                      placeholder={t("fields.dateTimeFormat")}
+                      displayValue={data.date_time_format}
+                      exampleOf={dateExample}
+                      mono
+                    />
+                    <SelectField
+                      editing={editing}
+                      form={form}
+                      name="time_format"
+                      options={TIME_FORMATS}
+                      label={t("fields.timeFormat")}
+                      description={t("fields.timeFormatDesc")}
+                      placeholder={t("fields.timeFormat")}
+                      displayValue={data.time_format}
+                      exampleOf={dateExample}
+                      mono
+                    />
+                    <SelectField
+                      editing={editing}
+                      form={form}
+                      name="short_time_format"
+                      options={SHORT_TIME_FORMATS}
+                      label={t("fields.shortTimeFormat")}
+                      description={t("fields.shortTimeFormatDesc")}
+                      placeholder={t("fields.shortTimeFormat")}
+                      displayValue={data.short_time_format}
+                      exampleOf={dateExample}
+                      mono
+                    />
+                    <SelectField
+                      editing={editing}
+                      form={form}
+                      name="long_time_format"
+                      options={LONG_TIME_FORMATS}
+                      label={t("fields.longTimeFormat")}
+                      description={t("fields.longTimeFormatDesc")}
+                      placeholder={t("fields.longTimeFormat")}
+                      displayValue={data.long_time_format}
+                      exampleOf={dateExample}
+                      mono
+                    />
+                  </FieldGrid>
+                </Section>
               </div>
 
               {/* Number Formats */}
-              <div id={SECTION_IDS.numberFormats}>
-                <SettingSection
+              <div>
+                <Section
                   title={t("sections.numberFormats")}
                   description={t("sections.numberFormatsDesc")}
                 >
-                  <NumberFormatField
-                    editing={editing}
-                    form={form}
-                    name="amount_format"
-                    label={t("fields.amountFormat")}
-                    description={t("fields.amountFormatDesc")}
-                    // จำนวนเงินใช้แค่ locale — ดู formatAmount ใน lib/currency-utils.ts
-                    displayValue={data.amount_format?.locales ?? null}
-                    localeOptions={LOCALES}
-                    localesPlaceholder={t("fields.locales")}
-                    digitsPlaceholder={t("fields.minimumIntegerDigits")}
-                    showDigits={false}
-                    // 2 ตำแหน่งตาม formatAmount
-                    example={numberExample(data.amount_format?.locales, 2)}
-                  />
-                  <NumberFormatField
-                    editing={editing}
-                    form={form}
-                    name="quantity_format"
-                    label={t("fields.quantityFormat")}
-                    description={t("fields.quantityFormatDesc")}
-                    displayValue={fmtNumber(data.quantity_format)}
-                    // ทศนิยมจริงมาจาก decimal_place ของหน่วย — 2 คือ fallback ของ
-                    // useQuantityFormatter ไม่ใช่ค่าจากช่องนี้
-                    example={numberExample(data.quantity_format?.locales, 2)}
-                    localeOptions={LOCALES}
-                    localesPlaceholder={t("fields.locales")}
-                    digitsPlaceholder={t("fields.minimumIntegerDigits")}
-                  />
-                  <NumberFormatField
-                    editing={editing}
-                    form={form}
-                    name="recipe_format"
-                    label={t("fields.recipeFormat")}
-                    description={t("fields.recipeFormatDesc")}
-                    displayValue={fmtNumber(data.recipe_format)}
-                    // useRecipeFormatter ใช้ minimumIntegerDigits เป็นจำนวนทศนิยม
-                    example={numberExample(
-                      data.recipe_format?.locales,
-                      data.recipe_format?.minimumIntegerDigits ?? 5,
-                    )}
-                    localeOptions={LOCALES}
-                    localesPlaceholder={t("fields.locales")}
-                    digitsPlaceholder={t("fields.minimumIntegerDigits")}
-                  />
-                </SettingSection>
+                  <FieldGrid>
+                    <NumberFormatField
+                      editing={editing}
+                      form={form}
+                      name="amount_format"
+                      label={t("fields.amountFormat")}
+                      description={t("fields.amountFormatDesc")}
+                      // จำนวนเงินใช้แค่ locale — ดู formatAmount ใน lib/currency-utils.ts
+                      displayValue={data.amount_format?.locales ?? null}
+                      localeOptions={LOCALES}
+                      localesPlaceholder={t("fields.locales")}
+                      digitsPlaceholder={t("fields.minimumIntegerDigits")}
+                      showDigits={false}
+                      // 2 ตำแหน่งตาม formatAmount
+                      example={numberExample(data.amount_format?.locales, 2)}
+                    />
+                    <NumberFormatField
+                      editing={editing}
+                      form={form}
+                      name="quantity_format"
+                      label={t("fields.quantityFormat")}
+                      description={t("fields.quantityFormatDesc")}
+                      displayValue={fmtNumber(data.quantity_format)}
+                      // ทศนิยมจริงมาจาก decimal_place ของหน่วย — 2 คือ fallback ของ
+                      // useQuantityFormatter ไม่ใช่ค่าจากช่องนี้
+                      example={numberExample(data.quantity_format?.locales, 2)}
+                      localeOptions={LOCALES}
+                      localesPlaceholder={t("fields.locales")}
+                      digitsPlaceholder={t("fields.minimumIntegerDigits")}
+                    />
+                    <NumberFormatField
+                      editing={editing}
+                      form={form}
+                      name="recipe_format"
+                      label={t("fields.recipeFormat")}
+                      description={t("fields.recipeFormatDesc")}
+                      displayValue={fmtNumber(data.recipe_format)}
+                      // useRecipeFormatter ใช้ minimumIntegerDigits เป็นจำนวนทศนิยม
+                      example={numberExample(
+                        data.recipe_format?.locales,
+                        data.recipe_format?.minimumIntegerDigits ?? 5,
+                      )}
+                      localeOptions={LOCALES}
+                      localesPlaceholder={t("fields.locales")}
+                      digitsPlaceholder={t("fields.minimumIntegerDigits")}
+                    />
+                  </FieldGrid>
+                </Section>
               </div>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       )}
 

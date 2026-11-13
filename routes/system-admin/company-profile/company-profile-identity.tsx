@@ -38,7 +38,19 @@ export function IdentityCard({
   const t = useTranslations("companyProfile");
   return (
     <section className="bg-card overflow-hidden rounded-xl border shadow-sm">
-      <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
+      {/* ชื่อนำ รูปตาม — BU ส่วนใหญ่ยังไม่มีโลโก้ ถ้ารูปอยู่หน้า ช่องว่าง "No image"
+          สองช่องจะเป็นสิ่งที่เด่นที่สุดของหน้า แทนชื่อของ BU */}
+      <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold tracking-tight break-words">
+            {name}
+          </h2>
+          {alias && (
+            <p className="text-muted-foreground mt-0.5 font-mono text-xs">
+              {alias}
+            </p>
+          )}
+        </div>
         <div className="flex shrink-0 flex-wrap items-center gap-3">
           <BrandImage
             url={logoUrl}
@@ -51,21 +63,13 @@ export function IdentityCard({
             label={t("fields.avatar")}
           />
         </div>
-        <div className="min-w-0">
-          <h2 className="text-lg font-semibold tracking-tight break-words">
-            {name}
-          </h2>
-          {alias && (
-            <p className="text-muted-foreground font-mono text-xs">{alias}</p>
-          )}
-        </div>
       </div>
       <dl className="bg-muted/40 grid border-t sm:grid-cols-3">
         {facts.map((f, i) => (
           <div
             key={f.label}
             className={cn(
-              "min-w-0 px-5 py-3 sm:px-6",
+              "min-w-0 px-4 py-2",
               i > 0 && "border-t sm:border-t-0 sm:border-l",
             )}
           >
@@ -84,7 +88,7 @@ export function IdentityCard({
                 <TooltipContent>{t("identity.lockedHint")}</TooltipContent>
               </Tooltip>
             </dt>
-            <dd className="mt-1 truncate text-sm font-medium">
+            <dd className="mt-0.5 truncate text-sm font-medium">
               {f.value ?? <span className="text-muted-foreground">—</span>}
             </dd>
           </div>
@@ -97,15 +101,17 @@ export function IdentityCard({
 export function IdentityCardSkeleton() {
   return (
     <div className="bg-card overflow-hidden rounded-xl border shadow-sm">
-      <div className="flex items-center gap-4 p-5 sm:p-6">
-        <Skeleton className="h-16 w-64 rounded-md" />
-        <Skeleton className="size-16 rounded-full" />
+      <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
-          <Skeleton className="h-5 w-48" />
+          <Skeleton className="h-6 w-48" />
           <Skeleton className="h-3 w-16" />
         </div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-12 w-48 rounded-md" />
+          <Skeleton className="size-12 rounded-full" />
+        </div>
       </div>
-      <div className="grid gap-4 border-t px-5 py-3 sm:grid-cols-3 sm:px-6">
+      <div className="grid gap-4 border-t px-4 py-2 sm:grid-cols-3">
         <Skeleton className="h-9" />
         <Skeleton className="h-9" />
         <Skeleton className="h-9" />
@@ -124,11 +130,11 @@ function BrandImage({
   readonly label: string;
 }) {
   const t = useTranslations("companyProfile");
-  // โลโก้ช่องว่างเป็น 4:1 (h-16 w-64) — มีรูปแล้วสูงเท่าเดิม กว้างตามสัดส่วนรูป ไม่เกิน 4:1
+  // โลโก้ช่องว่างเป็น 4:1 (h-12 w-48) — มีรูปแล้วสูงเท่าเดิม กว้างตามสัดส่วนรูป ไม่เกิน 4:1
   const box =
     shape === "landscape"
-      ? cn(url ? "h-16 w-auto min-w-16 max-w-64" : "h-16 w-64", "rounded-md")
-      : "size-16 rounded-full";
+      ? cn(url ? "h-12 w-auto max-w-48 min-w-12" : "h-12 w-48", "rounded-md")
+      : "size-12 rounded-full";
   const imageClass =
     shape === "landscape"
       ? "h-full w-auto max-w-full object-contain"
@@ -136,19 +142,17 @@ function BrandImage({
   return (
     <div
       className={cn(
-        "bg-muted/50 relative flex items-center justify-center overflow-hidden border",
+        "relative flex items-center justify-center overflow-hidden border",
+        // ช่องว่าง = เส้นประ ไม่ถมสี ให้อ่านเป็น "ที่ว่างรอรูป" ไม่ใช่รูปสีเทา
+        url ? "bg-muted/50" : "border-dashed",
         box,
       )}
       title={label}
     >
       {url ? (
-        <img
-          src={url}
-          alt={label}
-          className={imageClass}
-          loading="lazy"
-        />
-      ) : (
+        <img src={url} alt={label} className={imageClass} loading="lazy" />
+      ) : shape === "round" ? null : (
+        // วงกลม 48px ใส่ "No image" แล้วตัดสองบรรทัด — เส้นประกับ title บอกพอแล้ว
         <span className="text-muted-foreground/60 text-micro-legal px-1 text-center">
           {t("noImage")}
         </span>

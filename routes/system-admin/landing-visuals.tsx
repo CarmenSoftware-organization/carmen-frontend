@@ -35,10 +35,20 @@ export function ModuleVisual({ visualKey }: { readonly visualKey: VisualKey }) {
       return <NotifyViz />;
     case "code":
       return <CodeViz />;
-    case "query":
-      return <QueryViz />;
     case "dataset":
       return <DatasetViz />;
+    case "company":
+      return <CompanyViz />;
+    case "settings":
+      return <SettingsViz />;
+    case "askAi":
+      return <AskAiViz />;
+    case "emailProfile":
+      return <EmailProfileViz />;
+    case "emailTemplate":
+      return <EmailTemplateViz />;
+    case "storage":
+      return <StorageViz />;
     default:
       return null;
   }
@@ -97,52 +107,6 @@ function RolesViz() {
   );
 }
 
-function AssignViz() {
-  const users = [
-    { i: "AC", n: "A. Chen", r: "Buyer" },
-    { i: "MR", n: "M. Rodriguez", r: "Storekeeper" },
-    { i: "FN", n: "F. Ng", r: "Finance" },
-  ];
-  return (
-    <div className={VIZ_WRAP}>
-      <div className="bg-card border-border rounded-sm border p-1.5">
-        {users.map((u, i) => (
-          <div
-            key={u.i}
-            className={`flex items-center gap-1.5 px-1 py-1.5 ${
-              i === users.length - 1 ? "" : "border-border-subtle border-b"
-            }`}
-          >
-            <span
-              className="text-micro-floor inline-flex size-4 items-center justify-center rounded-full font-semibold"
-              style={{
-                background:
-                  "color-mix(in oklch, var(--primary), var(--card) 80%)",
-                color: ACCENT,
-              }}
-            >
-              {u.i}
-            </span>
-            <span className="text-foreground text-micro-legal flex-1 font-semibold">
-              {u.n}
-            </span>
-            <span
-              className="text-micro-floor rounded-sm px-1.5 py-0.5 font-semibold tracking-wider uppercase"
-              style={{
-                background:
-                  "color-mix(in oklch, var(--primary), var(--card) 80%)",
-                color: ACCENT,
-              }}
-            >
-              {u.r}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function InventoryPeriodViz() {
   const months = [
     "Jan",
@@ -176,7 +140,7 @@ function InventoryPeriodViz() {
     <div className={VIZ_WRAP}>
       <div className="bg-card border-border rounded-sm border p-2">
         <div className="text-muted-foreground text-micro-eyebrow mb-1.5 font-semibold tracking-wider uppercase">
-          FY 2026 · Months
+          Months
         </div>
         <div className="grid grid-cols-12 gap-0.5">
           {months.map((m, i) => {
@@ -309,137 +273,6 @@ function WorkflowsViz() {
   );
 }
 
-function DocsViz() {
-  const tree = [
-    { d: 0, label: "Procurement", kind: "folder" as const },
-    { d: 1, label: "POs · 2026", kind: "folder" as const },
-    { d: 2, label: "PO-12480.pdf", kind: "file" as const },
-    { d: 2, label: "PO-12481.pdf", kind: "file" as const },
-    { d: 1, label: "GRNs · 2026", kind: "folder" as const },
-    { d: 0, label: "Finance", kind: "folder" as const },
-  ];
-  return (
-    <div className={VIZ_WRAP}>
-      <div className="bg-card border-border rounded-sm border p-2">
-        {tree.map((row, i) => (
-          <div
-            key={i}
-            className="text-foreground text-micro-eyebrow flex items-center gap-1.5 py-0.5"
-            style={{ paddingLeft: `${0.375 + row.d * 0.75}rem` }}
-          >
-            <span className="inline-flex size-2.5 items-center justify-center">
-              {row.kind === "folder" ? (
-                <span
-                  className="block h-[7px] w-[9px] rounded-[1px]"
-                  style={{ background: ACCENT }}
-                />
-              ) : (
-                <span className="bg-card border-muted-foreground block h-[9px] w-[7px] rounded-[1px] border" />
-              )}
-            </span>
-            <span
-              className={
-                row.kind === "folder" ? "font-semibold" : "font-normal"
-              }
-            >
-              {row.label}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function UserActivityViz() {
-  const events = [
-    { i: "AC", t: "approved PO-12480", m: "2m ago" },
-    { i: "JM", t: "edited Role · Buyer", m: "14m ago" },
-    { i: "MR", t: "received GRN-8821", m: "38m ago" },
-  ];
-  return (
-    <div className={VIZ_WRAP}>
-      <div className="bg-card border-border rounded-sm border p-1.5">
-        {events.map((e, i) => (
-          <div
-            key={i}
-            className={`flex items-center gap-1.5 px-1 py-1.5 ${
-              i === events.length - 1 ? "" : "border-border-subtle border-b"
-            }`}
-          >
-            <span
-              className="text-micro-floor inline-flex size-4 items-center justify-center rounded-full font-semibold"
-              style={{
-                background:
-                  "color-mix(in oklch, var(--primary), var(--card) 80%)",
-                color: ACCENT,
-              }}
-            >
-              {e.i}
-            </span>
-            <span className="text-foreground text-micro-eyebrow flex-1 leading-snug">
-              <span className="font-bold">{e.i}</span> {e.t}
-            </span>
-            <span className="text-muted-foreground text-micro-floor">
-              {e.m}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function MonitorViz() {
-  const points = [
-    12, 18, 22, 16, 28, 24, 32, 28, 36, 30, 28, 22, 26, 34, 30, 38, 42, 36,
-  ];
-  const max = Math.max(...points);
-  const w = 240;
-  const h = 70;
-  const stepX = w / (points.length - 1);
-  const path = points
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${i * stepX} ${h - (p / max) * h}`)
-    .join(" ");
-  const area = `${path} L ${w} ${h} L 0 ${h} Z`;
-  const lastX = (points.length - 1) * stepX;
-  const lastY = h - (points[points.length - 1] / max) * h;
-  return (
-    <div className={VIZ_WRAP}>
-      <div className="bg-card border-border rounded-sm border p-2">
-        <div className="mb-1 flex items-center justify-between">
-          <span className="text-muted-foreground text-micro-eyebrow font-semibold tracking-wider uppercase">
-            CPU · last 30m
-          </span>
-          <span className="text-micro font-bold" style={{ color: ACCENT }}>
-            34%
-          </span>
-        </div>
-        <svg
-          viewBox={`0 0 ${w} ${h + 6}`}
-          preserveAspectRatio="none"
-          className="h-10 w-full"
-          aria-hidden
-        >
-          <path
-            d={area}
-            fill={"color-mix(in oklch, var(--primary), var(--card) 78%)"}
-          />
-          <path
-            d={path}
-            stroke={ACCENT}
-            strokeWidth="1.5"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <circle cx={lastX} cy={lastY} r="2.5" fill={ACCENT} />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
 function InterfaceViz() {
   return (
     <div className={VIZ_WRAP}>
@@ -462,9 +295,10 @@ function InterfaceViz() {
 
 function NotifyViz() {
   const templates = [
-    { n: "Approval Required", e: "onApprove", c: "Email" },
-    { n: "Request Submitted", e: "onSubmit", c: "System" },
-    { n: "PR Rejected", e: "onReject", c: "Email" },
+    // ช่องทางเป็น In-app ทุกแถว — เทมเพลตการแจ้งเตือนเหลือช่องทางแอปช่องทางเดียว (ไม่มีอีเมลแล้ว)
+    { n: "Approval Required", e: "onApprove", c: "In-app" },
+    { n: "Request Submitted", e: "onSubmit", c: "In-app" },
+    { n: "PR Rejected", e: "onReject", c: "In-app" },
   ];
   return (
     <div className={VIZ_WRAP}>
@@ -515,124 +349,12 @@ function NotifyViz() {
   );
 }
 
-function CodeViz() {
-  const lines = [
-    {
-      p: "cron · 0 2 * * *",
-      color: "var(--muted-foreground)",
-      bold: false,
-      prefix: "  ",
-    },
-    {
-      p: "sync_vendor_prices.js",
-      color: "var(--primary-foreground)",
-      bold: true,
-      prefix: "$ ",
-    },
-    { p: "→ 1,284 rows updated", color: ACCENT, bold: false, prefix: "  " },
-    {
-      p: "→ done · 4.2s",
-      color: "var(--muted-foreground)",
-      bold: false,
-      prefix: "  ",
-    },
-  ];
-  return (
-    <div className={VIZ_WRAP}>
-      <div className="bg-foreground rounded-sm p-2">
-        <div className="mb-1.5 flex gap-1" aria-hidden>
-          <span
-            className="inline-block size-1.5 rounded-full"
-            style={{ background: "#ff5f57" }}
-          />
-          <span
-            className="inline-block size-1.5 rounded-full"
-            style={{ background: "#febc2e" }}
-          />
-          <span
-            className="inline-block size-1.5 rounded-full"
-            style={{ background: "#28c840" }}
-          />
-        </div>
-        {lines.map((l, i) => (
-          <div
-            key={i}
-            className="text-micro-eyebrow leading-snug"
-            style={{ color: l.color, fontWeight: l.bold ? 700 : 400 }}
-          >
-            {l.prefix}
-            {l.p}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function QueryViz() {
-  return (
-    <div className={VIZ_WRAP}>
-      <div className="bg-card border-border rounded-sm border p-2">
-        <div className="text-foreground text-micro-eyebrow leading-relaxed">
-          <div>
-            <span className="font-bold" style={{ color: ACCENT }}>
-              SELECT
-            </span>{" "}
-            vendor,{" "}
-            <span className="font-bold" style={{ color: ACCENT }}>
-              SUM
-            </span>
-            (total)
-          </div>
-          <div>
-            <span className="font-bold" style={{ color: ACCENT }}>
-              FROM
-            </span>{" "}
-            purchase_orders
-          </div>
-          <div>
-            <span className="font-bold" style={{ color: ACCENT }}>
-              WHERE
-            </span>{" "}
-            period{" "}
-            <span className="font-bold" style={{ color: ACCENT }}>
-              =
-            </span>{" "}
-            <span className="text-positive-ink">{`'2026-05'`}</span>
-          </div>
-          <div>
-            <span className="font-bold" style={{ color: ACCENT }}>
-              GROUP BY
-            </span>{" "}
-            vendor;
-          </div>
-        </div>
-        <div className="border-border-subtle mt-1.5 flex items-center justify-between border-t pt-1">
-          <span className="text-muted-foreground text-micro-floor">
-            184 rows · 1.2s
-          </span>
-          <span
-            className="text-micro-floor rounded-[1px] px-1.5 py-0.5 font-semibold"
-            style={{
-              background:
-                "color-mix(in oklch, var(--primary), var(--card) 80%)",
-              color: ACCENT,
-            }}
-          >
-            Save
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function DatasetViz() {
   const cols = [
     { n: "vendor_id", t: "string", pk: true },
     { n: "period", t: "date", pk: false },
+    // สามแถวพอดีกรอบภาพ (h-28) — แถวที่สี่ดันหัวตารางขึ้นไปเกินขอบบนจนถูกตัด
     { n: "total_thb", t: "number", pk: false },
-    { n: "doc_count", t: "int", pk: false },
   ];
   return (
     <div className={VIZ_WRAP}>
@@ -683,6 +405,283 @@ function DatasetViz() {
             </span>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/** เส้นแทนบรรทัดข้อความ — ภาพจำลองของหน้าที่เพิ่มทีหลังไม่ใส่ตัวเลขหรือชื่อสมมติ (ดูเหมือนข้อมูลจริง) */
+function Line({
+  w,
+  strong,
+}: {
+  readonly w: string;
+  readonly strong?: boolean;
+}) {
+  return (
+    <span
+      className={`block h-1.5 rounded-full ${strong ? "bg-foreground/60" : "bg-muted-foreground/30"}`}
+      style={{ width: w }}
+    />
+  );
+}
+
+function CompanyViz() {
+  return (
+    <div className={VIZ_WRAP}>
+      <div className="bg-card border-border flex items-center gap-2 rounded-sm border p-2">
+        <span
+          className="block size-8 shrink-0 rounded"
+          style={{ background: ACCENT, opacity: 0.8 }}
+        />
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <Line w="55%" strong />
+          <Line w="80%" />
+          <Line w="40%" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsViz() {
+  const rows = [true, false, true];
+  return (
+    <div className={VIZ_WRAP}>
+      <div className="bg-card border-border flex flex-col gap-1.5 rounded-sm border p-2">
+        {rows.map((on, i) => (
+          <div key={i} className="flex items-center justify-between gap-3">
+            <Line w={`${45 + i * 12}%`} />
+            <span
+              className="bg-muted relative block h-2.5 w-5 shrink-0 rounded-full"
+              style={on ? { background: ACCENT } : undefined}
+            >
+              <span
+                className="bg-card absolute top-0.5 block size-1.5 rounded-full"
+                style={on ? { right: "0.125rem" } : { left: "0.125rem" }}
+              />
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AskAiViz() {
+  return (
+    <div className={VIZ_WRAP}>
+      <div className="flex flex-col gap-1.5">
+        <div
+          className="ml-auto flex w-1/2 flex-col gap-1 rounded-md rounded-br-none p-1.5"
+          style={{ background: ACCENT, opacity: 0.85 }}
+        >
+          <span className="bg-primary-foreground/80 block h-1 w-4/5 rounded-full" />
+        </div>
+        <div className="bg-card border-border flex w-3/4 flex-col gap-1 rounded-md rounded-bl-none border p-1.5">
+          <Line w="90%" />
+          <Line w="70%" />
+          <Line w="45%" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmailProfileViz() {
+  return (
+    <div className={VIZ_WRAP}>
+      <div className="bg-card border-border flex flex-col gap-1.5 rounded-sm border p-2">
+        {["From", "SMTP"].map((label, i) => (
+          <div
+            key={label}
+            className="text-muted-foreground text-micro-eyebrow flex items-center gap-2"
+          >
+            <span className="w-7 shrink-0 font-semibold">{label}</span>
+            <Line w={i === 0 ? "60%" : "45%"} strong={i === 0} />
+            <span
+              className="ml-auto block size-1.5 shrink-0 rounded-full"
+              style={{ background: ACCENT }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EmailTemplateViz() {
+  return (
+    <div className={VIZ_WRAP}>
+      <div className="bg-card border-border flex flex-col gap-1.5 rounded-sm border p-2">
+        <Line w="50%" strong />
+        <Line w="92%" />
+        <Line w="85%" />
+        <span
+          className="mt-0.5 block h-3 w-12 rounded-sm"
+          style={{ background: ACCENT, opacity: 0.8 }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function StorageViz() {
+  return (
+    <div className={VIZ_WRAP}>
+      <div className="bg-card border-border flex flex-col gap-2 rounded-sm border p-2">
+        {[
+          { label: "Database", fill: "35%" },
+          { label: "Attachments", fill: "62%" },
+        ].map((row) => (
+          <div key={row.label}>
+            <div className="text-muted-foreground text-micro-eyebrow font-semibold">
+              {row.label}
+            </div>
+            <div className="bg-muted mt-1 h-1.5 overflow-hidden rounded-full">
+              <div
+                className="h-full rounded-full"
+                style={{ width: row.fill, background: ACCENT }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * แถวรายการของภาพจำลอง: จุดหน้าแถว + เส้นแทนข้อความ + ป้ายท้ายแถว
+ *
+ * ใช้กับหน้าที่เป็นรายการ (ผู้ใช้ ไฟล์ การเข้า–ออกระบบ ประวัติการแก้ไข) — เดิมแต่ละภาพใส่ชื่อคน
+ * เลขที่เอกสาร และเวลาสมมติ ("A. Chen", "PO-12480", "2m ago") ซึ่งอ่านเป็นข้อมูลจริงได้
+ * ป้ายท้ายแถวเป็นคำทั่วไปของหน้านั้น (ชื่อบทบาท ชนิดไฟล์ ชนิดการกระทำ) ไม่ใช่ข้อมูล
+ */
+function ListViz({
+  rows,
+  dot = "round",
+}: {
+  readonly rows: readonly { readonly w: string; readonly chip: string }[];
+  readonly dot?: "round" | "file";
+}) {
+  return (
+    <div className={VIZ_WRAP}>
+      <div className="bg-card border-border rounded-sm border p-1.5">
+        {rows.map((row, i) => (
+          <div
+            key={row.chip + i}
+            className={`flex items-center gap-1.5 px-1 py-1.5 ${
+              i === rows.length - 1 ? "" : "border-border-subtle border-b"
+            }`}
+          >
+            {dot === "round" ? (
+              <span
+                className="block size-3.5 shrink-0 rounded-full"
+                style={{
+                  background:
+                    "color-mix(in oklch, var(--primary), var(--card) 70%)",
+                }}
+              />
+            ) : (
+              <span className="bg-card border-muted-foreground block h-3 w-2.5 shrink-0 rounded-[1px] border" />
+            )}
+            <div className="min-w-0 flex-1">
+              <Line w={row.w} strong />
+            </div>
+            <span
+              className="text-micro-floor shrink-0 rounded-sm px-1.5 py-0.5 font-semibold tracking-wider uppercase"
+              style={{
+                background:
+                  "color-mix(in oklch, var(--primary), var(--card) 80%)",
+                color: ACCENT,
+              }}
+            >
+              {row.chip}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AssignViz() {
+  return (
+    <ListViz
+      rows={[
+        { w: "45%", chip: "Buyer" },
+        { w: "70%", chip: "Storekeeper" },
+        { w: "35%", chip: "Finance" },
+      ]}
+    />
+  );
+}
+
+function DocsViz() {
+  return (
+    <ListViz
+      dot="file"
+      rows={[
+        { w: "65%", chip: "PDF" },
+        { w: "50%", chip: "XLSX" },
+        { w: "75%", chip: "IMG" },
+      ]}
+    />
+  );
+}
+
+function UserActivityViz() {
+  return (
+    <ListViz
+      rows={[
+        { w: "50%", chip: "Sign in" },
+        { w: "65%", chip: "Sign out" },
+        { w: "40%", chip: "Sign in" },
+      ]}
+    />
+  );
+}
+
+/** Activity Monitor = ประวัติว่าใครแก้อะไร (ไม่ใช่กราฟ CPU ของเครื่องอย่างที่ภาพเดิมวาด) */
+function MonitorViz() {
+  return (
+    <ListViz
+      rows={[
+        { w: "60%", chip: "Create" },
+        { w: "45%", chip: "Update" },
+        { w: "70%", chip: "Delete" },
+      ]}
+    />
+  );
+}
+
+/** Running Code = รูปแบบเลขที่เอกสาร (ไม่ใช่สคริปต์ตามเวลาอย่างที่ภาพ terminal เดิมวาด) */
+function CodeViz() {
+  const parts = ["Prefix", "Date", "Running no."];
+  return (
+    <div className={VIZ_WRAP}>
+      <div className="bg-card border-border flex flex-col gap-1.5 rounded-sm border p-2">
+        <div className="flex items-center gap-1">
+          {parts.map((part, i) => (
+            <span
+              key={part}
+              className="text-micro-floor rounded-sm px-1.5 py-0.5 font-semibold tracking-wider uppercase"
+              style={
+                i === 0
+                  ? { background: ACCENT, color: "var(--primary-foreground)" }
+                  : {
+                      background:
+                        "color-mix(in oklch, var(--primary), var(--card) 80%)",
+                      color: ACCENT,
+                    }
+              }
+            >
+              {part}
+            </span>
+          ))}
+        </div>
+        <Line w="55%" strong />
       </div>
     </div>
   );

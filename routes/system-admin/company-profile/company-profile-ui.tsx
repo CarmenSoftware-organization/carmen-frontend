@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { FieldPlainText } from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -15,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SettingField } from "@/components/share/setting-field";
 import { cn } from "@/lib/utils";
 import type { BusinessUnitConfigItem } from "@/types/business-unit";
 import type { BusinessSettingFormValues } from "./company-profile-form-schema";
@@ -35,70 +35,6 @@ function fieldError(form: Form, name: FormName): string | undefined {
   }
   const msg = (cur as { message?: unknown } | undefined)?.message;
   return typeof msg === "string" ? msg : undefined;
-}
-
-/**
- * กรอบของค่าในโหมดดู — ขนาด/เส้นเท่า input ของโหมดแก้ กด Edit แล้ว layout ไม่กระโดด
- */
-const VIEW_BOX_CLASS =
-  "bg-muted/50 min-h-8 w-full rounded-md border px-3 py-1.5 text-sm";
-
-/**
- * ช่องแบบอ่านอย่างเดียว — ค่าอยู่ในกรอบ `VIEW_BOX_CLASS`
- *
- * @param example - ตัวอย่างผลลัพธ์ของค่า (เช่น pattern วันที่ → วันนี้ในรูปแบบนั้น)
- *   แสดงจาง ๆ ต่อท้ายค่า
- */
-export function SettingField({
-  label,
-  value,
-  description,
-  mono,
-  fullWidth,
-  example,
-  children,
-}: {
-  readonly label: string;
-  readonly value?: string | number | null;
-  readonly description?: string;
-  readonly mono?: boolean;
-  readonly fullWidth?: boolean;
-  readonly example?: string | null;
-  readonly children?: React.ReactNode;
-}) {
-  const isEmpty =
-    children == null && (value === null || value === undefined || value === "");
-  return (
-    <div className={cn("min-w-0 space-y-1", fullWidth && "sm:col-span-2")}>
-      <div className="text-foreground text-xs font-semibold">{label}</div>
-      {description && (
-        <p className="text-muted-foreground/80 text-micro leading-snug">
-          {description}
-        </p>
-      )}
-      {children ?? (
-        <FieldPlainText
-          className={cn(
-            VIEW_BOX_CLASS,
-            "flex flex-wrap items-center gap-x-2 break-words",
-            mono && "font-mono text-xs",
-            isEmpty && "text-muted-foreground/60",
-          )}
-        >
-          {isEmpty ? null : (
-            <>
-              <span className="min-w-0">{value}</span>
-              {example && (
-                <span className="text-muted-foreground font-sans text-xs font-normal tabular-nums">
-                  → {example}
-                </span>
-              )}
-            </>
-          )}
-        </FieldPlainText>
-      )}
-    </div>
-  );
 }
 
 /**
@@ -127,7 +63,7 @@ function EditShell({
     </p>
   );
   return (
-    <div className={cn("min-w-0 space-y-1", fullWidth && "sm:col-span-2")}>
+    <div className={cn("min-w-0 space-y-1", fullWidth && "@md:col-span-2")}>
       <Label
         htmlFor={htmlFor}
         className="text-foreground text-xs font-semibold"
@@ -305,6 +241,8 @@ export function SelectField({
         fullWidth={fullWidth}
         mono={mono}
         example={displayValue ? exampleOf?.(displayValue) : null}
+        // ช่อง pattern (mono) = โชว์ผลลัพธ์เป็นหลัก · timezone ชื่อโซนคือค่าหลักอยู่แล้ว
+        specimen={mono}
       />
     );
   }
@@ -364,7 +302,12 @@ export function NumberFormatField({
 }) {
   if (!editing) {
     return (
-      <SettingField label={label} value={displayValue} example={example} />
+      <SettingField
+        label={label}
+        value={displayValue}
+        example={example}
+        specimen
+      />
     );
   }
   return (
@@ -392,7 +335,7 @@ export function NumberFormatField({
 }
 
 /**
- * แถวของ config หนึ่งรายการ (หน้า Default Setting) — ป้าย + คำอธิบายซ้าย ค่า/คอนโทรลขวา
+ * config หนึ่งรายการ (หน้า Default Setting) — ช่องหนึ่งของ `FieldGrid`: ป้ายบน ค่า/คอนโทรลล่าง
  * value เก็บเป็น string เสมอ: boolean → Switch, enum (มี options) → Select, อื่นๆ → text input
  *
  * คีย์ดิบ (`item.key`) ไม่โชว์แล้ว — เป็นภาษา dev ผู้ใช้อ่านไม่ออก เหลือไว้ใน `title`
@@ -517,32 +460,35 @@ export function ConfigField({
     control = <Input id={name} {...form.register(name)} className="h-8" />;
   }
 
+  // ช่องหนึ่งของ `FieldGrid` — ป้ายบน ค่า/คอนโทรลล่าง (เดิมเป็นแถวเต็มความกว้าง ป้ายชิดซ้าย
+  // ค่าชิดขวา บนจอกว้างค่าจึงลอยห่างจากป้ายเป็นคืบ)
   return (
-    <div className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          {code && (
-            <span className="bg-muted text-muted-foreground text-micro w-10 shrink-0 rounded py-0.5 text-center font-mono font-semibold">
-              {code}
-            </span>
-          )}
-          <Label
-            htmlFor={editing ? name : undefined}
-            title={item.key}
-            className="text-foreground text-sm font-medium"
-          >
-            {displayLabel}
-          </Label>
-        </div>
-        {description && (
-          <p className="text-muted-foreground mt-0.5 text-xs leading-snug">
-            {description}
-          </p>
+    <div className="min-w-0">
+      <div className="flex items-center gap-1.5">
+        {code && (
+          <span className="bg-muted text-muted-foreground text-micro shrink-0 rounded px-1 py-0.5 text-center font-mono font-semibold">
+            {code}
+          </span>
         )}
+        <Label
+          htmlFor={editing ? name : undefined}
+          title={item.key}
+          className={cn(
+            "min-w-0 text-xs",
+            editing
+              ? "text-foreground font-semibold"
+              : "text-muted-foreground font-normal",
+          )}
+        >
+          {displayLabel}
+        </Label>
       </div>
-      <div className={cn("flex shrink-0 sm:justify-end", !isBool && "sm:w-64")}>
-        {control}
-      </div>
+      <div className={editing ? "mt-1" : "mt-0.5"}>{control}</div>
+      {description && (
+        <p className="text-muted-foreground/80 text-micro mt-1 leading-snug">
+          {description}
+        </p>
+      )}
     </div>
   );
 }

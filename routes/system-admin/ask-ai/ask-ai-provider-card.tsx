@@ -30,8 +30,9 @@ interface AskAiProviderCardProps {
 }
 
 /**
- * หนึ่งแถวต่อ provider — ยุบไว้ = ไอคอน · ชื่อ · ที่มาของ prompt · สถานะ + prompt ที่ใช้จริง 1 บรรทัด
- * ขยาย = prompt เต็ม (view) หรือ editor (edit) · ขยายได้ทีละแถว (parent คุม `open`)
+ * หนึ่งช่องต่อ provider (ช่องของ `FieldGrid size="item"`) — ยุบไว้ = ไอคอน · ชื่อ · ที่มาของ prompt · สถานะ + prompt ที่ใช้จริง 1 บรรทัด
+ * (ตัด 2 บรรทัด) · ขยาย = กินเต็มแถวของกริด โชว์ prompt เต็ม (view) หรือ editor (edit) ·
+ * ขยายได้ทีละตัว (parent คุม `open`)
  */
 export function AskAiProviderCard({
   item,
@@ -47,8 +48,13 @@ export function AskAiProviderCard({
   const idPrefix = `ask-ai-${item.code}`;
 
   return (
-    <Collapsible open={open} onOpenChange={onOpenChange}>
-      <div className="flex items-start gap-3 py-3">
+    <Collapsible
+      open={open}
+      onOpenChange={onOpenChange}
+      // ยุบ = ช่องหนึ่งของกริด · ขยาย = กินเต็มแถว ให้ prompt มีที่อ่าน
+      className={cn("min-w-0", open && "col-span-full")}
+    >
+      <div className="flex items-start gap-3">
         <CollapsibleTrigger asChild>
           <button
             type="button"
@@ -81,7 +87,7 @@ export function AskAiProviderCard({
               />
             )}
             <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-2">
+              <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 <span
                   className={cn(
                     "text-sm font-medium",
@@ -102,7 +108,7 @@ export function AskAiProviderCard({
                 // ตัวอย่างเท่านั้น — prompt เต็มอยู่ในส่วนที่ขยาย ไม่ให้ screen reader อ่านทั้งก้อนเป็นชื่อปุ่ม
                 <span
                   aria-hidden
-                  className="text-muted-foreground mt-0.5 block truncate text-xs"
+                  className="text-muted-foreground mt-0.5 line-clamp-2 text-xs"
                 >
                   {effectivePrompt.replace(/\s+/g, " ")}
                 </span>
@@ -139,67 +145,76 @@ export function AskAiProviderCard({
       </div>
 
       <CollapsibleContent>
-        <div className="space-y-3 pb-4 pl-6">
-          {editing ? (
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-2">
-                <label
-                  htmlFor={`${idPrefix}-prompt`}
-                  className="text-xs font-medium"
-                >
-                  {t("promptLabel")}
-                </label>
-                {custom ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onChange({ ...draft, prompt: "" })}
+        {/* prompt ที่แก้เองกับค่ามาตรฐานวางเคียงกันเมื่อกว้างพอ จะได้เทียบกันบรรทัดต่อบรรทัด */}
+        <div className="@container pt-2 pb-1 pl-6">
+          <div
+            className={cn("grid gap-x-5 gap-y-3", custom && "@3xl:grid-cols-2")}
+          >
+            {editing ? (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <label
+                    htmlFor={`${idPrefix}-prompt`}
+                    className="text-xs font-medium"
                   >
-                    {t("resetPrompt")}
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      onChange({ ...draft, prompt: item.default_prompt })
-                    }
-                  >
-                    {t("startFromDefault")}
-                  </Button>
-                )}
+                    {t("promptLabel")}
+                  </label>
+                  {custom ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onChange({ ...draft, prompt: "" })}
+                    >
+                      {t("resetPrompt")}
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        onChange({ ...draft, prompt: item.default_prompt })
+                      }
+                    >
+                      {t("startFromDefault")}
+                    </Button>
+                  )}
+                </div>
+                <Textarea
+                  id={`${idPrefix}-prompt`}
+                  value={draft.prompt}
+                  maxLength={ASK_AI_PROMPT_MAX}
+                  placeholder={t("promptPlaceholder")}
+                  onChange={(e) =>
+                    onChange({ ...draft, prompt: e.target.value })
+                  }
+                  className="min-h-28"
+                />
+                <p className="text-muted-foreground text-xs">
+                  {/* ห้ามใส่ {items} ใน messages (ICU) จึงเขียนใน JSX ตรง ๆ */}
+                  {t("promptHintPrefix")} <code>{"{items}"}</code>{" "}
+                  {t("promptHintSuffix")}
+                </p>
               </div>
-              <Textarea
-                id={`${idPrefix}-prompt`}
-                value={draft.prompt}
-                maxLength={ASK_AI_PROMPT_MAX}
-                placeholder={t("promptPlaceholder")}
-                onChange={(e) => onChange({ ...draft, prompt: e.target.value })}
-                className="min-h-28"
+            ) : (
+              <PromptBlock
+                label={
+                  custom ? t("customPromptLabel") : t("defaultPromptLabel")
+                }
+                text={effectivePrompt}
               />
-              <p className="text-muted-foreground text-xs">
-                {/* ห้ามใส่ {items} ใน messages (ICU) จึงเขียนใน JSX ตรง ๆ */}
-                {t("promptHintPrefix")} <code>{"{items}"}</code>{" "}
-                {t("promptHintSuffix")}
-              </p>
-            </div>
-          ) : (
-            <PromptBlock
-              label={custom ? t("customPromptLabel") : t("defaultPromptLabel")}
-              text={effectivePrompt}
-            />
-          )}
+            )}
 
-          {/* แก้ prompt เองแล้ว → ยังเห็นค่ามาตรฐานไว้เทียบ */}
-          {custom && (
-            <PromptBlock
-              label={t("defaultPromptLabel")}
-              text={item.default_prompt}
-              muted
-            />
-          )}
+            {/* แก้ prompt เองแล้ว → ยังเห็นค่ามาตรฐานไว้เทียบ */}
+            {custom && (
+              <PromptBlock
+                label={t("defaultPromptLabel")}
+                text={item.default_prompt}
+                muted
+              />
+            )}
+          </div>
         </div>
       </CollapsibleContent>
     </Collapsible>

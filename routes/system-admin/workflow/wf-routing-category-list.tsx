@@ -51,12 +51,14 @@ export function CategoryCheckboxList({
       form.setValue(
         `data.routing_rules.${ruleIndex}.condition.value`,
         value.filter((v) => v !== catName),
+        { shouldDirty: true },
       );
     } else {
-      form.setValue(`data.routing_rules.${ruleIndex}.condition.value`, [
-        ...value,
-        catName,
-      ]);
+      form.setValue(
+        `data.routing_rules.${ruleIndex}.condition.value`,
+        [...value, catName],
+        { shouldDirty: true },
+      );
     }
   };
 

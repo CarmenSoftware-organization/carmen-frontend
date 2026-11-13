@@ -4,7 +4,6 @@
     "loadError": "Failed to load business unit settings.",
     "minDigits": "min {n} digits",
     "noImage": "No image",
-    "sectionNav": "Sections",
     "identity": {
       "lockedHint": "Set when the business unit was created — can't be changed here."
     },
@@ -39,8 +38,6 @@
       "clusterNameDesc": "The business group this business unit belongs to.",
       "description": "Description",
       "descriptionDesc": "Free-text notes about the business unit.",
-      "info": "Info",
-      "infoDesc": "Additional information about the business unit.",
       "calculationMethod": "Costing Method",
       "calculationMethodDesc": "Inventory costing method (average, FIFO, or average per location).",
       "calculationMethodOptions": {
@@ -2821,163 +2818,108 @@
     "landing": {
       "kicker": "The control room",
       "title": "System Admin",
-      "lede": "Everything behind Carmen Blue — the calendars, permissions, workflows, scripts and datasets that make the rest of the building work. Eleven tools, grouped into five chapters by what they do.",
-      "meta": {
-        "module": "Module · System Admin",
-        "version": "v2026.05",
-        "summary": "5 chapters · 11 tools"
-      },
-      "cta": {
-        "open": "Open"
-      },
-      "kpi": {
-        "uptime": {
-          "label": "Uptime · 30 days",
-          "value": "99.98%",
-          "sub": "14 min total downtime · 1 incident"
-        },
-        "users": {
-          "label": "Active users · today",
-          "value": "247",
-          "sub": "38 admins · 209 staff"
-        },
-        "jobs": {
-          "label": "Background jobs",
-          "value": "1,284",
-          "sub": "12 queued · 4 retrying"
-        },
-        "health": {
-          "label": "System health",
-          "value": "Green",
-          "sub": "all checks passing"
-        }
-      },
+      "lede": "What the rest of Carmen Blue runs on — periods, permissions, approval workflows, connections and settings, grouped into chapters by what they do.",
       "chapters": {
+        "business": {
+          "kicker": "Business Unit",
+          "title": "Who we are",
+          "lede": "The identity of this business unit as printed on documents, and the defaults every new document starts from."
+        },
         "access": {
           "kicker": "Access & Identity",
           "title": "Who can do what",
-          "lede": "Define the permissions of the building and decide who carries which keys. Roles describe capability; assignments map people onto them."
+          "lede": "Roles say what a job may see and do; users are the people who hold them."
         },
         "process": {
           "kicker": "Process & Lifecycle",
           "title": "How work moves",
-          "lede": "The rules of the road. Define your fiscal calendar, the approval ladders documents must climb, and where every file lives across its life."
+          "lede": "The periods you post into, the order documents are approved in, and the files kept alongside the system."
         },
         "observe": {
           "kicker": "Observability",
           "title": "What's happening",
-          "lede": "A pair of windows into the building. One looks at the people; the other looks at the machine. Both keep a record long enough to answer hard questions."
+          "lede": "Who signed in and out, and who changed what on which document."
         },
         "config": {
           "kicker": "System Configuration",
           "title": "Wiring it together",
-          "lede": "The pieces that connect Carmen Blue to the rest of the world — mailservers, scripts that fire on events, scheduled code that runs without a human."
+          "lede": "Connections to outside systems, the wording of alerts and emails, and the shape of document numbers."
         },
         "data": {
           "kicker": "Data Platform",
           "title": "Data, ready for use",
-          "lede": "Datasets are the raw material the rest of Carmen Blue reads from. Query them to explore; promote them to a dashboard once they earn it."
+          "lede": "What dashboards are allowed to read, and how much space this business unit has used."
         }
       },
       "modules": {
         "roles": {
           "name": "Roles",
-          "one": "Permission templates by job function.",
-          "long": "Bundle granular permissions into named roles — Buyer, Storekeeper, Receiver, Finance Reviewer. Inherit between roles; lock down by module, action, or specific field.",
-          "stat": "14 roles · 87 permissions",
-          "meta": "last edited 2 days ago"
+          "one": "Job roles, and what each role is allowed to see and do."
         },
         "assign": {
-          "name": "Assign Users",
-          "one": "Map people to roles and properties.",
-          "long": "Bulk-assign roles to users, scope them to one or many properties, set effective dates for temporary access, and review who has what at a glance.",
-          "stat": "247 active users · 38 admins",
-          "meta": "3 pending invitations"
+          "name": "Users",
+          "one": "Who can sign in, which property they work at, and the role they hold."
         },
         "inventoryPeriod": {
           "name": "Inventory Period",
-          "one": "Inventory periods, close & reopen.",
-          "long": "Define inventory months and quarters, freeze them at close, and reopen with a documented reason. Inventory period status drives what every transaction screen will accept.",
-          "stat": "May 2026 · Open",
-          "meta": "next close · 31 May"
+          "one": "Inventory periods — open one to post into, close it when the month is done."
         },
         "workflows": {
           "name": "Workflows",
-          "one": "Approval chains for every document type.",
-          "long": "Design who approves what, in which order, with conditions on amount, department, and vendor. Reroute, parallel-approve, escalate on SLA breach — all configurable.",
-          "stat": "18 workflows · 6 doc types",
-          "meta": "2 awaiting review"
+          "one": "Who approves what, and in which order, before a document can go through."
         },
         "docs": {
           "name": "Document Management",
-          "one": "Storage, retention and versioning.",
-          "long": "Where attachments live, how long they're kept, who can see them. Set retention by doc type, configure versioning, watermark PDFs and lock originals.",
-          "stat": "124,802 documents",
-          "meta": "38 GB · retention 7 years"
+          "one": "Files kept alongside the system — upload, replace, or remove them."
         },
         "userActivity": {
           "name": "User Activity",
-          "one": "Every action a person took.",
-          "long": "Full audit log per user — sign-ins, edits, approvals, exports, role changes. Filter by user, date range, action class. Export for SOX, PCI and internal audits.",
-          "stat": "8,412 events · today",
-          "meta": "7 sign-in anomalies flagged"
+          "one": "Who signed in and out, and when."
         },
         "monitor": {
           "name": "Activity Monitor",
-          "one": "Live system load and job queues.",
-          "long": "Watch CPU, memory, request latency, background-job throughput in real time. Drill into any spike, replay the timeline, set alert thresholds per service.",
-          "stat": "CPU 34% · p95 218ms",
-          "meta": "12 jobs queued · 4 retrying"
-        },
-        "email": {
-          "name": "Email Config",
-          "one": "SMTP, senders and templates.",
-          "long": "Hook up your outbound mailserver, manage signing domains, configure DKIM/SPF, edit notification templates per locale. Test-send to any address before going live.",
-          "stat": "mail.aureliabay.com · OK",
-          "meta": "4 templates · EN + TH"
+          "one": "The trail of who changed what, across every document."
         },
         "interface": {
           "name": "Interfaces",
-          "one": "Accounting, POS and PMS connections.",
-          "long": "Point Carmen Blue at the systems around it — the ledger that receives your postings, the tills that report what was sold, the property system that owns the folios. Set the codes each one expects and the cadence they run at.",
-          "stat": "3 interfaces",
-          "meta": "Accounting · POS · PMS"
+          "one": "Connections between Carmen Blue and your accounting, POS and property systems."
         },
         "notifyTemplate": {
-          "name": "Notification Templates",
-          "one": "Reusable messages for workflow events.",
-          "long": "Author the emails and in-app alerts Carmen Blue sends on submit, approve, reject and SLA breach. Edit subject and body per event, drop in tokens, reuse the same template across every workflow.",
-          "stat": "12 templates · 5 events",
-          "meta": "EN + TH · edited 3d ago"
+          "name": "Notification Template",
+          "one": "The wording of the in-app alerts sent when a document moves along."
         },
         "code": {
           "name": "Running Code",
-          "one": "Scheduled scripts and webhooks.",
-          "long": "Run JavaScript on a cron — nightly data syncs, monthly snapshots, on-event webhooks. Tail logs, replay failures, version-control every script in-place.",
-          "stat": "23 scripts · 11 active",
-          "meta": "last run · 2 min ago"
-        },
-        "query": {
-          "name": "Query Dataset",
-          "one": "SQL workbench over every Carmen Blue table.",
-          "long": "Browse the catalog, run ad-hoc SQL, save queries, share with teammates. Sandboxed read-only by default — promote a query to a saved dataset when it's right.",
-          "stat": "184 saved queries",
-          "meta": "avg. exec · 1.2s"
+          "one": "The shape of your document numbers — prefix, running number, and when it starts over."
         },
         "dataset": {
           "name": "Dashboard Dataset",
-          "one": "Curated datasets that power dashboards.",
-          "long": "Promote a query into a named dataset, schedule refresh, document its columns. Reports and dashboards point here — change a dataset, every chart updates.",
-          "stat": "42 datasets · 6 stale",
-          "meta": "next refresh · 17:00"
+          "one": "The data each dashboard widget is allowed to pull from."
+        },
+        "companyProfile": {
+          "name": "Company Profile",
+          "one": "Business unit identity, hotel and company details."
+        },
+        "defaultSetting": {
+          "name": "Default Setting",
+          "one": "Per-document defaults for this business unit."
+        },
+        "askAi": {
+          "name": "Ask AI",
+          "one": "AI assistants in the purchase request menu."
+        },
+        "emailProfile": {
+          "name": "Email Profiles",
+          "one": "Sender profiles used to email purchase orders and other documents to vendors."
+        },
+        "emailTemplate": {
+          "name": "Email Messages",
+          "one": "Reusable subject and message templates for emailing purchase orders and pricing requests to vendors."
+        },
+        "storage": {
+          "name": "Storage",
+          "one": "Database and attachment space used."
         }
-      },
-      "footer": {
-        "kicker": "Looking for something else?",
-        "title": "Read the admin handbook, or jump into a sandbox to try changes safely first.",
-        "sub": "Every destructive action requires confirmation. Every config change is versioned and reversible.",
-        "handbook": "Open handbook",
-        "sandbox": "Enter sandbox"
       }
     },
     "role": {
@@ -3516,7 +3458,17 @@
       "insightsLegendActive": "Action enabled",
       "notifyOff": "Off",
       "insightsLegendRecipients": "Recipients notified",
-      "stageFormErrors": "Some stage fields are invalid"
+      "stageFormErrors": "Some stage fields are invalid",
+      "landing": {
+        "count": "{count, plural, =0 {No workflows yet} one {# workflow} other {# workflows}}",
+        "cards": {
+          "workflowPurchaseRequest": "Approval steps a purchase request passes before it becomes an order.",
+          "workflowPurchaseOrder": "Approval steps before a purchase order goes to the vendor.",
+          "workflowStoreRequisition": "Approval steps before stock is issued against a store requisition.",
+          "workflowJournalVoucher": "Approval steps before a journal voucher is posted.",
+          "notificationTemplate": "Wording of the notifications these workflows send."
+        }
+      }
     },
     "runningCode": {
       "entity": "Running Code",
@@ -3531,6 +3483,7 @@
       "init": "Init Running Code",
       "initializing": "Initializing...",
       "initSuccess": "Running code initialized successfully",
+      "example": "Example",
       "previewLabel": "Document numbers will look like this",
       "addPart": "Add part",
       "partText": "Fixed text",
@@ -8030,13 +7983,12 @@
     "measureTooSoon": "Measured just now. Try again in 10 minutes.",
     "loadFailed": "Could not load storage usage.",
     "notMeasured": "This business unit has not been measured yet.",
+    "usageTitle": "Usage",
+    "fileCount": "{count, plural, one {# file} other {# files}}",
     "breakdownTitle": "Attachments by type",
     "breakdownDesc": "View and delete unused files on the",
     "openDocuments": "Documents page",
-    "breakdownEmpty": "No attachments.",
-    "colType": "Type",
-    "colCount": "Files",
-    "colSize": "Size"
+    "breakdownEmpty": "No attachments."
   },
   "buCurrency": {
     "missing": "Business unit {bu} has no default currency set — amounts are shown in THB until one is set.",

@@ -1,47 +1,18 @@
 import { Link } from "react-router";
-import {
-  AtSign,
-  Building2,
-  IdCard,
-  Mail,
-  Phone,
-  Settings,
-  User,
-  UserRound,
-} from "lucide-react";
+import { Building2, Mail, Phone, Settings } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { useProfile } from "@/hooks/use-profile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import LoaderProfile from "@/components/loader/loader-profile";
+import {
+  CompactSection,
+  FieldGrid,
+  SECTION_PAIR,
+} from "@/components/share/compact-section";
+import { SettingField } from "@/components/share/setting-field";
 import BUSection from "./bu-section";
-
-function InfoItem({
-  icon: Icon,
-  label,
-  value,
-}: Readonly<{
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value?: string | null;
-}>) {
-  return (
-    <div className="group border-border/30 bg-background/40 hover:bg-background/60 flex items-center gap-3 rounded-xl border p-3 transition-all hover:shadow-md">
-      <span className="border-border/50 bg-background/50 group-hover:bg-primary/5 flex size-9 items-center justify-center rounded-lg border shadow-sm transition-transform group-hover:scale-110">
-        <Icon className="text-primary size-4" aria-hidden="true" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <dt className="text-muted-foreground text-micro-legal font-bold tracking-wider uppercase">
-          {label}
-        </dt>
-        <dd className="truncate text-sm font-medium" title={value || undefined}>
-          {value || "-"}
-        </dd>
-      </div>
-    </div>
-  );
-}
 
 export default function UserProfileDetails() {
   const t = useTranslations("profile");
@@ -66,17 +37,28 @@ export default function UserProfileDetails() {
     .map((n) => n!.charAt(0).toUpperCase())
     .join("");
 
+  const personal = (
+    <CompactSection title={t("personalInfo")}>
+      <FieldGrid>
+        <SettingField label={t("firstName")} value={user_info.firstname} />
+        <SettingField label={t("middleName")} value={user_info.middlename} />
+        <SettingField label={t("lastName")} value={user_info.lastname} />
+        <SettingField label={t("alias")} value={profile.alias_name} />
+      </FieldGrid>
+    </CompactSection>
+  );
+
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 relative z-0 w-full space-y-4 duration-500">
-      {/* Hero Header */}
-      <div className="bg-primary/5 relative overflow-hidden rounded-2xl border shadow-sm">
-        <div className="from-primary/10 absolute inset-0 bg-gradient-to-br via-transparent to-transparent opacity-50" />
-        <div className="relative flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4 sm:gap-5">
+    // ไม่มี slide-in: เหมือนหน้า profile/setting — แอนิเมชันยาวทำให้หน้าที่เปิดบ่อยรู้สึกช้า
+    <div className="animate-in fade-in w-full duration-150">
+      {/* หัวหน้า — เลือกแนวตั้ง/แนวนอนจากความกว้างของการ์ดเอง ไม่ใช่ของจอ (sidebar พับ/กางได้) */}
+      <div className="@container">
+        <div className="bg-card flex flex-col gap-3 rounded-xl border p-4 shadow-sm @md:flex-row @md:items-center @md:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
             <Avatar
               // Force remount when avatar_url flips
               key={profile.avatar_url ?? "fallback"}
-              className="ring-background/50 size-16 shadow-xl ring-4 ring-offset-0 transition-transform duration-300 hover:scale-105 sm:size-20"
+              className="size-14 shrink-0"
             >
               {profile.avatar_url && (
                 <AvatarImage
@@ -85,38 +67,30 @@ export default function UserProfileDetails() {
                   className="object-cover"
                 />
               )}
-              <AvatarFallback className="bg-primary/10 text-primary text-base font-semibold sm:text-lg">
+              <AvatarFallback className="bg-primary/10 text-primary text-base font-semibold">
                 {profile.alias_name || initials || "?"}
               </AvatarFallback>
             </Avatar>
-            <div className="min-w-0 flex-1 space-y-1.5">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-bold tracking-tight sm:text-xl">
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <h1 className="text-base font-semibold tracking-tight break-words">
                   {fullName}
-                </h2>
-                <Badge
-                  variant="primary-light"
-                  size="sm"
-                  className="shadow-primary/10 border-primary/20 text-xs shadow-sm"
-                >
-                  {profile.platform_role}
-                </Badge>
+                </h1>
+                {profile.platform_role && (
+                  <Badge variant="primary-light" size="sm">
+                    {profile.platform_role}
+                  </Badge>
+                )}
               </div>
-              <div className="text-muted-foreground flex flex-col gap-1.5 text-xs sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-                <span className="inline-flex items-center gap-1.5 truncate">
-                  <Mail
-                    className="text-primary/60 size-3.5 shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span className="truncate font-medium">{profile.email}</span>
+              <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                <span className="inline-flex min-w-0 items-center gap-1.5">
+                  <Mail className="size-3.5 shrink-0" aria-hidden="true" />
+                  <span className="break-all">{profile.email}</span>
                 </span>
                 {user_info.telephone && (
                   <span className="inline-flex items-center gap-1.5">
-                    <Phone
-                      className="text-primary/60 size-3.5 shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span className="font-medium">{user_info.telephone}</span>
+                    <Phone className="size-3.5 shrink-0" aria-hidden="true" />
+                    <span>{user_info.telephone}</span>
                   </span>
                 )}
               </div>
@@ -126,107 +100,58 @@ export default function UserProfileDetails() {
             variant="outline"
             size="sm"
             asChild
-            className="group h-11 w-full shadow-sm sm:h-9 sm:w-auto"
+            className="h-11 w-full shrink-0 @md:h-8 @md:w-auto"
           >
             <Link to="/profile/setting">
-              <Settings
-                className="size-3.5 transition-transform group-hover:rotate-45"
-                aria-hidden="true"
-              />
+              <Settings className="size-3.5" aria-hidden="true" />
               {t("editProfile")}
             </Link>
           </Button>
         </div>
       </div>
 
-      {/* Personal Information */}
-      <section className="bg-card overflow-hidden rounded-2xl border shadow-sm">
-        <header className="flex items-center gap-2 border-b px-3 py-3">
-          <span className="bg-primary/10 flex size-8 items-center justify-center rounded-lg">
-            <User className="text-primary size-4" aria-hidden="true" />
-          </span>
-          <h3 className="text-sm font-semibold">{t("personalInfo")}</h3>
-        </header>
-        <dl className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 lg:grid-cols-4">
-          <InfoItem
-            icon={UserRound}
-            label={t("firstName")}
-            value={user_info.firstname}
-          />
-          <InfoItem
-            icon={UserRound}
-            label={t("middleName")}
-            value={user_info.middlename}
-          />
-          <InfoItem
-            icon={IdCard}
-            label={t("lastName")}
-            value={user_info.lastname}
-          />
-          <InfoItem
-            icon={AtSign}
-            label={t("alias")}
-            value={profile.alias_name}
-          />
-        </dl>
-      </section>
-
-      {/* Signature */}
-      {profile.signature_url && (
-        <section className="bg-card overflow-hidden rounded-2xl border shadow-sm">
-          <header className="flex items-center gap-2 border-b px-3 py-3">
-            <span className="bg-primary/10 flex size-8 items-center justify-center rounded-lg">
-              <IdCard className="text-primary size-4" aria-hidden="true" />
-            </span>
-            <h3 className="text-sm font-semibold">{t("signature")}</h3>
-          </header>
-          <div className="flex min-h-24 items-center justify-center p-4">
-            <img
-              key={profile.signature_url}
-              src={profile.signature_url}
-              alt={t("signature")}
-              className="max-h-32 max-w-full object-contain drop-shadow-md transition-transform hover:scale-105"
-            />
-          </div>
-        </section>
+      {/* ข้อมูลส่วนตัว | ลายเซ็น — สองหมวดสูงใกล้กัน วางเคียงกันบนจอกว้าง */}
+      {profile.signature_url ? (
+        <div className={SECTION_PAIR}>
+          {personal}
+          <CompactSection title={t("signature")}>
+            {/* หมึกลายเซ็นเป็นสีเข้มบนพื้นโปร่ง — วางบนพื้นขาวเสมอ ไม่งั้นมองไม่เห็นใน dark mode */}
+            <div className="inline-flex max-w-full rounded-md border bg-white p-2">
+              <img
+                key={profile.signature_url}
+                src={profile.signature_url}
+                alt={t("signature")}
+                className="max-h-20 max-w-full object-contain"
+              />
+            </div>
+          </CompactSection>
+        </div>
+      ) : (
+        personal
       )}
 
-      {/* Business Units */}
-      <section className="bg-card overflow-hidden rounded-2xl border shadow-sm">
-        <header className="flex items-center gap-2 border-b px-3 py-3">
-          <span className="bg-primary/10 flex size-8 items-center justify-center rounded-lg">
-            <Building2 className="text-primary size-4" aria-hidden="true" />
+      {/* Business Units — หนึ่ง BU หนึ่งการ์ดเต็มความกว้าง ช่องข้างในแตกคอลัมน์ตามความกว้างการ์ด */}
+      <section className="mt-5">
+        <div className="mb-2 flex min-h-8 items-center gap-x-2">
+          <h2 className="text-sm font-semibold tracking-tight">
+            {t("businessUnits")}
+          </h2>
+          <span className="text-muted-foreground text-xs font-semibold tabular-nums">
+            {profile.business_unit.length}
           </span>
-          <h3 className="text-sm font-semibold">{t("businessUnits")}</h3>
-        </header>
-        <div className="p-3">
-          {profile.business_unit.length > 0 && (
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-              {profile.business_unit.map((bu) => (
-                <div
-                  key={bu.id}
-                  className="bg-muted/10 rounded-xl border p-3 shadow-sm transition-shadow hover:shadow-md"
-                >
-                  <h4 className="text-foreground mb-3 flex items-center gap-2 text-sm font-bold">
-                    <Building2 className="text-primary size-4" />
-                    {bu.name}
-                  </h4>
-                  <BUSection bu={bu} />
-                </div>
-              ))}
-            </div>
-          )}
-          {profile.business_unit.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="bg-muted/30 border-border/30 mb-3 flex size-12 items-center justify-center rounded-full border">
-                <Building2 className="text-muted-foreground size-5" />
-              </div>
-              <p className="text-muted-foreground text-sm font-medium">
-                {t("noBusinessUnits")}
-              </p>
-            </div>
-          )}
         </div>
+        {profile.business_unit.length > 0 ? (
+          <div className="space-y-3">
+            {profile.business_unit.map((bu) => (
+              <BUSection key={bu.id} bu={bu} />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-card text-muted-foreground flex items-center gap-2 rounded-xl border p-4 text-sm shadow-sm">
+            <Building2 className="size-4 shrink-0" aria-hidden="true" />
+            {t("noBusinessUnits")}
+          </div>
+        )}
       </section>
     </div>
   );

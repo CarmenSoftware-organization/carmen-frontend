@@ -1,23 +1,5 @@
 import { useRef, useState } from "react";
-import {
-  AtSign,
-  Barcode,
-  Building,
-  Briefcase,
-  FileText,
-  GitBranch,
-  Hotel,
-  ImageIcon,
-  Layers,
-  Loader2,
-  Mail,
-  MapPin,
-  Phone,
-  Receipt,
-  Trash2,
-  Upload,
-  Users,
-} from "lucide-react";
+import { ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
 import {
@@ -32,6 +14,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FieldGrid } from "@/components/share/compact-section";
+import { SettingField } from "@/components/share/setting-field";
 import {
   useDeleteBuAvatar,
   useDeleteBuLogo,
@@ -167,7 +151,7 @@ function ImageUploadField({
 
   return (
     <>
-      <div className="bg-background/50 flex flex-wrap items-center gap-3 rounded-lg border p-2">
+      <div className="flex min-w-0 flex-wrap items-center gap-3">
         <div className={boxClass}>
           {displayUrl ? (
             <img
@@ -183,11 +167,12 @@ function ImageUploadField({
             />
           )}
         </div>
-        <div className="min-w-0 flex-1 space-y-1">
-          <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-            {text.title}
+        {/* min-w-48: กล่องโลโก้ว่าง (256px) บนมือถือเหลือที่ไม่พอ — ให้ข้อความตกลงบรรทัดใหม่ ไม่ใช่บีบจนปุ่มล้นการ์ด */}
+        <div className="min-w-48 flex-1 space-y-1">
+          <p className="text-muted-foreground text-xs">{text.title}</p>
+          <p className="text-muted-foreground/80 text-micro leading-snug">
+            {text.hint}
           </p>
-          <p className="text-muted-foreground text-micro-legal">{text.hint}</p>
           <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
             <Button
               type="button"
@@ -266,54 +251,18 @@ function ImageUploadField({
   );
 }
 
-function InfoItem({
-  icon: Icon,
-  label,
-  value,
-  adornment,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value?: string | null;
-  adornment?: React.ReactNode;
-}) {
-  return (
-    <div className="bg-muted/30 flex items-center gap-2 rounded-lg px-2 py-1.5">
-      <span className="bg-background flex size-7 items-center justify-center rounded-md border">
-        <Icon className="text-muted-foreground size-3.5" aria-hidden="true" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <dt className="text-muted-foreground text-micro-legal font-semibold tracking-wide uppercase">
-          {label}
-        </dt>
-        <dd
-          className="flex items-center gap-1.5 text-xs font-semibold"
-          title={value || undefined}
-        >
-          <span className="truncate">{value || "-"}</span>
-          {adornment}
-        </dd>
-      </div>
-    </div>
-  );
-}
-
+/** หมวดย่อยในการ์ดของ BU (โรงแรม / บริษัท) — หัวข้อเล็ก + กริดของช่อง ไม่มีกรอบซ้อน */
 function SubSection({
   title,
-  icon: Icon,
   children,
 }: {
-  title: string;
-  icon: React.ComponentType<{ className?: string }>;
-  children: React.ReactNode;
+  readonly title: string;
+  readonly children: React.ReactNode;
 }) {
   return (
-    <div className="bg-background/50 space-y-2 rounded-lg border p-2">
-      <h4 className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
-        <Icon className="size-3.5" aria-hidden="true" />
-        {title}
-      </h4>
-      <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2">{children}</dl>
+    <div className="min-w-0">
+      <h4 className="mb-2 text-xs font-semibold">{title}</h4>
+      <FieldGrid>{children}</FieldGrid>
     </div>
   );
 }
@@ -358,134 +307,107 @@ export default function BUSection({ bu }: { bu: BusinessUnit }) {
   };
 
   return (
-    <section className="space-y-3">
-      {(config.is_hq || !bu.is_active) && (
-        <div className="flex items-center gap-1.5">
-          {config.is_hq && (
-            <Badge variant="info-light" size="xs">
-              {t("hq")}
-            </Badge>
+    <section className="bg-card @container rounded-xl border p-4 shadow-sm">
+      <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <h3 className="text-sm font-semibold break-words">{bu.name}</h3>
+        {bu.is_default && (
+          <Badge variant="success-light" size="xs">
+            {t("default")}
+          </Badge>
+        )}
+        {config.is_hq && (
+          <Badge variant="info-light" size="xs">
+            {t("hq")}
+          </Badge>
+        )}
+        {!bu.is_active && (
+          <Badge variant="destructive-light" size="xs">
+            {t("inactive")}
+          </Badge>
+        )}
+      </div>
+
+      {/* โลโก้กับ avatar กว้างเท่าเนื้อหา อยู่ติดกันชิดซ้าย — ไม่ยืดตามจอ */}
+      <div className="flex flex-wrap gap-x-10 gap-y-3">
+        <ImageUploadField
+          imageUrl={bu.logo_url}
+          entityId={bu.id}
+          useUpload={useUploadBuLogo}
+          useDelete={useDeleteBuLogo}
+          shape="landscape"
+          text={logoText}
+          priority
+        />
+        <ImageUploadField
+          imageUrl={bu.avatar_url}
+          entityId={bu.id}
+          useUpload={useUploadBuAvatar}
+          useDelete={useDeleteBuAvatar}
+          shape="round"
+          text={avatarText}
+          priority
+        />
+      </div>
+
+      <div className="mt-4">
+        <FieldGrid>
+          <SettingField label={t("buCode")} value={bu.code} />
+          <SettingField label={t("alias")} value={bu.alias_name} />
+          <SettingField
+            label={tfl("department")}
+            value={bu.department?.name}
+          />
+          <SettingField label={t("systemLevel")} value={bu.system_level} />
+          <SettingField
+            label={t("hodDepartments")}
+            value={bu.hod_department?.map((d) => d.name).join(", ")}
+          />
+          <SettingField label={t("taxNo")} value={config.tax_no} />
+          <SettingField label={t("branchNo")} value={config.branch_no} />
+          {config.description && (
+            <SettingField
+              label={tfl("description")}
+              value={config.description}
+              fullWidth
+            />
           )}
-          {!bu.is_active && (
-            <Badge variant="destructive-light" size="xs">
-              {t("inactive")}
-            </Badge>
+        </FieldGrid>
+      </div>
+
+      {/* โรงแรม | บริษัท เป็นคู่กัน — เคียงกันเมื่อการ์ดกว้างพอ (ตัดสินจากการ์ด ไม่ใช่จอ) */}
+      {(config.hotel || config.company) && (
+        <div className="mt-4 grid gap-x-5 gap-y-4 border-t pt-4 @5xl:grid-cols-2">
+          {config.hotel && (
+            <SubSection title={t("hotel")}>
+              <SettingField label={tfl("name")} value={config.hotel.name} />
+              <SettingField label={t("telephone")} value={config.hotel.tel} />
+              <SettingField label={tfl("email")} value={config.hotel.email} />
+              <SettingField
+                label={t("address")}
+                value={config.hotel.address}
+                fullWidth
+              />
+            </SubSection>
+          )}
+          {config.company && (
+            <SubSection title={t("company")}>
+              <SettingField label={tfl("name")} value={config.company.name} />
+              <SettingField
+                label={t("telephone")}
+                value={config.company.tel}
+              />
+              <SettingField
+                label={tfl("email")}
+                value={config.company.email}
+              />
+              <SettingField
+                label={t("address")}
+                value={config.company.address}
+                fullWidth
+              />
+            </SubSection>
           )}
         </div>
-      )}
-
-      <ImageUploadField
-        imageUrl={bu.logo_url}
-        entityId={bu.id}
-        useUpload={useUploadBuLogo}
-        useDelete={useDeleteBuLogo}
-        shape="landscape"
-        text={logoText}
-        priority
-      />
-
-      <ImageUploadField
-        imageUrl={bu.avatar_url}
-        entityId={bu.id}
-        useUpload={useUploadBuAvatar}
-        useDelete={useDeleteBuAvatar}
-        shape="round"
-        text={avatarText}
-        priority
-      />
-
-      <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        <InfoItem
-          icon={Barcode}
-          label={t("buCode")}
-          value={bu.code}
-          adornment={
-            bu.is_default && (
-              <Badge variant="success-light" size="xs">
-                {t("default")}
-              </Badge>
-            )
-          }
-        />
-        <InfoItem icon={AtSign} label={t("alias")} value={bu.alias_name} />
-        <InfoItem
-          icon={Briefcase}
-          label={tfl("department")}
-          value={bu.department?.name}
-        />
-        <InfoItem
-          icon={Layers}
-          label={t("systemLevel")}
-          value={bu.system_level}
-        />
-        <InfoItem
-          icon={Users}
-          label={t("hodDepartments")}
-          value={bu.hod_department?.map((d) => d.name).join(", ")}
-        />
-        <InfoItem icon={Receipt} label={t("taxNo")} value={config.tax_no} />
-        <InfoItem
-          icon={GitBranch}
-          label={t("branchNo")}
-          value={config.branch_no}
-        />
-        {config.description && (
-          <InfoItem
-            icon={FileText}
-            label={tfl("description")}
-            value={config.description}
-          />
-        )}
-      </dl>
-
-      {config.hotel && (
-        <SubSection title={t("hotel")} icon={Hotel}>
-          <InfoItem
-            icon={Hotel}
-            label={tfl("name")}
-            value={config.hotel.name}
-          />
-          <InfoItem
-            icon={Phone}
-            label={t("telephone")}
-            value={config.hotel.tel}
-          />
-          <InfoItem
-            icon={Mail}
-            label={tfl("email")}
-            value={config.hotel.email}
-          />
-          <InfoItem
-            icon={MapPin}
-            label={t("address")}
-            value={config.hotel.address}
-          />
-        </SubSection>
-      )}
-
-      {config.company && (
-        <SubSection title={t("company")} icon={Building}>
-          <InfoItem
-            icon={Building}
-            label={tfl("name")}
-            value={config.company.name}
-          />
-          <InfoItem
-            icon={Phone}
-            label={t("telephone")}
-            value={config.company.tel}
-          />
-          <InfoItem
-            icon={Mail}
-            label={tfl("email")}
-            value={config.company.email}
-          />
-          <InfoItem
-            icon={MapPin}
-            label={t("address")}
-            value={config.company.address}
-          />
-        </SubSection>
       )}
     </section>
   );

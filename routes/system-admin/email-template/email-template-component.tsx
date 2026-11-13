@@ -106,6 +106,56 @@ export default function EmailTemplateComponent() {
     );
   };
 
+  // ชิ้นส่วนของหนึ่งข้อความ — ใช้ทั้งในตาราง (กล่องกว้าง) และรายการแบบซ้อน (กล่องแคบ)
+  const rows = templates.map((template) => {
+    const isDefault = defaults[template.doc_type] === template.id;
+    return {
+      template,
+      isDefault,
+      subject:
+        template.subject_template || htmlToPlainText(template.body_template),
+      status: (
+        <Badge variant={template.enabled ? "default" : "secondary"}>
+          {template.enabled ? t("statusEnabled") : t("statusDisabled")}
+        </Badge>
+      ),
+      actions: (
+        <div className="flex items-center justify-end gap-1">
+          {!isDefault && (
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={() => handleSetDefault(template)}
+              disabled={isSaving}
+            >
+              <Star className="size-3" aria-hidden="true" />
+              {t("setDefault")}
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => {
+              setEditing(template);
+              setDialogOpen(true);
+            }}
+            aria-label={tc("edit")}
+          >
+            <Pencil className="size-3.5" aria-hidden="true" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => setDeleteTarget(template)}
+            aria-label={tc("delete")}
+          >
+            <Trash2 className="size-3.5" aria-hidden="true" />
+          </Button>
+        </div>
+      ),
+    };
+  });
+
   return (
     <ListPageShell
       title={t("title")}
@@ -135,105 +185,109 @@ export default function EmailTemplateComponent() {
       )}
 
       {!isError && !isLoading && templates.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-xs">
-            <thead className="bg-muted border-b">
-              <tr>
-                <th className="h-9 px-3 text-left font-medium">
-                  {t("table.name")}
-                </th>
-                <th className="h-9 px-3 text-left font-medium">
-                  {t("table.docType")}
-                </th>
-                <th className="h-9 px-3 text-left font-medium">
-                  {t("table.subject")}
-                </th>
-                <th className="h-9 px-3 text-left font-medium">
-                  {t("table.status")}
-                </th>
-                <th className="h-9 px-3 text-right font-medium">
-                  {tc("rowActions")}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {templates.map((template) => {
-                const isDefault = defaults[template.doc_type] === template.id;
+        // `@container`: ตาราง ↔ รายการแบบซ้อน ตัดสินจากความกว้างของกล่องนี้ ไม่ใช่ของจอ
+        // (skill carmen-blue-ui-design — แบบเดียวกับหน้า email-profile)
+        <div className="@container">
+          {/* กล่องแคบ (มือถือ): ซ้อนเป็นรายการ — ตาราง 5 คอลัมน์กว้างขั้นต่ำ ~890px ต้องเลื่อนแนวนอนในกรอบ
+              และปุ่มของแถวหลุดไปนอกจอ */}
+          <ul className="bg-card divide-y rounded-lg border @4xl:hidden">
+            {rows.map(({ template, isDefault, subject, status, actions }) => (
+              <li key={template.id} className="space-y-1.5 p-3 text-xs">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="font-medium">{template.name}</span>
+                  {isDefault && (
+                    <Badge variant="success-light" size="xs">
+                      {t("defaultBadge")}
+                    </Badge>
+                  )}
+                </div>
+                {template.note && (
+                  <p className="text-muted-foreground line-clamp-2">
+                    {template.note}
+                  </p>
+                )}
+                <p>
+                  {t(`docType.${template.doc_type}`)}
+                  <span aria-hidden="true" className="text-muted-foreground">
+                    {" · "}
+                  </span>
+                  <span className="text-muted-foreground break-words">
+                    {subject}
+                  </span>
+                </p>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  {status}
+                  {actions}
+                </div>
+              </li>
+            ))}
+          </ul>
 
-                return (
-                  <tr key={template.id} className="border-b last:border-0">
-                    <td className="px-3 py-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-medium">{template.name}</span>
-                        {isDefault && (
-                          <Badge variant="success-light" size="xs">
-                            {t("defaultBadge")}
-                          </Badge>
-                        )}
-                      </div>
-                      {template.note && (
-                        <p className="text-muted-foreground mt-0.5 line-clamp-1">
-                          {template.note}
-                        </p>
-                      )}
-                    </td>
-                    <td className="px-3 py-2">
-                      {t(`docType.${template.doc_type}`)}
-                    </td>
-                    <td className="text-muted-foreground max-w-64 px-3 py-2">
-                      <span className="line-clamp-1">
-                        {template.subject_template ||
-                          htmlToPlainText(template.body_template)}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2">
-                      <Badge
-                        variant={template.enabled ? "default" : "secondary"}
-                      >
-                        {template.enabled
-                          ? t("statusEnabled")
-                          : t("statusDisabled")}
-                      </Badge>
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex items-center justify-end gap-1">
-                        {!isDefault && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleSetDefault(template)}
-                            disabled={isSaving}
+          <div className="hidden overflow-x-auto rounded-lg border @4xl:block">
+            <table className="w-full text-xs">
+              {/* ชื่อ เอกสาร สถานะ และปุ่ม กว้างเท่าเนื้อหา (`w-px` + nowrap) · หัวเรื่องเป็นข้อความยาว
+                  จึงเป็นคอลัมน์เดียวที่ยืดหด: รับที่เหลือและตัดด้วย … เมื่อไม่พอ (`max-w-0` ทำให้เซลล์
+                  ไม่ดันตารางให้กว้างตามข้อความ) เดิมห้าคอลัมน์แบ่งที่เหลือกันเอง ชื่อกับเอกสารจึงห่างกัน
+                  เป็นคืบบนจอกว้าง ส่วนที่ 1366px หัวเรื่องถูกจำกัดไว้ 256px ทั้งที่มีที่ */}
+              <thead className="bg-muted border-b">
+                <tr>
+                  <th className="h-9 w-px px-3 pr-10 text-left font-medium whitespace-nowrap">
+                    {t("table.name")}
+                  </th>
+                  <th className="h-9 w-px px-3 pr-10 text-left font-medium whitespace-nowrap">
+                    {t("table.docType")}
+                  </th>
+                  <th className="h-9 min-w-40 px-3 pr-10 text-left font-medium">
+                    {t("table.subject")}
+                  </th>
+                  <th className="h-9 w-px px-3 pr-10 text-left font-medium whitespace-nowrap">
+                    {t("table.status")}
+                  </th>
+                  <th className="h-9 w-px px-3 text-right font-medium whitespace-nowrap">
+                    {tc("rowActions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(
+                  ({ template, isDefault, subject, status, actions }) => (
+                    <tr key={template.id} className="border-b last:border-0">
+                      <td className="px-3 py-2 pr-10 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium">{template.name}</span>
+                          {isDefault && (
+                            <Badge variant="success-light" size="xs">
+                              {t("defaultBadge")}
+                            </Badge>
+                          )}
+                        </div>
+                        {template.note && (
+                          <p
+                            className="text-muted-foreground mt-0.5 max-w-xs truncate"
+                            title={template.note}
                           >
-                            <Star className="size-3" aria-hidden="true" />
-                            {t("setDefault")}
-                          </Button>
+                            {template.note}
+                          </p>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={() => {
-                            setEditing(template);
-                            setDialogOpen(true);
-                          }}
-                          aria-label={tc("edit")}
-                        >
-                          <Pencil className="size-3.5" aria-hidden="true" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={() => setDeleteTarget(template)}
-                          aria-label={tc("delete")}
-                        >
-                          <Trash2 className="size-3.5" aria-hidden="true" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td className="px-3 py-2 pr-10 whitespace-nowrap">
+                        {t(`docType.${template.doc_type}`)}
+                      </td>
+                      <td className="text-muted-foreground w-full max-w-0 px-3 py-2 pr-10">
+                        <span className="block truncate" title={subject}>
+                          {subject}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 pr-10 whitespace-nowrap">
+                        {status}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap">{actions}</td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

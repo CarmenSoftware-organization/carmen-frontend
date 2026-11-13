@@ -45,6 +45,8 @@ export function useRoleTable({
           {row.getValue("name") || "..."}
         </CellAction>
       ),
+      // กว้างคงที่ (คอลัมน์ถัดไปเป็นตัว grow) — ชื่อ role ยาวกว่านี้ตัดสองบรรทัดตามปกติของ DataGrid
+      size: 280,
       meta: { skeleton: columnSkeletons.text },
     },
     {
@@ -58,7 +60,10 @@ export function useRoleTable({
         const count = row.original.permissions?.count ?? 0;
         return `${count} permissions`;
       },
-      meta: { skeleton: columnSkeletons.textShort },
+      // คอลัมน์ข้อมูลตัวสุดท้ายรับความกว้างที่เหลือ — `meta.grow` ทำให้คอลัมน์ชื่อกว้างคงที่ตาม
+      // `size` ตารางนี้มีข้อมูลแค่ 2 คอลัมน์สั้น ๆ ถ้าปล่อยแบ่งตามสัดส่วน บนจอ 4K ชื่อ role กับ
+      // จำนวนสิทธิ์จะห่างกันราว 1,450px เนื้อหาชิดซ้ายจึงยังอยู่ติดชื่อ (skill carmen-blue-ui-design)
+      meta: { skeleton: columnSkeletons.textShort, grow: true },
     },
   ];
 
