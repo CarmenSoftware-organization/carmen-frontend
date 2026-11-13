@@ -16,6 +16,7 @@ description: ใช้เมื่อจัดหรือปรับ layout �
 | รายการตั้งค่า (ป้ายซ้าย ค่าขวา เต็มแถว) | เปลี่ยนแต่ละแถวเป็นช่องของ `FieldGrid` | `values.md` §รายการ |
 | รายการที่ขยายดูรายละเอียดได้ | ยุบ = ช่องกริด · ขยาย = เต็มแถว | `values.md` §รายการ |
 | รายการแบ่งหมวด หมวดละไม่กี่แถว | หมวดเรียงเป็นคอลัมน์ด้วย `auto-fit` | `values.md` §รายการ |
+| หน้า landing ของโมดูล (หมวดสูงไม่เท่ากัน) | หมวดไหลเป็นคอลัมน์ด้วย CSS multi-column | `values.md` §รายการ |
 | list (`ListPageShell` + `DataGrid`) | **ไม่เปลี่ยนโครง** แก้เฉพาะตารางคอลัมน์น้อย | `values.md` §ตาราง |
 | list ที่คอลัมน์ไม่พอดีกล่องที่ tablet | ซ่อนคอลัมน์รอง/สลับชุดขนาดตามความกว้างกล่อง | `values.md` §ตาราง |
 | list ที่เป็น `<table>` ธรรมดา | คอลัมน์ข้อมูลกว้างเท่าเนื้อหา + ซ้อนเป็นรายการเมื่อกล่องแคบ | `values.md` §ตาราง |
@@ -67,7 +68,8 @@ description: ใช้เมื่อจัดหรือปรับ layout �
 inventory-period + footer #550 · interface (list) #552 · email-profile #553 · email-template #554 ·
 role (list) #555 · running-code (list) #556 · document (list) #557 · storage #558 · user (list) ·
 profile (หน้าดู: การ์ดต่อ BU เต็มความกว้าง) #565 ·
-profile/setting (ฟอร์ม + ตาราง `w-auto` ของ MCP tokens)
+profile/setting (ฟอร์มแถวเดียว + กริดโทเค็น) #566 ·
+system-admin landing (หมวดเรียงเป็นคอลัมน์ด้วย CSS multi-column)
 
 ## กับดัก
 

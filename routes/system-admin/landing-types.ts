@@ -2,12 +2,18 @@ import type { ComponentType, SVGProps } from "react";
 import {
   Activity,
   BellRing,
+  Building2,
   Cable,
   Calendar,
   Database,
   Folder,
   Gauge,
+  HardDrive,
+  Mail,
+  MailOpen,
   Shield,
+  SlidersHorizontal,
+  Sparkles,
   Terminal,
   Users,
   Workflow,
@@ -28,8 +34,13 @@ export type VisualKey =
   | "interface"
   | "notify"
   | "code"
-  | "query"
-  | "dataset";
+  | "dataset"
+  | "company"
+  | "settings"
+  | "askAi"
+  | "emailProfile"
+  | "emailTemplate"
+  | "storage";
 
 export type ModuleDef = {
   readonly key: string;
@@ -39,14 +50,40 @@ export type ModuleDef = {
 };
 
 export type ChapterDef = {
-  readonly num: string;
-  readonly key: "access" | "process" | "observe" | "config" | "data";
+  readonly key:
+    "business" | "access" | "process" | "observe" | "config" | "data";
   readonly modules: readonly ModuleDef[];
 };
 
+/**
+ * ทุกหน้าในเมนูซ้ายของ System Admin ต้องมีการ์ดที่นี่ — เพิ่มหน้าใหม่ใน `constant/module-list.ts`
+ * แล้วเพิ่มที่นี่ด้วย (ลูกของ Workflow ไม่นับ: หน้า Workflow มี landing ของตัวเอง)
+ */
 export const CHAPTERS: readonly ChapterDef[] = [
   {
-    num: "01",
+    key: "business",
+    modules: [
+      {
+        key: "companyProfile",
+        visualKey: "company",
+        href: "/system-admin/company-profile",
+        icon: Building2,
+      },
+      {
+        key: "defaultSetting",
+        visualKey: "settings",
+        href: "/system-admin/default-setting",
+        icon: SlidersHorizontal,
+      },
+      {
+        key: "askAi",
+        visualKey: "askAi",
+        href: "/system-admin/ask-ai",
+        icon: Sparkles,
+      },
+    ],
+  },
+  {
     key: "access",
     modules: [
       {
@@ -64,7 +101,6 @@ export const CHAPTERS: readonly ChapterDef[] = [
     ],
   },
   {
-    num: "02",
     key: "process",
     modules: [
       {
@@ -88,7 +124,6 @@ export const CHAPTERS: readonly ChapterDef[] = [
     ],
   },
   {
-    num: "03",
     key: "observe",
     modules: [
       {
@@ -106,7 +141,6 @@ export const CHAPTERS: readonly ChapterDef[] = [
     ],
   },
   {
-    num: "04",
     key: "config",
     modules: [
       {
@@ -122,6 +156,18 @@ export const CHAPTERS: readonly ChapterDef[] = [
         icon: BellRing,
       },
       {
+        key: "emailProfile",
+        visualKey: "emailProfile",
+        href: "/system-admin/email-profile",
+        icon: Mail,
+      },
+      {
+        key: "emailTemplate",
+        visualKey: "emailTemplate",
+        href: "/system-admin/email-template",
+        icon: MailOpen,
+      },
+      {
         key: "code",
         visualKey: "code",
         href: "/system-admin/running-code",
@@ -130,7 +176,6 @@ export const CHAPTERS: readonly ChapterDef[] = [
     ],
   },
   {
-    num: "05",
     key: "data",
     modules: [
       {
@@ -139,11 +184,14 @@ export const CHAPTERS: readonly ChapterDef[] = [
         href: "/system-admin/dashboard-dataset",
         icon: Database,
       },
+      {
+        key: "storage",
+        visualKey: "storage",
+        href: "/system-admin/storage",
+        icon: HardDrive,
+      },
     ],
   },
 ];
-
-export const KPI_KEYS = ["uptime", "users", "jobs", "health"] as const;
-export type KpiKey = (typeof KPI_KEYS)[number];
 
 export type TFn = (key: string) => string;
