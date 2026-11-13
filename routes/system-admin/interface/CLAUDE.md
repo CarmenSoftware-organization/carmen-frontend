@@ -14,7 +14,10 @@ systems pull data themselves via a BU API key). Config storage only; no sync/tes
 - **Shared bits:** `use-interface-config.ts` (wraps `useAppConfigByKey`/`useUpsertAppConfig`;
   maps 404 → `isNew`, not an error), `interface-page-layout.tsx` (presentational shell +
   nav-guard, takes `isDirty`, holds no form state), `interface-fields.tsx`
-  (`TextField`/`EnumField`/`ToggleField` — label+value, not schema-driven). Forms derive
+  (`TextField`/`EnumField`/`ToggleField` — label+value, not schema-driven; each is one
+  `FieldGrid` cell and renders its own read mode as plain text via `useInterfaceReadMode()`,
+  so `TextField` needs `viewValue={form.watch(...)}`). Forms lay sections out with
+  `CompactSection` + `FieldGrid`, paired on wide screens (`FIRST_SECTION_PAIR`). Forms derive
   dropdown options from `schema.shape.<field>.options` so options and validation can't drift.
 - **Storage:** one `tb_application_config` row per interface. The backend
   (`carmen-turborepo-backend`) encrypts+masks the `api_key` secret via a generic

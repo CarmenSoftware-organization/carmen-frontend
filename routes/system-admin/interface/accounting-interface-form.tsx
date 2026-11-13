@@ -5,11 +5,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useInterfaceConfig } from "./use-interface-config";
 import { InterfacePageLayout } from "./interface-page-layout";
-import { TextField, EnumField, ToggleField } from "./interface-fields";
+import {
+  EnumField,
+  FIRST_SECTION_PAIR,
+  TextField,
+  ToggleField,
+} from "./interface-fields";
 
 export const accountingSchema = z.object({
   enabled: z.boolean(),
@@ -63,7 +68,7 @@ const FREQUENCIES = accountingSchema.shape.posting_frequency.options;
  *   ยังถูกส่งกลับตอน Save เช่นเดียวกับ Connection
  * @param props.hideInvoiceValue - ซ่อนช่อง Default invoice value ใน Vendor fallbacks (brand `external`)
  *   และใช้คำอธิบาย section ที่ไม่พูดถึงมูลค่าใบแจ้งหนี้ · ค่าเดิมยังถูกส่งกลับตอน Save
- * @returns React element ของ SettingSection ที่ไม่ได้ถูกซ่อน (สูงสุดสามอัน)
+ * @returns React element ของหมวดที่ไม่ได้ถูกซ่อน (สูงสุดสามอัน)
  */
 export function AccountingFields({
   form,
@@ -78,45 +83,43 @@ export function AccountingFields({
 }) {
   const t = useTranslations("systemAdmin.interface");
   const ta = useTranslations("systemAdmin.interface.accounting");
-  return (
-    <>
-      {!hideConnection && (
-        <SettingSection
-          first
-          title={ta("connection")}
-          description={ta("connectionDesc")}
-        >
-          <ToggleField
-            label={t("enabled")}
-            checked={form.watch("enabled")}
-            onChange={(v) => form.setValue("enabled", v, { shouldDirty: true })}
-          />
-          <TextField
-            label={t("endpoint")}
-            field={form.register("endpoint")}
-            error={form.formState.errors.endpoint?.message}
-            placeholder="https://gl.example.com"
-            className="sm:col-span-2"
-          />
-        </SettingSection>
-      )}
-
-      <SettingSection
-        first={hideConnection}
-        title={ta("defaults")}
-        description={
-          hideInvoiceValue ? ta("defaultsDescNoInvoice") : ta("defaultsDesc")
-        }
-      >
+  const connection = !hideConnection && (
+    <CompactSection title={ta("connection")} description={ta("connectionDesc")}>
+      <FieldGrid>
+        <ToggleField
+          label={t("enabled")}
+          checked={form.watch("enabled")}
+          onChange={(v) => form.setValue("enabled", v, { shouldDirty: true })}
+        />
+        <TextField
+          label={t("endpoint")}
+          field={form.register("endpoint")}
+          viewValue={form.watch("endpoint")}
+          error={form.formState.errors.endpoint?.message}
+          placeholder="https://gl.example.com"
+        />
+      </FieldGrid>
+    </CompactSection>
+  );
+  const defaults = (
+    <CompactSection
+      title={ta("defaults")}
+      description={
+        hideInvoiceValue ? ta("defaultsDescNoInvoice") : ta("defaultsDesc")
+      }
+    >
+      <FieldGrid>
         <TextField
           label={ta("defaultAccountCode")}
           field={form.register("default_account_code")}
+          viewValue={form.watch("default_account_code")}
           error={form.formState.errors.default_account_code?.message}
           placeholder="1000"
         />
         <TextField
           label={ta("defaultDepartmentCode")}
           field={form.register("default_department_code")}
+          viewValue={form.watch("default_department_code")}
           error={form.formState.errors.default_department_code?.message}
           placeholder="D1"
         />
@@ -124,33 +127,46 @@ export function AccountingFields({
           <TextField
             label={ta("defaultInvoiceValue")}
             field={form.register("default_invoice_value")}
+            viewValue={form.watch("default_invoice_value")}
             error={form.formState.errors.default_invoice_value?.message}
             placeholder="0"
           />
         )}
-      </SettingSection>
+      </FieldGrid>
+    </CompactSection>
+  );
+  return (
+    <>
+      {/* การเชื่อมต่อ | ค่าสำรองของผู้ขาย — วางเคียงกันบนจอกว้าง · ซ่อนการเชื่อมต่อ = เหลือหมวดเดียว
+          เต็มความกว้าง (`-mt-5` หักระยะบนของหมวดแรก) */}
+      <div className={connection ? FIRST_SECTION_PAIR : "-mt-5"}>
+        {connection}
+        {defaults}
+      </div>
 
       {!hidePosting && (
-        <SettingSection title={ta("posting")} description={ta("postingDesc")}>
-          <EnumField
-            label={ta("exportFormat")}
-            value={form.watch("export_format")}
-            options={FORMATS}
-            optionLabel={(f) => ta(`formatOption.${f}`)}
-            onChange={(v) =>
-              form.setValue("export_format", v, { shouldDirty: true })
-            }
-          />
-          <EnumField
-            label={ta("postingFrequency")}
-            value={form.watch("posting_frequency")}
-            options={FREQUENCIES}
-            optionLabel={(f) => t(`frequencyOption.${f}`)}
-            onChange={(v) =>
-              form.setValue("posting_frequency", v, { shouldDirty: true })
-            }
-          />
-        </SettingSection>
+        <CompactSection title={ta("posting")} description={ta("postingDesc")}>
+          <FieldGrid>
+            <EnumField
+              label={ta("exportFormat")}
+              value={form.watch("export_format")}
+              options={FORMATS}
+              optionLabel={(f) => ta(`formatOption.${f}`)}
+              onChange={(v) =>
+                form.setValue("export_format", v, { shouldDirty: true })
+              }
+            />
+            <EnumField
+              label={ta("postingFrequency")}
+              value={form.watch("posting_frequency")}
+              options={FREQUENCIES}
+              optionLabel={(f) => t(`frequencyOption.${f}`)}
+              onChange={(v) =>
+                form.setValue("posting_frequency", v, { shouldDirty: true })
+              }
+            />
+          </FieldGrid>
+        </CompactSection>
       )}
     </>
   );

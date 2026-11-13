@@ -5,26 +5,11 @@ import { FormPageShell } from "@/components/share/form-page-shell";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { ErrorState } from "@/components/ui/error-state";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
-import { SettingSectionSkeleton } from "@/components/ui/setting-section";
+import { CompactSectionSkeleton } from "@/components/share/compact-section";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { useInterfaceEntitlement } from "@/hooks/use-interface-entitlement";
-import { cn } from "@/lib/utils";
+import { FIRST_SECTION_PAIR } from "./interface-fields";
 import { InterfaceReadModeContext } from "./interface-read-mode";
-
-/**
- * โหมดอ่านใช้ `disabled` ของ fieldset ปิดช่อง แต่สไตล์ disabled ของ primitive (`opacity-50`)
- * ทำให้ค่าที่ตั้งไว้จางจนแยกจาก placeholder ไม่ออก — คืนความทึบให้เฉพาะช่องกรอก (input /
- * select / lookup / switch) ไม่แตะปุ่ม action ทั่วไป ปุ่มที่กดไม่ได้ต้องยังดูกดไม่ได้
- *
- * ช่องว่างไม่ได้ซ่อน placeholder ด้วย CSS — field เปลี่ยน placeholder เป็น "—" เองผ่าน
- * `useInterfaceReadMode()` (ดู `interface-read-mode.ts`) ให้ input / lookup ว่างแสดงเหมือนกัน
- */
-const READ_MODE = cn(
-  "[&_input:disabled]:opacity-100 [&_textarea:disabled]:opacity-100",
-  "[&_button[aria-haspopup]:disabled]:opacity-100 [&_[role=combobox]:disabled]:opacity-100",
-  "[&_[role=switch]:disabled]:opacity-100",
-  "[&_:disabled]:cursor-default",
-);
 
 /**
  * โครงหน้าที่ทุก interface form ใช้ร่วมกัน — header, ปุ่ม Save, skeleton, ErrorState
@@ -38,9 +23,10 @@ const READ_MODE = cn(
  * guard อยู่ที่นี่ไม่ใช่ในแต่ละ form เพื่อไม่ให้ก๊อปโค้ดเดียวกันสามรอบ
  *
  * **โหมด view/edit อยู่ที่นี่ที่เดียวเช่นกัน** — เปิดหน้ามาเป็นโหมดอ่าน กด Edit ถึงแก้ได้
- * การปิดช่องกรอกใช้ `<fieldset disabled>` ครอบ children แทนที่จะเจาะ prop `readOnly`
- * ทะลุลงไปทุก field (มีราว 25 ช่องกระจายใน 4 ฟอร์ม) — fieldset ปิด input/select/switch
- * ที่อยู่ข้างในให้หมดในทีเดียว รวมถึง Radix Select/Switch ที่ render เป็น <button>
+ * โหมดส่งลงไปทาง `InterfaceReadModeContext`: field ใน `interface-fields.tsx` แสดงค่าเป็น
+ * ข้อความในโหมดอ่าน และเป็นช่องกรอกในโหมดแก้ · `<fieldset disabled>` ยังครอบ children ไว้เป็น
+ * ตาข่ายชั้นสอง — คอนโทรลที่ฟอร์มใส่เองโดยไม่ผ่าน field กลาง (input / select / switch รวมถึง
+ * Radix ที่ render เป็น <button>) ก็ถูกปิดในโหมดอ่านด้วย
  *
  * resolve entitlement เองที่นี่แทนที่จะรับ prop เข้ามา — ทุก brand form (4 ไฟล์) mount
  * ผ่านตัวนี้ตัวเดียว จึงล็อกจุดเดียวครอบทุก brand ได้โดยไม่ต้องเจาะ prop `readOnly` ทะลุ
@@ -55,7 +41,7 @@ const READ_MODE = cn(
  *
  * @param props.onSave - handleSubmit ของ form ที่ครอบอยู่
  * @param props.isDirty - `form.formState.isDirty` ของ form ที่ครอบอยู่
- * @param props.children - field ของ form (ปกติเป็น SettingSection หลายอัน)
+ * @param props.children - field ของ form (ปกติเป็น CompactSection หลายอัน)
  * @returns React element ของโครงหน้า interface
  */
 export function InterfacePageLayout({
@@ -72,6 +58,7 @@ export function InterfacePageLayout({
   onCancel,
   notice,
   afterForm,
+  skeleton,
   children,
 }: {
   readonly title: string;
@@ -89,6 +76,11 @@ export function InterfacePageLayout({
   readonly notice?: React.ReactNode;
   /** ส่วนใต้ฟอร์มที่ทำงานทันทีด้วยตัวเอง (ไม่ผ่านปุ่ม Save) — อยู่นอก fieldset/form */
   readonly afterForm?: React.ReactNode;
+  /**
+   * โครงรอโหลดของฟอร์มนี้เอง — ไม่ส่ง = หมวดคู่หนึ่งคู่ (รูปของฟอร์มส่วนใหญ่) ฟอร์มที่จำนวน
+   * หมวดต่างออกไปต้องส่งมา ไม่งั้นเนื้อหากระโดดตอนข้อมูลมา
+   */
+  readonly skeleton?: React.ReactNode;
   readonly children: React.ReactNode;
 }) {
   const t = useTranslations("systemAdmin.interface");
@@ -118,8 +110,7 @@ export function InterfacePageLayout({
   };
 
   return (
-    // wide ทุกแบรนด์ — section เป็น 2 คอลัมน์ (หัวซ้าย/การ์ดขวา) ที่ max-w-4xl การ์ดแคบจน
-    // ช่องคู่และเอกสาร API ถูกบีบ
+    // wide ทุกแบรนด์ — เนื้อหาเต็มความกว้างจอ (skill `carmen-blue-ui-design`)
     <FormPageShell
       width="wide"
       header={
@@ -141,13 +132,12 @@ export function InterfacePageLayout({
     >
       {isError && <ErrorState message={errorMessage} onRetry={onRetry} />}
 
-      {!isError && isLoading && (
-        <div>
-          <SettingSectionSkeleton
-            first
-            fields={["half", "half", "half", "half"]}
-          />
-          <SettingSectionSkeleton fields={["half", "half", "full"]} />
+      {!isError && isLoading && skeleton}
+
+      {!isError && isLoading && !skeleton && (
+        <div className={FIRST_SECTION_PAIR}>
+          <CompactSectionSkeleton className="h-18" />
+          <CompactSectionSkeleton className="h-18" />
         </div>
       )}
 
@@ -157,10 +147,7 @@ export function InterfacePageLayout({
         <form id="interface-config-form" onSubmit={guardedSave}>
           {/* `min-w-0` เพราะ fieldset ตั้ง min-width เป็น min-content เอง ซึ่งทำให้
               grid ข้างในล้นออกนอกกรอบเมื่อจอแคบ */}
-          <fieldset
-            disabled={!isEditing}
-            className={cn("min-w-0 border-0 p-0", !isEditing && READ_MODE)}
-          >
+          <fieldset disabled={!isEditing} className="min-w-0 border-0 p-0">
             <InterfaceReadModeContext.Provider value={!isEditing}>
               {children}
             </InterfaceReadModeContext.Provider>

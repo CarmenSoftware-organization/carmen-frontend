@@ -7,7 +7,11 @@ import { Link } from "react-router";
 import { useTranslations } from "use-intl";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SettingSection } from "@/components/ui/setting-section";
+import {
+  CompactSection,
+  CompactSectionSkeleton,
+  FieldGrid,
+} from "@/components/share/compact-section";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useInterfaceConfig } from "../use-interface-config";
 import { InterfacePageLayout } from "../interface-page-layout";
@@ -76,25 +80,29 @@ export default function PosMicros3700Form() {
       onRetry={refetch}
       errorMessage={t("loadError")}
       saveLabel={t("save")}
+      // หมวดเดียว ไม่ใช่หมวดคู่แบบโครงรอโหลดตั้งต้น
+      skeleton={<CompactSectionSkeleton first className="h-18" />}
       afterForm={
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" className="mt-5" asChild>
           <Link to="/operation-plan/import-pos">
             {tp("goToImport")} <ArrowRight />
           </Link>
         </Button>
       }
     >
-      <SettingSection
+      <CompactSection
         first
         title={tp("general")}
         description={tp("generalDesc")}
       >
-        <ToggleField
-          label={t("enabled")}
-          checked={form.watch("enabled")}
-          onChange={(v) => form.setValue("enabled", v, { shouldDirty: true })}
-        />
-      </SettingSection>
+        <FieldGrid>
+          <ToggleField
+            label={t("enabled")}
+            checked={form.watch("enabled")}
+            onChange={(v) => form.setValue("enabled", v, { shouldDirty: true })}
+          />
+        </FieldGrid>
+      </CompactSection>
     </InterfacePageLayout>
   );
 }

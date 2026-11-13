@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Eye, KeyRound, RefreshCw } from "lucide-react";
 import { useTranslations } from "use-intl";
+import { CompactSection } from "@/components/share/compact-section";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { CopyButton } from "@/components/ui/copy-button";
@@ -13,7 +14,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ErrorState } from "@/components/ui/error-state";
-import { SettingSection } from "@/components/ui/setting-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusDotBadge } from "@/components/ui/status-dot-badge";
 import { Switch } from "@/components/ui/switch";
@@ -205,10 +205,11 @@ export function ExternalApiAccessSection() {
           </StatusDotBadge>
         </label>
 
-        {/* Base URL เต็มแถว, Client ID กับ Secret คู่กันเมื่อ "การ์ด" กว้างพอ — วัดที่ container
-            ไม่ใช่ viewport เพราะการ์ดอยู่คอลัมน์ขวา 2/3 ความกว้างของ viewport บอกอะไรไม่ได้ */}
+        {/* Base URL กว้างสองช่อง, Client ID กับ Secret ช่องละหนึ่ง — การ์ดกว้างพอ (เต็มจอ) ทั้งสาม
+            อยู่แถวเดียว การ์ดครึ่งจอ Base URL เต็มแถวแล้ว Client ID คู่กับ Secret · วัดที่ container
+            ไม่ใช่ viewport เพราะการ์ดเป็นได้ทั้งเต็มจอและครึ่งจอ (วางคู่กับเอกสาร API บนจอกว้าง) */}
         <div className="@container">
-          <div className="grid gap-4 @lg:grid-cols-2">
+          <div className="grid gap-4 @lg:grid-cols-2 @4xl:grid-cols-4">
             <div className="@lg:col-span-2">
               <CredentialField
                 label={t("baseUrl")}
@@ -304,15 +305,16 @@ export function ExternalApiAccessSection() {
   }
 
   return (
-    <div className="mt-8">
-      <SettingSection title={t("title")} description={t("desc")} plain first>
+    // <div> ครอบ section กับ dialog — `SECTION_PAIR` ทำให้ชั้นนี้เป็น flex-col การ์ดจึงยืดเท่าหมวดคู่
+    <div>
+      <CompactSection title={t("title")} description={t("desc")}>
         <div className="space-y-4">
           {licenseExpired && (
             <p className="text-warning-ink text-xs">{t("licenseExpired")}</p>
           )}
           {body}
         </div>
-      </SettingSection>
+      </CompactSection>
 
       <ConfirmDialog
         open={confirmRegen}

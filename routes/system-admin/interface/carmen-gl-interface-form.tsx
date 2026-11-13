@@ -5,11 +5,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import { SettingSection } from "@/components/ui/setting-section";
+import {
+  CompactSection,
+  CompactSectionSkeleton,
+  FieldGrid,
+  SECTION_PAIR,
+} from "@/components/share/compact-section";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useInterfaceConfig } from "./use-interface-config";
 import { InterfacePageLayout } from "./interface-page-layout";
-import { EnumField, TextField, ToggleField } from "./interface-fields";
+import {
+  EnumField,
+  FIRST_SECTION_PAIR,
+  TextField,
+  ToggleField,
+} from "./interface-fields";
 
 export const COA_ON_DUPLICATE = ["skip", "upsert", "error"] as const;
 export const COA_ON_LOCAL_ONLY = ["keep", "delete"] as const;
@@ -74,6 +84,22 @@ export function toApiValue(
   return { ...values };
 }
 
+/** โครงรอโหลด — สองคู่หมวดเท่าหน้าจริง (ความสูงการ์ดของโหมดอ่านที่ 1366px) */
+function CarmenGlSkeleton() {
+  return (
+    <div>
+      <div className={FIRST_SECTION_PAIR}>
+        <CompactSectionSkeleton className="h-18" />
+        <CompactSectionSkeleton className="h-18" />
+      </div>
+      <div className={SECTION_PAIR}>
+        <CompactSectionSkeleton className="h-30" />
+        <CompactSectionSkeleton className="h-30" />
+      </div>
+    </div>
+  );
+}
+
 /**
  * หน้า config ของ Carmen GL (Carmen 4 legacy) — API server + authorize token +
  * endpoint path 3 เส้น + option การ post GL
@@ -130,97 +156,131 @@ export default function CarmenGlInterfaceForm() {
       onRetry={refetch}
       errorMessage={t("loadError")}
       saveLabel={t("save")}
+      skeleton={<CarmenGlSkeleton />}
     >
-      <SettingSection
-        first
-        title={tc("connection")}
-        description={tc("connectionDesc")}
-      >
-        <ToggleField
-          label={t("enabled")}
-          checked={form.watch("enabled")}
-          onChange={(v) => form.setValue("enabled", v, { shouldDirty: true })}
-        />
-        <TextField
-          label={tc("apiServer")}
-          field={form.register("api_server")}
-          error={form.formState.errors.api_server?.message}
-          placeholder="https://dev.carmen4.com/carmen.api/"
-          className="sm:col-span-2"
-        />
-        <TextField
-          label={tc("authorizeToken")}
-          field={form.register("authorize_token")}
-          error={form.formState.errors.authorize_token?.message}
-          type="password"
-          revealLabels={{ show: t("showSecret"), hide: t("hideSecret") }}
-          // hint เฉพาะของ brand นี้ ไม่ใช่ `t("apiKeyHint")` ที่ POS/PMS ใช้ — backend ส่งค่านี้
-          // เป็น Authorization header ตรง ๆ ทั้งก้อน (`Authorization: ${token}`) ค่าที่ไม่มี
-          // scheme นำหน้าจึงได้ 401 จาก Carmen 4 โดยที่ฝั่งเราดูเหมือนตั้งค่าครบทุกช่อง
-          hint={tc("authorizeTokenHint")}
-          className="sm:col-span-2"
-        />
-      </SettingSection>
+      {/* การเชื่อมต่อ | ปลายทางข้อมูล — หมวดละ 3 ช่อง สูงใกล้กัน */}
+      <div className={FIRST_SECTION_PAIR}>
+        <CompactSection
+          title={tc("connection")}
+          description={tc("connectionDesc")}
+        >
+          <FieldGrid>
+            <ToggleField
+              label={t("enabled")}
+              checked={form.watch("enabled")}
+              onChange={(v) =>
+                form.setValue("enabled", v, { shouldDirty: true })
+              }
+            />
+            {/* ไม่ให้ URL กินสองคอลัมน์: หมวดนี้จะมี 4 ช่องกริดแต่หมวดคู่ (ปลายทางข้อมูล) มี 3
+                การ์ดคู่จึงสูงไม่เท่ากันทุกขนาดจอ — คอลัมน์เดียวแคบสุด ~270px ยังพอสำหรับ URL */}
+            <TextField
+              label={tc("apiServer")}
+              field={form.register("api_server")}
+              viewValue={form.watch("api_server")}
+              error={form.formState.errors.api_server?.message}
+              placeholder="https://dev.carmen4.com/carmen.api/"
+            />
+            <TextField
+              label={tc("authorizeToken")}
+              field={form.register("authorize_token")}
+              viewValue={form.watch("authorize_token")}
+              error={form.formState.errors.authorize_token?.message}
+              type="password"
+              revealLabels={{ show: t("showSecret"), hide: t("hideSecret") }}
+              // hint เฉพาะของ brand นี้ ไม่ใช่ `t("apiKeyHint")` ที่ POS/PMS ใช้ — backend ส่งค่านี้
+              // เป็น Authorization header ตรง ๆ ทั้งก้อน (`Authorization: ${token}`) ค่าที่ไม่มี
+              // scheme นำหน้าจึงได้ 401 จาก Carmen 4 โดยที่ฝั่งเราดูเหมือนตั้งค่าครบทุกช่อง
+              // (แสดงเฉพาะโหมดแก้ — เป็นคำแนะนำตอนกรอก)
+              hint={tc("authorizeTokenHint")}
+            />
+          </FieldGrid>
+        </CompactSection>
 
-      <SettingSection title={tc("endpoints")} description={tc("endpointsDesc")}>
-        <TextField
-          label={tc("accountCodePath")}
-          field={form.register("account_code_path")}
-          error={form.formState.errors.account_code_path?.message}
-        />
-        <TextField
-          label={tc("departmentPath")}
-          field={form.register("department_path")}
-          error={form.formState.errors.department_path?.message}
-        />
-        <TextField
-          label={tc("vendorPath")}
-          field={form.register("vendor_path")}
-          error={form.formState.errors.vendor_path?.message}
-        />
-      </SettingSection>
+        <CompactSection
+          title={tc("endpoints")}
+          description={tc("endpointsDesc")}
+        >
+          <FieldGrid>
+            <TextField
+              label={tc("accountCodePath")}
+              field={form.register("account_code_path")}
+              viewValue={form.watch("account_code_path")}
+              error={form.formState.errors.account_code_path?.message}
+            />
+            <TextField
+              label={tc("departmentPath")}
+              field={form.register("department_path")}
+              viewValue={form.watch("department_path")}
+              error={form.formState.errors.department_path?.message}
+            />
+            <TextField
+              label={tc("vendorPath")}
+              field={form.register("vendor_path")}
+              viewValue={form.watch("vendor_path")}
+              error={form.formState.errors.vendor_path?.message}
+            />
+          </FieldGrid>
+        </CompactSection>
+      </div>
 
-      <SettingSection title={tc("options")} description={tc("optionsDesc")}>
-        <ToggleField
-          label={tc("setAccountMappingAllItems")}
-          checked={form.watch("set_account_mapping_all_items")}
-          onChange={(v) =>
-            form.setValue("set_account_mapping_all_items", v, {
-              shouldDirty: true,
-            })
-          }
-        />
-        <ToggleField
-          label={tc("allowPostingTransferToGl")}
-          checked={form.watch("allow_posting_transfer_to_gl")}
-          onChange={(v) =>
-            form.setValue("allow_posting_transfer_to_gl", v, {
-              shouldDirty: true,
-            })
-          }
-        />
-      </SettingSection>
+      {/* ตัวเลือก | การซิงก์ผังบัญชี — หมวดละ 2 ช่อง */}
+      <div className={SECTION_PAIR}>
+        <CompactSection title={tc("options")} description={tc("optionsDesc")}>
+          <FieldGrid>
+            <ToggleField
+              label={tc("setAccountMappingAllItems")}
+              checked={form.watch("set_account_mapping_all_items")}
+              onChange={(v) =>
+                form.setValue("set_account_mapping_all_items", v, {
+                  shouldDirty: true,
+                })
+              }
+            />
+            <ToggleField
+              label={tc("allowPostingTransferToGl")}
+              checked={form.watch("allow_posting_transfer_to_gl")}
+              onChange={(v) =>
+                form.setValue("allow_posting_transfer_to_gl", v, {
+                  shouldDirty: true,
+                })
+              }
+            />
+          </FieldGrid>
+        </CompactSection>
 
-      <SettingSection title={tc("syncPolicy")} description={tc("syncPolicyDesc")}>
-        <EnumField
-          label={tc("onDuplicate")}
-          value={form.watch("sync_policy.on_duplicate")}
-          options={COA_ON_DUPLICATE}
-          optionLabel={(o) => tc(`onDuplicateOption.${o}`)}
-          onChange={(v) =>
-            form.setValue("sync_policy.on_duplicate", v, { shouldDirty: true })
-          }
-        />
-        <EnumField
-          label={tc("onLocalOnly")}
-          value={form.watch("sync_policy.on_local_only")}
-          options={COA_ON_LOCAL_ONLY}
-          optionLabel={(o) => tc(`onLocalOnlyOption.${o}`)}
-          onChange={(v) =>
-            form.setValue("sync_policy.on_local_only", v, { shouldDirty: true })
-          }
-        />
-      </SettingSection>
+        {/* คำอธิบายของหมวดนี้ยาวสามประโยค — อยู่ในการ์ดใต้ช่อง ไม่ใช่บนบรรทัดหัวข้อ: บนหัวข้อมันห่อ
+            หลายบรรทัด หัวข้อของสองหมวดในคู่จึงสูงไม่เท่ากันและการ์ดเริ่มคนละระดับ */}
+        <CompactSection title={tc("syncPolicy")}>
+          <FieldGrid>
+            <EnumField
+              label={tc("onDuplicate")}
+              value={form.watch("sync_policy.on_duplicate")}
+              options={COA_ON_DUPLICATE}
+              optionLabel={(o) => tc(`onDuplicateOption.${o}`)}
+              onChange={(v) =>
+                form.setValue("sync_policy.on_duplicate", v, {
+                  shouldDirty: true,
+                })
+              }
+            />
+            <EnumField
+              label={tc("onLocalOnly")}
+              value={form.watch("sync_policy.on_local_only")}
+              options={COA_ON_LOCAL_ONLY}
+              optionLabel={(o) => tc(`onLocalOnlyOption.${o}`)}
+              onChange={(v) =>
+                form.setValue("sync_policy.on_local_only", v, {
+                  shouldDirty: true,
+                })
+              }
+            />
+          </FieldGrid>
+          <p className="text-muted-foreground mt-3 text-xs leading-relaxed">
+            {tc("syncPolicyDesc")}
+          </p>
+        </CompactSection>
+      </div>
     </InterfacePageLayout>
   );
 }

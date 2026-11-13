@@ -117,7 +117,9 @@ storage #558 · user (list) · profile (view page: full-width card per BU) #565 
 profile/setting (single-row form + token grid) #566 ·
 system-admin landing (multi-column, real things only) #568 ·
 user (detail: view mode shows only what is held + table picks columns in 3 steps by box width) ·
-vendor (detail: lists as a grid of cards, address in view mode as text, `CompactSection frameless`)
+vendor (detail: lists as a grid of cards, address in view mode as text, `CompactSection frameless`) ·
+interface (brand forms: fields that render their own view mode, long section descriptions moved
+into the card so paired headings stay the same height)
 
 ## Gotchas
 
