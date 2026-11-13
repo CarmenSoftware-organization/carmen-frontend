@@ -23,6 +23,7 @@ import {
 import { activeIngredients, formatQty } from "./recipe-ingredients-cost";
 import { useRecipePrintTemplateId } from "./use-recipe-print-template";
 import { useWakeLock } from "./use-wake-lock";
+import { RecipeCookImages } from "./recipe-cook-images";
 import { RecipeVideoPlayer } from "./recipe-video-player";
 
 const LIST_PATH = "/operation-plan/recipe";
@@ -146,11 +147,8 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
       <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         {/* ขั้นตอน */}
         <section aria-label={t("stepsSection")} className="min-w-0">
-          {/* วิดีโอของสูตร (ถ้ามี) อยู่บนสุดของคอลัมน์ขั้นตอน — เห็นก่อนลงมือ */}
-          <RecipeVideoPlayer
-            url={recipe.video_url}
-            title={t("videoTitle", { name: recipe.name })}
-          />
+          {/* รูปของสูตร (ถ้ามี) อยู่บนสุดของคอลัมน์ขั้นตอน — กดรูปเพื่อดูขนาดใหญ่ */}
+          <RecipeCookImages images={recipe.images} recipeName={recipe.name} />
           {total === 0 || !current ? (
             <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
               <p>{t("cookNoSteps")}</p>
@@ -393,7 +391,7 @@ function CookStep({
       <p className="text-foreground mt-2 text-xl leading-relaxed break-words whitespace-pre-line">
         {step.description}
       </p>
-      {/* วิดีโอของขั้นนี้ (ถ้ามี) ใต้คำอธิบาย — วิดีโอของทั้งสูตรยังอยู่บนสุดของคอลัมน์ตามเดิม */}
+      {/* วิดีโอของขั้นนี้ (ถ้ามี) ใต้คำอธิบาย — สูตรมีวิดีโอได้เฉพาะรายขั้นตอน */}
       <RecipeVideoPlayer
         // ขั้นใหม่ = iframe ใหม่ ไม่ค้างตำแหน่งเล่นของวิดีโอขั้นก่อน
         key={step.id}
