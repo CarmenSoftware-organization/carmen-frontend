@@ -20,6 +20,7 @@ import {
   FieldGrid,
 } from "@/components/share/compact-section";
 import {
+  ConfigCode,
   ConfigField,
   CONFIG_ENUM_EMPTY,
 } from "../company-profile/company-profile-ui";
@@ -118,6 +119,12 @@ export default function DefaultSettingComponent() {
   const docSections = configGroups.sections.filter((s) => s.id !== "printForm");
   const printSection = configGroups.sections.find((s) => s.id === "printForm");
   const isBusy = !isProfileReady || isLoading;
+  // โหมดดู: ช่องเต็มเฉพาะแบบฟอร์มที่ตั้งเอง ที่เหลือ (ค่า "" = ใช้ค่าระบบ) รวมเป็นรายชื่อ
+  const printEntries = printSection?.entries ?? [];
+  const printDefaults = printEntries.filter((e) => e.item.value === "");
+  const printShown = editing
+    ? printEntries
+    : printEntries.filter((e) => e.item.value !== "");
 
   // มีการแก้ค้าง (dirty) ระหว่างโหมด edit → กัน discard โดยไม่ได้ตั้งใจ
   const hasUnsaved = editing && form.formState.isDirty;
@@ -194,7 +201,9 @@ export default function DefaultSettingComponent() {
               title={t("sections.documents")}
               description={t("sections.documentsDesc")}
             >
-              <FieldGrid>
+              {/* auto-fit ไม่ใช่ `FieldGrid`: หมวดนี้มีไม่กี่ค่า (3 ตอนนี้) กริดคอลัมน์ตายตัวเหลือ
+                  ครึ่งการ์ดว่างบนจอกว้าง — ให้ค่าที่มีแบ่งเต็มแถว ส่วนคอนโทรลไม่ยืดตาม (max-w ใน ConfigField) */}
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,15rem),1fr))] gap-x-5 gap-y-3">
                 {docSections.flatMap((section) =>
                   section.entries.map((entry) => (
                     <ConfigField
@@ -223,7 +232,7 @@ export default function DefaultSettingComponent() {
                     />
                   )),
                 )}
-              </FieldGrid>
+              </div>
             </CompactSection>
           )}
 
@@ -248,39 +257,67 @@ export default function DefaultSettingComponent() {
                 )
               }
             >
-              <FieldGrid>
-                {printSection.entries.map((entry) => (
-                  <ConfigField
-                    key={entry.item.key}
-                    editing={editing}
-                    form={form}
-                    index={entry.index}
-                    item={entry.item}
-                    code={entry.code}
-                    label={t(entry.labelKey)}
-                    yesLabel={t("yes")}
-                    noLabel={t("no")}
-                    emptyIsDefault
-                    options={buildPrintFormOptions({
-                      current: entry.item.value,
-                      list: entry.optionsGroup
-                        ? formTemplates.data?.get(entry.optionsGroup)
-                        : undefined,
-                      isLoading: formTemplates.isLoading,
-                      isError: formTemplates.isError,
-                      unknownLabel: t("config.printFormUnknown", {
-                        id: entry.item.value,
-                      }),
-                      loadingLabel: t("config.printFormLoading"),
-                      unavailableLabel: t("config.printFormUnavailable", {
-                        id: entry.item.value,
-                      }),
-                      systemDefaultLabel: t("config.printFormSystemDefault"),
-                    })}
-                    disabled={formTemplates.isLoading}
-                  />
-                ))}
-              </FieldGrid>
+              {printShown.length > 0 && (
+                <FieldGrid>
+                  {printShown.map((entry) => (
+                    <ConfigField
+                      key={entry.item.key}
+                      editing={editing}
+                      form={form}
+                      index={entry.index}
+                      item={entry.item}
+                      code={entry.code}
+                      label={t(entry.labelKey)}
+                      yesLabel={t("yes")}
+                      noLabel={t("no")}
+                      emptyIsDefault
+                      options={buildPrintFormOptions({
+                        current: entry.item.value,
+                        list: entry.optionsGroup
+                          ? formTemplates.data?.get(entry.optionsGroup)
+                          : undefined,
+                        isLoading: formTemplates.isLoading,
+                        isError: formTemplates.isError,
+                        unknownLabel: t("config.printFormUnknown", {
+                          id: entry.item.value,
+                        }),
+                        loadingLabel: t("config.printFormLoading"),
+                        unavailableLabel: t("config.printFormUnavailable", {
+                          id: entry.item.value,
+                        }),
+                        systemDefaultLabel: t("config.printFormSystemDefault"),
+                      })}
+                      disabled={formTemplates.isLoading}
+                    />
+                  ))}
+                </FieldGrid>
+              )}
+              {/* โหมดดู: แบบฟอร์มที่ยังใช้ค่าระบบไม่กินช่องละใบ — 13 ช่องที่เขียนว่า "ใช้ค่าเริ่มต้น
+                  ของระบบ" ซ้ำกันคือเสียงรบกวน (มือถือยาว 26 บรรทัด) รวมเป็นรายชื่อบรรทัดเดียว
+                  ช่องเต็มเหลือเฉพาะใบที่ตั้งเอง · โหมดแก้ยังเห็นครบทุกใบ */}
+              {!editing && printDefaults.length > 0 && (
+                <div
+                  className={
+                    printShown.length > 0 ? "mt-3 border-t pt-3" : undefined
+                  }
+                >
+                  <p className="text-muted-foreground text-xs">
+                    {t("config.printFormSystemDefault")}
+                  </p>
+                  <ul className="mt-1.5 grid grid-cols-[repeat(auto-fill,minmax(min(100%,10.5rem),1fr))] gap-x-4 gap-y-1.5">
+                    {printDefaults.map((entry) => (
+                      <li
+                        key={entry.item.key}
+                        title={entry.item.key}
+                        className="text-muted-foreground flex min-w-0 items-center gap-1.5 text-xs"
+                      >
+                        {entry.code && <ConfigCode code={entry.code} />}
+                        {t(entry.labelKey)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </CompactSection>
           )}
         </form>

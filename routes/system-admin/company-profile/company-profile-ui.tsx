@@ -335,6 +335,18 @@ export function NumberFormatField({
 }
 
 /**
+ * รหัสเอกสารหน้าป้าย (PR, GRN, …) — กว้างขั้นต่ำเท่ารหัส 3 ตัว ป้ายของรหัส 2 กับ 3 ตัวอักษร
+ * จึงเริ่มที่ระดับเดียวกันเมื่อเรียงลงมาในคอลัมน์
+ */
+export function ConfigCode({ code }: { readonly code: string }) {
+  return (
+    <span className="bg-muted text-muted-foreground text-micro min-w-7 shrink-0 rounded px-1 py-0.5 text-center font-mono font-semibold">
+      {code}
+    </span>
+  );
+}
+
+/**
  * config หนึ่งรายการ (หน้า Default Setting) — ช่องหนึ่งของ `FieldGrid`: ป้ายบน ค่า/คอนโทรลล่าง
  * value เก็บเป็น string เสมอ: boolean → Switch, enum (มี options) → Select, อื่นๆ → text input
  *
@@ -465,11 +477,7 @@ export function ConfigField({
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-1.5">
-        {code && (
-          <span className="bg-muted text-muted-foreground text-micro shrink-0 rounded px-1 py-0.5 text-center font-mono font-semibold">
-            {code}
-          </span>
-        )}
+        {code && <ConfigCode code={code} />}
         <Label
           htmlFor={editing ? name : undefined}
           title={item.key}
@@ -483,7 +491,11 @@ export function ConfigField({
           {displayLabel}
         </Label>
       </div>
-      <div className={editing ? "mt-1" : "mt-0.5"}>{control}</div>
+      {/* max-w-sm: ช่องในกริด auto-fit ที่มีไม่กี่รายการกว้างได้หลายร้อย px — คอนโทรลต้องไม่ยืดตาม
+          (จอกว้างขึ้น = คอลัมน์เพิ่ม ไม่ใช่ช่องกรอกกว้างขึ้น) ใน `FieldGrid` ปกติช่องแคบกว่านี้อยู่แล้ว */}
+      <div className={cn("max-w-sm", editing ? "mt-1" : "mt-0.5")}>
+        {control}
+      </div>
       {description && (
         <p className="text-muted-foreground/80 text-micro mt-1 leading-snug">
           {description}
