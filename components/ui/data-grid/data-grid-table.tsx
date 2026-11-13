@@ -406,7 +406,16 @@ function DataGridTableBodyRow<TData>({
   dndStyle?: CSSProperties;
 }) {
   "use no memo"; // TanStack table is stable-ref but mutable; opt out of React Compiler
-  const { props, table } = useDataGrid();
+  const { props, table, highlightedRowId, setHighlightedRowId } =
+    useDataGrid();
+  const rowHighlight = !!props.tableLayout?.rowHighlight;
+  // จำด้วย id ของข้อมูล ไม่ใช่ `row.id` — ค่าเริ่มต้นของ TanStack คือลำดับแถว เปลี่ยนหน้าหรือ
+  // เรียงใหม่แล้วไฮไลต์จะค้างที่ตำแหน่งเดิมบนข้อมูลคนละตัว · แถวที่ยังไม่มี id (แถวใหม่ในฟอร์ม)
+  // ถอยไปใช้ลำดับแถว
+  const dataId = (row.original as { id?: unknown } | null)?.id;
+  const highlightKey =
+    typeof dataId === "string" && dataId ? dataId : `#${row.id}`;
+  const isHighlighted = rowHighlight && highlightedRowId === highlightKey;
 
   return (
     <tr
@@ -414,13 +423,18 @@ function DataGridTableBodyRow<TData>({
       style={{ ...(dndStyle ? dndStyle : null) }}
       data-slot="data-row"
       data-state={
-        table.options.enableRowSelection && row.getIsSelected()
+        isHighlighted ||
+        (table.options.enableRowSelection && row.getIsSelected())
           ? "selected"
           : undefined
       }
+      data-highlighted={isHighlighted ? "" : undefined}
       tabIndex={props.onRowClick ? 0 : undefined}
       role={props.onRowClick ? "button" : undefined}
-      onClick={() => props.onRowClick && props.onRowClick(row.original)}
+      onClick={() => {
+        if (rowHighlight) setHighlightedRowId(highlightKey);
+        props.onRowClick?.(row.original);
+      }}
       onKeyDown={
         props.onRowClick
           ? (e) => {
