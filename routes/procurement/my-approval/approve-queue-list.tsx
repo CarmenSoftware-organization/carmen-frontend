@@ -4,7 +4,7 @@ import { isPriceHidden } from "@/types/workflows";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { Clock } from "lucide-react";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { PR_STATUS_CONFIG } from "@/constant/purchase-request";
 import type { ApprovalItem } from "@/types/approval";
 import { formatDate } from "@/lib/date-utils";
@@ -116,7 +116,7 @@ export default function ApprovalQueueList({
                 </Badge>
               )}
             </div>
-            <SendBackStatus lastAction={item.last_action} />
+            <SendBackStatus chip lastAction={item.last_action} />
           </div>
         );
       },
@@ -174,9 +174,7 @@ export default function ApprovalQueueList({
         if (stage) return <span className="truncate text-xs">{stage}</span>;
         const config =
           PR_STATUS_CONFIG[status || "draft"] ?? PR_STATUS_CONFIG.draft;
-        return (
-          <StatusIconLabel status={status || "draft"} label={config.label} />
-        );
+        return <StatusChip status={status || "draft"} label={config.label} />;
       },
       size: 140,
       meta: { headerTitle: tfl("stage"), skeleton: columnSkeletons.text },

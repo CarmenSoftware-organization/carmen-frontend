@@ -7,7 +7,7 @@ import {
   indexColumn,
   columnSkeletons,
 } from "@/components/ui/data-grid/columns";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
@@ -43,7 +43,7 @@ export function useScHistoryTable({
   const isMobile = useIsMobile() === true;
 
   const renderStatus = (sc: SpotCheck, className: string) => (
-    <StatusIconLabel
+    <StatusChip
       status={statusIconKey(sc.doc_status)}
       label={ts(sc.doc_status)}
       className={className}

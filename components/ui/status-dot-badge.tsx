@@ -3,11 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export type DotTone =
-  | "success"
-  | "info"
-  | "warning"
-  | "destructive"
-  | "neutral";
+  "success" | "info" | "warning" | "destructive" | "neutral";
 
 const TONE_DOT: Record<DotTone, string> = {
   success: "bg-success",
@@ -32,7 +28,14 @@ const DOT_SIZE = {
 } as const;
 
 interface StatusDotBadgeProps {
-  readonly tone: DotTone;
+  /** semantic tone ของจุด — ไม่ส่งได้เมื่อส่ง `dotColor` */
+  readonly tone?: DotTone;
+  /**
+   * สีจุดเป็นค่า CSS ตรง ๆ (เช่น `var(--status-approved)`) — สำหรับสถานะเอกสารซึ่งใช้
+   * พาเลตของ `styles/badge-status.css` ไม่ใช่ semantic tone (DESIGN.md: สองชั้นสีห้ามปนกัน)
+   * ส่งมาแล้วชนะ `tone`
+   */
+  readonly dotColor?: string;
   readonly size?: keyof typeof DOT_SIZE;
   readonly className?: string;
   readonly children: ReactNode;
@@ -49,7 +52,8 @@ interface StatusDotBadgeProps {
  * <StatusDotBadge tone="success">Active</StatusDotBadge>
  */
 export function StatusDotBadge({
-  tone,
+  tone = "neutral",
+  dotColor,
   size = "sm",
   className,
   children,
@@ -68,8 +72,9 @@ export function StatusDotBadge({
         className={cn(
           "shrink-0 rounded-full",
           DOT_SIZE[size],
-          TONE_DOT[tone],
+          !dotColor && TONE_DOT[tone],
         )}
+        style={dotColor ? { backgroundColor: dotColor } : undefined}
         aria-hidden="true"
       />
       {children}

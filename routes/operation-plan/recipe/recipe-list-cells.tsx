@@ -23,15 +23,18 @@ export function recipeStatusKey(
 export function RecipeStatusBadge({
   status,
   className,
+  size = "xs",
 }: {
   readonly status: string | null | undefined;
   readonly className?: string;
+  /** ในคอลัมน์ของตารางส่ง `"sm"` — ชิปสถานะทุกตารางสูงเท่ากัน */
+  readonly size?: "xs" | "sm";
 }) {
   const ts = useTranslations("status");
   return (
     <StatusDotBadge
       tone={RECIPE_STATUS_TONE[status ?? ""] ?? "info"}
-      size="xs"
+      size={size}
       className={className}
     >
       {ts(recipeStatusKey(status))}

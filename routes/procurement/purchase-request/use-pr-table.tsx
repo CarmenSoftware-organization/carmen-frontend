@@ -41,7 +41,7 @@ import {
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { formatAmount } from "@/lib/currency-utils";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { PR_STATUS_CONFIG } from "@/constant/purchase-request";
 import type { PurchaseRequest } from "@/types/purchase-request";
 import { PR_STATUS } from "@/types/purchase-request";
@@ -172,7 +172,7 @@ export function usePrTable({
         const config = PR_STATUS_CONFIG[status] ?? PR_STATUS_CONFIG.draft;
         return (
           <div data-slot="cell-stack" className="flex min-w-0 flex-col">
-            <StatusIconLabel status={status} label={config.label} />
+            <StatusChip status={status} label={config.label} />
             {stage && (
               <span
                 className="text-muted-foreground truncate text-xs"

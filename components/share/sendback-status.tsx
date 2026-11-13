@@ -1,4 +1,5 @@
 import { useTranslations } from "use-intl";
+import { StatusChip } from "@/components/ui/status-chip";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { isSentBack } from "@/constant/last-action";
 import type { LastAction } from "@/types/last-action";
@@ -6,6 +7,8 @@ import type { LastAction } from "@/types/last-action";
 interface SendBackStatusProps {
   readonly lastAction?: LastAction | null;
   readonly className?: string;
+  /** ชิปจุดสี — ใช้ในคอลัมน์ของ DataGrid ให้ทรงเดียวกับคอลัมน์สถานะข้าง ๆ */
+  readonly chip?: boolean;
 }
 
 /**
@@ -31,10 +34,24 @@ interface SendBackStatusProps {
  * <SendBackStatus lastAction={item.last_action} />
  * ```
  */
-export function SendBackStatus({ lastAction, className }: SendBackStatusProps) {
+export function SendBackStatus({
+  lastAction,
+  className,
+  chip,
+}: SendBackStatusProps) {
   const tc = useTranslations("common");
 
   if (!isSentBack(lastAction)) return null;
+
+  if (chip) {
+    return (
+      <StatusChip
+        status="send_back"
+        label={tc("sendBack")}
+        className={className}
+      />
+    );
+  }
 
   return (
     <StatusIconLabel

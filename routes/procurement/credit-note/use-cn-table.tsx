@@ -14,6 +14,7 @@ import {
   auditColumns,
   columnSkeletons,
 } from "@/components/ui/data-grid/columns";
+import { StatusChip } from "@/components/ui/status-chip";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { CN_STATUS_CONFIG, CN_TYPE_CONFIG } from "@/constant/credit-note";
 
@@ -152,7 +153,7 @@ export function useCnTable({
         const status = row.original.doc_status;
         const config = CN_STATUS_CONFIG[status];
         return (
-          <StatusIconLabel
+          <StatusChip
             status={status}
             label={config?.label ?? status}
             // คอลัมน์นี้จัดกลาง — label เป็น inline-flex ซึ่ง `text-center`

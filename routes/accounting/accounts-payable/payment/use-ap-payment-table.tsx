@@ -4,7 +4,7 @@ import { CellAction } from "@/components/ui/cell-action";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { columnSkeletons } from "@/components/ui/data-grid/columns";
 import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
@@ -139,7 +139,7 @@ export function useApPaymentTable({
         <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
       cell: ({ row }) => (
-        <StatusIconLabel
+        <StatusChip
           status={row.original.doc_status}
           label={t(`statuses.${row.original.doc_status}`)}
         />

@@ -29,7 +29,7 @@ import {
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import type { ListPageKey } from "@/constant/list-page-keys";
 import { useCan } from "@/hooks/use-can";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
@@ -129,7 +129,7 @@ export default function AccountingRegisterList({
       ) : key === "date" ? (
         formatDate(row.date, dateFormat)
       ) : key === "status" ? (
-        <StatusIconLabel
+        <StatusChip
           status={row.status.toLowerCase()}
           label={t(`statuses.${row.status.toLowerCase()}`)}
         />
