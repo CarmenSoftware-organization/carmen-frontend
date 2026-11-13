@@ -28,6 +28,32 @@ interface UseVendorTableOptions {
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onEdit: (vendor: Vendor) => void;
   onDelete: (vendor: Vendor) => void;
+  /** ความกว้างของกล่องตาราง (px) — `undefined` = ยังไม่ได้วัด โชว์ครบทุกคอลัมน์ */
+  containerWidth?: number;
+}
+
+/**
+ * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
+ *
+ * คอลัมน์สั้นกว้างคงที่ ชื่อผู้ขายรับที่เหลือ (`meta.grow`) ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`
+ * ซึ่งนับคอลัมน์ select (55) ที่หน้านี้ไม่ได้เรนเดอร์ด้วย:
+ *   ครบ            55+60+90+180+160+190+130+100+60 = 1025
+ *   ไม่มีประเภทธุรกิจ                                  =  865
+ *   ไม่มีคะแนน                                        =  735
+ *   ไม่มีเลขลำดับ + ผู้ติดต่อเหลือ 170   55+90+180+170+100+60 = 655  (กล่องที่จอ 768 = 662)
+ * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 25–35px โดยตั้งใจ — คอลัมน์รองกลับมาเมื่อชื่อได้ที่ ~205px แล้ว
+ * เท่านั้น ไม่งั้นพอข้ามขั้นชื่อจะหดเหลือขั้นต่ำ 180px
+ * ผู้ติดต่ออยู่ถึงขั้นสุดท้าย (จัดซื้อเปิดหน้านี้เพื่อหาว่าจะโทรหาใคร) · ของที่ซ่อนยังดูได้จาก
+ * มุมมองการ์ดและหน้ารายละเอียด · คอลัมน์ที่ผู้ใช้เปิดเพิ่มเอง (credit term, created, updated)
+ * ไม่ได้นับในงบนี้ — เปิดแล้วเกินกล่อง ตารางเลื่อนแนวนอนในกรอบของมันเอง
+ */
+function columnTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  return {
+    showBusinessType: w >= 1060,
+    showRating: w >= 890,
+    showIndex: w >= 770,
+  };
 }
 
 export function useVendorTable({
@@ -37,10 +63,15 @@ export function useVendorTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseVendorTableOptions) {
+  "use no memo";
+
   const tfl = useTranslations("field");
   const t = useTranslations("vendorManagement.vendor");
   const { dateTimeFormat } = useProfile();
+  const { showBusinessType, showRating, showIndex } =
+    columnTier(containerWidth);
 
   const columns: ColumnDef<Vendor>[] = [
     {
@@ -69,8 +100,13 @@ export function useVendorTable({
           {row.original.name || "..."}
         </CellAction>
       ),
-      meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
-      size: 200,
+      // คอลัมน์ข้อความยาวตัวเดียวของตาราง รับความกว้างที่เหลือ — `size` คือขั้นต่ำ
+      meta: {
+        headerTitle: tfl("name"),
+        skeleton: columnSkeletons.text,
+        grow: true,
+      },
+      size: 180,
     },
 
     {
@@ -88,12 +124,16 @@ export function useVendorTable({
         // แถวเดียวเสมอ: ป้ายแรก + "+N" — รายชื่อเต็มอยู่ใน title
         const [first, ...rest] = types;
         return (
+          // data-slot: ไม่งั้น wrapper ของ DataGridTable ใส่ line-clamp-2 ทับ flex → ป้ายไม่หด
+          // ชื่อยาวถูกตัดกลางตัวอักษรและ "+N" ตกไปบรรทัดสอง
           <div
+            data-slot="cell-business-type"
             className="flex min-w-0 items-center gap-1"
             title={types.map((bt) => bt.name).join(", ")}
           >
-            <Badge variant="outline" className="min-w-0 truncate">
-              {first.name}
+            {/* Badge เป็น inline-flex + shrink-0: ต้องปลด shrink และตัดคำที่ span ข้างใน */}
+            <Badge variant="outline" className="min-w-0 shrink">
+              <span className="truncate">{first.name}</span>
             </Badge>
             {rest.length > 0 && (
               <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
@@ -103,7 +143,7 @@ export function useVendorTable({
           </div>
         );
       },
-      size: 170,
+      size: 160,
       enableSorting: false,
       meta: {
         headerTitle: tfl("businessType"),
@@ -133,7 +173,7 @@ export function useVendorTable({
           </div>
         );
       },
-      size: 200,
+      size: showIndex ? 190 : 170,
       enableSorting: false,
       meta: { headerTitle: tfl("contact"), skeleton: columnSkeletons.text },
     },
@@ -169,7 +209,8 @@ export function useVendorTable({
         ) : (
           <VendorRatingStars value={row.original.rating} className="text-xs" />
         ),
-      size: 120,
+      // ดาว 5 ดวง + "5/5" กว้าง 102px + padding เซลล์ 24
+      size: 130,
       meta: { headerTitle: t("rating"), skeleton: columnSkeletons.textShort },
     },
     // status column แทรกเองก่อน created/updated (useConfigTable ส่ง hideStatus)
@@ -177,9 +218,22 @@ export function useVendorTable({
     ...auditColumns<Vendor>(tfl, dateTimeFormat),
   ];
 
+  // ซ่อนผ่าน state ของตาราง ไม่ใช่ CSS — ความกว้างขั้นต่ำของตารางที่มีคอลัมน์ยืดคิดจากทุกคอลัมน์
+  // ที่ TanStack ถือว่ามองเห็น · ตัดออกจากรายการคอลัมน์เลย เมนู Toggle Columns ของผู้ใช้จึงไม่ถูกทับ
+  const hidden = new Set<string>([
+    ...(showBusinessType ? [] : ["business_type_names"]),
+    ...(showRating ? [] : ["rating"]),
+  ]);
+  const visibleColumns = columns.filter((c) => {
+    const key =
+      c.id ?? ("accessorKey" in c ? String(c.accessorKey) : undefined);
+    return !key || !hidden.has(key);
+  });
+
   return useConfigTable<Vendor>({
     data: vendors,
-    columns,
+    columns: visibleColumns,
+    hideIndex: !showIndex,
     totalRecords,
     params,
     tableConfig,

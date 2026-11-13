@@ -25,6 +25,8 @@ interface UseConfigTableOptions<T> {
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onDelete?: (item: T) => void;
   hideStatus?: boolean;
+  /** ไม่ใส่คอลัมน์เลขลำดับ — ตารางที่เลือกคอลัมน์ตามความกว้างกล่องใช้ตัดออกเมื่อกล่องแคบ */
+  hideIndex?: boolean;
   permissionPrefix?: string;
   initialState?: InitialTableState;
   /**
@@ -74,6 +76,7 @@ export function useConfigTable<T>({
   tableConfig,
   onDelete,
   hideStatus,
+  hideIndex,
   permissionPrefix,
   initialState,
   activity,
@@ -92,7 +95,7 @@ export function useConfigTable<T>({
 
   const allColumns: ColumnDef<T>[] = [
     selectColumn<T>(),
-    indexColumn<T>(params),
+    ...(hideIndex ? [] : [indexColumn<T>(params)]),
     ...columns,
     ...(hideStatus ? [] : [statusColumn<T>(tfl)]),
     ...(onDelete
