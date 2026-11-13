@@ -85,7 +85,11 @@ export default function OperationDashboard() {
           className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12"
         >
           {Array.from({ length: 4 }).map((_, i) => (
-            <WidgetSkeleton key={`opd-skeleton-${i}`} />
+            <WidgetSkeleton
+              key={`opd-skeleton-${i}`}
+              // ต้องบอกขนาดช่องเอง — ไม่ใส่ = กว้าง 1 คอลัมน์ สูง 1 แถว (โครงการ์ดบีบเหลือ ~50–110px)
+              className="row-span-2 @min-[38rem]:col-span-2 @5xl:col-span-3"
+            />
           ))}
         </div>
       )}
