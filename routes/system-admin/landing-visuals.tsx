@@ -45,8 +45,6 @@ export function ModuleVisual({ visualKey }: { readonly visualKey: VisualKey }) {
       return <EmailProfileViz />;
     case "emailTemplate":
       return <EmailTemplateViz />;
-    case "storage":
-      return <StorageViz />;
     default:
       return null;
   }
@@ -463,30 +461,6 @@ function EmailTemplateViz() {
   );
 }
 
-function StorageViz() {
-  return (
-    <div className={VIZ_WRAP}>
-      <div className="bg-card border-border flex flex-col gap-2 rounded-sm border p-2">
-        {[
-          { label: "Database", fill: "35%" },
-          { label: "Attachments", fill: "62%" },
-        ].map((row) => (
-          <div key={row.label}>
-            <div className="text-muted-foreground text-micro-eyebrow font-semibold">
-              {row.label}
-            </div>
-            <div className="bg-muted mt-1 h-1.5 overflow-hidden rounded-full">
-              <div
-                className="h-full rounded-full"
-                style={{ width: row.fill, background: ACCENT }}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 /**
  * แถวรายการของภาพจำลอง: จุดหน้าแถว + เส้นแทนข้อความ + ป้ายท้ายแถว

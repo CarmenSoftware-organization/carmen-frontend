@@ -38,7 +38,7 @@ interface StorageQuotaBannerProps {
   readonly usage: BuStorageUsage;
   /** ผู้ใช้มี `system_admin.view` — แถบเหลืองขึ้นเฉพาะคนกลุ่มนี้ */
   readonly canManage: boolean;
-  /** ผู้ใช้เปิด /system-admin/storage ได้ — ลิงก์ขึ้นเฉพาะคนกลุ่มนี้ */
+  /** ผู้ใช้เปิดหน้า Document (ที่แสดงโควตาและลบไฟล์ได้) ได้ — ลิงก์ขึ้นเฉพาะคนกลุ่มนี้ */
   readonly canOpenStorage: boolean;
   /** เวลาปัจจุบัน (ms) — ส่งจากผู้เรียกเพื่อให้ render บริสุทธิ์ */
   readonly now: number;
@@ -147,7 +147,7 @@ function KindAction({
       {canOpenStorage && (
         <>
           {" "}
-          <Link to="/system-admin/storage" className="font-semibold underline">
+          <Link to="/system-admin/document" className="font-semibold underline">
             {t("openStoragePage")}
           </Link>
         </>

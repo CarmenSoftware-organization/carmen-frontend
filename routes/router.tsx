@@ -769,8 +769,9 @@ export const router = createBrowserRouter([
                 lazy: () => import("./system-admin/document/document.route"),
               },
               {
+                // หน้า Storage รวมเข้าหน้า Document แล้ว — เก็บ path ไว้ให้ bookmark เก่า
                 path: "storage",
-                lazy: () => import("./system-admin/storage/storage.route"),
+                element: <Navigate to="/system-admin/document" replace />,
               },
               {
                 path: "activity-log",

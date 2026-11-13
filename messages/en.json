@@ -2845,11 +2845,6 @@
           "kicker": "System Configuration",
           "title": "Wiring it together",
           "lede": "Connections to outside systems, the wording of alerts and emails, and the shape of document numbers."
-        },
-        "data": {
-          "kicker": "Data Platform",
-          "title": "Data, ready for use",
-          "lede": "How much database and attachment space this business unit has used."
         }
       },
       "modules": {
@@ -2912,10 +2907,6 @@
         "emailTemplate": {
           "name": "Email Messages",
           "one": "Reusable subject and message templates for emailing purchase orders and pricing requests to vendors."
-        },
-        "storage": {
-          "name": "Storage",
-          "one": "Database and attachment space used."
         }
       }
     },
@@ -7341,7 +7332,6 @@
     "wastageReporting": "Wastage Reporting",
     "systemAdmin": "System Administration",
     "document": "Document Management",
-    "storage": "Storage",
     "role": "Roles",
     "user": "Users",
     "workflow": "Workflows",
@@ -7955,25 +7945,14 @@
     "warn": "The {kind} storage has {pct}% left.",
     "overQuota": "The {kind} storage is over quota. The grace period starts at the next measurement.",
     "measureFailed": "Could not measure storage. Please try again.",
-    "directUpload": "Direct upload",
     "actionDatabase": "Contact the Carmen team.",
     "actionAttachment": "Delete unused files.",
-    "openStoragePage": "View storage",
+    "openStoragePage": "Open Documents",
     "dismiss": "Dismiss",
-    "pageTitle": "Storage",
-    "pageDesc": "Database and attachment storage used by this business unit, against its quota.",
     "usedOfQuota": "{used} of {quota} ({pct}%)",
     "measuredAt": "Last measured {date}",
     "measureNow": "Measure now",
-    "measureTooSoon": "Measured just now. Try again in 10 minutes.",
-    "loadFailed": "Could not load storage usage.",
-    "notMeasured": "This business unit has not been measured yet.",
-    "usageTitle": "Usage",
-    "fileCount": "{count, plural, one {# file} other {# files}}",
-    "breakdownTitle": "Attachments by type",
-    "breakdownDesc": "View and delete unused files on the",
-    "openDocuments": "Documents page",
-    "breakdownEmpty": "No attachments."
+    "measureTooSoon": "Measured just now. Try again in 10 minutes."
   },
   "buCurrency": {
     "missing": "Business unit {bu} has no default currency set — amounts are shown in THB until one is set.",

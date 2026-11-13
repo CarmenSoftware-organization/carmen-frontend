@@ -182,8 +182,9 @@ const ALLOWED_SUB_10PX: Record<string, number> = {
   // — the point is that it reads as a tiny screenshot.
   // Was 20 until ca4d678 deleted the email-config module's illustration (−3), then 17
   // until PR #568 rewrote the list-style illustrations around one shared row (−7), then
-  // 10 until the Dashboard Dataset page and its fake-SQL illustration were removed (−4).
-  "routes/system-admin/landing-visuals.tsx": 6,
+  // 10 until the Dashboard Dataset page and its fake-SQL illustration were removed (−4),
+  // then 6 until the Storage page merged into Document and its card went away (−1).
+  "routes/system-admin/landing-visuals.tsx": 5,
 
   // ── Digits ──
   // Uniform height, no ascenders/descenders, no diacritics; legible at 9px in a way
