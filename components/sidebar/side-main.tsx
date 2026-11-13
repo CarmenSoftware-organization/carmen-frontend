@@ -10,7 +10,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { findAccountingSection, moduleList } from "@/constant/module-list";
+import {
+  findAccountingSection,
+  findActiveModule,
+} from "@/constant/module-list";
 import {
   useVisibleModules,
   type ModuleWithAccess,
@@ -70,7 +73,7 @@ export function SideMain() {
   const pathname = useLocation().pathname;
   const t = useTranslations("modules");
 
-  const activeModule = moduleList.find((mod) => pathname.startsWith(mod.path));
+  const activeModule = findActiveModule(pathname);
   const sidebarModule =
     activeModule?.name === "accounting"
       ? findAccountingSection(pathname)

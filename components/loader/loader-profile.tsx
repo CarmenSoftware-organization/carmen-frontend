@@ -1,36 +1,19 @@
-import { Separator } from "../ui/separator";
+import { CompactSectionSkeleton } from "@/components/share/compact-section";
 import { Skeleton } from "../ui/skeleton";
 
+/** โครงรอโหลดของหน้า /profile — โครงเดียวกับหน้าจริง (หัว · ข้อมูลส่วนตัว · BU) เนื้อหาจึงไม่กระโดดตอนข้อมูลมา */
 export default function LoaderProfile() {
   return (
-    <div className="space-y-4">
-      <section>
-        <Skeleton className="h-3 w-32" />
-        <Separator className="my-2" />
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={`user-${i}`} className="space-y-1">
-              <Skeleton className="h-2.5 w-16" />
-              <Skeleton className="h-3 w-24" />
-            </div>
-          ))}
+    <div className="w-full">
+      <div className="bg-card flex items-center gap-3 rounded-xl border p-4 shadow-sm">
+        <Skeleton className="size-14 shrink-0 rounded-full" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <Skeleton className="h-5 w-48 max-w-full" />
+          <Skeleton className="h-3.5 w-64 max-w-full" />
         </div>
-      </section>
-      <section>
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-3 w-40" />
-          <Skeleton className="h-4 w-14 rounded-full" />
-        </div>
-        <Separator className="my-2" />
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
-          {Array.from({ length: 7 }).map((_, i) => (
-            <div key={`bu-${i}`} className="space-y-1">
-              <Skeleton className="h-2.5 w-16" />
-              <Skeleton className="h-3 w-24" />
-            </div>
-          ))}
-        </div>
-      </section>
+      </div>
+      <CompactSectionSkeleton className="h-20" />
+      <CompactSectionSkeleton className="h-72" />
     </div>
   );
 }

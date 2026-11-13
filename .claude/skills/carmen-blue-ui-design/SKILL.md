@@ -48,10 +48,11 @@ description: ใช้เมื่อจัดหรือปรับ layout �
 
 - `components/share/compact-section.tsx` — `CompactSection` (`count`, `action`, `first`),
   `CompactSectionSkeleton`, `FieldGrid` (`size="field"` | `"item"`), `SECTION_PAIR`
-- `routes/system-admin/company-profile/company-profile-ui.tsx` — `SettingField` (prop `specimen`
-  ของข้อ 8), `ConfigField` (ช่อง config: รหัสเอกสาร + ป้ายบน ค่าล่าง) — ยังเป็นของโมดูล
-  system-admin โมดูลอื่นที่ต้องใช้ให้ยกขึ้น `components/` ก่อน (ESLint ห้าม `routes/<A>/` →
-  `routes/<B>/`)
+- `components/share/setting-field.tsx` — `SettingField` ช่องโหมดดู: ป้ายจาง + ค่าตัวเข้ม ไม่มีกรอบ
+  (prop `specimen` ของข้อ 8, `fullWidth` = `@md:col-span-2`) ใช้ได้ทุกโมดูล
+- `routes/system-admin/company-profile/company-profile-ui.tsx` — `ConfigField` (ช่อง config:
+  รหัสเอกสาร + ป้ายบน ค่าล่าง) — ยังเป็นของโมดูล system-admin โมดูลอื่นที่ต้องใช้ให้ยกขึ้น
+  `components/` ก่อน (ESLint ห้าม `routes/<A>/` → `routes/<B>/`)
 - `DataGrid` column `meta: { grow: true }` — คอลัมน์รับความกว้างที่เหลือ
 - `routes/system-admin/shared/use-element-width.ts` — `useElementWidth()` วัดความกว้างของกล่อง
   ด้วย ResizeObserver สำหรับจุดที่ container query ของ CSS ทำไม่ได้ (เลือกคอลัมน์/ขนาดคอลัมน์ของ
@@ -62,7 +63,8 @@ description: ใช้เมื่อจัดหรือปรับ layout �
 
 หน้าที่ทำแล้ว (เปิดดูเป็นตัวอย่าง): company-profile #547 · default-setting #548 · ask-ai #549 ·
 inventory-period + footer #550 · interface (list) #552 · email-profile #553 · email-template #554 ·
-role (list) #555 · running-code (list) #556 · document (list) #557 · storage #558 · user (list)
+role (list) #555 · running-code (list) #556 · document (list) #557 · storage #558 · user (list) ·
+profile (หน้าดู: การ์ดต่อ BU เต็มความกว้าง)
 
 ## กับดัก
 

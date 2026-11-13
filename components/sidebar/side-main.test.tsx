@@ -34,9 +34,9 @@ const { DummyIcon } = vi.hoisted(() => ({
   DummyIcon: (() => null) as unknown as LucideIcon,
 }));
 
-// SideMain ใช้ `moduleList` แค่หา activeModule จาก pathname — ให้ตัวเดียวพอ
-vi.mock("@/constant/module-list", () => ({
-  moduleList: [
+// SideMain หา activeModule จาก pathname ผ่าน `findActiveModule` — ให้สองโมดูลพอ
+vi.mock("@/constant/module-list", () => {
+  const moduleList = [
     {
       name: "procurementModule",
       path: "/procurement",
@@ -44,13 +44,18 @@ vi.mock("@/constant/module-list", () => ({
       subModules: [],
     },
     { name: "accounting", path: "/accounting", icon: DummyIcon },
-  ],
-  findAccountingSection: () => ({
-    name: "generalLedger",
-    path: "/accounting",
-    icon: DummyIcon,
-  }),
-}));
+  ];
+  return {
+    moduleList,
+    findActiveModule: (pathname: string) =>
+      moduleList.find((mod) => pathname.startsWith(mod.path)),
+    findAccountingSection: () => ({
+      name: "generalLedger",
+      path: "/accounting",
+      icon: DummyIcon,
+    }),
+  };
+});
 
 // Mock ทั้ง hook ที่ระดับนี้ — ตรรกะการคำนวณ denied/locked เทสต์แยกไว้แล้วที่
 // hooks/use-visible-modules.test.ts ตรง ๆ กับ annotate/markAll; ที่นี่ทดสอบแค่ว่า
