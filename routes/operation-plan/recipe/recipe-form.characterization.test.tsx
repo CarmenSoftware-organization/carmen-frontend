@@ -152,58 +152,6 @@ describe("RecipeForm — characterization", () => {
   it.todo("[create] เซฟแล้วกลับหน้ารายการ");
 });
 
-describe("RecipeForm — ลิงก์วิดีโอ", () => {
-  const videoInput = () =>
-    screen.getByLabelText(en.operationPlan.recipe.videoUrl);
-
-  it("โหลดลิงก์ที่บันทึกไว้ แล้วเซฟส่งค่าเดิมกลับ", async () => {
-    const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-    renderForm(<RecipeForm recipe={{ ...RECIPE, video_url: url }} />);
-    expect(videoInput()).toHaveValue(url);
-    await act(async () => submitForm("recipe-form"));
-
-    expect(firstPayload(updateMut)).toMatchObject({ video_url: url });
-  });
-
-  it("วางลิงก์ youtu.be → ส่งตามที่วาง (backend แปลงเป็นรูปแบบ watch?v= เอง)", async () => {
-    renderForm(<RecipeForm recipe={RECIPE} />);
-    fireEvent.change(videoInput(), {
-      target: { value: "  https://youtu.be/dQw4w9WgXcQ?si=x  " },
-    });
-    await act(async () => submitForm("recipe-form"));
-
-    expect(firstPayload(updateMut)).toMatchObject({
-      video_url: "https://youtu.be/dQw4w9WgXcQ?si=x",
-    });
-  });
-
-  it("ลบลิงก์ออก → ส่ง null (ล้างวิดีโอ)", async () => {
-    renderForm(
-      <RecipeForm
-        recipe={{
-          ...RECIPE,
-          video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        }}
-      />,
-    );
-    fireEvent.change(videoInput(), { target: { value: "" } });
-    await act(async () => submitForm("recipe-form"));
-
-    expect(firstPayload(updateMut)).toMatchObject({ video_url: null });
-  });
-
-  it("ลิงก์ที่ไม่ใช่วิดีโอ YouTube → ไม่บันทึก ช่องขึ้น error", async () => {
-    renderForm(<RecipeForm recipe={RECIPE} />);
-    fireEvent.change(videoInput(), {
-      target: { value: "https://vimeo.com/76979871" },
-    });
-    await act(async () => submitForm("recipe-form"));
-
-    expect(updateMut.mutate).not.toHaveBeenCalled();
-    expect(videoInput()).toHaveAttribute("aria-invalid", "true");
-  });
-});
-
 describe("RecipeForm — วิดีโอของขั้นตอน", () => {
   const WATCH = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
   const STEP = {
