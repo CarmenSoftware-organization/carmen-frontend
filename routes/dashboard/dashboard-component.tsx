@@ -409,7 +409,7 @@ const SavedWidgetsSection = () => {
     : undefined;
 
   return (
-    <section className="space-y-3">
+    <section className="@container space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-baseline gap-2">
           <h2 className="text-muted-foreground text-micro-legal font-bold tracking-[0.16em] uppercase">
@@ -444,7 +444,7 @@ const SavedWidgetsSection = () => {
         <div
           aria-busy="true"
           aria-live="polite"
-          className="grid auto-rows-[4rem] grid-cols-1 gap-3 md:grid-cols-6 lg:grid-cols-12"
+          className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12"
         >
           <WidgetSkeletonCards />
         </div>
@@ -494,7 +494,7 @@ const SavedWidgetsSection = () => {
             items={renderable.map(({ widget }) => widget.id)}
             strategy={rectSortingStrategy}
           >
-            <ul className="grid auto-rows-[4rem] grid-cols-1 gap-3 md:grid-cols-6 lg:grid-cols-12">
+            <ul className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
               {renderable.map(({ widget, query }) => (
                 <SortableWidgetItem
                   key={widget.id}
@@ -597,7 +597,12 @@ function EmptyState({
             ))}
           </ul>
 
-          <Button size="sm" className="mt-2" onClick={onAdd} disabled={disabled}>
+          <Button
+            size="sm"
+            className="mt-2"
+            onClick={onAdd}
+            disabled={disabled}
+          >
             <Plus aria-hidden="true" />
             {t("add")}
           </Button>

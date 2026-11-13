@@ -37,12 +37,7 @@ import {
   DataGridContainer,
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppTile, SubTile } from "@/components/icons/tiles";
 import {
@@ -157,7 +152,7 @@ export function DashboardWidgetGrid({
     });
 
   return (
-    <div className="space-y-4 p-3">
+    <div className="@container space-y-4 p-3">
       <header className="flex items-center gap-3">
         <AppTile name={moduleName} size={40} />
         <div className="min-w-0">
@@ -182,7 +177,7 @@ export function DashboardWidgetGrid({
       <section
         aria-busy={isLoading}
         aria-live="polite"
-        className="grid auto-rows-[4rem] grid-cols-1 gap-3 md:grid-cols-6 lg:grid-cols-12"
+        className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12"
       >
         {isLoading ? (
           <WidgetSkeletonCards />
@@ -660,35 +655,36 @@ export function PieCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
             {/* รายการสีต้องเลื่อนได้ในกล่องตัวเอง: เดิม ul ถูกจัดกลางแนวตั้ง (items-center)
                 เมื่อรายการยาวกว่ากล่อง ครึ่งบนจึงล้นขึ้นไปทับหัวการ์ด */}
             <div className="h-full min-h-0 min-w-0 flex-1 overflow-y-auto">
-            <ul className="flex min-h-full flex-col justify-center gap-1.5">
-              {chartData.map((item, i) => {
-                const pct =
-                  total > 0 ? Math.round((item.value / total) * 100) : 0;
-                return (
-                  <li key={item.name} className="flex items-center gap-1.5">
-                    <span
-                      aria-hidden="true"
-                      className="size-2 shrink-0 rounded-full"
-                      style={{
-                        backgroundColor: CHART_COLORS[i % CHART_COLORS.length],
-                      }}
-                    />
-                    <span
-                      className="text-micro min-w-0 flex-1 truncate leading-tight"
-                      title={item.name}
-                    >
-                      {item.name}
-                    </span>
-                    <span className="text-micro font-semibold tabular-nums">
-                      {formatMetric(item.value, unit)}
-                    </span>
-                    <span className="text-muted-foreground text-micro w-9 text-right tabular-nums">
-                      {pct}%
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
+              <ul className="flex min-h-full flex-col justify-center gap-1.5">
+                {chartData.map((item, i) => {
+                  const pct =
+                    total > 0 ? Math.round((item.value / total) * 100) : 0;
+                  return (
+                    <li key={item.name} className="flex items-center gap-1.5">
+                      <span
+                        aria-hidden="true"
+                        className="size-2 shrink-0 rounded-full"
+                        style={{
+                          backgroundColor:
+                            CHART_COLORS[i % CHART_COLORS.length],
+                        }}
+                      />
+                      <span
+                        className="text-micro min-w-0 flex-1 truncate leading-tight"
+                        title={item.name}
+                      >
+                        {item.name}
+                      </span>
+                      <span className="text-micro font-semibold tabular-nums">
+                        {formatMetric(item.value, unit)}
+                      </span>
+                      <span className="text-muted-foreground text-micro w-9 text-right tabular-nums">
+                        {pct}%
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </div>
         )}
@@ -1366,7 +1362,9 @@ export function TableCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
             const content = renderTableCell(getValue(), col.type, col.unit);
             const href = col.link ? cellDocHref(row.original, col.link) : null;
             if (!col.link || !href) return content;
-            const title = col.link.title ? row.original[col.link.title] : undefined;
+            const title = col.link.title
+              ? row.original[col.link.title]
+              : undefined;
             return (
               <Link
                 to={href}
@@ -1503,27 +1501,27 @@ export function WidgetSkeletonCards() {
     <>
       <WidgetSkeleton
         variant="kpi"
-        className="row-span-2 md:col-span-2 lg:col-span-3"
+        className="row-span-2 @min-[38rem]:col-span-2 @5xl:col-span-3"
       />
       <WidgetSkeleton
         variant="kpi"
-        className="row-span-2 md:col-span-2 lg:col-span-3"
+        className="row-span-2 @min-[38rem]:col-span-2 @5xl:col-span-3"
       />
       <WidgetSkeleton
         variant="pie"
-        className="row-span-3 md:col-span-3 lg:col-span-6"
+        className="row-span-3 @min-[38rem]:col-span-3 @5xl:col-span-6"
       />
       <WidgetSkeleton
         variant="bar"
-        className="row-span-3 md:col-span-3 lg:col-span-6"
+        className="row-span-3 @min-[38rem]:col-span-3 @5xl:col-span-6"
       />
       <WidgetSkeleton
         variant="kpi"
-        className="row-span-2 md:col-span-2 lg:col-span-3"
+        className="row-span-2 @min-[38rem]:col-span-2 @5xl:col-span-3"
       />
       <WidgetSkeleton
         variant="kpi"
-        className="row-span-2 md:col-span-2 lg:col-span-3"
+        className="row-span-2 @min-[38rem]:col-span-2 @5xl:col-span-3"
       />
     </>
   );
@@ -1598,8 +1596,16 @@ function DeltaIndicator({
   const sign = isUp ? "+" : "";
 
   return (
-    <p className={cn("mt-1 flex items-center gap-1 text-xs", tone)}>
-      <Icon className="size-3" aria-hidden="true" />
+    // บรรทัดเดียวเสมอ (h-4 + overflow-hidden): การ์ดสูงตายตัว ถ้าบรรทัดนี้ห่อเป็นสองบรรทัดบนการ์ดแคบ
+    // ขอบล่างจะตัดมัน — คำว่า "เทียบงวดก่อน" ที่ไม่พอที่จึงตกไปบรรทัดสองแล้วถูกซ่อนทั้งคำ
+    // ตัวเลขยังอยู่ครบ (ไม่ใช้ truncate: ตัดเหลือ "vs. pr…" อ่านไม่รู้เรื่อง)
+    <p
+      className={cn(
+        "mt-1 flex h-4 flex-wrap items-center gap-x-1 overflow-hidden text-xs whitespace-nowrap",
+        tone,
+      )}
+    >
+      <Icon className="size-3 shrink-0" aria-hidden="true" />
       <span className="tabular-nums">
         {sign}
         {diff.toLocaleString()}

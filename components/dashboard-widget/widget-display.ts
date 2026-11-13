@@ -1,35 +1,39 @@
 import type { WidgetDisplay } from "@/types/dashboard-widget";
 
 /**
- * กริดของ dashboard — 12 คอลัมน์บนจอใหญ่ 6 บนจอกลาง เต็มแถวบนมือถือ
+ * กริดของ dashboard — 12 คอลัมน์เมื่อกล่องกว้าง 64rem ขึ้นไป · 6 ตั้งแต่ 38rem · ต่ำกว่านั้นเต็มแถว
  * 1 แถว = 4rem (คู่กับ `auto-rows-[4rem]` ของ container)
+ *
+ * ตัดสินจาก **ความกว้างของกล่อง** (container query) ไม่ใช่ของจอ: จอ 1024 ที่กาง sidebar เหลือกล่อง
+ * ~710px ถ้าแบ่ง 12 คอลัมน์ การ์ด KPI กว้าง 169px บรรทัดเทียบงวดก่อนโดนตัดขอบล่าง
+ * ตัวที่ห่อกริดจึงต้องเป็น `@container` (ไม่มี = คอลัมน์ไม่แตกเลย และไม่มี error)
  *
  * ต้องเป็น string เต็มตัวในตาราง ไม่ใช่ประกอบด้วย template literal — Tailwind
  * สแกน class จาก source แบบ static ถ้าประกอบชื่อตอน runtime จะไม่มี class นั้นใน bundle
  */
-const COL_SPAN_LG: Record<number, string> = {
-  1: "lg:col-span-1",
-  2: "lg:col-span-2",
-  3: "lg:col-span-3",
-  4: "lg:col-span-4",
-  5: "lg:col-span-5",
-  6: "lg:col-span-6",
-  7: "lg:col-span-7",
-  8: "lg:col-span-8",
-  9: "lg:col-span-9",
-  10: "lg:col-span-10",
-  11: "lg:col-span-11",
-  12: "lg:col-span-12",
+const COL_SPAN_WIDE: Record<number, string> = {
+  1: "@5xl:col-span-1",
+  2: "@5xl:col-span-2",
+  3: "@5xl:col-span-3",
+  4: "@5xl:col-span-4",
+  5: "@5xl:col-span-5",
+  6: "@5xl:col-span-6",
+  7: "@5xl:col-span-7",
+  8: "@5xl:col-span-8",
+  9: "@5xl:col-span-9",
+  10: "@5xl:col-span-10",
+  11: "@5xl:col-span-11",
+  12: "@5xl:col-span-12",
 };
 
-/** จอกลาง 6 คอลัมน์ = ครึ่งหนึ่งของความกว้างที่ตั้งไว้ (ปัดขึ้น, อย่างน้อย 1) */
-const COL_SPAN_MD: Record<number, string> = {
-  1: "md:col-span-1",
-  2: "md:col-span-2",
-  3: "md:col-span-3",
-  4: "md:col-span-4",
-  5: "md:col-span-5",
-  6: "md:col-span-6",
+/** กล่องกลาง 6 คอลัมน์ = ครึ่งหนึ่งของความกว้างที่ตั้งไว้ (ปัดขึ้น, อย่างน้อย 1) */
+const COL_SPAN_MID: Record<number, string> = {
+  1: "@min-[38rem]:col-span-1",
+  2: "@min-[38rem]:col-span-2",
+  3: "@min-[38rem]:col-span-3",
+  4: "@min-[38rem]:col-span-4",
+  5: "@min-[38rem]:col-span-5",
+  6: "@min-[38rem]:col-span-6",
 };
 
 const ROW_SPAN: Record<number, string> = {
@@ -203,7 +207,7 @@ export function gridClasses(
 ): string {
   const { width, height } = gridSize(widgetType, display);
   const md = clamp(Math.ceil(width / 2), 1, 6);
-  return `${COL_SPAN_MD[md]} ${COL_SPAN_LG[width]} ${ROW_SPAN[height]}`;
+  return `${COL_SPAN_MID[md]} ${COL_SPAN_WIDE[width]} ${ROW_SPAN[height]}`;
 }
 
 /**
