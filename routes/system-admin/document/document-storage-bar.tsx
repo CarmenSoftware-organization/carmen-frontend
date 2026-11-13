@@ -103,18 +103,18 @@ export default function DocumentStorageBar({
     : "";
 
   return (
-    // เรียงแนวนอนเมื่อ "กล่องเอง" กว้างพอ (@xl ของ container) ไม่ใช่เมื่อจอกว้างพอ
+    // เรียงแนวนอนเมื่อ "กล่องเอง" กว้างพอ (@lg ของ container) ไม่ใช่เมื่อจอกว้างพอ
     <div className="@container">
       <div className="bg-muted/40 flex flex-col gap-2 rounded-md border px-3 py-2">
         {hasQuota && (
           // จำนวนชนิดมาจากข้อมูล (ปกติ 2) — auto-fit ไม่เหลือคอลัมน์ว่างแบบกริดจำนวนคอลัมน์ตายตัว
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] gap-x-8 gap-y-2">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-x-8 gap-y-2">
             {kinds.map((k) => (
               <QuotaBar key={k.kind} usage={k} />
             ))}
           </div>
         )}
-        <div className="flex flex-col gap-1 @xl:flex-row @xl:items-center @xl:gap-4">
+        <div className="flex flex-col gap-1 @lg:flex-row @lg:items-center @lg:gap-4">
           {measuredAt && (
             <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
               {tq("measuredAt", {

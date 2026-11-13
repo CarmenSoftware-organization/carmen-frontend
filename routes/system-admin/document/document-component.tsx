@@ -57,6 +57,7 @@ import { DocumentLoadMore } from "./document-load-more";
 import { useElementWidth } from "@/hooks/use-element-width";
 import { useStorageUsage } from "@/hooks/use-storage-usage";
 import { useCan } from "@/hooks/use-can";
+import { useBuCode } from "@/hooks/use-bu-code";
 import { PERMISSIONS } from "@/constant/permissions";
 
 type DocumentDisplayMode = "list" | "grid" | "preview";
@@ -98,6 +99,7 @@ export default function DocumentComponent() {
   const hasSummary = !!summary && summary.total_count > 0;
   const { data: usage, isLoading: isUsageLoading } = useStorageUsage();
   const { can } = useCan();
+  const buCode = useBuCode();
   // กล่องพื้นที่ (โควตา + แจกแจง) ถือว่า "มีของ" ตั้งแต่ตอนโหลด (มี skeleton แสดงอยู่) ไม่ใช่แค่
   // ตอนมีข้อมูลจริง ใช้ค่านี้กับ max-h ของตารางเท่านั้น ส่วน Sheet ยังต้องใช้ hasSummary
   // เพราะต้องการข้อมูลจริง
@@ -320,7 +322,10 @@ export default function DocumentComponent() {
             onChange={handleUpload}
             className="hidden"
           />
-          {can(PERMISSIONS.system_admin.view) && <DocumentMeasureButton />}
+          {can(PERMISSIONS.system_admin.view) && (
+            // key ตาม BU: สถานะ "เพิ่งวัดไป" (429) เป็นของ BU ที่กด — สลับ BU แล้วปุ่มต้องกลับมากดได้
+            <DocumentMeasureButton key={buCode} />
+          )}
           <Button
             size="sm"
             onClick={() => fileInputRef.current?.click()}
