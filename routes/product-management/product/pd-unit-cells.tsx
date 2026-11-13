@@ -31,7 +31,7 @@ export function FromUnitCell({
 }: UnitCellProps) {
   if (!isOrder) {
     return (
-      <div className="text-muted-foreground flex items-center px-2 text-xs">
+      <div className="text-muted-foreground flex items-center text-xs">
         {inventoryUnitName}
       </div>
     );
@@ -43,9 +43,7 @@ export function FromUnitCell({
         name={`${name}.${index}.from_unit_id`}
         render={({ field }) =>
           disabled ? (
-            <span className="px-2 text-xs">
-              {unitMap.get(field.value) ?? ""}
-            </span>
+            <span className="text-xs">{unitMap.get(field.value) ?? ""}</span>
           ) : (
             <LookupUnit
               value={field.value}
@@ -81,7 +79,7 @@ export function ToUnitCell({
 }: UnitCellProps) {
   if (isOrder) {
     return (
-      <div className="text-muted-foreground flex items-center px-2 text-xs">
+      <div className="text-muted-foreground flex items-center text-xs">
         {inventoryUnitName}
       </div>
     );
@@ -93,9 +91,7 @@ export function ToUnitCell({
         name={`${name}.${index}.to_unit_id`}
         render={({ field }) =>
           disabled ? (
-            <span className="px-2 text-xs">
-              {unitMap.get(field.value) ?? ""}
-            </span>
+            <span className="text-xs">{unitMap.get(field.value) ?? ""}</span>
           ) : (
             <LookupUnit
               value={field.value}

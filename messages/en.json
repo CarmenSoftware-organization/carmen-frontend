@@ -5729,6 +5729,8 @@
       "addFirstConversionHint": "Describe how suppliers ship this product",
       "addFirstAttributeHint": "Add extra details like brand, shelf life, or dimensions for reporting",
       "sectionCodesCost": "Codes & cost",
+      "sectionClassificationUnit": "Classification & Unit",
+      "sectionTaxPriceThresholds": "Tax, Price & Thresholds",
       "skuHint": "Letters, numbers, hyphens. Must be unique.",
       "priceHint": "Used until first PO establishes actual",
       "nameHint": "English name shown on POs, invoices",

@@ -24,7 +24,10 @@ import {
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
-import { SettingSection } from "@/components/ui/setting-section";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { CompactSection } from "@/components/share/compact-section";
+import { useElementWidth } from "@/hooks/use-element-width";
+import { RowCard, RowCardField, RowCards } from "./pd-row-cards";
 import { LookupLocation } from "@/components/lookup/lookup-location";
 import { LookupShelf } from "@/components/lookup/lookup-shelf";
 import EmptyComponent from "@/components/empty-component";
@@ -149,6 +152,18 @@ function PdTabLocations({ form, isDisabled }: PdTabLocationsProps) {
     }
   };
 
+  // กล่องกว้างพอ → คอลัมน์กว้างคงที่ คอลัมน์สถานะ (สุดท้าย) รับที่เหลือ · ผลรวมคอลัมน์:
+  // # 32 · location 300 · type 130 · shelf 180 · qty 110×3 · status 100 = 1072, โหมดแก้ + ปุ่มลบ
+  // 40 = 1112 · กล่องแคบกว่านั้น (รวมจอ 1366 ที่กล่อง ~1054) แบ่งตามสัดส่วนเหมือนเดิม
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const fixedColumns =
+    (gridBoxWidth ?? Number.POSITIVE_INFINITY) >= (isDisabled ? 1090 : 1130);
+  // กล่องแคบ + โหมดดู → การ์ดทีละใบ · โหมดแก้ยังเป็นตาราง (lookup/ช่องกรอกผูกกับ column cell)
+  // จุดเปลี่ยน 760 ไม่ใช่ 560 ของตารางอื่น: ตารางนี้ 8 คอลัมน์ ที่กล่อง 632px (tablet) คอลัมน์ Type
+  // เหลือ 75px ป้ายประเภทล้นช่อง
+  const asCards =
+    isDisabled && gridBoxWidth !== undefined && gridBoxWidth < 760;
+
   const columns = useMemo<ColumnDef<LocationRow>[]>(() => {
     const indexCol: ColumnDef<LocationRow> = {
       id: "index",
@@ -174,7 +189,7 @@ function PdTabLocations({ form, isDisabled }: PdTabLocationsProps) {
 
           if (isDisabled) {
             return (
-              <span className="flex items-center gap-1.5 px-2 text-xs">
+              <span className="flex items-center gap-1.5 text-xs">
                 {location_code && (
                   <span className="text-muted-foreground">{location_code}</span>
                 )}
@@ -360,10 +375,11 @@ function PdTabLocations({ form, isDisabled }: PdTabLocationsProps) {
         },
         enableSorting: false,
         size: 100,
-        meta: {
-          headerClassName: "text-center",
-          cellClassName: "text-center",
-        },
+        // คอลัมน์สุดท้ายของข้อมูลรับที่เหลือ (ชิดซ้าย) — ไม่ให้คอลัมน์ Location ยืด เพราะโหมดแก้
+        // ช่องนั้นเป็น lookup: ยืดแล้วช่องกรอกกว้างเป็นพันพิกเซลบนจอกว้าง
+        meta: fixedColumns
+          ? { grow: true }
+          : { headerClassName: "text-center", cellClassName: "text-center" },
       },
     ];
 
@@ -392,7 +408,7 @@ function PdTabLocations({ form, isDisabled }: PdTabLocationsProps) {
     return [indexCol, ...dataCols, ...(isDisabled ? [] : [actionCol])];
     // errors ต้องอยู่ใน deps — cell ปิดทับค่านี้ไว้ ถ้าไม่ใส่ columns จะไม่สร้างใหม่
     // ตอน validation fail แล้ว error ที่ส่งเข้า cell ค้างเป็นค่าเก่า
-  }, [t, tfl, ts, isDisabled, form, assignedIds, errors]);
+  }, [t, tfl, ts, isDisabled, form, assignedIds, errors, fixedColumns]);
 
   const table = useReactTable({
     data: tableData,
@@ -402,22 +418,21 @@ function PdTabLocations({ form, isDisabled }: PdTabLocationsProps) {
   });
 
   return (
-    // SettingSection ตัวเดียวกับแท็บ General — เดิมเขียนหัวข้อเองเป็น h2 14px
-    // ไม่มี tracking ทำให้สลับแท็บแล้วหัวข้อเปลี่ยนขนาดกันเองในฟอร์มเดียว
-    <SettingSection
+    // CompactSection ตัวเดียวกับแท็บ General — สลับแท็บแล้วหัวข้อขนาดเท่ากัน
+    <CompactSection
       first
-      wide
       frameless
       title={t("sectionLocations")}
       count={fields.length}
       action={
-        <div className="flex items-center gap-2">
+        // max-w-full + flex-wrap: กล่อง 302px ของมือถือใส่ช่องค้น 256 + ปุ่มเพิ่มไม่พอในแถวเดียว
+        <div className="flex max-w-full min-w-0 flex-wrap items-center gap-2">
           {/* SearchInput ตัวเดียวกับหน้า list — ยิงตอน Enter/กดแว่น ตาม convention
               ของแอป (มีปุ่ม X ล้างคำค้นมาให้ด้วย) */}
           <SearchInput
             defaultValue={search}
             onSearch={setSearch}
-            containerClassName="w-64"
+            containerClassName="w-64 max-w-full"
             inputClassName="h-8 text-xs placeholder:text-xs"
           />
           {!isDisabled && (
@@ -434,24 +449,94 @@ function PdTabLocations({ form, isDisabled }: PdTabLocationsProps) {
         </div>
       }
     >
-      {/* padding แถวเท่า tab units/attributes — default ของ DataGrid คือ py-1
-          ซึ่งแน่นกว่าตารางอื่นในฟอร์มเดียวกัน */}
-      <DataGrid
-        table={table}
-        recordCount={fields.length}
-        tableLayout={{ rowClamp: false, headerSticky: true, rowRounded: true }}
-        tableClassNames={{ bodyRow: "[&>td]:py-3", headerRow: "[&>th]:py-3" }}
-        emptyMessage={
-          <EmptyComponent
-            title={t("noLocations")}
-            description={t("addFirstLocationHint")}
-          />
-        }
-      >
-        <DataGridContainer>
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+      <div ref={setGridBox}>
+        {asCards ? (
+          tableData.length === 0 ? (
+            <EmptyComponent
+              title={t("noLocations")}
+              description={t("addFirstLocationHint")}
+            />
+          ) : (
+            <RowCards>
+              {tableData.map((row) => (
+                <RowCard
+                  key={row.fieldId}
+                  title={row.location_name}
+                  subtitle={row.location_code}
+                  badge={
+                    row.is_active === undefined ||
+                    row.is_active === null ? undefined : (
+                      <StatusDotBadge
+                        tone={row.is_active ? "success" : "neutral"}
+                      >
+                        {row.is_active ? ts("active") : ts("inactive")}
+                      </StatusDotBadge>
+                    )
+                  }
+                >
+                  {row.location_type && (
+                    <RowCardField label={tfl("type")}>
+                      <LocationTypeLabel
+                        type={row.location_type as INVENTORY_TYPE}
+                      />
+                    </RowCardField>
+                  )}
+                  <RowCardField label={tfl("shelf")}>
+                    <Controller
+                      control={form.control}
+                      name={`locations.${row.fieldIndex}.shelf_id`}
+                      render={({ field }) => (
+                        <LookupShelf
+                          value={field.value ?? ""}
+                          onValueChange={field.onChange}
+                          readOnly
+                        />
+                      )}
+                    />
+                  </RowCardField>
+                  <RowCardField label={t("minQty")}>
+                    {row.min_qty ?? "—"}
+                  </RowCardField>
+                  <RowCardField label={t("maxQty")}>
+                    {row.max_qty ?? "—"}
+                  </RowCardField>
+                  <RowCardField label={t("parQty")}>
+                    {row.par_qty ?? "—"}
+                  </RowCardField>
+                </RowCard>
+              ))}
+            </RowCards>
+          )
+        ) : (
+          <DataGrid
+            table={table}
+            recordCount={fields.length}
+            tableLayout={{
+              // โหมดดูใช้ความสูงแถวมาตรฐานของตาราง · โหมดแก้ปล่อยให้แถวสูงตามช่องกรอก
+              rowClamp: isDisabled,
+              headerSticky: true,
+            }}
+            tableClassNames={{
+              // โหมดแก้: กล่องแคบแล้วเลื่อนแนวนอนแทนการบีบช่องกรอก (900 < กล่อง 1052 ของจอ 1366
+              // desktop จึงไม่ต้องเลื่อน)
+              base: isDisabled ? undefined : "min-w-[900px]",
+            }}
+            emptyMessage={
+              <EmptyComponent
+                title={t("noLocations")}
+                description={t("addFirstLocationHint")}
+              />
+            }
+          >
+            <DataGridContainer>
+              <ScrollArea className="w-full">
+                <DataGridTable />
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            </DataGridContainer>
+          </DataGrid>
+        )}
+      </div>
 
       <DeleteDialog
         open={deleteIdx !== null}
@@ -460,7 +545,7 @@ function PdTabLocations({ form, isDisabled }: PdTabLocationsProps) {
         description={t("removeLocationConfirm")}
         onConfirm={confirmDelete}
       />
-    </SettingSection>
+    </CompactSection>
   );
 }
 

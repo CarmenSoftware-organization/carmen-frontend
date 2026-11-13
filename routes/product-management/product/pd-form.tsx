@@ -482,7 +482,7 @@ export function ProductForm({ product }: ProductFormProps) {
             />
           </TabsContent>
           <TabsContent value="units">
-            <div className="space-y-6">
+            <div className="space-y-5">
               <PdTabUnitConversion
                 form={form}
                 name="order_units"

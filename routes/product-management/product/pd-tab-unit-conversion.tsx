@@ -22,7 +22,15 @@ import {
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection } from "@/components/share/compact-section";
+import { useElementWidth } from "@/hooks/use-element-width";
+import { StatusDotBadge } from "@/components/ui/status-dot-badge";
+import {
+  ROW_CARDS_BELOW,
+  RowCard,
+  RowCardField,
+  RowCards,
+} from "./pd-row-cards";
 import {
   capQtyDecimals,
   DEFAULT_QTY_DECIMALS,
@@ -64,6 +72,7 @@ function PdTabUnitConversion({
   const { errors } = useFormState({ control: form.control });
   const t = useTranslations("productManagement.product");
   const tfl = useTranslations("field");
+  const ts = useTranslations("status");
   const { fields, prepend, remove } = useFieldArray({
     control: form.control,
     name,
@@ -173,6 +182,17 @@ function PdTabUnitConversion({
     }
   };
 
+  // กล่องกว้างพอ → คอลัมน์กว้างคงที่ คอลัมน์ Conversion รับที่เหลือ คอลัมน์จึงอยู่ติดกัน ไม่กระจาย
+  // ห่างกันบนจอกว้าง · ผลรวมคอลัมน์: # 32 · หน่วย 160×2 · จำนวน 90×2 · conversion 160 · default 60 ·
+  // active 60 = 812, โหมดแก้ + ปุ่มลบ 40 = 852 · กล่องแคบกว่านั้นกลับไปแบ่งตามสัดส่วน ไม่งั้นตารางล้น
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const fixedColumns =
+    (gridBoxWidth ?? Number.POSITIVE_INFINITY) >= (isDisabled ? 830 : 870);
+  // กล่องแคบ + โหมดดู → การ์ดทีละใบ · โหมดแก้ยังเป็นตารางเลื่อนแนวนอน (ช่องกรอก/lookup ในแถว
+  // ผูกกับ column cell) · undefined = ยังไม่ได้วัด ใช้ตารางไปก่อน
+  const asCards =
+    isDisabled && gridBoxWidth !== undefined && gridBoxWidth < ROW_CARDS_BELOW;
+
   /* ---- Column definitions ---- */
   const columns = useMemo<ColumnDef<UnitField>[]>(() => {
     // Handlers live inside useMemo so cells always see the latest closure
@@ -245,7 +265,7 @@ function PdTabUnitConversion({
         accessorKey: "from_unit_qty",
         header: tfl("fromQty"),
         cell: ({ row }) => (
-          <div className="text-muted-foreground flex items-center justify-end px-2 text-xs tabular-nums">
+          <div className="text-muted-foreground flex items-center justify-end text-xs tabular-nums">
             <input
               type="hidden"
               {...form.register(`${name}.${row.index}.from_unit_qty`)}
@@ -281,7 +301,7 @@ function PdTabUnitConversion({
         cell: ({ row }) => {
           if (isDisabled) {
             return (
-              <div className="flex items-center justify-end px-2 text-xs tabular-nums">
+              <div className="flex items-center justify-end text-xs tabular-nums">
                 {row.original.to_unit_qty}
               </div>
             );
@@ -327,6 +347,7 @@ function PdTabUnitConversion({
         ),
         enableSorting: false,
         size: 160,
+        meta: fixedColumns ? { grow: true } : undefined,
       },
       {
         accessorKey: "is_default",
@@ -419,6 +440,7 @@ function PdTabUnitConversion({
     unitMap,
     usedSelectableIds,
     unitDecimalsMap,
+    fixedColumns,
     // cell ปิดทับ errors ไว้ ไม่ใส่ใน deps แล้ว columns ไม่สร้างใหม่ตอน
     // validation fail — error ที่ส่งเข้า cell ค้างเป็นค่าเก่า
     errors,
@@ -432,11 +454,9 @@ function PdTabUnitConversion({
   });
 
   return (
-    // SettingSection ตัวเดียวกับแท็บ General — เดิมเขียนหัวข้อเองเป็น h2 14px
-    // ไม่มี tracking ทำให้สลับแท็บแล้วหัวข้อเปลี่ยนขนาดกันเองในฟอร์มเดียว
-    <SettingSection
+    // CompactSection ตัวเดียวกับแท็บ General — สลับแท็บแล้วหัวข้อขนาดเท่ากัน
+    <CompactSection
       first
-      wide
       frameless
       title={label}
       count={fields.length}
@@ -459,25 +479,77 @@ function PdTabUnitConversion({
         <p className="text-muted-foreground text-sm">{t("enableRecipe")}</p>
       )}
 
-      <DataGrid
-        table={table}
-        recordCount={fields.length}
-        tableLayout={{ rowClamp: false, rowRounded: true }}
-        tableClassNames={{ bodyRow: "[&>td]:py-3", headerRow: "[&>th]:py-3" }}
-        emptyMessage={
-          <EmptyComponent
-            title={t("noUnits", { label })}
-            description={t("addFirstConversionHint")}
-          />
-        }
-      >
-        <DataGridContainer>
-          <ScrollArea className="w-full pb-2">
-            <DataGridTable />
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        </DataGridContainer>
-      </DataGrid>
+      <div ref={setGridBox}>
+        {asCards ? (
+          fields.length === 0 ? (
+            <EmptyComponent
+              title={t("noUnits", { label })}
+              description={t("addFirstConversionHint")}
+            />
+          ) : (
+            <RowCards>
+              {fields.map((field, index) => {
+                const u = watchedUnits?.[index] ?? field;
+                const fromName = isOrder
+                  ? (unitMap.get(u.from_unit_id) ?? "")
+                  : inventoryUnitName;
+                const toName = isOrder
+                  ? inventoryUnitName
+                  : (unitMap.get(u.to_unit_id) ?? "");
+                return (
+                  <RowCard
+                    key={field._fieldKey}
+                    title={`${u.from_unit_qty} ${fromName} → ${u.to_unit_qty} ${toName}`}
+                    badge={
+                      <StatusDotBadge
+                        tone={u.is_active ? "success" : "neutral"}
+                      >
+                        {u.is_active ? ts("active") : ts("inactive")}
+                      </StatusDotBadge>
+                    }
+                  >
+                    <RowCardField label={tfl("conversion")}>
+                      <ConversionPreview
+                        control={form.control}
+                        name={name}
+                        index={index}
+                        unitMap={unitMap}
+                      />
+                    </RowCardField>
+                    <RowCardField label={tfl("isDefault")}>
+                      {u.is_default ? "✓" : "—"}
+                    </RowCardField>
+                  </RowCard>
+                );
+              })}
+            </RowCards>
+          )
+        ) : (
+          <DataGrid
+            table={table}
+            recordCount={fields.length}
+            // โหมดดูใช้ความสูงแถวมาตรฐานของตาราง · โหมดแก้ปล่อยให้แถวสูงตามช่องกรอก
+            tableLayout={{ rowClamp: isDisabled, headerSticky: true }}
+            tableClassNames={{
+              // โหมดแก้: กล่องแคบกว่าผลรวมคอลัมน์ (852) แล้วเลื่อนแนวนอนแทนการบีบช่องกรอก
+              base: isDisabled ? undefined : "min-w-[852px]",
+            }}
+            emptyMessage={
+              <EmptyComponent
+                title={t("noUnits", { label })}
+                description={t("addFirstConversionHint")}
+              />
+            }
+          >
+            <DataGridContainer>
+              <ScrollArea className="w-full">
+                <DataGridTable />
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            </DataGridContainer>
+          </DataGrid>
+        )}
+      </div>
 
       <DeleteDialog
         open={deleteIndex !== null}
@@ -488,7 +560,7 @@ function PdTabUnitConversion({
         description={t("removeUnitConfirm", { label })}
         onConfirm={confirmDelete}
       />
-    </SettingSection>
+    </CompactSection>
   );
 }
 
