@@ -7,7 +7,6 @@ import {
   Calendar,
   Folder,
   Gauge,
-  HardDrive,
   Mail,
   MailOpen,
   Shield,
@@ -37,8 +36,7 @@ export type VisualKey =
   | "settings"
   | "askAi"
   | "emailProfile"
-  | "emailTemplate"
-  | "storage";
+  | "emailTemplate";
 
 export type ModuleDef = {
   readonly key: string;
@@ -49,7 +47,7 @@ export type ModuleDef = {
 
 export type ChapterDef = {
   readonly key:
-    "business" | "access" | "process" | "observe" | "config" | "data";
+    "business" | "access" | "process" | "observe" | "config";
   readonly modules: readonly ModuleDef[];
 };
 
@@ -170,17 +168,6 @@ export const CHAPTERS: readonly ChapterDef[] = [
         visualKey: "code",
         href: "/system-admin/running-code",
         icon: Terminal,
-      },
-    ],
-  },
-  {
-    key: "data",
-    modules: [
-      {
-        key: "storage",
-        visualKey: "storage",
-        href: "/system-admin/storage",
-        icon: HardDrive,
       },
     ],
   },

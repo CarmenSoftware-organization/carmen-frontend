@@ -9,7 +9,7 @@ const FIVE_MINUTES = 5 * 60 * 1000;
 
 /**
  * ผลวัดพื้นที่เก็บข้อมูล (database + ไฟล์แนบ) ของ BU ปัจจุบัน — ใช้ร่วมกันระหว่างแถบเตือน
- * ใน root-layout กับหน้า `/system-admin/storage` จึงอยู่ใน `hooks/`
+ * ใน root-layout กับหน้า `/system-admin/document` จึงอยู่ใน `hooks/`
  *
  * โหลดไม่สำเร็จ (รวมกรณี api_name ยังไม่อยู่ใน allowlist) = `data` เป็น undefined เงียบ ๆ
  * ผู้เรียกต้องไม่แสดงอะไร ไม่ใช่ error state
