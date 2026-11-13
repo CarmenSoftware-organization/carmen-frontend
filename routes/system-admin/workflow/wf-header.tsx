@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useListReturn } from "@/hooks/use-list-return";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import { Copy, History, Lock } from "lucide-react";
+import { Copy, FileText, History, Lock } from "lucide-react";
 import { useNavigate } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -76,10 +76,22 @@ export function WfHeader({
   const hasInProgress = (docCounts?.in_progress ?? 0) > 0;
   const docBadges =
     docCounts && (hasInProgress || quietCounts.length > 0) ? (
-      <>
-        <Separator orientation="vertical" className="mx-0.5 h-3.5" />
+      // กลุ่มเดียว ไม่ใช่ลูกแยกชิ้นของแถว badge: หัวแคบกว่า 576px (มือถือ) ทั้งกลุ่มลงบรรทัดของตัวเอง
+      // (basis-full) และต้องจบในบรรทัดเดียว — เดิมแต่ละชิ้นห่อเอง "Done: 18" จึงตกไปอยู่บรรทัดที่สาม
+      // คนเดียว ที่ว่างไม่พอสำหรับคำว่า DOCUMENTS (หัว 272px ที่จอ 360) จึงเหลือเป็นไอคอนเอกสาร
+      // คำยังอยู่ให้ screen reader และตัวเลขรองลดเป็น text-xs · ตัดสินจากความกว้างของหัวเอง
+      // (@container/doc-header ใน DocFormHeader) เหมือนป้ายปุ่มใน FormToolbar
+      <div className="flex items-center gap-2 @max-xl/doc-header:basis-full @max-xl/doc-header:gap-1.5">
+        <Separator
+          orientation="vertical"
+          className="mx-0.5 h-3.5 @max-xl/doc-header:hidden"
+        />
+        <FileText
+          className="text-muted-foreground hidden size-3.5 shrink-0 @max-xl/doc-header:block"
+          aria-hidden="true"
+        />
         {/* ป้ายกลุ่ม — ไม่มีมันตัวเลขชุดนี้ดูเหมือนสถิติของ workflow เอง ไม่ใช่จำนวนเอกสารที่ใช้มันอยู่ */}
-        <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+        <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase @max-xl/doc-header:sr-only">
           {tw("label")}
         </span>
         {hasInProgress && (
@@ -88,7 +100,7 @@ export function WfHeader({
               <Badge
                 variant="warning-light"
                 size="sm"
-                className="gap-1 tabular-nums"
+                className="gap-1 whitespace-nowrap tabular-nums"
               >
                 <Lock className="size-3" aria-hidden="true" />
                 {tw("inProgress")}: {docCounts.in_progress}
@@ -102,12 +114,12 @@ export function WfHeader({
         {quietCounts.map((c) => (
           <span
             key={c.key}
-            className="text-muted-foreground text-sm tabular-nums"
+            className="text-muted-foreground text-sm whitespace-nowrap tabular-nums @max-xl/doc-header:text-xs"
           >
             {c.label}: {c.count}
           </span>
         ))}
-      </>
+      </div>
     ) : null;
 
   // status + type-label (คั่นด้วย separator) แสดงข้าง title
