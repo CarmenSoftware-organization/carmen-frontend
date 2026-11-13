@@ -117,7 +117,7 @@ import {
   WorkflowHistoryTimeline,
   type WorkflowHistoryTimelineEntry,
 } from "@/components/share/workflow-history-timeline";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 // action ของ workflow ใช้คำชุดเดียวกับ PR/PO (workflow engine ตัวเดียวกัน)
 import { PR_WORKFLOW_ACTION_CONFIG } from "@/constant/purchase-request";
 import { jvSourceLabel, jvStatusLabel } from "../journal-voucher/jv-status";
@@ -1132,10 +1132,9 @@ export default function AccountingDocumentDetail() {
   const jvBadges =
     isJournalVoucher && journal ? (
       <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3">
-        <StatusIconLabel
+        <StatusChip
           status={journal.jv_status}
           label={jvStatusLabel(journal.jv_status)}
-          className="text-muted-foreground text-micro [&>svg]:size-3"
         />
         {journal.doc_version != null && (
           <span className="text-muted-foreground text-micro">
@@ -1960,7 +1959,7 @@ export default function AccountingDocumentDetail() {
                   )}
                   <span className="bg-border h-4 w-px" aria-hidden="true" />
                   <span className="text-muted-foreground">{t("status")}</span>
-                  <StatusIconLabel
+                  <StatusChip
                     status={journal?.jv_status ?? "draft"}
                     label={jvStatusLabel(journal?.jv_status ?? "draft")}
                   />
@@ -3277,9 +3276,7 @@ export default function AccountingDocumentDetail() {
         <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{t("allDimensions")}</DialogTitle>
-            <DialogDescription>
-              {t("lineDetailsDescription")}
-            </DialogDescription>
+            <DialogDescription>{t("lineDetailsDescription")}</DialogDescription>
           </DialogHeader>
           {selectedLine && (
             <div className="grid gap-4 sm:grid-cols-2">

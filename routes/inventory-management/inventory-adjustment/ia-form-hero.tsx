@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { useFormPrimaryClaimed } from "@/components/share/form-primary-action";
 import { PrintDocumentButton } from "@/components/print-document-button";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { Badge } from "@/components/ui/badge";
 import {
   IA_STATUS_CONFIG,
@@ -81,10 +81,9 @@ export function IaFormHero({
         <Badge size="sm" className={IA_TYPE_CONFIG[adjustmentType]?.className}>
           {typeLabel}
         </Badge>
-        <StatusIconLabel
+        <StatusChip
           status={inventoryAdjustment.doc_status}
           label={statusConfig.label}
-          className="text-muted-foreground text-micro [&>svg]:size-3"
         />
       </div>
     ) : undefined;

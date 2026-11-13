@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApJournalTab } from "../shared/ap-journal-tab";
@@ -523,7 +523,7 @@ function ApPaymentEditor({
         onBack={() => toList()}
         badges={
           loaded ? (
-            <StatusIconLabel
+            <StatusChip
               status={loaded.doc_status}
               label={t(`statuses.${loaded.doc_status}`)}
             />

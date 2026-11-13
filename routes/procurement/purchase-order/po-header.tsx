@@ -8,6 +8,7 @@ import { WorkflowTrack } from "@/components/share/workflow-track";
 import { WorkflowStepButton } from "@/components/share/workflow-step-button";
 import { usePurchaseOrderComments } from "../shared/use-purchase-order";
 import { PO_STATUS, type PurchaseOrder } from "@/types/purchase-order";
+import { StatusChip } from "@/components/ui/status-chip";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { PO_STATUS_CONFIG, PO_TYPE_CONFIG } from "@/constant/purchase-order";
 import type { FormMode } from "@/types/form";
@@ -88,12 +89,11 @@ export function PoHeader({
   const badges = (
     <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3">
       {poStatusConfig && purchaseOrder && (
-        <StatusIconLabel
+        <StatusChip
           status={purchaseOrder.po_status}
           label={poStatusConfig.label}
           // เบากว่าในตาราง: ตัวเอกของแถบนี้คือเลขที่ใบ สถานะเป็นข้อมูลประกอบ
           // เหลือสีไว้ที่ไอคอนจุดเดียวซึ่งเป็นสัญญาณที่ต้องเห็นจริง ๆ
-          className="text-muted-foreground text-micro [&>svg]:size-3"
         />
       )}
       {poTypeConfig && purchaseOrder && (

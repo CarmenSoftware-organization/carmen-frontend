@@ -143,32 +143,18 @@ export function useCnTable({
     {
       accessorKey: "doc_status",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("status")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
       cell: ({ row }) => {
         const status = row.original.doc_status;
         const config = CN_STATUS_CONFIG[status];
-        return (
-          <StatusChip
-            status={status}
-            label={config?.label ?? status}
-            // คอลัมน์นี้จัดกลาง — label เป็น inline-flex ซึ่ง `text-center`
-            // ของเซลล์เอื้อมไม่ถึงเมื่ออยู่ในกล่อง clamp ของ DataGrid
-            className="flex w-full justify-center"
-          />
-        );
+        return <StatusChip status={status} label={config?.label ?? status} />;
       },
       // กว้างพอให้ COMPLETED ไม่ถูกตัด
       size: 135,
       meta: {
         headerTitle: tfl("status"),
         skeleton: columnSkeletons.text,
-        cellClassName: "text-center",
-        headerClassName: "text-center",
       },
     },
     {

@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import {
   usePeriodEndCurrent,
   usePeriodEndReview,
@@ -122,7 +122,7 @@ export default function PeComponent() {
                 >
                   {data.period}
                 </h2>
-                <StatusIconLabel
+                <StatusChip
                   status={statusKey}
                   label={t(`status.${statusKey}`)}
                 />

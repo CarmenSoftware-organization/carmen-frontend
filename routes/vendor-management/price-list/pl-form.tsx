@@ -6,7 +6,7 @@ import { useTranslations } from "use-intl";
 import { toast } from "sonner";
 import { Ban, RotateCcw } from "lucide-react";
 
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -244,12 +244,11 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
                   · {plNo}
                 </span>
               )}
-              <StatusIconLabel
+              <StatusChip
                 status={watchedStatus}
                 label={tsStatus(watchedStatus)}
                 // เบากว่าในตาราง: ตัวเอกของแถบนี้คือชื่อ/เลขที่ใบ สถานะเป็นข้อมูล
                 // ประกอบ เหลือสีไว้ที่ไอคอนจุดเดียว (ท่าเดียวกับหัวฟอร์ม PR/PO)
-                className="text-muted-foreground text-micro uppercase [&>svg]:size-3"
               />
               {/* ช่วงราคาหมด/ยังไม่เริ่ม/ใกล้หมด — อยู่ข้างสถานะเอกสาร เพราะใบ ACTIVE
                   ที่หมดช่วงแล้วใช้ออก PO ไม่ได้ ต้องเห็นตั้งแต่หัวใบ · ใบโมฆะไม่ต้องบอก */}

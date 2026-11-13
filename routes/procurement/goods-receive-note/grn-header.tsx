@@ -6,6 +6,7 @@ import { DocActions } from "@/components/share/doc-actions";
 import { useGoodsReceiveNoteComments } from "@/hooks/use-goods-receive-note";
 import type { FormMode } from "@/types/form";
 import type { GoodsReceiveNote } from "@/types/goods-receive-note";
+import { StatusChip } from "@/components/ui/status-chip";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { GRN_FORM_STATUS_CONFIG } from "@/constant/goods-receive-note";
 import { getGrnDocTypeLabel } from "@/constant/grn-doc-type";
@@ -78,12 +79,11 @@ export function GrnHeader({
   const badges = (
     <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3">
       {statusCfg && goodsReceiveNote && (
-        <StatusIconLabel
+        <StatusChip
           status={goodsReceiveNote.doc_status}
           label={statusCfg.label ?? goodsReceiveNote.doc_status}
           // เบากว่าในตาราง: ตัวเอกของแถบนี้คือเลขที่ใบ สถานะเป็นข้อมูลประกอบ
           // เหลือสีไว้ที่ไอคอนจุดเดียวซึ่งเป็นสัญญาณที่ต้องเห็นจริง ๆ
-          className="text-muted-foreground text-micro [&>svg]:size-3"
         />
       )}
       {goodsReceiveNote && (

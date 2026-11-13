@@ -200,14 +200,10 @@ export function PeDocumentsDialog({
             <StatusChip
               status={row.original.status}
               label={cfg?.label ?? row.original.status.replace(/_/g, " ")}
-              className="flex w-full justify-center"
             />
           );
         },
-        meta: {
-          headerClassName: "text-center",
-          cellClassName: "text-center",
-        },
+        meta: {},
         size: 140,
       },
       {

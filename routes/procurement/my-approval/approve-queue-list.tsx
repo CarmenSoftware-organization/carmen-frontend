@@ -116,7 +116,7 @@ export default function ApprovalQueueList({
                 </Badge>
               )}
             </div>
-            <SendBackStatus chip lastAction={item.last_action} />
+            <SendBackStatus lastAction={item.last_action} />
           </div>
         );
       },

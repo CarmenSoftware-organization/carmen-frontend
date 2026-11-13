@@ -11,7 +11,7 @@ import { FormToolbar } from "@/components/share/form-toolbar";
 import { WorkflowTrack } from "@/components/share/workflow-track";
 import { WorkflowStepButton } from "@/components/share/workflow-step-button";
 import { PR_STATUS, type PurchaseRequest } from "@/types/purchase-request";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { PR_STATUS_CONFIG } from "@/constant/purchase-request";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -105,13 +105,12 @@ export function PrHeader({
     // นั่งติดกันด้วย gap เท่ากันหมดจนอ่านเป็นพวงเดียว
     <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3">
       {statusCfg && purchaseRequest && (
-        <StatusIconLabel
+        <StatusChip
           status={purchaseRequest.pr_status}
           label={statusCfg.label ?? purchaseRequest.pr_status}
           // เบากว่าในตาราง: ตัวเอกของแถบนี้คือเลขที่ใบ (18-20px) สถานะเป็นข้อมูล
           // ประกอบ ป้ายจึงเป็นสีจางเท่ารุ่นเอกสารที่อยู่ข้างกัน เหลือสีไว้ที่ไอคอน
           // จุดเดียวซึ่งเป็นสัญญาณที่ต้องเห็นจริง ๆ
-          className="text-muted-foreground text-micro [&>svg]:size-3"
         />
       )}
       {purchaseRequest?.doc_version != null && (

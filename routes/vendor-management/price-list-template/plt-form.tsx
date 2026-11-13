@@ -3,6 +3,7 @@ import { Controller, useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "use-intl";
 
+import { StatusChip } from "@/components/ui/status-chip";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import {
   Field,
@@ -133,9 +134,7 @@ export function PriceListTemplateForm({
             priceListTemplate ? () => actions.setShowDelete(true) : undefined
           }
           deleteIsPending={actions.isDeletePending}
-          onComment={
-            priceListTemplate ? () => setShowComment(true) : undefined
-          }
+          onComment={priceListTemplate ? () => setShowComment(true) : undefined}
           activity={
             priceListTemplate && {
               id: priceListTemplate.id,
@@ -143,11 +142,10 @@ export function PriceListTemplateForm({
             }
           }
           badges={
-            <StatusIconLabel
+            <StatusChip
               status={watchedStatus}
               label={tsStatus(watchedStatus)}
               // เบากว่าในตาราง: ตัวเอกของแถบนี้คือชื่อเทมเพลต สถานะเป็นข้อมูลประกอบ
-              className="text-muted-foreground text-micro uppercase [&>svg]:size-3"
             />
           }
         />

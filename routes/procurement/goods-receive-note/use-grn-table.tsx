@@ -122,11 +122,7 @@ export function useGrnTable({
     {
       accessorKey: "doc_status",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("status")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
       cell: ({ row }) => {
         const status = row.getValue<string>("doc_status") || "draft";
@@ -135,13 +131,6 @@ export function useGrnTable({
           <StatusChip
             status={status}
             label={config?.label ?? status.toUpperCase()}
-            // คอลัมน์นี้จัดกลาง — label เป็น inline-flex ซึ่ง `text-center`
-            // ของเซลล์เอื้อมไม่ถึงเมื่ออยู่ในกล่อง clamp ของ DataGrid
-            //
-            // สีเดียวกับคอลัมน์ชนิดใบ — ไอคอนรับสีจากข้อความแทนสีประจำสถานะ
-            // (`!` เพราะ StatusIconLabel ใส่สีมาเป็น inline style ซึ่ง class ธรรมดา
-            // สู้ไม่ได้ · แก้ที่คอมโพเนนต์ไม่ได้ มันเป็นของกลางทั้งแอป)
-            className="text-muted-foreground flex w-full justify-center [&_svg]:text-current!"
           />
         );
       },
@@ -149,7 +138,6 @@ export function useGrnTable({
       size: 140,
       meta: {
         headerTitle: tfl("status"),
-        cellClassName: "text-center",
       },
     },
     {

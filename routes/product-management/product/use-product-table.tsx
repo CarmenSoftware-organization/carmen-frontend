@@ -201,11 +201,7 @@ export function useProductTable({
       id: "product_status_type",
       accessorKey: "product_status_type",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("status")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
       cell: ({ row }) => {
         const status = row.getValue<string>("product_status_type");
@@ -221,7 +217,6 @@ export function useProductTable({
       size: 100,
       meta: {
         headerTitle: tfl("status"),
-        cellClassName: "text-center",
         skeleton: columnSkeletons.badge,
       },
     },

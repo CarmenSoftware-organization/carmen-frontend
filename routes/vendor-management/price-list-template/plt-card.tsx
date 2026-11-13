@@ -1,5 +1,5 @@
 import { useTranslations } from "use-intl";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import {
   ListCard,
   ListCardAuditRows,
@@ -22,10 +22,9 @@ export default function PltCard({ item, onEdit, onDelete }: PltCardProps) {
     <ListCard
       title={item.name || "..."}
       badge={
-        <StatusIconLabel
+        <StatusChip
           status={item.status}
           label={ts(item.status as "draft" | "active" | "inactive")}
-          className="uppercase"
         />
       }
       onOpen={() => onEdit(item)}

@@ -2,7 +2,7 @@ import { Archive } from "lucide-react";
 import { useLocale, useTranslations } from "use-intl";
 import EmptyComponent from "@/components/empty-component";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { formatLocalizedDate } from "@/lib/date-utils";
 import { usePeriodEnd } from "./use-period-end";
 
@@ -84,7 +84,7 @@ export default function PeHistory() {
                     {formatLocalizedDate(item.end_at, locale)}
                   </span>
                   <span className="order-2 sm:order-none">
-                    <StatusIconLabel
+                    <StatusChip
                       status={item.status}
                       label={t(`status.${item.status}`)}
                     />
