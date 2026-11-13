@@ -3306,7 +3306,6 @@
       "jvScopeSummary": "This workflow handles journal vouchers with {prefix} and from {source}.",
       "typePurchaseOrder": "Purchase Order",
       "editWorkflow": "Edit Workflow",
-      "saveChanges": "Save Changes",
       "listStepCount": "{count, plural, one {# step} other {# steps}}",
       "listProductCount": "{count, plural, =0 {No products} one {# product} other {# products}}",
       "listRuleCount": "{count, plural, one {# routing rule} other {# routing rules}}",

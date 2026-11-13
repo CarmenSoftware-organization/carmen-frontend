@@ -165,7 +165,6 @@ export function WfHeader({
         title={isEditing ? t("editWorkflow") : workflow.name}
         subtitle={subtitle}
         badges={badges}
-        submitLabel={t("saveChanges")}
         onBack={() => toList()}
         onCancel={onCancel}
         onEdit={onEdit}
