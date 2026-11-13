@@ -61,6 +61,8 @@ interface FormToolbarProps {
   readonly onComment?: () => void;
   /** แถวช่องข้อมูลใต้หัว ส่งต่อ `DocFormHeader.ribbon` (PR — ช่อง workflow/description) */
   readonly ribbon?: ReactNode;
+  /** ส่งต่อ `DocFormHeader.titleClassName` */
+  readonly titleClassName?: string;
 }
 
 /**
@@ -122,6 +124,7 @@ export function FormToolbar({
   activity,
   onComment,
   ribbon,
+  titleClassName,
 }: FormToolbarProps) {
   const tc = useTranslations("common");
   const tf = useTranslations("form");
@@ -317,6 +320,7 @@ export function FormToolbar({
       actions={actions}
       ribbon={ribbon}
       flush={flush}
+      titleClassName={titleClassName}
     />
   );
 }

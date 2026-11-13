@@ -1,158 +1,189 @@
 ---
 name: carmen-blue-ui-design
-description: ใช้เมื่อจัดหรือปรับ layout หน้าจอของ CARMEN BLUE (form / settings / detail / list / แถบของ shell) ให้เต็มความกว้างจอ กะทัดรัด และถูกทั้ง 5 ขนาดจอ (mobile, tablet, 1366, Full HD, 4K) — หรือเมื่อผู้ใช้บอกว่าหน้า "โล่ง" "ยืด" "ไม่ compact" "มีที่ว่างซ้ายขวา" "ข้อความทับกัน" "ล้น"
+description: Use when laying out or adjusting a CARMEN BLUE screen (form / settings / detail / list / shell bars) so it fills the screen width, stays compact, and is correct at all 5 screen sizes (mobile, tablet, 1366, Full HD, 4K) — or when the user says a page is "empty", "stretched", "not compact", "has blank space left and right", "text overlaps", "overflows" (Thai: "โล่ง" "ยืด" "ไม่ compact" "มีที่ว่างซ้ายขวา" "ข้อความทับกัน" "ล้น")
 ---
 
-# CARMEN BLUE — การจัดหน้าจอ
+# CARMEN BLUE — screen layout
 
-กติกาที่ผู้ใช้กำหนดเองบนหน้า `/system-admin/company-profile` (2026-11-12) ว่าด้วย **การวางพื้นที่**
-เท่านั้น — สี ตัวอักษร primitive เป็นเรื่องของ `docs/DESIGN.md` และหน้า `/design-system`
+Rules the user set themselves on the `/system-admin/company-profile` page (2026-11-12). They cover
+**use of space** only — colour, type and primitives belong to `docs/DESIGN.md` and the
+`/design-system` page.
 
-## เริ่มจากชนิดของหน้า
+## Start from the kind of page
 
-| หน้า | ทำอะไร | สูตร |
+| Page | What to do | Recipe |
 |---|---|---|
-| form / settings / detail | เปลี่ยนเป็น `CompactSection` + `FieldGrid` | `values.md` §ฟอร์ม |
-| รายการตั้งค่า (ป้ายซ้าย ค่าขวา เต็มแถว) | เปลี่ยนแต่ละแถวเป็นช่องของ `FieldGrid` | `values.md` §รายการ |
-| รายการที่ขยายดูรายละเอียดได้ | ยุบ = ช่องกริด · ขยาย = เต็มแถว | `values.md` §รายการ |
-| รายการแบ่งหมวด หมวดละไม่กี่แถว | หมวดเรียงเป็นคอลัมน์ด้วย `auto-fit` | `values.md` §รายการ |
-| หน้า landing ของโมดูล (หมวดสูงไม่เท่ากัน) | หมวดไหลเป็นคอลัมน์ด้วย CSS multi-column | `values.md` §รายการ |
-| list (`ListPageShell` + `DataGrid`) | **ไม่เปลี่ยนโครง** แก้เฉพาะตารางคอลัมน์น้อย | `values.md` §ตาราง |
-| list ที่คอลัมน์ไม่พอดีกล่องที่ tablet | ซ่อนคอลัมน์รอง/สลับชุดขนาดตามความกว้างกล่อง | `values.md` §ตาราง |
-| list ที่เป็น `<table>` ธรรมดา | คอลัมน์ข้อมูลกว้างเท่าเนื้อหา + ซ้อนเป็นรายการเมื่อกล่องแคบ | `values.md` §ตาราง |
-| แถบของ shell (footer, toolbar, แถบสรุป) | ให้แถบตัดสินจากความกว้างของตัวเอง | `values.md` §แถบ |
-| แถบค้นหาของหน้า list | ปุ่ม View (bookmark) และ Filter อยู่ติดช่องค้น | `values.md` §แถบ |
+| form / settings / detail | Convert to `CompactSection` + `FieldGrid` | `values.md` §Forms |
+| settings list (label left, value right, full row) | Turn each row into a `FieldGrid` cell | `values.md` §Lists |
+| list whose items expand to show detail | collapsed = grid cell · expanded = full row | `values.md` §Lists |
+| list split into groups, a few rows per group | Groups flow as columns with `auto-fit` | `values.md` §Lists |
+| module landing page (groups of unequal height) | Groups flow as columns with CSS multi-column | `values.md` §Lists |
+| list (`ListPageShell` + `DataGrid`) | **Do not change the structure**; fix only tables with few columns | `values.md` §Tables |
+| list whose columns do not fit the box at tablet | Hide secondary columns / swap size sets by box width | `values.md` §Tables |
+| list that is a plain `<table>` | Data columns as wide as their content + stack as a list when the box is narrow | `values.md` §Tables |
+| shell bars (footer, toolbar, summary bar) | Let the bar decide from its own width | `values.md` §Bars |
+| list page search bar | View (bookmark) and Filter buttons sit next to the search box | `values.md` §Bars |
 
-ทำเสร็จแล้วตรวจตาม `verify.md` ทุกครั้ง — กติกาข้อ 1–3 ผิดได้โดยไม่มี error
+When done, check against `verify.md` every time — rules 1–3 can be broken without any error.
 
-## กติกา
+## Rules
 
-1. **เต็มความกว้างจอทุกขนาด** — ไม่มี `max-w-*` ครอบเนื้อหา ไม่มีคอลัมน์หัวข้อเปล่าด้านข้าง
-   ที่ว่างที่ยอมได้คือ gutter ของ shell กับ gap ภายใน (`FormPageShell width="wide"`)
-2. **จอกว้างขึ้น = คอลัมน์มากขึ้น ไม่ใช่ช่องกว้างขึ้น** — ค่าต้องอยู่ติดป้ายของมัน
-3. **ตัดสินจากความกว้างของกล่องตัวเอง ไม่ใช่ของจอ** — container query (`@md:`) ไม่ใช่
-   breakpoint (`md:`) กล่องกว้างเท่าจอลบ sidebar ที่พับ/กางได้
-4. **หมวดที่เป็นคู่กันวางเคียงกันบนจอกว้าง** (1700px ขึ้นไป) ต่ำกว่านั้นเรียงลงมา
-   การ์ดที่อยู่แถวเดียวกันต้อง**สูงเท่ากัน** (ผู้ใช้สั่งบนหน้า `/profile/setting` 2026-11-13) —
-   `SECTION_PAIR` + `CompactSection` ทำให้แล้ว การ์ดที่เขียนเองในกริดหลายคอลัมน์ห้ามใส่ `items-start`
-5. **กะทัดรัด** — ระยะห่างต้องไม่กินที่มากกว่าเนื้อหา
-6. **ไม่มีเมนูข้ามหมวดด้านข้าง**
-7. **โหมดดูไม่ใส่กรอบให้ค่า** — ป้ายจาง + ค่าตัวเข้ม กรอบมีเฉพาะช่องที่กรอกได้จริง
-8. **ค่าตั้งแบบ pattern โชว์ผลลัพธ์เป็นหลัก** — `2026-11-12` เป็นค่าหลัก `yyyy-MM-dd` เป็นบรรทัดรอง
-9. **ข้อความช่วยใต้ช่องมีเฉพาะที่บอกอะไรเพิ่ม** — ที่แค่ทวนป้ายตัดออก
-10. **ข้อความห้ามล้นทับกันที่ขนาดจอใดเลย** — ไม่มีที่ก็ซ่อนของที่สำคัญน้อยกว่า ไม่ใช่ปล่อยทับ
-    หรือตัดจนเหลือไม่กี่ตัวอักษร
-11. **อ่านออกทั้ง light และ dark** — ใช้โทเค็นเท่านั้น
-12. **ปุ่ม View (bookmark) และ Filter อยู่ติดช่องค้น** — ไม่ถูกดันไปขวาสุดของแถว
-    (ผู้ใช้สั่งบนหน้า `/system-admin/user` 2026-11-13) ฝั่งขวาของแถบมีได้เฉพาะปุ่มของตาราง
-    (เรียง เลือกคอลัมน์ สลับมุมมอง)
-13. **ปุ่มบนหัวฟอร์มอยู่บรรทัดเดียวทุกขนาดจอ** (ผู้ใช้สั่งบนหน้า vendor 2026-11-13) — หัวแคบกว่า 576px
-    ปุ่มรอง (Cancel, Delete, Print, Comment, Activity) เหลือแต่ไอคอน ปุ่มหลัก (Edit / Save) เก็บป้าย
-    ลำดับคงเดิมและ**ไม่ยุบเป็นเมนู ⋯** `FormToolbar` + `PrintDocumentButton` ทำให้แล้ว ปุ่มของหน้าที่
-    ใส่เพิ่มบนหัว (children ของ `FormToolbar`) ให้ห่อป้ายด้วย `<ToolbarLabel>` จาก
-    `components/share/form-toolbar.tsx` และใส่ `title` — ลืมแล้วปุ่มนั้นดันทั้งแถวตกบรรทัดบนมือถือ
+1. **Full screen width at every size** — no `max-w-*` around the content, no empty heading column at
+   the side. The only acceptable blank space is the shell gutter and internal gaps
+   (`FormPageShell width="wide"`).
+2. **A wider screen means more columns, not wider fields** — a value must stay next to its label.
+3. **Decide from the box's own width, not the screen's** — container queries (`@md:`), not
+   breakpoints (`md:`). The box is the screen minus a sidebar that can be collapsed or expanded.
+4. **Sections that form a pair sit side by side on wide screens** (1700px and up); below that they
+   stack. Cards in the same row must be the **same height** (user instruction on `/profile/setting`,
+   2026-11-13) — `SECTION_PAIR` + `CompactSection` already do this. Hand-written cards in a
+   multi-column grid must not use `items-start`.
+5. **Compact** — spacing must not take more room than the content.
+6. **No cross-section side navigation.**
+7. **View mode does not box its values** — muted label + strong value. Borders are only for fields
+   that can actually be edited.
+8. **Pattern settings show the result first** — `2026-11-12` is the main value, `yyyy-MM-dd` the
+   secondary line.
+9. **Help text under a field only when it adds something** — text that merely repeats the label is
+   removed.
+10. **Text must never overflow or overlap at any screen size** — when there is no room, hide the
+    less important thing; do not let things overlap or truncate down to a few characters.
+11. **Readable in both light and dark** — tokens only.
+12. **View (bookmark) and Filter buttons sit next to the search box** — not pushed to the far right
+    of the row (user instruction on `/system-admin/user`, 2026-11-13). The right side of the bar may
+    hold only table buttons (sort, column picker, view switch).
+13. **Form header buttons stay on one line at every screen size** (user instruction on the vendor
+    page, 2026-11-13) — when the header is narrower than 576px, secondary buttons (Cancel, Delete,
+    Print, Comment, Activity) become icon-only and the primary button (Edit / Save) keeps its label.
+    The order is unchanged and they are **never collapsed into a ⋯ menu**. `FormToolbar` +
+    `PrintDocumentButton` already do this. Buttons a page adds to the header (children of
+    `FormToolbar`) must wrap their label in `<ToolbarLabel>` from
+    `components/share/form-toolbar.tsx` and set `title` — forget it and that button pushes the whole
+    row onto a second line on mobile.
 
-## หน้า landing ของโมดูล
+## Module landing pages
 
-กติกาที่ผู้ใช้สั่งบนหน้า `/system-admin` (2026-11-13) — หน้า landing ต้อง**แสดงเฉพาะของจริง**:
+Rules the user set on the `/system-admin` page (2026-11-13) — a landing page must **show only real
+things**:
 
-1. **ไม่มีตัวเลขหรือข้อมูลที่เป็นข้อความตายตัว** — สถิติบนการ์ด ("14 roles · 87 permissions")
-   เลขเวอร์ชัน จำนวนเครื่องมือ ล้วนอ่านเป็นข้อมูลจริงได้ ตัวเลขมีได้เมื่อดึงจาก API เท่านั้น
-   (ตัวอย่างที่ทำถูก: จำนวน workflow ใน `routes/system-admin/workflow/wf-landing.tsx`)
-2. **ทุกหน้าในเมนูซ้ายของโมดูลมีการ์ด** — เทียบรายการกับ `constant/module-list.ts` ทุกครั้ง
-3. **คำอธิบายของการ์ดคือคำอธิบายบนหัวของหน้านั้นเอง** (`systemAdmin.<page>.desc`) และชื่อการ์ด
-   คือชื่อในเมนูซ้าย — ไม่เขียนข้อความโฆษณาแยก (ของเดิมอ้างความสามารถที่ไม่มี)
-4. **สิทธิ์ของการ์ดมาจาก `useVisibleModules` ตัวเดียวกับเมนูซ้าย** — ถูกซ่อน = ไม่มีการ์ด ·
-   ล็อก/ไม่มีสิทธิ์ = การ์ดจางเป็นปุ่มที่เรียก `dispatchPermissionDenied` (locked ชนะ denied)
-   หมวดที่การ์ดหายหมดหายทั้งหมวด และเลขหมวดนับจากที่แสดงจริง
-5. **การ์ดกดได้ทั้งใบ** — ไม่มีแถบท้ายการ์ดที่มีแค่ปุ่ม Open
-6. **ไม่มีปุ่มที่กดแล้วไม่เกิดอะไร และไม่มีข้อความที่สัญญาของที่ไม่มี** (handbook, sandbox)
-7. **ภาพประกอบใช้เส้นแทนข้อความ** — ไม่มีชื่อคน เลขที่เอกสาร เวลา หรือเปอร์เซ็นต์สมมติ ป้ายในภาพ
-   ต้องตรงกับหน้าจริง และภาพต้องวาดเรื่องเดียวกับหน้า (Running Code = รูปแบบเลขที่เอกสาร
-   ไม่ใช่ terminal) ของช่วย: `Line`, `ListViz` ใน `routes/system-admin/landing-visuals.tsx`
-8. **หัวหน้ากะทัดรัด** — ชื่อหน้า + คำโปรย ไม่มี hero สูงครึ่งจอ ไม่มีสารบัญที่ทวนหัวข้อข้างล่าง
+1. **No hard-coded numbers or data** — card statistics ("14 roles · 87 permissions"), version
+   numbers and tool counts all read as real data. A number is allowed only when it comes from the
+   API (done right: the workflow count in `routes/system-admin/workflow/wf-landing.tsx`).
+2. **Every page in the module's left menu has a card** — compare against `constant/module-list.ts`
+   every time.
+3. **A card's description is that page's own header description** (`systemAdmin.<page>.desc`) and
+   its title is the left-menu name — no separate marketing copy (the old copy claimed features that
+   do not exist).
+4. **Card permissions come from `useVisibleModules`, the same source as the left menu** — hidden =
+   no card · locked / no permission = a faded card that is a button calling
+   `dispatchPermissionDenied` (locked wins over denied). A group whose cards are all gone disappears
+   entirely, and group numbers count only what is shown.
+5. **The whole card is clickable** — no card footer holding only an Open button.
+6. **No button that does nothing when pressed, and no text promising things that do not exist**
+   (handbook, sandbox).
+7. **Illustrations use lines instead of text** — no made-up names, document numbers, times or
+   percentages. Labels inside an illustration must match the real page, and the illustration must
+   depict the same subject as the page (Running Code = a document-number pattern, not a terminal).
+   Helpers: `Line`, `ListViz` in `routes/system-admin/landing-visuals.tsx`.
+8. **Compact page header** — page name + tagline. No half-screen hero, no table of contents
+   repeating the headings below.
 
-การจัดวาง → `values.md` §รายการ (multi-column) · วิธีตรวจ → `verify.md` §หน้า landing
+Layout → `values.md` §Lists (multi-column) · how to check → `verify.md` §Landing pages
 
-## ของที่มีอยู่แล้ว — ใช้ อย่าเขียนชุดที่สอง
+## What already exists — use it, do not write a second set
 
 - `components/share/compact-section.tsx` — `CompactSection` (`count`, `action`, `first`,
-  `frameless` = ไม่ห่อการ์ด สำหรับเนื้อหาที่มีกรอบเอง เช่น กริดของการ์ดรายการหรือตาราง),
-  `CompactSectionSkeleton`, `FieldGrid` (`size="field"` | `"item"`), `SECTION_PAIR`
-- `components/share/setting-field.tsx` — `SettingField` ช่องโหมดดู: ป้ายจาง + ค่าตัวเข้ม ไม่มีกรอบ
-  (prop `specimen` ของข้อ 8, `fullWidth` = `@md:col-span-2`) ใช้ได้ทุกโมดูล
-- `routes/system-admin/company-profile/company-profile-ui.tsx` — `ConfigField` (ช่อง config:
-  รหัสเอกสาร + ป้ายบน ค่าล่าง) — ยังเป็นของโมดูล system-admin โมดูลอื่นที่ต้องใช้ให้ยกขึ้น
-  `components/` ก่อน (ESLint ห้าม `routes/<A>/` → `routes/<B>/`)
-- `DataGrid` column `meta: { grow: true }` — คอลัมน์รับความกว้างที่เหลือ
-- `hooks/use-element-width.ts` — `useElementWidth()` วัดความกว้างของกล่อง
-  ด้วย ResizeObserver สำหรับจุดที่ container query ของ CSS ทำไม่ได้ (เลือกคอลัมน์/ขนาดคอลัมน์ของ
-  `DataGrid`) ใช้ได้ทุกโมดูล
-- `components/list-filter/list-toolbar.tsx` — `ListToolbar` ทั้ง `variant="wrap"` และ `"row"`
-  วางปุ่ม View/Filter ติดช่องค้นให้แล้ว อย่าเขียนแถบค้นหาเอง
-- ตัวอย่างแถบของ shell: `components/footer/status-bar.tsx`
+  `frameless` = no card wrapper, for content that has its own frame such as a grid of item cards or
+  a table), `CompactSectionSkeleton`, `FieldGrid` (`size="field"` | `"item"`), `SECTION_PAIR`
+- `components/share/setting-field.tsx` — `SettingField`, the view-mode field: muted label + strong
+  value, no border (prop `specimen` for rule 8, `fullWidth` = `@md:col-span-2`). Usable from any
+  module.
+- `routes/system-admin/company-profile/company-profile-ui.tsx` — `ConfigField` (config field:
+  document code + label on top, value below) — still owned by the system-admin module. Another
+  module that needs it must lift it into `components/` first (ESLint forbids `routes/<A>/` →
+  `routes/<B>/`).
+- `DataGrid` column `meta: { grow: true }` — the column takes the remaining width
+- `hooks/use-element-width.ts` — `useElementWidth()` measures a box's width with ResizeObserver, for
+  places where a CSS container query cannot do the job (choosing columns / column sizes of a
+  `DataGrid`). Usable from any module.
+- `components/list-filter/list-toolbar.tsx` — `ListToolbar`, both `variant="wrap"` and `"row"`,
+  already puts View/Filter next to the search box. Do not write your own search bar.
+- Example shell bar: `components/footer/status-bar.tsx`
 
-หน้าที่ทำแล้ว (เปิดดูเป็นตัวอย่าง): company-profile #547 · default-setting #548 · ask-ai #549 ·
-inventory-period + footer #550 · interface (list) #552 · email-profile #553 · email-template #554 ·
-role (list) #555 · running-code (list) #556 · document (list) #557 · storage #558 · user (list) ·
-profile (หน้าดู: การ์ดต่อ BU เต็มความกว้าง) #565 ·
-profile/setting (ฟอร์มแถวเดียว + กริดโทเค็น) #566 ·
-system-admin landing (multi-column, ของจริงเท่านั้น) #568 ·
-user (detail: โหมดดูแสดงเฉพาะของที่ถืออยู่ + ตารางเลือกคอลัมน์ 3 ขั้นตามความกว้างกล่อง) ·
-vendor (detail: รายการเป็นกริดของการ์ด, ที่อยู่โหมดดูเป็นข้อความ, `CompactSection frameless`)
+Pages already done (open them as examples): company-profile #547 · default-setting #548 ·
+ask-ai #549 · inventory-period + footer #550 · interface (list) #552 · email-profile #553 ·
+email-template #554 · role (list) #555 · running-code (list) #556 · document (list) #557 ·
+storage #558 · user (list) · profile (view page: full-width card per BU) #565 ·
+profile/setting (single-row form + token grid) #566 ·
+system-admin landing (multi-column, real things only) #568 ·
+user (detail: view mode shows only what is held + table picks columns in 3 steps by box width) ·
+vendor (detail: lists as a grid of cards, address in view mode as text, `CompactSection frameless`)
 
-## กับดัก
+## Gotchas
 
-- **`@md:` ไม่ทำงานถ้าไม่มี ancestor ที่เป็น `@container`** — ไม่มี error คอลัมน์แค่ไม่แตก
-- **อย่าแก้ `components/ui/setting-section.tsx` ให้กะทัดรัดทั้งตัว** — config-email,
-  notification-template และฟอร์มของ vendor-management ยังใช้ layout หัวข้อซ้าย 1/3 ของมัน
-  ผู้ใช้ยังไม่ได้สั่งเปลี่ยนหน้าพวกนั้น ถามก่อน
-- **ห้ามเขียน `max-w-4xl` หรือ padding safe-area ที่หน้าเอง** — มาจาก `FormPageShell`
-  (`components/share/__tests__/form-page-shell.usage.test.ts` ดักอยู่)
-- **ช่องที่กิน 2 คอลัมน์สองช่องติดกันในกริด 3 คอลัมน์ลงไปคนละแถว** — เหลือช่องกว้างช่องเดียวต่อหมวด
-- **`meta.grow` ทำให้คอลัมน์อื่นเป็น px ตายตัว ต้องวัดที่ tablet** — ผลรวม `size` + ความกว้าง
-  ขั้นต่ำของคอลัมน์ grow (~165px สำหรับคอลัมน์สถานะ) ต้องไม่เกิน 662px ไม่งั้นตารางล้น
-  ห้ามใช้กับตารางแก้ไขหลายคอลัมน์
-- **`getTotalSize()` นับคอลัมน์ select (55px) แม้ไม่ได้เรนเดอร์** — ตารางจาก `useConfigTable`
-  และตารางที่ใส่ `selectColumn()` เองโดยไม่เปิด `tableLayout.checkbox` มีงบที่ tablet แค่ 607px
-  (662 − 55) ไม่ใช่ 662px
-- **ซ่อนคอลัมน์ของตารางที่มี grow ด้วย CSS ไม่ได้** — ความกว้างขั้นต่ำของตารางคิดจากทุกคอลัมน์
-  ที่ TanStack ถือว่าเปิดอยู่ ต้องปิดผ่าน `state.columnVisibility` ตามความกว้างที่วัดจากกล่อง
-- **จุดเปลี่ยนขั้นของคอลัมน์ต้องสูงกว่าผลรวม `size` ของขั้นนั้น** — ตั้งเท่ากันพอดี พอกล่องกว้างเลย
-  จุดนั้นนิดเดียวคอลัมน์รองกลับมาแล้วคอลัมน์ grow หดเหลือขั้นต่ำ (ชื่อไฟล์แคบกว่าตอนกล่องเล็กกว่า)
-- **กล่องครอบที่ `flex-1` รอบของที่กว้างคงที่ ดันของถัดไปไปขวาสุด** — ช่องค้นกว้างคงที่ตั้งแต่ `md`
-  กล่องครอบจึงต้องเลิกยืดที่ `md` ด้วย (`flex-1 md:flex-initial`)
-- **อย่าใช้คอลัมน์ว่างต่อท้ายเป็นตัวรับที่เหลือใน `DataGrid`** — กว้างขั้นต่ำ 75px แม้ใส่ `p-0!`
-  ให้คอลัมน์ข้อมูลตัวสุดท้ายเป็นตัว grow
-- **กริดจำนวนคอลัมน์ตายตัวเหลือคอลัมน์ว่างเมื่อรายการน้อยกว่าคอลัมน์** — รายการที่จำนวนเปลี่ยน
-  ตามข้อมูลใช้ `repeat(auto-fit, minmax(…, 1fr))` วัดด้วยขอบขวาของรายการสุดท้ายเทียบกับขอบขวา
-  ของกล่อง ทุกขนาดจอ
-- **โหมดดูของรายการให้ติ๊ก ไม่ใช่รายการเดิมที่ถูก disable** — แสดงเฉพาะของที่ถืออยู่เป็นช่องของ
-  `FieldGrid` (ชื่อ + คำอธิบาย) จากข้อมูลที่มากับตัวเอกสาร ไม่ต้องยิงทะเบียนทั้งชุด · โหมดแก้ค่อย
-  โชว์รายการให้ติ๊ก และจำกัดความกว้างของรายการ (`max-w-2xl`) เมื่อแถวมีชื่อชิดซ้าย–เครื่องหมายชิดขวา
-  ตัวอย่าง: `routes/system-admin/user/user-assigned-roles.tsx`
-- **รายการที่เพิ่ม/ลบได้ (ที่อยู่ ผู้ติดต่อ) เป็นกริดของการ์ด ไม่ใช่แถวเต็มความกว้าง** —
-  `grid-cols-[repeat(auto-fill,minmax(min(100%,<ขั้นต่ำ>),1fr))]` (`auto-fill` ไม่ใช่ `auto-fit`:
-  มีใบเดียวต้องไม่ยืดเต็มแถว) ขั้นต่ำของโหมดแก้กว้างกว่าโหมดดู และข้างในการ์ดต้องใช้ container
-  query (`@container` + `@sm:`) เพราะการ์ดแคบเกิดได้บนจอกว้าง · โหมดดูเขียนเป็นคอมโพเนนต์แยกที่
-  แสดงข้อความ ไม่ใช่ฟอร์มเดิมที่ disable ทุกช่อง ตัวอย่าง: `routes/vendor-management/vendor/`
-- **ตารางคอลัมน์น้อยในหน้า detail: ใช้ `grow` เฉพาะเมื่อกล่องกว้างพอ** — วัดด้วย `useElementWidth`
-  กล่องแคบกว่าผลรวมคอลัมน์ให้กลับไปแบ่งตามสัดส่วน (ไม่ใส่ `grow`) ไม่งั้นตารางล้นกล่องบนมือถือ
-- **ตารางในหน้า detail บนกล่องแคบ (มือถือ) เป็นการ์ดทีละแถว ไม่ใช่ตารางที่ถูกบีบ** (ผู้ใช้สั่งบนหน้า
-  vendor 2026-11-13) — สลับจากความกว้างกล่องที่วัดได้ (`< 560px`) ไม่ใช่ breakpoint ของจอ การ์ดต้องมี
-  ข้อมูลครบทุกช่องของตาราง ปุ่มของแถวสูง 32px (`size="icon-sm"`) และกล่องที่ผูก ref วัดความกว้างต้อง
-  อยู่ทั้งสองมุมมอง ตัวอย่าง: `CertificateCards` ใน `vendor-certificate-section.tsx`
-- **หน้าที่กลับเป็นโหมดดูหลัง Save ต้องรอข้อมูลใหม่ก่อน** — mutation ที่แค่สั่ง `invalidateQueries` แล้ว
-  จบ ทำให้โหมดดูโชว์ค่าเก่า 1–3 วินาที และ Save ซ้ำในช่วงนั้นส่ง `doc_version` เก่าไปชน 409 ให้
-  `onSuccess` ของ hook **คืน promise ของ `invalidateQueries`** (mutation ค้าง pending จน refetch เสร็จ)
-  ตัวอย่าง: `useUpdateBusinessUnit` ใน `hooks/use-business-unit.ts`
-- **คอลัมน์ปุ่มของแถวใน `DataGrid` ต้องกว้างพอ**: ปุ่ม 24px สองปุ่ม + ช่องไฟ 4 + padding เซลล์ 24 = 76px
-  ตั้ง `size: 72` แล้วปุ่มตกเป็นสองบรรทัด ใช้ 84
-- **skeleton ต้องเป็นโครงเดียวกับหน้าจริง** ไม่งั้นเนื้อหากระโดดตอนข้อมูลมา
-- **วัดขนาดจอครบไม่ได้แปลว่าฟอร์มใช้ได้** — ฟอร์มที่ผูก `values` กับ query ต้องมี
-  `resetOptions: { keepDirtyValues: true }` และ mutation ต้อง `setQueryData` ก่อน invalidate
-  ไม่งั้นแก้ค่าหลัง Save ไม่กี่วินาทีแล้วปุ่ม Save ค้าง disabled วิธีลอง → `verify.md` §ตรวจการกดจริง
-- **`resize_window` ของ Chrome extension เชื่อไม่ได้** — รายงานสำเร็จแต่ viewport ไม่เปลี่ยน
-  ใช้ iframe ตาม `verify.md`
-- **หน้าที่มี learning เดิมกำหนด layout ไว้** (เช่น Ask AI) — `trail check` จะแดง ให้บันทึก
-  learning ใหม่ด้วย `--replaces` แล้วเขียนเหตุผลใน PR คงพฤติกรรมอื่นของ learning เดิมไว้
+- **`@md:` does nothing without an ancestor that is a `@container`** — no error; the columns simply
+  never split.
+- **Do not make `components/ui/setting-section.tsx` compact across the board** — config-email,
+  notification-template and the vendor-management forms still use its heading-left-1/3 layout. The
+  user has not asked to change those pages. Ask first.
+- **Never write `max-w-4xl` or safe-area padding in the page itself** — they come from
+  `FormPageShell` (`components/share/__tests__/form-page-shell.usage.test.ts` catches it).
+- **Two adjacent fields that each span 2 columns land on separate rows in a 3-column grid** — keep
+  to one wide field per section.
+- **`meta.grow` turns the other columns into fixed px, so measure at tablet** — the sum of `size`
+  plus the minimum width of the grow column (~165px for a status column) must not exceed 662px or
+  the table overflows. Never use it on a multi-column editable table.
+- **`getTotalSize()` counts the select column (55px) even when it is not rendered** — tables from
+  `useConfigTable`, and tables that add `selectColumn()` themselves without turning on
+  `tableLayout.checkbox`, have a tablet budget of only 607px (662 − 55), not 662px.
+- **You cannot hide a column of a grow table with CSS** — the table's minimum width is computed from
+  every column TanStack considers visible. Turn it off through `state.columnVisibility` based on the
+  measured box width.
+- **A column step's switch point must be higher than that step's `size` total** — set them exactly
+  equal and, once the box is just past that point, the secondary column comes back and the grow
+  column shrinks to its minimum (the file name is narrower than when the box was smaller).
+- **A `flex-1` wrapper around something of fixed width pushes the next thing to the far right** —
+  the search box has a fixed width from `md`, so its wrapper must stop stretching at `md` too
+  (`flex-1 md:flex-initial`).
+- **Do not use an empty trailing column to absorb the remaining width in a `DataGrid`** — it is at
+  least 75px wide even with `p-0!`. Make the last data column the grow column.
+- **A grid with a fixed column count leaves empty columns when there are fewer items than columns**
+  — for lists whose count depends on data use `repeat(auto-fit, minmax(…, 1fr))`. Measure the right
+  edge of the last item against the right edge of the box, at every screen size.
+- **View mode of a checklist is not the same list disabled** — show only what is held, as `FieldGrid`
+  cells (name + description), from the data that comes with the document itself; do not fetch the
+  whole registry. Edit mode then shows the checklist, with its width capped (`max-w-2xl`) when rows
+  have the name on the left and the mark on the right. Example:
+  `routes/system-admin/user/user-assigned-roles.tsx`
+- **Lists you can add to / remove from (addresses, contacts) are a grid of cards, not full-width
+  rows** — `grid-cols-[repeat(auto-fill,minmax(min(100%,<min>),1fr))]` (`auto-fill`, not `auto-fit`:
+  a single card must not stretch across the row). The edit-mode minimum is wider than view mode's,
+  and inside the card use container queries (`@container` + `@sm:`) because a narrow card can occur
+  on a wide screen. Write view mode as a separate component that shows text, not the same form with
+  every field disabled. Example: `routes/vendor-management/vendor/`
+- **A table with few columns on a detail page: use `grow` only when the box is wide enough** —
+  measure with `useElementWidth`. When the box is narrower than the column total, fall back to
+  proportional widths (no `grow`), otherwise the table overflows its box on mobile.
+- **A table on a detail page in a narrow box (mobile) becomes one card per row, not a squeezed
+  table** (user instruction on the vendor page, 2026-11-13) — switch on the measured box width
+  (`< 560px`), not a screen breakpoint. The card must carry every field of the table, row buttons
+  are 32px tall (`size="icon-sm"`), and the box bound to the width-measuring ref must exist in both
+  views. Example: `CertificateCards` in `vendor-certificate-section.tsx`
+- **A page that returns to view mode after Save must wait for the new data first** — a mutation that
+  only calls `invalidateQueries` and finishes leaves view mode showing the old value for 1–3
+  seconds, and a second Save in that window sends the old `doc_version` and hits a 409. Have the
+  hook's `onSuccess` **return the `invalidateQueries` promise** (the mutation stays pending until
+  the refetch completes). Example: `useUpdateBusinessUnit` in `hooks/use-business-unit.ts`
+- **A row-button column in a `DataGrid` must be wide enough**: two 24px buttons + 4 gap + 24 cell
+  padding = 76px. With `size: 72` the buttons wrap onto two lines. Use 84.
+- **A skeleton must have the same structure as the real page**, otherwise the content jumps when
+  data arrives.
+- **Passing every screen size does not mean the form works** — a form that binds `values` to a query
+  needs `resetOptions: { keepDirtyValues: true }`, and the mutation must `setQueryData` before
+  invalidating; otherwise editing a value a few seconds after Save leaves the Save button stuck
+  disabled. How to try it → `verify.md` §Check real clicks
+- **The Chrome extension's `resize_window` cannot be trusted** — it reports success but the viewport
+  does not change. Use the iframe from `verify.md`.
+- **Pages with an older learning that fixes their layout** (e.g. Ask AI) — `trail check` goes red.
+  Save a new learning with `--replaces` and write the reason in the PR. Keep the other behaviours of
+  the old learning.
