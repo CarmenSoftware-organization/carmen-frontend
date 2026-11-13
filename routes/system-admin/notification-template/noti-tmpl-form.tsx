@@ -10,13 +10,16 @@ import {
   FieldInput,
   FieldLabel,
 } from "@/components/ui/field";
-import { Skeleton } from "@/components/ui/skeleton";
 import { StatusSwitch } from "@/components/ui/status-switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  SettingSection,
-  SettingSectionSkeleton,
-} from "@/components/ui/setting-section";
+  CompactSection,
+  CompactSectionSkeleton,
+  FieldGrid,
+  SECTION_PAIR,
+} from "@/components/share/compact-section";
+import { SettingField } from "@/components/share/setting-field";
+import { cn } from "@/lib/utils";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useEntityForm } from "@/hooks/use-entity-form";
@@ -33,7 +36,7 @@ import {
   notificationTemplateSchema,
   type NotificationTemplateFormValues,
 } from "./noti-tmpl-form-schema";
-import { NotiTmplPreview } from "./noti-tmpl-preview";
+import { NotiTmplPreview, TemplateText } from "./noti-tmpl-preview";
 import { VariableChips } from "./noti-tmpl-variable-chips";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { FormToolbar } from "@/components/share/form-toolbar";
@@ -41,6 +44,16 @@ import { FormPageHeaderSkeleton } from "@/components/loader/form-page-skeleton";
 
 const LIST_PATH = "/system-admin/notification-template";
 const FORM_ID = "notification-template-form";
+
+/**
+ * สองหมวดของหน้า (ทั่วไป | เนื้อหาข้อความ) วางเคียงกันบนจอกว้าง 1700px ขึ้นไป ต่ำกว่านั้นเรียงลง
+ * `-mt-5` หักระยะบนของหมวดแรกทิ้ง — ใส่ `first` ให้หมวดซ้ายไม่ได้ เพราะตอนวางเคียงกันหมวดขวา
+ * ยังมี `mt-5` อยู่ หัวข้อสองฝั่งจะเหลื่อมกัน 20px
+ */
+const SECTIONS = cn(SECTION_PAIR, "-mt-5");
+
+/** ครึ่งซ้ายเขียน ครึ่งขวาเห็นผล — แบ่งตามความกว้างของการ์ดเอง (การ์ดครึ่งจอบน Full HD ก็ยังแบ่งได้) */
+const MESSAGE_GRID = "grid gap-4 @2xl:grid-cols-2";
 
 interface NotificationTemplateFormProps {
   readonly template?: NotificationTemplate;
@@ -75,6 +88,12 @@ export function NotificationTemplateForm({
   const watchedName = useWatch({ control: form.control, name: "name" });
   const watchedActive = useWatch({ control: form.control, name: "is_active" });
   const watchedBody = useWatch({ control: form.control, name: "body" });
+  const watchedDescription = useWatch({
+    control: form.control,
+    name: "description",
+  });
+  // โหมดดูแสดงค่าเป็นข้อความ (ป้ายเงียบ + ค่า) — กรอบมีเฉพาะช่องที่แก้ได้จริง
+  const isView = f.mode === "view";
   const title = isAdd ? t("add") : watchedName || t("untitled");
 
   const onSubmit = (values: NotificationTemplateFormValues) => {
@@ -114,6 +133,7 @@ export function NotificationTemplateForm({
 
   return (
     <FormPageShell
+      width="wide"
       header={
         <FormToolbar
           mode={f.mode}
@@ -146,108 +166,141 @@ export function NotificationTemplateForm({
           scrollToFirstInvalidField(),
         )}
       >
-        {/* Section: General */}
-        <SettingSection
-          first
-          title={t("sectionGeneralTitle")}
-          description={t("sectionGeneralDesc")}
-        >
-          <Field className="sm:col-span-2">
-            <FieldLabel htmlFor="nt-name" required>
-              {tfl("name")}
-            </FieldLabel>
-            <FieldInput
-              id="nt-name"
-              placeholder={t("namePlaceholder")}
-              disabled={isDisabled}
-              maxLength={100}
-              error={errors.name?.message}
-              {...form.register("name")}
-            />
-          </Field>
+        <div className={SECTIONS}>
+          <CompactSection
+            title={t("sectionGeneralTitle")}
+            description={t("sectionGeneralDesc")}
+          >
+            <FieldGrid>
+              {isView ? (
+                <SettingField label={tfl("name")} value={watchedName} />
+              ) : (
+                <Field className="min-w-0">
+                  <FieldLabel htmlFor="nt-name" required>
+                    {tfl("name")}
+                  </FieldLabel>
+                  <FieldInput
+                    id="nt-name"
+                    placeholder={t("namePlaceholder")}
+                    disabled={isDisabled}
+                    maxLength={100}
+                    error={errors.name?.message}
+                    {...form.register("name")}
+                  />
+                </Field>
+              )}
 
-          {template?.code && (
-            <div className="sm:col-span-2">
-              <p className="text-muted-foreground font-mono text-xs">
-                {template.code}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                {t("systemDefaultHint")}
-              </p>
-            </div>
-          )}
-
-          <Field className="sm:col-span-2">
-            <FieldLabel htmlFor="nt-description">
-              {tfl("description")}
-            </FieldLabel>
-            <Textarea
-              id="nt-description"
-              placeholder={tfl("optional")}
-              rows={2}
-              disabled={isDisabled}
-              maxLength={256}
-              {...form.register("description")}
-            />
-          </Field>
-
-          <div className="sm:col-span-2">
-            <Controller
-              control={form.control}
-              name="is_active"
-              render={({ field }) => (
-                <StatusSwitch
-                  id="nt-is-active"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isDisabled}
-                  // สถานะเดียวกันเคยแสดงสามที่: badge ข้างชื่อเรื่อง, สวิตช์ และ
-                  // badge ซ้ำในกล่องสวิตช์ — เหลือสองที่ที่ทำหน้าที่ต่างกันจริง
-                  hideBadge
+              {/* รหัสแก้ไม่ได้ทั้งสองโหมด จึงเป็นข้อความเสมอ */}
+              {template?.code && (
+                <SettingField
+                  label={tfl("code")}
+                  value={template.code}
+                  mono
+                  example={t("systemDefaultHint")}
                 />
               )}
-            />
-          </div>
-        </SettingSection>
 
-        {/* Section: Message content — section เดียวของหน้าที่กินเต็มความกว้าง
-            เพราะเป็นงานจริงของหน้านี้ ครึ่งซ้ายเขียน ครึ่งขวาเห็นผลทันที */}
-        <SettingSection
-          wide
-          title={t("sectionMessageTitle")}
-          description={t("sectionMessageDesc")}
-        >
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="min-w-0 space-y-5">
-              <Field>
-                <FieldLabel htmlFor="nt-body" required>
-                  {t("colBody")}
-                </FieldLabel>
-                <Textarea
-                  id="nt-body"
-                  placeholder={t("bodyPlaceholder")}
-                  disabled={isDisabled}
-                  maxLength={259}
-                  rows={6}
-                  className="min-h-32"
-                  aria-invalid={!!errors.body}
-                  {...form.register("body")}
+              {isView ? (
+                // สถานะซ้ำกับ badge ข้างชื่อเรื่องโดยตั้งใจ: badge บอกสถานะของเอกสาร ส่วนช่องนี้
+                // คือค่าของช่องที่โหมดแก้เปลี่ยนเป็นสวิตช์ — ตัดออกแล้วช่องจะโผล่/หายตอนสลับโหมด
+                <SettingField
+                  label={tfl("status")}
+                  value={watchedActive ? ts("active") : ts("inactive")}
                 />
-                <FieldError>{errors.body?.message}</FieldError>
-                <VariableChips
-                  label={t("insertVariable")}
-                  targetId="nt-body"
-                  disabled={isDisabled}
+              ) : (
+                <div className="min-w-0">
+                  <Controller
+                    control={form.control}
+                    name="is_active"
+                    render={({ field }) => (
+                      <StatusSwitch
+                        id="nt-is-active"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isDisabled}
+                        hideBadge
+                      />
+                    )}
+                  />
+                </div>
+              )}
+
+              {isView ? (
+                <SettingField
+                  label={tfl("description")}
+                  value={watchedDescription}
+                  fullWidth
                 />
-              </Field>
+              ) : (
+                <Field className="min-w-0 @md:col-span-2">
+                  <FieldLabel htmlFor="nt-description">
+                    {tfl("description")}
+                  </FieldLabel>
+                  <Textarea
+                    id="nt-description"
+                    placeholder={tfl("optional")}
+                    rows={2}
+                    disabled={isDisabled}
+                    maxLength={256}
+                    {...form.register("description")}
+                  />
+                </Field>
+              )}
+            </FieldGrid>
+          </CompactSection>
+
+          {/* เนื้อหาข้อความ — งานจริงของหน้านี้: ซ้ายคือเทมเพลต (โหมดแก้เป็นช่องกรอก) ขวาคือผลที่ผู้รับเห็น */}
+          <CompactSection
+            title={t("sectionMessageTitle")}
+            description={t("sectionMessageDesc")}
+          >
+            <div className="@container h-full">
+              <div className={cn(MESSAGE_GRID, "h-full")}>
+                {isView ? (
+                  <div className="min-w-0">
+                    <div className="text-muted-foreground text-xs">
+                      {t("colBody")}
+                    </div>
+                    <p className="mt-0.5 text-sm break-words whitespace-pre-wrap">
+                      {watchedBody ? (
+                        <TemplateText text={watchedBody} wrap />
+                      ) : (
+                        <span className="text-muted-foreground/60">—</span>
+                      )}
+                    </p>
+                  </div>
+                ) : (
+                  <Field className="min-w-0">
+                    <FieldLabel htmlFor="nt-body" required>
+                      {t("colBody")}
+                    </FieldLabel>
+                    <Textarea
+                      id="nt-body"
+                      placeholder={t("bodyPlaceholder")}
+                      disabled={isDisabled}
+                      maxLength={259}
+                      rows={4}
+                      className="min-h-24"
+                      aria-invalid={!!errors.body}
+                      {...form.register("body")}
+                    />
+                    <FieldError>{errors.body?.message}</FieldError>
+                    <VariableChips
+                      label={t("insertVariable")}
+                      targetId="nt-body"
+                      disabled={isDisabled}
+                    />
+                  </Field>
+                )}
+
+                <NotiTmplPreview
+                  name={watchedName || t("untitled")}
+                  body={watchedBody ?? ""}
+                />
+              </div>
             </div>
-
-            <NotiTmplPreview
-              name={watchedName || t("untitled")}
-              body={watchedBody ?? ""}
-            />
-          </div>
-        </SettingSection>
+          </CompactSection>
+        </div>
       </form>
 
       <DiscardDialog {...f.discard.dialogProps} variant="warning" />
@@ -280,19 +333,11 @@ export function NotificationTemplateForm({
 
 export function NotificationTemplateFormSkeleton() {
   return (
-    <FormPageShell header={<FormPageHeaderSkeleton />}>
-      {/* General: name · description(textarea) · status */}
-      <SettingSectionSkeleton first fields={["full", "tall", "full"]} />
-      {/* Message content: ครึ่งซ้ายช่องกรอก ครึ่งขวาพรีวิว */}
-      <div className="border-border/70 mt-8 space-y-4 border-t pt-8">
-        <div className="space-y-2">
-          <Skeleton className="h-5 w-36" />
-          <Skeleton className="h-3 w-64" />
-        </div>
-        <div className="bg-card grid gap-6 rounded-xl border p-5 shadow-sm sm:p-6 lg:grid-cols-2">
-          <Skeleton className="h-40 w-full" />
-          <Skeleton className="h-40 w-full" />
-        </div>
+    <FormPageShell width="wide" header={<FormPageHeaderSkeleton />}>
+      {/* โครงเดียวกับหน้าจริง: สองหมวด เคียงกันบนจอกว้าง */}
+      <div className={SECTIONS}>
+        <CompactSectionSkeleton className="h-28" />
+        <CompactSectionSkeleton className="h-28" />
       </div>
     </FormPageShell>
   );

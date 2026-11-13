@@ -119,14 +119,16 @@ system-admin landing (multi-column, real things only) #568 ·
 user (detail: view mode shows only what is held + table picks columns in 3 steps by box width) ·
 vendor (detail: lists as a grid of cards, address in view mode as text, `CompactSection frameless`) ·
 interface (brand forms: fields that render their own view mode, long section descriptions moved
-into the card so paired headings stay the same height)
+into the card so paired headings stay the same height) ·
+notification-template (detail: General | Message paired, editor and preview split by card width,
+view mode shows the raw template as text beside the preview)
 
 ## Gotchas
 
 - **`@md:` does nothing without an ancestor that is a `@container`** — no error; the columns simply
   never split.
-- **Do not make `components/ui/setting-section.tsx` compact across the board** — config-email,
-  notification-template and the vendor-management forms still use its heading-left-1/3 layout. The
+- **Do not make `components/ui/setting-section.tsx` compact across the board** — config-email and
+  the vendor-management forms still use its heading-left-1/3 layout. The
   user has not asked to change those pages. Ask first.
 - **Never write `max-w-4xl` or safe-area padding in the page itself** — they come from
   `FormPageShell` (`components/share/__tests__/form-page-shell.usage.test.ts` catches it).
