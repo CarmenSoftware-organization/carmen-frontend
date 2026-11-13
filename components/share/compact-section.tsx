@@ -15,7 +15,11 @@ import { cn } from "@/lib/utils";
  * การ์ดเต็ม 6 / การ์ดคู่ 3 · 4K การ์ดเต็มและการ์ดคู่ 6
  */
 export const SECTION_PAIR =
-  "min-[1700px]:grid min-[1700px]:grid-cols-2 min-[1700px]:items-start min-[1700px]:gap-x-5";
+  // ไม่มี items-start: การ์ดคู่ในแถวเดียวกันต้องสูงเท่ากัน (grid ยืดให้เอง — `CompactSection`
+  // เป็น flex-col และการ์ดเป็น flex-1 จึงยืดตามเพื่อนที่สูงกว่า)
+  // `[&>div]`: หน้าที่ครอบ section ด้วย <div> อีกชั้น (company-profile) — ให้ชั้นครอบเป็น flex-col
+  // ด้วย ไม่งั้นการยืดหยุดอยู่ที่ชั้นครอบ การ์ดข้างในยังเตี้ยเท่าเนื้อหา
+  "min-[1700px]:grid min-[1700px]:grid-cols-2 min-[1700px]:gap-x-5 min-[1700px]:[&>div]:flex min-[1700px]:[&>div]:flex-col";
 
 /**
  * กริดของช่องในการ์ด — จำนวนคอลัมน์ตามความกว้างการ์ด
@@ -73,8 +77,9 @@ export function CompactSection({
   readonly children: React.ReactNode;
 }) {
   return (
-    <section className={cn(!first && "mt-5")}>
-      <div className="mb-2 flex min-h-7 flex-wrap items-center justify-between gap-x-3 gap-y-1">
+    <section className={cn("flex flex-1 flex-col", !first && "mt-5")}>
+      {/* min-h-8 = ความสูงปุ่ม size="sm" — หัวข้อที่มีปุ่มกับไม่มีปุ่มสูงเท่ากัน การ์ดคู่จึงเริ่มที่ระดับเดียวกัน */}
+      <div className="mb-2 flex min-h-8 flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-2">
           <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
           {count !== undefined && (
@@ -88,7 +93,10 @@ export function CompactSection({
         </div>
         {action}
       </div>
-      <div className="bg-card rounded-xl border p-4 shadow-sm">{children}</div>
+      {/* flex-1: ใน SECTION_PAIR การ์ดยืดเท่าเพื่อนข้าง ๆ · นอกคู่ไม่มีผล (section สูงเท่าเนื้อหา) */}
+      <div className="bg-card flex-1 rounded-xl border p-4 shadow-sm">
+        {children}
+      </div>
     </section>
   );
 }

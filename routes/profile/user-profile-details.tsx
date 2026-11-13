@@ -132,7 +132,7 @@ export default function UserProfileDetails() {
 
       {/* Business Units — หนึ่ง BU หนึ่งการ์ดเต็มความกว้าง ช่องข้างในแตกคอลัมน์ตามความกว้างการ์ด */}
       <section className="mt-5">
-        <div className="mb-2 flex min-h-7 items-baseline gap-x-2">
+        <div className="mb-2 flex min-h-8 items-center gap-x-2">
           <h2 className="text-sm font-semibold tracking-tight">
             {t("businessUnits")}
           </h2>
