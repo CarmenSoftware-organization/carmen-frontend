@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useState,
   useRef,
 } from "react";
 import { Row, RowData, Table } from "@tanstack/react-table";
@@ -37,6 +38,9 @@ export interface DataGridContextProps<TData extends object> {
   table: Table<TData>;
   recordCount: number;
   isLoading: boolean;
+  /** id ของแถวที่ไฮไลต์อยู่ (`tableLayout.rowHighlight`) */
+  highlightedRowId: string | null;
+  setHighlightedRowId: (id: string | null) => void;
 }
 
 export interface DataGridProps<TData extends object> {
@@ -86,6 +90,12 @@ export interface DataGridProps<TData extends object> {
      * เนื้อหาด้านเดียว ช่องไฟบน/ล่างของแถวจะไม่เท่ากัน
      */
     cellAlign?: "top" | "middle";
+    /**
+     * คลิกแถวแล้วแถวนั้นไฮไลต์ค้าง (default `true` · ทีละแถว สี `--selected` เดียวกับแถวที่ติ๊ก checkbox)
+     * — ไว้ตามสายตาข้ามแถวในตารางกว้าง ไม่ใช่การเลือกเพื่อสั่งงาน จึงไม่แตะ row selection
+     * ของ TanStack คลิกจากลูกทุกตัว (ลิงก์ ปุ่ม ที่ว่าง) bubble มาที่แถว
+     */
+    rowHighlight?: boolean;
   };
   tableClassNames?: {
     base?: string;
@@ -134,14 +144,19 @@ function DataGridProvider<TData extends object>({
   table,
   ...props
 }: DataGridProps<TData> & { table: Table<TData> }) {
+  const [highlightedRowId, setHighlightedRowId] = useState<string | null>(
+    null,
+  );
   const contextValue = useMemo(
     () => ({
       props,
       table,
       recordCount: props.recordCount,
       isLoading: props.isLoading || false,
+      highlightedRowId,
+      setHighlightedRowId,
     }),
-    [props, table],
+    [props, table, highlightedRowId],
   );
 
   return (
@@ -177,6 +192,8 @@ function DataGrid<TData extends object>({
       rowsDraggable: false,
       checkbox: false,
       rowClamp: true,
+      // คลิกแถวแล้วไฮไลต์ค้างเป็นค่าเริ่มต้นของทุกตาราง — ตารางไหนไม่เอาส่ง `rowHighlight: false`
+      rowHighlight: true,
     },
     tableClassNames: {
       base: "",
