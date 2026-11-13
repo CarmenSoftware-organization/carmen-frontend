@@ -159,6 +159,29 @@ export default function InventoryPeriodComponent() {
   // ไม่ใช่หน้าปัจจุบันของตาราง — รอบมีปีละ 12 แถว ดึงทั้งหมดได้สบาย
   const { data: allData } = useInventoryPeriodAll();
   const allPeriods = allData ?? [];
+  // BU ที่ยังไม่มีรอบเลย — ไม่มีปุ่ม "เพิ่ม" แล้ว ทางเดียวที่จะเริ่มได้คือ "เติมรอบ" ซึ่งซ่อนอยู่ใน
+  // เมนู ⋯ empty state จึงต้องยื่นปุ่มนั้นให้ตรง ๆ ไม่งั้นหน้าเปล่าไม่บอกว่าต้องทำอะไรต่อ
+  // (`allData` ยัง undefined = กำลังโหลด ไม่ใช่ว่าง)
+  const hasNoPeriods = allData !== undefined && allPeriods.length === 0;
+  const emptyState = hasNoPeriods ? (
+    <EmptyComponent
+      icon={CalendarPlus}
+      title={t("emptyTitle")}
+      description={t("emptyDesc")}
+      content={
+        <Button
+          size="sm"
+          disabled={generateNext.isPending}
+          onClick={() => setGenerateOpen(true)}
+        >
+          <CalendarPlus aria-hidden="true" />
+          {t("emptyAction")}
+        </Button>
+      }
+    />
+  ) : (
+    <EmptyComponent />
+  );
   // backend เติมรอบที่เปิดอยู่ให้ครบ count ไม่ใช่สร้างเพิ่ม count รอบ
   // (micro-business inventory-period.service.ts generateNextPeriods)
   const openCount = allPeriods.filter((p) => p.status === "open").length;
@@ -283,7 +306,7 @@ export default function InventoryPeriodComponent() {
             )}
           </>
         ) : (
-          <EmptyComponent />
+          emptyState
         )
       ) : (
         <DataGrid
@@ -291,7 +314,7 @@ export default function InventoryPeriodComponent() {
           recordCount={totalRecords}
           isLoading={isLoading}
           tableLayout={{ headerSticky: true }}
-          emptyMessage={<EmptyComponent />}
+          emptyMessage={emptyState}
         >
           <DataGridContainer
             className={cn(
