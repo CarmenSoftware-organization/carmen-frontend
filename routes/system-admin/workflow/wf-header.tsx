@@ -81,7 +81,10 @@ export function WfHeader({
       // คนเดียว ที่ว่างไม่พอสำหรับคำว่า DOCUMENTS (หัว 272px ที่จอ 360) จึงเหลือเป็นไอคอนเอกสาร
       // คำยังอยู่ให้ screen reader และตัวเลขรองลดเป็น text-xs · ตัดสินจากความกว้างของหัวเอง
       // (@container/doc-header ใน DocFormHeader) เหมือนป้ายปุ่มใน FormToolbar
-      <div className="flex items-center gap-2 @max-xl/doc-header:basis-full @max-xl/doc-header:gap-1.5">
+      // flex-wrap เป็นทางหนีทุกขนาด: กลุ่มที่ห่อไม่ได้กว้าง ~340px ล้นกล่องชื่อไปทับปุ่มที่ tablet
+      // (หัว 632px เหลือที่ข้างปุ่ม ~290px) และจำนวนหลักพันทุกถังยาวเกินหัวที่จอ 360 — ให้ถังท้ายลง
+      // บรรทัดใหม่แทนการล้น
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 @max-xl/doc-header:basis-full @max-xl/doc-header:gap-x-1.5">
         <Separator
           orientation="vertical"
           className="mx-0.5 h-3.5 @max-xl/doc-header:hidden"
@@ -126,8 +129,13 @@ export function WfHeader({
   const badges = !isEditing ? (
     <>
       <StatusBadge active={workflow.is_active} />
-      <Separator orientation="vertical" className="mx-0.5 h-3.5" />
-      <span className="text-muted-foreground text-sm">
+      {/* หัวแคบ (มือถือ): ตัดเส้นคั่นและลดชนิดเป็น text-xs — ชื่อ + สถานะ + ชนิดต้องอยู่บรรทัดเดียวกัน
+          ที่จอ 360 (หัว 272px) ไม่งั้นชนิดตกไปอยู่บรรทัดของตัวเองแล้วหัวสูงขึ้นอีกหนึ่งบรรทัด */}
+      <Separator
+        orientation="vertical"
+        className="mx-0.5 h-3.5 @max-xl/doc-header:hidden"
+      />
+      <span className="text-muted-foreground text-sm whitespace-nowrap @max-xl/doc-header:text-xs">
         {typeLabels[workflow.workflow_type] ?? workflow.workflow_type}
       </span>
       {docBadges}
@@ -177,6 +185,12 @@ export function WfHeader({
         title={isEditing ? t("editWorkflow") : workflow.name}
         subtitle={subtitle}
         badges={badges}
+        // หัวแคบกว่า 768px + มีป้ายจำนวนเอกสาร: กล่องชื่อกินทั้งบรรทัด ปุ่มลงบรรทัดถัดไป — ไม่งั้นที่หัว
+        // 400–690px (มือถือแนวนอน, tablet) ป้ายถูกบีบอยู่ข้างปุ่มแล้วห่อเป็นสี่บรรทัด · ต้องการจริง ~690px
+        // (กลุ่มป้าย ~340 + ปุ่มมีป้าย ~340) เผื่อป้ายภาษาไทยที่ยาวกว่าจึงตัดที่ 768
+        titleClassName={
+          docBadges && !isEditing ? "@max-3xl/doc-header:basis-full" : undefined
+        }
         onBack={() => toList()}
         onCancel={onCancel}
         onEdit={onEdit}

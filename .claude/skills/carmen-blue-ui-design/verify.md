@@ -1,12 +1,14 @@
-# วิธีตรวจ 5 ขนาดจอ
+# How to check the 5 screen sizes
 
-ฝัง iframe same-origin ของหน้าเดียวกันด้วยความกว้างที่ต้องการ — media query และ container query
-ข้างในทำงานตามความกว้างของ iframe (`resize_window` เชื่อไม่ได้) iframe ที่ใหญ่กว่าจอถูกย่อด้วย
-`transform` ให้พอดี ค่าที่วัดจาก `contentDocument` ยังเป็นพิกเซลจริงของ iframe ไม่ต้องหารด้วยสเกล
+Embed a same-origin iframe of the same page at the width you want — media queries and container
+queries inside it respond to the iframe's width (`resize_window` cannot be trusted). An iframe
+larger than the screen is scaled down with `transform` to fit. Values measured from
+`contentDocument` are still the iframe's real pixels; do not divide by the scale.
 
-## สคริปต์
+## Script
 
-รันครั้งเดียวในแท็บที่เปิดหน้านั้นอยู่ แล้วเรียก `await __vp(W, H)` ต่อขนาด คืนผลวัดเป็นข้อความ
+Run it once in the tab that has the page open, then call `await __vp(W, H)` per size. It returns the
+measurements as text.
 
 ```js
 window.__vp = async (W, H, { edit = false, dark = false } = {}) => {
@@ -17,7 +19,7 @@ window.__vp = async (W, H, { edit = false, dark = false } = {}) => {
   const s = Math.min(1, innerWidth / W, innerHeight / H);
   f.style.cssText = `position:fixed;top:0;left:0;width:${W}px;height:${H}px;transform:scale(${s});transform-origin:top left;z-index:99999;background:#fff;border:0`;
   document.body.appendChild(f);
-  await new Promise((r) => setTimeout(r, 4500)); // รอ boot + ดึงข้อมูล
+  await new Promise((r) => setTimeout(r, 4500)); // wait for boot + data fetch
   const d = f.contentDocument;
   if (edit) {
     [...d.querySelectorAll("button")].find((b) => /Edit/.test(b.textContent))?.click();
@@ -41,78 +43,99 @@ for (const [W, H] of sizes) res.push(await __vp(W, H));
 res;
 ```
 
-วัดเกิน 4 ขนาดต่อการเรียก `javascript_tool` หนึ่งครั้งจะ timeout ที่ 45 วินาที — แบ่งเป็นสองชุด
+Measuring more than 4 sizes in one `javascript_tool` call times out at 45 seconds — split into two
+batches.
 
-อ่านผล:
+Reading the result:
 
-- `page` ต้องเท่ากับ `W` — มากกว่า = หน้ามี scroll แนวนอน
-- `table a/b` ต้อง `a ≤ b` — มากกว่า = ตารางล้นในกรอบของมัน
-- `footer gap` ต้องเป็นบวก และ `scroll` สองค่าเท่ากัน — ติดลบ = ข้อความทับกัน
+- `page` must equal `W` — larger = the page scrolls horizontally
+- `table a/b` must have `a ≤ b` — larger = the table overflows its frame
+- `footer gap` must be positive and the two `scroll` values equal — negative = text overlaps
 
-ถ่ายภาพหลังเรียกแต่ละขนาด พิกัดของ `zoom` เป็นพิกัดของภาพหน้าจอ ไม่ใช่ของ viewport: iframe กว้าง
-`W × s` พิกเซลของ viewport ต้องคูณด้วย (ความกว้างภาพหน้าจอ ÷ `innerWidth`) อีกที
+Take a screenshot after each size. `zoom` coordinates are screenshot coordinates, not viewport
+coordinates: the iframe is `W × s` viewport pixels wide, and that must be multiplied again by
+(screenshot width ÷ `innerWidth`).
 
-## ตรวจการกดจริง (ไม่ใช่แค่ขนาดจอ)
+## Check real clicks (not just screen sizes)
 
-จัด layout ของฟอร์มแล้วต้องลองกดจริงด้วย — บั๊กของหน้า `/profile/setting` (2026-11-13) วัดขนาดจอ
-ครบ 5 ขนาดก็ไม่เจอ เจอตอนกด Save
+After laying out a form you must also click through it for real — the `/profile/setting` bug
+(2026-11-13) was not found by measuring all 5 screen sizes; it was found by pressing Save.
 
-- **Save → แก้ช่องเดิมกลับเป็นค่าเก่าภายใน 3 วินาที → Save อีกรอบ** ปุ่มต้อง enabled และค่าต้องถูก
-  บันทึก (reload แล้วเช็ก) ฟอร์มที่ผูก `values` กับข้อมูลจาก query พังตรงนี้ถ้าขาดสองอย่าง:
-  `resetOptions: { keepDirtyValues: true }` (refetch ไม่ทับช่องที่กำลังแก้) และ mutation ที่
-  `setQueryData` ค่าที่เพิ่งบันทึกก่อน `invalidateQueries` (ไม่งั้นช่วงรอ refetch ฟอร์มถือค่าเก่าเป็น
-  default แก้กลับเป็นค่าเดิมแล้วปุ่ม Save disabled) ตัวอย่าง: `hooks/use-profile.ts`
-  `useUpdateProfile`, `routes/profile/user-profile-setting.tsx`
-- ตั้งค่า input ด้วย native setter + `input` event (`el.value = …` เฉย ๆ React ไม่เห็น) —
-  แต่ setter **ข้าม `disabled`** ได้ ผลที่ได้ตอนช่องถูก disable (ระหว่าง mutation pending) ไม่ใช่
-  พฤติกรรมของผู้ใช้จริง อย่าตีความเป็นบั๊ก
-- ฟังก์ชันที่ฝากไว้บน `window` (`__vp`) หายทุกครั้งที่หน้า reload/navigate — ประกาศใหม่
-- ผลลัพธ์ที่มี `=` ถูก extension บล็อกเป็น "Cookie/query string data" ทั้งที่สคริปต์รันจบแล้ว —
-  อย่ารันซ้ำโดยไม่เช็กสถานะ ใช้ `:` แทน
-- dialog ที่มีช่องรหัสผ่าน (Change Password) ทำ extension หลุด ("Detached") — ตรวจด้วยตาเอง
-  สคริปต์ที่หลุดกลางทาง**ยังรันต่อจนจบ** ถ่ายภาพดูสถานะก่อนทำอะไรต่อ
-- ทดสอบบน dev DB ที่ใช้ร่วมกัน: จดค่าเดิมก่อนแก้ แก้กลับแล้ว reload ยืนยัน · ของที่สร้างเพื่อทดสอบ
-  (โทเค็น ลายเซ็น) ลบออก · **ไม่อัปโหลดทับรูป/ไฟล์ที่มีอยู่** (กู้คืนไม่ได้) และไม่กด "ลบทั้งหมด"
-- สลับภาษา: `localStorage["carmen.locale"] = "th"` แล้วโหลด iframe ใหม่ เสร็จแล้วตั้งกลับ
+- **Save → change the same field back to the old value within 3 seconds → Save again.** The button
+  must be enabled and the value must be saved (reload and check). A form that binds `values` to
+  query data breaks here if it lacks two things: `resetOptions: { keepDirtyValues: true }` (a
+  refetch does not overwrite the field being edited) and a mutation that `setQueryData`s the
+  just-saved value before `invalidateQueries` (otherwise, while waiting for the refetch, the form
+  holds the old value as its default, and changing back to the original value leaves Save disabled).
+  Examples: `hooks/use-profile.ts` `useUpdateProfile`, `routes/profile/user-profile-setting.tsx`
+- Set an input's value with the native setter + an `input` event (plain `el.value = …` is invisible
+  to React) — but the setter **bypasses `disabled`**. What you get while the field is disabled
+  (during a pending mutation) is not real user behaviour; do not read it as a bug.
+- Functions parked on `window` (`__vp`) vanish every time the page reloads or navigates — declare
+  them again.
+- A result containing `=` is blocked by the extension as "Cookie/query string data" even though the
+  script ran to completion — do not rerun without checking state. Use `:` instead.
+- A dialog with a password field (Change Password) detaches the extension ("Detached") — check it by
+  eye. A script that detaches midway **still runs to the end**; take a screenshot to see the state
+  before doing anything else.
+- Testing on the shared dev DB: note the original value before changing it, change it back, then
+  reload to confirm · delete things created for the test (tokens, signatures) · **do not upload over
+  an existing image/file** (it cannot be recovered) and do not press "delete all".
+- Switching language: `localStorage["carmen.locale"] = "th"`, then reload the iframe. Set it back
+  when done.
 
-## หน้า landing
+## Landing pages
 
-- **จำนวนคอลัมน์** = จำนวนค่า `left` ที่ไม่ซ้ำของหมวด · **ความกว้างการ์ด** ต้องอยู่ราว 280–400px
-  ทุกขนาด · **ความยาวหน้า** = ขอบล่างของหมวดที่ต่ำสุด − ขอบบนของ `h1` เทียบกับความสูง viewport
-- **ภาพประกอบถูกตัดขอบไหม**: ขอบบนของเนื้อภาพ (`box.firstElementChild.firstElementChild`) ต้องไม่
-  อยู่เหนือขอบบนของกรอบภาพ — ลดความสูงกรอบแล้วภาพ 4 แถวจะโดนตัดเงียบ ๆ
-- **คีย์แปลดิบ**: ข้อความที่ขึ้นต้นด้วย namespace (`systemAdmin.`) ต้องเป็น 0 — แท็บที่เปิดค้างไว้ก่อน
-  แก้ไฟล์แปลยังถือข้อความชุดเก่า ต้อง reload ก่อนเชื่อ
-- **เปิดปลายทางให้ครบทุกใบ**: เก็บ `href` ของทุกการ์ด แล้วโหลดทีละ path ใน iframe (ครั้งละ ~3 วินาที
-  แบ่งชุดละ 5–6 ใบ) เช็กว่า `location.pathname` ตรง และไม่มี `[role=alert]` · กดการ์ดจริงอย่างน้อย 1 ใบ
-- **สถานะล็อก / ไม่มีสิทธิ์ / ถูกซ่อน** ดูไม่ได้ด้วยบัญชี admin — บังคับสถานะชั่วคราวในโค้ดของหน้า
-  (แก้ค่าใน map ของสิทธิ์ ติดป้าย `__TEMP_VERIFY__`) เปิดดูและกดจริง แล้ว**ถอดออกและ grep ยืนยัน
-  ก่อน commit** ดูให้ครบ 4 แบบ: ล็อก (กุญแจ + dialog license), ไม่มีสิทธิ์ (dialog permission),
-  การ์ดหาย, หมวดหายทั้งหมวด (เลขหมวดต้องไม่กระโดด จำนวนคอลัมน์ลดตาม) บอกผู้ใช้ด้วยว่าเป็นการจำลอง
-  ไม่ใช่บัญชี non-admin จริง
+- **Column count** = the number of distinct `left` values of the groups · **card width** must be
+  around 280–400px at every size · **page length** = the bottom edge of the lowest group − the top
+  edge of the `h1`, compared with the viewport height
+- **Is an illustration clipped?** The top edge of the illustration content
+  (`box.firstElementChild.firstElementChild`) must not sit above the top edge of the illustration
+  frame — reduce the frame height and a 4-row illustration gets clipped silently.
+- **Raw translation keys**: text starting with the namespace (`systemAdmin.`) must count 0 — a tab
+  left open from before the translation file was edited still holds the old strings. Reload before
+  trusting it.
+- **Open every destination**: collect every card's `href`, then load each path in an iframe (~3
+  seconds each, in batches of 5–6 cards) and check that `location.pathname` matches and there is no
+  `[role=alert]` · actually click at least 1 card.
+- **Locked / no permission / hidden states** cannot be seen with an admin account — force the state
+  temporarily in the page's code (change the value in the permission map, tagged
+  `__TEMP_VERIFY__`), open it and click for real, then **remove it and grep to confirm before
+  committing**. Cover all 4 cases: locked (padlock + licence dialog), no permission (permission
+  dialog), card gone, whole group gone (group numbers must not skip; the column count drops
+  accordingly). Tell the user it was a simulation, not a real non-admin account.
 
-## แท็บใช้ไม่ได้ ("Cannot access a chrome-extension:// URL of different extension")
+## Tab unusable ("Cannot access a chrome-extension:// URL of different extension")
 
-แท็บที่ผู้ใช้เปิดเครื่องมืออื่นทับอยู่ (เช่น โหมดจำลองมือถือ) รับคำสั่งจาก extension ไม่ได้ทั้ง JS และ
-screenshot — อย่าลองซ้ำ เปิดแท็บใหม่ด้วย `tabs_create_mcp` ทำงานในแท็บนั้น แล้วปิดเมื่อเสร็จ
-ถ้าหน้าต่างของผู้ใช้แคบอยู่แล้ว (`innerWidth` < 600) ดูของจริงในแท็บได้เลยโดยไม่ต้องใช้ iframe
+A tab where the user has another tool open on top (such as device-emulation mode) cannot take
+commands from the extension, neither JS nor screenshots — do not retry. Open a new tab with
+`tabs_create_mcp`, work in that tab, and close it when done. If the user's window is already narrow
+(`innerWidth` < 600) you can look at the real thing in the tab without an iframe.
 
-## ตรวจให้ครบก่อนบอกว่าเสร็จ
+## Check everything before saying it is done
 
-- [ ] โหมดดู **และ** โหมดแก้ ที่ทั้ง 5 ขนาด (`{ edit: true }`)
-- [ ] ไม่มี scroll แนวนอนของหน้า และตารางไม่ล้นกรอบ
-- [ ] ตารางที่เลือกคอลัมน์/ขนาดตามความกว้างกล่อง: วัดเพิ่มที่ 1024, 1180, 1280 (ขั้นเปลี่ยนในช่วงนี้)
-      และย่อ-ขยาย iframe สด ๆ (`f.style.width = "900px"`) ว่าคอลัมน์สลับตาม
-- [ ] แถบค้นหา: ระยะจากช่องค้นถึงปุ่ม View เท่ากันทุกขนาดตั้งแต่ tablet
-- [ ] footer / แถบของ shell ไม่ทับกันที่ mobile และ tablet
-- [ ] ปุ่มบนหัวฟอร์มอยู่บรรทัดเดียวที่ 360 / 390 / 486 ทั้งโหมดดูและโหมดแก้ — นับค่า `top` ที่ไม่ซ้ำของ
-      ปุ่มในหัว ต้องได้ 1 และขอบขวาของปุ่มสุดท้ายต้องไม่เกินขอบขวาของหัว
-- [ ] dark mode อย่างน้อยหนึ่งขนาด (`{ dark: true }`)
-- [ ] skeleton ตอนโหลด และสถานะว่าง (ไม่มีข้อมูล)
-- [ ] สถานะที่ขยาย/เปิดได้ของรายการ (ทั้งแบบมีและไม่มีเนื้อหาเปรียบเทียบ)
-- [ ] ฟอร์ม: ข้อความ error ใต้ช่อง · Save แล้วแก้กลับภายใน 3 วินาที (ดูหัวข้อ "ตรวจการกดจริง")
-- [ ] ภาษาไทยอย่างน้อยที่ mobile กับ 1366 · ของที่จำนวนเปลี่ยนตามข้อมูลลองที่ค่าสูงสุด (เช่น 10 scope)
-- [ ] แก้ของกลาง (`CompactSection` ฯลฯ) → เปิดทุกหน้าที่ใช้มัน ไม่ใช่แค่หน้าที่กำลังทำ
-- [ ] หน้า landing: ไม่มีตัวเลขตายตัว · การ์ดครบทุกหน้าในเมนู · เปิดปลายทางครบทุกใบ · สถานะสิทธิ์ 4 แบบ
-- [ ] `bun run typecheck` · `bun run lint` · เทสต์ของโฟลเดอร์ที่แตะ
-- [ ] ข้อไหนไม่ได้ตรวจ ขนาดไหนไม่ได้เปิดดู ให้บอกผู้ใช้ตรง ๆ — อย่ารายงานว่าครบ
+- [ ] View mode **and** edit mode at all 5 sizes (`{ edit: true }`)
+- [ ] No horizontal page scroll, and no table overflowing its frame
+- [ ] Tables that pick columns/sizes by box width: also measure at 1024, 1180, 1280 (the steps
+      change in this range) and resize the iframe live (`f.style.width = "900px"`) to confirm the
+      columns swap
+- [ ] Search bar: the distance from the search box to the View button is the same at every size
+      from tablet up
+- [ ] Footer / shell bars do not overlap at mobile and tablet
+- [ ] Form header buttons stay on one line at 360 / 390 / 486 in both view and edit mode — count the
+      distinct `top` values of the header buttons, which must be 1, and the right edge of the last
+      button must not pass the header's right edge
+- [ ] Dark mode at one size at least (`{ dark: true }`)
+- [ ] Loading skeleton and empty state (no data)
+- [ ] Expandable/openable states of list items (both with and without comparison content)
+- [ ] Forms: error text under a field · Save then change back within 3 seconds (see "Check real
+      clicks")
+- [ ] Thai at mobile and 1366 at least · things whose count depends on data, tried at the maximum
+      (e.g. 10 scopes)
+- [ ] Changed a shared piece (`CompactSection` etc.) → open every page that uses it, not just the
+      page you are working on
+- [ ] Landing pages: no hard-coded numbers · a card for every menu page · every destination opened ·
+      the 4 permission states
+- [ ] `bun run typecheck` · `bun run lint` · tests of the folders you touched
+- [ ] Anything not checked, any size not opened: tell the user plainly — do not report it as
+      complete

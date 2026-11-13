@@ -28,6 +28,12 @@ interface DocFormHeaderProps {
   readonly ribbon?: ReactNode;
   readonly leading?: ReactNode;
   readonly flush?: boolean;
+  /**
+   * คลาสเพิ่มของกล่องชื่อ + badge — หน้าที่ badge ยาวกว่าที่ว่างข้างปุ่มบนหัวแคบ ส่ง
+   * `@max-xl/doc-header:basis-full` ให้กล่องนี้กินทั้งบรรทัด ปุ่มจึงลงบรรทัดถัดไปแทนที่ badge จะถูกบีบ
+   * ห่อหลายบรรทัดข้างปุ่ม (หัว workflow ที่ 400–575px)
+   */
+  readonly titleClassName?: string;
 }
 
 export function DocFormHeader({
@@ -42,6 +48,7 @@ export function DocFormHeader({
   ribbon,
   leading,
   flush = false,
+  titleClassName,
 }: DocFormHeaderProps) {
   const { pathname } = useLocation();
   const { buCode } = useProfile();
@@ -79,7 +86,12 @@ export function DocFormHeader({
           {leading}
           {/* min-w-48 ไม่ใช่ min-w-0: ถ้าหดได้ถึง 0 แถวนอกจะไม่มีวันห่อ กลุ่มปุ่ม
               (shrink-0) เลยทับ badge บนจอแคบ — ต่ำกว่า 12rem ให้ปุ่มตกบรรทัดแทน */}
-          <div className="flex min-w-48 flex-1 flex-wrap items-center gap-2">
+          <div
+            className={cn(
+              "flex min-w-48 flex-1 flex-wrap items-center gap-2",
+              titleClassName,
+            )}
+          >
             <h1
               className={cn(
                 // ชื่อยาวตัดท้ายบรรทัดเดียว ไม่ห่อลงบรรทัดสอง — ตั้งใจ ไม่ใช่หลุด
