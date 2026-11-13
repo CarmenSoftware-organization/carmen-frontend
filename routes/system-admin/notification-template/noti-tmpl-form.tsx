@@ -226,13 +226,14 @@ export function NotificationTemplateForm({
               )}
 
               {isView ? (
+                // กินช่องเดียวเหมือนช่องอื่น — กินสองช่องแล้วกริด 2 คอลัมน์ (การ์ดคู่บน Full HD)
+                // เหลือช่องว่างข้างสถานะ
                 <SettingField
                   label={tfl("description")}
                   value={watchedDescription}
-                  fullWidth
                 />
               ) : (
-                <Field className="min-w-0 @md:col-span-2">
+                <Field className="min-w-0">
                   <FieldLabel htmlFor="nt-description">
                     {tfl("description")}
                   </FieldLabel>
