@@ -14,7 +14,14 @@ import {
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection } from "@/components/share/compact-section";
+import { useElementWidth } from "@/hooks/use-element-width";
+import {
+  ROW_CARDS_BELOW,
+  RowCard,
+  RowCardField,
+  RowCards,
+} from "./pd-row-cards";
 import { StatusDotBadge } from "@/components/ui/status-dot-badge";
 import EmptyComponent from "@/components/empty-component";
 import { formatDate } from "@/lib/date-utils";
@@ -86,6 +93,14 @@ export function PdTabEco({ productId, readOnly }: PdTabEcoProps) {
     });
   };
 
+  // กล่องกว้างพอ → คอลัมน์กว้างคงที่ คอลัมน์ชื่อฉลาก (ข้อความยาว) รับที่เหลือ · ผลรวมคอลัมน์:
+  // # 32 · เลขที่ 250 · ฉลาก 250 · วันที่ 120×2 · สถานะ 100 = 872, โหมดแก้ + ปุ่มของแถว 84 = 956
+  // กล่องแคบกว่านั้นแบ่งตามสัดส่วน · แคบกว่า 560 เป็นการ์ดทีละใบทั้งโหมดดูและแก้ (แก้ผ่าน dialog)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const fixedColumns =
+    (gridBoxWidth ?? Number.POSITIVE_INFINITY) >= (readOnly ? 890 : 975);
+  const asCards = gridBoxWidth !== undefined && gridBoxWidth < ROW_CARDS_BELOW;
+
   const columns = useMemo<ColumnDef<ProductEcoLabel>[]>(
     () => [
       {
@@ -113,6 +128,7 @@ export function PdTabEco({ productId, readOnly }: PdTabEcoProps) {
         id: "eco_label",
         header: tfl("ecoLabel"),
         size: 250,
+        meta: fixedColumns ? { grow: true } : undefined,
         cell: ({ row }) => (
           <span className="font-medium">
             {masterMap.get(row.original.master_eco_label_id)?.name ?? ""}
@@ -183,7 +199,8 @@ export function PdTabEco({ productId, readOnly }: PdTabEcoProps) {
                 </div>
               ),
               enableSorting: false,
-              size: 72,
+              // ปุ่ม 24px สองปุ่ม + gap 4 + padding เซลล์ 24 = 76 — 72 ทำให้ปุ่มขึ้นสองบรรทัด
+              size: 84,
               meta: {
                 headerClassName: "text-right",
                 cellClassName: "text-right",
@@ -191,7 +208,7 @@ export function PdTabEco({ productId, readOnly }: PdTabEcoProps) {
             } as ColumnDef<ProductEcoLabel>,
           ]),
     ],
-    [readOnly, dateFormat, tfl, tc, ts, masterMap],
+    [readOnly, dateFormat, tfl, tc, ts, masterMap, fixedColumns],
   );
 
   const table = useReactTable({
@@ -202,9 +219,8 @@ export function PdTabEco({ productId, readOnly }: PdTabEcoProps) {
   });
 
   return (
-    <SettingSection
+    <CompactSection
       first
-      wide
       frameless
       title={t("ecoLabelsTitle")}
       count={items.length}
@@ -222,16 +238,80 @@ export function PdTabEco({ productId, readOnly }: PdTabEcoProps) {
         ) : undefined
       }
     >
-      <DataGrid
-        table={table}
-        recordCount={items.length}
-        isLoading={isLoading}
-        emptyMessage={<EmptyComponent title={t("noEcoLabels")} />}
-      >
-        <DataGridContainer>
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+      <div ref={setGridBox}>
+        {asCards ? (
+          items.length === 0 ? (
+            isLoading ? null : (
+              <EmptyComponent title={t("noEcoLabels")} />
+            )
+          ) : (
+            <RowCards>
+              {items.map((item) => (
+                <RowCard
+                  key={item.id}
+                  title={masterMap.get(item.master_eco_label_id)?.name ?? ""}
+                  subtitle={item.certificate_no}
+                  badge={
+                    <StatusDotBadge
+                      tone={item.is_active ? "success" : "neutral"}
+                    >
+                      {item.is_active ? ts("active") : ts("inactive")}
+                    </StatusDotBadge>
+                  }
+                  actions={
+                    readOnly ? undefined : (
+                      <>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={tc("edit")}
+                          onClick={() => handleEdit(item)}
+                        >
+                          <Pencil />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={tc("delete")}
+                          onClick={() => setDeleteItem(item)}
+                        >
+                          <Trash2 />
+                        </Button>
+                      </>
+                    )
+                  }
+                >
+                  <RowCardField label={tfl("issuedDate")}>
+                    {item.issued_date
+                      ? formatDate(item.issued_date, dateFormat)
+                      : "—"}
+                  </RowCardField>
+                  <RowCardField label={tfl("expiryDate")}>
+                    {item.expiry_date
+                      ? formatDate(item.expiry_date, dateFormat)
+                      : "—"}
+                  </RowCardField>
+                </RowCard>
+              ))}
+            </RowCards>
+          )
+        ) : (
+          <DataGrid
+            table={table}
+            recordCount={items.length}
+            isLoading={isLoading}
+            // headerSticky: หัวตารางได้พื้นเดียวกับตารางหน้ารายการ (bg-background) ไม่งั้นหัวโปร่งเห็นพื้นขาวของกรอบ
+            tableLayout={{ headerSticky: true }}
+            emptyMessage={<EmptyComponent title={t("noEcoLabels")} />}
+          >
+            <DataGridContainer>
+              <DataGridTable />
+            </DataGridContainer>
+          </DataGrid>
+        )}
+      </div>
 
       <ProductEcoLabelDialog
         open={dialogOpen}
@@ -252,6 +332,6 @@ export function PdTabEco({ productId, readOnly }: PdTabEcoProps) {
         isPending={deleteEcoLabel.isPending}
         onConfirm={handleConfirmDelete}
       />
-    </SettingSection>
+    </CompactSection>
   );
 }
