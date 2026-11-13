@@ -62,7 +62,8 @@ export function ListCardSkeleton({
 interface ListCardProps {
   readonly title: ReactNode;
   readonly badge?: ReactNode;
-  readonly onOpen: () => void;
+  /** ไม่ส่ง = การ์ดดูอย่างเดียว ไม่เป็นปุ่ม ไม่มี hover/focus แบบกดได้ */
+  readonly onOpen?: () => void;
   /**
    * ส่งมาแล้วได้ปุ่มลบมาตรฐานท้าย footer; ไม่ส่ง = ลบไม่ได้
    *
@@ -274,13 +275,13 @@ export function ListCard({
   const handleClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest("button")) return;
-    onOpen();
+    onOpen?.();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      onOpen();
+      onOpen?.();
     }
   };
 
@@ -289,11 +290,15 @@ export function ListCard({
 
   return (
     <Card
-      role="button"
-      tabIndex={0}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-      className="hover:border-primary/40 focus-visible:ring-ring cursor-pointer gap-0 overflow-hidden py-0 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+      role={onOpen ? "button" : undefined}
+      tabIndex={onOpen ? 0 : undefined}
+      onClick={onOpen ? handleClick : undefined}
+      onKeyDown={onOpen ? handleKeyDown : undefined}
+      className={cn(
+        "gap-0 overflow-hidden py-0",
+        onOpen &&
+          "hover:border-primary/40 focus-visible:ring-ring cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none",
+      )}
     >
       <CardHeader className="gap-0 px-3.5 py-3">
         {/* min-w-0 ต้องมีทั้งตัวนี้และตัว title — CardHeader เป็น grid ที่คอลัมน์

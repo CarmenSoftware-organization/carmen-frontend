@@ -1818,6 +1818,8 @@
       "PERIOD_COUNTING_NOT_EDITABLE": "A stock count is in progress for this inventory period, so it can't be edited or deleted.",
       "PERIOD_CURRENT_NOT_EDITABLE": "The current inventory period can't be edited or deleted.",
       "PERIOD_STATUS_VIA_PERIOD_END_ONLY": "An inventory period's status can only be changed on the Period End page.",
+      "PERIOD_DATES_NOT_EDITABLE": "Period dates are set by the system and cannot be edited.",
+      "PERIOD_CREATE_ONLY_WHEN_EMPTY": "Periods are created automatically when a period is closed.",
       "COMMON_DOC_VERSION_REQUIRED": "This record is out of date. Refresh the page and try again.",
       "COMMON_COUNT_MUST_BE_POSITIVE": "The number of periods must be a whole number greater than 0.",
       "CREDIT_NOTE_LINE_ALREADY_CREDITED": "Line {line} ({product}) has already been credited on this goods receive note by another credit note. Each product on a receipt can be credited once.",
@@ -3489,10 +3491,7 @@
     "inventoryPeriod": {
       "entity": "Inventory Period",
       "title": "Inventory Period",
-      "desc": "Inventory periods — open one to post into, close it when the month is done.",
-      "add": "Add Inventory Period",
-      "deleteTitle": "Delete Inventory Period",
-      "deleteConfirm": "Are you sure you want to delete inventory period FY{year}/M{month}? This action cannot be undone.",
+      "desc": "Period dates are set by the system. New periods are created when a period is closed.",
       "period": "Inventory Period",
       "fiscalYear": "Fiscal Year",
       "fiscalMonth": "Fiscal Month",
@@ -3516,7 +3515,10 @@
       "nextYear": "Next fiscal year",
       "generateTitle": "Top up open periods to 12?",
       "generateDesc": "{open} periods are open now. This creates {create} more monthly periods after the latest one, each starting on day 1.",
-      "generateNothing": "12 periods are already open"
+      "generateNothing": "12 periods are already open",
+      "emptyTitle": "No periods yet",
+      "emptyDesc": "Generate the first 12 periods to start.",
+      "emptyAction": "Generate periods"
     },
     "configEmail": {
       "title": "Email Configuration",

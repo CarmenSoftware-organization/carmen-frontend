@@ -10,8 +10,6 @@ import { getInventoryPeriodPhase } from "./inventory-period-phase";
 
 interface Props {
   readonly item: InventoryPeriod;
-  readonly onEdit: (item: InventoryPeriod) => void;
-  readonly onDelete?: (item: InventoryPeriod) => void;
   /** เป็นรอบปัจจุบันของ BU (`useProfile().currentPeriod`) */
   readonly isCurrent?: boolean;
   /** วันนี้ `YYYY-MM-DD` ใช้ตัดสินว่ารอบนี้ค้างปิดหรือไม่ */
@@ -28,8 +26,6 @@ interface Props {
  */
 export default function InventoryPeriodCard({
   item,
-  onEdit,
-  onDelete,
   isCurrent,
   today,
 }: Props) {
@@ -63,8 +59,6 @@ export default function InventoryPeriodCard({
           label={statusConfig?.label ?? item.status}
         />
       }
-      onOpen={() => onEdit(item)}
-      onDelete={onDelete ? () => onDelete(item) : undefined}
     >
       <ListCardRow label={t("dateRange")}>
         <span className="tabular-nums">

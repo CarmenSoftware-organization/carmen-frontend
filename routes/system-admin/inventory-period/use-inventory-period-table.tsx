@@ -2,7 +2,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { AlertTriangle } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { CellAction } from "@/components/ui/cell-action";
 import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
 import type { InventoryPeriod, InventoryPeriodStatus } from "@/types/inventory-period";
 import type { ParamsDto } from "@/types/params";
@@ -18,7 +17,6 @@ interface UseInventoryPeriodTableOptions {
   totalRecords: number;
   params: ParamsDto;
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
-  onEdit: (period: InventoryPeriod) => void;
   /** id ของรอบปัจจุบันจาก `useProfile().currentPeriod` */
   currentPeriodId?: string;
   /** วันนี้ `YYYY-MM-DD` ใช้ตัดสินว่ารอบไหนค้างปิด */
@@ -30,7 +28,6 @@ export function useInventoryPeriodTable({
   totalRecords,
   params,
   tableConfig,
-  onEdit,
   currentPeriodId,
   today,
 }: UseInventoryPeriodTableOptions) {
@@ -51,9 +48,7 @@ export function useInventoryPeriodTable({
           // data-slot = หลุดจาก line-clamp ของ DataGrid ซึ่งตั้งลูกเป็น -webkit-box
           // จน flex/gap หาย (data-grid-table.tsx ตัวครอบ clamp)
           <div data-slot="period-cell" className="flex items-center gap-2">
-            <CellAction onClick={() => onEdit(p)}>
-              <span className="tabular-nums">{p.period}</span>
-            </CellAction>
+            <span className="tabular-nums">{p.period}</span>
             {isCurrent && (
               <span className="bg-primary/10 text-primary rounded px-1.5 py-0.5 text-xs font-medium">
                 {t("current")}
