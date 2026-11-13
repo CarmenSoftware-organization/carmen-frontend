@@ -198,7 +198,6 @@ Administration — users, roles, workflows, inventory periods, running codes, ac
 |---|---|
 | `/system-admin/activity-log` | `routes/system-admin/activity-log/activity-log.route.tsx` |
 | `/system-admin/company-profile` | `routes/system-admin/company-profile/company-profile.route.tsx` |
-| `/system-admin/dashboard-dataset` | `routes/system-admin/dashboard-dataset/dashboard-dataset.route.tsx` |
 | `/system-admin/default-setting` | `routes/system-admin/default-setting/default-setting.route.tsx` |
 | `/system-admin/document` | `routes/system-admin/document/document.route.tsx` |
 | `/system-admin/email-profile` | `routes/system-admin/email-profile/email-profile.route.tsx` |

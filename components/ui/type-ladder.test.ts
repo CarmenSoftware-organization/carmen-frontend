@@ -123,13 +123,8 @@ const ALLOWED_OFF_LADDER: Record<string, number> = {
   // share. The auth screens are the one surface that is intentionally not dense —
   // DESIGN.md's display end is deliberately loose.
   "components/auth/auth-split-shell.tsx": 4,
-  "components/not-found-component.tsx": 1, // 88px "404" numeral
   "routes/dashboard/dashboard-component.tsx": 2, // 16px + 32px stat display
   "routes/inventory-management/spot-check/sc-form.tsx": 1, // 28px count display
-  // 7px inside a decorative miniature mock-UI illustration — it draws a picture of
-  // an interface rather than presenting text, so DESIGN.md's 8px floor (which is
-  // about legibility of real content) does not apply.
-  "routes/system-admin/landing-visuals.tsx": 1,
 };
 
 describe("arbitrary font sizes do not creep back", () => {
@@ -186,8 +181,9 @@ const ALLOWED_SUB_10PX: Record<string, number> = {
   // fake SQL editor, fake table rows. Scaling this type up breaks the illustration
   // — the point is that it reads as a tiny screenshot.
   // Was 20 until ca4d678 deleted the email-config module's illustration (−3), then 17
-  // until PR #568 rewrote the list-style illustrations around one shared row (−7).
-  "routes/system-admin/landing-visuals.tsx": 10,
+  // until PR #568 rewrote the list-style illustrations around one shared row (−7), then
+  // 10 until the Dashboard Dataset page and its fake-SQL illustration were removed (−4).
+  "routes/system-admin/landing-visuals.tsx": 6,
 
   // ── Digits ──
   // Uniform height, no ascenders/descenders, no diacritics; legible at 9px in a way

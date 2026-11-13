@@ -35,8 +35,6 @@ export function ModuleVisual({ visualKey }: { readonly visualKey: VisualKey }) {
       return <NotifyViz />;
     case "code":
       return <CodeViz />;
-    case "dataset":
-      return <DatasetViz />;
     case "company":
       return <CompanyViz />;
     case "settings":
@@ -341,67 +339,6 @@ function NotifyViz() {
             </span>
             <span className="text-muted-foreground text-micro-floor font-semibold">
               {tpl.c}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function DatasetViz() {
-  const cols = [
-    { n: "vendor_id", t: "string", pk: true },
-    { n: "period", t: "date", pk: false },
-    // สามแถวพอดีกรอบภาพ (h-28) — แถวที่สี่ดันหัวตารางขึ้นไปเกินขอบบนจนถูกตัด
-    { n: "total_thb", t: "number", pk: false },
-  ];
-  return (
-    <div className={VIZ_WRAP}>
-      <div className="bg-card border-border rounded-sm border px-2 py-1.5">
-        <div className="border-border-subtle flex items-center justify-between border-b pb-1">
-          <span className="text-foreground text-micro-eyebrow font-semibold">
-            vendor_spend_monthly
-          </span>
-          <span
-            className="text-micro-floor rounded-[1px] px-1.5 py-0.5 font-semibold"
-            style={{
-              background:
-                "color-mix(in oklch, var(--primary), var(--card) 80%)",
-              color: ACCENT,
-            }}
-          >
-            fresh
-          </span>
-        </div>
-        {cols.map((c, i) => (
-          <div
-            key={c.n}
-            className={`grid grid-cols-[0.875rem_1fr_auto] items-center gap-1.5 py-1 ${
-              i === cols.length - 1 ? "" : "border-border-subtle border-b"
-            }`}
-          >
-            <span
-              className="rounded-[1px] px-0.5 py-px text-center text-[0.4375rem] font-bold"
-              style={
-                c.pk
-                  ? {
-                      background:
-                        "color-mix(in oklch, var(--primary), var(--card) 80%)",
-                      color: ACCENT,
-                    }
-                  : {
-                      background: "transparent",
-                      color: "var(--muted-foreground)",
-                      border: "1px solid var(--border)",
-                    }
-              }
-            >
-              {c.pk ? "PK" : "·"}
-            </span>
-            <span className="text-foreground text-micro-eyebrow">{c.n}</span>
-            <span className="text-muted-foreground text-micro-floor">
-              {c.t}
             </span>
           </div>
         ))}

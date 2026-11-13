@@ -63,7 +63,6 @@ import {
   Landmark,
   Percent,
   BellRing,
-  Database,
   Award,
   Leaf,
   Mail,
@@ -969,16 +968,6 @@ export const moduleList: ModuleDto[] = [
         licenseFeature: "system_admin.activity_log", // app:activity-logs
         icon: Activity,
         permission: PERMISSIONS.system_admin.activity_log.view,
-      },
-      {
-        name: "dashboardDataset",
-        path: "/system-admin/dashboard-dataset",
-        licenseFeature: "dashboard.dataset", // app:dashboard-lab / app:datasets
-        icon: Database,
-        // เส้นคั่นเคยมาจาก notificationTemplate ที่เคยอยู่เหนือมัน — ย้ายตัวนั้นไป
-        // ใต้ workflow แล้ว ถ้าไม่ถือเส้นเอง มันจะไหลไปติดกลุ่ม activity
-        separatorBefore: true,
-        permission: PERMISSIONS.dashboard.dataset.view,
       },
     ],
   },
