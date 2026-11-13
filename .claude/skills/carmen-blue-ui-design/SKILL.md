@@ -96,6 +96,9 @@ profile/setting (ฟอร์ม + ตาราง `w-auto` ของ MCP tokens
   ตามข้อมูลใช้ `repeat(auto-fit, minmax(…, 1fr))` วัดด้วยขอบขวาของรายการสุดท้ายเทียบกับขอบขวา
   ของกล่อง ทุกขนาดจอ
 - **skeleton ต้องเป็นโครงเดียวกับหน้าจริง** ไม่งั้นเนื้อหากระโดดตอนข้อมูลมา
+- **วัดขนาดจอครบไม่ได้แปลว่าฟอร์มใช้ได้** — ฟอร์มที่ผูก `values` กับ query ต้องมี
+  `resetOptions: { keepDirtyValues: true }` และ mutation ต้อง `setQueryData` ก่อน invalidate
+  ไม่งั้นแก้ค่าหลัง Save ไม่กี่วินาทีแล้วปุ่ม Save ค้าง disabled วิธีลอง → `verify.md` §ตรวจการกดจริง
 - **`resize_window` ของ Chrome extension เชื่อไม่ได้** — รายงานสำเร็จแต่ viewport ไม่เปลี่ยน
   ใช้ iframe ตาม `verify.md`
 - **หน้าที่มี learning เดิมกำหนด layout ไว้** (เช่น Ask AI) — `trail check` จะแดง ให้บันทึก
