@@ -1,9 +1,8 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   CalendarPlus,
   Download,
   MoreHorizontal,
-  Plus,
   Printer,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -43,12 +42,6 @@ import {
 import { ErrorState } from "@/components/ui/error-state";
 import EmptyComponent from "@/components/empty-component";
 import { StatusFilter } from "@/components/ui/status-filter";
-// แทน next/dynamic ด้วย React.lazy (code-split dialog chunk เหมือนเดิม)
-const InventoryPeriodDialog = lazy(() =>
-  import("./inventory-period-dialog").then((mod) => ({
-    default: mod.InventoryPeriodDialog,
-  })),
-);
 import { cn } from "@/lib/utils";
 import { useInventoryPeriodTable } from "./use-inventory-period-table";
 import { useListFilters } from "@/hooks/use-list-filters";
@@ -71,13 +64,10 @@ export default function InventoryPeriodComponent() {
   const generateNext = useGenerateNextInventoryPeriod();
   const { exportInventoryPeriod, isExporting } = useExportInventoryPeriod();
   const isMobile = useIsMobile();
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
   const { currentPeriod } = useProfile();
   const today = todayDateInput();
-  const [editInventoryPeriod, setEditInventoryPeriod] =
-    useState<InventoryPeriod | null>(null);
   const { params, search, setSearch, tableConfig } = useDataGridState();
   const t = useTranslations("systemAdmin.inventoryPeriod");
   const tc = useTranslations("common");
@@ -174,11 +164,6 @@ export default function InventoryPeriodComponent() {
   const openCount = allPeriods.filter((p) => p.status === "open").length;
   const toCreate = Math.max(0, GENERATE_TARGET - openCount);
 
-  const openEdit = (period: InventoryPeriod) => {
-    setEditInventoryPeriod(period);
-    setDialogOpen(true);
-  };
-
   const periods = useInfiniteScroll ? grid.items : (data?.data ?? []);
   const totalRecords = useInfiniteScroll
     ? grid.totalRecords
@@ -189,7 +174,6 @@ export default function InventoryPeriodComponent() {
     totalRecords,
     params,
     tableConfig,
-    onEdit: openEdit,
     currentPeriodId: currentPeriod?.id,
     today,
   });
@@ -203,19 +187,8 @@ export default function InventoryPeriodComponent() {
       count={totalRecords}
       actions={
         <div className="flex w-full items-center gap-2 sm:w-auto">
-          <Button
-            size="sm"
-            className="flex-1 sm:flex-none"
-            onClick={() => {
-              setEditInventoryPeriod(null);
-              setDialogOpen(true);
-            }}
-          >
-            <Plus aria-hidden="true" />
-            {t("add")}
-          </Button>
-          {/* งานรอง (เติมรอบ/ส่งออก/พิมพ์) อยู่ในเมนูเดียวกันทุกขนาดจอ — หน้า config
-              ที่เปิดเดือนละครั้งไม่ควรมีปุ่มน้ำหนักเท่ากันสี่ปุ่มแย่งสายตา */}
+          {/* ไม่มีปุ่ม "เพิ่ม" — รอบใหม่เกิดจากการปิดงวด วันที่กำหนดโดยระบบ
+              งานที่เหลือ (เติมรอบ/ส่งออก/พิมพ์) อยู่ในเมนูเดียวกันทุกขนาดจอ */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -267,7 +240,6 @@ export default function InventoryPeriodComponent() {
               currentPeriodId={currentPeriod?.id}
               currentFiscalYear={currentPeriod?.fiscal_year}
               today={today}
-              onSelect={openEdit}
             />
           )}
 
@@ -297,7 +269,6 @@ export default function InventoryPeriodComponent() {
                 <InventoryPeriodCard
                   key={p.id}
                   item={p}
-                  onEdit={openEdit}
                   isCurrent={p.id === currentPeriod?.id}
                   today={today}
                 />
@@ -335,14 +306,6 @@ export default function InventoryPeriodComponent() {
           </DataGridContainer>
         </DataGrid>
       )}
-
-      <Suspense fallback={null}>
-        <InventoryPeriodDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          period={editInventoryPeriod}
-        />
-      </Suspense>
 
       <ConfirmDialog
         open={generateOpen}

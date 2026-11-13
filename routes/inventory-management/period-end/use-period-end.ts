@@ -102,9 +102,11 @@ export function useClosePeriodEnd() {
       httpClient.post(API_ENDPOINTS.PERIOD_ENDS(buCode)),
     // ปิดงวดตั้งรอบตรวจนับทุกอันเป็น completed ด้วย — ถ้าไม่ล้าง key นี้
     // หน้า Physical Count จะค้างโชว์ counting ทั้งที่งวดปิดไปแล้ว
+    // ปิดงวดแล้ว backend เติมรอบใหม่ต่อท้ายให้ครบ 12 — หน้า Inventory Period ต้องเห็นทันที
     invalidateKeys: [
       QUERY_KEYS.PERIOD_ENDS,
       QUERY_KEYS.PHYSICAL_COUNT_PERIOD_CURRENT,
+      QUERY_KEYS.INVENTORY_PERIODS,
     ],
     errorMessage: "Failed to close period end",
   });

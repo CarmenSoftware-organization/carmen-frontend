@@ -41,7 +41,6 @@ interface Props {
   readonly currentPeriodId?: string;
   readonly currentFiscalYear?: number;
   readonly today: string;
-  readonly onSelect: (period: InventoryPeriod) => void;
 }
 
 /**
@@ -56,7 +55,6 @@ export function InventoryPeriodTimeline({
   currentPeriodId,
   currentFiscalYear,
   today,
-  onSelect,
 }: Props) {
   const t = useTranslations("systemAdmin.inventoryPeriod");
   const locale = useIntlLocale();
@@ -184,14 +182,16 @@ export function InventoryPeriodTimeline({
             <li key={month} className="min-w-0">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={() => onSelect(p)}
+                  {/* ไม่ใช่ปุ่ม — รอบแก้ด้วยมือไม่ได้ จึงไม่มีอะไรให้เปิด · ยัง focus ได้
+                      เพื่อให้คีย์บอร์ดอ่าน tooltip (ช่วงวันที่) ได้เหมือนเมาส์ */}
+                  <div
+                    role="img"
+                    tabIndex={0}
                     aria-current={isCurrent ? "true" : undefined}
                     aria-label={`${p.period} · ${status}${isCurrent ? ` · ${t("current")}` : ""}`}
                     className={cn(
-                      "flex w-full cursor-pointer flex-col items-center gap-1 rounded-md px-0.5 pt-0.5 pb-1 text-xs outline-none",
-                      "hover:bg-muted focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+                      "flex w-full flex-col items-center gap-1 rounded-md px-0.5 pt-0.5 pb-1 text-xs outline-none",
+                      "focus-visible:ring-ring/50 focus-visible:ring-[3px]",
                       isCurrent && "bg-primary/10 ring-primary ring-1",
                     )}
                   >
@@ -210,7 +210,7 @@ export function InventoryPeriodTimeline({
                     <span
                       className={cn("h-2 w-full rounded-sm", PHASE_BAR[phase])}
                     />
-                  </button>
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent>
                   <span className="font-medium tabular-nums">{p.period}</span>

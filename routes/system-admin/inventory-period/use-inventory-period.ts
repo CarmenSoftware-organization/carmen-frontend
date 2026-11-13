@@ -8,31 +8,20 @@ import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { QUERY_KEYS } from "@/constant/query-keys";
 import type {
   InventoryPeriod,
-  CreateInventoryPeriodDto,
   GenerateNextInventoryPeriodDto,
 } from "@/types/inventory-period";
 import type { ParamsDto } from "@/types/params";
 
-const crud = createConfigCrud<InventoryPeriod, CreateInventoryPeriodDto>({
+// อ่านอย่างเดียว — รอบสร้าง/แก้/ลบด้วยมือจากหน้านี้ไม่ได้ วันที่กำหนดโดยระบบ และรอบใหม่
+// เกิดจากการปิดงวด (backend เติมรอบที่เปิดอยู่ให้ครบ 12) จึงไม่ export hook create/update/delete
+const crud = createConfigCrud<InventoryPeriod, never>({
   queryKey: QUERY_KEYS.INVENTORY_PERIODS,
   endpoint: API_ENDPOINTS.INVENTORY_PERIODS,
   label: "inventory period",
-  updateMethod: "PATCH",
-  // backend ของรอบยังตอบบางกรณีเป็นข้อความดิบไม่มีรหัส catalog (ปี/เดือนซ้ำ,
-  // วันที่ไม่ถูกต้อง) — ให้ toast แสดงข้อความนั้นแทนข้อความกลางที่ผิดเรื่อง
-  mutationMeta: { preferServerMessage: true },
 });
 
 export const useInventoryPeriod = crud.useList;
 export const useInventoryPeriodAll = crud.useListAll;
-
-export const useInventoryPeriodById = crud.useById;
-
-export const useCreateInventoryPeriod = crud.useCreate;
-
-export const useUpdateInventoryPeriod = crud.useUpdate;
-
-export const useDeleteInventoryPeriod = crud.useDelete;
 
 /**
  * Hook สำหรับ generate InventoryPeriod ถัดไปแบบ batch ตามการตั้งค่าที่ระบุ
