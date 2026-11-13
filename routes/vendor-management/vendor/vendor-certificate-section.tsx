@@ -189,9 +189,7 @@ export function VendorCertificateSection({
         size: 100,
         cell: ({ row }) => <StatusBadge active={!!row.original.is_active} />,
         enableSorting: false,
-        meta: fixedColumns
-          ? { grow: true }
-          : { headerClassName: "text-center", cellClassName: "text-center" },
+        meta: fixedColumns ? { grow: true } : undefined,
       },
       ...(readOnly
         ? []

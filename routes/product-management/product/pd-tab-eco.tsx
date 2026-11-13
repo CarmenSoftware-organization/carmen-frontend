@@ -165,10 +165,6 @@ export function PdTabEco({ productId, readOnly }: PdTabEcoProps) {
           </StatusDotBadge>
         ),
         enableSorting: false,
-        meta: {
-          headerClassName: "text-center",
-          cellClassName: "text-center",
-        },
       },
       ...(readOnly
         ? []

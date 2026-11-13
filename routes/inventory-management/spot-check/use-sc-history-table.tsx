@@ -42,7 +42,7 @@ export function useScHistoryTable({
   const { dateFormat } = useProfile();
   const isMobile = useIsMobile() === true;
 
-  const renderStatus = (sc: SpotCheck, className: string) => (
+  const renderStatus = (sc: SpotCheck, className?: string) => (
     <StatusChip
       status={statusIconKey(sc.doc_status)}
       label={ts(sc.doc_status)}
@@ -173,24 +173,13 @@ export function useScHistoryTable({
     {
       accessorKey: "doc_status",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("status")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
-      // สีมาจากไอคอนอย่างเดียว ข้อความจาง — แบบเดียวกับคอลัมน์สถานะของ GRN
-      cell: ({ row }) =>
-        renderStatus(
-          row.original,
-          "text-muted-foreground flex w-full justify-center [&_svg]:text-current!",
-        ),
+      cell: ({ row }) => renderStatus(row.original),
       enableSorting: false,
       size: 130,
       meta: {
         headerTitle: tfl("status"),
-        headerClassName: "text-center",
-        cellClassName: "text-center",
         skeleton: columnSkeletons.badge,
       },
     },
@@ -208,11 +197,7 @@ export function useScHistoryTable({
             <CellAction onClick={() => onOpen(sc)} className="min-w-0 truncate">
               {sc.spot_check_no}
             </CellAction>
-            {renderStatus(
-              sc,
-              // สีเดียวกับคอลัมน์สถานะบนจอใหญ่ — ไอคอนรับสีจากข้อความ
-              "text-muted-foreground ml-auto shrink-0 [&_svg]:text-current!",
-            )}
+            {renderStatus(sc, "ml-auto shrink-0")}
           </div>
           <div className="text-muted-foreground text-micro flex min-w-0 items-center gap-1.5">
             <span className="min-w-0 truncate">{sc.location_name}</span>

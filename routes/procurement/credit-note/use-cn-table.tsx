@@ -75,11 +75,7 @@ export function useCnTable({
     {
       accessorKey: "credit_note_type",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("type")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("type")} />
       ),
       cell: ({ row }) => {
         const type = row.original.credit_note_type;
@@ -89,7 +85,7 @@ export function useCnTable({
             status={type}
             label={config?.label ?? type}
             // ชนิดใบไม่มีสี — สีสงวนไว้ให้สถานะซึ่งเป็นสิ่งที่คนกวาดตาหาจริง ๆ
-            className="text-muted-foreground flex w-full justify-center whitespace-nowrap"
+            className="text-muted-foreground whitespace-nowrap"
           />
         );
       },
@@ -98,7 +94,6 @@ export function useCnTable({
       meta: {
         headerTitle: tfl("type"),
         skeleton: columnSkeletons.text,
-        cellClassName: "text-center",
       },
     },
     {

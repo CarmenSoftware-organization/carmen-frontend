@@ -140,14 +140,14 @@ export function StockReplLocation({
       cell: ({ row }) => {
         const config = STATUS_CONFIG[row.original.status];
         return (
-          <StatusDotBadge tone={config.tone} size="xs">
+          <StatusDotBadge tone={config.tone} size="sm">
             {config.label}
           </StatusDotBadge>
         );
       },
       enableSorting: false,
-      size: 80,
-      meta: { headerClassName: "text-center", cellClassName: "text-center" },
+      // ชิป sm: จุด + "Critical" ~76px + padding เซลล์ 24
+      size: 100,
     },
   ];
 
@@ -166,7 +166,7 @@ export function StockReplLocation({
             <div className="min-w-0 flex-1">
               <ProductInfo product={p} />
             </div>
-            <StatusDotBadge tone={config.tone} size="xs">
+            <StatusDotBadge tone={config.tone} size="sm">
               {config.label}
             </StatusDotBadge>
           </div>
