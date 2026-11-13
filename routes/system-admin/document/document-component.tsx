@@ -23,7 +23,8 @@ import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CardSkeletonGrid } from "@/components/loader/card-skeleton";
 import DocumentCard from "./document-card";
-import DocumentSummaryBar from "./document-summary-bar";
+import DocumentStorageBar from "./document-storage-bar";
+import { DocumentMeasureButton } from "./document-measure-button";
 import DocumentSummarySheet from "./document-summary-sheet";
 import type { BulkDeleteDryRunResult, DocumentFile } from "@/types/document";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
@@ -54,6 +55,9 @@ import { DocumentIconGrid } from "./document-icon-grid";
 import { DocumentPreviewView } from "./document-preview-view";
 import { DocumentLoadMore } from "./document-load-more";
 import { useElementWidth } from "@/hooks/use-element-width";
+import { useStorageUsage } from "@/hooks/use-storage-usage";
+import { useCan } from "@/hooks/use-can";
+import { PERMISSIONS } from "@/constant/permissions";
 
 type DocumentDisplayMode = "list" | "grid" | "preview";
 const DOCUMENT_DISPLAY_MODES: readonly DocumentDisplayMode[] = [
@@ -92,9 +96,13 @@ export default function DocumentComponent() {
   const [setGridBox, gridBoxWidth] = useElementWidth();
   const { data: summary, isLoading: isSummaryLoading } = useDocumentSummary();
   const hasSummary = !!summary && summary.total_count > 0;
-  // ช่องแถบสรุปถือว่า "มีของ" ตั้งแต่ตอนโหลด (มี skeleton แสดงอยู่) ไม่ใช่แค่ตอนมีข้อมูลจริง
-  // ใช้ค่านี้กับ max-h ของตารางเท่านั้น ส่วน Sheet ยังต้องใช้ hasSummary เพราะต้องการข้อมูลจริง
-  const summarySlotVisible = hasSummary || isSummaryLoading;
+  const { data: usage, isLoading: isUsageLoading } = useStorageUsage();
+  const { can } = useCan();
+  // กล่องพื้นที่ (โควตา + แจกแจง) ถือว่า "มีของ" ตั้งแต่ตอนโหลด (มี skeleton แสดงอยู่) ไม่ใช่แค่
+  // ตอนมีข้อมูลจริง ใช้ค่านี้กับ max-h ของตารางเท่านั้น ส่วน Sheet ยังต้องใช้ hasSummary
+  // เพราะต้องการข้อมูลจริง
+  const storageSlotVisible =
+    hasSummary || isSummaryLoading || isUsageLoading || !!usage?.kinds.length;
 
   // สลับ BU แล้ว summary หายไปกลางอากาศ (query key เปลี่ยน) ทำให้ Sheet unmount โดยไม่เคยเรียก
   // onOpenChange(false) — ถ้าไม่รีเซ็ตตรงนี้ summarySheetOpen จะค้างเป็น true แล้วพอสลับไป BU
@@ -312,6 +320,7 @@ export default function DocumentComponent() {
             onChange={handleUpload}
             className="hidden"
           />
+          {can(PERMISSIONS.system_admin.view) && <DocumentMeasureButton />}
           <Button
             size="sm"
             onClick={() => fileInputRef.current?.click()}
@@ -324,9 +333,11 @@ export default function DocumentComponent() {
       }
       toolbar={
         <>
-          <DocumentSummaryBar
+          <DocumentStorageBar
+            usage={usage}
+            isUsageLoading={isUsageLoading}
             summary={summary}
-            isLoading={isSummaryLoading}
+            isSummaryLoading={isSummaryLoading}
             onViewAll={() => setSummarySheetOpen(true)}
           />
 
@@ -394,14 +405,15 @@ export default function DocumentComponent() {
             <DataGridContainer
               className={cn(
                 "flex flex-col",
-                // แถบสรุปสูงประมาณ 4rem รวมช่องไฟ (ทั้ง skeleton ตอนโหลดและแถบจริง) — สี่เคส
-                // ตามว่าช่องแถบสรุปมีของ (summarySlotVisible: กำลังโหลดหรือมีข้อมูลแล้ว) และมี
-                // active filter หรือไม่ ใช้ summarySlotVisible ไม่ใช่ hasSummary เพราะถ้ารอข้อมูล
-                // จริงก่อนค่อยเผื่อพื้นที่ ตารางจะกระตุกตอน skeleton สลับเป็นแถบจริง
-                summarySlotVisible
+                // กล่องพื้นที่สองแถวสูง 78px + ช่องไฟ = ประมาณ 6.75rem (ทั้ง skeleton ตอนโหลดและ
+                // กล่องจริง) เผื่อเต็มสองแถวเสมอแม้เหลือแถวเดียว — สี่เคสตามว่ากล่องมีของ
+                // (storageSlotVisible: กำลังโหลดหรือมีข้อมูลแล้ว) และมี active filter หรือไม่
+                // ใช้ storageSlotVisible ไม่ใช่ hasSummary เพราะถ้ารอข้อมูลจริงก่อนค่อยเผื่อพื้นที่
+                // ตารางจะกระตุกตอน skeleton สลับเป็นกล่องจริง
+                storageSlotVisible
                   ? lf.activeFilters.length > 0
-                    ? "max-h-[calc(100vh-17rem-3rem)]"
-                    : "max-h-[calc(100vh-14rem-3rem)]"
+                    ? "max-h-[calc(100vh-19.75rem-3rem)]"
+                    : "max-h-[calc(100vh-16.75rem-3rem)]"
                   : listGridMaxH(lf.activeFilters.length > 0),
               )}
             >
