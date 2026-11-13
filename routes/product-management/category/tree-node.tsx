@@ -222,7 +222,25 @@ export function TreeNode({
           </span>
         </div>
 
-        {/* Actions — คอลัมน์สุดท้ายของแถว ต่อจากจำนวนสินค้า กว้างคงที่ (4 ปุ่ม × 20px) ชิดขวา
+        {/* ที่ว่างท้ายแถว — การ์ดกว้างพอจึงแสดงคำอธิบาย (ข้อความยาว = ช่องเดียวที่ยืด)
+            แคบกว่านั้นคำอธิบายอ่านได้ในหน้าต่างแก้ไข */}
+        <div className="flex h-full min-w-0 flex-1 items-center">
+          {node.description && (
+            <span
+              className="text-muted-foreground/60 hidden truncate pl-6 text-xs @7xl:block"
+              title={node.description}
+            >
+              {highlight(node.description)}
+            </span>
+          )}
+          <div
+            aria-hidden
+            className="h-full flex-1"
+            onClick={() => toggleExpand(node.id)}
+          />
+        </div>
+
+        {/* Actions — ชิดขอบขวาของการ์ด หลังที่ว่างท้ายแถว กว้างคงที่ (4 ปุ่ม × 20px) ชิดขวา
               item group มี 3 ปุ่มจึงตรงแนวกับแถวอื่น · จองที่ไว้ตอนซ่อน (invisible) แถวจึงไม่ขยับ
               โผล่ตอน hover/โฟกัสคีย์บอร์ด/แถวที่เลือก และขึ้นตลอดบนจอสัมผัส */}
         <div
@@ -271,24 +289,6 @@ export function TreeNode({
           >
             <Trash2 className="h-3 w-3" />
           </button>
-        </div>
-
-        {/* ที่ว่างท้ายแถว — การ์ดกว้างพอจึงแสดงคำอธิบาย (ข้อความยาว = ช่องเดียวที่ยืด)
-            แคบกว่านั้นคำอธิบายอ่านได้ในหน้าต่างแก้ไข */}
-        <div className="flex h-full min-w-0 flex-1 items-center">
-          {node.description && (
-            <span
-              className="text-muted-foreground/60 hidden truncate pl-6 text-xs @7xl:block"
-              title={node.description}
-            >
-              {highlight(node.description)}
-            </span>
-          )}
-          <div
-            aria-hidden
-            className="h-full flex-1"
-            onClick={() => toggleExpand(node.id)}
-          />
         </div>
       </div>
 
