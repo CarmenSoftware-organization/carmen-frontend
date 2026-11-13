@@ -1,7 +1,385 @@
 {
-  "current": "2.5.61",
-  "generated_at": "2026-11-12T23:38:26.195Z",
+  "current": "2.6.0",
+  "generated_at": "2026-11-13T13:40:50.498Z",
   "versions": [
+    {
+      "version": "2.6.0",
+      "build": "2.6.0-build.20261113.7d477732",
+      "date": "2026-11-13",
+      "commit": "7d477732",
+      "changes": {
+        "added": [
+          {
+            "scope": "data-grid",
+            "summary": "คลิกแถวแล้วไฮไลต์ค้าง เป็นค่าเริ่มต้นของทุกตาราง",
+            "hash": "83544b5e",
+            "author": "Thammanoon Semapru",
+            "pr": 588
+          },
+          {
+            "scope": "default-setting",
+            "summary": "โหมดดูแสดงเฉพาะแบบฟอร์มที่ตั้งเอง ที่ใช้ค่าระบบรวมเป็นรายชื่อ",
+            "hash": "3ff96ea3",
+            "author": "Thammanoon Semapru",
+            "pr": 581
+          },
+          {
+            "scope": "inventory-period",
+            "summary": "ข้อความวันที่กำหนดโดยระบบ และ empty state ชี้ไปปุ่มเติมรอบ",
+            "hash": "04e1e85e",
+            "author": "Thammanoon Semapru",
+            "pr": 580
+          },
+          {
+            "scope": "inventory-period",
+            "summary": "หน้าเป็นแบบดูอย่างเดียว ลบฟอร์มเพิ่ม/แก้งวด",
+            "hash": "40da7dfd",
+            "author": "Thammanoon Semapru",
+            "pr": 580
+          },
+          {
+            "scope": "notification-template",
+            "summary": "หน้ารายละเอียดเต็มความกว้างจอ สองหมวดวางคู่กันบนจอกว้าง โหมดดูแสดงค่าเป็นข้อความ",
+            "hash": "c2196083",
+            "author": "Thammanoon Semapru",
+            "pr": 579
+          },
+          {
+            "scope": "interface",
+            "summary": "ฟอร์มตั้งค่า interface ทุกแบรนด์เต็มความกว้างจอ โหมดดูแสดงค่าเป็นข้อความ",
+            "hash": "e3b5234d",
+            "author": "Thammanoon Semapru",
+            "pr": 578
+          },
+          {
+            "scope": "role",
+            "summary": "หน้ารายละเอียดบทบาทเต็มความกว้างจอ การ์ดสิทธิ์ไหลเป็นคอลัมน์",
+            "hash": "ce6485bc",
+            "author": "Thammanoon Semapru",
+            "pr": 577
+          },
+          {
+            "scope": "document",
+            "summary": "แสดงโควตาพื้นที่และปุ่มวัดใหม่ในหน้า Document",
+            "hash": "9cefd5d6",
+            "author": "Thammanoon Semapru",
+            "pr": 576
+          },
+          {
+            "scope": "layout",
+            "summary": "หน้ารายละเอียดผู้ใช้และ vendor เต็มความกว้างจอ ปุ่มบนหัวฟอร์มบรรทัดเดียวบนมือถือ",
+            "hash": "612c363e",
+            "author": "Thammanoon Semapru",
+            "pr": 570
+          },
+          {
+            "scope": "system-admin",
+            "summary": "หน้า landing เต็มความกว้างจอ กะทัดรัด และแสดงเฉพาะของจริง",
+            "hash": "0cccb826",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "profile",
+            "summary": "หน้า Profile Settings เต็มความกว้างจอ และการ์ดคู่สูงเท่ากัน",
+            "hash": "a08dff32",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "profile",
+            "summary": "หน้า Profile เต็มความกว้างจอ ไม่มี sidebar เปล่า และ breadcrumb ขึ้นชื่อถูก",
+            "hash": "619bab89",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "workflow",
+            "summary": "หน้า landing ของ Workflow แทนการ redirect ไป Purchase Request",
+            "hash": "9554413b",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "dimension",
+            "summary": "ลบ sequence ออกจากหน้า Dimension เพิ่มคอลัมน์ลำดับแถว # และเปลี่ยนหัวคอลัมน์เป็น Code",
+            "hash": "4f5361ed",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "extra-cost",
+            "summary": "ตาราง Extra Cost ชื่อกว้างคงที่ สถานะชิดซ้ายติดชื่อ และ ConfigListTemplate ส่งความกว้างกล่องให้ตาราง",
+            "hash": "e94a4516",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "activity-log",
+            "summary": "ตาราง Activity Monitor คอลัมน์สั้นกว้างคงที่ และซ่อนคอลัมน์รองตามความกว้างกล่อง",
+            "hash": "02ce4b48",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "user-activity",
+            "summary": "ตาราง User Activity คอลัมน์สั้นกว้างคงที่ และซ่อนคอลัมน์รองตามความกว้างกล่อง",
+            "hash": "49318859",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "user",
+            "summary": "ขนาดคอลัมน์ตามความกว้างกล่อง แถบค้นหาให้ View/Filter ติดช่องค้น และกติกาใหม่ใน skill carmen-blue-ui-design",
+            "hash": "58dab640",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "user",
+            "summary": "ตาราง Users ชื่อ/อีเมลกว้างคงที่ ปุ่ม View และ Filter อยู่ติดช่องค้น และบันทึกกติกาลง skill",
+            "hash": "030409a6",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "storage",
+            "summary": "หน้า Storage เต็มความกว้างจอ แถบการใช้งานวางเคียงกัน และไฟล์แนบแยกตามประเภทเป็นกริด",
+            "hash": "26ab753e",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "document",
+            "summary": "ตาราง Document คอลัมน์สั้นกว้างคงที่ ซ่อนคอลัมน์รองตามความกว้างกล่อง และแถบสรุปชิดซ้าย",
+            "hash": "6b728815",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "running-code",
+            "summary": "ตาราง Running Code คอลัมน์ชื่อกว้างคงที่ เพิ่มคอลัมน์ตัวอย่างเลขที่เอกสาร และหมายเหตุยืดตามจอ",
+            "hash": "9fc53e9e",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "role",
+            "summary": "ตาราง Roles คอลัมน์ชื่อกว้างคงที่ จำนวนสิทธิ์อยู่ติดชื่อบนจอกว้าง",
+            "hash": "bf5793ea",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "email-template",
+            "summary": "ตารางให้หัวเรื่องยืดหดคอลัมน์เดียว และซ้อนเป็นรายการบนกล่องแคบ",
+            "hash": "6f2ec9c7",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "email-profile",
+            "summary": "ตารางคอลัมน์กว้างเท่าเนื้อหา และซ้อนเป็นรายการบนกล่องแคบ",
+            "hash": "e862457f",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "interface",
+            "summary": "หน้ารายการ Interfaces เต็มความกว้างจอ หมวดเรียงเป็นคอลัมน์",
+            "hash": "1648735b",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "ask-ai",
+            "summary": "จัดหน้าเต็มความกว้างจอ provider เป็นช่องในกริด ตัวที่ขยายกินเต็มแถว",
+            "hash": "8a51ba38",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "default-setting",
+            "summary": "จัดหน้าเต็มความกว้างจอแบบกะทัดรัด ค่าตั้งเป็นช่องในกริดหลายคอลัมน์",
+            "hash": "112cb746",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "company-profile",
+            "summary": "ฟอร์มเต็มความกว้างจอแบบกะทัดรัด ปรับคอลัมน์ตามขนาดจอ",
+            "hash": "c5f77c97",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "add cost center management and dimension preview components",
+            "hash": "c9ca290b",
+            "author": "llHorizonll",
+            "pr": null
+          }
+        ],
+        "fixed": [
+          {
+            "scope": "status",
+            "summary": "คอลัมน์ชนิดเอกสารและสถานะในตารางแท็บชิดซ้าย และยกเว้น prefix สิทธิ์ที่ backend ยังไม่มี action เขียน",
+            "hash": "682d692e",
+            "author": "Thammanoon Semapru",
+            "pr": 593
+          },
+          {
+            "scope": "status",
+            "summary": "ชิปสถานะแบบเดียวกันในการ์ดและหัวฟอร์ม และคอลัมน์สถานะชิดซ้ายทุกตาราง",
+            "hash": "29e9c0a7",
+            "author": "Thammanoon Semapru",
+            "pr": 592
+          },
+          {
+            "scope": "data-grid",
+            "summary": "คอลัมน์สถานะทุกตารางเป็นชิปเทา + จุดสีแบบเดียวกัน",
+            "hash": "3b70d1fb",
+            "author": "Thammanoon Semapru",
+            "pr": 591
+          },
+          {
+            "scope": "vendor",
+            "summary": "ตารางรายการเลือกคอลัมน์ตามความกว้างกล่อง ชื่อผู้ขายรับที่ว่างที่เหลือ",
+            "hash": "99c7ab59",
+            "author": "Thammanoon Semapru",
+            "pr": 590
+          },
+          {
+            "scope": "eco",
+            "summary": "ตารางรายการ Code/Name กว้างคงที่ Description รับที่ว่างที่เหลือ",
+            "hash": "d95a46ab",
+            "author": "Thammanoon Semapru",
+            "pr": 589
+          },
+          {
+            "scope": "product",
+            "summary": "หน้ารายละเอียดสินค้าเต็มความกว้างจอ กะทัดรัด และตารางในแท็บใช้ style มาตรฐาน",
+            "hash": "6a92eeaf",
+            "author": "Thammanoon Semapru",
+            "pr": 587
+          },
+          {
+            "scope": "category",
+            "summary": "ปุ่มของแถวชิดขอบขวาของการ์ด หลังที่ว่างท้ายแถว",
+            "hash": "73122f06",
+            "author": "Thammanoon Semapru",
+            "pr": 586
+          },
+          {
+            "scope": "category",
+            "summary": "ต้นไม้หมวดหมู่ตัดสินจากความกว้างการ์ด ชื่อไม่หายที่จอ 1024 ค่าอยู่ติดชื่อ ไฮไลต์แถวที่เลือก และย้ายปุ่มไปท้ายแถว",
+            "hash": "5e1baadf",
+            "author": "Thammanoon Semapru",
+            "pr": 586
+          },
+          {
+            "scope": "dashboard",
+            "summary": "skeleton ของ dashboard config และ operation-plan กว้างเท่าการ์ด KPI",
+            "hash": "20390c77",
+            "author": "Thammanoon Semapru",
+            "pr": 583
+          },
+          {
+            "scope": "dashboard",
+            "summary": "กริด widget แบ่งคอลัมน์ตามความกว้างกล่อง ไม่ใช่ความกว้างจอ",
+            "hash": "7fea6574",
+            "author": "Thammanoon Semapru",
+            "pr": 582
+          },
+          {
+            "scope": "notification-template",
+            "summary": "คำอธิบายกินช่องเดียว ไม่เหลือช่องว่างข้างสถานะบน Full HD",
+            "hash": "913fe61f",
+            "author": "Thammanoon Semapru",
+            "pr": 579
+          },
+          {
+            "scope": "document",
+            "summary": "ปุ่มวัดใหม่รีเซ็ตเมื่อสลับ BU และกล่องพื้นที่คงสองแถวบนกล่องแคบ",
+            "hash": "cf5f9f81",
+            "author": "Thammanoon Semapru",
+            "pr": 576
+          },
+          {
+            "scope": "system-admin",
+            "summary": "ลบหน้า Dashboard Dataset, หน้า 404 อยู่ใน shell และป้ายหัว Workflow ภาษาไทยบนมือถือ",
+            "hash": "4673a237",
+            "author": "Thammanoon Semapru",
+            "pr": 575
+          },
+          {
+            "scope": "workflow",
+            "summary": "ป้ายบนหัว Workflow ไม่ล้นไปทางปุ่มที่ tablet และ skill carmen-blue-ui-design เป็นภาษาอังกฤษ",
+            "hash": "1653bd3c",
+            "author": "Thammanoon Semapru",
+            "pr": 574
+          },
+          {
+            "scope": "workflow",
+            "summary": "ป้ายจำนวนเอกสารบนหัว Workflow อยู่บรรทัดเดียวบนมือถือ",
+            "hash": "51f09ab7",
+            "author": "Thammanoon Semapru",
+            "pr": 573
+          },
+          {
+            "scope": "workflow",
+            "summary": "ปุ่มบนหัวฟอร์ม Workflow โหมดแก้อยู่บรรทัดเดียวที่ 360px ภาษาไทย",
+            "hash": "b048fdc2",
+            "author": "Thammanoon Semapru",
+            "pr": 572
+          },
+          {
+            "scope": "layout",
+            "summary": "ปุ่มเฉพาะหน้าบนหัวฟอร์มเหลือไอคอนบนมือถือ และ Company Profile ไม่โชว์ค่าเก่าหลัง Save",
+            "hash": "15fd4dcc",
+            "author": "Thammanoon Semapru",
+            "pr": 571
+          },
+          {
+            "scope": "profile",
+            "summary": "แก้ช่องหลังกด Save ไม่กี่วินาทีแล้วปุ่ม Save ค้างกดไม่ได้",
+            "hash": "365c2805",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "layout",
+            "summary": "footer ไม่ทับกันที่ mobile/tablet และตาราง Inventory Period ไม่กระจายบนจอกว้าง",
+            "hash": "8e74391a",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "workflow",
+            "summary": "ติ๊กเพิ่ม/เอาผู้ใช้ออกใน stage ต้องนับเป็นการแก้ฟอร์ม",
+            "hash": "77f49131",
+            "author": "Khafang",
+            "pr": null
+          }
+        ],
+        "changed": [
+          {
+            "scope": "system-admin",
+            "summary": "ลบหน้า Storage ให้เหลือหน้า Document หน้าเดียว",
+            "hash": "60141ab7",
+            "author": "Thammanoon Semapru",
+            "pr": 576
+          },
+          {
+            "scope": null,
+            "summary": "remove trail context graph configurations and rules",
+            "hash": "d18ea87d",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          }
+        ]
+      }
+    },
     {
       "version": "2.5.61",
       "build": "2.5.61-build.20261112.cf5f4ef3",

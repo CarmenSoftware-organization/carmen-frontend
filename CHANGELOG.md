@@ -4,6 +4,66 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.6.0] - 2026-11-13
+
+### Added
+- **data-grid:** คลิกแถวแล้วไฮไลต์ค้าง เป็นค่าเริ่มต้นของทุกตาราง (#588) — Thammanoon Semapru `83544b5e`
+- **default-setting:** โหมดดูแสดงเฉพาะแบบฟอร์มที่ตั้งเอง ที่ใช้ค่าระบบรวมเป็นรายชื่อ (#581) — Thammanoon Semapru `3ff96ea3`
+- **inventory-period:** ข้อความวันที่กำหนดโดยระบบ และ empty state ชี้ไปปุ่มเติมรอบ (#580) — Thammanoon Semapru `04e1e85e`
+- **inventory-period:** หน้าเป็นแบบดูอย่างเดียว ลบฟอร์มเพิ่ม/แก้งวด (#580) — Thammanoon Semapru `40da7dfd`
+- **notification-template:** หน้ารายละเอียดเต็มความกว้างจอ สองหมวดวางคู่กันบนจอกว้าง โหมดดูแสดงค่าเป็นข้อความ (#579) — Thammanoon Semapru `c2196083`
+- **interface:** ฟอร์มตั้งค่า interface ทุกแบรนด์เต็มความกว้างจอ โหมดดูแสดงค่าเป็นข้อความ (#578) — Thammanoon Semapru `e3b5234d`
+- **role:** หน้ารายละเอียดบทบาทเต็มความกว้างจอ การ์ดสิทธิ์ไหลเป็นคอลัมน์ (#577) — Thammanoon Semapru `ce6485bc`
+- **document:** แสดงโควตาพื้นที่และปุ่มวัดใหม่ในหน้า Document (#576) — Thammanoon Semapru `9cefd5d6`
+- **layout:** หน้ารายละเอียดผู้ใช้และ vendor เต็มความกว้างจอ ปุ่มบนหัวฟอร์มบรรทัดเดียวบนมือถือ (#570) — Thammanoon Semapru `612c363e`
+- **system-admin:** หน้า landing เต็มความกว้างจอ กะทัดรัด และแสดงเฉพาะของจริง — Thammanoon Semapru `0cccb826`
+- **profile:** หน้า Profile Settings เต็มความกว้างจอ และการ์ดคู่สูงเท่ากัน — Thammanoon Semapru `a08dff32`
+- **profile:** หน้า Profile เต็มความกว้างจอ ไม่มี sidebar เปล่า และ breadcrumb ขึ้นชื่อถูก — Thammanoon Semapru `619bab89`
+- **workflow:** หน้า landing ของ Workflow แทนการ redirect ไป Purchase Request — Thammanoon Semapru `9554413b`
+- **dimension:** ลบ sequence ออกจากหน้า Dimension เพิ่มคอลัมน์ลำดับแถว # และเปลี่ยนหัวคอลัมน์เป็น Code — Thammanoon Semapru `4f5361ed`
+- **extra-cost:** ตาราง Extra Cost ชื่อกว้างคงที่ สถานะชิดซ้ายติดชื่อ และ ConfigListTemplate ส่งความกว้างกล่องให้ตาราง — Thammanoon Semapru `e94a4516`
+- **activity-log:** ตาราง Activity Monitor คอลัมน์สั้นกว้างคงที่ และซ่อนคอลัมน์รองตามความกว้างกล่อง — Thammanoon Semapru `02ce4b48`
+- **user-activity:** ตาราง User Activity คอลัมน์สั้นกว้างคงที่ และซ่อนคอลัมน์รองตามความกว้างกล่อง — Thammanoon Semapru `49318859`
+- **user:** ขนาดคอลัมน์ตามความกว้างกล่อง แถบค้นหาให้ View/Filter ติดช่องค้น และกติกาใหม่ใน skill carmen-blue-ui-design — Thammanoon Semapru `58dab640`
+- **user:** ตาราง Users ชื่อ/อีเมลกว้างคงที่ ปุ่ม View และ Filter อยู่ติดช่องค้น และบันทึกกติกาลง skill — Thammanoon Semapru `030409a6`
+- **storage:** หน้า Storage เต็มความกว้างจอ แถบการใช้งานวางเคียงกัน และไฟล์แนบแยกตามประเภทเป็นกริด — Thammanoon Semapru `26ab753e`
+- **document:** ตาราง Document คอลัมน์สั้นกว้างคงที่ ซ่อนคอลัมน์รองตามความกว้างกล่อง และแถบสรุปชิดซ้าย — Thammanoon Semapru `6b728815`
+- **running-code:** ตาราง Running Code คอลัมน์ชื่อกว้างคงที่ เพิ่มคอลัมน์ตัวอย่างเลขที่เอกสาร และหมายเหตุยืดตามจอ — Thammanoon Semapru `9fc53e9e`
+- **role:** ตาราง Roles คอลัมน์ชื่อกว้างคงที่ จำนวนสิทธิ์อยู่ติดชื่อบนจอกว้าง — Thammanoon Semapru `bf5793ea`
+- **email-template:** ตารางให้หัวเรื่องยืดหดคอลัมน์เดียว และซ้อนเป็นรายการบนกล่องแคบ — Thammanoon Semapru `6f2ec9c7`
+- **email-profile:** ตารางคอลัมน์กว้างเท่าเนื้อหา และซ้อนเป็นรายการบนกล่องแคบ — Thammanoon Semapru `e862457f`
+- **interface:** หน้ารายการ Interfaces เต็มความกว้างจอ หมวดเรียงเป็นคอลัมน์ — Thammanoon Semapru `1648735b`
+- **ask-ai:** จัดหน้าเต็มความกว้างจอ provider เป็นช่องในกริด ตัวที่ขยายกินเต็มแถว — Thammanoon Semapru `8a51ba38`
+- **default-setting:** จัดหน้าเต็มความกว้างจอแบบกะทัดรัด ค่าตั้งเป็นช่องในกริดหลายคอลัมน์ — Thammanoon Semapru `112cb746`
+- **company-profile:** ฟอร์มเต็มความกว้างจอแบบกะทัดรัด ปรับคอลัมน์ตามขนาดจอ — Thammanoon Semapru `c5f77c97`
+- add cost center management and dimension preview components — llHorizonll `c9ca290b`
+
+### Fixed
+- **status:** คอลัมน์ชนิดเอกสารและสถานะในตารางแท็บชิดซ้าย และยกเว้น prefix สิทธิ์ที่ backend ยังไม่มี action เขียน (#593) — Thammanoon Semapru `682d692e`
+- **status:** ชิปสถานะแบบเดียวกันในการ์ดและหัวฟอร์ม และคอลัมน์สถานะชิดซ้ายทุกตาราง (#592) — Thammanoon Semapru `29e9c0a7`
+- **data-grid:** คอลัมน์สถานะทุกตารางเป็นชิปเทา + จุดสีแบบเดียวกัน (#591) — Thammanoon Semapru `3b70d1fb`
+- **vendor:** ตารางรายการเลือกคอลัมน์ตามความกว้างกล่อง ชื่อผู้ขายรับที่ว่างที่เหลือ (#590) — Thammanoon Semapru `99c7ab59`
+- **eco:** ตารางรายการ Code/Name กว้างคงที่ Description รับที่ว่างที่เหลือ (#589) — Thammanoon Semapru `d95a46ab`
+- **product:** หน้ารายละเอียดสินค้าเต็มความกว้างจอ กะทัดรัด และตารางในแท็บใช้ style มาตรฐาน (#587) — Thammanoon Semapru `6a92eeaf`
+- **category:** ปุ่มของแถวชิดขอบขวาของการ์ด หลังที่ว่างท้ายแถว (#586) — Thammanoon Semapru `73122f06`
+- **category:** ต้นไม้หมวดหมู่ตัดสินจากความกว้างการ์ด ชื่อไม่หายที่จอ 1024 ค่าอยู่ติดชื่อ ไฮไลต์แถวที่เลือก และย้ายปุ่มไปท้ายแถว (#586) — Thammanoon Semapru `5e1baadf`
+- **dashboard:** skeleton ของ dashboard config และ operation-plan กว้างเท่าการ์ด KPI (#583) — Thammanoon Semapru `20390c77`
+- **dashboard:** กริด widget แบ่งคอลัมน์ตามความกว้างกล่อง ไม่ใช่ความกว้างจอ (#582) — Thammanoon Semapru `7fea6574`
+- **notification-template:** คำอธิบายกินช่องเดียว ไม่เหลือช่องว่างข้างสถานะบน Full HD (#579) — Thammanoon Semapru `913fe61f`
+- **document:** ปุ่มวัดใหม่รีเซ็ตเมื่อสลับ BU และกล่องพื้นที่คงสองแถวบนกล่องแคบ (#576) — Thammanoon Semapru `cf5f9f81`
+- **system-admin:** ลบหน้า Dashboard Dataset, หน้า 404 อยู่ใน shell และป้ายหัว Workflow ภาษาไทยบนมือถือ (#575) — Thammanoon Semapru `4673a237`
+- **workflow:** ป้ายบนหัว Workflow ไม่ล้นไปทางปุ่มที่ tablet และ skill carmen-blue-ui-design เป็นภาษาอังกฤษ (#574) — Thammanoon Semapru `1653bd3c`
+- **workflow:** ป้ายจำนวนเอกสารบนหัว Workflow อยู่บรรทัดเดียวบนมือถือ (#573) — Thammanoon Semapru `51f09ab7`
+- **workflow:** ปุ่มบนหัวฟอร์ม Workflow โหมดแก้อยู่บรรทัดเดียวที่ 360px ภาษาไทย (#572) — Thammanoon Semapru `b048fdc2`
+- **layout:** ปุ่มเฉพาะหน้าบนหัวฟอร์มเหลือไอคอนบนมือถือ และ Company Profile ไม่โชว์ค่าเก่าหลัง Save (#571) — Thammanoon Semapru `15fd4dcc`
+- **profile:** แก้ช่องหลังกด Save ไม่กี่วินาทีแล้วปุ่ม Save ค้างกดไม่ได้ — Thammanoon Semapru `365c2805`
+- **layout:** footer ไม่ทับกันที่ mobile/tablet และตาราง Inventory Period ไม่กระจายบนจอกว้าง — Thammanoon Semapru `8e74391a`
+- **workflow:** ติ๊กเพิ่ม/เอาผู้ใช้ออกใน stage ต้องนับเป็นการแก้ฟอร์ม — Khafang `77f49131`
+
+### Changed
+- **system-admin:** ลบหน้า Storage ให้เหลือหน้า Document หน้าเดียว (#576) — Thammanoon Semapru `60141ab7`
+- remove trail context graph configurations and rules — Thammanoon Semapru `d18ea87d`
+
 ## [2.5.61] - 2026-11-12
 
 ### Added
