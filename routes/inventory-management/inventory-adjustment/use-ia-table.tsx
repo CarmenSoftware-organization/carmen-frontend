@@ -111,8 +111,6 @@ export function useInventoryAdjustmentTable({
       meta: {
         headerTitle: tfl("type"),
         skeleton: columnSkeletons.badge,
-        cellClassName: "text-center",
-        headerClassName: "text-center",
       },
     },
     {

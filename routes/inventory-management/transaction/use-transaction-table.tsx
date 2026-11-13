@@ -91,11 +91,7 @@ export function useTransactionTable({
     {
       accessorKey: "inventory_doc_type",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("type")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("type")} />
       ),
       cell: ({ row }) => {
         const docType = row.original.inventory_doc_type;
@@ -108,7 +104,6 @@ export function useTransactionTable({
       },
       meta: {
         skeleton: columnSkeletons.badge,
-        cellClassName: "text-center",
       },
       size: 80,
     },

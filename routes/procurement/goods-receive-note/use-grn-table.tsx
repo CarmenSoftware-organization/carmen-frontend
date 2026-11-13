@@ -143,11 +143,7 @@ export function useGrnTable({
     {
       accessorKey: "doc_type",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("type")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("type")} />
       ),
       cell: ({ row }) => {
         const docType = row.original.doc_type;
@@ -156,7 +152,7 @@ export function useGrnTable({
             status={docType}
             label={getGrnDocTypeLabel(tfl, docType)}
             // ชนิดใบไม่มีสี — สีสงวนไว้ให้สถานะซึ่งเป็นสิ่งที่คนกวาดตาหาจริง ๆ
-            className="text-muted-foreground flex w-full justify-center"
+            className="text-muted-foreground"
           />
         );
       },
@@ -164,7 +160,6 @@ export function useGrnTable({
       size: 130,
       meta: {
         headerTitle: tfl("type"),
-        cellClassName: "text-center",
       },
     },
     {

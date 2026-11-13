@@ -65,6 +65,22 @@ const ALLOWED: Record<string, number> = {
   "routes/system-admin/config-email/config-email-component.tsx": 2,
 };
 
+/**
+ * prefix ที่ backend จองไว้แต่ยัง seed แค่ `.view` — ยังไม่มี `.create` / `.update` ให้ติ๊กที่หน้า Role
+ * (`seed.permission.data.ts`: "รูปร่าง action จริงของ accounting ที่เหลือยังไม่ได้ออกแบบ")
+ * หน้าที่ใช้เป็นหน้า mock เก็บข้อมูลใน localStorage · ผลตอนนี้: แก้รายการได้เฉพาะ admin
+ * backend เพิ่ม action เมื่อไหร่ ให้เพิ่มคีย์ใน `PERMISSIONS` แล้วลบออกจากรายการนี้
+ * (เทสต์ล่างแดงเองถ้าลืมลบ)
+ */
+const PLANNED_PREFIXES = ["accounting.config", "accounting.config.ap"];
+
+function hasWriteKey(prefix: string): boolean {
+  return (
+    PERMISSION_KEYS.has(`${prefix}.update`) ||
+    PERMISSION_KEYS.has(`${prefix}.create`)
+  );
+}
+
 function countSignatures(src: string): number {
   return SIGNATURES.reduce((n, re) => n + (src.match(re)?.length ?? 0), 0);
 }
@@ -98,14 +114,15 @@ describe("form pages go through FormPageShell / FormToolbar / BackButton", () =>
     for (const { file, src } of sources) {
       for (const m of src.matchAll(/permissionPrefix="([^"]+)"/g)) {
         const prefix = m[1];
-        if (
-          !PERMISSION_KEYS.has(`${prefix}.update`) &&
-          !PERMISSION_KEYS.has(`${prefix}.create`)
-        )
-          bad.push(`${file}: ${prefix}`);
+        if (PLANNED_PREFIXES.includes(prefix)) continue;
+        if (!hasWriteKey(prefix)) bad.push(`${file}: ${prefix}`);
       }
     }
     expect(bad).toEqual([]);
+  });
+
+  it("drops a planned prefix from the exemption once its keys are in the catalog", () => {
+    expect(PLANNED_PREFIXES.filter(hasWriteKey)).toEqual([]);
   });
 
   it("matches the padding as the shell actually writes it", () => {

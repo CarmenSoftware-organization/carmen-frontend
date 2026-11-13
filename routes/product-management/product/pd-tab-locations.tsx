@@ -258,10 +258,6 @@ function PdTabLocations({ form, isDisabled }: PdTabLocationsProps) {
         },
         enableSorting: false,
         size: 130,
-        meta: {
-          headerClassName: "text-center",
-          cellClassName: "text-center",
-        },
       },
       {
         id: "shelf",
@@ -377,9 +373,7 @@ function PdTabLocations({ form, isDisabled }: PdTabLocationsProps) {
         size: 100,
         // คอลัมน์สุดท้ายของข้อมูลรับที่เหลือ (ชิดซ้าย) — ไม่ให้คอลัมน์ Location ยืด เพราะโหมดแก้
         // ช่องนั้นเป็น lookup: ยืดแล้วช่องกรอกกว้างเป็นพันพิกเซลบนจอกว้าง
-        meta: fixedColumns
-          ? { grow: true }
-          : { headerClassName: "text-center", cellClassName: "text-center" },
+        meta: fixedColumns ? { grow: true } : undefined,
       },
     ];
 
