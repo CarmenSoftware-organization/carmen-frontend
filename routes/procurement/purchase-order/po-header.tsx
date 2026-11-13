@@ -11,7 +11,7 @@ import { PO_STATUS, type PurchaseOrder } from "@/types/purchase-order";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { PO_STATUS_CONFIG, PO_TYPE_CONFIG } from "@/constant/purchase-order";
 import type { FormMode } from "@/types/form";
-import { FormToolbar } from "@/components/share/form-toolbar";
+import { FormToolbar, ToolbarLabel } from "@/components/share/form-toolbar";
 import { PoSendEmailDialog } from "./po-send-email-dialog";
 
 const SEND_EMAIL_STATUSES: readonly PO_STATUS[] = [
@@ -198,6 +198,7 @@ export function PoHeader({
               (purchaseOrder.po_status === PO_STATUS.APPROVED ||
                 purchaseOrder.po_status === PO_STATUS.SENT_OR_PRINT) && (
                 <Button
+                  title={tc("close")}
                   type="button"
                   size="sm"
                   variant="outline"
@@ -205,11 +206,12 @@ export function PoHeader({
                   onClick={onShowClose}
                 >
                   <Lock aria-hidden="true" />
-                  {tc("close")}
+                  <ToolbarLabel>{tc("close")}</ToolbarLabel>
                 </Button>
               )}
             {canSendEmail && (
               <Button
+                title={t("sendEmail.button")}
                 type="button"
                 size="sm"
                 variant="outline"
@@ -217,7 +219,7 @@ export function PoHeader({
                 onClick={() => setShowSendEmail(true)}
               >
                 <Mail aria-hidden="true" />
-                {t("sendEmail.button")}
+                <ToolbarLabel>{t("sendEmail.button")}</ToolbarLabel>
               </Button>
             )}
             <DocActions

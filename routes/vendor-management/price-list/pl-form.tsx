@@ -16,7 +16,7 @@ import { useCan } from "@/hooks/use-can";
 import { useDeleteGate } from "@/hooks/use-delete-gate";
 import { useEntityForm } from "@/hooks/use-entity-form";
 import { FormPageShell } from "@/components/share/form-page-shell";
-import { FormToolbar } from "@/components/share/form-toolbar";
+import { FormToolbar, ToolbarLabel } from "@/components/share/form-toolbar";
 import {
   buildItemChanges,
   scrollToFirstInvalidField,
@@ -216,9 +216,7 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
     !!priceList && isView && !deleteDenied && !writeDisabled;
 
   const plNo = priceList?.no ?? null;
-  const tsStatus = ts as (
-    key: PriceListStatus,
-  ) => string;
+  const tsStatus = ts as (key: PriceListStatus) => string;
 
   return (
     <FormPageShell
@@ -255,15 +253,14 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
               />
               {/* ช่วงราคาหมด/ยังไม่เริ่ม/ใกล้หมด — อยู่ข้างสถานะเอกสาร เพราะใบ ACTIVE
                   ที่หมดช่วงแล้วใช้ออก PO ไม่ได้ ต้องเห็นตั้งแต่หัวใบ · ใบโมฆะไม่ต้องบอก */}
-              {!isVoided && (
-                <PlValidityTag from={watchedFrom} to={watchedTo} />
-              )}
+              {!isVoided && <PlValidityTag from={watchedFrom} to={watchedTo} />}
             </>
           }
         >
           {canVoidOrRestore &&
             (isVoided ? (
               <Button
+                title={t("restore")}
                 type="button"
                 variant="outline"
                 size="sm"
@@ -271,10 +268,11 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
                 disabled={restorePriceList.isPending}
               >
                 <RotateCcw />
-                {t("restore")}
+                <ToolbarLabel>{t("restore")}</ToolbarLabel>
               </Button>
             ) : (
               <Button
+                title={t("void")}
                 type="button"
                 variant="outline"
                 size="sm"
@@ -282,7 +280,7 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
                 disabled={voidPriceList.isPending}
               >
                 <Ban />
-                {t("void")}
+                <ToolbarLabel>{t("void")}</ToolbarLabel>
               </Button>
             ))}
         </FormToolbar>

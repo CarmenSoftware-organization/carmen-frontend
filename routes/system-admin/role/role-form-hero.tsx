@@ -1,7 +1,7 @@
 import { Printer } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
-import { FormToolbar } from "@/components/share/form-toolbar";
+import { FormToolbar, ToolbarLabel } from "@/components/share/form-toolbar";
 import type { FormMode } from "@/types/form";
 
 interface RoleHeroProps {
@@ -47,6 +47,7 @@ export function RoleHero({
       {/* Print เป็นปุ่มเฉพาะหน้า — อยู่ท้ายชุดมาตรฐาน (Edit · Delete · Activity · Print) */}
       {mode === "view" && (
         <Button
+          title={tc("print")}
           key="print"
           type="button"
           variant="secondary"
@@ -54,7 +55,7 @@ export function RoleHero({
           onClick={onPrint}
         >
           <Printer className="size-3.5" aria-hidden="true" />
-          {tc("print")}
+          <ToolbarLabel>{tc("print")}</ToolbarLabel>
         </Button>
       )}
     </FormToolbar>

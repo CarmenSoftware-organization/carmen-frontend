@@ -62,7 +62,6 @@ function renderPreview(
           id: "project",
           code: "project",
           name: "Project",
-          sequence: 1,
           is_active: true,
           doc_version: 1,
           data_type: "lookup",

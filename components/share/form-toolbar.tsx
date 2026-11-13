@@ -82,6 +82,20 @@ interface FormToolbarProps {
  */
 const LABEL_HIDE = "@max-xl/doc-header:sr-only";
 
+/**
+ * ป้ายของปุ่มที่หน้าใส่เพิ่มบนหัวฟอร์ม (children ของ `FormToolbar`) — ใช้ตัวนี้ห่อข้อความทุกครั้ง
+ * ไม่งั้นปุ่มนั้นยังกว้างเท่าเดิมบนมือถือแล้วดันทั้งแถวตกเป็นสองบรรทัด ปุ่มต้องมี `title` ด้วย
+ *
+ * @example
+ * <Button variant="outline" size="sm" title={t("void")} onClick={…}>
+ *   <Ban />
+ *   <ToolbarLabel>{t("void")}</ToolbarLabel>
+ * </Button>
+ */
+export function ToolbarLabel({ children }: { readonly children: ReactNode }) {
+  return <span className={LABEL_HIDE}>{children}</span>;
+}
+
 export function FormToolbar({
   entity,
   mode,
