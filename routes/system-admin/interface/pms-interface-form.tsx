@@ -5,11 +5,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useInterfaceConfig } from "./use-interface-config";
 import { InterfacePageLayout } from "./interface-page-layout";
-import { TextField, ToggleField } from "./interface-fields";
+import { FIRST_SECTION_PAIR, TextField, ToggleField } from "./interface-fields";
 
 export const pmsSchema = z.object({
   enabled: z.boolean(),
@@ -99,54 +99,65 @@ export default function PmsInterfaceForm() {
       errorMessage={t("loadError")}
       saveLabel={t("save")}
     >
-      <SettingSection
-        first
-        title={tp("connection")}
-        description={tp("connectionDesc")}
-      >
-        <ToggleField
-          label={t("enabled")}
-          checked={form.watch("enabled")}
-          onChange={(v) => form.setValue("enabled", v, { shouldDirty: true })}
-        />
-        <TextField
-          label={tp("propertyCode")}
-          field={form.register("property_code")}
-          error={form.formState.errors.property_code?.message}
-          placeholder="P1"
-        />
-        <TextField
-          label={t("endpoint")}
-          field={form.register("endpoint")}
-          error={form.formState.errors.endpoint?.message}
-          placeholder="https://pms.example.com"
-        />
-        <TextField
-          label={t("apiKey")}
-          field={form.register("api_key")}
-          error={form.formState.errors.api_key?.message}
-          type="password"
-          revealLabels={{ show: t("showSecret"), hide: t("hideSecret") }}
-          hint={t("apiKeyHint")}
-        />
-      </SettingSection>
+      {/* การเชื่อมต่อ | การ post — วางเคียงกันบนจอกว้าง */}
+      <div className={FIRST_SECTION_PAIR}>
+        <CompactSection
+          title={tp("connection")}
+          description={tp("connectionDesc")}
+        >
+          <FieldGrid>
+            <ToggleField
+              label={t("enabled")}
+              checked={form.watch("enabled")}
+              onChange={(v) =>
+                form.setValue("enabled", v, { shouldDirty: true })
+              }
+            />
+            <TextField
+              label={tp("propertyCode")}
+              field={form.register("property_code")}
+              viewValue={form.watch("property_code")}
+              error={form.formState.errors.property_code?.message}
+              placeholder="P1"
+            />
+            <TextField
+              label={t("endpoint")}
+              field={form.register("endpoint")}
+              viewValue={form.watch("endpoint")}
+              error={form.formState.errors.endpoint?.message}
+              placeholder="https://pms.example.com"
+            />
+            <TextField
+              label={t("apiKey")}
+              field={form.register("api_key")}
+              viewValue={form.watch("api_key")}
+              error={form.formState.errors.api_key?.message}
+              type="password"
+              revealLabels={{ show: t("showSecret"), hide: t("hideSecret") }}
+              hint={t("apiKeyHint")}
+            />
+          </FieldGrid>
+        </CompactSection>
 
-      <SettingSection title={tp("posting")} description={tp("postingDesc")}>
-        <ToggleField
-          label={tp("postCityLedger")}
-          checked={form.watch("post_city_ledger")}
-          onChange={(v) =>
-            form.setValue("post_city_ledger", v, { shouldDirty: true })
-          }
-        />
-        <ToggleField
-          label={tp("postCreditCard")}
-          checked={form.watch("post_credit_card")}
-          onChange={(v) =>
-            form.setValue("post_credit_card", v, { shouldDirty: true })
-          }
-        />
-      </SettingSection>
+        <CompactSection title={tp("posting")} description={tp("postingDesc")}>
+          <FieldGrid>
+            <ToggleField
+              label={tp("postCityLedger")}
+              checked={form.watch("post_city_ledger")}
+              onChange={(v) =>
+                form.setValue("post_city_ledger", v, { shouldDirty: true })
+              }
+            />
+            <ToggleField
+              label={tp("postCreditCard")}
+              checked={form.watch("post_credit_card")}
+              onChange={(v) =>
+                form.setValue("post_credit_card", v, { shouldDirty: true })
+              }
+            />
+          </FieldGrid>
+        </CompactSection>
+      </div>
     </InterfacePageLayout>
   );
 }

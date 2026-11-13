@@ -7,11 +7,15 @@ import { Link } from "react-router";
 import { useTranslations } from "use-intl";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useInterfaceConfig } from "../use-interface-config";
 import { InterfacePageLayout } from "../interface-page-layout";
-import { TextField, ToggleField } from "../interface-fields";
+import {
+  FIRST_SECTION_PAIR,
+  TextField,
+  ToggleField,
+} from "../interface-fields";
 
 /** mask ที่ backend ส่งกลับแทนรหัสผ่านที่เก็บไว้ */
 const ENCRYPTED_MASK = "***ENCRYPTED***";
@@ -76,7 +80,7 @@ export function toSimphonyFormValues(
 }
 
 /**
- * หน้าตั้งค่า Oracle Simphony — SFTP + รอบดึงไฟล์ 
+ * หน้าตั้งค่า Oracle Simphony — SFTP + รอบดึงไฟล์
  *
  * @returns React element ของหน้า Simphony
  */
@@ -132,67 +136,91 @@ export default function PosSimphonyForm() {
       errorMessage={t("loadError")}
       saveLabel={t("save")}
       afterForm={
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" className="mt-5" asChild>
           <Link to="/operation-plan/import-pos">
             {tp("goToImport")} <ArrowRight />
           </Link>
         </Button>
       }
     >
-      <SettingSection first title={tp("sftp")} description={tp("sftpDesc")}>
-        <ToggleField
-          label={t("enabled")}
-          checked={form.watch("enabled")}
-          onChange={(v) => form.setValue("enabled", v, { shouldDirty: true })}
-        />
-        <TextField
-          label={tp("host")}
-          field={form.register("sftp_host")}
-          error={errors.sftp_host ? tp("hostInvalid") : undefined}
-          placeholder="sftp.example.com"
-        />
-        <TextField
-          label={tp("port")}
-          field={form.register("sftp_port")}
-          error={errors.sftp_port ? tp("portInvalid") : undefined}
-          placeholder="22"
-        />
-        <TextField
-          label={tp("username")}
-          field={form.register("sftp_username")}
-          error={errors.sftp_username?.message}
-        />
-        <TextField
-          label={tp("password")}
-          field={form.register("sftp_password")}
-          error={errors.sftp_password?.message}
-          type="password"
-          revealLabels={{ show: t("showSecret"), hide: t("hideSecret") }}
-          hint={tp("passwordHint")}
-          className="sm:col-span-2"
-        />
-      </SettingSection>
+      {/* SFTP | รอบดึงไฟล์ — วางเคียงกันบนจอกว้าง · คำอธิบายของสองหมวดยาวสามประโยค จึงอยู่ใน
+          การ์ดใต้ช่อง ไม่ใช่บนบรรทัดหัวข้อ: บนหัวข้อมันห่อหลายบรรทัดไม่เท่ากัน การ์ดคู่เริ่มคนละระดับ */}
+      <div className={FIRST_SECTION_PAIR}>
+        <CompactSection title={tp("sftp")}>
+          <FieldGrid>
+            <ToggleField
+              label={t("enabled")}
+              checked={form.watch("enabled")}
+              onChange={(v) =>
+                form.setValue("enabled", v, { shouldDirty: true })
+              }
+            />
+            <TextField
+              label={tp("host")}
+              field={form.register("sftp_host")}
+              viewValue={form.watch("sftp_host")}
+              error={errors.sftp_host ? tp("hostInvalid") : undefined}
+              placeholder="sftp.example.com"
+            />
+            <TextField
+              label={tp("port")}
+              field={form.register("sftp_port")}
+              viewValue={form.watch("sftp_port")}
+              error={errors.sftp_port ? tp("portInvalid") : undefined}
+              placeholder="22"
+            />
+            <TextField
+              label={tp("username")}
+              field={form.register("sftp_username")}
+              viewValue={form.watch("sftp_username")}
+              error={errors.sftp_username?.message}
+            />
+            <TextField
+              label={tp("password")}
+              field={form.register("sftp_password")}
+              viewValue={form.watch("sftp_password")}
+              error={errors.sftp_password?.message}
+              type="password"
+              revealLabels={{ show: t("showSecret"), hide: t("hideSecret") }}
+              hint={tp("passwordHint")}
+            />
+          </FieldGrid>
+          <p className="text-muted-foreground mt-3 text-xs leading-relaxed">
+            {tp("sftpDesc")}
+          </p>
+        </CompactSection>
 
-      <SettingSection title={tp("pull")} description={tp("pullDesc")}>
-        <TextField
-          label={tp("remoteFolder")}
-          field={form.register("remote_folder_path")}
-          error={errors.remote_folder_path ? tp("folderInvalid") : undefined}
-          placeholder="/export/"
-        />
-        <TextField
-          label={tp("filePattern")}
-          field={form.register("file_pattern")}
-          error={errors.file_pattern ? tp("patternInvalid") : undefined}
-          placeholder="GLExport_*.txt"
-        />
-        <TextField
-          label={tp("scheduleTime")}
-          field={form.register("schedule_time")}
-          error={errors.schedule_time ? tp("scheduleInvalid") : undefined}
-          placeholder="03:00"
-        />
-      </SettingSection>
+        <CompactSection title={tp("pull")}>
+          <FieldGrid>
+            <TextField
+              label={tp("remoteFolder")}
+              field={form.register("remote_folder_path")}
+              viewValue={form.watch("remote_folder_path")}
+              error={
+                errors.remote_folder_path ? tp("folderInvalid") : undefined
+              }
+              placeholder="/export/"
+            />
+            <TextField
+              label={tp("filePattern")}
+              field={form.register("file_pattern")}
+              viewValue={form.watch("file_pattern")}
+              error={errors.file_pattern ? tp("patternInvalid") : undefined}
+              placeholder="GLExport_*.txt"
+            />
+            <TextField
+              label={tp("scheduleTime")}
+              field={form.register("schedule_time")}
+              viewValue={form.watch("schedule_time")}
+              error={errors.schedule_time ? tp("scheduleInvalid") : undefined}
+              placeholder="03:00"
+            />
+          </FieldGrid>
+          <p className="text-muted-foreground mt-3 text-xs leading-relaxed">
+            {tp("pullDesc")}
+          </p>
+        </CompactSection>
+      </div>
     </InterfacePageLayout>
   );
 }

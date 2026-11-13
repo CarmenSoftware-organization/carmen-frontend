@@ -5,11 +5,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useInterfaceConfig } from "./use-interface-config";
 import { InterfacePageLayout } from "./interface-page-layout";
-import { TextField, EnumField, ToggleField } from "./interface-fields";
+import {
+  EnumField,
+  FIRST_SECTION_PAIR,
+  TextField,
+  ToggleField,
+} from "./interface-fields";
 
 export const posSchema = z.object({
   enabled: z.boolean(),
@@ -106,59 +111,69 @@ export default function PosInterfaceForm() {
       errorMessage={t("loadError")}
       saveLabel={t("save")}
     >
-      <SettingSection
-        first
-        title={tp("connection")}
-        description={tp("connectionDesc")}
-      >
-        <ToggleField
-          label={t("enabled")}
-          checked={form.watch("enabled")}
-          onChange={(v) => form.setValue("enabled", v, { shouldDirty: true })}
-        />
-        <TextField
-          label={t("endpoint")}
-          field={form.register("endpoint")}
-          error={form.formState.errors.endpoint?.message}
-          placeholder="https://pos.example.com"
-        />
-        <TextField
-          label={t("apiKey")}
-          field={form.register("api_key")}
-          error={form.formState.errors.api_key?.message}
-          type="password"
-          revealLabels={{ show: t("showSecret"), hide: t("hideSecret") }}
-          hint={t("apiKeyHint")}
-          className="sm:col-span-2"
-        />
-      </SettingSection>
+      {/* การเชื่อมต่อ | การซิงก์ — หมวดละ 3 ช่อง */}
+      <div className={FIRST_SECTION_PAIR}>
+        <CompactSection
+          title={tp("connection")}
+          description={tp("connectionDesc")}
+        >
+          <FieldGrid>
+            <ToggleField
+              label={t("enabled")}
+              checked={form.watch("enabled")}
+              onChange={(v) =>
+                form.setValue("enabled", v, { shouldDirty: true })
+              }
+            />
+            <TextField
+              label={t("endpoint")}
+              field={form.register("endpoint")}
+              viewValue={form.watch("endpoint")}
+              error={form.formState.errors.endpoint?.message}
+              placeholder="https://pos.example.com"
+            />
+            <TextField
+              label={t("apiKey")}
+              field={form.register("api_key")}
+              viewValue={form.watch("api_key")}
+              error={form.formState.errors.api_key?.message}
+              type="password"
+              revealLabels={{ show: t("showSecret"), hide: t("hideSecret") }}
+              hint={t("apiKeyHint")}
+            />
+          </FieldGrid>
+        </CompactSection>
 
-      <SettingSection title={tp("sync")} description={tp("syncDesc")}>
-        <EnumField
-          label={tp("syncFrequency")}
-          value={form.watch("sync_frequency")}
-          options={FREQUENCIES}
-          optionLabel={(f) => t(`frequencyOption.${f}`)}
-          onChange={(v) =>
-            form.setValue("sync_frequency", v, { shouldDirty: true })
-          }
-        />
-        <TextField
-          label={tp("defaultLocationCode")}
-          field={form.register("default_location_code")}
-          error={form.formState.errors.default_location_code?.message}
-          placeholder="L1"
-        />
-        <EnumField
-          label={tp("consumptionPosting")}
-          value={form.watch("consumption_posting")}
-          options={POSTINGS}
-          optionLabel={(p) => tp(`postingOption.${p}`)}
-          onChange={(v) =>
-            form.setValue("consumption_posting", v, { shouldDirty: true })
-          }
-        />
-      </SettingSection>
+        <CompactSection title={tp("sync")} description={tp("syncDesc")}>
+          <FieldGrid>
+            <EnumField
+              label={tp("syncFrequency")}
+              value={form.watch("sync_frequency")}
+              options={FREQUENCIES}
+              optionLabel={(f) => t(`frequencyOption.${f}`)}
+              onChange={(v) =>
+                form.setValue("sync_frequency", v, { shouldDirty: true })
+              }
+            />
+            <TextField
+              label={tp("defaultLocationCode")}
+              field={form.register("default_location_code")}
+              viewValue={form.watch("default_location_code")}
+              error={form.formState.errors.default_location_code?.message}
+              placeholder="L1"
+            />
+            <EnumField
+              label={tp("consumptionPosting")}
+              value={form.watch("consumption_posting")}
+              options={POSTINGS}
+              optionLabel={(p) => tp(`postingOption.${p}`)}
+              onChange={(v) =>
+                form.setValue("consumption_posting", v, { shouldDirty: true })
+              }
+            />
+          </FieldGrid>
+        </CompactSection>
+      </div>
     </InterfacePageLayout>
   );
 }
