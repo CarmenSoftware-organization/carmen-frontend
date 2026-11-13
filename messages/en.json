@@ -1336,11 +1336,12 @@
   },
   "notFound": {
     "metaTitle": "Page not found",
-    "eyebrow": "Page not found",
-    "title": "We can't find that page",
-    "description": "The page you're looking for doesn't exist or may have been moved. Check the URL or head back to your dashboard.",
-    "backToDashboard": "Back to Dashboard",
-    "footer": "© {year} CARMEN BLUE · ERP for Hospitality"
+    "eyebrow": "404 · Page not found",
+    "title": "This address doesn't lead to a page",
+    "description": "The page may have been removed or renamed. Pick a page from the menu, or go back to where you were.",
+    "goBack": "Go back",
+    "backToModule": "Back to {module}",
+    "backToHome": "Go to home page"
   },
   "common": {
     "incVat": "Inc VAT",
@@ -2848,7 +2849,7 @@
         "data": {
           "kicker": "Data Platform",
           "title": "Data, ready for use",
-          "lede": "What dashboards are allowed to read, and how much space this business unit has used."
+          "lede": "How much database and attachment space this business unit has used."
         }
       },
       "modules": {
@@ -2891,10 +2892,6 @@
         "code": {
           "name": "Running Code",
           "one": "The shape of your document numbers — prefix, running number, and when it starts over."
-        },
-        "dataset": {
-          "name": "Dashboard Dataset",
-          "one": "The data each dashboard widget is allowed to pull from."
         },
         "companyProfile": {
           "name": "Company Profile",
@@ -3388,6 +3385,7 @@
         "draft": "Draft",
         "inProgress": "In progress",
         "done": "Done",
+        "inProgressShort": "In progress",
         "inProgressBlocksEdit": "Documents still in progress — stages and routing are locked until they finish",
         "blockedTitle": "Can’t delete this workflow yet",
         "blockedDescription": "{count} document(s) are still in progress on this workflow. Deleting it would take away the stages they are moving through, so finish or void them first.",
@@ -3576,17 +3574,6 @@
     },
     "queryDataset": {
       "title": "Query Dataset"
-    },
-    "dashboardDataset": {
-      "title": "Dashboard Dataset",
-      "desc": "The data each dashboard widget is allowed to pull from.",
-      "searchPlaceholder": "Search datasets…",
-      "loading": "Loading datasets…",
-      "loadError": "Failed to load datasets",
-      "emptyTitle": "No datasets available",
-      "emptyDesc": "There are no dashboard datasets registered for this business unit.",
-      "emptyFilteredTitle": "No matching datasets",
-      "emptyFilteredDesc": "Try a different search term."
     },
     "interface": {
       "title": "Interfaces",
@@ -7372,7 +7359,6 @@
     "configEmail": "Email Config",
     "notificationTemplate": "Notification Template",
     "queryDataset": "Query Dataset",
-    "dashboardDataset": "Dashboard Dataset",
     "companyProfile": "Company Profile",
     "defaultSetting": "Default Setting",
     "askAi": "Ask AI",

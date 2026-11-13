@@ -143,7 +143,10 @@ describe("WfHeader — สิ่งที่เอกสารดำเนิน
     renderHeader();
 
     expect(screen.getByText(/draft: 318/i)).toBeInTheDocument();
-    expect(screen.getByText(/in progress: 990/i)).toBeInTheDocument();
+    // ป้าย in progress มีสองความยาว (เต็ม / สั้นสำหรับหัวแคบ) สลับด้วย container query — jsdom ไม่มี CSS
+    // จึงเห็นทั้งคู่ ตรวจที่ตัวเลขซึ่งเป็น text node ของ badge เอง
+    expect(screen.getByText(/^: 990$/)).toBeInTheDocument();
+    expect(screen.getAllByText(/^in progress$/i)).toHaveLength(2);
     expect(screen.getByText(/done: 52/i)).toBeInTheDocument();
   });
 });

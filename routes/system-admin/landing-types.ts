@@ -5,7 +5,6 @@ import {
   Building2,
   Cable,
   Calendar,
-  Database,
   Folder,
   Gauge,
   HardDrive,
@@ -34,7 +33,6 @@ export type VisualKey =
   | "interface"
   | "notify"
   | "code"
-  | "dataset"
   | "company"
   | "settings"
   | "askAi"
@@ -178,12 +176,6 @@ export const CHAPTERS: readonly ChapterDef[] = [
   {
     key: "data",
     modules: [
-      {
-        key: "dataset",
-        visualKey: "dataset",
-        href: "/system-admin/dashboard-dataset",
-        icon: Database,
-      },
       {
         key: "storage",
         visualKey: "storage",

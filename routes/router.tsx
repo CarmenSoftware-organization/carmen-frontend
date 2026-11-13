@@ -820,11 +820,6 @@ export const router = createBrowserRouter([
                   import("./system-admin/running-code/running-code.route"),
               },
               {
-                path: "dashboard-dataset",
-                lazy: () =>
-                  import("./system-admin/dashboard-dataset/dashboard-dataset.route"),
-              },
-              {
                 path: "company-profile",
                 lazy: () =>
                   import("./system-admin/company-profile/company-profile.route"),
@@ -1077,9 +1072,11 @@ export const router = createBrowserRouter([
               },
             ],
           },
+          // catch-all อยู่ใน shell: คนที่ล็อกอินอยู่แล้วเปิด URL ผิดยังเห็นเมนูของโมดูลนั้น ส่วนคนที่ยัง
+          // ไม่ล็อกอิน RequireAuth พาไป /login?next=… ก่อน (เดิมเป็นหน้าเต็มจอนอก shell)
+          { path: "*", lazy: () => import("./not-found/not-found.route") },
         ],
       },
-      { path: "*", lazy: () => import("./not-found/not-found.route") },
     ],
   },
 ]);

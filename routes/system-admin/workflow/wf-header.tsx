@@ -106,7 +106,18 @@ export function WfHeader({
                 className="gap-1 whitespace-nowrap tabular-nums"
               >
                 <Lock className="size-3" aria-hidden="true" />
-                {tw("inProgress")}: {docCounts.in_progress}
+                {/* หัวแคบ (มือถือ) ใช้ป้ายสั้น: "กำลังดำเนินการ" ภาษาไทยยาวกว่า "In progress" ~25px พอจำนวน
+                    เอกสารขึ้นหลักร้อย ถังท้ายก็ตกไปอยู่บรรทัดที่สามคนเดียวที่จอ 360
+                    ห่อป้าย + ตัวเลขเป็นชิ้นเดียว — badge เป็น flex มี gap ถ้าปล่อยเป็นลูกแยกจะได้ "ป้าย : 2" */}
+                <span>
+                  <span className="@max-xl/doc-header:hidden">
+                    {tw("inProgress")}
+                  </span>
+                  <span className="hidden @max-xl/doc-header:inline">
+                    {tw("inProgressShort")}
+                  </span>
+                  : {docCounts.in_progress}
+                </span>
               </Badge>
             </TooltipTrigger>
             <TooltipContent className="max-w-64">

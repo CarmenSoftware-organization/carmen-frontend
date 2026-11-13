@@ -1417,57 +1417,6 @@ export const SubTiles: Record<string, TileRenderer> = {
       <circle cx="20" cy="28.6" r="2.1" style={{ fill: palette.accent }} />
     </>
   ),
-  dashboardDataset: ({ palette }) => (
-    <>
-      <TileBase palette={palette} />
-      {/* Mini dashboard grid — top half */}
-      <rect x="9" y="9" width="9" height="5" rx="1.2" fill="currentColor" />
-      <rect
-        x="20"
-        y="9"
-        width="11"
-        height="5"
-        rx="1.2"
-        style={{ fill: palette.accent }}
-      />
-      <rect
-        x="9"
-        y="15"
-        width="9"
-        height="5"
-        rx="1.2"
-        style={{ fill: palette.accent }}
-      />
-      <rect x="20" y="15" width="11" height="5" rx="1.2" fill="currentColor" />
-      {/* Database cylinder — bottom half */}
-      <ellipse
-        cx="20"
-        cy="23"
-        rx="10"
-        ry="2.2"
-        style={{ fill: palette.accent }}
-      />
-      <rect x="10" y="23" width="20" height="7" fill="currentColor" />
-      <ellipse cx="20" cy="30" rx="10" ry="2.2" fill="currentColor" />
-      <ellipse
-        cx="20"
-        cy="26.5"
-        rx="10"
-        ry="2.2"
-        fill="none"
-        style={{ stroke: palette.base }}
-        strokeWidth="0.7"
-        opacity="0.4"
-      />
-      <path
-        d="M 10 23 V 30 M 30 23 V 30"
-        style={{ stroke: palette.base }}
-        strokeWidth="0.6"
-        opacity="0.3"
-        fill="none"
-      />
-    </>
-  ),
   // ════ Accounting ════
   // NOTE: ทุกรายละเอียดที่ต้อง "มองเห็น" ใช้ currentColor (= --tile-ink) หรือ
   // palette.accent เท่านั้น — palette.base คือ --tile-surface ซึ่งเป็น
