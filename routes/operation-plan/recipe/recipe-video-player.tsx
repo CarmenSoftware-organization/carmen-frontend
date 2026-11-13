@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { parseYoutubeVideoId, youtubeEmbedUrl } from "@/lib/youtube";
 
 interface RecipeVideoPlayerProps {
-  /** ลิงก์ YouTube (`recipe.video_url` หรือของขั้นตอน) — ไม่มี/ไม่ใช่ลิงก์ YouTube = ไม่แสดงอะไรเลย */
+  /** ลิงก์ YouTube ของขั้นตอน — ไม่มี/ไม่ใช่ลิงก์ YouTube = ไม่แสดงอะไรเลย */
   readonly url: string | null | undefined;
   /** ชื่อของ iframe ที่ screen reader อ่าน เช่น "วิดีโอ: <ชื่อสูตร>" */
   readonly title: string;
@@ -10,8 +10,8 @@ interface RecipeVideoPlayerProps {
 }
 
 /**
- * player YouTube ของหน้าสูตร (หน้าที่เปิดเมื่อกดการ์ดสูตร) — วิดีโอของสูตรอยู่บนสุดของคอลัมน์ขั้นตอน
- * ส่วนวิดีโอของแต่ละขั้นอยู่ในการ์ดของขั้นนั้น
+ * player YouTube ของหน้าสูตร (หน้าที่เปิดเมื่อกดการ์ดสูตร) — วิดีโอมีได้เฉพาะรายขั้นตอน
+ * เล่นในการ์ดของขั้นนั้น
  *
  * - ไม่ autoplay — เบราว์เซอร์บล็อกเสียงอยู่แล้ว และครัวต้องการกดเล่นเองตอนพร้อม
  * - โดเมน youtube-nocookie.com ตรงกับ `frame-src` ใน CSP ของทุกปลายทาง deploy
