@@ -22,7 +22,7 @@ import { FormPageShell } from "@/components/share/form-page-shell";
 import { DocFormHeader } from "@/components/share/doc-form-header";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { useClosePeriodEnd, usePeriodEndReview } from "./use-period-end";
 import type {
   PeriodEndReview,
@@ -194,7 +194,7 @@ export default function PeReview() {
                   {formatLocalizedDate(data.start_date, locale)} –{" "}
                   {formatLocalizedDate(data.end_date, locale)}
                 </p>
-                <StatusIconLabel
+                <StatusChip
                   status={data.status}
                   label={t(`status.${data.status}`)}
                 />

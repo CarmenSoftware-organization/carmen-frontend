@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBuCode } from "@/hooks/use-bu-code";
@@ -163,7 +163,7 @@ function InvoiceView({
         deleteIsPending={deleting}
         flush={false}
         badges={
-          <StatusIconLabel
+          <StatusChip
             status={row.doc_status}
             label={t(`statuses.${row.doc_status}`)}
           />

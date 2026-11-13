@@ -25,6 +25,7 @@ import { WorkflowHistoryTimeline } from "@/components/share/workflow-history-tim
 import { SR_WORKFLOW_ACTION_CONFIG } from "@/constant/store-requisition";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { formatDate } from "@/lib/date-utils";
+import { StatusChip } from "@/components/ui/status-chip";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import type { FormMode } from "@/types/form";
 import { STAGE_ROLE } from "@/types/stage-role";
@@ -120,12 +121,11 @@ export function SrHeader({
   const badges = (
     <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3">
       {docStatus && (
-        <StatusIconLabel
+        <StatusChip
           status={docStatus}
           label={ts(docStatus)}
           // เบากว่าในตาราง: ตัวเอกของแถบนี้คือเลขที่ใบ สถานะเป็นข้อมูลประกอบ
           // เหลือสีไว้ที่ไอคอนจุดเดียวซึ่งเป็นสัญญาณที่ต้องเห็นจริง ๆ
-          className="text-muted-foreground text-micro uppercase [&>svg]:size-3"
         />
       )}
       {srType && (

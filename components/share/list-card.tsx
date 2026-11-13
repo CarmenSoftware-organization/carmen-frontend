@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { cn } from "@/lib/utils";
 import { isSentBack } from "@/constant/last-action";
 import { useDeleteGate } from "@/hooks/use-delete-gate";
@@ -170,13 +170,7 @@ export function ListCardStatusRow({
 
   return (
     <ListCardRow label={tfl("status")}>
-      <StatusIconLabel
-        status={status}
-        label={label}
-        // ป้ายของบางโมดูลมาจาก i18n ตรง ๆ ไม่ได้ผ่าน createStatusConfig ที่
-        // uppercase ให้ — บังคับที่นี่ทีเดียวจะได้ไม่ต้องจำเป็นราย ๆ ไป
-        className={cn("uppercase", className)}
-      />
+      <StatusChip status={status} label={label} className={className} />
     </ListCardRow>
   );
 }
@@ -187,9 +181,7 @@ export function ListCardStatusRow({
  * ย้ายลงมาจากช่อง `badge` หัวการ์ดด้วยเหตุผลเดียวกับสถานะเอกสาร — ของที่ลอยอยู่
  * มุมขวาบนโดยไม่มี label กำกับ คนต้องเดาเองว่ามันคืออะไร
  *
- * ยังเป็นชิปจุดสี (`StatusBadge`) ไม่ใช่ไอคอน+ข้อความแบบเอกสาร โดยตั้งใจ:
- * เปิด/ปิดใช้งานมีแค่สองค่าที่ตรงข้ามกัน ไม่ใช่ความคืบหน้าที่ไล่เป็นลำดับ จึงไม่มี
- * รูปทรงให้แยกด้วยไอคอน — ต่างจากสถานะเอกสารที่มีเจ็ดแปดค่าและคนแยกด้วยรูปไอคอน
+ * ชิปจุดสี (`StatusBadge`) ทรงเดียวกับสถานะเอกสาร (`StatusChip`) และกับคอลัมน์สถานะในตาราง
  *
  * @param active - `item.is_active` ของรายการนั้น
  */
@@ -226,10 +218,7 @@ export function ListCardSendBackRow({
   return (
     <ListCardRow label={tc("sendBack")}>
       {isSentBack(lastAction) ? (
-        <StatusIconLabel
-          status="send_back"
-          label={tc("sendBack").toUpperCase()}
-        />
+        <StatusChip status="send_back" label={tc("sendBack")} />
       ) : (
         "—"
       )}

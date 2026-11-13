@@ -151,20 +151,12 @@ export function useInventoryAdjustmentTable({
       cell: ({ row }) => {
         const status = row.getValue("doc_status") as InventoryAdjustmentStatus;
         const config = IA_STATUS_CONFIG[status];
-        return (
-          <StatusChip
-            status={status}
-            label={config?.label ?? status}
-            className="flex w-full justify-center"
-          />
-        );
+        return <StatusChip status={status} label={config?.label ?? status} />;
       },
       size: 120,
       meta: {
         headerTitle: tfl("status"),
         skeleton: columnSkeletons.badge,
-        cellClassName: "text-center",
-        headerClassName: "text-center",
       },
     },
     {

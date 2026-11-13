@@ -11,7 +11,7 @@ import {
   FieldLabel,
   FieldPlainText,
 } from "@/components/ui/field";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { Textarea } from "@/components/ui/textarea";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
@@ -158,7 +158,7 @@ export function ArInvoiceDraftForm({
         submitLabel={tc(document ? "save" : "saveDraft")}
         writeDisabledReason={canWrite ? undefined : t("writeUnavailable")}
         flush={false}
-        badges={<StatusIconLabel status="draft" label={t("statuses.draft")} />}
+        badges={<StatusChip status="draft" label={t("statuses.draft")} />}
       />
       <form
         id={FORM_ID}

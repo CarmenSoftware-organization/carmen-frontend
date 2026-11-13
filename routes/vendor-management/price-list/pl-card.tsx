@@ -1,5 +1,5 @@
 import { useTranslations } from "use-intl";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import {
   ListCard,
   ListCardAuditRows,
@@ -29,12 +29,9 @@ export default function PriceListCard({
     <ListCard
       title={item.name || "..."}
       badge={
-        <StatusIconLabel
+        <StatusChip
           status={item.status}
-          label={ts(
-            item.status as PriceListStatus,
-          )}
-          className="uppercase"
+          label={ts(item.status as PriceListStatus)}
         />
       }
       onOpen={() => onEdit(item)}

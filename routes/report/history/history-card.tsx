@@ -1,7 +1,7 @@
 import { ArrowUpRight, FileText, Rows3 } from "lucide-react";
 import { useTranslations } from "use-intl";
 
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import {
   REPORT_FORMAT_LABELS,
   normalizeJobStatus,
@@ -131,13 +131,7 @@ export default function HistoryCard({ item }: HistoryCardProps) {
           )}
         </div>
 
-        {statusKey && (
-          <StatusIconLabel
-            status={statusKey}
-            label={t(statusKey)}
-            className="text-micro-legal [&>svg]:size-3"
-          />
-        )}
+        {statusKey && <StatusChip status={statusKey} label={t(statusKey)} />}
       </div>
     </div>
   );

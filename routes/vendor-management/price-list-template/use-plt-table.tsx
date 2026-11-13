@@ -141,11 +141,7 @@ export function usePriceListTemplateTable({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("status")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
       cell: ({ row }) => {
         const status = row.getValue<string>("status");
@@ -155,20 +151,12 @@ export function usePriceListTemplateTable({
           inactive: ts("inactive"),
         };
         return (
-          <StatusChip
-            status={status}
-            label={labelMap[status] ?? status}
-            // คอลัมน์นี้จัดกลาง — label เป็น inline-flex ซึ่ง text-center ของเซลล์
-            // เอื้อมไม่ถึงเมื่ออยู่ในกล่อง clamp ของ DataGrid
-            className="flex w-full justify-center uppercase"
-          />
+          <StatusChip status={status} label={labelMap[status] ?? status} />
         );
       },
       size: 120,
       meta: {
         headerTitle: tfl("status"),
-        cellClassName: "text-center",
-        headerClassName: "text-center",
         skeleton: columnSkeletons.badge,
       },
     },

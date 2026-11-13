@@ -21,7 +21,7 @@ export const columnSkeletons = {
   number: <Skeleton className="h-2 w-5" />,
   text: <Skeleton className="h-2 w-3/4" />,
   textShort: <Skeleton className="h-2 w-1/2" />,
-  badge: <Skeleton className="mx-auto h-3 w-12 rounded-full" />,
+  badge: <Skeleton className="h-3 w-12 rounded-full" />,
 };
 
 export function selectColumn<T>(): ColumnDef<T> {
@@ -79,8 +79,9 @@ function StatusColumnHeader<T>({
 
 interface StatusColumnOptions {
   /**
-   * `"start"` = ป้ายสถานะชิดซ้าย (ค่าตั้งต้นจัดกึ่งกลาง) — ใช้เมื่อคอลัมน์นี้อยู่ถัดจากชื่อและ
-   * ต้องอยู่ติดชื่อ: ป้ายที่จัดกึ่งกลางในคอลัมน์กว้างจะลอยห่างจากชื่อครึ่งคอลัมน์
+   * ค่าตั้งต้น `"start"` = ป้ายสถานะชิดซ้ายเหมือนคอลัมน์ข้อความ — คอลัมน์สถานะทุกตารางชิดซ้าย
+   * (ผู้ใช้สั่ง 2026-11-13 ให้จัดตำแหน่งเหมือนกันทุกตาราง): จุดสีของทุกแถวเรียงตรงกันเป็นแนวดิ่ง
+   * และป้ายไม่ลอยห่างจากคอลัมน์ก่อนหน้าเมื่อคอลัมน์กว้าง · `"center"` เหลือไว้ให้กรณีพิเศษเท่านั้น
    */
   align?: "center" | "start";
   /** ให้คอลัมน์นี้รับความกว้างที่เหลือของตาราง (`meta.grow`) — ใช้คู่กับ `align: "start"` */
@@ -95,7 +96,7 @@ export function statusColumn<T>(
   tfl: FieldTranslator,
   options?: StatusColumnOptions,
 ): ColumnDef<T> {
-  const start = options?.align === "start";
+  const start = options?.align !== "center";
   return {
     accessorKey: "is_active",
     header: ({ column }) => (
@@ -218,27 +219,13 @@ export function sendbackColumn<T extends RowWithLastAction>(
     // ค่าจากตารางจะได้อ่านรู้เรื่อง ไม่ใช่ "true"/"false"
     accessorFn: (row: T) => (isSentBack(row.last_action) ? title : ""),
     header: ({ column }) => (
-      <DataGridColumnHeader
-        column={column}
-        title={title}
-        className="justify-center"
-      />
+      <DataGridColumnHeader column={column} title={title} />
     ),
-    cell: ({ row }) => (
-      <SendBackStatus
-        chip
-        lastAction={row.original.last_action}
-        // คอลัมน์นี้จัดกลาง — ป้ายเป็น inline-flex ซึ่ง `text-center` ของเซลล์
-        // เอื้อมไม่ถึงเมื่ออยู่ในกล่อง clamp ของ DataGrid (ท่าเดียวกับคอลัมน์สถานะ)
-        className="flex w-full justify-center"
-      />
-    ),
+    cell: ({ row }) => <SendBackStatus lastAction={row.original.last_action} />,
     size: options?.size ?? 110,
     meta: {
       headerTitle: title,
       skeleton: columnSkeletons.badge,
-      cellClassName: "text-center",
-      headerClassName: "text-center",
     },
   };
 }

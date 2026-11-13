@@ -135,13 +135,10 @@ export default function AccountingDocumentList() {
           <StatusChip
             status={row.original.status.toLowerCase()}
             label={row.original.status}
-            className="flex w-full justify-center"
           />
         ),
         meta: {
           headerTitle: t("status"),
-          headerClassName: "text-center",
-          cellClassName: "text-center",
         },
       },
       {

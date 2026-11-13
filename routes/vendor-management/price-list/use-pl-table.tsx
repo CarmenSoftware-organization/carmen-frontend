@@ -119,11 +119,7 @@ export function usePriceListTable({
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("status")}
-          className="justify-center"
-        />
+        <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
       cell: ({ row }) => {
         const status = row.getValue<string>("status");
@@ -133,17 +129,12 @@ export function usePriceListTable({
             // ป้ายมาจาก i18n ไม่ใช่ PL_STATUS_CONFIG ที่เป็นอังกฤษล้วน — หน้านี้มีไทย
             // อยู่แล้ว ไม่ถอยไปเป็นอังกฤษเพื่อให้เหมือน PR
             label={ts(status as PriceListStatus)}
-            // คอลัมน์นี้จัดกลาง — label เป็น inline-flex ซึ่ง text-center ของเซลล์
-            // เอื้อมไม่ถึงเมื่ออยู่ในกล่อง clamp ของ DataGrid
-            className="flex w-full justify-center uppercase"
           />
         );
       },
       size: 120,
       meta: {
         headerTitle: tfl("status"),
-        cellClassName: "text-center",
-        headerClassName: "text-center",
         skeleton: columnSkeletons.badge,
       },
     },

@@ -4,7 +4,7 @@ import { DocActions } from "@/components/share/doc-actions";
 import { useCreditNoteComments } from "./use-credit-note";
 import type { FormMode } from "@/types/form";
 import type { CreditNoteDetail } from "@/types/credit-note";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { CN_STATUS_CONFIG } from "@/constant/credit-note";
 import { FormToolbar } from "@/components/share/form-toolbar";
 
@@ -50,12 +50,11 @@ export function CnHeader({
   const badges = (
     <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3">
       {statusCfg && creditNote && (
-        <StatusIconLabel
+        <StatusChip
           status={creditNote.doc_status}
           label={statusCfg.label ?? creditNote.doc_status}
           // เบากว่าในตาราง: ตัวเอกของแถบนี้คือเลขที่ใบ สถานะเป็นข้อมูลประกอบ
           // เหลือสีไว้ที่ไอคอนจุดเดียวซึ่งเป็นสัญญาณที่ต้องเห็นจริง ๆ
-          className="text-muted-foreground text-micro [&>svg]:size-3"
         />
       )}
       {creditNote?.doc_version != null && (
