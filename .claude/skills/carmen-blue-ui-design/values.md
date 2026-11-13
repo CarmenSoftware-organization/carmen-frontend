@@ -41,6 +41,19 @@ Resulting column counts (sidebar expanded):
 Pair sections when the two are close in height and belong together (Hotel | Company). Do not pair a
 3-item section with a 13-item section.
 
+Gotchas:
+
+- **A long section description goes inside the card, not on the heading line** — on paired sections
+  it wraps and the two headings stop lining up (interface brand forms).
+- **A page that returns to view mode after Save must wait for the new data first** — a mutation that
+  only calls `invalidateQueries` and finishes leaves view mode showing the old value for 1–3
+  seconds, and a second Save in that window sends the old `doc_version` and hits a 409. Have the
+  hook's `onSuccess` **return the `invalidateQueries` promise** (the mutation stays pending until
+  the refetch completes). Example: `useUpdateBusinessUnit` in `hooks/use-business-unit.ts`
+- **A form that binds `values` to a query** needs `resetOptions: { keepDirtyValues: true }`, and the
+  mutation must `setQueryData` before invalidating; otherwise editing a value a few seconds after
+  Save leaves the Save button stuck disabled. Example: `useUpdateProfile` in `hooks/use-profile.ts`
+
 ## Lists
 
 **A settings list "label left, value right, full row width"** breaks rule 2 on a wide screen. Make
@@ -83,9 +96,50 @@ width.
 ```
 
 Rows inside a group's card must change `sm:` to `@xl:` (and put `@container` on the card), because a
-narrow card can occur on a wide screen once it splits into several columns.
+narrow card can occur on a wide screen once it splits into several columns. Measure the right edge
+of the last item against the right edge of the box, at every screen size.
 
-**A landing page whose groups differ in height** (System Admin: 6 chapters with 2–5 cards each): an
+**Lists you can add to / remove from** (addresses, contacts) are a grid of cards, not full-width
+rows — `grid-cols-[repeat(auto-fill,minmax(min(100%,<min>),1fr))]` (`auto-fill`, not `auto-fit`: a
+single card must not stretch across the row). The edit-mode minimum is wider than view mode's, and
+inside the card use container queries (`@container` + `@sm:`). Write view mode as a separate
+component that shows text, not the same form with every field disabled. Wrap the grid in
+`CompactSection frameless`. Example: `routes/vendor-management/vendor/`
+
+**View mode of a checklist is not the same list disabled** — show only what is held, as `FieldGrid`
+cells (name + description), from the data that comes with the document itself; do not fetch the
+whole registry. Edit mode then shows the checklist, with its width capped (`max-w-2xl`) when rows
+have the name on the left and the mark on the right. Example:
+`routes/system-admin/user/user-assigned-roles.tsx`
+
+## Landing pages
+
+A landing page must **show only real things**:
+
+1. **No hard-coded numbers or data** — card statistics ("14 roles · 87 permissions"), version
+   numbers and tool counts all read as real data. A number is allowed only when it comes from the
+   API (done right: the workflow count in `routes/system-admin/workflow/wf-landing.tsx`).
+2. **Every page in the module's left menu has a card** — compare against `constant/module-list.ts`
+   every time.
+3. **A card's description is that page's own header description** (`systemAdmin.<page>.desc`) and
+   its title is the left-menu name — no separate marketing copy.
+4. **Card permissions come from `useVisibleModules`, the same source as the left menu** — hidden =
+   no card · locked / no permission = a faded card that is a button calling
+   `dispatchPermissionDenied` (locked wins over denied). A group whose cards are all gone disappears
+   entirely, and group numbers count only what is shown.
+5. **The whole card is clickable** — no card footer holding only an Open button.
+6. **No button that does nothing when pressed, and no text promising things that do not exist**
+   (handbook, sandbox).
+7. **Illustrations use lines instead of text** — no made-up names, document numbers, times or
+   percentages. Labels inside an illustration must match the real page, and the illustration must
+   depict the same subject as the page (Running Code = a document-number pattern, not a terminal).
+   Helpers: `Line`, `ListViz` in `routes/system-admin/landing-visuals.tsx`.
+8. **Compact page header** — page name + tagline. No half-screen hero, no table of contents
+   repeating the headings below.
+
+How to check → `verify.md` §Landing pages
+
+**Layout when groups differ in height** (System Admin: 6 chapters with 2–5 cards each): an
 `auto-fit` grid leaves blank space under the short groups, and the last row leaves empty cells when
 the group count does not divide evenly by the columns. Use CSS multi-column instead — groups flow
 down one column at a time, in order.
@@ -108,9 +162,6 @@ down one column at a time, in order.
 - Measure: the number of columns (distinct `left` values of the groups) and the card width, which
   must be around 280–400px at every screen size (System Admin: 1 / 2 / 3 / 4 / 6 columns at
   390 / 768 / 1366 / 1920 / 3840).
-- Landing cards **must not carry hard-coded statistics** ("14 roles · 87 permissions") — they look
-  like real data but are not. A number must come from the API · and every page in the module's left
-  menu must have a card on the landing page.
 
 ## Tables (list pages)
 
@@ -127,9 +178,36 @@ the columns end up thousands of pixels apart.
 ```
 
 For a table with a long-text column (description), put `grow` on that column instead. Set `size` so
-the total fits at tablet (see the gotchas in `SKILL.md`). The `size` of the grow column is its
-minimum width. Truncate long-text cells with `block truncate` + `title` by the column width, not a
-fixed `max-w-*`.
+the total fits at tablet (budget below). The `size` of the grow column is its minimum width.
+Truncate long-text cells with `block truncate` + `title` by the column width, not a fixed
+`max-w-*`.
+
+`grow` gotchas:
+
+- **`meta.grow` turns the other columns into fixed px, so measure at tablet** — the sum of `size`
+  plus the minimum width of the grow column (~165px for a status column) must not exceed 662px or
+  the table overflows. Never use it on a multi-column editable table.
+- **`getTotalSize()` counts the select column (55px) even when it is not rendered** — tables from
+  `useConfigTable`, and tables that add `selectColumn()` themselves without turning on
+  `tableLayout.checkbox`, have a tablet budget of only 607px (662 − 55).
+- **You cannot hide a column of a grow table with CSS** — the table's minimum width is computed from
+  every column TanStack considers visible. Turn it off through `state.columnVisibility` based on the
+  measured box width.
+- **A column step's switch point must be higher than that step's `size` total** — set them exactly
+  equal and, once the box is just past that point, the secondary column comes back and the grow
+  column shrinks to its minimum.
+- **Do not use an empty trailing column to absorb the remaining width** — it is at least 75px wide
+  even with `p-0!`. Make the last data column the grow column.
+- **A row-button column must be wide enough**: two 24px buttons + 4 gap + 24 cell padding = 76px.
+  With `size: 72` the buttons wrap onto two lines. Use 84.
+
+**A table on a detail page** (few columns, inside a section): use `grow` only when the box is wide
+enough — measure with `useElementWidth`. When the box is narrower than the column total, fall back
+to proportional widths (no `grow`), otherwise the table overflows its box on mobile. In a narrow box
+(`< 560px` measured, not a screen breakpoint) it becomes **one card per row, not a squeezed table**:
+the card carries every field of the table, row buttons are 32px tall (`size="icon-sm"`), and the box
+bound to the width-measuring ref must exist in both views. Example: `CertificateCards` in
+`routes/vendor-management/vendor/vendor-certificate-section.tsx`
 
 **Pages that configure a pattern** (running-code) add a column showing the pattern's real result
 (rule 8) — the sample document number `PR26110001` in the table, without opening a dialog row by
