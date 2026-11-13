@@ -199,6 +199,28 @@ nowrap อื่นตารางล้นที่ 1366px
 
 วัดด้วยระยะจากขอบขวาของช่องค้นถึงขอบซ้ายของปุ่ม View — ต้องเท่ากันทุกขนาดจอตั้งแต่ tablet (17px)
 
+**ปุ่มบนหัวฟอร์ม** (กติกาข้อ 13): บรรทัดเดียวทุกขนาดจอ หัวแคบกว่า 576px ปุ่มรองเหลือแต่ไอคอน
+
+```tsx
+// DocFormHeader — หัวเป็น container ที่มีชื่อ
+<div className="@container/doc-header relative">…</div>
+
+// ปุ่มรอง: ป้ายอยู่ใน span ที่ซ่อนเมื่อหัวแคบ + title สำหรับ hover
+<Button variant="outline" size="sm" title={tc("delete")}>
+  <Trash2 />
+  <span className="@max-xl/doc-header:sr-only">{tc("delete")}</span>
+</Button>
+```
+
+- ปุ่มหลัก (Edit / Save) เก็บป้ายเสมอ · ปุ่มรอง = Cancel, Delete, Print, Comment, Activity
+- `sr-only` ไม่ใช่ `hidden` — ป้ายยังเป็นชื่อของปุ่มสำหรับ screen reader และเทสต์ที่หาปุ่มด้วยข้อความ
+- ลำดับห้ามเปลี่ยน: Edit/Cancel·Save → Delete → ปุ่มของหน้า → Comment → Activity และห้ามยุบเป็นเมนู ⋯
+  (ผู้ใช้สั่งกลับเรื่องนั้นแล้ว 2026-10-29)
+- ตัวเลข: แถวปุ่มมีป้ายกว้าง ~440px · เหลือไอคอนกว้าง ~275px (Edit 62 + ไอคอน 34×4 + ช่องไฟ) พอดีกล่อง
+  302px ของจอ 390 และ 272px ของจอ 360 · จุดเปลี่ยน 576px = กว้างกว่าแถวมีป้ายพอให้ชื่อเอกสารอยู่บรรทัดบน
+- ชื่อ container ไม่มีอยู่นอกหัวฟอร์ม ปุ่มเดียวกันที่ใช้ที่อื่น (`PrintDocumentButton`) จึงมีป้ายตามปกติ
+- ของเดิมที่ใช้ breakpoint ของจอ: `DocActions` (`max-xl:sr-only`) — ยังไม่ได้ย้ายมาใช้ container
+
 ขั้นของ `status-bar.tsx`: แคบกว่า 448px โชว์ชื่อ · รหัสรอบ · App v → เวลา + รหัส BU + ป้าย
 "Period" (`@md` 448px) → commit hash (`@2xl` 672px) → ป้าย "Inventory period" เต็ม + เวอร์ชัน
 API (`@4xl` 896px)

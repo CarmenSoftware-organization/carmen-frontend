@@ -48,9 +48,14 @@ export function PrintDocumentButton({
       disabled={disabled || isPrinting}
       onClick={() => void print(documentType, { documentId, filters, templateId })}
       className={className}
+      title={tc("print")}
     >
       <Printer aria-hidden="true" />
-      {showLabel ? tc("print") : null}
+      {/* บนหัวฟอร์มที่แคบ (มือถือ) เหลือแต่ไอคอนเหมือนปุ่มรองตัวอื่น — นอกหัวฟอร์มไม่มี container
+          ชื่อนี้ ป้ายจึงแสดงตามปกติ */}
+      {showLabel ? (
+        <span className="@max-xl/doc-header:sr-only">{tc("print")}</span>
+      ) : null}
     </Button>
   );
 }

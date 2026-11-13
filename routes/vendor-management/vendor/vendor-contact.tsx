@@ -9,7 +9,7 @@ import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getDeleteDescription } from "@/lib/form-utils";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection } from "@/components/share/compact-section";
 import { VendorEmptySection } from "./vendor-empty-section";
 import {
   EMPTY_VENDOR_CONTACT,
@@ -54,7 +54,7 @@ export function VendorContact({
   };
 
   return (
-    <SettingSection
+    <CompactSection
       frameless
       title={t("contactsLabel")}
       description={t("contactsDesc")}
@@ -73,7 +73,7 @@ export function VendorContact({
         ) : undefined
       }
     >
-      <div className="sm:col-span-2">
+      <div>
         {contactFields.length === 0 ? (
           <VendorEmptySection
             compact={isView}
@@ -82,7 +82,8 @@ export function VendorContact({
             description={t("contact.noContactsDesc")}
           />
         ) : (
-          <div className="flex flex-col gap-2">
+          // การ์ดผู้ติดต่อเรียงเป็นกริดตามความกว้างของหมวด ไม่ยืดเต็มแถว
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-2">
             {contactFields.map((field, index) => (
               <ContactCard
                 key={field.id}
@@ -112,7 +113,7 @@ export function VendorContact({
           setDeleteIndex(null);
         }}
       />
-    </SettingSection>
+    </CompactSection>
   );
 }
 
@@ -144,7 +145,7 @@ function ContactCard({
   return (
     <div
       className={cn(
-        "border-border/60 bg-card hover:border-primary/40 relative rounded-xl border p-3 transition-colors",
+        "border-border/60 bg-card hover:border-primary/40 @container relative min-w-0 rounded-xl border p-3 transition-colors",
         isPrimary && "border-primary/40 bg-primary/5",
       )}
     >
@@ -221,7 +222,7 @@ function ContactCard({
       </div>
 
       {/* Email + Phone row */}
-      <div className="border-border/40 mt-3 grid grid-cols-1 gap-2 border-t pt-3 md:grid-cols-2">
+      <div className="border-border/40 mt-3 grid grid-cols-1 gap-2 border-t pt-3 @sm:grid-cols-2">
         <ContactSubField
           icon={Mail}
           isView={isView}

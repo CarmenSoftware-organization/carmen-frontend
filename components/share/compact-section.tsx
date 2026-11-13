@@ -65,6 +65,7 @@ export function CompactSection({
   count,
   action,
   first,
+  frameless,
   children,
 }: {
   readonly title: string;
@@ -74,6 +75,11 @@ export function CompactSection({
   readonly count?: number;
   readonly action?: React.ReactNode;
   readonly first?: boolean;
+  /**
+   * ไม่ห่อการ์ดให้ — ใช้เมื่อเนื้อหามีกรอบของตัวเองอยู่แล้ว (กริดของการ์ดรายการ, `DataGridContainer`)
+   * ไม่งั้นได้กรอบซ้อนกรอบ
+   */
+  readonly frameless?: boolean;
   readonly children: React.ReactNode;
 }) {
   return (
@@ -94,9 +100,13 @@ export function CompactSection({
         {action}
       </div>
       {/* flex-1: ใน SECTION_PAIR การ์ดยืดเท่าเพื่อนข้าง ๆ · นอกคู่ไม่มีผล (section สูงเท่าเนื้อหา) */}
-      <div className="bg-card flex-1 rounded-xl border p-4 shadow-sm">
-        {children}
-      </div>
+      {frameless ? (
+        <div className="min-w-0 flex-1">{children}</div>
+      ) : (
+        <div className="bg-card flex-1 rounded-xl border p-4 shadow-sm">
+          {children}
+        </div>
+      )}
     </section>
   );
 }

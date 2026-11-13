@@ -6,7 +6,7 @@ import { useTranslations } from "use-intl";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
-import { AnimationStyles, Reveal } from "@/components/share/reveal";
+import { SECTION_PAIR } from "@/components/share/compact-section";
 import { toast } from "sonner";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { useUpdateUser } from "@/hooks/use-user";
@@ -129,6 +129,7 @@ export function UserAssignedForm({ user }: UserAssignedFormProps) {
 
   return (
     <FormPageShell
+      width="wide"
       header={
         <FormToolbar
           mode={mode}
@@ -158,9 +159,6 @@ export function UserAssignedForm({ user }: UserAssignedFormProps) {
         />
       }
     >
-      <AnimationStyles />
-
-      {/* ── Settings-style sections (title+desc left · body right) ── */}
       {/* ฟอร์มเดียวครอบทั้งสาม section — ปุ่ม Save อยู่นอกฟอร์มแล้วอ้างด้วย
           `form=` เดิม `<form>` ซ่อนอยู่ใน RolesSection ซึ่ง render เฉพาะตอนมี
           role ให้เลือก กดบันทึกตอนไม่มี role เลยเงียบสนิทเพราะปุ่มชี้ไปที่ไม่มีอยู่ */}
@@ -170,30 +168,28 @@ export function UserAssignedForm({ user }: UserAssignedFormProps) {
           scrollToFirstInvalidField(),
         )}
       >
-        <Reveal delay={80}>
+        <DepartmentsSection
+          first
+          form={form}
+          isDisabled={isDisabled}
+          departmentName={user.department?.name}
+        />
+
+        {/* บทบาท | คลัง — สองหมวดที่เป็นรายการยาวพอกัน วางเคียงกันบนจอกว้าง (การ์ดสูงเท่ากัน) */}
+        <div className={SECTION_PAIR}>
           <RolesSection
-            first
             form={form}
+            isView={isView}
             isDisabled={isDisabled}
             count={roleCount}
+            assignedRoles={user.application_roles}
           />
-        </Reveal>
-
-        <Reveal delay={140}>
-          <DepartmentsSection
-            form={form}
-            isDisabled={isDisabled}
-            departmentName={user.department?.name}
-          />
-        </Reveal>
-
-        <Reveal delay={200}>
           <LocationsSection
             form={form}
             isDisabled={isDisabled}
             userLocations={user.locations}
           />
-        </Reveal>
+        </div>
       </form>
 
       <DiscardDialog {...discard.dialogProps} variant="warning" />

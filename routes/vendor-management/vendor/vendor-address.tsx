@@ -35,7 +35,7 @@ import type {
 } from "@/hooks/use-thai-address";
 import { CACHE_STATIC } from "@/lib/cache-config";
 import { cn } from "@/lib/utils";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection } from "@/components/share/compact-section";
 import { VendorEmptySection } from "./vendor-empty-section";
 
 interface VendorAddressTabProps {
@@ -63,7 +63,7 @@ export function VendorAddress({
   const handleAdd = () => prependAddress(EMPTY_VENDOR_ADDRESS);
 
   return (
-    <SettingSection
+    <CompactSection
       frameless
       title={t("addressesLabel")}
       description={t("addressesDesc")}
@@ -82,17 +82,27 @@ export function VendorAddress({
         ) : undefined
       }
     >
-      <div className="sm:col-span-2">
-        {addressFields.length === 0 ? (
-          <VendorEmptySection
-            compact={isView}
-            icon={MapPin}
-            title={t("address.noAddresses")}
-            description={t("address.noAddressesDesc")}
-          />
-        ) : (
-          <div className="flex flex-col gap-2">
-            {addressFields.map((field, index) => (
+      {addressFields.length === 0 ? (
+        <VendorEmptySection
+          compact={isView}
+          icon={MapPin}
+          title={t("address.noAddresses")}
+          description={t("address.noAddressesDesc")}
+        />
+      ) : (
+        // การ์ดที่อยู่เรียงเป็นกริด — จอกว้างขึ้นได้การ์ดเคียงกันมากขึ้น ไม่ใช่การ์ดยืดเต็มแถว
+        // โหมดแก้ต้องการที่กว้างกว่า (ช่องเลือกจังหวัด/อำเภอ/ตำบล) ขั้นต่ำจึงต่างกัน
+        <div
+          className={
+            isView
+              ? "grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-2"
+              : "grid grid-cols-[repeat(auto-fill,minmax(min(100%,26rem),1fr))] gap-2"
+          }
+        >
+          {addressFields.map((field, index) =>
+            isView ? (
+              <AddressView key={field.id} form={form} index={index} />
+            ) : (
               <AddressRow
                 key={field.id}
                 form={form}
@@ -100,11 +110,60 @@ export function VendorAddress({
                 isDisabled={isDisabled}
                 onRemove={() => removeAddress(index)}
               />
-            ))}
-          </div>
-        )}
+            ),
+          )}
+        </div>
+      )}
+    </CompactSection>
+  );
+}
+
+/**
+ * ที่อยู่ในโหมดดู — ข้อความล้วน ไม่มีช่องกรอก
+ *
+ * เดิมโหมดดูใช้ `AddressRow` ตัวเดียวกับโหมดแก้แล้ว disable ทุกช่อง: หนึ่งที่อยู่กินที่ 6–7 ช่องกรอก
+ * ที่กรอกไม่ได้ อ่านเป็น "ฟอร์มที่แก้ไม่ได้" ไม่ใช่ข้อมูล และยังยิงโหลดทะเบียนตำบลทั้งประเทศเพื่อ
+ * เติม dropdown ที่ไม่มีใครเปิด
+ */
+function AddressView({
+  form,
+  index,
+}: {
+  readonly form: ReturnType<typeof useForm<VendorFormValues>>;
+  readonly index: number;
+}) {
+  const t = useTranslations("vendorManagement.vendor");
+  const a = form.getValues(`vendor_address.${index}`);
+  const typeLabels: Record<string, string> = {
+    contact_address: t("address.contactAddress"),
+    mailing_address: t("address.mailingAddress"),
+    register_address: t("address.registeredAddress"),
+  };
+  const Icon = ADDRESS_TYPE_ICON[a.address_type ?? ""];
+  const lines = [
+    a.address_line1,
+    a.address_line2,
+    [a.sub_district, a.district, a.city].filter(Boolean).join(", "),
+    [a.province, a.postal_code].filter(Boolean).join(" "),
+    a.country,
+  ].filter((line): line is string => !!line && line.trim() !== "");
+
+  return (
+    <div className="border-border/60 bg-card min-w-0 rounded-lg border p-3">
+      <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+        {Icon && <Icon className="size-3.5 shrink-0" aria-hidden="true" />}
+        {typeLabels[a.address_type ?? ""] ?? a.address_type}
       </div>
-    </SettingSection>
+      {lines.length > 0 ? (
+        <div className="mt-1 text-sm break-words">
+          {lines.map((line, i) => (
+            <div key={i}>{line}</div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-muted-foreground/60 mt-1 text-sm">—</div>
+      )}
+    </div>
   );
 }
 
@@ -271,9 +330,10 @@ const AddressRow = ({ form, index, isDisabled, onRemove }: AddressRowProps) => {
   };
 
   return (
-    <div className="border-border/60 bg-card rounded-xl border p-3">
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    // @container: ช่องจังหวัด/อำเภอ/ตำบลแตกคอลัมน์ตามความกว้างของการ์ดเอง (การ์ดอยู่ในกริดหลายคอลัมน์)
+    <div className="border-border/60 bg-card @container min-w-0 rounded-xl border p-3">
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Controller
             control={form.control}
             name={`vendor_address.${index}.address_type`}
@@ -285,7 +345,7 @@ const AddressRow = ({ form, index, isDisabled, onRemove }: AddressRowProps) => {
               >
                 <SelectTrigger
                   className={cn(
-                    "h-7 w-56 text-xs",
+                    "h-7 w-48 text-xs",
                     hasError && "border-destructive",
                   )}
                 >
@@ -371,7 +431,7 @@ const AddressRow = ({ form, index, isDisabled, onRemove }: AddressRowProps) => {
 
         {isThai ? (
           <>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-2 @sm:grid-cols-2 @xl:grid-cols-3">
               <LookupThaiProvince
                 value={provinceCode}
                 onValueChange={(code) => {
@@ -444,7 +504,7 @@ const AddressRow = ({ form, index, isDisabled, onRemove }: AddressRowProps) => {
           </>
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-2 @sm:grid-cols-2 @xl:grid-cols-3">
               <div className="space-y-1">
                 <Input
                   placeholder={t("address.city")}
@@ -473,7 +533,7 @@ const AddressRow = ({ form, index, isDisabled, onRemove }: AddressRowProps) => {
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-2 @sm:grid-cols-2 @xl:grid-cols-3">
               <Input
                 placeholder={t("address.provinceState")}
                 disabled={isDisabled}

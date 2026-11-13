@@ -46,6 +46,10 @@ description: ใช้เมื่อจัดหรือปรับ layout �
 12. **ปุ่ม View (bookmark) และ Filter อยู่ติดช่องค้น** — ไม่ถูกดันไปขวาสุดของแถว
     (ผู้ใช้สั่งบนหน้า `/system-admin/user` 2026-11-13) ฝั่งขวาของแถบมีได้เฉพาะปุ่มของตาราง
     (เรียง เลือกคอลัมน์ สลับมุมมอง)
+13. **ปุ่มบนหัวฟอร์มอยู่บรรทัดเดียวทุกขนาดจอ** (ผู้ใช้สั่งบนหน้า vendor 2026-11-13) — หัวแคบกว่า 576px
+    ปุ่มรอง (Cancel, Delete, Print, Comment, Activity) เหลือแต่ไอคอน ปุ่มหลัก (Edit / Save) เก็บป้าย
+    ลำดับคงเดิมและ**ไม่ยุบเป็นเมนู ⋯** `FormToolbar` + `PrintDocumentButton` ทำให้แล้ว ปุ่มของหน้าที่
+    ใส่เพิ่มบนหัวให้ห่อป้ายด้วย `<span className="@max-xl/doc-header:sr-only">` และใส่ `title`
 
 ## หน้า landing ของโมดูล
 
@@ -71,7 +75,8 @@ description: ใช้เมื่อจัดหรือปรับ layout �
 
 ## ของที่มีอยู่แล้ว — ใช้ อย่าเขียนชุดที่สอง
 
-- `components/share/compact-section.tsx` — `CompactSection` (`count`, `action`, `first`),
+- `components/share/compact-section.tsx` — `CompactSection` (`count`, `action`, `first`,
+  `frameless` = ไม่ห่อการ์ด สำหรับเนื้อหาที่มีกรอบเอง เช่น กริดของการ์ดรายการหรือตาราง),
   `CompactSectionSkeleton`, `FieldGrid` (`size="field"` | `"item"`), `SECTION_PAIR`
 - `components/share/setting-field.tsx` — `SettingField` ช่องโหมดดู: ป้ายจาง + ค่าตัวเข้ม ไม่มีกรอบ
   (prop `specimen` ของข้อ 8, `fullWidth` = `@md:col-span-2`) ใช้ได้ทุกโมดูล
@@ -79,9 +84,9 @@ description: ใช้เมื่อจัดหรือปรับ layout �
   รหัสเอกสาร + ป้ายบน ค่าล่าง) — ยังเป็นของโมดูล system-admin โมดูลอื่นที่ต้องใช้ให้ยกขึ้น
   `components/` ก่อน (ESLint ห้าม `routes/<A>/` → `routes/<B>/`)
 - `DataGrid` column `meta: { grow: true }` — คอลัมน์รับความกว้างที่เหลือ
-- `routes/system-admin/shared/use-element-width.ts` — `useElementWidth()` วัดความกว้างของกล่อง
+- `hooks/use-element-width.ts` — `useElementWidth()` วัดความกว้างของกล่อง
   ด้วย ResizeObserver สำหรับจุดที่ container query ของ CSS ทำไม่ได้ (เลือกคอลัมน์/ขนาดคอลัมน์ของ
-  `DataGrid`) — ยังเป็นของโมดูล system-admin
+  `DataGrid`) ใช้ได้ทุกโมดูล
 - `components/list-filter/list-toolbar.tsx` — `ListToolbar` ทั้ง `variant="wrap"` และ `"row"`
   วางปุ่ม View/Filter ติดช่องค้นให้แล้ว อย่าเขียนแถบค้นหาเอง
 - ตัวอย่างแถบของ shell: `components/footer/status-bar.tsx`
@@ -91,7 +96,9 @@ inventory-period + footer #550 · interface (list) #552 · email-profile #553 ·
 role (list) #555 · running-code (list) #556 · document (list) #557 · storage #558 · user (list) ·
 profile (หน้าดู: การ์ดต่อ BU เต็มความกว้าง) #565 ·
 profile/setting (ฟอร์มแถวเดียว + กริดโทเค็น) #566 ·
-system-admin landing (multi-column, ของจริงเท่านั้น) #568
+system-admin landing (multi-column, ของจริงเท่านั้น) #568 ·
+user (detail: โหมดดูแสดงเฉพาะของที่ถืออยู่ + ตารางเลือกคอลัมน์ 3 ขั้นตามความกว้างกล่อง) ·
+vendor (detail: รายการเป็นกริดของการ์ด, ที่อยู่โหมดดูเป็นข้อความ, `CompactSection frameless`)
 
 ## กับดัก
 
@@ -119,6 +126,21 @@ system-admin landing (multi-column, ของจริงเท่านั้�
 - **กริดจำนวนคอลัมน์ตายตัวเหลือคอลัมน์ว่างเมื่อรายการน้อยกว่าคอลัมน์** — รายการที่จำนวนเปลี่ยน
   ตามข้อมูลใช้ `repeat(auto-fit, minmax(…, 1fr))` วัดด้วยขอบขวาของรายการสุดท้ายเทียบกับขอบขวา
   ของกล่อง ทุกขนาดจอ
+- **โหมดดูของรายการให้ติ๊ก ไม่ใช่รายการเดิมที่ถูก disable** — แสดงเฉพาะของที่ถืออยู่เป็นช่องของ
+  `FieldGrid` (ชื่อ + คำอธิบาย) จากข้อมูลที่มากับตัวเอกสาร ไม่ต้องยิงทะเบียนทั้งชุด · โหมดแก้ค่อย
+  โชว์รายการให้ติ๊ก และจำกัดความกว้างของรายการ (`max-w-2xl`) เมื่อแถวมีชื่อชิดซ้าย–เครื่องหมายชิดขวา
+  ตัวอย่าง: `routes/system-admin/user/user-assigned-roles.tsx`
+- **รายการที่เพิ่ม/ลบได้ (ที่อยู่ ผู้ติดต่อ) เป็นกริดของการ์ด ไม่ใช่แถวเต็มความกว้าง** —
+  `grid-cols-[repeat(auto-fill,minmax(min(100%,<ขั้นต่ำ>),1fr))]` (`auto-fill` ไม่ใช่ `auto-fit`:
+  มีใบเดียวต้องไม่ยืดเต็มแถว) ขั้นต่ำของโหมดแก้กว้างกว่าโหมดดู และข้างในการ์ดต้องใช้ container
+  query (`@container` + `@sm:`) เพราะการ์ดแคบเกิดได้บนจอกว้าง · โหมดดูเขียนเป็นคอมโพเนนต์แยกที่
+  แสดงข้อความ ไม่ใช่ฟอร์มเดิมที่ disable ทุกช่อง ตัวอย่าง: `routes/vendor-management/vendor/`
+- **ตารางคอลัมน์น้อยในหน้า detail: ใช้ `grow` เฉพาะเมื่อกล่องกว้างพอ** — วัดด้วย `useElementWidth`
+  กล่องแคบกว่าผลรวมคอลัมน์ให้กลับไปแบ่งตามสัดส่วน (ไม่ใส่ `grow`) ไม่งั้นตารางล้นกล่องบนมือถือ
+- **ตารางในหน้า detail บนกล่องแคบ (มือถือ) เป็นการ์ดทีละแถว ไม่ใช่ตารางที่ถูกบีบ** (ผู้ใช้สั่งบนหน้า
+  vendor 2026-11-13) — สลับจากความกว้างกล่องที่วัดได้ (`< 560px`) ไม่ใช่ breakpoint ของจอ การ์ดต้องมี
+  ข้อมูลครบทุกช่องของตาราง ปุ่มของแถวสูง 32px (`size="icon-sm"`) และกล่องที่ผูก ref วัดความกว้างต้อง
+  อยู่ทั้งสองมุมมอง ตัวอย่าง: `CertificateCards` ใน `vendor-certificate-section.tsx`
 - **skeleton ต้องเป็นโครงเดียวกับหน้าจริง** ไม่งั้นเนื้อหากระโดดตอนข้อมูลมา
 - **วัดขนาดจอครบไม่ได้แปลว่าฟอร์มใช้ได้** — ฟอร์มที่ผูก `values` กับ query ต้องมี
   `resetOptions: { keepDirtyValues: true }` และ mutation ต้อง `setQueryData` ก่อน invalidate

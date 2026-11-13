@@ -63,7 +63,9 @@ export function DocFormHeader({
           body; ปุ่ม back absolute อ้าง title-row (start = ตำแหน่ง title เสมอ ไม่ว่า
           column จะ px-4 หรือ flush) จึง hang ออกซ้ายด้วย translate เดียวกันทั้งสอง
           โหมด — อยู่บรรทัดเดียวกับ title โดยไม่ push ให้ title เยื้อง */}
-      <div className={cn("relative", !flush && "px-4")}>
+      {/* @container/doc-header: ปุ่มบนหัวตัดสินจากความกว้างของหัวเอง — หัวแคบกว่า 576px (มือถือ)
+          ปุ่มรองเหลือแต่ไอคอน แถวปุ่มจึงไม่ตกเป็นสองบรรทัด (ดู LABEL_HIDE ใน form-toolbar.tsx) */}
+      <div className={cn("@container/doc-header relative", !flush && "px-4")}>
         <div className="relative flex flex-wrap items-center gap-2">
           {onBack && (
             <BackButton

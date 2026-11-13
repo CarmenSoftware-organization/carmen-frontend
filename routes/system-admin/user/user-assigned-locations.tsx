@@ -30,9 +30,11 @@ import SearchInput from "@/components/search-input";
 import { LocationTypeLabel } from "@/components/share/location-type-label";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { INVENTORY_TYPE, INVENTORY_TYPE_LABEL_KEY } from "@/constant/location";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { useLocationAll } from "@/hooks/use-location";
 import type { UserLocation } from "@/types/user";
-import { AssignSection, EmptyState } from "./user-assigned-ui";
+import { CompactSection } from "@/components/share/compact-section";
+import { EmptyState } from "./user-assigned-ui";
 import type { UserAssignedFormValues } from "./user-assigned-form-schema";
 
 /* ------------------------------------------------------------------ */
@@ -186,8 +188,7 @@ export function LocationsSection({
     ) : undefined;
 
   return (
-    <AssignSection
-      wide
+    <CompactSection
       title={tu("locationsTitle")}
       description={tu("locationsDesc")}
       // หัว section นับ "คลังของคนนี้" เสมอ ไม่ใช่จำนวนแถวในตาราง — ตอนแก้
@@ -202,8 +203,23 @@ export function LocationsSection({
         visibleLocations={visibleLocations}
         filters={filters}
       />
-    </AssignSection>
+    </CompactSection>
   );
+}
+
+/**
+ * ชุดคอลัมน์ตามความกว้างของกล่องตาราง (รวมช่องติ๊ก 40px ของโหมดแก้ไว้ในงบแล้ว)
+ *
+ * - `full`  ≥ 590px: # 32 · รหัส 100 · ชื่อ 180 · ประเภท 120 · สถานะ 110↔ = 542 (+40 = 582)
+ * - `mid`   ≥ 440px: รหัส 100 · ชื่อ 180 · สถานะ 110↔ = 390 (+40 = 430) — ประเภทยังกรองได้จาก dropdown
+ * - `narrow` < 440px: ชื่อ 130↔ (รหัสอยู่ใต้ชื่อ) · สถานะ 96 = 226 (+40 = 266 = กล่องที่จอ 390)
+ *
+ * จุดเปลี่ยนขั้นสูงกว่าผลรวมของขั้นนั้นเสมอ — ตั้งเท่ากันพอดีคอลัมน์รองจะกลับมาแล้วเบียดคอลัมน์ยืด
+ * แก้ `size` ของคอลัมน์เมื่อไรต้องคิดตัวเลขชุดนี้ใหม่
+ */
+function columnTier(width: number | undefined): "full" | "mid" | "narrow" {
+  if (width === undefined || width >= 590) return "full";
+  return width >= 440 ? "mid" : "narrow";
 }
 
 /* ------------------------------------------------------------------ */
@@ -241,6 +257,10 @@ function LocationsView({
   const tfl = useTranslations("field");
   const [search, setSearch] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
+  // เลือกชุดคอลัมน์จากความกว้างของกล่องตารางเอง (ไม่ใช่ของจอ) — การ์ดนี้กว้างครึ่งจอบนจอใหญ่
+  // และเต็มจอบนจอเล็ก · undefined (ยังไม่ได้วัด) = ชุดเต็ม
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const tier = columnTier(gridBoxWidth);
 
   // กรองในหน่วยความจำ — คลังมาทั้งก้อนอยู่แล้วทั้งสองโหมด ไม่มี API ให้ยิงต่อ
   // ค้นทั้งรหัสและชื่อ คนจำได้อย่างใดอย่างหนึ่ง
@@ -308,7 +328,7 @@ function LocationsView({
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title={tfl("code")} />
         ),
-        size: 120,
+        size: 100,
         cell: ({ row }) => (
           <span className="text-muted-foreground">
             <HighlightText text={row.original.code} query={search} />
@@ -321,58 +341,63 @@ function LocationsView({
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title={tfl("name")} />
         ),
-        size: 260,
+        size: tier === "narrow" ? 130 : 180,
         // ยังไม่ทำเป็นลิงก์ไป /config/location/:id — คนที่ดูหน้า user ไม่จำเป็นต้องมี
         // สิทธิ์เปิดหน้าตั้งค่าคลัง ต้องเช็ค permission ก่อนถึงจะให้กดได้
         cell: ({ row }) => (
-          <span className="font-medium">
-            <HighlightText text={row.original.name} query={search} />
-          </span>
+          <>
+            <span className="font-medium break-words">
+              <HighlightText text={row.original.name} query={search} />
+            </span>
+            {/* ชุดแคบซ่อนคอลัมน์รหัส — รหัสย้ายมาอยู่ใต้ชื่อ ยังค้นและอ่านได้ */}
+            {tier === "narrow" && (
+              <span className="text-muted-foreground block">
+                <HighlightText text={row.original.code} query={search} />
+              </span>
+            )}
+          </>
         ),
+        meta: tier === "narrow" ? { grow: true } : undefined,
       },
       {
         accessorKey: "type",
         id: "type",
         header: ({ column }) => (
-          <DataGridColumnHeader
-            column={column}
-            title={tfl("locationType")}
-            className="justify-center"
-          />
+          <DataGridColumnHeader column={column} title={tfl("locationType")} />
         ),
-        size: 140,
+        size: 120,
         cell: ({ row }) => <LocationTypeLabel type={row.original.type} />,
-        meta: {
-          headerClassName: "text-center",
-          cellClassName: "text-center",
-        },
       },
       {
         accessorKey: "is_active",
         id: "status",
         header: ({ column }) => (
-          <DataGridColumnHeader
-            column={column}
-            title={tfl("status")}
-            className="justify-center"
-          />
+          <DataGridColumnHeader column={column} title={tfl("status")} />
         ),
-        size: 110,
+        size: tier === "narrow" ? 96 : 110,
         cell: ({ row }) => <StatusBadge active={row.original.is_active} />,
-        meta: {
-          headerClassName: "text-center",
-          cellClassName: "text-center",
-        },
+        // ชุดเต็ม/กลาง: คอลัมน์สุดท้ายรับความกว้างที่เหลือ เนื้อหาชิดซ้าย — คอลัมน์ข้างหน้ากว้างคงที่
+        // จึงอยู่ติดกัน ไม่กระจายห่างกันบนจอกว้าง · ชุดแคบ: ชื่อเป็นตัวยืดแทน สถานะกว้างคงที่
+        meta: tier === "narrow" ? undefined : { grow: true },
       },
     ];
 
     return isDisabled ? base : [assignColumn, ...base];
-  }, [tfl, search, isDisabled, form.control]);
+  }, [tfl, search, isDisabled, form.control, tier]);
 
   const table = useReactTable({
     data: rows,
     columns,
-    state: { sorting },
+    state: {
+      sorting,
+      // ซ่อนผ่าน state ของตาราง ไม่ใช่ CSS — ความกว้างขั้นต่ำของตารางที่มีคอลัมน์ยืดคิดจากทุก
+      // คอลัมน์ที่ TanStack ถือว่าเปิดอยู่
+      columnVisibility: {
+        index: tier === "full",
+        type: tier === "full",
+        code: tier !== "narrow",
+      },
+    },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     // เรียงฝั่ง client ล้วน — ข้อมูลมาทั้งก้อนแล้ว ไม่ต้องยิงกลับไปเรียงที่ backend
@@ -390,39 +415,42 @@ function LocationsView({
           onInputChange={setSearch}
           onSearch={setSearch}
         />
-        {filters && <div className="sm:ms-auto">{filters}</div>}
+        {/* ตัวกรองอยู่ติดช่องค้น ไม่ถูกดันไปขวาสุดของแถว (กติกาข้อ 12) */}
+        {filters}
       </div>
-      <DataGrid
-        table={table}
-        recordCount={rows.length}
-        isLoading={isLoading}
-        tableLayout={{ headerSticky: true }}
-        emptyMessage={
-          // ยังไม่ผูกคลังเลย กับ กรองแล้วไม่เหลือ แก้คนละวิธี — ข้อความจึงต้องต่างกัน
-          allRows.length === 0 ? (
-            <EmptyState
-              icon={MapPin}
-              title={tu("noLocationsAssigned")}
-              desc={tu("noLocationsAssignedDesc")}
-            />
-          ) : (
-            <EmptyState
-              icon={MapPin}
-              title={tu("noLocationsMatchFilter")}
-              desc={tu("noLocationsMatchFilterDesc")}
-            />
-          )
-        }
-      >
-        {/* จำกัดความสูงแล้วให้เลื่อนในกล่อง — โหมดแก้โชว์คลังทั้ง BU ปล่อยยาว
+      <div ref={setGridBox}>
+        <DataGrid
+          table={table}
+          recordCount={rows.length}
+          isLoading={isLoading}
+          tableLayout={{ headerSticky: true }}
+          emptyMessage={
+            // ยังไม่ผูกคลังเลย กับ กรองแล้วไม่เหลือ แก้คนละวิธี — ข้อความจึงต้องต่างกัน
+            allRows.length === 0 ? (
+              <EmptyState
+                icon={MapPin}
+                title={tu("noLocationsAssigned")}
+                desc={tu("noLocationsAssignedDesc")}
+              />
+            ) : (
+              <EmptyState
+                icon={MapPin}
+                title={tu("noLocationsMatchFilter")}
+                desc={tu("noLocationsMatchFilterDesc")}
+              />
+            )
+          }
+        >
+          {/* จำกัดความสูงแล้วให้เลื่อนในกล่อง — โหมดแก้โชว์คลังทั้ง BU ปล่อยยาว
             ตามจำนวนแถวจะดันปุ่ม Save กับ section อื่นหลุดจอไปเลย · หัวตาราง
             sticky ไว้ ไม่งั้นเลื่อนไปกลางตารางแล้วไม่รู้ว่าคอลัมน์ไหนคืออะไร */}
-        <DataGridContainer className="flex max-h-96 flex-col">
-          <DataGridScrollArea>
-            <DataGridTable />
-          </DataGridScrollArea>
-        </DataGridContainer>
-      </DataGrid>
+          <DataGridContainer className="flex max-h-96 flex-col">
+            <DataGridScrollArea>
+              <DataGridTable />
+            </DataGridScrollArea>
+          </DataGridContainer>
+        </DataGrid>
+      </div>
     </div>
   );
 }

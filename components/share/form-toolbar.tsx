@@ -71,6 +71,17 @@ interface FormToolbarProps {
  * `PERMISSIONS` จริง (leaf ที่ใช้ permission ระดับโมดูลประกอบได้ key ผี เช่น
  * `operation_plan.update` ซึ่งต้องไม่ gate)
  */
+/**
+ * ป้ายของปุ่มรองบนหัวฟอร์ม — หัวแคบกว่า 576px (มือถือ) ซ่อนป้ายเหลือไอคอน ปุ่มทั้งแถวจึงอยู่บรรทัดเดียว
+ *
+ * ผู้ใช้สั่ง 2026-11-13 ว่าปุ่มบนหัวที่มือถือห้ามขึ้นหลายบรรทัด · ไม่ยุบเป็นเมนู ⋯ (ผู้ใช้เคยสั่งกลับ
+ * เรื่องนั้นแล้ว — ปุ่มต้องเห็นครบ) และลำดับคงเดิม: Edit/Cancel·Save → Delete → ปุ่มของหน้า → Comment
+ * → Activity · ปุ่มหลัก (Edit / Save) เก็บป้ายไว้เสมอ เพราะเป็นปุ่มเดียวที่ต้องอ่านออกโดยไม่ต้องเดา
+ * `sr-only` ไม่ใช่ `hidden`: ป้ายยังเป็นชื่อของปุ่มสำหรับ screen reader และแต่ละปุ่มมี `title` ให้ hover
+ * ตัดสินจากความกว้างของหัวเอง (`@container/doc-header` ใน DocFormHeader) ไม่ใช่ของจอ
+ */
+const LABEL_HIDE = "@max-xl/doc-header:sr-only";
+
 export function FormToolbar({
   entity,
   mode,
@@ -178,9 +189,10 @@ export function FormToolbar({
             size="sm"
             onClick={onCancel}
             disabled={isPending}
+            title={tc("cancel")}
           >
             <X />
-            {tc("cancel")}
+            <span className={LABEL_HIDE}>{tc("cancel")}</span>
           </Button>
           {submitSlot ??
             (writeDisabled ? (
@@ -235,7 +247,7 @@ export function FormToolbar({
           disabled={
             writeDisabled || (!deleteDenied && (isPending || deleteIsPending))
           }
-          title={disabledReason}
+          title={disabledReason ?? tc("delete")}
           aria-disabled={!writeDisabled && deleteDenied ? true : undefined}
           // outline สีแดง ไม่ใช่ variant destructive (พื้นแดงทึบ) — ยังเป็นปุ่มรองข้าง
           // ปุ่มหลัก แต่ต้องอ่านออกว่าเป็นการลบ ไม่ใช่ปุ่มเทาเหมือน Cancel ข้าง ๆ
@@ -245,7 +257,7 @@ export function FormToolbar({
           )}
         >
           <Trash2 />
-          {tc("delete")}
+          <span className={LABEL_HIDE}>{tc("delete")}</span>
         </Button>
       )}
       {/* ปุ่มเฉพาะหน้า (Print, Duplicate, DocActions …) มาก่อน Comment · Activity
@@ -253,9 +265,15 @@ export function FormToolbar({
           Edit · Delete · [ปุ่มของหน้า] · Comment · Activity */}
       {children}
       {onComment && (
-        <Button type="button" variant="outline" size="sm" onClick={onComment}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onComment}
+          title={tc("comment")}
+        >
           <MessageSquare />
-          {tc("comment")}
+          <span className={LABEL_HIDE}>{tc("comment")}</span>
         </Button>
       )}
       {activity && (
@@ -264,9 +282,10 @@ export function FormToolbar({
           variant="outline"
           size="sm"
           onClick={() => openActivity(activity.id, activity.label)}
+          title={tActivity("title")}
         >
           <History />
-          {tActivity("title")}
+          <span className={LABEL_HIDE}>{tActivity("title")}</span>
         </Button>
       )}
     </>

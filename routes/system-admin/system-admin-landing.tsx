@@ -10,7 +10,17 @@ import { CHAPTERS } from "./landing-types";
 
 const SYSTEM_ADMIN_SUBS =
   moduleList.find((mod) => mod.path === "/system-admin")?.subModules ?? [];
-const MENU_PATHS = new Set(SYSTEM_ADMIN_SUBS.map((sub) => sub.path));
+
+/**
+ * กางเมนูทุกชั้นเป็นรายการเดียว — บางหน้าเป็นเมนูชั้นสอง (Notification Template อยู่ใต้ Workflows)
+ * ดูแค่ชั้นแรกแล้วหน้าพวกนั้นจะถูกมองว่า "ไม่อยู่ในเมนู = เข้าได้" การ์ดจึงกดได้ทั้งที่เมนูซ้ายบล็อก
+ * (เจอจริงด้วยบัญชี non-admin 2026-11-13)
+ */
+function flatten<T extends { subModules?: T[] }>(mods: readonly T[]): T[] {
+  return mods.flatMap((mod) => [mod, ...flatten(mod.subModules ?? [])]);
+}
+
+const MENU_PATHS = new Set(flatten(SYSTEM_ADMIN_SUBS).map((sub) => sub.path));
 
 /**
  * หน้า landing ของ System Admin — เต็มความกว้างจอ กะทัดรัด (skill `carmen-blue-ui-design`)
@@ -29,7 +39,7 @@ export default function SystemAdminLanding() {
   const t = useTranslations("systemAdmin.landing");
   const visible = useVisibleModules(SYSTEM_ADMIN_SUBS);
   const accessByPath = new Map<string, ModuleWithAccess>(
-    visible.map((sub) => [sub.path, sub]),
+    flatten(visible).map((sub) => [sub.path, sub]),
   );
 
   const chapters = CHAPTERS.map((chapter) => ({
