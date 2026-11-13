@@ -12,6 +12,8 @@ interface Props {
   onAdd: (node: CategoryNode) => void;
   onDelete: (node: CategoryNode | null) => void;
   search: string;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
 }
 
 export default function TreeContent({
@@ -23,6 +25,8 @@ export default function TreeContent({
   onAdd,
   onDelete,
   search,
+  selectedId,
+  onSelect,
 }: Props) {
   const t = useTranslations("productManagement.category");
 
@@ -66,6 +70,8 @@ export default function TreeContent({
           onAdd={onAdd}
           onDelete={(node) => onDelete(node)}
           search={search}
+          selectedId={selectedId}
+          onSelect={onSelect}
         />
       ))}
     </div>
