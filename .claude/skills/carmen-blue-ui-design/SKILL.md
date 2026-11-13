@@ -49,7 +49,8 @@ description: ใช้เมื่อจัดหรือปรับ layout �
 13. **ปุ่มบนหัวฟอร์มอยู่บรรทัดเดียวทุกขนาดจอ** (ผู้ใช้สั่งบนหน้า vendor 2026-11-13) — หัวแคบกว่า 576px
     ปุ่มรอง (Cancel, Delete, Print, Comment, Activity) เหลือแต่ไอคอน ปุ่มหลัก (Edit / Save) เก็บป้าย
     ลำดับคงเดิมและ**ไม่ยุบเป็นเมนู ⋯** `FormToolbar` + `PrintDocumentButton` ทำให้แล้ว ปุ่มของหน้าที่
-    ใส่เพิ่มบนหัวให้ห่อป้ายด้วย `<span className="@max-xl/doc-header:sr-only">` และใส่ `title`
+    ใส่เพิ่มบนหัว (children ของ `FormToolbar`) ให้ห่อป้ายด้วย `<ToolbarLabel>` จาก
+    `components/share/form-toolbar.tsx` และใส่ `title` — ลืมแล้วปุ่มนั้นดันทั้งแถวตกบรรทัดบนมือถือ
 
 ## หน้า landing ของโมดูล
 
@@ -141,6 +142,12 @@ vendor (detail: รายการเป็นกริดของการ์�
   vendor 2026-11-13) — สลับจากความกว้างกล่องที่วัดได้ (`< 560px`) ไม่ใช่ breakpoint ของจอ การ์ดต้องมี
   ข้อมูลครบทุกช่องของตาราง ปุ่มของแถวสูง 32px (`size="icon-sm"`) และกล่องที่ผูก ref วัดความกว้างต้อง
   อยู่ทั้งสองมุมมอง ตัวอย่าง: `CertificateCards` ใน `vendor-certificate-section.tsx`
+- **หน้าที่กลับเป็นโหมดดูหลัง Save ต้องรอข้อมูลใหม่ก่อน** — mutation ที่แค่สั่ง `invalidateQueries` แล้ว
+  จบ ทำให้โหมดดูโชว์ค่าเก่า 1–3 วินาที และ Save ซ้ำในช่วงนั้นส่ง `doc_version` เก่าไปชน 409 ให้
+  `onSuccess` ของ hook **คืน promise ของ `invalidateQueries`** (mutation ค้าง pending จน refetch เสร็จ)
+  ตัวอย่าง: `useUpdateBusinessUnit` ใน `hooks/use-business-unit.ts`
+- **คอลัมน์ปุ่มของแถวใน `DataGrid` ต้องกว้างพอ**: ปุ่ม 24px สองปุ่ม + ช่องไฟ 4 + padding เซลล์ 24 = 76px
+  ตั้ง `size: 72` แล้วปุ่มตกเป็นสองบรรทัด ใช้ 84
 - **skeleton ต้องเป็นโครงเดียวกับหน้าจริง** ไม่งั้นเนื้อหากระโดดตอนข้อมูลมา
 - **วัดขนาดจอครบไม่ได้แปลว่าฟอร์มใช้ได้** — ฟอร์มที่ผูก `values` กับ query ต้องมี
   `resetOptions: { keepDirtyValues: true }` และ mutation ต้อง `setQueryData` ก่อน invalidate

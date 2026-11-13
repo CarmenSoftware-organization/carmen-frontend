@@ -73,10 +73,13 @@ export function useUpdateBusinessUnit(buId: string | undefined) {
       return res.json().catch(() => ({}));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PROFILE] });
+      // คืน promise ของ refetch — mutation ยัง pending จนข้อมูล BU ชุดใหม่มาถึง แล้ว callback ของ
+      // ผู้เรียก (ปิดโหมดแก้) ค่อยทำงาน · ไม่รอแล้วหน้า Company Profile / Default Setting กลับเป็นโหมดดู
+      // พร้อมค่าเก่าอยู่ 1–3 วินาที และถ้ากด Edit แล้ว Save ซ้ำในช่วงนั้นจะส่ง doc_version เก่าไปชน 409
+      return queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.BUSINESS_UNIT_DETAIL, buId],
       });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PROFILE] });
     },
   });
 }

@@ -14,7 +14,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { SettingSection } from "@/components/ui/setting-section";
 import { FormPageSkeleton } from "@/components/loader/form-page-skeleton";
 import { FormPageShell } from "@/components/share/form-page-shell";
-import { FormToolbar } from "@/components/share/form-toolbar";
+import { FormToolbar, ToolbarLabel } from "@/components/share/form-toolbar";
 import { useEntityForm } from "@/hooks/use-entity-form";
 import { useCan } from "@/hooks/use-can";
 import { PERMISSIONS } from "@/constant/permissions";
@@ -101,8 +101,7 @@ function JvTemplateForm({
   const presetType: JvTemplateType | "" =
     page.fixedType ??
     (queryType && page.creatableTypes.includes(queryType) ? queryType : "");
-  const typeChoices =
-    !template && !presetType ? page.creatableTypes : null;
+  const typeChoices = !template && !presetType ? page.creatableTypes : null;
 
   const createTemplate = useCreateJvTemplate();
   const updateTemplate = useUpdateJvTemplate();
@@ -141,7 +140,10 @@ function JvTemplateForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- รีเซ็ตเมื่อเวอร์ชันเปลี่ยนเท่านั้น
   }, [template?.doc_version]);
 
-  const watchedType = useWatch({ control: form.control, name: "template_type" });
+  const watchedType = useWatch({
+    control: form.control,
+    name: "template_type",
+  });
   const watchedName = useWatch({ control: form.control, name: "name" });
   const watchedCode = useWatch({ control: form.control, name: "code" });
   const watchedActive = useWatch({ control: form.control, name: "is_active" });
@@ -238,13 +240,14 @@ function JvTemplateForm({
         >
           {showGenerateButton && (
             <Button
+              title={t("generate")}
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setShowGenerate(true)}
             >
               <Play />
-              {t("generate")}
+              <ToolbarLabel>{t("generate")}</ToolbarLabel>
             </Button>
           )}
         </FormToolbar>
@@ -253,7 +256,9 @@ function JvTemplateForm({
       <form
         id={FORM_ID}
         noValidate
-        onSubmit={form.handleSubmit(onSubmit, () => scrollToFirstInvalidField())}
+        onSubmit={form.handleSubmit(onSubmit, () =>
+          scrollToFirstInvalidField(),
+        )}
       >
         <JvTemplateHeaderFields
           form={form}

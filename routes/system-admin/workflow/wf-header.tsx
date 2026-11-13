@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/tooltip";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { WarningDialog } from "@/components/ui/warning-dialog";
-import { FormToolbar } from "@/components/share/form-toolbar";
+import { FormToolbar, ToolbarLabel } from "@/components/share/form-toolbar";
 import { openActivity } from "@/components/share/activity-sheet-host";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
 import { useCan } from "@/hooks/use-can";
@@ -184,19 +184,20 @@ export function WfHeader({
             className={canWrite && createDenied ? "opacity-50" : undefined}
           >
             <Copy />
-            {t("duplicate")}
+            <ToolbarLabel>{t("duplicate")}</ToolbarLabel>
           </Button>
         )}
         {/* วาด Activity เองแทน prop activity ของ FormToolbar (ซึ่งต่อ children ไว้หลัง Activity)
             เพื่อให้ปุ่มประวัติอยู่ท้ายสุด ถัดจากทำสำเนา */}
         <Button
+          title={tActivity("title")}
           type="button"
           variant="outline"
           size="sm"
           onClick={() => openActivity(workflow.id, workflow.name)}
         >
           <History />
-          {tActivity("title")}
+          <ToolbarLabel>{tActivity("title")}</ToolbarLabel>
         </Button>
       </FormToolbar>
 

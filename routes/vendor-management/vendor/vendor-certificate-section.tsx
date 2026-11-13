@@ -113,11 +113,11 @@ export function VendorCertificateSection({
 
   // กล่องกว้างพอ → คอลัมน์กว้างคงที่ สถานะรับที่เหลือ (ชิดซ้าย) คอลัมน์จึงอยู่ติดกัน ไม่กระจายห่างกัน
   // เป็นพันพิกเซลบนจอกว้าง · กล่องแคบกว่าผลรวมคอลัมน์ (# 32 · เลขที่ 120 · ชื่อ 220 · วันที่ 100×2 ·
-  // สถานะ 100 = 672, โหมดแก้ + ปุ่มของแถว 72 = 744) → กลับไปแบ่งตามสัดส่วนเหมือนเดิม ไม่งั้นตารางล้น
+  // สถานะ 100 = 672, โหมดแก้ + ปุ่มของแถว 84 = 756) → กลับไปแบ่งตามสัดส่วนเหมือนเดิม ไม่งั้นตารางล้น
   // กล่อง (คอลัมน์ยืดล็อกความกว้างขั้นต่ำของตารางไว้ที่ผลรวม) · จุดเปลี่ยนสูงกว่าผลรวมเล็กน้อย
   const [setGridBox, gridBoxWidth] = useElementWidth();
   const fixedColumns =
-    (gridBoxWidth ?? Number.POSITIVE_INFINITY) >= (readOnly ? 690 : 760);
+    (gridBoxWidth ?? Number.POSITIVE_INFINITY) >= (readOnly ? 690 : 775);
   // กล่องแคบ (มือถือ ~300px) → การ์ดทีละใบแทนตาราง: ตาราง 6–7 คอลัมน์บีบลงกล่อง 300px แล้วหัวคอลัมน์
   // กับวันที่ตัดบรรทัดจนอ่านไม่ออก (ผู้ใช้สั่ง 2026-11-13) · undefined = ยังไม่ได้วัด ใช้ตารางไปก่อน
   const asCards = gridBoxWidth !== undefined && gridBoxWidth < 560;
@@ -222,7 +222,8 @@ export function VendorCertificateSection({
                 </div>
               ),
               enableSorting: false,
-              size: 72,
+              // 84 ไม่ใช่ 72: ปุ่ม 24px สองปุ่ม + ช่องไฟ 4 + padding เซลล์ 24 = 76 — ที่ 72 ปุ่มตกเป็นสองบรรทัด
+              size: 84,
               meta: {
                 headerClassName: "text-right",
                 cellClassName: "text-right",
