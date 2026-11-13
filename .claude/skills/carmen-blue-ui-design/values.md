@@ -177,8 +177,17 @@ the columns end up thousands of pixels apart.
 { accessorKey: "status", size: 110, meta: { grow: true }, … },
 ```
 
-For a table with a long-text column (description), put `grow` on that column instead. Set `size` so
-the total fits at tablet (budget below). The `size` of the grow column is its minimum width.
+**Which column grows:** the long-text column (description, note) when the table has one — even when
+other columns come after it, as in a config list where status and the row buttons follow the
+description; those stay fixed-width. Only a table with no long-text column grows its last data
+column, as above.
+
+**Tablet budget:** the `size` total of every visible column — the index, status and row-button
+columns a helper adds count too, and so does the grow column's `size` (that is its minimum width) —
+must not exceed **662px** — or **607px** for tables built with `useConfigTable`,
+which count a 55px select column that is not rendered (details in the gotchas below). Write the sum
+in a comment above the columns.
+
 Truncate long-text cells with `block truncate` + `title` by the column width, not a fixed
 `max-w-*`.
 
