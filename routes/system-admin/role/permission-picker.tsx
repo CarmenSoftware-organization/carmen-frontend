@@ -8,17 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { usePermissionAll } from "./use-permission";
+import { usePermissionLabels } from "./use-permission-labels";
 import {
-  ACTION_TKEY,
   CATEGORY_META,
   DEFAULT_CATEGORY_META,
-  MODULE_RESOURCE_KEY,
   getCategoryIds,
   getResourceIds,
   groupPermissions,
-  resourceLabelKeys,
   sortedActions,
-  titleCase,
   type GroupedResource,
   type PermissionGroup,
   type PermissionRecord,
@@ -62,23 +59,16 @@ export function PermissionPicker({
 }: PermissionPickerProps) {
   const t = useTranslations("systemAdmin.role");
   const tc = useTranslations("common");
-  const tRes = useTranslations("systemAdmin.role.resources");
+  const {
+    categoryLabel: getCategoryLabel,
+    resourceLabel: getResourceLabel,
+    actionLabel,
+  } = usePermissionLabels();
   const { data: permData, isLoading } = usePermissionAll();
   const permissions = (permData ?? []) as PermissionRecord[];
 
   const getCategoryMeta = (cat: string) =>
     CATEGORY_META[cat] ?? DEFAULT_CATEGORY_META;
-  const getCategoryLabel = (cat: string) => {
-    const meta = CATEGORY_META[cat];
-    return meta ? t(meta.tkey) : cat;
-  };
-  const getResourceLabel = (r: GroupedResource) => {
-    if (r.resourceKey === MODULE_RESOURCE_KEY) return t("moduleAccess");
-    const key = resourceLabelKeys(r.category, r.resourceKey).find((k) =>
-      tRes.has(k),
-    );
-    return key ? tRes(key) : titleCase(r.resourceKey);
-  };
 
   const grouped = groupPermissions(permissions, getResourceLabel);
 
@@ -150,8 +140,10 @@ export function PermissionPicker({
   return (
     <div className="space-y-3">
       {/* Toolbar */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-        <div className="relative flex-1">
+      {/* ช่องค้นกว้างไม่เกิน 24rem และตัวกรองอยู่ติดกัน — ไม่ยืดช่องค้นเต็มจอกว้าง
+          ที่ไม่พอ (มือถือ) ตัวกรองลงบรรทัดถัดไปเอง ไม่ต้องอิงขนาดจอ */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative max-w-sm min-w-0 flex-1 basis-56">
           <Search
             className="text-muted-foreground absolute top-1/2 left-3 size-3.5 -translate-y-1/2"
             aria-hidden="true"
@@ -218,20 +210,28 @@ export function PermissionPicker({
           desc={t("noMatchDesc", { query: search })}
         />
       ) : (
-        filteredGroups.map((group) => (
-          <ModuleMatrix
-            key={group.category}
-            group={group}
-            categoryLabel={getCategoryLabel(group.category)}
-            categoryMeta={getCategoryMeta(group.category)}
-            selectedSet={selectedSet}
-            disabled={disabled}
-            getResourceLabel={getResourceLabel}
-            onToggleCategory={(c) => handleToggleCategory(group, c)}
-            onToggleResource={handleToggleResource}
-            onTogglePermission={handleTogglePermission}
-          />
-        ))
+        // โมดูลไหลเป็นคอลัมน์ (CSS multi-column) — การ์ดโมดูลสูงไม่เท่ากัน (4–30 แถว) กริดจะเหลือ
+        // ที่ว่างใต้ใบเตี้ย · 30rem = กว้างพอให้ชื่อ + ปุ่ม 4 ตัวอยู่บรรทัดเดียว · เพดาน 6 คอลัมน์:
+        // ที่ 4K เบราว์เซอร์แบ่งได้ 7 แต่ใบที่สูงสุด (Configuration) ทำให้ใช้จริงแค่ 6 เหลือคอลัมน์ว่าง
+        // ทางขวา · เพดานเป็นค่าคงที่ ไม่ใช่จำนวนโมดูล: กรองแล้วเหลือโมดูลเดียว การ์ดต้องไม่ยืดเต็มจอ
+        // · -mb-5 หัก mb-5 ของใบล่างสุด
+        <div className="-mb-5 gap-x-5" style={{ columns: "30rem 6" }}>
+          {filteredGroups.map((group) => (
+            <ModuleMatrix
+              key={group.category}
+              group={group}
+              categoryLabel={getCategoryLabel(group.category)}
+              categoryMeta={getCategoryMeta(group.category)}
+              selectedSet={selectedSet}
+              disabled={disabled}
+              getResourceLabel={getResourceLabel}
+              actionLabel={actionLabel}
+              onToggleCategory={(c) => handleToggleCategory(group, c)}
+              onToggleResource={handleToggleResource}
+              onTogglePermission={handleTogglePermission}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -248,6 +248,7 @@ interface ModuleMatrixProps {
   readonly selectedSet: Set<string>;
   readonly disabled?: boolean;
   readonly getResourceLabel: (r: GroupedResource) => string;
+  readonly actionLabel: (action: string) => string;
   readonly onToggleCategory: (checked: boolean) => void;
   readonly onToggleResource: (r: GroupedResource, checked: boolean) => void;
   readonly onTogglePermission: (id: string, checked: boolean) => void;
@@ -260,6 +261,7 @@ function ModuleMatrix({
   selectedSet,
   disabled,
   getResourceLabel,
+  actionLabel,
   onToggleCategory,
   onToggleResource,
   onTogglePermission,
@@ -273,7 +275,7 @@ function ModuleMatrix({
   const someChecked = selected > 0 && selected < total;
 
   return (
-    <section className="bg-card overflow-hidden rounded-xl border">
+    <section className="bg-card @container mb-5 break-inside-avoid overflow-hidden rounded-xl border shadow-sm">
       {/* Module header — neutral chrome; wayfinding by icon shape + name (single
           accent reserved for interactive/selected state, per DESIGN.md) */}
       <header className="bg-muted/30 flex items-center gap-3 border-b px-4 py-3">
@@ -281,7 +283,10 @@ function ModuleMatrix({
           className="text-muted-foreground size-5 shrink-0"
           aria-hidden="true"
         />
-        <h3 className="text-foreground min-w-0 flex-1 truncate text-sm font-semibold tracking-tight">
+        <h3
+          className="text-foreground min-w-0 flex-1 truncate text-sm font-semibold tracking-tight"
+          title={categoryLabel}
+        >
           {categoryLabel}
         </h3>
         <span className="text-muted-foreground text-micro tabular-nums">
@@ -301,7 +306,9 @@ function ModuleMatrix({
             disabled={disabled}
             aria-label={t("selectAllCategory", { category: categoryLabel })}
           />
-          {t("grantAll")}
+          {/* การ์ดแคบกว่า 320px (มือถือ): เหลือแค่ช่องติ๊ก ไม่งั้นชื่อโมดูลถูกตัดเหลือครึ่งคำ —
+              ช่องติ๊กมี aria-label ของตัวเอง ป้ายนี้จึงซ่อนจากทุกคนได้ */}
+          <span className="hidden @xs:inline">{t("grantAll")}</span>
         </label>
       </header>
 
@@ -314,6 +321,7 @@ function ModuleMatrix({
             key={r.resource}
             resource={r}
             label={getResourceLabel(r)}
+            actionLabel={actionLabel}
             selectedSet={selectedSet}
             disabled={disabled}
             onToggleResource={(c) => onToggleResource(r, c)}
@@ -332,6 +340,7 @@ function ModuleMatrix({
 interface ResourceRowProps {
   readonly resource: GroupedResource;
   readonly label: string;
+  readonly actionLabel: (action: string) => string;
   readonly selectedSet: Set<string>;
   readonly disabled?: boolean;
   readonly onToggleResource: (checked: boolean) => void;
@@ -341,6 +350,7 @@ interface ResourceRowProps {
 function ResourceRow({
   resource,
   label,
+  actionLabel,
   selectedSet,
   disabled,
   onToggleResource,
@@ -355,11 +365,13 @@ function ResourceRow({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-x-6 gap-y-1.5 px-4 py-2",
+        "flex flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-2",
         allOn ? "bg-muted/40" : "bg-card",
       )}
     >
-      <div className="flex min-w-0 flex-1 basis-48 items-center gap-3">
+      {/* ชื่อกว้างคงที่ ปุ่มต่อท้ายทันที — เดิมชื่อยืด (flex-1) ดันปุ่มไปชิดขวาการ์ด บนการ์ดกว้าง
+          ปุ่มอยู่ห่างจากชื่อเป็นร้อยพิกเซล และปุ่มของแต่ละแถวไม่ตรงคอลัมน์กัน */}
+      <div className="flex w-48 max-w-full min-w-0 items-center gap-3">
         <Checkbox
           checked={getCheckedState(allOn, someOn)}
           onCheckedChange={(c) => onToggleResource(!!c)}
@@ -367,7 +379,10 @@ function ResourceRow({
           className="size-3.5"
           aria-label={t("selectAllResource", { resource: label })}
         />
-        <p className="text-foreground min-w-0 truncate text-xs font-semibold">
+        <p
+          className="text-foreground min-w-0 truncate text-xs font-semibold"
+          title={label}
+        >
           {label}
         </p>
       </div>
@@ -386,7 +401,7 @@ function ResourceRow({
               onPressedChange={(pressed) => onTogglePermission(id, pressed)}
               disabled={disabled}
             >
-              {ACTION_TKEY[a] ? t(ACTION_TKEY[a]) : titleCase(a)}
+              {actionLabel(a)}
             </Toggle>
           );
         })}

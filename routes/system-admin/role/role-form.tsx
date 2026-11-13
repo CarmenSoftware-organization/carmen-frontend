@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useWatch, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "use-intl";
-import { KeySquare, UserCog } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError } from "@/components/ui/field";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
@@ -17,8 +16,9 @@ import {
 } from "../shared/use-role";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import type { RoleDetail } from "@/types/role";
-import { SectionCard } from "../shared/admin-ui";
 import { FormPageShell } from "@/components/share/form-page-shell";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
+import { SettingField } from "@/components/share/setting-field";
 import { RoleHero } from "./role-form-hero";
 import { PermissionPicker } from "./permission-picker";
 import { useRolePrint } from "./use-role-print";
@@ -38,6 +38,7 @@ const LIST_PATH = "/system-admin/role";
 export function RoleForm({ role }: RoleFormProps) {
   const t = useTranslations("systemAdmin.role");
   const tt = useTranslations("toast");
+  const tfl = useTranslations("field");
   const createRole = useCreateRole();
   const updateRole = useUpdateRole();
   const deleteRole = useDeleteRole();
@@ -116,6 +117,7 @@ export function RoleForm({ role }: RoleFormProps) {
 
   return (
     <FormPageShell
+      width="wide"
       header={
         <Reveal>
           <RoleHero
@@ -140,34 +142,50 @@ export function RoleForm({ role }: RoleFormProps) {
         onSubmit={form.handleSubmit(onSubmit, () =>
           scrollToFirstInvalidField(),
         )}
-        className="space-y-4"
       >
-        {/* Name */}
+        {/* Name — โหมดดูเป็นข้อความ (ป้ายเงียบ + ค่า) กรอบมีเฉพาะตอนแก้ได้จริง */}
         <Reveal delay={140}>
-          <SectionCard icon={UserCog} title={t("name")}>
-            <Field data-invalid={!!form.formState.errors.application_role_name}>
-              <Input
-                placeholder={t("namePlaceholder")}
-                className="h-9 max-w-md"
-                disabled={isDisabled}
-                maxLength={100}
-                {...form.register("application_role_name")}
-              />
-              {form.formState.errors.application_role_name?.message && (
-                <FieldError>
-                  {form.formState.errors.application_role_name.message}
-                </FieldError>
+          <CompactSection first title={tfl("general")}>
+            <FieldGrid>
+              {f.mode === "view" ? (
+                <SettingField label={t("name")} value={watchedName} />
+              ) : (
+                <Field
+                  data-invalid={!!form.formState.errors.application_role_name}
+                >
+                  <label
+                    htmlFor="role-name"
+                    className="text-foreground text-xs font-semibold"
+                  >
+                    {t("name")}
+                  </label>
+                  <Input
+                    id="role-name"
+                    placeholder={t("namePlaceholder")}
+                    className="h-9"
+                    disabled={isDisabled}
+                    maxLength={100}
+                    {...form.register("application_role_name")}
+                  />
+                  {form.formState.errors.application_role_name?.message && (
+                    <FieldError>
+                      {form.formState.errors.application_role_name.message}
+                    </FieldError>
+                  )}
+                </Field>
               )}
-            </Field>
-          </SectionCard>
+            </FieldGrid>
+          </CompactSection>
         </Reveal>
 
-        {/* Permissions */}
+        {/* Permissions — ทั้งโหมดดูและโหมดแก้แสดงทุกรายการของทะเบียนในโครงเดียวกัน (ผู้ใช้สั่ง
+            2026-11-13: โหมดดูที่โชว์เฉพาะสิทธิ์ที่ถืออยู่อ่านแล้วงง) — โหมดดูแค่กดไม่ได้ ส่วนค้นหา
+            กับตัวกรอง Granted / Missing ยังใช้ได้ · แต่ละโมดูลมีกรอบของตัวเอง จึงไม่ห่อการ์ดซ้อน */}
         <Reveal delay={200}>
-          <SectionCard
-            icon={KeySquare}
+          <CompactSection
             title={t("permissions")}
             count={selectedPermissionCount}
+            frameless
           >
             <Controller
               control={form.control}
@@ -180,7 +198,7 @@ export function RoleForm({ role }: RoleFormProps) {
                 />
               )}
             />
-          </SectionCard>
+          </CompactSection>
         </Reveal>
       </form>
 
