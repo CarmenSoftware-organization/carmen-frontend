@@ -5,7 +5,9 @@ import { PagedChecklist } from "@/components/lookup/paged-checklist";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/types/role";
 import { useRole } from "../shared/use-role";
-import { AssignSection, EmptyState } from "./user-assigned-ui";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
+import type { UserRoleAssignment } from "@/types/user";
+import { EmptyState } from "./user-assigned-ui";
 import type { UserAssignedFormValues } from "./user-assigned-form-schema";
 
 /* ------------------------------------------------------------------ */
@@ -78,9 +80,12 @@ function RoleToggleCard({
 
 interface RolesSectionProps {
   readonly form: UseFormReturn<UserAssignedFormValues>;
+  /** โหมดดู — แสดงเฉพาะบทบาทที่ถืออยู่ ไม่ใช่รายการให้ติ๊กที่ถูก disable */
+  readonly isView: boolean;
   readonly isDisabled: boolean;
   readonly count: number;
-  readonly first?: boolean;
+  /** บทบาทที่มากับตัวผู้ใช้ (มีชื่อกับคำอธิบายครบ) — ใช้ในโหมดดู ไม่ต้องยิงทะเบียนบทบาท */
+  readonly assignedRoles: readonly UserRoleAssignment[];
 }
 
 // เส้นคั่นระหว่างการ์ด — แถว virtual เป็นลูกของ div ภายใน VirtualCommandList
@@ -90,59 +95,98 @@ const ROLE_LIST_CLASS =
 
 export function RolesSection({
   form,
+  isView,
   isDisabled,
   count,
-  first,
+  assignedRoles,
 }: RolesSectionProps) {
   const t = useTranslations("systemAdmin.user");
   const tc = useTranslations("common");
-  return (
-    <AssignSection
-      title={t("assignRoles")}
-      description={t("assignRolesDesc")}
-      count={count}
-      first={first}
-    >
+
+  let body;
+  if (isView && assignedRoles.length === 0) {
+    body = (
+      <EmptyState
+        icon={Shield}
+        title={t("noRolesAvailable")}
+        desc={t("noRolesAvailableDesc")}
+      />
+    );
+  } else if (isView) {
+    // โหมดดู: เฉพาะบทบาทที่ถืออยู่ เป็นช่องของกริด (ชื่อ + คำอธิบาย) ไม่มีกรอบ — เดิมโชว์ทะเบียน
+    // บทบาททั้ง BU แบบ disabled ให้ไล่หาเองว่าแถวไหนติ๊ก และต้องยิงทะเบียนทั้งที่แค่เปิดดู
+    body = (
+      <FieldGrid>
+        {assignedRoles.map((role) => (
+          <div key={role.application_role_id} className="min-w-0">
+            <div className="text-sm font-medium break-words">
+              {role.application_role_name}
+            </div>
+            {role.application_role_description && (
+              <div className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">
+                {role.application_role_description}
+              </div>
+            )}
+          </div>
+        ))}
+      </FieldGrid>
+    );
+  } else {
+    body = (
       <Controller
         control={form.control}
         name="role_ids"
         render={({ field }) => (
-          // การ์ดแสดงสถานะติ๊กเองจึงปิด badge — role ที่ assign ไว้แต่ยังไม่อยู่ในหน้าที่โหลด
-          // (ปิดใช้งาน/หลังหน้าแรก) PagedChecklist ปักไว้บนสุดให้เห็นและเอาออกได้
-          <PagedChecklist<Role>
-            useListHook={useRole}
-            getId={(r) => r.id}
-            getLabel={(r) => r.name}
-            value={field.value ?? []}
-            onChange={field.onChange}
-            disabled={isDisabled}
-            showSelectedBadges={false}
-            maxHeight={360}
-            estimateSize={52}
-            className={ROLE_LIST_CLASS}
-            renderItem={(role, checked, toggle) => (
-              <RoleToggleCard
-                role={role}
-                checked={checked}
-                disabled={isDisabled}
-                onChange={() => toggle()}
-              />
-            )}
-            emptyMessage={
-              <EmptyState
-                icon={Shield}
-                title={t("noRolesAvailable")}
-                desc={t("noRolesAvailableDesc")}
-              />
-            }
-            noResultMessage={
-              <span className="text-muted-foreground text-xs">
-                {tc("noSearchResult")}
-              </span>
-            }
-          />
+          // กว้างไม่เกิน 42rem: แถวของบทบาทมีชื่อชิดซ้าย เครื่องหมายติ๊กชิดขวา — ปล่อยเต็มการ์ด
+          // บนจอกว้างแล้วติ๊กอยู่ห่างจากชื่อเป็นพันพิกเซล
+          <div className="max-w-2xl">
+            {/* การ์ดแสดงสถานะติ๊กเองจึงปิด badge — role ที่ assign ไว้แต่ยังไม่อยู่ในหน้าที่โหลด
+                (ปิดใช้งาน/หลังหน้าแรก) PagedChecklist ปักไว้บนสุดให้เห็นและเอาออกได้ */}
+            <PagedChecklist<Role>
+              useListHook={useRole}
+              getId={(r) => r.id}
+              getLabel={(r) => r.name}
+              value={field.value ?? []}
+              onChange={field.onChange}
+              disabled={isDisabled}
+              showSelectedBadges={false}
+              maxHeight={360}
+              estimateSize={52}
+              className={ROLE_LIST_CLASS}
+              renderItem={(role, checked, toggle) => (
+                <RoleToggleCard
+                  role={role}
+                  checked={checked}
+                  disabled={isDisabled}
+                  onChange={() => toggle()}
+                />
+              )}
+              emptyMessage={
+                <EmptyState
+                  icon={Shield}
+                  title={t("noRolesAvailable")}
+                  desc={t("noRolesAvailableDesc")}
+                />
+              }
+              noResultMessage={
+                <span className="text-muted-foreground text-xs">
+                  {tc("noSearchResult")}
+                </span>
+              }
+            />
+          </div>
         )}
       />
-    </AssignSection>
+    );
+  }
+
+  return (
+    <CompactSection
+      title={t("assignRoles")}
+      description={t("assignRolesDesc")}
+      count={count}
+    >
+      {body}
+    </CompactSection>
   );
 }

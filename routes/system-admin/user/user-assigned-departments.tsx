@@ -2,13 +2,14 @@ import { Controller, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { LookupDepartment } from "@/components/lookup/lookup-department";
 import { FieldPlainText } from "@/components/ui/field";
-import { AssignSection } from "./user-assigned-ui";
+import { CompactSection } from "@/components/share/compact-section";
 import type { UserAssignedFormValues } from "./user-assigned-form-schema";
 
 interface DepartmentsSectionProps {
   readonly form: UseFormReturn<UserAssignedFormValues>;
   readonly isDisabled: boolean;
   readonly departmentName: string | undefined;
+  readonly first?: boolean;
 }
 
 /**
@@ -22,29 +23,40 @@ export function DepartmentsSection({
   form,
   isDisabled,
   departmentName,
+  first,
 }: DepartmentsSectionProps) {
   const t = useTranslations("systemAdmin.user");
 
   return (
-    <AssignSection
+    <CompactSection
+      first={first}
       title={t("departmentsTitle")}
       description={t("departmentsDesc")}
     >
       {isDisabled ? (
-        <FieldPlainText>{departmentName}</FieldPlainText>
+        departmentName ? (
+          <FieldPlainText className="block min-h-0 text-sm">
+            {departmentName}
+          </FieldPlainText>
+        ) : (
+          <span className="text-muted-foreground/60 text-sm">—</span>
+        )
       ) : (
         <Controller
           control={form.control}
           name="department_id"
           render={({ field }) => (
-            <LookupDepartment
-              value={field.value}
-              onValueChange={field.onChange}
-              className="w-full"
-            />
+            // ช่องเลือกกว้างไม่เกิน 24rem — การ์ดเต็มจอแต่ชื่อแผนกยาวแค่ไม่กี่คำ
+            <div className="max-w-sm">
+              <LookupDepartment
+                value={field.value}
+                onValueChange={field.onChange}
+                className="w-full"
+              />
+            </div>
           )}
         />
       )}
-    </AssignSection>
+    </CompactSection>
   );
 }

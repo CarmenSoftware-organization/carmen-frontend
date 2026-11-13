@@ -10,8 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FieldPlainText } from "@/components/ui/field";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
+import { SettingField } from "@/components/share/setting-field";
 import { VendorEmptySection } from "./vendor-empty-section";
 import { EMPTY_VENDOR_INFO, type VendorFormValues } from "./vendor-form-schema";
 
@@ -40,8 +40,9 @@ export function VendorInfo({
   const isView = isDisabled && !form.formState.isSubmitting;
 
   return (
-    <SettingSection
-      frameless
+    <CompactSection
+      // โหมดดู: ป้าย–ค่าเป็นช่องของกริดในการ์ดเดียว · โหมดแก้: แต่ละแถวมีกรอบของตัวเอง
+      frameless={!isView || infoFields.length === 0}
       title={t("info.title")}
       description={t("infoDesc")}
       count={infoFields.length}
@@ -59,64 +60,59 @@ export function VendorInfo({
         ) : undefined
       }
     >
-      <div className="sm:col-span-2">
-        {infoFields.length === 0 ? (
-          <VendorEmptySection
-            compact={isView}
-            icon={Info}
-            title={t("info.noInfo")}
-            description={t("info.noInfoDesc")}
-          />
-        ) : (
-          <div className="flex flex-col gap-2">
-            {infoFields.map((field, index) => (
-              <InfoRow
+      {infoFields.length === 0 ? (
+        <VendorEmptySection
+          compact={isView}
+          icon={Info}
+          title={t("info.noInfo")}
+          description={t("info.noInfoDesc")}
+        />
+      ) : isView ? (
+        <FieldGrid>
+          {infoFields.map((field, index) => {
+            const item = form.getValues(`info.${index}`);
+            return (
+              <SettingField
                 key={field.id}
-                form={form}
-                index={index}
-                isView={isView}
-                isDisabled={isDisabled}
-                onRemove={() => removeInfo(index)}
-                t={t}
+                label={item.label}
+                value={item.value}
               />
-            ))}
-          </div>
-        )}
-      </div>
-    </SettingSection>
+            );
+          })}
+        </FieldGrid>
+      ) : (
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,28rem),1fr))] gap-2">
+          {infoFields.map((field, index) => (
+            <InfoRow
+              key={field.id}
+              form={form}
+              index={index}
+              isDisabled={isDisabled}
+              onRemove={() => removeInfo(index)}
+              t={t}
+            />
+          ))}
+        </div>
+      )}
+    </CompactSection>
   );
 }
 
 function InfoRow({
   form,
   index,
-  isView,
   isDisabled,
   onRemove,
   t,
 }: {
   readonly form: ReturnType<typeof useForm<VendorFormValues>>;
   readonly index: number;
-  readonly isView: boolean;
   readonly isDisabled: boolean;
   readonly onRemove: () => void;
   readonly t: (key: string) => string;
 }) {
-  if (isView) {
-    const item = form.getValues(`info.${index}`);
-    return (
-      <div className="border-border/40 bg-background/40 grid grid-cols-[1fr_2fr_auto] items-center gap-3 rounded-lg border px-3 py-2">
-        <FieldPlainText>{item.label}</FieldPlainText>
-        <FieldPlainText>{item.value}</FieldPlainText>
-        <span className="bg-muted text-muted-foreground text-micro-legal rounded-md px-2 py-0.5 font-semibold tracking-widest uppercase">
-          {item.data_type}
-        </span>
-      </div>
-    );
-  }
-
   return (
-    <div className="border-border/40 bg-background/40 hover:border-foreground/30 grid grid-cols-[1fr_1fr_8rem_auto] items-start gap-2 rounded-lg border p-2 transition-colors">
+    <div className="border-border/40 bg-background/40 hover:border-foreground/30 grid min-w-0 grid-cols-[1fr_1fr_7rem_auto] items-start gap-2 rounded-lg border p-2 transition-colors">
       <Input
         placeholder={t("info.labelPlaceholder")}
         className="border-border/40 hover:border-foreground/50 focus-visible:border-primary h-8 rounded-md border bg-transparent text-xs shadow-none transition-colors focus-visible:ring-0"

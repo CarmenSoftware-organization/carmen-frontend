@@ -10,6 +10,7 @@ import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useEntityForm } from "@/hooks/use-entity-form";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
+import { SECTION_PAIR } from "@/components/share/compact-section";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { PrintDocumentButton } from "@/components/print-document-button";
@@ -291,20 +292,23 @@ export function VendorForm({ vendor }: VendorFormProps) {
         )}
       >
         <VendorGeneral form={form} isDisabled={isDisabled} />
-        <VendorAddress
-          form={form}
-          isDisabled={isDisabled}
-          addressFields={addressFields}
-          prependAddress={prependAddress}
-          removeAddress={handleRemoveAddress}
-        />
-        <VendorContact
-          form={form}
-          isDisabled={isDisabled}
-          contactFields={contactFields}
-          prependContact={prependContact}
-          removeContact={handleRemoveContact}
-        />
+        {/* ที่อยู่ | ผู้ติดต่อ — สองรายการคู่กัน วางเคียงกันบนจอกว้าง */}
+        <div className={SECTION_PAIR}>
+          <VendorAddress
+            form={form}
+            isDisabled={isDisabled}
+            addressFields={addressFields}
+            prependAddress={prependAddress}
+            removeAddress={handleRemoveAddress}
+          />
+          <VendorContact
+            form={form}
+            isDisabled={isDisabled}
+            contactFields={contactFields}
+            prependContact={prependContact}
+            removeContact={handleRemoveContact}
+          />
+        </div>
         <VendorInfo
           form={form}
           isDisabled={isDisabled}

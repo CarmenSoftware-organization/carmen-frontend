@@ -185,8 +185,9 @@ const ALLOWED_SUB_10PX: Record<string, number> = {
   // Miniature mock interfaces: a fake terminal with macOS traffic-light dots, a
   // fake SQL editor, fake table rows. Scaling this type up breaks the illustration
   // — the point is that it reads as a tiny screenshot.
-  // Was 20 until ca4d678 deleted the email-config module's illustration (−3).
-  "routes/system-admin/landing-visuals.tsx": 17,
+  // Was 20 until ca4d678 deleted the email-config module's illustration (−3), then 17
+  // until PR #568 rewrote the list-style illustrations around one shared row (−7).
+  "routes/system-admin/landing-visuals.tsx": 10,
 
   // ── Digits ──
   // Uniform height, no ascenders/descenders, no diacritics; legible at 9px in a way

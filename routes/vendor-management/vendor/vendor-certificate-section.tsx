@@ -14,9 +14,11 @@ import {
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
-import { SettingSection } from "@/components/ui/setting-section";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CompactSection } from "@/components/share/compact-section";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatDate } from "@/lib/date-utils";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { useProfile } from "@/hooks/use-profile";
 import { useEntitiesByIds } from "@/hooks/use-entities-by-ids";
 import type { Certification } from "@/types/certification";
@@ -109,6 +111,17 @@ export function VendorCertificateSection({
     });
   };
 
+  // กล่องกว้างพอ → คอลัมน์กว้างคงที่ สถานะรับที่เหลือ (ชิดซ้าย) คอลัมน์จึงอยู่ติดกัน ไม่กระจายห่างกัน
+  // เป็นพันพิกเซลบนจอกว้าง · กล่องแคบกว่าผลรวมคอลัมน์ (# 32 · เลขที่ 120 · ชื่อ 220 · วันที่ 100×2 ·
+  // สถานะ 100 = 672, โหมดแก้ + ปุ่มของแถว 72 = 744) → กลับไปแบ่งตามสัดส่วนเหมือนเดิม ไม่งั้นตารางล้น
+  // กล่อง (คอลัมน์ยืดล็อกความกว้างขั้นต่ำของตารางไว้ที่ผลรวม) · จุดเปลี่ยนสูงกว่าผลรวมเล็กน้อย
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const fixedColumns =
+    (gridBoxWidth ?? Number.POSITIVE_INFINITY) >= (readOnly ? 690 : 760);
+  // กล่องแคบ (มือถือ ~300px) → การ์ดทีละใบแทนตาราง: ตาราง 6–7 คอลัมน์บีบลงกล่อง 300px แล้วหัวคอลัมน์
+  // กับวันที่ตัดบรรทัดจนอ่านไม่ออก (ผู้ใช้สั่ง 2026-11-13) · undefined = ยังไม่ได้วัด ใช้ตารางไปก่อน
+  const asCards = gridBoxWidth !== undefined && gridBoxWidth < 560;
+
   const columns = useMemo<ColumnDef<VendorCertificate>[]>(
     () => [
       {
@@ -135,7 +148,7 @@ export function VendorCertificateSection({
       {
         id: "certificate",
         header: tfl("certificate"),
-        size: 200,
+        size: 220,
         cell: ({ row }) => (
           <span className="font-medium">
             {masterMap.get(row.original.master_certificate_id)?.name ?? ""}
@@ -145,7 +158,7 @@ export function VendorCertificateSection({
       {
         id: "issued_date",
         header: tfl("issuedDate"),
-        size: 120,
+        size: 100,
         cell: ({ row }) =>
           row.original.issued_date
             ? formatDate(row.original.issued_date, dateFormat)
@@ -155,26 +168,16 @@ export function VendorCertificateSection({
       {
         id: "expiry_date",
         header: tfl("expiryDate"),
-        size: 120,
+        size: 100,
         cell: ({ row }) => {
           const expiry = row.original.expiry_date;
           if (!expiry) return "—";
-          const days = daysUntil(expiry);
-          // เงียบไว้เมื่อยังไกล — บอกเฉพาะใบที่ใกล้หมด/หมดแล้ว ซึ่งฝ่ายจัดซื้อต้องรู้ก่อนออก PO
-          const hint =
-            days === null || days > EXPIRY_WARN_DAYS ? null : days < 0 ? (
-              <span className="text-destructive">{t("certExpired")}</span>
-            ) : (
-              <span className="text-warning-ink">
-                {t("certExpiresIn", { count: days })}
-              </span>
-            );
           return (
             // data-slot กัน DataGrid ใส่ line-clamp ให้ลูกของเซลล์ (มันจับ
             // `:not([data-slot])` แล้วเปลี่ยน display ทับ flex-col จนสองบรรทัดชนกัน)
             <div data-slot="cert-expiry" className="flex flex-col">
               <span>{formatDate(expiry, dateFormat)}</span>
-              {hint && <span className="text-micro font-medium">{hint}</span>}
+              <ExpiryHint expiry={expiry} />
             </div>
           );
         },
@@ -186,10 +189,9 @@ export function VendorCertificateSection({
         size: 100,
         cell: ({ row }) => <StatusBadge active={!!row.original.is_active} />,
         enableSorting: false,
-        meta: {
-          headerClassName: "text-center",
-          cellClassName: "text-center",
-        },
+        meta: fixedColumns
+          ? { grow: true }
+          : { headerClassName: "text-center", cellClassName: "text-center" },
       },
       ...(readOnly
         ? []
@@ -228,7 +230,7 @@ export function VendorCertificateSection({
             } as ColumnDef<VendorCertificate>,
           ]),
     ],
-    [readOnly, dateFormat, t, tfl, tc, masterMap],
+    [readOnly, dateFormat, tfl, tc, masterMap, fixedColumns],
   );
 
   const table = useReactTable({
@@ -239,8 +241,7 @@ export function VendorCertificateSection({
   });
 
   return (
-    <SettingSection
-      wide
+    <CompactSection
       frameless
       title={t("certificatesTitle")}
       description={t("certificatesDesc")}
@@ -259,23 +260,37 @@ export function VendorCertificateSection({
         ) : undefined
       }
     >
-      <DataGrid
-        table={table}
-        recordCount={items.length}
-        isLoading={isLoading}
-        emptyMessage={
-          <VendorEmptySection
-            compact={readOnly}
-            icon={Award}
-            title={t("noCertificates")}
-            description={t("noCertificatesDesc")}
+      <div ref={setGridBox}>
+        {asCards ? (
+          <CertificateCards
+            items={items}
+            isLoading={isLoading}
+            readOnly={readOnly}
+            masterMap={masterMap}
+            dateFormat={dateFormat}
+            onEdit={handleEdit}
+            onDelete={setDeleteItem}
           />
-        }
-      >
-        <DataGridContainer>
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+        ) : (
+          <DataGrid
+            table={table}
+            recordCount={items.length}
+            isLoading={isLoading}
+            emptyMessage={
+              <VendorEmptySection
+                compact={readOnly}
+                icon={Award}
+                title={t("noCertificates")}
+                description={t("noCertificatesDesc")}
+              />
+            }
+          >
+            <DataGridContainer>
+              <DataGridTable />
+            </DataGridContainer>
+          </DataGrid>
+        )}
+      </div>
 
       <VendorCertificateDialog
         open={dialogOpen}
@@ -296,6 +311,133 @@ export function VendorCertificateSection({
         isPending={deleteCert.isPending}
         onConfirm={handleConfirmDelete}
       />
-    </SettingSection>
+    </CompactSection>
+  );
+}
+
+/** บอกเฉพาะใบที่ใกล้หมด/หมดแล้ว ซึ่งฝ่ายจัดซื้อต้องรู้ก่อนออก PO — ยังไกลอยู่ไม่แสดงอะไร */
+function ExpiryHint({ expiry }: { readonly expiry: string }) {
+  const t = useTranslations("vendorManagement.vendor");
+  const days = daysUntil(expiry);
+  if (days === null || days > EXPIRY_WARN_DAYS) return null;
+  return (
+    <span className="text-micro font-medium">
+      {days < 0 ? (
+        <span className="text-destructive">{t("certExpired")}</span>
+      ) : (
+        <span className="text-warning-ink">
+          {t("certExpiresIn", { count: days })}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/**
+ * ใบรับรองแบบการ์ด — ใช้เมื่อกล่องแคบกว่าที่ตารางจะอ่านออก
+ *
+ * ข้อมูลชุดเดียวกับตารางทุกช่อง: ชื่อใบรับรอง + สถานะ · เลขที่ · วันออก · วันหมดอายุ (พร้อมคำเตือน)
+ * และปุ่มแก้/ลบในโหมดแก้ ปุ่มสูง 32px (ใหญ่กว่าในตาราง) เพราะเป็นจอสัมผัส
+ */
+function CertificateCards({
+  items,
+  isLoading,
+  readOnly,
+  masterMap,
+  dateFormat,
+  onEdit,
+  onDelete,
+}: {
+  readonly items: readonly VendorCertificate[];
+  readonly isLoading: boolean;
+  readonly readOnly?: boolean;
+  readonly masterMap: ReadonlyMap<string, Certification>;
+  readonly dateFormat: string;
+  readonly onEdit: (item: VendorCertificate) => void;
+  readonly onDelete: (item: VendorCertificate) => void;
+}) {
+  const t = useTranslations("vendorManagement.vendor");
+  const tc = useTranslations("common");
+  const tfl = useTranslations("field");
+
+  if (isLoading) return <Skeleton className="h-24 w-full rounded-lg" />;
+  if (items.length === 0)
+    return (
+      <VendorEmptySection
+        compact={readOnly}
+        icon={Award}
+        title={t("noCertificates")}
+        description={t("noCertificatesDesc")}
+      />
+    );
+
+  return (
+    <ul className="flex flex-col gap-2">
+      {items.map((item) => (
+        <li
+          key={item.id}
+          className="border-border/60 bg-card rounded-lg border p-3 text-xs"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <div className="text-sm font-medium break-words">
+                {masterMap.get(item.master_certificate_id)?.name ?? ""}
+              </div>
+              <div className="text-muted-foreground break-all">
+                {item.certificate_no}
+              </div>
+            </div>
+            <StatusBadge active={!!item.is_active} className="shrink-0" />
+          </div>
+          <div className="mt-2 flex items-end justify-between gap-2">
+            <dl className="flex flex-wrap gap-x-5 gap-y-1 tabular-nums">
+              <div>
+                <dt className="text-muted-foreground">{tfl("issuedDate")}</dt>
+                <dd>
+                  {item.issued_date
+                    ? formatDate(item.issued_date, dateFormat)
+                    : "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">{tfl("expiryDate")}</dt>
+                <dd className="flex flex-col">
+                  {item.expiry_date ? (
+                    <>
+                      <span>{formatDate(item.expiry_date, dateFormat)}</span>
+                      <ExpiryHint expiry={item.expiry_date} />
+                    </>
+                  ) : (
+                    "—"
+                  )}
+                </dd>
+              </div>
+            </dl>
+            {!readOnly && (
+              <div className="flex shrink-0 items-center gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={tc("edit")}
+                  onClick={() => onEdit(item)}
+                >
+                  <Pencil />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={tc("delete")}
+                  onClick={() => onDelete(item)}
+                >
+                  <Trash2 />
+                </Button>
+              </div>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }
