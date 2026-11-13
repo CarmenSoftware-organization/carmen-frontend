@@ -1,3 +1,4 @@
+import { useAccountingConfigEdit } from "../shared/use-accounting-config-edit";
 import {
   useGlDimensions,
   useGlDimensionValues,
@@ -62,6 +63,7 @@ import type {
 import { saveDimensionRecord } from "./save-dimension-record";
 
 export default function DimensionPage() {
+  "use no memo";
   const buCode = useBuCode();
   const queryClient = useQueryClient();
   const dimensionQuery = useGlDimensions();
@@ -78,7 +80,7 @@ export default function DimensionPage() {
   );
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const [detailOnly, setDetailOnly] = useState(false);
+  const canEdit = useAccountingConfigEdit("accounting.config.gl");
   const [editing, setEditing] = useState<DimensionMaster | null | undefined>();
   const [viewingValuesId, setViewingValuesId] = useState<string | null>(null);
   const viewingValues =
@@ -135,7 +137,6 @@ export default function DimensionPage() {
         cell: ({ row }) => (
           <CellAction
             onClick={() => {
-              setDetailOnly(true);
               setEditing(row.original);
             }}
           >
@@ -151,7 +152,6 @@ export default function DimensionPage() {
         cell: ({ row }) => (
           <CellAction
             onClick={() => {
-              setDetailOnly(true);
               setEditing(row.original);
             }}
           >
@@ -216,11 +216,6 @@ export default function DimensionPage() {
         cell: ({ row }) => (
           <DataGridRowActions
             activity={{ id: row.original.id }}
-
-            onEdit={() => {
-              setDetailOnly(false);
-              setEditing(row.original);
-            }}
             onDelete={() => setDeleting(row.original)}
           />
         ),
@@ -262,7 +257,6 @@ export default function DimensionPage() {
         <Button
           size="sm"
           onClick={() => {
-            setDetailOnly(false);
             setEditing(null);
           }}
         >
@@ -294,14 +288,13 @@ export default function DimensionPage() {
       )}
       {editing !== undefined && (
         <DimensionDialog
-          readOnly={detailOnly}
+          readOnly={!!editing && !canEdit}
           key={editing?.id ?? "new"}
           open={editing !== undefined}
           item={editing ?? null}
           onOpenChange={(open) => {
             if (!open) {
               setEditing(undefined);
-              setDetailOnly(false);
             }
           }}
           onSave={async (value, current) => {
@@ -643,6 +636,7 @@ function DimensionValuesDialog({
   onUpdateValue: (val: DimensionValueMaster) => Promise<boolean>;
   onDeleteValue: (id: string) => Promise<boolean>;
 }) {
+  const canEdit = useAccountingConfigEdit("accounting.config.gl");
   const [valCode, setValCode] = useState("");
   const [valName, setValName] = useState("");
   const [valNameLocal, setValNameLocal] = useState("");
@@ -692,59 +686,61 @@ function DimensionValuesDialog({
         </DialogHeader>
         <div className="space-y-4 py-2">
           {/* Add form */}
-          <div className="bg-muted/30 grid grid-cols-1 items-end gap-2 rounded-md p-3 sm:grid-cols-4">
-            <Field>
-              <FieldLabel className="text-xs" required>
-                Code
-              </FieldLabel>
-              <FieldInput
-                value={valCode}
-                placeholder="e.g. CORP"
-                className="h-8 text-xs"
-                onChange={(e) => setValCode(e.target.value.toUpperCase())}
-              />
-            </Field>
-            <Field>
-              <FieldLabel className="text-xs" required>
-                Name (EN)
-              </FieldLabel>
-              <FieldInput
-                value={valName}
-                placeholder="e.g. Corporate"
-                className="h-8 text-xs"
-                onChange={(e) => setValName(e.target.value)}
-              />
-            </Field>
-            <Field>
-              <FieldLabel className="text-xs">Name (TH)</FieldLabel>
-              <FieldInput
-                value={valNameLocal}
-                placeholder="e.g. องค์กร"
-                className="h-8 text-xs"
-                onChange={(e) => setValNameLocal(e.target.value)}
-              />
-            </Field>
-            <Button
-              size="sm"
-              className="h-8"
-              disabled={!valCode.trim() || !valName.trim()}
-              onClick={async () => {
-                const saved = await onAddValue({
-                  code: valCode.trim().toUpperCase(),
-                  name: valName.trim(),
-                  name_local: valNameLocal.trim() || null,
-                  is_active: true,
-                });
-                if (saved) {
-                  setValCode("");
-                  setValName("");
-                  setValNameLocal("");
-                }
-              }}
-            >
-              <Plus className="mr-1 size-3.5" /> Add Value
-            </Button>
-          </div>
+          {canEdit && (
+            <div className="bg-muted/30 grid grid-cols-1 items-end gap-2 rounded-md p-3 sm:grid-cols-4">
+              <Field>
+                <FieldLabel className="text-xs" required>
+                  Code
+                </FieldLabel>
+                <FieldInput
+                  value={valCode}
+                  placeholder="e.g. CORP"
+                  className="h-8 text-xs"
+                  onChange={(e) => setValCode(e.target.value.toUpperCase())}
+                />
+              </Field>
+              <Field>
+                <FieldLabel className="text-xs" required>
+                  Name (EN)
+                </FieldLabel>
+                <FieldInput
+                  value={valName}
+                  placeholder="e.g. Corporate"
+                  className="h-8 text-xs"
+                  onChange={(e) => setValName(e.target.value)}
+                />
+              </Field>
+              <Field>
+                <FieldLabel className="text-xs">Name (TH)</FieldLabel>
+                <FieldInput
+                  value={valNameLocal}
+                  placeholder="e.g. องค์กร"
+                  className="h-8 text-xs"
+                  onChange={(e) => setValNameLocal(e.target.value)}
+                />
+              </Field>
+              <Button
+                size="sm"
+                className="h-8"
+                disabled={!valCode.trim() || !valName.trim()}
+                onClick={async () => {
+                  const saved = await onAddValue({
+                    code: valCode.trim().toUpperCase(),
+                    name: valName.trim(),
+                    name_local: valNameLocal.trim() || null,
+                    is_active: true,
+                  });
+                  if (saved) {
+                    setValCode("");
+                    setValName("");
+                    setValNameLocal("");
+                  }
+                }}
+              >
+                <Plus className="mr-1 size-3.5" /> Add Value
+              </Button>
+            </div>
+          )}
 
           {/* Table */}
           <div className="max-h-60 overflow-hidden overflow-y-auto rounded-md border">
@@ -828,9 +824,23 @@ function DimensionValuesDialog({
                         ) : (
                           <>
                             <td className="p-2 font-mono font-medium">
-                              {v.code}
+                              {canEdit ? (
+                                <CellAction onClick={() => startEdit(v)}>
+                                  {v.code}
+                                </CellAction>
+                              ) : (
+                                v.code
+                              )}
                             </td>
-                            <td className="p-2">{v.name}</td>
+                            <td className="p-2">
+                              {canEdit ? (
+                                <CellAction onClick={() => startEdit(v)}>
+                                  {v.name}
+                                </CellAction>
+                              ) : (
+                                v.name
+                              )}
+                            </td>
                             <td className="text-muted-foreground p-2">
                               {v.name_local || "—"}
                             </td>
@@ -838,8 +848,11 @@ function DimensionValuesDialog({
                             <td className="p-2 text-right">
                               <DataGridRowActions
                                 activity={{ id: v.id, label: v.code }}
-                                onEdit={() => startEdit(v)}
-                                onDelete={() => setDeletingValue(v)}
+                                onDelete={
+                                  canEdit
+                                    ? () => setDeletingValue(v)
+                                    : undefined
+                                }
                               />
                             </td>
                           </>

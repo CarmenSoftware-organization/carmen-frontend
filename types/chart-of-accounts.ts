@@ -61,6 +61,7 @@ export interface ChartOfAccount {
   /** null = บัญชีที่มีอยู่ก่อน migration gl_core_master (9 ก.ย.) เพิ่มคอลัมน์โดยไม่ backfill — backend บังคับให้ระบุตอนแก้ครั้งถัดไป */
   category: AccountCategory | null;
   is_active: boolean;
+  is_require_cost_center?: boolean;
   control_account_type?: CONTROL_ACCOUNT_TYPE | null;
   manual_posting_allowed?: boolean;
   allowed_source_types?: string[];
@@ -80,6 +81,7 @@ export interface ChartOfAccount {
 }
 
 export interface CreateChartOfAccountDto {
+  is_require_cost_center?: boolean;
   doc_version?: number;
   code: string;
   description_1: string;

@@ -3,8 +3,10 @@ import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { FieldGroup } from "@/components/ui/field";
+import { useAccountingConfigEdit } from "./use-accounting-config-edit";
 
 interface MockEntityDialogProps {
+  readonly permissionPrefix: string;
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
   readonly icon: LucideIcon;
@@ -21,6 +23,7 @@ interface MockEntityDialogProps {
  * `ConfigEntityDialog` (ใช้ตัวนั้นตรง ๆ ไม่ได้เพราะผูกกับ mutation hook ของ API)
  */
 export function MockEntityDialog({
+  permissionPrefix,
   open,
   onOpenChange,
   icon: Icon,
@@ -31,6 +34,8 @@ export function MockEntityDialog({
   onSubmit,
   children,
 }: MockEntityDialogProps) {
+  const canEdit = useAccountingConfigEdit(permissionPrefix);
+  const readOnly = isEdit && !canEdit;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -41,7 +46,7 @@ export function MockEntityDialog({
           <form
             onSubmit={(event) => {
               event.preventDefault();
-              if (canSubmit) onSubmit();
+              if (!readOnly && canSubmit) onSubmit();
             }}
             className="relative flex flex-col"
           >
@@ -52,7 +57,7 @@ export function MockEntityDialog({
                 </div>
                 <div className="flex flex-col">
                   <DialogTitle className="text-foreground text-xl font-bold tracking-tight">
-                    {title}
+                    {readOnly ? title.replace(/^Edit /, "") : title}
                   </DialogTitle>
                   {subtitle && (
                     <p className="text-muted-foreground text-xs">{subtitle}</p>
@@ -62,7 +67,9 @@ export function MockEntityDialog({
             </div>
 
             <div className="px-6 py-6">
-              <FieldGroup className="gap-5">{children}</FieldGroup>
+              <fieldset disabled={readOnly}>
+                <FieldGroup className="gap-5">{children}</FieldGroup>
+              </fieldset>
             </div>
 
             <div className="border-border/40 bg-background/40 flex justify-end gap-3 border-t px-6 py-4">
@@ -72,15 +79,17 @@ export function MockEntityDialog({
                 onClick={() => onOpenChange(false)}
                 className="rounded-xl"
               >
-                Cancel
+                {readOnly ? "Close" : "Cancel"}
               </Button>
-              <Button
-                type="submit"
-                disabled={!canSubmit}
-                className="bg-primary/90 hover:bg-primary text-primary-foreground rounded-xl font-bold shadow-lg backdrop-blur-md transition-all"
-              >
-                {isEdit ? "Save" : "Create"}
-              </Button>
+              {!readOnly && (
+                <Button
+                  type="submit"
+                  disabled={!canSubmit}
+                  className="bg-primary/90 hover:bg-primary text-primary-foreground rounded-xl font-bold shadow-lg backdrop-blur-md transition-all"
+                >
+                  {isEdit ? "Save" : "Create"}
+                </Button>
+              )}
             </div>
           </form>
         </div>

@@ -1,3 +1,4 @@
+import { useAccountingConfigEdit } from "../shared/use-accounting-config-edit";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -26,11 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Field,
-  FieldInput,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldInput, FieldLabel } from "@/components/ui/field";
 import { StatusSwitch } from "@/components/ui/status-switch";
 import {
   type AssetCategoryMaster,
@@ -39,10 +36,13 @@ import {
 import { LookupChartOfAccount } from "@/components/lookup/lookup-chart-of-account";
 
 export default function AssetCategoryPage() {
+  "use no memo";
   const store = useAccountingMasterMock();
   const [search, setSearch] = useState("");
-  const [detailOnly, setDetailOnly] = useState(false);
-  const [editing, setEditing] = useState<AssetCategoryMaster | null | undefined>();
+  const canEdit = useAccountingConfigEdit("accounting.config.asset");
+  const [editing, setEditing] = useState<
+    AssetCategoryMaster | null | undefined
+  >();
   const [deleting, setDeleting] = useState<AssetCategoryMaster | null>(null);
 
   const rows = useMemo(
@@ -63,7 +63,11 @@ export default function AssetCategoryPage() {
           <DataGridColumnHeader column={column} title="Category Code" />
         ),
         cell: ({ row }) => (
-          <CellAction onClick={() => { setDetailOnly(true); setEditing(row.original); }}>
+          <CellAction
+            onClick={() => {
+              setEditing(row.original);
+            }}
+          >
             <span className="font-mono font-semibold">{row.original.code}</span>
           </CellAction>
         ),
@@ -74,7 +78,11 @@ export default function AssetCategoryPage() {
           <DataGridColumnHeader column={column} title="Description" />
         ),
         cell: ({ row }) => (
-          <CellAction onClick={() => { setDetailOnly(true); setEditing(row.original); }}>
+          <CellAction
+            onClick={() => {
+              setEditing(row.original);
+            }}
+          >
             {row.original.description}
           </CellAction>
         ),
@@ -92,38 +100,44 @@ export default function AssetCategoryPage() {
         accessorKey: "asset_account_id",
         header: "Asset Cost A/C",
         cell: ({ row }) => (
-          <span className="font-mono text-xs">{row.original.asset_account_id || "—"}</span>
+          <span className="font-mono text-xs">
+            {row.original.asset_account_id || "—"}
+          </span>
         ),
       },
       {
         accessorKey: "accum_dep_account_id",
         header: "Accum Dep A/C",
         cell: ({ row }) => (
-          <span className="font-mono text-xs">{row.original.accum_dep_account_id || "—"}</span>
+          <span className="font-mono text-xs">
+            {row.original.accum_dep_account_id || "—"}
+          </span>
         ),
       },
       {
         accessorKey: "dep_expense_account_id",
         header: "Dep Expense A/C",
         cell: ({ row }) => (
-          <span className="font-mono text-xs">{row.original.dep_expense_account_id || "—"}</span>
+          <span className="font-mono text-xs">
+            {row.original.dep_expense_account_id || "—"}
+          </span>
         ),
       },
       {
         accessorKey: "is_active",
         header: "Status",
-        cell: ({ row }) => (
-          <StatusBadge active={row.original.is_active} />
-        ),
+        cell: ({ row }) => <StatusBadge active={row.original.is_active} />,
       },
       {
         id: "actions",
         header: "",
         cell: ({ row }) => (
           <DataGridRowActions
-            activity={{ id: row.original.id, disabled: true, disabledTitle: "Activity is unavailable for mock data" }}
-
-            onEdit={() => { setDetailOnly(false); setEditing(row.original); }}
+            activity={{
+              id: row.original.id,
+              disabled: true,
+              disabledTitle: "Activity is unavailable for mock data",
+            }}
             onDelete={() => setDeleting(row.original)}
           />
         ),
@@ -161,7 +175,9 @@ export default function AssetCategoryPage() {
         <Building2 className="text-primary size-4" />
         <span className="font-medium">Three-leg accounting mapping:</span>
         <span className="text-muted-foreground">
-          Each asset category specifies the Asset Cost (BS), Accumulated Depreciation (contra-asset BS), and Depreciation Expense (P&L) accounts.
+          Each asset category specifies the Asset Cost (BS), Accumulated
+          Depreciation (contra-asset BS), and Depreciation Expense (P&L)
+          accounts.
         </span>
       </div>
       <DataGrid
@@ -176,11 +192,15 @@ export default function AssetCategoryPage() {
         </DataGridContainer>
       </DataGrid>
       <AssetCategoryDialog
-        readOnly={detailOnly}
+        readOnly={!!editing && !canEdit}
         key={editing?.id ?? "new"}
         open={editing !== undefined}
         item={editing ?? null}
-        onOpenChange={(open) => { if (!open) { setEditing(undefined); setDetailOnly(false); } }}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditing(undefined);
+          }
+        }}
         onSave={(value) => {
           store.saveAssetCategory(value, editing?.id);
           toast.success(
@@ -194,7 +214,9 @@ export default function AssetCategoryPage() {
         onOpenChange={(open) => !open && setDeleting(null)}
         title="Delete asset category?"
         description={
-          deleting ? `Delete ${deleting.code} — ${deleting.description}?` : undefined
+          deleting
+            ? `Delete ${deleting.code} — ${deleting.description}?`
+            : undefined
         }
         onConfirm={() => {
           if (!deleting) return;
@@ -224,22 +246,38 @@ function AssetCategoryDialog({
   const [description, setDescription] = useState(item?.description ?? "");
   const [usefulLife, setUsefulLife] = useState(item?.useful_life_years ?? 5);
   const [assetAcc, setAssetAcc] = useState(item?.asset_account_id ?? "");
-  const [accumDepAcc, setAccumDepAcc] = useState(item?.accum_dep_account_id ?? "");
-  const [depExpAcc, setDepExpAcc] = useState(item?.dep_expense_account_id ?? "");
+  const [accumDepAcc, setAccumDepAcc] = useState(
+    item?.accum_dep_account_id ?? "",
+  );
+  const [depExpAcc, setDepExpAcc] = useState(
+    item?.dep_expense_account_id ?? "",
+  );
   const [active, setActive] = useState(item?.is_active ?? true);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{readOnly ? "Asset Category Detail" : item ? "Edit Asset Category" : "Add Asset Category"}</DialogTitle>
+          <DialogTitle>
+            {readOnly
+              ? "Asset Category Detail"
+              : item
+                ? "Edit Asset Category"
+                : "Add Asset Category"}
+          </DialogTitle>
           <DialogDescription>
-            Configuration for asset classification, lifespan, and three-leg GL posting.
+            Configuration for asset classification, lifespan, and three-leg GL
+            posting.
           </DialogDescription>
         </DialogHeader>
-        <fieldset disabled={readOnly} className="grid gap-4 py-2 sm:grid-cols-2">
+        <fieldset
+          disabled={readOnly}
+          className="grid gap-4 py-2 sm:grid-cols-2"
+        >
           <Field>
-            <FieldLabel htmlFor="ast-code" required>Category Code</FieldLabel>
+            <FieldLabel htmlFor="ast-code" required>
+              Category Code
+            </FieldLabel>
             <FieldInput
               id="ast-code"
               value={code}
@@ -250,17 +288,23 @@ function AssetCategoryDialog({
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="ast-life" required>Useful Life (Years)</FieldLabel>
+            <FieldLabel htmlFor="ast-life" required>
+              Useful Life (Years)
+            </FieldLabel>
             <FieldInput
               id="ast-life"
               type="number"
               min={1}
               value={usefulLife}
-              onChange={(e) => setUsefulLife(Math.max(1, Number(e.target.value) || 1))}
+              onChange={(e) =>
+                setUsefulLife(Math.max(1, Number(e.target.value) || 1))
+              }
             />
           </Field>
           <Field className="sm:col-span-2">
-            <FieldLabel htmlFor="ast-desc" required>Description</FieldLabel>
+            <FieldLabel htmlFor="ast-desc" required>
+              Description
+            </FieldLabel>
             <FieldInput
               id="ast-desc"
               value={description}
@@ -270,7 +314,9 @@ function AssetCategoryDialog({
             />
           </Field>
           <Field className="sm:col-span-2">
-            <FieldLabel htmlFor="ast-leg1">Asset Cost Account (Balance Sheet Asset)</FieldLabel>
+            <FieldLabel htmlFor="ast-leg1">
+              Asset Cost Account (Balance Sheet Asset)
+            </FieldLabel>
             <LookupChartOfAccount
               value={assetAcc}
               category="asset"
@@ -308,22 +354,24 @@ function AssetCategoryDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {readOnly ? "Close" : "Cancel"}
           </Button>
-          {!readOnly && <Button
-            disabled={!code.trim() || !description.trim()}
-            onClick={() =>
-              onSave({
-                code,
-                description,
-                useful_life_years: usefulLife,
-                asset_account_id: assetAcc || null,
-                accum_dep_account_id: accumDepAcc || null,
-                dep_expense_account_id: depExpAcc || null,
-                is_active: active,
-              })
-            }
-          >
-            {item ? "Save" : "Create"}
-          </Button>}
+          {!readOnly && (
+            <Button
+              disabled={!code.trim() || !description.trim()}
+              onClick={() =>
+                onSave({
+                  code,
+                  description,
+                  useful_life_years: usefulLife,
+                  asset_account_id: assetAcc || null,
+                  accum_dep_account_id: accumDepAcc || null,
+                  dep_expense_account_id: depExpAcc || null,
+                  is_active: active,
+                })
+              }
+            >
+              {item ? "Save" : "Create"}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -19,6 +19,7 @@ import { useErrorToast } from "@/hooks/use-error-toast";
 import type { AccountMappingRow } from "@/types/chart-of-account-mapping";
 import { useUpdateAccountMapping } from "./use-account-mapping";
 import { SourceBadge } from "./coam-cells";
+import { useAccountingConfigEdit } from "../shared/use-accounting-config-edit";
 
 interface CoamEditSheetProps {
   readonly row: AccountMappingRow | null;
@@ -43,6 +44,9 @@ function CoamEditSheetBody({
   const tt = useTranslations("toast");
   const errorToast = useErrorToast();
   const update = useUpdateAccountMapping();
+  const canEdit = useAccountingConfigEdit(
+    "configuration.chart_of_account_mapping",
+  );
   // undefined = ไม่แตะ, null = กลับไปใช้ default, string = แก้ทับ
   const [account, setAccount] = useState<string | null | undefined>(undefined);
   const [costCenter, setCostCenter] = useState<string | null | undefined>(
@@ -65,6 +69,7 @@ function CoamEditSheetBody({
       : costCenter;
 
   const save = () => {
+    if (!canEdit) return;
     update.mutate(
       {
         id: row.id,
@@ -98,7 +103,7 @@ function CoamEditSheetBody({
     <Sheet open onOpenChange={(o) => !o && onClose()}>
       <SheetContent className="overflow-y-auto sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>{t("editTitle")}</SheetTitle>
+          <SheetTitle>{t(canEdit ? "editTitle" : "title")}</SheetTitle>
           <SheetDescription>
             {row.location.code} · {row.item_group.code} · {row.movement}
             {row.adjustment_type ? ` · ${row.adjustment_type.code}` : ""}
@@ -112,6 +117,7 @@ function CoamEditSheetBody({
               onValueChange={(id) => setCostCenter(id)}
               modal
               allowDeselect
+              disabled={!canEdit}
             />
             <p className="text-muted-foreground text-xs">
               {!ccOverridden && row.cost_center.id
@@ -122,7 +128,7 @@ function CoamEditSheetBody({
                   ? t("noDefault")
                   : null}
             </p>
-            {(ccOverridden || costCenter) && (
+            {canEdit && (ccOverridden || costCenter) && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -137,6 +143,7 @@ function CoamEditSheetBody({
             <LookupChartOfAccount
               value={shownAccount ?? ""}
               onValueChange={(code) => setAccount(code || null)}
+              disabled={!canEdit}
             />
             <p className="text-muted-foreground text-xs">
               {!accountOverridden && row.account.code
@@ -157,7 +164,7 @@ function CoamEditSheetBody({
                       : "override"
                 }
               />
-              {(accountOverridden || account) && (
+              {canEdit && (accountOverridden || account) && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -171,17 +178,19 @@ function CoamEditSheetBody({
         </div>
         <SheetFooter>
           <Button variant="outline" onClick={onClose}>
-            {tc("cancel")}
+            {tc(canEdit ? "cancel" : "close")}
           </Button>
-          <Button
-            onClick={save}
-            disabled={
-              update.isPending ||
-              (account === undefined && costCenter === undefined)
-            }
-          >
-            {tc("save")}
-          </Button>
+          {canEdit && (
+            <Button
+              onClick={save}
+              disabled={
+                update.isPending ||
+                (account === undefined && costCenter === undefined)
+              }
+            >
+              {tc("save")}
+            </Button>
+          )}
         </SheetFooter>
       </SheetContent>
     </Sheet>

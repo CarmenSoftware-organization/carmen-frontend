@@ -3,6 +3,9 @@ import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { ApReadValue } from "../shared/ap-read-value";
+import type { ApPayment } from "@/types/accounts-payable";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import type { DecimalString } from "@/types/accounts-payable";
 import type { PaymentErrorKey, PaymentWhtRow } from "./ap-payment-form";
@@ -22,6 +25,7 @@ export function PaymentWhtSection({
   errors,
   onChangeAmount,
   onRecalculate,
+  payee,
 }: {
   readonly rows: readonly PaymentWhtRow[];
   readonly editable: boolean;
@@ -33,9 +37,11 @@ export function PaymentWhtSection({
   readonly errors: ReadonlySet<PaymentErrorKey>;
   readonly onChangeAmount: (key: string, amount: DecimalString) => void;
   readonly onRecalculate: () => void;
+  readonly payee?: ApPayment | null;
 }) {
   const t = useTranslations("accounting.accountsPayable.payment.detail.wht");
   const format = useAmountFormatter();
+  const ui = useTranslations("accounting.accountsPayable.ui");
   return (
     <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0">
       <CardHeader className="flex flex-wrap items-center justify-between px-0">
@@ -54,6 +60,21 @@ export function PaymentWhtSection({
         )}
       </CardHeader>
       <CardContent className="px-0">
+        {payee && (
+          <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              [ui("payeeName"), payee.payee_name],
+              [ui("taxId"), payee.payee_tax_no],
+              [ui("branchNo"), payee.payee_branch_no],
+              [ui("address"), payee.payee_address],
+            ].map(([label, value]) => (
+              <Field key={label}>
+                <FieldLabel>{label}</FieldLabel>
+                <ApReadValue>{value || "—"}</ApReadValue>
+              </Field>
+            ))}
+          </div>
+        )}
         {editable && error && (
           <p role="alert" className="text-destructive mb-2 text-xs">
             {t("previewFailed", { message: error })}
@@ -72,6 +93,7 @@ export function PaymentWhtSection({
               <thead>
                 <tr className="border-b">
                   <th className={TH}>{t("profile")}</th>
+                  <th className={TH}>{ui("whtForm")}</th>
                   <th className={`${TH} text-right`}>{t("rate")}</th>
                   <th className={`${TH} text-right`}>{t("base")}</th>
                   <th className={`${TH} text-right`}>{t("amount")}</th>
@@ -88,6 +110,7 @@ export function PaymentWhtSection({
                         </span>
                       )}
                     </td>
+                    <td className={TD}>{row.pnd_form || "—"}</td>
                     <td className={`${TD} text-right tabular-nums`}>
                       {format(Number(row.rate || 0))}%
                     </td>

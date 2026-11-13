@@ -89,7 +89,7 @@ describe("Dashboard KPI StatCards (FRD Section 5.1 / FE-COA-09)", () => {
         ...mockUnusedAccount,
         id: "acc-3",
         is_active: false,
-        department_required: true,
+        is_require_cost_center: true,
       },
       {
         ...mockUnusedAccount,
@@ -103,7 +103,7 @@ describe("Dashboard KPI StatCards (FRD Section 5.1 / FE-COA-09)", () => {
     expect(screen.getByText("Total Accounts")).toBeDefined();
     expect(screen.getByText("Active Accounts")).toBeDefined();
     expect(screen.getByText("Inactive Accounts")).toBeDefined();
-    expect(screen.getByText("Req. Department")).toBeDefined();
+    expect(screen.getByText("Req. Cost Center")).toBeDefined();
     expect(screen.getByText("Req. Dimension")).toBeDefined();
   });
 });

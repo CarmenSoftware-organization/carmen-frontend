@@ -1,3 +1,4 @@
+import { useAccountingConfigEdit } from "../shared/use-accounting-config-edit";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -27,11 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Field,
-  FieldInput,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldInput, FieldLabel } from "@/components/ui/field";
 import { StatusSwitch } from "@/components/ui/status-switch";
 import { Switch } from "@/components/ui/switch";
 import { WarningDialog } from "@/components/ui/warning-dialog";
@@ -43,6 +40,7 @@ import { httpClient } from "@/lib/http-client";
 import type { JvPrefixMaster } from "@/types/accounting-master";
 
 export default function JvPrefixPage() {
+  "use no memo";
   const buCode = useBuCode();
   const queryClient = useQueryClient();
   const prefixQuery = useQuery({
@@ -56,7 +54,7 @@ export default function JvPrefixPage() {
     },
   });
   const [search, setSearch] = useState("");
-  const [detailOnly, setDetailOnly] = useState(false);
+  const canEdit = useAccountingConfigEdit("accounting.config.gl");
   const [editing, setEditing] = useState<JvPrefixMaster | null | undefined>();
   const [deleting, setDeleting] = useState<JvPrefixMaster | null>(null);
   const [warning, setWarning] = useState("");
@@ -79,7 +77,11 @@ export default function JvPrefixPage() {
           <DataGridColumnHeader column={column} title="Prefix Code" />
         ),
         cell: ({ row }) => (
-          <CellAction onClick={() => { setDetailOnly(true); setEditing(row.original); }}>
+          <CellAction
+            onClick={() => {
+              setEditing(row.original);
+            }}
+          >
             <span className="font-mono font-semibold">{row.original.code}</span>
           </CellAction>
         ),
@@ -90,7 +92,11 @@ export default function JvPrefixPage() {
           <DataGridColumnHeader column={column} title="Description (EN)" />
         ),
         cell: ({ row }) => (
-          <CellAction onClick={() => { setDetailOnly(true); setEditing(row.original); }}>
+          <CellAction
+            onClick={() => {
+              setEditing(row.original);
+            }}
+          >
             {row.original.description}
           </CellAction>
         ),
@@ -111,7 +117,12 @@ export default function JvPrefixPage() {
         header: "Default",
         cell: ({ row }) =>
           row.original.is_default ? (
-            <Badge data-standard-chip="" variant="outline" size="sm" className="border-primary text-primary">
+            <Badge
+              data-standard-chip=""
+              variant="outline"
+              size="sm"
+              className="border-primary text-primary"
+            >
               Default
             </Badge>
           ) : null,
@@ -129,9 +140,7 @@ export default function JvPrefixPage() {
       {
         accessorKey: "is_active",
         header: "Status",
-        cell: ({ row }) => (
-          <StatusBadge active={row.original.is_active} />
-        ),
+        cell: ({ row }) => <StatusBadge active={row.original.is_active} />,
       },
       {
         id: "actions",
@@ -139,9 +148,11 @@ export default function JvPrefixPage() {
         cell: ({ row }) => (
           <DataGridRowActions
             activity={{ id: row.original.id }}
-
-            onEdit={() => { setDetailOnly(false); setEditing(row.original); }}
-            onDelete={row.original.is_system ? undefined : () => setDeleting(row.original)}
+            onDelete={
+              row.original.is_system
+                ? undefined
+                : () => setDeleting(row.original)
+            }
           />
         ),
         enableSorting: false,
@@ -177,7 +188,8 @@ export default function JvPrefixPage() {
         <Bookmark className="text-primary size-4" />
         <span className="font-medium">System prefixes:</span>
         <span className="text-muted-foreground">
-          Prefixes flagged as System cannot be deleted because they are used by auto-generated transactions.
+          Prefixes flagged as System cannot be deleted because they are used by
+          auto-generated transactions.
         </span>
       </div>
       <DataGrid
@@ -199,11 +211,15 @@ export default function JvPrefixPage() {
         />
       )}
       <JvPrefixDialog
-        readOnly={detailOnly}
+        readOnly={!!editing && !canEdit}
         key={editing?.id ?? "new"}
         open={editing !== undefined}
         item={editing ?? null}
-        onOpenChange={(open) => { if (!open) { setEditing(undefined); setDetailOnly(false); } }}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditing(undefined);
+          }
+        }}
         onSave={async (value) => {
           try {
             if (!buCode) throw new Error("Select a business unit first");
@@ -217,17 +233,18 @@ export default function JvPrefixPage() {
                   doc_version: editing.doc_version,
                 })
               : await httpClient.post(endpoint, value);
-            if (!res.ok) throw await ApiError.from(res, "Unable to save JV prefix");
+            if (!res.ok)
+              throw await ApiError.from(res, "Unable to save JV prefix");
             await queryClient.invalidateQueries({
               queryKey: ["accounting-master", "jv-prefixes", buCode],
             });
-            toast.success(
-              editing ? "JV Prefix updated" : "JV Prefix created",
-            );
+            toast.success(editing ? "JV Prefix updated" : "JV Prefix created");
             setEditing(undefined);
           } catch (error) {
             setWarning(
-              error instanceof Error ? error.message : "Unable to save JV prefix",
+              error instanceof Error
+                ? error.message
+                : "Unable to save JV prefix",
             );
           }
         }}
@@ -237,7 +254,9 @@ export default function JvPrefixPage() {
         onOpenChange={(open) => !open && setDeleting(null)}
         title="Delete JV prefix?"
         description={
-          deleting ? `Delete ${deleting.code} — ${deleting.description}?` : undefined
+          deleting
+            ? `Delete ${deleting.code} — ${deleting.description}?`
+            : undefined
         }
         onConfirm={async () => {
           if (!deleting) return;
@@ -246,7 +265,8 @@ export default function JvPrefixPage() {
             const res = await httpClient.delete(
               `${API_ENDPOINTS.GL_JV_PREFIXES(buCode)}/${deleting.id}`,
             );
-            if (!res.ok) throw await ApiError.from(res, "Unable to delete JV prefix");
+            if (!res.ok)
+              throw await ApiError.from(res, "Unable to delete JV prefix");
             await queryClient.invalidateQueries({
               queryKey: ["accounting-master", "jv-prefixes", buCode],
             });
@@ -255,7 +275,9 @@ export default function JvPrefixPage() {
           } catch (error) {
             setDeleting(null);
             setWarning(
-              error instanceof Error ? error.message : "Unable to delete JV prefix",
+              error instanceof Error
+                ? error.message
+                : "Unable to delete JV prefix",
             );
           }
         }}
@@ -298,7 +320,11 @@ function JvPrefixDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {readOnly ? "JV Prefix Detail" : item ? "Edit JV Prefix" : "Add JV Prefix"}
+            {readOnly
+              ? "JV Prefix Detail"
+              : item
+                ? "Edit JV Prefix"
+                : "Add JV Prefix"}
           </DialogTitle>
           <DialogDescription>
             Prefix code used as running number prefix in Journal Vouchers.
@@ -331,9 +357,7 @@ function JvPrefixDialog({
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="jv-desc-local">
-              Description (TH)
-            </FieldLabel>
+            <FieldLabel htmlFor="jv-desc-local">Description (TH)</FieldLabel>
             <FieldInput
               id="jv-desc-local"
               value={descriptionLocal}
@@ -345,7 +369,7 @@ function JvPrefixDialog({
           <div className="flex items-center justify-between rounded-md border p-2.5">
             <div className="space-y-0.5">
               <p className="text-sm font-semibold">Default Prefix</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Set as default running prefix for Journal Vouchers
               </p>
             </div>
@@ -366,20 +390,22 @@ function JvPrefixDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {readOnly ? "Close" : "Cancel"}
           </Button>
-          {!readOnly && <Button
-            disabled={!code.trim() || !description.trim()}
-            onClick={() =>
-              onSave({
-                code,
-                description,
-                description_local: descriptionLocal || null,
-                is_default: isDefault,
-                is_active: active,
-              })
-            }
-          >
-            {item ? "Save" : "Create"}
-          </Button>}
+          {!readOnly && (
+            <Button
+              disabled={!code.trim() || !description.trim()}
+              onClick={() =>
+                onSave({
+                  code,
+                  description,
+                  description_local: descriptionLocal || null,
+                  is_default: isDefault,
+                  is_active: active,
+                })
+              }
+            >
+              {item ? "Save" : "Create"}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

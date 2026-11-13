@@ -1,3 +1,4 @@
+import { useAccountingConfigEdit } from "../shared/use-accounting-config-edit";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -27,11 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Field,
-  FieldInput,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldInput, FieldLabel } from "@/components/ui/field";
 import { StatusSwitch } from "@/components/ui/status-switch";
 import { WarningDialog } from "@/components/ui/warning-dialog";
 import { ErrorState } from "@/components/ui/error-state";
@@ -46,14 +43,17 @@ import type { BankAccountMaster } from "@/types/accounting-master";
 import { LookupChartOfAccount } from "@/components/lookup/lookup-chart-of-account";
 
 export default function BankAccountPage() {
+  "use no memo";
   const buCode = useBuCode();
   const queryClient = useQueryClient();
   const bankQuery = useBankAccounts();
   const { data: currencyData } = useCurrency({ perpage: 100 });
   const { data: accountData } = useChartOfAccount({ perpage: 100 });
   const [search, setSearch] = useState("");
-  const [detailOnly, setDetailOnly] = useState(false);
-  const [editing, setEditing] = useState<BankAccountMaster | null | undefined>();
+  const canEdit = useAccountingConfigEdit("accounting.config.gl");
+  const [editing, setEditing] = useState<
+    BankAccountMaster | null | undefined
+  >();
   const [deleting, setDeleting] = useState<BankAccountMaster | null>(null);
   const [warning, setWarning] = useState("");
   const [saving, setSaving] = useState(false);
@@ -112,7 +112,11 @@ export default function BankAccountPage() {
           <DataGridColumnHeader column={column} title="Bank Name" />
         ),
         cell: ({ row }) => (
-          <CellAction onClick={() => { setDetailOnly(true); setEditing(row.original); }}>
+          <CellAction
+            onClick={() => {
+              setEditing(row.original);
+            }}
+          >
             <span className="font-semibold">{row.original.bank_name}</span>
           </CellAction>
         ),
@@ -142,7 +146,9 @@ export default function BankAccountPage() {
         accessorKey: "gl_account_id",
         header: "GL Account",
         cell: ({ row }) => (
-          <span className="font-mono text-xs">{row.original.gl_account_id || "—"}</span>
+          <span className="font-mono text-xs">
+            {row.original.gl_account_id || "—"}
+          </span>
         ),
       },
       {
@@ -157,9 +163,7 @@ export default function BankAccountPage() {
       {
         accessorKey: "is_active",
         header: "Status",
-        cell: ({ row }) => (
-          <StatusBadge active={row.original.is_active} />
-        ),
+        cell: ({ row }) => <StatusBadge active={row.original.is_active} />,
       },
       {
         id: "actions",
@@ -167,8 +171,6 @@ export default function BankAccountPage() {
         cell: ({ row }) => (
           <DataGridRowActions
             activity={{ id: row.original.id }}
-
-            onEdit={() => { setDetailOnly(false); setEditing(row.original); }}
             onDelete={() => setDeleting(row.original)}
           />
         ),
@@ -205,7 +207,8 @@ export default function BankAccountPage() {
         <Landmark className="text-primary size-4" />
         <span className="font-medium">GL integration:</span>
         <span className="text-muted-foreground">
-          Each bank account links to a Chart of Accounts control account for automatic journal posting on AP/AR settlement.
+          Each bank account links to a Chart of Accounts control account for
+          automatic journal posting on AP/AR settlement.
         </span>
       </div>
       <DataGrid
@@ -227,16 +230,23 @@ export default function BankAccountPage() {
         </DataGridContainer>
       </DataGrid>
       <BankAccountDialog
-        readOnly={detailOnly}
+        readOnly={!!editing && !canEdit}
         key={editing?.id ?? "new"}
         open={editing !== undefined}
         item={editing ?? null}
         saving={saving}
         glAccountCode={
-          accountData?.data.find((account) => account.id === editing?.gl_account_id)
-            ?.code ?? editing?.gl_account_id ?? ""
+          accountData?.data.find(
+            (account) => account.id === editing?.gl_account_id,
+          )?.code ??
+          editing?.gl_account_id ??
+          ""
         }
-        onOpenChange={(open) => { if (!open) { setEditing(undefined); setDetailOnly(false); } }}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditing(undefined);
+          }
+        }}
         onSave={async (value) => {
           setSaving(true);
           try {
@@ -247,7 +257,9 @@ export default function BankAccountPage() {
             setEditing(undefined);
           } catch (error) {
             setWarning(
-              error instanceof Error ? error.message : "Unable to save bank account",
+              error instanceof Error
+                ? error.message
+                : "Unable to save bank account",
             );
           } finally {
             setSaving(false);
@@ -259,7 +271,9 @@ export default function BankAccountPage() {
         onOpenChange={(open) => !open && setDeleting(null)}
         title="Delete bank account?"
         description={
-          deleting ? `Delete ${deleting.bank_name} (${deleting.account_number})?` : undefined
+          deleting
+            ? `Delete ${deleting.bank_name} (${deleting.account_number})?`
+            : undefined
         }
         onConfirm={async () => {
           if (!deleting) return;
@@ -268,7 +282,8 @@ export default function BankAccountPage() {
             const res = await httpClient.delete(
               `${API_ENDPOINTS.GL_BANK_ACCOUNTS(buCode)}/${deleting.id}`,
             );
-            if (!res.ok) throw await ApiError.from(res, "Unable to delete bank account");
+            if (!res.ok)
+              throw await ApiError.from(res, "Unable to delete bank account");
             await queryClient.invalidateQueries({
               queryKey: ["accounting-master", "bank-accounts", buCode],
             });
@@ -277,7 +292,9 @@ export default function BankAccountPage() {
           } catch (error) {
             setDeleting(null);
             setWarning(
-              error instanceof Error ? error.message : "Unable to delete bank account",
+              error instanceof Error
+                ? error.message
+                : "Unable to delete bank account",
             );
           }
         }}
@@ -307,18 +324,20 @@ function BankAccountDialog({
   saving: boolean;
   glAccountCode: string;
   onOpenChange: (open: boolean) => void;
-  onSave: (
-    value: Omit<BankAccountMaster, "id" | "doc_version">,
-  ) => void;
+  onSave: (value: Omit<BankAccountMaster, "id" | "doc_version">) => void;
 }) {
   const [code, setCode] = useState(item?.code ?? "");
   const [bankName, setBankName] = useState(item?.bank_name ?? "");
-  const [accountNumber, setAccountNumber] = useState(item?.account_number ?? "");
+  const [accountNumber, setAccountNumber] = useState(
+    item?.account_number ?? "",
+  );
   const [accountName, setAccountName] = useState(item?.account_name ?? "");
   const [branchName, setBranchName] = useState(item?.branch_name ?? "");
   const [selectedGlAccountId, setGlAccountId] = useState<string | null>(null);
   const glAccountId = selectedGlAccountId ?? glAccountCode;
-  const [currencyCode, setCurrencyCode] = useState(item?.currency_code ?? "THB");
+  const [currencyCode, setCurrencyCode] = useState(
+    item?.currency_code ?? "THB",
+  );
   const [active, setActive] = useState(item?.is_active ?? true);
 
   return (
@@ -326,15 +345,24 @@ function BankAccountDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {readOnly ? "Bank Account Detail" : item ? "Edit Bank Account" : "Add Bank Account"}
+            {readOnly
+              ? "Bank Account Detail"
+              : item
+                ? "Edit Bank Account"
+                : "Add Bank Account"}
           </DialogTitle>
           <DialogDescription>
             Account details for financial operations and GL control mapping.
           </DialogDescription>
         </DialogHeader>
-        <fieldset disabled={readOnly} className="grid gap-4 py-2 sm:grid-cols-2">
+        <fieldset
+          disabled={readOnly}
+          className="grid gap-4 py-2 sm:grid-cols-2"
+        >
           <Field>
-            <FieldLabel htmlFor="bank-code" required>Code</FieldLabel>
+            <FieldLabel htmlFor="bank-code" required>
+              Code
+            </FieldLabel>
             <FieldInput
               id="bank-code"
               value={code}
@@ -388,9 +416,7 @@ function BankAccountDialog({
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="bank-branch">
-              Branch Name
-            </FieldLabel>
+            <FieldLabel htmlFor="bank-branch">Branch Name</FieldLabel>
             <FieldInput
               id="bank-branch"
               value={branchName}
@@ -399,9 +425,7 @@ function BankAccountDialog({
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="bank-gl">
-              GL Account Code
-            </FieldLabel>
+            <FieldLabel htmlFor="bank-gl">GL Account Code</FieldLabel>
             <LookupChartOfAccount
               value={glAccountId}
               category="asset"
@@ -421,23 +445,33 @@ function BankAccountDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {readOnly ? "Close" : "Cancel"}
           </Button>
-          {!readOnly && <Button
-            disabled={saving || !code.trim() || !bankName.trim() || !accountNumber.trim() || !accountName.trim() || !glAccountId || !currencyCode}
-            onClick={() =>
-              onSave({
-                code,
-                bank_name: bankName,
-                account_number: accountNumber,
-                account_name: accountName,
-                branch_name: branchName || null,
-                gl_account_id: glAccountId || null,
-                currency_code: currencyCode,
-                is_active: active,
-              })
-            }
-          >
-            {item ? "Save" : "Create"}
-          </Button>}
+          {!readOnly && (
+            <Button
+              disabled={
+                saving ||
+                !code.trim() ||
+                !bankName.trim() ||
+                !accountNumber.trim() ||
+                !accountName.trim() ||
+                !glAccountId ||
+                !currencyCode
+              }
+              onClick={() =>
+                onSave({
+                  code,
+                  bank_name: bankName,
+                  account_number: accountNumber,
+                  account_name: accountName,
+                  branch_name: branchName || null,
+                  gl_account_id: glAccountId || null,
+                  currency_code: currencyCode,
+                  is_active: active,
+                })
+              }
+            >
+              {item ? "Save" : "Create"}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

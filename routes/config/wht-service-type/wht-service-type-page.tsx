@@ -149,6 +149,7 @@ function WhtServiceTypeDialog({
 
   return (
     <MockEntityDialog
+      permissionPrefix="accounting.config.ap"
       open={open}
       onOpenChange={onOpenChange}
       icon={Percent}

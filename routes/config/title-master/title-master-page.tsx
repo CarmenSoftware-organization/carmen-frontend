@@ -163,6 +163,7 @@ function TitleDialog({
   const [active, setActive] = useState(item?.is_active ?? true);
   return (
     <MockEntityDialog
+      permissionPrefix="accounting.config"
       open={open}
       onOpenChange={onOpenChange}
       icon={UserRound}

@@ -1,8 +1,29 @@
 "use no memo";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Trash2, X, Pencil, Eye } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  useGlDimensions,
+  useGlDimensionValues,
+} from "@/hooks/use-gl-dimensions";
+import type { ApInvoiceLine } from "@/types/accounts-payable";
 import { useTranslations } from "use-intl";
 import { LookupChartOfAccountById } from "@/components/lookup/lookup-chart-of-account-by-id";
 import { LookupCostCenter } from "@/components/lookup/lookup-cost-center";
@@ -195,10 +216,10 @@ export function InvoiceLines({
   lines,
   editable,
   deposit,
-  showErrors,
   onChange,
   onMove,
   onRemove,
+  savedLines,
 }: {
   readonly lines: InvoiceFormLine[];
   readonly deposit: boolean;
@@ -207,20 +228,17 @@ export function InvoiceLines({
   readonly onChange: (key: string, patch: Patch) => void;
   readonly onMove: (key: string, direction: -1 | 1) => void;
   readonly onRemove: (key: string) => void;
+  readonly savedLines?: ApInvoiceLine[];
 }) {
   const t = useTranslations("accounting.accountsPayable.invoice.detail.lines");
+  const ui = useTranslations("accounting.accountsPayable.ui");
+  const [detailKey, setDetailKey] = useState<string | null>(null);
+  const detail = lines.find((line) => line.key === detailKey);
   const hasGrn = lines.some((line) => line.grn_no);
-  const required = t("required");
 
   // columns ต้อง memoize และไม่พึ่งค่าที่เปลี่ยนทุก render (formatter/t) ไม่งั้น cell remount แล้ว input เสีย focus
   const columns = useMemo<ColumnDef<InvoiceFormLine>[]>(() => {
-    const cols: ColumnDef<InvoiceFormLine>[] = [
-      {
-        id: "no",
-        header: () => "#",
-        cell: ({ row }) => row.index + 1,
-      },
-    ];
+    const cols: ColumnDef<InvoiceFormLine>[] = [];
     if (hasGrn)
       cols.push({
         id: "grn",
@@ -232,29 +250,6 @@ export function InvoiceLines({
         ),
       });
     cols.push(
-      {
-        id: "product",
-        header: () => <Label k="product" />,
-        cell: ({ row }) =>
-          editable ? (
-            <div className="min-w-48">
-              <LookupProduct
-                value={row.original.product_id ?? ""}
-                defaultLabel={row.original.product_name ?? undefined}
-                onValueChange={(id, product) =>
-                  onChange(row.original.key, {
-                    product_id: id || null,
-                    product_name: product?.name ?? null,
-                    description:
-                      row.original.description || (product?.name ?? ""),
-                  })
-                }
-              />
-            </div>
-          ) : (
-            <span className="min-w-32">{row.original.product_name ?? "—"}</span>
-          ),
-      },
       {
         id: "description",
         header: () => <Label k="description" />,
@@ -355,79 +350,6 @@ export function InvoiceLines({
         cell: ({ row }) => <Amount value={lineAmounts(row.original).net} />,
       },
       {
-        id: "account",
-        header: () => <Label k="account" />,
-        cell: ({ row }) =>
-          editable ? (
-            <div className="min-w-52">
-              <LookupChartOfAccountById
-                value={row.original.dr_chart_of_accounts_id}
-                onValueChange={(id) =>
-                  onChange(row.original.key, { dr_chart_of_accounts_id: id })
-                }
-                error={
-                  showErrors && !row.original.dr_chart_of_accounts_id
-                    ? required
-                    : undefined
-                }
-              />
-            </div>
-          ) : (
-            <span className="whitespace-nowrap">
-              {row.original.dr_account_code ?? "—"}
-            </span>
-          ),
-      },
-      {
-        id: "cost_center",
-        header: () => <Label k="costCenter" />,
-        cell: ({ row }) =>
-          editable ? (
-            <div className="min-w-44">
-              <LookupCostCenter
-                value={row.original.dr_cost_center_id}
-                onValueChange={(id) =>
-                  onChange(row.original.key, { dr_cost_center_id: id })
-                }
-                modal={false}
-              />
-            </div>
-          ) : (
-            <span className="whitespace-nowrap">
-              {row.original.dr_cost_center_code ?? "—"}
-            </span>
-          ),
-      },
-      {
-        id: "vat_profile",
-        header: () => <Label k="vat" />,
-        cell: ({ row }) => (
-          <TaxCell
-            kind="vat"
-            line={row.original}
-            editable={editable}
-            onChange={(patch) => onChange(row.original.key, patch)}
-          />
-        ),
-      },
-      {
-        id: "vat_amount",
-        header: () => <Label k="vatAmount" />,
-        cell: ({ row }) => <Amount value={lineAmounts(row.original).vat} />,
-      },
-      {
-        id: "wht_profile",
-        header: () => <Label k="wht" />,
-        cell: ({ row }) => (
-          <TaxCell
-            kind="wht"
-            line={row.original}
-            editable={editable}
-            onChange={(patch) => onChange(row.original.key, patch)}
-          />
-        ),
-      },
-      {
         id: "total",
         header: () => <Label k="total" />,
         cell: ({ row }) => (
@@ -438,23 +360,408 @@ export function InvoiceLines({
         ),
       },
     );
-    if (editable)
-      cols.push({
-        id: "actions",
-        header: () => null,
-        cell: ({ row, table }) => (
+    return cols;
+  }, [editable, deposit, hasGrn, onChange]);
+
+  const compact = columns.filter((column) =>
+    [
+      "grn",
+      "description",
+      "unit",
+      "quantity",
+      "unit_price",
+      "discount",
+      "net",
+      "total",
+    ].includes(column.id ?? ""),
+  );
+  const savedById = new Map((savedLines ?? []).map((line) => [line.id, line]));
+  const totalIndexBeforeTax = compact.findIndex(
+    (column) => column.id === "total",
+  );
+  compact[totalIndexBeforeTax] = {
+    ...compact[totalIndexBeforeTax],
+    id: "total",
+    header: () => `${ui("total")} / ${ui("unpaid")}`,
+  };
+  const totalColumn = compact[totalIndexBeforeTax];
+  if (totalColumn)
+    totalColumn.cell = ({ row }) => (
+      <div className="space-y-1">
+        <Amount
+          value={lineAmounts(row.original).total}
+          className="font-semibold"
+        />
+        <Amount
+          value={
+            !editable
+              ? (savedById.get(row.original.key)?.unpaid_amount ??
+                lineAmounts(row.original).total)
+              : lineAmounts(row.original).total
+          }
+          className="text-micro text-muted-foreground"
+        />
+      </div>
+    );
+  const totalIndex = compact.findIndex((column) => column.id === "total");
+  compact.splice(totalIndex, 0, {
+    id: "tax",
+    header: () => ui("taxSummary"),
+    cell: ({ row }) => (
+      <div className="text-right text-xs tabular-nums">
+        <Amount
+          value={lineAmounts(row.original).vat}
+          className="text-success-ink"
+        />
+        <span className="text-micro text-muted-foreground">
+          {t("wht")} {lineAmounts(row.original).wht}
+        </span>
+      </div>
+    ),
+  });
+  compact.splice(4, 0, {
+    id: "subtotal",
+    header: () => ui("subtotal"),
+    cell: ({ row }) => <Amount value={lineAmounts(row.original).subtotal} />,
+  });
+  compact.push({
+    id: "detail",
+    header: () => null,
+    cell: ({ row }) => (
+      <div className="flex items-center">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label={`${ui(editable ? "editItem" : "viewItem")} ${row.index + 1}`}
+          onClick={() => setDetailKey(row.original.key)}
+        >
+          {editable ? (
+            <Pencil className="size-4" />
+          ) : (
+            <Eye className="size-4" />
+          )}
+        </Button>
+        {editable && (
           <RowActions
             first={row.index === 0}
-            last={row.index === table.getRowModel().rows.length - 1}
-            only={table.getRowModel().rows.length === 1}
+            last={row.index === lines.length - 1}
+            only={lines.length === 1}
             onUp={() => onMove(row.original.key, -1)}
             onDown={() => onMove(row.original.key, 1)}
             onRemove={() => onRemove(row.original.key)}
           />
-        ),
-      });
-    return cols;
-  }, [editable, deposit, hasGrn, showErrors, required, onChange, onMove, onRemove]);
+        )}
+      </div>
+    ),
+  });
+  return (
+    <>
+      <ApDetailGrid
+        rows={lines}
+        columns={compact.map((column) => ({
+          ...column,
+          meta: { ...column.meta, cellClassName: "align-top" },
+        }))}
+        empty={t("empty")}
+      />
+      {detail && (
+        <InvoiceLineDialog
+          line={detail}
+          editable={editable}
+          deposit={deposit}
+          onChange={(patch) => onChange(detail.key, patch)}
+          onClose={() => setDetailKey(null)}
+        />
+      )}
+    </>
+  );
+}
 
-  return <ApDetailGrid rows={lines} columns={columns} empty={t("empty")} />;
+function InvoiceLineDialog({
+  line,
+  editable,
+  deposit,
+  onChange,
+  onClose,
+}: {
+  readonly line: InvoiceFormLine;
+  readonly editable: boolean;
+  readonly deposit: boolean;
+  readonly onChange: (patch: Patch) => void;
+  readonly onClose: () => void;
+}) {
+  const ui = useTranslations("accounting.accountsPayable.ui");
+  const t = useTranslations("accounting.accountsPayable.invoice.detail.lines");
+  const [dimensionsOpen, setDimensionsOpen] = useState(false);
+  const amounts = lineAmounts(line);
+  const carry = (patch: Partial<NonNullable<InvoiceFormLine["carry"]>>) =>
+    onChange({ carry: { ...line.carry, ...patch } });
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>{ui("itemDetail")}</DialogTitle>
+        </DialogHeader>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => setDimensionsOpen(!dimensionsOpen)}
+        >
+          {ui("dimensions")} · {line.carry?.dimensions?.length ?? 0}
+        </Button>
+        {dimensionsOpen && (
+          <InvoiceDimensions
+            line={line}
+            editable={editable}
+            onChange={onChange}
+          />
+        )}
+        <fieldset disabled={!editable} className="space-y-5">
+          <section className="space-y-3">
+            <h3 className="text-sm font-semibold">{ui("expense")}</h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field>
+                <FieldLabel>{t("product")}</FieldLabel>
+                <LookupProduct
+                  value={line.product_id ?? ""}
+                  defaultLabel={line.product_name ?? undefined}
+                  onValueChange={(id, product) =>
+                    onChange({
+                      product_id: id || null,
+                      product_name: product?.name ?? null,
+                      description: line.description || product?.name || "",
+                    })
+                  }
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="ap-item-description">
+                  {t("description")}
+                </FieldLabel>
+                <Input
+                  id="ap-item-description"
+                  value={line.description}
+                  onChange={(event) =>
+                    onChange({ description: event.target.value })
+                  }
+                />
+              </Field>
+              <Field>
+                <FieldLabel>{ui("account")}</FieldLabel>
+                <LookupChartOfAccountById
+                  value={line.dr_chart_of_accounts_id}
+                  onValueChange={(id) =>
+                    onChange({ dr_chart_of_accounts_id: id })
+                  }
+                />
+              </Field>
+              <Field>
+                <FieldLabel>{ui("costCenter")}</FieldLabel>
+                <LookupCostCenter
+                  modal
+                  value={line.dr_cost_center_id}
+                  onValueChange={(id) => onChange({ dr_cost_center_id: id })}
+                />
+              </Field>
+              <Field>
+                <FieldLabel>{ui("netAmount")}</FieldLabel>
+                <Amount value={amounts.net} />
+              </Field>
+            </div>
+          </section>
+          <section className="space-y-3 border-t pt-4">
+            <h3 className="text-sm font-semibold">{ui("inputTax")}</h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field>
+                <FieldLabel>{t("vatProfile")}</FieldLabel>
+                <TaxCell
+                  kind="vat"
+                  line={line}
+                  editable={editable}
+                  onChange={onChange}
+                />
+              </Field>
+              <Field>
+                <FieldLabel>{t("vatAmount")}</FieldLabel>
+                <Amount value={amounts.vat} />
+                <label className="flex items-center gap-2 text-xs">
+                  <Checkbox
+                    checked={line.vat_is_override}
+                    onCheckedChange={(checked) =>
+                      onChange({
+                        vat_is_override: checked === true,
+                        vat_amount: amounts.vat,
+                      })
+                    }
+                  />
+                  {ui("vatOverride")}
+                </label>
+                {line.vat_is_override && (
+                  <DecimalCell
+                    label={t("vatAmount")}
+                    value={line.vat_amount}
+                    editable={editable}
+                    onChange={(vat_amount) => onChange({ vat_amount })}
+                  />
+                )}
+              </Field>
+              <Field>
+                <FieldLabel>{ui("taxAccount")}</FieldLabel>
+                <LookupChartOfAccountById
+                  value={line.carry?.vat_chart_of_accounts_id ?? null}
+                  onValueChange={(id) =>
+                    carry({ vat_chart_of_accounts_id: id })
+                  }
+                />
+              </Field>
+              <Field>
+                <FieldLabel>{ui("taxCostCenter")}</FieldLabel>
+                <LookupCostCenter
+                  modal
+                  value={line.carry?.vat_cost_center_id ?? null}
+                  onValueChange={(id) => carry({ vat_cost_center_id: id })}
+                />
+              </Field>
+              <Field>
+                <FieldLabel>{t("whtProfile")}</FieldLabel>
+                <TaxCell
+                  kind="wht"
+                  line={line}
+                  editable={editable}
+                  onChange={onChange}
+                />
+              </Field>
+              {!deposit && (
+                <Field>
+                  <FieldLabel>{t("unitPrice")}</FieldLabel>
+                  <IncVatToggle
+                    checked={line.vat_is_included}
+                    onCheckedChange={(vat_is_included) =>
+                      onChange({ vat_is_included })
+                    }
+                  />
+                </Field>
+              )}
+            </div>
+          </section>
+          <section className="space-y-3 border-t pt-4">
+            <h3 className="text-sm font-semibold">{ui("accountPayable")}</h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field>
+                <FieldLabel>{ui("apAccount")}</FieldLabel>
+                <LookupChartOfAccountById
+                  value={line.carry?.cr_chart_of_accounts_id ?? null}
+                  onValueChange={(id) => carry({ cr_chart_of_accounts_id: id })}
+                />
+              </Field>
+              <Field>
+                <FieldLabel>{ui("apCostCenter")}</FieldLabel>
+                <LookupCostCenter
+                  modal
+                  value={line.carry?.cr_cost_center_id ?? null}
+                  onValueChange={(id) => carry({ cr_cost_center_id: id })}
+                />
+              </Field>
+              <Field>
+                <FieldLabel>{ui("total")}</FieldLabel>
+                <Amount value={amounts.total} />
+              </Field>
+            </div>
+          </section>
+        </fieldset>
+        <DialogFooter>
+          <Button type="button" variant="outline" size="sm" onClick={onClose}>
+            {ui("close")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function InvoiceDimensions({
+  line,
+  editable,
+  onChange,
+}: {
+  readonly line: InvoiceFormLine;
+  readonly editable: boolean;
+  readonly onChange: (patch: Patch) => void;
+}) {
+  const ui = useTranslations("accounting.accountsPayable.ui");
+  const dimensions = useGlDimensions();
+  const values = useGlDimensionValues();
+  const selected = line.carry?.dimensions ?? [];
+  if (dimensions.isError || values.isError)
+    return (
+      <div role="alert" className="text-destructive text-xs">
+        {ui("dimensionLoadError")}
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            void dimensions.refetch();
+            void values.refetch();
+          }}
+        >
+          {ui("retry")}
+        </Button>
+      </div>
+    );
+  return (
+    <div className="grid gap-3 border-b pb-4 sm:grid-cols-2">
+      {(dimensions.data ?? [])
+        .filter(
+          (dimension) =>
+            dimension.is_active ||
+            selected.some((item) => item.gl_dimension_id === dimension.id),
+        )
+        .map((dimension) => {
+          const value = selected.find(
+            (item) => item.gl_dimension_id === dimension.id,
+          )?.gl_dimension_value_id;
+          return (
+            <Field key={dimension.id}>
+              <FieldLabel>{dimension.name}</FieldLabel>
+              <Select
+                value={value ?? "__none__"}
+                disabled={!editable || dimensions.isLoading || values.isLoading}
+                onValueChange={(id) => {
+                  const next = selected.filter(
+                    (item) => item.gl_dimension_id !== dimension.id,
+                  );
+                  if (id !== "__none__")
+                    next.push({
+                      gl_dimension_id: dimension.id,
+                      gl_dimension_value_id: id,
+                    });
+                  onChange({ carry: { ...line.carry, dimensions: next } });
+                }}
+              >
+                <SelectTrigger size="sm" aria-label={dimension.name}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">{ui("noDimension")}</SelectItem>
+                  {(values.data ?? [])
+                    .filter(
+                      (item) =>
+                        item.dimension_id === dimension.id &&
+                        (item.is_active || item.id === value),
+                    )
+                    .map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.code} · {item.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          );
+        })}
+    </div>
+  );
 }

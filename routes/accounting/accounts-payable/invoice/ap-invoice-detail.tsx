@@ -28,6 +28,14 @@ import { ErrorState } from "@/components/ui/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ApJournalTab } from "../shared/ap-journal-tab";
+import { ApWorkflowStatus } from "../shared/ap-workflow-status";
+import {
+  InvoiceTaxPanel,
+  InvoiceReferencesPanel,
+  InvoicePaymentsPanel,
+} from "./ap-invoice-panels";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-profile";
 import { ApiError } from "@/lib/api-error";
@@ -50,10 +58,15 @@ import {
   type InvoiceForm,
   type InvoiceFormLine,
 } from "./ap-invoice-form";
+import { InvoiceReferenceEditor } from "./ap-invoice-reference-editor";
 import { InvoiceHeader } from "./ap-invoice-header";
 import { InvoiceLines } from "./ap-invoice-lines";
 import { ApPostingBanner } from "../shared/ap-posting-banner";
-import { addDecimal } from "../shared/ap-decimal";
+import {
+  addDecimal,
+  subtractDecimal,
+  multiplyDecimal,
+} from "../shared/ap-decimal";
 
 const LIST_PATH = "/accounting/accounts-payable/invoice";
 const NO_ERRORS: ReadonlySet<InvoiceErrorKey> = new Set();
@@ -95,6 +108,7 @@ function ApInvoiceEditor({
 }) {
   const t = useTranslations("accounting.accountsPayable.invoice");
   const td = useTranslations("accounting.accountsPayable.invoice.detail");
+  const ui = useTranslations("accounting.accountsPayable.ui");
   const navigate = useNavigate();
   const { defaultCurrencyId, defaultCurrencyCode, userId } = useProfile();
   const format = useAmountFormatter();
@@ -105,6 +119,7 @@ function ApInvoiceEditor({
   const isNew = !loaded;
   const [editing, setEditing] = useState(isNew);
   const [showErrors, setShowErrors] = useState(false);
+  const [activeTab, setActiveTab] = useState("items");
   const [form, setForm] = useState<InvoiceForm>(() =>
     initialInvoiceForm(loaded, {
       currencyId: defaultCurrencyId,
@@ -274,6 +289,26 @@ function ApInvoiceEditor({
       }
     : totals;
   const money = (value: string) => format(Number(value || 0));
+  const baseCurrency =
+    loaded?.base_currency_code || defaultCurrencyCode || form.currency_code;
+  const pair = (value: string, baseValue?: string) => (
+    <span className="flex flex-col items-end gap-0.5">
+      <span>
+        {money(value)}{" "}
+        <span className="text-muted-foreground font-normal">
+          {form.currency_code}
+        </span>
+      </span>
+      {baseCurrency !== form.currency_code && (
+        <span className="text-micro text-muted-foreground font-normal">
+          {money(
+            baseValue ?? multiplyDecimal(value, form.exchange_rate || "1"),
+          )}{" "}
+          {baseCurrency}
+        </span>
+      )}
+    </span>
+  );
 
   const grnLine = loaded?.lines?.find((l) => l.sources[0]);
   const grnId = grnLine?.sources[0]?.good_received_note_id;
@@ -281,7 +316,7 @@ function ApInvoiceEditor({
   const needsReason = reasonAction === "void";
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
+    <div className="flex min-h-0 flex-auto shrink-0 flex-col gap-4 lg:flex-1 lg:shrink">
       {locked && (
         <div className="bg-info/10 text-info-ink flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm">
           <span>{td("fromGrnBanner")}</span>
@@ -334,7 +369,7 @@ function ApInvoiceEditor({
                 </Button>
                 <Button size="sm" disabled={busy} onClick={() => void save()}>
                   <Save className="size-4" />
-                  {td("save")}
+                  {ui("saveDraft")}
                 </Button>
               </>
             )}
@@ -442,53 +477,123 @@ function ApInvoiceEditor({
         editable={editable}
         errors={errors}
         dueDate={loaded?.due_date}
+        docNo={loaded?.doc_no}
+        status={loaded?.doc_status}
+        source={loaded?.doc_source}
+        sourceDoc={grnLine?.sources[0]?.grn_no}
       />
 
-      <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0">
-        <CardHeader className="flex flex-wrap items-center justify-between px-0">
-          <CardTitle>{td("linesTitle")}</CardTitle>
-          {editable && (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() =>
-                setForm((current) => ({
-                  ...current,
-                  lines: [...current.lines, emptyLine()],
-                }))
-              }
+      <ApWorkflowStatus document={loaded} />
+      <Tabs
+        value={
+          form.doc_type !== "invoice" && activeTab === "references"
+            ? "items"
+            : activeTab
+        }
+        onValueChange={setActiveTab}
+        className="flex min-h-0 min-w-0 flex-auto shrink-0 flex-col lg:flex-1 lg:shrink"
+      >
+        <div className="shrink-0 overflow-x-auto overflow-y-hidden border-b">
+          <TabsList variant="line" className="w-max min-w-full justify-start">
+            <TabsTrigger value="items">{ui("items")}</TabsTrigger>
+            <TabsTrigger value="tax">{ui("taxInvoice")}</TabsTrigger>
+            <TabsTrigger
+              value="references"
+              disabled={form.doc_type !== "invoice"}
             >
-              <Plus className="size-4" />
-              {td("addLine")}
-            </Button>
-          )}
-        </CardHeader>
-        <CardContent className="px-0">
-          {errors.has("lines") && (
-            <p className="text-destructive mb-2 text-xs">
-              {td("errors.lines")}
-            </p>
-          )}
-          {(["account", "quantity", "unitPrice"] as const).map(
-            (key) =>
-              errors.has(key) && (
-                <p key={key} className="text-destructive mb-2 text-xs">
-                  {td(`errors.${key}`)}
+              {ui("references")}
+            </TabsTrigger>
+            <TabsTrigger value="payments">{ui("payments")}</TabsTrigger>
+            <TabsTrigger value="journal">{ui("journal")}</TabsTrigger>
+          </TabsList>
+        </div>
+        <TabsContent
+          value="items"
+          className="mt-3 min-h-0 min-w-0 flex-auto overflow-visible lg:flex-1 lg:overflow-auto"
+        >
+          <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0">
+            <CardHeader className="flex flex-wrap items-center justify-between px-0">
+              <CardTitle>{td("linesTitle")}</CardTitle>
+              {editable && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setForm((current) => ({
+                      ...current,
+                      lines: [...current.lines, emptyLine()],
+                    }))
+                  }
+                >
+                  <Plus className="size-4" />
+                  {td("addLine")}
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="px-0">
+              {errors.has("lines") && (
+                <p className="text-destructive mb-2 text-xs">
+                  {td("errors.lines")}
                 </p>
-              ),
+              )}
+              {(["account", "quantity", "unitPrice"] as const).map(
+                (key) =>
+                  errors.has(key) && (
+                    <p key={key} className="text-destructive mb-2 text-xs">
+                      {td(`errors.${key}`)}
+                    </p>
+                  ),
+              )}
+              <InvoiceLines
+                lines={lines}
+                deposit={deposit}
+                editable={editable}
+                showErrors={showErrors}
+                onChange={patchLine}
+                onMove={moveLine}
+                onRemove={removeLine}
+                savedLines={loaded?.lines}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent
+          value="tax"
+          className="mt-3 min-h-0 min-w-0 flex-auto overflow-visible lg:flex-1 lg:overflow-auto"
+        >
+          <InvoiceTaxPanel invoice={loaded} />
+        </TabsContent>
+        <TabsContent
+          value="references"
+          className="mt-3 min-h-0 min-w-0 flex-auto overflow-visible lg:flex-1 lg:overflow-auto"
+        >
+          {editable ? (
+            <InvoiceReferenceEditor
+              vendorId={form.vendor_id}
+              currencyId={form.currency_id}
+              invoiceId={loaded?.id}
+              value={form.references}
+              originalValue={loaded?.references}
+              onChange={(references) => patchForm({ references })}
+            />
+          ) : (
+            <InvoiceReferencesPanel invoice={loaded} />
           )}
-          <InvoiceLines
-            lines={lines}
-            deposit={deposit}
-            editable={editable}
-            showErrors={showErrors}
-            onChange={patchLine}
-            onMove={moveLine}
-            onRemove={removeLine}
-          />
-        </CardContent>
-      </Card>
+        </TabsContent>
+        <TabsContent
+          value="payments"
+          className="mt-3 min-h-0 min-w-0 flex-auto overflow-visible lg:flex-1 lg:overflow-auto"
+        >
+          <InvoicePaymentsPanel invoice={loaded} />
+        </TabsContent>
+        <TabsContent
+          value="journal"
+          className="mt-3 min-h-0 min-w-0 flex-auto overflow-visible lg:flex-1 lg:overflow-auto"
+        >
+          <ApJournalTab id={loaded?.gl_jv_id} />
+        </TabsContent>
+      </Tabs>
 
       <SummaryFooterBar
         hasRecord
@@ -496,21 +601,33 @@ function ApInvoiceEditor({
           {
             key: "subtotal",
             label: td("summary.subtotal"),
-            value: money(summary.subtotal),
+            value: pair(summary.subtotal),
           },
           {
             key: "discount",
             label: td("summary.discount"),
-            value: money(summary.discount),
+            value: pair(summary.discount),
           },
-          { key: "vat", label: td("summary.vat"), value: money(summary.vat) },
-          { key: "wht", label: td("summary.wht"), value: money(summary.wht) },
+          {
+            key: "net",
+            label: ui("netAmount"),
+            value: pair(subtractDecimal(summary.subtotal, summary.discount)),
+          },
+          { key: "vat", label: td("summary.vat"), value: pair(summary.vat) },
+          { key: "wht", label: td("summary.wht"), value: pair(summary.wht) },
           {
             key: "total",
             label: td("summary.total"),
-            value: money(summary.total),
+            value: pair(
+              summary.total,
+              view ? loaded.base_total_amount : undefined,
+            ),
             emphasis: true,
-            suffix: form.currency_code,
+          },
+          {
+            key: "unpaid",
+            label: ui("unpaid"),
+            value: pair(view ? loaded.outstanding_amount : summary.total),
           },
         ]}
       >

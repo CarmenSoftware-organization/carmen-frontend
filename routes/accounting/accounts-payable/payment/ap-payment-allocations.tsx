@@ -1,8 +1,16 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
@@ -34,8 +42,142 @@ function Money({ value }: { readonly value: DecimalString }) {
   );
 }
 
+export function PaymentAllocationsEditor(
+  props: React.ComponentProps<typeof PaymentAllocationOptions> & {
+    readonly inputDate?: string;
+  },
+) {
+  const t = useTranslations("accounting.accountsPayable.ui");
+  const [open, setOpen] = useState(false);
+  const [detail, setDetail] = useState(false);
+  const [draft, setDraft] = useState<Record<string, DecimalString>>({});
+  const selected = props.docs.filter((doc) =>
+    doc.lines.some(
+      (line) =>
+        compareDecimal(
+          props.allocations[line.ap_invoice_detail_id] || "0",
+          "0",
+        ) > 0,
+    ),
+  );
+  const draftCurrency =
+    props.lockedCurrency ??
+    props.docs.find((doc) =>
+      doc.lines.some(
+        (line) =>
+          compareDecimal(draft[line.ap_invoice_detail_id] || "0", "0") > 0,
+      ),
+    )?.currency_code ??
+    null;
+  const selectedIds = new Set(selected.map((doc) => doc.ap_invoice_id));
+  const eligible = props.docs.filter(
+    (doc) =>
+      !props.inputDate ||
+      doc.doc_date.slice(0, 10) <= props.inputDate ||
+      selectedIds.has(doc.ap_invoice_id),
+  );
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-muted-foreground text-xs">
+          {t("selectedDocuments", { count: selected.length })}
+        </span>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setDraft({ ...props.allocations });
+            setOpen(true);
+          }}
+        >
+          {t("selectDocument")}
+        </Button>
+      </div>
+      {selected.length ? (
+        <PaymentAllocationOptions {...props} docs={selected} />
+      ) : (
+        <p className="text-muted-foreground text-xs">
+          {t("noSelectedDocuments")}
+        </p>
+      )}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="flex max-h-[85dvh] flex-col sm:max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>{t("selectDocument")}</DialogTitle>
+          </DialogHeader>
+          <Tabs
+            value={detail ? "detail" : "summary"}
+            onValueChange={(value) => setDetail(value === "detail")}
+          >
+            <TabsList>
+              <TabsTrigger value="summary">{t("summaryView")}</TabsTrigger>
+              <TabsTrigger value="detail">{t("detailView")}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <div className="min-h-0 flex-1 overflow-auto">
+            <PaymentAllocationOptions
+              {...props}
+              docs={eligible}
+              allocations={draft}
+              lockedCurrency={draftCurrency}
+              showDetails={detail}
+              onChangeLine={(id, value) =>
+                setDraft((current) => ({ ...current, [id]: value }))
+              }
+              onPayFull={(doc) =>
+                setDraft((current) => ({
+                  ...current,
+                  ...Object.fromEntries(
+                    doc.lines.map((line) => [
+                      line.ap_invoice_detail_id,
+                      lineCap(line, props.ownReserved),
+                    ]),
+                  ),
+                }))
+              }
+              onClear={(doc) =>
+                setDraft((current) => {
+                  const next = { ...current };
+                  for (const line of doc.lines)
+                    delete next[line.ap_invoice_detail_id];
+                  return next;
+                })
+              }
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setOpen(false)}
+            >
+              {t("close")}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => {
+                for (const id of new Set([
+                  ...Object.keys(props.allocations),
+                  ...Object.keys(draft),
+                ]))
+                  props.onChangeLine(id, draft[id] ?? "");
+                setOpen(false);
+              }}
+            >
+              {t("select")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 /** เลือกจ่ายบรรทัดของ invoice ที่ยังค้าง — ยอดต่อบรรทัด ไม่เกินเพดานของบรรทัดนั้น */
-export function PaymentAllocationsEditor({
+function PaymentAllocationOptions({
   docs,
   allocations,
   ownReserved,
@@ -43,6 +185,7 @@ export function PaymentAllocationsEditor({
   onChangeLine,
   onPayFull,
   onClear,
+  showDetails = true,
 }: {
   readonly docs: readonly ApOutstandingDocument[];
   readonly allocations: Readonly<Record<string, DecimalString>>;
@@ -53,8 +196,11 @@ export function PaymentAllocationsEditor({
   readonly onChangeLine: (lineId: string, value: DecimalString) => void;
   readonly onPayFull: (doc: ApOutstandingDocument) => void;
   readonly onClear: (doc: ApOutstandingDocument) => void;
+  readonly showDetails?: boolean;
 }) {
-  const t = useTranslations("accounting.accountsPayable.payment.detail.allocations");
+  const t = useTranslations(
+    "accounting.accountsPayable.payment.detail.allocations",
+  );
   const ti = useTranslations("accounting.accountsPayable.invoice");
   const { dateFormat } = useProfile();
 
@@ -70,10 +216,10 @@ export function PaymentAllocationsEditor({
         return (
           <section
             key={doc.ap_invoice_id}
-            className="rounded-lg border"
+            className="border-b pb-3"
             aria-label={doc.doc_no}
           >
-            <header className="bg-muted/40 flex flex-wrap items-center gap-x-4 gap-y-1 border-b px-3 py-2 text-xs">
+            <header className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b px-3 py-2 text-xs">
               <Link
                 className="font-medium underline"
                 to={`${INVOICE_PATH}/${doc.ap_invoice_id}`}
@@ -84,7 +230,8 @@ export function PaymentAllocationsEditor({
                 {ti(`docTypes.${doc.doc_type}`)}
               </span>
               <span className="text-muted-foreground">
-                {t("dueDate")}: {doc.due_date ? formatDate(doc.due_date, dateFormat) : "—"}
+                {t("dueDate")}:{" "}
+                {doc.due_date ? formatDate(doc.due_date, dateFormat) : "—"}
               </span>
               <span className="text-muted-foreground">{doc.currency_code}</span>
               {otherCurrency && (
@@ -116,68 +263,80 @@ export function PaymentAllocationsEditor({
                 </Button>
               </span>
             </header>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[32rem] text-left">
-                <thead>
-                  <tr className="border-b">
-                    <th className={TH}>{t("line")}</th>
-                    <th className={TH}>{t("description")}</th>
-                    <th className={`${TH} text-right`}>{t("unpaid")}</th>
-                    <th className={`${TH} text-right`}>{t("available")}</th>
-                    <th className={`${TH} text-right`}>{t("payAmount")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {doc.lines.map((line) => {
-                    const cap = lineCap(line, ownReserved);
-                    const value = allocations[line.ap_invoice_detail_id] ?? "";
-                    const over =
-                      !!value.trim() && compareDecimal(value, cap) > 0;
-                    return (
-                      <tr key={line.ap_invoice_detail_id} className="border-b last:border-b-0">
-                        <td className={`${TD} tabular-nums`}>
-                          {line.sequence_no}
-                        </td>
-                        <td className={TD}>{line.description || "—"}</td>
-                        <td className={TD}>
-                          <Money
-                            value={negative ? subtractDecimal("0", line.unpaid_amount) : line.unpaid_amount}
-                          />
-                        </td>
-                        <td className={TD}>
-                          <Money value={negative ? subtractDecimal("0", cap) : cap} />
-                        </td>
-                        <td className={TD}>
-                          <span className="flex items-center justify-end gap-1">
-                            {negative && <span aria-hidden>-</span>}
-                            <Input
-                              aria-label={`${doc.doc_no} ${t("line")} ${line.sequence_no}`}
-                              aria-invalid={over || undefined}
-                              inputMode="decimal"
-                              className="w-32 text-right tabular-nums"
-                              disabled={otherCurrency}
-                              value={value}
-                              onChange={(event) => {
-                                if (DECIMAL_RE.test(event.target.value))
-                                  onChangeLine(
-                                    line.ap_invoice_detail_id,
-                                    event.target.value,
-                                  );
-                              }}
+            {showDetails && (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[32rem] text-left">
+                  <thead>
+                    <tr className="border-b">
+                      <th className={TH}>{t("line")}</th>
+                      <th className={TH}>{t("description")}</th>
+                      <th className={`${TH} text-right`}>{t("unpaid")}</th>
+                      <th className={`${TH} text-right`}>{t("available")}</th>
+                      <th className={`${TH} text-right`}>{t("payAmount")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {doc.lines.map((line) => {
+                      const cap = lineCap(line, ownReserved);
+                      const value =
+                        allocations[line.ap_invoice_detail_id] ?? "";
+                      const over =
+                        !!value.trim() && compareDecimal(value, cap) > 0;
+                      return (
+                        <tr
+                          key={line.ap_invoice_detail_id}
+                          className="border-b last:border-b-0"
+                        >
+                          <td className={`${TD} tabular-nums`}>
+                            {line.sequence_no}
+                          </td>
+                          <td className={TD}>{line.description || "—"}</td>
+                          <td className={TD}>
+                            <Money
+                              value={
+                                negative
+                                  ? subtractDecimal("0", line.unpaid_amount)
+                                  : line.unpaid_amount
+                              }
                             />
-                          </span>
-                          {over && (
-                            <span className="text-destructive block text-right text-xs">
-                              {t("overAvailable")}
+                          </td>
+                          <td className={TD}>
+                            <Money
+                              value={negative ? subtractDecimal("0", cap) : cap}
+                            />
+                          </td>
+                          <td className={TD}>
+                            <span className="flex items-center justify-end gap-1">
+                              {negative && <span aria-hidden>-</span>}
+                              <Input
+                                aria-label={`${doc.doc_no} ${t("line")} ${line.sequence_no}`}
+                                aria-invalid={over || undefined}
+                                inputMode="decimal"
+                                className="w-32 text-right tabular-nums"
+                                disabled={otherCurrency}
+                                value={value}
+                                onChange={(event) => {
+                                  if (DECIMAL_RE.test(event.target.value))
+                                    onChangeLine(
+                                      line.ap_invoice_detail_id,
+                                      event.target.value,
+                                    );
+                                }}
+                              />
                             </span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                            {over && (
+                              <span className="text-destructive block text-right text-xs">
+                                {t("overAvailable")}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
         );
       })}
@@ -202,7 +361,9 @@ export function PaymentAllocationsReadOnly({
 }: {
   readonly allocations: readonly ApPaymentAllocation[];
 }) {
-  const t = useTranslations("accounting.accountsPayable.payment.detail.allocations");
+  const t = useTranslations(
+    "accounting.accountsPayable.payment.detail.allocations",
+  );
   const groups = useMemo(() => {
     const map = new Map<string, ApPaymentAllocation[]>();
     for (const a of allocations)
@@ -227,7 +388,9 @@ function ReadOnlyGroup({
   readonly invoiceId: string;
   readonly rows: readonly ApPaymentAllocation[];
 }) {
-  const t = useTranslations("accounting.accountsPayable.payment.detail.allocations");
+  const t = useTranslations(
+    "accounting.accountsPayable.payment.detail.allocations",
+  );
   const ti = useTranslations("accounting.accountsPayable.invoice");
   const invoice = useApInvoice(invoiceId).data;
   const lineOf = (detailId: string) =>

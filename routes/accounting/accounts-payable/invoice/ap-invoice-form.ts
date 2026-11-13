@@ -5,6 +5,7 @@ import type {
   ApInvoiceInput,
   ApInvoiceLine,
   ApInvoiceLineInput,
+  ApInvoiceReferenceInput,
   DecimalString,
 } from "@/types/accounts-payable";
 import {
@@ -57,6 +58,7 @@ export interface InvoiceFormLine {
 }
 
 export interface InvoiceForm {
+  references: ApInvoiceReferenceInput[];
   doc_type: ApDocType;
   /** YYYY-MM-DD */
   doc_date: string;
@@ -143,7 +145,8 @@ function fromDocLine(line: ApInvoiceLine): InvoiceFormLine {
         gl_dimension_value_id: d.gl_dimension_value_id,
       })),
       sources: line.sources.map((src) => ({
-        good_received_note_detail_item_id: src.good_received_note_detail_item_id,
+        good_received_note_detail_item_id:
+          src.good_received_note_detail_item_id,
         matched_qty: src.matched_qty,
       })),
       vat_chart_of_accounts_id: line.vat_chart_of_accounts_id,
@@ -172,6 +175,10 @@ export function initialInvoiceForm(
       currency_code: doc.currency_code,
       exchange_rate: doc.exchange_rate,
       description: doc.description ?? "",
+      references: (doc.references ?? []).map((reference) => ({
+        ref_ap_invoice_id: reference.ref_ap_invoice_id,
+        applied_amount: reference.applied_amount,
+      })),
       lines: (doc.lines ?? []).map(fromDocLine),
     };
   }
@@ -190,6 +197,7 @@ export function initialInvoiceForm(
     exchange_rate: "1",
     description: "",
     lines: [emptyLine()],
+    references: [],
   };
 }
 
@@ -285,7 +293,10 @@ export function validateInvoiceForm(
   if (!no || no.length > 100) errors.add("vendorInvoiceNo");
   if (!form.doc_date) errors.add("docDate");
   if (!form.invoice_date) errors.add("invoiceDate");
-  if (form.exchange_rate.trim() && compareDecimal(num(form.exchange_rate), "0") <= 0)
+  if (
+    form.exchange_rate.trim() &&
+    compareDecimal(num(form.exchange_rate), "0") <= 0
+  )
     errors.add("exchangeRate");
   if (form.lines.length === 0) errors.add("lines");
   for (const line of form.lines) {
@@ -336,6 +347,7 @@ export function toInvoiceInput(form: InvoiceForm): ApInvoiceInput {
     currency_id: form.currency_id || null,
     exchange_rate: form.exchange_rate.trim() || null,
     description: form.description.trim() || null,
+    references: form.doc_type === "invoice" ? form.references : [],
     lines: form.lines.map((line, index) =>
       toLineInput(line, index, form.doc_type === "deposit"),
     ),

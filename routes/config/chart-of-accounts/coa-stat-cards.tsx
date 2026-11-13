@@ -13,8 +13,8 @@ export function CoaStatCards({ accounts, totalRecords }: CoaStatCardsProps) {
   const total = totalRecords ?? accounts.length;
   const activeCount = accounts.filter((a) => a.is_active).length;
   const inactiveCount = accounts.filter((a) => !a.is_active).length;
-  const reqDeptCount = accounts.filter(
-    (a) => a.department_required || (a.allowed_departments && a.allowed_departments.length > 0),
+  const reqCostCenterCount = accounts.filter(
+    (a) => a.is_require_cost_center,
   ).length;
   const reqDimCount = accounts.filter(
     (a) => a.dimension_required || (a.allowed_dimensions && a.allowed_dimensions.length > 0),
@@ -40,8 +40,8 @@ export function CoaStatCards({ accounts, totalRecords }: CoaStatCardsProps) {
       iconColor: "text-rose-600 dark:text-rose-400 bg-rose-500/10",
     },
     {
-      label: t("reqDept"),
-      value: reqDeptCount,
+      label: t("reqCostCenter"),
+      value: reqCostCenterCount,
       icon: Building2,
       iconColor: "text-purple-600 dark:text-purple-400 bg-purple-500/10",
     },

@@ -12,10 +12,7 @@ import {
   compareDecimal,
   subtractDecimal,
 } from "../shared/ap-decimal";
-import {
-  todayYmd,
-  toYmd,
-} from "../invoice/ap-invoice-form";
+import { todayYmd, toYmd } from "../invoice/ap-invoice-form";
 import { paymentSummary } from "./ap-payment-totals";
 
 export { todayYmd, ymdToPickerValue } from "../invoice/ap-invoice-form";
@@ -32,6 +29,7 @@ export interface PaymentWhtRow {
   key: string;
   wht_tax_profile_id: string;
   name: string;
+  pnd_form?: string | null;
   rate: DecimalString;
   base_amount: DecimalString;
   wht_amount: DecimalString;
@@ -111,9 +109,7 @@ export function invoiceAllocated(
   const total = addDecimal(
     doc.lines.map((l) => allocations[l.ap_invoice_detail_id] || "0"),
   );
-  return allocationSign(doc.doc_type) < 0
-    ? subtractDecimal("0", total)
-    : total;
+  return allocationSign(doc.doc_type) < 0 ? subtractDecimal("0", total) : total;
 }
 
 export function initialPaymentForm(
@@ -163,6 +159,7 @@ export function initialPaymentForm(
       key: w.id,
       wht_tax_profile_id: w.wht_tax_profile_id,
       name: w.wht_tax_profile_name,
+      pnd_form: w.pnd_form,
       rate: w.wht_rate,
       base_amount: w.base_amount,
       wht_amount: w.wht_amount,
@@ -242,13 +239,15 @@ export function mergeWhtPreview(
   return preview.map((row) => {
     const existing = keepOverrides
       ? current.find(
-          (c) => c.wht_tax_profile_id === row.wht_tax_profile_id && c.is_override,
+          (c) =>
+            c.wht_tax_profile_id === row.wht_tax_profile_id && c.is_override,
         )
       : undefined;
     return {
       key: existing?.key ?? newKey(),
       wht_tax_profile_id: row.wht_tax_profile_id,
       name: row.wht_tax_profile_name,
+      pnd_form: row.pnd_form,
       rate: row.wht_rate,
       base_amount: row.base_amount,
       wht_amount: existing ? existing.wht_amount : row.wht_amount,
@@ -284,9 +283,7 @@ export function validatePaymentForm(
   if (overCap) errors.add("overAllocated");
   if (form.wht.some((w) => !w.wht_amount.trim())) errors.add("whtAmount");
   if (
-    form.expenses.some(
-      (e) => !e.chart_of_accounts_id || !isPositive(e.amount),
-    )
+    form.expenses.some((e) => !e.chart_of_accounts_id || !isPositive(e.amount))
   )
     errors.add("expense");
   if (

@@ -177,6 +177,7 @@ function WhtFormDialog({
 
   return (
     <MockEntityDialog
+      permissionPrefix="accounting.config.ap"
       open={open}
       onOpenChange={onOpenChange}
       icon={FileSpreadsheet}

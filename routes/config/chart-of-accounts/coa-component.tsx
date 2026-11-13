@@ -32,7 +32,7 @@ export default function CoaComponent() {
         getEditPath={(account) => `/config/chart-of-accounts/${account.id}`}
         filterFields={COA_FILTER_FIELDS}
         extraActions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="outline"

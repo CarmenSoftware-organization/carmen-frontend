@@ -1,9 +1,4 @@
 import { useMemo } from "react";
-import { useNavigate } from "react-router";
-import { listReturnState } from "@/hooks/use-list-return";
-import { useCan } from "@/hooks/use-can";
-import { usePermissionPrefix } from "@/hooks/use-permission-prefix";
-import { buildPermissionKey } from "@/constant/permissions";
 import { useDeleteGate } from "@/hooks/use-delete-gate";
 import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -22,6 +17,7 @@ import type { ChartOfAccount } from "@/types/chart-of-accounts";
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
+import { Badge } from "@/components/ui/badge";
 
 interface UseCoaTableOptions {
   data: ChartOfAccount[];
@@ -43,11 +39,7 @@ export function useCoaTable({
   const t = useTranslations("config.chartOfAccounts");
   const tfl = useTranslations("field");
   const { dateTimeFormat } = useProfile();
-  const navigate = useNavigate();
   const deleteGate = useDeleteGate();
-  const { can, isAdmin } = useCan();
-  const prefix = usePermissionPrefix();
-  const editPermission = prefix ? buildPermissionKey(prefix, "update") : undefined;
   const groupQuery = useGlAccountGroups();
   const groupMap = useMemo(
     () => new Map((groupQuery.data ?? []).map((g) => [g.id, g])),
@@ -61,7 +53,10 @@ export function useCoaTable({
         <DataGridColumnHeader column={column} title={tfl("code")} />
       ),
       cell: ({ row }) => (
-        <CellAction onClick={() => onEdit(row.original)} className="font-mono font-bold text-primary">
+        <CellAction
+          onClick={() => onEdit(row.original)}
+          className="text-primary font-mono font-bold"
+        >
           {row.getValue("code") || "..."}
         </CellAction>
       ),
@@ -74,14 +69,21 @@ export function useCoaTable({
         <DataGridColumnHeader column={column} title={t("accountName")} />
       ),
       cell: ({ row }) => (
-        <CellAction onClick={() => onEdit(row.original)} className="space-y-0.5 text-left">
-          <div className="font-medium text-foreground">{row.original.description_1}</div>
+        <CellAction
+          onClick={() => onEdit(row.original)}
+          className="space-y-0.5 text-left"
+        >
+          <div className="text-foreground font-medium">
+            {row.original.description_1}
+          </div>
           {row.original.description_2 && (
-            <div className="text-xs text-muted-foreground">{row.original.description_2}</div>
+            <div className="text-muted-foreground text-xs">
+              {row.original.description_2}
+            </div>
           )}
         </CellAction>
       ),
-      size: 180,
+      size: 240,
       meta: { headerTitle: t("accountName"), skeleton: columnSkeletons.text },
     },
     {
@@ -91,6 +93,41 @@ export function useCoaTable({
       ),
       meta: {
         headerTitle: tfl("description"),
+        skeleton: columnSkeletons.text,
+      },
+    },
+    {
+      accessorKey: "category",
+      header: ({ column }) => (
+        <DataGridColumnHeader
+          column={column}
+          title={t("labels.categoryAndType")}
+        />
+      ),
+      cell: ({ row }) => (
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span>
+              {row.original.category
+                ? t(`accountCategory.${row.original.category}`)
+                : t("labels.categoryUnset")}
+            </span>
+            <Badge
+              variant="secondary"
+              size="sm"
+              title={t(`nature.${row.original.nature}`)}
+            >
+              {row.original.nature === "debit" ? "D" : "C"}
+            </Badge>
+          </div>
+          <div className="text-muted-foreground text-xs">
+            {t(`accountType.${row.original.type}`)}
+          </div>
+        </div>
+      ),
+      size: 180,
+      meta: {
+        headerTitle: t("labels.categoryAndType"),
         skeleton: columnSkeletons.text,
       },
     },
@@ -115,14 +152,18 @@ export function useCoaTable({
     {
       accessorKey: "account_group_id",
       header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={t("labels.groupingTreeLevel")} />
+        <DataGridColumnHeader
+          column={column}
+          title={t("labels.groupingTreeLevel")}
+        />
       ),
       cell: ({ row }) => {
-        const id = row.original.account_group?.id ?? row.original.account_group_id;
+        const id =
+          row.original.account_group?.id ?? row.original.account_group_id;
         if (!id) return <span className="text-muted-foreground">—</span>;
         const g = groupMap.get(id);
         return g ? (
-          <span className="inline-flex items-center gap-1 rounded bg-primary/10 px-2 py-0.5 font-mono text-xs font-medium text-primary">
+          <span className="font-mono text-xs">
             L{g.level} | {g.code} {g.name}
           </span>
         ) : (
@@ -140,11 +181,8 @@ export function useCoaTable({
     customActionColumn<ChartOfAccount>(({ row }) => (
       <DataGridRowActions
         activity={{ id: row.original.id, label: row.original.code }}
-        onEdit={() => navigate(`/config/chart-of-accounts/${row.original.id}?mode=edit`, listReturnState())}
         onDelete={() => onDelete(row.original)}
         {...deleteGate}
-        editPermission={editPermission}
-        editDenied={!!editPermission && !isAdmin && !can(editPermission)}
       />
     )),
   ];
@@ -157,8 +195,13 @@ export function useCoaTable({
     tableConfig,
     hideStatus: true,
     initialState: {
-      columnVisibility: { created_at: false, updated_at: false },
+      columnVisibility: {
+        description_2: false,
+        nature: false,
+        type: false,
+        created_at: false,
+        updated_at: false,
+      },
     },
-
   });
 }

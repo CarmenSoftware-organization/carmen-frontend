@@ -11,6 +11,7 @@ const crud = createConfigCrud<CostCenter, CreateCostCenterDto>({
 });
 
 export const useCostCenter = crud.useList;
+export const useCostCenterAll = crud.useListAll;
 export const useCostCenterById = crud.useById;
 export const useCreateCostCenter = crud.useCreate;
 export const useUpdateCostCenter = crud.useUpdate;

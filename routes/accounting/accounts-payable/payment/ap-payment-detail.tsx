@@ -20,6 +20,9 @@ import { ErrorState } from "@/components/ui/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ApJournalTab } from "../shared/ap-journal-tab";
+import { ApWorkflowStatus } from "../shared/ap-workflow-status";
 import { Textarea } from "@/components/ui/textarea";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useBankAccounts } from "@/hooks/use-accounting-master";
@@ -32,7 +35,7 @@ import type {
   ApUiAction,
   DecimalString,
 } from "@/types/accounts-payable";
-import { compareDecimal } from "../shared/ap-decimal";
+import { compareDecimal, multiplyDecimal } from "../shared/ap-decimal";
 import { apActions, apCanEdit } from "../shared/ap-status";
 import {
   useApOutstandingDocuments,
@@ -49,7 +52,6 @@ import {
 import { PaymentExpensesSection } from "./ap-payment-expenses";
 import {
   allocatedLines,
-  emptyExpense,
   formTotals,
   initialPaymentForm,
   lineCap,
@@ -118,6 +120,7 @@ function ApPaymentEditor({
 }) {
   const t = useTranslations("accounting.accountsPayable.payment");
   const td = useTranslations("accounting.accountsPayable.payment.detail");
+  const ui = useTranslations("accounting.accountsPayable.ui");
   const navigate = useNavigate();
   const { toList } = useListReturn(RETURN_PATHS);
   const [searchParams] = useSearchParams();
@@ -487,10 +490,32 @@ function ApPaymentEditor({
     : preview;
   const money = (value: string) => format(Number(value || 0));
   const currencyCode = view ? loaded.currency_code : lockedCurrency;
+  const pair = (value: string, baseValue?: string) => (
+    <span className="flex flex-col items-end gap-0.5">
+      <span>
+        {money(value)}{" "}
+        <span className="text-muted-foreground font-normal">
+          {currencyCode}
+        </span>
+      </span>
+      {currencyCode &&
+        baseCurrencyCode &&
+        currencyCode !== baseCurrencyCode && (
+          <span className="text-micro text-muted-foreground font-normal">
+            {baseValue
+              ? money(baseValue)
+              : Number(effectiveForm.exchange_rate) > 0
+                ? money(multiplyDecimal(value, effectiveForm.exchange_rate))
+                : "—"}{" "}
+            {baseCurrencyCode}
+          </span>
+        )}
+    </span>
+  );
   const needsReason = reasonAction === "void";
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
+    <div className="flex min-h-0 flex-auto shrink-0 flex-col gap-4 lg:flex-1 lg:shrink">
       <DocFormHeader
         title={loaded?.doc_no || td("newTitle")}
         subtitle={td("subtitle")}
@@ -533,7 +558,7 @@ function ApPaymentEditor({
                   onClick={() => void save()}
                 >
                   <Save className="size-4" />
-                  {td("save")}
+                  {ui("saveDraft")}
                 </Button>
               </>
             )}
@@ -617,6 +642,8 @@ function ApPaymentEditor({
 
       <PaymentHeader
         form={effectiveForm}
+        docNo={loaded?.doc_no}
+        status={loaded?.doc_status}
         onChange={patchForm}
         isNew={isNew}
         editable={editable}
@@ -632,152 +659,197 @@ function ApPaymentEditor({
         }
       />
 
-      <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0">
-        <CardHeader className="px-0">
-          <CardTitle>{td("allocations.title")}</CardTitle>
-        </CardHeader>
-        <CardContent className="px-0">
-          {errors.has("allocations") && (
-            <p className="text-destructive mb-2 text-xs">
-              {td("errors.allocations")}
-            </p>
-          )}
-          {errors.has("overAllocated") && (
-            <p className="text-destructive mb-2 text-xs">
-              {td("errors.overAllocated")}
-            </p>
-          )}
-          {errors.has("netPositive") && (
-            <p className="text-destructive mb-2 text-xs">
-              {td("errors.netPositive")}
-            </p>
-          )}
-          {!editable ? (
-            <PaymentAllocationsReadOnly
-              allocations={loaded?.allocations ?? []}
-            />
-          ) : !form.vendor_id ? (
-            <p className="text-muted-foreground text-sm">
-              {td("allocations.selectVendor")}
-            </p>
-          ) : outstanding.isLoading ? (
-            <Skeleton className="h-32 rounded-lg" />
-          ) : outstanding.isError ? (
-            <ErrorState
-              error={outstanding.error}
-              message={td("allocations.loadError")}
-              onRetry={() => void outstanding.refetch()}
-            />
-          ) : (
-            <PaymentAllocationsEditor
-              docs={docs ?? []}
-              allocations={form.allocations}
-              ownReserved={ownReserved}
-              lockedCurrency={lockedCurrency}
-              onChangeLine={setLine}
-              onPayFull={payFull}
-              onClear={clearDoc}
-            />
-          )}
-        </CardContent>
-      </Card>
+      <ApWorkflowStatus document={loaded} />
+      <Tabs
+        defaultValue="settlement"
+        className="flex min-h-0 min-w-0 flex-auto shrink-0 flex-col lg:flex-1 lg:shrink"
+      >
+        <div className="shrink-0 overflow-x-auto overflow-y-hidden border-b">
+          <TabsList variant="line" className="w-max min-w-full justify-start">
+            <TabsTrigger value="settlement">{ui("settlement")}</TabsTrigger>
+            <TabsTrigger value="journal">{ui("journal")}</TabsTrigger>
+          </TabsList>
+        </div>
+        <TabsContent
+          value="settlement"
+          className="mt-3 min-h-0 min-w-0 flex-auto space-y-5 overflow-visible lg:flex-1 lg:overflow-auto"
+        >
+          <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0">
+            <CardHeader className="px-0">
+              <CardTitle>{td("allocations.title")}</CardTitle>
+            </CardHeader>
+            <CardContent className="px-0">
+              {errors.has("allocations") && (
+                <p className="text-destructive mb-2 text-xs">
+                  {td("errors.allocations")}
+                </p>
+              )}
+              {errors.has("overAllocated") && (
+                <p className="text-destructive mb-2 text-xs">
+                  {td("errors.overAllocated")}
+                </p>
+              )}
+              {errors.has("netPositive") && (
+                <p className="text-destructive mb-2 text-xs">
+                  {td("errors.netPositive")}
+                </p>
+              )}
+              {!editable ? (
+                <PaymentAllocationsReadOnly
+                  allocations={loaded?.allocations ?? []}
+                />
+              ) : !form.vendor_id ? (
+                <p className="text-muted-foreground text-sm">
+                  {td("allocations.selectVendor")}
+                </p>
+              ) : outstanding.isLoading ? (
+                <Skeleton className="h-32 rounded-lg" />
+              ) : outstanding.isError ? (
+                <ErrorState
+                  error={outstanding.error}
+                  message={td("allocations.loadError")}
+                  onRetry={() => void outstanding.refetch()}
+                />
+              ) : (
+                <PaymentAllocationsEditor
+                  inputDate={form.payment_date}
+                  docs={docs ?? []}
+                  allocations={form.allocations}
+                  ownReserved={ownReserved}
+                  lockedCurrency={lockedCurrency}
+                  onChangeLine={setLine}
+                  onPayFull={payFull}
+                  onClear={clearDoc}
+                />
+              )}
+            </CardContent>
+          </Card>
 
-      <PaymentWhtSection
-        rows={form.wht}
-        editable={editable}
-        calculating={calculating}
-        stale={whtStale && !overCap}
-        error={whtError}
-        errors={errors}
-        onChangeAmount={(key, amount) =>
-          setForm((current) => ({
-            ...current,
-            wht: current.wht.map((row) =>
-              row.key === key
-                ? { ...row, wht_amount: amount, is_override: true }
-                : row,
-            ),
-          }))
-        }
-        onRecalculate={() => void recalculateWht()}
-      />
+          <PaymentHeader
+            section="methods"
+            form={effectiveForm}
+            docNo={loaded?.doc_no}
+            status={loaded?.doc_status}
+            onChange={patchForm}
+            isNew={isNew}
+            editable={editable}
+            errors={errors}
+            currencyCode={currencyCode}
+            baseCurrencyCode={baseCurrencyCode}
+            bankLabel={
+              view
+                ? [loaded.bank_account_code, loaded.bank_account_name]
+                    .filter(Boolean)
+                    .join(" · ")
+                : undefined
+            }
+          />
 
-      <PaymentExpensesSection
-        rows={form.expenses}
-        editable={editable}
-        errors={errors}
-        onAdd={() =>
-          setForm((current) => ({
-            ...current,
-            expenses: [...current.expenses, emptyExpense()],
-          }))
-        }
-        onChange={(key, patch) =>
-          setForm((current) => ({
-            ...current,
-            expenses: current.expenses.map((row) =>
-              row.key === key ? { ...row, ...patch } : row,
-            ),
-          }))
-        }
-        onRemove={(key) =>
-          setForm((current) => ({
-            ...current,
-            expenses: current.expenses.filter((row) => row.key !== key),
-          }))
-        }
-      />
+          <PaymentWhtSection
+            payee={loaded}
+            rows={form.wht}
+            editable={editable}
+            calculating={calculating}
+            stale={whtStale && !overCap}
+            error={whtError}
+            errors={errors}
+            onChangeAmount={(key, amount) =>
+              setForm((current) => ({
+                ...current,
+                wht: current.wht.map((row) =>
+                  row.key === key
+                    ? { ...row, wht_amount: amount, is_override: true }
+                    : row,
+                ),
+              }))
+            }
+            onRecalculate={() => void recalculateWht()}
+          />
 
-      {!editable && (loaded?.tax_invoices?.length ?? 0) > 0 && (
-        <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0">
-          <CardHeader className="px-0">
-            <CardTitle>{td("taxInvoices.title")}</CardTitle>
-          </CardHeader>
-          <CardContent className="overflow-x-auto px-0">
-            <table className="w-full min-w-[32rem] text-left text-xs">
-              <thead>
-                <tr className="border-b">
-                  <th className="px-2 py-1.5 font-medium">
-                    {td("taxInvoices.invoice")}
-                  </th>
-                  <th className="px-2 py-1.5 font-medium">
-                    {td("taxInvoices.taxInvoiceNo")}
-                  </th>
-                  <th className="px-2 py-1.5 font-medium">
-                    {td("taxInvoices.date")}
-                  </th>
-                  <th className="px-2 py-1.5 text-right font-medium">
-                    {td("taxInvoices.base")}
-                  </th>
-                  <th className="px-2 py-1.5 text-right font-medium">
-                    {td("taxInvoices.vat")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {loaded?.tax_invoices?.map((row) => (
-                  <tr
-                    key={`${row.ap_invoice_id}:${row.tax_invoice_no}`}
-                    className="border-b last:border-b-0"
-                  >
-                    <td className="px-2 py-1.5">{row.doc_no}</td>
-                    <td className="px-2 py-1.5">{row.tax_invoice_no}</td>
-                    <td className="px-2 py-1.5">
-                      {formatDate(row.tax_invoice_date, dateFormat)}
-                    </td>
-                    <td className="px-2 py-1.5 text-right tabular-nums">
-                      {money(row.base_amount)}
-                    </td>
-                    <td className="px-2 py-1.5 text-right tabular-nums">
-                      {money(row.vat_amount)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-      )}
+          <PaymentExpensesSection
+            rows={form.expenses}
+            editable={editable}
+            errors={errors}
+            onAdd={(expense) =>
+              setForm((current) => ({
+                ...current,
+                expenses: [...current.expenses, expense],
+              }))
+            }
+            onChange={(key, patch) =>
+              setForm((current) => ({
+                ...current,
+                expenses: current.expenses.map((row) =>
+                  row.key === key ? { ...row, ...patch } : row,
+                ),
+              }))
+            }
+            onRemove={(key) =>
+              setForm((current) => ({
+                ...current,
+                expenses: current.expenses.filter((row) => row.key !== key),
+              }))
+            }
+          />
+
+          {!editable && (loaded?.tax_invoices?.length ?? 0) > 0 && (
+            <Card className="min-w-0 gap-3 rounded-none border-0 bg-transparent py-0">
+              <CardHeader className="px-0">
+                <CardTitle>{td("taxInvoices.title")}</CardTitle>
+              </CardHeader>
+              <CardContent className="overflow-x-auto px-0">
+                <table className="w-full min-w-[32rem] text-left text-xs">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-2 py-1.5 font-medium">
+                        {td("taxInvoices.invoice")}
+                      </th>
+                      <th className="px-2 py-1.5 font-medium">
+                        {td("taxInvoices.taxInvoiceNo")}
+                      </th>
+                      <th className="px-2 py-1.5 font-medium">
+                        {td("taxInvoices.date")}
+                      </th>
+                      <th className="px-2 py-1.5 text-right font-medium">
+                        {td("taxInvoices.base")}
+                      </th>
+                      <th className="px-2 py-1.5 text-right font-medium">
+                        {td("taxInvoices.vat")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loaded?.tax_invoices?.map((row) => (
+                      <tr
+                        key={`${row.ap_invoice_id}:${row.tax_invoice_no}`}
+                        className="border-b last:border-b-0"
+                      >
+                        <td className="px-2 py-1.5">{row.doc_no}</td>
+                        <td className="px-2 py-1.5">{row.tax_invoice_no}</td>
+                        <td className="px-2 py-1.5">
+                          {formatDate(row.tax_invoice_date, dateFormat)}
+                        </td>
+                        <td className="px-2 py-1.5 text-right tabular-nums">
+                          {money(row.base_amount)}
+                        </td>
+                        <td className="px-2 py-1.5 text-right tabular-nums">
+                          {money(row.vat_amount)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+        <TabsContent
+          value="journal"
+          className="mt-3 min-h-0 min-w-0 flex-auto overflow-visible lg:flex-1 lg:overflow-auto"
+        >
+          <ApJournalTab id={loaded?.gl_jv_id} />
+        </TabsContent>
+      </Tabs>
 
       <SummaryFooterBar
         hasRecord
@@ -785,13 +857,26 @@ function ApPaymentEditor({
           {
             key: "applied",
             label: td("summary.applied"),
-            value: money(summary.applied),
+            value: pair(
+              summary.applied,
+              view ? loaded.base_total_applied_amount : undefined,
+            ),
           },
-          { key: "wht", label: td("summary.wht"), value: money(summary.wht) },
+          {
+            key: "wht",
+            label: td("summary.wht"),
+            value: pair(
+              summary.wht,
+              view ? loaded.base_total_wht_amount : undefined,
+            ),
+          },
           {
             key: "expenses",
             label: td("summary.expenses"),
-            value: money(summary.expenses),
+            value: pair(
+              summary.expenses,
+              view ? loaded.base_total_expense_amount : undefined,
+            ),
           },
           ...(view && Number(loaded.realized_fx_amount) !== 0
             ? [
@@ -805,9 +890,11 @@ function ApPaymentEditor({
           {
             key: "net",
             label: td("summary.net"),
-            value: money(summary.net),
+            value: pair(
+              summary.net,
+              view ? loaded.base_net_paid_amount : undefined,
+            ),
             emphasis: true,
-            suffix: currencyCode ?? undefined,
           },
         ]}
       >

@@ -40,11 +40,7 @@ export default function CoaCard({ item, onEdit, onDelete }: Props) {
       <ListCardRow label={tfl("nature")}>
         <span className="inline-flex items-center gap-1.5">
           <span
-            className={`inline-flex size-4.5 items-center justify-center rounded text-micro-legal font-bold ${
-              item.nature === "debit"
-                ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-            }`}
+            className="inline-flex size-4.5 items-center justify-center rounded bg-muted text-micro-legal font-bold"
           >
             {item.nature === "debit" ? "D" : "C"}
           </span>
