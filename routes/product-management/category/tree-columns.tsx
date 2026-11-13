@@ -4,7 +4,13 @@ import { cn } from "@/lib/utils";
 import type { CategoryNode } from "@/types/category";
 
 // คอลัมน์ค่าที่ไหลจากชั้นบนลงชั้นล่าง — กว้างคงที่ ตัวเลขจึงตรงแนวทุกระดับของต้นไม้
-// แสดงตั้งแต่ lg ขึ้นไป (จอเล็กกว่านั้นเหลือแค่ต้นไม้ + จำนวน)
+// ทุกขั้นตัดสินจากความกว้างของการ์ด (`@container` ที่ category-component) ไม่ใช่จอ:
+// การ์ด = จอ − sidebar ที่พับ/กางได้ จอ 1024 ที่ sidebar กางเหลือการ์ด 744px
+//   < 576 (@xl)   ต้นไม้อย่างเดียว
+//   ทุกขนาด       ปุ่มของแถว (84) ชิดขอบขวาของการ์ด หลังที่ว่างท้ายแถว
+//   ≥ 576 (@xl)   + จำนวนลูก/สินค้า (176)
+//   ≥ 896 (@4xl)  + คอลัมน์ค่า (368) — ชื่อเหลือ 896 − 368 − 176 − 84 − 14 = 254px
+//   ≥ 1280 (@7xl) + คำอธิบายในที่ว่างท้ายแถว
 export const COL = {
   tax: "w-32",
   price: "w-16",
@@ -13,17 +19,28 @@ export const COL = {
   sold: "w-14",
   children: "w-24",
   products: "w-20",
+  actions: "w-20",
 } as const;
 
-const COLS_WRAPPER = "hidden shrink-0 items-center lg:flex";
+const COLS_WRAPPER = "hidden shrink-0 items-center @4xl:flex";
+
+/**
+ * ช่องชื่อ — กว้างไม่เกิน 22rem (ชื่อยาวสุดจริง ~340px รวมย่อหน้า) แล้วหดได้เมื่อการ์ดแคบ
+ * ไม่ยืด: คอลัมน์ค่าจึงอยู่ติดชื่อ ที่ว่างที่เหลือไปอยู่ท้ายแถว ไม่ใช่คั่นกลางระหว่างชื่อกับค่า
+ * หัวตารางกับทุกแถวต้องใช้คลาสนี้ชุดเดียวกัน ไม่งั้นคอลัมน์เหลื่อม
+ */
+export const NAME_CELL = "flex min-w-0 flex-[0_1_22rem] items-center";
+
+/** จำนวนลูก / จำนวนสินค้า — โผล่เมื่อการ์ดกว้างพอ */
+export const META_COL = "hidden shrink-0 @xl:inline";
 
 /** หัวคอลัมน์ — ติดบนสุดของกล่องเลื่อน ต้องใช้ความกว้าง COL ชุดเดียวกับแถว */
 export function TreeColumnsHeader() {
   const t = useTranslations("productManagement.category");
   const head = "text-micro-legal text-muted-foreground font-medium";
   return (
-    <div className="bg-card sticky top-0 z-10 hidden h-7 items-center border-b pr-3 lg:flex">
-      <span className={cn(head, "flex-1 pl-3")}>{t("colName")}</span>
+    <div className="bg-card sticky top-0 z-10 hidden h-7 items-center border-b pr-3 @xl:flex">
+      <span className={cn(head, NAME_CELL, "pl-3")}>{t("colName")}</span>
       <div className={COLS_WRAPPER}>
         <span className={cn(head, COL.tax, "px-2")}>{t("colTax")}</span>
         <span className={cn(head, COL.price, "text-right")}>
@@ -39,12 +56,16 @@ export function TreeColumnsHeader() {
           {t("colSold")}
         </span>
       </div>
-      <span className={cn(head, COL.children, "hidden text-right sm:inline")}>
+      <span className={cn(head, COL.children, META_COL, "text-right")}>
         {t("colChildren")}
       </span>
-      <span className={cn(head, COL.products, "hidden text-right sm:inline")}>
+      <span className={cn(head, COL.products, META_COL, "text-right")}>
         {t("colProducts")}
       </span>
+      {/* ที่ว่างท้ายแถว + คอลัมน์ปุ่มชิดขอบขวา เท่ากับในแถว (ml-1 + COL.actions) — ไม่งั้นตอน
+          ช่องชื่อหด หัวกับแถวหดไม่เท่ากันแล้วคอลัมน์เหลื่อม */}
+      <span aria-hidden className="min-w-0 flex-1" />
+      <span aria-hidden className={cn("ml-1 shrink-0", COL.actions)} />
     </div>
   );
 }

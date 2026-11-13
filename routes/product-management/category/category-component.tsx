@@ -63,6 +63,8 @@ export default function CategoryComponent() {
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(() => searchParams.get("search") ?? "");
   const [deleteTarget, setDeleteTarget] = useState<CategoryNode | null>(null);
+  // แถวที่เลือก — ไฮไลต์ค้างไว้ให้ตามแถวข้ามคอลัมน์ได้ และเห็นว่ากำลังแก้/ดูประวัติของแถวไหน
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   // Product Category Report — Print / Export เปิด dialog ช่วงรหัสเดียวกัน ต่างกันแค่ปุ่มยืนยัน
   const [reportMode, setReportMode] = useState<"print" | "export" | null>(null);
   const categoryReport = useCategoryReport();
@@ -332,8 +334,8 @@ export default function CategoryComponent() {
         </div>
       }
     >
-      {/* Tree */}
-      <div className="bg-card rounded-md border">
+      {/* Tree — @container: แถบสถิติ หัวตาราง และทุกแถวเลือกสิ่งที่แสดงจากความกว้างการ์ดนี้ */}
+      <div className="bg-card @container rounded-md border">
         {/* Header row — สถิติทั้งต้นไม้ หรือจำนวนที่ค้นเจอระหว่างค้นหา */}
         <div className="text-muted-foreground flex h-9 items-center justify-between gap-2 border-b px-3 text-xs">
           <div className="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap tabular-nums">
@@ -346,22 +348,22 @@ export default function CategoryComponent() {
                 <span className="text-foreground/80 font-semibold">
                   {t("nItems", { count: stats.total })}
                 </span>
-                <span className="text-border hidden sm:inline" aria-hidden>
+                <span className="text-border hidden @xl:inline" aria-hidden>
                   ·
                 </span>
-                <span className="hidden sm:inline">
+                <span className="hidden @xl:inline">
                   {t("nCategories", { count: stats.cats })}
                 </span>
-                <span className="text-border hidden sm:inline" aria-hidden>
+                <span className="text-border hidden @xl:inline" aria-hidden>
                   ·
                 </span>
-                <span className="hidden sm:inline">
+                <span className="hidden @xl:inline">
                   {t("nSubcategories", { count: stats.subs })}
                 </span>
-                <span className="text-border hidden sm:inline" aria-hidden>
+                <span className="text-border hidden @xl:inline" aria-hidden>
                   ·
                 </span>
-                <span className="hidden sm:inline">
+                <span className="hidden @xl:inline">
                   {t("nItemGroups", { count: stats.igs })}
                 </span>
               </>
@@ -392,6 +394,8 @@ export default function CategoryComponent() {
             onAdd={handleAdd}
             onDelete={setDeleteTarget}
             search={search}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
           />
         </ScrollArea>
       </div>
