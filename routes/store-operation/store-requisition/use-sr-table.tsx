@@ -21,7 +21,7 @@ import type {
 } from "@/types/store-requisition";
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 
 interface UseStoreRequisitionTableOptions {
   items: StoreRequisition[];
@@ -175,14 +175,7 @@ export function useStoreRequisitionTable({
         const stage = row.original.workflow_current_stage;
         return (
           <div data-slot="cell-stack" className="flex min-w-0 flex-col">
-            <StatusIconLabel
-              status={status}
-              label={ts(status)}
-              // uppercase ด้วย CSS ไม่ใช่ .toUpperCase() — ค่าที่ export/คัดลอก
-              // ยังเป็นข้อความเดิม และภาษาไทยที่ไม่มีตัวพิมพ์ใหญ่ก็ไม่โดนแตะ
-              // (ต่างจากโมดูลอื่นที่ label uppercase มาจาก createStatusConfig แล้ว)
-              className="uppercase"
-            />
+            <StatusChip status={status} label={ts(status)} />
             {stage && (
               <span
                 className="text-muted-foreground truncate text-xs"

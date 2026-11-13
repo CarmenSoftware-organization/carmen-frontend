@@ -226,6 +226,7 @@ export function sendbackColumn<T extends RowWithLastAction>(
     ),
     cell: ({ row }) => (
       <SendBackStatus
+        chip
         lastAction={row.original.last_action}
         // คอลัมน์นี้จัดกลาง — ป้ายเป็น inline-flex ซึ่ง `text-center` ของเซลล์
         // เอื้อมไม่ถึงเมื่ออยู่ในกล่อง clamp ของ DataGrid (ท่าเดียวกับคอลัมน์สถานะ)

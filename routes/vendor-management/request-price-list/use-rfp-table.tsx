@@ -80,7 +80,7 @@ export function useRequestPriceListTable({
           className="flex flex-col items-start gap-0.5"
         >
           <span className="tabular-nums">{getValue<string>()}</span>
-          <RfpWindowBadge item={row.original} />
+          <RfpWindowBadge item={row.original} size="sm" />
         </div>
       ),
       meta: {

@@ -3,7 +3,7 @@ import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import {
   actionColumn,
   auditColumns,
@@ -128,7 +128,7 @@ export function usePriceListTable({
       cell: ({ row }) => {
         const status = row.getValue<string>("status");
         return (
-          <StatusIconLabel
+          <StatusChip
             status={status}
             // ป้ายมาจาก i18n ไม่ใช่ PL_STATUS_CONFIG ที่เป็นอังกฤษล้วน — หน้านี้มีไทย
             // อยู่แล้ว ไม่ถอยไปเป็นอังกฤษเพื่อให้เหมือน PR

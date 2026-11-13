@@ -409,7 +409,21 @@ Specs live in the `components` block above, read from the source. Notes that do 
 
 **Badge** — prefer the `-light` variants inside tables and dense rows: a neutral `bg-muted` box with the hue carried once, by the label. Solid fills are for the few chips that must survive being scanned past. Document-status badges take their colour from `badge-status.css`, not from the semantic variants.
 
-**DataGrid** — the surface everything else is in service of. Column header, filter, visibility toggle, pagination and row actions are all provided; two drag-and-drop variants exist for ordering. Badges inside it are pinned to 8px by a rule in `globals.css`.
+**DataGrid** — the surface everything else is in service of. Column header, filter, visibility toggle, pagination and row actions are all provided; two drag-and-drop variants exist for ordering. Badges inside it are pinned to 8px by a rule in `globals.css` — status chips opt out of that rule (`data-status-chip`) and keep their component size.
+
+**Status in a DataGrid column** — one look in every table, decided 2026-11-13: a neutral chip (`bg-muted`, 22px tall, 12px regular label) with **one coloured dot** in front. The label is sentence case ("In progress", not "IN PROGRESS") and stays neutral; the dot is the only place the hue appears.
+
+| What the column shows | Component | Dot colour comes from |
+| --- | --- | --- |
+| Active / Inactive (`is_active`) | `StatusBadge` — or `statusColumn()`, which `useConfigTable` adds for you | semantic `success` / neutral |
+| Document status (draft, approved, posted, voided…) | `StatusChip` (`components/ui/status-chip.tsx`) | `--status-*` in `badge-status.css` |
+| Any other state with a semantic meaning (closing soon, published) | `StatusDotBadge` with a `tone` | semantic tokens |
+| "Sent back" marker beside a document status | `SendBackStatus chip` / `sendBackColumn()` | `--status-review` |
+
+- Size is `sm` in a table. `xs` is for cards only — an `xs` chip in a row sits shorter than every other table's.
+- Alignment classes (`flex w-full justify-center`) go on `StatusChip`'s `className`, which lands on its outer box. Put them on the chip itself and it stretches across the column.
+- Do not hand-roll `<Badge className={config.className}>` or a `variant="default"` badge for a status, and do not use `StatusIconLabel` in a table cell.
+- `StatusIconLabel` (icon + label, no chip) is still what form headers, list cards and detail pages use, and what **document-type** columns use (GRN/CN type — a property of the document, not its progress, so it carries no colour). It replaced chips in document tables once, on the grounds that ten rows became ten grey blocks; that was reversed for tables in favour of one consistent look.
 
 **Field / FieldPlainText** — the read-only value display, and the home of weight 500.
 
@@ -421,6 +435,7 @@ Specs live in the `components` block above, read from the source. Notes that do 
 
 - Use `{colors.primary}` for every interactive signal, and nothing else.
 - Let one colour signal carry an element — the `-light` badge pattern is the model.
+- Show status in a table column as the dot chip (`StatusBadge` / `StatusChip` / `StatusDotBadge`), size `sm`, in every table.
 - Reach for a ladder utility (`text-micro`, `text-micro-legal`, …) instead of a literal size.
 - Register a new type step in **both** `globals.css` and `lib/utils.ts`.
 - Use `-ink` tokens for status **text** and the plain token for status **fills**.

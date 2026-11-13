@@ -8,6 +8,7 @@ import SearchInput from "@/components/search-input";
 import EmptyComponent from "@/components/empty-component";
 import { CellAction } from "@/components/ui/cell-action";
 import { Badge } from "@/components/ui/badge";
+import { StatusChip } from "@/components/ui/status-chip";
 import { Button } from "@/components/ui/button";
 import {
   DataGrid,
@@ -130,14 +131,13 @@ export default function AccountingDocumentList() {
       {
         accessorKey: "status",
         header: t("status"),
-        cell: ({ row }) => {
-          const badge = statusConfig(row.original.status);
-          return (
-            <Badge size="sm" className={badge.className}>
-              {row.original.status}
-            </Badge>
-          );
-        },
+        cell: ({ row }) => (
+          <StatusChip
+            status={row.original.status.toLowerCase()}
+            label={row.original.status}
+            className="flex w-full justify-center"
+          />
+        ),
         meta: {
           headerTitle: t("status"),
           headerClassName: "text-center",
@@ -247,7 +247,9 @@ export default function AccountingDocumentList() {
             recordCount={documents.length}
             tableLayout={{
               headerSticky: true,
-              width: pathname.startsWith("/accounting/asset/") ? "auto" : "fixed",
+              width: pathname.startsWith("/accounting/asset/")
+                ? "auto"
+                : "fixed",
             }}
             tableClassNames={{ bodyRow: "h-10" }}
             emptyMessage={<EmptyComponent />}

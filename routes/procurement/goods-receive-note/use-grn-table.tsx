@@ -9,6 +9,7 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { formatCurrency } from "@/lib/currency-utils";
+import { StatusChip } from "@/components/ui/status-chip";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { GRN_STATUS_CONFIG } from "@/constant/goods-receive-note";
 import { getGrnDocTypeLabel } from "@/constant/grn-doc-type";
@@ -131,7 +132,7 @@ export function useGrnTable({
         const status = row.getValue<string>("doc_status") || "draft";
         const config = GRN_STATUS_CONFIG[status];
         return (
-          <StatusIconLabel
+          <StatusChip
             status={status}
             label={config?.label ?? status.toUpperCase()}
             // คอลัมน์นี้จัดกลาง — label เป็น inline-flex ซึ่ง `text-center`

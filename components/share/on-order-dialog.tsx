@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { StatusChip } from "@/components/ui/status-chip";
 import EmptyComponent from "@/components/empty-component";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
 import { LastPriceChip } from "@/components/share/last-price-chip";
@@ -177,9 +177,10 @@ export function OnOrderDialog({ open, onOpenChange, productId }: Props) {
           if (!status) return null;
           const cfg = PO_STATUS_CONFIG[status];
           return (
-            <Badge className={cfg?.className} size="xs">
-              {cfg?.label ?? status.toUpperCase().replace(/_/g, " ")}
-            </Badge>
+            <StatusChip
+              status={status}
+              label={cfg?.label ?? status.replace(/_/g, " ")}
+            />
           );
         },
         size: 120,

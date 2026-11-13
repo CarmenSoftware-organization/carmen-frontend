@@ -16,7 +16,7 @@ import {
   columnSkeletons,
 } from "@/components/ui/data-grid/columns";
 import { PoSendBackHint } from "./po-send-back-hint";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { PO_STATUS_CONFIG, PO_TYPE_CONFIG } from "@/constant/purchase-order";
 
 interface UsePoTableOptions {
@@ -208,7 +208,7 @@ export function usePoTable({
         const config = PO_STATUS_CONFIG[status];
         return (
           <div data-slot="cell-stack" className="flex min-w-0 flex-col">
-            <StatusIconLabel status={status} label={config?.label ?? status} />
+            <StatusChip status={status} label={config?.label ?? status} />
             {stage && (
               <span
                 className="text-muted-foreground truncate text-xs"

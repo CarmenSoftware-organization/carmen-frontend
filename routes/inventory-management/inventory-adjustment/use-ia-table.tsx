@@ -18,7 +18,7 @@ import {
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { formatAmount } from "@/lib/currency-utils";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import {
   IA_STATUS_CONFIG,
   IA_TYPE_CONFIG,
@@ -152,7 +152,7 @@ export function useInventoryAdjustmentTable({
         const status = row.getValue("doc_status") as InventoryAdjustmentStatus;
         const config = IA_STATUS_CONFIG[status];
         return (
-          <StatusIconLabel
+          <StatusChip
             status={status}
             label={config?.label ?? status}
             className="flex w-full justify-center"

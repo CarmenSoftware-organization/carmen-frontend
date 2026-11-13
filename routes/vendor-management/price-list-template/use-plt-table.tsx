@@ -3,7 +3,7 @@ import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import {
   actionColumn,
   auditColumns,
@@ -155,7 +155,7 @@ export function usePriceListTemplateTable({
           inactive: ts("inactive"),
         };
         return (
-          <StatusIconLabel
+          <StatusChip
             status={status}
             label={labelMap[status] ?? status}
             // คอลัมน์นี้จัดกลาง — label เป็น inline-flex ซึ่ง text-center ของเซลล์

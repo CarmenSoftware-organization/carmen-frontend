@@ -2,6 +2,7 @@ import { Trash2 } from "lucide-react";
 import { useTranslations } from "use-intl";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import type { ReportFormat, ReportSchedule } from "@/types/report-schedule";
 
@@ -49,7 +50,6 @@ export function useScheduleTableColumns({
 }: UseScheduleTableOptions): ColumnDef<ReportSchedule>[] {
   const t = useTranslations("reportSchedule");
   const tc = useTranslations("common");
-  const ts = useTranslations("status");
   const weekdayShort = [
     t("wdSun"),
     t("wdMon"),
@@ -94,7 +94,9 @@ export function useScheduleTableColumns({
         if (!notify_at) return t("notifyImmediately");
         // "+1" ต่อท้ายเหมือนเวลาถึงของเที่ยวบินที่ข้ามวัน — ไม่งั้นเวลาที่เร็วกว่า
         // เวลารันจะอ่านดูเหมือนตั้งผิด
-        return notify_day_offset ? `${notify_at} (+${notify_day_offset})` : notify_at;
+        return notify_day_offset
+          ? `${notify_at} (+${notify_day_offset})`
+          : notify_at;
       },
       size: 120,
     },
@@ -103,12 +105,7 @@ export function useScheduleTableColumns({
       header: t("active"),
       cell: ({ getValue, row }) => (
         <div className="flex flex-wrap items-center gap-1">
-          <Badge
-            variant={getValue<boolean>() ? "default" : "secondary"}
-            size="sm"
-          >
-            {getValue<boolean>() ? ts("active") : ts("inactive")}
-          </Badge>
+          <StatusBadge active={getValue<boolean>()} />
           {/* template ใช้กับ BU นี้ไม่ได้แล้ว (allow/deny BU หรือวิธีคิดต้นทุน) — รอบรันถูกข้าม */}
           {row.original.template_available === false && (
             <Badge

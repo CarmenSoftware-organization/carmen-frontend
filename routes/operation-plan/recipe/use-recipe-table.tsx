@@ -86,6 +86,7 @@ export function useRecipeTable({
           </span>
           <RecipeStatusBadge
             status={row.original.status}
+            size="sm"
             className="shrink-0"
           />
         </div>

@@ -1,6 +1,6 @@
 import { useTranslations } from "use-intl";
 import type { ColumnDef } from "@tanstack/react-table";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import {
   REPORT_FORMAT_LABELS,
   normalizeJobStatus,
@@ -64,7 +64,7 @@ export function useHistoryTable(): ColumnDef<ReportHistory>[] {
       cell: ({ getValue }) => {
         const key = normalizeJobStatus(getValue<string>());
         if (!key) return "-";
-        return <StatusIconLabel status={key} label={t(key)} />;
+        return <StatusChip status={key} label={t(key)} />;
       },
       size: 120,
     },

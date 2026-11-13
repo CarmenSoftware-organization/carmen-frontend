@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { StatusChip } from "@/components/ui/status-chip";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/error-state";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -197,10 +197,11 @@ export function PeDocumentsDialog({
         cell: ({ row }) => {
           const cfg = statusConfig?.[row.original.status];
           return (
-            <Badge className={cfg?.className} size="xs">
-              {cfg?.label ??
-                row.original.status.toUpperCase().replace(/_/g, " ")}
-            </Badge>
+            <StatusChip
+              status={row.original.status}
+              label={cfg?.label ?? row.original.status.replace(/_/g, " ")}
+              className="flex w-full justify-center"
+            />
           );
         },
         meta: {

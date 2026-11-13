@@ -4,7 +4,7 @@ import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column
 import { CellAction } from "@/components/ui/cell-action";
 import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
 import { columnSkeletons } from "@/components/ui/data-grid/columns";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
@@ -128,7 +128,7 @@ export function useJvTable({
         <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
       cell: ({ row }) => (
-        <StatusIconLabel
+        <StatusChip
           status={row.original.jv_status}
           label={jvStatusLabel(row.original.jv_status)}
         />

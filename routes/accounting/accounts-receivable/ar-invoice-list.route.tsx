@@ -28,7 +28,7 @@ import { DataGridPagination } from "@/components/ui/data-grid/data-grid-paginati
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
 import { ErrorState } from "@/components/ui/error-state";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import { useCan } from "@/hooks/use-can";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
@@ -146,7 +146,7 @@ export function Component() {
     {
       ...column("doc_status", tc("status")),
       cell: ({ row }) => (
-        <StatusIconLabel
+        <StatusChip
           status={row.original.doc_status}
           label={t(`statuses.${row.original.doc_status}`)}
         />

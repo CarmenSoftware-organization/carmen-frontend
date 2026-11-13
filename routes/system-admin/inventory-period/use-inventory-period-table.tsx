@@ -3,12 +3,15 @@ import { AlertTriangle } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
-import type { InventoryPeriod, InventoryPeriodStatus } from "@/types/inventory-period";
+import type {
+  InventoryPeriod,
+  InventoryPeriodStatus,
+} from "@/types/inventory-period";
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { formatDate } from "@/lib/date-utils";
 import { useProfile } from "@/hooks/use-profile";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import { INVENTORY_PERIOD_STATUS_CONFIG } from "@/constant/inventory-period";
 import { getInventoryPeriodPhase } from "./inventory-period-phase";
 
@@ -91,8 +94,9 @@ export function useInventoryPeriodTable({
       cell: ({ row }) => {
         const status = row.getValue("status") as InventoryPeriodStatus;
         const config =
-          INVENTORY_PERIOD_STATUS_CONFIG[status] ?? INVENTORY_PERIOD_STATUS_CONFIG.open;
-        return <StatusIconLabel status={status} label={config.label} />;
+          INVENTORY_PERIOD_STATUS_CONFIG[status] ??
+          INVENTORY_PERIOD_STATUS_CONFIG.open;
+        return <StatusChip status={status} label={config.label} />;
       },
       size: 110,
       // คอลัมน์สุดท้ายรับความกว้างที่เหลือ — `meta.grow` ทำให้สองคอลัมน์ข้างหน้ากว้างคงที่ตาม

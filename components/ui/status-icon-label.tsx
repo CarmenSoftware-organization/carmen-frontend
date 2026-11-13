@@ -64,6 +64,8 @@ const STATUS_ICON: Record<
   completed: { icon: Flag, color: "var(--status-completed)" },
   /* PO — ใบสั่งซื้อเดินต่อจากอนุมัติแล้ว: ส่งให้ผู้ขาย → ของมาบางส่วน → ปิดใบ */
   sent: { icon: Send, color: "var(--status-sent)" },
+  /* PO "sent" ถูก rename เป็น "sent_or_print" — แนวคิดเดิม สีเดิม (ดู constant/status-config.ts) */
+  sent_or_print: { icon: Send, color: "var(--status-sent)" },
   partial: { icon: Percent, color: "var(--status-partial)" },
   closed: { icon: Archive, color: "var(--status-closed)" },
   /* GRN — ใบรับของไม่มี workflow: บันทึกไว้ก่อน แล้วค่อยยืนยันตัดสต๊อกจริง */

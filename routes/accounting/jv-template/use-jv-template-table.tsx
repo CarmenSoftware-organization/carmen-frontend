@@ -4,7 +4,7 @@ import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column
 import { CellAction } from "@/components/ui/cell-action";
 import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
 import { columnSkeletons } from "@/components/ui/data-grid/columns";
-import { StatusIconLabel } from "@/components/ui/status-icon-label";
+import { StatusChip } from "@/components/ui/status-chip";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { formatCurrency } from "@/lib/currency-utils";
 import type { ParamsDto } from "@/types/params";
@@ -167,7 +167,7 @@ export function useJvTemplateTable({
         <DataGridColumnHeader column={column} title={t("active")} />
       ),
       cell: ({ row }) => (
-        <StatusIconLabel
+        <StatusChip
           status={row.original.is_active ? "active" : "inactive"}
           label={jvTemplateActiveLabel(t, row.original.is_active)}
         />
