@@ -61,6 +61,16 @@ const EXTRA_SEGMENT_KEY: Record<string, string> = {
 };
 
 /**
+ * path ที่ไม่ใช่โมดูลแต่ segment ไปชนชื่อโมดูลอื่น — ดูก่อน `SEGMENT_TO_KEY`
+ *
+ * `/profile` (โปรไฟล์ผู้ใช้) ไม่อยู่ใน `moduleList` segment `profile` จึงตกไปเจอ
+ * `/accounting/accounts-receivable/profile` แล้วขึ้น "AR Profile"
+ */
+const EXTRA_PATH_KEY: Record<string, string> = {
+  "/profile": "profile",
+};
+
+/**
  * หน้า config ของ interface — `/system-admin/interface/:category/:brand`
  *
  * สอง segment ท้ายเป็น key ของ registry (`accounting`, `carmen_gl`) ไม่ใช่ชื่อโมดูล:
@@ -166,6 +176,7 @@ export default function PathBreadcrumb() {
             const key =
               keyOverride ??
               PATH_TO_KEY[href] ??
+              EXTRA_PATH_KEY[href] ??
               SEGMENT_TO_KEY[segment] ??
               EXTRA_SEGMENT_KEY[segment];
             const label = labelOverride

@@ -983,3 +983,13 @@ export const moduleList: ModuleDto[] = [
     ],
   },
 ];
+
+/**
+ * โมดูลที่ path นี้อยู่ข้างใต้ — `undefined` = หน้าที่ไม่อยู่ในโมดูลไหน (profile,
+ * notifications, design-system) ซึ่งไม่มีเมนูซ้ายให้แสดง shell จึงไม่วาด sidebar เลย
+ * ใช้ร่วมกันระหว่าง `SideMain` (เลือกเมนู) กับ `RootLayout` (ตัดสินว่ามี sidebar ไหม)
+ * สองที่ต้องตอบตรงกันเสมอ ไม่งั้นได้ sidebar เปล่าหรือเมนูหาย
+ */
+export function findActiveModule(pathname: string): ModuleDto | undefined {
+  return moduleList.find((mod) => pathname.startsWith(mod.path));
+}

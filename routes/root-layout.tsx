@@ -1,4 +1,4 @@
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import { AnalyticsBridge } from "@/components/analytics-bridge";
 import { AppStatusBanner } from "@/components/app-status-banner";
 import { AppStatusScreen } from "@/components/app-status-screen";
@@ -18,6 +18,7 @@ import { ProfileGate } from "@/components/share/profile-gate";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarShell } from "@/components/sidebar/sidebar-shell";
 import { SidebarInset } from "@/components/ui/sidebar";
+import { findActiveModule } from "@/constant/module-list";
 import { useAppStatus } from "@/hooks/use-app-status";
 import { useBuSwitchSync } from "@/hooks/use-switch-bu";
 import { isAppBlocked } from "@/lib/app-status-store";
@@ -27,6 +28,9 @@ export default function RootLayout() {
   useBuSwitchSync();
   // ตัว poll สถานะแอปตัวเดียวของทั้งแอป — ต้องอยู่ก่อน early return (rules of hooks)
   const appStatus = useAppStatus();
+  // หน้าที่ไม่อยู่ในโมดูลไหน (profile, notifications) ไม่มีเมนูซ้าย — ไม่วาด sidebar
+  // เปล่า ๆ ที่มีแต่โลโก้ ให้เนื้อหาได้เต็มความกว้างจอ (โลโก้ย้ายไปอยู่บน Navbar)
+  const hasSidebar = findActiveModule(useLocation().pathname) !== undefined;
 
   // ปิดปรับปรุง (ไม่ได้รับยกเว้น) / ปิดใช้งาน → แทนทั้ง shell ไม่ mount หน้าไหนเลย
   if (isAppBlocked(appStatus.snapshot)) {
@@ -42,9 +46,9 @@ export default function RootLayout() {
   return (
     <SidebarShell>
       <AnalyticsBridge />
-      <AppSidebar />
+      {hasSidebar && <AppSidebar />}
       <SidebarInset className="space-main-gradient relative h-dvh overflow-hidden">
-        <Navbar />
+        <Navbar hasSidebar={hasSidebar} />
         <OfflineBanner />
         {/* อ่านอย่างเดียว / ผู้ได้รับยกเว้น — ดู components/app-status-banner.tsx */}
         <AppStatusBanner snapshot={appStatus.snapshot} />
