@@ -184,6 +184,8 @@ export default function UserProfileSetting() {
     resolver: zodResolver(profileSchema) as Resolver<ProfileFormValues>,
     defaultValues,
     values: defaultValues,
+    // profile refetch เบื้องหลัง (หลัง Save, อัปโหลดรูป, ลายเซ็น) ต้องไม่ทับช่องที่ผู้ใช้กำลังแก้อยู่
+    resetOptions: { keepDirtyValues: true },
   });
 
   const discard = useDiscardConfirm({

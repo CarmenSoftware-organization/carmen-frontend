@@ -129,7 +129,25 @@ export function useUpdateProfile() {
       }
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (_res, saved) => {
+      // เขียนค่าที่เพิ่งบันทึกลง cache ทันที แล้วค่อย refetch — ถ้ารอ refetch อย่างเดียว ฟอร์มที่ผูก
+      // `values` กับ profile จะถือค่าเก่าเป็น default อยู่ช่วงหนึ่ง (1–3 วินาที): ผู้ใช้แก้ค่ากลับเป็น
+      // ค่าเดิมในช่วงนั้นฟอร์มมองว่า "ไม่ได้แก้" ปุ่ม Save จึง disabled และค่าที่พิมพ์ไม่ถูกบันทึก
+      queryClient.setQueryData<UserProfile>(profileQueryKey, (old) =>
+        old
+          ? {
+              ...old,
+              alias_name: saved.alias_name,
+              user_info: {
+                ...old.user_info,
+                firstname: saved.firstname,
+                middlename: saved.middlename,
+                lastname: saved.lastname,
+                telephone: saved.telephone,
+              },
+            }
+          : old,
+      );
       queryClient.invalidateQueries({ queryKey: profileQueryKey });
     },
   });
