@@ -11,9 +11,11 @@ import {
 } from "@/components/ui/collapsible";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ErrorState } from "@/components/ui/error-state";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { formatRelativeTime } from "@/lib/relative-time";
+import { cn } from "@/lib/utils";
 import type { McpToken, McpTokenStatus } from "@/types/mcp-token";
 import { McpTokenCreateDialog } from "./mcp-token-create-dialog";
 import { getMcpScopeMessageKey } from "./mcp-token-scopes";
@@ -97,40 +99,40 @@ export function McpTokensSection() {
   };
 
   return (
-    <div className="grid grid-cols-1 items-start gap-6 border-t pt-8 md:grid-cols-[220px_1fr] lg:gap-8">
-      <div className="pt-2">
-        <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">{t("title")}</h2>
-        <p className="text-muted-foreground mt-2 text-xs">{t("description")}</p>
-      </div>
-      <section className="bg-card overflow-hidden rounded-xl border shadow-sm">
-        <div className="bg-muted/10 flex items-center justify-between gap-2 border-b px-4 py-3">
-          <span className="text-muted-foreground text-xs font-semibold tabular-nums">
-            {tokens.isSuccess && `${t("statusActive")} ${activeRows.length}`}
-          </span>
+    <>
+      <CompactSection
+        title={t("title")}
+        count={tokens.isSuccess ? activeRows.length : undefined}
+        action={
           <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
             <Plus className="size-3.5" aria-hidden="true" />
             {t("create")}
           </Button>
-        </div>
+        }
+      >
+        {/* คำอธิบายยาวสามประโยค — อยู่ในการ์ด ไม่ใช่บรรทัดหัวข้อ ไม่งั้นดันปุ่ม Create ตกบรรทัด */}
+        <p className="text-muted-foreground mb-3 max-w-3xl text-xs">
+          {t("description")}
+        </p>
         {tokens.isPending ? (
-          <div className="text-muted-foreground px-4 py-8 text-center text-sm">{tc("loading")}</div>
+          <div className="text-muted-foreground text-sm">{tc("loading")}</div>
         ) : tokens.isError ? (
           <ErrorState error={tokens.error} onRetry={() => tokens.refetch()} />
         ) : (
           <>
             {activeRows.length === 0 ? (
-              <div className="text-muted-foreground px-4 py-8 text-center text-sm">
+              <div className="text-muted-foreground text-sm">
                 <p className="font-medium">{t("empty")}</p>
                 <p className="mt-1 text-xs">{t("emptyHint")}</p>
               </div>
             ) : (
-              <TokenTable rows={activeRows} onRevoke={setRevokeTarget} />
+              <TokenGrid rows={activeRows} onRevoke={setRevokeTarget} />
             )}
             {inactiveRows.length > 0 && (
-              <Collapsible className="border-t">
+              <Collapsible className="mt-3 border-t pt-1">
                 {/* ปุ่ม Delete all อยู่ข้าง trigger ไม่ใช่ข้างใน — button ซ้อน button ไม่ได้ */}
-                <div className="flex items-center gap-2 pr-3">
-                  <CollapsibleTrigger className="group text-muted-foreground hover:text-foreground hover:bg-muted/30 focus-visible:ring-ring/50 flex min-w-0 flex-1 items-center gap-1.5 px-4 py-2.5 text-left text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none">
+                <div className="flex items-center gap-2">
+                  <CollapsibleTrigger className="group text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 flex min-w-0 items-center gap-1.5 rounded-md py-2 pr-2 text-left text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none">
                     <ChevronRight
                       className="size-3.5 shrink-0 transition-transform group-data-[state=open]:rotate-90"
                       aria-hidden="true"
@@ -149,14 +151,14 @@ export function McpTokensSection() {
                     {t("deleteAll")}
                   </Button>
                 </div>
-                <CollapsibleContent className="border-t">
-                  <TokenTable rows={inactiveRows} showStatus onDelete={setDeleteTarget} />
+                <CollapsibleContent className="pt-1">
+                  <TokenGrid rows={inactiveRows} showStatus onDelete={setDeleteTarget} />
                 </CollapsibleContent>
               </Collapsible>
             )}
           </>
         )}
-      </section>
+      </CompactSection>
 
       <McpTokenCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
       <ConfirmDialog
@@ -192,21 +194,22 @@ export function McpTokensSection() {
         isPending={deleteInactive.isPending}
         onConfirm={handleConfirmDeleteAll}
       />
-    </div>
+    </>
   );
 }
 
 /**
- * รายการโทเค็น — ตารางเมื่อกรอบกว้างพอ, การ์ดทีละใบเมื่อแคบ
+ * รายการโทเค็น — หนึ่งโทเค็นหนึ่งช่องของกริด จำนวนคอลัมน์ตามความกว้างการ์ด
  *
- * สลับด้วย container query (`@container` + `@[600px]:`) ไม่ใช่ breakpoint ของ viewport
- * เพราะกรอบนี้แชร์แถวกับคอลัมน์ป้าย 220px — ที่ viewport 768–1100px กรอบยังแคบกว่า
- * ความกว้างขั้นต่ำของตาราง (~588px) อยู่ ถ้าใช้ `md:` ปุ่ม Revoke จะหลุดขอบขวาต้องปัดดู
+ * เดิมเป็น `<table>`: ยืดเต็มการ์ดแล้วคอลัมน์สั้น ๆ ห่างกันเป็นพันพิกเซลบนจอกว้าง ไม่ยืดก็
+ * เหลือที่ว่างสองในสามของการ์ด และตาราง active กับ revoked คอลัมน์ไม่ตรงกัน (จำนวนคอลัมน์ต่างกัน)
+ * โทเค็นเป็นรายการที่มีหลายส่วน (ชื่อ scope วันที่ สถานะ ปุ่ม) จึงใช้ `FieldGrid size="item"`
+ * แบบเดียวกับ provider ของหน้า Ask AI — จอกว้างขึ้นได้คอลัมน์เพิ่ม ไม่ใช่ช่องกว้างขึ้น
  *
  * ชื่อกับ prefix อยู่ด้วยกันเสมอ (ชื่อซ้ำกันได้ prefix คือตัวแยก) และวันที่เป็น relative
  * พร้อม `title` เวลาเต็ม
  */
-function TokenTable({
+function TokenGrid({
   rows,
   showStatus,
   onRevoke,
@@ -262,7 +265,6 @@ function TokenTable({
   const renderStatus = (status: McpTokenStatus) => (
     <Badge variant={STATUS_VARIANT[status]} size="xs">{statusLabel[status]}</Badge>
   );
-  const hasAction = Boolean(onRevoke || onDelete);
   const renderAction = (row: McpToken) => {
     if (onRevoke) {
       return (
@@ -296,60 +298,42 @@ function TokenTable({
   };
 
   return (
-    <div className="@container">
-      {/* แคบ: การ์ดทีละโทเค็น */}
-      <ul className="divide-y text-xs @[600px]:hidden">
-        {items.map(({ row, status, isMuted, lastUsed, expires }) => (
-          <li key={row.id} className={isMuted ? "text-muted-foreground space-y-2 px-4 py-3" : "space-y-2 px-4 py-3"}>
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0" title={absolute(row.created_at)}>{renderName(row)}</div>
-              {showStatus && renderStatus(status)}
+    <FieldGrid size="item">
+      {items.map(({ row, status, isMuted, lastUsed, expires }) => (
+        <div
+          key={row.id}
+          className={cn(
+            "flex min-w-0 flex-col gap-2 rounded-lg border p-3 text-xs",
+            isMuted && "text-muted-foreground",
+          )}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0" title={absolute(row.created_at)}>
+              {renderName(row)}
             </div>
-            <div className="flex flex-wrap gap-1">{renderScopes(row)}</div>
-            <div className="flex items-center justify-between gap-2">
-              <dl className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-0.5">
-                <div className="flex gap-1" title={absolute(row.last_used_at)}>
-                  <dt>{t("lastUsedAt")}</dt>
-                  <dd className="text-foreground">{lastUsed}</dd>
-                </div>
-                <div className="flex gap-1" title={absolute(row.expires_at)}>
-                  <dt>{t("expiresAt")}</dt>
-                  <dd className="text-foreground">{expires}</dd>
-                </div>
-              </dl>
-              {renderAction(row)}
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      {/* กว้าง: ตาราง */}
-      <table className="hidden w-full text-xs @[600px]:table">
-        <thead className="bg-muted/50 text-muted-foreground border-b">
-          <tr>
-            <th className="px-4 py-2 text-left font-medium">{t("name")}</th>
-            <th className="px-2 py-2 text-left font-medium">{t("scopes")}</th>
-            <th className="px-2 py-2 text-left font-medium whitespace-nowrap">{t("lastUsedAt")}</th>
-            <th className="px-2 py-2 text-left font-medium whitespace-nowrap">{t("expiresAt")}</th>
-            {showStatus && <th className="px-2 py-2 text-left font-medium">{t("status")}</th>}
-            {hasAction && <th className="px-4 py-2" />}
-          </tr>
-        </thead>
-        <tbody className="divide-y">
-          {items.map(({ row, status, isMuted, lastUsed, expires }) => (
-            <tr key={row.id} className={isMuted ? "text-muted-foreground" : undefined}>
-              <td className="px-4 py-2.5 align-top" title={absolute(row.created_at)}>{renderName(row)}</td>
-              <td className="px-2 py-2.5 align-top">
-                <div className="flex min-w-[180px] flex-wrap gap-1">{renderScopes(row)}</div>
-              </td>
-              <td className="px-2 py-2.5 align-top whitespace-nowrap" title={absolute(row.last_used_at)}>{lastUsed}</td>
-              <td className="px-2 py-2.5 align-top whitespace-nowrap" title={absolute(row.expires_at)}>{expires}</td>
-              {showStatus && <td className="px-2 py-2.5 align-top">{renderStatus(status)}</td>}
-              {hasAction && <td className="px-4 py-1.5 text-right align-top">{renderAction(row)}</td>}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+            {showStatus && renderStatus(status)}
+          </div>
+          <div className="flex flex-wrap gap-1">{renderScopes(row)}</div>
+          {/* mt-auto: ช่องในแถวเดียวกันสูงเท่ากัน (scope ตัดบรรทัดไม่เท่ากัน) — วันที่กับปุ่มชิดล่างให้ตรงกันทั้งแถว */}
+          <div className="mt-auto flex items-center justify-between gap-2">
+            <dl className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-0.5">
+              <div className="flex gap-1" title={absolute(row.last_used_at)}>
+                <dt>{t("lastUsedAt")}</dt>
+                <dd className={isMuted ? undefined : "text-foreground"}>
+                  {lastUsed}
+                </dd>
+              </div>
+              <div className="flex gap-1" title={absolute(row.expires_at)}>
+                <dt>{t("expiresAt")}</dt>
+                <dd className={isMuted ? undefined : "text-foreground"}>
+                  {expires}
+                </dd>
+              </div>
+            </dl>
+            {renderAction(row)}
+          </div>
+        </div>
+      ))}
+    </FieldGrid>
   );
 }

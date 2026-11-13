@@ -20,7 +20,7 @@
 |---|---|
 | กริดของช่อง (`FieldGrid`) | `grid gap-x-5 gap-y-3 @md:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 @min-[96rem]:grid-cols-6` ใต้ wrapper `@container` |
 | ช่องที่ต้องกว้าง (textarea, ชื่อยาว) | `@md:col-span-2` — ไม่ใช่ `col-span-full` และไม่ใช่ `sm:col-span-2` |
-| หมวดคู่ (`SECTION_PAIR`) | `min-[1700px]:grid min-[1700px]:grid-cols-2 min-[1700px]:items-start min-[1700px]:gap-x-5` |
+| หมวดคู่ (`SECTION_PAIR`) | `min-[1700px]:grid min-[1700px]:grid-cols-2 min-[1700px]:gap-x-5` — ไม่มี `items-start` การ์ดคู่สูงเท่ากัน |
 | ระยะระหว่างหมวด | `mt-5` ไม่มีเส้นคั่น |
 | หัวข้อหมวด | `text-sm font-semibold` + คำอธิบาย `text-xs text-muted-foreground` บรรทัดเดียวกัน เหนือการ์ด, action ชิดขวา |
 | การ์ด | `bg-card rounded-xl border p-4 shadow-sm` |

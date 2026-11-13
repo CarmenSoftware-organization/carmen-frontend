@@ -31,12 +31,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+  CompactSection,
+  CompactSectionSkeleton,
+  SECTION_PAIR,
+} from "@/components/share/compact-section";
 import {
   getDefaultValues,
   createProfileSchema,
@@ -53,6 +53,9 @@ import {
   IMAGE_MIME_TYPES,
 } from "@/lib/image-upload";
 import { BackButton } from "@/components/share/back-button";
+
+/** ช่องชื่อ/โทรศัพท์ของฟอร์ม: กว้างขั้นต่ำ 176px โตได้ถึง 320px แล้วหยุด (จอกว้างไม่ทำให้ช่องยืด) */
+const NAME_FIELD = "w-auto max-w-xs min-w-44 flex-1 basis-44";
 
 export default function UserProfileSetting() {
   const navigate = useNavigate();
@@ -222,303 +225,279 @@ export default function UserProfileSetting() {
 
   return (
     // ไม่มี slide-in: หน้าตั้งค่าเปิดซ้ำบ่อย แอนิเมชัน 500ms ทำให้รู้สึกช้า
-    <div className="animate-in fade-in mx-auto w-full max-w-5xl space-y-10 pb-[max(2rem,env(safe-area-inset-bottom))] duration-150">
+    // เต็มความกว้างจอ (skill carmen-blue-ui-design) — ไม่มี max-w และไม่มีคอลัมน์หัวข้อด้านซ้าย
+    <div className="animate-in fade-in w-full pb-[max(2rem,env(safe-area-inset-bottom))] duration-150">
       {/* Header — ไม่มีปุ่ม Save ที่นี่ เพราะ Save บันทึกแค่ข้อมูลส่วนตัว
           ส่วนรูป ลายเซ็น และโทเค็นบันทึกทันที ปุ่มจึงอยู่ท้ายฟอร์มนั้นแทน */}
       {/* พื้นหลังทึบจำเป็นเพราะ sticky บนมือถือ — ไม่มีแล้วหัวข้อ section เลื่อนทะลุมาทับชื่อหน้า */}
-      <div className="bg-background/95 sticky top-0 z-20 flex items-center gap-2 py-1 backdrop-blur-sm sm:static sm:bg-transparent sm:py-0 sm:backdrop-blur-none">
+      <div className="bg-background/95 sticky top-0 z-20 mb-3 flex items-center gap-2 py-1 backdrop-blur-sm sm:static sm:bg-transparent sm:py-0 sm:backdrop-blur-none">
         {/* touch target 44px บนมือถือ — header นี้ sticky อยู่บนสุดของหน้าโปรไฟล์
             ซึ่งเป็นหน้าที่เปิดจากมือถือบ่อย จงใจใหญ่กว่า icon-sm ปกติ */}
         <BackButton onClick={handleBack} className="h-11 w-11 sm:h-8 sm:w-8" />
         <h1 className="text-lg font-semibold tracking-tight">{t("title")}</h1>
       </div>
 
-      {/* Account Info — read-only hero */}
-      <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-[220px_1fr] lg:gap-8">
-        <div className="pt-2">
-          <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
-            {t("accountInfo")}
-          </h2>
-        </div>
-        <div className="bg-card relative overflow-hidden rounded-xl border shadow-sm">
-          <div className="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4 sm:gap-5">
-              <div className="group/avatar relative">
-                <button
+      {/* Account Info */}
+      <CompactSection
+        first
+        title={t("accountInfo")}
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPasswordOpen(true)}
+          >
+            <KeyRound className="size-3.5" aria-hidden="true" />
+            {t("changePassword")}
+          </Button>
+        }
+      >
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="group/avatar relative">
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={isUploadingAvatar}
+              aria-label={t("uploadAvatar")}
+              aria-busy={isUploadingAvatar}
+              className="group ring-primary/30 ring-offset-background hover:ring-primary/60 focus-visible:ring-primary relative block size-14 cursor-pointer rounded-full ring-2 ring-offset-2 transition-all focus-visible:outline-none disabled:cursor-wait disabled:opacity-70"
+            >
+              <Avatar
+                key={avatarPreview ?? profile.avatar_url ?? "fallback"}
+                className="size-14"
+              >
+                {(avatarPreview ?? profile.avatar_url) && (
+                  <AvatarImage
+                    src={avatarPreview ?? profile.avatar_url ?? undefined}
+                    alt={initials || "?"}
+                    className="object-cover"
+                  />
+                )}
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                  {profile.alias_name || initials || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <span className="bg-foreground/55 pointer-events-none absolute inset-0 flex items-center justify-center rounded-full opacity-0 transition-opacity group-hover:opacity-100">
+                {isUploadingAvatar ? (
+                  <Loader2
+                    className="text-background size-4 animate-spin"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Camera
+                    className="text-background size-4"
+                    aria-hidden="true"
+                  />
+                )}
+              </span>
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept={IMAGE_ACCEPT_ATTR}
+              disabled={isUploadingAvatar}
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+          </div>
+          <div className="min-w-0 flex-1 space-y-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="text-base font-semibold tracking-tight break-words">
+                {fullName || profile.email || "-"}
+              </span>
+              {/* platform_role ว่างได้ (ผู้ใช้ระดับ BU) — badge เปล่าดูเหมือนบั๊ก */}
+              {profile.platform_role && (
+                <Badge variant="primary-light" size="sm">
+                  {profile.platform_role}
+                </Badge>
+              )}
+            </div>
+            <div className="text-muted-foreground flex min-w-0 items-center gap-1.5 text-xs">
+              <Mail className="size-3.5 shrink-0" aria-hidden="true" />
+              <span className="break-all">{profile.email || "-"}</span>
+            </div>
+            {/* ปุ่มรูปแบบข้อความแทน hover-overlay + ถังขยะแดงติดมุมรูป:
+                hover ไม่มีบนมือถือ และปุ่มลบ 20px ที่ขอบรูปกดพลาดง่าย */}
+            <div className="-ml-2 flex flex-wrap items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                disabled={isUploadingAvatar}
+                onClick={() => avatarInputRef.current?.click()}
+              >
+                <Camera className="size-3" aria-hidden="true" />
+                {hasAvatar ? t("changeAvatar") : t("uploadAvatar")}
+              </Button>
+              {hasAvatar && !isUploadingAvatar && (
+                <Button
                   type="button"
-                  onClick={() => avatarInputRef.current?.click()}
-                  disabled={isUploadingAvatar}
-                  aria-label={t("uploadAvatar")}
-                  aria-busy={isUploadingAvatar}
-                  className="group ring-primary/30 ring-offset-background hover:ring-primary/60 focus-visible:ring-primary relative block size-16 cursor-pointer rounded-full shadow-xl ring-4 ring-offset-2 transition-all focus-visible:outline-none disabled:cursor-wait disabled:opacity-70 sm:size-20"
+                  variant="ghost"
+                  size="xs"
+                  disabled={isDeletingAvatar}
+                  onClick={handleRemoveAvatar}
+                  className="text-muted-foreground hover:text-destructive"
                 >
-                  <Avatar
-                    key={avatarPreview ?? profile.avatar_url ?? "fallback"}
-                    className="size-16 sm:size-20"
-                  >
-                    {(avatarPreview ?? profile.avatar_url) && (
-                      <AvatarImage
-                        src={avatarPreview ?? profile.avatar_url ?? undefined}
-                        alt={initials || "?"}
-                        className="object-cover"
-                      />
-                    )}
-                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {profile.alias_name || initials || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="bg-foreground/55 pointer-events-none absolute inset-0 flex items-center justify-center rounded-full opacity-0 transition-opacity group-hover:opacity-100">
-                    {isUploadingAvatar ? (
-                      <Loader2
-                        className="text-background size-4 animate-spin"
-                        aria-hidden="true"
-                      />
-                    ) : (
-                      <Camera
-                        className="text-background size-4"
-                        aria-hidden="true"
-                      />
-                    )}
-                  </span>
-                </button>
-                <input
-                  ref={avatarInputRef}
-                  type="file"
-                  accept={IMAGE_ACCEPT_ATTR}
-                  disabled={isUploadingAvatar}
-                  className="hidden"
-                  onChange={handleAvatarChange}
-                />
-              </div>
-              <div className="min-w-0 flex-1 space-y-1.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="truncate text-lg font-bold tracking-tight">
-                    {fullName || profile.email || "-"}
-                  </span>
-                  {/* platform_role ว่างได้ (ผู้ใช้ระดับ BU) — badge เปล่าดูเหมือนบั๊ก */}
-                  {profile.platform_role && (
-                    <Badge variant="primary-light" size="sm">
-                      {profile.platform_role}
-                    </Badge>
-                  )}
-                </div>
-                <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                  <span className="flex min-w-0 items-center gap-1.5">
-                    <Mail
-                      className="text-primary/60 size-3.5 shrink-0"
+                  {isDeletingAvatar ? (
+                    <Loader2
+                      className="size-3 animate-spin"
                       aria-hidden="true"
                     />
-                    <span className="truncate font-medium">
-                      {profile.email || "-"}
-                    </span>
-                  </span>
-                  <Badge
-                    variant={hasSignature ? "success-light" : "warning-light"}
-                    size="xs"
-                  >
-                    {hasSignature ? t("signatureSet") : t("signatureNotSet")}
-                  </Badge>
-                </div>
-                {/* ปุ่มรูปแบบข้อความแทน hover-overlay + ถังขยะแดงติดมุมรูป:
-                    hover ไม่มีบนมือถือ และปุ่มลบ 20px ที่ขอบรูปกดพลาดง่าย */}
-                <div className="flex items-center gap-1 pt-0.5">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="xs"
-                    disabled={isUploadingAvatar}
-                    onClick={() => avatarInputRef.current?.click()}
-                  >
-                    <Camera className="size-3" aria-hidden="true" />
-                    {hasAvatar ? t("changeAvatar") : t("uploadAvatar")}
-                  </Button>
-                  {hasAvatar && !isUploadingAvatar && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="xs"
-                      disabled={isDeletingAvatar}
-                      onClick={handleRemoveAvatar}
-                      className="text-muted-foreground hover:text-destructive"
-                    >
-                      {isDeletingAvatar ? (
-                        <Loader2
-                          className="size-3 animate-spin"
-                          aria-hidden="true"
-                        />
-                      ) : (
-                        <Trash2 className="size-3" aria-hidden="true" />
-                      )}
-                      {t("removeAvatar")}
-                    </Button>
+                  ) : (
+                    <Trash2 className="size-3" aria-hidden="true" />
                   )}
-                </div>
-              </div>
+                  {t("removeAvatar")}
+                </Button>
+              )}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPasswordOpen(true)}
-              className="group h-10 w-full shadow-sm sm:h-9 sm:w-auto"
-            >
-              <KeyRound
-                className="size-3.5 transition-transform group-hover:rotate-12"
-                aria-hidden="true"
-              />
-              {t("changePassword")}
-            </Button>
           </div>
         </div>
-      </div>
+      </CompactSection>
 
-      {/* Personal Info Form */}
-      <div className="grid grid-cols-1 items-start gap-6 border-t pt-8 md:grid-cols-[220px_1fr] lg:gap-8">
-        <div className="pt-2">
-          <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
-            {t("personalInfo")}
-          </h2>
-        </div>
-        <section className="bg-card overflow-hidden rounded-xl border shadow-sm">
+      {/* ข้อมูลส่วนตัว | ลายเซ็น — สองหมวดสูงใกล้กัน วางเคียงกันบนจอกว้าง */}
+      <div className={SECTION_PAIR}>
+        <CompactSection title={t("personalInfo")}>
           <form
             id="profile-form"
             onSubmit={form.handleSubmit(onSubmit, () =>
               scrollToFirstInvalidField(),
             )}
           >
-            <div className="space-y-6 p-5 sm:p-6">
-              <FieldGroup className="gap-6">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <Field data-invalid={!!form.formState.errors.firstname}>
-                    <FieldLabel htmlFor="firstname" required>
-                      {t("firstName")}
-                    </FieldLabel>
-                    <Input
-                      id="firstname"
-                      placeholder={t("enterFirstName")}
-                      className="h-9 transition-colors"
-                      maxLength={100}
-                      disabled={updateProfile.isPending}
-                      aria-invalid={!!form.formState.errors.firstname}
-                      {...form.register("firstname")}
-                    />
-                    <FieldError>
-                      {form.formState.errors.firstname?.message}
-                    </FieldError>
-                  </Field>
+            {/* แถวเดียวแบบ flex-wrap แทน FieldGrid: ฟอร์มมี 5 ช่อง + ปุ่ม Save ในกริดคอลัมน์ตายตัว
+                Alias ตกไปอยู่แถวของตัวเองและ Save กินอีกแถว การ์ดสูงเป็นสองเท่าของเนื้อหา
+                ช่องชื่อกว้าง 176–320px (ไม่ยืดตามจอ) · Alias 2 ตัวอักษรกว้างคงที่ · Save ต่อท้ายแถวเดียวกัน */}
+            <div className="flex flex-wrap items-start gap-x-5 gap-y-3">
+              <Field
+                data-invalid={!!form.formState.errors.firstname}
+                className={NAME_FIELD}
+              >
+                <FieldLabel htmlFor="firstname" required>
+                  {t("firstName")}
+                </FieldLabel>
+                <Input
+                  id="firstname"
+                  placeholder={t("enterFirstName")}
+                  className="h-9 transition-colors"
+                  maxLength={100}
+                  disabled={updateProfile.isPending}
+                  aria-invalid={!!form.formState.errors.firstname}
+                  {...form.register("firstname")}
+                />
+                <FieldError>
+                  {form.formState.errors.firstname?.message}
+                </FieldError>
+              </Field>
 
-                  <Field data-invalid={!!form.formState.errors.middlename}>
-                    <FieldLabel htmlFor="middlename">
-                      {t("middleName")}
-                    </FieldLabel>
-                    <Input
-                      id="middlename"
-                      placeholder={t("enterMiddleName")}
-                      className="h-9 transition-colors"
-                      maxLength={100}
-                      disabled={updateProfile.isPending}
-                      aria-invalid={!!form.formState.errors.middlename}
-                      {...form.register("middlename")}
-                    />
-                    <FieldError>
-                      {form.formState.errors.middlename?.message}
-                    </FieldError>
-                  </Field>
+              <Field
+                data-invalid={!!form.formState.errors.middlename}
+                className={NAME_FIELD}
+              >
+                <FieldLabel htmlFor="middlename">{t("middleName")}</FieldLabel>
+                <Input
+                  id="middlename"
+                  placeholder={t("enterMiddleName")}
+                  className="h-9 transition-colors"
+                  maxLength={100}
+                  disabled={updateProfile.isPending}
+                  aria-invalid={!!form.formState.errors.middlename}
+                  {...form.register("middlename")}
+                />
+                <FieldError>
+                  {form.formState.errors.middlename?.message}
+                </FieldError>
+              </Field>
 
-                  <Field data-invalid={!!form.formState.errors.lastname}>
-                    <FieldLabel htmlFor="lastname" required>
-                      {t("lastName")}
-                    </FieldLabel>
-                    <Input
-                      id="lastname"
-                      placeholder={t("enterLastName")}
-                      className="h-9 transition-colors"
-                      maxLength={100}
-                      disabled={updateProfile.isPending}
-                      aria-invalid={!!form.formState.errors.lastname}
-                      {...form.register("lastname")}
-                    />
-                    <FieldError>
-                      {form.formState.errors.lastname?.message}
-                    </FieldError>
-                  </Field>
-                </div>
+              <Field
+                data-invalid={!!form.formState.errors.lastname}
+                className={NAME_FIELD}
+              >
+                <FieldLabel htmlFor="lastname" required>
+                  {t("lastName")}
+                </FieldLabel>
+                <Input
+                  id="lastname"
+                  placeholder={t("enterLastName")}
+                  className="h-9 transition-colors"
+                  maxLength={100}
+                  disabled={updateProfile.isPending}
+                  aria-invalid={!!form.formState.errors.lastname}
+                  {...form.register("lastname")}
+                />
+                <FieldError>
+                  {form.formState.errors.lastname?.message}
+                </FieldError>
+              </Field>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field
-                    data-invalid={!!form.formState.errors.telephone}
-                    className="w-full"
-                  >
-                    <FieldLabel htmlFor="telephone">
-                      {t("telephone")}
-                    </FieldLabel>
-                    <Input
-                      id="telephone"
-                      placeholder={t("enterTelephone")}
-                      className="h-9 transition-colors"
-                      maxLength={20}
-                      disabled={updateProfile.isPending}
-                      aria-invalid={!!form.formState.errors.telephone}
-                      {...form.register("telephone")}
-                    />
-                    <FieldError>
-                      {form.formState.errors.telephone?.message}
-                    </FieldError>
-                  </Field>
+              <Field
+                data-invalid={!!form.formState.errors.telephone}
+                className={NAME_FIELD}
+              >
+                <FieldLabel htmlFor="telephone">{t("telephone")}</FieldLabel>
+                <Input
+                  id="telephone"
+                  placeholder={t("enterTelephone")}
+                  className="h-9 transition-colors"
+                  maxLength={20}
+                  disabled={updateProfile.isPending}
+                  aria-invalid={!!form.formState.errors.telephone}
+                  {...form.register("telephone")}
+                />
+                <FieldError>
+                  {form.formState.errors.telephone?.message}
+                </FieldError>
+              </Field>
 
-                  <Field
-                    data-invalid={!!form.formState.errors.alias_name}
-                    className="w-full lg:w-20"
-                  >
-                    <FieldLabel htmlFor="alias_name">{t("alias")}</FieldLabel>
-                    <Input
-                      id="alias_name"
-                      placeholder={t("aliasPlaceholder")}
-                      className="h-9 uppercase transition-colors"
-                      maxLength={2}
-                      hideCounter
-                      disabled={updateProfile.isPending}
-                      aria-invalid={!!form.formState.errors.alias_name}
-                      {...form.register("alias_name")}
-                    />
-                    <FieldError>
-                      {form.formState.errors.alias_name?.message}
-                    </FieldError>
-                  </Field>
-                </div>
-              </FieldGroup>
-            </div>
-            <div className="bg-muted/10 flex justify-end border-t px-5 py-3 sm:px-6">
+              <Field
+                data-invalid={!!form.formState.errors.alias_name}
+                className="w-20 flex-none"
+              >
+                <FieldLabel htmlFor="alias_name">{t("alias")}</FieldLabel>
+                <Input
+                  id="alias_name"
+                  placeholder={t("aliasPlaceholder")}
+                  className="h-9 uppercase transition-colors"
+                  maxLength={2}
+                  hideCounter
+                  disabled={updateProfile.isPending}
+                  aria-invalid={!!form.formState.errors.alias_name}
+                  {...form.register("alias_name")}
+                />
+                <FieldError>
+                  {form.formState.errors.alias_name?.message}
+                </FieldError>
+              </Field>
+              {/* mt-5.5 = ความสูงป้าย + gap ของ Field — ปุ่มอยู่ระดับเดียวกับช่องกรอก ไม่ใช่กับป้าย
+                  ml-auto: ชิดขวาของแถวสุดท้าย */}
               <Button
                 type="submit"
                 size="sm"
+                className="mt-5.5 ml-auto h-9"
                 disabled={!form.formState.isDirty || updateProfile.isPending}
               >
                 {updateProfile.isPending && (
-                  <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                  <Loader2
+                    className="size-3.5 animate-spin"
+                    aria-hidden="true"
+                  />
                 )}
                 {updateProfile.isPending ? t("saving") : tc("save")}
               </Button>
             </div>
           </form>
-        </section>
-      </div>
+        </CompactSection>
 
-      {/* Signature */}
-      <div className="grid grid-cols-1 items-start gap-6 border-t pt-8 md:grid-cols-[220px_1fr] lg:gap-8">
-        <div className="pt-2">
-          <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
-            {t("signature")}
-          </h2>
-        </div>
-        <section className="bg-card overflow-hidden rounded-xl border shadow-sm">
-          <div className="bg-muted/10 flex items-center justify-between gap-2 border-b px-4 py-3">
+        <CompactSection
+          title={t("signature")}
+          description={
             <Badge
               variant={hasSignature ? "success-light" : "warning-light"}
               size="xs"
             >
               {hasSignature ? t("signatureSet") : t("signatureNotSet")}
             </Badge>
-            <div className="flex gap-2">
+          }
+          action={
+            <div className="flex flex-wrap gap-2">
               {profile.signature_url && !isUploadingSignature && (
                 <Button
                   type="button"
@@ -544,41 +523,42 @@ export default function UserProfileSetting() {
                 size="sm"
                 disabled={isUploadingSignature}
                 onClick={() => setSignatureDialogOpen(true)}
-                className="shadow-sm"
               >
                 {profile.signature_url ? t("editSignature") : t("addSignature")}
               </Button>
             </div>
-          </div>
-          <div className="flex min-h-32 items-center justify-center p-4 sm:p-6">
-            {profile.signature_url ? (
+          }
+        >
+          {profile.signature_url ? (
+            // หมึกลายเซ็นเป็นสีเข้มบนพื้นโปร่ง — วางบนพื้นขาวเสมอ ไม่งั้นมองไม่เห็นใน dark mode
+            <div className="inline-flex max-w-full rounded-md border bg-white p-2">
               <img
                 key={profile.signature_url}
                 src={profile.signature_url}
                 alt={t("signature")}
-                className="max-h-36 max-w-full object-contain"
+                className="max-h-28 max-w-full object-contain"
               />
-            ) : (
-              // พื้นที่ว่างทั้งก้อนเป็นปุ่ม — ข้อความเดิมบอกให้ "คลิก" แต่คลิกแล้วไม่มีอะไรเกิดขึ้น
-              <button
-                type="button"
-                disabled={isUploadingSignature}
-                onClick={() => setSignatureDialogOpen(true)}
-                className="border-border hover:border-primary/50 hover:bg-muted/30 focus-visible:ring-ring/50 flex w-full flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-8 text-center transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-wait disabled:opacity-60"
-              >
-                <span className="bg-muted/40 flex size-12 items-center justify-center rounded-full border">
-                  <IdCard
-                    className="text-muted-foreground size-5"
-                    aria-hidden="true"
-                  />
-                </span>
-                <span className="text-muted-foreground text-sm font-medium">
-                  {t("signatureEmptyHint")}
-                </span>
-              </button>
-            )}
-          </div>
-        </section>
+            </div>
+          ) : (
+            // พื้นที่ว่างทั้งก้อนเป็นปุ่ม — ข้อความเดิมบอกให้ "คลิก" แต่คลิกแล้วไม่มีอะไรเกิดขึ้น
+            <button
+              type="button"
+              disabled={isUploadingSignature}
+              onClick={() => setSignatureDialogOpen(true)}
+              className="border-border hover:border-primary/50 hover:bg-muted/30 focus-visible:ring-ring/50 flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-5 text-center transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-wait disabled:opacity-60"
+            >
+              <span className="bg-muted/40 flex size-10 items-center justify-center rounded-full border">
+                <IdCard
+                  className="text-muted-foreground size-5"
+                  aria-hidden="true"
+                />
+              </span>
+              <span className="text-muted-foreground text-sm font-medium">
+                {t("signatureEmptyHint")}
+              </span>
+            </button>
+          )}
+        </CompactSection>
       </div>
 
       <McpTokensSection />
@@ -694,15 +674,20 @@ export default function UserProfileSetting() {
   );
 }
 
+/** โครงเดียวกับหน้าจริง: หัวหน้า · บัญชี · ข้อมูลส่วนตัว | ลายเซ็น · โทเค็น */
 const ProfileSettingSkeleton = () => {
   return (
-    <div className="max-w-2xl space-y-4 p-3">
-      <div className="flex items-center gap-2">
+    <div className="w-full">
+      <div className="mb-3 flex items-center gap-2">
         <Skeleton className="size-8 rounded-md" />
-        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-6 w-40" />
       </div>
-      <Skeleton className="h-20 w-full rounded-xl" />
-      <Skeleton className="h-64 w-full rounded-xl" />
+      <CompactSectionSkeleton first className="h-24" />
+      <div className={SECTION_PAIR}>
+        <CompactSectionSkeleton className="h-44" />
+        <CompactSectionSkeleton className="h-44" />
+      </div>
+      <CompactSectionSkeleton className="h-40" />
     </div>
   );
 };
