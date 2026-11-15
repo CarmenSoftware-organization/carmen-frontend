@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { ApDetailGrid } from "../shared/ap-detail-grid";
 import { lineAmounts, type InvoiceFormLine } from "./ap-invoice-form";
+import { InvoiceSourceEditor } from "./ap-invoice-source-editor";
 
 const DECIMAL_RE = /^\d*(\.\d*)?$/;
 
@@ -122,6 +123,7 @@ function TaxCell({
     <div className="flex min-w-44 items-center gap-1">
       <LookupTaxProfile
         value={profileId ?? ""}
+        taxType={kind}
         placeholder={t(kind === "vat" ? "vatProfile" : "whtProfile")}
         onValueChange={(id, taxRate) =>
           onChange(
@@ -220,6 +222,10 @@ export function InvoiceLines({
   onMove,
   onRemove,
   savedLines,
+  currencyCode,
+  baseCurrencyCode,
+  vendorId,
+  currencyId,
 }: {
   readonly lines: InvoiceFormLine[];
   readonly deposit: boolean;
@@ -229,12 +235,17 @@ export function InvoiceLines({
   readonly onMove: (key: string, direction: -1 | 1) => void;
   readonly onRemove: (key: string) => void;
   readonly savedLines?: ApInvoiceLine[];
+  readonly currencyCode: string;
+  readonly baseCurrencyCode: string;
+  readonly vendorId: string;
+  readonly currencyId: string;
 }) {
   const t = useTranslations("accounting.accountsPayable.invoice.detail.lines");
   const ui = useTranslations("accounting.accountsPayable.ui");
   const [detailKey, setDetailKey] = useState<string | null>(null);
   const detail = lines.find((line) => line.key === detailKey);
   const hasGrn = lines.some((line) => line.grn_no);
+  const savedById = new Map((savedLines ?? []).map((line) => [line.id, line]));
 
   // columns ต้อง memoize และไม่พึ่งค่าที่เปลี่ยนทุก render (formatter/t) ไม่งั้น cell remount แล้ว input เสีย focus
   const columns = useMemo<ColumnDef<InvoiceFormLine>[]>(() => {
@@ -347,7 +358,16 @@ export function InvoiceLines({
       {
         id: "net",
         header: () => <Label k="net" />,
-        cell: ({ row }) => <Amount value={lineAmounts(row.original).net} />,
+        cell: ({ row }) => (
+          <Amount
+            value={
+              !editable
+                ? (savedLines?.find((line) => line.id === row.original.key)
+                    ?.net_amount ?? lineAmounts(row.original).net)
+                : lineAmounts(row.original).net
+            }
+          />
+        ),
       },
       {
         id: "total",
@@ -361,7 +381,7 @@ export function InvoiceLines({
       },
     );
     return cols;
-  }, [editable, deposit, hasGrn, onChange]);
+  }, [editable, deposit, hasGrn, onChange, savedLines]);
 
   const compact = columns.filter((column) =>
     [
@@ -375,7 +395,6 @@ export function InvoiceLines({
       "total",
     ].includes(column.id ?? ""),
   );
-  const savedById = new Map((savedLines ?? []).map((line) => [line.id, line]));
   const totalIndexBeforeTax = compact.findIndex(
     (column) => column.id === "total",
   );
@@ -389,7 +408,12 @@ export function InvoiceLines({
     totalColumn.cell = ({ row }) => (
       <div className="space-y-1">
         <Amount
-          value={lineAmounts(row.original).total}
+          value={
+            !editable
+              ? (savedById.get(row.original.key)?.total_amount ??
+                lineAmounts(row.original).total)
+              : lineAmounts(row.original).total
+          }
           className="font-semibold"
         />
         <Amount
@@ -401,6 +425,20 @@ export function InvoiceLines({
           }
           className="text-micro text-muted-foreground"
         />
+        {!editable &&
+          baseCurrencyCode !== currencyCode &&
+          savedById.has(row.original.key) && (
+            <span className="text-micro text-muted-foreground block text-right tabular-nums">
+              {baseCurrencyCode}{" "}
+              <Amount
+                value={savedById.get(row.original.key)!.base_total_amount}
+              />
+              {ui("unpaid")}{" "}
+              <Amount
+                value={savedById.get(row.original.key)!.base_unpaid_amount}
+              />
+            </span>
+          )}
       </div>
     );
   const totalIndex = compact.findIndex((column) => column.id === "total");
@@ -410,11 +448,20 @@ export function InvoiceLines({
     cell: ({ row }) => (
       <div className="text-right text-xs tabular-nums">
         <Amount
-          value={lineAmounts(row.original).vat}
+          value={
+            !editable
+              ? (savedById.get(row.original.key)?.vat_amount ??
+                lineAmounts(row.original).vat)
+              : lineAmounts(row.original).vat
+          }
           className="text-success-ink"
         />
         <span className="text-micro text-muted-foreground">
-          {t("wht")} {lineAmounts(row.original).wht}
+          {t("wht")}{" "}
+          {!editable
+            ? (savedById.get(row.original.key)?.wht_estimate_amount ??
+              lineAmounts(row.original).wht)
+            : lineAmounts(row.original).wht}
         </span>
       </div>
     ),
@@ -468,6 +515,10 @@ export function InvoiceLines({
       {detail && (
         <InvoiceLineDialog
           line={detail}
+          savedLine={savedById.get(detail.key)}
+          baseCurrencyCode={baseCurrencyCode}
+          vendorId={vendorId}
+          currencyId={currencyId}
           editable={editable}
           deposit={deposit}
           onChange={(patch) => onChange(detail.key, patch)}
@@ -480,12 +531,20 @@ export function InvoiceLines({
 
 function InvoiceLineDialog({
   line,
+  savedLine,
+  baseCurrencyCode,
+  vendorId,
+  currencyId,
   editable,
   deposit,
   onChange,
   onClose,
 }: {
   readonly line: InvoiceFormLine;
+  readonly savedLine?: ApInvoiceLine;
+  readonly baseCurrencyCode: string;
+  readonly vendorId: string;
+  readonly currencyId: string;
   readonly editable: boolean;
   readonly deposit: boolean;
   readonly onChange: (patch: Patch) => void;
@@ -493,8 +552,20 @@ function InvoiceLineDialog({
 }) {
   const ui = useTranslations("accounting.accountsPayable.ui");
   const t = useTranslations("accounting.accountsPayable.invoice.detail.lines");
+  const baseText = useTranslations(
+    "accounting.accountsPayable.invoice.detail.base",
+  );
   const [dimensionsOpen, setDimensionsOpen] = useState(false);
-  const amounts = lineAmounts(line);
+  const amounts =
+    !editable && savedLine
+      ? {
+          subtotal: savedLine.sub_total_amount,
+          net: savedLine.net_amount,
+          vat: savedLine.vat_amount,
+          wht: savedLine.wht_estimate_amount,
+          total: savedLine.total_amount,
+        }
+      : lineAmounts(line);
   const carry = (patch: Partial<NonNullable<InvoiceFormLine["carry"]>>) =>
     onChange({ carry: { ...line.carry, ...patch } });
   return (
@@ -671,6 +742,36 @@ function InvoiceLineDialog({
             </div>
           </section>
         </fieldset>
+        {!editable && savedLine && (
+          <section className="space-y-3 border-t pt-4">
+            <h3 className="text-sm font-semibold">
+              {baseText("title", { currency: baseCurrencyCode })}
+            </h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                [baseText("subtotal"), savedLine.base_sub_total_amount],
+                [t("discount"), savedLine.base_discount_amount],
+                [t("net"), savedLine.base_net_amount],
+                [t("vatAmount"), savedLine.base_vat_amount],
+                [t("total"), savedLine.base_total_amount],
+                [ui("unpaid"), savedLine.base_unpaid_amount],
+              ].map(([label, value]) => (
+                <Field key={label}>
+                  <FieldLabel>{label}</FieldLabel>
+                  <Amount value={value} />
+                </Field>
+              ))}
+            </div>
+          </section>
+        )}
+        <InvoiceSourceEditor
+          line={line}
+          savedLine={savedLine}
+          editable={editable}
+          vendorId={vendorId}
+          currencyId={currencyId}
+          onChange={onChange}
+        />
         <DialogFooter>
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
             {ui("close")}

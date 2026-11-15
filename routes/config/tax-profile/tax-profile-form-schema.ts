@@ -21,7 +21,7 @@ export const EMPTY_FORM: TaxProfileFormValues = {
 };
 
 export function getDefaultValues(
-  taxProfile?: TaxProfile,
+  taxProfile?: TaxProfile | null,
 ): TaxProfileFormValues {
   if (!taxProfile) return { ...EMPTY_FORM };
   return {

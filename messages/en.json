@@ -819,6 +819,25 @@
           "voidReason": "Void reason",
           "reversalJournal": "Reversal journal voucher",
           "fromGrnBanner": "Created automatically from GRN - edit it at the GRN.",
+          "base": {
+            "title": "Stored amounts ({currency})",
+            "subtotal": "Gross subtotal"
+          },
+          "sources": {
+            "title": "GRN matching",
+            "selectGrn": "Select a committed GRN",
+            "searchGrn": "Search GRNs",
+            "noGrn": "No eligible GRNs for this vendor and currency.",
+            "add": "Match line",
+            "remove": "Remove GRN match",
+            "empty": "No GRN lines matched.",
+            "line": "GRN line {number}",
+            "quantity": "Matched quantity",
+            "unitPrice": "GRN unit price",
+            "amount": "Matched amount",
+            "variance": "Price variance",
+            "validationNote": "Match quantities use the GRN received unit. Save recalculates amounts; Submit validates the remaining received quantity."
+          },
           "openGrn": "Open GRN",
           "linesTitle": "Lines",
           "addLine": "Add line",
@@ -871,6 +890,7 @@
             "exchangeRate": "Exchange rate must be greater than 0",
             "lines": "Add at least one line",
             "account": "Every line needs a debit account",
+            "sourceQuantity": "Every GRN match needs a quantity greater than 0",
             "quantity": "Quantity must be greater than 0",
             "unitPrice": "Unit price cannot be negative"
           },
@@ -975,6 +995,9 @@
             "payAmount": "Pay Amount",
             "overAvailable": "Exceeds the available amount",
             "openInvoice": "Open invoice",
+            "bookingRate": "Invoice FX Rate",
+            "baseAtBookingRate": "Base at Invoice Rate ({currency})",
+            "baseAtPaymentRate": "Base at Payment Rate ({currency})",
             "realizedFx": "Realized FX"
           },
           "wht": {
@@ -982,6 +1005,13 @@
             "recalculate": "Recalculate from invoices",
             "calculating": "Calculating...",
             "empty": "No withholding tax for the selected lines.",
+            "add": "Add WHT service",
+            "remove": "Remove WHT service",
+            "limit": "Up to 3 WHT services per voucher",
+            "incomeType": "Income Type",
+            "profileLoadError": "Unable to load WHT profiles.",
+            "noProfiles": "No active WHT profiles are configured for this business unit.",
+            "manualOverride": "Edited WHT rows are kept when invoices change. Recalculate resets them from the selected invoices.",
             "profile": "Tax Profile",
             "rate": "Rate",
             "base": "Base",
@@ -991,11 +1021,12 @@
             "staleBlocksSave": "Recalculate the withholding tax before saving",
             "previewFailed": "Withholding tax could not be recalculated: {message}",
             "errors": {
-              "amount": "Enter a WHT amount for every row"
+              "amount": "Select a WHT profile and enter a non-negative base and WHT amount for every row"
             }
           },
           "expenses": {
             "title": "Other expenses",
+            "baseAmount": "Base Amount ({currency})",
             "add": "Add expense",
             "empty": "No expenses.",
             "account": "Account",
@@ -1073,6 +1104,12 @@
         "source": "Source",
         "sourceDoc": "Source Doc.",
         "saveDraft": "Save Draft",
+        "attachFiles": "Attach files",
+        "attachments": "Attachments",
+        "attachmentsSaveHint": "Files are uploaded when you save. Removing an attachment detaches it from this document.",
+        "noAttachments": "No attachments.",
+        "pendingAttachment": "Pending save",
+        "attachmentDownloadFailed": "Could not download the attachment",
         "items": "Item Details",
         "taxInvoice": "Tax Invoice",
         "references": "Doc Reference",
@@ -1167,7 +1204,8 @@
         "appliedAmount": "Apply Amount",
         "noEligibleReferences": "No eligible documents for this vendor and currency.",
         "removeReference": "Remove reference",
-        "referenceSaveNote": "Save the draft to recalculate outstanding balances."
+        "referenceSaveNote": "Save the draft to recalculate outstanding balances.",
+        "realizedFx": "Realized FX"
       }
     },
     "arFolio": {
@@ -1938,6 +1976,7 @@
     }
   },
   "validation": {
+    "invalidFormat": "{field} has an invalid format",
     "required": "{field} is required",
     "minNumber": "{field} must be at least {min}",
     "maxNumber": "{field} must be at most {max}",
@@ -1984,6 +2023,7 @@
     "youtubeLink": "Must be a YouTube video link, e.g. https://www.youtube.com/watch?v=… or https://youtu.be/…"
   },
   "field": {
+    "chequeForm": "Cheque form",
     "field": "Field",
     "code": "Code",
     "glAccount": "GL Account",
@@ -2306,6 +2346,66 @@
     "none": "None"
   },
   "config": {
+    "paymentType": {
+      "entity": "Payment Type",
+      "title": "Payment Types",
+      "desc": "Sample payment types while the API is pending. Changes stay in this session and reset on reload.",
+      "add": "Add Payment Type",
+      "deleteTitle": "Delete Payment Type",
+      "deleteConfirm": "Delete payment type {name}?"
+    },
+    "whtForm": {
+      "entity": "WHT Form",
+      "title": "WHT Forms",
+      "desc": "Sample WHT forms while the API is pending. Changes stay in this session and reset on reload.",
+      "add": "Add WHT Form",
+      "deleteTitle": "Delete WHT Form",
+      "deleteConfirm": "Delete WHT form {name}?"
+    },
+    "whtServiceType": {
+      "entity": "WHT Service Type",
+      "title": "WHT Service Types",
+      "desc": "Sample WHT services while the API is pending. Changes stay in this session and reset on reload.",
+      "add": "Add WHT Service Type",
+      "deleteTitle": "Delete WHT Service Type",
+      "deleteConfirm": "Delete WHT service type {name}?"
+    },
+    "apMaster": {
+      "mockStatus": "MOCKUP",
+      "selectMockAccount": "Select GL account",
+      "mockDuplicateCode": "This code already exists in the mockup.",
+      "mockCodeRequired": "Enter a code.",
+      "mockCodeImmutable": "The code cannot be changed after creation.",
+      "mockVersionConflict": "This sample changed. Close and reopen the form before saving.",
+      "mockNotFound": "This sample has already been removed.",
+      "bankAccountsLoadFailed": "Unable to load bank accounts. Reopen the selector to retry.",
+      "dimensionValuesLoadFailed": "Unable to load dimension values. Reopen the selector to retry.",
+      "deleteSuccess": "Record deleted",
+      "availableModules": "Available modules",
+      "bankAccount": "Bank account",
+      "isCheque": "Cheque payment",
+      "chequeForm": "Cheque form",
+      "defaultRate": "Default WHT rate (%)",
+      "noChequeForms": "No active cheque forms are configured for this business unit.",
+      "chequeFormsLoadFailed": "Unable to load cheque forms. Close and reopen to retry.",
+      "mappingLoadFailed": "Unable to load account mapping. Re-select the account to retry.",
+      "accountChangeHint": "Changing the account replaces the Cost Center and dimension values with that account's defaults.",
+      "dependencyTitle": "Record is in use",
+      "dependencyDescription": "Resolve these references before deactivating or deleting this record.",
+      "otherReferences": "Other references",
+      "dependencyCheckFailed": "Unable to check references. Close and try again.",
+      "deleteTitle": "Delete record?",
+      "deleteConfirm": "Delete {name}? This action cannot be undone.",
+      "referenceTypes": {
+        "vendor": "Vendors",
+        "customer": "Customers",
+        "tax_profile": "Tax profiles",
+        "ap_invoice": "AP invoices",
+        "ap_payment": "AP payments",
+        "ap_payment_wht": "AP payment WHT records",
+        "ar_receipt": "AR receipts"
+      }
+    },
     "title": "Configuration",
     "dashboard": {
       "title": "Configuration Overview",
@@ -2404,7 +2504,12 @@
       "deleteTitle": "Delete Tax Profile",
       "deleteConfirm": "Are you sure you want to delete tax profile \"{name}\"? This action cannot be undone.",
       "namePlaceholder": "e.g. VAT 7%, None",
-      "ratePlaceholder": "e.g. 7"
+      "ratePlaceholder": "e.g. 7",
+      "pnd_1": "PND.1",
+      "pnd_2": "PND.2",
+      "pnd_3": "PND.3",
+      "pnd_53": "PND.53",
+      "pnd_54": "PND.54"
     },
     "exchangeRate": {
       "entity": "Exchange Rate",

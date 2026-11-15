@@ -25,6 +25,14 @@ When a supplied mockup or specification introduces a new workflow, preserve its 
 
 ## Required workflow
 
+Read `docs/DESIGN.md` first. For layout work, read the matching section of
+`.claude/skills/carmen-blue-ui-design/values.md` (Forms, Lists, Landing pages,
+Tables, or Bars); these are maintained recipes, not a second design system.
+Read [current-conventions.md](current-conventions.md) for the current shared
+contracts and module-specific exceptions. Use the supported browser viewport
+capability for responsive checks; old iframe/DOM-injection scripts in historical
+verification notes are not required.
+
 1. Identify the closest reference page (list, detail, settings, form, or report).
 2. Open the reference page in the Browser and exercise the exact target state (view, blank create, or edit). Source inspection alone is not enough because action placement changes by mode.
 3. Read its route, representative component, and any shared primitives it uses.
@@ -39,9 +47,10 @@ When a supplied mockup or specification introduces a new workflow, preserve its 
 
 When a document is intended to follow the current PR detail flow, verify against the live PR state and preserve this placement:
 
-- View: `Edit` and `More` in `DocFormHeader`.
+- View: `Edit` and available document actions in `DocFormHeader`.
 - Blank create: `Cancel` and `Save` in `DocFormHeader`; `Submit` in the sticky footer.
-- Edit existing: `Cancel`, `Save`, and `More` in `DocFormHeader`; `Submit` in the sticky footer.
+- Edit existing: `Cancel` and `Save` in `DocFormHeader`; `Submit` in the sticky footer.
+- Keep header actions in their established order. Use `ToolbarLabel` and `title` for secondary actions on narrow headers instead of introducing a More menu.
 - Use `DocFormHeader` with its default spacing. Do not pass `flush` unless the live reference page also does; removing its left inset can clip the absolute Back button.
 - Do not add New, Copy, Template, AI, Attachments, or Log actions merely because an older prototype contains them.
 
@@ -66,6 +75,10 @@ Apply the same shell consistently to Journal Voucher, Template Voucher, Recurrin
 - Sticky totals/actions: `SummaryFooterBar`
 - New interaction surfaces: existing `Dialog`, `Sheet`, `ConfirmDialog`, `WarningDialog`, `DeleteDialog`
 - Feedback: existing empty, skeleton, toast, badge, and error components
+- Compact sections/forms: `CompactSection`, `FieldGrid`, `SECTION_PAIR`, `SettingField`
+- List shell and responsive view switch: `ListPageShell`, `ListToolbar`, `DisplayModeToggle`
+- Element measurement: `useElementWidth` when table state must react to its box width
+- Status: `StatusBadge`, `StatusChip`, `StatusDotBadge` — size `sm`, left-aligned
 
 ## Review gates
 

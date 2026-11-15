@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -65,6 +65,7 @@ vi.mock("@/hooks/use-accounting-master", () => ({
 }));
 vi.mock("@/hooks/use-chart-of-account", () => ({
   useChartOfAccount: () => ({ data: { data: [] } }),
+  useChartOfAccountById: () => ({ data: undefined }),
 }));
 vi.mock("@/hooks/use-currency", () => ({
   useCurrency: () => ({ data: { data: [] } }),
@@ -85,19 +86,48 @@ vi.mock("../chart-of-account-mapping/use-account-mapping", () => ({
 vi.mock("../accounting-master-mock", () => ({
   useAccountingMasterMock: () => ({
     assetCategories: [{ ...base, useful_life_years: 5 }],
-    paymentTypes: [{ ...base, payment_method: "cash" }],
-    whtServiceTypes: [{ ...base, default_rate: "3.00" }],
-    whtForms: [{ ...base, form_type: "PND3" }],
     titles: [base],
   }),
 }));
 vi.mock("@/lib/http-client", () => ({
   httpClient: {
     get: vi.fn(
-      async () =>
+      async (url: string) =>
         new Response(
           JSON.stringify({
-            data: [{ ...base, is_default: false, is_system: false }],
+            data:
+              url.includes("/list-views") || url.includes("/cheque-forms")
+                ? []
+                : url.includes("/account-mapping/")
+                  ? {
+                      account: {
+                        id: "019638a6-2a00-7c4f-8e46-9b7a52c80c4d",
+                        code: "2141",
+                        name: "WHT",
+                      },
+                      is_require_cost_center: false,
+                      cost_centers: [],
+                      dimensions: [],
+                      default_cost_center_id: null,
+                    }
+                  : [
+                      {
+                        ...base,
+                        is_default: false,
+                        is_system: false,
+                        chart_of_accounts_id:
+                          "019638a6-2a00-7c4f-8e46-9b7a52c80c4d",
+                        cost_center_id: null,
+                        dimensions: [],
+                        rate_percent: "3.00",
+                        available_ap: true,
+                        available_ar: false,
+                        is_cheque: false,
+                        bank_account_id: null,
+                        cheque_form_id: null,
+                      },
+                    ],
+            paginate: { page: 1, pages: 1, perpage: 20, total: 1 },
           }),
         ),
     ),
@@ -130,21 +160,27 @@ const pages = [
     prefix: "accounting.config.asset",
   },
   {
+    plainView: true,
     name: "Payment Type",
     Page: PaymentTypePage,
-    code: "QA",
+    code: "CASH",
+    description: "Petty Cash Payment",
     prefix: "accounting.config.ap",
   },
   {
+    plainView: true,
     name: "WHT Service Type",
     Page: WhtServiceTypePage,
-    code: "QA",
+    code: "01",
+    description: "ค่าบริการ / Service Fee (P.N.D. 3/53)",
     prefix: "accounting.config.ap",
   },
   {
+    plainView: true,
     name: "WHT Form",
     Page: WhtFormPage,
-    code: "QA",
+    code: "1",
+    description: "ภ.ง.ด. 1 (Personal Employment)",
     prefix: "accounting.config.ap",
   },
   {
@@ -181,51 +217,66 @@ beforeEach(() => {
     );
 });
 
-describe.each(pages)("$name list dialog", ({ Page, code, prefix }) => {
-  it("opens directly in edit mode and has no Edit in the row menu", async () => {
-    renderPage(Page);
-    const open = await screen.findByRole("button", { name: code });
-    await userEvent.click(
-      screen.getAllByRole("button", { name: "Row actions" })[0],
-    );
-    expect(screen.queryByRole("menuitem", { name: "Edit" })).toBeNull();
-    await userEvent.keyboard("{Escape}");
-    await userEvent.click(open);
-    const dialog = await screen.findByRole("dialog");
-    expect(
-      within(dialog).getByRole("button", { name: "Save" }),
-    ).toBeInTheDocument();
-    expect(
-      within(dialog)
-        .getAllByRole("textbox")
-        .some(
-          (input) =>
-            !(input as HTMLInputElement).disabled &&
-            !input.closest("fieldset[disabled]"),
-        ),
-    ).toBe(true);
-    expect(access.can).toHaveBeenCalledWith(`${prefix}.update`);
-  });
-
-  it.each(["permission", "license"])(
-    "opens view only when %s denies editing",
-    async (reason) => {
-      if (reason === "permission") access.update = false;
-      else access.canWrite = false;
+describe.each(pages)(
+  "$name list dialog",
+  ({ Page, code, prefix, plainView, description }) => {
+    it("opens directly in edit mode and has no Edit in the row menu", async () => {
       renderPage(Page);
-      await userEvent.click(await screen.findByRole("button", { name: code }));
+      await screen.findByRole("button", { name: code });
+      await userEvent.click(
+        screen.getAllByRole("button", { name: "Row actions" })[0],
+      );
+      expect(screen.queryByRole("menuitem", { name: "Edit" })).toBeNull();
+      await userEvent.keyboard("{Escape}");
+      fireEvent.click(screen.getByRole("button", { name: code }));
       const dialog = await screen.findByRole("dialog");
-      expect(within(dialog).queryByRole("button", { name: "Save" })).toBeNull();
       expect(
-        within(dialog).getAllByRole("button", {
-          name: "Close",
-        })[0],
+        within(dialog).getByRole("button", { name: "Save" }),
       ).toBeInTheDocument();
-      for (const input of within(dialog).getAllByRole("textbox"))
-        expect(input).toBeDisabled();
-    },
-  );
-});
+      expect(
+        within(dialog)
+          .getAllByRole("textbox")
+          .some(
+            (input) =>
+              !(input as HTMLInputElement).disabled &&
+              !input.closest("fieldset[disabled]"),
+          ),
+      ).toBe(true);
+      expect(access.can).toHaveBeenCalledWith(`${prefix}.update`);
+    });
+
+    it.each(["permission", "license"])(
+      "opens view only when %s denies editing",
+      async (reason) => {
+        if (reason === "permission") access.update = false;
+        else access.canWrite = false;
+        renderPage(Page);
+        await screen.findByRole("button", { name: code });
+        fireEvent.click(screen.getByRole("button", { name: code }));
+        const dialog = await screen.findByRole("dialog");
+        expect(
+          within(dialog).queryByRole("button", { name: "Save" }),
+        ).toBeNull();
+        expect(
+          within(dialog).getAllByRole("button", {
+            name: "Close",
+          })[0],
+        ).toBeInTheDocument();
+        if (plainView) {
+          expect(
+            within(dialog).getByText(description ?? "QA Master"),
+          ).toBeVisible();
+          expect(within(dialog).queryByRole("textbox")).not.toBeInTheDocument();
+          expect(
+            within(dialog).queryByRole("combobox"),
+          ).not.toBeInTheDocument();
+        } else
+          for (const input of within(dialog).getAllByRole("textbox"))
+            expect(input).toBeDisabled();
+      },
+    );
+  },
+);
 
 describe("COA mapping detail", () => {
   it.each([true, false])(

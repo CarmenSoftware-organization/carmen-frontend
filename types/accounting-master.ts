@@ -1,4 +1,5 @@
 import type { AccountCategory } from "@/types/chart-of-accounts";
+import type { Audit } from "./audit";
 
 export interface TitleMaster {
   id: string;
@@ -47,7 +48,8 @@ export interface DimensionValueMaster {
   doc_version: number;
 }
 
-export type DimensionDataType = "string" | "number" | "date" | "lookup" | "boolean";
+export type DimensionDataType =
+  "string" | "number" | "date" | "lookup" | "boolean";
 export type DimensionDateFormat = "DD/MM/YYYY" | "YYYY-MM-DD" | "DD-MMM-YYYY";
 
 export interface DimensionMaster {
@@ -86,34 +88,71 @@ export interface GlPeriodMaster {
   doc_version: number;
 }
 
-export interface PaymentTypeMaster {
+export interface ApMasterBase {
   id: string;
   code: string;
   description: string;
-  description_local?: string | null;
-  payment_method: string;
   is_active: boolean;
   doc_version: number;
+  is_used?: boolean;
+  audit?: Audit;
 }
 
-export interface WhtServiceTypeMaster {
-  id: string;
-  code: string;
-  description: string;
-  default_rate: string;
-  is_active: boolean;
-  doc_version: number;
+export interface ApMasterDimension {
+  gl_dimension_id: string;
+  gl_dimension_value_id: string;
+  dimension_code?: string;
+  dimension_name?: string;
+  value_code?: string;
+  value_name?: string;
 }
 
-export interface WhtFormMaster {
-  id: string;
-  code: string;
-  description: string;
-  gl_account_id?: string | null;
+export interface ApMasterMapping {
+  chart_of_accounts_id: string | null;
   cost_center_id?: string | null;
-  dimension_value_id?: string | null;
-  is_active: boolean;
-  doc_version: number;
+  account_code?: string | null;
+  account_name?: string | null;
+  cost_center_code?: string | null;
+  cost_center_name?: string | null;
+  dimensions: ApMasterDimension[];
+}
+
+export interface PaymentTypeMaster extends ApMasterBase, ApMasterMapping {
+  chart_of_accounts_id: string;
+  available_ap: boolean;
+  available_ar: boolean;
+  bank_account_id: string | null;
+  bank_account_code?: string | null;
+  bank_account_name?: string | null;
+  is_cheque: boolean;
+  cheque_form_id: string | null;
+  cheque_form_name?: string | null;
+}
+
+export interface WhtServiceTypeMaster extends ApMasterBase {
+  rate_percent: number | string;
+}
+
+export interface WhtFormMaster extends ApMasterBase, ApMasterMapping {}
+
+export interface ApMasterDependencies {
+  is_used: boolean;
+  can_deactivate: boolean;
+  can_delete: boolean;
+  references: { type: string; count: number; names?: string[] }[];
+}
+
+export interface ApMasterAccountMapping {
+  account: { id: string; code: string; name: string };
+  is_require_cost_center: boolean;
+  cost_centers: { id: string; code: string; name: string }[];
+  dimensions: {
+    gl_dimension_id: string;
+    code: string;
+    name: string;
+    requirement: "mandatory" | "optional" | "prohibited";
+  }[];
+  default_cost_center_id: string | null;
 }
 
 export interface AssetCategoryMaster {

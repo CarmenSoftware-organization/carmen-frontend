@@ -62,6 +62,8 @@ import { InvoiceReferenceEditor } from "./ap-invoice-reference-editor";
 import { InvoiceHeader } from "./ap-invoice-header";
 import { InvoiceLines } from "./ap-invoice-lines";
 import { ApPostingBanner } from "../shared/ap-posting-banner";
+import { ApAttachmentsPanel } from "../shared/ap-attachments";
+import { useApAttachments } from "../shared/use-ap-attachments";
 import {
   addDecimal,
   subtractDecimal,
@@ -117,6 +119,7 @@ function ApInvoiceEditor({
   const deleteMutation = useDeleteApInvoice();
 
   const isNew = !loaded;
+  const attachmentState = useApAttachments(loaded?.attachments);
   const [editing, setEditing] = useState(isNew);
   const [showErrors, setShowErrors] = useState(false);
   const [activeTab, setActiveTab] = useState("items");
@@ -137,6 +140,7 @@ function ApInvoiceEditor({
     ? validateInvoiceForm(form, isNew ? "create" : "update")
     : NO_ERRORS;
   const busy =
+    attachmentState.uploading ||
     saveMutation.isPending ||
     actionMutation.isPending ||
     deleteMutation.isPending;
@@ -201,14 +205,15 @@ function ApInvoiceEditor({
     }
     const input = toInvoiceInput(form);
     try {
+      if (loaded && loaded.doc_version == null) {
+        toast.error(td("reloaded"));
+        return refetch();
+      }
+      input.attachments = await attachmentState.prepare();
       if (loaded) {
-        if (loaded.doc_version == null) {
-          toast.error(td("reloaded"));
-          return refetch();
-        }
         await saveMutation.mutateAsync({
           id: loaded.id,
-          docVersion: loaded.doc_version,
+          docVersion: loaded.doc_version!,
           input,
         });
         toast.success(td("saved"));
@@ -316,7 +321,11 @@ function ApInvoiceEditor({
   const needsReason = reasonAction === "void";
 
   return (
-    <div className="flex min-h-0 flex-auto shrink-0 flex-col gap-4 lg:flex-1 lg:shrink">
+    <div
+      className="flex min-h-0 flex-auto shrink-0 flex-col gap-4 lg:flex-1 lg:shrink"
+      inert={busy || undefined}
+      aria-busy={busy || undefined}
+    >
       {locked && (
         <div className="bg-info/10 text-info-ink flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm">
           <span>{td("fromGrnBanner")}</span>
@@ -352,6 +361,7 @@ function ApInvoiceEditor({
                   size="sm"
                   disabled={busy}
                   onClick={() => {
+                    attachmentState.reset();
                     if (isNew) navigate(LIST_PATH);
                     else {
                       setEditing(false);
@@ -505,6 +515,7 @@ function ApInvoiceEditor({
             </TabsTrigger>
             <TabsTrigger value="payments">{ui("payments")}</TabsTrigger>
             <TabsTrigger value="journal">{ui("journal")}</TabsTrigger>
+            <TabsTrigger value="attachments">{ui("attachments")}</TabsTrigger>
           </TabsList>
         </div>
         <TabsContent
@@ -537,7 +548,9 @@ function ApInvoiceEditor({
                   {td("errors.lines")}
                 </p>
               )}
-              {(["account", "quantity", "unitPrice"] as const).map(
+              {(
+                ["account", "quantity", "unitPrice", "sourceQuantity"] as const
+              ).map(
                 (key) =>
                   errors.has(key) && (
                     <p key={key} className="text-destructive mb-2 text-xs">
@@ -554,6 +567,10 @@ function ApInvoiceEditor({
                 onMove={moveLine}
                 onRemove={removeLine}
                 savedLines={loaded?.lines}
+                currencyCode={form.currency_code}
+                baseCurrencyCode={baseCurrency}
+                vendorId={form.vendor_id}
+                currencyId={form.currency_id}
               />
             </CardContent>
           </Card>
@@ -588,6 +605,16 @@ function ApInvoiceEditor({
           <InvoicePaymentsPanel invoice={loaded} />
         </TabsContent>
         <TabsContent
+          value="attachments"
+          className="mt-3 min-h-0 min-w-0 flex-auto overflow-auto"
+        >
+          <ApAttachmentsPanel
+            state={attachmentState}
+            editable={editable}
+            disabled={busy}
+          />
+        </TabsContent>
+        <TabsContent
           value="journal"
           className="mt-3 min-h-0 min-w-0 flex-auto overflow-visible lg:flex-1 lg:overflow-auto"
         >
@@ -601,19 +628,39 @@ function ApInvoiceEditor({
           {
             key: "subtotal",
             label: td("summary.subtotal"),
-            value: pair(summary.subtotal),
+            value: pair(
+              summary.subtotal,
+              view
+                ? addDecimal([
+                    loaded.base_net_amount,
+                    loaded.base_discount_amount,
+                  ])
+                : undefined,
+            ),
           },
           {
             key: "discount",
             label: td("summary.discount"),
-            value: pair(summary.discount),
+            value: pair(
+              summary.discount,
+              view ? loaded.base_discount_amount : undefined,
+            ),
           },
           {
             key: "net",
             label: ui("netAmount"),
-            value: pair(subtractDecimal(summary.subtotal, summary.discount)),
+            value: pair(
+              view
+                ? loaded.net_amount
+                : subtractDecimal(summary.subtotal, summary.discount),
+              view ? loaded.base_net_amount : undefined,
+            ),
           },
-          { key: "vat", label: td("summary.vat"), value: pair(summary.vat) },
+          {
+            key: "vat",
+            label: td("summary.vat"),
+            value: pair(summary.vat, view ? loaded.base_vat_amount : undefined),
+          },
           { key: "wht", label: td("summary.wht"), value: pair(summary.wht) },
           {
             key: "total",

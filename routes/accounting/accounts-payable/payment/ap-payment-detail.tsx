@@ -65,6 +65,8 @@ import {
 import { PaymentHeader } from "./ap-payment-header";
 import { PaymentWhtSection } from "./ap-payment-wht";
 import { ApPostingBanner } from "../shared/ap-posting-banner";
+import { ApAttachmentsPanel } from "../shared/ap-attachments";
+import { useApAttachments } from "../shared/use-ap-attachments";
 
 const LIST_PATH = "/accounting/accounts-payable/payment";
 const RETURN_PATHS = [
@@ -132,6 +134,7 @@ function ApPaymentEditor({
   const whtPreview = useApWhtPreview();
 
   const isNew = !loaded;
+  const attachmentState = useApAttachments(loaded?.attachments);
   const [editing, setEditing] = useState(isNew);
   const [showErrors, setShowErrors] = useState(false);
   const [form, setForm] = useState<PaymentForm>(() =>
@@ -147,6 +150,7 @@ function ApPaymentEditor({
   const editable = editing && (isNew || (!!loaded && apCanEdit(loaded)));
   const actions = loaded ? apActions(loaded, userId) : [];
   const busy =
+    attachmentState.uploading ||
     saveMutation.isPending ||
     actionMutation.isPending ||
     deleteMutation.isPending;
@@ -222,6 +226,7 @@ function ApPaymentEditor({
               ...patch,
               allocations: {},
               wht: [],
+              wht_manual: false,
               bank_account_id: "",
             }
           : { ...current, ...patch },
@@ -324,7 +329,7 @@ function ApPaymentEditor({
       setCalculating(false);
       setWhtError(null);
       setCalcSig(signature);
-      setForm((current) => ({ ...current, wht: [] }));
+      setForm((current) => ({ ...current, wht: [], wht_manual: false }));
       return;
     }
     // ถือว่ากำลังคำนวณตั้งแต่เริ่มหน่วง ไม่งั้นช่วง 600ms แรก (เช่นตอนเติมใบจากปุ่ม Pay invoice)
@@ -341,7 +346,7 @@ function ApPaymentEditor({
           setCalcSig(signature);
           setForm((current) => ({
             ...current,
-            wht: mergeWhtPreview(current.wht, rows, true),
+            wht: mergeWhtPreview(current.wht, rows, true, current.wht_manual),
           }));
         })
         .catch((error: unknown) => {
@@ -377,6 +382,7 @@ function ApPaymentEditor({
       setForm((current) => ({
         ...current,
         wht: mergeWhtPreview(current.wht, rows, false),
+        wht_manual: false,
       }));
     } catch (error) {
       if (id === requestId.current)
@@ -412,17 +418,18 @@ function ApPaymentEditor({
     }
     const input = toPaymentInput(effectiveForm, allocationInputs);
     try {
+      if (loaded && loaded.doc_version == null) {
+        toast.error(td("reloaded"));
+        return refetch();
+      }
+      input.attachments = await attachmentState.prepare();
       if (loaded) {
-        if (loaded.doc_version == null) {
-          toast.error(td("reloaded"));
-          return refetch();
-        }
         // vendor_id แก้หลังสร้างไม่ได้
         const update: Partial<typeof input> = { ...input };
         delete update.vendor_id;
         await saveMutation.mutateAsync({
           id: loaded.id,
-          docVersion: loaded.doc_version,
+          docVersion: loaded.doc_version!,
           input: update,
         });
         toast.success(td("saved"));
@@ -515,7 +522,11 @@ function ApPaymentEditor({
   const needsReason = reasonAction === "void";
 
   return (
-    <div className="flex min-h-0 flex-auto shrink-0 flex-col gap-4 lg:flex-1 lg:shrink">
+    <div
+      className="flex min-h-0 flex-auto shrink-0 flex-col gap-4 lg:flex-1 lg:shrink"
+      inert={busy || undefined}
+      aria-busy={busy || undefined}
+    >
       <DocFormHeader
         title={loaded?.doc_no || td("newTitle")}
         subtitle={td("subtitle")}
@@ -538,6 +549,7 @@ function ApPaymentEditor({
                   size="sm"
                   disabled={busy}
                   onClick={() => {
+                    attachmentState.reset();
                     if (isNew) navigate(LIST_PATH);
                     else {
                       setEditing(false);
@@ -668,6 +680,7 @@ function ApPaymentEditor({
           <TabsList variant="line" className="w-max min-w-full justify-start">
             <TabsTrigger value="settlement">{ui("settlement")}</TabsTrigger>
             <TabsTrigger value="journal">{ui("journal")}</TabsTrigger>
+            <TabsTrigger value="attachments">{ui("attachments")}</TabsTrigger>
           </TabsList>
         </div>
         <TabsContent
@@ -748,18 +761,46 @@ function ApPaymentEditor({
           <PaymentWhtSection
             payee={loaded}
             rows={form.wht}
+            manual={form.wht_manual}
             editable={editable}
             calculating={calculating}
             stale={whtStale && !overCap}
             error={whtError}
             errors={errors}
-            onChangeAmount={(key, amount) =>
+            onAdd={() =>
               setForm((current) => ({
                 ...current,
+                wht_manual: true,
+                wht:
+                  current.wht.length >= 3
+                    ? current.wht
+                    : [
+                        ...current.wht,
+                        {
+                          key: crypto.randomUUID(),
+                          wht_tax_profile_id: "",
+                          name: "",
+                          rate: "0",
+                          base_amount: "0",
+                          wht_amount: "0",
+                          is_override: true,
+                        },
+                      ],
+              }))
+            }
+            onRemove={(key) =>
+              setForm((current) => ({
+                ...current,
+                wht_manual: true,
+                wht: current.wht.filter((row) => row.key !== key),
+              }))
+            }
+            onChange={(key, patch) =>
+              setForm((current) => ({
+                ...current,
+                wht_manual: true,
                 wht: current.wht.map((row) =>
-                  row.key === key
-                    ? { ...row, wht_amount: amount, is_override: true }
-                    : row,
+                  row.key === key ? { ...row, ...patch } : row,
                 ),
               }))
             }
@@ -770,6 +811,7 @@ function ApPaymentEditor({
             rows={form.expenses}
             editable={editable}
             errors={errors}
+            baseCurrency={baseCurrencyCode}
             onAdd={(expense) =>
               setForm((current) => ({
                 ...current,
@@ -842,6 +884,16 @@ function ApPaymentEditor({
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+        <TabsContent
+          value="attachments"
+          className="mt-3 min-h-0 min-w-0 flex-auto overflow-auto"
+        >
+          <ApAttachmentsPanel
+            state={attachmentState}
+            editable={editable}
+            disabled={busy}
+          />
         </TabsContent>
         <TabsContent
           value="journal"

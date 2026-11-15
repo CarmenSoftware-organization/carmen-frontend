@@ -31,6 +31,9 @@ const atDateQuery = (atDate?: string) =>
   atDate ? `?at_date=${encodeURIComponent(atDate)}` : "";
 
 export const API_ENDPOINTS = {
+  PAYMENT_TYPES: (buCode: string) => `/api/proxy/api/config/${buCode}/payment-types`,
+  WHT_FORMS: (buCode: string) => `/api/proxy/api/config/${buCode}/wht-forms`,
+  WHT_SERVICE_TYPES: (buCode: string) => `/api/proxy/api/config/${buCode}/wht-service-types`,
   ASK_AI_PROVIDERS: (buCode: string) =>
     `/api/proxy/api/${buCode}/ask-ai/providers`,
   ASK_AI_CONFIG: (buCode: string) => `/api/proxy/api/config/${buCode}/ask-ai`,

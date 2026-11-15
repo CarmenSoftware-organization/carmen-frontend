@@ -28,6 +28,7 @@ export function PaymentExpensesSection({
   rows,
   editable,
   errors,
+  baseCurrency,
   onAdd,
   onChange,
   onRemove,
@@ -35,6 +36,7 @@ export function PaymentExpensesSection({
   readonly rows: readonly PaymentExpenseRow[];
   readonly editable: boolean;
   readonly errors: ReadonlySet<PaymentErrorKey>;
+  readonly baseCurrency?: string | null;
   readonly onAdd: (row: PaymentExpenseRow) => void;
   readonly onChange: (key: string, patch: Partial<PaymentExpenseRow>) => void;
   readonly onRemove: (key: string) => void;
@@ -73,6 +75,11 @@ export function PaymentExpensesSection({
                   <th className={TH}>{t("costCenter")}</th>
                   <th className={TH}>{t("description")}</th>
                   <th className={`${TH} text-right`}>{t("amount")}</th>
+                  {!editable && (
+                    <th className={`${TH} text-right`}>
+                      {t("baseAmount", { currency: baseCurrency || "—" })}
+                    </th>
+                  )}
                   {editable && <th className={TH} />}
                 </tr>
               </thead>
@@ -105,6 +112,15 @@ export function PaymentExpensesSection({
                         {format(Number(row.amount || 0))}
                       </span>
                     </td>
+                    {!editable && (
+                      <td className={TD}>
+                        <span className="block text-right tabular-nums">
+                          {row.base_amount == null
+                            ? "—"
+                            : format(Number(row.base_amount))}
+                        </span>
+                      </td>
+                    )}
                     {editable && (
                       <td className={TD}>
                         <Button

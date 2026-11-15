@@ -273,11 +273,7 @@ export default function ReportComponent() {
               onSaveClick={() => setSaveViewDialogOpen(true)}
               activeCount={lf.activeFilters.length}
             />
-            <DisplayModeToggle
-              value={displayMode}
-              onChange={setDisplayMode}
-              className="hidden sm:flex"
-            />
+            <DisplayModeToggle value={displayMode} onChange={setDisplayMode} />
           </div>
 
           <ActiveFilterBar

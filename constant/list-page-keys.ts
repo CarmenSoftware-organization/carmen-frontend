@@ -37,6 +37,9 @@ export const LIST_PAGE_KEYS = {
   LOCATION: "location",
   SHELF: "shelf",
   TAX_PROFILE: "tax_profile",
+  PAYMENT_TYPE: "payment_type",
+  WHT_FORM: "wht_form",
+  WHT_SERVICE_TYPE: "wht_service_type",
   UNIT: "unit",
   // inventory-management
   INVENTORY_ADJUSTMENT: "inventory_adjustment",

@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { useTranslations } from "use-intl";
 import { cn } from "@/lib/utils";
-import { useLookupResource } from "@/hooks/use-lookup-resource";
-import { lookupLabel, type TaxProfileLookup } from "@/types/lookup";
+import {
+  ACTIVE_ONLY_FILTER,
+  useLookupPagination,
+} from "@/hooks/use-lookup-pagination";
+import { useTaxProfile } from "@/hooks/use-tax-profile";
+import type { TaxProfile, TaxProfileType } from "@/types/tax-profile";
 import { LookupCombobox } from "./lookup-combobox";
 
 interface LookupTaxProfileProps {
@@ -17,6 +21,8 @@ interface LookupTaxProfileProps {
   readonly className?: string;
   readonly size?: "xs" | "sm" | "default";
   readonly error?: string;
+  /** Procurement tax fields use VAT; withholding fields must request WHT explicitly. */
+  readonly taxType?: TaxProfileType;
 }
 
 export function LookupTaxProfile({
@@ -27,6 +33,7 @@ export function LookupTaxProfile({
   className,
   size = "sm",
   error,
+  taxType = "vat",
 }: LookupTaxProfileProps) {
   const tl = useTranslations("lookup");
   const tfl = useTranslations("field");
@@ -34,10 +41,14 @@ export function LookupTaxProfile({
   const [hasOpened, setHasOpened] = useState(false);
 
   const { items, selectedItems, isLoading, isLoadingMore, hasMore, loadMore } =
-    useLookupResource<TaxProfileLookup>("tax_profile", {
+    // The generic Lookup API does not expose/filter tax_type yet. The master
+    // list supports it; selectedIds still resolves saved inactive profiles separately.
+    useLookupPagination<TaxProfile>({
+      useListHook: useTaxProfile,
       search,
       enabled: hasOpened,
       selectedIds: value ? [value] : [],
+      serverFilter: `tax_type|string:${taxType},${ACTIVE_ONLY_FILTER}`,
     });
 
   return (
@@ -47,7 +58,7 @@ export function LookupTaxProfile({
       size={size}
       value={value}
       onValueChange={(id, tp) =>
-        onValueChange(id, tp?.tax_rate ?? 0, tp ? lookupLabel(tp) : "")
+        onValueChange(id, tp?.tax_rate ?? 0, tp?.name ?? "")
       }
       onOpenChange={(open) => {
         if (open) setHasOpened(true);
@@ -55,7 +66,7 @@ export function LookupTaxProfile({
       items={items}
       selectedItems={selectedItems}
       getId={(tp) => tp.id}
-      getLabel={lookupLabel}
+      getLabel={(tp) => tp.name}
       placeholder={placeholder ?? tl("select", { entity: tfl("taxProfile") })}
       searchPlaceholder={tl("search", { entity: tfl("taxProfile") })}
       disabled={disabled}

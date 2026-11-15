@@ -76,7 +76,7 @@ export default function ApInvoiceList() {
   const { exportInvoices, isExporting } = useExportApInvoices();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { dateFormat } = useProfile();
+  const { dateFormat, dateTimeFormat } = useProfile();
   const formatAmount = useAmountFormatter();
   const [displayMode, setDisplayMode] = useState<"list" | "grid">("list");
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
@@ -184,6 +184,8 @@ export default function ApInvoiceList() {
       const count = await exportInvoices(queryParams, [
         { header: t("docNo"), value: (row) => row.doc_no },
         { header: t("docDate"), value: (row) => row.doc_date },
+        { header: t("detail.invoiceDate"), value: (row) => row.invoice_date },
+        { header: t("detail.dueDate"), value: (row) => row.due_date },
         { header: t("vendor"), value: (row) => row.vendor_name },
         { header: t("vendorInvoiceNo"), value: (row) => row.vendor_invoice_no },
         { header: t("docType"), value: (row) => t(`docTypes.${row.doc_type}`) },
@@ -194,6 +196,11 @@ export default function ApInvoiceList() {
           value: (row) => t(`statuses.${row.doc_status}`),
         },
         { header: tfl("currency"), value: (row) => row.currency_code },
+        {
+          header: tfl("updated"),
+          value: (row) =>
+            row.updated_at ? formatDate(row.updated_at, dateTimeFormat) : "",
+        },
       ]);
       if (!count) toast.warning(tc("exportNoData"));
       else toast.success(tc("exportSuccess", { count }));
@@ -316,6 +323,25 @@ export default function ApInvoiceList() {
                 <ListCardRow label={t("docType")}>
                   {t(`docTypes.${invoice.doc_type}`)}
                 </ListCardRow>
+                <ListCardRow label={t("vendorInvoiceNo")}>
+                  {invoice.vendor_invoice_no || "—"}
+                </ListCardRow>
+                <ListCardRow label={t("detail.invoiceDate")}>
+                  <span className="tabular-nums">
+                    {formatDate(invoice.invoice_date, dateFormat)}
+                  </span>
+                </ListCardRow>
+                <ListCardRow label={t("detail.dueDate")}>
+                  <span className="tabular-nums">
+                    {formatDate(invoice.due_date, dateFormat)}
+                  </span>
+                </ListCardRow>
+                <ListCardRow label={t("total")}>
+                  <span className="tabular-nums">
+                    {formatAmount(Number(invoice.total_amount))}{" "}
+                    {invoice.currency_code}
+                  </span>
+                </ListCardRow>
                 <ListCardRow label={t("outstanding")}>
                   <span className="tabular-nums">
                     {formatAmount(Number(invoice.outstanding_amount))}{" "}
@@ -325,6 +351,13 @@ export default function ApInvoiceList() {
                 <ListCardRow label={t("settlement")}>
                   <ApSettlementBadge invoice={invoice} />
                 </ListCardRow>
+                {invoice.updated_at && (
+                  <ListCardRow label={tfl("updated")}>
+                    <span className="tabular-nums">
+                      {formatDate(invoice.updated_at, dateTimeFormat)}
+                    </span>
+                  </ListCardRow>
+                )}
               </ListCard>
             ))}
           </div>

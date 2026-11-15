@@ -81,9 +81,11 @@ export function InvoiceTaxPanel({
 function InvoiceReferenceRow({
   reference,
   currency,
+  baseCurrency,
 }: {
   readonly reference: ApInvoiceReference;
   readonly currency: string;
+  readonly baseCurrency: string;
 }) {
   const t = useTranslations("accounting.accountsPayable.ui");
   const invoiceText = useTranslations("accounting.accountsPayable.invoice");
@@ -96,7 +98,7 @@ function InvoiceReferenceRow({
       <ErrorState error={query.error} onRetry={() => void query.refetch()} />
     );
   return (
-    <div className="grid items-center gap-2 border-b py-3 text-xs sm:grid-cols-4">
+    <div className="grid items-center gap-2 border-b py-3 text-xs sm:grid-cols-5">
       <span>{invoiceText(`docTypes.${reference.ref_doc_type}`)}</span>
       <Link
         className="text-primary underline"
@@ -108,6 +110,10 @@ function InvoiceReferenceRow({
         {query.data?.doc_date
           ? formatDate(query.data.doc_date, dateFormat)
           : "—"}
+      </span>
+      <span className="text-right tabular-nums">
+        {t("realizedFx")} {money(Number(reference.realized_fx_amount))}{" "}
+        {baseCurrency}
       </span>
       <span className="text-right tabular-nums">
         {money(
@@ -139,6 +145,7 @@ export function InvoiceReferencesPanel({
             key={reference.ref_ap_invoice_id}
             reference={reference}
             currency={invoice.currency_code}
+            baseCurrency={invoice.base_currency_code}
           />
         ))
       ) : (

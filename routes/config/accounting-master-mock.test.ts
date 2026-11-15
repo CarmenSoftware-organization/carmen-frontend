@@ -53,9 +53,6 @@ const state = {
   dimensions: [],
   bankAccounts: [],
   glPeriods: [],
-  paymentTypes: [],
-  whtServiceTypes: [],
-  whtForms: [],
   assetCategories: [],
 };
 

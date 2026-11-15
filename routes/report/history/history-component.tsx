@@ -73,11 +73,7 @@ export default function HistoryComponent() {
           <div className="w-full flex-1 sm:w-auto sm:flex-initial">
             <SearchInput defaultValue={search} onSearch={setSearch} />
           </div>
-          <DisplayModeToggle
-            value={displayMode}
-            onChange={setDisplayMode}
-            className="hidden sm:flex"
-          />
+          <DisplayModeToggle value={displayMode} onChange={setDisplayMode} />
         </div>
       }
     >

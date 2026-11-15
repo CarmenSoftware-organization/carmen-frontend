@@ -1,4 +1,7 @@
 export const QUERY_KEYS = {
+  PAYMENT_TYPES: "payment-types",
+  WHT_FORMS: "wht-forms",
+  WHT_SERVICE_TYPES: "wht-service-types",
   ACCOUNT_MAPPING: "account-mapping",
   ASK_AI_PROVIDERS: "ask-ai-providers",
   ASK_AI_CONFIG: "ask-ai-config",

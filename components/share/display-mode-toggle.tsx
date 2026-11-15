@@ -29,6 +29,7 @@ interface DisplayModeToggleProps<M extends DisplayMode> {
  * ปุ่มสลับมุมมองของหน้า list — ที่เดียวที่วาดปุ่มชุดนี้ทั้งแอป
  * (เคยถูกก๊อปไว้ใน ConfigListTemplate, ListToolbar และอีก 9 หน้า)
  * ค่าตั้งต้นคือคู่ตาราง/การ์ด · หน้าที่มีมุมมองพรีวิว (Document) ส่ง `modes` เพิ่มเอง
+ * ซ่อนต่ำกว่า md ให้ตรงกับ useIsMobile ที่บังคับการ์ด ไม่แสดงปุ่มที่เปลี่ยนมุมมองไม่ได้
  * คนละเรื่องกับ `ViewModeToggle` ซึ่งสลับ my-pending / all-documents
  */
 export function DisplayModeToggle<M extends DisplayMode>({
@@ -39,7 +40,9 @@ export function DisplayModeToggle<M extends DisplayMode>({
 }: DisplayModeToggleProps<M>) {
   const tc = useTranslations("common");
   return (
-    <div className={cn("flex items-center rounded-md border", className)}>
+    <div
+      className={cn("hidden items-center rounded-md border md:flex", className)}
+    >
       {modes.map((mode) => {
         const key: DisplayMode = mode;
         const Icon = MODE_ICON[key];

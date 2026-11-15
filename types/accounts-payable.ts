@@ -13,47 +13,32 @@ export type DecimalString = string;
 export type ApDocStatus = "draft" | "in_review" | "posted" | "void";
 export type ApDocType = "invoice" | "debit_note" | "credit_note" | "deposit";
 export type ApDocSource =
-  | "manual"
-  | "grn"
-  | "grn_auto"
-  | "copy"
-  | "excel"
-  | "ai"
-  | "interface";
+  "manual" | "grn" | "grn_auto" | "copy" | "excel" | "ai" | "interface";
 /** สถานะการชำระ — คำนวณจาก outstanding เทียบ total (ไม่มีคอลัมน์ใน backend) */
 export type ApSettlement = "unpaid" | "partially_paid" | "paid";
 export type ApPaymentMethod =
-  | "bank_transfer"
-  | "cheque"
-  | "cash"
-  | "credit_card"
-  | "promptpay";
+  "bank_transfer" | "cheque" | "cash" | "credit_card" | "promptpay";
 export type ApTaxStatus =
-  | "pending"
-  | "on_review"
-  | "unclaim"
-  | "confirmed"
-  | "submitted"
-  | "void";
+  "pending" | "on_review" | "unclaim" | "confirmed" | "submitted" | "void";
 
 /** คำสั่ง workflow ที่ backend รับ (UI "return" = `review`) */
 export type ApCommand = "submit" | "approve" | "review" | "reject" | "void";
 /** ชื่อ action ฝั่ง UI */
 export type ApUiAction =
-  | "submit"
-  | "approve"
-  | "return"
-  | "reject"
-  | "void"
-  | "delete";
+  "submit" | "approve" | "return" | "reject" | "void" | "delete";
 
 export type ApListParams = ParamsDto;
 
-export interface ApAttachment {
+export interface ApLiveAttachment {
   originalName: string;
   fileToken: string;
   contentType: string;
+  deleted?: false;
 }
+
+export type ApAttachment =
+  | ApLiveAttachment
+  | import("@/components/ui/comment-attachment").DeletedAttachment;
 
 export interface ApWorkflowFields {
   workflow_id?: string | null;
@@ -120,6 +105,10 @@ export interface ApInvoiceLine {
   cr_cost_center_id: string | null;
   total_amount: DecimalString;
   unpaid_amount: DecimalString;
+  base_sub_total_amount: DecimalString;
+  base_discount_amount: DecimalString;
+  base_net_amount: DecimalString;
+  base_vat_amount: DecimalString;
   base_total_amount: DecimalString;
   base_unpaid_amount: DecimalString;
   dimensions: ApDimensionRef[];
@@ -169,6 +158,10 @@ export interface ApInvoice extends ApWorkflowFields {
   net_amount: DecimalString;
   vat_amount: DecimalString;
   total_amount: DecimalString;
+  base_sub_total_amount: DecimalString;
+  base_discount_amount: DecimalString;
+  base_net_amount: DecimalString;
+  base_vat_amount: DecimalString;
   base_total_amount: DecimalString;
   wht_estimate_amount: DecimalString;
   outstanding_amount: DecimalString;
@@ -208,13 +201,19 @@ export interface ApInvoiceLineInput {
   vat_amount?: DecimalString | null;
   vat_is_override?: boolean;
   wht_tax_profile_id?: string | null;
-  dimensions?: { gl_dimension_id: string; gl_dimension_value_id: string }[] | null;
+  dimensions?:
+    { gl_dimension_id: string; gl_dimension_value_id: string }[] | null;
   /** ฟิลด์ที่ UI ไม่ได้แก้ — ส่งกลับตามเดิมตอน PUT (กันถูกล้าง) */
   vat_chart_of_accounts_id?: string | null;
   vat_cost_center_id?: string | null;
   cr_chart_of_accounts_id?: string | null;
   cr_cost_center_id?: string | null;
-  sources?: { good_received_note_detail_item_id: string; matched_qty: DecimalString }[] | null;
+  sources?:
+    | {
+        good_received_note_detail_item_id: string;
+        matched_qty: DecimalString;
+      }[]
+    | null;
 }
 
 export interface ApInvoiceReferenceInput {

@@ -36,7 +36,7 @@ export function useApInvoiceTable({
 }: UseApInvoiceTableOptions) {
   const t = useTranslations("accounting.accountsPayable.invoice");
   const tfl = useTranslations("field");
-  const { dateFormat } = useProfile();
+  const { dateFormat, dateTimeFormat } = useProfile();
   const formatAmount = useAmountFormatter();
 
   const money = (value: string, currency: string) => (
@@ -75,6 +75,30 @@ export function useApInvoiceTable({
       ),
       size: 110,
       meta: { headerTitle: t("docDate"), skeleton: columnSkeletons.text },
+    },
+    {
+      accessorKey: "invoice_date",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={t("detail.invoiceDate")} />
+      ),
+      cell: ({ row }) => formatDate(row.original.invoice_date, dateFormat),
+      size: 110,
+      meta: {
+        headerTitle: t("detail.invoiceDate"),
+        skeleton: columnSkeletons.text,
+      },
+    },
+    {
+      accessorKey: "due_date",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={t("detail.dueDate")} />
+      ),
+      cell: ({ row }) => formatDate(row.original.due_date, dateFormat),
+      size: 110,
+      meta: {
+        headerTitle: t("detail.dueDate"),
+        skeleton: columnSkeletons.text,
+      },
     },
     {
       id: "vendor",
@@ -178,6 +202,18 @@ export function useApInvoiceTable({
       size: 130,
       meta: { headerTitle: tfl("status"), skeleton: columnSkeletons.text },
     },
+    {
+      accessorKey: "updated_at",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={tfl("updated")} />
+      ),
+      cell: ({ row }) =>
+        row.original.updated_at
+          ? formatDate(row.original.updated_at, dateTimeFormat)
+          : "—",
+      size: 160,
+      meta: { headerTitle: tfl("updated"), skeleton: columnSkeletons.text },
+    },
   ];
 
   return useConfigTable<ApInvoice>({
@@ -187,5 +223,6 @@ export function useApInvoiceTable({
     params,
     tableConfig,
     hideStatus: true,
+    initialState: { columnVisibility: { updated_at: false } },
   });
 }

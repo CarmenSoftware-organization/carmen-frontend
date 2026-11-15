@@ -1,253 +1,140 @@
-import { useMemo, useState } from "react";
+import { useTranslations } from "use-intl";
 import type { ColumnDef } from "@tanstack/react-table";
-import { FileSpreadsheet } from "lucide-react";
-import { toast } from "sonner";
-import { ListCardRow } from "@/components/share/list-card";
-import { LookupChartOfAccount } from "@/components/lookup/lookup-chart-of-account";
-import { Badge } from "@/components/ui/badge";
-import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { columnSkeletons } from "@/components/ui/data-grid/columns";
-import { DeleteDialog } from "@/components/ui/delete-dialog";
+import { ConfigListTemplate } from "@/components/templates/config-list-template";
+import type { ConfigTableHookOptions } from "@/components/templates/types";
 import {
-  Field,
-  FieldInput,
-  FieldLabel,
-  FieldSelect,
-} from "@/components/ui/field";
-import { SelectContent, SelectItem } from "@/components/ui/select";
-import { StatusSwitch } from "@/components/ui/status-switch";
+  ListCard,
+  ListCardActiveRow,
+  ListCardRow,
+  ListCardAuditRows,
+} from "@/components/share/list-card";
+import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
+import type { WhtFormMaster } from "@/types/accounting-master";
 import {
-  type WhtFormMaster,
-  useAccountingMasterMock,
-} from "../accounting-master-mock";
-import { MockConfigList } from "../shared/mock-config-list";
-import { mockCodeColumn } from "../shared/mock-code-column";
-import { MockEntityDialog } from "../shared/mock-entity-dialog";
+  AP_MASTER_FILTER_FIELDS,
+  useApMasterTable,
+} from "../shared/use-ap-master-table";
+import { MasterDeleteDialog } from "../shared/ap-master-dependencies";
+import { whtFormCrud } from "./use-wht-form";
+import { WhtFormDialog } from "./wht-form-dialog";
+import { ApMasterMockStatus } from "../shared/ap-master-mock-status";
 
-const FORM_TYPES = [
-  { value: "pnd1", label: "ภ.ง.ด. 1 (เงินเดือนและค่าจ้างพนักงาน)" },
-  { value: "pnd2", label: "ภ.ง.ด. 2 (ดอกเบี้ย เงินปันผล)" },
-  { value: "pnd3", label: "ภ.ง.ด. 3 (หัก ณ ที่จ่ายบุคคลธรรมดา)" },
-  { value: "pnd53", label: "ภ.ง.ด. 53 (หัก ณ ที่จ่ายนิติบุคคล)" },
-  { value: "pnd54", label: "ภ.ง.ด. 54 (ส่งไปต่างประเทศ)" },
-];
-
-export default function WhtFormPage() {
-  const store = useAccountingMasterMock();
-  const [editing, setEditing] = useState<WhtFormMaster | null | undefined>();
-  const [deleting, setDeleting] = useState<WhtFormMaster | null>(null);
-
-  const columns = useMemo<ColumnDef<WhtFormMaster>[]>(
-    () => [
-      mockCodeColumn<WhtFormMaster>("Form Code", setEditing),
-      {
-        accessorKey: "description",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Form Description" />
-        ),
-        meta: {
-          headerTitle: "Form Description",
-          skeleton: columnSkeletons.text,
-        },
-      },
-      {
-        accessorKey: "form_type",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Form Type" />
-        ),
-        cell: ({ row }) => (
-          <Badge
-            data-standard-chip=""
-            variant="outline"
-            size="sm"
-            className="font-mono uppercase"
-          >
-            {row.original.form_type}
-          </Badge>
-        ),
-        size: 120,
-        meta: { headerTitle: "Form Type", skeleton: columnSkeletons.textShort },
-      },
-      {
-        accessorKey: "gl_account_id",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="GL Control Account" />
-        ),
-        cell: ({ row }) => (
-          <span className="font-mono text-xs">
-            {row.original.gl_account_id || "—"}
-          </span>
-        ),
-        meta: {
-          headerTitle: "GL Control Account",
-          skeleton: columnSkeletons.textShort,
-        },
-      },
-    ],
-    [],
-  );
-
-  return (
-    <MockConfigList
-      title="WHT Tax Return Forms"
-      description="Revenue Department filing forms (ภ.ง.ด. 1/2/3/53/54) and their GL liability accounts"
-      addLabel="Add WHT Form"
-      exportName="WHT Forms"
-      items={store.whtForms}
-      searchText={(item) =>
-        `${item.code} ${item.description} ${item.form_type} ${item.gl_account_id ?? ""}`
-      }
-      columns={columns}
-      exportColumns={[
-        { header: "Form Code", value: (r) => r.code, width: 14 },
-        { header: "Form Description", value: (r) => r.description, width: 36 },
-        { header: "Form Type", value: (r) => r.form_type, width: 12 },
-        {
-          header: "GL Control Account",
-          value: (r) => r.gl_account_id ?? "",
-          width: 20,
-        },
-        {
-          header: "Status",
-          value: (r) => (r.is_active ? "Active" : "Inactive"),
-          width: 10,
-        },
-      ]}
-      renderCardRows={(item) => (
-        <>
-          <ListCardRow label="Description">{item.description}</ListCardRow>
-          <ListCardRow label="Form Type">
-            <span className="font-mono uppercase">{item.form_type}</span>
-          </ListCardRow>
-        </>
-      )}
-      onAdd={() => setEditing(null)}
-      onEdit={setEditing}
-      onDelete={setDeleting}
-    >
-      <WhtFormDialog
-        key={editing?.id ?? "new"}
-        open={editing !== undefined}
-        item={editing ?? null}
-        onOpenChange={(open) => {
-          if (!open) setEditing(undefined);
-        }}
-        onSave={(value) => {
-          store.saveWhtForm(value, editing?.id);
-          toast.success(editing ? "WHT form updated" : "WHT form created");
-          setEditing(undefined);
-        }}
-      />
-      <DeleteDialog
-        open={!!deleting}
-        onOpenChange={(open) => !open && setDeleting(null)}
-        title="Delete WHT form?"
-        description={
-          deleting
-            ? `Delete ${deleting.code} — ${deleting.description}?`
-            : undefined
-        }
-        onConfirm={() => {
-          if (!deleting) return;
-          store.deleteWhtForm(deleting);
-          toast.success("WHT form deleted");
-          setDeleting(null);
-        }}
-      />
-    </MockConfigList>
-  );
+function useWhtFormTable(options: ConfigTableHookOptions<WhtFormMaster>) {
+  const tf = useTranslations("field");
+  const columns: ColumnDef<WhtFormMaster>[] = [];
+  if ((options.containerWidth ?? 1000) >= 900)
+    columns.push({
+      accessorKey: "account_code",
+      size: 220,
+      header: tf("glAccount"),
+      cell: ({ row }) =>
+        [row.original.account_code, row.original.account_name]
+          .filter(Boolean)
+          .join(" · ") || "—",
+      enableSorting: false,
+      meta: { headerTitle: tf("glAccount") },
+    });
+  if ((options.containerWidth ?? 1000) >= 1200)
+    columns.push({
+      accessorKey: "cost_center_code",
+      size: 200,
+      header: tf("costCenter"),
+      cell: ({ row }) =>
+        [row.original.cost_center_code, row.original.cost_center_name]
+          .filter(Boolean)
+          .join(" · ") || "—",
+      enableSorting: false,
+      meta: { headerTitle: tf("costCenter") },
+    });
+  return useApMasterTable(options, columns);
 }
 
-function WhtFormDialog({
-  open,
-  item,
-  onOpenChange,
-  onSave,
-}: {
-  open: boolean;
-  item: WhtFormMaster | null;
-  onOpenChange: (open: boolean) => void;
-  onSave: (value: Omit<WhtFormMaster, "id" | "doc_version">) => void;
-}) {
-  const [code, setCode] = useState(item?.code ?? "");
-  const [description, setDescription] = useState(item?.description ?? "");
-  const [formType, setFormType] = useState(item?.form_type ?? "pnd3");
-  const [glAccountId, setGlAccountId] = useState(item?.gl_account_id ?? "");
-  const [active, setActive] = useState(item?.is_active ?? true);
-
+export default function WhtFormPage() {
+  const tf = useTranslations("field");
+  const ts = useTranslations("status");
+  const deletion = whtFormCrud.useDeleteVersioned();
   return (
-    <MockEntityDialog
+    <ConfigListTemplate<WhtFormMaster>
+      translationNamespace="config.whtForm"
+      extraActions={<ApMasterMockStatus />}
+      entityNameField="code"
+      useList={whtFormCrud.useList}
+      useDelete={whtFormCrud.useDelete}
+      useTable={useWhtFormTable}
       permissionPrefix="accounting.config.ap"
-      open={open}
-      onOpenChange={onOpenChange}
-      icon={FileSpreadsheet}
-      title={item ? "Edit WHT Form" : "Add WHT Form"}
-      subtitle="Statutory withholding tax filing and liability mapping."
-      isEdit={!!item}
-      canSubmit={!!code.trim() && !!description.trim()}
-      onSubmit={() =>
-        onSave({
-          code,
-          description,
-          form_type: formType,
-          gl_account_id: glAccountId || null,
-          is_active: active,
-        })
-      }
-    >
-      <Field>
-        <FieldLabel htmlFor="form-code" required>
-          Form Code
-        </FieldLabel>
-        <FieldInput
-          id="form-code"
-          className="h-8"
-          value={code}
-          disabled={!!item}
-          maxLength={20}
-          placeholder="e.g. PND3, PND53"
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
+      pageKey={LIST_PAGE_KEYS.WHT_FORM}
+      filterFields={AP_MASTER_FILTER_FIELDS}
+      defaultSort="code:asc"
+      fixedColumnWidths
+      exportColumns={[
+        { header: tf("code"), value: (row) => row.code, width: 18 },
+        {
+          header: tf("description"),
+          value: (row) => row.description,
+          width: 40,
+        },
+        {
+          header: tf("glAccount"),
+          value: (row) =>
+            [row.account_code, row.account_name].filter(Boolean).join(" · "),
+          width: 30,
+        },
+        {
+          header: tf("costCenter"),
+          value: (row) =>
+            [row.cost_center_code, row.cost_center_name]
+              .filter(Boolean)
+              .join(" · "),
+          width: 25,
+        },
+        {
+          header: tf("status"),
+          value: (row) => ts(row.is_active ? "active" : "inactive"),
+          width: 12,
+        },
+      ]}
+      renderDialog={(props) => <WhtFormDialog {...props} />}
+      renderDeleteDialog={(props) => (
+        <MasterDeleteDialog
+          {...props}
+          endpoint={whtFormCrud.endpoint}
+          remove={deletion.mutate}
+          isPending={deletion.isPending}
+          error={deletion.error}
+          reset={deletion.reset}
         />
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="form-desc" required>
-          Form Description
-        </FieldLabel>
-        <FieldInput
-          id="form-desc"
-          className="h-8"
-          value={description}
-          maxLength={100}
-          placeholder="e.g. ภ.ง.ด. 3 (บุคคลธรรมดา)"
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </Field>
-      <Field>
-        <FieldLabel required>Form Type</FieldLabel>
-        <FieldSelect value={formType} onValueChange={setFormType}>
-          <SelectContent>
-            {FORM_TYPES.map((f) => (
-              <SelectItem key={f.value} value={f.value}>
-                {f.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </FieldSelect>
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="form-gl">GL Liability Account</FieldLabel>
-        <LookupChartOfAccount
-          value={glAccountId}
-          category="liability"
-          placeholder="Select liability GL account"
-          onValueChange={setGlAccountId}
-        />
-      </Field>
-      <StatusSwitch
-        id="wht-form-active"
-        checked={active}
-        onCheckedChange={setActive}
-      />
-    </MockEntityDialog>
+      )}
+      renderCard={({ item, onEdit, onDelete }) => (
+        <ListCard
+          title={item.code}
+          onOpen={() => onEdit(item)}
+          onDelete={() => onDelete(item)}
+        >
+          <ListCardActiveRow active={item.is_active} />
+          <ListCardRow label={tf("description")}>
+            {item.description}
+          </ListCardRow>
+          <ListCardRow label={tf("glAccount")}>
+            {[item.account_code, item.account_name]
+              .filter(Boolean)
+              .join(" · ") || "—"}
+          </ListCardRow>
+          <ListCardRow label={tf("costCenter")}>
+            {[item.cost_center_code, item.cost_center_name]
+              .filter(Boolean)
+              .join(" · ") || "—"}
+          </ListCardRow>
+          <ListCardRow label={tf("dimension")}>
+            {item.dimensions
+              .map(
+                (dimension) =>
+                  `${dimension.dimension_code}: ${dimension.value_code || "—"}`,
+              )
+              .join(" · ") || "—"}
+          </ListCardRow>
+          <ListCardAuditRows audit={item.audit} />
+        </ListCard>
+      )}
+    />
   );
 }

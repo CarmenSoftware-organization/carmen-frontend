@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   fireEvent,
+  act,
   render,
   screen,
   within,
@@ -18,6 +19,8 @@ import { PaymentExpensesSection } from "../payment/ap-payment-expenses";
 import { InvoiceReferenceEditor } from "../invoice/ap-invoice-reference-editor";
 import { InvoiceReferencesPanel } from "../invoice/ap-invoice-panels";
 import { httpApRepository } from "./ap-http-repository";
+import { httpClient } from "@/lib/http-client";
+import { DEFAULT_ATTACHMENT_POLICY } from "@/lib/attachment-policy";
 import type {
   ApInvoice,
   ApPayment,
@@ -31,6 +34,9 @@ const state = vi.hoisted(() => ({
   preview: vi.fn(),
 }));
 vi.mock("@/hooks/use-bu-code", () => ({ useBuCode: () => "BU" }));
+vi.mock("@/hooks/use-attachment-policy", () => ({
+  useAttachmentPolicy: () => DEFAULT_ATTACHMENT_POLICY,
+}));
 vi.mock("@/hooks/use-profile", () => ({
   useProfile: () => ({
     dateFormat: "yyyy-MM-dd",
@@ -64,6 +70,13 @@ vi.mock("@/routes/accounting/journal-voucher/use-journal-voucher", () => ({
 }));
 vi.mock("@/hooks/use-accounting-master", () => ({
   useBankAccounts: () => ({ data: [] }),
+}));
+vi.mock("@/hooks/use-goods-receive-note", () => ({
+  useGoodsReceiveNote: () => ({
+    data: undefined,
+    isLoading: false,
+  }),
+  useGoodsReceiveNoteById: () => ({ data: undefined, isLoading: false }),
 }));
 vi.mock("@/components/lookup/lookup-vendor", () => ({
   LookupVendor: () => <button type="button">Vendor lookup</button>,
@@ -136,6 +149,10 @@ const invoice: ApInvoice = {
   wht_estimate_amount: "0",
   total_amount: "107",
   base_total_amount: "107",
+  base_sub_total_amount: "100",
+  base_discount_amount: "0",
+  base_net_amount: "100",
+  base_vat_amount: "7",
   outstanding_amount: "107",
   reference_applied_amount: "0",
   gl_jv_id: null,
@@ -151,6 +168,10 @@ const invoice: ApInvoice = {
       cr_account_code: null,
       base_total_amount: "107",
       base_unpaid_amount: "107",
+      base_sub_total_amount: "100",
+      base_discount_amount: "0",
+      base_net_amount: "100",
+      base_vat_amount: "7",
       sequence_no: 1,
       description: "Service",
       quantity: "1",
@@ -228,7 +249,111 @@ it("displays a credit-note reference as an offset without changing its stored po
 });
 
 describe("AP document layout and persistence contract", () => {
-  it("shows the five Invoice tabs and disables references for non-invoice types", async () => {
+  it.each(["invoice", "payment"])(
+    "blocks %s edits while uploads hold the save snapshot",
+    async (kind) => {
+      let finishUpload!: (response: Response) => void;
+      vi.spyOn(httpClient, "post").mockImplementationOnce(
+        () =>
+          new Promise<Response>((resolve) => {
+            finishUpload = resolve;
+          }),
+      );
+      vi.spyOn(httpClient, "get").mockResolvedValue(
+        new Response(
+          JSON.stringify({ data: [], paginate: { total: 0, pages: 1 } }),
+        ),
+      );
+      if (kind === "invoice") state.invoice = invoice;
+      else
+        state.payment = {
+          ...invoice,
+          id: "payment",
+          doc_no: "APPV001",
+          payment_date: "2026-11-12",
+          paid_date: null,
+          payment_method: "bank_transfer",
+          bank_account_id: "bank",
+          bank_account_name: "Bank",
+          allocations: [
+            {
+              id: "allocation",
+              ap_invoice_id: invoice.id,
+              ap_invoice_detail_id: "line",
+              doc_type: "invoice",
+              applied_amount: "107",
+            },
+          ],
+          total_applied_amount: "107",
+          total_wht_amount: "3",
+          total_expense_amount: "0",
+          net_paid_amount: "104",
+          wht: [
+            {
+              id: "wht",
+              wht_tax_profile_id: "service3",
+              wht_tax_profile_name: "Service 3%",
+              wht_rate: "3",
+              base_amount: "100",
+              wht_amount: "3",
+              is_override: true,
+            },
+          ],
+          expenses: [],
+        } as unknown as ApPayment;
+      wrap(
+        <Routes>
+          <Route
+            path="/:id"
+            element={
+              kind === "invoice" ? <ApInvoiceDetail /> : <ApPaymentDetail />
+            }
+          />
+        </Routes>,
+        `/${kind}`,
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Edit" }));
+      await userEvent.click(screen.getByRole("tab", { name: "Attachments" }));
+      fireEvent.change(screen.getByLabelText("Attach files"), {
+        target: {
+          files: [
+            new File(["payload"], "invoice.pdf", { type: "application/pdf" }),
+          ],
+        },
+      });
+      await userEvent.click(
+        screen.getByRole("tab", {
+          name: kind === "invoice" ? "Item Details" : "Settlement & Payment",
+        }),
+      );
+      const amount = screen.getByRole("textbox", {
+        name: kind === "invoice" ? "unit price 1" : "Base Service 3%",
+      });
+      expect(amount.closest("[inert]")).toBeNull();
+      await userEvent.click(screen.getByRole("button", { name: "Save Draft" }));
+      await waitFor(() =>
+        expect(amount.closest("[inert]")).toHaveAttribute("aria-busy", "true"),
+      );
+      expect(state.save).not.toHaveBeenCalled();
+      // jsdom does not enforce native inert; assert its real-browser interaction boundary.
+      expect(amount).toHaveValue("100");
+      await act(async () =>
+        finishUpload(
+          new Response(JSON.stringify({ data: { fileToken: "BU/new-file" } })),
+        ),
+      );
+      await waitFor(() => expect(state.save).toHaveBeenCalledOnce());
+      const input = state.save.mock.calls[0][0].input;
+      expect(
+        kind === "invoice"
+          ? input.lines[0].unit_price
+          : input.wht[0].base_amount,
+      ).toBe("100");
+      expect(input.attachments[0].fileToken).toBe("BU/new-file");
+    },
+  );
+
+  it("shows the Invoice tabs and disables references for non-invoice types", async () => {
     wrap(
       <Routes>
         <Route path="/:id" element={<ApInvoiceDetail />} />
@@ -241,6 +366,7 @@ describe("AP document layout and persistence contract", () => {
       "Doc Reference",
       "Payment",
       "Journal (GL)",
+      "Attachments",
     ]);
     await userEvent.click(screen.getByRole("tab", { name: "Doc Reference" }));
     await userEvent.click(screen.getByRole("combobox"));
@@ -330,6 +456,27 @@ describe("AP document layout and persistence contract", () => {
     ).toBeDisabled();
   });
 
+  it("shows persisted base amounts even when they differ from a fresh rate calculation", async () => {
+    state.invoice = {
+      ...invoice,
+      currency_code: "USD",
+      exchange_rate: "35",
+      base_net_amount: "3512.34",
+      lines: [{ ...invoice.lines![0], base_net_amount: "3512.34" }],
+    };
+    wrap(
+      <Routes>
+        <Route path="/:id" element={<ApInvoiceDetail />} />
+      </Routes>,
+      "/invoice",
+    );
+    expect(screen.getAllByText("3,512.34 THB")).toHaveLength(2);
+    await userEvent.click(screen.getByRole("button", { name: "View item 1" }));
+    expect(
+      within(screen.getByRole("dialog")).getByText("3,512.34"),
+    ).toBeInTheDocument();
+  });
+
   it("separates Payment settlement from the real posted journal", () => {
     wrap(
       <Routes>
@@ -340,6 +487,7 @@ describe("AP document layout and persistence contract", () => {
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
       "Settlement & Payment",
       "Journal (GL)",
+      "Attachments",
     ]);
     expect(
       screen.getByRole("heading", { name: "Payment Methods" }),

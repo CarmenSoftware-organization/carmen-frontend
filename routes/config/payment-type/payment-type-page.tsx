@@ -1,262 +1,210 @@
-import { useMemo, useState } from "react";
+import { useTranslations } from "use-intl";
 import type { ColumnDef } from "@tanstack/react-table";
-import { CreditCard } from "lucide-react";
-import { toast } from "sonner";
-import { ListCardRow } from "@/components/share/list-card";
+import { ConfigListTemplate } from "@/components/templates/config-list-template";
+import type { ConfigTableHookOptions } from "@/components/templates/types";
+import {
+  ListCard,
+  ListCardActiveRow,
+  ListCardRow,
+  ListCardAuditRows,
+} from "@/components/share/list-card";
 import { Badge } from "@/components/ui/badge";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { columnSkeletons } from "@/components/ui/data-grid/columns";
-import { DeleteDialog } from "@/components/ui/delete-dialog";
+import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
+import type { PaymentTypeMaster } from "@/types/accounting-master";
 import {
-  Field,
-  FieldInput,
-  FieldLabel,
-  FieldSelect,
-} from "@/components/ui/field";
-import { SelectContent, SelectItem } from "@/components/ui/select";
-import { StatusSwitch } from "@/components/ui/status-switch";
-import {
-  type PaymentTypeMaster,
-  useAccountingMasterMock,
-} from "../accounting-master-mock";
-import { MockConfigList } from "../shared/mock-config-list";
-import { mockCodeColumn } from "../shared/mock-code-column";
-import { MockEntityDialog } from "../shared/mock-entity-dialog";
+  AP_MASTER_FILTER_FIELDS,
+  useApMasterTable,
+} from "../shared/use-ap-master-table";
+import { MasterDeleteDialog } from "../shared/ap-master-dependencies";
+import { paymentTypeCrud } from "./use-payment-type";
+import { PaymentTypeDialog } from "./payment-type-dialog";
+import { ApMasterMockStatus } from "../shared/ap-master-mock-status";
 
-const PAYMENT_METHODS = [
-  { value: "transfer", label: "Bank Transfer (โอนเงินผ่านธนาคาร)" },
-  { value: "cheque", label: "Bank Cheque (เช็คธนาคาร)" },
-  { value: "cash", label: "Cash / Petty Cash (เงินสด/เงินสดย่อย)" },
-  { value: "credit_card", label: "Credit Card (บัตรเครดิต)" },
-  { value: "other", label: "Other (อื่นๆ)" },
-];
-
-export default function PaymentTypePage() {
-  const store = useAccountingMasterMock();
-  const [editing, setEditing] = useState<
-    PaymentTypeMaster | null | undefined
-  >();
-  const [deleting, setDeleting] = useState<PaymentTypeMaster | null>(null);
-
-  const columns = useMemo<ColumnDef<PaymentTypeMaster>[]>(
-    () => [
-      mockCodeColumn<PaymentTypeMaster>("Payment Type Code", setEditing),
-      {
-        accessorKey: "description",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Description (EN)" />
-        ),
-        meta: {
-          headerTitle: "Description (EN)",
-          skeleton: columnSkeletons.text,
-        },
-      },
-      {
-        accessorKey: "description_local",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Description (TH)" />
-        ),
-        cell: ({ row }) => (
-          <span className="text-muted-foreground">
-            {row.original.description_local || "—"}
-          </span>
-        ),
-        meta: {
-          headerTitle: "Description (TH)",
-          skeleton: columnSkeletons.text,
-        },
-      },
-      {
-        accessorKey: "payment_method",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Method" />
-        ),
-        cell: ({ row }) => (
-          <Badge
-            data-standard-chip=""
-            variant="outline"
-            size="sm"
-            className="font-mono uppercase"
-          >
-            {row.original.payment_method}
-          </Badge>
-        ),
-        size: 140,
-        meta: { headerTitle: "Method", skeleton: columnSkeletons.textShort },
-      },
-    ],
-    [],
-  );
-
-  return (
-    <MockConfigList
-      title="Payment Types"
-      description="Payment instruments that categorize AP Payment Vouchers and AR Receipts"
-      addLabel="Add Payment Type"
-      exportName="Payment Types"
-      items={store.paymentTypes}
-      searchText={(item) =>
-        `${item.code} ${item.description} ${item.description_local ?? ""} ${item.payment_method}`
-      }
-      columns={columns}
-      exportColumns={[
-        { header: "Payment Type Code", value: (r) => r.code, width: 18 },
-        { header: "Description (EN)", value: (r) => r.description, width: 28 },
-        {
-          header: "Description (TH)",
-          value: (r) => r.description_local ?? "",
-          width: 28,
-        },
-        { header: "Method", value: (r) => r.payment_method, width: 14 },
-        {
-          header: "Status",
-          value: (r) => (r.is_active ? "Active" : "Inactive"),
-          width: 10,
-        },
-      ]}
-      renderCardRows={(item) => (
-        <>
-          <ListCardRow label="Description">{item.description}</ListCardRow>
-          <ListCardRow label="Method">
-            <span className="font-mono uppercase">{item.payment_method}</span>
-          </ListCardRow>
-        </>
-      )}
-      onAdd={() => setEditing(null)}
-      onEdit={setEditing}
-      onDelete={setDeleting}
-    >
-      <PaymentTypeDialog
-        key={editing?.id ?? "new"}
-        open={editing !== undefined}
-        item={editing ?? null}
-        onOpenChange={(open) => {
-          if (!open) setEditing(undefined);
-        }}
-        onSave={(value) => {
-          store.savePaymentType(value, editing?.id);
-          toast.success(
-            editing ? "Payment type updated" : "Payment type created",
-          );
-          setEditing(undefined);
-        }}
-      />
-      <DeleteDialog
-        open={!!deleting}
-        onOpenChange={(open) => !open && setDeleting(null)}
-        title="Delete payment type?"
-        description={
-          deleting
-            ? `Delete ${deleting.code} — ${deleting.description}?`
-            : undefined
-        }
-        onConfirm={() => {
-          if (!deleting) return;
-          store.deletePaymentType(deleting);
-          toast.success("Payment type deleted");
-          setDeleting(null);
-        }}
-      />
-    </MockConfigList>
-  );
+function usePaymentTypeTable(
+  options: ConfigTableHookOptions<PaymentTypeMaster>,
+) {
+  const t = useTranslations("config.apMaster");
+  const tf = useTranslations("field");
+  const columns: ColumnDef<PaymentTypeMaster>[] = [];
+  if ((options.containerWidth ?? 1000) >= 900)
+    columns.push({
+      id: "modules",
+      size: 100,
+      header: t("availableModules"),
+      cell: ({ row }) => (
+        <div className="flex gap-1">
+          {[
+            row.original.available_ap && "AP",
+            row.original.available_ar && "AR",
+          ]
+            .filter(Boolean)
+            .map((module) => (
+              <Badge variant="outline" size="sm" key={String(module)}>
+                {module}
+              </Badge>
+            ))}
+        </div>
+      ),
+      enableSorting: false,
+      meta: { headerTitle: t("availableModules") },
+    });
+  if ((options.containerWidth ?? 1000) >= 1100)
+    columns.push({
+      accessorKey: "account_code",
+      size: 200,
+      header: tf("glAccount"),
+      cell: ({ row }) =>
+        [row.original.account_code, row.original.account_name]
+          .filter(Boolean)
+          .join(" · ") || "—",
+      enableSorting: false,
+      meta: { headerTitle: tf("glAccount") },
+    });
+  if ((options.containerWidth ?? 1000) >= 1400)
+    columns.push({
+      accessorKey: "cost_center_code",
+      size: 180,
+      header: tf("costCenter"),
+      cell: ({ row }) =>
+        [row.original.cost_center_code, row.original.cost_center_name]
+          .filter(Boolean)
+          .join(" · ") || "—",
+      enableSorting: false,
+      meta: { headerTitle: tf("costCenter") },
+    });
+  if ((options.containerWidth ?? 1000) >= 1200)
+    columns.push({
+      accessorKey: "cheque_form_name",
+      size: 170,
+      header: t("chequeForm"),
+      cell: ({ row }) =>
+        row.original.is_cheque ? row.original.cheque_form_name || "—" : "—",
+      enableSorting: false,
+      meta: { headerTitle: t("chequeForm") },
+    });
+  if ((options.containerWidth ?? 1000) >= 1000)
+    columns.push({
+      accessorKey: "is_cheque",
+      size: 90,
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={t("isCheque")} />
+      ),
+      cell: ({ row }) => (row.original.is_cheque ? "✓" : "—"),
+      meta: { headerTitle: t("isCheque") },
+    });
+  return useApMasterTable(options, columns);
 }
 
-function PaymentTypeDialog({
-  open,
-  item,
-  onOpenChange,
-  onSave,
-}: {
-  open: boolean;
-  item: PaymentTypeMaster | null;
-  onOpenChange: (open: boolean) => void;
-  onSave: (value: Omit<PaymentTypeMaster, "id" | "doc_version">) => void;
-}) {
-  const [code, setCode] = useState(item?.code ?? "");
-  const [description, setDescription] = useState(item?.description ?? "");
-  const [descriptionLocal, setDescriptionLocal] = useState(
-    item?.description_local ?? "",
-  );
-  const [paymentMethod, setPaymentMethod] = useState(
-    item?.payment_method ?? "transfer",
-  );
-  const [active, setActive] = useState(item?.is_active ?? true);
-
+export default function PaymentTypePage() {
+  const t = useTranslations("config.apMaster");
+  const tf = useTranslations("field");
+  const ts = useTranslations("status");
+  const tc = useTranslations("common");
+  const deletion = paymentTypeCrud.useDeleteVersioned();
   return (
-    <MockEntityDialog
+    <ConfigListTemplate<PaymentTypeMaster>
+      translationNamespace="config.paymentType"
+      extraActions={<ApMasterMockStatus />}
+      entityNameField="code"
+      useList={paymentTypeCrud.useList}
+      useDelete={paymentTypeCrud.useDelete}
+      useTable={usePaymentTypeTable}
       permissionPrefix="accounting.config.ap"
-      open={open}
-      onOpenChange={onOpenChange}
-      icon={CreditCard}
-      title={item ? "Edit Payment Type" : "Add Payment Type"}
-      subtitle="Defines the payment instrument for financial transactions."
-      isEdit={!!item}
-      canSubmit={!!code.trim() && !!description.trim()}
-      onSubmit={() =>
-        onSave({
-          code,
-          description,
-          description_local: descriptionLocal || null,
-          payment_method: paymentMethod,
-          is_active: active,
-        })
-      }
-    >
-      <Field>
-        <FieldLabel htmlFor="pm-code" required>
-          Payment Type Code
-        </FieldLabel>
-        <FieldInput
-          id="pm-code"
-          className="h-8"
-          value={code}
-          disabled={!!item}
-          maxLength={20}
-          placeholder="e.g. TRANSFER, CHEQUE, CASH"
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
+      pageKey={LIST_PAGE_KEYS.PAYMENT_TYPE}
+      filterFields={AP_MASTER_FILTER_FIELDS}
+      defaultSort="code:asc"
+      fixedColumnWidths
+      exportColumns={[
+        { header: tf("code"), value: (row) => row.code, width: 18 },
+        {
+          header: tf("description"),
+          value: (row) => row.description,
+          width: 35,
+        },
+        {
+          header: t("availableModules"),
+          value: (row) =>
+            [row.available_ap && "AP", row.available_ar && "AR"]
+              .filter(Boolean)
+              .join(" / "),
+          width: 15,
+        },
+        {
+          header: tf("glAccount"),
+          value: (row) =>
+            [row.account_code, row.account_name].filter(Boolean).join(" · "),
+          width: 30,
+        },
+        {
+          header: tf("costCenter"),
+          value: (row) =>
+            [row.cost_center_code, row.cost_center_name]
+              .filter(Boolean)
+              .join(" · "),
+          width: 25,
+        },
+        {
+          header: t("isCheque"),
+          value: (row) => tc(row.is_cheque ? "yes" : "no"),
+          width: 12,
+        },
+        {
+          header: tf("status"),
+          value: (row) => ts(row.is_active ? "active" : "inactive"),
+          width: 12,
+        },
+      ]}
+      renderDialog={(props) => <PaymentTypeDialog {...props} />}
+      renderDeleteDialog={(props) => (
+        <MasterDeleteDialog
+          {...props}
+          endpoint={paymentTypeCrud.endpoint}
+          remove={deletion.mutate}
+          isPending={deletion.isPending}
+          error={deletion.error}
+          reset={deletion.reset}
         />
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="pm-desc" required>
-          Description (EN)
-        </FieldLabel>
-        <FieldInput
-          id="pm-desc"
-          className="h-8"
-          value={description}
-          maxLength={100}
-          placeholder="e.g. Bank Transfer"
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="pm-desc-local">Description (TH)</FieldLabel>
-        <FieldInput
-          id="pm-desc-local"
-          className="h-8"
-          value={descriptionLocal}
-          maxLength={100}
-          placeholder="e.g. โอนเงินผ่านธนาคาร"
-          onChange={(e) => setDescriptionLocal(e.target.value)}
-        />
-      </Field>
-      <Field>
-        <FieldLabel required>Payment Method</FieldLabel>
-        <FieldSelect value={paymentMethod} onValueChange={setPaymentMethod}>
-          <SelectContent>
-            {PAYMENT_METHODS.map((m) => (
-              <SelectItem key={m.value} value={m.value}>
-                {m.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </FieldSelect>
-      </Field>
-      <StatusSwitch
-        id="payment-type-active"
-        checked={active}
-        onCheckedChange={setActive}
-      />
-    </MockEntityDialog>
+      )}
+      renderCard={({ item, onEdit, onDelete }) => (
+        <ListCard
+          title={item.code}
+          onOpen={() => onEdit(item)}
+          onDelete={() => onDelete(item)}
+        >
+          <ListCardActiveRow active={item.is_active} />
+          <ListCardRow label={tf("description")}>
+            {item.description}
+          </ListCardRow>
+          <ListCardRow label={t("availableModules")}>
+            {[item.available_ap && "AP", item.available_ar && "AR"]
+              .filter(Boolean)
+              .join(" · ")}
+          </ListCardRow>
+          <ListCardRow label={tf("glAccount")}>
+            {[item.account_code, item.account_name]
+              .filter(Boolean)
+              .join(" · ") || "—"}
+          </ListCardRow>
+          <ListCardRow label={tf("costCenter")}>
+            {[item.cost_center_code, item.cost_center_name]
+              .filter(Boolean)
+              .join(" · ") || "—"}
+          </ListCardRow>
+          <ListCardRow label={t("isCheque")}>
+            {tc(item.is_cheque ? "yes" : "no")}
+          </ListCardRow>
+          <ListCardRow label={t("bankAccount")}>
+            {item.bank_account_name || "—"}
+          </ListCardRow>
+          {item.is_cheque && (
+            <ListCardRow label={t("chequeForm")}>
+              {item.cheque_form_name || "—"}
+            </ListCardRow>
+          )}
+          <ListCardAuditRows audit={item.audit} />
+        </ListCard>
+      )}
+    />
   );
 }

@@ -1,4 +1,12 @@
-import { act, renderHook } from "@testing-library/react";
+import {
+  act,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import type { ReactNode } from "react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { downloadXlsx } from "@/lib/xlsx-utils";
 import { httpApRepository } from "./ap-http-repository";
@@ -6,8 +14,76 @@ import {
   useExportApInvoices,
   useExportApPayments,
 } from "./use-accounts-payable";
+import ApInvoiceList from "../invoice/ap-invoice-list";
+import ApPaymentList from "../payment/ap-payment-list";
+
+const { listData } = vi.hoisted(() => ({ listData: { rows: [] as object[] } }));
 
 vi.mock("@/hooks/use-bu-code", () => ({ useBuCode: () => "DEV" }));
+vi.mock("use-intl", () => ({
+  useTranslations: () => (key: string) => key,
+}));
+vi.mock("react-router", () => ({ useNavigate: () => vi.fn() }));
+vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => true }));
+vi.mock("@/hooks/use-profile", () => ({
+  useProfile: () => ({
+    dateFormat: "yyyy-MM-dd",
+    dateTimeFormat: "yyyy-MM-dd HH:mm",
+  }),
+}));
+vi.mock("@/hooks/use-number-formatter", () => ({
+  useAmountFormatter: () => (value: number) => value.toFixed(2),
+}));
+vi.mock("@/hooks/use-delete-gate", () => ({ useDeleteGate: () => ({}) }));
+vi.mock("@/hooks/use-export-error-toast", () => ({
+  useExportErrorToast: () => vi.fn(),
+}));
+vi.mock("@/hooks/use-data-grid-state", () => ({
+  useDataGridState: () => ({
+    params: {},
+    search: "",
+    setSearch: vi.fn(),
+    tableConfig: {},
+  }),
+}));
+vi.mock("@/hooks/use-list-filters", () => ({
+  useListFilters: () => ({ filterParam: "", activeFilters: [], view: {} }),
+}));
+vi.mock("@/hooks/use-grid-pagination", () => ({
+  useGridPagination: () => ({
+    items: listData.rows,
+    totalRecords: listData.rows.length,
+  }),
+}));
+vi.mock("@/components/ui/data-grid/use-config-table", () => ({
+  useConfigTable: () => ({}),
+}));
+vi.mock("@/components/list-filter/list-toolbar", () => ({
+  ListToolbar: () => null,
+}));
+vi.mock("@/components/list-filter/save-view-dialog", () => ({
+  SaveViewDialog: () => null,
+}));
+vi.mock("@/components/share/list-page-shell", () => ({
+  ListPageShell: ({
+    children,
+    actions,
+  }: {
+    children: ReactNode;
+    actions: ReactNode;
+  }) => (
+    <>
+      {actions}
+      {children}
+    </>
+  ),
+}));
+vi.mock("./use-accounts-payable", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./use-accounts-payable")>()),
+  useApInvoices: () => ({}),
+  useApPayments: () => ({}),
+  useApPaymentAction: () => ({}),
+}));
 vi.mock("./ap-http-repository", () => ({
   httpApRepository: { listInvoices: vi.fn(), listPayments: vi.fn() },
 }));
@@ -83,4 +159,81 @@ it("keeps the approval queue filter and rejects an incomplete payment export", a
   });
   expect(downloadXlsx).not.toHaveBeenCalled();
   expect(result.current.isExporting).toBe(false);
+});
+
+it("carries invoice dates and update time from the displayed card into the actual list export", async () => {
+  const invoice = {
+    id: "invoice",
+    doc_no: "AP-1",
+    doc_source: "manual",
+    doc_status: "draft",
+    doc_type: "invoice",
+    vendor_name: "Supplier",
+    vendor_invoice_no: "SUP-1",
+    doc_date: "2026-11-01",
+    invoice_date: "2026-11-02",
+    due_date: "2026-12-02",
+    updated_at: "2026-11-03T10:00:00Z",
+    currency_code: "THB",
+    total_amount: "100.00",
+    outstanding_amount: "75.00",
+  };
+  listData.rows = [invoice];
+  vi.mocked(httpApRepository.listInvoices).mockResolvedValueOnce({
+    data: [invoice],
+  } as never);
+  render(<ApInvoiceList />);
+  expect(screen.getByText("2026-11-02")).toBeInTheDocument();
+  expect(screen.getByText("2026-12-02")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: /^export$/ }));
+  await waitFor(() => expect(downloadXlsx).toHaveBeenCalledOnce());
+  const exported = vi.mocked(downloadXlsx).mock.calls[0][0];
+  const values = Object.fromEntries(
+    exported.columns.map((column) => [column.header, column.value(invoice, 0)]),
+  );
+  expect(values).toMatchObject({
+    "detail.invoiceDate": "2026-11-02",
+    "detail.dueDate": "2026-12-02",
+  });
+  expect(values.updated).toMatch(/^2026-11-03 \d{2}:00$/);
+  expect(screen.getByText(String(values.updated))).toBeInTheDocument();
+});
+
+it("shows and exports applied amount, WHT, reference and workflow without rounding the API decimals", async () => {
+  const payment = {
+    id: "payment",
+    doc_no: "PV-1",
+    doc_status: "draft",
+    vendor_name: "Supplier",
+    payment_date: "2026-11-04",
+    bank_account_name: "Clearing",
+    payment_method: "bank_transfer",
+    currency_code: "THB",
+    total_applied_amount: "123.45678",
+    total_wht_amount: "3.45678",
+    net_paid_amount: "120.00",
+    reference_no: "BANK-REF",
+    workflow_current_stage: "Manager review",
+  };
+  listData.rows = [payment];
+  vi.mocked(httpApRepository.listPayments).mockResolvedValueOnce({
+    data: [payment],
+  } as never);
+  render(<ApPaymentList />);
+  expect(screen.getByText("123.46 THB")).toBeInTheDocument();
+  expect(screen.getByText("3.46 THB")).toBeInTheDocument();
+  expect(screen.getByText("BANK-REF")).toBeInTheDocument();
+  expect(screen.getByText("Manager review")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: /^export$/ }));
+  await waitFor(() => expect(downloadXlsx).toHaveBeenCalledOnce());
+  const exported = vi.mocked(downloadXlsx).mock.calls[0][0];
+  const values = Object.fromEntries(
+    exported.columns.map((column) => [column.header, column.value(payment, 0)]),
+  );
+  expect(values).toMatchObject({
+    "detail.summary.applied": "123.45678",
+    "detail.summary.wht": "3.45678",
+    referenceNo: "BANK-REF",
+    workflow: "Manager review",
+  });
 });

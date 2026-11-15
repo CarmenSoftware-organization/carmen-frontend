@@ -82,6 +82,7 @@ export default function ApPaymentList({
   const t = useTranslations("accounting.accountsPayable.payment");
   const tc = useTranslations("common");
   const tfl = useTranslations("field");
+  const ui = useTranslations("accounting.accountsPayable.ui");
   const exportErrorToast = useExportErrorToast();
   const { exportPayments, isExporting } = useExportApPayments();
   const navigate = useNavigate();
@@ -206,12 +207,25 @@ export default function ApPaymentList({
           header: t("method"),
           value: (row) => t(`methods.${row.payment_method}`),
         },
+        { header: t("referenceNo"), value: (row) => row.reference_no ?? "" },
+        {
+          header: t("detail.summary.applied"),
+          value: (row) => row.total_applied_amount,
+        },
+        {
+          header: t("detail.summary.wht"),
+          value: (row) => row.total_wht_amount,
+        },
         { header: t("netPaid"), value: (row) => row.net_paid_amount },
         {
           header: tc("status"),
           value: (row) => t(`statuses.${row.doc_status}`),
         },
         { header: tfl("currency"), value: (row) => row.currency_code },
+        {
+          header: ui("workflow"),
+          value: (row) => row.workflow_current_stage ?? "",
+        },
       ]);
       if (!count) toast.warning(tc("exportNoData"));
       else toast.success(tc("exportSuccess", { count }));
@@ -420,11 +434,29 @@ export default function ApPaymentList({
                 <ListCardRow label={t("method")}>
                   {t(`methods.${payment.payment_method}`)}
                 </ListCardRow>
+                <ListCardRow label={t("referenceNo")}>
+                  {payment.reference_no || "—"}
+                </ListCardRow>
+                <ListCardRow label={t("detail.summary.applied")}>
+                  <span className="tabular-nums">
+                    {formatAmount(Number(payment.total_applied_amount))}{" "}
+                    {payment.currency_code}
+                  </span>
+                </ListCardRow>
+                <ListCardRow label={t("detail.summary.wht")}>
+                  <span className="tabular-nums">
+                    {formatAmount(Number(payment.total_wht_amount))}{" "}
+                    {payment.currency_code}
+                  </span>
+                </ListCardRow>
                 <ListCardRow label={t("netPaid")}>
                   <span className="tabular-nums">
                     {formatAmount(Number(payment.net_paid_amount))}{" "}
                     {payment.currency_code}
                   </span>
+                </ListCardRow>
+                <ListCardRow label={ui("workflow")}>
+                  {payment.workflow_current_stage || "—"}
                 </ListCardRow>
               </ListCard>
             ))}

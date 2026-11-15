@@ -80,35 +80,6 @@ export interface GlPeriodMaster {
   doc_version: number;
 }
 
-export interface PaymentTypeMaster {
-  id: string;
-  code: string;
-  description: string;
-  description_local?: string | null;
-  payment_method: string;
-  is_active: boolean;
-  doc_version: number;
-}
-
-export interface WhtServiceTypeMaster {
-  id: string;
-  code: string;
-  description: string;
-  default_rate: string;
-  is_active: boolean;
-  doc_version: number;
-}
-
-export interface WhtFormMaster {
-  id: string;
-  code: string;
-  description: string;
-  form_type: string;
-  gl_account_id?: string | null;
-  is_active: boolean;
-  doc_version: number;
-}
-
 export interface AssetCategoryMaster {
   id: string;
   code: string;
@@ -128,9 +99,6 @@ interface AccountingMasterState {
   dimensions: DimensionMaster[];
   bankAccounts: BankAccountMaster[];
   glPeriods: GlPeriodMaster[];
-  paymentTypes: PaymentTypeMaster[];
-  whtServiceTypes: WhtServiceTypeMaster[];
-  whtForms: WhtFormMaster[];
   assetCategories: AssetCategoryMaster[];
 }
 
@@ -378,81 +346,6 @@ const seed: AccountingMasterState = {
       start_date: "2026-04-01",
       end_date: "2026-04-30",
       status: "open",
-      doc_version: 0,
-    },
-  ],
-  paymentTypes: [
-    {
-      id: "pm-transfer",
-      code: "TRANSFER",
-      description: "Bank Transfer",
-      description_local: "โอนเงินผ่านธนาคาร",
-      payment_method: "transfer",
-      is_active: true,
-      doc_version: 0,
-    },
-    {
-      id: "pm-cheque",
-      code: "CHEQUE",
-      description: "Bank Cheque",
-      description_local: "เช็คธนาคาร",
-      payment_method: "cheque",
-      is_active: true,
-      doc_version: 0,
-    },
-    {
-      id: "pm-cash",
-      code: "CASH",
-      description: "Petty Cash",
-      description_local: "เงินสดย่อย",
-      payment_method: "cash",
-      is_active: true,
-      doc_version: 0,
-    },
-  ],
-  whtServiceTypes: [
-    {
-      id: "wht-service-3",
-      code: "WHT-SVC",
-      description: "Service Fee (ค่าจ้างบริการ/ทำของ)",
-      default_rate: "3.00",
-      is_active: true,
-      doc_version: 0,
-    },
-    {
-      id: "wht-rent-5",
-      code: "WHT-RENT",
-      description: "Rental Fee (ค่าเช่าทรัพย์สิน)",
-      default_rate: "5.00",
-      is_active: true,
-      doc_version: 0,
-    },
-    {
-      id: "wht-transport-1",
-      code: "WHT-TRANS",
-      description: "Transportation (ค่าขนส่ง)",
-      default_rate: "1.00",
-      is_active: true,
-      doc_version: 0,
-    },
-  ],
-  whtForms: [
-    {
-      id: "wht-form-pnd3",
-      code: "PND3",
-      description: "ภ.ง.ด. 3 (บุคคลธรรมดา)",
-      form_type: "pnd3",
-      gl_account_id: "2141-01",
-      is_active: true,
-      doc_version: 0,
-    },
-    {
-      id: "wht-form-pnd53",
-      code: "PND53",
-      description: "ภ.ง.ด. 53 (นิติบุคคล)",
-      form_type: "pnd53",
-      gl_account_id: "2141-02",
-      is_active: true,
       doc_version: 0,
     },
   ],
@@ -867,103 +760,7 @@ export function toggleGlPeriodStatus(
   };
 }
 
-// --- Generic Helpers for Simple Masters (PaymentType, WhtServiceType, WhtForm, AssetCategory) ---
-export function savePaymentTypeState(
-  state: AccountingMasterState,
-  input: Omit<PaymentTypeMaster, "id" | "doc_version">,
-  id?: string,
-): AccountingMasterState {
-  const current = state.paymentTypes.find((item) => item.id === id);
-  const code = current?.code ?? input.code.trim().toUpperCase();
-  return {
-    ...state,
-    paymentTypes: id
-      ? state.paymentTypes.map((item) =>
-          item.id === id
-            ? { ...item, ...input, code, doc_version: item.doc_version + 1 }
-            : item,
-        )
-      : [
-          ...state.paymentTypes,
-          { ...input, id: crypto.randomUUID(), code, doc_version: 0 },
-        ],
-  };
-}
-
-export function deletePaymentTypeState(
-  state: AccountingMasterState,
-  item: PaymentTypeMaster,
-): AccountingMasterState {
-  return {
-    ...state,
-    paymentTypes: state.paymentTypes.filter((p) => p.id !== item.id),
-  };
-}
-
-export function saveWhtServiceTypeState(
-  state: AccountingMasterState,
-  input: Omit<WhtServiceTypeMaster, "id" | "doc_version">,
-  id?: string,
-): AccountingMasterState {
-  const current = state.whtServiceTypes.find((item) => item.id === id);
-  const code = current?.code ?? input.code.trim().toUpperCase();
-  return {
-    ...state,
-    whtServiceTypes: id
-      ? state.whtServiceTypes.map((item) =>
-          item.id === id
-            ? { ...item, ...input, code, doc_version: item.doc_version + 1 }
-            : item,
-        )
-      : [
-          ...state.whtServiceTypes,
-          { ...input, id: crypto.randomUUID(), code, doc_version: 0 },
-        ],
-  };
-}
-
-export function deleteWhtServiceTypeState(
-  state: AccountingMasterState,
-  item: WhtServiceTypeMaster,
-): AccountingMasterState {
-  return {
-    ...state,
-    whtServiceTypes: state.whtServiceTypes.filter((p) => p.id !== item.id),
-  };
-}
-
-export function saveWhtFormState(
-  state: AccountingMasterState,
-  input: Omit<WhtFormMaster, "id" | "doc_version">,
-  id?: string,
-): AccountingMasterState {
-  const current = state.whtForms.find((item) => item.id === id);
-  const code = current?.code ?? input.code.trim().toUpperCase();
-  return {
-    ...state,
-    whtForms: id
-      ? state.whtForms.map((item) =>
-          item.id === id
-            ? { ...item, ...input, code, doc_version: item.doc_version + 1 }
-            : item,
-        )
-      : [
-          ...state.whtForms,
-          { ...input, id: crypto.randomUUID(), code, doc_version: 0 },
-        ],
-  };
-}
-
-export function deleteWhtFormState(
-  state: AccountingMasterState,
-  item: WhtFormMaster,
-): AccountingMasterState {
-  return {
-    ...state,
-    whtForms: state.whtForms.filter((p) => p.id !== item.id),
-  };
-}
-
+// --- Asset Category ---
 export function saveAssetCategoryState(
   state: AccountingMasterState,
   input: Omit<AssetCategoryMaster, "id" | "doc_version">,
@@ -1094,48 +891,6 @@ export function useAccountingMasterMock() {
     [update],
   );
 
-  const savePaymentType = useCallback(
-    (input: Omit<PaymentTypeMaster, "id" | "doc_version">, id?: string) => {
-      update((value) => savePaymentTypeState(value, input, id));
-    },
-    [update],
-  );
-
-  const deletePaymentType = useCallback(
-    (item: PaymentTypeMaster) => {
-      update((value) => deletePaymentTypeState(value, item));
-    },
-    [update],
-  );
-
-  const saveWhtServiceType = useCallback(
-    (input: Omit<WhtServiceTypeMaster, "id" | "doc_version">, id?: string) => {
-      update((value) => saveWhtServiceTypeState(value, input, id));
-    },
-    [update],
-  );
-
-  const deleteWhtServiceType = useCallback(
-    (item: WhtServiceTypeMaster) => {
-      update((value) => deleteWhtServiceTypeState(value, item));
-    },
-    [update],
-  );
-
-  const saveWhtForm = useCallback(
-    (input: Omit<WhtFormMaster, "id" | "doc_version">, id?: string) => {
-      update((value) => saveWhtFormState(value, input, id));
-    },
-    [update],
-  );
-
-  const deleteWhtForm = useCallback(
-    (item: WhtFormMaster) => {
-      update((value) => deleteWhtFormState(value, item));
-    },
-    [update],
-  );
-
   const saveAssetCategory = useCallback(
     (input: Omit<AssetCategoryMaster, "id" | "doc_version">, id?: string) => {
       update((value) => saveAssetCategoryState(value, input, id));
@@ -1164,12 +919,6 @@ export function useAccountingMasterMock() {
     deleteBankAccount,
     generatePeriods,
     setPeriodStatus,
-    savePaymentType,
-    deletePaymentType,
-    saveWhtServiceType,
-    deleteWhtServiceType,
-    saveWhtForm,
-    deleteWhtForm,
     saveAssetCategory,
     deleteAssetCategory,
   };

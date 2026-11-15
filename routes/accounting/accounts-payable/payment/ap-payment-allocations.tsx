@@ -412,12 +412,23 @@ function ReadOnlyGroup({
         </span>
       </header>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[28rem] text-left">
+        <table className="w-full min-w-[54rem] text-left">
           <thead>
             <tr className="border-b">
               <th className={TH}>{t("line")}</th>
               <th className={TH}>{t("description")}</th>
               <th className={`${TH} text-right`}>{t("payAmount")}</th>
+              <th className={`${TH} text-right`}>{t("bookingRate")}</th>
+              <th className={`${TH} text-right`}>
+                {t("baseAtBookingRate", {
+                  currency: invoice?.base_currency_code || "—",
+                })}
+              </th>
+              <th className={`${TH} text-right`}>
+                {t("baseAtPaymentRate", {
+                  currency: invoice?.base_currency_code || "—",
+                })}
+              </th>
               <th className={`${TH} text-right`}>{t("realizedFx")}</th>
             </tr>
           </thead>
@@ -432,6 +443,15 @@ function ReadOnlyGroup({
                   <td className={TD}>{line?.description || "—"}</td>
                   <td className={TD}>
                     <Money value={row.applied_amount} />
+                  </td>
+                  <td className={`${TD} text-right tabular-nums`}>
+                    {row.invoice_exchange_rate}
+                  </td>
+                  <td className={TD}>
+                    <Money value={row.base_applied_at_invoice_rate} />
+                  </td>
+                  <td className={TD}>
+                    <Money value={row.base_applied_at_payment_rate} />
                   </td>
                   <td className={TD}>
                     <Money value={row.realized_fx_amount} />

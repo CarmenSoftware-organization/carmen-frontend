@@ -33,6 +33,7 @@ export function useApPaymentTable({
 }: UseApPaymentTableOptions) {
   const t = useTranslations("accounting.accountsPayable.payment");
   const tfl = useTranslations("field");
+  const ui = useTranslations("accounting.accountsPayable.ui");
   const { dateFormat } = useProfile();
   const formatAmount = useAmountFormatter();
 
@@ -112,6 +113,59 @@ export function useApPaymentTable({
       meta: { headerTitle: t("method"), skeleton: columnSkeletons.text },
     },
     {
+      accessorKey: "reference_no",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={t("referenceNo")} />
+      ),
+      cell: ({ row }) => row.original.reference_no || "—",
+      size: 160,
+      meta: { headerTitle: t("referenceNo"), skeleton: columnSkeletons.text },
+    },
+    {
+      accessorKey: "total_applied_amount",
+      header: ({ column }) => (
+        <DataGridColumnHeader
+          column={column}
+          title={t("detail.summary.applied")}
+          className="justify-end"
+        />
+      ),
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap tabular-nums">
+          {formatAmount(Number(row.original.total_applied_amount))}{" "}
+          {row.original.currency_code}
+        </span>
+      ),
+      size: 150,
+      meta: {
+        headerTitle: t("detail.summary.applied"),
+        skeleton: columnSkeletons.text,
+        cellClassName: "text-right",
+      },
+    },
+    {
+      accessorKey: "total_wht_amount",
+      header: ({ column }) => (
+        <DataGridColumnHeader
+          column={column}
+          title={t("detail.summary.wht")}
+          className="justify-end"
+        />
+      ),
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap tabular-nums">
+          {formatAmount(Number(row.original.total_wht_amount))}{" "}
+          {row.original.currency_code}
+        </span>
+      ),
+      size: 150,
+      meta: {
+        headerTitle: t("detail.summary.wht"),
+        skeleton: columnSkeletons.text,
+        cellClassName: "text-right",
+      },
+    },
+    {
       accessorKey: "net_paid_amount",
       header: ({ column }) => (
         <DataGridColumnHeader
@@ -146,6 +200,15 @@ export function useApPaymentTable({
       ),
       size: 130,
       meta: { headerTitle: tfl("status"), skeleton: columnSkeletons.text },
+    },
+    {
+      accessorKey: "workflow_current_stage",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={ui("workflow")} />
+      ),
+      cell: ({ row }) => row.original.workflow_current_stage || "—",
+      size: 160,
+      meta: { headerTitle: ui("workflow"), skeleton: columnSkeletons.text },
     },
   ];
 

@@ -45,6 +45,7 @@ export interface InvoiceFormLine {
   /** เลข GRN ที่ใบนี้อ้างถึง (อ่านอย่างเดียว) */
   grn_no: string | null;
   grn_id: string | null;
+  source_labels: Record<string, string>;
   /** ฟิลด์ของบรรทัดเดิมที่ UI ไม่แก้ (dimension / cr_* / vat_* account / sources) — ส่งกลับตามเดิมตอน PUT; บรรทัดใหม่ไม่มี */
   carry: Pick<
     ApInvoiceLineInput,
@@ -111,6 +112,7 @@ export const emptyLine = (): InvoiceFormLine => ({
   wht_rate: "0",
   grn_no: null,
   grn_id: null,
+  source_labels: {},
   carry: null,
 });
 
@@ -139,6 +141,12 @@ function fromDocLine(line: ApInvoiceLine): InvoiceFormLine {
     wht_rate: line.wht_rate ?? "0",
     grn_no: source?.grn_no ?? null,
     grn_id: source?.good_received_note_id ?? null,
+    source_labels: Object.fromEntries(
+      line.sources.map((src) => [
+        src.good_received_note_detail_item_id,
+        src.grn_no,
+      ]),
+    ),
     carry: {
       dimensions: line.dimensions.map((d) => ({
         gl_dimension_id: d.gl_dimension_id,
@@ -280,7 +288,8 @@ export type InvoiceErrorKey =
   | "lines"
   | "account"
   | "quantity"
-  | "unitPrice";
+  | "unitPrice"
+  | "sourceQuantity";
 
 /** ตรวจก่อนส่ง — คืนชุดคีย์ข้อผิดพลาด (ว่าง = ผ่าน) */
 export function validateInvoiceForm(
@@ -303,6 +312,12 @@ export function validateInvoiceForm(
     if (!line.dr_chart_of_accounts_id) errors.add("account");
     if (compareDecimal(num(line.quantity), "0") <= 0) errors.add("quantity");
     if (compareDecimal(num(line.unit_price), "0") < 0) errors.add("unitPrice");
+    if (
+      line.carry?.sources?.some(
+        (source) => compareDecimal(num(source.matched_qty), "0") <= 0,
+      )
+    )
+      errors.add("sourceQuantity");
   }
   return errors;
 }

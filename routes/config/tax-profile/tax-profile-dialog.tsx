@@ -10,7 +10,7 @@ import {
 } from "@/hooks/use-tax-profile";
 import {
   createTaxProfileSchema,
-  EMPTY_FORM,
+  getDefaultValues,
   type TaxProfileFormValues,
 } from "./tax-profile-form-schema";
 import type { TaxProfile } from "@/types/tax-profile";
@@ -22,12 +22,6 @@ interface TaxProfileDialogProps {
   readonly readOnly?: boolean;
 }
 
-type TaxProfilePayload = {
-  name: string;
-  tax_rate: number;
-  is_active: boolean;
-};
-
 export function TaxProfileDialog({
   open,
   onOpenChange,
@@ -38,7 +32,7 @@ export function TaxProfileDialog({
   const tfl = useTranslations("field");
 
   return (
-    <ConfigEntityDialog<TaxProfile, TaxProfileFormValues, TaxProfilePayload>
+    <ConfigEntityDialog<TaxProfile, TaxProfileFormValues, TaxProfileFormValues>
       open={open}
       onOpenChange={onOpenChange}
       entity={taxProfile}
@@ -49,20 +43,8 @@ export function TaxProfileDialog({
       useUpdate={useUpdateTaxProfile}
       serverFieldErrors={{ TAX_PROFILE_NAME_ALREADY_EXISTS: "name" }}
       buildSchema={createTaxProfileSchema}
-      toFormValues={(e) =>
-        e
-          ? {
-              name: e.name,
-              tax_rate: e.tax_rate,
-              is_active: e.is_active,
-            }
-          : EMPTY_FORM
-      }
-      toPayload={(v) => ({
-        name: v.name,
-        tax_rate: v.tax_rate,
-        is_active: v.is_active,
-      })}
+      toFormValues={getDefaultValues}
+      toPayload={(v) => v}
     >
       {({ form, disabled }) => (
         <>

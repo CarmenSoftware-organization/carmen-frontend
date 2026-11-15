@@ -5,113 +5,9 @@ import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { useBuCode } from "@/hooks/use-bu-code";
 import type {
   BankAccountMaster,
-  PaymentTypeMaster,
-  WhtFormMaster,
-  WhtServiceTypeMaster,
   TitleMaster,
   GlPeriodMaster,
 } from "@/types/accounting-master";
-
-export const DEFAULT_PAYMENT_TYPES: PaymentTypeMaster[] = [
-  {
-    id: "pm-transfer",
-    code: "TRANSFER",
-    description: "Bank Transfer",
-    description_local: "โอนเงินผ่านธนาคาร",
-    payment_method: "transfer",
-    is_active: true,
-    doc_version: 0,
-  },
-  {
-    id: "pm-cheque",
-    code: "CHEQUE",
-    description: "Bank Cheque",
-    description_local: "เช็คธนาคาร",
-    payment_method: "cheque",
-    is_active: true,
-    doc_version: 0,
-  },
-  {
-    id: "pm-cash",
-    code: "CASH",
-    description: "Petty Cash / Cash on Hand",
-    description_local: "เงินสดย่อย / เงินสดในมือ",
-    payment_method: "cash",
-    is_active: true,
-    doc_version: 0,
-  },
-  {
-    id: "pm-direct-debit",
-    code: "DIRECT_DEBIT",
-    description: "Direct Debit",
-    description_local: "หักบัญชีเงินฝากอัตโนมัติ",
-    payment_method: "direct_debit",
-    is_active: true,
-    doc_version: 0,
-  },
-];
-
-export const DEFAULT_WHT_FORMS: WhtFormMaster[] = [
-  {
-    id: "wht-form-pnd3",
-    code: "PND3",
-    description: "ภ.ง.ด. 3 (บุคคลธรรมดา)",
-    gl_account_id: "2012005",
-    is_active: true,
-    doc_version: 0,
-  },
-  {
-    id: "wht-form-pnd53",
-    code: "PND53",
-    description: "ภ.ง.ด. 53 (นิติบุคคล)",
-    gl_account_id: "2012006",
-    is_active: true,
-    doc_version: 0,
-  },
-  {
-    id: "wht-form-pnd2",
-    code: "PND2",
-    description: "ภ.ง.ด. 2 (ค่าเช่าและบริการบุคคลธรรมดา)",
-    gl_account_id: "2012004",
-    is_active: true,
-    doc_version: 0,
-  },
-];
-
-export const DEFAULT_WHT_SERVICE_TYPES: WhtServiceTypeMaster[] = [
-  {
-    id: "wht-service-3",
-    code: "WHT-SVC",
-    description: "Service Fee (ค่าจ้างบริการ/ทำของ)",
-    default_rate: "3.00",
-    is_active: true,
-    doc_version: 0,
-  },
-  {
-    id: "wht-rent-5",
-    code: "WHT-RENT",
-    description: "Rental Fee (ค่าเช่าทรัพย์สิน)",
-    default_rate: "5.00",
-    is_active: true,
-    doc_version: 0,
-  },
-  {
-    id: "wht-transport-1",
-    code: "WHT-TRANS",
-    description: "Transportation (ค่าขนส่ง)",
-    default_rate: "1.00",
-    is_active: true,
-    doc_version: 0,
-  },
-  {
-    id: "wht-advertising-2",
-    code: "WHT-ADV",
-    description: "Advertising (ค่าโฆษณา)",
-    default_rate: "2.00",
-    is_active: true,
-    doc_version: 0,
-  },
-];
 
 export const DEFAULT_TITLES: TitleMaster[] = [
   {
@@ -180,36 +76,6 @@ export function useBankAccounts() {
       }));
     },
     enabled: !!buCode,
-  });
-}
-
-export function usePaymentTypes() {
-  return useQuery({
-    queryKey: ["accounting-master", "payment-types"],
-    queryFn: async (): Promise<PaymentTypeMaster[]> => {
-      return DEFAULT_PAYMENT_TYPES;
-    },
-    initialData: DEFAULT_PAYMENT_TYPES,
-  });
-}
-
-export function useWhtForms() {
-  return useQuery({
-    queryKey: ["accounting-master", "wht-forms"],
-    queryFn: async (): Promise<WhtFormMaster[]> => {
-      return DEFAULT_WHT_FORMS;
-    },
-    initialData: DEFAULT_WHT_FORMS,
-  });
-}
-
-export function useWhtServiceTypes() {
-  return useQuery({
-    queryKey: ["accounting-master", "wht-service-types"],
-    queryFn: async (): Promise<WhtServiceTypeMaster[]> => {
-      return DEFAULT_WHT_SERVICE_TYPES;
-    },
-    initialData: DEFAULT_WHT_SERVICE_TYPES,
   });
 }
 

@@ -30,6 +30,7 @@ export interface PaymentWhtRow {
   wht_tax_profile_id: string;
   name: string;
   pnd_form?: string | null;
+  income_type?: string | null;
   rate: DecimalString;
   base_amount: DecimalString;
   wht_amount: DecimalString;
@@ -42,6 +43,7 @@ export interface PaymentExpenseRow {
   cost_center_id: string | null;
   description: string;
   amount: DecimalString;
+  base_amount?: DecimalString;
 }
 
 export interface PaymentForm {
@@ -61,6 +63,8 @@ export interface PaymentForm {
   /** ยอดจ่ายต่อบรรทัด invoice (key = ap_invoice_detail_id) เป็นค่าสัมบูรณ์ — เครื่องหมายใส่ตอนส่ง */
   allocations: Record<string, DecimalString>;
   wht: PaymentWhtRow[];
+  /** ผู้ใช้จัดชุด WHT เอง รวมถึงลบหมด — เก็บเฉพาะใน editor */
+  wht_manual: boolean;
   expenses: PaymentExpenseRow[];
 }
 
@@ -131,6 +135,7 @@ export function initialPaymentForm(
       exchange_rate: "",
       allocations: {},
       wht: [],
+      wht_manual: false,
       expenses: [],
     };
   }
@@ -160,17 +165,20 @@ export function initialPaymentForm(
       wht_tax_profile_id: w.wht_tax_profile_id,
       name: w.wht_tax_profile_name,
       pnd_form: w.pnd_form,
+      income_type: w.income_type,
       rate: w.wht_rate,
       base_amount: w.base_amount,
       wht_amount: w.wht_amount,
       is_override: w.is_override,
     })),
+    wht_manual: false,
     expenses: (loaded.expenses ?? []).map((e) => ({
       key: e.id,
       chart_of_accounts_id: e.chart_of_accounts_id,
       cost_center_id: e.cost_center_id,
       description: e.description ?? "",
       amount: e.amount,
+      base_amount: e.base_amount,
     })),
   };
 }
@@ -235,25 +243,22 @@ export function mergeWhtPreview(
   current: readonly PaymentWhtRow[],
   preview: readonly ApWhtPreviewRow[],
   keepOverrides: boolean,
+  manualSet = false,
 ): PaymentWhtRow[] {
-  return preview.map((row) => {
-    const existing = keepOverrides
-      ? current.find(
-          (c) =>
-            c.wht_tax_profile_id === row.wht_tax_profile_id && c.is_override,
-        )
-      : undefined;
-    return {
-      key: existing?.key ?? newKey(),
-      wht_tax_profile_id: row.wht_tax_profile_id,
-      name: row.wht_tax_profile_name,
-      pnd_form: row.pnd_form,
-      rate: row.wht_rate,
-      base_amount: row.base_amount,
-      wht_amount: existing ? existing.wht_amount : row.wht_amount,
-      is_override: !!existing,
-    };
-  });
+  // โปรไฟล์ที่ผู้ใช้เปลี่ยนอาจแทนตัวเดิมใน preview จึงคงทั้งชุดที่แก้เองจนสั่งคำนวณใหม่
+  if (keepOverrides && (manualSet || current.some((row) => row.is_override)))
+    return current.map((row) => ({ ...row, is_override: true }));
+  return preview.map((row) => ({
+    key: newKey(),
+    wht_tax_profile_id: row.wht_tax_profile_id,
+    name: row.wht_tax_profile_name,
+    pnd_form: row.pnd_form,
+    income_type: row.income_type,
+    rate: row.wht_rate,
+    base_amount: row.base_amount,
+    wht_amount: row.wht_amount,
+    is_override: false,
+  }));
 }
 
 export function formTotals(
@@ -281,7 +286,15 @@ export function validatePaymentForm(
     errors.add("exchangeRate");
   if (allocationInputs.length === 0) errors.add("allocations");
   if (overCap) errors.add("overAllocated");
-  if (form.wht.some((w) => !w.wht_amount.trim())) errors.add("whtAmount");
+  if (
+    form.wht.some(
+      (w) =>
+        !w.wht_tax_profile_id ||
+        !/^\d+(\.\d{1,2})?$/.test(w.base_amount) ||
+        !/^\d+(\.\d{1,2})?$/.test(w.wht_amount),
+    )
+  )
+    errors.add("whtAmount");
   if (
     form.expenses.some((e) => !e.chart_of_accounts_id || !isPositive(e.amount))
   )
