@@ -16,7 +16,12 @@ import { ALLERGEN_OPTIONS } from "@/constant/recipe";
 import { cn } from "@/lib/utils";
 import type { Recipe, RecipePreparationStep } from "@/types/recipe";
 import { activeSteps, normalizeEquipment } from "./recipe-steps-sync";
-import { activeIngredients, formatQty } from "./recipe-ingredients-cost";
+import {
+  activeIngredients,
+  decimalsFor,
+  formatQty,
+  formatQtyFixed,
+} from "./recipe-ingredients-cost";
 import { useRecipePrintTemplateId } from "./use-recipe-print-template";
 import { useWakeLock } from "./use-wake-lock";
 import { RecipeCookImages, type CookImage } from "./recipe-cook-images";
@@ -131,6 +136,8 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
       value: t("cookMinutes", { min: totalTime }),
     });
   const ingredients = activeIngredients(recipe.ingredients);
+  // ทศนิยมของจำนวนวัตถุดิบเท่ากันทุกแถว = ของแถวที่ละเอียดที่สุด
+  const qtyDecimals = decimalsFor(ingredients.map((l) => l.qty));
   // ติ๊กแล้วเก็บแค่ในหน้านี้ — รีเฟรชแล้วเริ่มใหม่ (ครัวเช็กของต่อรอบที่ทำ)
   const [checked, setChecked] = useState<ReadonlySet<string>>(() => new Set());
   const toggle = (id: string, on: boolean) =>
@@ -284,7 +291,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                               )}
                             </span>
                             <span className="shrink-0 tabular-nums">
-                              {formatQty(line.qty)}{" "}
+                              {formatQtyFixed(line.qty, qtyDecimals)}{" "}
                               {line.ingredient_unit?.name ?? ""}
                             </span>
                           </div>
