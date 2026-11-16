@@ -30,6 +30,8 @@ import {
   ReceivedQtyCell,
   UnitPriceCell,
 } from "./grn-item-cells";
+import { GrnItemDimensions } from "./grn-item-cells/item-dimensions";
+import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 
 export type GrnItemField = FieldArrayWithId<GrnFormValues, "items", "id">;
 
@@ -69,6 +71,7 @@ export function useGrnItemTable({
   lockedLines,
 }: UseGrnItemTableOptions) {
   "use no memo";
+  const dimensionsEnabled = useLineDimensionsEnabled();
   const tfl = useTranslations("field");
   const t = useTranslations("procurement.goodsReceiveNote");
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -138,6 +141,24 @@ export function useGrnItemTable({
             onPicked={() => onLocationPicked(row.id)}
           />
         ),
+        // แถว dimension ใต้บรรทัด — ใส่เฉพาะเมื่อเปิดใช้ ไม่งั้น DataGrid วาดแถว
+        // footer ว่างทุกบรรทัด · เริ่มที่คอลัมน์คลัง (ข้ามเลขลำดับ) กินถึงคอลัมน์ยอดรวม
+        meta: dimensionsEnabled
+          ? {
+              footerContent: (item: GrnItemField) => {
+                const index = itemFields.findIndex((f) => f.id === item.id);
+                if (index === -1) return null;
+                return (
+                  <GrnItemDimensions
+                    form={form}
+                    index={index}
+                    disabled={disabled || isLocked(index)}
+                  />
+                );
+              },
+              footerColSpan: 11,
+            }
+          : undefined,
       },
       {
         id: "product",
@@ -398,6 +419,8 @@ export function useGrnItemTable({
     onDeleteItem,
     qtyRefFor,
     lockedLines,
+    itemFields,
+    dimensionsEnabled,
     tfl,
     t,
   ]);

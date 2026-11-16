@@ -2,6 +2,7 @@ import type { LastAction } from "./last-action";
 import type { DiscountFields, ItemMoneyFields, TaxFields } from "./shared-item";
 import type { Audit } from "./audit";
 import type { EntityRef } from "./entity-ref";
+import type { DimensionPayload, DimensionRef } from "./gl-dimension";
 
 // --- Workflow ---
 
@@ -83,6 +84,8 @@ interface GoodsReceiveNoteDetail {
   product: EntityRef | null;
   product_sku: string | null;
   items: GrnDetailItem[];
+  /** dimension ระดับบรรทัด (อยู่ที่ detail ไม่ใช่ item) — `[]` เมื่อไม่มี */
+  dimensions?: DimensionRef[];
   doc_version?: number;
   /**
    * มีค่าเฉพาะใบ saved — ว่าง = แก้ได้ · มีสักเหตุ = จำนวน ราคา ส่วนลด ภาษี หน่วย
@@ -237,6 +240,8 @@ export interface GrnDetailPayload {
   note?: string;
   /** null = ล้างวันหมดอายุของบรรทัดนี้ */
   expired_at?: string | null;
+  /** ไม่ส่ง = backend ไม่แตะ (update) / copy จาก PO (add) · ส่ง (รวม `[]`) = แทนที่ทั้งชุด */
+  dimensions?: DimensionPayload[];
 }
 
 export interface ExtraCostDetailPayload {

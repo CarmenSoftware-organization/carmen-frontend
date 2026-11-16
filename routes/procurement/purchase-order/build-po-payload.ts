@@ -13,6 +13,8 @@ export function buildPoPayload(
   defaultItems: PoFormValues["items"],
   options?: {
     po_type?: PO_TYPE;
+    /** เปิดช่อง dimension ต่อบรรทัด — false/ไม่ส่ง = ไม่ส่ง `dimensions` เลย */
+    dimensionsEnabled?: boolean;
     docVersion?: number;
     freshDetails?: readonly { id: string; doc_version?: number }[];
   },
@@ -21,7 +23,10 @@ export function buildPoPayload(
   const purchaseOrderDetail = buildItemChanges(
     values.items,
     defaultItems,
-    mapItemToPayload,
+    (item, index) =>
+      mapItemToPayload(item, index, {
+        dimensionsEnabled: options?.dimensionsEnabled,
+      }),
   );
   // ทับหลัง buildItemChanges เสมอ — ดันเข้า input จะทำให้ทุกแถวกลายเป็น update
   purchaseOrderDetail.update = withFreshDetailVersions(

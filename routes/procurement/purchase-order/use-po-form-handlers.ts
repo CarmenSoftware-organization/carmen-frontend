@@ -24,6 +24,7 @@ import type { PurchaseOrder } from "@/types/purchase-order";
 import { PO_TYPE } from "@/types/purchase-order";
 import type { FormMode } from "@/types/form";
 import { pickDocVersion } from "@/lib/doc-version";
+import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 import { buildPoPayload } from "./build-po-payload";
 import type { PoFormValues } from "./po-form-schema";
 
@@ -57,6 +58,7 @@ export function usePoFormHandlers({
   const tv = useTranslations("validation");
   const tfl = useTranslations("field");
   const buCode = useBuCode();
+  const dimensionsEnabled = useLineDimensionsEnabled();
 
   const createPo = useCreatePurchaseOrder();
   const updatePo = useUpdatePurchaseOrder();
@@ -113,12 +115,14 @@ export function usePoFormHandlers({
   // - add: PO ใหม่ผ่านฟอร์มนี้เป็น manual เสมอ
   // - edit: คงค่าเดิมของ PO (manual→manual, ไม่ทับ PL/PR)
   // กัน backend default เป็น PR (ทำให้แก้ไขทีหลังไม่ได้: PO_FROM_PR_NOT_UPDATABLE)
-  const poTypeOption =
-    mode === "add"
+  const poTypeOption = {
+    ...(mode === "add"
       ? { po_type: PO_TYPE.MANUAL }
       : purchaseOrder?.po_type
         ? { po_type: purchaseOrder.po_type as PO_TYPE }
-        : undefined;
+        : {}),
+    dimensionsEnabled,
+  };
 
   // หลัง /save: ดึง doc_version ล่าสุดจาก response กลับเข้า form (header + ราย
   // detail จับคู่ด้วย id) — กัน save/submit ครั้งถัดไปส่ง doc_version เก่า → 409

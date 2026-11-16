@@ -12,6 +12,7 @@ export {
 export { PriceCell } from "./price-cell";
 export { ComputedPricingCell, PoItemComputedSync } from "./pricing-cell";
 export { CommentFooterRow } from "./comment-footer-row";
+export { PoItemDimensions } from "./item-dimensions";
 export {
   ItemAmountCell,
   ItemDiscountCell,

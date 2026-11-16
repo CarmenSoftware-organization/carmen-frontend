@@ -24,6 +24,7 @@ import PrInventoryRow from "./pr-inventory-row";
 import { PrItemSummary } from "./pr-item-summary";
 import { PrLastReceivingInfo } from "./pr-last-receiving-info";
 import { PrDiscountInput, PrTaxInput } from "./pr-money-fields";
+import { PrItemDimensions } from "./pr-item-dimensions";
 
 type ItemField = FieldArrayWithId<PrFormValues, "items", "id">;
 
@@ -38,6 +39,8 @@ interface PrItemExpandProps {
   readonly hidePrice?: boolean;
   /** stage ซ่อน `total_price` — subtotal / ส่วนลด / net / ภาษี / total / ยอดสกุลฐาน */
   readonly hideTotal?: boolean;
+  /** dimension แก้ได้เฉพาะ stage create (เหมือนสินค้า/คลัง) — ผู้ใช้ stage อื่นเห็นอย่างเดียว */
+  readonly isDimensionsDisabled?: boolean;
 }
 
 export function PrItemExpand({
@@ -49,6 +52,7 @@ export function PrItemExpand({
   baseCurrencyCode,
   hidePrice = false,
   hideTotal = false,
+  isDimensionsDisabled = true,
 }: PrItemExpandProps) {
   const tfl = useTranslations("field");
   const index = itemFields.findIndex((f) => f.id === item.id);
@@ -548,6 +552,11 @@ export function PrItemExpand({
           isHidden={hideTotal}
         />
       </div>
+      <PrItemDimensions
+        form={form}
+        index={index}
+        disabled={isDimensionsDisabled}
+      />
     </div>
   );
 }

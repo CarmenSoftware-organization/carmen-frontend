@@ -1,11 +1,21 @@
 import { z } from "zod";
 import { computeLineAmounts } from "@/lib/line-pricing";
 import type { TranslationFn } from "@/lib/i18n-schema";
+import { lineDimensionsPayload } from "@/lib/dimension-payload";
 import type {
   PurchaseOrder,
   PoDetailPayload,
   PrDetailRefPayload,
 } from "@/types/purchase-order";
+
+const dimensionRefSchema = z.object({
+  gl_dimension_id: z.string(),
+  gl_dimension_value_id: z.string(),
+  dimension_code: z.string().optional(),
+  value_code: z.string().optional(),
+  dimension_name: z.string().optional(),
+  value_name: z.string().optional(),
+});
 
 const prDetailSchema = z.object({
   // null ได้ — แถวที่ไม่ได้มาจาก PR (สร้างเองหรือมาจาก price list)
@@ -70,6 +80,10 @@ export function createPoDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     delivery_point_id: z.string().nullable(),
     delivery_point_name: z.string(),
     comment: z.string(),
+    /** dimension ระดับบรรทัด — โหลดจาก response แก้ได้ */
+    dimensions: z.array(dimensionRefSchema).optional(),
+    /** ผู้ใช้แก้ช่อง dimension ของบรรทัดนี้แล้ว — คุมว่าจะส่งใน details.update ไหม */
+    dimensions_dirty: z.boolean().optional(),
     received_qty: z.coerce.number(),
     foc_received_qty: z.coerce.number(),
     current_stage_status: z.string(),
@@ -168,6 +182,8 @@ export const PO_ITEM: PoFormValues["items"][number] = {
   delivery_point_id: null as string | null,
   delivery_point_name: "",
   comment: "",
+  dimensions: [],
+  dimensions_dirty: false,
   received_qty: 0,
   foc_qty: 0,
   foc_received_qty: 0,
@@ -283,6 +299,8 @@ export function getDefaultValues(
           delivery_point_id: d.delivery_point?.id ?? null,
           delivery_point_name: d.delivery_point?.name ?? "",
           comment: d.comment ?? "",
+          dimensions: d.dimensions ?? [],
+          dimensions_dirty: false,
           foc_qty: d.foc_qty ?? 0,
           // ไม่มี foc_unit บน wire เลย (ดูคอมเมนต์ที่ PurchaseOrderDetail) — ตั้งว่างไว้
           foc_unit_id: null as string | null,
@@ -314,6 +332,7 @@ export function getDefaultValues(
 export function mapItemToPayload(
   item: PoFormValues["items"][number],
   index: number,
+  options?: { dimensionsEnabled?: boolean },
 ): PoDetailPayload {
   const price = item.price ?? 0;
   const conversion = item.order_unit_conversion_factor ?? 1;
@@ -375,5 +394,6 @@ export function mapItemToPayload(
     delivery_point_id: item.delivery_point_id || null,
     delivery_point_name: item.delivery_point_name ?? "",
     comment: item.comment || "",
+    ...lineDimensionsPayload(item, options?.dimensionsEnabled ?? false),
   };
 }

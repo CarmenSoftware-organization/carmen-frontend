@@ -7,6 +7,7 @@ import {
   GrnSourceButton,
   type PrSource,
 } from "./pr-source-button";
+import { PoItemDimensions } from "./item-dimensions";
 import type { PoFormValues } from "../po-form-schema";
 
 export const CommentFooterRow = memo(function CommentFooterRow({
@@ -44,28 +45,37 @@ export const CommentFooterRow = memo(function CommentFooterRow({
   return (
     // pb เท่ากับ py ของเซลล์แถวแม่ (2.5) — `<td>` ของแถวหมายเหตุไม่มี padding
     // ของตัวเอง ช่องไฟด้านล่างจึงต้องมาจากตรงนี้ ไม่งั้นช่องกรอกชนเส้นคั่นแถว
-    <div className="flex items-center gap-2 pb-2.5">
-      {/* กินที่เท่าคอลัมน์ # พอดี ปุ่มลบจึงอยู่ใต้เลขลำดับของแถวตัวเอง */}
-      <div
-        className="flex shrink-0 justify-center"
-        style={{ width: leadingWidth }}
-      >
-        {renderLeading?.(index)}
+    <div className="pb-2.5">
+      <div className="flex items-center gap-2">
+        {/* กินที่เท่าคอลัมน์ # พอดี ปุ่มลบจึงอยู่ใต้เลขลำดับของแถวตัวเอง */}
+        <div
+          className="flex shrink-0 justify-center"
+          style={{ width: leadingWidth }}
+        >
+          {renderLeading?.(index)}
+        </div>
+        <Input
+          id={`items-${index}-comment`}
+          placeholder={placeholder}
+          maxLength={256}
+          className="w-96 text-xs"
+          disabled={isDisabled}
+          {...form.register(`items.${index}.comment`)}
+        />
+        <PoInventoryDialog control={form.control} index={index} />
+        <PrSourceButton
+          sources={detailId ? prSourcesByDetailId.get(detailId) : undefined}
+        />
+        <GrnSourceButton
+          sources={detailId ? grnSourcesByDetailId.get(detailId) : undefined}
+        />
       </div>
-      <Input
-        id={`items-${index}-comment`}
-        placeholder={placeholder}
-        maxLength={256}
-        className="w-96 text-xs"
+      {/* dimension ระดับบรรทัด — เยื้องเท่าคอลัมน์ # + gap ให้ตรงช่องหมายเหตุ */}
+      <PoItemDimensions
+        form={form}
+        index={index}
         disabled={isDisabled}
-        {...form.register(`items.${index}.comment`)}
-      />
-      <PoInventoryDialog control={form.control} index={index} />
-      <PrSourceButton
-        sources={detailId ? prSourcesByDetailId.get(detailId) : undefined}
-      />
-      <GrnSourceButton
-        sources={detailId ? grnSourcesByDetailId.get(detailId) : undefined}
+        offset={leadingWidth + 8}
       />
     </div>
   );

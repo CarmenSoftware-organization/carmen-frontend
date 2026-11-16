@@ -24,6 +24,7 @@ import { pickDocVersion, withFreshDetailVersions } from "@/lib/doc-version";
 import { httpClient } from "@/lib/http-client";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { useBuCode } from "@/hooks/use-bu-code";
+import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 import { useProfile } from "@/hooks/use-profile";
 import {
   resolvePeriodDate,
@@ -62,6 +63,7 @@ export function useGrnFormActions({
   const t = useTranslations("procurement.goodsReceiveNote");
   const tt = useTranslations("toast");
 
+  const dimensionsEnabled = useLineDimensionsEnabled();
   const isEdit = mode === "edit";
   const isAdd = mode === "add";
 
@@ -199,7 +201,7 @@ export function useGrnFormActions({
       values.items,
       defaultValues.items,
       (item) => {
-        const payload = mapDetailToPayload(item);
+        const payload = mapDetailToPayload(item, { dimensionsEnabled });
         if (isManual) {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { purchase_order_detail_id, ...rest } = payload;

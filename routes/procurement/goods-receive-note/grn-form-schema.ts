@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { lineDimensionsPayload } from "@/lib/dimension-payload";
 import { round2 } from "@/lib/currency-utils";
 import { stableStringify } from "@/lib/form-helpers";
 import type { TranslationFn } from "@/lib/i18n-schema";
@@ -7,6 +8,15 @@ import type {
   GrnDetailPayload,
   ExtraCostDetailPayload,
 } from "@/types/goods-receive-note";
+
+const dimensionRefSchema = z.object({
+  gl_dimension_id: z.string(),
+  gl_dimension_value_id: z.string(),
+  dimension_code: z.string().optional(),
+  value_code: z.string().optional(),
+  dimension_name: z.string().optional(),
+  value_name: z.string().optional(),
+});
 
 function createGrnDetailSchema(tv: TranslationFn, tf: TranslationFn) {
   const base = z.object({
@@ -73,6 +83,10 @@ function createGrnDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     // วันหมดอายุของล็อต (ISO) — ไม่บังคับ และกรอกวันที่ผ่านมาแล้วได้ (เตือนตอนสร้าง/commit
     // แต่ไม่บล็อก) · optional ด้วยเพราะแถวจาก wizard ที่ค้างใน session รุ่นก่อนไม่มีฟิลด์นี้
     expired_at: z.string().nullable().optional(),
+    /** dimension ระดับบรรทัด — optional เพราะ wizard ที่ค้างใน session รุ่นก่อนไม่มีฟิลด์นี้ */
+    dimensions: z.array(dimensionRefSchema).optional(),
+    /** ผู้ใช้แก้ช่อง dimension ของบรรทัดนี้แล้ว — คุมว่าจะส่งใน good_received_note_detail.update ไหม */
+    dimensions_dirty: z.boolean().optional(),
   });
 
   // backend บังคับ received_price (= unit_price ของฟอร์ม) เมื่อ received_qty > 0
@@ -182,6 +196,8 @@ export const EMPTY_DETAIL: GrnFormValues["items"][number] = {
   description: "",
   note: "",
   expired_at: null,
+  dimensions: [],
+  dimensions_dirty: false,
 };
 
 // --- Default extra cost detail ---
@@ -325,6 +341,8 @@ export function getDefaultValues(
           description: "",
           note: item?.note ?? "",
           expired_at: item?.expired_at ?? null,
+          dimensions: detail.dimensions ?? [],
+          dimensions_dirty: false,
         };
       }) ?? [],
     extra_cost_details:
@@ -339,6 +357,7 @@ export function getDefaultValues(
 
 export function mapDetailToPayload(
   item: GrnFormValues["items"][number],
+  options?: { dimensionsEnabled?: boolean },
 ): GrnDetailPayload {
   return {
     ...(item.doc_version != null ? { doc_version: item.doc_version } : {}),
@@ -374,6 +393,7 @@ export function mapDetailToPayload(
     // ส่ง null ไปด้วยเสมอ (ไม่ตัดทิ้ง) — แถวที่แก้ถูกส่งทั้งแถว null จึงแปลว่า "ล้างวันที่"
     // ("" ก็เป็น null: หลังบ้านรับแค่ datetime หรือ null ส่งสตริงว่างไปได้ 400)
     expired_at: item.expired_at || null,
+    ...lineDimensionsPayload(item, options?.dimensionsEnabled ?? false),
   };
 }
 
