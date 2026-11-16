@@ -49,9 +49,49 @@ export function applyDerivedAmounts(
   form.setValue(`items.${index}.total_price`, amounts.totalPrice);
 }
 
+/**
+ * ผู้ขายของใบราคาล่าสุดที่เคยเสนอสินค้านี้ — `last_vendor` ของ price-compare
+ * backend ส่งมาเฉพาะตอนไม่มีใบราคาที่เปิดอยู่ และ**ไม่มีราคามาด้วย** (ราคาเก่าไม่ใช่ข้อเสนอ
+ * ของใครแล้ว จัดซื้อต้องกรอกเอง) เลขใบราคา/ช่วงวันที่มีไว้บอกที่มาเท่านั้น ห้ามเขียนลงบรรทัด
+ */
+export interface LastPricelistVendor {
+  vendor_id: string;
+  vendor_name: string;
+  vendor_code: string | null;
+  pricelist_no: string;
+  pricelist_status: string;
+  effective_date: { from: string | null; to: string | null };
+}
+
+/**
+ * บรรทัดที่ไม่มีใบราคาที่เปิดอยู่: ใส่ผู้ขายล่าสุดที่เคยเสนอราคาสินค้านี้ (ไม่มี = ล้างผู้ขาย)
+ * แล้วล้างทุกอย่างที่มากับใบราคา — ราคา 0 ให้จัดซื้อกรอกเอง ห้ามผูกเลขใบราคาเก่า
+ *
+ * ใช้ทั้ง auto-allocate และปุ่ม "ใช้ผู้ขายนี้" ในหน้าต่างเทียบราคา ให้สองทางได้ผลเหมือนกัน
+ */
+export function applyNoPricelist(
+  form: UseFormReturn<PrFormValues>,
+  index: number,
+  item: PrFormValues["items"][number],
+  lastVendor: LastPricelistVendor | null,
+) {
+  form.setValue(`items.${index}.vendor_id`, lastVendor?.vendor_id ?? null);
+  form.setValue(`items.${index}.vendor_name`, lastVendor?.vendor_name ?? "");
+  form.setValue(`items.${index}.pricelist_price`, 0);
+  // ราคากับธง Inc VAT มาจากแหล่งเดียวกันเสมอ — ไม่มีราคา ธงก็รีเป็นปิด
+  form.setValue(`items.${index}.is_tax_included`, false);
+  form.setValue(`items.${index}.pricelist_type`, null);
+  form.setValue(`items.${index}.pricelist_detail_id`, null);
+  form.setValue(`items.${index}.pricelist_no`, null);
+  // ไม่มีราคา → ยอด derive กลับเป็น 0 (tax_rate คงเดิม)
+  applyDerivedAmounts(form, index, item, 0, Number(item.tax_rate) || 0);
+}
+
 export interface AutoAllocateMessages {
   allocating: (count: number) => string;
   allocated: (allocated: number, total: number) => string;
+  /** ไม่มีใบราคาที่เปิดอยู่ ใส่ผู้ขายล่าสุดให้แล้ว แต่ราคาต้องกรอกเอง */
+  vendorOnly: (count: number) => string;
   allocateFailed: (count: number) => string;
   noPriceListFound: string;
 }
@@ -60,7 +100,7 @@ export interface AutoAllocateMessages {
  * ดึงราคาจาก price list ให้ทุกรายการในใบอัตโนมัติ (ผู้ขาย ราคา ภาษี อัตราแลกเปลี่ยน)
  *
  * อยู่ในไฟล์กลางเพราะตรรกะว่าจะเลือกราคาไหน/เคลียร์ field อะไรเมื่อไม่เจอราคา
- * ห้ามแตกเป็นหลายชุด
+ * ห้ามแตกเป็นหลายชุด · ไม่มีใบราคาที่เปิดอยู่ = ใส่ผู้ขายล่าสุดให้ แต่ราคาว่าง (ดู applyNoPricelist)
  *
  * @param form - ฟอร์ม PR ที่จะเขียนค่ากลับ
  * @param buCode - รหัส business unit สำหรับ endpoint เทียบราคา
@@ -76,6 +116,7 @@ export async function runPrAutoAllocate(
 
   const toastId = toast.loading(msg.allocating(items.length));
   let allocated = 0;
+  let vendorOnly = 0;
 
   const results = await Promise.allSettled(
     items.map(async (item, index) => {
@@ -99,16 +140,12 @@ export async function runPrAutoAllocate(
       const json = await res.json();
       const selected = json.data?.selected;
       if (!selected) {
-        form.setValue(`items.${index}.vendor_id`, null);
-        form.setValue(`items.${index}.vendor_name`, "");
-        form.setValue(`items.${index}.pricelist_price`, 0);
-        // ราคากับธง Inc VAT มาจากแหล่งเดียวกันเสมอ — ไม่มีราคา ธงก็รีเป็นปิด
-        form.setValue(`items.${index}.is_tax_included`, false);
-        form.setValue(`items.${index}.pricelist_type`, null);
-        form.setValue(`items.${index}.pricelist_detail_id`, null);
-        form.setValue(`items.${index}.pricelist_no`, null);
-        // ไม่มีราคา → ยอด derive กลับเป็น 0 (tax_rate คงเดิม)
-        applyDerivedAmounts(form, index, item, 0, Number(item.tax_rate) || 0);
+        // backend ตอบ last_vendor เฉพาะตอนไม่มีใบราคาที่เปิดอยู่เลย — ใบราคาเปิดอยู่แต่จำนวน
+        // ไม่ถึงขั้นต่ำได้ null ผู้ขายจึงถูกล้างเหมือนเดิม
+        const lastVendor: LastPricelistVendor | null =
+          json.data?.last_vendor ?? null;
+        applyNoPricelist(form, index, item, lastVendor);
+        if (lastVendor) vendorOnly++;
         return;
       }
 
@@ -150,6 +187,8 @@ export async function runPrAutoAllocate(
   toast.dismiss(toastId);
   const failed = results.filter((r) => r.status === "rejected").length;
   if (allocated > 0) toast.success(msg.allocated(allocated, items.length));
+  if (vendorOnly > 0) toast.warning(msg.vendorOnly(vendorOnly));
   if (failed > 0) toast.error(msg.allocateFailed(failed));
-  if (allocated === 0 && failed === 0) toast.warning(msg.noPriceListFound);
+  if (allocated === 0 && vendorOnly === 0 && failed === 0)
+    toast.warning(msg.noPriceListFound);
 }

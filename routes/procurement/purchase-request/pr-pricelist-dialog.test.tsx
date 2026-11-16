@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { IntlProvider } from "use-intl";
 
 const get = vi.fn();
@@ -14,6 +14,7 @@ import en from "@/messages/en.json";
 import { PrPricelistDialog } from "./pr-pricelist-dialog";
 
 const bu = en.procurement.purchaseRequest.betterUnit;
+const lv = en.procurement.purchaseRequest.lastVendor;
 
 // ขอ 10 KG ที่ 100/KG · กล่อง 3 KG ราคา 270 = 90/KG แต่ต้องซื้อ 4 กล่อง = 12 KG
 const kgLine = {
@@ -65,12 +66,20 @@ function respond(betterUnit: unknown[]) {
   });
 }
 
-function renderDialog() {
+function renderDialog({
+  onSelectVendor = vi.fn(),
+  onOpenChange = vi.fn(),
+  readOnly = false,
+}: {
+  onSelectVendor?: (lastVendor: unknown) => void;
+  onOpenChange?: (open: boolean) => void;
+  readOnly?: boolean;
+} = {}) {
   return render(
     <IntlProvider locale="en" messages={en} timeZone="Asia/Bangkok">
       <PrPricelistDialog
         open
-        onOpenChange={vi.fn()}
+        onOpenChange={onOpenChange}
         productId="prod1"
         productName="Pork neck"
         unitId="u-kg"
@@ -81,6 +90,8 @@ function renderDialog() {
         approvedQty={0}
         approvedUnitName="KG"
         onSelect={vi.fn()}
+        onSelectVendor={onSelectVendor}
+        readOnly={readOnly}
       />
     </IntlProvider>,
   );
@@ -119,6 +130,83 @@ describe("PrPricelistDialog — cheaper in another unit", () => {
     await screen.findByText("Vendor KG");
     expect(
       screen.queryByRole("note", { name: bu.title }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+// ไม่มีใบราคาที่เปิดอยู่: backend ส่งผู้ขายของใบราคาล่าสุดที่เคยเสนอสินค้านี้มา (ไม่มีราคา)
+// กล่องนี้ให้ใส่ได้แค่ผู้ขาย ราคาต้องให้จัดซื้อกรอกเอง
+describe("PrPricelistDialog — no open price list", () => {
+  beforeEach(() => get.mockReset());
+
+  const lastVendor = {
+    vendor_id: "v9",
+    vendor_name: "Fresh Farm Co.",
+    vendor_code: "V009",
+    pricelist_no: "PL260900003",
+    pricelist_status: "expired",
+    effective_date: {
+      from: "2026-09-01T00:00:00.000Z",
+      to: "2026-09-30T00:00:00.000Z",
+    },
+  };
+
+  function respondEmpty(last: unknown) {
+    get.mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: {
+            selected: null,
+            lists: [],
+            suggests: { next_lowest_moq: [], most_value_moq: [], better_unit: [] },
+            last_price: null,
+            last_vendor: last,
+          },
+        }),
+    });
+  }
+
+  it("names the last vendor and where it came from", async () => {
+    respondEmpty(lastVendor);
+    renderDialog();
+
+    const note = await screen.findByRole("note", { name: lv.title });
+    expect(note).toHaveTextContent("Fresh Farm Co. (V009)");
+    expect(note).toHaveTextContent("from price list PL260900003");
+    expect(note).toHaveTextContent(lv.hint);
+  });
+
+  it("hands back only the vendor and closes when it is used", async () => {
+    respondEmpty(lastVendor);
+    const onSelectVendor = vi.fn();
+    const onOpenChange = vi.fn();
+    renderDialog({ onSelectVendor, onOpenChange });
+
+    fireEvent.click(await screen.findByRole("button", { name: lv.use }));
+
+    expect(onSelectVendor).toHaveBeenCalledWith(lastVendor);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("shows the vendor without the button when the dialog is read-only", async () => {
+    respondEmpty(lastVendor);
+    renderDialog({ readOnly: true });
+
+    await screen.findByRole("note", { name: lv.title });
+    expect(
+      screen.queryByRole("button", { name: lv.use }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows nothing extra when no price list ever quoted the product", async () => {
+    respondEmpty(null);
+    renderDialog();
+
+    await waitFor(() => expect(get).toHaveBeenCalled());
+    await screen.findByText(en.procurement.purchaseRequest.noPriceList);
+    expect(
+      screen.queryByRole("note", { name: lv.title }),
     ).not.toBeInTheDocument();
   });
 });
