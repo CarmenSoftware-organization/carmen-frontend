@@ -117,10 +117,13 @@ const SOURCE_BADGE: Partial<
  * - คอลัมน์ตัวเลขกว้างขึ้นเป็นขั้นที่ 48rem และ 56rem ส่วนที่เหลือเป็นของชื่อวัตถุดิบเสมอ
  *   (ขั้นแคบสุด 42–48rem: ช่องในเซลล์ลด padding และซ่อนลูกศรของ select หน่วย ให้ "GRAM" ไม่โดนตัด)
  *
- * คอลัมน์: ประเภท · ชื่อ · หน่วย · จำนวน · % เสีย · ต้นทุน/หน่วย · ต้นทุนบรรทัด · ลบ
+ * คอลัมน์: ประเภท · ชื่อ · หน่วย · จำนวน · จำนวนในหน่วยสต๊อก · % เสีย · ต้นทุนบรรทัด · ลบ
+ * (จำนวนในหน่วยสต๊อกเป็นคอลัมน์ของตัวเอง — ผู้ใช้สั่ง 2026-11-16 · ขั้นแคบสุดแสดงแค่ผลลัพธ์ "0.4 KG"
+ *  อัตราแปลง "(1 KG = 1000 GRAM)" อยู่ใน title เพราะคอลัมน์ 5.5rem ใส่ไม่พอ ตั้งแต่ 48rem จึงแสดงเป็นบรรทัดที่สอง)
+ * (ไม่มีคอลัมน์ต้นทุน/หน่วย — ผู้ใช้สั่งซ่อน 2026-11-16: ดูและกรอกเป็นต้นทุนของจำนวนนั้นทั้งบรรทัดพอ)
  */
 const ING_GRID =
-  "grid grid-cols-2 gap-x-1.5 gap-y-1 @2xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_4.5rem_4rem_3rem_4.5rem_4.75rem_1.75rem] @3xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_5.5rem_4.5rem_3.75rem_5.5rem_5.25rem_1.75rem] @4xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_7rem_5.5rem_4.5rem_7rem_6.5rem_1.75rem]";
+  "grid grid-cols-2 gap-x-1.5 gap-y-1 @2xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_4.5rem_4rem_5.5rem_3rem_5.25rem_1.75rem] @3xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_5.5rem_4.5rem_8rem_3.75rem_6rem_1.75rem] @4xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_7rem_5.5rem_8.5rem_4.5rem_7rem_1.75rem]";
 
 /**
  * ช่องกรอกในตาราง — ดูเป็นข้อความในเซลล์ กดแล้วจึงเป็นช่องกรอก (ผู้ใช้สั่ง: "คล้ายตาราง แล้วกดเพื่อใส่ค่า")
@@ -362,10 +365,10 @@ export function RecipeIngredientsFields({
                     <span className="col-span-2">{t("ingredientName")}</span>
                     <span className="px-2">{tfl("unit")}</span>
                     <span className="px-2 text-right">{tfl("qty")}</span>
-                    <span className="px-1 text-right">{t("wastagePct")}</span>
                     <span className="px-2 text-right">
-                      {tfl("costPerUnit")}
+                      {t("inventoryQtyCol")}
                     </span>
+                    <span className="px-1 text-right">{t("wastagePct")}</span>
                     <span className="text-right">{t("cost")}</span>
                     <span />
                   </div>
@@ -540,10 +543,6 @@ function IngredientRow({
       : undefined;
 
   const unitName = unitOptions.find((u) => u.id === unitId)?.name ?? "";
-  // หน่วยที่ต้นทุนต่อหน่วยอ้างถึง: สินค้า = หน่วย inventory · สูตร = หน่วยผลผลิต
-  const costUnitName = isRecipe
-    ? (recipeUnit?.name ?? savedUnit?.name)
-    : inventoryUnit?.name;
   const removeButton = (className: string) =>
     !isDisabled && (
       <Button
@@ -675,8 +674,8 @@ function IngredientRow({
         </div>
       </div>
 
-      {/* หน่วย + จำนวน (+ จำนวนในหน่วย inventory ใต้สองช่องนี้) */}
-      <div className="col-span-2 grid grid-cols-2 gap-x-1.5 gap-y-1 @2xl/ing:grid-cols-subgrid">
+      {/* หน่วย + จำนวน + จำนวนในหน่วย inventory (ตาราง = คอลัมน์ที่สาม · การ์ด = บรรทัดใต้สองช่องนี้) */}
+      <div className="col-span-2 grid grid-cols-2 gap-x-1.5 gap-y-1 @2xl/ing:col-span-3 @2xl/ing:grid-cols-subgrid">
         <div className="min-w-0">
           <span className={CARD_LABEL}>{tfl("unit")}</span>
           {isRecipe ? (
@@ -742,18 +741,29 @@ function IngredientRow({
             {...form.register(`ingredients.${i}.qty`, numberInput)}
           />
         </div>
-        {inventoryUnit && inventoryQty !== undefined && (
+        {inventoryUnit && inventoryQty !== undefined ? (
           <p
             aria-label={t("inventoryQtyLabel")}
-            className="text-muted-foreground col-span-2 px-2 text-right text-xs break-words tabular-nums"
+            title={`${formatQty(inventoryQty)} ${inventoryUnit.name} ${t(
+              "inventoryQtyRatio",
+              {
+                inventoryUnit: inventoryUnit.name,
+                ratio: formatQty(unitRatio),
+                unit: unitName,
+              },
+            )}`}
+            className="text-muted-foreground col-span-2 min-w-0 px-2 text-right text-xs break-words tabular-nums @2xl/ing:col-span-1 @2xl/ing:pt-2"
           >
-            <span className="text-foreground font-medium">
+            <span className="text-foreground font-medium @2xl/ing:hidden">
               {t("inventoryQtyValue", {
                 qty: formatQty(inventoryQty),
                 unit: inventoryUnit.name,
               })}
+            </span>
+            <span className="text-foreground hidden font-medium @2xl/ing:block">
+              {formatQty(inventoryQty)} {inventoryUnit.name}
             </span>{" "}
-            <span className="text-micro">
+            <span className="text-micro @2xl/ing:hidden @3xl/ing:block">
               {t("inventoryQtyRatio", {
                 inventoryUnit: inventoryUnit.name,
                 ratio: formatQty(unitRatio),
@@ -761,42 +771,34 @@ function IngredientRow({
               })}
             </span>
           </p>
+        ) : (
+          // ตารางต้องมีเซลล์ครบทุกคอลัมน์ — แถวสูตรย่อย/ยังไม่เลือกหน่วยไม่มีค่าให้แสดง
+          <span className="hidden @2xl/ing:block" aria-hidden="true" />
         )}
       </div>
 
-      <div className="relative min-w-0">
-        <span className={CARD_LABEL}>{t("wastagePct")}</span>
-        <FieldInput
-          aria-label={t("wastagePct")}
-          title={t("wastagePct")}
-          type="number"
-          inputMode="decimal"
-          min={0}
-          max={100}
-          step="any"
-          size="sm"
-          disabled={isDisabled}
-          className={cn("text-right tabular-nums", CELL_INPUT)}
-          error={rowErrors?.wastage_percentage?.message}
-          errorIconAlign="left"
-          {...form.register(`ingredients.${i}.wastage_percentage`, numberInput)}
-        />
-      </div>
-
-      {/* ต้นทุน/หน่วย (ระบบหารให้) + ต้นทุนบรรทัด (กรอกเองได้) (+ ที่มาของต้นทุนใต้สองช่องนี้) */}
+      {/* % เสีย + ต้นทุนบรรทัด (กรอกเองได้) — ที่มาของต้นทุนอยู่ใต้สองช่องนี้ (ป้ายกว้างกว่าคอลัมน์ต้นทุนช่องเดียว) */}
       <div className="contents @2xl/ing:col-span-2 @2xl/ing:grid @2xl/ing:grid-cols-subgrid @2xl/ing:gap-y-1">
-        <div className="flex min-h-8 min-w-0 items-center justify-between gap-2 @2xl/ing:justify-end @2xl/ing:px-2">
-          <span className="text-muted-foreground text-xs @2xl/ing:hidden">
-            {tfl("costPerUnit")}
-          </span>
-          <span
-            aria-label={tfl("costPerUnit")}
-            className="text-muted-foreground truncate text-sm tabular-nums"
-          >
-            {cost.state === "ok"
-              ? formatCurrency(cost.unit.cost_per_unit)
-              : "—"}
-          </span>
+        <div className="relative min-w-0">
+          <span className={CARD_LABEL}>{t("wastagePct")}</span>
+          <FieldInput
+            aria-label={t("wastagePct")}
+            title={t("wastagePct")}
+            type="number"
+            inputMode="decimal"
+            min={0}
+            max={100}
+            step="any"
+            size="sm"
+            disabled={isDisabled}
+            className={cn("text-right tabular-nums", CELL_INPUT)}
+            error={rowErrors?.wastage_percentage?.message}
+            errorIconAlign="left"
+            {...form.register(
+              `ingredients.${i}.wastage_percentage`,
+              numberInput,
+            )}
+          />
         </div>
         <div className="min-w-0">
           <span className={CARD_LABEL}>{t("lineCost")}</span>
@@ -808,40 +810,29 @@ function IngredientRow({
             error={rowErrors?.line_cost?.message}
           />
         </div>
-        {(costUnitName ||
-          badge ||
-          cost.state === "pending" ||
-          cost.state === "error") && (
-          // ใต้คอลัมน์ต้นทุน/หน่วย = หน่วยที่ราคานั้นอ้างถึง · ใต้คอลัมน์ต้นทุน = ที่มาของต้นทุน + ปุ่มย้อน
-          <div className="col-span-2 grid grid-cols-subgrid items-start">
-            <span className="text-muted-foreground text-micro min-w-0 text-right @2xl/ing:px-2">
-              {costUnitName && cost.state === "ok"
-                ? t("costPerUnitOf", { unit: costUnitName })
-                : null}
-            </span>
-            <div className="flex min-w-0 flex-wrap items-center justify-end gap-x-1.5 gap-y-0.5">
-              {(cost.state === "pending" || cost.state === "error") && (
-                <LineCostValue cost={cost} onRetry={onRetryCost} />
-              )}
-              {badge && (
-                <Badge variant={badge.variant} size="xs">
-                  {t(badge.key)}
-                </Badge>
-              )}
-              {isManual && !isDisabled && (
-                <button
-                  type="button"
-                  title={t("resetManualCost")}
-                  aria-label={t("resetManualCost")}
-                  onClick={() =>
-                    form.setValue(`ingredients.${i}.line_cost`, null, opts)
-                  }
-                  className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 rounded-sm outline-none focus-visible:ring-2"
-                >
-                  <RotateCcw className="size-3" aria-hidden="true" />
-                </button>
-              )}
-            </div>
+        {(badge || cost.state === "pending" || cost.state === "error") && (
+          <div className="col-span-2 flex min-w-0 flex-wrap items-center justify-end gap-x-1.5 gap-y-0.5">
+            {(cost.state === "pending" || cost.state === "error") && (
+              <LineCostValue cost={cost} onRetry={onRetryCost} />
+            )}
+            {badge && (
+              <Badge variant={badge.variant} size="xs">
+                {t(badge.key)}
+              </Badge>
+            )}
+            {isManual && !isDisabled && (
+              <button
+                type="button"
+                title={t("resetManualCost")}
+                aria-label={t("resetManualCost")}
+                onClick={() =>
+                  form.setValue(`ingredients.${i}.line_cost`, null, opts)
+                }
+                className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 rounded-sm outline-none focus-visible:ring-2"
+              >
+                <RotateCcw className="size-3" aria-hidden="true" />
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -858,7 +849,7 @@ const lineCostText = (n: number | undefined) =>
 /**
  * ช่องต้นทุนของบรรทัด — ปกติแสดงต้นทุนที่ระบบคิด (จำนวน × ต้นทุนต่อหน่วย + ของเสีย)
  * พิมพ์ทับ = กำหนดเอง: "จำนวนนี้ราคาเท่านี้" เช่น 400 GRAM = 20 (`line_cost` ของแถว ส่งไปกับ PUT →
- * server เก็บค่านั้นตรง ๆ แล้วหารย้อนเป็นต้นทุนต่อหน่วย) · ลบจนว่าง = กลับไปใช้ของระบบ
+ * server เก็บค่านั้นตรง ๆ แล้วหารย้อนเป็นต้นทุนต่อหน่วยเอง ไม่แสดงบนจอ) · ลบจนว่าง = กลับไปใช้ของระบบ
  * ผู้ใช้สั่ง 2026-11-16: ช่องที่กรอกเองคือต้นทุนรวมของจำนวนนั้น ไม่ใช่ต้นทุนต่อหน่วย
  *
  * ระหว่างพิมพ์เก็บข้อความไว้ในช่องเอง — ผูกค่าตัวเลขจากฟอร์มตรง ๆ แล้ว "12." จะถูกเขียนกลับเป็น "12"
@@ -996,6 +987,12 @@ function IngredientCostTable({
         <table className="w-full text-xs">
           <thead className="bg-muted/60">
             <tr className="text-muted-foreground text-left">
+              <th
+                scope="col"
+                className="w-px py-1.5 pr-1 pl-2 text-right font-semibold"
+              >
+                #
+              </th>
               <th scope="col" className="px-2 py-1.5 font-semibold">
                 {t("ingredientName")}
               </th>
@@ -1011,8 +1008,12 @@ function IngredientCostTable({
             </tr>
           </thead>
           <tbody>
-            {lines.map(({ d, cost, i }) => (
+            {lines.map(({ d, cost, i }, order) => (
               <tr key={i} className="border-border/60 border-t">
+                {/* ลำดับตามที่แสดง (แพง → ถูก) — ผู้ใช้สั่งใส่เลข 1, 2, 3 … 2026-11-16 */}
+                <td className="text-muted-foreground w-px py-1.5 pr-1 pl-2 text-right tabular-nums">
+                  {order + 1}
+                </td>
                 <td className="px-2 py-1.5">
                   {d.product_label || "—"}
                   {d.ingredient_type === "recipe" && (

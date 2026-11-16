@@ -5272,7 +5272,7 @@
       "preview": "Preview",
       "costSourceManual": "Manual",
       "resetManualCost": "Use system cost",
-      "costPerUnitOf": "per {unit}"
+      "inventoryQtyCol": "In stock unit"
     },
     "posSale": {
       "history": {

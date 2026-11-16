@@ -5272,7 +5272,7 @@
       "preview": "ดูตัวอย่าง",
       "costSourceManual": "กำหนดเอง",
       "resetManualCost": "ใช้ต้นทุนจากระบบ",
-      "costPerUnitOf": "ต่อ {unit}"
+      "inventoryQtyCol": "ในหน่วยสต๊อก"
     },
     "posSale": {
       "history": {
