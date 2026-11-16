@@ -139,7 +139,7 @@ const pages = [
     name: "Dimension",
     Page: DimensionPage,
     code: "qa_dimension",
-    prefix: "accounting.config.gl",
+    prefix: "configuration.dimension",
   },
   {
     name: "JV Prefix",

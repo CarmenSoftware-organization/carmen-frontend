@@ -86,7 +86,7 @@ export default function DimensionPage() {
     fields: STATUS_FILTER_FIELDS,
   });
   const activeFilter = activeFromFilter(lf.values.filter);
-  const canEdit = useAccountingConfigEdit("accounting.config.gl");
+  const canEdit = useAccountingConfigEdit("configuration.dimension");
   const [editing, setEditing] = useState<DimensionMaster | null | undefined>();
   const [viewingValuesId, setViewingValuesId] = useState<string | null>(null);
   const viewingValues =
@@ -327,7 +327,7 @@ export default function DimensionPage() {
             if (!buCode) throw new Error("Select a business unit first");
             const { code: _code, ...changes } = value;
             const saved = await saveDimensionRecord(
-              API_ENDPOINTS.GL_DIMENSIONS(buCode),
+              API_ENDPOINTS.DIMENSIONS(buCode),
               current ? changes : value,
               current,
             );
@@ -352,7 +352,7 @@ export default function DimensionPage() {
             }
             return mutateValue(
               () =>
-                httpClient.post(API_ENDPOINTS.GL_DIMENSION_VALUES(buCode!), {
+                httpClient.post(API_ENDPOINTS.DIMENSION_VALUES(buCode!), {
                   gl_dimension_id: viewingValues.id,
                   ...val,
                 }),
@@ -363,7 +363,7 @@ export default function DimensionPage() {
             return mutateValue(
               () =>
                 httpClient.put(
-                  `${API_ENDPOINTS.GL_DIMENSION_VALUES(buCode!)}/${val.id}`,
+                  `${API_ENDPOINTS.DIMENSION_VALUES(buCode!)}/${val.id}`,
                   {
                     name: val.name,
                     name_local: val.name_local,
@@ -378,7 +378,7 @@ export default function DimensionPage() {
             return mutateValue(
               () =>
                 httpClient.delete(
-                  `${API_ENDPOINTS.GL_DIMENSION_VALUES(buCode!)}/${id}`,
+                  `${API_ENDPOINTS.DIMENSION_VALUES(buCode!)}/${id}`,
                 ),
               "Dimension value removed",
             );
@@ -397,7 +397,7 @@ export default function DimensionPage() {
           try {
             if (!buCode) throw new Error("Select a business unit first");
             const res = await httpClient.delete(
-              `${API_ENDPOINTS.GL_DIMENSIONS(buCode)}/${deleting.id}`,
+              `${API_ENDPOINTS.DIMENSIONS(buCode)}/${deleting.id}`,
             );
             if (!res.ok)
               throw await ApiError.from(res, "Unable to delete dimension");
@@ -650,7 +650,7 @@ function DimensionValuesDialog({
   onUpdateValue: (val: DimensionValueMaster) => Promise<boolean>;
   onDeleteValue: (id: string) => Promise<boolean>;
 }) {
-  const canEdit = useAccountingConfigEdit("accounting.config.gl");
+  const canEdit = useAccountingConfigEdit("configuration.dimension");
   const [valCode, setValCode] = useState("");
   const [valName, setValName] = useState("");
   const [valNameLocal, setValNameLocal] = useState("");
@@ -1098,7 +1098,7 @@ async function saveDimensionWithValues({
       .map(async (value) => {
         if (value.deleted) {
           const response = await httpClient.delete(
-            `${API_ENDPOINTS.GL_DIMENSION_VALUES(buCode)}/${value.id}`,
+            `${API_ENDPOINTS.DIMENSION_VALUES(buCode)}/${value.id}`,
           );
           if (!response.ok)
             throw await ApiError.from(
@@ -1119,7 +1119,7 @@ async function saveDimensionWithValues({
           is_active: value.is_active,
         };
         const saved = await saveDimensionRecord(
-          API_ENDPOINTS.GL_DIMENSION_VALUES(buCode),
+          API_ENDPOINTS.DIMENSION_VALUES(buCode),
           value.id
             ? changes
             : {
