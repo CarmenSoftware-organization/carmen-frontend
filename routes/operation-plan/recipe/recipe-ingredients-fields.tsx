@@ -8,13 +8,14 @@ import {
 } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { useQueries } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
-  Calculator,
   ChefHat,
   Package,
   Plus,
   RotateCcw,
   RotateCw,
+  Tags,
   Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -44,13 +45,11 @@ import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { formatCurrency } from "@/lib/currency-utils";
 import { cn } from "@/lib/utils";
 import type {
-  IngredientCostLine,
   IngredientCostSource,
   Recipe,
   RecipeIngredientLine,
 } from "@/types/recipe";
 import { numberInput, type RecipeFormValues } from "./recipe-form-schema";
-import type { RecipeCostCalc } from "./use-recipe-cost-calc";
 import {
   activeIngredients,
   draftToInput,
@@ -73,7 +72,6 @@ import {
   type RowCost,
 } from "./recipe-ingredients-cost";
 import { usePreviewIngredientCosts } from "./use-recipe-ingredients";
-import { RecipeIngredientsRecalcDialog } from "./recipe-ingredients-recalc-dialog";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -83,7 +81,6 @@ interface RecipeIngredientsFieldsProps {
   readonly isDisabled: boolean;
   /** undefined = สูตรใหม่ ยังไม่มี recipe_id ให้ผูกวัตถุดิบ */
   readonly recipe?: Recipe;
-  readonly computed: RecipeCostCalc;
 }
 
 /** ป้ายบอกว่าต้นทุนบรรทัดนี้ไม่ได้มาจากต้นทุนเฉลี่ยคลัง */
@@ -96,7 +93,8 @@ const SOURCE_BADGE: Partial<
         | "costSourceStandard"
         | "costSourceNone"
         | "costSourceRecipe"
-        | "costSourceManual";
+        | "costSourceManual"
+        | "costSourcePricelist";
       variant: "warning-light" | "info-light" | "destructive-light";
     }
   >
@@ -106,6 +104,7 @@ const SOURCE_BADGE: Partial<
   none: { key: "costSourceNone", variant: "destructive-light" },
   recipe: { key: "costSourceRecipe", variant: "info-light" },
   manual: { key: "costSourceManual", variant: "info-light" },
+  pricelist: { key: "costSourcePricelist", variant: "info-light" },
 };
 
 /**
@@ -150,7 +149,6 @@ export function RecipeIngredientsFields({
   form,
   isDisabled,
   recipe,
-  computed,
 }: RecipeIngredientsFieldsProps) {
   const t = useTranslations("operationPlan.recipe");
   const tfl = useTranslations("field");
@@ -250,7 +248,12 @@ export function RecipeIngredientsFields({
   const requestPair = (key: string) => {
     if (!recipeId || inFlight.current.has(key)) return;
     inFlight.current.add(key);
-    previewCosts({ recipeId, items: [parsePairKey(key)] })
+    // หลังกด Update price บรรทัดที่เพิ่มทีหลังต้องเห็นราคาจากใบราคาเหมือนที่ Save จะคิด
+    previewCosts({
+      recipeId,
+      items: [parsePairKey(key)],
+      priceSource: recalculate ? "pricelist" : undefined,
+    })
       .then((res) => {
         const hit = pairCostsFrom(res.items).find(([k]) => k === key);
         setCurrent((prev) =>
@@ -288,25 +291,45 @@ export function RecipeIngredientsFields({
     requestPair(key);
   };
 
-  // คำนวณใหม่ — ต้นทุนปัจจุบันทั้งรายการ เทียบกับบนจอก่อนตัดสินใจ
-  const recalc = usePreviewIngredientCosts();
-  const [showRecalc, setShowRecalc] = useState(false);
-  const canRecalc =
+  // Update price (ผู้ใช้สั่ง 2026-11-16 แทนปุ่ม Recalculate): กดแล้วทับต้นทุนทุกบรรทัดสินค้าทันที
+  // ด้วยราคาจากใบราคาที่เปิดอยู่ ไม่มีใบราคา = 0 — ต้นทุนที่กรอกเองก็ถูกทับ (ล้าง line_cost)
+  // บรรทัดสูตรฐานไม่มีในใบราคา คงต้นทุนของสูตรฐาน · ยังไม่บันทึกจนกด Save (ส่ง recalculate + pricelist)
+  const updatePrice = usePreviewIngredientCosts();
+  const canUpdatePrice =
     drafts.length > 0 && drafts.every((d) => isDraftComplete(d) && d.qty > 0);
-  const openRecalc = () => {
+  const handleUpdatePrice = () => {
     if (!recipeId) return;
-    recalc.reset();
-    recalc.mutate({ recipeId, items: drafts.map(draftToInput) });
-    setShowRecalc(true);
-  };
-  const applyRecalc = (lines: IngredientCostLine[]) => {
-    setCurrent((prev) => {
-      const next = new Map(prev);
-      for (const [k, v] of pairCostsFrom(lines)) next.set(k, v);
-      return next;
-    });
-    form.setValue("recalculate_ingredients", true, { shouldDirty: true });
-    setShowRecalc(false);
+    const items = drafts.map((d) => draftToInput({ ...d, line_cost: null }));
+    updatePrice.mutate(
+      { recipeId, items, priceSource: "pricelist" },
+      {
+        onSuccess: (res) => {
+          drafts.forEach((d, i) => {
+            if (manualCostOf(d) !== null)
+              form.setValue(`ingredients.${i}.line_cost`, null, {
+                shouldDirty: true,
+              });
+          });
+          // แทนทั้ง map — ต้นทุนคลังที่ถามไว้ก่อนหน้าห้ามค้าง (บรรทัดที่ลบแล้วเพิ่มกลับต้องถามราคาใบราคาใหม่)
+          setCurrent(new Map(pairCostsFrom(res.items)));
+          form.setValue("recalculate_ingredients", true, { shouldDirty: true });
+          const products = res.items.filter(
+            (l) => l.ingredient_type !== "recipe",
+          );
+          const missing = products.filter(
+            (l) => l.cost_source !== "pricelist",
+          ).length;
+          toast.success(
+            t("updatePriceDone", {
+              priced: products.length - missing,
+              missing,
+            }),
+          );
+        },
+        onError: (err) =>
+          toast.error(getUserErrorMessage(err, tErr) || t("updatePriceFailed")),
+      },
+    );
   };
 
   const handleAdd = () => append({ ...EMPTY_INGREDIENT });
@@ -323,12 +346,13 @@ export function RecipeIngredientsFields({
             type="button"
             size="xs"
             variant="outline"
-            onClick={openRecalc}
-            disabled={!canRecalc}
+            onClick={handleUpdatePrice}
+            disabled={!canUpdatePrice || updatePrice.isPending}
+            title={t("updatePriceHint")}
             className="gap-1"
           >
-            <Calculator className="size-3" aria-hidden="true" />
-            {t("recalculate")}
+            <Tags className="size-3" aria-hidden="true" />
+            {t("updatePrice")}
           </Button>
         ) : undefined
       }
@@ -370,7 +394,9 @@ export function RecipeIngredientsFields({
                   {tfl("total")}
                 </p>
                 {recalculate && (
-                  <Badge variant="warning-light">{t("recalcApplied")}</Badge>
+                  <Badge variant="warning-light">
+                    {t("updatePriceApplied")}
+                  </Badge>
                 )}
               </div>
 
@@ -437,20 +463,6 @@ export function RecipeIngredientsFields({
             />
           </div>
         </div>
-      )}
-
-      {showRecalc && (
-        <RecipeIngredientsRecalcDialog
-          form={form}
-          computed={computed}
-          drafts={drafts}
-          rows={rows}
-          result={recalc.data}
-          isPending={recalc.isPending}
-          error={recalc.error}
-          onApply={applyRecalc}
-          onClose={() => setShowRecalc(false)}
-        />
       )}
     </CompactSection>
   );
