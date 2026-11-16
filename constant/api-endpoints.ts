@@ -206,12 +206,12 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/config/${buCode}/cost-centers/import-from-interface/carmen-gl`,
   GL_COST_CENTER_GROUPS: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/cost-center-groups`,
-  GL_DIMENSIONS: (buCode: string) =>
-    `/api/proxy/api/config/${buCode}/gl-dimensions`,
-  GL_ACCOUNT_DIMENSION_RULES: (buCode: string) =>
-    `/api/proxy/api/config/${buCode}/gl-account-dimension-rules`,
-  GL_DIMENSION_VALUES: (buCode: string) =>
-    `/api/proxy/api/config/${buCode}/gl-dimension-values`,
+  DIMENSIONS: (buCode: string) =>
+    `/api/proxy/api/config/${buCode}/dimensions`,
+  ACCOUNT_DIMENSION_RULES: (buCode: string) =>
+    `/api/proxy/api/config/${buCode}/account-dimension-rules`,
+  DIMENSION_VALUES: (buCode: string) =>
+    `/api/proxy/api/config/${buCode}/dimension-values`,
   GL_ACCOUNT_GROUPS: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/gl-account-groups`,
   GOODS_RECEIVE_NOTE_STOCK_MOVEMENTS: (buCode: string, grnId: string) =>

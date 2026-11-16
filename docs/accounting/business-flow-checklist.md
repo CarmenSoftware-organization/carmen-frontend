@@ -94,7 +94,7 @@
 - [x] **GL Periods & Lock**: หน้า Config และฟอร์ม JV ใช้ API จริง; ยังไม่ได้ smoke test runtime
 - [ ] **Titles (คำนำหน้าชื่อ)**: หน้า Config mock; ไม่พบ `/api/config/{bu_code}/titles` ใน Swagger รุ่นนี้
 - [x] **Account Code Grouping (L1-L4 Tree)**: หน้า Config และ COA ใช้ `/api/config/{bu_code}/gl-account-groups`; ยังไม่ได้ smoke test CRUD runtime
-- [x] **Dimensions & Sub-codes**: หน้า Config, COA และ JV ใช้ `/api/config/{bu_code}/gl-dimensions` และ `/gl-dimension-values`; smoke test Create/Read/Update ผ่านบน `CARMEN-AVG` (2026-09-30) แต่ Delete ติด backend `Unknown argument deleted_at`; JV เลือกค่าได้ แต่ Save พร้อม Dimension ติด backend `Unknown argument updated_by_id` (Save โดยไม่ใส่ Dimension ผ่าน)
+- [x] **Dimensions & Sub-codes**: หน้า Config, COA และ JV ใช้ `/api/config/{bu_code}/dimensions` และ `/dimension-values`; smoke test Create/Read/Update ผ่านบน `CARMEN-AVG` (2026-09-30) แต่ Delete ติด backend `Unknown argument deleted_at`; JV เลือกค่าได้ แต่ Save พร้อม Dimension ติด backend `Unknown argument updated_by_id` (Save โดยไม่ใส่ Dimension ผ่าน)
 - [x] **JV Prefix Management**: หน้า Config ใช้ `/api/config/{bu_code}/gl-jv-prefixes`; ยังไม่ได้ smoke test CRUD runtime
 - [ ] **Payment Types Master (สิ่งที่ยังขาด)**:
   - หน้ากำหนดประเภทการชำระเงิน (Transfer, Cheque, Credit Card, Cash) และเงื่อนไขบัญชี

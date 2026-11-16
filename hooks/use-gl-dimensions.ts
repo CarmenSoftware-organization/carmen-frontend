@@ -5,8 +5,8 @@ import { createConfigApi } from "@/lib/config-crud";
 import { fetchAllPages } from "@/lib/fetch-all-pages";
 import type { DimensionMaster, DimensionValueMaster } from "@/types/accounting-master";
 
-const dimensionsApi = createConfigApi<DimensionMaster, never>({ endpoint: API_ENDPOINTS.GL_DIMENSIONS, label: "dimensions" });
-const valuesApi = createConfigApi<DimensionValueMaster & { gl_dimension_id: string }, never>({ endpoint: API_ENDPOINTS.GL_DIMENSION_VALUES, label: "dimension values" });
+const dimensionsApi = createConfigApi<DimensionMaster, never>({ endpoint: API_ENDPOINTS.DIMENSIONS, label: "dimensions" });
+const valuesApi = createConfigApi<DimensionValueMaster & { gl_dimension_id: string }, never>({ endpoint: API_ENDPOINTS.DIMENSION_VALUES, label: "dimension values" });
 
 export function useGlDimensions(enabled = true) {
   const buCode = useBuCode();

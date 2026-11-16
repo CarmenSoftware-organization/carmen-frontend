@@ -6,7 +6,7 @@ import { ApiError } from "@/lib/api-error";
 import { readCoaRules, type DimensionRequirement, type CoaDimensionRule } from "@/lib/coa-dimension-rules";
 export { readCoaRules, coaRulesKey, type DimensionRequirement, type CoaDimensionRule } from "@/lib/coa-dimension-rules";
 const api = createConfigApi<CoaDimensionRule, { chart_of_accounts_id: string; gl_dimension_id: string; requirement: DimensionRequirement }>({
-  endpoint: API_ENDPOINTS.GL_ACCOUNT_DIMENSION_RULES, label: "account dimension rules",
+  endpoint: API_ENDPOINTS.ACCOUNT_DIMENSION_RULES, label: "account dimension rules",
 });
 
 async function checkSaved(response: Response) {
@@ -24,7 +24,7 @@ export async function saveCoaRules(bu: string, accountId: string, desired: Recor
     let response: Response | undefined;
     if (!requirement) response = await api.remove(bu, rule.id);
     else if (requirement !== rule.requirement) {
-      response = await httpClient.put(`${API_ENDPOINTS.GL_ACCOUNT_DIMENSION_RULES(bu)}/${rule.id}`, { requirement, doc_version: rule.doc_version });
+      response = await httpClient.put(`${API_ENDPOINTS.ACCOUNT_DIMENSION_RULES(bu)}/${rule.id}`, { requirement, doc_version: rule.doc_version });
     }
     if (response) await checkSaved(response);
   }

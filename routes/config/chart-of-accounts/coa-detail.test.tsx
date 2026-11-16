@@ -340,7 +340,7 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
 
     // จำลองกรณี backend ไม่มี endpoint หรือ query rules ล้มเหลว
     vi.spyOn(dimensionRulesModule, "readCoaRules").mockRejectedValue(
-      new Error("404 Not Found: gl-account-dimension-rules"),
+      new Error("404 Not Found: account-dimension-rules"),
     );
 
     renderWithProviders(

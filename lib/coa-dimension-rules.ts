@@ -12,7 +12,7 @@ export interface CoaDimensionRule {
 }
 export const coaRulesKey = (bu: string | undefined, id: string | undefined) => ["coa-dimension-rules", bu, id] as const;
 const api = createConfigApi<CoaDimensionRule, { chart_of_accounts_id: string; gl_dimension_id: string; requirement: DimensionRequirement }>({
-  endpoint: API_ENDPOINTS.GL_ACCOUNT_DIMENSION_RULES, label: "account dimension rules",
+  endpoint: API_ENDPOINTS.ACCOUNT_DIMENSION_RULES, label: "account dimension rules",
 });
 export async function readCoaRules(bu: string, id: string) {
   const rules = await fetchAllPages(async (page, perpage) => {
