@@ -140,7 +140,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
     });
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-4 md:px-6">
+    <div className="w-full px-4 py-4 md:px-6">
       {/* แถบบน — กลับ + รหัสสูตร · พิมพ์ / แก้ไข */}
       <header className="mb-4 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
