@@ -117,11 +117,13 @@ const SOURCE_BADGE: Partial<
  * - คอลัมน์ตัวเลขกว้างขึ้นเป็นขั้นที่ 48rem และ 56rem ส่วนที่เหลือเป็นของชื่อวัตถุดิบเสมอ
  *   (ขั้นแคบสุด 42–48rem: ช่องในเซลล์ลด padding และซ่อนลูกศรของ select หน่วย ให้ "GRAM" ไม่โดนตัด)
  *
- * คอลัมน์: ประเภท · ชื่อ · หน่วย · จำนวน · % เสีย · ต้นทุนบรรทัด · ลบ
+ * คอลัมน์: ประเภท · ชื่อ · หน่วย · จำนวน · จำนวนในหน่วยสต๊อก · % เสีย · ต้นทุนบรรทัด · ลบ
+ * (จำนวนในหน่วยสต๊อกเป็นคอลัมน์ของตัวเอง — ผู้ใช้สั่ง 2026-11-16 · ขั้นแคบสุดแสดงแค่ผลลัพธ์ "0.4 KG"
+ *  อัตราแปลง "(1 KG = 1000 GRAM)" อยู่ใน title เพราะคอลัมน์ 5.5rem ใส่ไม่พอ ตั้งแต่ 48rem จึงแสดงเป็นบรรทัดที่สอง)
  * (ไม่มีคอลัมน์ต้นทุน/หน่วย — ผู้ใช้สั่งซ่อน 2026-11-16: ดูและกรอกเป็นต้นทุนของจำนวนนั้นทั้งบรรทัดพอ)
  */
 const ING_GRID =
-  "grid grid-cols-2 gap-x-1.5 gap-y-1 @2xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_4.5rem_4rem_3rem_5.25rem_1.75rem] @3xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_5.5rem_4.5rem_3.75rem_6rem_1.75rem] @4xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_7rem_5.5rem_4.5rem_7rem_1.75rem]";
+  "grid grid-cols-2 gap-x-1.5 gap-y-1 @2xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_4.5rem_4rem_5.5rem_3rem_5.25rem_1.75rem] @3xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_5.5rem_4.5rem_8rem_3.75rem_6rem_1.75rem] @4xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_7rem_5.5rem_8.5rem_4.5rem_7rem_1.75rem]";
 
 /**
  * ช่องกรอกในตาราง — ดูเป็นข้อความในเซลล์ กดแล้วจึงเป็นช่องกรอก (ผู้ใช้สั่ง: "คล้ายตาราง แล้วกดเพื่อใส่ค่า")
@@ -363,6 +365,9 @@ export function RecipeIngredientsFields({
                     <span className="col-span-2">{t("ingredientName")}</span>
                     <span className="px-2">{tfl("unit")}</span>
                     <span className="px-2 text-right">{tfl("qty")}</span>
+                    <span className="px-2 text-right">
+                      {t("inventoryQtyCol")}
+                    </span>
                     <span className="px-1 text-right">{t("wastagePct")}</span>
                     <span className="text-right">{t("cost")}</span>
                     <span />
@@ -669,8 +674,8 @@ function IngredientRow({
         </div>
       </div>
 
-      {/* หน่วย + จำนวน (+ จำนวนในหน่วย inventory ใต้สองช่องนี้) */}
-      <div className="col-span-2 grid grid-cols-2 gap-x-1.5 gap-y-1 @2xl/ing:grid-cols-subgrid">
+      {/* หน่วย + จำนวน + จำนวนในหน่วย inventory (ตาราง = คอลัมน์ที่สาม · การ์ด = บรรทัดใต้สองช่องนี้) */}
+      <div className="col-span-2 grid grid-cols-2 gap-x-1.5 gap-y-1 @2xl/ing:col-span-3 @2xl/ing:grid-cols-subgrid">
         <div className="min-w-0">
           <span className={CARD_LABEL}>{tfl("unit")}</span>
           {isRecipe ? (
@@ -736,18 +741,29 @@ function IngredientRow({
             {...form.register(`ingredients.${i}.qty`, numberInput)}
           />
         </div>
-        {inventoryUnit && inventoryQty !== undefined && (
+        {inventoryUnit && inventoryQty !== undefined ? (
           <p
             aria-label={t("inventoryQtyLabel")}
-            className="text-muted-foreground col-span-2 px-2 text-right text-xs break-words tabular-nums"
+            title={`${formatQty(inventoryQty)} ${inventoryUnit.name} ${t(
+              "inventoryQtyRatio",
+              {
+                inventoryUnit: inventoryUnit.name,
+                ratio: formatQty(unitRatio),
+                unit: unitName,
+              },
+            )}`}
+            className="text-muted-foreground col-span-2 min-w-0 px-2 text-right text-xs break-words tabular-nums @2xl/ing:col-span-1 @2xl/ing:pt-2"
           >
-            <span className="text-foreground font-medium">
+            <span className="text-foreground font-medium @2xl/ing:hidden">
               {t("inventoryQtyValue", {
                 qty: formatQty(inventoryQty),
                 unit: inventoryUnit.name,
               })}
+            </span>
+            <span className="text-foreground hidden font-medium @2xl/ing:block">
+              {formatQty(inventoryQty)} {inventoryUnit.name}
             </span>{" "}
-            <span className="text-micro">
+            <span className="text-micro @2xl/ing:hidden @3xl/ing:block">
               {t("inventoryQtyRatio", {
                 inventoryUnit: inventoryUnit.name,
                 ratio: formatQty(unitRatio),
@@ -755,6 +771,9 @@ function IngredientRow({
               })}
             </span>
           </p>
+        ) : (
+          // ตารางต้องมีเซลล์ครบทุกคอลัมน์ — แถวสูตรย่อย/ยังไม่เลือกหน่วยไม่มีค่าให้แสดง
+          <span className="hidden @2xl/ing:block" aria-hidden="true" />
         )}
       </div>
 

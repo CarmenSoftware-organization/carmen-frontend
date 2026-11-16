@@ -5271,7 +5271,8 @@
       "stepVideoTitle": "Video for step {n}",
       "preview": "Preview",
       "costSourceManual": "Manual",
-      "resetManualCost": "Use system cost"
+      "resetManualCost": "Use system cost",
+      "inventoryQtyCol": "In stock unit"
     },
     "posSale": {
       "history": {
