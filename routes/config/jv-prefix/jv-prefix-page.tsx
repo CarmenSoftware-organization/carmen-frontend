@@ -8,7 +8,14 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Bookmark, Plus } from "lucide-react";
 import { toast } from "sonner";
-import SearchInput from "@/components/search-input";
+import { ListToolbar } from "@/components/list-filter/list-toolbar";
+import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
+import { useListFilters } from "@/hooks/use-list-filters";
+import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
+import {
+  STATUS_FILTER_FIELDS,
+  activeFromFilter,
+} from "../shared/status-list-filter";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,6 +57,12 @@ export default function JvPrefixPage() {
     },
   });
   const [search, setSearch] = useState("");
+  const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
+  const lf = useListFilters({
+    pageKey: LIST_PAGE_KEYS.JV_PREFIX,
+    fields: STATUS_FILTER_FIELDS,
+  });
+  const activeFilter = activeFromFilter(lf.values.filter);
   const canEdit = useAccountingConfigEdit("accounting.config.gl");
   const [editing, setEditing] = useState<JvPrefixMaster | null | undefined>();
   const [deleting, setDeleting] = useState<JvPrefixMaster | null>(null);
@@ -57,12 +70,17 @@ export default function JvPrefixPage() {
 
   const rows = useMemo(
     () =>
-      (prefixQuery.data ?? []).filter((item) =>
-        `${item.code} ${item.description} ${item.description_local ?? ""}`
-          .toLowerCase()
-          .includes(search.toLowerCase()),
-      ),
-    [search, prefixQuery.data],
+      (prefixQuery.data ?? [])
+        .filter((item) =>
+          `${item.code} ${item.description} ${item.description_local ?? ""}`
+            .toLowerCase()
+            .includes(search.toLowerCase()),
+        )
+        .filter(
+          (item) =>
+            activeFilter === undefined || item.is_active === activeFilter,
+        ),
+    [search, activeFilter, prefixQuery.data],
   );
 
   const columns = useMemo<ColumnDef<JvPrefixMaster>[]>(
@@ -182,10 +200,13 @@ export default function JvPrefixPage() {
       title="Journal Voucher Prefixes"
       description="Document prefix codes for classifying Journal Vouchers (AJ, PV, RV, etc.)"
       toolbar={
-        <SearchInput
-          defaultValue={search}
+        <ListToolbar
+          variant="row"
+          search={search}
           onSearch={setSearch}
-          onInputChange={setSearch}
+          lf={lf}
+          fields={STATUS_FILTER_FIELDS}
+          onSaveViewClick={() => setSaveViewDialogOpen(true)}
         />
       }
       actions={
@@ -301,6 +322,13 @@ export default function JvPrefixPage() {
         title="Action blocked"
         description={warning}
         onConfirm={() => setWarning("")}
+      />
+      <SaveViewDialog
+        open={saveViewDialogOpen}
+        onOpenChange={setSaveViewDialogOpen}
+        canManageBu={lf.view.canManageBu}
+        existingNames={lf.view.existingNames}
+        onSave={lf.view.saveOrUpdate}
       />
     </ListPageShell>
   );

@@ -23,7 +23,14 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Plus, ListTree, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import SearchInput from "@/components/search-input";
+import { ListToolbar } from "@/components/list-filter/list-toolbar";
+import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
+import { useListFilters } from "@/hooks/use-list-filters";
+import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
+import {
+  STATUS_FILTER_FIELDS,
+  activeFromFilter,
+} from "../shared/status-list-filter";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -41,7 +48,6 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldInput, FieldLabel } from "@/components/ui/field";
 import { StatusSwitch } from "@/components/ui/status-switch";
-import { StatusFilter } from "@/components/ui/status-filter";
 import { WarningDialog } from "@/components/ui/warning-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import { useBuCode } from "@/hooks/use-bu-code";
@@ -74,7 +80,12 @@ export default function DimensionPage() {
     [dimensionQuery.data, valueQuery.data],
   );
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
+  const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
+  const lf = useListFilters({
+    pageKey: LIST_PAGE_KEYS.DIMENSION,
+    fields: STATUS_FILTER_FIELDS,
+  });
+  const activeFilter = activeFromFilter(lf.values.filter);
   const canEdit = useAccountingConfigEdit("accounting.config.gl");
   const [editing, setEditing] = useState<DimensionMaster | null | undefined>();
   const [viewingValuesId, setViewingValuesId] = useState<string | null>(null);
@@ -115,9 +126,12 @@ export default function DimensionPage() {
             .toLowerCase()
             .includes(search.toLowerCase()),
         )
-        .filter((item) => !status || item.is_active === (status === "active"))
+        .filter(
+          (item) =>
+            activeFilter === undefined || item.is_active === activeFilter,
+        )
         .sort((a, b) => a.code.localeCompare(b.code)),
-    [search, status, dimensions],
+    [search, activeFilter, dimensions],
   );
 
   const columns = useMemo<ColumnDef<DimensionMaster>[]>(
@@ -178,10 +192,16 @@ export default function DimensionPage() {
       {
         accessorKey: "data_type",
         header: "Data Type",
-        cell: ({ row }) =>
-          DIMENSION_DATA_TYPES.find(
-            (type) => type.value === (row.original.data_type ?? "lookup"),
-          )?.label,
+        cell: ({ row }) => {
+          const type = DIMENSION_DATA_TYPES.find(
+            (t) => t.value === (row.original.data_type ?? "lookup"),
+          );
+          return (
+            <span className="block truncate" title={type?.label}>
+              {type?.short}
+            </span>
+          );
+        },
       },
       {
         id: "values_count",
@@ -247,22 +267,14 @@ export default function DimensionPage() {
       title="Dimensions"
       description="Manage GL dimensions and values used by Journal Vouchers"
       toolbar={
-        <>
-          <SearchInput
-            defaultValue={search}
-            onSearch={setSearch}
-            onInputChange={setSearch}
-          />
-          <StatusFilter
-            value={status}
-            onChange={setStatus}
-            defaultLabel="All statuses"
-            options={[
-              { value: "active", label: "Active" },
-              { value: "inactive", label: "Inactive" },
-            ]}
-          />
-        </>
+        <ListToolbar
+          variant="row"
+          search={search}
+          onSearch={setSearch}
+          lf={lf}
+          fields={STATUS_FILTER_FIELDS}
+          onSaveViewClick={() => setSaveViewDialogOpen(true)}
+        />
       }
       actions={
         <Button
@@ -409,6 +421,13 @@ export default function DimensionPage() {
         title="Action blocked"
         description={warning}
         onConfirm={() => setWarning("")}
+      />
+      <SaveViewDialog
+        open={saveViewDialogOpen}
+        onOpenChange={setSaveViewDialogOpen}
+        canManageBu={lf.view.canManageBu}
+        existingNames={lf.view.existingNames}
+        onSave={lf.view.saveOrUpdate}
       />
     </ListPageShell>
   );
