@@ -31,6 +31,7 @@ export const LIST_PAGE_KEYS = {
   CURRENCY: "currency",
   DELIVERY_POINT: "delivery_point",
   DEPARTMENT: "department",
+  DIMENSION: "dimension",
   ECO: "eco",
   EXCHANGE_RATE: "exchange_rate",
   EXTRA_COST: "extra_cost",
