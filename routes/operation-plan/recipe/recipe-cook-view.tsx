@@ -185,7 +185,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
       </header>
 
       {/* สองคอลัมน์บนจอกว้าง (ผู้ใช้สั่ง 2026-11-16 สลับข้าง): ซ้าย = ปุ่มเลขขั้น → ขั้นที่เปิดอยู่ (ซ้าย)
-          กับรูปของขั้นนั้น (ขวา) → ขั้นตอนทั้งหมด · ขวา = ข้อมูลสูตร (รูปเมนู+วิดีโอ · ชื่อ · ข้อมูลสรุป ·
+          กับรูปของขั้นนั้น (ขวา) → การ์ดขั้นถัดไป (ลิสต์ขั้นตอนทั้งหมดถอดออก 2026-11-16 — ใช้ปุ่มเลขแทน) · ขวา = ข้อมูลสูตร (รูปเมนู+วิดีโอ · ชื่อ · ข้อมูลสรุป ·
           วัตถุดิบ · จัดจาน · เก็บรักษา)
           จอแคบ: ซ้อนกัน ข้อมูลสูตรอยู่บน (รูปกับชื่ออยู่ข้างกันเมื่อพอ) ขั้นตอนอยู่ล่าง */}
       <div className="grid gap-6 @3xl:grid-cols-[minmax(0,1fr)_20rem]">
@@ -432,52 +432,6 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                   </span>
                 </button>
               )}
-
-              {/* ขั้นตอนทั้งหมด — หนึ่งขั้นหนึ่งการ์ด มีเลขขั้นนำหน้า กดเพื่อเปิดขั้นนั้นด้านบน */}
-              <EyeBrow className="mt-6 mb-2">{t("cookAllSteps")}</EyeBrow>
-              <ol className="space-y-2" aria-label={t("cookAllSteps")}>
-                {steps.map((s, i) => (
-                  <li key={s.id}>
-                    <button
-                      type="button"
-                      aria-current={i === step ? "step" : undefined}
-                      onClick={() => setIndex(i)}
-                      className={cn(
-                        "bg-card flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors",
-                        i === step
-                          ? "border-primary ring-primary/30 ring-1"
-                          : "hover:bg-muted/60",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold tabular-nums",
-                          i === step
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground",
-                        )}
-                      >
-                        {i + 1}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="text-foreground block text-sm font-semibold break-words">
-                          {s.title || s.description}
-                        </span>
-                        {s.title && s.description && (
-                          <span className="text-muted-foreground mt-0.5 line-clamp-2 block text-sm break-words">
-                            {s.description}
-                          </span>
-                        )}
-                      </span>
-                      {s.duration ? (
-                        <span className="text-muted-foreground mt-1 shrink-0 text-xs tabular-nums">
-                          {t("cookMinutes", { min: s.duration })}
-                        </span>
-                      ) : null}
-                    </button>
-                  </li>
-                ))}
-              </ol>
             </>
           )}
         </section>

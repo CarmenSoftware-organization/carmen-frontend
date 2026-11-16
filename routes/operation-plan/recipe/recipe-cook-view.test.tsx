@@ -464,6 +464,15 @@ describe("RecipeCookView — ปุ่มเลขขั้นตอน", () => 
     expect(buttons.at(-1)).toHaveAccessibleName(R.cookNext);
   });
 
+  it("ไม่มีลิสต์ขั้นตอนทั้งหมดด้านล่างแล้ว — ใช้ปุ่มเลขเลือกขั้นแทน", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    const steps = screen.getByRole("region", { name: R.stepsSection });
+    expect(steps.querySelector("ol")).toBeNull();
+    // ขั้นที่ไม่ได้เปิดและไม่ใช่ขั้นถัดไปไม่โผล่เป็นข้อความบนจอ (มีแค่ title ของปุ่มเลข)
+    expect(screen.queryByText("Title 3")).toBeNull();
+    expect(screen.queryByText("Title 4")).toBeNull();
+  });
+
   it("กดเลขขั้นไหนก็ได้ → ข้ามไปขั้นนั้นทันที (ไม่ต้องกดถัดไปทีละขั้น)", () => {
     renderForm(<RecipeCookView recipe={recipe} />);
     fireEvent.click(goTo(3));
