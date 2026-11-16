@@ -5261,6 +5261,7 @@
       "cookImages": "รูปของสูตร",
       "cookViewImage": "ขยายรูปที่ {n} จาก {total}",
       "cookShowImage": "แสดงรูปที่ {n} จาก {total}",
+      "cookShowVideo": "เล่นวิดีโอ",
       "tabHasErrors": "มีช่องที่ต้องแก้",
       "preview": "ดูตัวอย่าง",
       "costSourceManual": "กำหนดเอง",
