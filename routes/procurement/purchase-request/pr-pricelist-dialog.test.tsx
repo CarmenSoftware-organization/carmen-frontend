@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { IntlProvider } from "use-intl";
 
 const get = vi.fn();
@@ -14,7 +14,6 @@ import en from "@/messages/en.json";
 import { PrPricelistDialog } from "./pr-pricelist-dialog";
 
 const bu = en.procurement.purchaseRequest.betterUnit;
-const lv = en.procurement.purchaseRequest.lastVendor;
 
 // ขอ 10 KG ที่ 100/KG · กล่อง 3 KG ราคา 270 = 90/KG แต่ต้องซื้อ 4 กล่อง = 12 KG
 const kgLine = {
@@ -66,20 +65,12 @@ function respond(betterUnit: unknown[]) {
   });
 }
 
-function renderDialog({
-  onSelectVendor = vi.fn(),
-  onOpenChange = vi.fn(),
-  readOnly = false,
-}: {
-  onSelectVendor?: (lastVendor: unknown) => void;
-  onOpenChange?: (open: boolean) => void;
-  readOnly?: boolean;
-} = {}) {
+function renderDialog() {
   return render(
     <IntlProvider locale="en" messages={en} timeZone="Asia/Bangkok">
       <PrPricelistDialog
         open
-        onOpenChange={onOpenChange}
+        onOpenChange={vi.fn()}
         productId="prod1"
         productName="Pork neck"
         unitId="u-kg"
@@ -90,8 +81,6 @@ function renderDialog({
         approvedQty={0}
         approvedUnitName="KG"
         onSelect={vi.fn()}
-        onSelectVendor={onSelectVendor}
-        readOnly={readOnly}
       />
     </IntlProvider>,
   );
@@ -134,24 +123,14 @@ describe("PrPricelistDialog — cheaper in another unit", () => {
   });
 });
 
-// ไม่มีใบราคาที่เปิดอยู่: backend ส่งผู้ขายของใบราคาล่าสุดที่เคยเสนอสินค้านี้มา (ไม่มีราคา)
-// กล่องนี้ให้ใส่ได้แค่ผู้ขาย ราคาต้องให้จัดซื้อกรอกเอง
-describe("PrPricelistDialog — no open price list", () => {
+// ไม่มีใบราคาที่เปิดอยู่: backend ส่งผู้ขายของใบราคาล่าสุดมา — แสดงข้างราคาล่าสุดอย่างเดียว
+// ไม่มีปุ่มเอาไปกรอกลงบรรทัด (ผู้ใช้สั่ง 2026-11-16)
+describe("PrPricelistDialog — last vendor beside the last price", () => {
   beforeEach(() => get.mockReset());
 
-  const lastVendor = {
-    vendor_id: "v9",
-    vendor_name: "Fresh Farm Co.",
-    vendor_code: "V009",
-    pricelist_no: "PL260900003",
-    pricelist_status: "expired",
-    effective_date: {
-      from: "2026-09-01T00:00:00.000Z",
-      to: "2026-09-30T00:00:00.000Z",
-    },
-  };
+  const pr = en.procurement.purchaseRequest;
 
-  function respondEmpty(last: unknown) {
+  function respondEmpty(lastVendor: unknown) {
     get.mockResolvedValue({
       ok: true,
       json: () =>
@@ -160,53 +139,45 @@ describe("PrPricelistDialog — no open price list", () => {
             selected: null,
             lists: [],
             suggests: { next_lowest_moq: [], most_value_moq: [], better_unit: [] },
-            last_price: null,
-            last_vendor: last,
+            last_price: {
+              cost_per_unit: 250,
+              doc_type: "good_received_note",
+              doc_id: "grn-1",
+              at: "2026-09-01T00:00:00.000Z",
+            },
+            last_vendor: lastVendor,
           },
         }),
     });
   }
 
-  it("names the last vendor and where it came from", async () => {
-    respondEmpty(lastVendor);
+  it("shows the last vendor and its price list next to the last price", async () => {
+    respondEmpty({
+      vendor_id: "v9",
+      vendor_name: "Fresh Farm Co.",
+      vendor_code: "V009",
+      pricelist_no: "PL260900003",
+      pricelist_status: "expired",
+      effective_date: { from: "2026-09-01", to: "2026-09-30" },
+    });
     renderDialog();
 
-    const note = await screen.findByRole("note", { name: lv.title });
-    expect(note).toHaveTextContent("Fresh Farm Co. (V009)");
-    expect(note).toHaveTextContent("from price list PL260900003");
-    expect(note).toHaveTextContent(lv.hint);
+    const vendor = await screen.findByText("V009 - Fresh Farm Co.");
+    const chip = vendor.closest("span.inline-flex");
+    expect(chip).toHaveTextContent(`${pr.lastVendor}:`);
+    expect(chip).toHaveTextContent("from price list PL260900003");
+    expect(screen.getByText(`${pr.lastPrice}:`, { exact: false })).toBeInTheDocument();
+    // แสดงอย่างเดียว — ไม่มีปุ่มเอาผู้ขายไปใส่บรรทัด
+    expect(screen.queryByRole("button", { name: /vendor/i })).not.toBeInTheDocument();
   });
 
-  it("hands back only the vendor and closes when it is used", async () => {
-    respondEmpty(lastVendor);
-    const onSelectVendor = vi.fn();
-    const onOpenChange = vi.fn();
-    renderDialog({ onSelectVendor, onOpenChange });
-
-    fireEvent.click(await screen.findByRole("button", { name: lv.use }));
-
-    expect(onSelectVendor).toHaveBeenCalledWith(lastVendor);
-    expect(onOpenChange).toHaveBeenCalledWith(false);
-  });
-
-  it("shows the vendor without the button when the dialog is read-only", async () => {
-    respondEmpty(lastVendor);
-    renderDialog({ readOnly: true });
-
-    await screen.findByRole("note", { name: lv.title });
-    expect(
-      screen.queryByRole("button", { name: lv.use }),
-    ).not.toBeInTheDocument();
-  });
-
-  it("shows nothing extra when no price list ever quoted the product", async () => {
+  it("shows no last vendor when the backend sends none", async () => {
     respondEmpty(null);
     renderDialog();
 
-    await waitFor(() => expect(get).toHaveBeenCalled());
-    await screen.findByText(en.procurement.purchaseRequest.noPriceList);
+    await screen.findByText(`${pr.lastPrice}:`, { exact: false });
     expect(
-      screen.queryByRole("note", { name: lv.title }),
+      screen.queryByText(`${pr.lastVendor}:`, { exact: false }),
     ).not.toBeInTheDocument();
   });
 });

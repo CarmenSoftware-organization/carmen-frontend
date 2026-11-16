@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { UseFormReturn } from "react-hook-form";
-import { toast } from "sonner";
 import { httpClient } from "@/lib/http-client";
 import { runPrAutoAllocate } from "./pr-auto-allocate";
 import { PR_ITEM, type PrFormValues } from "./pr-form-schema";
@@ -19,7 +18,6 @@ vi.mock("sonner", () => ({
 const msg = {
   allocating: () => "",
   allocated: () => "",
-  vendorOnly: (count: number) => `vendor-only ${count}`,
   allocateFailed: () => "",
   noPriceListFound: "",
 };
@@ -90,68 +88,29 @@ describe("runPrAutoAllocate — qty ที่ส่งไปเทียบร�
   });
 });
 
-// ไม่มีใบราคาที่เปิดอยู่: ใส่ผู้ขายของใบราคาล่าสุดที่เคยเสนอสินค้านี้ แต่ไม่เอาราคา/เลขใบราคา
-// จัดซื้อต้องกรอกราคาเอง
+// last_vendor ของ price-compare มีไว้แสดงในหน้าต่างเทียบราคาเท่านั้น — auto-allocate ห้ามเอาไปกรอก
+// (ผู้ใช้สั่ง 2026-11-16) ไม่มีใบราคาที่เปิดอยู่ = ล้างผู้ขายเหมือนเดิม
 describe("runPrAutoAllocate — ไม่มีใบราคาที่เปิดอยู่", () => {
-  const lastVendor = {
-    vendor_id: "v9",
-    vendor_name: "Fresh Farm Co.",
-    vendor_code: "V009",
-    pricelist_no: "PL260900003",
-    pricelist_status: "expired",
-    effective_date: { from: "2026-09-01", to: "2026-09-30" },
-  };
-
-  function respond(last: unknown) {
+  it("ไม่เอา last_vendor ไปกรอก ล้างผู้ขายเหมือนเดิม", async () => {
     vi.mocked(httpClient.get).mockResolvedValue(
       new Response(
         JSON.stringify({
-          data: { selected: null, lists: [], last_vendor: last },
+          data: {
+            selected: null,
+            lists: [],
+            last_vendor: { vendor_id: "v9", vendor_name: "Fresh Farm Co." },
+          },
         }),
       ),
     );
-  }
-
-  function written(form: UseFormReturn<PrFormValues>) {
-    return Object.fromEntries(
-      vi.mocked(form.setValue).mock.calls.map(([name, value]) => [name, value]),
-    );
-  }
-
-  it("ใส่ผู้ขายล่าสุด แต่ราคา 0 และไม่ผูกเลขใบราคาเก่า", async () => {
-    respond(lastVendor);
-    const form = formWith([
-      {
-        requested_qty: 5,
-        pricelist_price: 250,
-        pricelist_detail_id: "old-pld",
-        pricelist_no: "PL-OLD",
-        is_tax_included: true,
-      },
-    ]);
-
-    await runPrAutoAllocate(form, "BU", msg);
-
-    const values = written(form);
-    expect(values["items.0.vendor_id"]).toBe("v9");
-    expect(values["items.0.vendor_name"]).toBe("Fresh Farm Co.");
-    expect(values["items.0.pricelist_price"]).toBe(0);
-    expect(values["items.0.is_tax_included"]).toBe(false);
-    expect(values["items.0.pricelist_detail_id"]).toBeNull();
-    expect(values["items.0.pricelist_no"]).toBeNull();
-    expect(values["items.0.pricelist_type"]).toBeNull();
-    expect(toast.warning).toHaveBeenCalledWith("vendor-only 1");
-  });
-
-  it("ไม่เคยมีใบราคาเลย = ล้างผู้ขายเหมือนเดิม", async () => {
-    respond(null);
     const form = formWith([{ requested_qty: 5, vendor_id: "v-old" }]);
 
     await runPrAutoAllocate(form, "BU", msg);
 
-    const values = written(form);
+    const values = Object.fromEntries(
+      vi.mocked(form.setValue).mock.calls.map(([name, value]) => [name, value]),
+    );
     expect(values["items.0.vendor_id"]).toBeNull();
     expect(values["items.0.vendor_name"]).toBe("");
-    expect(toast.warning).not.toHaveBeenCalledWith("vendor-only 1");
   });
 });

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from "use-intl";
-import { Check, Crown, FileText, Package, Receipt } from "lucide-react";
+import { Check, Crown, FileText, Package, Receipt, Store } from "lucide-react";
 import { toast } from "sonner";
 import {
   type ColumnDef,
@@ -36,8 +36,6 @@ import {
   PrBetterUnitNotice,
   type BetterUnitOffer,
 } from "./pr-better-unit-notice";
-import { PrLastVendorNotice } from "./pr-last-vendor-notice";
-import type { LastPricelistVendor } from "./pr-auto-allocate";
 
 export interface PricelistEntry {
   vendor_id: string;
@@ -60,6 +58,19 @@ export interface PricelistEntry {
   tax_rate?: number;
   effective_date: { from: string; to: string };
   is_preferred?: boolean;
+}
+
+/**
+ * ผู้ขายของใบราคาล่าสุดที่เคยเสนอสินค้านี้ — `last_vendor` ของ price-compare
+ * backend ส่งมาเฉพาะตอนไม่มีใบราคาที่เปิดอยู่ ไม่มีราคามาด้วย · **แสดงอย่างเดียว**
+ * ข้างราคาล่าสุด ไม่เขียนลงบรรทัด PR (ผู้ใช้สั่ง 2026-11-16: ไม่ต้องกรอกลง field)
+ */
+export interface LastPricelistVendor {
+  vendor_id: string;
+  vendor_name: string;
+  vendor_code: string | null;
+  pricelist_no: string;
+  effective_date: { from: string | null; to: string | null };
 }
 
 /** ราคาก่อน VAT (backend คำนวณให้) · ไม่มีค่า = ราคาที่กรอกไม่รวม VAT อยู่แล้ว */
@@ -254,8 +265,6 @@ interface PrPricelistDialogProps {
   readonly approvedQty: number;
   readonly approvedUnitName: string;
   readonly onSelect: (entry: PricelistEntry) => void;
-  /** ไม่มีใบราคาที่เปิดอยู่ แล้วผู้ใช้กด "ใช้ผู้ขายนี้" — ใส่แค่ผู้ขาย ราคาต้องกรอกเอง */
-  readonly onSelectVendor: (lastVendor: LastPricelistVendor) => void;
   readonly readOnly?: boolean;
 }
 
@@ -272,7 +281,6 @@ export function PrPricelistDialog({
   approvedQty,
   approvedUnitName,
   onSelect,
-  onSelectVendor,
   readOnly = false,
 }: PrPricelistDialogProps) {
   const t = useTranslations("procurement.purchaseRequest");
@@ -286,7 +294,7 @@ export function PrPricelistDialog({
   const [lastPrice, setLastPrice] = useState<LastPrice | null>(null);
   // ซื้อจำนวนเดิมด้วยหน่วยอื่นที่ถูกกว่าต่อหน่วยฐาน (suggests.better_unit) — แสดงอย่างเดียว
   const [betterUnit, setBetterUnit] = useState<BetterUnitOffer[]>([]);
-  // ไม่มีใบราคาที่เปิดอยู่ → ผู้ขายของใบราคาล่าสุดที่เคยเสนอสินค้านี้ (ไม่มีราคามาด้วย)
+  // ไม่มีใบราคาที่เปิดอยู่ → ผู้ขายของใบราคาล่าสุดที่เคยเสนอสินค้านี้ แสดงข้างราคาล่าสุด
   const [lastVendor, setLastVendor] = useState<LastPricelistVendor | null>(
     null,
   );
@@ -348,12 +356,6 @@ export function PrPricelistDialog({
   const handleSelect = (entry: PricelistEntry) => {
     if (readOnly) return;
     onSelect(entry);
-    onOpenChange(false);
-  };
-
-  const handleSelectVendor = (vendor: LastPricelistVendor) => {
-    if (readOnly) return;
-    onSelectVendor(vendor);
     onOpenChange(false);
   };
 
@@ -436,21 +438,33 @@ export function PrPricelistDialog({
                   <LastPriceChip lastPrice={lastPrice} />
                 </>
               )}
+              {lastVendor && (
+                <>
+                  <span className="bg-border h-3 w-px" />
+                  <span className="inline-flex items-center gap-1">
+                    <Store className="size-3" />
+                    {t("lastVendor")}:{" "}
+                    <span className="text-foreground font-semibold">
+                      {lastVendor.vendor_code
+                        ? `${lastVendor.vendor_code} - ${lastVendor.vendor_name}`
+                        : lastVendor.vendor_name}
+                    </span>
+                    <span>
+                      (
+                      {t("lastVendorSource", {
+                        pricelistNo: lastVendor.pricelist_no,
+                      })}
+                      )
+                    </span>
+                  </span>
+                </>
+              )}
             </div>
           </DialogHeader>
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col px-6 pb-6">
           <PrBetterUnitNotice offers={betterUnit} />
-          {/* backend ตอบ last_vendor เฉพาะตอนไม่มีใบราคาที่เปิดอยู่ — ตารางว่างเสมอเมื่อมีค่า */}
-          {!isLoading && rows.length === 0 && (
-            <PrLastVendorNotice
-              lastVendor={lastVendor}
-              dateFormat={dateFormat}
-              readOnly={readOnly}
-              onUse={handleSelectVendor}
-            />
-          )}
           <DataGrid
             table={table}
             recordCount={rows.length}
