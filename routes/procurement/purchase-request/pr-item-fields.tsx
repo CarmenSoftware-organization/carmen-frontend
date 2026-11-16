@@ -237,6 +237,7 @@ export function PrItemFields({
     await runPrAutoAllocate(form, buCode, {
       allocating: (count) => t("allocating", { count }),
       allocated: (allocated, total) => t("allocated", { allocated, total }),
+      vendorOnly: (count) => t("allocatedVendorOnly", { count }),
       allocateFailed: (count) => t("allocateFailed", { count }),
       noPriceListFound: t("noPriceListFound"),
     });

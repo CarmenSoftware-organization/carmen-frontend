@@ -36,6 +36,8 @@ import {
   PrBetterUnitNotice,
   type BetterUnitOffer,
 } from "./pr-better-unit-notice";
+import { PrLastVendorNotice } from "./pr-last-vendor-notice";
+import type { LastPricelistVendor } from "./pr-auto-allocate";
 
 export interface PricelistEntry {
   vendor_id: string;
@@ -252,6 +254,8 @@ interface PrPricelistDialogProps {
   readonly approvedQty: number;
   readonly approvedUnitName: string;
   readonly onSelect: (entry: PricelistEntry) => void;
+  /** ไม่มีใบราคาที่เปิดอยู่ แล้วผู้ใช้กด "ใช้ผู้ขายนี้" — ใส่แค่ผู้ขาย ราคาต้องกรอกเอง */
+  readonly onSelectVendor: (lastVendor: LastPricelistVendor) => void;
   readonly readOnly?: boolean;
 }
 
@@ -268,6 +272,7 @@ export function PrPricelistDialog({
   approvedQty,
   approvedUnitName,
   onSelect,
+  onSelectVendor,
   readOnly = false,
 }: PrPricelistDialogProps) {
   const t = useTranslations("procurement.purchaseRequest");
@@ -281,6 +286,10 @@ export function PrPricelistDialog({
   const [lastPrice, setLastPrice] = useState<LastPrice | null>(null);
   // ซื้อจำนวนเดิมด้วยหน่วยอื่นที่ถูกกว่าต่อหน่วยฐาน (suggests.better_unit) — แสดงอย่างเดียว
   const [betterUnit, setBetterUnit] = useState<BetterUnitOffer[]>([]);
+  // ไม่มีใบราคาที่เปิดอยู่ → ผู้ขายของใบราคาล่าสุดที่เคยเสนอสินค้านี้ (ไม่มีราคามาด้วย)
+  const [lastVendor, setLastVendor] = useState<LastPricelistVendor | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!open || !productId || !unitId || !currencyId || !buCode) return;
@@ -291,6 +300,7 @@ export function PrPricelistDialog({
       setSelected(null);
       setLastPrice(null);
       setBetterUnit([]);
+      setLastVendor(null);
       try {
         const url = buildUrl(API_ENDPOINTS.PRICE_LIST_COMPARE(buCode), {
           product_id: productId,
@@ -314,6 +324,7 @@ export function PrPricelistDialog({
         setSelected(json.data?.selected ?? null);
         setLastPrice(json.data?.last_price ?? null);
         setBetterUnit(json.data?.suggests?.better_unit ?? []);
+        setLastVendor(json.data?.last_vendor ?? null);
       } catch {
         toast.error(t("priceListLoadFailed"));
       } finally {
@@ -337,6 +348,12 @@ export function PrPricelistDialog({
   const handleSelect = (entry: PricelistEntry) => {
     if (readOnly) return;
     onSelect(entry);
+    onOpenChange(false);
+  };
+
+  const handleSelectVendor = (vendor: LastPricelistVendor) => {
+    if (readOnly) return;
+    onSelectVendor(vendor);
     onOpenChange(false);
   };
 
@@ -425,6 +442,15 @@ export function PrPricelistDialog({
 
         <div className="flex min-h-0 flex-1 flex-col px-6 pb-6">
           <PrBetterUnitNotice offers={betterUnit} />
+          {/* backend ตอบ last_vendor เฉพาะตอนไม่มีใบราคาที่เปิดอยู่ — ตารางว่างเสมอเมื่อมีค่า */}
+          {!isLoading && rows.length === 0 && (
+            <PrLastVendorNotice
+              lastVendor={lastVendor}
+              dateFormat={dateFormat}
+              readOnly={readOnly}
+              onUse={handleSelectVendor}
+            />
+          )}
           <DataGrid
             table={table}
             recordCount={rows.length}

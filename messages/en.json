@@ -6120,6 +6120,7 @@
       "allocated": "Allocated {allocated} of {total} items",
       "allocateFailed": "{count} item(s) failed to allocate",
       "noPriceListFound": "No price list found for the items",
+      "allocatedVendorOnly": "{count} item(s) have no open price list — the last vendor was filled in, please enter the price",
       "noSavedItemsForSplit": "Pick items that have already been saved — a split needs saved lines.",
       "overQtyWarningTitle": "Approved Quantity Exceeds Requested",
       "overQtyWarningDesc": "Some items have an approved quantity greater than the requested quantity. Confirming will approve with the entered values. Cancelling will reset those approved quantities back to the requested quantity.",
@@ -6190,6 +6191,12 @@
         "saving": "{saving} {currency} less per {baseUnit}",
         "extra": "{extra} {baseUnit} more than ordered",
         "hint": "To take it, change this line's unit and quantity — the table below stays in the line's unit."
+      },
+      "lastVendor": {
+        "title": "No open price list — last vendor who quoted this product",
+        "source": "from price list {pricelistNo}",
+        "hint": "Only the vendor is filled in — enter the price yourself (the old price list's price is not used).",
+        "use": "Use this vendor"
       }
     },
     "purchaseRequestTemplate": {

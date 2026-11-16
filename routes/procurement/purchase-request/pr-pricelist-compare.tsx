@@ -13,7 +13,11 @@ import { STAGE_ROLE } from "@/types/stage-role";
 import { PR_ITEM_PRICELIST_COMPARE_TYPE } from "@/types/purchase-request";
 import { formatDate } from "@/lib/date-utils";
 import type { PrFormValues } from "./pr-form-schema";
-import { applyDerivedAmounts } from "./pr-auto-allocate";
+import {
+  applyDerivedAmounts,
+  applyNoPricelist,
+  type LastPricelistVendor,
+} from "./pr-auto-allocate";
 import type { PricelistEntry } from "./pr-pricelist-dialog";
 
 const PrPricelistDialog = lazy(() =>
@@ -105,6 +109,16 @@ export function PrPricelistCompare({
     );
   };
 
+  // ไม่มีใบราคาที่เปิดอยู่: ใส่ผู้ขายล่าสุด ราคา 0 ให้จัดซื้อกรอกเอง — ตรรกะเดียวกับ auto-allocate
+  const handleSelectVendor = (lastVendor: LastPricelistVendor) => {
+    applyNoPricelist(
+      form,
+      index,
+      form.getValues(`items.${index}`),
+      lastVendor,
+    );
+  };
+
   return (
     <div className="pt-3">
       <TooltipProvider delayDuration={100}>
@@ -138,6 +152,7 @@ export function PrPricelistCompare({
           approvedQty={approvedQty}
           approvedUnitName={approvedUnitName}
           onSelect={handleSelect}
+          onSelectVendor={handleSelectVendor}
           readOnly={isDisabled || role !== STAGE_ROLE.PURCHASE}
         />
       </Suspense>
