@@ -325,11 +325,12 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
           className="@container min-w-0 border-t pt-6 @3xl:border-t-0 @3xl:border-l @3xl:pt-0 @3xl:pl-6"
         >
           {/* วิดีโอของสูตร (1 ลิงก์ ถ้ามี) อยู่บนสุดของฝั่งขั้นตอน — เห็นก่อนลงมือ
-              จำกัดความกว้างไว้: เต็มคอลัมน์บนจอกว้างจะสูงจนดันขั้นตอนตกจอ */}
+              จำกัดความกว้างไว้: เต็มคอลัมน์บนจอกว้างจะสูงจนดันขั้นตอนตกจอ · วางกึ่งกลางคอลัมน์
+              (ผู้ใช้สั่ง 2026-11-16 — ชิดซ้ายแล้วจอกว้างเหลือที่ว่างทางขวาข้างเดียว) */}
           <RecipeVideoPlayer
             url={recipe.video_url}
             title={t("videoTitle", { name: recipe.name })}
-            className="max-w-2xl"
+            className="mx-auto max-w-2xl"
           />
           {total === 0 || !current ? (
             <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
