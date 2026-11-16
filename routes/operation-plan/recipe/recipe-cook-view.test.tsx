@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { act, fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen, within } from "@testing-library/react";
 import en from "@/messages/en.json";
 import type { Recipe } from "@/types/recipe";
 import { renderForm } from "@/lib/test-utils/form-characterization";
@@ -294,7 +294,8 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
   const goNext = () =>
     fireEvent.click(screen.getAllByRole("button", { name: R.cookNext })[0]);
 
-  // แบบหน้าสินค้า Shopee (ผู้ใช้สั่ง 2026-11-16 "เอา video ไปใส่ใน Menu"): วิดีโอเป็นช่องแรกของแกลเลอรีรูปเมนู
+  // แบบหน้าสินค้า Shopee (ผู้ใช้สั่ง 2026-11-16 "เอา video ไปใส่ใน Menu"): วิดีโออยู่ในแกลเลอรีรูปเมนู
+  // เป็นช่องหลังรูปสุดท้าย (ผู้ใช้สั่งย้ายจากช่องแรก) เปิดหน้ามาที่รูปหลัก
   const EMBED = "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0";
   const gallery = () => screen.getByRole("list", { name: R.cookImages });
   const photo = (id: string, n: number) => ({
@@ -308,9 +309,33 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     ...recipe,
     images: [photo("a", 0), photo("b", 1)],
   } as unknown as Recipe;
+  const heroPhoto = (n: number) =>
+    screen
+      .getByRole("button", {
+        name: R.cookViewImage.replace("{n}", String(n)).replace("{total}", "2"),
+      })
+      .querySelector("img");
 
-  it("วิดีโออยู่ในแกลเลอรีรูปเมนูเป็นช่องแรก เปิดหน้ามาเล่นในกรอบใหญ่ ไม่อยู่ในคอลัมน์ขั้นตอน · วิดีโอรายขั้นตอนของเดิมไม่ถูกฝัง", () => {
+  it("วิดีโอเป็นช่องหลังรูปสุดท้ายของแกลเลอรีรูปเมนู เปิดหน้ามาที่รูปหลัก · วิดีโอรายขั้นตอนของเดิมไม่ถูกฝัง", () => {
     const { container } = renderForm(<RecipeCookView recipe={withPhotos} />);
+    expect(container.querySelector("iframe")).toBeNull();
+    expect(heroPhoto(1)).toHaveAttribute("src", "https://files.test/a.jpg");
+
+    const slots = Array.from(gallery().querySelectorAll("li button"));
+    expect(slots).toHaveLength(3);
+    const last = slots.at(-1);
+    expect(last).toHaveAccessibleName(R.cookShowVideo);
+    expect(last).toHaveAttribute("aria-current", "false");
+    expect(last?.querySelector("img")).toHaveAttribute(
+      "src",
+      "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
+    );
+    expect(slots[0]).toHaveAttribute("aria-current", "true");
+  });
+
+  it("กดช่องวิดีโอ → เล่นในกรอบใหญ่ (นอกคอลัมน์ขั้นตอน) · กดรูปย่อ → กลับเป็นรูป", () => {
+    const { container } = renderForm(<RecipeCookView recipe={withPhotos} />);
+    fireEvent.click(screen.getByRole("button", { name: R.cookShowVideo }));
     const frames = container.querySelectorAll("iframe");
     expect(frames).toHaveLength(1);
     expect(frames[0]).toHaveAttribute("src", EMBED);
@@ -320,39 +345,32 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     );
     const steps = screen.getByRole("region", { name: R.stepsSection });
     expect(steps).not.toContainElement(frames[0]);
-    // ช่องแรกของแถบรูปย่อ = วิดีโอ (ภาพตัวอย่างจาก YouTube) และเป็นช่องที่เปิดอยู่
-    const first = gallery().querySelector("li button");
-    expect(first).toHaveAccessibleName(R.cookShowVideo);
-    expect(first).toHaveAttribute("aria-current", "true");
-    expect(first?.querySelector("img")).toHaveAttribute(
-      "src",
-      "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
-    );
     // กรอบใหญ่กับชื่อสูตรอยู่ hero เดียวกัน (แกลเลอรีซ้าย ชื่อขวา)
     const title = screen.getByRole("heading", { level: 1, name: RECIPE.name });
     expect(
       title.parentElement?.parentElement?.firstElementChild,
     ).toContainElement(frames[0]);
-  });
 
-  it("กดรูปย่อ → กรอบใหญ่เป็นรูป (player หาย) · กดช่องวิดีโอ → กลับมาที่วิดีโอ", () => {
-    const { container } = renderForm(<RecipeCookView recipe={withPhotos} />);
     fireEvent.click(
       screen.getByRole("button", {
         name: R.cookShowImage.replace("{n}", "2").replace("{total}", "2"),
       }),
     );
     expect(container.querySelector("iframe")).toBeNull();
-    expect(
-      screen
-        .getByRole("button", {
-          name: R.cookViewImage.replace("{n}", "2").replace("{total}", "2"),
-        })
-        .querySelector("img"),
-    ).toHaveAttribute("src", "https://files.test/b.jpg");
+    expect(heroPhoto(2)).toHaveAttribute("src", "https://files.test/b.jpg");
+  });
 
-    fireEvent.click(screen.getByRole("button", { name: R.cookShowVideo }));
-    expect(container.querySelector("iframe")).toHaveAttribute("src", EMBED);
+  it("จอกว้าง: ขั้นตอนอยู่คอลัมน์ซ้าย ข้อมูลสูตรอยู่คอลัมน์ขวา · จอแคบข้อมูลสูตรยังอยู่บน", () => {
+    renderForm(<RecipeCookView recipe={withPhotos} />);
+    const steps = screen.getByRole("region", { name: R.stepsSection });
+    const layout = steps.parentElement!;
+    expect(layout.className).toContain("@3xl:grid-cols-[minmax(0,1fr)_20rem]");
+    expect(steps.className).toContain("@3xl:col-start-1");
+    const info = layout.firstElementChild!;
+    expect(info).toContainElement(
+      screen.getByRole("heading", { level: 1, name: RECIPE.name }),
+    );
+    expect(info.className).toContain("@3xl:col-start-2");
   });
 
   it("มีวิดีโอแต่ไม่มีรูป → แกลเลอรีมีแค่วิดีโอ ไม่มีแถบรูปย่อ", () => {
@@ -398,5 +416,82 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     expect(card).toHaveTextContent("Step 2 text");
     expect(card.parentElement!.querySelector(".cursor-zoom-in")).toBeNull();
     expect(card.parentElement!.className).not.toContain("grid-cols");
+  });
+});
+
+// ปุ่มเลือกขั้นแบบเลขหน้าของ Google (ผู้ใช้สั่ง 2026-11-16): วงกลมเลขขั้นครบทุกขั้น กดข้ามไปขั้นไหนก็ได้
+describe("RecipeCookView — ปุ่มเลขขั้นตอน", () => {
+  const R = en.operationPlan.recipe;
+  const step = (id: string, n: number) => ({
+    id,
+    doc_version: 1,
+    sequence_no: n,
+    title: `Title ${n}`,
+    description: `Step ${n} text`,
+    duration: null,
+    temperature: null,
+    temperature_unit: null,
+    equipment: [],
+    chef_notes: null,
+    safety_warnings: null,
+    videos: [],
+  });
+  const recipe = {
+    ...RECIPE,
+    preparation_steps: [
+      step("s1", 1),
+      step("s2", 2),
+      step("s3", 3),
+      step("s4", 4),
+    ],
+  } as unknown as Recipe;
+  const pager = () => screen.getByRole("navigation", { name: R.cookStepPager });
+  const goTo = (n: number) =>
+    screen.getByRole("button", {
+      name: R.cookGoToStep.replace("{n}", String(n)),
+    });
+
+  it("มีวงกลมเลขขั้นครบทุกขั้น ขั้นที่เปิดอยู่ถูกเน้น · ลูกศรหัวท้าย", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    const nav = pager();
+    for (const n of [1, 2, 3, 4]) expect(nav).toContainElement(goTo(n));
+    expect(goTo(1)).toHaveAttribute("aria-current", "step");
+    expect(goTo(1)).toHaveTextContent("1");
+    // ปุ่มก่อนหน้า/ถัดไปเป็นวงกลมลูกศร อยู่หัว-ท้ายของแถวเลข
+    const buttons = Array.from(nav.querySelectorAll("button"));
+    expect(buttons[0]).toHaveAccessibleName(R.cookPrev);
+    expect(buttons[0]).toBeDisabled();
+    expect(buttons.at(-1)).toHaveAccessibleName(R.cookNext);
+  });
+
+  it("ไม่มีลิสต์ขั้นตอนทั้งหมดด้านล่างแล้ว — ใช้ปุ่มเลขเลือกขั้นแทน", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    const steps = screen.getByRole("region", { name: R.stepsSection });
+    expect(steps.querySelector("ol")).toBeNull();
+    // ขั้นที่ไม่ได้เปิดและไม่ใช่ขั้นถัดไปไม่โผล่เป็นข้อความบนจอ (มีแค่ title ของปุ่มเลข)
+    expect(screen.queryByText("Title 3")).toBeNull();
+    expect(screen.queryByText("Title 4")).toBeNull();
+  });
+
+  it("กดเลขขั้นไหนก็ได้ → ข้ามไปขั้นนั้นทันที (ไม่ต้องกดถัดไปทีละขั้น)", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    fireEvent.click(goTo(3));
+    expect(screen.getByRole("article")).toHaveTextContent("Step 3 text");
+    expect(goTo(3)).toHaveAttribute("aria-current", "step");
+    expect(goTo(1)).not.toHaveAttribute("aria-current");
+
+    fireEvent.click(goTo(1));
+    expect(screen.getByRole("article")).toHaveTextContent("Step 1 text");
+  });
+
+  it("ขั้นสุดท้าย → ปุ่มถัดไปกดไม่ได้ · ลูกศรก่อนหน้าย้อนได้ทีละขั้น", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    fireEvent.click(goTo(4));
+    const nav = pager();
+    expect(
+      within(nav).getByRole("button", { name: R.cookNext }),
+    ).toBeDisabled();
+    fireEvent.click(within(nav).getByRole("button", { name: R.cookPrev }));
+    expect(screen.getByRole("article")).toHaveTextContent("Step 3 text");
   });
 });

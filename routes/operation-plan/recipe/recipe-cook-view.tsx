@@ -184,11 +184,13 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
         </div>
       </header>
 
-      {/* สองคอลัมน์บนจอกว้าง: ซ้าย = ข้อมูลสูตร (วิดีโอ+รูปเมนู · ชื่อ · ข้อมูลสรุป · วัตถุดิบ · จัดจาน · เก็บรักษา)
-          ขวา = ปุ่มก่อนหน้า/ถัดไป → ขั้นที่เปิดอยู่ (ซ้าย) กับรูปของขั้นนั้น (ขวา) → ขั้นตอนทั้งหมด
+      {/* สองคอลัมน์บนจอกว้าง (ผู้ใช้สั่ง 2026-11-16 สลับข้าง): ซ้าย = ปุ่มเลขขั้น → ขั้นที่เปิดอยู่ (ซ้าย)
+          กับรูปของขั้นนั้น (ขวา) → การ์ดขั้นถัดไป (ลิสต์ขั้นตอนทั้งหมดถอดออก 2026-11-16 — ใช้ปุ่มเลขแทน) · ขวา = ข้อมูลสูตร (รูปเมนู+วิดีโอ · ชื่อ · ข้อมูลสรุป ·
+          วัตถุดิบ · จัดจาน · เก็บรักษา)
           จอแคบ: ซ้อนกัน ข้อมูลสูตรอยู่บน (รูปกับชื่ออยู่ข้างกันเมื่อพอ) ขั้นตอนอยู่ล่าง */}
-      <div className="grid gap-6 @3xl:grid-cols-[20rem_minmax(0,1fr)]">
-        <div className="@container min-w-0 space-y-5">
+      <div className="grid gap-6 @3xl:grid-cols-[minmax(0,1fr)_20rem]">
+        {/* ข้อมูลสูตรอยู่ก่อนใน DOM (จอแคบซ้อนกัน = ชื่อ/รูปอยู่บน) แต่จอกว้างย้ายไปคอลัมน์ขวา */}
+        <div className="@container min-w-0 space-y-5 @3xl:col-start-2 @3xl:row-start-1">
           <div
             className={cn(
               "grid gap-4 @lg:gap-6",
@@ -336,7 +338,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
         {/* ขั้นตอน */}
         <section
           aria-label={t("stepsSection")}
-          className="@container min-w-0 border-t pt-6 @3xl:border-t-0 @3xl:border-l @3xl:pt-0 @3xl:pl-6"
+          className="@container min-w-0 border-t pt-6 @3xl:col-start-1 @3xl:row-start-1 @3xl:border-t-0 @3xl:border-r @3xl:pt-0 @3xl:pr-6"
         >
           {/* วิดีโอของสูตรย้ายไปอยู่ในแกลเลอรีรูปเมนู (ช่องแรก แบบหน้าสินค้า Shopee — ผู้ใช้สั่ง 2026-11-16) */}
           {total === 0 || !current ? (
@@ -346,28 +348,54 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
             </div>
           ) : (
             <>
-              {/* ปุ่มก่อนหน้า/ถัดไปอยู่เหนือการ์ดขั้น — ขั้นที่ยาวปุ่มไม่ตกจอ */}
-              <div className="mb-3 grid grid-cols-2 gap-3">
+              {/* ตัวเลือกขั้นเหนือการ์ดขั้น แบบเลขหน้าของ Google (ผู้ใช้สั่ง 2026-11-16): ปุ่มวงกลมเลขขั้น
+                  ครบทุกขั้น กดข้ามไปขั้นไหนก็ได้ · ลูกศรก่อนหน้า/ถัดไปอยู่หัวท้าย · ขั้นเยอะขึ้นบรรทัดใหม่
+                  ปุ่ม 44px ให้นิ้วกดง่ายบนแท็บเล็ตในครัว · ลูกศรซ้าย/ขวาบนคีย์บอร์ดยังใช้ได้เหมือนเดิม */}
+              <nav
+                aria-label={t("cookStepPager")}
+                className="mb-3 flex flex-wrap items-center justify-center gap-2"
+              >
                 <Button
                   type="button"
                   variant="outline"
-                  className="h-12 text-base"
+                  size="icon"
+                  className="size-11 rounded-full"
+                  aria-label={t("cookPrev")}
                   disabled={step === 0}
                   onClick={() => setIndex(step - 1)}
                 >
                   <ChevronLeft />
-                  {t("cookPrev")}
                 </Button>
+                {steps.map((s, i) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setIndex(i)}
+                    aria-label={t("cookGoToStep", { n: i + 1 })}
+                    aria-current={i === step ? "step" : undefined}
+                    title={s.title || s.description || undefined}
+                    className={cn(
+                      "focus-visible:ring-ring flex size-11 shrink-0 items-center justify-center rounded-full border text-base font-semibold tabular-nums transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                      i === step
+                        ? "bg-primary border-primary text-primary-foreground"
+                        : "bg-card text-foreground hover:bg-muted",
+                    )}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
                 <Button
                   type="button"
-                  className="h-12 text-base"
+                  variant="outline"
+                  size="icon"
+                  className="size-11 rounded-full"
+                  aria-label={t("cookNext")}
                   disabled={step >= total - 1}
                   onClick={() => setIndex(step + 1)}
                 >
-                  {t("cookNext")}
                   <ChevronRight />
                 </Button>
-              </div>
+              </nav>
               {/* ขั้นที่เปิดอยู่ทางซ้าย รูปของขั้นนั้นทางขวา (กดรูป = popup แบบเดียวกับรูปหลักของสูตร)
                   ขั้นที่ไม่มีรูป = การ์ดขั้นเต็มแถว · ฝั่งขั้นตอนแคบ (ต่ำกว่า 36rem) = รูปลงมาอยู่ใต้การ์ด */}
               <div
@@ -404,52 +432,6 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                   </span>
                 </button>
               )}
-
-              {/* ขั้นตอนทั้งหมด — หนึ่งขั้นหนึ่งการ์ด มีเลขขั้นนำหน้า กดเพื่อเปิดขั้นนั้นด้านบน */}
-              <EyeBrow className="mt-6 mb-2">{t("cookAllSteps")}</EyeBrow>
-              <ol className="space-y-2" aria-label={t("cookAllSteps")}>
-                {steps.map((s, i) => (
-                  <li key={s.id}>
-                    <button
-                      type="button"
-                      aria-current={i === step ? "step" : undefined}
-                      onClick={() => setIndex(i)}
-                      className={cn(
-                        "bg-card flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors",
-                        i === step
-                          ? "border-primary ring-primary/30 ring-1"
-                          : "hover:bg-muted/60",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold tabular-nums",
-                          i === step
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground",
-                        )}
-                      >
-                        {i + 1}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="text-foreground block text-sm font-semibold break-words">
-                          {s.title || s.description}
-                        </span>
-                        {s.title && s.description && (
-                          <span className="text-muted-foreground mt-0.5 line-clamp-2 block text-sm break-words">
-                            {s.description}
-                          </span>
-                        )}
-                      </span>
-                      {s.duration ? (
-                        <span className="text-muted-foreground mt-1 shrink-0 text-xs tabular-nums">
-                          {t("cookMinutes", { min: s.duration })}
-                        </span>
-                      ) : null}
-                    </button>
-                  </li>
-                ))}
-              </ol>
             </>
           )}
         </section>

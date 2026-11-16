@@ -48,7 +48,8 @@ type Selection = "video" | number;
  * - กดรูปย่อ = เปลี่ยนรูปใหญ่
  * - กดรูปใหญ่ = popup เต็มจอของรูปนั้น (มีแถบรูปทั้งหมดด้านล่าง เลื่อนดูรูปอื่นต่อได้)
  * - มีวิดีโอ (`videoUrl`) = แบบหน้าสินค้า Shopee (ผู้ใช้สั่ง 2026-11-16 "เอา video ไปใส่ใน Menu"):
- *   วิดีโอเป็นช่องแรกของแถบรูปย่อ (ภาพตัวอย่าง + ไอคอนเล่น) และเปิดหน้ามาที่วิดีโอ เล่นในกรอบใหญ่
+ *   วิดีโอเป็นช่องหลังรูปสุดท้ายของแถบรูปย่อ (ภาพตัวอย่าง + ไอคอนเล่น — ผู้ใช้สั่งย้ายจากช่องแรก)
+ *   เปิดหน้ามาที่รูปหลักเหมือนเดิม กดช่องวิดีโอแล้วเล่นในกรอบใหญ่ · ไม่มีรูป = กรอบใหญ่เป็นวิดีโอเลย
  *   ไม่ autoplay · popup เปิดเฉพาะรูป · ตัวเลข "n / ทั้งหมด" และชื่อปุ่มนับเฉพาะรูป
  */
 export function RecipeCookImages({
@@ -66,12 +67,10 @@ export function RecipeCookImages({
   const total = sorted.length;
   const videoId = parseYoutubeVideoId(videoUrl);
   const [selected, setSelected] = useState<Selection>(() =>
-    videoId
-      ? "video"
-      : Math.max(
-          sorted.findIndex((img) => img.is_primary),
-          0,
-        ),
+    Math.max(
+      sorted.findIndex((img) => img.is_primary),
+      0,
+    ),
   );
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
@@ -133,6 +132,29 @@ export function RecipeCookImages({
           // ขึ้นบรรทัดใหม่แทนเลื่อนแนวนอน — คอลัมน์รูปของขั้น (14rem) ใส่รูปย่อได้ 4 รูป รูปที่ 5 เคยหลบอยู่นอกกรอบ
           className="mt-2 flex flex-wrap gap-2 p-0.5"
         >
+          {sorted.map((img, i) => (
+            <li key={img.id} className="shrink-0">
+              <button
+                type="button"
+                onClick={() => setSelected(i)}
+                aria-label={t("cookShowImage", { n: i + 1, total })}
+                aria-current={!showVideo && i === active}
+                className={cn(
+                  "bg-muted focus-visible:ring-ring block size-12 overflow-hidden rounded-md border transition-opacity focus-visible:ring-2 focus-visible:outline-none",
+                  !showVideo && i === active
+                    ? "ring-primary ring-2 ring-offset-1"
+                    : "opacity-70 hover:opacity-100",
+                )}
+              >
+                <img
+                  src={img.url}
+                  alt=""
+                  loading="lazy"
+                  className="size-full object-cover"
+                />
+              </button>
+            </li>
+          ))}
           {videoId && (
             <li className="shrink-0">
               <button
@@ -162,29 +184,6 @@ export function RecipeCookImages({
               </button>
             </li>
           )}
-          {sorted.map((img, i) => (
-            <li key={img.id} className="shrink-0">
-              <button
-                type="button"
-                onClick={() => setSelected(i)}
-                aria-label={t("cookShowImage", { n: i + 1, total })}
-                aria-current={!showVideo && i === active}
-                className={cn(
-                  "bg-muted focus-visible:ring-ring block size-12 overflow-hidden rounded-md border transition-opacity focus-visible:ring-2 focus-visible:outline-none",
-                  !showVideo && i === active
-                    ? "ring-primary ring-2 ring-offset-1"
-                    : "opacity-70 hover:opacity-100",
-                )}
-              >
-                <img
-                  src={img.url}
-                  alt=""
-                  loading="lazy"
-                  className="size-full object-cover"
-                />
-              </button>
-            </li>
-          ))}
         </ul>
       )}
 
