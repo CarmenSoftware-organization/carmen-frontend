@@ -294,24 +294,76 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
   const goNext = () =>
     fireEvent.click(screen.getAllByRole("button", { name: R.cookNext })[0]);
 
-  it("วิดีโอของสูตรอยู่บนสุดของฝั่งขั้นตอน เหนือปุ่มก่อนหน้า/ถัดไป · วิดีโอรายขั้นตอนของเดิมไม่ถูกฝัง", () => {
-    const { container } = renderForm(<RecipeCookView recipe={recipe} />);
+  // แบบหน้าสินค้า Shopee (ผู้ใช้สั่ง 2026-11-16 "เอา video ไปใส่ใน Menu"): วิดีโอเป็นช่องแรกของแกลเลอรีรูปเมนู
+  const EMBED = "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0";
+  const gallery = () => screen.getByRole("list", { name: R.cookImages });
+  const photo = (id: string, n: number) => ({
+    id,
+    alt_text: null,
+    sort_order: n,
+    is_primary: n === 0,
+    url: `https://files.test/${id}.jpg`,
+  });
+  const withPhotos = {
+    ...recipe,
+    images: [photo("a", 0), photo("b", 1)],
+  } as unknown as Recipe;
+
+  it("วิดีโออยู่ในแกลเลอรีรูปเมนูเป็นช่องแรก เปิดหน้ามาเล่นในกรอบใหญ่ ไม่อยู่ในคอลัมน์ขั้นตอน · วิดีโอรายขั้นตอนของเดิมไม่ถูกฝัง", () => {
+    const { container } = renderForm(<RecipeCookView recipe={withPhotos} />);
     const frames = container.querySelectorAll("iframe");
     expect(frames).toHaveLength(1);
-    expect(frames[0]).toHaveAttribute(
-      "src",
-      "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0",
-    );
+    expect(frames[0]).toHaveAttribute("src", EMBED);
     expect(frames[0]).toHaveAttribute(
       "title",
       R.videoTitle.replace("{name}", RECIPE.name),
     );
-    const prev = screen.getByRole("button", { name: R.cookPrev });
+    const steps = screen.getByRole("region", { name: R.stepsSection });
+    expect(steps).not.toContainElement(frames[0]);
+    // ช่องแรกของแถบรูปย่อ = วิดีโอ (ภาพตัวอย่างจาก YouTube) และเป็นช่องที่เปิดอยู่
+    const first = gallery().querySelector("li button");
+    expect(first).toHaveAccessibleName(R.cookShowVideo);
+    expect(first).toHaveAttribute("aria-current", "true");
+    expect(first?.querySelector("img")).toHaveAttribute(
+      "src",
+      "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
+    );
+    // กรอบใหญ่กับชื่อสูตรอยู่ hero เดียวกัน (แกลเลอรีซ้าย ชื่อขวา)
+    const title = screen.getByRole("heading", { level: 1, name: RECIPE.name });
     expect(
-      frames[0].compareDocumentPosition(prev) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(frames[0].closest("article")).toBeNull();
+      title.parentElement?.parentElement?.firstElementChild,
+    ).toContainElement(frames[0]);
+  });
+
+  it("กดรูปย่อ → กรอบใหญ่เป็นรูป (player หาย) · กดช่องวิดีโอ → กลับมาที่วิดีโอ", () => {
+    const { container } = renderForm(<RecipeCookView recipe={withPhotos} />);
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: R.cookShowImage.replace("{n}", "2").replace("{total}", "2"),
+      }),
+    );
+    expect(container.querySelector("iframe")).toBeNull();
+    expect(
+      screen
+        .getByRole("button", {
+          name: R.cookViewImage.replace("{n}", "2").replace("{total}", "2"),
+        })
+        .querySelector("img"),
+    ).toHaveAttribute("src", "https://files.test/b.jpg");
+
+    fireEvent.click(screen.getByRole("button", { name: R.cookShowVideo }));
+    expect(container.querySelector("iframe")).toHaveAttribute("src", EMBED);
+  });
+
+  it("มีวิดีโอแต่ไม่มีรูป → แกลเลอรีมีแค่วิดีโอ ไม่มีแถบรูปย่อ", () => {
+    const { container } = renderForm(<RecipeCookView recipe={recipe} />);
+    expect(container.querySelector("iframe")).toHaveAttribute("src", EMBED);
+    expect(screen.queryByRole("list", { name: R.cookImages })).toBeNull();
+    // ยังแบ่งคอลัมน์ให้แกลเลอรีข้างชื่อสูตร
+    const title = screen.getByRole("heading", { level: 1, name: RECIPE.name });
+    expect(title.parentElement?.parentElement?.className).toContain(
+      "grid-cols-[13rem",
+    );
   });
 
   it("ขั้นที่มีรูป → รูปอยู่ข้างการ์ดของขั้น (นอกการ์ด) กดรูปย่อเปลี่ยนรูปใหญ่", () => {

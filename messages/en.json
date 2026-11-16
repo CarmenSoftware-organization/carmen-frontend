@@ -5265,6 +5265,7 @@
       "cookImages": "Recipe photos",
       "cookViewImage": "Enlarge photo {n} of {total}",
       "cookShowImage": "Show photo {n} of {total}",
+      "cookShowVideo": "Play video",
       "tabHasErrors": "Has fields to fix",
       "preview": "Preview",
       "costSourceManual": "Manual",

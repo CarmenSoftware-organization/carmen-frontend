@@ -27,7 +27,7 @@ import { useWakeLock } from "./use-wake-lock";
 import { RecipeCookImages, type CookImage } from "./recipe-cook-images";
 import { useRecipeStepImages } from "./use-recipe-step-images";
 import { RecipeDifficultyPips } from "./recipe-difficulty-pips";
-import { RecipeVideoPlayer } from "./recipe-video-player";
+import { parseYoutubeVideoId } from "@/lib/youtube";
 
 const LIST_PATH = "/operation-plan/recipe";
 const ALLERGEN_LABEL = new Map<string, string>(
@@ -93,7 +93,9 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
 
   const totalTime = (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0);
   const allergens = recipe.allergens ?? [];
-  const hasImages = (recipe.images?.length ?? 0) > 0;
+  // รูปเมนูกับวิดีโออยู่แกลเลอรีเดียวกัน (วิดีโอเป็นช่องแรก) — มีอย่างใดอย่างหนึ่งก็แบ่งคอลัมน์ให้แกลเลอรี
+  const hasMedia =
+    (recipe.images?.length ?? 0) > 0 || !!parseYoutubeVideoId(recipe.video_url);
   const difficultyKey = recipe.difficulty?.toLowerCase();
   // ข้อมูลสรุปข้างรูป — แสดงเฉพาะช่องที่มีค่า (view mode: label จาง + ค่าเข้ม ไม่มีกรอบ)
   const facts: { label: string; value: ReactNode }[] = [];
@@ -182,18 +184,23 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
         </div>
       </header>
 
-      {/* สองคอลัมน์บนจอกว้าง: ซ้าย = ข้อมูลสูตร (รูป · ชื่อ · ข้อมูลสรุป · วัตถุดิบ · จัดจาน · เก็บรักษา)
-          ขวา = วิดีโอของสูตร → ปุ่มก่อนหน้า/ถัดไป → ขั้นที่เปิดอยู่ (ซ้าย) กับรูปของขั้นนั้น (ขวา) → ขั้นตอนทั้งหมด
+      {/* สองคอลัมน์บนจอกว้าง: ซ้าย = ข้อมูลสูตร (วิดีโอ+รูปเมนู · ชื่อ · ข้อมูลสรุป · วัตถุดิบ · จัดจาน · เก็บรักษา)
+          ขวา = ปุ่มก่อนหน้า/ถัดไป → ขั้นที่เปิดอยู่ (ซ้าย) กับรูปของขั้นนั้น (ขวา) → ขั้นตอนทั้งหมด
           จอแคบ: ซ้อนกัน ข้อมูลสูตรอยู่บน (รูปกับชื่ออยู่ข้างกันเมื่อพอ) ขั้นตอนอยู่ล่าง */}
       <div className="grid gap-6 @3xl:grid-cols-[20rem_minmax(0,1fr)]">
         <div className="@container min-w-0 space-y-5">
           <div
             className={cn(
               "grid gap-4 @lg:gap-6",
-              hasImages && "@lg:grid-cols-[13rem_minmax(0,1fr)]",
+              hasMedia && "@lg:grid-cols-[13rem_minmax(0,1fr)]",
             )}
           >
-            <RecipeCookImages images={recipe.images} recipeName={recipe.name} />
+            <RecipeCookImages
+              images={recipe.images}
+              recipeName={recipe.name}
+              videoUrl={recipe.video_url}
+              videoTitle={t("videoTitle", { name: recipe.name })}
+            />
             <div className="@container min-w-0">
               <h1 className="text-foreground text-2xl font-semibold tracking-tight break-words">
                 {recipe.name}
@@ -331,14 +338,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
           aria-label={t("stepsSection")}
           className="@container min-w-0 border-t pt-6 @3xl:border-t-0 @3xl:border-l @3xl:pt-0 @3xl:pl-6"
         >
-          {/* วิดีโอของสูตร (1 ลิงก์ ถ้ามี) อยู่บนสุดของฝั่งขั้นตอน — เห็นก่อนลงมือ
-              จำกัดความกว้างไว้: เต็มคอลัมน์บนจอกว้างจะสูงจนดันขั้นตอนตกจอ · วางกึ่งกลางคอลัมน์
-              (ผู้ใช้สั่ง 2026-11-16 — ชิดซ้ายแล้วจอกว้างเหลือที่ว่างทางขวาข้างเดียว) */}
-          <RecipeVideoPlayer
-            url={recipe.video_url}
-            title={t("videoTitle", { name: recipe.name })}
-            className="mx-auto max-w-2xl"
-          />
+          {/* วิดีโอของสูตรย้ายไปอยู่ในแกลเลอรีรูปเมนู (ช่องแรก แบบหน้าสินค้า Shopee — ผู้ใช้สั่ง 2026-11-16) */}
           {total === 0 || !current ? (
             <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
               <p>{t("cookNoSteps")}</p>
