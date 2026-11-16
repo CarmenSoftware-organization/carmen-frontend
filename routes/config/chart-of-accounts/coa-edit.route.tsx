@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { coaRulesKey, readCoaRules } from "./coa-dimension-rules";
 import { useParams, useSearchParams } from "react-router";
-import { FormSkeleton } from "@/components/loader/form-skeleton";
+import { CoaFormSkeleton } from "./coa-form-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { useChartOfAccountById } from "./use-coa";
 import { CoaForm } from "./coa-form";
@@ -19,14 +19,17 @@ export function Component() {
       try {
         return await readCoaRules(bu!, id!);
       } catch (err) {
-        console.warn("Unable to load dimension rules, defaulting to empty:", err);
+        console.warn(
+          "Unable to load dimension rules, defaulting to empty:",
+          err,
+        );
         return [];
       }
     },
     retry: false,
   });
 
-  if (query.isLoading || rules.isLoading) return <FormSkeleton />;
+  if (query.isLoading || rules.isLoading) return <CoaFormSkeleton />;
   if (query.error || !query.data) {
     return (
       <ErrorState
