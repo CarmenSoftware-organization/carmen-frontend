@@ -1,7 +1,132 @@
 {
-  "current": "2.6.0",
-  "generated_at": "2026-11-13T13:40:50.498Z",
+  "current": "2.7.0",
+  "generated_at": "2026-11-16T09:39:50.775Z",
   "versions": [
+    {
+      "version": "2.7.0",
+      "build": "2.7.0-build.20261116.e7680c16",
+      "date": "2026-11-16",
+      "commit": "e7680c16",
+      "changes": {
+        "added": [
+          {
+            "scope": "pr",
+            "summary": "เทียบราคาไม่มีใบราคาที่เปิดอยู่ ใส่ผู้ขายล่าสุดให้ แต่ราคาให้จัดซื้อกรอกเอง",
+            "hash": "1ddaab35",
+            "author": "Khafang",
+            "pr": 603
+          },
+          {
+            "scope": "recipe",
+            "summary": "วิดีโอเหลือลิงก์เดียวต่อสูตร ขั้นตอนใส่รูปได้ และหน้าดูสูตรแสดงวิดีโอ → ปุ่มขั้น → ขั้นตอนคู่กับรูป",
+            "hash": "57fbe79f",
+            "author": "Khafang",
+            "pr": 600
+          },
+          {
+            "scope": "recipe",
+            "summary": "จำนวนในหน่วยสต๊อกเป็นคอลัมน์ของตัวเองในตารางวัตถุดิบ",
+            "hash": "0140d6f3",
+            "author": "Khafang",
+            "pr": 599
+          },
+          {
+            "scope": "recipe",
+            "summary": "ตารางต้นทุนรายวัตถุดิบมีเลขลำดับ 1, 2, 3 …",
+            "hash": "1930b927",
+            "author": "Khafang",
+            "pr": 599
+          },
+          {
+            "scope": "recipe",
+            "summary": "ซ่อนคอลัมน์ต้นทุน/หน่วยในตารางวัตถุดิบ",
+            "hash": "6cd04d12",
+            "author": "Khafang",
+            "pr": 599
+          },
+          {
+            "scope": "recipe",
+            "summary": "เปิดสูตรเจอหน้าแก้ไขก่อน มีปุ่ม Preview · วัตถุดิบเป็นตาราง · กรอกต้นทุนของบรรทัดเองได้",
+            "hash": "1a86b018",
+            "author": "Khafang",
+            "pr": 598
+          },
+          {
+            "scope": "recipe",
+            "summary": "หน้าสูตรสองคอลัมน์ การ์ดขั้นตอนชัดขึ้น และจำนวนในหน่วยสต๊อกใต้ช่องจำนวนวัตถุดิบ",
+            "hash": "3070d410",
+            "author": "Khafang",
+            "pr": 597
+          },
+          {
+            "scope": "recipe",
+            "summary": "หน้าสูตรแบบหน้าสินค้า — รูปอยู่ซ้ายขนาดเล็กลง ชื่อและข้อมูลสูตรอยู่ขวา",
+            "hash": "d3761619",
+            "author": "Khafang",
+            "pr": 594
+          },
+          {
+            "scope": "recipe",
+            "summary": "ฟอร์มสูตรแบ่งเป็นแท็บ และหน้าสูตรแสดงรูปใหญ่พร้อมแถบรูปย่อ",
+            "hash": "1a3c580d",
+            "author": "Khafang",
+            "pr": 569
+          },
+          {
+            "scope": "recipe",
+            "summary": "หน้าสูตรแสดงรูปที่อัปโหลด กดดูขนาดใหญ่ใน popup — ถอดวิดีโอของทั้งสูตร เหลือวิดีโอรายขั้นตอน",
+            "hash": "f2e44fa4",
+            "author": "Khafang",
+            "pr": 569
+          },
+          {
+            "scope": null,
+            "summary": "Add Carmen Blue UI design values and recipes",
+            "hash": "43a9dbc4",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "add AP master mock status component and related tests",
+            "hash": "9710b519",
+            "author": "llHorizonll",
+            "pr": null
+          }
+        ],
+        "fixed": [
+          {
+            "scope": "recipe",
+            "summary": "ตัวเลขวัตถุดิบแสดงทศนิยมเท่ากันทั้งคอลัมน์",
+            "hash": "798f4190",
+            "author": "Khafang",
+            "pr": 602
+          },
+          {
+            "scope": "recipe",
+            "summary": "วิดีโอของสูตรบนหน้าดูสูตรอยู่กึ่งกลางคอลัมน์ขั้นตอน",
+            "hash": "3897dc6b",
+            "author": "Khafang",
+            "pr": 601
+          },
+          {
+            "scope": "coa",
+            "summary": "หน้ารายละเอียดผังบัญชีเต็มความกว้างจอ โหมดดูเป็นข้อความ และกลุ่มบัญชีแสดงเป็น tree",
+            "hash": "a2cfd1bc",
+            "author": "Thammanoon Semapru",
+            "pr": 596
+          },
+          {
+            "scope": "recipe",
+            "summary": "หน้าสูตรใช้ความกว้างเต็มจอ ไม่เว้นขอบว่างซ้ายขวาบนจอกว้าง",
+            "hash": "33dee9bf",
+            "author": "Khafang",
+            "pr": 595
+          }
+        ],
+        "changed": []
+      }
+    },
     {
       "version": "2.6.0",
       "build": "2.6.0-build.20261113.7d477732",
