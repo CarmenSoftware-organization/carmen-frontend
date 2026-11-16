@@ -5271,8 +5271,7 @@
       "stepVideoTitle": "วิดีโอขั้นที่ {n}",
       "preview": "ดูตัวอย่าง",
       "costSourceManual": "กำหนดเอง",
-      "resetManualCost": "ใช้ต้นทุนจากระบบ",
-      "costPerUnitOf": "ต่อ {unit}"
+      "resetManualCost": "ใช้ต้นทุนจากระบบ"
     },
     "posSale": {
       "history": {
