@@ -184,11 +184,13 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
         </div>
       </header>
 
-      {/* สองคอลัมน์บนจอกว้าง: ซ้าย = ข้อมูลสูตร (วิดีโอ+รูปเมนู · ชื่อ · ข้อมูลสรุป · วัตถุดิบ · จัดจาน · เก็บรักษา)
-          ขวา = ปุ่มก่อนหน้า/ถัดไป → ขั้นที่เปิดอยู่ (ซ้าย) กับรูปของขั้นนั้น (ขวา) → ขั้นตอนทั้งหมด
+      {/* สองคอลัมน์บนจอกว้าง (ผู้ใช้สั่ง 2026-11-16 สลับข้าง): ซ้าย = ปุ่มเลขขั้น → ขั้นที่เปิดอยู่ (ซ้าย)
+          กับรูปของขั้นนั้น (ขวา) → ขั้นตอนทั้งหมด · ขวา = ข้อมูลสูตร (รูปเมนู+วิดีโอ · ชื่อ · ข้อมูลสรุป ·
+          วัตถุดิบ · จัดจาน · เก็บรักษา)
           จอแคบ: ซ้อนกัน ข้อมูลสูตรอยู่บน (รูปกับชื่ออยู่ข้างกันเมื่อพอ) ขั้นตอนอยู่ล่าง */}
-      <div className="grid gap-6 @3xl:grid-cols-[20rem_minmax(0,1fr)]">
-        <div className="@container min-w-0 space-y-5">
+      <div className="grid gap-6 @3xl:grid-cols-[minmax(0,1fr)_20rem]">
+        {/* ข้อมูลสูตรอยู่ก่อนใน DOM (จอแคบซ้อนกัน = ชื่อ/รูปอยู่บน) แต่จอกว้างย้ายไปคอลัมน์ขวา */}
+        <div className="@container min-w-0 space-y-5 @3xl:col-start-2 @3xl:row-start-1">
           <div
             className={cn(
               "grid gap-4 @lg:gap-6",
@@ -336,7 +338,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
         {/* ขั้นตอน */}
         <section
           aria-label={t("stepsSection")}
-          className="@container min-w-0 border-t pt-6 @3xl:border-t-0 @3xl:border-l @3xl:pt-0 @3xl:pl-6"
+          className="@container min-w-0 border-t pt-6 @3xl:col-start-1 @3xl:row-start-1 @3xl:border-t-0 @3xl:border-r @3xl:pt-0 @3xl:pr-6"
         >
           {/* วิดีโอของสูตรย้ายไปอยู่ในแกลเลอรีรูปเมนู (ช่องแรก แบบหน้าสินค้า Shopee — ผู้ใช้สั่ง 2026-11-16) */}
           {total === 0 || !current ? (
