@@ -968,6 +968,12 @@ function IngredientCostTable({
         <table className="w-full text-xs">
           <thead className="bg-muted/60">
             <tr className="text-muted-foreground text-left">
+              <th
+                scope="col"
+                className="w-px py-1.5 pr-1 pl-2 text-right font-semibold"
+              >
+                #
+              </th>
               <th scope="col" className="px-2 py-1.5 font-semibold">
                 {t("ingredientName")}
               </th>
@@ -983,8 +989,12 @@ function IngredientCostTable({
             </tr>
           </thead>
           <tbody>
-            {lines.map(({ d, cost, i }) => (
+            {lines.map(({ d, cost, i }, order) => (
               <tr key={i} className="border-border/60 border-t">
+                {/* ลำดับตามที่แสดง (แพง → ถูก) — ผู้ใช้สั่งใส่เลข 1, 2, 3 … 2026-11-16 */}
+                <td className="text-muted-foreground w-px py-1.5 pr-1 pl-2 text-right tabular-nums">
+                  {order + 1}
+                </td>
                 <td className="px-2 py-1.5">
                   {d.product_label || "—"}
                   {d.ingredient_type === "recipe" && (
