@@ -152,58 +152,6 @@ describe("RecipeForm — characterization", () => {
   it.todo("[create] เซฟแล้วกลับหน้ารายการ");
 });
 
-describe("RecipeForm — ลิงก์วิดีโอ", () => {
-  const videoInput = () =>
-    screen.getByLabelText(en.operationPlan.recipe.videoUrl);
-
-  it("โหลดลิงก์ที่บันทึกไว้ แล้วเซฟส่งค่าเดิมกลับ", async () => {
-    const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-    renderForm(<RecipeForm recipe={{ ...RECIPE, video_url: url }} />);
-    expect(videoInput()).toHaveValue(url);
-    await act(async () => submitForm("recipe-form"));
-
-    expect(firstPayload(updateMut)).toMatchObject({ video_url: url });
-  });
-
-  it("วางลิงก์ youtu.be → ส่งตามที่วาง (backend แปลงเป็นรูปแบบ watch?v= เอง)", async () => {
-    renderForm(<RecipeForm recipe={RECIPE} />);
-    fireEvent.change(videoInput(), {
-      target: { value: "  https://youtu.be/dQw4w9WgXcQ?si=x  " },
-    });
-    await act(async () => submitForm("recipe-form"));
-
-    expect(firstPayload(updateMut)).toMatchObject({
-      video_url: "https://youtu.be/dQw4w9WgXcQ?si=x",
-    });
-  });
-
-  it("ลบลิงก์ออก → ส่ง null (ล้างวิดีโอ)", async () => {
-    renderForm(
-      <RecipeForm
-        recipe={{
-          ...RECIPE,
-          video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        }}
-      />,
-    );
-    fireEvent.change(videoInput(), { target: { value: "" } });
-    await act(async () => submitForm("recipe-form"));
-
-    expect(firstPayload(updateMut)).toMatchObject({ video_url: null });
-  });
-
-  it("ลิงก์ที่ไม่ใช่วิดีโอ YouTube → ไม่บันทึก ช่องขึ้น error", async () => {
-    renderForm(<RecipeForm recipe={RECIPE} />);
-    fireEvent.change(videoInput(), {
-      target: { value: "https://vimeo.com/76979871" },
-    });
-    await act(async () => submitForm("recipe-form"));
-
-    expect(updateMut.mutate).not.toHaveBeenCalled();
-    expect(videoInput()).toHaveAttribute("aria-invalid", "true");
-  });
-});
-
 describe("RecipeForm — วิดีโอของขั้นตอน", () => {
   const WATCH = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
   const STEP = {
@@ -252,5 +200,80 @@ describe("RecipeForm — วิดีโอของขั้นตอน", () =
     await act(async () => submitForm("recipe-form"));
 
     expect(syncedDrafts()[0].video_url).toBe("");
+  });
+});
+
+describe("RecipeForm — แท็บ", () => {
+  const R = en.operationPlan.recipe;
+  const tab = (name: string) =>
+    screen.getByRole("tab", { name: new RegExp(`^${name}`) });
+  const openTab = (name: string) => {
+    // Radix เปลี่ยนแท็บตอน mousedown
+    fireEvent.mouseDown(tab(name), { button: 0, ctrlKey: false });
+  };
+
+  it("เปิดมาที่แท็บรายละเอียด · ทุกแท็บ mount ค้างไว้ แท็บที่ไม่ได้เลือกถูกซ่อน", () => {
+    renderForm(<RecipeForm recipe={RECIPE} />);
+    expect(tab(R.recipeDetails)).toHaveAttribute("aria-selected", "true");
+
+    const panels = screen.getAllByRole("tabpanel", { hidden: true });
+    expect(panels).toHaveLength(4);
+    expect(panels.map((panel) => panel.getAttribute("data-state"))).toEqual([
+      "active",
+      "inactive",
+      "inactive",
+      "inactive",
+    ]);
+    // ช่องของแท็บต้นทุนอยู่ใน DOM แล้วแม้ยังไม่เปิดแท็บ — Save ตรวจครบทุกช่อง
+    expect(document.getElementById("recipe-selling-price")).not.toBeNull();
+  });
+
+  it("แก้ช่องในแท็บหนึ่งแล้วสลับไปอีกแท็บ → ค่ายังอยู่และถูกส่งตอน Save", async () => {
+    renderForm(<RecipeForm recipe={RECIPE} />);
+    fireEvent.change(document.getElementById("recipe-note")!, {
+      target: { value: "keep me" },
+    });
+    openTab(R.costing);
+    expect(tab(R.costing)).toHaveAttribute("aria-selected", "true");
+    fireEvent.change(document.getElementById("recipe-selling-price")!, {
+      target: { value: "120" },
+    });
+    await act(async () => submitForm("recipe-form"));
+
+    expect(firstPayload(updateMut)).toMatchObject({
+      note: "keep me",
+      selling_price: 120,
+    });
+  });
+
+  it("Save ไม่ผ่านเพราะช่องในแท็บอื่น → เปิดแท็บนั้น ช่องขึ้น error และแท็บมีจุดเตือน", async () => {
+    renderForm(<RecipeForm recipe={RECIPE} />);
+    fireEvent.change(document.getElementById("recipe-code")!, {
+      target: { value: "" },
+    });
+    openTab(R.costing);
+    await act(async () => submitForm("recipe-form"));
+
+    expect(updateMut.mutate).not.toHaveBeenCalled();
+    expect(tab(R.recipeDetails)).toHaveAttribute("aria-selected", "true");
+    expect(document.getElementById("recipe-code")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    expect(tab(R.recipeDetails)).toHaveTextContent(R.tabHasErrors);
+    expect(tab(R.costing)).not.toHaveTextContent(R.tabHasErrors);
+  });
+
+  it("ชื่อสูตร (อยู่เหนือแท็บ) ผิดด้วย → ไม่สลับแท็บ", async () => {
+    renderForm(<RecipeForm recipe={{ ...RECIPE, name: "" }} />);
+    fireEvent.change(document.getElementById("recipe-code")!, {
+      target: { value: "" },
+    });
+    openTab(R.costing);
+    await act(async () => submitForm("recipe-form"));
+
+    expect(updateMut.mutate).not.toHaveBeenCalled();
+    expect(tab(R.costing)).toHaveAttribute("aria-selected", "true");
+    expect(tab(R.recipeDetails)).toHaveTextContent(R.tabHasErrors);
   });
 });

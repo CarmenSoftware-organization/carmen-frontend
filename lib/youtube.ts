@@ -1,5 +1,5 @@
 /**
- * ลิงก์วิดีโอ YouTube — ใช้กับช่องวิดีโอของสูตร (`recipe.video_url`) และวิดีโอของแต่ละขั้นตอน
+ * ลิงก์วิดีโอ YouTube — ใช้กับวิดีโอของแต่ละขั้นตอนของสูตร
  * (`preparation_step.videos[0].token` เก็บแค่รหัสวิดีโอ ไม่ใช่ลิงก์)
  *
  * กติกาเดียวกับ backend (`RecipeVideoUrlSchema` ใน gateway): รับลิงก์วิดีโอ YouTube ทุกรูปแบบ
@@ -60,7 +60,7 @@ export function parseYoutubeVideoId(
   return isYoutubeVideoId(id) ? id : null;
 }
 
-/** ลิงก์หน้าดูวิดีโอรูปแบบเดียวกับที่ backend เก็บใน `recipe.video_url` */
+/** ลิงก์หน้าดูวิดีโอแบบมาตรฐาน (watch?v=<id>) — ที่ช่องวิดีโอของขั้นตอนแสดงจาก token ที่เก็บไว้ */
 export function youtubeWatchUrl(id: string): string {
   return `https://www.youtube.com/watch?v=${id}`;
 }

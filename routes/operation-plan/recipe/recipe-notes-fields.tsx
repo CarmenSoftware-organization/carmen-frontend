@@ -7,7 +7,7 @@ import {
   FieldDescription,
 } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection } from "@/components/share/compact-section";
 import type { RecipeFormValues } from "./recipe-form-schema";
 
 interface RecipeNotesFieldsProps {
@@ -23,8 +23,7 @@ export function RecipeNotesFields({
   const t = useTranslations("operationPlan.recipe");
 
   return (
-    <SettingSection
-      plain
+    <CompactSection
       title={t("notesSection")}
       description={t("notesSectionDesc")}
     >
@@ -56,6 +55,6 @@ export function RecipeNotesFields({
           <FieldDescription>{t("storageInstructionsDesc")}</FieldDescription>
         </Field>
       </FieldGroup>
-    </SettingSection>
+    </CompactSection>
   );
 }

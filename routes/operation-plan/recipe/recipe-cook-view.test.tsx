@@ -111,46 +111,134 @@ describe("RecipeCookView — ปุ่ม Print", () => {
   });
 });
 
-describe("RecipeCookView — วิดีโอของสูตร", () => {
-  const playerTitle = en.operationPlan.recipe.videoTitle.replace(
-    "{name}",
-    RECIPE.name,
-  );
+describe("RecipeCookView — รูปของสูตร", () => {
+  const img = (id: string, sort: number, alt: string | null = null) => ({
+    id,
+    alt_text: alt,
+    sort_order: sort,
+    is_primary: sort === 0,
+    url: `https://files.test/${id}.jpg`,
+  });
+  const label = (
+    key: "cookViewImage" | "cookShowImage",
+    n: number,
+    total = 3,
+  ) =>
+    en.operationPlan.recipe[key]
+      .replace("{n}", String(n))
+      .replace("{total}", String(total));
+  // b เป็นรูปหลักแต่อยู่ลำดับที่ 2 — รูปใหญ่ต้องเริ่มที่รูปหลัก แถบรูปเรียงตาม sort_order
+  const IMAGES = [
+    { ...img("c", 2), is_primary: false },
+    { ...img("b", 1, "Plated"), is_primary: true },
+    { ...img("a", 0), is_primary: false },
+  ];
+  const heroSrc = (n: number) =>
+    screen
+      .getByRole("button", { name: label("cookViewImage", n) })
+      .querySelector("img")
+      ?.getAttribute("src");
 
-  it("มีลิงก์ YouTube → ฝัง player ของ youtube-nocookie บนสุดของคอลัมน์ขั้นตอน", () => {
-    renderForm(
-      <RecipeCookView
-        recipe={{
-          ...RECIPE,
-          video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        }}
-      />,
-    );
-    const player = screen.getByTitle(playerTitle);
-    expect(player.tagName).toBe("IFRAME");
-    expect(player).toHaveAttribute(
-      "src",
-      "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0",
-    );
-    // YouTube ต้องรู้ origin ของหน้าที่ฝัง ไม่งั้น player ขึ้น Error 153
-    expect(player).toHaveAttribute(
-      "referrerpolicy",
-      "strict-origin-when-cross-origin",
-    );
-    // ก่อนกล่อง "ยังไม่มีขั้นตอน" — วิดีโอเห็นก่อนเสมอ
+  it("รูปใหญ่เริ่มที่รูปหลัก + แถบรูปย่อทั้งหมดข้างใต้ เรียงตาม sort_order อยู่บนสุดของคอลัมน์ขั้นตอน", () => {
+    renderForm(<RecipeCookView recipe={{ ...RECIPE, images: IMAGES }} />);
+    expect(heroSrc(2)).toBe("https://files.test/b.jpg");
+
+    const strip = screen.getByRole("list", {
+      name: en.operationPlan.recipe.cookImages,
+    });
+    expect(
+      Array.from(strip.querySelectorAll("img")).map((el) =>
+        el.getAttribute("src"),
+      ),
+    ).toEqual([
+      "https://files.test/a.jpg",
+      "https://files.test/b.jpg",
+      "https://files.test/c.jpg",
+    ]);
+    // ก่อนกล่อง "ยังไม่มีขั้นตอน" — รูปเห็นก่อนเสมอ
     const steps = screen.getByRole("region", {
       name: en.operationPlan.recipe.stepsSection,
     });
-    expect(steps.firstElementChild).toContainElement(player);
+    expect(steps.firstElementChild).toContainElement(strip);
+  });
+
+  it("กดรูปย่อ → เปลี่ยนรูปใหญ่ ไม่เปิด popup", () => {
+    renderForm(<RecipeCookView recipe={{ ...RECIPE, images: IMAGES }} />);
+    const thumb = screen.getByRole("button", {
+      name: label("cookShowImage", 3),
+    });
+    fireEvent.click(thumb);
+
+    expect(heroSrc(3)).toBe("https://files.test/c.jpg");
+    expect(thumb).toHaveAttribute("aria-current", "true");
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("กดรูปใหญ่ → popup เปิดรูปขนาดใหญ่พร้อมแถบรูปทั้งหมด ปิดได้", () => {
+    // carousel ใน popup (embla) ถาม matchMedia ตอน mount — jsdom ไม่มีให้
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: false,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+    }));
+    renderForm(<RecipeCookView recipe={{ ...RECIPE, images: IMAGES }} />);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    fireEvent.click(
+      screen.getByRole("button", { name: label("cookViewImage", 2) }),
+    );
+
+    // jsdom ไม่มี layout carousel จึงตรวจตำแหน่งเริ่มของ popup ไม่ได้ (ตรวจบนเบราว์เซอร์จริง)
+    const dialog = screen.getByRole("dialog");
+    for (const id of ["a", "b", "c"]) {
+      expect(
+        dialog.querySelectorAll(`img[src="https://files.test/${id}.jpg"]`)
+          .length,
+        // รูปใหญ่ใน carousel + รูปย่อในแถบด้านล่าง
+      ).toBe(2);
+    }
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("รูปเดียว → มีแต่รูปใหญ่ ไม่มีแถบรูปย่อ", () => {
+    renderForm(
+      <RecipeCookView recipe={{ ...RECIPE, images: [img("a", 0)] }} />,
+    );
+    expect(
+      screen.getByRole("button", { name: label("cookViewImage", 1, 1) }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("list", { name: en.operationPlan.recipe.cookImages }),
+    ).toBeNull();
   });
 
   it.each([
-    ["ไม่มีฟิลด์ (backend เก่า)", undefined],
-    ["null", null],
-    ["ไม่ใช่ลิงก์ YouTube", "https://vimeo.com/76979871"],
-  ])("%s → ไม่มี player", (_label, videoUrl) => {
+    ["ไม่มีฟิลด์", undefined],
+    ["ว่าง", []],
+  ])("%s → ไม่มีรูปบนหน้า", (_label, images) => {
     const { container } = renderForm(
-      <RecipeCookView recipe={{ ...RECIPE, video_url: videoUrl }} />,
+      <RecipeCookView recipe={{ ...RECIPE, images } as unknown as Recipe} />,
+    );
+    expect(container.querySelector(".cursor-zoom-in")).toBeNull();
+    expect(
+      screen.queryByRole("list", { name: en.operationPlan.recipe.cookImages }),
+    ).toBeNull();
+  });
+
+  it("ลิงก์วิดีโอของทั้งสูตรที่เคยบันทึกไว้ → ไม่ฝัง player แล้ว (วิดีโอมีเฉพาะรายขั้นตอน)", () => {
+    const { container } = renderForm(
+      <RecipeCookView
+        recipe={
+          {
+            ...RECIPE,
+            video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          } as unknown as Recipe
+        }
+      />,
     );
     expect(container.querySelector("iframe")).toBeNull();
   });
@@ -204,22 +292,5 @@ describe("RecipeCookView — วิดีโอของขั้นตอน", 
     );
     expect(screen.getByRole("article")).toHaveTextContent("Step 2 text");
     expect(container.querySelector("iframe")).toBeNull();
-  });
-
-  it("มีทั้งวิดีโอของสูตรและของขั้น → แสดงทั้งสองตัว", () => {
-    renderForm(
-      <RecipeCookView
-        recipe={{
-          ...recipe,
-          video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        }}
-      />,
-    );
-    expect(
-      screen.getByTitle(
-        en.operationPlan.recipe.videoTitle.replace("{name}", RECIPE.name),
-      ),
-    ).toBeInTheDocument();
-    expect(screen.getByTitle(stepTitle(1))).toBeInTheDocument();
   });
 });

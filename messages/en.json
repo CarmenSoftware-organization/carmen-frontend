@@ -5261,9 +5261,10 @@
       "marginBelowCategoryMin": "Below category minimum {pct}%",
       "marginCategoryTarget": "Category target {pct}%",
       "marginMeetsCategoryTarget": "Meets category target {pct}%",
-      "videoUrl": "Video link (YouTube)",
-      "videoUrlDesc": "Paste a YouTube video link — it plays at the top of the recipe page",
-      "videoTitle": "Video: {name}",
+      "cookImages": "Recipe photos",
+      "cookViewImage": "Enlarge photo {n} of {total}",
+      "cookShowImage": "Show photo {n} of {total}",
+      "tabHasErrors": "Has fields to fix",
       "stepVideoUrl": "Step video (YouTube)",
       "stepVideoUrlDesc": "Optional — plays inside this step on the recipe page",
       "stepVideoTitle": "Video for step {n}"

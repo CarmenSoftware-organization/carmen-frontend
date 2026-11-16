@@ -24,6 +24,14 @@ import {
   mergeAllergens,
 } from "./recipe-form-schema";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { SECTION_PAIR } from "@/components/share/compact-section";
+import { RecipeFormTabList } from "./recipe-form-tab-list";
+import {
+  RECIPE_TABS,
+  tabToOpenForErrors,
+  type RecipeTab,
+} from "./recipe-form-tabs";
 import { computeRecipeCost, useRecipeCostCalc } from "./use-recipe-cost-calc";
 import { RecipeNotesFields } from "./recipe-notes-fields";
 import { RecipeStepsFields } from "./recipe-steps-fields";
@@ -60,6 +68,15 @@ interface RecipeFormProps {
 }
 
 const LIST_PATH = "/operation-plan/recipe";
+// ทุกแท็บ mount ค้างไว้ (forceMount) แล้วซ่อนด้วย CSS — field array ของวัตถุดิบ/ขั้นตอน ตัวคำนวณต้นทุน
+// และค่าที่พิมพ์ค้างไว้ต้องไม่หายเมื่อสลับแท็บ และ Save ต้องตรวจครบทุกช่องเหมือนตอนเป็นหน้าเดียว
+const TAB_PANEL = "mt-3 data-[state=inactive]:hidden";
+const INVALID_IN_VIEW = ["[data-recipe-hero]", '[data-state="active"]']
+  .flatMap((scope) => [
+    `${scope} [aria-invalid="true"]`,
+    `${scope} [data-invalid="true"]`,
+  ])
+  .join(", ");
 
 export function RecipeForm({ recipe }: RecipeFormProps) {
   const t = useTranslations("operationPlan.recipe");
@@ -71,6 +88,9 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
   const deleteRecipe = useDeleteRecipe();
   const [showDelete, setShowDelete] = useState(false);
   const [showComment, setShowComment] = useState(false);
+  // แท็บเก็บใน state ของหน้า ไม่ใช่ URL — navigation guard ของฟอร์มวาง sentinel ไว้ใน history
+  // การ replace URL จะเขียนทับ sentinel นั้น
+  const [tab, setTab] = useState<RecipeTab>("details");
   const syncSteps = useSyncRecipeSteps();
   const replaceIngredients = useReplaceIngredients();
   const queryClient = useQueryClient();
@@ -280,44 +300,78 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
         />
       }
     >
-      {/* flatten หน้าเดียว: hero บนสุด แล้วแต่ละ section เป็น 2-col แบบ company
-          profile (title/desc ซ้าย · เนื้อหาขวา) stack ต่อกันด้วยเส้นคั่น */}
+      {/* hero อยู่เหนือแท็บเสมอ (ชื่อ รูป ตัวเลขสรุปที่ต้องเห็นจากทุกแท็บ) ข้างล่างแบ่งเป็นแท็บ:
+          รายละเอียด · วัตถุดิบ · ขั้นตอน · ต้นทุน — เดิมเรียงต่อกันหน้าเดียวต้องเลื่อนยาว */}
       <form
         id="recipe-form"
-        onSubmit={form.handleSubmit(onSubmit, () =>
-          scrollToFirstInvalidField(),
-        )}
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          // ช่องที่ผิดอาจอยู่ในแท็บที่ซ่อนอยู่ (เลื่อนไปหา/โฟกัสไม่ได้) — เปิดแท็บนั้นก่อน
+          // scrollToFirstInvalidField ลองซ้ำทีละเฟรมอยู่แล้ว จึงทันแท็บที่เพิ่งเปิด
+          const errorTab = tabToOpenForErrors(errors);
+          if (errorTab) setTab(errorTab);
+          // รอให้แท็บสลับก่อน แล้วหาเฉพาะใน hero กับแท็บที่เปิดอยู่ — ช่องผิดในแท็บที่ซ่อนอยู่
+          // มาก่อนใน DOM ได้ แต่เลื่อนไปหาไม่ได้
+          requestAnimationFrame(() =>
+            scrollToFirstInvalidField({ selector: INVALID_IN_VIEW }),
+          );
+        })}
       >
-        <RecipeHeroFields
-          form={form}
-          isDisabled={isDisabled}
-          computed={computed}
-          gallery={gallery}
-        />
-        <RecipeGeneralFields
-          form={form}
-          isDisabled={isDisabled}
-          recipe={recipe}
-        />
-        <RecipeIngredientsFields
-          form={form}
-          isDisabled={isDisabled}
-          recipe={recipe}
-          computed={computed}
-        />
-        <RecipeStepsFields
-          form={form}
-          isDisabled={isDisabled}
-          isNew={!recipe}
-        />
-        <RecipeComplianceFields form={form} isDisabled={isDisabled} />
-        <RecipeNotesFields form={form} isDisabled={isDisabled} />
-        <RecipeCostFields
-          form={form}
-          isDisabled={isDisabled}
-          computed={computed}
-          categoryDefaults={categoryDefaults}
-        />
+        <div data-recipe-hero>
+          <RecipeHeroFields
+            form={form}
+            isDisabled={isDisabled}
+            computed={computed}
+            gallery={gallery}
+          />
+        </div>
+        <Tabs
+          value={tab}
+          onValueChange={(v) => {
+            const next = RECIPE_TABS.find((x) => x === v);
+            if (next) setTab(next);
+          }}
+          className="mt-4 gap-0"
+        >
+          <RecipeFormTabList
+            control={form.control}
+            isNew={!recipe}
+            onOpenTab={setTab}
+          />
+          <TabsContent value="details" forceMount className={TAB_PANEL}>
+            <RecipeGeneralFields
+              form={form}
+              isDisabled={isDisabled}
+              recipe={recipe}
+            />
+            <div className={SECTION_PAIR}>
+              <RecipeComplianceFields form={form} isDisabled={isDisabled} />
+              <RecipeNotesFields form={form} isDisabled={isDisabled} />
+            </div>
+          </TabsContent>
+          <TabsContent value="ingredients" forceMount className={TAB_PANEL}>
+            <RecipeIngredientsFields
+              form={form}
+              isDisabled={isDisabled}
+              recipe={recipe}
+              computed={computed}
+            />
+          </TabsContent>
+          <TabsContent value="steps" forceMount className={TAB_PANEL}>
+            <RecipeStepsFields
+              form={form}
+              isDisabled={isDisabled}
+              isNew={!recipe}
+            />
+          </TabsContent>
+          <TabsContent value="cost" forceMount className={TAB_PANEL}>
+            <RecipeCostFields
+              form={form}
+              isDisabled={isDisabled}
+              computed={computed}
+              categoryDefaults={categoryDefaults}
+            />
+          </TabsContent>
+        </Tabs>
       </form>
 
       {recipe && (
@@ -365,7 +419,6 @@ function buildRecipePayload(values: RecipeFormValues) {
     name: values.name,
     description: values.description || null,
     note: values.note || null,
-    video_url: values.video_url.trim() || null,
     status: values.status,
     difficulty: values.difficulty,
     cuisine_id: values.cuisine_id!,
