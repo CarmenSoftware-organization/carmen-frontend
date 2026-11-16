@@ -430,7 +430,6 @@ export function pickTouchedLineUpdates<U extends { id: string }>(
   current: GrnFormValues["items"],
   original: GrnFormValues["items"],
 ): U[] | undefined {
-  type Line = GrnFormValues["items"][number];
   const touched = update.filter(
     (u) => lineInputKey(current, u.id) !== lineInputKey(original, u.id),
   );
