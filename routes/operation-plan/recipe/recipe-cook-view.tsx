@@ -140,7 +140,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
     });
 
   return (
-    <div className="w-full px-4 py-4 md:px-6">
+    <div className="@container w-full px-4 py-4 md:px-6">
       {/* แถบบน — กลับ + รหัสสูตร · พิมพ์ / แก้ไข */}
       <header className="mb-4 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
@@ -173,136 +173,50 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
         </div>
       </header>
 
-      {/* hero แบบหน้าสินค้า — รูปซ้าย (ถ้ามี) · ชื่อ + ข้อมูลที่ครัวต้องรู้ก่อนลงมืออยู่ขวา
-          จอแคบ: รูปอยู่บน ข้อมูลอยู่ล่าง */}
-      <div className="@container mb-6 border-b pb-6">
-        <div
-          className={cn(
-            "grid gap-4 @lg:gap-6",
-            hasImages &&
-              "@lg:grid-cols-[13rem_minmax(0,1fr)] @3xl:grid-cols-[18rem_minmax(0,1fr)]",
-          )}
-        >
-          <RecipeCookImages images={recipe.images} recipeName={recipe.name} />
-          <div className="@container min-w-0">
-            <h1 className="text-foreground text-2xl font-semibold tracking-tight break-words">
-              {recipe.name}
-            </h1>
-            {recipe.description && (
-              <p className="text-muted-foreground mt-2 text-sm break-words whitespace-pre-line">
-                {recipe.description}
-              </p>
+      {/* สองคอลัมน์บนจอกว้าง: ซ้าย = ข้อมูลสูตร (รูป · ชื่อ · ข้อมูลสรุป · วัตถุดิบ · จัดจาน · เก็บรักษา) ขวา = ขั้นตอนทำ
+          จอแคบ: ซ้อนกัน ข้อมูลสูตรอยู่บน (รูปกับชื่ออยู่ข้างกันเมื่อพอ) ขั้นตอนอยู่ล่าง */}
+      <div className="grid gap-6 @3xl:grid-cols-[20rem_minmax(0,1fr)]">
+        <div className="@container min-w-0 space-y-5">
+          <div
+            className={cn(
+              "grid gap-4 @lg:gap-6",
+              hasImages && "@lg:grid-cols-[13rem_minmax(0,1fr)]",
             )}
-            <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 @md:grid-cols-3">
-              {facts.map((f) => (
-                <div key={f.label} className="min-w-0">
-                  <dt className="text-muted-foreground text-xs">{f.label}</dt>
-                  <dd className="text-foreground mt-0.5 flex items-center gap-1.5 text-sm font-medium break-words">
-                    {f.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            {allergens.length > 0 && (
-              <div className="mt-4">
-                <EyeBrow className="mb-1.5">{t("cookAllergens")}</EyeBrow>
-                <div className="flex flex-wrap gap-1.5">
-                  {allergens.map((a) => (
-                    <Badge key={a} variant="secondary">
-                      {ALLERGEN_LABEL.get(a.toLowerCase()) ?? a}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        {/* ขั้นตอน */}
-        <section aria-label={t("stepsSection")} className="min-w-0">
-          {total === 0 || !current ? (
-            <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
-              <p>{t("cookNoSteps")}</p>
-              {canEdit && <div className="mt-3">{editLink}</div>}
-            </div>
-          ) : (
-            <>
-              <CookStep step={current} n={step + 1} total={total} />
-
-              {next && (
-                <button
-                  type="button"
-                  onClick={() => setIndex(step + 1)}
-                  className="text-muted-foreground hover:bg-muted mt-3 w-full rounded-lg border p-3 text-left text-sm transition-colors"
-                >
-                  <span className="text-micro font-semibold tracking-wider uppercase">
-                    {t("cookNextUp")}
-                  </span>
-                  <span className="mt-0.5 line-clamp-2 block">
-                    {next.title || next.description}
-                  </span>
-                </button>
+          >
+            <RecipeCookImages images={recipe.images} recipeName={recipe.name} />
+            <div className="@container min-w-0">
+              <h1 className="text-foreground text-2xl font-semibold tracking-tight break-words">
+                {recipe.name}
+              </h1>
+              {recipe.description && (
+                <p className="text-muted-foreground mt-2 text-sm break-words whitespace-pre-line">
+                  {recipe.description}
+                </p>
               )}
-
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-12 text-base"
-                  disabled={step === 0}
-                  onClick={() => setIndex(step - 1)}
-                >
-                  <ChevronLeft />
-                  {t("cookPrev")}
-                </Button>
-                <Button
-                  type="button"
-                  className="h-12 text-base"
-                  disabled={step >= total - 1}
-                  onClick={() => setIndex(step + 1)}
-                >
-                  {t("cookNext")}
-                  <ChevronRight />
-                </Button>
-              </div>
-
-              <ol className="mt-6 space-y-1" aria-label={t("cookAllSteps")}>
-                {steps.map((s, i) => (
-                  <li key={s.id}>
-                    <button
-                      type="button"
-                      aria-current={i === step ? "step" : undefined}
-                      onClick={() => setIndex(i)}
-                      className={cn(
-                        "flex min-h-11 w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
-                        i === step
-                          ? "bg-muted text-foreground font-semibold"
-                          : "text-muted-foreground hover:bg-muted/60",
-                      )}
-                    >
-                      <span className="w-6 shrink-0 text-right tabular-nums">
-                        {i + 1}
-                      </span>
-                      <span className="line-clamp-1">
-                        {s.title || s.description}
-                      </span>
-                      {s.duration ? (
-                        <span className="ml-auto shrink-0 text-xs tabular-nums">
-                          {t("cookMinutes", { min: s.duration })}
-                        </span>
-                      ) : null}
-                    </button>
-                  </li>
+              <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 @md:grid-cols-3">
+                {facts.map((f) => (
+                  <div key={f.label} className="min-w-0">
+                    <dt className="text-muted-foreground text-xs">{f.label}</dt>
+                    <dd className="text-foreground mt-0.5 flex items-center gap-1.5 text-sm font-medium break-words">
+                      {f.value}
+                    </dd>
+                  </div>
                 ))}
-              </ol>
-            </>
-          )}
-        </section>
-
-        {/* ข้าง — เช็กลิสต์วัตถุดิบ · จัดจาน · เก็บรักษา (ไม่มีตัวเลขเงิน; allergens อยู่ใน hero) */}
-        <aside className="space-y-5 md:border-l md:pl-6">
+              </dl>
+              {allergens.length > 0 && (
+                <div className="mt-4">
+                  <EyeBrow className="mb-1.5">{t("cookAllergens")}</EyeBrow>
+                  <div className="flex flex-wrap gap-1.5">
+                    {allergens.map((a) => (
+                      <Badge key={a} variant="secondary">
+                        {ALLERGEN_LABEL.get(a.toLowerCase()) ?? a}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           {ingredients.length > 0 && (
             <div>
               <EyeBrow className="mb-1.5">{t("cookIngredients")}</EyeBrow>
@@ -400,7 +314,107 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
               </p>
             </div>
           )}
-        </aside>
+        </div>
+
+        {/* ขั้นตอน */}
+        <section
+          aria-label={t("stepsSection")}
+          className="min-w-0 border-t pt-6 @3xl:border-t-0 @3xl:border-l @3xl:pt-0 @3xl:pl-6"
+        >
+          {total === 0 || !current ? (
+            <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
+              <p>{t("cookNoSteps")}</p>
+              {canEdit && <div className="mt-3">{editLink}</div>}
+            </div>
+          ) : (
+            <>
+              {/* ปุ่มก่อนหน้า/ถัดไปอยู่เหนือการ์ดขั้น — ขั้นที่ยาว (มีวิดีโอ) ปุ่มไม่ตกจอ */}
+              <div className="mb-3 grid grid-cols-2 gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 text-base"
+                  disabled={step === 0}
+                  onClick={() => setIndex(step - 1)}
+                >
+                  <ChevronLeft />
+                  {t("cookPrev")}
+                </Button>
+                <Button
+                  type="button"
+                  className="h-12 text-base"
+                  disabled={step >= total - 1}
+                  onClick={() => setIndex(step + 1)}
+                >
+                  {t("cookNext")}
+                  <ChevronRight />
+                </Button>
+              </div>
+              <CookStep step={current} n={step + 1} total={total} />
+
+              {next && (
+                <button
+                  type="button"
+                  onClick={() => setIndex(step + 1)}
+                  className="text-muted-foreground hover:bg-muted mt-3 w-full rounded-lg border p-3 text-left text-sm transition-colors"
+                >
+                  <span className="text-micro font-semibold tracking-wider uppercase">
+                    {t("cookNextUp")}
+                  </span>
+                  <span className="mt-0.5 line-clamp-2 block">
+                    {next.title || next.description}
+                  </span>
+                </button>
+              )}
+
+              {/* ขั้นตอนทั้งหมด — หนึ่งขั้นหนึ่งการ์ด มีเลขขั้นนำหน้า กดเพื่อเปิดขั้นนั้นด้านบน */}
+              <EyeBrow className="mt-6 mb-2">{t("cookAllSteps")}</EyeBrow>
+              <ol className="space-y-2" aria-label={t("cookAllSteps")}>
+                {steps.map((s, i) => (
+                  <li key={s.id}>
+                    <button
+                      type="button"
+                      aria-current={i === step ? "step" : undefined}
+                      onClick={() => setIndex(i)}
+                      className={cn(
+                        "bg-card flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors",
+                        i === step
+                          ? "border-primary ring-primary/30 ring-1"
+                          : "hover:bg-muted/60",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold tabular-nums",
+                          i === step
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        {i + 1}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="text-foreground block text-sm font-semibold break-words">
+                          {s.title || s.description}
+                        </span>
+                        {s.title && s.description && (
+                          <span className="text-muted-foreground mt-0.5 line-clamp-2 block text-sm break-words">
+                            {s.description}
+                          </span>
+                        )}
+                      </span>
+                      {s.duration ? (
+                        <span className="text-muted-foreground mt-1 shrink-0 text-xs tabular-nums">
+                          {t("cookMinutes", { min: s.duration })}
+                        </span>
+                      ) : null}
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            </>
+          )}
+        </section>
       </div>
     </div>
   );

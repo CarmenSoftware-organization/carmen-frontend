@@ -16,7 +16,7 @@ interface RecipeCookImagesProps {
  * ทั้งหมดอยู่ข้างใต้ เรียงตามลำดับที่จัดไว้ในฟอร์ม (sort_order) เริ่มที่รูปหลัก
  *
  * ความกว้างมาจากคอลัมน์ซ้ายของ hero ใน `RecipeCookView` (ต้องอยู่ใต้ `@container` ของหน้านั้น)
- * จอแคบที่ยังไม่แบ่งคอลัมน์ = จำกัดไว้ 18rem กลางแถว ไม่ขยายเต็มจอ
+ * จอแคบที่ยังไม่แบ่งคอลัมน์ = จำกัดไว้ 20rem กลางแถว ไม่ขยายเต็มจอ
  *
  * - กดรูปย่อ = เปลี่ยนรูปใหญ่
  * - กดรูปใหญ่ = popup เต็มจอของรูปนั้น (มีแถบรูปทั้งหมดด้านล่าง เลื่อนดูรูปอื่นต่อได้)
@@ -48,7 +48,7 @@ export function RecipeCookImages({
   const hero = sorted[active];
 
   return (
-    <div className="mx-auto w-full max-w-72 min-w-0 @lg:mx-0 @lg:max-w-none">
+    <div className="mx-auto w-full max-w-80 min-w-0 @lg:mx-0 @lg:max-w-none">
       <button
         type="button"
         onClick={() => setLightboxOpen(true)}

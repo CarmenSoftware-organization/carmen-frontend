@@ -75,6 +75,8 @@ export function RecipeStepsFields({
   return (
     <CompactSection
       first
+      // แต่ละขั้นเป็นการ์ดของตัวเองอยู่แล้ว — ไม่ห่อกรอบซ้อน การ์ดขาววางบนพื้นหน้าโดยตรง เงาจึงเห็นชัด
+      frameless
       title={t("stepsSection")}
       description={t("stepsSectionDesc")}
     >
@@ -85,17 +87,19 @@ export function RecipeStepsFields({
           {fields.length === 0 && (
             <p className="text-muted-foreground text-sm">{t("noSteps")}</p>
           )}
-          {/* การ์ดกว้าง (80rem+) = ขั้นตอน 2 คอลัมน์ เรียงซ้ายไปขวาตามเลขขั้น */}
-          <div className="grid gap-3 @7xl:grid-cols-2 @7xl:items-start">
+          {/* การ์ดกว้าง (80rem+) = ขั้นตอน 2 คอลัมน์ เรียงซ้ายไปขวาตามเลขขั้น — การ์ดในแถวเดียวกันสูงเท่ากัน
+              (ห้าม items-start) · แต่ละขั้นมีแถบหัวสีพื้น + เลขขั้นสีหลัก + เงา ให้แยกจากกันชัด
+              ธีมมืดเงาแทบมองไม่เห็น จึงยกพื้นการ์ดให้สว่างกว่าพื้นหลังและเข้มขอบแทน */}
+          <div className="grid gap-4 @7xl:grid-cols-2">
             {fields.map((field, i) => {
               const stepErrors = errors.preparation_steps?.[i];
               return (
                 <div
                   key={field.key}
-                  className="@container rounded-md border p-3"
+                  className="bg-card dark:border-foreground/25 @container rounded-lg border p-3 shadow-md"
                 >
-                  <div className="mb-2 flex items-center gap-2">
-                    <span className="bg-muted text-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums">
+                  <div className="bg-muted/60 -mx-3 -mt-3 mb-3 flex items-center gap-2 rounded-t-lg border-b px-3 py-2">
+                    <span className="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums">
                       {i + 1}
                     </span>
                     <FieldInput
