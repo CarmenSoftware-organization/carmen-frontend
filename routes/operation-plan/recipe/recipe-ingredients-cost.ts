@@ -383,6 +383,34 @@ export function pairCostsFrom(
     ]);
 }
 
+/**
+ * จำนวนทศนิยมที่คอลัมน์ตัวเลขหนึ่งคอลัมน์ต้องใช้ = ของแถวที่ละเอียดที่สุด (ไม่เกิน 5 ตามสเกลคอลัมน์ใน DB)
+ * ทุกแถวในคอลัมน์เดียวกันแสดงทศนิยมเท่ากัน — เดิมแต่ละแถวตัดศูนย์ท้ายเอง ได้ 0.4 / 0.04 / 0.005 ปนกัน
+ * หลักทศนิยมไม่ตรงแนว (ผู้ใช้สั่งแก้ 2026-11-16) · ค่าว่าง/ไม่ใช่ตัวเลขไม่นับ
+ */
+export function decimalsFor(
+  values: readonly (number | string | null | undefined)[],
+): number {
+  let max = 0;
+  for (const v of values) {
+    const text = formatQty(v);
+    const dot = text.indexOf(".");
+    if (dot >= 0) max = Math.max(max, text.length - dot - 1);
+  }
+  return Math.min(max, 5);
+}
+
+/** ตัวเลขที่ทศนิยมคงที่ `decimals` ตำแหน่ง (เติมศูนย์ท้าย) — ใช้คู่กับ `decimalsFor` ของคอลัมน์ */
+export function formatQtyFixed(
+  n: number | string | null | undefined,
+  decimals: number,
+): string {
+  const v = Number(n);
+  if (n === null || n === undefined || n === "" || !Number.isFinite(v))
+    return "";
+  return v.toFixed(decimals);
+}
+
 /** ตัดศูนย์ท้ายทศนิยม — 2.50000 → "2.5" */
 export function formatQty(n: number | string | null | undefined): string {
   const v = Number(n);

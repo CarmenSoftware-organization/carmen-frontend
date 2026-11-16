@@ -55,7 +55,9 @@ import {
   activeIngredients,
   draftToInput,
   EMPTY_INGREDIENT,
+  decimalsFor,
   formatQty,
+  formatQtyFixed,
   inventoryEquivalentOf,
   manualCostOf,
   pairCostsFrom,
@@ -190,6 +192,24 @@ export function RecipeIngredientsFields({
   const rows = resolveRowCosts(drafts, saved, current, recalculate, ratios);
   const total = round5(
     rows.reduce((s, r) => (r.state === "ok" ? s + r.line_cost : s), 0),
+  );
+  // ทศนิยมของคอลัมน์ต้นทุนเท่ากันทุกแถว: 2 ตำแหน่ง เว้นแต่มีแถวที่ผู้ใช้พิมพ์ละเอียดกว่านั้น
+  // (ต้นทุนที่ระบบคิดปัดแสดง 2 ตำแหน่งเสมอ — ไม่ดันทั้งคอลัมน์เป็น 5 ตำแหน่งเพราะเศษของการคูณ)
+  const costDecimals = Math.max(
+    2,
+    decimalsFor(drafts.map((d) => manualCostOf(d))),
+  );
+  // ทศนิยมของคอลัมน์ "ในหน่วยสต๊อก" เท่ากันทุกแถว = ของแถวที่ละเอียดที่สุด (ค่าเดียวกับที่แต่ละแถวแสดง)
+  const inventoryDecimals = decimalsFor(
+    drafts.map((d, i) => {
+      if (d.ingredient_type === "recipe" || !d.ingredient_unit_id) return null;
+      const r = rows[i];
+      return inventoryEquivalentOf(
+        d.qty,
+        ratios.get(pairKey(refOf(d), d.ingredient_unit_id)),
+        r?.state === "ok" ? r.unit : undefined,
+      );
+    }),
   );
 
   // ยอดรวมบรรทัด = Ingredient Cost ใน Costing
@@ -379,6 +399,8 @@ export function RecipeIngredientsFields({
                         form={form}
                         index={i}
                         cost={rows[i] ?? { state: "incomplete" }}
+                        inventoryDecimals={inventoryDecimals}
+                        costDecimals={costDecimals}
                         saved={saved}
                         recipeId={recipeId}
                         isDisabled={isDisabled}
@@ -438,6 +460,8 @@ function IngredientRow({
   form,
   index: i,
   cost,
+  inventoryDecimals,
+  costDecimals,
   saved,
   recipeId,
   isDisabled,
@@ -447,6 +471,10 @@ function IngredientRow({
   readonly form: UseFormReturn<RecipeFormValues>;
   readonly index: number;
   readonly cost: RowCost;
+  /** ทศนิยมของคอลัมน์ "ในหน่วยสต๊อก" — เท่ากันทุกแถว */
+  readonly inventoryDecimals: number;
+  /** ทศนิยมของคอลัมน์ต้นทุน — เท่ากันทุกแถว */
+  readonly costDecimals: number;
   readonly saved: RecipeIngredientLine[];
   /** id ของสูตรที่กำลังแก้ — ห้ามเลือกตัวเองเป็นสูตรย่อย */
   readonly recipeId?: string;
@@ -744,7 +772,7 @@ function IngredientRow({
         {inventoryUnit && inventoryQty !== undefined ? (
           <p
             aria-label={t("inventoryQtyLabel")}
-            title={`${formatQty(inventoryQty)} ${inventoryUnit.name} ${t(
+            title={`${formatQtyFixed(inventoryQty, inventoryDecimals)} ${inventoryUnit.name} ${t(
               "inventoryQtyRatio",
               {
                 inventoryUnit: inventoryUnit.name,
@@ -756,12 +784,13 @@ function IngredientRow({
           >
             <span className="text-foreground font-medium @2xl/ing:hidden">
               {t("inventoryQtyValue", {
-                qty: formatQty(inventoryQty),
+                qty: formatQtyFixed(inventoryQty, inventoryDecimals),
                 unit: inventoryUnit.name,
               })}
             </span>
             <span className="text-foreground hidden font-medium @2xl/ing:block">
-              {formatQty(inventoryQty)} {inventoryUnit.name}
+              {formatQtyFixed(inventoryQty, inventoryDecimals)}{" "}
+              {inventoryUnit.name}
             </span>{" "}
             <span className="text-micro @2xl/ing:hidden @3xl/ing:block">
               {t("inventoryQtyRatio", {
@@ -806,6 +835,7 @@ function IngredientRow({
             form={form}
             index={i}
             auto={cost.state === "ok" ? cost.line_cost : undefined}
+            decimals={costDecimals}
             isDisabled={isDisabled || cost.state === "incomplete"}
             error={rowErrors?.line_cost?.message}
           />
@@ -842,10 +872,6 @@ function IngredientRow({
   );
 }
 
-/** ต้นทุนบรรทัดแบบ 2 ตำแหน่งสำหรับช่องกรอก (ไม่มีตัวคั่นหลักพัน — ช่อง type=number รับไม่ได้) */
-const lineCostText = (n: number | undefined) =>
-  n === undefined ? "" : String(Number(n.toFixed(2)));
-
 /**
  * ช่องต้นทุนของบรรทัด — ปกติแสดงต้นทุนที่ระบบคิด (จำนวน × ต้นทุนต่อหน่วย + ของเสีย)
  * พิมพ์ทับ = กำหนดเอง: "จำนวนนี้ราคาเท่านี้" เช่น 400 GRAM = 20 (`line_cost` ของแถว ส่งไปกับ PUT →
@@ -858,11 +884,14 @@ function LineCostInput({
   form,
   index: i,
   auto,
+  decimals,
   isDisabled,
   error,
 }: {
   readonly form: UseFormReturn<RecipeFormValues>;
   readonly index: number;
+  /** ทศนิยมที่แสดงตอนไม่ได้พิมพ์ — ค่าเดียวกันทั้งคอลัมน์ ("20.00" ไม่ใช่ "20") */
+  readonly decimals: number;
   /** ต้นทุนบรรทัดที่แถวใช้อยู่ตอนนี้ — undefined = ยังไม่รู้ (แถวไม่ครบ/กำลังถาม) */
   readonly auto: number | undefined;
   readonly isDisabled: boolean;
@@ -876,7 +905,8 @@ function LineCostInput({
   });
   const manual = manualCostOf({ line_cost: stored });
   const [typing, setTyping] = useState<string | null>(null);
-  const resting = manual === null ? lineCostText(auto) : formatQty(manual);
+  // ไม่มีตัวคั่นหลักพัน — ช่อง type=number รับไม่ได้
+  const resting = formatQtyFixed(manual ?? auto, decimals);
 
   return (
     <FieldInput
@@ -979,6 +1009,8 @@ function IngredientCostTable({
     )
     .sort((a, b) => b.cost - a.cost);
   if (lines.length === 0) return null;
+  // ทศนิยมของคอลัมน์จำนวนเท่ากันทุกแถว
+  const qtyDecimals = decimalsFor(lines.map(({ d }) => d.qty));
 
   return (
     <div className="pt-2 @7xl:pt-0">
@@ -1023,7 +1055,7 @@ function IngredientCostTable({
                   )}
                 </td>
                 <td className="px-2 py-1.5 text-right tabular-nums">
-                  {formatQty(d.qty)}{" "}
+                  {formatQtyFixed(d.qty, qtyDecimals)}{" "}
                   <UnitName
                     productId={
                       d.ingredient_type === "recipe" ? "" : d.product_id
