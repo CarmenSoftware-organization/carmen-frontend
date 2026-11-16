@@ -9,7 +9,6 @@ import { useTranslations } from "use-intl";
 import {
   Field,
   FieldLabel,
-  FieldGroup,
   FieldDescription,
   FieldInput,
 } from "@/components/ui/field";
@@ -18,7 +17,7 @@ import { LookupCuisine } from "@/components/lookup/lookup-cuisine";
 import { LookupRecipeCategory } from "@/components/lookup/lookup-recipe-category";
 import { LookupUnit } from "@/components/lookup/lookup-unit";
 import { useUnitById } from "@/hooks/use-unit";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
 import type { Recipe } from "@/types/recipe";
 import type { RecipeFormValues } from "./recipe-form-schema";
 
@@ -48,74 +47,123 @@ export function RecipeGeneralFields({
   const { errors } = useFormState({ control: form.control });
 
   return (
-    <SettingSection
-      plain
+    <CompactSection
+      first
       title={t("recipeDetails")}
       description={t("recipeDetailsDesc")}
     >
-      <FieldGroup className="gap-3">
+      {/* ช่องทั้งหมดอยู่กริดเดียว — จอกว้างขึ้นได้คอลัมน์เพิ่ม ไม่ใช่ช่องกว้างขึ้น */}
+      <FieldGrid>
         {/* Code + Classification */}
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-          <Field>
-            <FieldLabel htmlFor="recipe-code" required>
-              {tfl("code")}
-            </FieldLabel>
-            <FieldInput
-              id="recipe-code"
-              size="sm"
-              placeholder={t("codePlaceholder")}
-              disabled={isDisabled}
-              maxLength={10}
-              error={errors.code?.message}
-              {...form.register("code")}
-            />
-          </Field>
+        <Field>
+          <FieldLabel htmlFor="recipe-code" required>
+            {tfl("code")}
+          </FieldLabel>
+          <FieldInput
+            id="recipe-code"
+            size="sm"
+            placeholder={t("codePlaceholder")}
+            disabled={isDisabled}
+            maxLength={10}
+            error={errors.code?.message}
+            {...form.register("code")}
+          />
+        </Field>
 
-          <Field>
-            <FieldLabel required>{tfl("cuisine")}</FieldLabel>
-            <Controller
-              control={form.control}
-              name="cuisine_id"
-              render={({ field }) => (
-                <LookupCuisine
-                  value={field.value ?? ""}
-                  onValueChange={field.onChange}
-                  defaultLabel={
-                    field.value && field.value === recipe?.cuisine?.id
-                      ? recipe.cuisine.name
-                      : undefined
-                  }
-                  disabled={isDisabled}
-                  error={errors.cuisine_id?.message}
-                />
-              )}
-            />
-          </Field>
+        <Field>
+          <FieldLabel required>{tfl("cuisine")}</FieldLabel>
+          <Controller
+            control={form.control}
+            name="cuisine_id"
+            render={({ field }) => (
+              <LookupCuisine
+                value={field.value ?? ""}
+                onValueChange={field.onChange}
+                defaultLabel={
+                  field.value && field.value === recipe?.cuisine?.id
+                    ? recipe.cuisine.name
+                    : undefined
+                }
+                disabled={isDisabled}
+                error={errors.cuisine_id?.message}
+              />
+            )}
+          />
+        </Field>
 
-          <Field>
-            <FieldLabel required>{tfl("category")}</FieldLabel>
-            <Controller
-              control={form.control}
-              name="category_id"
-              render={({ field }) => (
-                <LookupRecipeCategory
-                  value={field.value ?? ""}
-                  onValueChange={field.onChange}
-                  defaultLabel={
-                    field.value && field.value === recipe?.category?.id
-                      ? recipe.category.name
-                      : undefined
-                  }
-                  disabled={isDisabled}
-                  error={errors.category_id?.message}
-                />
-              )}
-            />
-          </Field>
-        </div>
+        <Field>
+          <FieldLabel required>{tfl("category")}</FieldLabel>
+          <Controller
+            control={form.control}
+            name="category_id"
+            render={({ field }) => (
+              <LookupRecipeCategory
+                value={field.value ?? ""}
+                onValueChange={field.onChange}
+                defaultLabel={
+                  field.value && field.value === recipe?.category?.id
+                    ? recipe.category.name
+                    : undefined
+                }
+                disabled={isDisabled}
+                error={errors.category_id?.message}
+              />
+            )}
+          />
+        </Field>
+
+        {/* Time + yield */}
+        <NumberField
+          id="recipe-prep-time"
+          label={t("prepTime")}
+          suffix={t("min")}
+          control={form.control}
+          name="prep_time"
+          disabled={isDisabled}
+          error={errors.prep_time?.message}
+        />
+        <NumberField
+          id="recipe-cook-time"
+          label={t("cookTime")}
+          suffix={t("min")}
+          control={form.control}
+          name="cook_time"
+          disabled={isDisabled}
+          error={errors.cook_time?.message}
+        />
+        <NumberField
+          id="recipe-base-yield"
+          label={t("baseYield")}
+          control={form.control}
+          name="base_yield"
+          disabled={isDisabled}
+          error={errors.base_yield?.message}
+        />
+
+        <Field>
+          <FieldLabel required>{t("yieldUnit")}</FieldLabel>
+          <Controller
+            control={form.control}
+            name="base_yield_unit"
+            render={({ field }) => (
+              <LookupUnit
+                value={field.value ?? ""}
+                onValueChange={field.onChange}
+                disabled={isDisabled}
+                placeholder={t("selectUnit")}
+                defaultLabel={
+                  field.value && field.value === savedYieldUnit?.id
+                    ? savedYieldUnit.name
+                    : undefined
+                }
+                error={errors.base_yield_unit?.message}
+              />
+            )}
+          />
+        </Field>
 
         {/* Description / Note */}
-        <Field>
+        <Field className="@md:col-span-2">
           <FieldLabel htmlFor="recipe-description">
             {tfl("description")}
           </FieldLabel>
@@ -130,7 +178,7 @@ export function RecipeGeneralFields({
           <FieldDescription>{t("descriptionDesc")}</FieldDescription>
         </Field>
 
-        <Field>
+        <Field className="@md:col-span-2">
           <FieldLabel htmlFor="recipe-note">{tfl("internalNote")}</FieldLabel>
           <Textarea
             id="recipe-note"
@@ -142,60 +190,8 @@ export function RecipeGeneralFields({
           />
           <FieldDescription>{t("internalNoteDesc")}</FieldDescription>
         </Field>
-
-        {/* Time + yield */}
-        <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-          <NumberField
-            id="recipe-prep-time"
-            label={t("prepTime")}
-            suffix={t("min")}
-            control={form.control}
-            name="prep_time"
-            disabled={isDisabled}
-            error={errors.prep_time?.message}
-          />
-          <NumberField
-            id="recipe-cook-time"
-            label={t("cookTime")}
-            suffix={t("min")}
-            control={form.control}
-            name="cook_time"
-            disabled={isDisabled}
-            error={errors.cook_time?.message}
-          />
-          <NumberField
-            id="recipe-base-yield"
-            label={t("baseYield")}
-            control={form.control}
-            name="base_yield"
-            disabled={isDisabled}
-            error={errors.base_yield?.message}
-          />
-
-          <Field>
-            <FieldLabel required>{t("yieldUnit")}</FieldLabel>
-            <Controller
-              control={form.control}
-              name="base_yield_unit"
-              render={({ field }) => (
-                <LookupUnit
-                  value={field.value ?? ""}
-                  onValueChange={field.onChange}
-                  disabled={isDisabled}
-                  placeholder={t("selectUnit")}
-                  defaultLabel={
-                    field.value && field.value === savedYieldUnit?.id
-                      ? savedYieldUnit.name
-                      : undefined
-                  }
-                  error={errors.base_yield_unit?.message}
-                />
-              )}
-            />
-          </Field>
-        </div>
-      </FieldGroup>
-    </SettingSection>
+      </FieldGrid>
+    </CompactSection>
   );
 }
 

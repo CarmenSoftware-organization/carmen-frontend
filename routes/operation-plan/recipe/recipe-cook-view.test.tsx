@@ -119,35 +119,62 @@ describe("RecipeCookView — รูปของสูตร", () => {
     is_primary: sort === 0,
     url: `https://files.test/${id}.jpg`,
   });
-  const viewLabel = (n: number, total: number) =>
-    en.operationPlan.recipe.cookViewImage
+  const label = (
+    key: "cookViewImage" | "cookShowImage",
+    n: number,
+    total = 3,
+  ) =>
+    en.operationPlan.recipe[key]
       .replace("{n}", String(n))
       .replace("{total}", String(total));
+  // b เป็นรูปหลักแต่อยู่ลำดับที่ 2 — รูปใหญ่ต้องเริ่มที่รูปหลัก แถบรูปเรียงตาม sort_order
+  const IMAGES = [
+    { ...img("c", 2), is_primary: false },
+    { ...img("b", 1, "Plated"), is_primary: true },
+    { ...img("a", 0), is_primary: false },
+  ];
+  const heroSrc = (n: number) =>
+    screen
+      .getByRole("button", { name: label("cookViewImage", n) })
+      .querySelector("img")
+      ?.getAttribute("src");
 
-  it("มีรูป → แถบรูปย่อบนสุดของคอลัมน์ขั้นตอน เรียงตาม sort_order", () => {
-    renderForm(
-      <RecipeCookView
-        recipe={{ ...RECIPE, images: [img("b", 1), img("a", 0)] }}
-      />,
-    );
+  it("รูปใหญ่เริ่มที่รูปหลัก + แถบรูปย่อทั้งหมดข้างใต้ เรียงตาม sort_order อยู่บนสุดของคอลัมน์ขั้นตอน", () => {
+    renderForm(<RecipeCookView recipe={{ ...RECIPE, images: IMAGES }} />);
+    expect(heroSrc(2)).toBe("https://files.test/b.jpg");
+
     const strip = screen.getByRole("list", {
       name: en.operationPlan.recipe.cookImages,
     });
-    const srcs = Array.from(strip.querySelectorAll("img")).map((el) =>
-      el.getAttribute("src"),
-    );
-    expect(srcs).toEqual([
+    expect(
+      Array.from(strip.querySelectorAll("img")).map((el) =>
+        el.getAttribute("src"),
+      ),
+    ).toEqual([
       "https://files.test/a.jpg",
       "https://files.test/b.jpg",
+      "https://files.test/c.jpg",
     ]);
     // ก่อนกล่อง "ยังไม่มีขั้นตอน" — รูปเห็นก่อนเสมอ
     const steps = screen.getByRole("region", {
       name: en.operationPlan.recipe.stepsSection,
     });
-    expect(steps.firstElementChild).toBe(strip);
+    expect(steps.firstElementChild).toContainElement(strip);
   });
 
-  it("กดรูป → popup เปิดรูปนั้นขนาดใหญ่ ปิดได้", () => {
+  it("กดรูปย่อ → เปลี่ยนรูปใหญ่ ไม่เปิด popup", () => {
+    renderForm(<RecipeCookView recipe={{ ...RECIPE, images: IMAGES }} />);
+    const thumb = screen.getByRole("button", {
+      name: label("cookShowImage", 3),
+    });
+    fireEvent.click(thumb);
+
+    expect(heroSrc(3)).toBe("https://files.test/c.jpg");
+    expect(thumb).toHaveAttribute("aria-current", "true");
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("กดรูปใหญ่ → popup เปิดรูปขนาดใหญ่พร้อมแถบรูปทั้งหมด ปิดได้", () => {
     // carousel ใน popup (embla) ถาม matchMedia ตอน mount — jsdom ไม่มีให้
     vi.stubGlobal("matchMedia", (query: string) => ({
       matches: false,
@@ -157,32 +184,46 @@ describe("RecipeCookView — รูปของสูตร", () => {
       addListener: () => {},
       removeListener: () => {},
     }));
-    renderForm(
-      <RecipeCookView
-        recipe={{ ...RECIPE, images: [img("a", 0, "Plated"), img("b", 1)] }}
-      />,
-    );
+    renderForm(<RecipeCookView recipe={{ ...RECIPE, images: IMAGES }} />);
     expect(screen.queryByRole("dialog")).toBeNull();
-    // รูปแรก — jsdom ไม่มี layout carousel จึงเลื่อนไปรูปอื่นไม่ได้ (ตำแหน่งเริ่มตรวจบนเบราว์เซอร์จริง)
-    fireEvent.click(screen.getByRole("button", { name: viewLabel(1, 2) }));
+    fireEvent.click(
+      screen.getByRole("button", { name: label("cookViewImage", 2) }),
+    );
 
+    // jsdom ไม่มี layout carousel จึงตรวจตำแหน่งเริ่มของ popup ไม่ได้ (ตรวจบนเบราว์เซอร์จริง)
     const dialog = screen.getByRole("dialog");
-    expect(dialog).toHaveTextContent("Plated");
-    expect(
-      dialog.querySelector('img[src="https://files.test/a.jpg"]'),
-    ).not.toBeNull();
+    for (const id of ["a", "b", "c"]) {
+      expect(
+        dialog.querySelectorAll(`img[src="https://files.test/${id}.jpg"]`)
+          .length,
+        // รูปใหญ่ใน carousel + รูปย่อในแถบด้านล่าง
+      ).toBe(2);
+    }
 
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
+  it("รูปเดียว → มีแต่รูปใหญ่ ไม่มีแถบรูปย่อ", () => {
+    renderForm(
+      <RecipeCookView recipe={{ ...RECIPE, images: [img("a", 0)] }} />,
+    );
+    expect(
+      screen.getByRole("button", { name: label("cookViewImage", 1, 1) }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("list", { name: en.operationPlan.recipe.cookImages }),
+    ).toBeNull();
+  });
+
   it.each([
     ["ไม่มีฟิลด์", undefined],
     ["ว่าง", []],
-  ])("%s → ไม่มีแถบรูป", (_label, images) => {
-    renderForm(
+  ])("%s → ไม่มีรูปบนหน้า", (_label, images) => {
+    const { container } = renderForm(
       <RecipeCookView recipe={{ ...RECIPE, images } as unknown as Recipe} />,
     );
+    expect(container.querySelector(".cursor-zoom-in")).toBeNull();
     expect(
       screen.queryByRole("list", { name: en.operationPlan.recipe.cookImages }),
     ).toBeNull();

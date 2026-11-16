@@ -5262,7 +5262,9 @@
       "marginCategoryTarget": "Category target {pct}%",
       "marginMeetsCategoryTarget": "Meets category target {pct}%",
       "cookImages": "Recipe photos",
-      "cookViewImage": "View photo {n} of {total}",
+      "cookViewImage": "Enlarge photo {n} of {total}",
+      "cookShowImage": "Show photo {n} of {total}",
+      "tabHasErrors": "Has fields to fix",
       "stepVideoUrl": "Step video (YouTube)",
       "stepVideoUrlDesc": "Optional — plays inside this step on the recipe page",
       "stepVideoTitle": "Video for step {n}"

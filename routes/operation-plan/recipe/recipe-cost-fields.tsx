@@ -2,7 +2,7 @@ import { useFormState, useWatch, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { cn } from "@/lib/utils";
 import { FieldInput } from "@/components/ui/field";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection } from "@/components/share/compact-section";
 import { EyeBrow } from "@/components/ui/eye-brow";
 import { formatCurrency } from "@/lib/currency-utils";
 import { useUnitById } from "@/hooks/use-unit";
@@ -95,240 +95,254 @@ export function RecipeCostFields({
   const hasPrice = (Number(sell) || 0) > 0;
 
   return (
-    <SettingSection plain title={t("costing")} description={t("costingDesc")}>
-      {/* 1 · ต้นทุนทั้งชุด */}
-      <EyeBrow className="mb-2">{t("batchCost")}</EyeBrow>
-      <div
-        className="bg-muted mb-3 flex h-1.5 overflow-hidden rounded-full"
-        aria-hidden="true"
-      >
-        {COST_LINES.map((line) => (
-          <div
-            key={line.key}
-            className={cn(line.swatch, "transition-[width]")}
-            style={{ width: `${share(amounts[line.key])}%` }}
-          />
-        ))}
-      </div>
-      <div className="space-y-1.5">
-        {COST_LINES.map((line) => (
-          <div
-            key={line.key}
-            className="grid grid-cols-[0.5rem_minmax(0,1fr)_2.5rem_7rem] items-center gap-2"
-          >
-            <span
-              className={cn("size-2 rounded-sm", line.swatch)}
+    <CompactSection first title={t("costing")} description={t("costingDesc")}>
+      {/* การ์ดกว้าง (64rem+) = ต้นทุน (1–2) ซ้าย · ราคาและผลลัพธ์ (3–4) ขวา — แคบกว่านั้นอ่านจากบนลงล่าง */}
+      <div className="@container">
+        <div className="grid gap-x-10 @5xl:grid-cols-2 @5xl:items-start">
+          <div className="min-w-0">
+            {/* 1 · ต้นทุนทั้งชุด */}
+            <EyeBrow className="mb-2">{t("batchCost")}</EyeBrow>
+            <div
+              className="bg-muted mb-3 flex h-1.5 overflow-hidden rounded-full"
               aria-hidden="true"
-            />
-            <label
-              htmlFor={`recipe-${line.key}`}
-              className="text-foreground truncate text-xs"
             >
-              {t(line.label)}
-            </label>
-            <span className="text-muted-foreground text-micro text-right tabular-nums">
-              {share(amounts[line.key]).toFixed(0)}%
-            </span>
-            {line.key === "total_ingredient_cost" && ingredientLocked ? (
-              <output
-                id={`recipe-${line.key}`}
-                title={t("ingredientCostFromLines")}
-                className="bg-muted text-foreground flex h-8 items-center justify-end rounded-md px-3 text-xs tabular-nums"
-              >
-                ฿{formatCurrency(amounts.total_ingredient_cost)}
-              </output>
-            ) : (
-              <FieldInput
-                id={`recipe-${line.key}`}
-                type="number"
-                inputMode="decimal"
-                step="0.01"
-                disabled={isDisabled}
-                size="sm"
-                className="text-right text-xs tabular-nums"
-                error={errors[line.key]?.message}
-                errorIconAlign="left"
-                {...form.register(line.key, numberInput)}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* 2 · สมการต้นทุนต่อเสิร์ฟ — แสดงที่มาของตัวเลข ไม่ใช่แค่ผลลัพธ์ */}
-      <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t pt-3">
-        <span className="text-muted-foreground text-xs tabular-nums">
-          ฿{formatCurrency(batchTotal)} ÷ {yld}
-          {yieldUnit?.name ? ` ${yieldUnit.name}` : ""}
-        </span>
-        <span className="flex items-baseline gap-2">
-          <EyeBrow>{t("costPerPortion")}</EyeBrow>
-          <span className="text-foreground text-2xl font-semibold tracking-tight tabular-nums">
-            ฿{formatCurrency(computed.costPerPortion)}
-          </span>
-        </span>
-      </div>
-
-      {/* 3 · ราคาขาย + ราคาแนะนำตามเป้า */}
-      <div className="mt-4 grid gap-3 border-t pt-4 sm:grid-cols-2">
-        <div>
-          <EyeBrow className="mb-1">
-            <label htmlFor="recipe-selling-price">{t("sellingPrice")}</label>
-          </EyeBrow>
-          <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground text-sm">฿</span>
-            <FieldInput
-              id="recipe-selling-price"
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              disabled={isDisabled}
-              size="sm"
-              className="w-32 text-sm font-semibold tabular-nums"
-              placeholder="0.00"
-              error={errors.selling_price?.message}
-              errorIconAlign="left"
-              {...form.register("selling_price", nullableNumberInput)}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-4">
-          <div>
-            <EyeBrow className="mb-1">
-              <label htmlFor="recipe-target-food-cost">
-                {t("targetFoodCost")}
-              </label>
-            </EyeBrow>
-            <div className="relative w-32">
-              <FieldInput
-                id="recipe-target-food-cost"
-                type="number"
-                inputMode="decimal"
-                step="0.1"
-                min={0}
-                max={100}
-                disabled={isDisabled}
-                size="sm"
-                className="pr-6 text-right text-sm tabular-nums"
-                error={errors.target_food_cost_percentage?.message}
-                errorIconAlign="left"
-                {...form.register("target_food_cost_percentage", {
-                  ...nullableNumberInput,
-                  deps: ["max_food_cost_percentage"],
-                })}
-              />
-              <span className="text-muted-foreground text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
-                %
-              </span>
+              {COST_LINES.map((line) => (
+                <div
+                  key={line.key}
+                  className={cn(line.swatch, "transition-[width]")}
+                  style={{ width: `${share(amounts[line.key])}%` }}
+                />
+              ))}
             </div>
-            {categoryDefaults?.foodCost != null && (
-              <CategoryFoodCostHint
-                value={categoryDefaults.foodCost}
-                current={targetPct}
-                isDisabled={isDisabled}
-                onApply={(v) =>
-                  form.setValue("target_food_cost_percentage", v, {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  })
-                }
-              />
-            )}
-          </div>
-          <div>
-            <EyeBrow className="mb-1">
-              <label htmlFor="recipe-max-food-cost">{t("maxFoodCost")}</label>
-            </EyeBrow>
-            <div className="relative w-32">
-              <FieldInput
-                id="recipe-max-food-cost"
-                type="number"
-                inputMode="decimal"
-                step="0.1"
-                min={0}
-                max={100}
-                disabled={isDisabled}
-                size="sm"
-                className="pr-6 text-right text-sm tabular-nums"
-                error={errors.max_food_cost_percentage?.message}
-                errorIconAlign="left"
-                {...form.register(
-                  "max_food_cost_percentage",
-                  nullableNumberInput,
-                )}
-              />
-              <span className="text-muted-foreground text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
-                %
+            <div className="space-y-1.5">
+              {COST_LINES.map((line) => (
+                <div
+                  key={line.key}
+                  className="grid grid-cols-[0.5rem_minmax(0,1fr)_2.5rem_7rem] items-center gap-2"
+                >
+                  <span
+                    className={cn("size-2 rounded-sm", line.swatch)}
+                    aria-hidden="true"
+                  />
+                  <label
+                    htmlFor={`recipe-${line.key}`}
+                    className="text-foreground truncate text-xs"
+                  >
+                    {t(line.label)}
+                  </label>
+                  <span className="text-muted-foreground text-micro text-right tabular-nums">
+                    {share(amounts[line.key]).toFixed(0)}%
+                  </span>
+                  {line.key === "total_ingredient_cost" && ingredientLocked ? (
+                    <output
+                      id={`recipe-${line.key}`}
+                      title={t("ingredientCostFromLines")}
+                      className="bg-muted text-foreground flex h-8 items-center justify-end rounded-md px-3 text-xs tabular-nums"
+                    >
+                      ฿{formatCurrency(amounts.total_ingredient_cost)}
+                    </output>
+                  ) : (
+                    <FieldInput
+                      id={`recipe-${line.key}`}
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      disabled={isDisabled}
+                      size="sm"
+                      className="text-right text-xs tabular-nums"
+                      error={errors[line.key]?.message}
+                      errorIconAlign="left"
+                      {...form.register(line.key, numberInput)}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* 2 · สมการต้นทุนต่อเสิร์ฟ — แสดงที่มาของตัวเลข ไม่ใช่แค่ผลลัพธ์ */}
+            <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t pt-3">
+              <span className="text-muted-foreground text-xs tabular-nums">
+                ฿{formatCurrency(batchTotal)} ÷ {yld}
+                {yieldUnit?.name ? ` ${yieldUnit.name}` : ""}
+              </span>
+              <span className="flex items-baseline gap-2">
+                <EyeBrow>{t("costPerPortion")}</EyeBrow>
+                <span className="text-foreground text-2xl font-semibold tracking-tight tabular-nums">
+                  ฿{formatCurrency(computed.costPerPortion)}
+                </span>
               </span>
             </div>
           </div>
+          <div className="min-w-0">
+            {/* 3 · ราคาขาย + ราคาแนะนำตามเป้า */}
+            <div className="mt-4 grid gap-3 border-t pt-4 @md:grid-cols-2 @5xl:mt-0 @5xl:border-t-0 @5xl:pt-0">
+              <div>
+                <EyeBrow className="mb-1">
+                  <label htmlFor="recipe-selling-price">
+                    {t("sellingPrice")}
+                  </label>
+                </EyeBrow>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-muted-foreground text-sm">฿</span>
+                  <FieldInput
+                    id="recipe-selling-price"
+                    type="number"
+                    inputMode="decimal"
+                    step="0.01"
+                    disabled={isDisabled}
+                    size="sm"
+                    className="w-32 text-sm font-semibold tabular-nums"
+                    placeholder="0.00"
+                    error={errors.selling_price?.message}
+                    errorIconAlign="left"
+                    {...form.register("selling_price", nullableNumberInput)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-4">
+                <div>
+                  <EyeBrow className="mb-1">
+                    <label htmlFor="recipe-target-food-cost">
+                      {t("targetFoodCost")}
+                    </label>
+                  </EyeBrow>
+                  <div className="relative w-32">
+                    <FieldInput
+                      id="recipe-target-food-cost"
+                      type="number"
+                      inputMode="decimal"
+                      step="0.1"
+                      min={0}
+                      max={100}
+                      disabled={isDisabled}
+                      size="sm"
+                      className="pr-6 text-right text-sm tabular-nums"
+                      error={errors.target_food_cost_percentage?.message}
+                      errorIconAlign="left"
+                      {...form.register("target_food_cost_percentage", {
+                        ...nullableNumberInput,
+                        deps: ["max_food_cost_percentage"],
+                      })}
+                    />
+                    <span className="text-muted-foreground text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
+                      %
+                    </span>
+                  </div>
+                  {categoryDefaults?.foodCost != null && (
+                    <CategoryFoodCostHint
+                      value={categoryDefaults.foodCost}
+                      current={targetPct}
+                      isDisabled={isDisabled}
+                      onApply={(v) =>
+                        form.setValue("target_food_cost_percentage", v, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        })
+                      }
+                    />
+                  )}
+                </div>
+                <div>
+                  <EyeBrow className="mb-1">
+                    <label htmlFor="recipe-max-food-cost">
+                      {t("maxFoodCost")}
+                    </label>
+                  </EyeBrow>
+                  <div className="relative w-32">
+                    <FieldInput
+                      id="recipe-max-food-cost"
+                      type="number"
+                      inputMode="decimal"
+                      step="0.1"
+                      min={0}
+                      max={100}
+                      disabled={isDisabled}
+                      size="sm"
+                      className="pr-6 text-right text-sm tabular-nums"
+                      error={errors.max_food_cost_percentage?.message}
+                      errorIconAlign="left"
+                      {...form.register(
+                        "max_food_cost_percentage",
+                        nullableNumberInput,
+                      )}
+                    />
+                    <span className="text-muted-foreground text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
+                      %
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <RecipePriceRecommendations
+              form={form}
+              computed={computed}
+              isDisabled={isDisabled}
+            />
+
+            {/* 4 · ผลลัพธ์ — food cost เทียบเป้า + กำไรขั้นต้น */}
+            <div className="mt-4 border-t pt-4">
+              {hasPrice ? (
+                <RecipeCostVerdict
+                  computed={computed}
+                  targetPct={targetPct}
+                  categoryDefaults={categoryDefaults}
+                />
+              ) : (
+                <p className="text-muted-foreground text-xs">
+                  {t("noPriceYet")}
+                </p>
+              )}
+            </div>
+
+            {/* ท้ายใบ — ตัวเลขประกอบ */}
+            <div className="text-muted-foreground mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 border-t pt-3 text-xs">
+              {hasPrice && (
+                <>
+                  <span>
+                    {t("laborCostRatio")}{" "}
+                    <span className="text-foreground font-semibold tabular-nums">
+                      {computed.laborCostPct?.toFixed(1) ?? "—"}%
+                    </span>
+                    <CategoryRatio value={categoryDefaults?.labor} />
+                  </span>
+                  <span>
+                    {t("overhead")}{" "}
+                    <span className="text-foreground font-semibold tabular-nums">
+                      {computed.overheadPct?.toFixed(1) ?? "—"}%
+                    </span>
+                    <CategoryRatio value={categoryDefaults?.overhead} />
+                  </span>
+                </>
+              )}
+              <span className="ml-auto flex items-center gap-2">
+                <label htmlFor="recipe-carbon-footprint">
+                  {t("carbonFootprint")}
+                </label>
+                <span className="relative w-32">
+                  <FieldInput
+                    id="recipe-carbon-footprint"
+                    type="number"
+                    inputMode="decimal"
+                    step="0.01"
+                    disabled={isDisabled}
+                    size="sm"
+                    className="pr-14 text-right text-xs tabular-nums"
+                    error={errors.carbon_footprint?.message}
+                    errorIconAlign="left"
+                    {...form.register("carbon_footprint", nullableNumberInput)}
+                  />
+                  <span className="text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
+                    {t("kgCo2e")}
+                  </span>
+                </span>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
-
-      <RecipePriceRecommendations
-        form={form}
-        computed={computed}
-        isDisabled={isDisabled}
-      />
-
-      {/* 4 · ผลลัพธ์ — food cost เทียบเป้า + กำไรขั้นต้น */}
-      <div className="mt-4 border-t pt-4">
-        {hasPrice ? (
-          <RecipeCostVerdict
-            computed={computed}
-            targetPct={targetPct}
-            categoryDefaults={categoryDefaults}
-          />
-        ) : (
-          <p className="text-muted-foreground text-xs">{t("noPriceYet")}</p>
-        )}
-      </div>
-
-      {/* ท้ายใบ — ตัวเลขประกอบ */}
-      <div className="text-muted-foreground mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 border-t pt-3 text-xs">
-        {hasPrice && (
-          <>
-            <span>
-              {t("laborCostRatio")}{" "}
-              <span className="text-foreground font-semibold tabular-nums">
-                {computed.laborCostPct?.toFixed(1) ?? "—"}%
-              </span>
-              <CategoryRatio value={categoryDefaults?.labor} />
-            </span>
-            <span>
-              {t("overhead")}{" "}
-              <span className="text-foreground font-semibold tabular-nums">
-                {computed.overheadPct?.toFixed(1) ?? "—"}%
-              </span>
-              <CategoryRatio value={categoryDefaults?.overhead} />
-            </span>
-          </>
-        )}
-        <span className="ml-auto flex items-center gap-2">
-          <label htmlFor="recipe-carbon-footprint">
-            {t("carbonFootprint")}
-          </label>
-          <span className="relative w-32">
-            <FieldInput
-              id="recipe-carbon-footprint"
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              disabled={isDisabled}
-              size="sm"
-              className="pr-14 text-right text-xs tabular-nums"
-              error={errors.carbon_footprint?.message}
-              errorIconAlign="left"
-              {...form.register("carbon_footprint", nullableNumberInput)}
-            />
-            <span className="text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
-              {t("kgCo2e")}
-            </span>
-          </span>
-        </span>
-      </div>
-    </SettingSection>
+    </CompactSection>
   );
 }
 
@@ -354,7 +368,7 @@ function RecipeCostVerdict({
   const clamp = (n: number) => Math.min(Math.max(n, 0), 100);
 
   return (
-    <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
+    <div className="grid gap-4 @md:grid-cols-[minmax(0,1fr)_auto]">
       <div className="min-w-0">
         <div className="flex items-baseline justify-between gap-2">
           <EyeBrow>{t("foodCost")}</EyeBrow>
@@ -399,7 +413,7 @@ function RecipeCostVerdict({
         </p>
       </div>
 
-      <div className="sm:border-l sm:pl-4 sm:text-right">
+      <div className="@md:border-l @md:pl-4 @md:text-right">
         <EyeBrow>{t("grossMargin")}</EyeBrow>
         <div
           className={cn(

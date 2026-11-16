@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection } from "@/components/share/compact-section";
 import { EyeBrow } from "@/components/ui/eye-brow";
 import EmptyComponent from "@/components/empty-component";
 import { LookupProduct } from "@/components/lookup/lookup-product";
@@ -251,8 +251,8 @@ export function RecipeIngredientsFields({
   const isNew = !recipe;
 
   return (
-    <SettingSection
-      plain
+    <CompactSection
+      first
       title={t("ingredients")}
       description={t("ingredientsDesc")}
       action={
@@ -294,57 +294,62 @@ export function RecipeIngredientsFields({
           }
         />
       ) : (
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-            <p className="text-muted-foreground">
-              {t("ingredientCount", { count: fields.length })}
-              {" · "}
-              <span className="text-foreground font-semibold tabular-nums">
-                ฿{formatCurrency(total)}
-              </span>{" "}
-              {tfl("total")}
-            </p>
-            {recalculate && (
-              <Badge variant="warning-light">{t("recalcApplied")}</Badge>
-            )}
-          </div>
+        // การ์ดกว้าง (80rem+) = บรรทัดวัตถุดิบซ้าย ตารางต้นทุนขวา — ไม่ยืดบรรทัดเต็มจอแล้วต้องเลื่อนลงไปหาตาราง
+        <div className="@container">
+          <div className="grid gap-x-6 gap-y-3 @7xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] @7xl:items-start">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <p className="text-muted-foreground">
+                  {t("ingredientCount", { count: fields.length })}
+                  {" · "}
+                  <span className="text-foreground font-semibold tabular-nums">
+                    ฿{formatCurrency(total)}
+                  </span>{" "}
+                  {tfl("total")}
+                </p>
+                {recalculate && (
+                  <Badge variant="warning-light">{t("recalcApplied")}</Badge>
+                )}
+              </div>
 
-          {fields.map((field, i) => (
-            <IngredientRow
-              key={field.key}
-              form={form}
-              index={i}
-              cost={rows[i] ?? { state: "incomplete" }}
+              {fields.map((field, i) => (
+                <IngredientRow
+                  key={field.key}
+                  form={form}
+                  index={i}
+                  cost={rows[i] ?? { state: "incomplete" }}
+                  saved={saved}
+                  recipeId={recipeId}
+                  isDisabled={isDisabled}
+                  onRemove={() => remove(i)}
+                  onRetryCost={() => {
+                    const d = drafts[i];
+                    if (d && isDraftComplete(d))
+                      retryPair(pairKey(refOf(d), d.ingredient_unit_id));
+                  }}
+                />
+              ))}
+
+              {!isDisabled && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAdd}
+                >
+                  <Plus />
+                  {t("addIngredient")}
+                </Button>
+              )}
+            </div>
+
+            <IngredientCostTable
+              drafts={drafts}
+              rows={rows}
               saved={saved}
-              recipeId={recipeId}
-              isDisabled={isDisabled}
-              onRemove={() => remove(i)}
-              onRetryCost={() => {
-                const d = drafts[i];
-                if (d && isDraftComplete(d))
-                  retryPair(pairKey(refOf(d), d.ingredient_unit_id));
-              }}
+              total={total}
             />
-          ))}
-
-          {!isDisabled && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAdd}
-            >
-              <Plus />
-              {t("addIngredient")}
-            </Button>
-          )}
-
-          <IngredientCostTable
-            drafts={drafts}
-            rows={rows}
-            saved={saved}
-            total={total}
-          />
+          </div>
         </div>
       )}
 
@@ -361,7 +366,7 @@ export function RecipeIngredientsFields({
           onClose={() => setShowRecalc(false)}
         />
       )}
-    </SettingSection>
+    </CompactSection>
   );
 }
 
@@ -450,10 +455,12 @@ function IngredientRow({
     cost.state === "ok" ? SOURCE_BADGE[cost.unit.cost_source] : undefined;
 
   return (
-    <div className="rounded-md border p-3">
-      {/* สินค้าเต็มแถวบน — การ์ดในฟอร์มแคบ ถ้าอยู่แถวเดียวกับหน่วย/จำนวน ชื่อสินค้าเหลือ ~120px */}
-      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_6rem_5rem_7rem_auto] sm:items-start">
-        <div className="flex min-w-0 items-start gap-2 sm:col-span-full">
+    <div className="@container rounded-md border p-3">
+      {/* ตัดสินจากความกว้างของการ์ดบรรทัดนี้เอง: แคบ = เรียงลงมา · กลาง = สินค้าเต็มแถวบน
+          (อยู่แถวเดียวกับหน่วย/จำนวน ชื่อสินค้าเหลือ ~120px) · กว้าง (56rem+) = ทุกช่องแถวเดียว
+          หน่วยกว้างคงที่ ไม่ยืดตามจอ */}
+      <div className="grid gap-2 @lg:grid-cols-[minmax(0,1fr)_6rem_5rem_7rem_auto] @lg:items-start @4xl:grid-cols-[minmax(0,1fr)_10rem_6rem_5rem_7rem_auto]">
+        <div className="flex min-w-0 items-start gap-2 @lg:col-span-full @4xl:col-span-1">
           <div
             role="group"
             aria-label={t("ingredientType")}
@@ -737,7 +744,7 @@ function IngredientCostTable({
   if (lines.length === 0) return null;
 
   return (
-    <div className="pt-2">
+    <div className="pt-2 @7xl:pt-0">
       <EyeBrow className="mb-2">{t("ingredientCostTable")}</EyeBrow>
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-xs">

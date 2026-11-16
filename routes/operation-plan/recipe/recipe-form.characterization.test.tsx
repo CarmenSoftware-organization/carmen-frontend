@@ -202,3 +202,78 @@ describe("RecipeForm — วิดีโอของขั้นตอน", () =
     expect(syncedDrafts()[0].video_url).toBe("");
   });
 });
+
+describe("RecipeForm — แท็บ", () => {
+  const R = en.operationPlan.recipe;
+  const tab = (name: string) =>
+    screen.getByRole("tab", { name: new RegExp(`^${name}`) });
+  const openTab = (name: string) => {
+    // Radix เปลี่ยนแท็บตอน mousedown
+    fireEvent.mouseDown(tab(name), { button: 0, ctrlKey: false });
+  };
+
+  it("เปิดมาที่แท็บรายละเอียด · ทุกแท็บ mount ค้างไว้ แท็บที่ไม่ได้เลือกถูกซ่อน", () => {
+    renderForm(<RecipeForm recipe={RECIPE} />);
+    expect(tab(R.recipeDetails)).toHaveAttribute("aria-selected", "true");
+
+    const panels = screen.getAllByRole("tabpanel", { hidden: true });
+    expect(panels).toHaveLength(4);
+    expect(panels.map((panel) => panel.getAttribute("data-state"))).toEqual([
+      "active",
+      "inactive",
+      "inactive",
+      "inactive",
+    ]);
+    // ช่องของแท็บต้นทุนอยู่ใน DOM แล้วแม้ยังไม่เปิดแท็บ — Save ตรวจครบทุกช่อง
+    expect(document.getElementById("recipe-selling-price")).not.toBeNull();
+  });
+
+  it("แก้ช่องในแท็บหนึ่งแล้วสลับไปอีกแท็บ → ค่ายังอยู่และถูกส่งตอน Save", async () => {
+    renderForm(<RecipeForm recipe={RECIPE} />);
+    fireEvent.change(document.getElementById("recipe-note")!, {
+      target: { value: "keep me" },
+    });
+    openTab(R.costing);
+    expect(tab(R.costing)).toHaveAttribute("aria-selected", "true");
+    fireEvent.change(document.getElementById("recipe-selling-price")!, {
+      target: { value: "120" },
+    });
+    await act(async () => submitForm("recipe-form"));
+
+    expect(firstPayload(updateMut)).toMatchObject({
+      note: "keep me",
+      selling_price: 120,
+    });
+  });
+
+  it("Save ไม่ผ่านเพราะช่องในแท็บอื่น → เปิดแท็บนั้น ช่องขึ้น error และแท็บมีจุดเตือน", async () => {
+    renderForm(<RecipeForm recipe={RECIPE} />);
+    fireEvent.change(document.getElementById("recipe-code")!, {
+      target: { value: "" },
+    });
+    openTab(R.costing);
+    await act(async () => submitForm("recipe-form"));
+
+    expect(updateMut.mutate).not.toHaveBeenCalled();
+    expect(tab(R.recipeDetails)).toHaveAttribute("aria-selected", "true");
+    expect(document.getElementById("recipe-code")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    expect(tab(R.recipeDetails)).toHaveTextContent(R.tabHasErrors);
+    expect(tab(R.costing)).not.toHaveTextContent(R.tabHasErrors);
+  });
+
+  it("ชื่อสูตร (อยู่เหนือแท็บ) ผิดด้วย → ไม่สลับแท็บ", async () => {
+    renderForm(<RecipeForm recipe={{ ...RECIPE, name: "" }} />);
+    fireEvent.change(document.getElementById("recipe-code")!, {
+      target: { value: "" },
+    });
+    openTab(R.costing);
+    await act(async () => submitForm("recipe-form"));
+
+    expect(updateMut.mutate).not.toHaveBeenCalled();
+    expect(tab(R.costing)).toHaveAttribute("aria-selected", "true");
+    expect(tab(R.recipeDetails)).toHaveTextContent(R.tabHasErrors);
+  });
+});
