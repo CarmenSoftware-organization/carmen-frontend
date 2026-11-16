@@ -196,6 +196,16 @@ export default function RecipeComponent() {
     ids: recipes.map((r) => r.category_id),
   });
 
+  // ชื่อ/รหัสในแถวและการ์ดเปิดหน้าแก้ไขก่อน (ผู้ใช้สั่ง 2026-11-16) — หน้าดูสูตร (โหมดทำอาหาร) เข้าจาก
+  // ปุ่ม Preview บนหัวฟอร์ม · แก้ไม่ได้ (ไม่มีสิทธิ์/สัญญาหมดอายุ) = เปิดหน้าดูสูตรเหมือนเดิม
+  const openRecipe = (recipe: Recipe) =>
+    navigate(
+      canEditRecipe
+        ? `/operation-plan/recipe/${recipe.id}/edit`
+        : `/operation-plan/recipe/${recipe.id}`,
+      listReturnState(),
+    );
+
   const table = useRecipeTable({
     recipes,
     cuisines,
@@ -203,11 +213,9 @@ export default function RecipeComponent() {
     totalRecords,
     params,
     tableConfig,
-    onEdit: (recipe) =>
-      navigate(`/operation-plan/recipe/${recipe.id}`, listReturnState()),
+    onEdit: openRecipe,
     onDelete: setDeleteTarget,
-    // ชื่อ/รหัสในแถวเปิดหน้าโหมดทำอาหาร — เมนู Edit พาไปหน้าแก้ตรง ๆ (สิทธิ์เดียวกับ
-    // ปุ่มแก้ในหน้าโหมดทำอาหาร: ไม่มีสิทธิ์หรือสัญญาหมดอายุ = ไม่มีเมนู)
+    // เมนู Edit ของแถว — สิทธิ์เดียวกับปุ่มแก้ในหน้าโหมดทำอาหาร: ไม่มีสิทธิ์หรือสัญญาหมดอายุ = ไม่มีเมนู
     onEditRecipe: canEditRecipe
       ? (recipe) =>
           navigate(
@@ -256,9 +264,7 @@ export default function RecipeComponent() {
                 item={item}
                 cuisines={cuisines}
                 categories={recipeCategories}
-                onEdit={(r) =>
-                  navigate(`/operation-plan/recipe/${r.id}`, listReturnState())
-                }
+                onEdit={openRecipe}
                 onDelete={setDeleteTarget}
               />
             ))}

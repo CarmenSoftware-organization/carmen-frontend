@@ -100,6 +100,21 @@ function createIngredientSchema(tv: TranslationFn, tf: TranslationFn) {
           .min(0, tv("minZero", { field: "%" }))
           .max(100, tv("maxNumber", { field: "%", max: 100 })),
       ),
+      // ว่าง = ให้ server คิดต้นทุน · มีค่า = ต้นทุนของทั้งบรรทัดที่ผู้ใช้กรอกเอง (0 ได้)
+      line_cost: z.preprocess(
+        (v) => (v === "" || v === undefined || Number.isNaN(v) ? null : v),
+        z.coerce
+          .number()
+          .min(0, tv("minZero", { field: tf("totalCost") }))
+          .max(
+            999_999_999,
+            tv("maxNumber", {
+              field: tf("totalCost"),
+              max: 999_999_999,
+            }),
+          )
+          .nullable(),
+      ),
       note: z
         .string()
         .max(500, tv("maxLength", { field: tf("note"), max: 500 })),

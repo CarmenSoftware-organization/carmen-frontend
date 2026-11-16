@@ -7,6 +7,7 @@ import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useEntityForm } from "@/hooks/use-entity-form";
 import { useBuCode } from "@/hooks/use-bu-code";
+import { useListReturn } from "@/hooks/use-list-return";
 import { QUERY_KEYS } from "@/constant/query-keys";
 import { toast } from "sonner";
 import {
@@ -95,6 +96,8 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
   const replaceIngredients = useReplaceIngredients();
   const queryClient = useQueryClient();
   const buCode = useBuCode();
+  // Preview พกที่มาของ list ไปด้วย — ปุ่มกลับของหน้าดูสูตรจึงกลับ list หน้าเดิม/ตัวกรองเดิม
+  const { returnState } = useListReturn(LIST_PATH);
   const isPending =
     createRecipe.isPending ||
     updateRecipe.isPending ||
@@ -297,6 +300,12 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
           onDelete={recipe ? () => setShowDelete(true) : undefined}
           activity={recipe && { id: recipe.id, label: recipe.code }}
           onComment={recipe ? () => setShowComment(true) : undefined}
+          preview={
+            recipe && {
+              to: `${LIST_PATH}/${recipe.id}`,
+              state: returnState,
+            }
+          }
         />
       }
     >

@@ -5268,7 +5268,11 @@
       "tabHasErrors": "Has fields to fix",
       "stepVideoUrl": "Step video (YouTube)",
       "stepVideoUrlDesc": "Optional — plays inside this step on the recipe page",
-      "stepVideoTitle": "Video for step {n}"
+      "stepVideoTitle": "Video for step {n}",
+      "preview": "Preview",
+      "costSourceManual": "Manual",
+      "resetManualCost": "Use system cost",
+      "costPerUnitOf": "per {unit}"
     },
     "posSale": {
       "history": {

@@ -6,7 +6,7 @@ import type {
   RecipeIngredientLine,
 } from "@/types/recipe";
 
-/** แถววัตถุดิบในฟอร์ม — ไม่มีตัวเลขต้นทุน (server คำนวณ, ฟอร์มแสดงอย่างเดียว) */
+/** แถววัตถุดิบในฟอร์ม — ต้นทุนเป็นของ server ฟอร์มแสดงอย่างเดียว เว้นแต่ผู้ใช้กรอก `line_cost` เอง */
 export interface IngredientDraft {
   /** id ของแถวที่บันทึกแล้ว · null = แถวใหม่ (PUT แทนทั้งชุด จึงใช้แค่อ้างอิง) */
   line_id: string | null;
@@ -20,6 +20,11 @@ export interface IngredientDraft {
   qty: number;
   ingredient_unit_id: string;
   wastage_percentage: number;
+  /**
+   * ต้นทุนของทั้งบรรทัดที่ผู้ใช้กรอกเองตามจำนวนนั้น (รวมของเสียแล้ว เช่น 400 GRAM = 20) · null = ให้ server คิด
+   * แถวที่โหลดมาเป็น null เสมอ — ต้นทุนที่บันทึกไว้ (รวมที่เคยกรอกเอง) คงอยู่ด้วยกฎ snapshot ของ server
+   */
+  line_cost: number | null;
   note: string;
 }
 
@@ -32,6 +37,7 @@ export const EMPTY_INGREDIENT: IngredientDraft = {
   qty: 1,
   ingredient_unit_id: "",
   wastage_percentage: 0,
+  line_cost: null,
   note: "",
 };
 
@@ -120,8 +126,22 @@ export function ingredientToDraft(line: RecipeIngredientLine): IngredientDraft {
     qty: Number(line.qty) || 0,
     ingredient_unit_id: line.ingredient_unit_id ?? "",
     wastage_percentage: Number(line.wastage_percentage) || 0,
+    line_cost: null,
     note: line.note ?? "",
   };
+}
+
+/**
+ * ต้นทุนบรรทัดที่ผู้ใช้กรอกเองของแถว — null เมื่อไม่ได้กรอก (ช่องว่าง/ไม่ใช่ตัวเลข/ติดลบ = ไม่ได้กรอก)
+ * 0 นับเป็นค่าที่กรอก (ของแถม/ของที่ไม่คิดต้นทุน)
+ */
+export function manualCostOf(
+  d: Pick<IngredientDraft, "line_cost">,
+): number | null {
+  const v = d.line_cost;
+  if (v === null || v === undefined || (v as unknown) === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) && n >= 0 ? round5(n) : null;
 }
 
 export function draftToInput(d: IngredientDraft): IngredientInput {
@@ -138,6 +158,7 @@ export function draftToInput(d: IngredientDraft): IngredientInput {
       ? { ingredient_unit_id: d.ingredient_unit_id }
       : {}),
     wastage_percentage: Number(d.wastage_percentage) || 0,
+    ...(manualCostOf(d) === null ? {} : { line_cost: manualCostOf(d)! }),
     note: d.note.trim() || null,
   };
 }
@@ -245,6 +266,11 @@ export function computeLineCost(
  * `recalculate` false (Save ปกติ): แถวที่ (สินค้า, หน่วย) ตรงกับแถวที่บันทึกไว้ —
  * จับคู่ตามลำดับถ้ามีซ้ำ แบบเดียวกับ server — คงต้นทุนต่อหน่วยเดิม (snapshot)
  * แถวอื่นใช้ต้นทุนปัจจุบันจาก preview · `recalculate` true: ทุกแถวใช้ต้นทุนปัจจุบัน
+ *
+ * แถวที่ผู้ใช้กรอกต้นทุนของบรรทัดเอง (`line_cost`) คงค่านั้นเป็นต้นทุนบรรทัดเสมอ (ที่มา "manual") แล้วหารย้อน
+ * เป็นต้นทุนต่อหน่วยด้วยสูตรเดียวกับ server: net = line ÷ (1 + % เสีย / 100) · ต่อหน่วย = net ÷ inventory_qty
+ * ยังกินคู่ snapshot ของตัวเองไป แถวถัดไปจึงจับคู่เหมือนเดิม · ไม่ต้องรอ preview: รู้อัตราส่วนแปลงหน่วย
+ * (หรือเป็นบรรทัดสูตร 1:1) ก็แสดงได้เลย
  */
 export function resolveRowCosts(
   drafts: IngredientDraft[],
@@ -280,21 +306,49 @@ export function resolveRowCosts(
         };
       }
     }
+    const key = pairKey(dRef, d.ingredient_unit_id);
+    const ratio = ratios.get(key);
+    const pc = unit ? undefined : current.get(key);
+    if (!unit && pc?.ok) unit = pc;
+    const manual = manualCostOf(d);
+    if (manual !== null) {
+      const factor =
+        unit?.conversion_factor ??
+        (d.ingredient_type === "recipe"
+          ? 1
+          : ratio !== undefined && ratio > 0
+            ? round5(1 / ratio)
+            : undefined);
+      // ยังไม่รู้ว่า 1 หน่วยสูตร = กี่หน่วย inventory — รอ preview/รายการหน่วยก่อน
+      if (factor !== undefined) {
+        const base: UnitCost = {
+          ...unit,
+          cost_per_unit: 0,
+          conversion_factor: factor,
+          cost_source: "manual",
+        };
+        const inventoryQty = inventoryQtyOf(d.qty, base, ratio);
+        const net = round5(
+          manual / (1 + round5(Number(d.wastage_percentage) || 0) / 100),
+        );
+        return {
+          state: "ok",
+          unit: {
+            ...base,
+            cost_per_unit: inventoryQty > 0 ? round5(net / inventoryQty) : 0,
+          },
+          line_cost: manual,
+        };
+      }
+    }
     if (!unit) {
-      const pc = current.get(pairKey(dRef, d.ingredient_unit_id));
       if (!pc) return { state: "pending" };
-      if (!pc.ok) return { state: "error", message: pc.message };
-      unit = pc;
+      return { state: "error", message: pc.ok ? "" : pc.message };
     }
     return {
       state: "ok",
       unit,
-      line_cost: computeLineCost(
-        d.qty,
-        d.wastage_percentage,
-        unit,
-        ratios.get(pairKey(dRef, d.ingredient_unit_id)),
-      ),
+      line_cost: computeLineCost(d.qty, d.wastage_percentage, unit, ratio),
     };
   });
 }
@@ -316,10 +370,17 @@ export function pendingPairs(
 export function pairCostsFrom(
   lines: IngredientCostLine[],
 ): [string, PairCost][] {
-  return lines.map((l) => [
-    pairKey(refOf(l), l.ingredient_unit_id),
-    { ok: true, unit_name: l.ingredient_unit?.name ?? null, ...unitCostOf(l) },
-  ]);
+  // บรรทัดที่ผู้ใช้กรอกต้นทุนเอง server ส่งค่านั้นกลับมา — ไม่ใช่ต้นทุนปัจจุบันของคู่นี้ ห้ามจำ
+  return lines
+    .filter((l) => l.cost_source !== "manual")
+    .map((l) => [
+      pairKey(refOf(l), l.ingredient_unit_id),
+      {
+        ok: true,
+        unit_name: l.ingredient_unit?.name ?? null,
+        ...unitCostOf(l),
+      },
+    ]);
 }
 
 /** ตัดศูนย์ท้ายทศนิยม — 2.50000 → "2.5" */

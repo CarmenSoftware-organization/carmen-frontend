@@ -8,7 +8,15 @@ import {
 } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { useQueries } from "@tanstack/react-query";
-import { Calculator, Plus, RotateCw, Trash2 } from "lucide-react";
+import {
+  Calculator,
+  ChefHat,
+  Package,
+  Plus,
+  RotateCcw,
+  RotateCw,
+  Trash2,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
@@ -34,6 +42,7 @@ import {
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { formatCurrency } from "@/lib/currency-utils";
+import { cn } from "@/lib/utils";
 import type {
   IngredientCostLine,
   IngredientCostSource,
@@ -48,6 +57,7 @@ import {
   EMPTY_INGREDIENT,
   formatQty,
   inventoryEquivalentOf,
+  manualCostOf,
   pairCostsFrom,
   isDraftComplete,
   pairKey,
@@ -83,7 +93,8 @@ const SOURCE_BADGE: Partial<
         | "costSourceLastAverage"
         | "costSourceStandard"
         | "costSourceNone"
-        | "costSourceRecipe";
+        | "costSourceRecipe"
+        | "costSourceManual";
       variant: "warning-light" | "info-light" | "destructive-light";
     }
   >
@@ -92,7 +103,34 @@ const SOURCE_BADGE: Partial<
   standard: { key: "costSourceStandard", variant: "info-light" },
   none: { key: "costSourceNone", variant: "destructive-light" },
   recipe: { key: "costSourceRecipe", variant: "info-light" },
+  manual: { key: "costSourceManual", variant: "info-light" },
 };
+
+/**
+ * ตารางวัตถุดิบ — หัวตารางกับทุกแถวใช้ grid ชุดเดียวกัน คอลัมน์จึงตรงกันโดยไม่ต้องเป็น <table>
+ * (ช่องในแถวเป็น lookup/select/input ที่ต้องยืดหดตามกล่อง)
+ *
+ * ตัดสินจากความกว้างของกล่องรายการเอง (`@container/ing`) ไม่ใช่ของจอ:
+ * - กว้าง 42rem ขึ้นไป = ตาราง ทุกช่องของวัตถุดิบหนึ่งตัวอยู่แถวเดียว หน่วยอยู่ในคอลัมน์ของตัวเองเสมอ
+ *   (เดิมช่วง 36–56rem ชื่อสินค้ากินทั้งแถวแล้วหน่วย/จำนวนตกลงไปบรรทัดล่าง — ผู้ใช้สั่งแก้ 2026-11-16)
+ * - แคบกว่านั้น (มือถือ) = การ์ดต่อวัตถุดิบ มีป้ายกำกับทุกช่อง — ตาราง 7 คอลัมน์บีบลงจอ 390px ไม่ได้
+ * - คอลัมน์ตัวเลขกว้างขึ้นเป็นขั้นที่ 48rem และ 56rem ส่วนที่เหลือเป็นของชื่อวัตถุดิบเสมอ
+ *   (ขั้นแคบสุด 42–48rem: ช่องในเซลล์ลด padding และซ่อนลูกศรของ select หน่วย ให้ "GRAM" ไม่โดนตัด)
+ *
+ * คอลัมน์: ประเภท · ชื่อ · หน่วย · จำนวน · % เสีย · ต้นทุน/หน่วย · ต้นทุนบรรทัด · ลบ
+ */
+const ING_GRID =
+  "grid grid-cols-2 gap-x-1.5 gap-y-1 @2xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_4.5rem_4rem_3rem_4.5rem_4.75rem_1.75rem] @3xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_5.5rem_4.5rem_3.75rem_5.5rem_5.25rem_1.75rem] @4xl/ing:grid-cols-[4.25rem_minmax(0,1fr)_7rem_5.5rem_4.5rem_7rem_6.5rem_1.75rem]";
+
+/**
+ * ช่องกรอกในตาราง — ดูเป็นข้อความในเซลล์ กดแล้วจึงเป็นช่องกรอก (ผู้ใช้สั่ง: "คล้ายตาราง แล้วกดเพื่อใส่ค่า")
+ * โหมดการ์ด (กล่องแคบ) ยังเป็นช่องมีกรอบตามปกติ — บนจอสัมผัสไม่มี hover บอกว่าช่องไหนกดได้
+ */
+const CELL_INPUT =
+  "@2xl/ing:px-1.5 @3xl/ing:px-2.5 @2xl/ing:border-transparent @2xl/ing:bg-transparent @2xl/ing:dark:bg-transparent @2xl/ing:shadow-none @2xl/ing:hover:border-input @2xl/ing:hover:bg-background @2xl/ing:focus-visible:border-ring @2xl/ing:focus-visible:bg-background @2xl/ing:data-[state=open]:border-ring @2xl/ing:data-[state=open]:bg-background aria-invalid:border-destructive!";
+
+/** ป้ายกำกับของช่องในโหมดการ์ด — โหมดตารางใช้หัวตารางแทน */
+const CARD_LABEL = "text-muted-foreground mb-0.5 block text-xs @2xl/ing:hidden";
 
 const EPSILON = 1e-6;
 
@@ -313,23 +351,45 @@ export function RecipeIngredientsFields({
                 )}
               </div>
 
-              {fields.map((field, i) => (
-                <IngredientRow
-                  key={field.key}
-                  form={form}
-                  index={i}
-                  cost={rows[i] ?? { state: "incomplete" }}
-                  saved={saved}
-                  recipeId={recipeId}
-                  isDisabled={isDisabled}
-                  onRemove={() => remove(i)}
-                  onRetryCost={() => {
-                    const d = drafts[i];
-                    if (d && isDraftComplete(d))
-                      retryPair(pairKey(refOf(d), d.ingredient_unit_id));
-                  }}
-                />
-              ))}
+              <div className="@container/ing">
+                <div className="bg-card overflow-hidden rounded-md @2xl/ing:border">
+                  <div
+                    className={cn(
+                      ING_GRID,
+                      "bg-muted/60 text-muted-foreground hidden px-2 py-1.5 text-xs font-semibold @2xl/ing:grid",
+                    )}
+                  >
+                    <span className="col-span-2">{t("ingredientName")}</span>
+                    <span className="px-2">{tfl("unit")}</span>
+                    <span className="px-2 text-right">{tfl("qty")}</span>
+                    <span className="px-1 text-right">{t("wastagePct")}</span>
+                    <span className="px-2 text-right">
+                      {tfl("costPerUnit")}
+                    </span>
+                    <span className="text-right">{t("cost")}</span>
+                    <span />
+                  </div>
+                  <div className="space-y-2 @2xl/ing:space-y-0">
+                    {fields.map((field, i) => (
+                      <IngredientRow
+                        key={field.key}
+                        form={form}
+                        index={i}
+                        cost={rows[i] ?? { state: "incomplete" }}
+                        saved={saved}
+                        recipeId={recipeId}
+                        isDisabled={isDisabled}
+                        onRemove={() => remove(i)}
+                        onRetryCost={() => {
+                          const d = drafts[i];
+                          if (d && isDraftComplete(d))
+                            retryPair(pairKey(refOf(d), d.ingredient_unit_id));
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
 
               {!isDisabled && (
                 <Button
@@ -455,6 +515,7 @@ function IngredientRow({
 
   const badge =
     cost.state === "ok" ? SOURCE_BADGE[cost.unit.cost_source] : undefined;
+  const isManual = cost.state === "ok" && cost.unit.cost_source === "manual";
 
   // จำนวนในหน่วย inventory ใต้ช่องจำนวน — ทุกแถวสินค้าที่เลือกหน่วยและกรอกจำนวนแล้ว
   // (เลือกหน่วย inventory เอง = โชว์ 1:1 ให้ช่องอยู่ที่เดิมทุกแถว)
@@ -478,109 +539,149 @@ function IngredientRow({
         )
       : undefined;
 
-  return (
-    <div className="@container rounded-md border p-3">
-      {/* ตัดสินจากความกว้างของการ์ดบรรทัดนี้เอง: แคบ = เรียงลงมา · กลาง = สินค้าเต็มแถวบน
-          (อยู่แถวเดียวกับหน่วย/จำนวน ชื่อสินค้าเหลือ ~120px) · กว้าง (56rem+) = ทุกช่องแถวเดียว
-          หน่วยกว้างคงที่ ไม่ยืดตามจอ */}
-      <div className="grid gap-2 @lg:grid-cols-[minmax(0,1fr)_6rem_5rem_7rem_auto] @lg:items-start @4xl:grid-cols-[minmax(0,1fr)_10rem_6rem_5rem_7rem_auto]">
-        <div className="flex min-w-0 items-start gap-2 @lg:col-span-full @4xl:col-span-1">
-          <div
-            role="group"
-            aria-label={t("ingredientType")}
-            className="flex shrink-0 items-center gap-1"
-          >
-            <Toggle
-              variant="outline"
-              size="sm"
-              pressed={!isRecipe}
-              disabled={isDisabled}
-              onPressedChange={() => changeType("product")}
-            >
-              {t("ingredientTypeProduct")}
-            </Toggle>
-            <Toggle
-              variant="outline"
-              size="sm"
-              pressed={isRecipe}
-              disabled={isDisabled}
-              onPressedChange={() => changeType("recipe")}
-            >
-              {t("ingredientTypeRecipe")}
-            </Toggle>
-          </div>
-          <div className="min-w-0 flex-1">
-            {isRecipe ? (
-              <LookupRecipe
-                value={subRecipeId}
-                defaultLabel={productLabel || undefined}
-                size="sm"
-                className="w-full min-w-0"
-                disabled={isDisabled}
-                placeholder={t("ingredientName")}
-                excludeIds={excludeSelf}
-                error={rowErrors?.sub_recipe_id?.message}
-                onValueChange={(id) => {
-                  if (id === subRecipeId) return;
-                  form.setValue(`ingredients.${i}.sub_recipe_id`, id, opts);
-                }}
-                onItemChange={(r) => {
-                  form.setValue(
-                    `ingredients.${i}.product_label`,
-                    r.name ?? r.code ?? "",
-                    opts,
-                  );
-                  // หน่วยของสูตรคือหน่วยผลผลิตเสมอ — ว่างแปลว่าแถวยังไม่ครบ (server ก็ปฏิเสธ)
-                  form.setValue(
-                    `ingredients.${i}.ingredient_unit_id`,
-                    r.base_yield_unit ?? "",
-                    opts,
-                  );
-                }}
-              />
-            ) : (
-              <LookupProduct
-                value={productId}
-                defaultLabel={productLabel || undefined}
-                size="sm"
-                // ปุ่ม combobox กว้างตามชื่อสินค้า (shrink-0) — ชื่อยาวล้นทับช่องหน่วย
-                className="w-full min-w-0"
-                disabled={isDisabled}
-                placeholder={t("ingredientName")}
-                error={rowErrors?.product_id?.message}
-                onValueChange={(id, item) => {
-                  if (id === productId) return;
-                  form.setValue(`ingredients.${i}.product_id`, id, opts);
-                  form.setValue(
-                    `ingredients.${i}.product_label`,
-                    item?.name ?? item?.code ?? "",
-                    opts,
-                  );
-                  form.setValue(
-                    `ingredients.${i}.ingredient_unit_id`,
-                    "",
-                    opts,
-                  );
-                }}
-              />
-            )}
-            {isRecipe && subRecipeId && (
-              <a
-                href={`/operation-plan/recipe/${subRecipeId}`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-primary mt-1 inline-block text-xs underline-offset-2 hover:underline"
-              >
-                {productLabel || t("openSubRecipe")}
-              </a>
-            )}
-          </div>
-        </div>
+  const unitName = unitOptions.find((u) => u.id === unitId)?.name ?? "";
+  // หน่วยที่ต้นทุนต่อหน่วยอ้างถึง: สินค้า = หน่วย inventory · สูตร = หน่วยผลผลิต
+  const costUnitName = isRecipe
+    ? (recipeUnit?.name ?? savedUnit?.name)
+    : inventoryUnit?.name;
+  const removeButton = (className: string) =>
+    !isDisabled && (
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        aria-label={t("removeIngredient")}
+        title={t("removeIngredient")}
+        onClick={onRemove}
+        className={className}
+      >
+        <Trash2 />
+      </Button>
+    );
 
-        <div>
+  return (
+    <div
+      role="group"
+      aria-label={productLabel || t("ingredientName")}
+      className={cn(
+        ING_GRID,
+        "rounded-md border p-3 @2xl/ing:items-start @2xl/ing:rounded-none @2xl/ing:border-x-0 @2xl/ing:border-t @2xl/ing:border-b-0 @2xl/ing:px-2 @2xl/ing:py-1.5",
+      )}
+    >
+      {/* ประเภท + ชื่อ (+ หมายเหตุใต้ชื่อ) */}
+      <div className="col-span-2 grid grid-cols-[auto_minmax(0,1fr)_auto] gap-x-1.5 gap-y-1 @2xl/ing:grid-cols-subgrid">
+        <div
+          role="group"
+          aria-label={t("ingredientType")}
+          className="flex shrink-0 items-center gap-1 @2xl/ing:h-8"
+        >
+          <Toggle
+            variant="outline"
+            size="sm"
+            pressed={!isRecipe}
+            disabled={isDisabled}
+            aria-label={t("ingredientTypeProduct")}
+            title={t("ingredientTypeProduct")}
+            onPressedChange={() => changeType("product")}
+          >
+            <Package aria-hidden="true" />
+          </Toggle>
+          <Toggle
+            variant="outline"
+            size="sm"
+            pressed={isRecipe}
+            disabled={isDisabled}
+            aria-label={t("ingredientTypeRecipe")}
+            title={t("ingredientTypeRecipe")}
+            onPressedChange={() => changeType("recipe")}
+          >
+            <ChefHat aria-hidden="true" />
+          </Toggle>
+        </div>
+        <div className="min-w-0">
+          {isRecipe ? (
+            <LookupRecipe
+              value={subRecipeId}
+              defaultLabel={productLabel || undefined}
+              size="sm"
+              className={cn("w-full min-w-0", CELL_INPUT)}
+              disabled={isDisabled}
+              placeholder={t("ingredientName")}
+              excludeIds={excludeSelf}
+              error={rowErrors?.sub_recipe_id?.message}
+              onValueChange={(id) => {
+                if (id === subRecipeId) return;
+                form.setValue(`ingredients.${i}.sub_recipe_id`, id, opts);
+              }}
+              onItemChange={(r) => {
+                form.setValue(
+                  `ingredients.${i}.product_label`,
+                  r.name ?? r.code ?? "",
+                  opts,
+                );
+                // หน่วยของสูตรคือหน่วยผลผลิตเสมอ — ว่างแปลว่าแถวยังไม่ครบ (server ก็ปฏิเสธ)
+                form.setValue(
+                  `ingredients.${i}.ingredient_unit_id`,
+                  r.base_yield_unit ?? "",
+                  opts,
+                );
+              }}
+            />
+          ) : (
+            <LookupProduct
+              value={productId}
+              defaultLabel={productLabel || undefined}
+              size="sm"
+              // ปุ่ม combobox กว้างตามชื่อสินค้า (shrink-0) — ชื่อยาวล้นทับช่องหน่วย
+              className={cn("w-full min-w-0", CELL_INPUT)}
+              disabled={isDisabled}
+              placeholder={t("ingredientName")}
+              error={rowErrors?.product_id?.message}
+              onValueChange={(id, item) => {
+                if (id === productId) return;
+                form.setValue(`ingredients.${i}.product_id`, id, opts);
+                form.setValue(
+                  `ingredients.${i}.product_label`,
+                  item?.name ?? item?.code ?? "",
+                  opts,
+                );
+                form.setValue(`ingredients.${i}.ingredient_unit_id`, "", opts);
+              }}
+            />
+          )}
+        </div>
+        {removeButton("@2xl/ing:hidden")}
+        <div className="col-span-full min-w-0 @2xl/ing:col-span-1 @2xl/ing:col-start-2">
+          {isRecipe && subRecipeId && (
+            <a
+              href={`/operation-plan/recipe/${subRecipeId}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary inline-block px-2 text-xs underline-offset-2 hover:underline"
+            >
+              {t("openSubRecipe")}
+            </a>
+          )}
+          <FieldInput
+            aria-label={t("ingredientNote")}
+            placeholder={t("ingredientNote")}
+            size="xs"
+            maxLength={500}
+            disabled={isDisabled}
+            className={cn("text-muted-foreground text-xs", CELL_INPUT)}
+            error={rowErrors?.note?.message}
+            {...form.register(`ingredients.${i}.note`)}
+          />
+        </div>
+      </div>
+
+      {/* หน่วย + จำนวน (+ จำนวนในหน่วย inventory ใต้สองช่องนี้) */}
+      <div className="col-span-2 grid grid-cols-2 gap-x-1.5 gap-y-1 @2xl/ing:grid-cols-subgrid">
+        <div className="min-w-0">
+          <span className={CARD_LABEL}>{tfl("unit")}</span>
           {isRecipe ? (
             <div
-              className="bg-muted/40 text-muted-foreground flex h-8 items-center truncate rounded-md border px-2 text-sm"
+              className="text-muted-foreground flex h-8 items-center truncate px-2 text-sm"
               aria-label={tfl("unit")}
             >
               {recipeUnit?.name ?? savedUnit?.name ?? "—"}
@@ -597,7 +698,10 @@ function IngredientRow({
                 >
                   <SelectTrigger
                     size="sm"
-                    className="w-full"
+                    className={cn(
+                      "w-full min-w-0 @2xl/ing:[&>svg]:hidden @3xl/ing:[&>svg]:block",
+                      CELL_INPUT,
+                    )}
                     aria-label={tfl("unit")}
                     aria-invalid={!!rowErrors?.ingredient_unit_id}
                   >
@@ -622,8 +726,8 @@ function IngredientRow({
             <FieldError errors={[rowErrors?.ingredient_unit_id]} />
           )}
         </div>
-
         <div className="min-w-0">
+          <span className={CARD_LABEL}>{tfl("qty")}</span>
           <FieldInput
             aria-label={tfl("qty")}
             type="number"
@@ -632,91 +736,187 @@ function IngredientRow({
             step="any"
             size="sm"
             disabled={isDisabled}
-            className="text-right tabular-nums"
+            className={cn("text-right tabular-nums", CELL_INPUT)}
             error={rowErrors?.qty?.message}
             errorIconAlign="left"
             {...form.register(`ingredients.${i}.qty`, numberInput)}
           />
-          {inventoryUnit && inventoryQty !== undefined && (
-            <p
-              aria-label={t("inventoryQtyLabel")}
-              className="text-muted-foreground mt-1 text-right text-xs break-words tabular-nums"
-            >
-              <span className="text-foreground block font-medium">
-                {t("inventoryQtyValue", {
-                  qty: formatQty(inventoryQty),
-                  unit: inventoryUnit.name,
-                })}
-              </span>
-              <span className="text-micro block">
-                {t("inventoryQtyRatio", {
-                  inventoryUnit: inventoryUnit.name,
-                  ratio: formatQty(unitRatio),
-                  unit: unitOptions.find((u) => u.id === unitId)?.name ?? "",
-                })}
-              </span>
-            </p>
-          )}
         </div>
-
-        <div className="relative">
-          <FieldInput
-            aria-label={t("wastagePct")}
-            title={t("wastagePct")}
-            type="number"
-            inputMode="decimal"
-            min={0}
-            max={100}
-            step="any"
-            size="sm"
-            disabled={isDisabled}
-            className="pr-6 text-right tabular-nums"
-            error={rowErrors?.wastage_percentage?.message}
-            errorIconAlign="left"
-            {...form.register(
-              `ingredients.${i}.wastage_percentage`,
-              numberInput,
-            )}
-          />
-          <span className="text-muted-foreground text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
-            %
-          </span>
-        </div>
-
-        <div className="flex min-h-8 flex-col items-end justify-center text-right">
-          <LineCostValue cost={cost} onRetry={onRetryCost} />
-          {badge && (
-            <Badge variant={badge.variant} size="xs" className="mt-0.5">
-              {t(badge.key)}
-            </Badge>
-          )}
-        </div>
-
-        {!isDisabled && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t("removeIngredient")}
-            onClick={onRemove}
-            className="justify-self-end"
+        {inventoryUnit && inventoryQty !== undefined && (
+          <p
+            aria-label={t("inventoryQtyLabel")}
+            className="text-muted-foreground col-span-2 px-2 text-right text-xs break-words tabular-nums"
           >
-            <Trash2 />
-          </Button>
+            <span className="text-foreground font-medium">
+              {t("inventoryQtyValue", {
+                qty: formatQty(inventoryQty),
+                unit: inventoryUnit.name,
+              })}
+            </span>{" "}
+            <span className="text-micro">
+              {t("inventoryQtyRatio", {
+                inventoryUnit: inventoryUnit.name,
+                ratio: formatQty(unitRatio),
+                unit: unitName,
+              })}
+            </span>
+          </p>
         )}
       </div>
 
-      <FieldInput
-        aria-label={t("ingredientNote")}
-        placeholder={t("ingredientNote")}
-        size="sm"
-        maxLength={500}
-        disabled={isDisabled}
-        className="mt-2"
-        error={rowErrors?.note?.message}
-        {...form.register(`ingredients.${i}.note`)}
-      />
+      <div className="relative min-w-0">
+        <span className={CARD_LABEL}>{t("wastagePct")}</span>
+        <FieldInput
+          aria-label={t("wastagePct")}
+          title={t("wastagePct")}
+          type="number"
+          inputMode="decimal"
+          min={0}
+          max={100}
+          step="any"
+          size="sm"
+          disabled={isDisabled}
+          className={cn("text-right tabular-nums", CELL_INPUT)}
+          error={rowErrors?.wastage_percentage?.message}
+          errorIconAlign="left"
+          {...form.register(`ingredients.${i}.wastage_percentage`, numberInput)}
+        />
+      </div>
+
+      {/* ต้นทุน/หน่วย (ระบบหารให้) + ต้นทุนบรรทัด (กรอกเองได้) (+ ที่มาของต้นทุนใต้สองช่องนี้) */}
+      <div className="contents @2xl/ing:col-span-2 @2xl/ing:grid @2xl/ing:grid-cols-subgrid @2xl/ing:gap-y-1">
+        <div className="flex min-h-8 min-w-0 items-center justify-between gap-2 @2xl/ing:justify-end @2xl/ing:px-2">
+          <span className="text-muted-foreground text-xs @2xl/ing:hidden">
+            {tfl("costPerUnit")}
+          </span>
+          <span
+            aria-label={tfl("costPerUnit")}
+            className="text-muted-foreground truncate text-sm tabular-nums"
+          >
+            {cost.state === "ok"
+              ? formatCurrency(cost.unit.cost_per_unit)
+              : "—"}
+          </span>
+        </div>
+        <div className="min-w-0">
+          <span className={CARD_LABEL}>{t("lineCost")}</span>
+          <LineCostInput
+            form={form}
+            index={i}
+            auto={cost.state === "ok" ? cost.line_cost : undefined}
+            isDisabled={isDisabled || cost.state === "incomplete"}
+            error={rowErrors?.line_cost?.message}
+          />
+        </div>
+        {(costUnitName ||
+          badge ||
+          cost.state === "pending" ||
+          cost.state === "error") && (
+          // ใต้คอลัมน์ต้นทุน/หน่วย = หน่วยที่ราคานั้นอ้างถึง · ใต้คอลัมน์ต้นทุน = ที่มาของต้นทุน + ปุ่มย้อน
+          <div className="col-span-2 grid grid-cols-subgrid items-start">
+            <span className="text-muted-foreground text-micro min-w-0 text-right @2xl/ing:px-2">
+              {costUnitName && cost.state === "ok"
+                ? t("costPerUnitOf", { unit: costUnitName })
+                : null}
+            </span>
+            <div className="flex min-w-0 flex-wrap items-center justify-end gap-x-1.5 gap-y-0.5">
+              {(cost.state === "pending" || cost.state === "error") && (
+                <LineCostValue cost={cost} onRetry={onRetryCost} />
+              )}
+              {badge && (
+                <Badge variant={badge.variant} size="xs">
+                  {t(badge.key)}
+                </Badge>
+              )}
+              {isManual && !isDisabled && (
+                <button
+                  type="button"
+                  title={t("resetManualCost")}
+                  aria-label={t("resetManualCost")}
+                  onClick={() =>
+                    form.setValue(`ingredients.${i}.line_cost`, null, opts)
+                  }
+                  className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 rounded-sm outline-none focus-visible:ring-2"
+                >
+                  <RotateCcw className="size-3" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {removeButton("hidden justify-self-end @2xl/ing:inline-flex")}
     </div>
+  );
+}
+
+/** ต้นทุนบรรทัดแบบ 2 ตำแหน่งสำหรับช่องกรอก (ไม่มีตัวคั่นหลักพัน — ช่อง type=number รับไม่ได้) */
+const lineCostText = (n: number | undefined) =>
+  n === undefined ? "" : String(Number(n.toFixed(2)));
+
+/**
+ * ช่องต้นทุนของบรรทัด — ปกติแสดงต้นทุนที่ระบบคิด (จำนวน × ต้นทุนต่อหน่วย + ของเสีย)
+ * พิมพ์ทับ = กำหนดเอง: "จำนวนนี้ราคาเท่านี้" เช่น 400 GRAM = 20 (`line_cost` ของแถว ส่งไปกับ PUT →
+ * server เก็บค่านั้นตรง ๆ แล้วหารย้อนเป็นต้นทุนต่อหน่วย) · ลบจนว่าง = กลับไปใช้ของระบบ
+ * ผู้ใช้สั่ง 2026-11-16: ช่องที่กรอกเองคือต้นทุนรวมของจำนวนนั้น ไม่ใช่ต้นทุนต่อหน่วย
+ *
+ * ระหว่างพิมพ์เก็บข้อความไว้ในช่องเอง — ผูกค่าตัวเลขจากฟอร์มตรง ๆ แล้ว "12." จะถูกเขียนกลับเป็น "12"
+ */
+function LineCostInput({
+  form,
+  index: i,
+  auto,
+  isDisabled,
+  error,
+}: {
+  readonly form: UseFormReturn<RecipeFormValues>;
+  readonly index: number;
+  /** ต้นทุนบรรทัดที่แถวใช้อยู่ตอนนี้ — undefined = ยังไม่รู้ (แถวไม่ครบ/กำลังถาม) */
+  readonly auto: number | undefined;
+  readonly isDisabled: boolean;
+  readonly error?: string;
+}) {
+  const t = useTranslations("operationPlan.recipe");
+  const { isSubmitted } = useFormState({ control: form.control });
+  const stored = useWatch({
+    control: form.control,
+    name: `ingredients.${i}.line_cost`,
+  });
+  const manual = manualCostOf({ line_cost: stored });
+  const [typing, setTyping] = useState<string | null>(null);
+  const resting = manual === null ? lineCostText(auto) : formatQty(manual);
+
+  return (
+    <FieldInput
+      aria-label={t("lineCost")}
+      type="number"
+      inputMode="decimal"
+      min={0}
+      step="any"
+      size="sm"
+      disabled={isDisabled}
+      className={cn("text-right font-semibold tabular-nums", CELL_INPUT)}
+      error={error}
+      errorIconAlign="left"
+      value={typing ?? resting}
+      onFocus={(e) => {
+        setTyping(resting);
+        e.currentTarget.select();
+      }}
+      onChange={(e) => {
+        const text = e.target.value;
+        setTyping(text);
+        const n = Number(text);
+        // ว่าง = เลิกกำหนดเอง · พิมพ์ค่าเดิมของระบบซ้ำก็นับเป็นกำหนดเอง (ผู้ใช้ตั้งใจล็อกราคานี้)
+        form.setValue(
+          `ingredients.${i}.line_cost`,
+          text.trim() === "" || !Number.isFinite(n) ? null : n,
+          { shouldDirty: true, shouldValidate: isSubmitted },
+        );
+      }}
+      onBlur={() => setTyping(null)}
+    />
   );
 }
 
