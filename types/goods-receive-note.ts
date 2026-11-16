@@ -43,6 +43,8 @@ interface GrnDetailItem extends TaxFields, DiscountFields, ItemMoneyFields {
   received_unit: EntityRef | null;
   received_unit_conversion_factor: number;
   received_base_qty: number;
+  /** ราคาต่อหน่วยที่เก็บจริง (คอลัมน์ DB ไม่ปัดเศษ) */
+  received_price?: number | null;
   foc_qty: number;
   foc_unit: EntityRef | null;
   foc_unit_conversion_factor: number;

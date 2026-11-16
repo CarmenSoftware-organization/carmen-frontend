@@ -348,10 +348,14 @@ export function getDefaultValues(
           expired_at: item?.expired_at ?? null,
           dimensions: detail.dimensions ?? [],
           dimensions_dirty: false,
+          // received_price = ราคาที่เก็บจริง (คอลัมน์ DB) · ไม่มีจึงถอยไปหาร sub_total/qty
           stored_unit_price:
-            item && item.received_qty > 0
+            (item?.received_price != null
+              ? Number(item.received_price)
+              : undefined) ??
+            (item && item.received_qty > 0
               ? item.sub_total_price / item.received_qty
-              : undefined,
+              : undefined),
         };
       }) ?? [],
     extra_cost_details:
