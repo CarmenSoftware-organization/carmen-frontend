@@ -178,10 +178,16 @@ export default function DimensionPage() {
       {
         accessorKey: "data_type",
         header: "Data Type",
-        cell: ({ row }) =>
-          DIMENSION_DATA_TYPES.find(
-            (type) => type.value === (row.original.data_type ?? "lookup"),
-          )?.label,
+        cell: ({ row }) => {
+          const type = DIMENSION_DATA_TYPES.find(
+            (t) => t.value === (row.original.data_type ?? "lookup"),
+          );
+          return (
+            <span className="block truncate" title={type?.label}>
+              {type?.short}
+            </span>
+          );
+        },
       },
       {
         id: "values_count",
@@ -247,12 +253,14 @@ export default function DimensionPage() {
       title="Dimensions"
       description="Manage GL dimensions and values used by Journal Vouchers"
       toolbar={
-        <>
-          <SearchInput
-            defaultValue={search}
-            onSearch={setSearch}
-            onInputChange={setSearch}
-          />
+        <div className="flex w-full items-center gap-2">
+          <div className="flex-1 md:flex-initial">
+            <SearchInput
+              defaultValue={search}
+              onSearch={setSearch}
+              onInputChange={setSearch}
+            />
+          </div>
           <StatusFilter
             value={status}
             onChange={setStatus}
@@ -262,7 +270,7 @@ export default function DimensionPage() {
               { value: "inactive", label: "Inactive" },
             ]}
           />
-        </>
+        </div>
       }
       actions={
         <Button
