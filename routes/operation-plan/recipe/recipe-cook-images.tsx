@@ -12,8 +12,11 @@ interface RecipeCookImagesProps {
 }
 
 /**
- * รูปของสูตรบนหน้าสูตร (หน้าที่เปิดเมื่อกดการ์ดสูตร) แบบหน้าสินค้า: รูปใหญ่หนึ่งรูป + แถบรูปย่อ
+ * รูปของสูตรบนหน้าสูตร (หน้าที่เปิดเมื่อกดการ์ดสูตร) แบบหน้าสินค้า: รูปหลักสี่เหลี่ยมจัตุรัส + แถบรูปย่อ
  * ทั้งหมดอยู่ข้างใต้ เรียงตามลำดับที่จัดไว้ในฟอร์ม (sort_order) เริ่มที่รูปหลัก
+ *
+ * ความกว้างมาจากคอลัมน์ซ้ายของ hero ใน `RecipeCookView` (ต้องอยู่ใต้ `@container` ของหน้านั้น)
+ * จอแคบที่ยังไม่แบ่งคอลัมน์ = จำกัดไว้ 18rem กลางแถว ไม่ขยายเต็มจอ
  *
  * - กดรูปย่อ = เปลี่ยนรูปใหญ่
  * - กดรูปใหญ่ = popup เต็มจอของรูปนั้น (มีแถบรูปทั้งหมดด้านล่าง เลื่อนดูรูปอื่นต่อได้)
@@ -45,12 +48,12 @@ export function RecipeCookImages({
   const hero = sorted[active];
 
   return (
-    <div className="@container mb-4">
+    <div className="mx-auto w-full max-w-72 min-w-0 @lg:mx-0 @lg:max-w-none">
       <button
         type="button"
         onClick={() => setLightboxOpen(true)}
         aria-label={t("cookViewImage", { n: active + 1, total })}
-        className="bg-muted focus-visible:ring-ring relative flex h-56 w-full cursor-zoom-in items-center justify-center overflow-hidden rounded-lg border focus-visible:ring-2 focus-visible:outline-none @md:h-72 @3xl:h-96"
+        className="bg-muted focus-visible:ring-ring relative flex aspect-square w-full cursor-zoom-in items-center justify-center overflow-hidden rounded-lg border focus-visible:ring-2 focus-visible:outline-none"
       >
         <img
           src={hero.url}
@@ -77,7 +80,7 @@ export function RecipeCookImages({
                 aria-label={t("cookShowImage", { n: i + 1, total })}
                 aria-current={i === active}
                 className={cn(
-                  "bg-muted focus-visible:ring-ring block size-14 overflow-hidden rounded-md border transition-opacity focus-visible:ring-2 focus-visible:outline-none @md:size-16",
+                  "bg-muted focus-visible:ring-ring block size-12 overflow-hidden rounded-md border transition-opacity focus-visible:ring-2 focus-visible:outline-none",
                   i === active
                     ? "ring-primary ring-2 ring-offset-1"
                     : "opacity-70 hover:opacity-100",

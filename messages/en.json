@@ -5208,8 +5208,6 @@
       "stepsChangedElsewhere": "The steps were changed by someone else and have been reloaded. Check them and save again.",
       "noSteps": "No steps yet.",
       "backToRecipes": "Back to recipes",
-      "cookYield": "Makes {qty} {unit}",
-      "cookTotalTime": "{min} min total",
       "editRecipe": "Edit recipe",
       "cookNoSteps": "This recipe has no preparation steps yet.",
       "cookNextUp": "Next",

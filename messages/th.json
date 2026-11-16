@@ -5208,8 +5208,6 @@
       "stepsChangedElsewhere": "มีคนอื่นแก้ขั้นตอนของสูตรนี้ไปแล้ว โหลดข้อมูลล่าสุดให้แล้ว ตรวจแล้วกดบันทึกอีกครั้ง",
       "noSteps": "ยังไม่มีขั้นตอน",
       "backToRecipes": "กลับไปรายการสูตร",
-      "cookYield": "ได้ {qty} {unit}",
-      "cookTotalTime": "รวม {min} นาที",
       "editRecipe": "แก้ไขสูตร",
       "cookNoSteps": "สูตรนี้ยังไม่มีขั้นตอนทำ",
       "cookNextUp": "ถัดไป",
