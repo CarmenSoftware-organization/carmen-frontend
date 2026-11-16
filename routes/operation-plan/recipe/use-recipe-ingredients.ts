@@ -9,10 +9,18 @@ import type { IngredientCostResult, IngredientInput } from "@/types/recipe";
 interface PreviewVars {
   recipeId: string;
   items: IngredientInput[];
+  /** "pricelist" = บรรทัดสินค้าใช้ราคาจากใบราคาที่เปิดอยู่ (ไม่มี = 0) · ไม่ส่ง = ต้นทุนคลัง */
+  priceSource?: "pricelist";
 }
 
-interface ReplaceVars extends PreviewVars {
-  /** true = ทุกบรรทัดใช้ต้นทุนปัจจุบัน · false = บรรทัดที่สินค้า+หน่วยเดิมคงต้นทุนที่บันทึกไว้ */
+interface ReplaceVars {
+  recipeId: string;
+  items: IngredientInput[];
+  /**
+   * true = กดปุ่ม "Update price" แล้ว: ทุกบรรทัดสินค้าถูกทับด้วยราคาจากใบราคาที่เปิดอยู่ (ไม่มี = 0)
+   * · false = บรรทัดที่สินค้า+หน่วยเดิมคงต้นทุนที่บันทึกไว้
+   * (ฟอร์มไม่มีทางคิดราคาใหม่จากต้นทุนคลังแล้ว — ปุ่ม Recalculate เดิมถูกแทนด้วย Update price 2026-11-16)
+   */
   recalculate: boolean;
 }
 
@@ -29,19 +37,20 @@ async function readResult(
 }
 
 /**
- * ต้นทุนปัจจุบันของวัตถุดิบ (ต้นทุนเฉลี่ยคลัง → fallback) — server คำนวณ ไม่เขียน DB
- * ใช้ทั้งตอนเลือกสินค้า/หน่วยใหม่ในฟอร์ม และปุ่ม "คำนวณใหม่"
+ * ต้นทุนปัจจุบันของวัตถุดิบ — server คำนวณ ไม่เขียน DB
+ * ไม่ส่ง priceSource = ต้นทุนเฉลี่ยคลัง → fallback (ตอนเลือกสินค้า/หน่วยใหม่ในฟอร์ม)
+ * · "pricelist" = ราคาจากใบราคาที่เปิดอยู่ (ปุ่ม "Update price" และบรรทัดที่เพิ่มหลังกดปุ่มนั้น)
  */
 export function usePreviewIngredientCosts() {
   const buCode = useBuCode();
 
   return useMutation<IngredientCostResult, ApiError, PreviewVars>({
-    mutationFn: async ({ recipeId, items }) => {
+    mutationFn: async ({ recipeId, items, priceSource }) => {
       if (!buCode)
         throw new ApiError("MISSING_REQUIRED_FIELD", "Missing buCode");
       const res = await httpClient.post(
         `${API_ENDPOINTS.RECIPE_INGREDIENTS(buCode, recipeId)}/preview`,
-        { items },
+        { items, ...(priceSource ? { price_source: priceSource } : {}) },
       );
       return readResult(res, "Failed to preview ingredient costs");
     },
@@ -62,7 +71,12 @@ export function useReplaceIngredients() {
         throw new ApiError("MISSING_REQUIRED_FIELD", "Missing buCode");
       const res = await httpClient.put(
         API_ENDPOINTS.RECIPE_INGREDIENTS(buCode, recipeId),
-        { items, recalculate },
+        {
+          items,
+          recalculate,
+          // คิดใหม่ทั้งชุดมีทางเดียวคือ Update price = ราคาจากใบราคา
+          ...(recalculate ? { price_source: "pricelist" } : {}),
+        },
       );
       return readResult(res, "Failed to save ingredients");
     },

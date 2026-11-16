@@ -74,7 +74,9 @@ export type IngredientCostSource =
   | "snapshot"
   | "recipe"
   /** ผู้ใช้กรอกต้นทุนของบรรทัดเอง (บรรทัดส่ง `line_cost` มา) — ต้นทุนต่อหน่วยหารย้อนจากค่านั้น */
-  | "manual";
+  | "manual"
+  /** ราคาก่อน VAT จากใบราคาที่เปิดอยู่ ต่อหน่วยคลัง — ได้จากปุ่ม "Update price" (`price_source: "pricelist"`) */
+  | "pricelist";
 
 /** วัตถุดิบเป็นสินค้า หรือเป็นสูตรอื่น (sub-recipe) */
 export type IngredientType = "product" | "recipe";

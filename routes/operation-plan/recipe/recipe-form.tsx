@@ -371,7 +371,6 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
               form={form}
               isDisabled={isDisabled}
               recipe={recipe}
-              computed={computed}
             />
           </TabsContent>
           <TabsContent value="cost" forceMount className={TAB_PANEL}>

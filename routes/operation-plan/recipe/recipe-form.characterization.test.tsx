@@ -389,3 +389,87 @@ describe("RecipeForm — แท็บ", () => {
     expect(tab(R.recipeDetails)).toHaveTextContent(R.tabHasErrors);
   });
 });
+
+// ปุ่ม Update price (แทน Recalculate — ผู้ใช้สั่ง 2026-11-16): กดแล้วทับต้นทุนด้วยราคาจากใบราคาทันที
+// ไม่มีใบราคา = 0 (server ตัดสิน) ยังไม่บันทึกจนกด Save ซึ่งส่ง recalculate + price_source "pricelist"
+describe("RecipeForm — Update price จากใบราคา", () => {
+  const R = en.operationPlan.recipe;
+  const P = "prod-1";
+  const GRAM = "unit-gram";
+  const RECIPE_WITH_INGREDIENT = {
+    ...RECIPE,
+    ingredients: [
+      {
+        id: "line-1",
+        sequence_no: 1,
+        ingredient_type: "product",
+        product_id: P,
+        product: { id: P, code: "P-1", name: "Shrimp" },
+        qty: 400,
+        ingredient_unit_id: GRAM,
+        ingredient_unit: { id: GRAM, name: "GRAM" },
+        inventory_qty: 0.4,
+        inventory_unit_id: "unit-kg",
+        conversion_factor: 0.001,
+        cost_per_unit: 70,
+        wastage_percentage: 10,
+        net_cost: 28,
+        wastage_cost: 2.8,
+        line_cost: 30.8,
+        cost_source: "snapshot",
+        note: null,
+      },
+    ],
+  } as unknown as Recipe;
+
+  const openIngredients = () =>
+    fireEvent.mouseDown(
+      screen.getByRole("tab", { name: new RegExp(`^${R.ingredients}`) }),
+      { button: 0, ctrlKey: false },
+    );
+
+  it("ปุ่มชื่อ Update price ไม่ใช่ Recalculate", () => {
+    renderForm(<RecipeForm recipe={RECIPE_WITH_INGREDIENT} />);
+    openIngredients();
+    expect(
+      screen.getByRole("button", { name: R.updatePrice }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /recalculate/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("กดแล้วขอราคาจากใบราคาทั้งรายการทันที (ไม่มีหน้าต่างยืนยัน) และขึ้นป้ายให้กด Save", () => {
+    renderForm(<RecipeForm recipe={RECIPE_WITH_INGREDIENT} />);
+    openIngredients();
+    fireEvent.click(screen.getByRole("button", { name: R.updatePrice }));
+
+    expect(previewIngredientsMut.mutate).toHaveBeenCalledTimes(1);
+    const vars = firstPayload(previewIngredientsMut) as {
+      recipeId: string;
+      priceSource: string;
+      items: Record<string, unknown>[];
+    };
+    expect(vars.recipeId).toBe("rec-1");
+    expect(vars.priceSource).toBe("pricelist");
+    expect(vars.items).toHaveLength(1);
+    expect(vars.items[0]).toMatchObject({ product_id: P, qty: 400 });
+    // ต้นทุนที่กรอกเองไม่ถูกส่ง — ทุกบรรทัดถูกทับด้วยราคาใบราคา
+    expect(vars.items[0]).not.toHaveProperty("line_cost");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByText(R.updatePriceApplied)).toBeInTheDocument();
+  });
+
+  it("กด Save หลัง Update price → บันทึกวัตถุดิบแบบคิดใหม่ทั้งชุด", async () => {
+    renderForm(<RecipeForm recipe={RECIPE_WITH_INGREDIENT} />);
+    openIngredients();
+    fireEvent.click(screen.getByRole("button", { name: R.updatePrice }));
+    await act(async () => submitForm("recipe-form"));
+
+    expect(replaceIngredientsMut.mutate).toHaveBeenCalledTimes(1);
+    expect(firstPayload(replaceIngredientsMut)).toMatchObject({
+      recipeId: "rec-1",
+      recalculate: true,
+    });
+  });
+});
