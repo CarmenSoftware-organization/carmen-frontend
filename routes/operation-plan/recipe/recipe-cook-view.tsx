@@ -346,28 +346,54 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
             </div>
           ) : (
             <>
-              {/* ปุ่มก่อนหน้า/ถัดไปอยู่เหนือการ์ดขั้น — ขั้นที่ยาวปุ่มไม่ตกจอ */}
-              <div className="mb-3 grid grid-cols-2 gap-3">
+              {/* ตัวเลือกขั้นเหนือการ์ดขั้น แบบเลขหน้าของ Google (ผู้ใช้สั่ง 2026-11-16): ปุ่มวงกลมเลขขั้น
+                  ครบทุกขั้น กดข้ามไปขั้นไหนก็ได้ · ลูกศรก่อนหน้า/ถัดไปอยู่หัวท้าย · ขั้นเยอะขึ้นบรรทัดใหม่
+                  ปุ่ม 44px ให้นิ้วกดง่ายบนแท็บเล็ตในครัว · ลูกศรซ้าย/ขวาบนคีย์บอร์ดยังใช้ได้เหมือนเดิม */}
+              <nav
+                aria-label={t("cookStepPager")}
+                className="mb-3 flex flex-wrap items-center justify-center gap-2"
+              >
                 <Button
                   type="button"
                   variant="outline"
-                  className="h-12 text-base"
+                  size="icon"
+                  className="size-11 rounded-full"
+                  aria-label={t("cookPrev")}
                   disabled={step === 0}
                   onClick={() => setIndex(step - 1)}
                 >
                   <ChevronLeft />
-                  {t("cookPrev")}
                 </Button>
+                {steps.map((s, i) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setIndex(i)}
+                    aria-label={t("cookGoToStep", { n: i + 1 })}
+                    aria-current={i === step ? "step" : undefined}
+                    title={s.title || s.description || undefined}
+                    className={cn(
+                      "focus-visible:ring-ring flex size-11 shrink-0 items-center justify-center rounded-full border text-base font-semibold tabular-nums transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                      i === step
+                        ? "bg-primary border-primary text-primary-foreground"
+                        : "bg-card text-foreground hover:bg-muted",
+                    )}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
                 <Button
                   type="button"
-                  className="h-12 text-base"
+                  variant="outline"
+                  size="icon"
+                  className="size-11 rounded-full"
+                  aria-label={t("cookNext")}
                   disabled={step >= total - 1}
                   onClick={() => setIndex(step + 1)}
                 >
-                  {t("cookNext")}
                   <ChevronRight />
                 </Button>
-              </div>
+              </nav>
               {/* ขั้นที่เปิดอยู่ทางซ้าย รูปของขั้นนั้นทางขวา (กดรูป = popup แบบเดียวกับรูปหลักของสูตร)
                   ขั้นที่ไม่มีรูป = การ์ดขั้นเต็มแถว · ฝั่งขั้นตอนแคบ (ต่ำกว่า 36rem) = รูปลงมาอยู่ใต้การ์ด */}
               <div

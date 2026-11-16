@@ -5213,6 +5213,8 @@
       "cookNextUp": "Next",
       "cookPrev": "Previous",
       "cookNext": "Next step",
+      "cookStepPager": "Steps",
+      "cookGoToStep": "Go to step {n}",
       "cookAllSteps": "All steps",
       "cookPlating": "Plating",
       "cookStorage": "Storage",

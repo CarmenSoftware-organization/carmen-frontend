@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { act, fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen, within } from "@testing-library/react";
 import en from "@/messages/en.json";
 import type { Recipe } from "@/types/recipe";
 import { renderForm } from "@/lib/test-utils/form-characterization";
@@ -398,5 +398,73 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     expect(card).toHaveTextContent("Step 2 text");
     expect(card.parentElement!.querySelector(".cursor-zoom-in")).toBeNull();
     expect(card.parentElement!.className).not.toContain("grid-cols");
+  });
+});
+
+// ปุ่มเลือกขั้นแบบเลขหน้าของ Google (ผู้ใช้สั่ง 2026-11-16): วงกลมเลขขั้นครบทุกขั้น กดข้ามไปขั้นไหนก็ได้
+describe("RecipeCookView — ปุ่มเลขขั้นตอน", () => {
+  const R = en.operationPlan.recipe;
+  const step = (id: string, n: number) => ({
+    id,
+    doc_version: 1,
+    sequence_no: n,
+    title: `Title ${n}`,
+    description: `Step ${n} text`,
+    duration: null,
+    temperature: null,
+    temperature_unit: null,
+    equipment: [],
+    chef_notes: null,
+    safety_warnings: null,
+    videos: [],
+  });
+  const recipe = {
+    ...RECIPE,
+    preparation_steps: [
+      step("s1", 1),
+      step("s2", 2),
+      step("s3", 3),
+      step("s4", 4),
+    ],
+  } as unknown as Recipe;
+  const pager = () => screen.getByRole("navigation", { name: R.cookStepPager });
+  const goTo = (n: number) =>
+    screen.getByRole("button", {
+      name: R.cookGoToStep.replace("{n}", String(n)),
+    });
+
+  it("มีวงกลมเลขขั้นครบทุกขั้น ขั้นที่เปิดอยู่ถูกเน้น · ลูกศรหัวท้าย", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    const nav = pager();
+    for (const n of [1, 2, 3, 4]) expect(nav).toContainElement(goTo(n));
+    expect(goTo(1)).toHaveAttribute("aria-current", "step");
+    expect(goTo(1)).toHaveTextContent("1");
+    // ปุ่มก่อนหน้า/ถัดไปเป็นวงกลมลูกศร อยู่หัว-ท้ายของแถวเลข
+    const buttons = Array.from(nav.querySelectorAll("button"));
+    expect(buttons[0]).toHaveAccessibleName(R.cookPrev);
+    expect(buttons[0]).toBeDisabled();
+    expect(buttons.at(-1)).toHaveAccessibleName(R.cookNext);
+  });
+
+  it("กดเลขขั้นไหนก็ได้ → ข้ามไปขั้นนั้นทันที (ไม่ต้องกดถัดไปทีละขั้น)", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    fireEvent.click(goTo(3));
+    expect(screen.getByRole("article")).toHaveTextContent("Step 3 text");
+    expect(goTo(3)).toHaveAttribute("aria-current", "step");
+    expect(goTo(1)).not.toHaveAttribute("aria-current");
+
+    fireEvent.click(goTo(1));
+    expect(screen.getByRole("article")).toHaveTextContent("Step 1 text");
+  });
+
+  it("ขั้นสุดท้าย → ปุ่มถัดไปกดไม่ได้ · ลูกศรก่อนหน้าย้อนได้ทีละขั้น", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    fireEvent.click(goTo(4));
+    const nav = pager();
+    expect(
+      within(nav).getByRole("button", { name: R.cookNext }),
+    ).toBeDisabled();
+    fireEvent.click(within(nav).getByRole("button", { name: R.cookPrev }));
+    expect(screen.getByRole("article")).toHaveTextContent("Step 3 text");
   });
 });
