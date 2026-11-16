@@ -23,6 +23,7 @@ import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import type { PurchaseOrder } from "@/types/purchase-order";
 import { PO_TYPE } from "@/types/purchase-order";
 import type { FormMode } from "@/types/form";
+import { clearDimensionsDirty } from "@/lib/dimension-payload";
 import { pickDocVersion } from "@/lib/doc-version";
 import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 import { buildPoPayload } from "./build-po-payload";
@@ -170,7 +171,7 @@ export function usePoFormHandlers({
             // syncDocVersions เพื่อเก็บ doc_version ใหม่เข้า baseline ไปด้วย
             // ไม่งั้นฟอร์มยังนับว่ามีของค้าง กด Back หลังเซฟก็เจอ discard dialog
             // และ nav guard ยังดักลิงก์อยู่ทั้งที่บันทึกไปแล้ว
-            form.reset(form.getValues());
+            form.reset(clearDimensionsDirty(form.getValues()));
           },
         },
       );
@@ -455,7 +456,7 @@ export function usePoFormHandlers({
         // (CN/PR เดินทางเดียวกันแต่ยิงใบเดียวมาตั้งแต่แรก)
         setMode("view");
         // เหตุผลเดียวกับใน onSubmit — บันทึกแล้วต้องไม่เหลือของค้าง
-        form.reset(form.getValues());
+        form.reset(clearDimensionsDirty(form.getValues()));
         await runSubmitPo();
         return;
       } catch {

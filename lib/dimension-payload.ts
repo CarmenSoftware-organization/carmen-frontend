@@ -28,5 +28,22 @@ export function lineDimensionsPayload(
 ): { dimensions?: DimensionPayload[] } {
   if (!enabled) return {};
   if (item.id && !item.dimensions_dirty) return {};
+  // บรรทัดใหม่ที่ไม่มีฟิลด์ dimensions เลย (เช่น session wizard เก่า) = ไม่ส่ง
+  // ให้ backend copy จากต้นทาง ไม่ใช่ส่ง [] ไปทับเป็นว่าง
+  if (item.dimensions === undefined) return {};
   return { dimensions: toDimensionPayload(item.dimensions) };
+}
+
+/**
+ * ล้างธง `dimensions_dirty` ทุกบรรทัด — เรียกก่อน `form.reset(values)` หลังบันทึกสำเร็จ
+ * เพื่อให้ baseline ใหม่ไม่ถือว่ายังมี dimension ที่แก้ค้าง (ไม่งั้นการบันทึกครั้งถัดไป
+ * ส่ง dimensions ของบรรทัดนั้นซ้ำทั้งที่ไม่ได้แก้)
+ */
+export function clearDimensionsDirty<
+  T extends { items: { dimensions_dirty?: boolean }[] },
+>(values: T): T {
+  return {
+    ...values,
+    items: values.items.map((item) => ({ ...item, dimensions_dirty: false })),
+  };
 }

@@ -23,6 +23,7 @@ import { buildItemChanges } from "@/lib/form-helpers";
 import { pickDocVersion, withFreshDetailVersions } from "@/lib/doc-version";
 import { httpClient } from "@/lib/http-client";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
+import { clearDimensionsDirty } from "@/lib/dimension-payload";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 import { useProfile } from "@/hooks/use-profile";
@@ -35,6 +36,7 @@ import {
   mapDetailToPayload,
   mapExtraCostToPayload,
   pickTouchedLineUpdates,
+  restoreStoredPricing,
   type GrnFormValues,
 } from "./grn-form-schema";
 import { findExpiredLines } from "./grn-expiry";
@@ -218,6 +220,18 @@ export function useGrnFormActions({
         values.items,
         defaultValues.items,
       );
+      // แถวที่แก้แค่ dimension — ส่งราคา/ยอดเดิมที่เก็บไว้ ไม่ใช่ค่าที่ปัดในฟอร์ม
+      detail.update = restoreStoredPricing(
+        detail.update,
+        values.items,
+        defaultValues.items,
+        (item) => {
+          const payload = mapDetailToPayload(item, { dimensionsEnabled });
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { purchase_order_detail_id, ...rest } = payload;
+          return isManual ? rest : payload;
+        },
+      );
     }
 
     // PATCH: backend ต้องการ good_received_note_id (parent ref) ต่อ item ใน update
@@ -388,7 +402,7 @@ export function useGrnFormActions({
               setMode("view");
               // ล้าง dirty ให้ baseline = ค่าที่เพิ่งบันทึก — ไม่งั้นฟอร์มยังนับว่า
               // มีของค้าง แล้ว rebase จากข้อมูลสด (ที่มี doc_version ใหม่) จะไม่ทำงาน
-              form.reset(form.getValues());
+              form.reset(clearDimensionsDirty(form.getValues()));
             };
             if (willCallSave) {
               saveGrn.mutate(goodsReceiveNote.id, {

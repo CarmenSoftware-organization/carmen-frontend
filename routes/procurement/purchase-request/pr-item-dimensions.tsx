@@ -20,9 +20,10 @@ export function PrItemDimensions({
   const enabled = useLineDimensionsEnabled();
   const value = useWatch({
     control: form.control,
-    name: `items.${index}.dimensions`,
+    name: `items.${Math.max(index, 0)}.dimensions`,
   });
-  if (!enabled) return null;
+  // index -1 = แถวหลุดจาก itemFields ชั่วคราวตอนลบ — ไม่วาดดีกว่าผูกกับ items.-1
+  if (!enabled || index < 0) return null;
   return (
     <div className="mt-3 border-t pt-3">
       <LineDimensionFields
