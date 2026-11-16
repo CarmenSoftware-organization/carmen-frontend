@@ -2,7 +2,7 @@ import type { FieldErrors } from "react-hook-form";
 import type { RecipeFormValues } from "./recipe-form-schema";
 
 /** แท็บของฟอร์มสูตร เรียงตามที่แสดง — hero (ชื่อ รูป ตัวเลขสรุป) อยู่เหนือแท็บ ไม่นับเป็นแท็บ */
-export const RECIPE_TABS = ["details", "ingredients", "steps", "cost"] as const;
+export const RECIPE_TABS = ["details", "ingredients", "cost", "steps"] as const;
 export type RecipeTab = (typeof RECIPE_TABS)[number];
 
 /**
@@ -31,6 +31,7 @@ const FIELD_TAB: Record<keyof RecipeFormValues, RecipeTab | null> = {
   code: "details",
   description: "details",
   note: "details",
+  video_url: "details",
   cuisine_id: "details",
   category_id: "details",
   prep_time: "details",

@@ -45,6 +45,18 @@ vi.mock("./use-recipe-ingredients", () => ({
     reset: vi.fn(),
   }),
 }));
+// รูปของขั้นตอนดึงแยกต่อขั้น — ป้อนเองแทน query
+let savedStepImages: {
+  id: string;
+  url: string;
+  alt_text: null;
+  caption: null;
+  sort_order: number;
+  is_primary: boolean;
+}[] = [];
+vi.mock("./use-recipe-step-images", () => ({
+  useRecipeStepImages: () => ({ data: savedStepImages, isError: false }),
+}));
 vi.mock("./use-recipe-gallery", () => ({
   useRecipeGallery: () => ({
     isDirty: false,
@@ -152,8 +164,60 @@ describe("RecipeForm — characterization", () => {
   it.todo("[create] เซฟแล้วกลับหน้ารายการ");
 });
 
-describe("RecipeForm — วิดีโอของขั้นตอน", () => {
-  const WATCH = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+describe("RecipeForm — ลิงก์วิดีโอของสูตร (1 ลิงก์)", () => {
+  const videoInput = () =>
+    screen.getByLabelText(en.operationPlan.recipe.videoUrl);
+
+  it("โหลดลิงก์ที่บันทึกไว้ แล้วเซฟส่งค่าเดิมกลับ", async () => {
+    const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    renderForm(<RecipeForm recipe={{ ...RECIPE, video_url: url }} />);
+    expect(videoInput()).toHaveValue(url);
+    await act(async () => submitForm("recipe-form"));
+
+    expect(firstPayload(updateMut)).toMatchObject({ video_url: url });
+  });
+
+  it("วางลิงก์ youtu.be → ส่งตามที่วาง (backend แปลงเป็นรูปแบบ watch?v= เอง)", async () => {
+    renderForm(<RecipeForm recipe={RECIPE} />);
+    fireEvent.change(videoInput(), {
+      target: { value: "  https://youtu.be/dQw4w9WgXcQ?si=x  " },
+    });
+    await act(async () => submitForm("recipe-form"));
+
+    expect(firstPayload(updateMut)).toMatchObject({
+      video_url: "https://youtu.be/dQw4w9WgXcQ?si=x",
+    });
+  });
+
+  it("ลบลิงก์ออก → ส่ง null (ล้างวิดีโอ)", async () => {
+    renderForm(
+      <RecipeForm
+        recipe={{
+          ...RECIPE,
+          video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        }}
+      />,
+    );
+    fireEvent.change(videoInput(), { target: { value: "" } });
+    await act(async () => submitForm("recipe-form"));
+
+    expect(firstPayload(updateMut)).toMatchObject({ video_url: null });
+  });
+
+  it("ลิงก์ที่ไม่ใช่วิดีโอ YouTube → ไม่บันทึก ช่องขึ้น error", async () => {
+    renderForm(<RecipeForm recipe={RECIPE} />);
+    fireEvent.change(videoInput(), {
+      target: { value: "https://vimeo.com/76979871" },
+    });
+    await act(async () => submitForm("recipe-form"));
+
+    expect(updateMut.mutate).not.toHaveBeenCalled();
+    expect(videoInput()).toHaveAttribute("aria-invalid", "true");
+  });
+});
+
+describe("RecipeForm — รูปของขั้นตอน (ไม่เกิน 5 รูปต่อขั้น)", () => {
+  const R = en.operationPlan.recipe;
   const STEP = {
     id: "step-1",
     doc_version: 2,
@@ -166,40 +230,88 @@ describe("RecipeForm — วิดีโอของขั้นตอน", () =
     equipment: [],
     chef_notes: null,
     safety_warnings: null,
+    // วิดีโอรายขั้นตอนของเดิม — ฟอร์มไม่มีช่องให้แล้ว
     videos: [{ provider: "youtube", token: "dQw4w9WgXcQ", sort_order: 0 }],
   };
   const withStep = { ...RECIPE, preparation_steps: [STEP] } as Recipe;
-  const stepVideoInput = () =>
-    screen.getByLabelText(en.operationPlan.recipe.stepVideoUrl);
-  const syncedDrafts = () =>
-    (firstPayload(syncStepsMut) as { drafts: { video_url: string }[] }).drafts;
-
-  it("โหลดวิดีโอของขั้นเป็นลิงก์ watch?v= แล้วส่งค่าเดิมให้ sync ขั้นตอน", async () => {
-    renderForm(<RecipeForm recipe={withStep} />);
-    expect(stepVideoInput()).toHaveValue(WATCH);
-    await act(async () => submitForm("recipe-form"));
-
-    expect(syncedDrafts()[0].video_url).toBe(WATCH);
+  const saved = (id: string, n: number) => ({
+    id,
+    url: `https://files.test/${id}.jpg`,
+    alt_text: null,
+    caption: null,
+    sort_order: n,
+    is_primary: n === 0,
   });
-
-  it("ลิงก์ที่ไม่ใช่วิดีโอ YouTube → ไม่บันทึก ช่องของขั้นขึ้น error", async () => {
-    renderForm(<RecipeForm recipe={withStep} />);
-    fireEvent.change(stepVideoInput(), {
-      target: { value: "https://vimeo.com/76979871" },
+  const png = (name: string) => new File(["x"], name, { type: "image/png" });
+  const fileInput = () =>
+    screen.getByLabelText(new RegExp(`^${R.stepImages}`), {
+      selector: "input",
     });
-    await act(async () => submitForm("recipe-form"));
+  const pick = (...files: File[]) =>
+    fireEvent.change(fileInput(), { target: { files } });
+  const syncedDrafts = () =>
+    (
+      firstPayload(syncStepsMut) as {
+        drafts: { image_files: File[]; removed_image_ids: string[] }[];
+      }
+    ).drafts;
+  const removeLabel = (n: number) =>
+    R.removeStepImage.replace("{n}", String(n));
 
-    expect(updateMut.mutate).not.toHaveBeenCalled();
-    expect(syncStepsMut.mutate).not.toHaveBeenCalled();
-    expect(stepVideoInput()).toHaveAttribute("aria-invalid", "true");
+  beforeEach(() => {
+    savedStepImages = [];
+    let n = 0;
+    // jsdom ไม่มี createObjectURL — ใส่ให้เฉพาะสองเมธอดนี้ ตัว URL ต้องยังเป็น constructor
+    URL.createObjectURL = () => `blob:step-${n++}`;
+    URL.revokeObjectURL = () => {};
   });
 
-  it("ลบลิงก์ของขั้นออก → ส่งค่าว่างให้ sync (ไปเป็น videos: [])", async () => {
+  it("ไม่มีช่องลิงก์วิดีโอในการ์ดขั้นแล้ว — วิดีโอมีที่ระดับสูตรช่องเดียว", () => {
     renderForm(<RecipeForm recipe={withStep} />);
-    fireEvent.change(stepVideoInput(), { target: { value: "" } });
+    expect(screen.getAllByLabelText(R.videoUrl)).toHaveLength(1);
+    expect(screen.queryByDisplayValue(/dQw4w9WgXcQ/)).toBeNull();
+  });
+
+  it("เลือกไฟล์ → ส่งไฟล์ให้ sync ขั้นตอนตอน Save", async () => {
+    renderForm(<RecipeForm recipe={withStep} />);
+    pick(png("a.png"), png("b.png"));
     await act(async () => submitForm("recipe-form"));
 
-    expect(syncedDrafts()[0].video_url).toBe("");
+    expect(syncedDrafts()[0].image_files.map((f) => f.name)).toEqual([
+      "a.png",
+      "b.png",
+    ]);
+    expect(syncedDrafts()[0].removed_image_ids).toEqual([]);
+  });
+
+  it("ลบรูปที่บันทึกแล้ว → ส่ง id ที่ลบให้ sync รูปหายจากการ์ดทันที", async () => {
+    savedStepImages = [saved("img-1", 0), saved("img-2", 1)];
+    renderForm(<RecipeForm recipe={withStep} />);
+    fireEvent.click(screen.getByRole("button", { name: removeLabel(1) }));
+    expect(
+      document.querySelector('img[src="https://files.test/img-1.jpg"]'),
+    ).toBeNull();
+    await act(async () => submitForm("recipe-form"));
+
+    expect(syncedDrafts()[0].removed_image_ids).toEqual(["img-1"]);
+  });
+
+  it("มี 4 รูปแล้ว เลือกอีก 3 → รับได้แค่ 1 แล้วปุ่มเพิ่มรูปหายไป", async () => {
+    savedStepImages = [0, 1, 2, 3].map((n) => saved(`img-${n}`, n));
+    renderForm(<RecipeForm recipe={withStep} />);
+    pick(png("a.png"), png("b.png"), png("c.png"));
+    expect(screen.queryByRole("button", { name: R.addStepImage })).toBeNull();
+    await act(async () => submitForm("recipe-form"));
+
+    expect(syncedDrafts()[0].image_files.map((f) => f.name)).toEqual(["a.png"]);
+  });
+
+  it("ไฟล์ที่ไม่ใช่รูป → ไม่รับ", async () => {
+    renderForm(<RecipeForm recipe={withStep} />);
+    pick(new File(["x"], "a.pdf", { type: "application/pdf" }));
+    await act(async () => submitForm("recipe-form"));
+
+    expect(syncedDrafts()[0].image_files).toEqual([]);
   });
 });
 

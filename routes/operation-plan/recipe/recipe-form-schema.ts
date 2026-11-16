@@ -71,13 +71,9 @@ function createStepSchema(tv: TranslationFn, tf: TranslationFn) {
     ),
     chef_notes: z.string().max(1000),
     safety_warnings: z.string().max(1000),
-    // วิดีโอของขั้น 1 ลิงก์ · ว่าง = ไม่มี · ต้องเป็นลิงก์วิดีโอ YouTube (กติกาเดียวกับ backend — lib/youtube.ts)
-    video_url: z
-      .string()
-      .refine(
-        (v) => !v.trim() || parseYoutubeVideoId(v) !== null,
-        tv("youtubeLink"),
-      ),
+    // รูปของขั้น — ส่วนที่เปลี่ยนเทียบกับที่บันทึกแล้ว (ดู StepDraft) · จำนวนรวมคุมที่ช่องเลือกไฟล์
+    image_files: z.array(z.custom<File>((v) => v instanceof File)),
+    removed_image_ids: z.array(z.string()),
   });
 }
 
@@ -145,6 +141,13 @@ export function createRecipeSchema(tv: TranslationFn, tf: TranslationFn) {
       name: z.string().min(1, tv("required", { field: tf("name") })),
       description: z.string(),
       note: z.string(),
+      // วิดีโอของสูตร 1 ลิงก์ · ว่าง = ไม่มี · ต้องเป็นลิงก์วิดีโอ YouTube (กติกาเดียวกับ backend — lib/youtube.ts)
+      video_url: z
+        .string()
+        .refine(
+          (v) => !v.trim() || parseYoutubeVideoId(v) !== null,
+          tv("youtubeLink"),
+        ),
       status: z.string().min(1, tv("required", { field: tf("status") })),
       difficulty: z
         .string()
@@ -238,6 +241,7 @@ export const EMPTY_FORM: RecipeFormValues = {
   name: "",
   description: "",
   note: "",
+  video_url: "",
   status: "DRAFT",
   difficulty: "EASY",
   cuisine_id: null,
@@ -282,6 +286,7 @@ export function getDefaultValues(recipe?: Recipe): RecipeFormValues {
     name: recipe.name,
     description: recipe.description ?? "",
     note: recipe.note ?? "",
+    video_url: recipe.video_url ?? "",
     status: recipe.status,
     difficulty: recipe.difficulty,
     cuisine_id: recipe.cuisine_id,

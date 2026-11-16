@@ -2,13 +2,25 @@ import { useState } from "react";
 import { useTranslations } from "use-intl";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { cn } from "@/lib/utils";
-import type { RecipeImage } from "@/types/recipe";
+
+/** รูปที่แกลเลอรีแสดงได้ — ทั้งรูปของสูตร (RecipeImage) และรูปของขั้นตอน (RecipeStepImage ที่มี url) */
+export interface CookImage {
+  readonly id: string;
+  readonly url: string;
+  readonly alt_text: string | null;
+  readonly sort_order: number;
+  readonly is_primary: boolean;
+}
 
 interface RecipeCookImagesProps {
-  /** รูปของสูตรจาก recipe detail — ไม่มี/ว่าง = ไม่แสดงอะไรเลย */
-  readonly images: readonly RecipeImage[] | null | undefined;
-  /** ชื่อสูตร — ใช้เป็นชื่อรูปเมื่อรูปไม่มี alt text */
+  /** รูปของสูตรจาก recipe detail หรือรูปของขั้นตอน — ไม่มี/ว่าง = ไม่แสดงอะไรเลย */
+  readonly images: readonly CookImage[] | null | undefined;
+  /** ชื่อสูตร/ชื่อขั้น — ใช้เป็นชื่อรูปเมื่อรูปไม่มี alt text */
   readonly recipeName: string;
+  /** ชื่อของแถบรูปย่อที่ screen reader อ่าน — ไม่ส่ง = "รูปของสูตร" */
+  readonly label?: string;
+  /** แทนคลาสจัดความกว้างเริ่มต้น (ซึ่งผูกกับ hero ของหน้าสูตร) */
+  readonly className?: string;
 }
 
 /**
@@ -18,12 +30,16 @@ interface RecipeCookImagesProps {
  * ความกว้างมาจากคอลัมน์ซ้ายของ hero ใน `RecipeCookView` (ต้องอยู่ใต้ `@container` ของหน้านั้น)
  * จอแคบที่ยังไม่แบ่งคอลัมน์ = จำกัดไว้ 20rem กลางแถว ไม่ขยายเต็มจอ
  *
+ * ใช้ซ้ำกับรูปของขั้นตอน (ส่ง `label` + `className`) — กดแล้วได้ popup แบบเดียวกับรูปหลักของสูตร
+ *
  * - กดรูปย่อ = เปลี่ยนรูปใหญ่
  * - กดรูปใหญ่ = popup เต็มจอของรูปนั้น (มีแถบรูปทั้งหมดด้านล่าง เลื่อนดูรูปอื่นต่อได้)
  */
 export function RecipeCookImages({
   images,
   recipeName,
+  label,
+  className,
 }: RecipeCookImagesProps) {
   const t = useTranslations("operationPlan.recipe");
   const sorted = [...(images ?? [])].sort(
@@ -48,7 +64,11 @@ export function RecipeCookImages({
   const hero = sorted[active];
 
   return (
-    <div className="mx-auto w-full max-w-80 min-w-0 @lg:mx-0 @lg:max-w-none">
+    <div
+      className={
+        className ?? "mx-auto w-full max-w-80 min-w-0 @lg:mx-0 @lg:max-w-none"
+      }
+    >
       <button
         type="button"
         onClick={() => setLightboxOpen(true)}
@@ -69,8 +89,9 @@ export function RecipeCookImages({
 
       {total > 1 && (
         <ul
-          aria-label={t("cookImages")}
-          className="mt-2 flex gap-2 overflow-x-auto p-0.5"
+          aria-label={label ?? t("cookImages")}
+          // ขึ้นบรรทัดใหม่แทนเลื่อนแนวนอน — คอลัมน์รูปของขั้น (14rem) ใส่รูปย่อได้ 4 รูป รูปที่ 5 เคยหลบอยู่นอกกรอบ
+          className="mt-2 flex flex-wrap gap-2 p-0.5"
         >
           {sorted.map((img, i) => (
             <li key={img.id} className="shrink-0">

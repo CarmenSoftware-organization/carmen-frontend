@@ -31,6 +31,14 @@ vi.mock("@/hooks/use-business-unit", () => ({
   useBusinessUnit: () => ({ data: { config: buConfig } }),
 }));
 
+// รูปของขั้นตอนดึงแยกต่อขั้น — ป้อนเองตาม id ของขั้นแทน query
+let stepImagesById: Record<string, unknown[]> = {};
+vi.mock("./use-recipe-step-images", () => ({
+  useRecipeStepImages: (_recipeId: string, stepId?: string) => ({
+    data: stepId ? (stepImagesById[stepId] ?? []) : [],
+  }),
+}));
+
 const { RecipeCookView } = await import("./recipe-cook-view");
 
 // หน้าโหมดทำอาหารอ่านแค่ชื่อ รหัส เวลา ขั้นตอน วัตถุดิบ — ใส่เท่าที่ใช้แล้ว cast
@@ -51,6 +59,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   canWrite = true;
   buConfig = [];
+  stepImagesById = {};
 });
 
 describe("RecipeCookView — ปุ่ม Print", () => {
@@ -237,23 +246,15 @@ describe("RecipeCookView — รูปของสูตร", () => {
     ).toBeNull();
   });
 
-  it("ลิงก์วิดีโอของทั้งสูตรที่เคยบันทึกไว้ → ไม่ฝัง player แล้ว (วิดีโอมีเฉพาะรายขั้นตอน)", () => {
-    const { container } = renderForm(
-      <RecipeCookView
-        recipe={
-          {
-            ...RECIPE,
-            video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-          } as unknown as Recipe
-        }
-      />,
-    );
+  it("ไม่มีลิงก์วิดีโอ → ไม่มี player", () => {
+    const { container } = renderForm(<RecipeCookView recipe={RECIPE} />);
     expect(container.querySelector("iframe")).toBeNull();
   });
 });
 
-describe("RecipeCookView — วิดีโอของขั้นตอน", () => {
-  const step = (id: string, n: number, videos: unknown) => ({
+describe("RecipeCookView — วิดีโอของสูตร + รูปของขั้นตอน", () => {
+  const R = en.operationPlan.recipe;
+  const step = (id: string, n: number, videos: unknown = []) => ({
     id,
     doc_version: 1,
     sequence_no: n,
@@ -267,38 +268,83 @@ describe("RecipeCookView — วิดีโอของขั้นตอน", 
     safety_warnings: null,
     videos,
   });
-  const stepTitle = (n: number) =>
-    en.operationPlan.recipe.stepVideoTitle.replace("{n}", String(n));
+  const stepImg = (id: string, n: number, url: string | null) => ({
+    id,
+    url,
+    alt_text: null,
+    caption: null,
+    sort_order: n,
+    is_primary: n === 0,
+  });
   const recipe = {
     ...RECIPE,
+    video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     preparation_steps: [
+      // ขั้น 1 มีวิดีโอรายขั้นตอนของเดิมค้างอยู่ — หน้าสูตรไม่เล่นแล้ว
       step("s1", 1, [
         { provider: "youtube", token: "aqz-KE-bpKQ", sort_order: 0 },
       ]),
-      step("s2", 2, []),
+      step("s2", 2),
     ],
   } as unknown as Recipe;
+  const stepList = (n: number) =>
+    screen.queryByRole("list", {
+      name: R.cookStepImages.replace("{n}", String(n)),
+    });
+  const goNext = () =>
+    fireEvent.click(screen.getAllByRole("button", { name: R.cookNext })[0]);
 
-  it("ขั้นที่มีวิดีโอ → player อยู่ในการ์ดของขั้นนั้น ใต้คำอธิบาย", () => {
-    renderForm(<RecipeCookView recipe={recipe} />);
-    const player = screen.getByTitle(stepTitle(1));
-    expect(player).toHaveAttribute(
+  it("วิดีโอของสูตรอยู่บนสุดของฝั่งขั้นตอน เหนือปุ่มก่อนหน้า/ถัดไป · วิดีโอรายขั้นตอนของเดิมไม่ถูกฝัง", () => {
+    const { container } = renderForm(<RecipeCookView recipe={recipe} />);
+    const frames = container.querySelectorAll("iframe");
+    expect(frames).toHaveLength(1);
+    expect(frames[0]).toHaveAttribute(
       "src",
-      "https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ?rel=0",
+      "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0",
     );
-    const card = player.closest("article");
-    expect(card).not.toBeNull();
-    expect(card).toHaveTextContent("Step 1 text");
+    expect(frames[0]).toHaveAttribute(
+      "title",
+      R.videoTitle.replace("{name}", RECIPE.name),
+    );
+    const prev = screen.getByRole("button", { name: R.cookPrev });
+    expect(
+      frames[0].compareDocumentPosition(prev) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(frames[0].closest("article")).toBeNull();
   });
 
-  it("ไปขั้นที่ไม่มีวิดีโอ → ไม่มี player ของขั้น", () => {
-    const { container } = renderForm(<RecipeCookView recipe={recipe} />);
-    fireEvent.click(
-      screen.getAllByRole("button", {
-        name: en.operationPlan.recipe.cookNext,
-      })[0],
-    );
-    expect(screen.getByRole("article")).toHaveTextContent("Step 2 text");
-    expect(container.querySelector("iframe")).toBeNull();
+  it("ขั้นที่มีรูป → รูปอยู่ข้างการ์ดของขั้น (นอกการ์ด) กดรูปย่อเปลี่ยนรูปใหญ่", () => {
+    stepImagesById = {
+      s1: [
+        stepImg("a", 0, "https://files.test/s1-a.jpg"),
+        stepImg("b", 1, "https://files.test/s1-b.jpg"),
+        // ออก URL ไม่ได้ = ไม่แสดงรูปนั้น
+        stepImg("c", 2, null),
+      ],
+    };
+    renderForm(<RecipeCookView recipe={recipe} />);
+    const list = stepList(1);
+    expect(list).not.toBeNull();
+    expect(list!.querySelectorAll("img")).toHaveLength(2);
+    expect(list!.closest("article")).toBeNull();
+    const card = screen.getByRole("article");
+    expect(card).toHaveTextContent("Step 1 text");
+    expect(card.parentElement).toContainElement(list);
+
+    const big = () => card.parentElement!.querySelector(".cursor-zoom-in img");
+    expect(big()).toHaveAttribute("src", "https://files.test/s1-a.jpg");
+    fireEvent.click(list!.querySelectorAll("button")[1]);
+    expect(big()).toHaveAttribute("src", "https://files.test/s1-b.jpg");
+  });
+
+  it("ไปขั้นที่ไม่มีรูป → ไม่มีรูปของขั้น การ์ดขั้นเต็มแถว", () => {
+    stepImagesById = { s1: [stepImg("a", 0, "https://files.test/s1-a.jpg")] };
+    renderForm(<RecipeCookView recipe={recipe} />);
+    goNext();
+    const card = screen.getByRole("article");
+    expect(card).toHaveTextContent("Step 2 text");
+    expect(card.parentElement!.querySelector(".cursor-zoom-in")).toBeNull();
+    expect(card.parentElement!.className).not.toContain("grid-cols");
   });
 });

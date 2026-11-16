@@ -176,6 +176,15 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
                       }
                     });
                   },
+                  // รูปของขั้นนี้เขียนเสร็จแล้ว — ล้างส่วนที่ค้างในฟอร์ม ถ้าขั้นถัดไปล้ม
+                  // กด Save ซ้ำจะไม่อัปโหลดรูปชุดเดิมอีกรอบ
+                  onImagesSynced: (i) => {
+                    form.setValue(`preparation_steps.${i}.image_files`, []);
+                    form.setValue(
+                      `preparation_steps.${i}.removed_image_ids`,
+                      [],
+                    );
+                  },
                 },
                 {
                   onSuccess: () => {
@@ -310,7 +319,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
       }
     >
       {/* hero อยู่เหนือแท็บเสมอ (ชื่อ รูป ตัวเลขสรุปที่ต้องเห็นจากทุกแท็บ) ข้างล่างแบ่งเป็นแท็บ:
-          รายละเอียด · วัตถุดิบ · ขั้นตอน · ต้นทุน — เดิมเรียงต่อกันหน้าเดียวต้องเลื่อนยาว */}
+          รายละเอียด · วัตถุดิบ · ต้นทุน · ขั้นตอน — เดิมเรียงต่อกันหน้าเดียวต้องเลื่อนยาว */}
       <form
         id="recipe-form"
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
@@ -365,19 +374,20 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
               computed={computed}
             />
           </TabsContent>
-          <TabsContent value="steps" forceMount className={TAB_PANEL}>
-            <RecipeStepsFields
-              form={form}
-              isDisabled={isDisabled}
-              isNew={!recipe}
-            />
-          </TabsContent>
           <TabsContent value="cost" forceMount className={TAB_PANEL}>
             <RecipeCostFields
               form={form}
               isDisabled={isDisabled}
               computed={computed}
               categoryDefaults={categoryDefaults}
+            />
+          </TabsContent>
+          <TabsContent value="steps" forceMount className={TAB_PANEL}>
+            <RecipeStepsFields
+              form={form}
+              isDisabled={isDisabled}
+              isNew={!recipe}
+              recipeId={recipe?.id}
             />
           </TabsContent>
         </Tabs>
@@ -428,6 +438,7 @@ function buildRecipePayload(values: RecipeFormValues) {
     name: values.name,
     description: values.description || null,
     note: values.note || null,
+    video_url: values.video_url.trim() || null,
     status: values.status,
     difficulty: values.difficulty,
     cuisine_id: values.cuisine_id!,

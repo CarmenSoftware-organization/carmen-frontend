@@ -15,15 +15,12 @@ import { PERMISSIONS } from "@/constant/permissions";
 import { ALLERGEN_OPTIONS } from "@/constant/recipe";
 import { cn } from "@/lib/utils";
 import type { Recipe, RecipePreparationStep } from "@/types/recipe";
-import {
-  activeSteps,
-  normalizeEquipment,
-  stepVideoUrl,
-} from "./recipe-steps-sync";
+import { activeSteps, normalizeEquipment } from "./recipe-steps-sync";
 import { activeIngredients, formatQty } from "./recipe-ingredients-cost";
 import { useRecipePrintTemplateId } from "./use-recipe-print-template";
 import { useWakeLock } from "./use-wake-lock";
-import { RecipeCookImages } from "./recipe-cook-images";
+import { RecipeCookImages, type CookImage } from "./recipe-cook-images";
+import { useRecipeStepImages } from "./use-recipe-step-images";
 import { RecipeDifficultyPips } from "./recipe-difficulty-pips";
 import { RecipeVideoPlayer } from "./recipe-video-player";
 
@@ -83,6 +80,11 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
   }, [total]);
   const current = steps[step];
   const next = steps[step + 1];
+  // รูปของขั้นที่เปิดอยู่ — ดึงทีละขั้นตอนที่เปิด (recipe detail ไม่ส่งรูปของขั้นมาด้วย)
+  const { data: stepImageRows } = useRecipeStepImages(recipe.id, current?.id);
+  const stepImages: CookImage[] = (stepImageRows ?? []).flatMap((img) =>
+    img.url ? [{ ...img, url: img.url }] : [],
+  );
 
   const totalTime = (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0);
   const allergens = recipe.allergens ?? [];
@@ -173,7 +175,8 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
         </div>
       </header>
 
-      {/* สองคอลัมน์บนจอกว้าง: ซ้าย = ข้อมูลสูตร (รูป · ชื่อ · ข้อมูลสรุป · วัตถุดิบ · จัดจาน · เก็บรักษา) ขวา = ขั้นตอนทำ
+      {/* สองคอลัมน์บนจอกว้าง: ซ้าย = ข้อมูลสูตร (รูป · ชื่อ · ข้อมูลสรุป · วัตถุดิบ · จัดจาน · เก็บรักษา)
+          ขวา = วิดีโอของสูตร → ปุ่มก่อนหน้า/ถัดไป → ขั้นที่เปิดอยู่ (ซ้าย) กับรูปของขั้นนั้น (ขวา) → ขั้นตอนทั้งหมด
           จอแคบ: ซ้อนกัน ข้อมูลสูตรอยู่บน (รูปกับชื่ออยู่ข้างกันเมื่อพอ) ขั้นตอนอยู่ล่าง */}
       <div className="grid gap-6 @3xl:grid-cols-[20rem_minmax(0,1fr)]">
         <div className="@container min-w-0 space-y-5">
@@ -319,8 +322,15 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
         {/* ขั้นตอน */}
         <section
           aria-label={t("stepsSection")}
-          className="min-w-0 border-t pt-6 @3xl:border-t-0 @3xl:border-l @3xl:pt-0 @3xl:pl-6"
+          className="@container min-w-0 border-t pt-6 @3xl:border-t-0 @3xl:border-l @3xl:pt-0 @3xl:pl-6"
         >
+          {/* วิดีโอของสูตร (1 ลิงก์ ถ้ามี) อยู่บนสุดของฝั่งขั้นตอน — เห็นก่อนลงมือ
+              จำกัดความกว้างไว้: เต็มคอลัมน์บนจอกว้างจะสูงจนดันขั้นตอนตกจอ */}
+          <RecipeVideoPlayer
+            url={recipe.video_url}
+            title={t("videoTitle", { name: recipe.name })}
+            className="max-w-2xl"
+          />
           {total === 0 || !current ? (
             <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
               <p>{t("cookNoSteps")}</p>
@@ -328,7 +338,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
             </div>
           ) : (
             <>
-              {/* ปุ่มก่อนหน้า/ถัดไปอยู่เหนือการ์ดขั้น — ขั้นที่ยาว (มีวิดีโอ) ปุ่มไม่ตกจอ */}
+              {/* ปุ่มก่อนหน้า/ถัดไปอยู่เหนือการ์ดขั้น — ขั้นที่ยาวปุ่มไม่ตกจอ */}
               <div className="mb-3 grid grid-cols-2 gap-3">
                 <Button
                   type="button"
@@ -350,7 +360,27 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
                   <ChevronRight />
                 </Button>
               </div>
-              <CookStep step={current} n={step + 1} total={total} />
+              {/* ขั้นที่เปิดอยู่ทางซ้าย รูปของขั้นนั้นทางขวา (กดรูป = popup แบบเดียวกับรูปหลักของสูตร)
+                  ขั้นที่ไม่มีรูป = การ์ดขั้นเต็มแถว · ฝั่งขั้นตอนแคบ (ต่ำกว่า 36rem) = รูปลงมาอยู่ใต้การ์ด */}
+              <div
+                className={cn(
+                  "grid items-start gap-4",
+                  stepImages.length > 0 &&
+                    "@xl:grid-cols-[minmax(0,1fr)_14rem] @4xl:grid-cols-[minmax(0,1fr)_18rem]",
+                )}
+              >
+                <CookStep step={current} n={step + 1} total={total} />
+                <RecipeCookImages
+                  // ขั้นใหม่ = เริ่มที่รูปแรกของขั้นนั้น ไม่ค้างตำแหน่งรูปของขั้นก่อน
+                  key={current.id}
+                  images={stepImages}
+                  recipeName={
+                    current.title || t("cookStepOf", { n: step + 1, total })
+                  }
+                  label={t("cookStepImages", { n: step + 1 })}
+                  className="mx-auto w-full max-w-80 min-w-0 @xl:max-w-none"
+                />
+              </div>
 
               {next && (
                 <button
@@ -466,14 +496,6 @@ function CookStep({
       <p className="text-foreground mt-2 text-xl leading-relaxed break-words whitespace-pre-line">
         {step.description}
       </p>
-      {/* วิดีโอของขั้นนี้ (ถ้ามี) ใต้คำอธิบาย — สูตรมีวิดีโอได้เฉพาะรายขั้นตอน */}
-      <RecipeVideoPlayer
-        // ขั้นใหม่ = iframe ใหม่ ไม่ค้างตำแหน่งเล่นของวิดีโอขั้นก่อน
-        key={step.id}
-        url={stepVideoUrl(step.videos)}
-        title={t("stepVideoTitle", { n })}
-        className="mt-4 mb-0"
-      />
       {step.safety_warnings && (
         <div className="border-warning/50 bg-warning/10 text-warning-ink mt-4 flex gap-2 rounded-md border p-3 text-sm">
           <AlertTriangle
