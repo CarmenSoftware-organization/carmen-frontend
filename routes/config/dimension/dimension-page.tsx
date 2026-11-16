@@ -27,7 +27,10 @@ import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { useListFilters } from "@/hooks/use-list-filters";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
-import type { FilterFieldDef } from "@/types/list-filter";
+import {
+  STATUS_FILTER_FIELDS,
+  activeFromFilter,
+} from "../shared/status-list-filter";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -60,26 +63,6 @@ import type {
 
 import { saveDimensionRecord } from "./save-dimension-record";
 
-// module-level — useListFilters ต้องการ fields ที่ reference คงที่ข้าม render
-const DIMENSION_FILTER_FIELDS: FilterFieldDef[] = [
-  {
-    key: "filter",
-    control: "status",
-    labelKey: "common.status",
-    options: [
-      { labelKey: "status.active", value: "is_active|bool:true" },
-      { labelKey: "status.inactive", value: "is_active|bool:false" },
-    ],
-  },
-];
-
-/** หน้านี้กรองฝั่ง client — แปลงค่า `is_active|bool:true` ของตัวกรองกลับเป็น boolean */
-function activeFromFilter(value: string): boolean | undefined {
-  if (value.endsWith(":true")) return true;
-  if (value.endsWith(":false")) return false;
-  return undefined;
-}
-
 export default function DimensionPage() {
   "use no memo";
   const buCode = useBuCode();
@@ -100,9 +83,9 @@ export default function DimensionPage() {
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
   const lf = useListFilters({
     pageKey: LIST_PAGE_KEYS.DIMENSION,
-    fields: DIMENSION_FILTER_FIELDS,
+    fields: STATUS_FILTER_FIELDS,
   });
-  const activeFilter = activeFromFilter(lf.values.filter ?? "");
+  const activeFilter = activeFromFilter(lf.values.filter);
   const canEdit = useAccountingConfigEdit("accounting.config.gl");
   const [editing, setEditing] = useState<DimensionMaster | null | undefined>();
   const [viewingValuesId, setViewingValuesId] = useState<string | null>(null);
@@ -289,7 +272,7 @@ export default function DimensionPage() {
           search={search}
           onSearch={setSearch}
           lf={lf}
-          fields={DIMENSION_FILTER_FIELDS}
+          fields={STATUS_FILTER_FIELDS}
           onSaveViewClick={() => setSaveViewDialogOpen(true)}
         />
       }
