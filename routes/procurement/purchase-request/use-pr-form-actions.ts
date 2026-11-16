@@ -12,6 +12,7 @@ import {
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { useBuCode } from "@/hooks/use-bu-code";
+import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 import { useProfile } from "@/hooks/use-profile";
 import { httpClient } from "@/lib/http-client";
 import { pickDocVersion, withFreshDetailVersions } from "@/lib/doc-version";
@@ -68,6 +69,7 @@ export function usePrFormActions({
     "/procurement/purchase-request",
   );
   const buCode = useBuCode();
+  const dimensionsEnabled = useLineDimensionsEnabled();
   const { defaultBu } = useProfile();
 
   // GET PR สดจาก DB ก่อนยิง workflow event — กัน 409 optimistic lock จาก
@@ -214,7 +216,7 @@ export function usePrFormActions({
     const detail = buildItemChanges(
       values.items,
       defaultValues.items,
-      mapItemToPayload,
+      (item) => mapItemToPayload(item, { dimensionsEnabled }),
     );
     // lock ของ backend เช็คราย detail ด้วย ไม่ใช่แค่หัวเอกสาร (ดู
     // withFreshDetailVersions) ทับหลัง buildItemChanges เสมอ ไม่ใช่ก่อน

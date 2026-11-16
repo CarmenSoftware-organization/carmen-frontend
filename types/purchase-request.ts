@@ -5,6 +5,7 @@ import { lastActionSchema } from "./last-action";
 import type { LastAction } from "./last-action";
 import type { DiscountFields, ItemMoneyFields, TaxFields } from "./shared-item";
 import type { EntityRef } from "./entity-ref";
+import type { DimensionPayload, DimensionRef } from "./gl-dimension";
 import type { HiddenPriceField } from "./workflows";
 import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 
@@ -73,6 +74,8 @@ interface PurchaseRequestDetail
   state_message: string | null;
   info: Record<string, unknown>;
   dimension: unknown[];
+  /** dimension ระดับบรรทัด — `[]` เมื่อไม่มี */
+  dimensions?: DimensionRef[];
   history?: PrItemHistoryEntry[];
   doc_version: number;
 }
@@ -287,6 +290,8 @@ export interface PurchaseRequestDetailPayload {
   net_amount: number;
   total_price: number;
   comment?: string;
+  /** ไม่ส่ง = backend ไม่แตะ · ส่ง (รวม `[]`) = แทนที่ทั้งชุด */
+  dimensions?: DimensionPayload[];
 }
 
 export interface CreatePurchaseRequestDto {

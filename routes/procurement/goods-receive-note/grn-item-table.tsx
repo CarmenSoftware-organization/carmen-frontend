@@ -58,6 +58,7 @@ export const mapPoDetailToItems = (
         is_tax_included: d.is_tax_included ?? false,
         net_amount: 0,
         total_price: 0,
+        dimensions: d.dimensions ?? [],
       },
     ];
   }
@@ -92,6 +93,7 @@ export const mapPoDetailToItems = (
       is_tax_included: d.is_tax_included ?? false,
       net_amount: 0,
       total_price: 0,
+      dimensions: d.dimensions ?? [],
     }));
 };
 

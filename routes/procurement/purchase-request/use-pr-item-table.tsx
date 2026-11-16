@@ -235,6 +235,7 @@ export function usePrItemTable({
             baseCurrencyCode={baseCurrencyCode}
             hidePrice={hidePrice}
             hideTotal={hideTotal}
+            isDimensionsDisabled={isLockedAfterCreate}
           />
         ),
       },

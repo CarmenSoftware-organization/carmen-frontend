@@ -9,12 +9,23 @@ import type {
   PurchaseApproveDetail,
 } from "@/types/purchase-request";
 import type { EntityRef } from "@/types/entity-ref";
+import type { DimensionRef } from "@/types/gl-dimension";
 import type { HiddenPriceField } from "@/types/workflows";
 import { STAGE_ROLE } from "@/types/stage-role";
 import { PR_ITEM_STAGE_STATUS } from "@/types/purchase-request";
 import { addDays, isoToDateInput } from "@/lib/date-utils";
 import { round2 } from "@/lib/currency-utils";
 import { computeLineAmounts } from "@/lib/line-pricing";
+import { lineDimensionsPayload } from "@/lib/dimension-payload";
+
+const dimensionRefSchema = z.object({
+  gl_dimension_id: z.string(),
+  gl_dimension_value_id: z.string(),
+  dimension_code: z.string().optional(),
+  value_code: z.string().optional(),
+  dimension_name: z.string().optional(),
+  value_name: z.string().optional(),
+});
 
 function createDetailSchema(tv: TranslationFn, tf: TranslationFn) {
   return z.object({
@@ -97,6 +108,10 @@ function createDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     net_amount: z.coerce.number().optional(),
     total_price: z.coerce.number().optional(),
     comment: z.string(),
+    /** dimension ระดับบรรทัด — โหลดจาก response แก้ได้ */
+    dimensions: z.array(dimensionRefSchema).optional(),
+    /** ผู้ใช้แก้ช่อง dimension ของบรรทัดนี้แล้ว — คุมว่าจะส่งใน details.update ไหม */
+    dimensions_dirty: z.boolean().optional(),
     // ประวัติ workflow ระดับรายการ (display-only passthrough, ไม่ส่งกลับ API)
     history: z
       .array(
@@ -262,6 +277,8 @@ export const PR_ITEM = {
   net_amount: 0,
   total_price: 0,
   comment: "",
+  dimensions: [] as DimensionRef[],
+  dimensions_dirty: false,
 } as const;
 
 export const EMPTY_FORM: PrFormValues = {
@@ -353,6 +370,8 @@ export function getDefaultValues(
           net_amount: d.net_amount ?? 0,
           total_price: d.total_price ?? 0,
           comment: d.comment ?? "",
+          dimensions: d.dimensions ?? [],
+          dimensions_dirty: false,
           history: d.history,
         })) ?? [],
     };
@@ -728,6 +747,7 @@ export function preparePurchaseDetails(
 
 export function mapItemToPayload(
   item: PrFormValues["items"][number],
+  options?: { dimensionsEnabled?: boolean },
 ): PurchaseRequestDetailPayload {
   return {
     ...(item.doc_version != null ? { doc_version: item.doc_version } : {}),
@@ -760,5 +780,6 @@ export function mapItemToPayload(
     net_amount: item.net_amount ?? 0,
     total_price: item.total_price ?? 0,
     comment: item.comment ?? "",
+    ...lineDimensionsPayload(item, options?.dimensionsEnabled ?? false),
   };
 }

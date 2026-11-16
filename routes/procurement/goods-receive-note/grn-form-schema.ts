@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { lineDimensionsPayload } from "@/lib/dimension-payload";
 import { round2 } from "@/lib/currency-utils";
 import { stableStringify } from "@/lib/form-helpers";
 import type { TranslationFn } from "@/lib/i18n-schema";
@@ -7,6 +8,15 @@ import type {
   GrnDetailPayload,
   ExtraCostDetailPayload,
 } from "@/types/goods-receive-note";
+
+const dimensionRefSchema = z.object({
+  gl_dimension_id: z.string(),
+  gl_dimension_value_id: z.string(),
+  dimension_code: z.string().optional(),
+  value_code: z.string().optional(),
+  dimension_name: z.string().optional(),
+  value_name: z.string().optional(),
+});
 
 function createGrnDetailSchema(tv: TranslationFn, tf: TranslationFn) {
   const base = z.object({
@@ -73,6 +83,15 @@ function createGrnDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     // วันหมดอายุของล็อต (ISO) — ไม่บังคับ และกรอกวันที่ผ่านมาแล้วได้ (เตือนตอนสร้าง/commit
     // แต่ไม่บล็อก) · optional ด้วยเพราะแถวจาก wizard ที่ค้างใน session รุ่นก่อนไม่มีฟิลด์นี้
     expired_at: z.string().nullable().optional(),
+    /** dimension ระดับบรรทัด — optional เพราะ wizard ที่ค้างใน session รุ่นก่อนไม่มีฟิลด์นี้ */
+    dimensions: z.array(dimensionRefSchema).optional(),
+    /** ผู้ใช้แก้ช่อง dimension ของบรรทัดนี้แล้ว — คุมว่าจะส่งใน good_received_note_detail.update ไหม */
+    dimensions_dirty: z.boolean().optional(),
+    /**
+     * ราคาต่อหน่วยที่เก็บจริง (sub_total / qty ไม่ปัดเศษ) ตอนโหลดใบ saved — ใช้ตอนแก้
+     * แค่ dimension เพื่อส่งแถวเดิมกลับโดยไม่คิดราคาใหม่ (ดู `restoreStoredPricing`)
+     */
+    stored_unit_price: z.number().optional(),
   });
 
   // backend บังคับ received_price (= unit_price ของฟอร์ม) เมื่อ received_qty > 0
@@ -182,6 +201,8 @@ export const EMPTY_DETAIL: GrnFormValues["items"][number] = {
   description: "",
   note: "",
   expired_at: null,
+  dimensions: [],
+  dimensions_dirty: false,
 };
 
 // --- Default extra cost detail ---
@@ -325,6 +346,16 @@ export function getDefaultValues(
           description: "",
           note: item?.note ?? "",
           expired_at: item?.expired_at ?? null,
+          dimensions: detail.dimensions ?? [],
+          dimensions_dirty: false,
+          // received_price = ราคาที่เก็บจริง (คอลัมน์ DB) · ไม่มีจึงถอยไปหาร sub_total/qty
+          stored_unit_price:
+            (item?.received_price != null
+              ? Number(item.received_price)
+              : undefined) ??
+            (item && item.received_qty > 0
+              ? item.sub_total_price / item.received_qty
+              : undefined),
         };
       }) ?? [],
     extra_cost_details:
@@ -339,6 +370,7 @@ export function getDefaultValues(
 
 export function mapDetailToPayload(
   item: GrnFormValues["items"][number],
+  options?: { dimensionsEnabled?: boolean },
 ): GrnDetailPayload {
   return {
     ...(item.doc_version != null ? { doc_version: item.doc_version } : {}),
@@ -374,6 +406,7 @@ export function mapDetailToPayload(
     // ส่ง null ไปด้วยเสมอ (ไม่ตัดทิ้ง) — แถวที่แก้ถูกส่งทั้งแถว null จึงแปลว่า "ล้างวันที่"
     // ("" ก็เป็น null: หลังบ้านรับแค่ datetime หรือ null ส่งสตริงว่างไปได้ 400)
     expired_at: item.expired_at || null,
+    ...lineDimensionsPayload(item, options?.dimensionsEnabled ?? false),
   };
 }
 
@@ -401,29 +434,80 @@ export function pickTouchedLineUpdates<U extends { id: string }>(
   current: GrnFormValues["items"],
   original: GrnFormValues["items"],
 ): U[] | undefined {
-  type Line = GrnFormValues["items"][number];
-  const inputOf = (list: Line[], id: string) => {
-    const item = list.find((i) => i.id === id);
-    if (!item) return "";
-    const {
-      net_amount: _net,
-      total_price: _total,
-      received_base_qty: _baseQty,
-      discount_amount,
-      tax_amount,
-      ...rest
-    } = item;
-    return stableStringify({
-      ...rest,
-      sequence: list.indexOf(item),
-      discount_amount: item.is_discount_adjustment ? discount_amount : null,
-      tax_amount: item.is_tax_adjustment ? tax_amount : null,
-    });
-  };
   const touched = update.filter(
-    (u) => inputOf(current, u.id) !== inputOf(original, u.id),
+    (u) => lineInputKey(current, u.id) !== lineInputKey(original, u.id),
   );
   return touched.length > 0 ? touched : undefined;
+}
+
+/**
+ * คีย์เทียบ "ช่องที่คนกรอก" ของแถว — ใช้ร่วมกันระหว่าง `pickTouchedLineUpdates` และ
+ * `restoreStoredPricing` · `omitDimensions` ตัดช่อง dimension ออกเพื่อถามว่า
+ * "แก้อย่างอื่นนอกจาก dimension ไหม"
+ */
+function lineInputKey(
+  list: GrnFormValues["items"],
+  id: string,
+  omitDimensions = false,
+): string {
+  const item = list.find((i) => i.id === id);
+  if (!item) return "";
+  const {
+    net_amount: _net,
+    total_price: _total,
+    received_base_qty: _baseQty,
+    discount_amount,
+    tax_amount,
+    dimensions,
+    dimensions_dirty,
+    ...rest
+  } = item;
+  return stableStringify({
+    ...rest,
+    ...(omitDimensions ? {} : { dimensions, dimensions_dirty }),
+    sequence: list.indexOf(item),
+    discount_amount: item.is_discount_adjustment ? discount_amount : null,
+    tax_amount: item.is_tax_adjustment ? tax_amount : null,
+  });
+}
+
+/**
+ * แถวที่แก้แค่ dimension บนใบ saved: GRN update เป็น whole-row (backend บังคับ
+ * qty/หน่วย/ราคาครบ) ถ้าส่งค่าจากฟอร์มซึ่งปัดราคา (33.33333 → 33.33) แล้ว backend
+ * จะคิดราคาใหม่และลงสต๊อกใหม่ทั้งที่ไม่มีใครแตะราคา — จึงสร้างแถวจากค่าที่โหลดมา
+ * (baseline) พร้อมราคาต่อหน่วยที่เก็บจริง แล้วใส่เฉพาะ dimensions ใหม่ทับ
+ *
+ * แถวที่แก้อย่างอื่นด้วยไม่แตะ — ส่งตามค่าในฟอร์มเหมือนเดิม
+ *
+ * @param update - `update` หลังผ่าน `pickTouchedLineUpdates`
+ * @param current - `values.items` ตอนกด Save
+ * @param original - `defaultValues.items` ที่โหลดมา
+ * @param toPayload - ตัวสร้าง payload ของแถวจากค่าในฟอร์ม (แบบเดียวกับที่ส่งตามปกติ)
+ * @returns update ที่แทนแถว dimension-only แล้ว
+ */
+export function restoreStoredPricing<U extends { id: string }>(
+  update: U[] | undefined,
+  current: GrnFormValues["items"],
+  original: GrnFormValues["items"],
+  toPayload: (item: GrnFormValues["items"][number]) => Record<string, unknown>,
+): U[] | undefined {
+  return update?.map((u) => {
+    const cur = current.find((i) => i.id === u.id);
+    const orig = original.find((i) => i.id === u.id);
+    if (!cur || !orig || !cur.dimensions_dirty) return u;
+    const isDimensionOnly =
+      lineInputKey(current, u.id, true) === lineInputKey(original, u.id, true);
+    if (!isDimensionOnly) return u;
+    const rebuilt = toPayload({
+      ...orig,
+      unit_price: orig.stored_unit_price ?? orig.unit_price,
+      dimensions: cur.dimensions,
+      dimensions_dirty: true,
+    });
+    // doc_version / id ของแถวคงตาม u (ผ่าน withFreshDetailVersions ภายหลังได้)
+    const { doc_version: _doc, ...rest } = rebuilt;
+    return { ...u, ...rest };
+  });
 }
 
 export function mapExtraCostToPayload(

@@ -3,6 +3,7 @@ import type { WorkflowHistoryEntry } from "./purchase-request";
 import type { Audit } from "./audit";
 import type { LastAction } from "./last-action";
 import type { EntityRef } from "./entity-ref";
+import type { DimensionPayload, DimensionRef } from "./gl-dimension";
 import type { HiddenPriceField } from "./workflows";
 import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 
@@ -54,6 +55,8 @@ interface PurchaseOrderDetail extends ItemMoneyFields {
    */
   location: EntityRef | null;
   delivery_point: EntityRef | null;
+  /** dimension ระดับบรรทัด — `[]` เมื่อไม่มี */
+  dimensions?: DimensionRef[];
   /**
    * ฟิลด์ที่ frontend ส่งขึ้นแล้วแต่ response ยังไม่ส่งกลับมา — ประกาศเป็น optional
    * ตามความจริง ไม่ใช่ตามที่อยากให้เป็น (`getDefaultValues` เติมค่าว่างให้อยู่แล้ว)
@@ -158,6 +161,8 @@ export interface PoDetailPayload {
   comment: string;
   foc_unit_id: string | null;
   foc_unit_name: string;
+  /** ไม่ส่ง = backend ไม่แตะ · ส่ง (รวม `[]`) = แทนที่ทั้งชุด */
+  dimensions?: DimensionPayload[];
 }
 
 export interface CreatePoDto {
@@ -282,6 +287,8 @@ export interface PoGrnDetail {
   is_tax_included?: boolean;
   net_amount: number;
   is_foc: boolean;
+  /** dimension ของบรรทัด PO — ใช้เป็นค่าตั้งต้นตอนสร้าง GRN */
+  dimensions?: DimensionRef[];
   locations: PoGrnDetailLocation[];
   can_use?: boolean;
 }

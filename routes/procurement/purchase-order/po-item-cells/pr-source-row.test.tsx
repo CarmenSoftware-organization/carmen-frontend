@@ -3,6 +3,8 @@ import { describe, it, expect, vi } from "vitest";
 // เทสต์นี้สนใจแค่ปุ่มใบขอซื้อ — ตัดกล่องสต๊อกที่อยู่ข้างกันออก มันลาก useBuCode
 // กับ query ของ inventory มาทั้งพวง
 vi.mock("./inventory-dialog-cell", () => ({ PoInventoryDialog: () => null }));
+// ช่อง dimension ต่อบรรทัดลาก license/profile query มาด้วย — ไม่เกี่ยวกับปุ่มต้นทาง
+vi.mock("./item-dimensions", () => ({ PoItemDimensions: () => null }));
 import { render, screen } from "@testing-library/react";
 import { IntlProvider } from "use-intl";
 import { MemoryRouter } from "react-router";
