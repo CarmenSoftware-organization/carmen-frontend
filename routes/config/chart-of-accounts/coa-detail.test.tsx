@@ -350,8 +350,11 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
 
     // ตรวจสอบว่าหน้า Detail เรนเดอร์ฟอร์มขึ้นมา ไม่ใช่ ErrorState
     expect(screen.queryByText(/Something went wrong/i)).toBeNull();
-    expect(await screen.findByDisplayValue("111000")).toBeDefined();
-    expect(screen.getByDisplayValue("Main Operating Cash")).toBeDefined();
+    // โหมดดูแสดงค่าเป็นข้อความ ไม่ใช่ input ที่ disable — รหัสอยู่ทั้งบนหัวฟอร์มและในการ์ด
+    expect((await screen.findAllByText("111000")).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Main Operating Cash").length).toBeGreaterThan(
+      0,
+    );
     expect(screen.getByText("CASH_MAIN")).toBeDefined();
   });
   it("selects dimensions with checkboxes without requirement status choices", () => {
@@ -386,7 +389,7 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
       }),
     );
     renderWithProviders(<CoaEditRoute />, "/config/chart-of-accounts/account");
-    expect(screen.queryByDisplayValue("111000")).toBeNull();
+    expect(screen.queryByText("111000")).toBeNull();
     await act(async () => {
       finish([
         {

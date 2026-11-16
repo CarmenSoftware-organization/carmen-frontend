@@ -4,7 +4,7 @@ import {
   saveCoaCostCenters,
   coaCostCentersKey,
 } from "./coa-cost-centers";
-import { FormSkeleton } from "@/components/loader/form-skeleton";
+import { CoaFormSkeleton, COA_SECTION_PAIR } from "./coa-form-skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import {
   coaRulesKey,
@@ -18,7 +18,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
-import { FolderTree, Plus, X, Tag } from "lucide-react";
+import { FileText, FolderOpen, FolderTree, Plus, X, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
@@ -26,12 +26,15 @@ import {
   Field,
   FieldInput,
   FieldLabel,
+  FieldPlainText,
   FieldSelect,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SelectContent, SelectItem } from "@/components/ui/select";
-import { SettingSection } from "@/components/ui/setting-section";
-import { StatusSwitch } from "@/components/ui/status-switch";
+import { StatusDotBadge } from "@/components/ui/status-dot-badge";
+import { Switch } from "@/components/ui/switch";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
+import { SettingField } from "@/components/share/setting-field";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { useEntityForm } from "@/hooks/use-entity-form";
@@ -72,6 +75,61 @@ import {
 
 const LIST_PATH = "/config/chart-of-accounts";
 const FORM_ID = "coa-form";
+
+// ค่ากลางของ skill carmen-blue-ui-design (values.md §Forms)
+const EDIT_LABEL = "font-semibold";
+const ATTR_LABEL = "text-foreground text-xs font-semibold";
+const VIEW_LABEL = "text-muted-foreground text-xs";
+const HELPER = "text-micro text-muted-foreground";
+
+/** เส้นฉากโยงโหนดลูกกับระดับแม่ใน tree ของกลุ่มบัญชี */
+function TreeElbow() {
+  return (
+    <span
+      aria-hidden
+      className="border-border ml-2 h-2.5 w-3 shrink-0 rounded-bl-sm border-b border-l"
+    />
+  );
+}
+
+/**
+ * สวิตช์ + ป้าย + คำอธิบายชิดกันทางซ้าย — ไม่ดันสวิตช์ไปขอบขวาของการ์ด (จอกว้างแล้ว
+ * สวิตช์จะห่างจากป้ายเป็นพันพิกเซล) และไม่มีกรอบซ้อนในการ์ด
+ */
+function SwitchRow({
+  id,
+  label,
+  description,
+  checked,
+  onCheckedChange,
+  disabled,
+}: {
+  readonly id: string;
+  readonly label: string;
+  readonly description: string;
+  readonly checked: boolean;
+  readonly onCheckedChange: (checked: boolean) => void;
+  readonly disabled?: boolean;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <Switch
+        id={id}
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        disabled={disabled}
+        aria-label={label}
+        className="mt-0.5 shrink-0"
+      />
+      <div className="min-w-0">
+        <label htmlFor={id} className={ATTR_LABEL}>
+          {label}
+        </label>
+        <p className="text-muted-foreground text-xs">{description}</p>
+      </div>
+    </div>
+  );
+}
 
 function normalizeArray(val: unknown): string[] {
   if (Array.isArray(val)) return val.map(String);
@@ -123,7 +181,7 @@ export function CoaForm(props: CoaFormProps) {
           backTo={LIST_PATH}
         />
       );
-    return <FormSkeleton />;
+    return <CoaFormSkeleton />;
   }
   return <CoaFormFields {...props} costCenterQuery={costCenterQuery} />;
 }
@@ -476,6 +534,17 @@ function CoaFormFields({
     });
   };
 
+  const codeValue = form.watch("code");
+  const typeValue = form.watch("type");
+  const isActive = form.watch("is_active");
+  const natureText = !category
+    ? null
+    : nature === ACCOUNT_NATURE.DEBIT
+      ? `${t("nature.debit")} (D)`
+      : nature === ACCOUNT_NATURE.CREDIT
+        ? `${t("nature.credit")} (C)`
+        : null;
+
   const displayGroupingPath: GroupingPathNode[] =
     groupingPath.length > 0
       ? groupingPath
@@ -484,55 +553,81 @@ function CoaFormFields({
         : [];
 
   return (
-    <div className="-mx-4 sm:mx-0">
-      <FormPageShell
-        header={
-          <FormToolbar
-            entity={account?.description_1 || t("entity")}
-            mode={f.mode}
-            formId={FORM_ID}
-            isPending={save.isPending}
-            onBack={f.handleBack}
-            onCancel={f.handleCancel}
-            onEdit={f.handleEdit}
-            onDelete={account ? () => setDeleteOpen(true) : undefined}
-            deleteIsPending={remove.isPending}
-            badges={
-              account && (
-                <Badge variant="secondary" size="sm" className="font-mono">
-                  {account.code}
-                </Badge>
-              )
-            }
-          />
-        }
+    <FormPageShell
+      width="wide"
+      header={
+        <FormToolbar
+          entity={account?.description_1 || t("entity")}
+          mode={f.mode}
+          formId={FORM_ID}
+          isPending={save.isPending}
+          onBack={f.handleBack}
+          onCancel={f.handleCancel}
+          onEdit={f.handleEdit}
+          onDelete={account ? () => setDeleteOpen(true) : undefined}
+          deleteIsPending={remove.isPending}
+          badges={
+            account && (
+              <Badge variant="secondary" size="sm" className="font-mono">
+                {account.code}
+              </Badge>
+            )
+          }
+        />
+      }
+    >
+      <form
+        id={FORM_ID}
+        className="@container"
+        onSubmit={form.handleSubmit(onSubmit, () =>
+          scrollToFirstInvalidField(),
+        )}
       >
-        <form
-          id={FORM_ID}
-          className="space-y-6"
-          onSubmit={form.handleSubmit(onSubmit, () =>
-            scrollToFirstInvalidField(),
-          )}
+        {/* SECTION 1: ข้อมูลพื้นฐานรหัสบัญชี (Basic Account Information) */}
+        <CompactSection
+          first
+          title={t("sections.general")}
+          description={t("sections.generalDesc")}
         >
-          {/* SECTION 1: ข้อมูลพื้นฐานรหัสบัญชี (Basic Account Information) */}
-          <SettingSection
-            first
-            wide
-            title={t("sections.general")}
-            description={t("sections.generalDesc")}
-          >
-            <div className="grid min-w-0 gap-6 sm:grid-cols-2">
-              <Field>
-                <div className="flex h-5 items-center justify-between">
-                  <FieldLabel htmlFor="coa-code" required>
-                    {tfl("code")}
-                  </FieldLabel>
-                  {isExisting && (
-                    <Badge variant="secondary" size="sm">
-                      {t("rules.codeLocked")}
-                    </Badge>
-                  )}
+          {f.isView ? (
+            // โหมดดู: ป้ายเงียบ + ค่าเด่น ไม่มีกรอบ (กรอบมีเฉพาะช่องที่กรอกได้จริง)
+            <FieldGrid>
+              <SettingField label={tfl("code")} value={codeValue} mono />
+              <SettingField
+                label={t("descriptionEnglish")}
+                value={form.watch("description_1")}
+              />
+              <SettingField
+                label={t("descriptionThai")}
+                value={form.watch("description_2")}
+              />
+              <SettingField
+                label={tfl("category")}
+                value={category ? t(`accountCategory.${category}`) : null}
+              />
+              <SettingField label={tfl("nature")} value={natureText} />
+              <SettingField
+                label={tfl("type")}
+                value={typeValue ? t(`accountType.${typeValue}`) : null}
+              />
+              <div className="min-w-0">
+                <div className="text-muted-foreground text-xs">
+                  {t("rules.activeStatusTitle")}
                 </div>
+                <StatusDotBadge
+                  tone={isActive ? "success" : "destructive"}
+                  className="mt-1"
+                >
+                  {tfl(isActive ? "active" : "inactive")}
+                </StatusDotBadge>
+              </div>
+            </FieldGrid>
+          ) : (
+            <FieldGrid>
+              <Field>
+                <FieldLabel htmlFor="coa-code" required className={EDIT_LABEL}>
+                  {tfl("code")}
+                </FieldLabel>
                 <FieldInput
                   id="coa-code"
                   maxLength={50}
@@ -542,14 +637,20 @@ function CoaFormFields({
                   className="font-mono"
                   {...form.register("code")}
                 />
+                {/* คำเตือนล็อกอยู่ใต้ช่อง ไม่ใช่ข้างป้าย — ช่องกว้าง ~220px ข้อความยาวจะชนป้าย */}
+                {isExisting && (
+                  <p className={HELPER}>{t("rules.codeLocked")}</p>
+                )}
               </Field>
 
               <Field>
-                <div className="flex h-5 items-center">
-                  <FieldLabel htmlFor="coa-description-1" required>
-                    {t("descriptionEnglish")}
-                  </FieldLabel>
-                </div>
+                <FieldLabel
+                  htmlFor="coa-description-1"
+                  required
+                  className={EDIT_LABEL}
+                >
+                  {t("descriptionEnglish")}
+                </FieldLabel>
                 <FieldInput
                   id="coa-description-1"
                   maxLength={150}
@@ -561,11 +662,9 @@ function CoaFormFields({
               </Field>
 
               <Field>
-                <div className="flex h-5 items-center">
-                  <FieldLabel htmlFor="coa-description-2">
-                    {t("descriptionThai")}
-                  </FieldLabel>
-                </div>
+                <FieldLabel htmlFor="coa-description-2" className={EDIT_LABEL}>
+                  {t("descriptionThai")}
+                </FieldLabel>
                 <FieldInput
                   id="coa-description-2"
                   maxLength={150}
@@ -576,14 +675,9 @@ function CoaFormFields({
               </Field>
 
               <Field>
-                <div className="flex h-5 items-center justify-between">
-                  <FieldLabel required>{tfl("category")}</FieldLabel>
-                  {categoryLocked && (
-                    <span className="text-micro text-warning-ink">
-                      {t("rules.fieldLockedUsed")}
-                    </span>
-                  )}
-                </div>
+                <FieldLabel required className={EDIT_LABEL}>
+                  {tfl("category")}
+                </FieldLabel>
                 <Controller
                   control={form.control}
                   name="category"
@@ -618,39 +712,25 @@ function CoaFormFields({
                     </FieldSelect>
                   )}
                 />
+                {categoryLocked && (
+                  <p className="text-micro text-warning-ink">
+                    {t("rules.fieldLockedUsed")}
+                  </p>
+                )}
               </Field>
 
+              {/* Nature แก้ไม่ได้ (ตามหมวดบัญชี) จึงไม่มีกรอบแม้อยู่ในโหมดแก้ */}
               <Field>
-                <div className="flex h-5 items-center justify-between">
-                  <FieldLabel required>{tfl("nature")}</FieldLabel>
-                </div>
-                {/* Hidden input for react-hook-form value binding */}
+                <FieldLabel required>{tfl("nature")}</FieldLabel>
                 <input type="hidden" {...form.register("nature")} />
-                <div className="border-input bg-muted/50 flex h-8 w-full items-center justify-between rounded-md border px-3 text-xs shadow-xs">
-                  <span className="text-foreground font-medium">
-                    {!category
-                      ? "—"
-                      : nature === ACCOUNT_NATURE.DEBIT
-                        ? `${t("nature.debit")} (D)`
-                        : nature === ACCOUNT_NATURE.CREDIT
-                          ? `${t("nature.credit")} (C)`
-                          : "-"}
-                  </span>
-                </div>
-                <p className="text-micro text-muted-foreground">
-                  {t("rules.natureAutoDesc")}
-                </p>
+                <FieldPlainText>{natureText}</FieldPlainText>
+                <p className={HELPER}>{t("rules.natureAutoDesc")}</p>
               </Field>
 
               <Field>
-                <div className="flex h-5 items-center justify-between">
-                  <FieldLabel required>{tfl("type")}</FieldLabel>
-                  {isUsed && (
-                    <span className="text-micro text-warning-ink">
-                      {t("rules.fieldLockedUsed")}
-                    </span>
-                  )}
-                </div>
+                <FieldLabel required className={EDIT_LABEL}>
+                  {tfl("type")}
+                </FieldLabel>
                 <Controller
                   control={form.control}
                   name="type"
@@ -672,32 +752,39 @@ function CoaFormFields({
                     </FieldSelect>
                   )}
                 />
+                {isUsed && (
+                  <p className="text-micro text-warning-ink">
+                    {t("rules.fieldLockedUsed")}
+                  </p>
+                )}
               </Field>
 
-              <Field className="sm:col-span-2">
-                <Controller
-                  control={form.control}
-                  name="is_active"
-                  render={({ field }) => (
-                    <StatusSwitch
-                      id="coa-is-active"
-                      checked={field.value}
-                      onCheckedChange={handleActiveToggle}
-                      disabled={f.isDisabled}
-                      label={t("rules.activeStatusTitle")}
-                      description={t("rules.activeStatusRule")}
-                      hideBadge
-                    />
-                  )}
-                />
+              <Field>
+                <FieldLabel htmlFor="coa-is-active" className={EDIT_LABEL}>
+                  {t("rules.activeStatusTitle")}
+                </FieldLabel>
+                <div className="flex min-h-8 items-center gap-2">
+                  <Switch
+                    id="coa-is-active"
+                    checked={isActive}
+                    onCheckedChange={handleActiveToggle}
+                    disabled={f.isDisabled}
+                    aria-label={t("rules.activeStatusTitle")}
+                  />
+                  <span className="text-xs">
+                    {tfl(isActive ? "active" : "inactive")}
+                  </span>
+                </div>
+                <p className={HELPER}>{t("rules.activeStatusRule")}</p>
               </Field>
-            </div>
-          </SettingSection>
+            </FieldGrid>
+          )}
+        </CompactSection>
 
+        <div className={COA_SECTION_PAIR}>
           {/* SECTION 2: ระดับหมวดบัญชีคุม (Account Code Grouping Path) */}
-          <SettingSection
+          <CompactSection
             title={t("sections.grouping")}
-            description={t("sections.groupingDesc")}
             action={
               !f.isDisabled && (
                 <Button
@@ -716,19 +803,21 @@ function CoaFormFields({
                 </Button>
               )
             }
-            plain
-            wide
           >
             {displayGroupingPath.length > 0 ? (
+              // tree: แต่ละระดับเยื้องเข้า 20px + เส้นฉากโยงจากระดับแม่ · ใบสุดท้ายคือบัญชีนี้เอง
               <ol
-                className="space-y-3"
+                className="space-y-1.5 text-xs"
                 aria-label={t("labels.hierarchicalPath")}
               >
                 {displayGroupingPath.map((node, index) => (
                   <li
                     key={node.code}
-                    className="flex min-w-0 items-start gap-3 text-xs"
+                    className="flex min-w-0 items-start gap-1.5"
+                    style={{ paddingLeft: Math.max(0, index - 1) * 20 }}
                   >
+                    {index > 0 && <TreeElbow />}
+                    <FolderOpen className="text-muted-foreground mt-0.5 size-4 shrink-0" />
                     <Badge
                       variant={
                         index === displayGroupingPath.length - 1
@@ -740,7 +829,7 @@ function CoaFormFields({
                     >
                       L{node.level}
                     </Badge>
-                    <div className="min-w-0 break-words">
+                    <div className="min-w-0 pt-0.5 break-words">
                       <span className="mr-2 font-mono font-semibold">
                         {node.code}
                       </span>
@@ -748,37 +837,66 @@ function CoaFormFields({
                     </div>
                   </li>
                 ))}
+                {codeValue && (
+                  <li
+                    className="flex min-w-0 items-start gap-1.5"
+                    style={{
+                      paddingLeft: (displayGroupingPath.length - 1) * 20,
+                    }}
+                  >
+                    <TreeElbow />
+                    <FileText className="text-primary mt-0.5 size-4 shrink-0" />
+                    <div className="min-w-0 pt-0.5 font-medium break-words">
+                      <span className="mr-2 font-mono font-semibold">
+                        {codeValue}
+                      </span>
+                      <span>{form.watch("description_1")}</span>
+                    </div>
+                  </li>
+                )}
               </ol>
             ) : (
               <p className="text-muted-foreground text-xs">
                 {t("labels.noGroupingSelected")}
               </p>
             )}
-          </SettingSection>
+          </CompactSection>
 
-          {/* Cost Center configuration */}
-          <SettingSection title={t("sections.costCenters")} plain wide>
-            <div className="space-y-4">
-              <Controller
-                control={form.control}
-                name="req_cost_center"
-                render={({ field }) => (
-                  <StatusSwitch
-                    id="coa-req-cost-center-switch"
-                    checked={Boolean(field.value)}
-                    disabled={f.isDisabled}
-                    onCheckedChange={field.onChange}
-                    label={t("labels.requireCostCenter")}
-                    description={t("sections.costCentersDesc")}
-                    hideBadge
-                  />
-                )}
-              />
+          {/* SECTION 3: Cost Center configuration */}
+          <CompactSection title={t("sections.costCenters")}>
+            <div className="space-y-3">
+              {f.isView ? (
+                // สถานะเป็นชิปจุดสี — กวาดตาแล้วรู้ทันทีว่าบังคับหรือไม่ ไม่ต้องอ่านทั้งประโยค
+                <StatusDotBadge tone={reqCostCenter ? "info" : "neutral"}>
+                  {reqCostCenter ? t("labels.costCenterReq") : tfl("optional")}
+                </StatusDotBadge>
+              ) : (
+                <Controller
+                  control={form.control}
+                  name="req_cost_center"
+                  render={({ field }) => (
+                    <SwitchRow
+                      id="coa-req-cost-center-switch"
+                      checked={Boolean(field.value)}
+                      disabled={f.isDisabled}
+                      onCheckedChange={field.onChange}
+                      label={t("labels.requireCostCenter")}
+                      description={
+                        field.value
+                          ? t("sections.costCentersDesc")
+                          : t("labels.costCenterDisabledNote")
+                      }
+                    />
+                  )}
+                />
+              )}
 
-              {reqCostCenter ? (
-                <div className="space-y-2">
-                  <div className="text-muted-foreground text-xs font-medium">
-                    {t("labels.allowedCostCentersLabel")}
+              {reqCostCenter && (
+                <div className="max-w-md space-y-1.5">
+                  <div className={f.isView ? VIEW_LABEL : ATTR_LABEL}>
+                    {f.isView
+                      ? t("labels.costCentersPicker")
+                      : t("labels.allowedCostCentersLabel")}
                   </div>
                   {costCenterQuery.isLoading && (
                     <p role="status" className="text-muted-foreground text-xs">
@@ -830,32 +948,40 @@ function CoaFormFields({
                     readOnly={f.isView}
                   />
                 </div>
-              ) : (
-                <p className="text-muted-foreground text-xs">
-                  {t("labels.costCenterDisabledNote")}
-                </p>
               )}
             </div>
-          </SettingSection>
+          </CompactSection>
+        </div>
 
+        <div className={COA_SECTION_PAIR}>
           {/* SECTION 4: ข้อกำหนดการวิเคราะห์ (Require Dimension Configuration) */}
-          <SettingSection title={t("sections.dimensions")} plain wide>
-            <div className="space-y-4">
-              <Controller
-                control={form.control}
-                name="req_dim"
-                render={({ field }) => (
-                  <StatusSwitch
-                    id="coa-req-dim-switch"
-                    checked={Boolean(field.value)}
-                    disabled={f.isDisabled}
-                    onCheckedChange={field.onChange}
-                    label={t("labels.requireDimension")}
-                    description={t("sections.dimensionsDesc")}
-                    hideBadge
-                  />
-                )}
-              />
+          <CompactSection title={t("sections.dimensions")}>
+            <div className="space-y-3">
+              {f.isView ? (
+                // สถานะเป็นชิปจุดสี — กวาดตาแล้วรู้ทันทีว่าบังคับหรือไม่ ไม่ต้องอ่านทั้งประโยค
+                <StatusDotBadge tone={reqDim ? "info" : "neutral"}>
+                  {reqDim ? t("labels.dimReq") : tfl("optional")}
+                </StatusDotBadge>
+              ) : (
+                <Controller
+                  control={form.control}
+                  name="req_dim"
+                  render={({ field }) => (
+                    <SwitchRow
+                      id="coa-req-dim-switch"
+                      checked={Boolean(field.value)}
+                      disabled={f.isDisabled}
+                      onCheckedChange={field.onChange}
+                      label={t("labels.requireDimension")}
+                      description={
+                        field.value
+                          ? t("sections.dimensionsDesc")
+                          : t("labels.dimDisabledNote")
+                      }
+                    />
+                  )}
+                />
+              )}
 
               {(reqDim || hasDimensionPreview) && (
                 <div className="bg-muted flex flex-wrap items-start justify-between gap-2 rounded-md p-3">
@@ -875,237 +1001,222 @@ function CoaFormFields({
                   )}
                 </div>
               )}
-              {reqDim ? (
-                <div className="space-y-3">
-                  <div className="text-muted-foreground text-xs font-medium">
-                    {t("labels.allowedDimsLabel")}
-                  </div>
-                  {dimensionQuery.isError && (
-                    <p className="text-destructive text-xs">
-                      Unable to load dimensions.
-                    </p>
-                  )}
-                  <CoaMultiSelect
-                    label={t("labels.allowedDimsLabel")}
-                    options={dimensions.map((item) => ({
-                      value: item.id,
-                      code: item.code,
-                      name: item.name,
-                    }))}
-                    value={selectedDimensionIds}
-                    onChange={(ids) => {
-                      form.setValue(
-                        "dimension_rules",
-                        Object.fromEntries(
-                          ids.map((id) => [
-                            id,
-                            dimensionRules[id] ?? "mandatory",
-                          ]),
-                        ),
-                        { shouldDirty: true },
-                      );
-                      const selected = new Set(ids);
-                      setDimensionPreviews((previous) =>
-                        Object.fromEntries(
-                          Object.entries(previous).filter(([id]) =>
-                            selected.has(id),
+              {reqDim && (
+                <>
+                  <div className="max-w-md space-y-1.5">
+                    <div className={f.isView ? VIEW_LABEL : ATTR_LABEL}>
+                      {t("labels.allowedDimsLabel")}
+                    </div>
+                    {dimensionQuery.isError && (
+                      <p className="text-destructive text-xs">
+                        Unable to load dimensions.
+                      </p>
+                    )}
+                    <CoaMultiSelect
+                      label={t("labels.allowedDimsLabel")}
+                      options={dimensions.map((item) => ({
+                        value: item.id,
+                        code: item.code,
+                        name: item.name,
+                      }))}
+                      value={selectedDimensionIds}
+                      onChange={(ids) => {
+                        form.setValue(
+                          "dimension_rules",
+                          Object.fromEntries(
+                            ids.map((id) => [
+                              id,
+                              dimensionRules[id] ?? "mandatory",
+                            ]),
                           ),
-                        ),
-                      );
-                    }}
-                    disabled={
-                      save.isPending ||
-                      dimensionQuery.isLoading ||
-                      dimensionQuery.isError
-                    }
-                    readOnly={f.isView}
-                  />
+                          { shouldDirty: true },
+                        );
+                        const selected = new Set(ids);
+                        setDimensionPreviews((previous) =>
+                          Object.fromEntries(
+                            Object.entries(previous).filter(([id]) =>
+                              selected.has(id),
+                            ),
+                          ),
+                        );
+                      }}
+                      disabled={
+                        save.isPending ||
+                        dimensionQuery.isLoading ||
+                        dimensionQuery.isError
+                      }
+                      readOnly={f.isView}
+                    />
+                  </div>
 
-                  {dimensions
-                    .filter((item) => selectedDimensionSet.has(item.id))
-                    .map((dimension) => (
-                      <CoaDimensionPreview
-                        key={dimension.id}
-                        dimension={dimension}
-                        value={
-                          dimensionPreviews[dimension.id] ??
-                          EMPTY_DIMENSION_PREVIEW
-                        }
-                        readOnly={f.isView}
-                        onChange={(next) =>
-                          setDimensionPreviews((previous) => {
-                            const result = { ...previous };
-                            if (
-                              next.allowedValueIds.length === 0 &&
-                              !next.defaultValueId
-                            )
-                              delete result[dimension.id];
-                            else result[dimension.id] = next;
-                            return result;
-                          })
-                        }
-                      />
-                    ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-xs">
-                  {t("labels.dimDisabledNote")}
-                </p>
+                  {/* dimension ที่เลือก = รายการหลายส่วน (ชื่อ สรุป ปุ่ม) → กริดตามความกว้างการ์ด */}
+                  {selectedDimensionIds.length > 0 && (
+                    <FieldGrid size="item">
+                      {dimensions
+                        .filter((item) => selectedDimensionSet.has(item.id))
+                        .map((dimension) => (
+                          <CoaDimensionPreview
+                            key={dimension.id}
+                            dimension={dimension}
+                            value={
+                              dimensionPreviews[dimension.id] ??
+                              EMPTY_DIMENSION_PREVIEW
+                            }
+                            readOnly={f.isView}
+                            onChange={(next) =>
+                              setDimensionPreviews((previous) => {
+                                const result = { ...previous };
+                                if (
+                                  next.allowedValueIds.length === 0 &&
+                                  !next.defaultValueId
+                                )
+                                  delete result[dimension.id];
+                                else result[dimension.id] = next;
+                                return result;
+                              })
+                            }
+                          />
+                        ))}
+                    </FieldGrid>
+                  )}
+                </>
               )}
             </div>
-          </SettingSection>
+          </CompactSection>
 
           {/* SECTION 5: คุณลักษณะอ้างอิงเพิ่มเติม (Attribute Tags) */}
-          <SettingSection
+          <CompactSection
             title={t("sections.attributes")}
             description={t("sections.attributesDesc")}
             count={Object.keys(attributes).length}
-            plain
-            wide
           >
-            <div className="space-y-4">
+            <div className="space-y-3">
               {!f.isDisabled && (
-                <div className="space-y-2">
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:items-end">
-                    <div className="min-w-0 space-y-1.5">
-                      <label
-                        htmlFor="coa-attr-key"
-                        className="text-foreground text-xs font-medium"
-                      >
-                        {t("labels.tagKey")}
-                      </label>
-                      <Input
-                        id="coa-attr-key"
-                        placeholder={t("labels.keyPlaceholder")}
-                        value={attrKey}
-                        disabled={f.isDisabled}
-                        onChange={(e) => setAttrKey(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleAddAttribute();
-                          }
-                        }}
-                        className="bg-card h-9 text-xs"
-                      />
-                    </div>
-                    <div className="min-w-0 space-y-1.5">
-                      <label
-                        htmlFor="coa-attr-val"
-                        className="text-foreground text-xs font-medium"
-                      >
-                        {t("labels.tagValue")}
-                      </label>
-                      <Input
-                        id="coa-attr-val"
-                        placeholder={t("labels.valuePlaceholder")}
-                        value={attrVal}
-                        disabled={f.isDisabled}
-                        onChange={(e) => setAttrVal(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleAddAttribute();
-                          }
-                        }}
-                        className="bg-card h-9 text-xs"
-                      />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        disabled={
-                          f.isDisabled || !attrKey.trim() || !attrVal.trim()
+                <FieldGrid>
+                  <div className="min-w-0 space-y-1.5">
+                    <label htmlFor="coa-attr-key" className={ATTR_LABEL}>
+                      {t("labels.tagKey")}
+                    </label>
+                    <Input
+                      id="coa-attr-key"
+                      placeholder={t("labels.keyPlaceholder")}
+                      value={attrKey}
+                      onChange={(e) => setAttrKey(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddAttribute();
                         }
-                        onClick={handleAddAttribute}
-                        className="gap-1.5"
-                      >
-                        <Plus className="size-4" />
-                        <span>{t("labels.addTag")}</span>
-                      </Button>
-                    </div>
+                      }}
+                      className="h-8 text-xs"
+                    />
                   </div>
-                  <p className="text-micro text-muted-foreground mt-2">
-                    {t("labels.attributeHint")}
-                  </p>
-                </div>
+                  <div className="min-w-0 space-y-1.5">
+                    <label htmlFor="coa-attr-val" className={ATTR_LABEL}>
+                      {t("labels.tagValue")}
+                    </label>
+                    <Input
+                      id="coa-attr-val"
+                      placeholder={t("labels.valuePlaceholder")}
+                      value={attrVal}
+                      onChange={(e) => setAttrVal(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddAttribute();
+                        }
+                      }}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div className="self-end">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={!attrKey.trim() || !attrVal.trim()}
+                      onClick={handleAddAttribute}
+                      className="gap-1.5"
+                    >
+                      <Plus className="size-4" />
+                      <span>{t("labels.addTag")}</span>
+                    </Button>
+                  </div>
+                </FieldGrid>
               )}
 
-              <div>
-                {Object.keys(attributes).length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(attributes).map(([k, v]) => (
-                      <span
-                        key={k}
-                        className="bg-muted text-foreground inline-flex max-w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs"
-                      >
-                        <Tag className="text-muted-foreground size-3 shrink-0" />
-                        <span className="min-w-0 font-semibold break-all">
-                          {k}:
-                        </span>
-                        <span className="min-w-0 font-mono break-all">{v}</span>
-                        {!f.isDisabled && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveAttribute(k)}
-                            className="text-muted-foreground hover:bg-destructive/15 hover:text-destructive focus-visible:outline-ring ml-1 inline-flex size-4 items-center justify-center rounded-sm transition-colors focus-visible:outline-2"
-                            aria-label={`Remove tag ${k}`}
-                          >
-                            <X className="size-3" />
-                          </button>
-                        )}
+              {Object.keys(attributes).length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(attributes).map(([k, v]) => (
+                    <span
+                      key={k}
+                      className="bg-muted text-foreground inline-flex max-w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs"
+                    >
+                      <Tag className="text-muted-foreground size-3 shrink-0" />
+                      <span className="min-w-0 font-semibold break-all">
+                        {k}:
                       </span>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-muted-foreground text-xs">
-                    {t("labels.noAttributes")}
-                  </div>
-                )}
-              </div>
+                      <span className="min-w-0 font-mono break-all">{v}</span>
+                      {!f.isDisabled && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAttribute(k)}
+                          className="text-muted-foreground hover:bg-destructive/15 hover:text-destructive focus-visible:outline-ring ml-1 inline-flex size-4 items-center justify-center rounded-sm transition-colors focus-visible:outline-2"
+                          aria-label={`Remove tag ${k}`}
+                        >
+                          <X className="size-3" />
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-xs">
+                  {t("labels.noAttributes")}
+                </p>
+              )}
             </div>
-          </SettingSection>
-        </form>
+          </CompactSection>
+        </div>
+      </form>
 
-        <DiscardDialog {...f.discard.dialogProps} variant="warning" />
-        <DiscardDialog
-          open={f.navGuard.isOpen}
-          onOpenChange={(open) => {
-            if (!open) f.navGuard.cancel();
-          }}
-          onConfirm={f.navGuard.confirm}
-          onCancel={f.navGuard.cancel}
-          variant="warning"
-        />
+      <DiscardDialog {...f.discard.dialogProps} variant="warning" />
+      <DiscardDialog
+        open={f.navGuard.isOpen}
+        onOpenChange={(open) => {
+          if (!open) f.navGuard.cancel();
+        }}
+        onConfirm={f.navGuard.confirm}
+        onCancel={f.navGuard.cancel}
+        variant="warning"
+      />
 
-        {/* Delete Guardrail Dialog */}
-        <CoaDeleteGuardrailDialog
-          account={account ?? null}
-          open={deleteOpen}
-          onOpenChange={setDeleteOpen}
-          isPending={remove.isPending}
-          onConfirmDelete={(acc) => {
-            remove.mutate(acc.id, {
-              onSuccess: () => {
-                toast.success(tt("deleteSuccess", { entity: t("entity") }));
-                f.backToList();
-              },
-            });
-          }}
-        />
+      {/* Delete Guardrail Dialog */}
+      <CoaDeleteGuardrailDialog
+        account={account ?? null}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        isPending={remove.isPending}
+        onConfirmDelete={(acc) => {
+          remove.mutate(acc.id, {
+            onSuccess: () => {
+              toast.success(tt("deleteSuccess", { entity: t("entity") }));
+              f.backToList();
+            },
+          });
+        }}
+      />
 
-        {/* Account Code Grouping Tree Selector Modal */}
-        <CoaTreeSelectorModal
-          open={treeModalOpen}
-          onOpenChange={setTreeModalOpen}
-          category={category}
-          groups={groups}
-          nonLeafIds={nonLeafIds}
-          currentGroupId={selectedGroupId}
-          onSelect={handleTreeSelect}
-        />
-      </FormPageShell>
-    </div>
+      {/* Account Code Grouping Tree Selector Modal */}
+      <CoaTreeSelectorModal
+        open={treeModalOpen}
+        onOpenChange={setTreeModalOpen}
+        category={category}
+        groups={groups}
+        nonLeafIds={nonLeafIds}
+        currentGroupId={selectedGroupId}
+        onSelect={handleTreeSelect}
+      />
+    </FormPageShell>
   );
 }
