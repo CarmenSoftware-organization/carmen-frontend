@@ -139,7 +139,7 @@ describe("RecipeCookView — รูปของสูตร", () => {
       .querySelector("img")
       ?.getAttribute("src");
 
-  it("รูปใหญ่เริ่มที่รูปหลัก + แถบรูปย่อทั้งหมดข้างใต้ เรียงตาม sort_order อยู่บนสุดของคอลัมน์ขั้นตอน", () => {
+  it("รูปใหญ่เริ่มที่รูปหลัก + แถบรูปย่อทั้งหมดข้างใต้ เรียงตาม sort_order อยู่ซ้ายของ hero คู่กับชื่อสูตร ก่อนคอลัมน์ขั้นตอน", () => {
     renderForm(<RecipeCookView recipe={{ ...RECIPE, images: IMAGES }} />);
     expect(heroSrc(2)).toBe("https://files.test/b.jpg");
 
@@ -155,11 +155,19 @@ describe("RecipeCookView — รูปของสูตร", () => {
       "https://files.test/b.jpg",
       "https://files.test/c.jpg",
     ]);
-    // ก่อนกล่อง "ยังไม่มีขั้นตอน" — รูปเห็นก่อนเสมอ
+    // hero แบบหน้าสินค้า: รูปอยู่ช่องแรก (ซ้าย) ชื่อสูตรอยู่ช่องถัดไป (ขวา) ในกริดเดียวกัน
+    const title = screen.getByRole("heading", { level: 1, name: RECIPE.name });
+    const hero = title.parentElement?.parentElement;
+    expect(hero?.firstElementChild).toContainElement(strip);
+    expect(hero?.lastElementChild).toContainElement(title);
+    // รูปไม่อยู่ในคอลัมน์ขั้นตอนแล้ว และมาก่อนคอลัมน์นั้น
     const steps = screen.getByRole("region", {
       name: en.operationPlan.recipe.stepsSection,
     });
-    expect(steps.firstElementChild).toContainElement(strip);
+    expect(steps).not.toContainElement(strip);
+    expect(
+      strip.compareDocumentPosition(steps) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it("กดรูปย่อ → เปลี่ยนรูปใหญ่ ไม่เปิด popup", () => {

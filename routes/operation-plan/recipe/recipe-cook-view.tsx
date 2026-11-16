@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import { useTranslations } from "use-intl";
 import { AlertTriangle, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
@@ -24,6 +24,7 @@ import { activeIngredients, formatQty } from "./recipe-ingredients-cost";
 import { useRecipePrintTemplateId } from "./use-recipe-print-template";
 import { useWakeLock } from "./use-wake-lock";
 import { RecipeCookImages } from "./recipe-cook-images";
+import { RecipeDifficultyPips } from "./recipe-difficulty-pips";
 import { RecipeVideoPlayer } from "./recipe-video-player";
 
 const LIST_PATH = "/operation-plan/recipe";
@@ -37,6 +38,8 @@ const ALLERGEN_LABEL = new Map<string, string>(
  */
 export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
   const t = useTranslations("operationPlan.recipe");
+  const tfl = useTranslations("field");
+  const ts = useTranslations("status");
   const { can, canWrite } = useCan();
   const { toList, returnState } = useListReturn(LIST_PATH);
   const { data: yieldUnit } = useUnitById(recipe.base_yield_unit || undefined);
@@ -83,6 +86,48 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
 
   const totalTime = (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0);
   const allergens = recipe.allergens ?? [];
+  const hasImages = (recipe.images?.length ?? 0) > 0;
+  const difficultyKey = recipe.difficulty?.toLowerCase();
+  // ข้อมูลสรุปข้างรูป — แสดงเฉพาะช่องที่มีค่า (view mode: label จาง + ค่าเข้ม ไม่มีกรอบ)
+  const facts: { label: string; value: ReactNode }[] = [];
+  if (recipe.category?.name)
+    facts.push({ label: tfl("category"), value: recipe.category.name });
+  if (recipe.cuisine?.name)
+    facts.push({ label: tfl("cuisine"), value: recipe.cuisine.name });
+  if (
+    difficultyKey === "easy" ||
+    difficultyKey === "medium" ||
+    difficultyKey === "hard"
+  )
+    facts.push({
+      label: tfl("difficulty"),
+      value: (
+        <>
+          <RecipeDifficultyPips difficulty={recipe.difficulty} />
+          {ts(difficultyKey)}
+        </>
+      ),
+    });
+  if (recipe.base_yield > 0)
+    facts.push({
+      label: t("baseYield"),
+      value: `${formatQty(recipe.base_yield)} ${yieldUnit?.name ?? ""}`.trim(),
+    });
+  if (recipe.prep_time > 0)
+    facts.push({
+      label: t("prepTime"),
+      value: t("cookMinutes", { min: recipe.prep_time }),
+    });
+  if (recipe.cook_time > 0)
+    facts.push({
+      label: t("cookTime"),
+      value: t("cookMinutes", { min: recipe.cook_time }),
+    });
+  if (totalTime > 0 && recipe.prep_time > 0 && recipe.cook_time > 0)
+    facts.push({
+      label: tfl("totalTime"),
+      value: t("cookMinutes", { min: totalTime }),
+    });
   const ingredients = activeIngredients(recipe.ingredients);
   // ติ๊กแล้วเก็บแค่ในหน้านี้ — รีเฟรชแล้วเริ่มใหม่ (ครัวเช็กของต่อรอบที่ทำ)
   const [checked, setChecked] = useState<ReadonlySet<string>>(() => new Set());
@@ -96,31 +141,15 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-4 md:px-6">
-      {/* หัว — ชื่อ + ข้อมูลที่ครัวต้องรู้ก่อนลงมือ */}
-      <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b pb-4">
-        <div className="flex min-w-0 items-start gap-2">
+      {/* แถบบน — กลับ + รหัสสูตร · พิมพ์ / แก้ไข */}
+      <header className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
           <BackButton onClick={() => toList()} label={t("backToRecipes")} />
-          <div className="min-w-0">
-            <h1 className="text-foreground text-2xl font-semibold tracking-tight break-words">
-              {recipe.name}
-            </h1>
-            <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-              <span className="tabular-nums">{recipe.code}</span>
-              {recipe.base_yield > 0 && (
-                <span>
-                  {t("cookYield", {
-                    qty: recipe.base_yield,
-                    unit: yieldUnit?.name ?? "",
-                  })}
-                </span>
-              )}
-              {totalTime > 0 && (
-                <span>{t("cookTotalTime", { min: totalTime })}</span>
-              )}
-            </div>
-          </div>
+          <span className="text-muted-foreground truncate text-sm tabular-nums">
+            {recipe.code}
+          </span>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {/* สูตรนี้สูตรเดียว ด้วย template ที่ BU เลือกใน Default Setting → แบบฟอร์มการพิมพ์ → Recipe
               PrintSingle: ใบเดียว micro-report ไม่พิมพ์บล็อกตัวกรองบนหัวรายงาน (หน้ารายการรายงานยังพิมพ์)
               RecordType/RecordId: QR มุมขวาบนที่สแกนแล้วกลับมาหน้าสูตรนี้ (/qr/recipe/<id>) */}
@@ -144,11 +173,55 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
         </div>
       </header>
 
+      {/* hero แบบหน้าสินค้า — รูปซ้าย (ถ้ามี) · ชื่อ + ข้อมูลที่ครัวต้องรู้ก่อนลงมืออยู่ขวา
+          จอแคบ: รูปอยู่บน ข้อมูลอยู่ล่าง */}
+      <div className="@container mb-6 border-b pb-6">
+        <div
+          className={cn(
+            "grid gap-4 @lg:gap-6",
+            hasImages &&
+              "@lg:grid-cols-[13rem_minmax(0,1fr)] @3xl:grid-cols-[18rem_minmax(0,1fr)]",
+          )}
+        >
+          <RecipeCookImages images={recipe.images} recipeName={recipe.name} />
+          <div className="@container min-w-0">
+            <h1 className="text-foreground text-2xl font-semibold tracking-tight break-words">
+              {recipe.name}
+            </h1>
+            {recipe.description && (
+              <p className="text-muted-foreground mt-2 text-sm break-words whitespace-pre-line">
+                {recipe.description}
+              </p>
+            )}
+            <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 @md:grid-cols-3">
+              {facts.map((f) => (
+                <div key={f.label} className="min-w-0">
+                  <dt className="text-muted-foreground text-xs">{f.label}</dt>
+                  <dd className="text-foreground mt-0.5 flex items-center gap-1.5 text-sm font-medium break-words">
+                    {f.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            {allergens.length > 0 && (
+              <div className="mt-4">
+                <EyeBrow className="mb-1.5">{t("cookAllergens")}</EyeBrow>
+                <div className="flex flex-wrap gap-1.5">
+                  {allergens.map((a) => (
+                    <Badge key={a} variant="secondary">
+                      {ALLERGEN_LABEL.get(a.toLowerCase()) ?? a}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         {/* ขั้นตอน */}
         <section aria-label={t("stepsSection")} className="min-w-0">
-          {/* รูปของสูตร (ถ้ามี) อยู่บนสุดของคอลัมน์ขั้นตอน — กดรูปเพื่อดูขนาดใหญ่ */}
-          <RecipeCookImages images={recipe.images} recipeName={recipe.name} />
           {total === 0 || !current ? (
             <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
               <p>{t("cookNoSteps")}</p>
@@ -228,7 +301,7 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
           )}
         </section>
 
-        {/* ข้าง — เช็กลิสต์วัตถุดิบ · จัดจาน · เก็บรักษา · allergens (ไม่มีตัวเลขเงิน) */}
+        {/* ข้าง — เช็กลิสต์วัตถุดิบ · จัดจาน · เก็บรักษา (ไม่มีตัวเลขเงิน; allergens อยู่ใน hero) */}
         <aside className="space-y-5 md:border-l md:pl-6">
           {ingredients.length > 0 && (
             <div>
@@ -325,18 +398,6 @@ export function RecipeCookView({ recipe }: { readonly recipe: Recipe }) {
               <p className="text-foreground text-sm whitespace-pre-line">
                 {recipe.storage_instructions}
               </p>
-            </div>
-          )}
-          {allergens.length > 0 && (
-            <div>
-              <EyeBrow className="mb-1.5">{t("cookAllergens")}</EyeBrow>
-              <div className="flex flex-wrap gap-1.5">
-                {allergens.map((a) => (
-                  <Badge key={a} variant="secondary">
-                    {ALLERGEN_LABEL.get(a.toLowerCase()) ?? a}
-                  </Badge>
-                ))}
-              </div>
             </div>
           )}
         </aside>
