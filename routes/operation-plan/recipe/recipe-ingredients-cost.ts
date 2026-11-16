@@ -204,6 +204,27 @@ export function inventoryQtyOf(
 }
 
 /**
+ * จำนวนในหน่วย inventory ที่โชว์ใต้ช่องจำนวนของแถววัตถุดิบ
+ *
+ * - `ratio` (หน่วยสูตรต่อ 1 หน่วย inventory) ไม่มี/ไม่เป็นบวก → undefined = ไม่โชว์
+ *   (หน่วยที่ conversion ถูกปิด หรือยังโหลดหน่วยไม่เสร็จ) · หน่วย inventory เอง = ratio 1
+ * - จำนวนว่าง/ไม่ใช่ตัวเลข/ไม่เป็นบวก → undefined
+ * - รู้ต้นทุนของแถวแล้ว → คิดแบบเดียวกับ server ผ่าน `inventoryQtyOf` · ยังไม่รู้ → qty ÷ ratio
+ */
+export function inventoryEquivalentOf(
+  qty: unknown,
+  ratio: number | undefined,
+  unit?: UnitCost,
+): number | undefined {
+  const r = Number(ratio);
+  if (ratio === undefined || !Number.isFinite(r) || r <= 0) return undefined;
+  const q = Number(qty);
+  if (qty === "" || qty === null || !Number.isFinite(q) || q <= 0)
+    return undefined;
+  return unit ? inventoryQtyOf(q, unit, r) : round5(round5(q) / r);
+}
+
+/**
  * สูตรเดียวกับ server: net = round5(inventory_qty × cost_per_unit) ·
  * wastage = round5(net × % เสีย / 100) · line = net + wastage
  */

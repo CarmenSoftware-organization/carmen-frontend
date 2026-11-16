@@ -47,6 +47,7 @@ import {
   draftToInput,
   EMPTY_INGREDIENT,
   formatQty,
+  inventoryEquivalentOf,
   pairCostsFrom,
   isDraftComplete,
   pairKey,
@@ -398,7 +399,7 @@ function IngredientRow({
     name: `ingredients.${i}`,
   });
   const rowErrors = errors.ingredients?.[i];
-  const [ingredientType, productId, subRecipeId, productLabel, unitId] =
+  const [ingredientType, productId, subRecipeId, productLabel, unitId, qty] =
     useWatch({
       control: form.control,
       name: [
@@ -407,6 +408,7 @@ function IngredientRow({
         `ingredients.${i}.sub_recipe_id`,
         `ingredients.${i}.product_label`,
         `ingredients.${i}.ingredient_unit_id`,
+        `ingredients.${i}.qty`,
       ],
     });
   const isRecipe = ingredientType === "recipe";
@@ -453,6 +455,28 @@ function IngredientRow({
 
   const badge =
     cost.state === "ok" ? SOURCE_BADGE[cost.unit.cost_source] : undefined;
+
+  // จำนวนในหน่วย inventory ใต้ช่องจำนวน — ทุกแถวสินค้าที่เลือกหน่วยและกรอกจำนวนแล้ว
+  // (เลือกหน่วย inventory เอง = โชว์ 1:1 ให้ช่องอยู่ที่เดิมทุกแถว)
+  // หาหน่วย inventory: รายการ ingredient-units เรียงตามชื่อ ไม่ได้เอาหน่วย inventory ขึ้นก่อน —
+  // ใช้ inventory_unit_id ของแถวที่บันทึกไว้ของสินค้าเดียวกันก่อน ไม่มีค่อยใช้หน่วยที่ conversion = 1
+  // (backend ไม่ให้หน่วยวัตถุดิบซ้ำกับหน่วย inventory จึงมีหน่วย inventory ตัวเดียวที่เป็น 1 เสมอ)
+  const savedInventoryUnitId = saved.find(
+    (s) => s.product_id === productId,
+  )?.inventory_unit_id;
+  const inventoryUnit = isRecipe
+    ? undefined
+    : (units?.find((u) => u.id === savedInventoryUnitId) ??
+      units?.find((u) => Number(u.conversion) === 1));
+  const unitRatio = units?.find((u) => u.id === unitId)?.conversion;
+  const inventoryQty =
+    inventoryUnit && unitId
+      ? inventoryEquivalentOf(
+          qty,
+          unitRatio,
+          cost.state === "ok" ? cost.unit : undefined,
+        )
+      : undefined;
 
   return (
     <div className="@container rounded-md border p-3">
@@ -599,19 +623,41 @@ function IngredientRow({
           )}
         </div>
 
-        <FieldInput
-          aria-label={tfl("qty")}
-          type="number"
-          inputMode="decimal"
-          min={0}
-          step="any"
-          size="sm"
-          disabled={isDisabled}
-          className="text-right tabular-nums"
-          error={rowErrors?.qty?.message}
-          errorIconAlign="left"
-          {...form.register(`ingredients.${i}.qty`, numberInput)}
-        />
+        <div className="min-w-0">
+          <FieldInput
+            aria-label={tfl("qty")}
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step="any"
+            size="sm"
+            disabled={isDisabled}
+            className="text-right tabular-nums"
+            error={rowErrors?.qty?.message}
+            errorIconAlign="left"
+            {...form.register(`ingredients.${i}.qty`, numberInput)}
+          />
+          {inventoryUnit && inventoryQty !== undefined && (
+            <p
+              aria-label={t("inventoryQtyLabel")}
+              className="text-muted-foreground mt-1 text-right text-xs break-words tabular-nums"
+            >
+              <span className="text-foreground block font-medium">
+                {t("inventoryQtyValue", {
+                  qty: formatQty(inventoryQty),
+                  unit: inventoryUnit.name,
+                })}
+              </span>
+              <span className="text-micro block">
+                {t("inventoryQtyRatio", {
+                  inventoryUnit: inventoryUnit.name,
+                  ratio: formatQty(unitRatio),
+                  unit: unitOptions.find((u) => u.id === unitId)?.name ?? "",
+                })}
+              </span>
+            </p>
+          )}
+        </div>
 
         <div className="relative">
           <FieldInput
