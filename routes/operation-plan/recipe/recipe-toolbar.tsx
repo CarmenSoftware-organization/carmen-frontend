@@ -1,6 +1,9 @@
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
-import { FormToolbar } from "@/components/share/form-toolbar";
+import { Link } from "react-router";
+import { Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FormToolbar, ToolbarLabel } from "@/components/share/form-toolbar";
 import {
   Select,
   SelectContent,
@@ -27,6 +30,8 @@ interface RecipeToolbarProps {
   readonly activity?: { id: string; label?: string };
   /** เปิด sheet comment + ไฟล์แนบ — ส่งเฉพาะสูตรที่บันทึกแล้ว */
   readonly onComment?: () => void;
+  /** ปุ่ม Preview → หน้าดูสูตร (โหมดทำอาหาร) — ส่งเฉพาะสูตรที่บันทึกแล้ว */
+  readonly preview?: { to: string; state?: unknown };
 }
 
 export function RecipeToolbar({
@@ -40,6 +45,7 @@ export function RecipeToolbar({
   onDelete,
   activity,
   onComment,
+  preview,
 }: RecipeToolbarProps) {
   const ts = useTranslations("status");
   const tr = useTranslations("operationPlan.recipe");
@@ -115,6 +121,15 @@ export function RecipeToolbar({
       deleteIsPending={isDeleting}
       activity={activity}
       onComment={onComment}
-    />
+    >
+      {preview && (
+        <Button asChild variant="outline" size="sm" title={tr("preview")}>
+          <Link to={preview.to} state={preview.state}>
+            <Eye />
+            <ToolbarLabel>{tr("preview")}</ToolbarLabel>
+          </Link>
+        </Button>
+      )}
+    </FormToolbar>
   );
 }

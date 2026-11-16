@@ -54,7 +54,14 @@ export interface RecipePreparationStep {
 
 /** แหล่งที่มาของต้นทุนต่อหน่วย — server เลือกตามลำดับ fallback (snapshot = คงราคาที่บันทึกไว้) */
 export type IngredientCostSource =
-  "average" | "last_average" | "standard" | "none" | "snapshot" | "recipe";
+  | "average"
+  | "last_average"
+  | "standard"
+  | "none"
+  | "snapshot"
+  | "recipe"
+  /** ผู้ใช้กรอกต้นทุนของบรรทัดเอง (บรรทัดส่ง `line_cost` มา) — ต้นทุนต่อหน่วยหารย้อนจากค่านั้น */
+  | "manual";
 
 /** วัตถุดิบเป็นสินค้า หรือเป็นสูตรอื่น (sub-recipe) */
 export type IngredientType = "product" | "recipe";
@@ -99,7 +106,10 @@ export interface RecipeIngredientLine extends IngredientCostLine {
   deleted_at?: string | null;
 }
 
-/** หนึ่งบรรทัดใน body ของ preview / PUT — ไม่มีตัวเลขต้นทุน (server คำนวณเอง) */
+/**
+ * หนึ่งบรรทัดใน body ของ preview / PUT — ปกติไม่มีตัวเลขต้นทุน (server คำนวณเอง)
+ * ยกเว้น `line_cost` ที่ผู้ใช้กรอกเอง
+ */
 export interface IngredientInput {
   /** ไม่ส่ง = "product" */
   ingredient_type?: IngredientType;
@@ -111,6 +121,11 @@ export interface IngredientInput {
   /** บรรทัด recipe ไม่บังคับ (server ใช้หน่วยผลผลิตของสูตรฐาน) ถ้าส่งต้องตรงกับหน่วยนั้น */
   ingredient_unit_id?: string;
   wastage_percentage?: number;
+  /**
+   * ต้นทุนของทั้งบรรทัดที่ผู้ใช้กรอกเองตามจำนวนนั้น (รวมของเสียแล้ว เช่น 400 GRAM = 20) — ส่งแล้ว server
+   * เก็บค่านี้ตรง ๆ และหารย้อนเป็นต้นทุนต่อหน่วย (cost_source = "manual") · ไม่ส่ง = server หาต้นทุนเอง
+   */
+  line_cost?: number;
   note?: string | null;
 }
 

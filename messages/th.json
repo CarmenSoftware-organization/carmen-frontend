@@ -5268,7 +5268,11 @@
       "tabHasErrors": "มีช่องที่ต้องแก้",
       "stepVideoUrl": "วิดีโอของขั้นตอน (YouTube)",
       "stepVideoUrlDesc": "ไม่บังคับ — วิดีโอจะเล่นในการ์ดของขั้นนี้บนหน้าสูตร",
-      "stepVideoTitle": "วิดีโอขั้นที่ {n}"
+      "stepVideoTitle": "วิดีโอขั้นที่ {n}",
+      "preview": "ดูตัวอย่าง",
+      "costSourceManual": "กำหนดเอง",
+      "resetManualCost": "ใช้ต้นทุนจากระบบ",
+      "costPerUnitOf": "ต่อ {unit}"
     },
     "posSale": {
       "history": {
