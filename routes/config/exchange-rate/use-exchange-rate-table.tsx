@@ -1,3 +1,4 @@
+import { useConfigTableLayout } from "../shared/use-config-list-table";
 import { useMemo } from "react";
 import {
   type ColumnDef,
@@ -22,6 +23,7 @@ import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 
 interface UseExchangeRateTableOptions {
+  containerWidth?: number;
   items: ExchangeRateItem[];
   totalRecords: number;
   params: ParamsDto;
@@ -37,6 +39,7 @@ export function useExchangeRateTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseExchangeRateTableOptions) {
   const { dateTimeFormat, defaultCurrencyCode } = useProfile();
   const tfl = useTranslations("field");
@@ -103,18 +106,37 @@ export function useExchangeRateTable({
       ...auditColumns<ExchangeRateItem>(tfl, dateTimeFormat),
       actionColumn<ExchangeRateItem>(onDelete, deleteGate),
     ],
-    [params, dateTimeFormat, defaultCurrencyCode, onEdit, onDelete, tfl, deleteGate],
+    [
+      params,
+      dateTimeFormat,
+      defaultCurrencyCode,
+      onEdit,
+      onDelete,
+      tfl,
+      deleteGate,
+    ],
   );
 
+  // 60 index + 180 date + 120 code + 180 rate + 60 actions = 600px.
+  const responsive = useConfigTableLayout(
+    columns,
+    {
+      grow: "exchange_rate",
+      widths: { at_date: 180, currency_code: 120, exchange_rate: 180 },
+    },
+    containerWidth,
+    { created_at: false, updated_at: false },
+  );
   return useReactTable({
     data: items,
-    columns,
+    ...responsive,
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id,
     initialState: {
       columnVisibility: { created_at: false, updated_at: false },
     },
     ...tableConfig,
+    state: { ...tableConfig.state, ...responsive.state },
     pageCount: Math.ceil(totalRecords / Number(params.perpage ?? 10)),
   });
 }

@@ -53,7 +53,8 @@ export function AccountGroupTreeNode({
   const isSelected = selectedNodeId === node.id;
   const isExpanded = expanded[node.id] ?? false;
   const hasChildren = !!node.children?.length;
-  const assignedCount = node.assignedAccounts?.length ?? node.account_count ?? 0;
+  const assignedCount =
+    node.assignedAccounts?.length ?? node.account_count ?? 0;
 
   const highlight = (text: string) => {
     if (!search.trim() || !text) return text;
@@ -63,7 +64,10 @@ export function AccountGroupTreeNode({
     if (parts.length === 1) return text;
     return parts.map((part, i) =>
       regex.test(part) ? (
-        <mark key={i} className="bg-amber-200 dark:bg-amber-900/60 rounded px-0.5">
+        <mark
+          key={i}
+          className="rounded bg-amber-200 px-0.5 dark:bg-amber-900/60"
+        >
           {part}
         </mark>
       ) : (
@@ -78,18 +82,18 @@ export function AccountGroupTreeNode({
       <div
         onClick={() => onSelect(node)}
         className={cn(
-          "group/node flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-xs transition-colors cursor-pointer border",
+          "group/node flex cursor-pointer flex-wrap items-center justify-between gap-2 rounded-lg border px-2 py-1.5 text-xs transition-colors",
           isSelected
             ? "bg-primary/10 border-primary text-primary font-medium"
-            : "border-transparent hover:bg-secondary/60 hover:border-border/60 text-foreground",
+            : "hover:bg-secondary/60 hover:border-border/60 text-foreground border-transparent",
         )}
         style={{ paddingLeft: `${level * 18 + 6}px` }}
       >
-        <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5">
           {/* Expand/Collapse Toggle */}
           <button
             type="button"
-            className="flex size-5 shrink-0 items-center justify-center rounded hover:bg-muted text-muted-foreground transition-colors"
+            className="hover:bg-muted text-muted-foreground flex size-5 shrink-0 items-center justify-center rounded transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               if (hasChildren) toggleExpand(node.id);
@@ -118,7 +122,7 @@ export function AccountGroupTreeNode({
           {/* Level Badge */}
           <span
             className={cn(
-              "px-1.5 py-0.2 rounded text-micro-legal font-mono font-semibold border",
+              "py-0.2 text-micro-legal rounded border px-1.5 font-mono font-semibold",
               LEVEL_BADGE_STYLES[node.level] ?? LEVEL_BADGE_STYLES[1],
             )}
           >
@@ -126,21 +130,28 @@ export function AccountGroupTreeNode({
           </span>
 
           {/* Code */}
-          <span className="font-mono font-bold shrink-0">{highlight(node.code)}</span>
+          <span className="max-w-28 font-mono font-bold break-all">
+            {highlight(node.code)}
+          </span>
 
           {/* Name */}
-          <span className="truncate">{highlight(node.name)}</span>
+          <span className="min-w-0 flex-1 break-words">
+            {highlight(node.name)}
+          </span>
         </div>
 
         {/* Right side: Accounts badge & Actions */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5">
           {assignedCount > 0 && (
             <Badge
               variant="secondary"
               size="sm"
-              className="text-micro-legal font-mono px-1.5 py-0 font-normal bg-secondary text-secondary-foreground"
+              className="text-micro-legal bg-secondary text-secondary-foreground px-1.5 py-0 font-mono font-normal"
             >
-              {assignedCount} Accs
+              <span title={`${assignedCount} accounts`}>
+                {assignedCount}
+                <span className="hidden @md:inline"> Accs</span>
+              </span>
             </Badge>
           )}
 
@@ -148,7 +159,9 @@ export function AccountGroupTreeNode({
             <div
               className={cn(
                 "items-center gap-0.5 transition-opacity",
-                isSelected ? "flex opacity-100" : "hidden group-hover/node:flex opacity-90",
+                isSelected
+                  ? "flex opacity-100"
+                  : "hidden opacity-90 group-hover/node:flex",
               )}
               onClick={(e) => e.stopPropagation()}
             >
@@ -157,7 +170,7 @@ export function AccountGroupTreeNode({
                   type="button"
                   variant="ghost"
                   size="xs"
-                  className="size-6 p-0 text-primary hover:text-primary hover:bg-primary/10"
+                  className="text-primary hover:text-primary hover:bg-primary/10 size-6 p-0"
                   onClick={() => onAddSubGroup(node)}
                   title={t("addSubGroup")}
                   aria-label={t("addSubGroup")}
@@ -169,7 +182,7 @@ export function AccountGroupTreeNode({
                 type="button"
                 variant="ghost"
                 size="xs"
-                className="size-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted size-6 p-0"
                 onClick={() => onMoveGroup(node)}
                 title={t("moveGroup")}
                 aria-label={t("moveGroup")}
@@ -180,7 +193,7 @@ export function AccountGroupTreeNode({
                 type="button"
                 variant="ghost"
                 size="xs"
-                className="size-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted size-6 p-0"
                 onClick={() => onEditGroup(node)}
                 title={t("editGroup")}
                 aria-label={t("editGroup")}
@@ -191,7 +204,7 @@ export function AccountGroupTreeNode({
                 type="button"
                 variant="ghost"
                 size="xs"
-                className="size-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 size-6 p-0"
                 onClick={() => onDeleteGroup(node)}
                 title={t("deleteGroup")}
                 aria-label={t("deleteGroup")}
@@ -205,7 +218,7 @@ export function AccountGroupTreeNode({
 
       {/* Children Nodes */}
       {hasChildren && isExpanded && (
-        <div className="space-y-0.5 mt-0.5">
+        <div className="mt-0.5 space-y-0.5">
           {node.children!.map((child) => (
             <AccountGroupTreeNode
               key={child.id}

@@ -84,6 +84,7 @@ export interface ConfigListTemplateProps<TEntity extends { id: string }> {
   renderCard?: (props: CardRenderProps<TEntity>) => ReactNode;
 
   extraActions?: ReactNode;
+  mock?: boolean;
   hideExportPrint?: boolean;
   exportColumns?: XlsxColumn<TEntity>[];
   exportFileNamePrefix?: string;

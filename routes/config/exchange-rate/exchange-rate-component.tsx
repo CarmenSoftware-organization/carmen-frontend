@@ -1,3 +1,4 @@
+import { useElementWidth } from "@/hooks/use-element-width";
 import { useState } from "react";
 import {
   ArrowRight,
@@ -157,7 +158,9 @@ export default function ExchangeRateComponent() {
     });
   };
 
+  const [setGridBox, gridWidth] = useElementWidth();
   const table = useExchangeRateTable({
+    containerWidth: gridWidth == null ? undefined : gridWidth - 2,
     items,
     totalRecords,
     params,
@@ -246,55 +249,56 @@ export default function ExchangeRateComponent() {
         </div>
       }
     >
-      {isGridMode && grid.isLoading && <CardSkeletonGrid />}
-      {isGridMode && !grid.isLoading && items.length > 0 && (
-        <>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((item) => (
-              <ExchangeRateCard
-                key={item.id}
-                item={item}
-                baseCurrency={baseCurrency}
-                onEdit={(rate) => {
-                  setEditItem(rate);
-                  setDialogMode("edit");
-                  setDialogOpen(true);
-                }}
-                onDelete={(rate) => setDeleteItem(rate)}
-              />
-            ))}
-          </div>
-          {grid.hasMore && (
-            <div ref={grid.sentinelRef} className="flex justify-center py-4">
-              {grid.isLoadingMore && (
-                <Loader2 className="text-muted-foreground size-5 animate-spin" />
-              )}
+      <div ref={setGridBox} className="@container min-w-0">
+        {isGridMode && grid.isLoading && <CardSkeletonGrid />}
+        {isGridMode && !grid.isLoading && items.length > 0 && (
+          <>
+            <div className="grid grid-cols-1 gap-3 @xl:grid-cols-2 @5xl:grid-cols-3 @min-[96rem]:grid-cols-4">
+              {items.map((item) => (
+                <ExchangeRateCard
+                  key={item.id}
+                  item={item}
+                  baseCurrency={baseCurrency}
+                  onEdit={(rate) => {
+                    setEditItem(rate);
+                    setDialogMode("edit");
+                    setDialogOpen(true);
+                  }}
+                  onDelete={(rate) => setDeleteItem(rate)}
+                />
+              ))}
             </div>
-          )}
-        </>
-      )}
-      {isGridMode && !grid.isLoading && items.length === 0 && (
-        <EmptyComponent />
-      )}
-      {!isGridMode && (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoadingHistory}
-          tableLayout={{ headerSticky: true }}
-          emptyMessage={<EmptyComponent />}
-        >
-          <DataGridContainer
-            className={cn("flex flex-col", listGridMaxH(false))}
+            {grid.hasMore && (
+              <div ref={grid.sentinelRef} className="flex justify-center py-4">
+                {grid.isLoadingMore && (
+                  <Loader2 className="text-muted-foreground size-5 animate-spin" />
+                )}
+              </div>
+            )}
+          </>
+        )}
+        {isGridMode && !grid.isLoading && items.length === 0 && (
+          <EmptyComponent />
+        )}
+        {!isGridMode && (
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoadingHistory}
+            tableLayout={{ width: "fixed", headerSticky: true }}
+            emptyMessage={<EmptyComponent />}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination sizes={[5, 10, 25, 50, 100]} />
-          </DataGridContainer>
-        </DataGrid>
-      )}
-
+            <DataGridContainer
+              className={cn("flex flex-col", listGridMaxH(false))}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination sizes={[5, 10, 25, 50, 100]} />
+            </DataGridContainer>
+          </DataGrid>
+        )}
+      </div>
       {dialogMode === "create" ? (
         <ExchangeRateDialog
           mode="create"

@@ -18,6 +18,7 @@ export default function CurrencyComponent() {
   const ts = useTranslations("status");
   return (
     <ConfigListTemplate<Currency>
+      fixedColumnWidths
       translationNamespace="config.currency"
       entityNameField="code"
       useList={useCurrency}

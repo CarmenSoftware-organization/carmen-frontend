@@ -45,6 +45,7 @@ export default function AdjustmentTypeComponent() {
 
   return (
     <ConfigListTemplate<AdjustmentType>
+      fixedColumnWidths
       translationNamespace="config.adjustmentType"
       entityNameField="name"
       useList={useAdjustmentType}

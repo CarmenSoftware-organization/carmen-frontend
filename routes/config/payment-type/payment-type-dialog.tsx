@@ -98,13 +98,13 @@ export function PaymentTypeDialog({
           ),
           cheque_form_id: values.is_cheque ? values.cheque_form_id : null,
         })}
-        contentClassName="max-h-[90dvh] overflow-y-auto sm:max-w-2xl"
+        contentClassName="@container max-h-[90dvh] overflow-y-auto sm:max-w-2xl"
       >
         {({ form, disabled }) => {
           const value = form.watch();
           const mapping = { ...entity, ...value };
           return (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 @md:grid-cols-2">
               <Field>
                 <FieldLabel htmlFor="payment-type-code" required>
                   {tf("code")}
@@ -140,7 +140,7 @@ export function PaymentTypeDialog({
                   />
                 )}
               </Field>
-              <Field className="sm:col-span-2">
+              <Field className="@md:col-span-2">
                 <FieldLabel required>{t("availableModules")}</FieldLabel>
                 {readOnly ? (
                   <FieldPlainText>
@@ -321,7 +321,7 @@ export function PaymentTypeDialog({
                     )}
                 </Field>
               )}
-              <div className="sm:col-span-2">
+              <div className="@md:col-span-2">
                 <Controller
                   name="is_active"
                   control={form.control}

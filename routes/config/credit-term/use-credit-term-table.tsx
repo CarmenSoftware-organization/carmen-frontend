@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
-import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
+import { useConfigListTable } from "../shared/use-config-list-table";
 import {
   auditColumns,
   columnSkeletons,
@@ -14,6 +14,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useTranslations } from "use-intl";
 
 interface UseCreditTermTableOptions {
+  containerWidth?: number;
   data: CreditTerm[];
   totalRecords: number;
   params: ParamsDto;
@@ -29,6 +30,7 @@ export function useCreditTermTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseCreditTermTableOptions) {
   const tfl = useTranslations("field");
   const { dateTimeFormat } = useProfile();
@@ -72,7 +74,12 @@ export function useCreditTermTable({
     ...auditColumns<CreditTerm>(tfl, dateTimeFormat),
   ];
 
-  return useConfigTable<CreditTerm>({
+  return useConfigListTable<CreditTerm>({
+    containerWidth,
+    layout: {
+      grow: "description",
+      widths: { name: 140, value: 100, description: 150 },
+    },
     data,
     columns,
     totalRecords,

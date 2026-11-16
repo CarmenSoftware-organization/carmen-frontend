@@ -13,6 +13,7 @@ export default function LocationComponent() {
 
   return (
     <ConfigListTemplate<Location>
+      fixedColumnWidths
       translationNamespace="config.location"
       entityNameField="name"
       useList={useLocation}

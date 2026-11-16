@@ -125,7 +125,7 @@ function AccountGroupMoveForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-md">
+    <DialogContent className="@container max-h-[90dvh] overflow-y-auto sm:max-w-md">
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
           <MoveRight className="size-4 text-primary" />

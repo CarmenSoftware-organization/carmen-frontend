@@ -1,3 +1,5 @@
+import { ConfigMasterGrid } from "../shared/config-master-grid";
+import { useMasterGridLayout } from "../shared/use-config-list-table";
 import { useAccountingConfigEdit } from "../shared/use-accounting-config-edit";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useMemo, useState } from "react";
@@ -7,18 +9,12 @@ import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Landmark, Plus } from "lucide-react";
 import { toast } from "sonner";
 import SearchInput from "@/components/search-input";
-import EmptyComponent from "@/components/empty-component";
-import DisplayTemplate from "@/components/display-template";
+import { ListPageShell } from "@/components/share/list-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
 import { CellAction } from "@/components/ui/cell-action";
-import {
-  DataGrid,
-  DataGridContainer,
-} from "@/components/ui/data-grid/data-grid";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import {
   Dialog,
@@ -180,14 +176,29 @@ export default function BankAccountPage() {
     [],
   );
 
+  const { gridRef, gridWidth, ...responsive } = useMasterGridLayout(columns, {
+    grow: "account_name",
+    widths: {
+      bank_name: 150,
+      account_number: 170,
+      account_name: 180,
+      branch_name: 150,
+      gl_account_id: 150,
+      currency_code: 100,
+      is_active: 100,
+      actions: 60,
+    },
+    secondary: ["branch_name", "gl_account_id", "currency_code"],
+  });
+
   const table = useReactTable({
     data: rows,
-    columns,
+    ...responsive,
     getCoreRowModel: getCoreRowModel(),
   });
 
   return (
-    <DisplayTemplate
+    <ListPageShell
       title="Bank Accounts"
       description="Business unit bank accounts used for AP payments, AR receipts, and cash management"
       toolbar={
@@ -203,7 +214,7 @@ export default function BankAccountPage() {
         </Button>
       }
     >
-      <div className="bg-muted/30 flex items-center gap-2 rounded-md px-3 py-2 text-xs">
+      <div className="bg-muted/30 flex flex-wrap items-center gap-2 rounded-md px-3 py-2 text-xs [&>svg]:shrink-0">
         <Landmark className="text-primary size-4" />
         <span className="font-medium">GL integration:</span>
         <span className="text-muted-foreground">
@@ -211,24 +222,29 @@ export default function BankAccountPage() {
           automatic journal posting on AP/AR settlement.
         </span>
       </div>
-      <DataGrid
+      {bankQuery.isError && (
+        <ErrorState
+          error={bankQuery.error}
+          message="Unable to load bank accounts"
+          onRetry={() => void bankQuery.refetch()}
+        />
+      )}
+      <ConfigMasterGrid
         table={table}
-        recordCount={rows.length}
-        emptyMessage={<EmptyComponent />}
-        tableLayout={{ width: "auto", headerSticky: true }}
-        tableClassNames={{ bodyRow: "h-10" }}
-      >
-        {bankQuery.isError && (
-          <ErrorState
-            error={bankQuery.error}
-            message="Unable to load bank accounts"
-            onRetry={() => void bankQuery.refetch()}
-          />
-        )}
-        <DataGridContainer scroll className="max-h-[calc(100vh-14rem)]">
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+        gridRef={gridRef}
+        gridWidth={gridWidth}
+        labels={{
+          bank_name: "Bank Name",
+          account_number: "Account Number",
+          account_name: "Account Name",
+          branch_name: "Branch",
+          gl_account_id: "GL Account",
+          currency_code: "Currency",
+          is_active: "Status",
+        }}
+        titleColumn="bank_name"
+        isLoading={bankQuery.isLoading}
+      />
       <BankAccountDialog
         readOnly={!!editing && !canEdit}
         key={editing?.id ?? "new"}
@@ -305,7 +321,7 @@ export default function BankAccountPage() {
         description={warning}
         onConfirm={() => setWarning("")}
       />
-    </DisplayTemplate>
+    </ListPageShell>
   );
 }
 
@@ -342,7 +358,7 @@ function BankAccountDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="@container max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {readOnly
@@ -357,7 +373,7 @@ function BankAccountDialog({
         </DialogHeader>
         <fieldset
           disabled={readOnly}
-          className="grid gap-4 py-2 sm:grid-cols-2"
+          className="grid gap-4 py-2 @md:grid-cols-2"
         >
           <Field>
             <FieldLabel htmlFor="bank-code" required>
@@ -370,7 +386,7 @@ function BankAccountDialog({
               onChange={(event) => setCode(event.target.value.toUpperCase())}
             />
           </Field>
-          <Field className="sm:col-span-2">
+          <Field className="@md:col-span-2">
             <FieldLabel htmlFor="bank-name" required>
               Bank Name
             </FieldLabel>
@@ -404,7 +420,7 @@ function BankAccountDialog({
               onChange={(e) => setCurrencyCode(e.target.value.toUpperCase())}
             />
           </Field>
-          <Field className="sm:col-span-2">
+          <Field className="@md:col-span-2">
             <FieldLabel htmlFor="bank-acc-name" required>
               Account Name
             </FieldLabel>
@@ -433,7 +449,7 @@ function BankAccountDialog({
               onValueChange={setGlAccountId}
             />
           </Field>
-          <div className="sm:col-span-2">
+          <div className="@md:col-span-2">
             <StatusSwitch
               id="bank-account-active"
               checked={active}

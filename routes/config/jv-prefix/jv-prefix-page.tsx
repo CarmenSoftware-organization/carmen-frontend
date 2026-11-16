@@ -1,3 +1,5 @@
+import { ConfigMasterGrid } from "../shared/config-master-grid";
+import { useMasterGridLayout } from "../shared/use-config-list-table";
 import { useAccountingConfigEdit } from "../shared/use-accounting-config-edit";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useMemo, useState } from "react";
@@ -7,18 +9,12 @@ import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Bookmark, Plus } from "lucide-react";
 import { toast } from "sonner";
 import SearchInput from "@/components/search-input";
-import EmptyComponent from "@/components/empty-component";
-import DisplayTemplate from "@/components/display-template";
+import { ListPageShell } from "@/components/share/list-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
 import { CellAction } from "@/components/ui/cell-action";
-import {
-  DataGrid,
-  DataGridContainer,
-} from "@/components/ui/data-grid/data-grid";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import {
   Dialog,
@@ -161,14 +157,28 @@ export default function JvPrefixPage() {
     [],
   );
 
+  const { gridRef, gridWidth, ...responsive } = useMasterGridLayout(columns, {
+    grow: "description",
+    widths: {
+      code: 100,
+      description: 180,
+      description_local: 180,
+      is_default: 90,
+      is_system: 90,
+      is_active: 100,
+      actions: 60,
+    },
+    secondary: ["description_local", "is_system", "is_default"],
+  });
+
   const table = useReactTable({
     data: rows,
-    columns,
+    ...responsive,
     getCoreRowModel: getCoreRowModel(),
   });
 
   return (
-    <DisplayTemplate
+    <ListPageShell
       title="Journal Voucher Prefixes"
       description="Document prefix codes for classifying Journal Vouchers (AJ, PV, RV, etc.)"
       toolbar={
@@ -184,7 +194,7 @@ export default function JvPrefixPage() {
         </Button>
       }
     >
-      <div className="bg-muted/30 flex items-center gap-2 rounded-md px-3 py-2 text-xs">
+      <div className="bg-muted/30 flex flex-wrap items-center gap-2 rounded-md px-3 py-2 text-xs [&>svg]:shrink-0">
         <Bookmark className="text-primary size-4" />
         <span className="font-medium">System prefixes:</span>
         <span className="text-muted-foreground">
@@ -192,17 +202,21 @@ export default function JvPrefixPage() {
           auto-generated transactions.
         </span>
       </div>
-      <DataGrid
+      <ConfigMasterGrid
         table={table}
-        recordCount={rows.length}
-        emptyMessage={<EmptyComponent />}
-        tableLayout={{ width: "auto", headerSticky: true }}
-        tableClassNames={{ bodyRow: "h-10" }}
-      >
-        <DataGridContainer scroll className="max-h-[calc(100vh-14rem)]">
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+        gridRef={gridRef}
+        gridWidth={gridWidth}
+        labels={{
+          code: "Prefix Code",
+          description: "Description (EN)",
+          description_local: "Description (TH)",
+          is_default: "Default",
+          is_system: "System",
+          is_active: "Status",
+        }}
+        titleColumn="code"
+        isLoading={prefixQuery.isLoading}
+      />
       {prefixQuery.isError && (
         <ErrorState
           error={prefixQuery.error}
@@ -288,7 +302,7 @@ export default function JvPrefixPage() {
         description={warning}
         onConfirm={() => setWarning("")}
       />
-    </DisplayTemplate>
+    </ListPageShell>
   );
 }
 
@@ -317,7 +331,7 @@ function JvPrefixDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="@container max-h-[90dvh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
             {readOnly

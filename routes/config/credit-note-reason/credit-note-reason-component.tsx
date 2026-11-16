@@ -16,6 +16,7 @@ export default function CreditNoteReasonComponent() {
   const ts = useTranslations("status");
   return (
     <ConfigListTemplate<CnReason>
+      fixedColumnWidths
       translationNamespace="config.creditNoteReason"
       entityNameField="name"
       useList={useCnReasonConfig}

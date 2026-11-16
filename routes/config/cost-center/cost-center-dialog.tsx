@@ -45,6 +45,7 @@ export function CostCenterDialog({
 
   return (
     <ConfigEntityDialog<CostCenter, CostCenterFormValues, CreateCostCenterDto>
+      contentClassName="@container max-h-[90dvh] overflow-y-auto"
       open={open}
       onOpenChange={onOpenChange}
       entity={costCenter}
@@ -74,7 +75,7 @@ export function CostCenterDialog({
     >
       {({ form, disabled }) => (
         <>
-          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-3">
+          <div className="grid gap-3 @sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
             <Field>
               <FieldLabel htmlFor="cc-code" required>
                 {tfl("code")}
@@ -106,9 +107,7 @@ export function CostCenterDialog({
           </div>
 
           <Field>
-            <FieldLabel htmlFor="cc-group">
-              {tfl("costCenterGroup")}
-            </FieldLabel>
+            <FieldLabel htmlFor="cc-group">{tfl("costCenterGroup")}</FieldLabel>
             <Controller
               control={form.control}
               name="cost_center_group_id"

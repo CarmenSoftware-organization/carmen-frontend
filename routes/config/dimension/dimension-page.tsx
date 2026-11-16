@@ -1,3 +1,5 @@
+import { ConfigMasterGrid } from "../shared/config-master-grid";
+import { useMasterGridLayout } from "../shared/use-config-list-table";
 import { useAccountingConfigEdit } from "../shared/use-accounting-config-edit";
 import {
   useGlDimensions,
@@ -22,18 +24,12 @@ import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Plus, ListTree, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import SearchInput from "@/components/search-input";
-import EmptyComponent from "@/components/empty-component";
-import DisplayTemplate from "@/components/display-template";
+import { ListPageShell } from "@/components/share/list-page-shell";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
 import { CellAction } from "@/components/ui/cell-action";
-import {
-  DataGrid,
-  DataGridContainer,
-} from "@/components/ui/data-grid/data-grid";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import {
   Dialog,
@@ -225,14 +221,29 @@ export default function DimensionPage() {
     [],
   );
 
+  const { gridRef, gridWidth, ...responsive } = useMasterGridLayout(columns, {
+    grow: "name",
+    widths: {
+      index: 60,
+      code: 100,
+      name: 180,
+      name_local: 180,
+      data_type: 120,
+      values_count: 150,
+      is_active: 100,
+      actions: 60,
+    },
+    secondary: ["name_local", "data_type", "index"],
+  });
+
   const table = useReactTable({
     data: rows,
-    columns,
+    ...responsive,
     getCoreRowModel: getCoreRowModel(),
   });
 
   return (
-    <DisplayTemplate
+    <ListPageShell
       title="Dimensions"
       description="Manage GL dimensions and values used by Journal Vouchers"
       toolbar={
@@ -264,18 +275,21 @@ export default function DimensionPage() {
         </Button>
       }
     >
-      <DataGrid
+      <ConfigMasterGrid
         table={table}
-        recordCount={rows.length}
+        gridRef={gridRef}
+        gridWidth={gridWidth}
+        labels={{
+          code: "Code",
+          name: "Dimension Name (EN)",
+          name_local: "Dimension Name (TH)",
+          data_type: "Data Type",
+          values_count: "List Master Items",
+          is_active: "Status",
+        }}
+        titleColumn="code"
         isLoading={dimensionQuery.isLoading || valueQuery.isLoading}
-        emptyMessage={<EmptyComponent />}
-        tableLayout={{ width: "auto", headerSticky: true }}
-        tableClassNames={{ bodyRow: "h-10" }}
-      >
-        <DataGridContainer scroll className="max-h-[calc(100vh-14rem)]">
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+      />
       {(dimensionQuery.isError || valueQuery.isError) && (
         <ErrorState
           error={dimensionQuery.error ?? valueQuery.error}
@@ -396,7 +410,7 @@ export default function DimensionPage() {
         description={warning}
         onConfirm={() => setWarning("")}
       />
-    </DisplayTemplate>
+    </ListPageShell>
   );
 }
 
@@ -447,7 +461,7 @@ export function DimensionDialog({
         if (!saving) onOpenChange(next);
       }}
     >
-      <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-3xl">
+      <DialogContent className="@container max-h-[85dvh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>
             {readOnly
@@ -463,7 +477,7 @@ export function DimensionDialog({
         </DialogHeader>
         <fieldset
           disabled={readOnly || saving}
-          className="grid gap-4 py-2 sm:grid-cols-2"
+          className="grid gap-4 py-2 @md:grid-cols-2"
         >
           <Field>
             <FieldLabel htmlFor="dim-code" required>
@@ -656,7 +670,7 @@ function DimensionValuesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="@container max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             List Master Items for {dimension.name} ({dimension.code})
@@ -668,7 +682,7 @@ function DimensionValuesDialog({
         <div className="space-y-4 py-2">
           {/* Add form */}
           {canEdit && (
-            <div className="bg-muted/30 grid grid-cols-1 items-end gap-2 rounded-md p-3 sm:grid-cols-4">
+            <div className="bg-muted/30 grid grid-cols-1 items-end gap-2 rounded-md p-3 @xl:grid-cols-4">
               <Field>
                 <FieldLabel className="text-xs" required>
                   Code
@@ -725,8 +739,8 @@ function DimensionValuesDialog({
 
           {/* Table */}
           <div className="max-h-60 overflow-hidden overflow-y-auto rounded-md border">
-            <table className="w-full text-xs">
-              <thead className="bg-muted/50 border-b">
+            <table className="block w-full text-xs @xl:table">
+              <thead className="bg-muted/50 sr-only border-b @xl:not-sr-only @xl:table-header-group">
                 <tr>
                   <th className="p-2 text-left">Code</th>
                   <th className="p-2 text-left">Name (EN)</th>
@@ -734,7 +748,7 @@ function DimensionValuesDialog({
                   <th className="p-2 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="block divide-y @xl:table-row-group">
                 {values.length === 0 ? (
                   <tr>
                     <td
@@ -750,11 +764,11 @@ function DimensionValuesDialog({
                     return (
                       <tr
                         key={v.id}
-                        className={isEditing ? "bg-muted/40" : undefined}
+                        className={`block space-y-2 p-3 @xl:table-row @xl:space-y-0 @xl:p-0 ${isEditing ? "bg-muted/40" : ""}`}
                       >
                         {isEditing ? (
                           <>
-                            <td className="p-2">
+                            <td className="block p-2 @xl:table-cell">
                               <FieldInput
                                 value={editCode}
                                 disabled
@@ -764,14 +778,14 @@ function DimensionValuesDialog({
                                 }
                               />
                             </td>
-                            <td className="p-2">
+                            <td className="block p-2 @xl:table-cell">
                               <FieldInput
                                 value={editName}
                                 className="h-7 text-xs"
                                 onChange={(e) => setEditName(e.target.value)}
                               />
                             </td>
-                            <td className="p-2">
+                            <td className="block p-2 @xl:table-cell">
                               <FieldInput
                                 value={editNameLocal}
                                 placeholder="TH (optional)"
@@ -782,11 +796,11 @@ function DimensionValuesDialog({
                               />
                             </td>
 
-                            <td className="p-2 text-right">
+                            <td className="block p-2 text-right @xl:table-cell">
                               <div className="flex items-center justify-end gap-1">
                                 <Button
                                   size="sm"
-                                  className="h-6 px-2 text-xs"
+                                  className="h-8 px-2 text-xs"
                                   onClick={() => void saveEdit(v)}
                                 >
                                   Save
@@ -794,7 +808,7 @@ function DimensionValuesDialog({
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-6 px-2 text-xs"
+                                  className="h-8 px-2 text-xs"
                                   onClick={cancelEdit}
                                 >
                                   Cancel
@@ -804,7 +818,10 @@ function DimensionValuesDialog({
                           </>
                         ) : (
                           <>
-                            <td className="p-2 font-mono font-medium">
+                            <td
+                              data-label="Code"
+                              className="before:text-muted-foreground block p-2 font-mono font-medium before:mr-2 before:content-[attr(data-label)] @xl:table-cell @xl:before:hidden"
+                            >
                               {canEdit ? (
                                 <CellAction onClick={() => startEdit(v)}>
                                   {v.code}
@@ -813,7 +830,7 @@ function DimensionValuesDialog({
                                 v.code
                               )}
                             </td>
-                            <td className="p-2">
+                            <td className="block p-2 @xl:table-cell">
                               {canEdit ? (
                                 <CellAction onClick={() => startEdit(v)}>
                                   {v.name}
@@ -822,11 +839,14 @@ function DimensionValuesDialog({
                                 v.name
                               )}
                             </td>
-                            <td className="text-muted-foreground p-2">
+                            <td
+                              data-label="Name (TH)"
+                              className="text-muted-foreground block p-2 before:mr-2 before:content-[attr(data-label)] @xl:table-cell @xl:before:hidden"
+                            >
                               {v.name_local || "—"}
                             </td>
 
-                            <td className="p-2 text-right">
+                            <td className="block p-2 text-right @xl:table-cell">
                               <DataGridRowActions
                                 activity={{ id: v.id, label: v.code }}
                                 onDelete={
@@ -918,7 +938,7 @@ function DimensionSubValues({
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               size="sm"
               disabled={!selected.length}
               onClick={() => {
@@ -963,7 +983,7 @@ function DimensionSubValues({
         return (
           <div
             key={value.key}
-            className={`grid gap-3 border-b pb-4 ${readOnly ? "sm:grid-cols-3" : "sm:grid-cols-[auto_1fr_1fr_1fr]"}`}
+            className={`grid gap-3 border-b pb-4 ${readOnly ? "@xl:grid-cols-3" : "@xl:grid-cols-[auto_1fr_1fr_1fr]"}`}
           >
             {!readOnly && (
               <Checkbox

@@ -1,21 +1,18 @@
+import { ConfigMasterGrid } from "../shared/config-master-grid";
+import { useMasterGridLayout } from "../shared/use-config-list-table";
 import { useCallback, useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { CalendarRange, Plus, Unlock, CheckCircle2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import DisplayTemplate from "@/components/display-template";
+import { ListPageShell } from "@/components/share/list-page-shell";
 import { CellAction } from "@/components/ui/cell-action";
 import { StatusDotBadge } from "@/components/ui/status-dot-badge";
 import { Button } from "@/components/ui/button";
 import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import {
-  DataGrid,
-  DataGridContainer,
-} from "@/components/ui/data-grid/data-grid";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import {
   Dialog,
   DialogContent,
@@ -40,27 +37,36 @@ import { httpClient } from "@/lib/http-client";
 import type { GlPeriodMaster } from "@/types/accounting-master";
 
 export default function GlPeriodPage() {
+  "use no memo";
   const buCode = useBuCode();
   const queryClient = useQueryClient();
   const periodQuery = useGlPeriods();
   const periods = useMemo(() => periodQuery.data ?? [], [periodQuery.data]);
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear(),
+  );
   const [generatingYear, setGeneratingYear] = useState(false);
-  const [newYearInput, setNewYearInput] = useState<number>(new Date().getFullYear() + 1);
+  const [newYearInput, setNewYearInput] = useState<number>(
+    new Date().getFullYear() + 1,
+  );
   const [warning, setWarning] = useState("");
   const [detail, setDetail] = useState<GlPeriodMaster | null>(null);
 
-  const updatePeriod = useCallback(async (id: string, action: "close" | "reopen") => {
-    if (!buCode) throw new Error("Select a business unit first");
-    const res = await httpClient.post(
-      `${API_ENDPOINTS.GL_PERIODS(buCode)}/${id}/${action}`,
-      {},
-    );
-    if (!res.ok) throw await ApiError.from(res, `Unable to ${action} GL period`);
-    await queryClient.invalidateQueries({
-      queryKey: ["accounting-master", "gl-periods", buCode],
-    });
-  }, [buCode, queryClient]);
+  const updatePeriod = useCallback(
+    async (id: string, action: "close" | "reopen") => {
+      if (!buCode) throw new Error("Select a business unit first");
+      const res = await httpClient.post(
+        `${API_ENDPOINTS.GL_PERIODS(buCode)}/${id}/${action}`,
+        {},
+      );
+      if (!res.ok)
+        throw await ApiError.from(res, `Unable to ${action} GL period`);
+      await queryClient.invalidateQueries({
+        queryKey: ["accounting-master", "gl-periods", buCode],
+      });
+    },
+    [buCode, queryClient],
+  );
 
   const years = useMemo(() => {
     const set = new Set(periods.map((p) => p.fiscal_year));
@@ -84,7 +90,10 @@ export default function GlPeriodPage() {
           <DataGridColumnHeader column={column} title="Period #" />
         ),
         cell: ({ row }) => (
-          <CellAction onClick={() => setDetail(row.original)} className="font-mono font-bold">
+          <CellAction
+            onClick={() => setDetail(row.original)}
+            className="font-mono font-bold"
+          >
             {row.original.period_number === 13
               ? "Period 13 (Year-end Adj)"
               : `Period ${row.original.period_number}`}
@@ -122,16 +131,8 @@ export default function GlPeriodPage() {
         cell: ({ row }) => {
           const s = row.original.status;
           const tone =
-            s === "open"
-              ? "success"
-              : s === "closed"
-                ? "warning"
-                : "neutral";
-          return (
-            <StatusDotBadge tone={tone}>
-              {s}
-            </StatusDotBadge>
-          );
+            s === "open" ? "success" : s === "closed" ? "warning" : "neutral";
+          return <StatusDotBadge tone={tone}>{s}</StatusDotBadge>;
         },
       },
       {
@@ -140,18 +141,29 @@ export default function GlPeriodPage() {
         cell: ({ row }) => {
           const p = row.original;
           return (
-            <DataGridRowActions activity={{ id: p.id, label: `${p.fiscal_year} / Period ${p.period_number}` }}>
+            <DataGridRowActions
+              activity={{
+                id: p.id,
+                label: `${p.fiscal_year} / Period ${p.period_number}`,
+              }}
+            >
               {p.status === "open" && (
                 <DropdownMenuItem
                   onSelect={() => {
                     void updatePeriod(p.id, "close")
-                      .then(() => toast.success(`Period ${p.period_number} closed`))
+                      .then(() =>
+                        toast.success(`Period ${p.period_number} closed`),
+                      )
                       .catch((error) =>
-                        setWarning(error instanceof Error ? error.message : "Unable to close period"),
+                        setWarning(
+                          error instanceof Error
+                            ? error.message
+                            : "Unable to close period",
+                        ),
                       );
                   }}
                 >
-                  <CheckCircle2 className="size-3.5 mr-1" />
+                  <CheckCircle2 className="mr-1 size-3.5" />
                   Close Period
                 </DropdownMenuItem>
               )}
@@ -160,21 +172,25 @@ export default function GlPeriodPage() {
                   <DropdownMenuItem
                     onSelect={() => {
                       void updatePeriod(p.id, "reopen")
-                        .then(() => toast.success(`Period ${p.period_number} re-opened`))
+                        .then(() =>
+                          toast.success(`Period ${p.period_number} re-opened`),
+                        )
                         .catch((error) =>
-                          setWarning(error instanceof Error ? error.message : "Unable to reopen period"),
+                          setWarning(
+                            error instanceof Error
+                              ? error.message
+                              : "Unable to reopen period",
+                          ),
                         );
                     }}
                   >
-                    <Unlock className="size-3.5 mr-1" />
+                    <Unlock className="mr-1 size-3.5" />
                     Re-open
                   </DropdownMenuItem>
                 </>
               )}
               {p.status === "locked" && (
-                <DropdownMenuItem disabled>
-                  Locked
-                </DropdownMenuItem>
+                <DropdownMenuItem disabled>Locked</DropdownMenuItem>
               )}
             </DataGridRowActions>
           );
@@ -185,26 +201,41 @@ export default function GlPeriodPage() {
     [updatePeriod],
   );
 
+  const { gridRef, gridWidth, ...responsive } = useMasterGridLayout(columns, {
+    grow: "status",
+    widths: {
+      period_number: 200,
+      fiscal_year: 100,
+      start_date: 125,
+      end_date: 125,
+      status: 110,
+      actions: 60,
+    },
+    secondary: ["fiscal_year"],
+  });
+
   const table = useReactTable({
     data: rows,
-    columns,
+    ...responsive,
     getCoreRowModel: getCoreRowModel(),
   });
 
   return (
-    <DisplayTemplate
+    <ListPageShell
       title="Accounting GL Periods"
       description="Fiscal year accounting periods control document posting dates and period-end close"
       toolbar={
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground">Fiscal Year:</span>
+          <span className="text-muted-foreground text-xs font-medium">
+            Fiscal Year:
+          </span>
           <div className="flex gap-1">
             {years.map((y) => (
               <Button
                 key={y}
                 size="sm"
                 variant={selectedYear === y ? "default" : "outline"}
-                className="h-8 text-xs font-mono"
+                className="h-8 font-mono text-xs"
                 onClick={() => setSelectedYear(y)}
               >
                 {y}
@@ -219,11 +250,12 @@ export default function GlPeriodPage() {
         </Button>
       }
     >
-      <div className="bg-muted/30 flex items-center gap-2 rounded-md px-3 py-2 text-xs">
+      <div className="bg-muted/30 flex flex-wrap items-center gap-2 rounded-md px-3 py-2 text-xs [&>svg]:shrink-0">
         <CalendarRange className="text-primary size-4" />
         <span className="font-medium">13-Period structure:</span>
         <span className="text-muted-foreground">
-          Generates 12 regular monthly calendar periods plus Period 13 specifically dedicated for year-end audit adjustments.
+          Generates 12 regular monthly calendar periods plus Period 13
+          specifically dedicated for year-end audit adjustments.
         </span>
       </div>
       {periodQuery.isError && (
@@ -233,44 +265,67 @@ export default function GlPeriodPage() {
           onRetry={() => void periodQuery.refetch()}
         />
       )}
-      <DataGrid
+      <ConfigMasterGrid
         table={table}
-        recordCount={rows.length}
-        emptyMessage={
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            No periods generated for fiscal year {selectedYear}.
-          </div>
-        }
-        tableLayout={{ width: "auto", headerSticky: true }}
-        tableClassNames={{ bodyRow: "h-10" }}
-      >
-        <DataGridContainer scroll className="max-h-[calc(100vh-14rem)]">
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+        gridRef={gridRef}
+        gridWidth={gridWidth}
+        labels={{
+          period_number: "Period #",
+          fiscal_year: "Fiscal Year",
+          start_date: "Start Date",
+          end_date: "End Date",
+          status: "Status",
+        }}
+        titleColumn="period_number"
+        isLoading={periodQuery.isLoading}
+      />
 
       <Dialog open={!!detail} onOpenChange={(open) => !open && setDetail(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="@container max-h-[90dvh] overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>GL Period Detail</DialogTitle>
-            <DialogDescription>Fiscal period dates and current status.</DialogDescription>
+            <DialogDescription>
+              Fiscal period dates and current status.
+            </DialogDescription>
           </DialogHeader>
-          {detail && <div className="grid gap-4 sm:grid-cols-2">
-            <Field><FieldLabel>Fiscal Year</FieldLabel><FieldPlainText>{detail.fiscal_year}</FieldPlainText></Field>
-            <Field><FieldLabel>Period</FieldLabel><FieldPlainText>{detail.period_number}</FieldPlainText></Field>
-            <Field><FieldLabel>Start Date</FieldLabel><FieldPlainText>{detail.start_date}</FieldPlainText></Field>
-            <Field><FieldLabel>End Date</FieldLabel><FieldPlainText>{detail.end_date}</FieldPlainText></Field>
-            <Field><FieldLabel>Status</FieldLabel><FieldPlainText>{detail.status}</FieldPlainText></Field>
-          </div>}
-          <DialogFooter><Button variant="outline" onClick={() => setDetail(null)}>Close</Button></DialogFooter>
+          {detail && (
+            <div className="grid gap-4 @md:grid-cols-2">
+              <Field>
+                <FieldLabel>Fiscal Year</FieldLabel>
+                <FieldPlainText>{detail.fiscal_year}</FieldPlainText>
+              </Field>
+              <Field>
+                <FieldLabel>Period</FieldLabel>
+                <FieldPlainText>{detail.period_number}</FieldPlainText>
+              </Field>
+              <Field>
+                <FieldLabel>Start Date</FieldLabel>
+                <FieldPlainText>{detail.start_date}</FieldPlainText>
+              </Field>
+              <Field>
+                <FieldLabel>End Date</FieldLabel>
+                <FieldPlainText>{detail.end_date}</FieldPlainText>
+              </Field>
+              <Field>
+                <FieldLabel>Status</FieldLabel>
+                <FieldPlainText>{detail.status}</FieldPlainText>
+              </Field>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDetail(null)}>
+              Close
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
       <Dialog open={generatingYear} onOpenChange={setGeneratingYear}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="@container max-h-[90dvh] overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Generate Fiscal Year Periods</DialogTitle>
             <DialogDescription>
-              Automatically creates 12 monthly periods and 1 year-end adjustment period for the specified year.
+              Automatically creates 12 monthly periods and 1 year-end adjustment
+              period for the specified year.
             </DialogDescription>
           </DialogHeader>
           <div className="py-2">
@@ -282,7 +337,11 @@ export default function GlPeriodPage() {
                 id="fiscal-year-input"
                 type="number"
                 value={newYearInput}
-                onChange={(e) => setNewYearInput(Number(e.target.value) || new Date().getFullYear() + 1)}
+                onChange={(e) =>
+                  setNewYearInput(
+                    Number(e.target.value) || new Date().getFullYear() + 1,
+                  )
+                }
               />
             </Field>
           </div>
@@ -298,7 +357,11 @@ export default function GlPeriodPage() {
                     `${API_ENDPOINTS.GL_PERIODS(buCode)}/years`,
                     { fiscal_year: newYearInput },
                   );
-                  if (!res.ok) throw await ApiError.from(res, "Unable to generate fiscal year");
+                  if (!res.ok)
+                    throw await ApiError.from(
+                      res,
+                      "Unable to generate fiscal year",
+                    );
                   await queryClient.invalidateQueries({
                     queryKey: ["accounting-master", "gl-periods", buCode],
                   });
@@ -306,7 +369,11 @@ export default function GlPeriodPage() {
                   toast.success(`13 periods generated for FY ${newYearInput}`);
                   setGeneratingYear(false);
                 } catch (err) {
-                  setWarning(err instanceof Error ? err.message : "Unable to generate fiscal year");
+                  setWarning(
+                    err instanceof Error
+                      ? err.message
+                      : "Unable to generate fiscal year",
+                  );
                 }
               }}
             >
@@ -322,6 +389,6 @@ export default function GlPeriodPage() {
         description={warning}
         onConfirm={() => setWarning("")}
       />
-    </DisplayTemplate>
+    </ListPageShell>
   );
 }

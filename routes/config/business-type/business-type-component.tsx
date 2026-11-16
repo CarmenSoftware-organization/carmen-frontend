@@ -23,6 +23,7 @@ export default function BusinessTypeComponent() {
   const ts = useTranslations("status");
   return (
     <ConfigListTemplate<BusinessType>
+      fixedColumnWidths
       translationNamespace="config.businessType"
       entityNameField="name"
       useList={useBusinessType}

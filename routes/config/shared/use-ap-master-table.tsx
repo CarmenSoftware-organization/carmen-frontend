@@ -6,7 +6,7 @@ import {
   auditColumns,
   columnSkeletons,
 } from "@/components/ui/data-grid/columns";
-import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
+import { useConfigListTable } from "./use-config-list-table";
 import { useProfile } from "@/hooks/use-profile";
 import type { ConfigTableHookOptions } from "@/components/templates/types";
 import type { ApMasterBase } from "@/types/accounting-master";
@@ -30,11 +30,6 @@ export function useApMasterTable<T extends ApMasterBase>(
 ) {
   const tf = useTranslations("field");
   const { dateTimeFormat } = useProfile();
-  const width = options.containerWidth ?? 1000;
-  const extraWidth = extraColumns.reduce(
-    (sum, column) => sum + (column.size ?? 150),
-    0,
-  );
   const columns: ColumnDef<T>[] = [
     {
       accessorKey: "code",
@@ -51,7 +46,7 @@ export function useApMasterTable<T extends ApMasterBase>(
     },
     {
       accessorKey: "description",
-      size: Math.max(180, width - 55 - 120 - 100 - 55 - extraWidth),
+      size: 180,
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tf("description")} />
       ),
@@ -65,7 +60,8 @@ export function useApMasterTable<T extends ApMasterBase>(
     ...extraColumns,
     ...auditColumns<T>(tf, dateTimeFormat),
   ];
-  return useConfigTable({
+  return useConfigListTable({
+    layout: { grow: "description", widths: {} },
     ...options,
     columns,
     hideIndex: true,

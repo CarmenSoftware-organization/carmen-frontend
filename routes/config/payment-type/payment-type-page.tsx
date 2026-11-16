@@ -19,7 +19,6 @@ import {
 import { MasterDeleteDialog } from "../shared/ap-master-dependencies";
 import { paymentTypeCrud } from "./use-payment-type";
 import { PaymentTypeDialog } from "./payment-type-dialog";
-import { ApMasterMockStatus } from "../shared/ap-master-mock-status";
 
 function usePaymentTypeTable(
   options: ConfigTableHookOptions<PaymentTypeMaster>,
@@ -105,7 +104,7 @@ export default function PaymentTypePage() {
   return (
     <ConfigListTemplate<PaymentTypeMaster>
       translationNamespace="config.paymentType"
-      extraActions={<ApMasterMockStatus />}
+      mock
       entityNameField="code"
       useList={paymentTypeCrud.useList}
       useDelete={paymentTypeCrud.useDelete}

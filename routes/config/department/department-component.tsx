@@ -12,6 +12,7 @@ export default function DepartmentComponent() {
   const ts = useTranslations("status");
   return (
     <ConfigListTemplate<Department>
+      fixedColumnWidths
       translationNamespace="config.department"
       entityNameField="name"
       useList={useDepartment}

@@ -6,7 +6,7 @@ import { useGlAccountGroups } from "../shared/use-gl-account-groups";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
-import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
+import { useConfigListTable } from "../shared/use-config-list-table";
 import {
   auditColumns,
   customActionColumn,
@@ -20,6 +20,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { Badge } from "@/components/ui/badge";
 
 interface UseCoaTableOptions {
+  containerWidth?: number;
   data: ChartOfAccount[];
   totalRecords: number;
   params: ParamsDto;
@@ -35,6 +36,7 @@ export function useCoaTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseCoaTableOptions) {
   const t = useTranslations("config.chartOfAccounts");
   const tfl = useTranslations("field");
@@ -187,7 +189,18 @@ export function useCoaTable({
     )),
   ];
 
-  return useConfigTable<ChartOfAccount>({
+  return useConfigListTable<ChartOfAccount>({
+    containerWidth,
+    layout: {
+      grow: "description_1",
+      widths: {
+        code: 100,
+        description_1: 180,
+        category: 180,
+        account_group_id: 180,
+      },
+      secondary: ["account_group_id", "category"],
+    },
     data,
     columns,
     totalRecords,

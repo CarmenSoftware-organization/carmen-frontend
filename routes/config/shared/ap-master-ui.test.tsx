@@ -33,7 +33,6 @@ import {
   mockDependencies,
   mockMasterPage,
 } from "./ap-master-mock-data";
-import { ApMasterMockStatus } from "./ap-master-mock-status";
 
 vi.mock("@/hooks/use-bu-code", () => ({ useBuCode: () => "BU" }));
 vi.mock("@/lib/http-client", () => ({
@@ -66,7 +65,7 @@ afterEach(() => {
 });
 
 describe("AP master session mockups", () => {
-  it("labels the preview and loads the three HTML sample collections without requests", () => {
+  it("loads the three HTML sample collections without requests", () => {
     const { Wrapper } = fixture();
     const { result } = renderHook(
       () => ({
@@ -79,12 +78,6 @@ describe("AP master session mockups", () => {
     expect(result.current.payment.data.paginate.total).toBe(5);
     expect(result.current.form.data.paginate.total).toBe(4);
     expect(result.current.service.data.paginate.total).toBe(6);
-    render(
-      <Wrapper>
-        <ApMasterMockStatus />
-      </Wrapper>,
-    );
-    expect(screen.getByRole("status")).toHaveTextContent("MOCKUP");
   });
   it("keeps page data stable across renders so card pagination does not loop", () => {
     const { Wrapper } = fixture();

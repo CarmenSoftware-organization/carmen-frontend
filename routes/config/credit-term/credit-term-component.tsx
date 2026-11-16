@@ -13,6 +13,7 @@ export default function CreditTermComponent() {
   const ts = useTranslations("status");
   return (
     <ConfigListTemplate<CreditTerm>
+      fixedColumnWidths
       translationNamespace="config.creditTerm"
       entityNameField="name"
       useList={useCreditTerm}

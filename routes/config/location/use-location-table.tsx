@@ -2,7 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
-import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
+import { useConfigListTable } from "../shared/use-config-list-table";
 import {
   auditColumns,
   columnSkeletons,
@@ -17,6 +17,7 @@ import { LocationTypeLabel } from "@/components/share/location-type-label";
 import { useCostCenter } from "@/hooks/use-cost-center";
 
 interface UseLocationTableOptions {
+  containerWidth?: number;
   data: Location[];
   totalRecords: number;
   params: ParamsDto;
@@ -32,6 +33,7 @@ export function useLocationTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseLocationTableOptions) {
   const tfl = useTranslations("field");
   const tl = useTranslations("config.location");
@@ -154,7 +156,20 @@ export function useLocationTable({
     ...auditColumns<Location>(tfl, dateTimeFormat),
   ];
 
-  return useConfigTable<Location>({
+  return useConfigListTable<Location>({
+    containerWidth,
+    layout: {
+      grow: "name",
+      widths: {
+        code: 100,
+        name: 180,
+        location_type: 120,
+        physical_count_type: 140,
+        delivery_point: 180,
+        cost_center: 180,
+      },
+      secondary: ["physical_count_type", "cost_center", "delivery_point"],
+    },
     data,
     columns,
     totalRecords,

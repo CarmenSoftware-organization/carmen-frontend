@@ -8,7 +8,7 @@ import {
   IA_TYPE_ICON,
   IA_TYPE_ICON_COLOR,
 } from "@/constant/inventory-adjustment";
-import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
+import { useConfigListTable } from "../shared/use-config-list-table";
 import {
   auditColumns,
   columnSkeletons,
@@ -20,6 +20,7 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
 
 interface UseAdjustmentTypeTableOptions {
+  containerWidth?: number;
   data: AdjustmentType[];
   totalRecords: number;
   params: ParamsDto;
@@ -35,6 +36,7 @@ export function useAdjustmentTypeTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseAdjustmentTypeTableOptions) {
   const tfl = useTranslations("field");
   const { dateTimeFormat } = useProfile();
@@ -95,7 +97,9 @@ export function useAdjustmentTypeTable({
     ...auditColumns<AdjustmentType>(tfl, dateTimeFormat),
   ];
 
-  return useConfigTable<AdjustmentType>({
+  return useConfigListTable<AdjustmentType>({
+    containerWidth,
+    layout: { grow: "name", widths: { code: 100, name: 180, type: 130 } },
     data,
     columns,
     totalRecords,

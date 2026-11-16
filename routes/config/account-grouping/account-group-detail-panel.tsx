@@ -50,46 +50,51 @@ export function AccountGroupDetailPanel({
 
   if (!selectedNode) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-8 text-center text-muted-foreground">
-        <FolderTree className="size-12 mb-3 opacity-30" />
+      <div className="text-muted-foreground @container flex h-full min-w-0 flex-col items-center justify-center p-8 text-center">
+        <FolderTree className="mb-3 size-12 opacity-30" />
         <p className="text-sm font-medium">{t("noGroupSelected")}</p>
       </div>
     );
   }
 
-  const hasChildren = Boolean(selectedNode.children && selectedNode.children.length > 0);
+  const hasChildren = Boolean(
+    selectedNode.children && selectedNode.children.length > 0,
+  );
   const assignedList = selectedNode.assignedAccounts ?? [];
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="@container flex h-full min-w-0 flex-col">
       {/* Panel Header */}
-      <div className="flex h-11 items-center justify-between border-b px-4 bg-muted/30">
-        <div className="flex items-center gap-2 min-w-0">
+      <div className="bg-muted/30 flex min-h-11 flex-wrap items-center justify-between gap-2 border-b px-3 py-1.5">
+        <div className="flex min-w-0 items-center gap-2">
           <span
-            className={`px-2 py-0.5 rounded text-xs font-mono font-bold border ${
+            className={`rounded border px-2 py-0.5 font-mono text-xs font-bold ${
               LEVEL_COLOR_MAP[selectedNode.level] ?? LEVEL_COLOR_MAP[1]
             }`}
           >
             L{selectedNode.level} Group
           </span>
-          <span className="font-mono font-bold text-foreground text-sm truncate">
+          <span className="text-foreground truncate font-mono text-sm font-bold">
             {selectedNode.code}
           </span>
         </div>
 
         {/* Quick Toolbar */}
         {!readOnly && (
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex shrink-0 items-center gap-1.5">
             {selectedNode.level < 4 && (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 className="gap-1.5"
+                title={t("addSubGroup")}
                 onClick={() => onAddSubGroup(selectedNode)}
               >
                 <Plus className="size-3.5" />
-                <span>{t("addSubGroup")}</span>
+                <span className="sr-only @xl:not-sr-only">
+                  {t("addSubGroup")}
+                </span>
               </Button>
             )}
             <Button
@@ -97,10 +102,11 @@ export function AccountGroupDetailPanel({
               variant="outline"
               size="sm"
               className="gap-1.5"
+              title={t("moveGroup")}
               onClick={() => onMoveGroup(selectedNode)}
             >
               <MoveRight className="size-3.5" />
-              <span>{t("moveGroup")}</span>
+              <span className="sr-only @xl:not-sr-only">{t("moveGroup")}</span>
             </Button>
             <Button
               type="button"
@@ -125,29 +131,37 @@ export function AccountGroupDetailPanel({
         )}
       </div>
 
-      <ScrollArea className="flex-1 p-4 space-y-4">
+      <ScrollArea className="flex-1 space-y-4 p-4">
         {/* Node Information Card */}
-        <div className="rounded-lg border bg-secondary/20 p-3.5 space-y-2.5">
+        <div className="bg-secondary/20 space-y-2.5 rounded-lg border p-3.5">
           <div className="space-y-1">
-            <div className="text-xs text-muted-foreground font-medium">Group Name</div>
-            <div className="text-sm font-bold text-foreground">{selectedNode.name}</div>
+            <div className="text-muted-foreground text-xs font-medium">
+              Group Name
+            </div>
+            <div className="text-foreground text-sm font-bold">
+              {selectedNode.name}
+            </div>
             {selectedNode.name_local && (
-              <div className="text-xs text-muted-foreground">{selectedNode.name_local}</div>
+              <div className="text-muted-foreground text-xs">
+                {selectedNode.name_local}
+              </div>
             )}
           </div>
 
           {/* Breadcrumb Hierarchy */}
           {breadcrumbs.length > 0 && (
-            <div className="pt-2 border-t border-border/60">
-              <div className="text-micro text-muted-foreground mb-1">Hierarchy Path:</div>
-              <div className="flex flex-wrap items-center gap-1 text-xs font-mono">
+            <div className="border-border/60 border-t pt-2">
+              <div className="text-micro text-muted-foreground mb-1">
+                Hierarchy Path:
+              </div>
+              <div className="flex flex-wrap items-center gap-1 font-mono text-xs">
                 {breadcrumbs.map((b, idx) => (
                   <span key={b.id} className="inline-flex items-center gap-1">
-                    <span className="rounded bg-card border border-border px-1.5 py-0.5 font-semibold text-foreground">
+                    <span className="bg-card border-border text-foreground rounded border px-1.5 py-0.5 font-semibold">
                       L{b.level}:{b.code}
                     </span>
                     {idx < breadcrumbs.length - 1 && (
-                      <ChevronRight className="size-3 text-muted-foreground/60" />
+                      <ChevronRight className="text-muted-foreground/60 size-3" />
                     )}
                   </span>
                 ))}
@@ -156,21 +170,25 @@ export function AccountGroupDetailPanel({
           )}
 
           {/* Counts */}
-          <div className="flex items-center justify-between pt-2 border-t border-border/60 text-xs text-muted-foreground">
+          <div className="border-border/60 text-muted-foreground flex flex-wrap items-center gap-2 border-t pt-2 text-xs">
             <span>
-              Child Groups: <strong className="text-foreground">{selectedNode.children?.length ?? 0}</strong>
+              Child Groups:{" "}
+              <strong className="text-foreground">
+                {selectedNode.children?.length ?? 0}
+              </strong>
             </span>
             <span>
-              Assigned Accounts: <strong className="text-foreground">{assignedList.length}</strong>
+              Assigned Accounts:{" "}
+              <strong className="text-foreground">{assignedList.length}</strong>
             </span>
           </div>
         </div>
 
         {/* Assigned Accounts Section */}
-        <div className="space-y-2 mt-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Layers className="size-3.5 text-primary" />
+        <div className="mt-4 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-muted-foreground flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase">
+              <Layers className="text-primary size-3.5" />
               <span>
                 {t("assignedAccounts")} ({assignedList.length})
               </span>
@@ -200,45 +218,52 @@ export function AccountGroupDetailPanel({
           )}
 
           {/* Accounts Table Container */}
-          <div className="rounded-lg border bg-card overflow-hidden">
+          <div className="bg-card overflow-hidden rounded-lg border">
             {assignedList.length > 0 ? (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="border-b bg-muted/40 text-muted-foreground font-semibold">
+                <table className="block w-full text-left text-xs @2xl:table">
+                  <thead className="bg-muted/40 text-muted-foreground sr-only border-b font-semibold @2xl:not-sr-only @2xl:table-header-group">
                     <tr>
                       <th className="px-3 py-2">Code</th>
                       <th className="px-3 py-2">Account Name</th>
                       <th className="px-3 py-2">Type</th>
-                      {!readOnly && <th className="px-3 py-2 text-right">Action</th>}
+                      {!readOnly && (
+                        <th className="block px-3 py-2 text-right @2xl:table-cell @2xl:w-px">
+                          Action
+                        </th>
+                      )}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/60">
+                  <tbody className="divide-border/60 block divide-y @2xl:table-row-group">
                     {assignedList.map((acc) => (
-                      <tr key={acc.id} className="hover:bg-muted/30 transition-colors">
-                        <td className="px-3 py-2 font-mono font-bold text-primary">
+                      <tr
+                        key={acc.id}
+                        className="hover:bg-muted/30 block p-2 transition-colors @2xl:table-row @2xl:p-0"
+                      >
+                        <td className="text-primary block px-3 py-2 font-mono font-bold @2xl:table-cell @2xl:w-px @2xl:whitespace-nowrap">
                           {acc.code}
                         </td>
-                        <td className="px-3 py-2">
-                          <div className="font-medium text-foreground truncate max-w-[180px]">
+                        <td className="block px-3 py-2 @2xl:table-cell @2xl:w-full @2xl:max-w-0">
+                          <div className="text-foreground font-medium break-words @2xl:truncate">
                             {acc.description_1}
                           </div>
                           {acc.description_2 && (
-                            <div className="text-micro text-muted-foreground truncate max-w-[180px]">
+                            <div className="text-micro text-muted-foreground break-words @2xl:truncate">
                               {acc.description_2}
                             </div>
                           )}
                         </td>
-                        <td className="px-3 py-2 font-mono text-muted-foreground">
+                        <td className="text-muted-foreground block px-3 py-2 font-mono @2xl:table-cell @2xl:w-px @2xl:whitespace-nowrap">
                           {acc.type}
                         </td>
                         {!readOnly && (
-                          <td className="px-3 py-2 text-right">
+                          <td className="block px-3 py-2 text-right @2xl:table-cell @2xl:w-px">
                             <Button
                               type="button"
                               variant="ghost"
                               size="xs"
                               onClick={() => onUnassignAccount(acc)}
-                              className="h-6 px-2 text-micro-legal text-destructive hover:bg-destructive/10 hover:text-destructive gap-1"
+                              className="text-micro-legal text-destructive hover:bg-destructive/10 hover:text-destructive h-8 gap-1 px-2"
                               title={t("unassign")}
                             >
                               <Unlink className="size-3" />
@@ -252,8 +277,10 @@ export function AccountGroupDetailPanel({
                 </table>
               </div>
             ) : (
-              <div className="p-8 text-center text-xs text-muted-foreground space-y-1">
-                <p>{hasChildren ? t("leafOnlyNotice") : t("noAssignedAccounts")}</p>
+              <div className="text-muted-foreground space-y-1 p-8 text-center text-xs">
+                <p>
+                  {hasChildren ? t("leafOnlyNotice") : t("noAssignedAccounts")}
+                </p>
               </div>
             )}
           </div>

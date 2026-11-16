@@ -2,7 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
-import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
+import { useConfigListTable } from "../shared/use-config-list-table";
 import {
   auditColumns,
   columnSkeletons,
@@ -14,6 +14,7 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
 
 interface UseDeliveryPointTableOptions {
+  containerWidth?: number;
   data: DeliveryPoint[];
   totalRecords: number;
   params: ParamsDto;
@@ -29,6 +30,7 @@ export function useDeliveryPointTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseDeliveryPointTableOptions) {
   const tfl = useTranslations("field");
   const { dateTimeFormat } = useProfile();
@@ -49,7 +51,9 @@ export function useDeliveryPointTable({
     ...auditColumns<DeliveryPoint>(tfl, dateTimeFormat),
   ];
 
-  return useConfigTable<DeliveryPoint>({
+  return useConfigListTable<DeliveryPoint>({
+    containerWidth,
+    layout: { grow: "is_active", widths: { name: 240 } },
     data,
     columns,
     totalRecords,

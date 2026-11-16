@@ -20,6 +20,7 @@ export default function ExtraCostComponent() {
   const ts = useTranslations("status");
   return (
     <ConfigListTemplate<ExtraCost>
+      fixedColumnWidths
       translationNamespace="config.extraCost"
       entityNameField="name"
       useList={useExtraCost}

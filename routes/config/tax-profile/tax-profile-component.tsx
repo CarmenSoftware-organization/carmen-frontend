@@ -20,6 +20,7 @@ export default function TaxProfileComponent() {
   const ts = useTranslations("status");
   return (
     <ConfigListTemplate<TaxProfile>
+      fixedColumnWidths
       translationNamespace="config.taxProfile"
       entityNameField="name"
       useList={useTaxProfile}

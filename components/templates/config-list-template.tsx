@@ -171,6 +171,7 @@ export function ConfigListTemplate<TEntity extends { id: string }>({
   renderDeleteDialog,
   renderCard,
   extraActions,
+  mock,
   hideExportPrint,
   exportColumns,
   exportFileNamePrefix,
@@ -331,6 +332,7 @@ export function ConfigListTemplate<TEntity extends { id: string }>({
   return (
     <ListPageShell
       title={t("title")}
+      mock={mock}
       description={t("desc")}
       pullRefresh={pullRefresh}
       actions={

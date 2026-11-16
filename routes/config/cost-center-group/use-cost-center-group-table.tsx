@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
-import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
+import { useConfigListTable } from "../shared/use-config-list-table";
 import {
   auditColumns,
   columnSkeletons,
@@ -14,6 +14,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useTranslations } from "use-intl";
 
 interface UseCostCenterGroupTableOptions {
+  containerWidth?: number;
   data: CostCenterGroup[];
   totalRecords: number;
   params: ParamsDto;
@@ -29,6 +30,7 @@ export function useCostCenterGroupTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseCostCenterGroupTableOptions) {
   const tfl = useTranslations("field");
   const { dateTimeFormat } = useProfile();
@@ -64,7 +66,12 @@ export function useCostCenterGroupTable({
     ...auditColumns<CostCenterGroup>(tfl, dateTimeFormat),
   ];
 
-  return useConfigTable<CostCenterGroup>({
+  return useConfigListTable<CostCenterGroup>({
+    containerWidth,
+    layout: {
+      grow: "description",
+      widths: { code: 100, name: 150, description: 150 },
+    },
     data,
     columns,
     totalRecords,

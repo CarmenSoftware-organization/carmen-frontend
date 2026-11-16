@@ -16,6 +16,7 @@ export default function DeliveryPointComponent() {
   const ts = useTranslations("status");
   return (
     <ConfigListTemplate<DeliveryPoint>
+      fixedColumnWidths
       translationNamespace="config.deliveryPoint"
       entityNameField="name"
       useList={useDeliveryPoint}

@@ -14,6 +14,7 @@ export default function CostCenterComponent() {
   const ts = useTranslations("status");
   return (
     <ConfigListTemplate<CostCenter>
+      fixedColumnWidths
       translationNamespace="config.costCenter"
       entityNameField="name"
       useList={useCostCenter}

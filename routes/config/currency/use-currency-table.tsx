@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
+import { useConfigListTable } from "../shared/use-config-list-table";
 import {
   auditColumns,
   columnSkeletons,
@@ -15,6 +15,7 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { CellAction } from "@/components/ui/cell-action";
 
 interface UseCurrencyTableOptions {
+  containerWidth?: number;
   data: Currency[];
   totalRecords: number;
   params: ParamsDto;
@@ -30,6 +31,7 @@ export function useCurrencyTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseCurrencyTableOptions) {
   const { defaultCurrencyCode, dateTimeFormat } = useProfile();
   const tfl = useTranslations("field");
@@ -100,7 +102,13 @@ export function useCurrencyTable({
     ...auditColumns<Currency>(tfl, dateTimeFormat),
   ];
 
-  return useConfigTable<Currency>({
+  return useConfigListTable<Currency>({
+    containerWidth,
+    layout: {
+      grow: "name",
+      widths: { code: 80, name: 160, symbol: 85, exchange_rate: 150 },
+      secondary: ["symbol"],
+    },
     data,
     columns,
     totalRecords,

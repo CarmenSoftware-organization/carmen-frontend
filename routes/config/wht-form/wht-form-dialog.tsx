@@ -66,12 +66,12 @@ export function WhtFormDialog({
             }),
           ),
         })}
-        contentClassName="max-h-[90dvh] overflow-y-auto sm:max-w-xl"
+        contentClassName="@container max-h-[90dvh] overflow-y-auto sm:max-w-xl"
       >
         {({ form, disabled }) => {
           const value = form.watch();
           return (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 @md:grid-cols-2">
               <Field>
                 <FieldLabel htmlFor="wht-form-code" required>
                   {tf("code")}
@@ -128,7 +128,7 @@ export function WhtFormDialog({
                   });
                 }}
               />
-              <div className="sm:col-span-2">
+              <div className="@md:col-span-2">
                 <Controller
                   name="is_active"
                   control={form.control}

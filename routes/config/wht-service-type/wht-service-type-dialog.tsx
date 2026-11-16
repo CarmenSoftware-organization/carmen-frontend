@@ -75,7 +75,7 @@ export function WhtServiceTypeDialog({
       >
         {({ form, disabled }) => (
           <>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 @md:grid-cols-2">
               <Field>
                 <FieldLabel htmlFor="wht-service-code" required>
                   {tf("code")}
@@ -145,7 +145,7 @@ export function WhtServiceTypeDialog({
                   />
                 )}
               </Field>
-              <Field className="sm:col-span-2">
+              <Field className="@md:col-span-2">
                 <FieldLabel htmlFor="wht-service-description" required>
                   {tf("description")}
                 </FieldLabel>

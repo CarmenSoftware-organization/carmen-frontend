@@ -1,7 +1,7 @@
 # Current Carmen Blue conventions
 
 Use the current source to resolve stale plans. Read only the recipe needed for
-the page in `.claude/skills/carmen-blue-ui-design/values.md`; keep new layout
+the page in `.agents/skills/carmen-blue-ui-design/values.md`; keep new layout
 gotchas in the relevant recipe rather than growing the skill entrypoint.
 
 ## Layout and forms

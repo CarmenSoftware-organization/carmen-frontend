@@ -1,3 +1,5 @@
+import { useElementWidth } from "@/hooks/use-element-width";
+import { useConfigTableLayout } from "./use-config-list-table";
 import { useMemo, useState, type ReactNode } from "react";
 import { useTranslations } from "use-intl";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -150,9 +152,16 @@ export function MockConfigList<T extends MockConfigRow>({
     [columns, onDelete, tfl],
   );
 
+  const [setGridBox, gridWidth] = useElementWidth();
+  // 55 select + 60 index + 100 code + 140 description + 140 linked + 100 status + 60 actions = 655.
+  const responsive = useConfigTableLayout(
+    allColumns,
+    { grow: "description", widths: { code: 100, description: 140 } },
+    gridWidth == null ? undefined : gridWidth - 2,
+  );
   const table = useReactTable({
     data: rows,
-    columns: allColumns,
+    ...responsive,
     getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -197,7 +206,7 @@ export function MockConfigList<T extends MockConfigRow>({
       }
       toolbar={
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex w-full flex-1 items-center gap-2 sm:w-auto">
+          <div className="flex w-full min-w-0 flex-1 flex-wrap items-center gap-2 sm:w-auto">
             <div className="flex-1 sm:flex-initial">
               <SearchInput
                 defaultValue={search}
@@ -244,39 +253,43 @@ export function MockConfigList<T extends MockConfigRow>({
         </div>
       }
     >
-      {isGridMode ? (
-        rows.length === 0 ? (
-          <EmptyComponent />
+      <div ref={setGridBox} className="@container min-w-0">
+        {isGridMode ? (
+          rows.length === 0 ? (
+            <EmptyComponent />
+          ) : (
+            <div className="grid grid-cols-1 gap-3 @xl:grid-cols-2 @5xl:grid-cols-3 @min-[96rem]:grid-cols-4">
+              {table.getSortedRowModel().rows.map(({ original: item }) => (
+                <ListCard
+                  key={item.id}
+                  title={item.code}
+                  onOpen={() => onEdit(item)}
+                  onDelete={() => onDelete(item)}
+                >
+                  {renderCardRows(item)}
+                  <ListCardActiveRow active={item.is_active} />
+                </ListCard>
+              ))}
+            </div>
+          )
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            {table.getSortedRowModel().rows.map(({ original: item }) => (
-              <ListCard
-                key={item.id}
-                title={item.code}
-                onOpen={() => onEdit(item)}
-                onDelete={() => onDelete(item)}
-              >
-                {renderCardRows(item)}
-                <ListCardActiveRow active={item.is_active} />
-              </ListCard>
-            ))}
-          </div>
-        )
-      ) : (
-        <DataGrid
-          table={table}
-          recordCount={rows.length}
-          emptyMessage={<EmptyComponent />}
-          tableLayout={{ headerSticky: true }}
-        >
-          <DataGridContainer className={`flex flex-col ${listGridMaxH(false)}`}>
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
-      )}
+          <DataGrid
+            table={table}
+            recordCount={rows.length}
+            emptyMessage={<EmptyComponent />}
+            tableLayout={{ width: "fixed", headerSticky: true }}
+          >
+            <DataGridContainer
+              className={`flex flex-col ${listGridMaxH(false)}`}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        )}
+      </div>
       {children}
     </ListPageShell>
   );

@@ -27,6 +27,7 @@ export default function ShelfComponent() {
   const ts = useTranslations("status");
   return (
     <ConfigListTemplate<Shelf>
+      fixedColumnWidths
       translationNamespace="config.shelf"
       entityNameField="name"
       useList={useShelf}

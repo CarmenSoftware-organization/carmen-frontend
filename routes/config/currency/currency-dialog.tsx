@@ -105,7 +105,7 @@ function CurrencyFields({
         />
       </Field>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3 @sm:grid-cols-2">
         <Field>
           <FieldLabel htmlFor="currency-symbol" required>
             {tfl("symbol")}
@@ -177,6 +177,7 @@ export function CurrencyDialog({
 }: CurrencyDialogProps) {
   return (
     <ConfigEntityDialog<Currency, CurrencyFormValues, CurrencyPayload>
+      contentClassName="@container max-h-[90dvh] overflow-y-auto"
       open={open}
       onOpenChange={onOpenChange}
       entity={currency}

@@ -2,7 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
-import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
+import { useConfigListTable } from "../shared/use-config-list-table";
 import {
   auditColumns,
   columnSkeletons,
@@ -14,6 +14,7 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
 
 interface UseDepartmentTableOptions {
+  containerWidth?: number;
   data: Department[];
   totalRecords: number;
   params: ParamsDto;
@@ -43,6 +44,7 @@ export function useDepartmentTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseDepartmentTableOptions) {
   const tfl = useTranslations("field");
   const { dateTimeFormat } = useProfile();
@@ -88,7 +90,12 @@ export function useDepartmentTable({
     ...auditColumns<Department>(tfl, dateTimeFormat),
   ];
 
-  return useConfigTable<Department>({
+  return useConfigListTable<Department>({
+    containerWidth,
+    layout: {
+      grow: "name",
+      widths: { code: 100, name: 180, account_code: 130 },
+    },
     data,
     columns,
     totalRecords,

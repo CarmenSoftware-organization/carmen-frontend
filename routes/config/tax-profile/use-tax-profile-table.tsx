@@ -2,7 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
-import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
+import { useConfigListTable } from "../shared/use-config-list-table";
 import {
   auditColumns,
   columnSkeletons,
@@ -14,6 +14,7 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useProfile } from "@/hooks/use-profile";
 
 interface UseTaxProfileTableOptions {
+  containerWidth?: number;
   data: TaxProfile[];
   totalRecords: number;
   params: ParamsDto;
@@ -29,6 +30,7 @@ export function useTaxProfileTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseTaxProfileTableOptions) {
   const tfl = useTranslations("field");
   const { dateTimeFormat } = useProfile();
@@ -67,7 +69,9 @@ export function useTaxProfileTable({
     ...auditColumns<TaxProfile>(tfl, dateTimeFormat),
   ];
 
-  return useConfigTable<TaxProfile>({
+  return useConfigListTable<TaxProfile>({
+    containerWidth,
+    layout: { grow: "name", widths: { name: 230, tax_rate: 120 } },
     data,
     columns,
     totalRecords,

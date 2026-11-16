@@ -2,7 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
-import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
+import { useConfigListTable } from "../shared/use-config-list-table";
 import {
   auditColumns,
   columnSkeletons,
@@ -13,6 +13,7 @@ import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 
 interface UseCreditNoteReasonTableOptions {
+  containerWidth?: number;
   data: CnReason[];
   totalRecords: number;
   params: ParamsDto;
@@ -28,6 +29,7 @@ export function useCreditNoteReasonTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseCreditNoteReasonTableOptions) {
   const tfl = useTranslations("field");
   const { dateTimeFormat } = useProfile();
@@ -54,7 +56,9 @@ export function useCreditNoteReasonTable({
     ...auditColumns<CnReason>(tfl, dateTimeFormat),
   ];
 
-  return useConfigTable<CnReason>({
+  return useConfigListTable<CnReason>({
+    containerWidth,
+    layout: { grow: "description", widths: { name: 180, description: 180 } },
     data,
     columns,
     totalRecords,

@@ -62,8 +62,7 @@ interface ExchangeRateDialogCreateProps {
 }
 
 type ExchangeRateDialogProps =
-  | ExchangeRateDialogEditProps
-  | ExchangeRateDialogCreateProps;
+  ExchangeRateDialogEditProps | ExchangeRateDialogCreateProps;
 
 function EditForm({
   item,
@@ -395,7 +394,7 @@ export function ExchangeRateDialog({
 
   return (
     <Dialog open={open} onOpenChange={isPending ? undefined : onOpenChange}>
-      <DialogContent className="gap-0 p-0 sm:max-w-md">
+      <DialogContent className="@container gap-0 p-0 sm:max-w-md">
         <DialogHeader className="relative gap-0 px-5 pt-6 pb-4">
           <div className="flex items-start gap-3">
             <div className="bg-muted text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">

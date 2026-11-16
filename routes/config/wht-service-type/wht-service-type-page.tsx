@@ -17,7 +17,6 @@ import {
 import { MasterDeleteDialog } from "../shared/ap-master-dependencies";
 import { whtServiceTypeCrud } from "./use-wht-service-type";
 import { WhtServiceTypeDialog } from "./wht-service-type-dialog";
-import { ApMasterMockStatus } from "../shared/ap-master-mock-status";
 
 function useWhtServiceTypeTable(
   options: ConfigTableHookOptions<WhtServiceTypeMaster>,
@@ -51,7 +50,7 @@ export default function WhtServiceTypePage() {
   return (
     <ConfigListTemplate<WhtServiceTypeMaster>
       translationNamespace="config.whtServiceType"
-      extraActions={<ApMasterMockStatus />}
+      mock
       entityNameField="code"
       useList={whtServiceTypeCrud.useList}
       useDelete={whtServiceTypeCrud.useDelete}

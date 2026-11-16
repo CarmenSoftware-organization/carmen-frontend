@@ -33,6 +33,7 @@ export function ShelfDialog({
 
   return (
     <ConfigEntityDialog<Shelf, ShelfFormValues, ShelfPayload>
+      contentClassName="@container max-h-[90dvh] overflow-y-auto"
       open={open}
       onOpenChange={onOpenChange}
       entity={shelf}
@@ -54,7 +55,7 @@ export function ShelfDialog({
     >
       {({ form, disabled }) => (
         <>
-          <div className="grid grid-cols-[8rem_1fr] gap-3">
+          <div className="grid gap-3 @sm:grid-cols-[8rem_1fr]">
             <Field>
               <FieldLabel htmlFor="shelf-code" required>
                 {tfl("code")}

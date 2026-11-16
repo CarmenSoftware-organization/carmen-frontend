@@ -1,3 +1,5 @@
+import { ConfigMasterGrid } from "../shared/config-master-grid";
+import { useMasterGridLayout } from "../shared/use-config-list-table";
 import { useAccountingConfigEdit } from "../shared/use-accounting-config-edit";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useMemo, useState } from "react";
@@ -6,18 +8,12 @@ import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Building2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import SearchInput from "@/components/search-input";
-import EmptyComponent from "@/components/empty-component";
-import DisplayTemplate from "@/components/display-template";
+import { ListPageShell } from "@/components/share/list-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
 import { CellAction } from "@/components/ui/cell-action";
-import {
-  DataGrid,
-  DataGridContainer,
-} from "@/components/ui/data-grid/data-grid";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import {
   Dialog,
@@ -147,14 +143,33 @@ export default function AssetCategoryPage() {
     [],
   );
 
+  const { gridRef, gridWidth, ...responsive } = useMasterGridLayout(columns, {
+    grow: "description",
+    widths: {
+      code: 120,
+      description: 180,
+      useful_life_years: 110,
+      asset_account_id: 150,
+      accum_dep_account_id: 150,
+      dep_expense_account_id: 150,
+      is_active: 100,
+      actions: 60,
+    },
+    secondary: [
+      "dep_expense_account_id",
+      "accum_dep_account_id",
+      "asset_account_id",
+    ],
+  });
+
   const table = useReactTable({
     data: rows,
-    columns,
+    ...responsive,
     getCoreRowModel: getCoreRowModel(),
   });
 
   return (
-    <DisplayTemplate
+    <ListPageShell
       title="Asset Categories"
       mock
       description="Fixed asset categories, standard useful life years, and GL depreciation account legs"
@@ -171,7 +186,7 @@ export default function AssetCategoryPage() {
         </Button>
       }
     >
-      <div className="bg-muted/30 flex items-center gap-2 rounded-md px-3 py-2 text-xs">
+      <div className="bg-muted/30 flex flex-wrap items-center gap-2 rounded-md px-3 py-2 text-xs [&>svg]:shrink-0">
         <Building2 className="text-primary size-4" />
         <span className="font-medium">Three-leg accounting mapping:</span>
         <span className="text-muted-foreground">
@@ -180,17 +195,22 @@ export default function AssetCategoryPage() {
           accounts.
         </span>
       </div>
-      <DataGrid
+      <ConfigMasterGrid
         table={table}
-        recordCount={rows.length}
-        emptyMessage={<EmptyComponent />}
-        tableLayout={{ width: "auto", headerSticky: true }}
-        tableClassNames={{ bodyRow: "h-10" }}
-      >
-        <DataGridContainer scroll className="max-h-[calc(100vh-14rem)]">
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+        gridRef={gridRef}
+        gridWidth={gridWidth}
+        labels={{
+          code: "Category Code",
+          description: "Description",
+          useful_life_years: "Useful Life",
+          asset_account_id: "Asset Cost A/C",
+          accum_dep_account_id: "Accum Dep A/C",
+          dep_expense_account_id: "Dep Expense A/C",
+          is_active: "Status",
+        }}
+        titleColumn="code"
+        isLoading={false}
+      />
       <AssetCategoryDialog
         readOnly={!!editing && !canEdit}
         key={editing?.id ?? "new"}
@@ -225,7 +245,7 @@ export default function AssetCategoryPage() {
           setDeleting(null);
         }}
       />
-    </DisplayTemplate>
+    </ListPageShell>
   );
 }
 
@@ -256,7 +276,7 @@ function AssetCategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="@container max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {readOnly
@@ -272,7 +292,7 @@ function AssetCategoryDialog({
         </DialogHeader>
         <fieldset
           disabled={readOnly}
-          className="grid gap-4 py-2 sm:grid-cols-2"
+          className="grid gap-4 py-2 @md:grid-cols-2"
         >
           <Field>
             <FieldLabel htmlFor="ast-code" required>
@@ -301,7 +321,7 @@ function AssetCategoryDialog({
               }
             />
           </Field>
-          <Field className="sm:col-span-2">
+          <Field className="@md:col-span-2">
             <FieldLabel htmlFor="ast-desc" required>
               Description
             </FieldLabel>
@@ -313,7 +333,7 @@ function AssetCategoryDialog({
               onChange={(e) => setDescription(e.target.value)}
             />
           </Field>
-          <Field className="sm:col-span-2">
+          <Field className="@md:col-span-2">
             <FieldLabel htmlFor="ast-leg1">
               Asset Cost Account (Balance Sheet Asset)
             </FieldLabel>
@@ -342,7 +362,7 @@ function AssetCategoryDialog({
               onValueChange={setDepExpAcc}
             />
           </Field>
-          <div className="sm:col-span-2">
+          <div className="@md:col-span-2">
             <StatusSwitch
               id="asset-category-active"
               checked={active}

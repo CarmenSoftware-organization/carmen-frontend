@@ -40,6 +40,7 @@ export function CostCenterGroupDialog({
       CostCenterGroupFormValues,
       CreateCostCenterGroupDto
     >
+      contentClassName="@container max-h-[90dvh] overflow-y-auto"
       open={open}
       onOpenChange={onOpenChange}
       entity={costCenterGroup}
@@ -67,7 +68,7 @@ export function CostCenterGroupDialog({
     >
       {({ form, disabled }) => (
         <>
-          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-3">
+          <div className="grid gap-3 @sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
             <Field>
               <FieldLabel htmlFor="ccg-code" required>
                 {tfl("code")}

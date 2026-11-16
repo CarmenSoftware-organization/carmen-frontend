@@ -16,6 +16,7 @@ export default function CostCenterGroupComponent() {
   const ts = useTranslations("status");
   return (
     <ConfigListTemplate<CostCenterGroup>
+      fixedColumnWidths
       translationNamespace="config.costCenterGroup"
       entityNameField="name"
       useList={useCostCenterGroup}

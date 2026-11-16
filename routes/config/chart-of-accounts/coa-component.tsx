@@ -22,6 +22,7 @@ export default function CoaComponent() {
   return (
     <>
       <ConfigListTemplate<ChartOfAccount>
+        fixedColumnWidths
         translationNamespace="config.chartOfAccounts"
         entityNameField="code"
         useList={useChartOfAccount}
@@ -40,13 +41,19 @@ export default function CoaComponent() {
               onClick={() => setWizardOpen(true)}
               className="gap-1.5"
             >
-              <Sparkles className="size-4 text-primary" />
+              <Sparkles className="text-primary size-4" />
               <span>{t("wizard.button")}</span>
             </Button>
             <CoaImportCarmenGlButton />
           </div>
         }
-        renderDeleteDialog={({ target, open, onOpenChange, isPending, onConfirm }) => (
+        renderDeleteDialog={({
+          target,
+          open,
+          onOpenChange,
+          isPending,
+          onConfirm,
+        }) => (
           <CoaDeleteGuardrailDialog
             account={target}
             open={open}
@@ -57,7 +64,11 @@ export default function CoaComponent() {
         )}
         exportColumns={[
           { header: tfl("code"), value: (r) => r.code, width: 18 },
-          { header: t("accountName"), value: (r) => r.description_1, width: 40 },
+          {
+            header: t("accountName"),
+            value: (r) => r.description_1,
+            width: 40,
+          },
           {
             header: tfl("description"),
             value: (r) => r.description_2 ?? "",

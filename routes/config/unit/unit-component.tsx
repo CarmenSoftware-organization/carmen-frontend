@@ -13,6 +13,7 @@ export default function UnitComponent() {
   const ts = useTranslations("status");
   return (
     <ConfigListTemplate<Unit>
+      fixedColumnWidths
       translationNamespace="config.unit"
       entityNameField="name"
       useList={useUnit}

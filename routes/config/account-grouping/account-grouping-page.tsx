@@ -14,14 +14,23 @@ import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { ApiError, isAppStatusErrorCode } from "@/lib/api-error";
 import { useErrorToast } from "@/hooks/use-error-toast";
 import { httpClient } from "@/lib/http-client";
-import { useGlAccountGroups, glAccountGroupsKey } from "../shared/use-gl-account-groups";
+import {
+  useGlAccountGroups,
+  glAccountGroupsKey,
+} from "../shared/use-gl-account-groups";
 import {
   useChartOfAccountAll,
   useUpdateChartOfAccount,
 } from "@/hooks/use-chart-of-account";
 import { QUERY_KEYS } from "@/constant/query-keys";
-import type { ChartOfAccount, AccountCategory } from "@/types/chart-of-accounts";
-import type { AccountGroupNode, GroupTreeLevel } from "./account-grouping-types";
+import type {
+  ChartOfAccount,
+  AccountCategory,
+} from "@/types/chart-of-accounts";
+import type {
+  AccountGroupNode,
+  GroupTreeLevel,
+} from "./account-grouping-types";
 import { useAccountGroupingTree } from "./use-account-grouping-tree";
 import { AccountGroupTreeNode } from "./account-group-tree-node";
 import { AccountGroupDetailPanel } from "./account-group-detail-panel";
@@ -52,7 +61,10 @@ export default function AccountGroupingPage() {
   const updateAccount = useUpdateChartOfAccount();
 
   const groups = useMemo(() => groupQuery.data ?? [], [groupQuery.data]);
-  const accounts = useMemo(() => accountsQuery.data ?? [], [accountsQuery.data]);
+  const accounts = useMemo(
+    () => accountsQuery.data ?? [],
+    [accountsQuery.data],
+  );
   const isLoading = groupQuery.isLoading || accountsQuery.isLoading;
 
   const [search, setSearch] = useState("");
@@ -62,7 +74,8 @@ export default function AccountGroupingPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"add" | "edit">("add");
   const [editingNode, setEditingNode] = useState<AccountGroupNode | null>(null);
-  const [defaultParentNode, setDefaultParentNode] = useState<AccountGroupNode | null>(null);
+  const [defaultParentNode, setDefaultParentNode] =
+    useState<AccountGroupNode | null>(null);
   const [targetLevel, setTargetLevel] = useState<GroupTreeLevel>(1);
 
   const [moveOpen, setMoveOpen] = useState(false);
@@ -74,7 +87,9 @@ export default function AccountGroupingPage() {
   const [warningNode, setWarningNode] = useState<AccountGroupNode | null>(null);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deletingNode, setDeletingNode] = useState<AccountGroupNode | null>(null);
+  const [deletingNode, setDeletingNode] = useState<AccountGroupNode | null>(
+    null,
+  );
 
   const [isMutating, setIsMutating] = useState(false);
 
@@ -119,7 +134,10 @@ export default function AccountGroupingPage() {
   }, [targetLevel, getNodesByLevel]);
 
   // Handler: Add Group (Top Header or Sub-group button)
-  const handleOpenAdd = (parent: AccountGroupNode | null = null, defaultLvl: GroupTreeLevel = 1) => {
+  const handleOpenAdd = (
+    parent: AccountGroupNode | null = null,
+    defaultLvl: GroupTreeLevel = 1,
+  ) => {
     if (parent) {
       // BR-GRP-004: If chosen parent has assigned accounts, block and show Warning Modal!
       if (parent.assignedAccounts && parent.assignedAccounts.length > 0) {
@@ -198,10 +216,17 @@ export default function AccountGroupingPage() {
           })
         : await httpClient.post(url, payload);
 
-      if (!res.ok) throw await ApiError.from(res, "Unable to save account group");
+      if (!res.ok)
+        throw await ApiError.from(res, "Unable to save account group");
 
-      await queryClient.invalidateQueries({ queryKey: glAccountGroupsKey(buCode) });
-      toast.success(isEdit ? tt("updateSuccess", { entity: data.name }) : tt("createSuccess", { entity: data.name }));
+      await queryClient.invalidateQueries({
+        queryKey: glAccountGroupsKey(buCode),
+      });
+      toast.success(
+        isEdit
+          ? tt("updateSuccess", { entity: data.name })
+          : tt("createSuccess", { entity: data.name }),
+      );
       setFormOpen(false);
     } catch (err) {
       toastMutationError(err, "Unable to save account group");
@@ -211,12 +236,17 @@ export default function AccountGroupingPage() {
   };
 
   // Submit Move Group
-  const handleMoveConfirm = async (group: AccountGroupNode, targetParentId: string | null) => {
+  const handleMoveConfirm = async (
+    group: AccountGroupNode,
+    targetParentId: string | null,
+  ) => {
     if (!buCode || isMutating) return;
     setIsMutating(true);
     try {
       const targetParent = targetParentId ? findNodeById(targetParentId) : null;
-      const newLevel = targetParent ? ((targetParent.level + 1) as GroupTreeLevel) : (1 as GroupTreeLevel);
+      const newLevel = targetParent
+        ? ((targetParent.level + 1) as GroupTreeLevel)
+        : (1 as GroupTreeLevel);
 
       const url = `${API_ENDPOINTS.GL_ACCOUNT_GROUPS(buCode)}/${group.id}`;
       const res = await httpClient.put(url, {
@@ -230,9 +260,12 @@ export default function AccountGroupingPage() {
         doc_version: group.doc_version,
       });
 
-      if (!res.ok) throw await ApiError.from(res, "Unable to move account group");
+      if (!res.ok)
+        throw await ApiError.from(res, "Unable to move account group");
 
-      await queryClient.invalidateQueries({ queryKey: glAccountGroupsKey(buCode) });
+      await queryClient.invalidateQueries({
+        queryKey: glAccountGroupsKey(buCode),
+      });
       toast.success(`Group [${group.code}] moved successfully`);
       setMoveOpen(false);
     } catch (err) {
@@ -276,9 +309,13 @@ export default function AccountGroupingPage() {
         control_account_type: account.control_account_type ?? null,
       });
 
-      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_OF_ACCOUNTS] });
+      await queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.CHART_OF_ACCOUNTS],
+      });
       await accountsQuery.refetch();
-      toast.success(`Account [${account.code}] assigned to group [${selectedNode.code}]`);
+      toast.success(
+        `Account [${account.code}] assigned to group [${selectedNode.code}]`,
+      );
       setAssignOpen(false);
     } catch (err) {
       toastMutationError(err, "Unable to assign account");
@@ -293,7 +330,9 @@ export default function AccountGroupingPage() {
     // บัญชีเก่าที่ category ยัง null — backend ปฏิเสธการแก้จนกว่าจะระบุหมวด ไม่เดาหมวดให้เงียบ ๆ
     const category = account.category;
     if (!category) {
-      toast.error(`Account [${account.code}] has no category — set it on the account first`);
+      toast.error(
+        `Account [${account.code}] has no category — set it on the account first`,
+      );
       return;
     }
     setIsMutating(true);
@@ -319,7 +358,9 @@ export default function AccountGroupingPage() {
         control_account_type: account.control_account_type ?? null,
       });
 
-      await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CHART_OF_ACCOUNTS] });
+      await queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.CHART_OF_ACCOUNTS],
+      });
       await accountsQuery.refetch();
       toast.success(`Account [${account.code}] unassigned successfully`);
     } catch (err) {
@@ -336,9 +377,12 @@ export default function AccountGroupingPage() {
     try {
       const url = `${API_ENDPOINTS.GL_ACCOUNT_GROUPS(buCode)}/${deletingNode.id}`;
       const res = await httpClient.delete(url);
-      if (!res.ok) throw await ApiError.from(res, "Unable to delete account group");
+      if (!res.ok)
+        throw await ApiError.from(res, "Unable to delete account group");
 
-      await queryClient.invalidateQueries({ queryKey: glAccountGroupsKey(buCode) });
+      await queryClient.invalidateQueries({
+        queryKey: glAccountGroupsKey(buCode),
+      });
       toast.success(tt("deleteSuccess", { entity: deletingNode.name }));
       if (selectedNodeId === deletingNode.id) {
         setSelectedNodeId(null);
@@ -376,8 +420,8 @@ export default function AccountGroupingPage() {
     >
       {/* Summary KPI Counters Bar */}
       {!isLoading && (
-        <div className="flex flex-wrap items-center gap-2.5 px-1 py-1 text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground/80">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-2.5 px-1 py-1 text-xs">
+          <span className="text-foreground/80 font-semibold">
             {t("totalGroups")}: {stats.total}
           </span>
           <span className="text-border">|</span>
@@ -389,83 +433,104 @@ export default function AccountGroupingPage() {
           <span className="text-border">|</span>
           <span>L4: {stats.l4}</span>
           <span className="text-border">|</span>
-          <span className="text-emerald-700 dark:text-emerald-400 font-medium">
+          <span className="font-medium text-emerald-700 dark:text-emerald-400">
             {t("assignedAccounts")}: {stats.assignedCount}
           </span>
           <span className="text-border">|</span>
-          <span className="text-amber-700 dark:text-amber-400 font-medium">
+          <span className="font-medium text-amber-700 dark:text-amber-400">
             {t("unassignedAccounts")}: {stats.unassignedCount}
           </span>
         </div>
       )}
 
-      {/* Main Workspace Split Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-17.5rem)] min-h-[500px]">
-        {/* LEFT 7 COLS: TREE VIEW NAVIGATION PANEL */}
-        <div className="lg:col-span-7 flex flex-col rounded-lg border bg-card shadow-xs overflow-hidden">
-          {/* Header Row */}
-          <div className="flex h-11 items-center justify-between border-b bg-muted/40 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            <div className="flex items-center gap-1.5">
-              <FolderTree className="size-4 text-primary" />
-              <span>{t("groupHierarchy")}</span>
+      <div className="@container">
+        {/* Main Workspace Split Grid */}
+        <div className="grid grid-cols-1 gap-4 @5xl:grid-cols-2">
+          {/* LEFT 7 COLS: TREE VIEW NAVIGATION PANEL */}
+          <div className="bg-card @container flex h-[min(65dvh,40rem)] min-h-80 min-w-0 flex-col overflow-hidden rounded-lg border shadow-xs">
+            {/* Header Row */}
+            <div className="bg-muted/40 text-muted-foreground flex min-h-11 flex-wrap items-center justify-between gap-2 border-b px-3 py-1.5 text-xs font-semibold tracking-wider uppercase">
+              <div className="flex items-center gap-1.5">
+                <FolderTree className="text-primary size-4" />
+                <span>{t("groupHierarchy")}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  onClick={expandAll}
+                  title={t("expandAll")}
+                  size="sm"
+                  variant="ghost"
+                  className="gap-1.5 text-xs"
+                >
+                  <ChevronDown className="size-3.5" />
+                  <span className="sr-only @md:not-sr-only">
+                    {t("expandAll")}
+                  </span>
+                </Button>
+                <Button
+                  onClick={collapseAll}
+                  title={t("collapseAll")}
+                  size="sm"
+                  variant="ghost"
+                  className="gap-1.5 text-xs"
+                >
+                  <ChevronUp className="size-3.5" />
+                  <span className="sr-only @md:not-sr-only">
+                    {t("collapseAll")}
+                  </span>
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Button onClick={expandAll} size="sm" variant="ghost" className="text-xs gap-1.5">
-                <ChevronDown className="size-3.5" />
-                <span>{t("expandAll")}</span>
-              </Button>
-              <Button onClick={collapseAll} size="sm" variant="ghost" className="text-xs gap-1.5">
-                <ChevronUp className="size-3.5" />
-                <span>{t("collapseAll")}</span>
-              </Button>
-            </div>
+
+            {/* Tree Scrollable Content */}
+            <ScrollArea className="flex-1 p-2.5">
+              {filteredTree.length > 0 ? (
+                <div className="space-y-0.5">
+                  {filteredTree.map((node) => (
+                    <AccountGroupTreeNode
+                      key={node.id}
+                      node={node}
+                      level={0}
+                      selectedNodeId={selectedNodeId}
+                      expanded={expanded}
+                      toggleExpand={toggleExpand}
+                      onSelect={(n) => setSelectedNodeId(n.id)}
+                      onAddSubGroup={(n) => handleOpenAdd(n)}
+                      onMoveGroup={handleOpenMove}
+                      onEditGroup={handleOpenEdit}
+                      onDeleteGroup={handleOpenDelete}
+                      search={search}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-muted-foreground flex h-40 flex-col items-center justify-center text-xs">
+                  <FolderTree className="mb-2 size-8 opacity-20" />
+                  <span>
+                    {search
+                      ? "No matching account groups found"
+                      : "No account groups configured yet"}
+                  </span>
+                </div>
+              )}
+            </ScrollArea>
           </div>
 
-          {/* Tree Scrollable Content */}
-          <ScrollArea className="flex-1 p-2.5">
-            {filteredTree.length > 0 ? (
-              <div className="space-y-0.5">
-                {filteredTree.map((node) => (
-                  <AccountGroupTreeNode
-                    key={node.id}
-                    node={node}
-                    level={0}
-                    selectedNodeId={selectedNodeId}
-                    expanded={expanded}
-                    toggleExpand={toggleExpand}
-                    onSelect={(n) => setSelectedNodeId(n.id)}
-                    onAddSubGroup={(n) => handleOpenAdd(n)}
-                    onMoveGroup={handleOpenMove}
-                    onEditGroup={handleOpenEdit}
-                    onDeleteGroup={handleOpenDelete}
-                    search={search}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="flex h-40 flex-col items-center justify-center text-xs text-muted-foreground">
-                <FolderTree className="size-8 opacity-20 mb-2" />
-                <span>{search ? "No matching account groups found" : "No account groups configured yet"}</span>
-              </div>
-            )}
-          </ScrollArea>
-        </div>
-
-        {/* RIGHT 5 COLS: DETAIL & ASSIGNED ACCOUNTS PANEL */}
-        <div className="lg:col-span-5 flex flex-col rounded-lg border bg-card shadow-xs overflow-hidden">
-          <AccountGroupDetailPanel
-            selectedNode={selectedNode}
-            breadcrumbs={breadcrumbs}
-            onAddSubGroup={(n) => handleOpenAdd(n)}
-            onMoveGroup={handleOpenMove}
-            onEditGroup={handleOpenEdit}
-            onDeleteGroup={handleOpenDelete}
-            onOpenAssignDialog={() => setAssignOpen(true)}
-            onUnassignAccount={handleUnassignAccount}
-          />
+          {/* RIGHT 5 COLS: DETAIL & ASSIGNED ACCOUNTS PANEL */}
+          <div className="bg-card @container flex min-h-80 min-w-0 flex-col overflow-hidden rounded-lg border shadow-xs @5xl:h-[min(65dvh,40rem)]">
+            <AccountGroupDetailPanel
+              selectedNode={selectedNode}
+              breadcrumbs={breadcrumbs}
+              onAddSubGroup={(n) => handleOpenAdd(n)}
+              onMoveGroup={handleOpenMove}
+              onEditGroup={handleOpenEdit}
+              onDeleteGroup={handleOpenDelete}
+              onOpenAssignDialog={() => setAssignOpen(true)}
+              onUnassignAccount={handleUnassignAccount}
+            />
+          </div>
         </div>
       </div>
-
       {/* MODALS */}
       <AccountGroupFormDialog
         open={formOpen}
@@ -511,7 +576,10 @@ export default function AccountGroupingPage() {
         title={t("delete.title")}
         description={
           deletingNode
-            ? t("delete.confirm", { name: deletingNode.name, code: deletingNode.code })
+            ? t("delete.confirm", {
+                name: deletingNode.name,
+                code: deletingNode.code,
+              })
             : ""
         }
         onConfirm={handleConfirmDelete}

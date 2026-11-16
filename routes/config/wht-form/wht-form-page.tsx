@@ -17,7 +17,6 @@ import {
 import { MasterDeleteDialog } from "../shared/ap-master-dependencies";
 import { whtFormCrud } from "./use-wht-form";
 import { WhtFormDialog } from "./wht-form-dialog";
-import { ApMasterMockStatus } from "../shared/ap-master-mock-status";
 
 function useWhtFormTable(options: ConfigTableHookOptions<WhtFormMaster>) {
   const tf = useTranslations("field");
@@ -56,7 +55,7 @@ export default function WhtFormPage() {
   return (
     <ConfigListTemplate<WhtFormMaster>
       translationNamespace="config.whtForm"
-      extraActions={<ApMasterMockStatus />}
+      mock
       entityNameField="code"
       useList={whtFormCrud.useList}
       useDelete={whtFormCrud.useDelete}

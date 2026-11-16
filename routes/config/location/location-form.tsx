@@ -1,3 +1,4 @@
+import { CONFIG_RELATED_TABLE } from "../shared/config-related-table";
 import { lazy, Suspense, useRef, useState } from "react";
 import { Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,7 +21,8 @@ import { FormToolbar } from "@/components/share/form-toolbar";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { ProductTable } from "@/components/ui/product-table";
 import { SelectContent, SelectItem } from "@/components/ui/select";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { StatusSwitch } from "@/components/ui/status-switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { TransferItem } from "@/components/ui/transfer";
@@ -221,16 +223,14 @@ export function LocationForm({ location }: LocationFormProps) {
         },
       );
     } else if (isAdd) {
-      createLocation.mutate(payload, {
-        onSuccess: (res) => {
-          const { id } = (res as { data: { id: string } }).data;
-          toast.success(tt("createSuccess", { entity: t("entity") }));
-          navigate(`/config/location/${id}`, {
-            replace: true,
-            ...f.returnState,
-          });
-          f.setMode("view");
-        },
+      f.submit(createLocation, payload, (res) => {
+        const { id } = (res as { data: { id: string } }).data;
+        toast.success(tt("createSuccess", { entity: t("entity") }));
+        navigate(`/config/location/${id}`, {
+          replace: true,
+          ...f.returnState,
+        });
+        f.setMode("view");
       });
     }
   };
@@ -249,6 +249,7 @@ export function LocationForm({ location }: LocationFormProps) {
 
   return (
     <FormPageShell
+      width="wide"
       ref={containerRef}
       tabIndex={-1}
       header={
@@ -279,214 +280,274 @@ export function LocationForm({ location }: LocationFormProps) {
             form.handleSubmit(onSubmit, () => scrollToFirstInvalidField())(e)
           }
         >
-          <SettingSection
+          <CompactSection
             first
             title={tfl("general")}
             description={t("generalDesc")}
           >
-            <Field>
-              <FieldLabel htmlFor="location-code" required>
-                {tfl("code")}
-              </FieldLabel>
-              {isView ? (
-                <FieldPlainText>{location?.code}</FieldPlainText>
-              ) : (
-                <FieldInput
-                  id="location-code"
-                  placeholder={t("codePlaceholder")}
-                  disabled={isDisabled}
-                  error={form.formState.errors.code?.message}
-                  maxLength={10}
-                  {...form.register("code")}
-                />
-              )}
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="location-name" required>
-                {tfl("name")}
-              </FieldLabel>
-              {isView ? (
-                <FieldPlainText>{location?.name}</FieldPlainText>
-              ) : (
-                <FieldInput
-                  id="location-name"
-                  placeholder={t("namePlaceholder")}
-                  disabled={isDisabled}
-                  error={form.formState.errors.name?.message}
-                  maxLength={100}
-                  {...form.register("name")}
-                />
-              )}
-            </Field>
-
-            <Field>
-              <FieldLabel required>{tfl("locationType")}</FieldLabel>
-              {isView ? (
-                <FieldPlainText>
-                  {location?.location_type ? (
-                    <LocationTypeLabel type={location.location_type} />
-                  ) : (
-                    ""
-                  )}
-                </FieldPlainText>
-              ) : (
-                <Controller
-                  control={form.control}
-                  name="location_type"
-                  render={({ field }) => (
-                    <FieldSelect
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isDisabled}
-                      error={form.formState.errors.location_type?.message}
-                      placeholder={tfl("selectLocationType")}
-                    >
-                      <SelectContent>
-                        {INVENTORY_TYPE_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {t(INVENTORY_TYPE_LABEL_KEY[opt.value])}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </FieldSelect>
-                  )}
-                />
-              )}
-            </Field>
-
-            <Field>
-              <FieldLabel required>{tfl("physicalCount")}</FieldLabel>
-              {isView ? (
-                <FieldPlainText>
-                  {location?.physical_count_type
-                    ? t(PHYSICAL_COUNT_LABEL_KEY[location.physical_count_type])
-                    : ""}
-                </FieldPlainText>
-              ) : (
-                <Controller
-                  control={form.control}
-                  name="physical_count_type"
-                  render={({ field }) => (
-                    <FieldSelect
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isDisabled}
-                      error={form.formState.errors.physical_count_type?.message}
-                      placeholder={tfl("selectPhysicalCountType")}
-                    >
-                      <SelectContent>
-                        {PHYSICAL_COUNT_TYPE_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {t(PHYSICAL_COUNT_LABEL_KEY[opt.value])}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </FieldSelect>
-                  )}
-                />
-              )}
-            </Field>
-
-            <Field>
-              <FieldLabel required>{tfl("deliveryPoint")}</FieldLabel>
-              {isView ? (
-                <FieldPlainText>
-                  {location?.delivery_point?.name}
-                </FieldPlainText>
-              ) : (
-                <Controller
-                  control={form.control}
-                  name="delivery_point_id"
-                  render={({ field }) => (
-                    <LookupDeliveryPoint
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      onItemChange={(item) =>
-                        form.setValue("delivery_point_name", item.name)
-                      }
-                      defaultLabel={location?.delivery_point?.name}
-                      disabled={isDisabled}
-                      error={form.formState.errors.delivery_point_id?.message}
-                    />
-                  )}
-                />
-              )}
-            </Field>
-
-            <Field>
-              <FieldLabel>{tfl("costCenter")}</FieldLabel>
-              {isView ? (
-                <FieldPlainText>
-                  {location?.cost_center_id ? costCenterLabel : "—"}
-                </FieldPlainText>
-              ) : (
-                <Controller
-                  control={form.control}
-                  name="cost_center_id"
-                  render={({ field }) => (
-                    <LookupCostCenter
-                      value={field.value ?? null}
-                      onValueChange={(id) => field.onChange(id)}
-                      disabled={isDisabled}
-                      allowDeselect
-                    />
-                  )}
-                />
-              )}
-            </Field>
-
-            <Field className="sm:col-span-2">
-              <FieldLabel htmlFor="location-description">
-                {tfl("description")}
-              </FieldLabel>
-              {isView ? (
-                <FieldPlainText className="whitespace-pre-wrap">
-                  {location?.description}
-                </FieldPlainText>
-              ) : (
-                <Textarea
-                  id="location-description"
-                  placeholder={tfl("optional")}
-                  rows={2}
-                  disabled={isDisabled}
-                  maxLength={256}
-                  className="resize-none"
-                  {...form.register("description")}
-                />
-              )}
-            </Field>
-
-            <div className="sm:col-span-2">
-              <Controller
-                control={form.control}
-                name="is_active"
-                render={({ field }) => (
-                  <StatusSwitch
-                    id="location-is-active"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
+            <FieldGrid>
+              <Field>
+                <FieldLabel
+                  className={
+                    isView ? "text-muted-foreground font-normal" : undefined
+                  }
+                  htmlFor="location-code"
+                  required
+                >
+                  {tfl("code")}
+                </FieldLabel>
+                {isView ? (
+                  <FieldPlainText>{location?.code}</FieldPlainText>
+                ) : (
+                  <FieldInput
+                    id="location-code"
+                    placeholder={t("codePlaceholder")}
                     disabled={isDisabled}
-                    description={t("activeDescription")}
+                    error={form.formState.errors.code?.message}
+                    maxLength={10}
+                    {...form.register("code")}
                   />
                 )}
-              />
-            </div>
-          </SettingSection>
+              </Field>
+
+              <Field>
+                <FieldLabel
+                  className={
+                    isView ? "text-muted-foreground font-normal" : undefined
+                  }
+                  htmlFor="location-name"
+                  required
+                >
+                  {tfl("name")}
+                </FieldLabel>
+                {isView ? (
+                  <FieldPlainText>{location?.name}</FieldPlainText>
+                ) : (
+                  <FieldInput
+                    id="location-name"
+                    placeholder={t("namePlaceholder")}
+                    disabled={isDisabled}
+                    error={form.formState.errors.name?.message}
+                    maxLength={100}
+                    {...form.register("name")}
+                  />
+                )}
+              </Field>
+
+              <Field>
+                <FieldLabel
+                  className={
+                    isView ? "text-muted-foreground font-normal" : undefined
+                  }
+                  required
+                >
+                  {tfl("locationType")}
+                </FieldLabel>
+                {isView ? (
+                  <FieldPlainText>
+                    {location?.location_type ? (
+                      <LocationTypeLabel type={location.location_type} />
+                    ) : (
+                      ""
+                    )}
+                  </FieldPlainText>
+                ) : (
+                  <Controller
+                    control={form.control}
+                    name="location_type"
+                    render={({ field }) => (
+                      <FieldSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isDisabled}
+                        error={form.formState.errors.location_type?.message}
+                        placeholder={tfl("selectLocationType")}
+                      >
+                        <SelectContent>
+                          {INVENTORY_TYPE_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {t(INVENTORY_TYPE_LABEL_KEY[opt.value])}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </FieldSelect>
+                    )}
+                  />
+                )}
+              </Field>
+
+              <Field>
+                <FieldLabel
+                  className={
+                    isView ? "text-muted-foreground font-normal" : undefined
+                  }
+                  required
+                >
+                  {tfl("physicalCount")}
+                </FieldLabel>
+                {isView ? (
+                  <FieldPlainText>
+                    {location?.physical_count_type
+                      ? t(
+                          PHYSICAL_COUNT_LABEL_KEY[
+                            location.physical_count_type
+                          ],
+                        )
+                      : ""}
+                  </FieldPlainText>
+                ) : (
+                  <Controller
+                    control={form.control}
+                    name="physical_count_type"
+                    render={({ field }) => (
+                      <FieldSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isDisabled}
+                        error={
+                          form.formState.errors.physical_count_type?.message
+                        }
+                        placeholder={tfl("selectPhysicalCountType")}
+                      >
+                        <SelectContent>
+                          {PHYSICAL_COUNT_TYPE_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {t(PHYSICAL_COUNT_LABEL_KEY[opt.value])}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </FieldSelect>
+                    )}
+                  />
+                )}
+              </Field>
+
+              <Field>
+                <FieldLabel
+                  className={
+                    isView ? "text-muted-foreground font-normal" : undefined
+                  }
+                  required
+                >
+                  {tfl("deliveryPoint")}
+                </FieldLabel>
+                {isView ? (
+                  <FieldPlainText>
+                    {location?.delivery_point?.name}
+                  </FieldPlainText>
+                ) : (
+                  <Controller
+                    control={form.control}
+                    name="delivery_point_id"
+                    render={({ field }) => (
+                      <LookupDeliveryPoint
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        onItemChange={(item) =>
+                          form.setValue("delivery_point_name", item.name)
+                        }
+                        defaultLabel={location?.delivery_point?.name}
+                        disabled={isDisabled}
+                        error={form.formState.errors.delivery_point_id?.message}
+                      />
+                    )}
+                  />
+                )}
+              </Field>
+
+              <Field>
+                <FieldLabel
+                  className={
+                    isView ? "text-muted-foreground font-normal" : undefined
+                  }
+                >
+                  {tfl("costCenter")}
+                </FieldLabel>
+                {isView ? (
+                  <FieldPlainText>
+                    {location?.cost_center_id ? costCenterLabel : "—"}
+                  </FieldPlainText>
+                ) : (
+                  <Controller
+                    control={form.control}
+                    name="cost_center_id"
+                    render={({ field }) => (
+                      <LookupCostCenter
+                        value={field.value ?? null}
+                        onValueChange={(id) => field.onChange(id)}
+                        disabled={isDisabled}
+                        allowDeselect
+                      />
+                    )}
+                  />
+                )}
+              </Field>
+
+              <Field className="@md:col-span-2">
+                <FieldLabel
+                  className={
+                    isView ? "text-muted-foreground font-normal" : undefined
+                  }
+                  htmlFor="location-description"
+                >
+                  {tfl("description")}
+                </FieldLabel>
+                {isView ? (
+                  <FieldPlainText className="whitespace-pre-wrap">
+                    {location?.description}
+                  </FieldPlainText>
+                ) : (
+                  <Textarea
+                    id="location-description"
+                    placeholder={tfl("optional")}
+                    rows={2}
+                    disabled={isDisabled}
+                    maxLength={256}
+                    className="resize-none"
+                    {...form.register("description")}
+                  />
+                )}
+              </Field>
+
+              <div>
+                <Controller
+                  control={form.control}
+                  name="is_active"
+                  render={({ field }) =>
+                    isView ? (
+                      <div>
+                        <div className="text-muted-foreground text-xs">
+                          {tfl("status")}
+                        </div>
+                        <StatusBadge active={field.value} />
+                      </div>
+                    ) : (
+                      <StatusSwitch
+                        id="location-is-active"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isDisabled}
+                        description={t("activeDescription")}
+                      />
+                    )
+                  }
+                />
+              </div>
+            </FieldGrid>
+          </CompactSection>
         </form>
       </Reveal>
 
       {/* ── Users ─────────── */}
       <Reveal delay={160}>
-        <SettingSection
-          wide
+        <CompactSection
           frameless
           title={t("locationUsers")}
           description={t("usersDesc")}
           count={isView ? enrichedUsers.length : userTargetKeys.length}
         >
           {isView ? (
-            <UserTable users={enrichedUsers} />
+            <UserTable className={CONFIG_RELATED_TABLE} users={enrichedUsers} />
           ) : (
             <Suspense fallback={null}>
               <Transfer
@@ -499,20 +560,22 @@ export function LocationForm({ location }: LocationFormProps) {
               />
             </Suspense>
           )}
-        </SettingSection>
+        </CompactSection>
       </Reveal>
 
       {/* ── Products ─────────── */}
       <Reveal delay={220}>
-        <SettingSection
-          wide
+        <CompactSection
           frameless
           title={t("products")}
           description={t("productsDesc")}
           count={isView ? enrichedProducts.length : selectedProductIds.size}
         >
           {isView ? (
-            <ProductTable products={enrichedProducts} />
+            <ProductTable
+              className={CONFIG_RELATED_TABLE}
+              products={enrichedProducts}
+            />
           ) : (
             <TreeProductLookup
               products={allProducts}
@@ -522,7 +585,7 @@ export function LocationForm({ location }: LocationFormProps) {
               loading={isLoadingProducts}
             />
           )}
-        </SettingSection>
+        </CompactSection>
       </Reveal>
 
       <DiscardDialog {...f.discard.dialogProps} variant="warning" />
