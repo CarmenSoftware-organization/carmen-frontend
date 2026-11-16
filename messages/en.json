@@ -5266,13 +5266,21 @@
       "cookViewImage": "Enlarge photo {n} of {total}",
       "cookShowImage": "Show photo {n} of {total}",
       "tabHasErrors": "Has fields to fix",
-      "stepVideoUrl": "Step video (YouTube)",
-      "stepVideoUrlDesc": "Optional — plays inside this step on the recipe page",
-      "stepVideoTitle": "Video for step {n}",
       "preview": "Preview",
       "costSourceManual": "Manual",
       "resetManualCost": "Use system cost",
-      "inventoryQtyCol": "In stock unit"
+      "inventoryQtyCol": "In stock unit",
+      "videoUrl": "Video link (YouTube)",
+      "videoUrlDesc": "One YouTube link per recipe — it plays above the steps on the recipe page",
+      "videoTitle": "Video: {name}",
+      "stepImages": "Step photos",
+      "stepImagesDesc": "Up to {max} photos per step, {size} each — shown beside this step on the recipe page",
+      "maxStepImages": "Up to {max} photos per step",
+      "stepImagesLoadFailed": "Couldn't load this step's photos",
+      "stepImageN": "Step photo {n}",
+      "addStepImage": "Add step photo",
+      "removeStepImage": "Remove step photo {n}",
+      "cookStepImages": "Photos for step {n}"
     },
     "posSale": {
       "history": {

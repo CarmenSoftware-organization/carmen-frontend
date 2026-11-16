@@ -5266,13 +5266,21 @@
       "cookViewImage": "ขยายรูปที่ {n} จาก {total}",
       "cookShowImage": "แสดงรูปที่ {n} จาก {total}",
       "tabHasErrors": "มีช่องที่ต้องแก้",
-      "stepVideoUrl": "วิดีโอของขั้นตอน (YouTube)",
-      "stepVideoUrlDesc": "ไม่บังคับ — วิดีโอจะเล่นในการ์ดของขั้นนี้บนหน้าสูตร",
-      "stepVideoTitle": "วิดีโอขั้นที่ {n}",
       "preview": "ดูตัวอย่าง",
       "costSourceManual": "กำหนดเอง",
       "resetManualCost": "ใช้ต้นทุนจากระบบ",
-      "inventoryQtyCol": "ในหน่วยสต๊อก"
+      "inventoryQtyCol": "ในหน่วยสต๊อก",
+      "videoUrl": "ลิงก์วิดีโอ (YouTube)",
+      "videoUrlDesc": "สูตรละ 1 ลิงก์ YouTube — วิดีโอจะเล่นเหนือขั้นตอนบนหน้าสูตร",
+      "videoTitle": "วิดีโอ: {name}",
+      "stepImages": "รูปของขั้นตอน",
+      "stepImagesDesc": "ไม่เกิน {max} รูปต่อขั้นตอน รูปละไม่เกิน {size} — แสดงข้างขั้นนี้บนหน้าสูตร",
+      "maxStepImages": "ใส่รูปได้ไม่เกิน {max} รูปต่อขั้นตอน",
+      "stepImagesLoadFailed": "โหลดรูปของขั้นนี้ไม่สำเร็จ",
+      "stepImageN": "รูปของขั้นตอน รูปที่ {n}",
+      "addStepImage": "เพิ่มรูปของขั้นตอน",
+      "removeStepImage": "ลบรูปของขั้นตอน รูปที่ {n}",
+      "cookStepImages": "รูปของขั้นที่ {n}"
     },
     "posSale": {
       "history": {

@@ -8,6 +8,7 @@ import type { RecipePreparationStep } from "@/types/recipe";
 import {
   diffSteps,
   draftToItem,
+  hasImageChanges,
   isEmptyDiff,
   StepsChangedElsewhereError,
   type StepDraft,
@@ -19,10 +20,13 @@ interface SyncVars {
   drafts: StepDraft[];
   /** id ของขั้นที่ POST สำเร็จ ตามลำดับ draft ใหม่ — ให้ฟอร์มผูกไว้กัน POST ซ้ำ */
   onAdded?: (ids: string[]) => void;
+  /** รูปของ draft ลำดับที่ `index` เขียนเสร็จแล้ว — ให้ฟอร์มล้างไฟล์/รายการลบที่ค้าง กันอัปโหลดซ้ำ */
+  onImagesSynced?: (index: number) => void;
 }
 
 /**
- * เขียนขั้นตอนทำให้ตรงกับฟอร์ม: ลบ → แก้ → เพิ่ม → เรียงลำดับ
+ * เขียนขั้นตอนทำให้ตรงกับฟอร์ม: ลบ → แก้ → เพิ่ม → เรียงลำดับ → รูปของแต่ละขั้น (ลบรูป → อัปโหลดรูปใหม่)
+ * รูปอยู่ท้ายสุดเพราะขั้นใหม่ต้องมี id ก่อน และลบรูปก่อนอัปโหลดเพื่อไม่ชนเพดาน 5 รูปต่อขั้นของ backend
  *
  * ยิงทีละคำขอตามลำดับ (ไม่ Promise.all) เพราะ reorder ต้องรู้ id ของขั้นที่เพิ่งเพิ่ม
  * และต้องส่ง id ครบทุกขั้นที่ยังอยู่ · ไม่ atomic — ล้มกลางทาง ของที่เขียนไปแล้วคงอยู่
@@ -34,11 +38,17 @@ export function useSyncRecipeSteps() {
   const queryClient = useQueryClient();
 
   return useMutation<void, ApiError, SyncVars>({
-    mutationFn: async ({ recipeId, original, drafts, onAdded }) => {
+    mutationFn: async ({
+      recipeId,
+      original,
+      drafts,
+      onAdded,
+      onImagesSynced,
+    }) => {
       if (!buCode)
         throw new ApiError("MISSING_REQUIRED_FIELD", "Missing buCode");
       const diff = diffSteps(original, drafts);
-      if (isEmptyDiff(diff)) return;
+      if (isEmptyDiff(diff) && !drafts.some(hasImageChanges)) return;
 
       const base = API_ENDPOINTS.RECIPE_PREPARATION_STEPS(buCode, recipeId);
       const ensureOk = async (res: Response, fallback: string) => {
@@ -92,6 +102,32 @@ export function useSyncRecipeSteps() {
           }
           throw err;
         }
+      }
+
+      let nextAdded = 0;
+      for (const [i, d] of drafts.entries()) {
+        const stepId = d.step_id ?? addedIds[nextAdded++];
+        if (!stepId || !hasImageChanges(d)) continue;
+        const images = API_ENDPOINTS.RECIPE_STEP_IMAGES(
+          buCode,
+          recipeId,
+          stepId,
+        );
+        for (const imageId of d.removed_image_ids) {
+          const res = await httpClient.delete(`${images}/${imageId}`);
+          // 404 = ลบไปแล้ว (Save รอบก่อนล้มกลางทาง หรือคนอื่นลบ) — ผลลัพธ์ที่ต้องการอยู่แล้ว
+          if (res.status !== 404)
+            await ensureOk(res, "Failed to delete step image");
+        }
+        if (d.image_files.length > 0) {
+          const body = new FormData();
+          for (const file of d.image_files) body.append("images", file);
+          await ensureOk(
+            await httpClient.post(images, body),
+            "Failed to upload step images",
+          );
+        }
+        onImagesSynced?.(i);
       }
     },
     // ทั้งสำเร็จและล้มต้องดึงใหม่ — id/doc_version ของขั้นที่เขียนไปแล้วเปลี่ยน

@@ -546,6 +546,8 @@ export const API_ENDPOINTS = {
   RECIPES: (buCode: string) => `/api/proxy/api/config/${buCode}/recipes`,
   RECIPE_PREPARATION_STEPS: (buCode: string, recipeId: string) =>
     `/api/proxy/api/config/${buCode}/recipes/${recipeId}/preparation-steps`,
+  RECIPE_STEP_IMAGES: (buCode: string, recipeId: string, stepId: string) =>
+    `/api/proxy/api/config/${buCode}/recipes/${recipeId}/preparation-steps/${stepId}/images`,
   RECIPE_INGREDIENTS: (buCode: string, recipeId: string) =>
     `/api/proxy/api/config/${buCode}/recipes/${recipeId}/ingredients`,
   RECIPE_COMMENT: (buCode: string, recipeId?: string) =>

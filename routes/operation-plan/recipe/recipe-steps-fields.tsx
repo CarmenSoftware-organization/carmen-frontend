@@ -1,8 +1,8 @@
+import { useEffect } from "react";
 import {
   Controller,
   useFieldArray,
   useFormState,
-  useWatch,
   type UseFormReturn,
 } from "react-hook-form";
 import { useTranslations } from "use-intl";
@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldInput,
   FieldLabel,
@@ -26,18 +25,21 @@ import {
 } from "@/components/ui/select";
 import { CompactSection } from "@/components/share/compact-section";
 import { LookupRecipeEquipment } from "@/components/lookup/lookup-recipe-equipment";
-import { parseYoutubeVideoId, youtubeThumbnailUrl } from "@/lib/youtube";
 import {
   nullableNumberInput,
   type RecipeFormValues,
 } from "./recipe-form-schema";
 import type { StepDraft } from "./recipe-steps-sync";
+import { RecipeStepImagesField } from "./recipe-step-images-field";
+import { releaseStepImagePreview } from "./recipe-step-image-preview";
 
 interface RecipeStepsFieldsProps {
   readonly form: UseFormReturn<RecipeFormValues>;
   readonly isDisabled: boolean;
   /** สูตรที่ยังไม่บันทึก — ยังไม่มี recipe_id ให้ผูกขั้นตอน */
   readonly isNew: boolean;
+  /** id ของสูตรที่บันทึกแล้ว — ใช้ดึงรูปของแต่ละขั้น */
+  readonly recipeId: string | undefined;
 }
 
 const EMPTY_STEP: StepDraft = {
@@ -51,7 +53,8 @@ const EMPTY_STEP: StepDraft = {
   equipment: [],
   chef_notes: "",
   safety_warnings: "",
-  video_url: "",
+  image_files: [],
+  removed_image_ids: [],
 };
 
 /** ขั้นตอนทำ — บันทึกพร้อมปุ่ม Save ของฟอร์ม (sync หลังหัวสูตรบันทึกสำเร็จ) */
@@ -59,8 +62,17 @@ export function RecipeStepsFields({
   form,
   isDisabled,
   isNew,
+  recipeId,
 }: RecipeStepsFieldsProps) {
   const t = useTranslations("operationPlan.recipe");
+  // ออกจากฟอร์ม = คืน URL ชั่วคราวของรูปที่เลือกไว้แต่ยังไม่ได้อัปโหลด
+  useEffect(
+    () => () => {
+      for (const step of form.getValues("preparation_steps"))
+        step.image_files.forEach(releaseStepImagePreview);
+    },
+    [form],
+  );
   const { fields, append, remove, move } = useFieldArray({
     control: form.control,
     name: "preparation_steps",
@@ -138,7 +150,12 @@ export function RecipeStepsFields({
                           variant="ghost"
                           size="icon-sm"
                           aria-label={t("removeStep")}
-                          onClick={() => remove(i)}
+                          onClick={() => {
+                            form
+                              .getValues(`preparation_steps.${i}.image_files`)
+                              .forEach(releaseStepImagePreview);
+                            remove(i);
+                          }}
                         >
                           <Trash2 />
                         </Button>
@@ -317,11 +334,11 @@ export function RecipeStepsFields({
                     </Field>
                   </div>
 
-                  <StepVideoField
+                  <RecipeStepImagesField
                     form={form}
                     index={i}
+                    recipeId={recipeId}
                     isDisabled={isDisabled}
-                    error={stepErrors?.video_url?.message}
                   />
                 </div>
               );
@@ -342,62 +359,5 @@ export function RecipeStepsFields({
         </div>
       )}
     </CompactSection>
-  );
-}
-
-interface StepVideoFieldProps {
-  readonly form: UseFormReturn<RecipeFormValues>;
-  readonly index: number;
-  readonly isDisabled: boolean;
-  readonly error: string | undefined;
-}
-
-/**
- * ลิงก์วิดีโอ YouTube ของขั้น (1 ลิงก์) — เล่นในการ์ดของขั้นนี้บนหน้าสูตร
- * แยกเป็นคอมโพเนนต์เพราะต้อง useWatch ค่าของขั้นเดียว (เรียก hook ในลูปของ fields ไม่ได้)
- */
-function StepVideoField({
-  form,
-  index,
-  isDisabled,
-  error,
-}: StepVideoFieldProps) {
-  const t = useTranslations("operationPlan.recipe");
-  const url = useWatch({
-    control: form.control,
-    name: `preparation_steps.${index}.video_url`,
-  });
-  const videoId = parseYoutubeVideoId(url);
-  const inputId = `recipe-step-${index}-video-url`;
-
-  return (
-    <Field className="mt-3">
-      <FieldLabel htmlFor={inputId}>{t("stepVideoUrl")}</FieldLabel>
-      <FieldInput
-        id={inputId}
-        size="sm"
-        // ไม่ใช้ type="url" — form ไม่มี noValidate เบราว์เซอร์จะเด้ง bubble ของมันเองก่อน zod
-        inputMode="url"
-        autoComplete="off"
-        placeholder="https://www.youtube.com/watch?v=…"
-        disabled={isDisabled}
-        maxLength={2048}
-        error={error}
-        {...form.register(`preparation_steps.${index}.video_url`)}
-      />
-      {videoId ? (
-        <div className="flex items-center gap-3">
-          <img
-            src={youtubeThumbnailUrl(videoId)}
-            alt=""
-            loading="lazy"
-            className="aspect-video w-32 shrink-0 rounded-md border object-cover"
-          />
-          <FieldDescription>{t("stepVideoUrlDesc")}</FieldDescription>
-        </div>
-      ) : (
-        <FieldDescription>{t("stepVideoUrlDesc")}</FieldDescription>
-      )}
-    </Field>
   );
 }

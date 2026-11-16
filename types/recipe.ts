@@ -44,12 +44,25 @@ export interface RecipePreparationStep {
   chef_notes: string | null;
   safety_warnings: string | null;
   /**
-   * JSONB `[{ provider: "youtube", token: <รหัสวิดีโอ 11 ตัว>, title?, sort_order }]` — ไม่เกิน 1 ตัว
-   * ต่อขั้น (gateway บังคับ) · ไม่เคยตั้ง = `[]` · อ่านผ่าน stepVideoUrl() เท่านั้น
+   * JSONB วิดีโอรายขั้นตอนของเดิม — หน้าจอเลิกใช้แล้ว (วิดีโอมีได้ 1 ลิงก์ที่ระดับสูตร: `Recipe.video_url`)
+   * ค่าที่เคยบันทึกยังอยู่ใน DB ฟอร์มไม่อ่านและไม่เขียนทับ
    */
   videos?: unknown;
   /** recipe detail ฝั่ง backend เคยคืนขั้นที่ลบแล้วปนมา — กรองทิ้งด้วย activeSteps() */
   deleted_at?: string | null;
+}
+
+/**
+ * รูปของขั้นตอน — มาจาก `GET …/preparation-steps/:stepId/images` (recipe detail ไม่ส่งรูปของขั้นมาด้วย)
+ * `url` เป็น presigned URL อายุ 1 ชั่วโมง · `null` = ออก URL ไม่ได้ (ไฟล์หาย / micro-file ล่ม)
+ */
+export interface RecipeStepImage {
+  id: string;
+  caption: string | null;
+  alt_text: string | null;
+  sort_order: number;
+  is_primary: boolean;
+  url: string | null;
 }
 
 /** แหล่งที่มาของต้นทุนต่อหน่วย — server เลือกตามลำดับ fallback (snapshot = คงราคาที่บันทึกไว้) */
@@ -165,6 +178,8 @@ export interface Recipe {
   description: string | null;
   note: string | null;
   is_active: boolean;
+  /** ลิงก์วิดีโอ YouTube 1 ลิงก์ของทั้งสูตร (backend เก็บรูปแบบ watch?v=<id>) — เล่นบนสุดของฝั่งขั้นตอนในหน้าสูตร */
+  video_url?: string | null;
   category_id: string;
   cuisine_id: string;
   difficulty: string;
