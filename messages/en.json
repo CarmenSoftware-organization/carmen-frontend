@@ -1373,6 +1373,12 @@
     "signedInAs": "Signed in as {name}",
     "signOut": "Sign out"
   },
+  "dimensionValue": {
+    "notSelected": "Not selected",
+    "enterText": "Enter text",
+    "enterNumber": "Enter number",
+    "pickDate": "Pick a date"
+  },
   "notFound": {
     "metaTitle": "Page not found",
     "eyebrow": "404 · Page not found",

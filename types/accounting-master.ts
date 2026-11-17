@@ -1,3 +1,4 @@
+import type { DimensionRef } from "@/types/gl-dimension";
 import type { AccountCategory } from "@/types/chart-of-accounts";
 import type { Audit } from "./audit";
 
@@ -98,14 +99,7 @@ export interface ApMasterBase {
   audit?: Audit;
 }
 
-export interface ApMasterDimension {
-  dimension_id: string;
-  dimension_value_id: string;
-  dimension_code?: string;
-  dimension_name?: string;
-  value_code?: string;
-  value_name?: string;
-}
+export type ApMasterDimension = DimensionRef;
 
 export interface ApMasterMapping {
   chart_of_accounts_id: string | null;

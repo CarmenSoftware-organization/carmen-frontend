@@ -25,6 +25,8 @@ interface DatePickerProps {
   readonly hideClear?: boolean;
   readonly invalid?: boolean;
   readonly readOnly?: boolean;
+  /** ใช้รูปแบบวันที่นี้แทนรูปแบบของโปรไฟล์ (เช่น `date_format` ของ dimension) */
+  readonly displayFormat?: string;
 }
 
 export function DatePicker({
@@ -40,13 +42,15 @@ export function DatePicker({
   hideClear,
   invalid,
   readOnly,
+  displayFormat: displayFormatOverride,
 }: DatePickerProps) {
   const { dateFormat, dateTimeFormat } = useProfile();
   const [open, setOpen] = useState(false);
 
   const selected = value ? new Date(value) : undefined;
 
-  const displayFormat = includeTime ? dateTimeFormat : dateFormat;
+  const displayFormat =
+    displayFormatOverride ?? (includeTime ? dateTimeFormat : dateFormat);
 
   if (readOnly) {
     return (

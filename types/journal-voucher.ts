@@ -1,3 +1,4 @@
+import type { DimensionPayload, DimensionRef } from "@/types/gl-dimension";
 import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 
 /** ตรงกับ `enum_jv_status` ของ backend */
@@ -34,10 +35,7 @@ export interface JournalVoucherCapabilities {
   can_open_source: boolean;
 }
 
-export interface JournalLineDimensionInput {
-  dimension_id: string;
-  dimension_value_id: string;
-}
+export type JournalLineDimensionInput = DimensionPayload;
 
 export interface JournalVoucherLineInput {
   account_id: string;
@@ -50,7 +48,7 @@ export interface JournalVoucherLineInput {
   rate_source: string | null;
   debit: string;
   credit: string;
-  dimension: JournalLineDimensionInput[];
+  dimension: DimensionRef[];
 }
 
 export interface JournalVoucherInput {

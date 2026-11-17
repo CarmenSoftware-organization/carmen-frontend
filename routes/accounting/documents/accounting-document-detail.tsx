@@ -94,6 +94,11 @@ import { useBuCode } from "@/hooks/use-bu-code";
 import { ApiError, isAppStatusErrorCode } from "@/lib/api-error";
 import { useErrorToast } from "@/hooks/use-error-toast";
 import { readCoaRules, coaRulesKey } from "@/lib/coa-dimension-rules";
+import { DimensionValueInput } from "@/components/dimension/dimension-value-input";
+import { useDimensionValueFormatter } from "@/hooks/use-dimension-value-formatter";
+import { toDimensionPayload } from "@/lib/dimension-payload";
+import { dimensionRefHasValue } from "@/lib/dimension-value";
+import type { DimensionRef } from "@/types/gl-dimension";
 import { visibleLineDimensions } from "./journal-line-dimensions";
 import { multiplyDecimal } from "../accounts-payable/shared/ap-decimal";
 import { CellAction } from "@/components/ui/cell-action";
@@ -141,10 +146,7 @@ import {
   useJournalVoucherAction,
   useUpdateJournalVoucher,
 } from "../journal-voucher/use-journal-voucher";
-import type {
-  JournalLineDimensionInput,
-  JournalVoucherInput,
-} from "@/types/journal-voucher";
+import type { JournalVoucherInput } from "@/types/journal-voucher";
 import {
   isSourceGenerated,
   journalVoucherCapabilities,
@@ -190,7 +192,7 @@ interface JournalLine {
   budgetControlled: boolean;
   budget: string;
   dimension: string;
-  dimensions?: JournalLineDimensionInput[];
+  dimensions?: DimensionRef[];
   departmentLabel?: string;
   accountLabel?: string;
   currency?: string;
@@ -282,6 +284,7 @@ export default function AccountingDocumentDetail() {
   const buCode = useBuCode();
   const dimensionQuery = useGlDimensions(isGlVoucher);
   const dimensionValuesQuery = useGlDimensionValues(isGlVoucher);
+  const formatDimensionValue = useDimensionValueFormatter();
   const usesVoucherDetailPattern =
     isGlVoucher ||
     config.kind === "arInvoice" ||
@@ -820,8 +823,8 @@ export default function AccountingDocumentDetail() {
               Number(line.exchangeRate ?? 1) !== Number(saved.exchange_rate) ||
               Number(line.debit) !== Number(saved.debit) ||
               Number(line.credit) !== Number(saved.credit) ||
-              JSON.stringify(line.dimensions ?? []) !==
-                JSON.stringify(saved.dimension ?? [])
+              JSON.stringify(toDimensionPayload(line.dimensions)) !==
+                JSON.stringify(toDimensionPayload(saved.dimension))
             );
           }))
       ) {
@@ -890,7 +893,7 @@ export default function AccountingDocumentDetail() {
                 !line.dimensions?.some(
                   (item) =>
                     item.dimension_id === rule.dimension_id &&
-                    item.dimension_value_id,
+                    dimensionRefHasValue(item),
                 ),
             ),
         )
@@ -931,7 +934,7 @@ export default function AccountingDocumentDetail() {
           debit: line.debit.toFixed(2),
           credit: line.credit.toFixed(2),
           dimension: isJournalVoucher
-            ? (line.dimensions ?? [])
+            ? toDimensionPayload(line.dimensions)
             : line.dimension
               ? [
                   {
@@ -2535,10 +2538,15 @@ export default function AccountingDocumentDetail() {
                                 )}
                               {isGlVoucher ? (
                                 visibleDimensions.map((dimension) => {
-                                  const selectedValue = line.dimensions?.find(
+                                  const lineRef = line.dimensions?.find(
                                     (item) =>
                                       item.dimension_id === dimension.id,
-                                  )?.dimension_value_id;
+                                  );
+                                  const selectedValue =
+                                    lineRef?.dimension_value_id ?? undefined;
+                                  const isTyped =
+                                    !!dimension.data_type &&
+                                    dimension.data_type !== "lookup";
                                   const values = (
                                     dimensionValuesQuery.data ?? []
                                   ).filter(
@@ -2550,6 +2558,52 @@ export default function AccountingDocumentDetail() {
                                   const selected = values.find(
                                     (value) => value.id === selectedValue,
                                   );
+                                  // ข้อความบนชิป: lookup = รหัสค่า · ชนิดอื่น = ค่าที่กรอกตามชนิด
+                                  const chipText = !lineRef
+                                    ? "—"
+                                    : isTyped && !lineRef.dimension_value_id
+                                      ? formatDimensionValue(
+                                          lineRef,
+                                          dimension,
+                                        ) || "—"
+                                      : (selected?.code ??
+                                        lineRef.value_code ??
+                                        "—");
+                                  if (isNew && !isView && isTyped) {
+                                    return (
+                                      <div
+                                        key={dimension.id}
+                                        className="flex items-center gap-1"
+                                      >
+                                        <span className="text-muted-foreground text-xs">
+                                          {dimension.code}:
+                                        </span>
+                                        <DimensionValueInput
+                                          dimension={dimension}
+                                          size="xs"
+                                          value={lineRef}
+                                          disabled={
+                                            dimensionQuery.isPending ||
+                                            dimensionQuery.isError
+                                          }
+                                          onChange={(next) =>
+                                            updateLine(line.id, {
+                                              dimensions: [
+                                                ...(
+                                                  line.dimensions ?? []
+                                                ).filter(
+                                                  (item) =>
+                                                    item.dimension_id !==
+                                                    dimension.id,
+                                                ),
+                                                ...(next ? [next] : []),
+                                              ],
+                                            })
+                                          }
+                                        />
+                                      </div>
+                                    );
+                                  }
                                   if (isNew && !isView) {
                                     return (
                                       <Select
@@ -2623,8 +2677,7 @@ export default function AccountingDocumentDetail() {
                                         variant="outline"
                                         size="sm"
                                       >
-                                        {dimension.code}:{" "}
-                                        {selected?.code ?? "—"}
+                                        {dimension.code}: {chipText}
                                       </Badge>
                                     );
                                   }
@@ -2640,7 +2693,7 @@ export default function AccountingDocumentDetail() {
                                     >
                                       {dimension.code}:{" "}
                                       <span className="text-foreground">
-                                        {selected?.code ?? "—"}
+                                        {chipText}
                                       </span>
                                     </Button>
                                   );
@@ -3284,9 +3337,10 @@ export default function AccountingDocumentDetail() {
                 dimensionRules,
                 selectedLine.dimensions ?? [],
               ).map((dimension) => {
-                const selectedValue = selectedLine.dimensions?.find(
+                const selectedRef = selectedLine.dimensions?.find(
                   (item) => item.dimension_id === dimension.id,
-                )?.dimension_value_id;
+                );
+                const selectedValue = selectedRef?.dimension_value_id;
                 const options = (dimensionValuesQuery.data ?? []).filter(
                   (value) =>
                     value.dimension_id === dimension.id &&
@@ -3298,8 +3352,14 @@ export default function AccountingDocumentDetail() {
                       {dimension.code} — {dimension.name}
                     </FieldLabel>
                     <FieldPlainText>
-                      {options.find((value) => value.id === selectedValue)
-                        ?.name ?? "—"}
+                      {selectedValue
+                        ? (options.find((value) => value.id === selectedValue)
+                            ?.name ??
+                          selectedRef?.value_code ??
+                          "—")
+                        : selectedRef
+                          ? formatDimensionValue(selectedRef, dimension) || "—"
+                          : "—"}
                     </FieldPlainText>
                   </Field>
                 );

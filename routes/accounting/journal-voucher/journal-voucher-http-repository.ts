@@ -8,6 +8,8 @@ import type {
   JournalVoucherSourceType,
   JournalVoucherStatus,
 } from "@/types/journal-voucher";
+import { toDimensionPayload } from "@/lib/dimension-payload";
+import type { DimensionRef } from "@/types/gl-dimension";
 import { httpClient } from "@/lib/http-client";
 import { buildUrl } from "@/lib/build-query-string";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
@@ -189,10 +191,7 @@ async function buildLineRequests(
         lineObj.description = line.comment || fallbackDescription;
       }
       if (line.dimension.length > 0) {
-        lineObj.dimensions = line.dimension.map((item) => ({
-          dimension_id: item.dimension_id,
-          dimension_value_id: item.dimension_value_id,
-        }));
+        lineObj.dimensions = toDimensionPayload(line.dimension);
       }
 
       return lineObj;
@@ -330,10 +329,7 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
       credit?: number | string;
       base_debit?: number | string;
       base_credit?: number | string;
-      tb_gl_jv_detail_dimension?: Array<{
-        dimension_id: string;
-        dimension_value_id: string;
-      }>;
+      tb_gl_jv_detail_dimension?: DimensionRef[];
     }
 
     const rawLines: RawLine[] = Array.isArray(raw.tb_gl_jv_detail)
@@ -372,10 +368,7 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
           credit: String(l.credit ?? 0),
           base_debit: String(l.base_debit ?? l.debit ?? 0),
           base_credit: String(l.base_credit ?? l.credit ?? 0),
-          dimension: (l.tb_gl_jv_detail_dimension ?? []).map((item) => ({
-            dimension_id: item.dimension_id,
-            dimension_value_id: item.dimension_value_id,
-          })),
+          dimension: l.tb_gl_jv_detail_dimension ?? [],
         };
       },
     );

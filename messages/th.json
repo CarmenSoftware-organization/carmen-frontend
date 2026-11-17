@@ -1373,6 +1373,12 @@
     "signedInAs": "เข้าใช้งานในชื่อ {name}",
     "signOut": "ออกจากระบบ"
   },
+  "dimensionValue": {
+    "notSelected": "ยังไม่เลือก",
+    "enterText": "กรอกข้อความ",
+    "enterNumber": "กรอกตัวเลข",
+    "pickDate": "เลือกวันที่"
+  },
   "notFound": {
     "metaTitle": "ไม่พบหน้านี้",
     "eyebrow": "404 · ไม่พบหน้านี้",

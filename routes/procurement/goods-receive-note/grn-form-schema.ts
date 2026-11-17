@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dimensionRefSchema } from "@/lib/dimension-schema";
 import { lineDimensionsPayload } from "@/lib/dimension-payload";
 import { round2 } from "@/lib/currency-utils";
 import { stableStringify } from "@/lib/form-helpers";
@@ -9,14 +10,6 @@ import type {
   ExtraCostDetailPayload,
 } from "@/types/goods-receive-note";
 
-const dimensionRefSchema = z.object({
-  dimension_id: z.string(),
-  dimension_value_id: z.string(),
-  dimension_code: z.string().optional(),
-  value_code: z.string().optional(),
-  dimension_name: z.string().optional(),
-  value_name: z.string().optional(),
-});
 
 function createGrnDetailSchema(tv: TranslationFn, tf: TranslationFn) {
   const base = z.object({

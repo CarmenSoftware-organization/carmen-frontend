@@ -22,7 +22,6 @@ export function useGlDimensionValues(enabled = true) {
   return useQuery({
     queryKey: ["accounting-master", "dimension-values", buCode],
     enabled: enabled && !!buCode,
-    queryFn: async () => (await fetchAllPages((page, perpage) => valuesApi.getList(buCode!, { page, perpage })))
-      .map((value) => ({ ...value, dimension_id: value.dimension_id })),
+    queryFn: () => fetchAllPages((page, perpage) => valuesApi.getList(buCode!, { page, perpage })),
   });
 }
