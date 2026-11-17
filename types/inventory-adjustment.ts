@@ -38,7 +38,6 @@ interface InventoryAdjustmentDetail {
   total_cost?: number;
   doc_version?: number;
   info: unknown;
-  dimension: unknown;
 }
 
 export interface InventoryAdjustment {

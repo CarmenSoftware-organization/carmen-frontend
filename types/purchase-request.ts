@@ -73,7 +73,6 @@ interface PurchaseRequestDetail
   current_stage_status: string;
   state_message: string | null;
   info: Record<string, unknown>;
-  dimension: unknown[];
   /** dimension ระดับบรรทัด — `[]` เมื่อไม่มี */
   dimensions?: DimensionRef[];
   history?: PrItemHistoryEntry[];
@@ -116,7 +115,6 @@ export interface PurchaseRequestTemplateDetail
   base_discount_amount: number;
   is_active: boolean;
   info: Record<string, unknown>;
-  dimension: unknown[];
   doc_version: number;
 }
 
@@ -191,7 +189,6 @@ export interface PurchaseRequest {
   purchase_request_detail: PurchaseRequestDetail[];
   base_total_amount: number;
   info: Record<string, unknown>;
-  dimension: string;
   doc_version: number;
   audit?: Audit;
 }

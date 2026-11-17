@@ -14,7 +14,6 @@ export interface PeriodEnd {
   status: PeriodEndStatus;
   note: string | null;
   info: Record<string, unknown>;
-  dimension: unknown[];
   audit: AuditInfo;
 }
 

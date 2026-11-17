@@ -117,7 +117,6 @@ const WITH_INVALID_ROW = {
       description: null,
       note: null,
       info: {},
-      dimension: [],
     },
   ],
 } as unknown as PriceList;

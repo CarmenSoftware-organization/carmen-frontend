@@ -10,7 +10,6 @@ export interface Cuisine {
   popular_dishes: string[] | null;
   key_ingredients: string[] | null;
   info: Record<string, unknown> | null;
-  dimension: string[] | null;
   is_active: boolean;
   /** จำนวนสูตรที่ยังไม่ถูกลบซึ่งใช้ cuisine นี้ — มีเฉพาะ response ของ list (backend ที่ยังไม่ส่ง = undefined) */
   recipe_count?: number;
@@ -27,6 +26,5 @@ export interface CreateCuisineDto {
   popular_dishes: string[] | null;
   key_ingredients: string[] | null;
   info: Record<string, unknown> | null;
-  dimension: string[] | null;
   is_active: boolean;
 }

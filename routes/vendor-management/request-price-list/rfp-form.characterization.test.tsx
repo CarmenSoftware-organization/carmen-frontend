@@ -83,7 +83,6 @@ const RFP = {
   custom_message: "",
   email_template_id: null,
   info: "{}",
-  dimension: {},
   pricelist_template: {
     id: "plt-1",
     name: "Produce",

@@ -467,7 +467,6 @@ function buildRecipePayload(values: RecipeFormValues) {
     deduct_from_stock: values.deduct_from_stock,
     default_variant_id: values.default_variant_id || null,
     info: textToObject(values.info),
-    dimension: textToObject(values.dimension),
     is_active: values.is_active,
   };
 }

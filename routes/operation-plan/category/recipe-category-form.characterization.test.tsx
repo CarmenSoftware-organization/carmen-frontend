@@ -55,7 +55,6 @@ const CATEGORY: RecipeCategory = {
   default_cost_settings: null,
   default_margins: null,
   info: null,
-  dimension: null,
 };
 
 beforeEach(() => {

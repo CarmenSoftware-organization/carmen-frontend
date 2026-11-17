@@ -113,7 +113,6 @@ export function RfpVendorFields({
           contact_person: primaryContact?.name ?? "",
           contact_phone: primaryContact?.phone ?? "",
           contact_email: primaryContact?.email ?? "",
-          dimension: "",
         };
       }),
     );

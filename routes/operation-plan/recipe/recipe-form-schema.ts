@@ -195,7 +195,6 @@ export function createRecipeSchema(tv: TranslationFn, tf: TranslationFn) {
       deduct_from_stock: z.boolean(),
       default_variant_id: z.string().nullable(),
       info: z.string(),
-      dimension: z.string(),
       is_active: z.boolean(),
     })
     .superRefine((v, ctx) => {
@@ -274,7 +273,6 @@ export const EMPTY_FORM: RecipeFormValues = {
   deduct_from_stock: false,
   default_variant_id: null,
   info: "",
-  dimension: "",
   is_active: true,
 };
 
@@ -319,7 +317,6 @@ export function getDefaultValues(recipe?: Recipe): RecipeFormValues {
     deduct_from_stock: recipe.deduct_from_stock,
     default_variant_id: recipe.default_variant_id,
     info: "",
-    dimension: "",
     is_active: recipe.is_active,
   };
 }

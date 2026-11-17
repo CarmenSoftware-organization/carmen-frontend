@@ -153,7 +153,6 @@ export function createGrnSchema(tv: TranslationFn, tf: TranslationFn) {
     exchange_rate: z.coerce.number().nullable(),
     exchange_rate_date: z.string().nullable(),
     info: z.string(),
-    dimension: z.string(),
     // Extra cost header
     allocate_extra_cost_type: z.string(),
     // Arrays
@@ -254,7 +253,6 @@ export function getDefaultValues(
       exchange_rate: 1,
       exchange_rate_date: new Date().toISOString(),
       info: "",
-      dimension: "",
       allocate_extra_cost_type: "by_qty",
       items: [],
       extra_cost_details: [],
@@ -285,7 +283,6 @@ export function getDefaultValues(
     exchange_rate: grn.exchange_rate ?? 1,
     exchange_rate_date: grn.exchange_rate_date,
     info: objectToText(grn.info),
-    dimension: objectToText(grn.dimension),
     // extra_cost เป็น object เดียวที่มีบรรทัดซ้อนอยู่ข้างใน ไม่ใช่ array (ดู type GrnExtraCost)
     allocate_extra_cost_type:
       grn.extra_cost?.allocate_extra_cost_type ?? "by_qty",

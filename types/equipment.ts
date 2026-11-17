@@ -37,7 +37,6 @@ export interface Equipment {
   attachments: unknown[] | null;
   manuals_urls: string[] | null;
   info: Record<string, unknown> | null;
-  dimension: unknown[] | null;
   doc_version: number;
   average_usage_time: number;
   category: Record<string, unknown> | null;

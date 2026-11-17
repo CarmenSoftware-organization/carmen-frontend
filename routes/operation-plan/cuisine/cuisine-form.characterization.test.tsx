@@ -52,7 +52,6 @@ const CUISINE: Cuisine = {
   popular_dishes: null,
   key_ingredients: null,
   info: null,
-  dimension: null,
   is_active: true,
 };
 

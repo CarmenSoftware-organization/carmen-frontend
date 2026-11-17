@@ -198,7 +198,6 @@ export interface Workflow {
   description: string;
   note: null;
   info: object;
-  dimension: object;
   audit?: AuditInfo;
 }
 

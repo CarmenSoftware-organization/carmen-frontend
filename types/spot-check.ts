@@ -89,7 +89,6 @@ interface SpotCheckDetail {
   note: string | null;
   comment: string | null;
   info: Record<string, unknown>;
-  dimension: unknown[];
   doc_version: number;
   tb_product?: {
     id: string;
@@ -112,7 +111,6 @@ export interface SpotCheck {
   description: string;
   note: string;
   info: Record<string, unknown>;
-  dimension: unknown[];
   doc_version: number;
   items?: number;
   min_value?: number;

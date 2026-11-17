@@ -259,7 +259,6 @@ export interface CreateRecipeDto {
   deduct_from_stock: boolean;
   default_variant_id: string | null;
   info: Record<string, unknown> | null;
-  dimension: Record<string, unknown> | null;
   is_active: boolean;
 }
 
