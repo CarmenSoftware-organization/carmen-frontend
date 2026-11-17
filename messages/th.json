@@ -478,7 +478,6 @@
       "dimensionsLoadError": "โหลด Dimension ไม่สำเร็จ",
       "lineDimensionLabel": "{name} บรรทัดที่ {row}",
       "clearLineDimension": "ล้างค่ามิติข้อมูล",
-      "savedDimensionsReadOnly": "ดูมิติข้อมูลได้ แต่แก้ไขไม่ได้หลังสร้างฉบับร่าง",
       "prefix": "ประเภทใบสำคัญ",
       "rate": "อัตรา",
       "baseDebit": "เดบิตสกุลเงินหลัก",

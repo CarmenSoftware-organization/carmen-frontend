@@ -948,6 +948,9 @@ export default function AccountingDocumentDetail() {
           : (
               await updateJournal.mutateAsync({
                 ...input,
+                // backend แทนที่บรรทัดได้เฉพาะใบ manual — ใบจาก template (recurring/allocation/…)
+                // ส่งบรรทัดไปจะโดน 409 จึงแก้แค่ header เหมือนเดิม
+                lines: journal!.source_type === "manual" ? input.lines : [],
                 id: journal!.id,
                 doc_version: journal!.doc_version,
               })
@@ -2023,11 +2026,6 @@ export default function AccountingDocumentDetail() {
                     {entryTitle}
                   </CardTitle>
                 )}
-                {isGlVoucher && !isNew && !isView && (
-                  <p className="text-muted-foreground text-xs">
-                    {t("savedDimensionsReadOnly")}
-                  </p>
-                )}
                 {isPeriodLocked && (
                   <Badge variant="destructive" className="gap-1 text-xs">
                     🔒 งวดบัญชี {currentPeriod?.fiscal_year}-P
@@ -2550,7 +2548,7 @@ export default function AccountingDocumentDetail() {
                                   const selected = values.find(
                                     (value) => value.id === selectedValue,
                                   );
-                                  if (isNew && !isView) {
+                                  if (!isView) {
                                     return (
                                       <Select
                                         key={dimension.id}
@@ -2614,18 +2612,6 @@ export default function AccountingDocumentDetail() {
                                           ))}
                                         </SelectContent>
                                       </Select>
-                                    );
-                                  }
-                                  if (!isView) {
-                                    return (
-                                      <Badge
-                                        key={dimension.id}
-                                        variant="outline"
-                                        size="sm"
-                                      >
-                                        {dimension.code}:{" "}
-                                        {selected?.code ?? "—"}
-                                      </Badge>
                                     );
                                   }
                                   return (
