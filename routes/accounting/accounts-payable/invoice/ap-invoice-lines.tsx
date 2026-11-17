@@ -801,7 +801,8 @@ function InvoiceLineDialog({
 function useVisibleInvoiceDimensions(line: InvoiceFormLine) {
   const bu = useBuCode();
   const accountId = line.dr_chart_of_accounts_id || undefined;
-  const { data: account } = useChartOfAccountById(accountId);
+  const accountQuery = useChartOfAccountById(accountId);
+  const account = accountQuery.data;
   const rules = useQuery({
     queryKey: coaRulesKey(bu, accountId),
     queryFn: () => readCoaRules(bu!, accountId!),
@@ -815,15 +816,21 @@ function useVisibleInvoiceDimensions(line: InvoiceFormLine) {
   );
   const dimensions = useGlDimensions(hasDimensions);
   const values = useGlDimensionValues(hasDimensions);
-  const visible = visibleLineDimensions(
-    dimensions.data ?? [],
-    account,
-    rules.data ?? [],
-    selected.map((item) => ({
-      dimension_id: item.gl_dimension_id,
-      dimension_value_id: item.gl_dimension_value_id,
-    })),
-  );
+  // บัญชียังโหลดไม่เสร็จ / โหลดพลาด / ถูกลบไปแล้ว — helper คืน [] เมื่อไม่มีบัญชี
+  // ค่าที่บันทึกไว้จึงต้องโชว์เองไม่ให้หายไปเฉย ๆ
+  const visible = account
+    ? visibleLineDimensions(
+        dimensions.data ?? [],
+        account,
+        rules.data ?? [],
+        selected.map((item) => ({
+          dimension_id: item.gl_dimension_id,
+          dimension_value_id: item.gl_dimension_value_id,
+        })),
+      )
+    : (dimensions.data ?? []).filter((dimension) =>
+        selected.some((item) => item.gl_dimension_id === dimension.id),
+      );
   return {
     visible,
     dimensions,
@@ -831,6 +838,7 @@ function useVisibleInvoiceDimensions(line: InvoiceFormLine) {
     rules,
     isError:
       rules.isError ||
+      (selected.length > 0 && accountQuery.isError) ||
       (hasDimensions && (dimensions.isError || values.isError)),
   };
 }
