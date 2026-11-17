@@ -30,6 +30,7 @@ import { dispatchPermissionDenied } from "@/components/permission-denied-dialog"
 import { cn } from "@/lib/utils";
 import { useStockReplenishment } from "./use-stock-replenishment";
 import { useCreatableWorkflows } from "@/hooks/use-workflow";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { WORKFLOW_TYPE } from "@/types/workflows";
 import type { Location, ProductLocation } from "@/types/stock-replenishment";
 import { StockReplLocation } from "./stock-repl-location";
@@ -75,6 +76,9 @@ export default function StockReplComponent() {
   const [openOverride, setOpenOverride] = useState<Set<string> | null>(null);
   const [createDialog, setCreateDialog] = useState<"pr" | "sr" | null>(null);
   const [locationWarningOpen, setLocationWarningOpen] = useState(false);
+  // ตารางของทุกคลังกว้างเท่ากล่องรายการ — วัดที่นี่ครั้งเดียว (กล่องนี้อยู่แม้ทุกคลังพับ)
+  // แล้วส่งลงไปให้เลือกขั้นคอลัมน์ · ลบขอบ 1px สองข้างของ DataGridContainer
+  const [setListBox, listBoxWidth] = useElementWidth();
 
   const openLocations =
     openOverride ??
@@ -240,7 +244,7 @@ export default function StockReplComponent() {
         </Empty>
       )}
       {!isLoading && locations && locations.length > 0 && (
-        <div className="space-y-3">
+        <div ref={setListBox} className="space-y-3">
           <div className="bg-muted/30 flex flex-wrap items-center gap-3 rounded-md border px-3 py-2 text-xs">
             <span className="text-muted-foreground flex items-center gap-1.5">
               <MapPin className="size-3.5" aria-hidden="true" />
@@ -321,6 +325,7 @@ export default function StockReplComponent() {
                 selections.get(location.location_id) ?? new Set<string>()
               }
               onSelectionChange={handleSelectionChange}
+              boxWidth={listBoxWidth == null ? undefined : listBoxWidth - 2}
             />
           ))}
 
