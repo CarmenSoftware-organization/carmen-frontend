@@ -40,6 +40,7 @@ import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { VENDOR_ENTITY } from "@/components/filter/entity-sources";
 import { setURLParams, useURL } from "@/hooks/use-url";
 import { encodeFilterParam, clauseTokens } from "@/lib/list-filter-encode";
@@ -147,10 +148,12 @@ export default function PriceListComponent() {
   // ป้ายในตาราง — ค่าเป็น clause เต็มต่อตัว MultiSelectFilter join เองเมื่อเลือกหลายตัว
   const statusOptions = useMemo(
     () =>
-      (["draft", "submitted", "active", "inactive", "voided"] as const).map((status) => ({
-        label: ts(status),
-        value: `status|string:${status}`,
-      })),
+      (["draft", "submitted", "active", "inactive", "voided"] as const).map(
+        (status) => ({
+          label: ts(status),
+          value: `status|string:${status}`,
+        }),
+      ),
     [ts],
   );
 
@@ -289,6 +292,9 @@ export default function PriceListComponent() {
     }
   };
 
+  // ตารางเลือกคอลัมน์จากความกว้างกล่องของมันเอง (ลบขอบ 1px สองข้างของ DataGridContainer)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+
   const table = usePriceListTable({
     priceLists,
     totalRecords,
@@ -300,6 +306,7 @@ export default function PriceListComponent() {
         listReturnState(),
       ),
     onVoid: setVoidTarget,
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
     quietExpired: validity === "expired",
   });
 
@@ -386,25 +393,27 @@ export default function PriceListComponent() {
       )}
 
       {!isGridMode && (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          tableLayout={{ headerSticky: true }}
-          emptyMessage={<EmptyComponent />}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              listGridMaxH(lf.activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            tableLayout={{ headerSticky: true }}
+            emptyMessage={<EmptyComponent />}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                listGridMaxH(lf.activeFilters.length > 0),
+              )}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       {/* key ตาม id: mount ใหม่ต่อใบ ช่องเหตุผลจะไม่ค้างค่าจากใบก่อนหน้า */}
