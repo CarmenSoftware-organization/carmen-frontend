@@ -11,7 +11,7 @@ import { KeyValueInput } from "@/components/ui/key-value-input";
 import { SettingSection } from "@/components/ui/setting-section";
 import type { CuisineFormValues } from "./cuisine-form-schema";
 
-type TagFieldName = "popular_dishes" | "key_ingredients" | "dimension";
+type TagFieldName = "popular_dishes" | "key_ingredients";
 
 interface CuisineDetailFieldsProps {
   readonly form: UseFormReturn<CuisineFormValues>;
@@ -62,7 +62,6 @@ export function CuisineDetailFields({
       <div className="grid grid-cols-1 gap-4">
         {tagField("popular_dishes", tfl("popularDishes"))}
         {tagField("key_ingredients", tfl("keyIngredients"))}
-        {tagField("dimension", tfl("dimension"))}
 
         <Field>
           <FieldLabel>{tfl("info")}</FieldLabel>

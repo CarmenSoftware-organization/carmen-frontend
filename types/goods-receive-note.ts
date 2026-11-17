@@ -105,7 +105,6 @@ interface ExtraCostDetailItem {
   extra_cost_type: EntityRef | null;
   note: string;
   info: Record<string, unknown> | null;
-  dimension: Record<string, unknown> | null;
   amount: number;
   tax_profile: EntityRef | null;
   tax_rate: number;
@@ -178,7 +177,6 @@ export interface GoodsReceiveNote {
   exchange_rate_date: string | null;
   total_amount?: number;
   info: Record<string, unknown> | null;
-  dimension: unknown[] | Record<string, unknown> | null;
   // Workflow
   workflow: EntityRef | null;
   workflow_history: Record<string, unknown> | WorkflowHistoryEntry[];

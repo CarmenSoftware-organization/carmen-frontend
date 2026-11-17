@@ -17,7 +17,6 @@ export interface RequestPriceListVendor {
     status: string;
   } | null;
   info: Record<string, unknown>;
-  dimension: string;
   doc_version: number;
 }
 
@@ -29,7 +28,6 @@ export interface RequestPriceList {
   custom_message: string;
   email_template_id: string | null;
   info: string;
-  dimension: Record<string, unknown>;
   doc_version: number;
   pricelist_template: {
     id: string;
@@ -50,7 +48,6 @@ export interface CreateRequestPriceListDto {
   custom_message?: string;
   email_template_id?: string;
   info?: string;
-  dimension?: unknown;
   vendors: {
     add?: {
       vendor_id: string;
@@ -60,7 +57,6 @@ export interface CreateRequestPriceListDto {
       contact_phone: string;
       contact_email: string;
       sequence_no: number;
-      dimension: string;
       id: string;
     }[];
     // id ของบรรทัดผู้ขายในคำขอราคา ไม่ใช่ vendor_id — เดิมส่ง { vendor_id } หลังบ้านอ่าน id

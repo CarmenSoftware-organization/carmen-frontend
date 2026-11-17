@@ -75,6 +75,5 @@ export function mapToPayload(values: RecipeCategoryFormValues) {
       target_profit_margin: values.margin_target,
     },
     info: null,
-    dimension: null,
   };
 }

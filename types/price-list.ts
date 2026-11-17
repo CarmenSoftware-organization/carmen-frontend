@@ -37,7 +37,6 @@ export interface PriceListDetailItem {
   description: string | null;
   note: string | null;
   info: Record<string, unknown>;
-  dimension: unknown[];
   can_use?: boolean;
   doc_version?: number;
 }

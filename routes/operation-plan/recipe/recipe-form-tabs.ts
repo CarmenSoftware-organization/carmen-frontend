@@ -21,7 +21,6 @@ const FIELD_TAB: Record<keyof RecipeFormValues, RecipeTab | null> = {
   // ไม่มีช่องบนจอ
   default_variant_id: null,
   info: null,
-  dimension: null,
   cost_per_portion: null,
   suggested_price: null,
   gross_margin: null,

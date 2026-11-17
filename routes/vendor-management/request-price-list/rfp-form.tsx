@@ -105,7 +105,6 @@ export function RequestPriceListForm({
       custom_message: values.custom_message ?? "",
       email_template_id: values.email_template_id || undefined,
       info: values.info || undefined,
-      dimension: values.dimension || undefined,
       vendors: buildVendorChanges(values.vendors, defaultValues.vendors),
     };
 

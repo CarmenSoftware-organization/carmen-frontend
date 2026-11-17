@@ -31,7 +31,6 @@ export const cuisineSchema = z.object({
       seen.add(key);
     });
   }),
-  dimension: z.array(z.string()),
   is_active: z.boolean(),
 });
 
@@ -45,7 +44,6 @@ export const EMPTY_FORM: CuisineFormValues = {
   popular_dishes: [],
   key_ingredients: [],
   info: [],
-  dimension: [],
   is_active: true,
 };
 
@@ -59,7 +57,6 @@ export function getDefaultValues(cuisine?: Cuisine): CuisineFormValues {
     popular_dishes: cuisine.popular_dishes ?? [],
     key_ingredients: cuisine.key_ingredients ?? [],
     info: objectToKeyValues(cuisine.info),
-    dimension: cuisine.dimension ?? [],
     is_active: cuisine.is_active,
   };
 }
@@ -75,7 +72,6 @@ export function mapToPayload(values: CuisineFormValues) {
     popular_dishes: orNull(values.popular_dishes),
     key_ingredients: orNull(values.key_ingredients),
     info: keyValuesToObject(values.info),
-    dimension: orNull(values.dimension),
     is_active: values.is_active,
   };
 }

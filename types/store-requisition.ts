@@ -35,7 +35,6 @@ interface StoreRequisitionDetail {
   current_stage_status: string;
   history?: SrItemHistoryEntry[];
   info: Record<string, unknown>;
-  dimension: string;
   doc_version: number;
 }
 
@@ -80,7 +79,6 @@ export interface StoreRequisition {
   issue_by?: EntityRef | null;
   store_requisition_detail: StoreRequisitionDetail[];
   info: Record<string, unknown>;
-  dimension: string;
   doc_version: number;
   // flat fields ยังใช้อยู่ในหน้า edit (sr-header / edit-store-requisition-content);
   // list endpoint จะไม่ส่งมา (serializer omit) แต่ enrich เป็น audit object แทน

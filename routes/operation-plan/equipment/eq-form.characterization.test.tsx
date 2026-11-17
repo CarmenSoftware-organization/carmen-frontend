@@ -70,7 +70,6 @@ const EQUIPMENT: Equipment = {
   attachments: null,
   manuals_urls: null,
   info: null,
-  dimension: null,
   average_usage_time: 0,
   category: null,
   image_url: null,

@@ -15,7 +15,6 @@ function createVendorRowSchema(tv: TranslationFn, tf: TranslationFn) {
     contact_person: z.string(),
     contact_phone: z.string(),
     contact_email: z.string(),
-    dimension: z.string(),
   });
 }
 
@@ -29,7 +28,6 @@ export function createRfpSchema(tv: TranslationFn, tf: TranslationFn) {
       start_date: z.string().min(1, tv("required", { field: tf("startDate") })),
       end_date: z.string().min(1, tv("required", { field: tf("endDate") })),
       custom_message: z.string().optional(),
-      dimension: z.any(),
       info: z.string().optional(),
       email_template_id: z.string().optional(),
       vendors: z.array(createVendorRowSchema(tv, tf)).default([]),
@@ -51,7 +49,6 @@ export const EMPTY_FORM: RfpFormValues = {
   start_date: "",
   end_date: "",
   custom_message: "",
-  dimension: "",
   info: "",
   email_template_id: "",
   vendors: [],
@@ -65,7 +62,6 @@ export function getDefaultValues(rfp?: RequestPriceList): RfpFormValues {
     start_date: rfp.start_date ?? "",
     end_date: rfp.end_date ?? "",
     custom_message: rfp.custom_message ?? "",
-    dimension: rfp.dimension ?? "",
     info:
       typeof rfp.info === "string" ? rfp.info : JSON.stringify(rfp.info ?? {}),
     email_template_id: rfp.email_template_id ?? "",
@@ -84,7 +80,6 @@ export function toVendorRow(
     contact_person: vendor.contact_person,
     contact_phone: vendor.contact_phone,
     contact_email: vendor.contact_email,
-    dimension: vendor.dimension ?? "",
   };
 }
 
@@ -113,7 +108,6 @@ export function buildVendorChanges(
       contact_phone: v.contact_phone,
       contact_email: v.contact_email,
       sequence_no: keptCount + i + 1,
-      dimension: v.dimension,
       id: "",
     }));
 
