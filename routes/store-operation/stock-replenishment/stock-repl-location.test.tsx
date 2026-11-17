@@ -6,9 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import type { Location } from "@/types/stock-replenishment";
 import { StockReplLocation } from "./stock-repl-location";
 
-const mobile = { value: false };
-vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => mobile.value }));
-
 const product = (id: string, name: string) => ({
   id,
   name,
@@ -37,7 +34,11 @@ const location: Location = {
   ],
 };
 
-function renderLocation(selectedIds: Set<string>, onChange = vi.fn()) {
+function renderLocation(
+  selectedIds: Set<string>,
+  onChange = vi.fn(),
+  boxWidth?: number,
+) {
   render(
     <IntlProvider locale="en" messages={en}>
       <TooltipProvider>
@@ -47,6 +48,7 @@ function renderLocation(selectedIds: Set<string>, onChange = vi.fn()) {
           open
           onOpenChange={() => {}}
           onSelectionChange={onChange}
+          boxWidth={boxWidth}
         />
       </TooltipProvider>
     </IntlProvider>,
@@ -87,15 +89,13 @@ describe("StockReplLocation — selection", () => {
   });
 });
 
-describe("StockReplLocation — mobile", () => {
-  it("จอเล็กยังติ๊กรายตัวได้ และไม่มีคอลัมน์ Min/Max ให้บีบ", () => {
-    mobile.value = true;
-    const onChange = renderLocation(new Set());
+describe("StockReplLocation — กล่องแคบ", () => {
+  it("กล่องแคบยังติ๊กรายตัวได้ และไม่มีคอลัมน์ Min/Max ให้บีบ", () => {
+    const onChange = renderLocation(new Set(), vi.fn(), 330);
 
     fireEvent.click(screen.getByRole("checkbox", { name: "Select Item One" }));
 
     expect(onChange).toHaveBeenCalledWith("loc-1", new Set(["p1"]));
     expect(screen.queryByText("Stock level")).toBeNull();
-    mobile.value = false;
   });
 });

@@ -17,7 +17,6 @@ import {
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import type { Location, ProductLocation } from "@/types/stock-replenishment";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { StockLevelBar } from "./stock-level-bar";
 
 interface StockReplLocationProps {
@@ -29,6 +28,22 @@ interface StockReplLocationProps {
     locationId: string,
     selectedIds: Set<string>,
   ) => void;
+  /** ความกว้างของกล่องรายการ (px) — `undefined` = ยังไม่ได้วัด ใช้ตารางเต็ม */
+  readonly boxWidth?: number;
+}
+
+/**
+ * ขั้นของตารางตามความกว้างกล่อง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
+ *
+ * สินค้ารับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมแบ่งสัดส่วน บน Full HD แถบสต็อก
+ * ยืดเป็น 623px · checkbox ถูกเรนเดอร์จริง (`tableLayout.checkbox`) จึงนับ 40 ไม่ใช่ select ล่องหน:
+ *   ครบ             40+40+200+190+110+110 = 690
+ *   ไม่มีเลขลำดับ                          = 650  (กล่องที่จอ 768 = 662)
+ *   ต่ำกว่านั้น      checkbox + เซลล์สองชั้น (compact)
+ */
+function tableTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  return { compact: w < 660, showIndex: w >= 725 };
 }
 
 export function StockReplLocation({
@@ -37,13 +52,14 @@ export function StockReplLocation({
   open,
   onOpenChange,
   onSelectionChange,
+  boxWidth,
 }: StockReplLocationProps) {
   "use no memo";
   const t = useTranslations("storeOperation.stockReplenishment");
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
   const tl = useTranslations("lookup");
-  const isMobile = useIsMobile() === true;
+  const { compact, showIndex } = tableTier(boxWidth);
 
   // สีอยู่ที่ dot ตัวเดียว chip เป็นกลาง ตาม pattern StatusDotBadge ของแอป
   const STATUS_CONFIG = {
@@ -114,13 +130,15 @@ export function StockReplLocation({
       header: tfl("product"),
       cell: ({ row }) => <ProductInfo product={row.original} />,
       enableSorting: false,
+      size: 200,
+      meta: { grow: true },
     },
     {
       id: "stock_level",
       header: t("stockLevel"),
       cell: ({ row }) => <StockLevelBar product={row.original} />,
       enableSorting: false,
-      size: 220,
+      size: 190,
     },
     {
       accessorKey: "reorder_qty",
@@ -131,7 +149,7 @@ export function StockReplLocation({
         </span>
       ),
       enableSorting: false,
-      size: 80,
+      size: 110,
       meta: { headerClassName: "text-right", cellClassName: "text-right" },
     },
     {
@@ -146,12 +164,12 @@ export function StockReplLocation({
         );
       },
       enableSorting: false,
-      // ชิป sm: จุด + "Critical" ~76px + padding เซลล์ 24
-      size: 100,
+      // ชิป sm: จุด + "Critical" ~76px + padding เซลล์ 24 (ไทย "วิกฤต" ยาวกว่าเล็กน้อย)
+      size: 110,
     },
   ];
 
-  // จอเล็กตาราง 6 คอลัมน์บีบจนชื่อเหลือ "Dish…" และสถานะเหลือ "Cri" — เหลือ
+  // กล่องแคบตาราง 6 คอลัมน์บีบจนชื่อเหลือ "Dish…" และสถานะเหลือ "Cri" — เหลือ
   // checkbox + เซลล์เดียวที่วางเป็นสองชั้นแทน (ไม่ใช้เลื่อนแนวนอน เพราะซ้อนอยู่ใน
   // collapsible ของแต่ละคลังอีกชั้น เลื่อนแล้วหลงว่าอยู่คลังไหน)
   const compactColumn: ColumnDef<ProductLocation> = {
@@ -189,9 +207,11 @@ export function StockReplLocation({
 
   const table = useReactTable({
     data: products,
-    columns: isMobile
+    columns: compact
       ? [...columns.filter((c) => c.id === "select"), compactColumn]
-      : columns,
+      : showIndex
+        ? columns
+        : columns.filter((c) => c.id !== "index"),
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id,
   });
@@ -253,7 +273,7 @@ export function StockReplLocation({
               // แถวจัดกึ่งกลางแนวตั้งตามค่าเริ่มต้น (เหมือนตาราง GRN)
               headerSticky: true,
               // เซลล์ compact สูงเกินสองบรรทัดเสมอ clamp จะตัดแถบสต็อกทิ้ง
-              rowClamp: !isMobile,
+              rowClamp: !compact,
             }}
           >
             <DataGridContainer>
