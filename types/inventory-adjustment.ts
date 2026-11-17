@@ -1,5 +1,6 @@
 import type { Audit } from "./audit";
 import type { EntityRef } from "./entity-ref";
+import type { DimensionPayload, DimensionRef } from "./gl-dimension";
 
 export type InventoryAdjustmentType = "stock-in" | "stock-out";
 export type InventoryAdjustmentStatus =
@@ -37,6 +38,8 @@ interface InventoryAdjustmentDetail {
   cost_per_unit?: number;
   total_cost?: number;
   doc_version?: number;
+  /** เฉพาะ GET รายตัวที่คืนมา */
+  dimensions?: DimensionRef[];
   info: unknown;
 }
 
@@ -76,6 +79,7 @@ export interface AdjustmentDetailItemPayload {
   cost_per_unit: number;
   total_cost: number;
   description: string;
+  dimensions?: DimensionPayload[];
 }
 
 interface AdjustmentDetailPayload {

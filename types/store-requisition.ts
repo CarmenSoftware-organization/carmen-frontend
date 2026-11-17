@@ -1,6 +1,7 @@
 import type { Audit } from "./audit";
 import type { LastAction } from "./last-action";
 import type { EntityRef } from "./entity-ref";
+import type { DimensionPayload, DimensionRef } from "./gl-dimension";
 import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 
 export type StoreRequisitionStatus =
@@ -34,6 +35,8 @@ interface StoreRequisitionDetail {
   issued_qty: number;
   current_stage_status: string;
   history?: SrItemHistoryEntry[];
+  /** เฉพาะ GET รายตัวที่คืนมา */
+  dimensions?: DimensionRef[];
   info: Record<string, unknown>;
   doc_version: number;
 }
@@ -93,6 +96,7 @@ interface SrDetailPayload {
   approved_qty: number;
   issued_qty: number;
   current_stage_status: string;
+  dimensions?: DimensionPayload[];
 }
 
 export interface CreateStoreRequisitionDto {

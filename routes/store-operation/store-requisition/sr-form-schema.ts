@@ -1,5 +1,15 @@
 import { z } from "zod";
 import type { TranslationFn } from "@/lib/i18n-schema";
+import type { DimensionRef } from "@/types/gl-dimension";
+
+const dimensionRefSchema = z.object({
+  gl_dimension_id: z.string(),
+  gl_dimension_value_id: z.string(),
+  dimension_code: z.string().optional(),
+  value_code: z.string().optional(),
+  dimension_name: z.string().optional(),
+  value_name: z.string().optional(),
+});
 
 function createSrDetailSchema(tv: TranslationFn, tf: TranslationFn) {
   return z.object({
@@ -39,6 +49,9 @@ function createSrDetailSchema(tv: TranslationFn, tf: TranslationFn) {
         }),
       )
       .optional(),
+    dimensions: z.array(dimensionRefSchema).optional(),
+    // ผู้ใช้แก้ช่อง dimension ของบรรทัดนี้ — ไม่ตั้งธงนี้ payload จะไม่ส่ง dimensions
+    dimensions_dirty: z.boolean().optional(),
   });
 }
 
@@ -111,6 +124,8 @@ export const SR_ITEM = {
   stage_status: "",
   _initial_stage_status: "pending",
   stage_message: "",
+  dimensions: [] as DimensionRef[],
+  dimensions_dirty: false,
 } as const;
 
 export const SR_ITEM_STAGE = {

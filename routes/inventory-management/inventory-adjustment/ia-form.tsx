@@ -24,6 +24,8 @@ import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
+import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
+import { clearDimensionsDirty } from "@/lib/dimension-payload";
 import { useErrorToast } from "@/hooks/use-error-toast";
 import { ApiError, ERROR_CODES, isAppStatusErrorCode } from "@/lib/api-error";
 import { VoidDialog } from "@/components/share/void-dialog";
@@ -38,6 +40,7 @@ import {
   getDefaultValues,
   mapItemToPayload,
   resolveDefaultDate,
+  restoreStoredCost,
 } from "./ia-form-schema";
 import { AdjItemFields } from "./ia-item-fields";
 import { DocumentInfo } from "./ia-doc-info";
@@ -92,6 +95,7 @@ export function InventoryAdjustmentForm({
   const formatter = useFormatter();
 
   const { currentPeriod, dateFormat } = useProfile();
+  const dimensionsEnabled = useLineDimensionsEnabled();
   const adjTypeFilter =
     adjustmentType === "stock-in"
       ? ADJUSTMENT_TYPE.STOCK_IN
@@ -175,7 +179,7 @@ export function InventoryAdjustmentForm({
     toast.success(tt("updateSuccess", { entity: t("entity") }));
     // rebaseline ค่าที่เพิ่งเซฟ ไม่งั้น isDirty ค้างแล้วเตือน "ยังไม่ได้บันทึก"
     // ตอนออกจากหน้า ทั้งที่บันทึกไปแล้ว
-    form.reset(form.getValues());
+    form.reset(clearDimensionsDirty(form.getValues()));
     setMode("view");
   };
 
@@ -208,22 +212,38 @@ export function InventoryAdjustmentForm({
   const detailsKey =
     adjustmentType === "stock-in" ? "stock_in_detail" : "stock_out_detail";
 
+  // บรรทัดที่แก้แค่ dimension ต้องไม่ทำให้ต้นทุนเปลี่ยน (ดู restoreStoredCost)
+  const buildUpdateChanges = (values: AdjFormValues) => {
+    const changes = buildItemChanges(
+      values.items,
+      defaultValues.items,
+      (item) => mapItemToPayload(item, { dimensionsEnabled }),
+    );
+    if (!changes.update) return changes;
+    return {
+      ...changes,
+      update: restoreStoredCost(changes.update, values, defaultValues, {
+        isStockOut: adjustmentType === "stock-out",
+      }),
+    };
+  };
+
   const buildUpdatePayload = (values: AdjFormValues) => ({
     id: inventoryAdjustment!.id,
     type: adjustmentType,
     doc_version: inventoryAdjustment!.doc_version,
     ...buildBasePayload(values),
-    [detailsKey]: buildItemChanges(
-      values.items,
-      defaultValues.items,
-      mapItemToPayload,
-    ),
+    [detailsKey]: buildUpdateChanges(values),
   });
 
   const buildCreatePayload = (values: AdjFormValues) => ({
     type: adjustmentType,
     ...buildBasePayload(values),
-    [detailsKey]: { add: values.items.map(mapItemToPayload) },
+    [detailsKey]: {
+      add: values.items.map((item) =>
+        mapItemToPayload(item, { dimensionsEnabled }),
+      ),
+    },
   });
 
   const submitUpdate = (values: AdjFormValues) => {
@@ -306,7 +326,7 @@ export function InventoryAdjustmentForm({
           });
           toast.success(tt("updateSuccess", { entity: t("entity") }));
           // reset ก่อนออกจากหน้า ไม่งั้น isDirty ค้างแล้วโดน discard ขวางตอน navigate
-          form.reset(form.getValues());
+          form.reset(clearDimensionsDirty(form.getValues()));
           toList();
         } catch (err) {
           handleMutationError(err);
