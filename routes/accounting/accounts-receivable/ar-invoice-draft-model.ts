@@ -1,9 +1,7 @@
+import { toDimensionPayload } from "@/lib/dimension-payload";
+import type { DimensionRef } from "@/types/gl-dimension";
 export type ArAmount = number | string;
 
-interface LineDimension {
-  gl_dimension_id: string;
-  gl_dimension_value_id: string;
-}
 
 export interface ArInvoiceLineInput {
   sequence_no: number;
@@ -34,7 +32,7 @@ export interface ArInvoiceLineInput {
   dr_chart_of_accounts_id?: string | null;
   dr_cost_center_id?: string | null;
   is_pms_folio?: boolean;
-  dimensions?: LineDimension[];
+  dimensions?: DimensionRef[];
 }
 
 export interface ArDraftLine extends ArInvoiceLineInput {
@@ -45,7 +43,7 @@ export interface ArDraftLine extends ArInvoiceLineInput {
 
 export interface ArInvoiceLineRecord extends Omit<ArDraftLine, "dimensions"> {
   total_amount: ArAmount;
-  tb_ar_invoice_detail_dimension?: LineDimension[];
+  tb_ar_invoice_detail_dimension?: DimensionRef[];
 }
 
 export interface ArInvoiceCreateInput {
@@ -112,11 +110,6 @@ export function draftLineToInput(line: ArDraftLine): ArInvoiceLineInput {
     dr_chart_of_accounts_id: line.dr_chart_of_accounts_id,
     dr_cost_center_id: line.dr_cost_center_id,
     is_pms_folio: line.is_pms_folio,
-    dimensions: line.dimensions?.map(
-      ({ gl_dimension_id, gl_dimension_value_id }) => ({
-        gl_dimension_id,
-        gl_dimension_value_id,
-      }),
-    ),
+    dimensions: line.dimensions && toDimensionPayload(line.dimensions),
   };
 }

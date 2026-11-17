@@ -85,9 +85,9 @@ describe("Dimension with sub-values", () => {
     expect(
       vi.mocked(httpClient.post).mock.calls.map((call) => call[1]),
     ).toEqual([
-      expect.objectContaining({ code: "A", gl_dimension_id: "dimension" }),
-      expect.objectContaining({ code: "B", gl_dimension_id: "dimension" }),
-      expect.objectContaining({ code: "B", gl_dimension_id: "dimension" }),
+      expect.objectContaining({ code: "A", dimension_id: "dimension" }),
+      expect.objectContaining({ code: "B", dimension_id: "dimension" }),
+      expect.objectContaining({ code: "B", dimension_id: "dimension" }),
     ]);
   });
   it("deletes a selected saved value only when saving the dimension", async () => {

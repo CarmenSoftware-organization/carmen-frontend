@@ -15,7 +15,7 @@ const rules = ["mandatory", "optional", "prohibited"].map(
   (requirement, i) =>
     ({
       chart_of_accounts_id: "account",
-      gl_dimension_id: dimensions[i].id,
+      dimension_id: dimensions[i].id,
       requirement,
     }) as CoaDimensionRule,
 );

@@ -25,27 +25,18 @@ describe("httpJournalVoucherRepository", () => {
 
   it("reads saved line dimensions from the detail API", async () => {
     vi.mocked(httpClient.get).mockImplementation(async (url: string) =>
-      mockResponse(
-        url.includes("cost-centers")
-          ? { data: [] }
-          : {
-              data: {
-                id: "44444444-4444-4444-4444-444444444444",
-                tb_gl_jv_detail: [
-                  {
-                    id: "line-1",
-                    tb_gl_jv_detail_dimension: [
-                      {
-                        gl_dimension_id: "66666666-6666-6666-6666-666666666666",
-                        gl_dimension_value_id:
-                          "77777777-7777-7777-7777-777777777777",
-                      },
-                    ],
-                  },
-                ],
-              },
-            },
-      ),
+      mockResponse(url.includes("cost-centers")
+        ? { data: [] }
+        : { data: {
+            id: "44444444-4444-4444-4444-444444444444",
+            tb_gl_jv_detail: [{
+              id: "line-1",
+              tb_gl_jv_detail_dimension: [{
+                dimension_id: "66666666-6666-6666-6666-666666666666",
+                dimension_value_id: "77777777-7777-7777-7777-777777777777",
+              }],
+            }],
+          } }),
     );
 
     const voucher = await httpJournalVoucherRepository.get(
@@ -171,12 +162,10 @@ describe("httpJournalVoucherRepository", () => {
               credit: 0,
               exchange_rate: 1,
               description: "Electricity line",
-              dimensions: [
-                {
-                  gl_dimension_id: "66666666-6666-6666-6666-666666666666",
-                  gl_dimension_value_id: "77777777-7777-7777-7777-777777777777",
-                },
-              ],
+              dimensions: [{
+                dimension_id: "66666666-6666-6666-6666-666666666666",
+                dimension_value_id: "77777777-7777-7777-7777-777777777777",
+              }],
             },
             {
               sequence_no: 2,

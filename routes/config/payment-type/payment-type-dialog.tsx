@@ -1,3 +1,4 @@
+import { toDimensionPayload } from "@/lib/dimension-payload";
 import { dependencyDetails } from "../shared/ap-master-crud";
 import { PaymentTypeBankLookup } from "./payment-type-bank-lookup";
 import { Controller } from "react-hook-form";
@@ -90,12 +91,7 @@ export function PaymentTypeDialog({
         toPayload={({ code, ...values }, current) => ({
           ...values,
           ...(!current ? { code } : {}),
-          dimensions: values.dimensions.map(
-            ({ gl_dimension_id, gl_dimension_value_id }) => ({
-              gl_dimension_id,
-              gl_dimension_value_id,
-            }),
-          ),
+          dimensions: toDimensionPayload(values.dimensions),
           cheque_form_id: values.is_cheque ? values.cheque_form_id : null,
         })}
         contentClassName="@container max-h-[90dvh] overflow-y-auto sm:max-w-2xl"

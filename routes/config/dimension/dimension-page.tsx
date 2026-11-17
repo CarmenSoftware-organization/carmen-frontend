@@ -353,7 +353,7 @@ export default function DimensionPage() {
             return mutateValue(
               () =>
                 httpClient.post(API_ENDPOINTS.DIMENSION_VALUES(buCode!), {
-                  gl_dimension_id: viewingValues.id,
+                  dimension_id: viewingValues.id,
                   ...val,
                 }),
               "Dimension value added",
@@ -1125,7 +1125,7 @@ async function saveDimensionWithValues({
             : {
                 ...changes,
                 code: value.code.trim().toUpperCase(),
-                gl_dimension_id: master.id,
+                dimension_id: master.id,
               },
           value.id ? value : null,
         );

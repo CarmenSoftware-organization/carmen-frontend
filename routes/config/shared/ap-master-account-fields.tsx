@@ -6,6 +6,7 @@ import {
   FieldPlainText,
   FieldDescription,
 } from "@/components/ui/field";
+import { formatDimensionValue } from "@/lib/dimension-value";
 import type {
   ApMasterDimension,
   ApMasterMapping,
@@ -32,7 +33,7 @@ function MasterDimensionLookup({
     MOCK_DIMENSIONS.find((item) => item.id === dimensionId)?.values ?? [];
   return (
     <LookupCombobox
-      value={value?.gl_dimension_value_id ?? ""}
+      value={value?.dimension_value_id ?? ""}
       onValueChange={(id) => onChange(id)}
       items={items}
       getId={(item) => item.id}
@@ -74,6 +75,7 @@ export function MasterAccountFields({
 }) {
   const t = useTranslations("config.apMaster");
   const tf = useTranslations("field");
+  const tc = useTranslations("common");
   const accounts = endpoint("").endsWith("/payment-types")
     ? MOCK_ACCOUNTS.slice(0, 5)
     : MOCK_ACCOUNTS.slice(5);
@@ -156,28 +158,33 @@ export function MasterAccountFields({
       )}
       {readOnly
         ? value.dimensions.map((dimension) => (
-            <Field key={dimension.gl_dimension_id}>
+            <Field key={dimension.dimension_id}>
               <FieldLabel>
                 {dimension.dimension_name ||
                   dimension.dimension_code ||
                   tf("dimension")}
               </FieldLabel>
               <FieldPlainText>
-                {[dimension.value_code, dimension.value_name]
-                  .filter(Boolean)
-                  .join(" · ") || "—"}
+                {dimension.dimension_value_id
+                  ? [dimension.value_code, dimension.value_name]
+                      .filter(Boolean)
+                      .join(" · ") || "—"
+                  : formatDimensionValue(dimension, undefined, {
+                      yes: tc("yes"),
+                      no: tc("no"),
+                    }) || "—"}
               </FieldPlainText>
             </Field>
           ))
         : visibleRules.map((rule) => (
-            <Field key={rule.gl_dimension_id}>
+            <Field key={rule.dimension_id}>
               <FieldLabel required={rule.requirement === "mandatory"}>
                 {rule.code} · {rule.name}
               </FieldLabel>
               <MasterDimensionLookup
-                dimensionId={rule.gl_dimension_id}
+                dimensionId={rule.dimension_id}
                 value={value.dimensions.find(
-                  (item) => item.gl_dimension_id === rule.gl_dimension_id,
+                  (item) => item.dimension_id === rule.dimension_id,
                 )}
                 disabled={disabled}
                 onChange={(id) =>
@@ -186,13 +193,13 @@ export function MasterAccountFields({
                     cost_center_id: value.cost_center_id,
                     dimensions: [
                       ...value.dimensions.filter(
-                        (item) => item.gl_dimension_id !== rule.gl_dimension_id,
+                        (item) => item.dimension_id !== rule.dimension_id,
                       ),
                       ...(id
                         ? [
                             {
-                              gl_dimension_id: rule.gl_dimension_id,
-                              gl_dimension_value_id: id,
+                              dimension_id: rule.dimension_id,
+                              dimension_value_id: id,
                             },
                           ]
                         : []),

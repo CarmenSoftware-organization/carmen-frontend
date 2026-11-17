@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dimensionRefSchema } from "@/lib/dimension-schema";
 import { computeLineAmounts } from "@/lib/line-pricing";
 import type { TranslationFn } from "@/lib/i18n-schema";
 import { lineDimensionsPayload } from "@/lib/dimension-payload";
@@ -8,14 +9,6 @@ import type {
   PrDetailRefPayload,
 } from "@/types/purchase-order";
 
-const dimensionRefSchema = z.object({
-  gl_dimension_id: z.string(),
-  gl_dimension_value_id: z.string(),
-  dimension_code: z.string().optional(),
-  value_code: z.string().optional(),
-  dimension_name: z.string().optional(),
-  value_name: z.string().optional(),
-});
 
 const prDetailSchema = z.object({
   // null ได้ — แถวที่ไม่ได้มาจาก PR (สร้างเองหรือมาจาก price list)

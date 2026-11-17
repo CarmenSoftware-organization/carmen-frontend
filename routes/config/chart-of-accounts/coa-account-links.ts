@@ -21,7 +21,7 @@ export function buildCoaAccountLinks(
     .filter((id) => !selectedCenters.has(id))
     .map((cost_center_id) => ({ cost_center_id }));
   const currentDimensions = new Map(
-    account?.dimensions.map((item) => [item.gl_dimension_id, item]),
+    account?.dimensions.map((item) => [item.dimension_id, item]),
   );
   // Prohibited rules are not shown as selected dimensions; preserve their posting restrictions.
   const desired = values.req_dim
@@ -36,11 +36,11 @@ export function buildCoaAccountLinks(
     update: [],
     remove: [],
   };
-  for (const [gl_dimension_id, requirement] of Object.entries(desired)) {
-    const current = currentDimensions.get(gl_dimension_id);
-    const draft = configs[gl_dimension_id];
+  for (const [dimension_id, requirement] of Object.entries(desired)) {
+    const current = currentDimensions.get(dimension_id);
+    const draft = configs[dimension_id];
     const input = {
-      gl_dimension_id,
+      dimension_id,
       requirement,
       ...(draft
         ? {
@@ -55,9 +55,9 @@ export function buildCoaAccountLinks(
     else if (current.requirement !== requirement || draft)
       dimensions.update.push(input);
   }
-  for (const gl_dimension_id of currentDimensions.keys()) {
-    if (!(gl_dimension_id in desired))
-      dimensions.remove.push({ gl_dimension_id });
+  for (const dimension_id of currentDimensions.keys()) {
+    if (!(dimension_id in desired))
+      dimensions.remove.push({ dimension_id });
   }
   return {
     ...(add.length || remove.length ? { cost_centers: { add, remove } } : {}),

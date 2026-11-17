@@ -108,7 +108,7 @@ vi.mock("@/hooks/use-gl-dimensions", () => ({
 }));
 
 const mockDimension: AccountDimension = {
-  gl_dimension_id: "project",
+  dimension_id: "project",
   code: "project",
   name: "Project",
   data_type: "lookup",
@@ -194,7 +194,7 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
             remove: [],
             update: [
               {
-                gl_dimension_id: "project",
+                dimension_id: "project",
                 requirement: "optional",
                 config: { default_value_id: "p1", allowed_value_ids: [] },
               },

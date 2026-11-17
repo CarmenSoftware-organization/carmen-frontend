@@ -1,13 +1,36 @@
+import { storedTypedValue } from "@/lib/dimension-value";
 import type { DimensionPayload, DimensionRef } from "@/types/gl-dimension";
 
-/** ตัด dimension จาก response ให้เหลือสอง id ที่ backend รับ */
+/** แถว dimension หนึ่งแถวเป็นรูปที่ backend รับ — null = ไม่มีค่า (ไม่ส่ง) */
+export function toDimensionPayloadRow(
+  ref: DimensionRef,
+): DimensionPayload | null {
+  // value ที่ผู้ใช้เพิ่งกรอก (ชนิดไม่ใช่ lookup) มาก่อนเสมอ
+  if (!isBlank(ref.value))
+    return { dimension_id: ref.dimension_id, value: ref.value };
+  // lookup (หรือแถวเก่าที่ยังไม่ถูกแก้) ส่ง value id เดิมกลับ — backend รับเป็นค่าเดิมของบรรทัด
+  if (ref.dimension_value_id)
+    return {
+      dimension_id: ref.dimension_id,
+      dimension_value_id: ref.dimension_value_id,
+    };
+  const stored = storedTypedValue(ref);
+  if (stored === null) return null;
+  return { dimension_id: ref.dimension_id, value: stored };
+}
+
+function isBlank(v: unknown): boolean {
+  return v === undefined || v === null || v === "";
+}
+
+/** ตัด dimension จาก response ให้เหลือเฉพาะฟิลด์ที่ backend รับ (ข้ามแถวที่ไม่มีค่า) */
 export function toDimensionPayload(
   dimensions: readonly DimensionRef[] | undefined,
 ): DimensionPayload[] {
-  return (dimensions ?? []).map((d) => ({
-    gl_dimension_id: d.gl_dimension_id,
-    gl_dimension_value_id: d.gl_dimension_value_id,
-  }));
+  return (dimensions ?? []).flatMap((d) => {
+    const row = toDimensionPayloadRow(d);
+    return row ? [row] : [];
+  });
 }
 
 /**

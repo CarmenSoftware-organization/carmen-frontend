@@ -6,12 +6,12 @@ export type DimensionRequirement = "mandatory" | "optional" | "prohibited";
 export interface CoaDimensionRule {
   id: string;
   chart_of_accounts_id: string;
-  gl_dimension_id: string;
+  dimension_id: string;
   requirement: DimensionRequirement;
   doc_version: number;
 }
 export const coaRulesKey = (bu: string | undefined, id: string | undefined) => ["coa-dimension-rules", bu, id] as const;
-const api = createConfigApi<CoaDimensionRule, { chart_of_accounts_id: string; gl_dimension_id: string; requirement: DimensionRequirement }>({
+const api = createConfigApi<CoaDimensionRule, { chart_of_accounts_id: string; dimension_id: string; requirement: DimensionRequirement }>({
   endpoint: API_ENDPOINTS.ACCOUNT_DIMENSION_RULES, label: "account dimension rules",
 });
 export async function readCoaRules(bu: string, id: string) {

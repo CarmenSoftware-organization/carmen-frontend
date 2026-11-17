@@ -275,7 +275,7 @@ export function CoaForm({ account, initialEdit = false }: CoaFormProps) {
           allowed_dimensions: normalizeArray(account.allowed_dimensions),
           dimension_rules: Object.fromEntries(
             account.dimensions.map((rule) => [
-              rule.gl_dimension_id,
+              rule.dimension_id,
               rule.requirement,
             ]),
           ),
@@ -383,11 +383,11 @@ export function CoaForm({ account, initialEdit = false }: CoaFormProps) {
   const currentGroup = selectedGroupId ? groupMap.get(selectedGroupId) : null;
 
   const savedDimensions = new Map(
-    account?.dimensions.map((item) => [item.gl_dimension_id, item]),
+    account?.dimensions.map((item) => [item.dimension_id, item]),
   );
   const savedDimensionConfigs = new Map(
     account?.dimensions.map((item) => [
-      item.gl_dimension_id,
+      item.dimension_id,
       {
         allowedValueIds: item.config.allowed_values.map((value) => value.id),
         defaultValueId: item.config.default_value_id,
@@ -401,10 +401,10 @@ export function CoaForm({ account, initialEdit = false }: CoaFormProps) {
     ]),
   );
   for (const item of account?.dimensions ?? []) {
-    if (!dimensionMap.has(item.gl_dimension_id))
-      dimensionMap.set(item.gl_dimension_id, {
+    if (!dimensionMap.has(item.dimension_id))
+      dimensionMap.set(item.dimension_id, {
         ...item,
-        id: item.gl_dimension_id,
+        id: item.dimension_id,
         is_active: true,
       });
   }

@@ -12,7 +12,7 @@ const dimension = (
   id: string,
   requirement: AccountDimension["requirement"] = "optional",
 ): AccountDimension => ({
-  gl_dimension_id: id,
+  dimension_id: id,
   code: id,
   name: id,
   data_type: "lookup",
@@ -71,9 +71,9 @@ it("builds only the account's changed links, preserving optional/prohibited rule
       remove: [{ cost_center_id: "remove" }],
     },
     dimensions: {
-      add: [{ gl_dimension_id: "add", requirement: "mandatory" }],
-      update: [{ gl_dimension_id: "change", requirement: "mandatory" }],
-      remove: [{ gl_dimension_id: "remove" }],
+      add: [{ dimension_id: "add", requirement: "mandatory" }],
+      update: [{ dimension_id: "change", requirement: "mandatory" }],
+      remove: [{ dimension_id: "remove" }],
     },
   });
 });
@@ -87,7 +87,7 @@ it("omits unchanged relationships rather than overwriting saved configs", () => 
         allowed_cost_center_ids: ["keep", "remove"],
         dimension_rules: Object.fromEntries(
           account.dimensions.map((item) => [
-            item.gl_dimension_id,
+            item.dimension_id,
             item.requirement,
           ]),
         ),
@@ -104,19 +104,19 @@ it("sends explicit empty configs to clear saved values and never writes drafts f
     remove: { allowedValueIds: ["unused"], defaultValueId: "unused" },
   });
   expect(result.dimensions?.update).toContainEqual({
-    gl_dimension_id: "keep",
+    dimension_id: "keep",
     requirement: "optional",
     config: { allowed_value_ids: [], default_value_id: null },
   });
   expect(result.dimensions?.add).toEqual([
     {
-      gl_dimension_id: "add",
+      dimension_id: "add",
       requirement: "mandatory",
       config: { allowed_value_ids: ["value"], default_value_id: "value" },
     },
   ]);
   expect(
-    result.dimensions?.update.some((item) => item.gl_dimension_id === "remove"),
+    result.dimensions?.update.some((item) => item.dimension_id === "remove"),
   ).toBe(false);
 });
 
@@ -127,9 +127,9 @@ it("turning off dimensions removes selected rules while retaining prohibited pos
     add: [],
     update: [],
     remove: [
-      { gl_dimension_id: "keep" },
-      { gl_dimension_id: "change" },
-      { gl_dimension_id: "remove" },
+      { dimension_id: "keep" },
+      { dimension_id: "change" },
+      { dimension_id: "remove" },
     ],
   });
 });

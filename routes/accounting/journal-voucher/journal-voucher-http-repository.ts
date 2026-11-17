@@ -8,6 +8,8 @@ import type {
   JournalVoucherSourceType,
   JournalVoucherStatus,
 } from "@/types/journal-voucher";
+import { toDimensionPayload } from "@/lib/dimension-payload";
+import type { DimensionRef } from "@/types/gl-dimension";
 import { httpClient } from "@/lib/http-client";
 import { buildUrl } from "@/lib/build-query-string";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
@@ -190,10 +192,7 @@ async function buildLineRequests(
       }
       // ไม่ส่งเมื่อว่าง — ตอน update บรรทัดถูกสร้างใหม่ทั้งชุด ไม่ส่ง = ไม่มี dimension (ล้างค่าเดิมได้)
       if (line.dimension.length > 0) {
-        lineObj.dimensions = line.dimension.map((item) => ({
-          gl_dimension_id: item.dimension_id,
-          gl_dimension_value_id: item.dimension_value_id,
-        }));
+        lineObj.dimensions = toDimensionPayload(line.dimension);
       }
 
       return lineObj;
@@ -347,10 +346,7 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
       credit?: number | string;
       base_debit?: number | string;
       base_credit?: number | string;
-      tb_gl_jv_detail_dimension?: Array<{
-        gl_dimension_id: string;
-        gl_dimension_value_id: string;
-      }>;
+      tb_gl_jv_detail_dimension?: DimensionRef[];
     }
 
     const rawLines: RawLine[] = Array.isArray(raw.tb_gl_jv_detail)
@@ -361,39 +357,38 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
 
     const costCenters = await getCostCenterLookup(buCode);
 
-    const mappedLines: JournalVoucherLine[] = rawLines.map((l, idx) => {
-      const ccId = l.cost_center_id ?? l.department_id ?? null;
-      const matched = ccId
-        ? costCenters.find((c) => c.id === ccId || c.code === ccId)
-        : null;
-      return {
-        id: l.id ?? `line-${idx + 1}`,
-        sequence_no: l.sequence_no ?? idx + 1,
-        account_id: l.chart_of_accounts_id ?? l.account_id ?? "",
-        account_code: l.account_code ?? null,
-        account_name: l.account_name ?? null,
-        department_id: ccId,
-        department_code:
-          l.cost_center_code ?? l.department_code ?? matched?.code ?? null,
-        department_name:
-          l.cost_center_name ?? l.department_name ?? matched?.name ?? null,
-        comment: l.description ?? l.comment ?? null,
-        currency_id: l.currency_id ?? "THB",
-        currency_code: l.currency_code ?? "THB",
-        exchange_rate: String(l.exchange_rate ?? 1),
-        rate_date: null,
-        rate_type: null,
-        rate_source: null,
-        debit: String(l.debit ?? 0),
-        credit: String(l.credit ?? 0),
-        base_debit: String(l.base_debit ?? l.debit ?? 0),
-        base_credit: String(l.base_credit ?? l.credit ?? 0),
-        dimension: (l.tb_gl_jv_detail_dimension ?? []).map((item) => ({
-          dimension_id: item.gl_dimension_id,
-          dimension_value_id: item.gl_dimension_value_id,
-        })),
-      };
-    });
+    const mappedLines: JournalVoucherLine[] = rawLines.map(
+      (l, idx) => {
+        const ccId = l.cost_center_id ?? l.department_id ?? null;
+        const matched = ccId
+          ? costCenters.find((c) => c.id === ccId || c.code === ccId)
+          : null;
+        return {
+          id: l.id ?? `line-${idx + 1}`,
+          sequence_no: l.sequence_no ?? idx + 1,
+          account_id: l.chart_of_accounts_id ?? l.account_id ?? "",
+          account_code: l.account_code ?? null,
+          account_name: l.account_name ?? null,
+          department_id: ccId,
+          department_code:
+            l.cost_center_code ?? l.department_code ?? matched?.code ?? null,
+          department_name:
+            l.cost_center_name ?? l.department_name ?? matched?.name ?? null,
+          comment: l.description ?? l.comment ?? null,
+          currency_id: l.currency_id ?? "THB",
+          currency_code: l.currency_code ?? "THB",
+          exchange_rate: String(l.exchange_rate ?? 1),
+          rate_date: null,
+          rate_type: null,
+          rate_source: null,
+          debit: String(l.debit ?? 0),
+          credit: String(l.credit ?? 0),
+          base_debit: String(l.base_debit ?? l.debit ?? 0),
+          base_credit: String(l.base_credit ?? l.credit ?? 0),
+          dimension: l.tb_gl_jv_detail_dimension ?? [],
+        };
+      },
+    );
 
     const doc: JournalVoucher = {
       id: raw.id,

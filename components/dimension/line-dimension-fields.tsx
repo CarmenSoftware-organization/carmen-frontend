@@ -1,13 +1,7 @@
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { DimensionValueInput } from "@/components/dimension/dimension-value-input";
 import {
   useGlDimensions,
   useGlDimensionValues,
@@ -19,8 +13,6 @@ interface LineDimensionFieldsProps {
   readonly onChange: (next: DimensionRef[]) => void;
   readonly disabled?: boolean;
 }
-
-const NONE = "__none__";
 
 /**
  * ช่องเลือก dimension ต่อบรรทัดเอกสาร — หนึ่ง Select ต่อหนึ่ง dimension (ค่าเดียว)
@@ -59,50 +51,28 @@ export function LineDimensionFields({
         .filter(
           (dimension) =>
             dimension.is_active ||
-            value.some((item) => item.gl_dimension_id === dimension.id),
+            value.some((item) => item.dimension_id === dimension.id),
         )
         .map((dimension) => {
           const current = value.find(
-            (item) => item.gl_dimension_id === dimension.id,
-          )?.gl_dimension_value_id;
+            (item) => item.dimension_id === dimension.id,
+          );
           return (
             <Field key={dimension.id}>
               <FieldLabel className="text-muted-foreground text-xs">
                 {dimension.name}
               </FieldLabel>
-              <Select
-                value={current ?? NONE}
-                disabled={disabled || dimensions.isLoading || values.isLoading}
-                onValueChange={(id) => {
-                  const next = value.filter(
-                    (item) => item.gl_dimension_id !== dimension.id,
+              <DimensionValueInput
+                dimension={dimension}
+                value={current}
+                disabled={disabled || dimensions.isLoading}
+                onChange={(next) => {
+                  const rest = value.filter(
+                    (item) => item.dimension_id !== dimension.id,
                   );
-                  if (id !== NONE)
-                    next.push({
-                      gl_dimension_id: dimension.id,
-                      gl_dimension_value_id: id,
-                    });
-                  onChange(next);
+                  onChange(next ? [...rest, next] : rest);
                 }}
-              >
-                <SelectTrigger size="sm" aria-label={dimension.name}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NONE}>{ui("noDimension")}</SelectItem>
-                  {(values.data ?? [])
-                    .filter(
-                      (item) =>
-                        item.dimension_id === dimension.id &&
-                        (item.is_active || item.id === current),
-                    )
-                    .map((item) => (
-                      <SelectItem key={item.id} value={item.id}>
-                        {item.code} · {item.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              />
             </Field>
           );
         })}

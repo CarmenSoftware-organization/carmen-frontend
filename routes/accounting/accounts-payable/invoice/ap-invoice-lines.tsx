@@ -1,5 +1,6 @@
 "use no memo";
 
+import { DimensionValueInput } from "@/components/dimension/dimension-value-input";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -13,13 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   useGlDimensions,
   useGlDimensionValues,
@@ -823,13 +817,10 @@ function useVisibleInvoiceDimensions(line: InvoiceFormLine) {
         dimensions.data ?? [],
         account,
         rules.data ?? [],
-        selected.map((item) => ({
-          dimension_id: item.gl_dimension_id,
-          dimension_value_id: item.gl_dimension_value_id,
-        })),
+        selected,
       )
     : (dimensions.data ?? []).filter((dimension) =>
-        selected.some((item) => item.gl_dimension_id === dimension.id),
+        selected.some((item) => item.dimension_id === dimension.id),
       );
   return {
     visible,
@@ -879,44 +870,27 @@ function InvoiceDimensions({
     <div className="grid gap-3 border-b pb-4 sm:grid-cols-2">
       {visible.map((dimension) => {
         const value = selected.find(
-          (item) => item.gl_dimension_id === dimension.id,
-        )?.gl_dimension_value_id;
+          (item) => item.dimension_id === dimension.id,
+        );
         return (
           <Field key={dimension.id}>
             <FieldLabel>{dimension.name}</FieldLabel>
-            <Select
-              value={value ?? "__none__"}
+            <DimensionValueInput
+              dimension={dimension}
+              value={value}
               disabled={!editable || dimensions.isLoading || values.isLoading}
-              onValueChange={(id) => {
-                const next = selected.filter(
-                  (item) => item.gl_dimension_id !== dimension.id,
+              onChange={(next) => {
+                const rest = selected.filter(
+                  (item) => item.dimension_id !== dimension.id,
                 );
-                if (id !== "__none__")
-                  next.push({
-                    gl_dimension_id: dimension.id,
-                    gl_dimension_value_id: id,
-                  });
-                onChange({ carry: { ...line.carry, dimensions: next } });
+                onChange({
+                  carry: {
+                    ...line.carry,
+                    dimensions: next ? [...rest, next] : rest,
+                  },
+                });
               }}
-            >
-              <SelectTrigger size="sm" aria-label={dimension.name}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">{ui("noDimension")}</SelectItem>
-                {(values.data ?? [])
-                  .filter(
-                    (item) =>
-                      item.dimension_id === dimension.id &&
-                      (item.is_active || item.id === value),
-                  )
-                  .map((item) => (
-                    <SelectItem key={item.id} value={item.id}>
-                      {item.code} · {item.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
+            />
           </Field>
         );
       })}
