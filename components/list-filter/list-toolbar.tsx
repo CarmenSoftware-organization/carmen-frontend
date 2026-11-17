@@ -91,11 +91,13 @@ export function ListToolbar({
             : "flex flex-wrap items-center justify-between gap-2"
         }
       >
+        {/* wrap: ไม่ใส่ nowrap — กลุ่มซ้ายตัดสินจากความกว้างของตัวเอง ไม่ใช่จอ ที่ไม่พอ (หน้า PR/PO
+            มีปุ่ม My pending / All Documents แทรก) ปุ่ม View/Filter ขึ้นบรรทัดใหม่แทนการล้นขอบ */}
         <div
           className={
             isRow
               ? "contents"
-              : "flex w-full flex-1 flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap"
+              : "flex w-full flex-1 flex-wrap items-center gap-2 sm:w-auto"
           }
         >
           {/* row: ช่องค้นยืดเฉพาะจอแคบ (ต่ำกว่า md ที่ SearchInput เป็น w-full) — ตั้งแต่ md
