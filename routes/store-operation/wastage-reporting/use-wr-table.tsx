@@ -7,7 +7,6 @@ import {
   indexColumn,
   columnSkeletons,
 } from "@/components/ui/data-grid/columns";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { formatCurrency } from "@/lib/currency-utils";
 import type { WastageItem } from "@/types/wastage-reporting";
 import type { ParamsDto } from "@/types/params";
@@ -20,6 +19,35 @@ interface UseWastageReportTableOptions {
   params: ParamsDto;
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onOpenGrn: (item: WastageItem) => void;
+  /** ความกว้างของกล่องตาราง (px) — `undefined` = ยังไม่ได้วัด ใช้ตารางเต็ม */
+  containerWidth?: number;
+}
+
+/**
+ * ขั้นของตารางตามความกว้างกล่อง (ไม่ใช่ของจอ — sidebar พับ/กางได้) · หน้าใช้ `compact`
+ * ตัดสิน rowClamp ด้วย จึง export ให้ใช้เกณฑ์เดียวกัน
+ *
+ * สินค้ารับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมแบ่งสัดส่วน ที่ tablet หัว
+ * Remaining Qty / Cost/Unit ล้นเซลล์ ส่วนบน Full HD คอลัมน์ห่างกันเกินจำเป็น
+ * ไม่มีคอลัมน์ select ผลรวม `size` จึงเท่ากับความกว้างขั้นต่ำจริง:
+ *   ครบ                60+140+200+160+120+130+130+100+140 = 1180
+ *   ไม่มีเลขลำดับ                                         = 1120
+ *   ไม่มีต้นทุนต่อหน่วย                                     = 1020
+ *   ไม่มีล็อต                                             = 900
+ *   ไม่มีคลัง                                             = 740
+ *   ต่ำกว่านั้น       เซลล์เดียวสามบรรทัด (compact)
+ * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35px · ของที่ซ่อนยังเห็น: ต้นทุนต่อหน่วย = มูลค่า ÷ คงเหลือ
+ * (และอยู่ใน GRN) · คลัง/ล็อตลงบรรทัดรองใต้สินค้า
+ */
+export function wrTableTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  return {
+    compact: w < 750,
+    showIndex: w >= 1215,
+    showCost: w >= 1155,
+    showLot: w >= 1055,
+    showLocation: w >= 935,
+  };
 }
 
 export function useWastageReportTable({
@@ -28,10 +56,12 @@ export function useWastageReportTable({
   params,
   tableConfig,
   onOpenGrn,
+  containerWidth,
 }: UseWastageReportTableOptions) {
   "use no memo";
   const tfl = useTranslations("field");
-  const isMobile = useIsMobile() === true;
+  const { compact, showIndex, showCost, showLot, showLocation } =
+    wrTableTier(containerWidth);
 
   const dataColumns: ColumnDef<WastageItem>[] = [
     {
@@ -57,23 +87,37 @@ export function useWastageReportTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("product")} />
       ),
-      cell: ({ row }) => (
-        <div className="min-w-0">
-          <p className="truncate" title={row.original.product_name}>
-            {row.original.product_name}
-          </p>
-          {row.original.product_local_name && (
-            <p
-              className="text-muted-foreground truncate text-xs"
-              title={row.original.product_local_name}
-            >
-              {row.original.product_local_name}
+      // กล่องแคบ: คลัง/ล็อตที่ถูกซ่อนต่อท้ายชื่อท้องถิ่นในบรรทัดเดียวกัน — ไม่เพิ่มบรรทัดที่สาม
+      // เพราะ rowClamp ตัดเซลล์ไว้สองบรรทัด
+      cell: ({ row }) => {
+        const it = row.original;
+        const secondary = [
+          it.product_local_name,
+          showLocation
+            ? undefined
+            : [it.location_code, it.location_name].filter(Boolean).join(" "),
+          showLot ? undefined : it.lot_no,
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        return (
+          <div className="min-w-0">
+            <p className="truncate" title={it.product_name}>
+              {it.product_name}
             </p>
-          )}
-        </div>
-      ),
+            {secondary && (
+              <p
+                className="text-muted-foreground truncate text-xs"
+                title={secondary}
+              >
+                {secondary}
+              </p>
+            )}
+          </div>
+        );
+      },
       enableSorting: false,
-      meta: { skeleton: columnSkeletons.text },
+      meta: { skeleton: columnSkeletons.text, grow: true },
       size: 200,
     },
     {
@@ -82,7 +126,7 @@ export function useWastageReportTable({
         <DataGridColumnHeader column={column} title={tfl("location")} />
       ),
       cell: ({ row }) => (
-        <span className="truncate">
+        <span className="block truncate">
           <span className="text-muted-foreground mr-1.5">
             {row.original.location_code}
           </span>
@@ -181,7 +225,7 @@ export function useWastageReportTable({
     },
   ];
 
-  // จอเล็ก 9 คอลัมน์บีบจนอ่านไม่ออก — เหลือเซลล์เดียวสามบรรทัด: สินค้า · มูลค่า /
+  // กล่องแคบ 9 คอลัมน์บีบจนอ่านไม่ออก — เหลือเซลล์เดียวสามบรรทัด: สินค้า · มูลค่า /
   // ความเร่งด่วน · คงเหลือ / คลัง · ล็อต · GRN (แนวเดียวกับ stock-replenishment)
   const compactColumn: ColumnDef<WastageItem> = {
     id: "compact",
@@ -227,9 +271,25 @@ export function useWastageReportTable({
     enableSorting: false,
   };
 
-  const allColumns: ColumnDef<WastageItem>[] = isMobile
+  // ซ่อนผ่านรายการคอลัมน์ ไม่ใช่ CSS — ความกว้างขั้นต่ำของตารางที่มีคอลัมน์ยืดคิดจากทุกคอลัมน์
+  // ที่ TanStack ถือว่ามองเห็น
+  const hidden = new Set([
+    ...(showCost ? [] : ["cost_per_unit"]),
+    ...(showLot ? [] : ["lot_no"]),
+    ...(showLocation ? [] : ["location"]),
+  ]);
+  const visibleDataColumns = dataColumns.filter((c) => {
+    const key =
+      c.id ?? ("accessorKey" in c ? String(c.accessorKey) : undefined);
+    return !key || !hidden.has(key);
+  });
+
+  const allColumns: ColumnDef<WastageItem>[] = compact
     ? [compactColumn]
-    : [indexColumn<WastageItem>(params), ...dataColumns];
+    : [
+        ...(showIndex ? [indexColumn<WastageItem>(params)] : []),
+        ...visibleDataColumns,
+      ];
 
   return useReactTable({
     data: items,

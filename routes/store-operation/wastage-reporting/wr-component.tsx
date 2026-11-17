@@ -23,9 +23,9 @@ import {
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { LIST_GRID_MAX_H } from "@/components/share/list-grid-max-h";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { WASTAGE_WINDOW_DAYS } from "@/constant/wastage-reporting";
-import { useWastageReportTable } from "./use-wr-table";
+import { useWastageReportTable, wrTableTier } from "./use-wr-table";
 import { WrSummaryBar } from "./wr-summary-bar";
 import SearchInput from "@/components/search-input";
 import { setURLParams, useURL } from "@/hooks/use-url";
@@ -35,11 +35,17 @@ const isWastageStatus = (v: string): v is WastageStatus =>
   v === "expired" || v === "expiring";
 
 export default function WrComponent() {
+  // คอลัมน์เปลี่ยนตามความกว้างกล่อง แต่ table เป็น ref เดิม — ไม่ใส่ คอมไพเลอร์แช่ JSX ของ
+  // DataGrid ไว้ ลากขนาดแล้วตารางไม่เปลี่ยนขั้น (ล้นกรอบ) จนกว่าจะโหลดหน้าใหม่ (routes/CLAUDE.md)
+  "use no memo";
   const navigate = useNavigate();
   const t = useTranslations("storeOperation.wastageReporting");
   const tc = useTranslations("common");
   const { params, search, setSearch, tableConfig } = useDataGridState();
-  const isMobile = useIsMobile() === true;
+  // ตารางเลือกคอลัมน์จากความกว้างกล่องของมันเอง (ลบขอบ 1px สองข้างของ DataGridContainer)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const tableWidth = gridBoxWidth == null ? undefined : gridBoxWidth - 2;
+  const { compact } = wrTableTier(tableWidth);
 
   // ไม่มี ListToolbar / saved view: ตัวกรองเดียวคือสถานะ ซึ่งอยู่บนหน้าแล้ว
   // (WrSummaryBar) เมนู Filter ว่างเปล่า และ view ที่บันทึกได้มีแค่คำค้น+สถานะ
@@ -79,6 +85,7 @@ export default function WrComponent() {
     tableConfig,
     onOpenGrn: (item) =>
       navigate(`/procurement/goods-receive-note/${item.grn_id}`),
+    containerWidth: tableWidth,
   });
 
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
@@ -134,25 +141,27 @@ export default function WrComponent() {
           onStatusChange={(next) => setURLParams({ status: next, page: "" })}
         />
 
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          emptyMessage={emptyMessage}
-          // มือถือเป็นเซลล์เดียวสามบรรทัด — clamp สองบรรทัดจะตัด GRN ทิ้ง
-          tableLayout={{ headerSticky: true, rowClamp: !isMobile }}
-        >
-          {/* แถบสรุป (WrSummaryBar) กินอีกแถวเหนือตารางเท่ากับ ActiveFilterBar
-              จึงใช้สูตร withFilters — หน้านี้ไม่มี ActiveFilterBar ของตัวเอง */}
-          <DataGridContainer
-            className={cn("flex flex-col", LIST_GRID_MAX_H.withFilters)}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            emptyMessage={emptyMessage}
+            // กล่องแคบเป็นเซลล์เดียวสามบรรทัด — clamp สองบรรทัดจะตัด GRN ทิ้ง
+            tableLayout={{ headerSticky: true, rowClamp: !compact }}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+            {/* แถบสรุป (WrSummaryBar) กินอีกแถวเหนือตารางเท่ากับ ActiveFilterBar
+              จึงใช้สูตร withFilters — หน้านี้ไม่มี ActiveFilterBar ของตัวเอง */}
+            <DataGridContainer
+              className={cn("flex flex-col", LIST_GRID_MAX_H.withFilters)}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       </div>
     </ListPageShell>
   );
