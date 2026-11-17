@@ -1,9 +1,11 @@
 import type React from "react";
+import { useState } from "react";
 import type {
   ColumnDef,
   DisplayColumnDef,
   OnChangeFn,
   RowSelectionState,
+  VisibilityState,
 } from "@tanstack/react-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
@@ -48,6 +50,27 @@ import { PR_STATUS } from "@/types/purchase-request";
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 
+/**
+ * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
+ *
+ * "แผนก" รับที่เหลือ (`meta.grow`) ที่เหลือกว้างคงที่ ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`
+ * (ไม่นับ audit ที่ซ่อนเป็น default) — All documents ไม่มีช่องติ๊ก 55 + ปุ่มแถว 60 จึงลบ 115:
+ * ครบ 1075 / 960 (ติ๊ก 55 # 60 เลขที่ 210 วันที่ 95 workflow 100 สถานะ 140 ผู้ขอ 110
+ * แผนก 125 ยอด 120 ปุ่ม 60) · ไม่มี # 1015 / 900 · ไม่มี workflow 915 / 800 ·
+ * ไม่มีผู้ขอ 805 / 690 · กล่องแคบ (วันที่+ป้ายส่งกลับลงใต้เลขที่ เลขที่ 150) 650 / 535
+ * — กล่องที่จอ 768 = 660 · จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px
+ * ผู้ขอที่ถูกซ่อนย้ายเป็นบรรทัดรองใต้แผนก · # และ workflow ดูได้ในหน้าเอกสาร
+ */
+function columnTier(width: number | undefined, isMyPending: boolean) {
+  const w = (width ?? Number.POSITIVE_INFINITY) - (isMyPending ? 115 : 0);
+  return {
+    showIndex: w >= 965,
+    showWorkflow: w >= 905,
+    showRequester: w >= 805,
+    wide: w >= 695,
+  };
+}
+
 interface UsePurchaseRequestTableOptions {
   items: PurchaseRequest[];
   totalRecords: number;
@@ -62,6 +85,8 @@ interface UsePurchaseRequestTableOptions {
   onSelectAll?: () => void;
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
+  /** ความกว้างกล่องตาราง (px) — `undefined` = ยังไม่ได้วัด ใช้ชุดคอลัมน์จอกว้าง */
+  containerWidth?: number;
 }
 
 export function usePrTable({
@@ -78,8 +103,19 @@ export function usePrTable({
   onSelectAll,
   rowSelection,
   onRowSelectionChange,
+  containerWidth,
 }: UsePurchaseRequestTableOptions) {
   "use no memo";
+  const { showIndex, showWorkflow, showRequester, wide } = columnTier(
+    containerWidth,
+    isMyPending,
+  );
+  // คอลัมน์ที่ผู้ใช้เปิด/ปิดเองจากเมนู Toggle Columns — audit ซ่อนเป็น default
+  // ขั้นตามความกว้างกล่องทับเฉพาะคอลัมน์ที่บังคับซ่อน
+  const [userVisibility, setUserVisibility] = useState<VisibilityState>({
+    created_at: false,
+    updated_at: false,
+  });
   const { dateFormat, dateTimeFormat, amountFormat, defaultCurrencyCode } =
     useProfile();
   const tfl = useTranslations("field");
@@ -107,20 +143,40 @@ export function usePrTable({
       // ป้าย "ส่งกลับ" ต่อท้ายเลขที่แทนคอลัมน์ของตัวเอง — ใบที่ถูกตีกลับมีไม่กี่ใบ
       // คอลัมน์แยกจึงว่างเกือบทุกแถวแต่กินที่ 110px · hover ป้ายเพื่อดูเหตุผล
       // data-slot ให้ rowClamp ของ DataGrid ข้ามกล่องนี้ ไม่งั้นลูกถูกแปลงเป็น -webkit-box
-      cell: ({ row }) => (
-        <div data-slot="cell-stack" className="flex items-center gap-2">
-          <CellAction onClick={() => onEdit(row.original)}>
-            {row.original.pr_no}
-          </CellAction>
+      cell: ({ row }) => {
+        const sendBack = (
           <PrSendBackHint
             prId={row.original.id}
             lastAction={row.original.last_action}
           />
-        </div>
-      ),
+        );
+        if (wide)
+          return (
+            <div data-slot="cell-stack" className="flex items-center gap-2">
+              <CellAction onClick={() => onEdit(row.original)}>
+                {row.original.pr_no}
+              </CellAction>
+              {sendBack}
+            </div>
+          );
+        // กล่องแคบ: คอลัมน์วันที่ถูกซ่อน — วันที่ + ป้ายส่งกลับลงบรรทัดรองใต้เลขที่
+        return (
+          <div data-slot="cell-stack" className="flex flex-col items-start">
+            <CellAction onClick={() => onEdit(row.original)}>
+              {row.original.pr_no}
+            </CellAction>
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
+                {formatDate(row.original.pr_date, dateFormat)}
+              </span>
+              {sendBack}
+            </div>
+          </div>
+        );
+      },
       // 210 = เลขที่ยาว (PR20260400051) + ป้าย SEND BACK ไม่ถูกตัดที่ 1366px
-      // (200 ขาดไป 2px — เซลล์มี padding 12px สองข้าง)
-      size: 210,
+      // (200 ขาดไป 2px — เซลล์มี padding 12px สองข้าง) · กล่องแคบป้ายลงบรรทัดรอง เหลือ 150
+      size: wide ? 210 : 150,
       meta: { headerTitle: tfl("prNo"), skeleton: columnSkeletons.text },
     },
     {
@@ -211,16 +267,33 @@ export function usePrTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("department")} />
       ),
+      // คอลัมน์ข้อความที่ยาวได้ — รับที่เหลือ ไม่ให้คอลัมน์สั้นห่างกันเป็นร้อยพิกเซลที่ 4K
+      // size = ความกว้างขั้นต่ำ
       size: 125,
       cell: ({ row }) => (
-        <span
-          className="block truncate"
-          title={row.original.department_name ?? undefined}
-        >
-          {row.original.department_name}
-        </span>
+        <div data-slot="cell-stack" className="flex min-w-0 flex-col">
+          <span
+            className="block truncate"
+            title={row.original.department_name ?? undefined}
+          >
+            {row.original.department_name}
+          </span>
+          {/* คอลัมน์ผู้ขอถูกซ่อนในกล่องแคบ — ย้ายมาเป็นบรรทัดรอง */}
+          {!showRequester && row.original.requestor_name && (
+            <span
+              className="text-muted-foreground block truncate text-xs"
+              title={row.original.requestor_name}
+            >
+              {row.original.requestor_name}
+            </span>
+          )}
+        </div>
       ),
-      meta: { headerTitle: tfl("department"), skeleton: columnSkeletons.text },
+      meta: {
+        headerTitle: tfl("department"),
+        skeleton: columnSkeletons.text,
+        grow: true,
+      },
     },
     {
       accessorKey: "base_total_amount",
@@ -374,15 +447,22 @@ export function usePrTable({
     columns: allColumns,
     getCoreRowModel: getCoreRowModel(),
     enableRowSelection: isMyPending,
-    // คอลัมน์ audit ซ่อนเป็น default (เปิดได้จากเมนู Toggle Columns)
-    initialState: {
-      columnVisibility: { created_at: false, updated_at: false },
-    },
     ...tableConfig,
     // key ของ selection เป็น pr id ไม่ใช่เลข index แถว — ข้อมูลถูกลบ/เรียงใหม่แล้ว
     // ที่ติ๊กไว้ยังชี้ใบเดิม
     getRowId: (row) => row.id,
-    state: { ...tableConfig.state, rowSelection },
+    state: {
+      ...tableConfig.state,
+      rowSelection,
+      columnVisibility: {
+        ...userVisibility,
+        ...(!showIndex && { index: false }),
+        ...(!showWorkflow && { workflow_name: false }),
+        ...(!showRequester && { requestor_name: false }),
+        ...(!wide && { pr_date: false }),
+      },
+    },
+    onColumnVisibilityChange: setUserVisibility,
     onRowSelectionChange,
     pageCount: Math.ceil(totalRecords / (Number(params.perpage) || 10)),
   });
