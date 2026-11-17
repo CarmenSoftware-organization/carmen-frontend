@@ -5253,6 +5253,8 @@
       "shareOfTotal": "% of total",
       "ingredientCostFromLines": "Total of the ingredient lines — change the ingredients to change it",
       "cookIngredients": "Ingredients",
+      "cookChecked": "{n}/{total} checked",
+      "cookClearChecks": "Clear",
       "categoryDefaultHint": "Category: {pct}%",
       "applyCategoryDefault": "Apply",
       "categoryRatio": "(category {pct}%)",

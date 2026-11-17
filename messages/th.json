@@ -5253,6 +5253,8 @@
       "shareOfTotal": "% ของรวม",
       "ingredientCostFromLines": "ยอดรวมของบรรทัดวัตถุดิบ — แก้ที่วัตถุดิบเพื่อเปลี่ยนค่านี้",
       "cookIngredients": "วัตถุดิบ",
+      "cookChecked": "เช็กแล้ว {n}/{total}",
+      "cookClearChecks": "ล้าง",
       "categoryDefaultHint": "หมวด: {pct}%",
       "applyCategoryDefault": "ใช้ค่านี้",
       "categoryRatio": "(หมวด {pct}%)",
