@@ -359,18 +359,29 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     expect(heroPhoto(2)).toHaveAttribute("src", "https://files.test/b.jpg");
   });
 
-  it("จอกว้าง: ขั้นตอนอยู่คอลัมน์ซ้าย (ตรึงไว้) ข้อมูลสูตรอยู่คอลัมน์ขวา · จอแคบข้อมูลสูตรยังอยู่บน", () => {
+  it("จอกว้าง: ขั้นตอนซ้าย (ตรึงไว้) ข้อมูลสูตรขวา · iPad แนวตั้ง: ข้อมูลสูตรบน ขั้นตอนคู่วัตถุดิบ · มือถือข้อมูลสูตรอยู่บน", () => {
     renderForm(<RecipeCookView recipe={withPhotos} />);
     const steps = screen.getByRole("region", { name: R.stepsSection });
     const layout = steps.parentElement!;
+    // ≥ 48rem: ขั้นตอนกินทั้งคอลัมน์ซ้าย ข้อมูล/วัตถุดิบ/หลังทำเสร็จเรียงในคอลัมน์ขวา
     expect(layout.className).toContain("@3xl:grid-cols-[minmax(0,1fr)_20rem]");
-    expect(steps.className).toContain("@3xl:col-start-1");
-    expect(steps.className).toContain("@3xl:row-span-2");
-    // เลื่อนดูวัตถุดิบด้านขวาแล้วขั้นที่ทำอยู่ไม่หลุดจอ
-    expect(steps.className).toContain("@3xl:sticky");
+    expect(layout.className).toContain(
+      "@3xl:[grid-template-areas:'steps_info'_'steps_ing'_'steps_after']",
+    );
+    // 36–48rem (iPad แนวตั้ง): ข้อมูลสูตรเป็นแถบบน ขั้นตอนกับวัตถุดิบคู่กัน ไม่ต้องเลื่อนสลับไปมา
+    expect(layout.className).toContain(
+      "@xl:[grid-template-areas:'info_info'_'steps_ing'_'after_after']",
+    );
+    // มือถือ: เรียงตามลำดับอ่าน
+    expect(layout.className).toContain(
+      "[grid-template-areas:'info'_'ing'_'steps'_'after']",
+    );
+    expect(steps.className).toContain("[grid-area:steps]");
+    // เลื่อนดูวัตถุดิบด้านข้างแล้วขั้นที่ทำอยู่ไม่หลุดจอ
+    expect(steps.className).toContain("@xl:sticky");
     const info = layout.firstElementChild!;
     expect(info).toContainElement(gallery());
-    expect(info.className).toContain("@3xl:col-start-2");
+    expect(info.className).toContain("[grid-area:info]");
   });
 
   it("การจัดจาน/การเก็บรักษาอยู่หลังขั้นตอน (จอแคบ = ท้ายหน้า) · จอกว้างอยู่ใต้ข้อมูลสูตรในคอลัมน์ขวา", () => {
@@ -393,8 +404,7 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     ).toBeTruthy();
     const after = steps.nextElementSibling!;
     expect(after).toContainElement(plating);
-    expect(after.className).toContain("@3xl:col-start-2");
-    expect(after.className).toContain("@3xl:row-start-2");
+    expect(after.className).toContain("[grid-area:after]");
   });
 
   it("มีวิดีโอแต่ไม่มีรูป → แกลเลอรีมีแค่วิดีโอ ไม่มีแถบรูปย่อ", () => {
@@ -425,9 +435,10 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     const card = screen.getByRole("article");
     expect(list!.closest("article")).toBe(card);
     expect(card).toHaveTextContent("Step 1 text");
-    expect(card.firstElementChild?.className).toContain(
-      "@2xl/steps:grid-cols-[minmax(0,1fr)_15rem]",
-    );
+    // ข้อความซ้าย รูปขวาเมื่อการ์ดกว้าง ≥ 32rem (ผู้ใช้สั่ง 2026-11-16 "ขั้นตอนซ้าย รูปขวา")
+    expect(
+      card.querySelector('[class*="@lg/steps:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"]'),
+    ).toContainElement(list!);
 
     const big = () => card.querySelector(".cursor-zoom-in img");
     expect(big()).toHaveAttribute("src", "https://files.test/s1-a.jpg");
@@ -442,7 +453,7 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     const card = screen.getByRole("article");
     expect(card).toHaveTextContent("Step 2 text");
     expect(card.querySelector(".cursor-zoom-in")).toBeNull();
-    expect(card.firstElementChild?.className).not.toContain("grid-cols");
+    expect(card.querySelector('[class*="grid-cols"]')).toBeNull();
   });
 });
 
@@ -498,6 +509,40 @@ describe("RecipeCookView — ปุ่มเลขขั้นตอน", () => 
     // ขั้นที่ไม่ได้เปิดและไม่ใช่ขั้นถัดไปไม่โผล่เป็นข้อความบนจอ (มีแค่ title ของปุ่มเลข)
     expect(screen.queryByText("Title 3")).toBeNull();
     expect(screen.queryByText("Title 4")).toBeNull();
+  });
+
+  // ผู้ใช้เสนอ 2026-11-17: "เอาปุ่มขั้นตอนที่เป็นตัวเลขลงไปข้างล่าง แล้วให้มันลอยไว้ ไม่ว่าขั้นตอนจะยาวแค่ไหนก็จะไม่เจอปัญหาปุ่มตก"
+  it("แถบเลขอยู่ก้นการ์ดขั้นและลอยติดก้นจอ (sticky) · การ์ดไม่ตัดแบบ overflow-hidden ที่ทำให้ sticky ไม่เกาะจอ", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    const card = screen.getByRole("article");
+    const nav = pager();
+    expect(card).toContainElement(nav);
+    const bar = nav.parentElement!;
+    expect(bar.className).toContain("sticky");
+    expect(bar.className).toContain("bottom-0");
+    expect(bar).toBe(card.lastElementChild);
+    expect(card.className).toContain("overflow-clip");
+    expect(card.className).not.toContain("overflow-hidden");
+    // หน้าที่มีคอลัมน์ข้าง: การ์ดสูงไม่เกินกล่องเลื่อนของแอป ข้อความยาวเลื่อนในการ์ด
+    expect(card.className).toContain("@xl/page:max-h-(--cook-stage-max-h)");
+    expect(card.firstElementChild?.className).toContain("overflow-y-auto");
+  });
+
+  it("เหนือแถวเลขบอกชื่อขั้นถัดไป กดแล้วไปขั้นนั้น · ขั้นสุดท้ายบอกว่าเป็นขั้นสุดท้าย", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    const caption = () =>
+      screen.getByRole("button", {
+        name: R.cookNextStep.replace("{title}", "Title 2"),
+      });
+    fireEvent.click(caption());
+    expect(screen.getByRole("article")).toHaveTextContent("Step 2 text");
+    expect(goTo(2)).toHaveAttribute("aria-current", "step");
+
+    fireEvent.click(goTo(4));
+    expect(screen.getByText(R.cookLastStep)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /^Next · / }),
+    ).toBeNull();
   });
 
   it("กดเลขขั้นไหนก็ได้ → ข้ามไปขั้นนั้นทันที (ไม่ต้องกดถัดไปทีละขั้น)", () => {
@@ -594,17 +639,35 @@ describe("RecipeCookView — หัวหน้า + วัตถุดิบ", 
     ).toBeInTheDocument();
   });
 
+  it("ตัวเลขสรุป: มีทั้งเวลาเตรียมและเวลาทำ = เวลารวมเป็นค่าหลัก แยกเตรียม/ทำเป็นบรรทัดรอง", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    const total = screen.getByText(en.field.totalTime).closest("div")!;
+    expect(total).toHaveTextContent(R.cookMinutes.replace("{min}", "30"));
+    expect(total).toHaveTextContent(
+      R.cookTimeSplit.replace("{prep}", "10").replace("{cook}", "20"),
+    );
+  });
+
   it("ติ๊กวัตถุดิบ → ขึ้นจำนวนที่เช็กแล้ว · กดล้าง → เอาติ๊กออกทั้งหมด", () => {
     renderForm(<RecipeCookView recipe={recipe} />);
     expect(
       screen.queryByRole("button", { name: R.cookClearChecks }),
     ).toBeNull();
+    expect(screen.getByRole("progressbar")).toHaveAttribute(
+      "aria-valuenow",
+      "0",
+    );
     fireEvent.click(screen.getByRole("checkbox", { name: "Shrimp" }));
     expect(
       screen.getByText(
         R.cookChecked.replace("{n}", "1").replace("{total}", "2"),
       ),
     ).toBeInTheDocument();
+    // แถบความคืบหน้าใต้หัววัตถุดิบ — หยิบไปแล้วครึ่งหนึ่ง
+    expect(screen.getByRole("progressbar")).toHaveAttribute(
+      "aria-valuenow",
+      "50",
+    );
 
     fireEvent.click(screen.getByRole("button", { name: R.cookClearChecks }));
     expect(screen.getByRole("checkbox", { name: "Shrimp" })).not.toBeChecked();
