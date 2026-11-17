@@ -47,6 +47,14 @@ Channel เป็นแค่ตัวอย่าง
 
 ## Design
 
+### 0. เปลี่ยนชื่อ `gl_dimension` → `dimension` (user สั่ง, เลือก "ก. เปลี่ยนทั้งหมด")
+- ตาราง `tb_gl_dimension` → `tb_dimension`, `tb_gl_dimension_value` → `tb_dimension_value`
+- คอลัมน์ `gl_dimension_id` → `dimension_id`, `gl_dimension_value_id` → `dimension_value_id` ทุกตาราง (รวมตารางกฎผังบัญชี)
+- เปลี่ยนทั้ง DB, Prisma model/field/relation, โค้ด และ key ใน API request/response (ไม่ใช้ `@map`)
+- ไม่เปลี่ยน: `tb_gl_account_dimension_rule*`, `tb_gl_jv_detail_dimension` (`gl_` = GL account / GL JV), รหัส error `GL_DIMENSION_*`, path API
+- ผลกระทบ: key ใน JSON เปลี่ยน → BE + FE ต้อง deploy พร้อมกัน · รีโปอื่นไม่มีผู้ใช้ชื่อนี้ (backstage/mobile/micro-report/micro-data = 0) · mobile ยังไม่ live
+- **ทุกชื่อคอลัมน์ใน §1–§6 ด้านล่างให้อ่านเป็นชื่อใหม่** (`dimension_value_id` แทน `gl_dimension_value_id`, `dimension_id` แทน `gl_dimension_id`)
+
 ### 1. Schema (tenant, migration เดียว ทุกตาราง `*_dimension` 12 ตาราง)
 - `gl_dimension_value_id` → nullable (FK เดิมคงไว้)
 - เพิ่ม `value_text varchar(20) NULL`, `value_number decimal(20,5) NULL`, `value_date date NULL`, `value_boolean boolean NULL`
@@ -119,7 +127,7 @@ Channel เป็นแค่ตัวอย่าง
 - `visibleLineDimensions` / กฎผังบัญชีฝั่ง FE ไม่ต้องเปลี่ยน (ทำงานระดับ dimension ไม่ใช่ค่า)
 
 ### ลำดับ deploy
-tenant migration ทุก BU → micro-business + gateway → FE
+tenant migration ทุก BU → micro-business + gateway → FE **ในหน้าต่างเวลาเดียวกัน** (การเปลี่ยนชื่อ §0 ทำให้ BE/FE คนละรุ่นใช้กันไม่ได้)
 FE ขึ้นก่อน BE = ส่ง `value` ไป backend เก่าที่ไม่รู้จัก → ค่าหายเงียบ ๆ (ต้องขึ้น BE ก่อนเสมอ)
 
 ## ปล่อยให้ผู้ลงมือตัดสินเอง
