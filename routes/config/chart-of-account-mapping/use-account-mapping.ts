@@ -1,4 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { httpClient } from "@/lib/http-client";
 import { buildUrl } from "@/lib/build-query-string";
 import { ApiError } from "@/lib/api-error";
@@ -46,20 +50,33 @@ export const EMPTY_COUNTS: MappingCounts = {
   unreviewed: 0,
 };
 
+/** จำนวนแถวต่อการโหลดหนึ่งรอบของ lazy load */
+export const ACCOUNT_MAPPING_PAGE_SIZE = 50;
+
 /**
- * รายการ mapping ของแท็บเดียว (AP หรือ GL) แบบแบ่งหน้าที่ server
+ * รายการ mapping แบบ lazy load — โหลดทีละ ACCOUNT_MAPPING_PAGE_SIZE แถวเมื่อเลื่อนถึงท้ายตาราง
  *
- * `counts` มาจาก `summary.counts` ของ response (นับทั้งแท็บ ไม่ใช่แค่หน้านี้)
+ * key ขึ้นต้น QUERY_KEYS.ACCOUNT_MAPPING → mutation ทุกตัว invalidate ถึง และ useInfiniteQuery
+ * refetch ทุกหน้าที่โหลดไว้ใหม่ทั้งชุด (แถวที่แก้ไม่ค้างค่าเก่า ไม่ต่อท้ายซ้ำ)
+ * `counts` / `total` อ่านจากหน้าแรก (นับทั้งแท็บ ไม่ขึ้นกับจำนวนที่โหลด)
  */
-export function useAccountMappingList(params: AccountMappingListParams) {
+export function useAccountMappingInfinite(
+  params: Omit<AccountMappingListParams, "page" | "perpage">,
+) {
   const buCode = useBuCode();
-  return useQuery<AccountMappingListResponse, ApiError>({
-    queryKey: [QUERY_KEYS.ACCOUNT_MAPPING, buCode, params],
-    queryFn: async () => {
+  return useInfiniteQuery<AccountMappingListResponse, ApiError>({
+    queryKey: [QUERY_KEYS.ACCOUNT_MAPPING, buCode, "infinite", params],
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) => {
       if (!buCode)
         throw new ApiError("MISSING_REQUIRED_FIELD", "Missing buCode");
+      const page = pageParam as number;
       const res = await httpClient.get(
-        buildUrl(API_ENDPOINTS.ACCOUNT_MAPPING(buCode), params),
+        buildUrl(API_ENDPOINTS.ACCOUNT_MAPPING(buCode), {
+          ...params,
+          page,
+          perpage: ACCOUNT_MAPPING_PAGE_SIZE,
+        }),
       );
       if (!res.ok)
         throw await ApiError.from(res, "Failed to fetch account mapping");
@@ -68,13 +85,17 @@ export function useAccountMappingList(params: AccountMappingListParams) {
         data: json?.data ?? [],
         paginate: json?.paginate ?? {
           total: 0,
-          page: params.page ?? 1,
-          perpage: params.perpage ?? 0,
+          page,
+          perpage: ACCOUNT_MAPPING_PAGE_SIZE,
           pages: 0,
         },
         counts: { ...EMPTY_COUNTS, ...json?.summary?.counts },
       };
     },
+    getNextPageParam: (last) =>
+      last.paginate.page < last.paginate.pages
+        ? last.paginate.page + 1
+        : undefined,
     ...CACHE_DYNAMIC,
     enabled: !!buCode,
   });

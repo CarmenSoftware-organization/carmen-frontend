@@ -1,8 +1,15 @@
-import { TriangleAlert } from "lucide-react";
+import { ExternalLink, Pencil, RotateCcw, TriangleAlert } from "lucide-react";
 import { Link } from "react-router";
 import { useTranslations } from "use-intl";
-import { NameWithSubtext } from "@/components/share/name-with-sub-text";
 import { Badge } from "@/components/ui/badge";
+import { CellAction } from "@/components/ui/cell-action";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
@@ -158,34 +165,227 @@ export function IssueText({
   );
 }
 
-/** รหัสบัญชีที่ resolve แล้ว + ที่มา หรือข้อความ issue ถ้าหาไม่เจอ */
-export function AccountCell({ row }: { readonly row: AccountMappingRow }) {
-  const a = row.account;
-  if (!a.code) return a.issue ? <IssueText issue={a.issue} row={row} /> : null;
+export type MappingField = "account" | "cost_center";
+
+/** การกระทำจากเมนูบนค่า account / cost center — ไม่ส่งมา = เซลล์แสดงผลอย่างเดียว */
+export interface CellMenuHandlers {
+  readonly canEdit: boolean;
+  readonly onEdit: (row: AccountMappingRow, field: MappingField) => void;
+  readonly onReset: (row: AccountMappingRow, field: MappingField) => void;
+  /** แถวที่กำลังบันทึกจากเมนู — ปิดปุ่ม "ใช้ค่าเริ่มต้น" กันกดซ้ำ */
+  readonly pendingId?: string | null;
+}
+
+/**
+ * ค่าในเซลล์เป็นปุ่มเปิดเมนู: แก้ไข (เปิดแผง) · ใช้ค่าเริ่มต้น (เฉพาะที่แก้ทับไว้) ·
+ * ไปแก้ที่ต้นทาง (เมื่อค่ามาจากค่าเริ่มต้นที่มีหน้าให้แก้)
+ * ป้ายที่มา / issue ยังเป็นลิงก์แยกอยู่นอกปุ่ม — ห้ามซ้อน interactive ใน trigger
+ */
+function ValueMenu({
+  row,
+  field,
+  menu,
+  children,
+}: {
+  readonly row: AccountMappingRow;
+  readonly field: MappingField;
+  readonly menu: CellMenuHandlers;
+  readonly children: React.ReactNode;
+}) {
+  const t = useTranslations("config.chartOfAccountMapping");
+  const value = field === "account" ? row.account : row.cost_center;
+  const overridden = value.source === "override";
+  const sourceLink = overridden ? undefined : sourceHref(value.source, row);
+  const editKey = field === "account" ? "editAccount" : "editCostCenter";
   return (
-    <div className="flex flex-col gap-1">
-      <NameWithSubtext primary={a.code} secondary={a.name ?? undefined} />
-      {a.issue ? (
-        <IssueText issue={a.issue} row={row} />
-      ) : (
-        <SourceBadge source={a.source} href={sourceHref(a.source, row)} />
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <CellAction
+          className="data-[state=open]:bg-accent -mx-1 rounded-sm px-1"
+          aria-label={t(editKey)}
+        >
+          {children}
+        </CellAction>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-48">
+        <DropdownMenuItem onSelect={() => menu.onEdit(row, field)}>
+          <Pencil aria-hidden="true" />
+          {menu.canEdit ? t(editKey) : t("viewDetail")}
+        </DropdownMenuItem>
+        {menu.canEdit && overridden && (
+          <DropdownMenuItem
+            disabled={menu.pendingId === row.id}
+            onSelect={() => menu.onReset(row, field)}
+          >
+            <RotateCcw aria-hidden="true" />
+            {t("resetToDefault")}
+          </DropdownMenuItem>
+        )}
+        {sourceLink && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to={sourceLink}>
+                <ExternalLink aria-hidden="true" />
+                {t("editAtSource")}
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/** ปุ่มเปิดเมนูเมื่อยังไม่มีค่า — ให้กำหนดค่าแก้ทับที่แถวนี้ได้โดยไม่ต้องไปกดคอลัมน์ location */
+function EmptyValueTrigger({
+  row,
+  field,
+  menu,
+}: {
+  readonly row: AccountMappingRow;
+  readonly field: MappingField;
+  readonly menu: CellMenuHandlers;
+}) {
+  const t = useTranslations("config.chartOfAccountMapping");
+  if (!menu.canEdit) return null;
+  return (
+    <ValueMenu row={row} field={field} menu={menu}>
+      <span className="inline-flex items-center gap-1 text-xs">
+        <Pencil className="size-3" aria-hidden="true" />
+        {t("setOverride")}
+      </span>
+    </ValueMenu>
+  );
+}
+
+/**
+ * โครงเซลล์ค่า: บรรทัดแรก = รหัส + ป้าย (ที่มา / issue) · บรรทัดสอง = ชื่อ
+ * ตารางสูง 2 บรรทัด — ถ้าป้ายลงบรรทัดที่สามจะล้นไปทับแถวอื่น
+ * `data-slot` กัน wrapper ของ DataGrid ใส่ line-clamp (display:-webkit-box) ทับ flex
+ */
+function ValueLayout({
+  code,
+  name,
+  badge,
+}: {
+  readonly code: React.ReactNode;
+  readonly name?: string | null;
+  readonly badge?: React.ReactNode;
+}) {
+  return (
+    <div data-slot="coam-value" className="flex min-w-0 flex-col">
+      <div className="flex min-w-0 items-center gap-1.5">
+        <span className="min-w-0 truncate">{code}</span>
+        {badge && <span className="shrink-0">{badge}</span>}
+      </div>
+      {name && (
+        <p
+          className="text-muted-foreground text-micro-legal truncate py-0.5 leading-[normal]"
+          title={name}
+        >
+          {name}
+        </p>
       )}
     </div>
   );
 }
 
-/** cost center ที่ resolve แล้ว + ที่มา หรือข้อความ issue ถ้า location ไม่มี */
-export function CostCenterCell({ row }: { readonly row: AccountMappingRow }) {
-  const c = row.cost_center;
-  if (!c.id) return c.issue ? <IssueText issue={c.issue} row={row} /> : null;
+function CodeText({ code }: { readonly code: string }) {
   return (
-    <div className="flex flex-col gap-1">
-      <NameWithSubtext
-        primary={c.code ?? c.id}
-        secondary={c.name ?? undefined}
-      />
-      <SourceBadge source={c.source} href={sourceHref(c.source, row)} />
+    <span className="font-semibold" title={code}>
+      {code}
+    </span>
+  );
+}
+
+/** แถวที่ยังไม่มีค่า: ป้ายเตือน + ปุ่ม "กำหนด" บรรทัดเดียวกัน */
+function EmptyValue({
+  row,
+  field,
+  issue,
+  menu,
+}: {
+  readonly row: AccountMappingRow;
+  readonly field: MappingField;
+  readonly issue: MappingIssue | null;
+  readonly menu?: CellMenuHandlers;
+}) {
+  if (!issue && !menu) return null;
+  return (
+    <div
+      data-slot="coam-value"
+      className="flex min-w-0 flex-wrap items-center gap-x-1.5"
+    >
+      {issue && <IssueText issue={issue} row={row} />}
+      {menu && <EmptyValueTrigger row={row} field={field} menu={menu} />}
     </div>
+  );
+}
+
+/** รหัสบัญชีที่ resolve แล้ว + ที่มา หรือข้อความ issue ถ้าหาไม่เจอ */
+export function AccountCell({
+  row,
+  menu,
+}: {
+  readonly row: AccountMappingRow;
+  readonly menu?: CellMenuHandlers;
+}) {
+  const a = row.account;
+  if (!a.code)
+    return <EmptyValue row={row} field="account" issue={a.issue} menu={menu} />;
+  const code = <CodeText code={a.code} />;
+  return (
+    <ValueLayout
+      code={
+        menu ? (
+          <ValueMenu row={row} field="account" menu={menu}>
+            {code}
+          </ValueMenu>
+        ) : (
+          code
+        )
+      }
+      name={a.name}
+      badge={
+        a.issue ? (
+          <IssueText issue={a.issue} row={row} />
+        ) : (
+          <SourceBadge source={a.source} href={sourceHref(a.source, row)} />
+        )
+      }
+    />
+  );
+}
+
+/** cost center ที่ resolve แล้ว + ที่มา หรือข้อความ issue ถ้า location ไม่มี */
+export function CostCenterCell({
+  row,
+  menu,
+}: {
+  readonly row: AccountMappingRow;
+  readonly menu?: CellMenuHandlers;
+}) {
+  const c = row.cost_center;
+  if (!c.id)
+    return (
+      <EmptyValue row={row} field="cost_center" issue={c.issue} menu={menu} />
+    );
+  const code = <CodeText code={c.code ?? c.id} />;
+  return (
+    <ValueLayout
+      code={
+        menu ? (
+          <ValueMenu row={row} field="cost_center" menu={menu}>
+            {code}
+          </ValueMenu>
+        ) : (
+          code
+        )
+      }
+      name={c.name}
+      badge={<SourceBadge source={c.source} href={sourceHref(c.source, row)} />}
+    />
   );
 }
 

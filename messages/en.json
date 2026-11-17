@@ -3254,7 +3254,13 @@
       "batchEditDone": "Saved {count, plural, one {# row} other {# rows}}",
       "batchEditPartial": "Saved {saved, plural, one {# row} other {# rows}} · {failed, plural, one {# row was} other {# rows were}} changed by someone else or no longer exist. They stay selected — check them and try again.",
       "incompleteCount": "{count} incomplete",
-      "statusFilterAria": "Filter by status"
+      "statusFilterAria": "Filter by status",
+      "editAccount": "Edit account…",
+      "editCostCenter": "Edit cost center…",
+      "viewDetail": "View details",
+      "editAtSource": "Edit at source",
+      "setOverride": "Set",
+      "loadedOf": "Showing {loaded} of {total}"
     },
     "accountGrouping": {
       "title": "Account Code Groups",

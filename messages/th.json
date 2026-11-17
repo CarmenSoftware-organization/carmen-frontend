@@ -3254,7 +3254,13 @@
       "batchEditDone": "บันทึก {count} แถวแล้ว",
       "batchEditPartial": "บันทึก {saved} แถว · {failed} แถวถูกแก้โดยคนอื่นหรือถูกลบไปแล้ว ยังติ๊กค้างไว้ให้ ตรวจแล้วลองอีกครั้ง",
       "incompleteCount": "ยังไม่ครบ {count} แถว",
-      "statusFilterAria": "กรองตามสถานะ"
+      "statusFilterAria": "กรองตามสถานะ",
+      "editAccount": "แก้ไขรหัสบัญชี…",
+      "editCostCenter": "แก้ไขศูนย์ต้นทุน…",
+      "viewDetail": "ดูรายละเอียด",
+      "editAtSource": "ไปแก้ที่ต้นทาง",
+      "setOverride": "กำหนด",
+      "loadedOf": "แสดง {loaded} จาก {total}"
     },
     "accountGrouping": {
       "title": "กลุ่มรหัสบัญชี (Account Code Group)",

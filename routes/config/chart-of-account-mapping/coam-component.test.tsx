@@ -9,17 +9,25 @@ const listSpy = vi.fn();
 
 vi.mock("./use-account-mapping", () => ({
   EMPTY_COUNTS: { incomplete: 0, overridden: 0, default: 0, unreviewed: 0 },
-  useAccountMappingList: (q: unknown) => {
+  useAccountMappingInfinite: (q: unknown) => {
     listSpy(q);
     return {
       data: undefined,
       isLoading: false,
       error: null,
       refetch: vi.fn(),
+      fetchNextPage: vi.fn(),
+      hasNextPage: false,
+      isFetchingNextPage: false,
     };
   },
   useReviewAccountMapping: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateAccountMapping: () => ({ mutate: vi.fn(), isPending: false }),
 }));
+vi.mock("../shared/use-accounting-config-edit", () => ({
+  useAccountingConfigEdit: () => true,
+}));
+vi.mock("@/hooks/use-error-toast", () => ({ useErrorToast: () => vi.fn() }));
 vi.mock("./use-coam-table", () => ({
   useCoamTable: () => ({
     resetRowSelection: vi.fn(),
@@ -70,9 +78,6 @@ vi.mock("@/components/ui/data-grid/data-grid", () => ({
 }));
 vi.mock("@/components/ui/data-grid/data-grid-table", () => ({
   DataGridTable: () => null,
-}));
-vi.mock("@/components/ui/data-grid/data-grid-pagination", () => ({
-  DataGridPagination: () => null,
 }));
 vi.mock("./coam-edit-sheet", () => ({ CoamEditSheet: () => null }));
 vi.mock("./coam-generate-dialog", () => ({ CoamGenerateDialog: () => null }));
