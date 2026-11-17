@@ -83,11 +83,14 @@ export function useCostCenterTable({
 
   return useConfigListTable<CostCenter>({
     containerWidth,
+    // name 270 = ชื่อจริงยาวสุด ~241px + padding 24 — 150 เดิมทำชื่อขึ้นสองบรรทัดแล้วโดนตัด
+    // ทั้งที่ description ว่าง · ชุดเต็ม 55+60+100+270+180+150+100+60 = 975 (พอที่กล่อง 1366 = 1085)
+    // ตัด group แล้ว 795 · กล่องแคบกว่านั้นกลับไปแบ่งตามสัดส่วน
     layout: {
       grow: "description",
       widths: {
         code: 100,
-        name: 150,
+        name: 270,
         description: 150,
         cost_center_group: 180,
       },
