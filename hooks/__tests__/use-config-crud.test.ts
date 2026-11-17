@@ -173,6 +173,40 @@ describe("useCreate", () => {
 // useUpdate
 // =========================================================================
 describe("useUpdate", () => {
+  it.each([undefined, "none"] as const)(
+    "keeps default refetch behavior unless this form requests %s",
+    async (refetchType) => {
+      vi.mocked(httpClient.get).mockResolvedValue(
+        jsonRes(200, { data: [], paginate: { pages: 1 } }),
+      );
+      vi.mocked(httpClient.put).mockResolvedValue(jsonRes(200, { ok: true }));
+      const { result } = renderHook(
+        () => ({
+          query: crud.useList(),
+          mutation: crud.useUpdate(
+            refetchType ? { invalidateRefetchType: refetchType } : undefined,
+          ),
+        }),
+        { wrapper: createWrapper() },
+      );
+      await waitFor(() => expect(result.current.query.isSuccess).toBe(true));
+      await act(async () => {
+        await result.current.mutation.mutateAsync({
+          id: "1",
+          name: "Changed",
+          is_active: true,
+        });
+      });
+      await waitFor(() =>
+        expect(httpClient.get).toHaveBeenCalledTimes(
+          refetchType === "none" ? 1 : 2,
+        ),
+      );
+      if (refetchType === "none")
+        expect(result.current.query.isStale).toBe(true);
+    },
+  );
+
   it("updates successfully and calls put", async () => {
     vi.mocked(httpClient.put).mockResolvedValue(jsonRes(200, { ok: true }));
 

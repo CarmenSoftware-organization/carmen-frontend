@@ -27,6 +27,10 @@ interface ConfigCrudOptions {
   extraInvalidateKeys?: readonly unknown[];
 }
 
+interface ConfigMutationOptions {
+  invalidateRefetchType?: "active" | "none";
+}
+
 /**
  * Factory สร้างชุด hook CRUD มาตรฐานสำหรับ config module (list/byId/create/update/delete)
  *
@@ -72,13 +76,19 @@ export function createConfigCrud<T, TCreate>({
     id: string | undefined,
     options?: Pick<UseQueryOptions<T>, "staleTime" | "refetchOnMount">,
   ) => UseQueryResult<T>;
-  useCreate: () => UseMutationResult<unknown, Error, TCreate>;
-  useUpdate: () => UseMutationResult<
+  useCreate: (
+    options?: ConfigMutationOptions,
+  ) => UseMutationResult<unknown, Error, TCreate>;
+  useUpdate: (
+    options?: ConfigMutationOptions,
+  ) => UseMutationResult<
     unknown,
     Error,
     TCreate & { id: string; doc_version?: number }
   >;
-  useDelete: () => UseMutationResult<unknown, Error, string>;
+  useDelete: (
+    options?: ConfigMutationOptions,
+  ) => UseMutationResult<unknown, Error, string>;
 } {
   const api = createConfigApi<T, TCreate>({ endpoint, label, updateMethod });
 
@@ -173,29 +183,32 @@ export function createConfigCrud<T, TCreate>({
     });
   }
 
-  function useCreate() {
+  function useCreate(options?: ConfigMutationOptions) {
     return useApiMutation<TCreate>({
       mutationFn: (data, buCode) => api.create(buCode, data),
       invalidateKeys: [queryKey, ...extraInvalidateKeys],
+      invalidateRefetchType: options?.invalidateRefetchType,
       errorMessage: `Failed to create ${label}`,
       meta: mutationMeta,
     });
   }
 
-  function useUpdate() {
+  function useUpdate(options?: ConfigMutationOptions) {
     return useApiMutation<TCreate & { id: string; doc_version?: number }>({
       mutationFn: ({ id, ...data }, buCode) =>
         api.update(buCode, id, data as TCreate),
       invalidateKeys: [queryKey, ...extraInvalidateKeys],
+      invalidateRefetchType: options?.invalidateRefetchType,
       errorMessage: `Failed to update ${label}`,
       meta: mutationMeta,
     });
   }
 
-  function useDelete() {
+  function useDelete(options?: ConfigMutationOptions) {
     return useApiMutation<string>({
       mutationFn: (id, buCode) => api.remove(buCode, id),
       invalidateKeys: [queryKey, ...extraInvalidateKeys],
+      invalidateRefetchType: options?.invalidateRefetchType,
       errorMessage: `Failed to delete ${label}`,
       meta: mutationMeta,
     });

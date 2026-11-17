@@ -62,8 +62,6 @@ function renderPreview(
           id: "project",
           code: "project",
           name: "Project",
-          is_active: true,
-          doc_version: 1,
           data_type: "lookup",
         }}
         value={value}
@@ -82,7 +80,7 @@ it("previews an allowed item beyond 200 and one default without submitting data"
   const onChange = renderPreview();
   expect(
     screen.getByText(
-      "List Master and Default are a UI preview and are not saved yet.",
+      "List Master and Default changes are saved with the account.",
     ),
   ).toBeInTheDocument();
   fireEvent.click(
@@ -104,7 +102,7 @@ it("previews an allowed item beyond 200 and one default without submitting data"
   expect(screen.getAllByRole("checkbox")).toHaveLength(1);
   fireEvent.click(screen.getByRole("checkbox", { name: "P205 — Project 205" }));
   expect(onChange).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Apply preview" }));
+  fireEvent.click(screen.getByRole("button", { name: "Apply" }));
   expect(onChange).toHaveBeenCalledWith({
     allowedValueIds: ["value-205"],
     defaultValueId: "value-205",
@@ -127,7 +125,7 @@ it("clears the default after removing it from the allowed list", () => {
   expect(screen.getByRole("combobox", { name: "Default" })).toHaveTextContent(
     "No default",
   );
-  fireEvent.click(screen.getByRole("button", { name: "Apply preview" }));
+  fireEvent.click(screen.getByRole("button", { name: "Apply" }));
   expect(onChange).toHaveBeenCalledWith({
     allowedValueIds: ["value-1"],
     defaultValueId: null,
@@ -148,7 +146,7 @@ it("offers retry and prevents applying when the master fails to load", () => {
   expect(screen.getByRole("alert")).toHaveTextContent(
     "Unable to load List Master items.",
   );
-  expect(screen.getByRole("button", { name: "Apply preview" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Apply" })).toBeDisabled();
   fireEvent.click(screen.getByRole("button", { name: "Retry" }));
   expect(query.refetch).toHaveBeenCalled();
   expect(onChange).not.toHaveBeenCalled();

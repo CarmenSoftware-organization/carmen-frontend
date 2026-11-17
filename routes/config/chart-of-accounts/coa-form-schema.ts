@@ -8,7 +8,9 @@ import {
 } from "@/types/chart-of-accounts";
 
 export function natureFor(category: AccountCategory): ACCOUNT_NATURE {
-  return category === "liability" || category === "equity" || category === "revenue"
+  return category === "liability" ||
+    category === "equity" ||
+    category === "revenue"
     ? ACCOUNT_NATURE.CREDIT
     : ACCOUNT_NATURE.DEBIT;
 }
@@ -32,10 +34,13 @@ export function createCoaSchema(tv: TranslationFn, tf: TranslationFn) {
     }),
     account_group_id: z.string(),
     req_cost_center: z.boolean().optional(),
-    allowed_cost_center_codes: z.array(z.string()).optional(),
+    allowed_cost_center_ids: z.array(z.string()).optional(),
     req_dim: z.boolean().optional(),
     allowed_dimensions: z.array(z.string()).optional(),
-    dimension_rules: z.record(z.string(), z.enum(["mandatory", "optional", "prohibited"])),
+    dimension_rules: z.record(
+      z.string(),
+      z.enum(["mandatory", "optional", "prohibited"]),
+    ),
     attributes: z.record(z.string(), z.string()).optional(),
     grouping_path: z
       .array(

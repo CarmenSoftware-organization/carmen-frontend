@@ -1,20 +1,11 @@
 import { useGlDimensions } from "@/hooks/use-gl-dimensions";
-import {
-  useCoaCostCenters,
-  saveCoaCostCenters,
-  coaCostCentersKey,
-} from "./coa-cost-centers";
-import { CoaFormSkeleton, COA_SECTION_PAIR } from "./coa-form-skeleton";
-import { ErrorState } from "@/components/ui/error-state";
-import {
-  coaRulesKey,
-  saveCoaRules,
-  type CoaDimensionRule,
-} from "./coa-dimension-rules";
+import { useCostCenterAll } from "@/hooks/use-cost-center";
+import { COA_SECTION_PAIR } from "./coa-form-skeleton";
+import { buildCoaAccountLinks } from "./coa-account-links";
 import { useRef, useState, useMemo, useEffect } from "react";
 import { Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
@@ -43,13 +34,17 @@ import { useGlAccountGroups } from "../shared/use-gl-account-groups";
 import { ApiError, isAppStatusErrorCode } from "@/lib/api-error";
 import { useErrorToast } from "@/hooks/use-error-toast";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
-import type { AccountGroupMaster } from "@/types/accounting-master";
+import type {
+  AccountGroupMaster,
+  DimensionMaster,
+} from "@/types/accounting-master";
 import {
   ACCOUNT_CATEGORIES,
   ACCOUNT_NATURE,
   CHART_OF_ACCOUNT_TYPES,
   type AccountCategory,
   type ChartOfAccount,
+  type ChartOfAccountDetail,
 } from "@/types/chart-of-accounts";
 import {
   createCoaSchema,
@@ -165,33 +160,11 @@ function normalizeAttributes(val: unknown): Record<string, string> {
 }
 
 interface CoaFormProps {
-  account?: ChartOfAccount;
-  rules?: CoaDimensionRule[];
+  account?: ChartOfAccountDetail;
   initialEdit?: boolean;
 }
 
-export function CoaForm(props: CoaFormProps) {
-  const costCenterQuery = useCoaCostCenters();
-  if (!costCenterQuery.data) {
-    if (costCenterQuery.isError)
-      return (
-        <ErrorState
-          error={costCenterQuery.error}
-          onRetry={() => void costCenterQuery.refetch()}
-          backTo={LIST_PATH}
-        />
-      );
-    return <CoaFormSkeleton />;
-  }
-  return <CoaFormFields {...props} costCenterQuery={costCenterQuery} />;
-}
-
-function CoaFormFields({
-  account,
-  rules = [],
-  initialEdit = false,
-  costCenterQuery,
-}: CoaFormProps & { costCenterQuery: ReturnType<typeof useCoaCostCenters> }) {
+export function CoaForm({ account, initialEdit = false }: CoaFormProps) {
   const navigate = useNavigate();
   const t = useTranslations("config.chartOfAccounts");
   const tfl = useTranslations("field");
@@ -199,9 +172,9 @@ function CoaFormFields({
   const tt = useTranslations("toast");
   const errorToast = useErrorToast();
 
-  const create = useCreateChartOfAccount();
-  const update = useUpdateChartOfAccount();
-  const remove = useDeleteChartOfAccount();
+  const create = useCreateChartOfAccount({ invalidateRefetchType: "none" });
+  const update = useUpdateChartOfAccount({ invalidateRefetchType: "none" });
+  const remove = useDeleteChartOfAccount({ invalidateRefetchType: "none" });
 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [treeModalOpen, setTreeModalOpen] = useState(false);
@@ -214,7 +187,6 @@ function CoaFormFields({
 
   const groupQuery = useGlAccountGroups();
   const buCode = useBuCode();
-  const queryClient = useQueryClient();
   const persisted = useRef(
     account ? { id: account.id, doc_version: account.doc_version } : undefined,
   );
@@ -237,8 +209,14 @@ function CoaFormFields({
         grouping_path: values.grouping_path ?? null,
         is_active: values.is_active,
       };
+      const links = buildCoaAccountLinks(account, values, dimensionPreviews);
+      const isNew = !persisted.current;
       const result = persisted.current
-        ? await update.mutateAsync({ ...persisted.current, ...payload })
+        ? await update.mutateAsync({
+            ...persisted.current,
+            ...payload,
+            ...links,
+          })
         : await create.mutateAsync(payload);
       const record = (result as { data?: { id: string; doc_version: number } })
         .data;
@@ -246,34 +224,19 @@ function CoaFormFields({
         throw new Error("API did not return the saved account ID/version");
       }
       persisted.current = record;
-      try {
-        const saved = await saveCoaCostCenters(
-          buCode,
-          record.id,
-          values.allowed_cost_center_codes ?? [],
-          Boolean(values.req_cost_center),
-        );
-        queryClient.setQueryData(coaCostCentersKey(buCode), saved);
-      } catch (error) {
-        throw new Error(
-          `Account saved, but Cost Center configuration was not fully saved. Retry Save. ${error instanceof Error ? error.message : ""}`,
-        );
+      // POST creates the account; link edits are supported by PATCH only. Keep its ID/version for retries.
+      if (isNew && Object.keys(links).length) {
+        const linked = await update.mutateAsync({
+          ...record,
+          ...payload,
+          ...links,
+        });
+        const saved = (linked as { data?: { id: string; doc_version: number } })
+          .data;
+        if (!saved?.id || typeof saved.doc_version !== "number")
+          throw new Error("API did not return the saved account ID/version");
+        persisted.current = saved;
       }
-      try {
-        // สวิตช์ปิด = ไม่มีกฎ dimension เลย — ลบกฎที่มีอยู่ทิ้ง (เก็บค่าในฟอร์มไว้เผื่อเปิดกลับก่อนบันทึก)
-        await saveCoaRules(
-          buCode,
-          record.id,
-          values.req_dim ? values.dimension_rules : {},
-        );
-      } catch (error) {
-        throw new Error(
-          `Account saved, but dimension rules were not fully saved. Retry Save. ${error instanceof Error ? error.message : ""}`,
-        );
-      }
-      await queryClient.invalidateQueries({
-        queryKey: coaRulesKey(buCode, record.id),
-      });
     },
     // รหัสสถานะแอป (APP_READ_ONLY ฯลฯ) ต้องแปลผ่าน errorToast — `err.message` เป็นประโยค
     // default ภาษาอังกฤษของ gateway
@@ -282,8 +245,6 @@ function CoaFormFields({
         ? errorToast(error)
         : toast.error(error.message),
   });
-
-  const dimensionQuery = useGlDimensions();
 
   const f = useEntityForm<CoaFormValues>({
     entity: account,
@@ -304,22 +265,19 @@ function CoaFormFields({
           account_group_id:
             account.account_group?.id ?? account.account_group_id ?? "",
           req_cost_center: account.is_require_cost_center ?? false,
-          allowed_cost_center_codes: (costCenterQuery.data ?? [])
-            .filter((item) =>
-              item.accounts.some(
-                (entry) => entry.chart_of_accounts_id === account.id,
-              ),
-            )
-            .map((item) => item.code),
+          allowed_cost_center_ids: account.cost_centers.map(
+            (item) => item.cost_center_id,
+          ),
           // backend ไม่เก็บสถานะสวิตช์ — มีกฎอยู่ = เปิด
-          req_dim: (rules ?? []).some(
+          req_dim: account.dimensions.some(
             (rule) => rule.requirement !== "prohibited",
           ),
           allowed_dimensions: normalizeArray(account.allowed_dimensions),
           dimension_rules: Object.fromEntries(
-            (rules ?? [])
-              .filter((rule) => rule.requirement !== "prohibited")
-              .map((rule) => [rule.gl_dimension_id, rule.requirement]),
+            account.dimensions.map((rule) => [
+              rule.gl_dimension_id,
+              rule.requirement,
+            ]),
           ),
           attributes: normalizeAttributes(account.attributes),
           grouping_path: Array.isArray(account.grouping_path)
@@ -336,7 +294,7 @@ function CoaFormFields({
           type: "" as ChartOfAccount["type"],
           account_group_id: "",
           req_cost_center: false,
-          allowed_cost_center_codes: [],
+          allowed_cost_center_ids: [],
           req_dim: false,
           allowed_dimensions: [],
           dimension_rules: {},
@@ -348,40 +306,38 @@ function CoaFormFields({
     isPending: save.isPending,
     extraDirty: hasDimensionPreview,
     onResetExtra: () => setDimensionPreviews({}),
+    initialMode: initialEdit ? "edit" : "view",
   });
 
   const { form } = f;
-  useEffect(() => {
-    if (account && initialEdit) {
-      f.setMode("edit");
-    }
-  }, [account, initialEdit, f]);
-
   const category = form.watch("category");
   const nature = form.watch("nature");
   const selectedGroupId = form.watch("account_group_id");
   const groupingPath = form.watch("grouping_path") ?? [];
   const reqCostCenter = form.watch("req_cost_center");
-  const allowedCostCenters = form.watch("allowed_cost_center_codes") ?? [];
-  const selectedCostCenterCodes = new Set(allowedCostCenters);
-  const masterCostCenterCodes = new Set(
-    (costCenterQuery.data ?? []).map((item) => item.code),
+  const allowedCostCenters = form.watch("allowed_cost_center_ids") ?? [];
+  const costCenterQuery = useCostCenterAll(undefined, {
+    enabled: !f.isView && !!reqCostCenter,
+  });
+  const selectedCostCenterIds = new Set(allowedCostCenters);
+  const costCenters = new Map(
+    (f.isView ? [] : (costCenterQuery.data ?? [])).map((item) => [
+      item.id,
+      item,
+    ]),
   );
-  const costCenters = (costCenterQuery.data ?? []).filter(
-    (item) =>
-      item.is_active !== false || selectedCostCenterCodes.has(item.code),
+  for (const item of account?.cost_centers ?? []) {
+    if (!costCenters.has(item.cost_center_id))
+      costCenters.set(item.cost_center_id, {
+        ...item,
+        id: item.cost_center_id,
+      });
+  }
+  const costCenterOptions = [...costCenters.values()].filter(
+    (item) => item.is_active !== false || selectedCostCenterIds.has(item.id),
   );
-  const missingCostCenterCodes = allowedCostCenters.filter(
-    (code) => !masterCostCenterCodes.has(code),
-  );
-  const costCenterOptions = [
-    ...costCenters,
-    ...missingCostCenterCodes.map((code) => ({
-      code,
-      name: costCenterQuery.isSuccess ? t("labels.unavailableCostCenter") : "",
-    })),
-  ];
   const reqDim = form.watch("req_dim");
+  const dimensionQuery = useGlDimensions(!f.isView && !!reqDim);
   const attributes = form.watch("attributes") ?? {};
   const dimensionRules = form.watch("dimension_rules") ?? {};
   const selectedDimensionIds = Object.entries(dimensionRules)
@@ -426,8 +382,34 @@ function CoaFormFields({
   );
   const currentGroup = selectedGroupId ? groupMap.get(selectedGroupId) : null;
 
-  const dimensions = (dimensionQuery.data ?? []).filter(
-    (d) => d.is_active || rules.some((r) => r.gl_dimension_id === d.id),
+  const savedDimensions = new Map(
+    account?.dimensions.map((item) => [item.gl_dimension_id, item]),
+  );
+  const savedDimensionConfigs = new Map(
+    account?.dimensions.map((item) => [
+      item.gl_dimension_id,
+      {
+        allowedValueIds: item.config.allowed_values.map((value) => value.id),
+        defaultValueId: item.config.default_value_id,
+      },
+    ]),
+  );
+  const dimensionMap = new Map<string, Omit<DimensionMaster, "doc_version">>(
+    (f.isView ? [] : (dimensionQuery.data ?? [])).map((item) => [
+      item.id,
+      item,
+    ]),
+  );
+  for (const item of account?.dimensions ?? []) {
+    if (!dimensionMap.has(item.gl_dimension_id))
+      dimensionMap.set(item.gl_dimension_id, {
+        ...item,
+        id: item.gl_dimension_id,
+        is_active: true,
+      });
+  }
+  const dimensions = [...dimensionMap.values()].filter(
+    (d) => d.is_active || selectedDimensionSet.has(d.id),
   );
 
   const isExisting = Boolean(account && account.code);
@@ -491,11 +473,6 @@ function CoaFormFields({
   };
 
   const onSubmit = (values: CoaFormValues) => {
-    if (hasDimensionPreview) {
-      toast.error(t("dimensionPreview.saveUnavailable"));
-      return;
-    }
-
     if (
       !values.is_active &&
       account?.current_balance != null &&
@@ -518,7 +495,7 @@ function CoaFormFields({
       return;
     }
 
-    if (dimensionQuery.isError || dimensionQuery.isLoading) {
+    if (reqDim && (dimensionQuery.isError || dimensionQuery.isLoading)) {
       toast.error("Load dimensions successfully before saving.");
       return;
     }
@@ -930,20 +907,20 @@ function CoaFormFields({
                   <CoaMultiSelect
                     label={t("labels.costCentersPicker")}
                     options={costCenterOptions.map((item) => ({
-                      value: item.code,
+                      value: item.id,
                       code: item.code,
                       name: item.name,
                     }))}
                     value={allowedCostCenters}
-                    onChange={(codes) =>
-                      form.setValue("allowed_cost_center_codes", codes, {
+                    onChange={(ids) =>
+                      form.setValue("allowed_cost_center_ids", ids, {
                         shouldDirty: true,
                       })
                     }
                     disabled={
                       save.isPending ||
-                      costCenterQuery.isLoading ||
-                      costCenterQuery.isError
+                      (!f.isView &&
+                        (costCenterQuery.isLoading || costCenterQuery.isError))
                     }
                     readOnly={f.isView}
                   />
@@ -983,7 +960,7 @@ function CoaFormFields({
                 />
               )}
 
-              {(reqDim || hasDimensionPreview) && (
+              {!f.isView && (reqDim || hasDimensionPreview) && (
                 <div className="bg-muted flex flex-wrap items-start justify-between gap-2 rounded-md p-3">
                   <p className="text-muted-foreground min-w-0 flex-1 text-xs">
                     {t("dimensionPreview.previewNotice")}
@@ -1023,12 +1000,22 @@ function CoaFormFields({
                       onChange={(ids) => {
                         form.setValue(
                           "dimension_rules",
-                          Object.fromEntries(
-                            ids.map((id) => [
-                              id,
-                              dimensionRules[id] ?? "mandatory",
-                            ]),
-                          ),
+                          {
+                            ...Object.fromEntries(
+                              Object.entries(dimensionRules).filter(
+                                ([, requirement]) =>
+                                  requirement === "prohibited",
+                              ),
+                            ),
+                            ...Object.fromEntries(
+                              ids.map((id) => [
+                                id,
+                                dimensionRules[id] === "prohibited"
+                                  ? "mandatory"
+                                  : (dimensionRules[id] ?? "mandatory"),
+                              ]),
+                            ),
+                          },
                           { shouldDirty: true },
                         );
                         const selected = new Set(ids);
@@ -1042,8 +1029,8 @@ function CoaFormFields({
                       }}
                       disabled={
                         save.isPending ||
-                        dimensionQuery.isLoading ||
-                        dimensionQuery.isError
+                        (!f.isView &&
+                          (dimensionQuery.isLoading || dimensionQuery.isError))
                       }
                       readOnly={f.isView}
                     />
@@ -1060,20 +1047,18 @@ function CoaFormFields({
                             dimension={dimension}
                             value={
                               dimensionPreviews[dimension.id] ??
+                              savedDimensionConfigs.get(dimension.id) ??
                               EMPTY_DIMENSION_PREVIEW
+                            }
+                            savedValues={
+                              savedDimensions.get(dimension.id)?.config
                             }
                             readOnly={f.isView}
                             onChange={(next) =>
-                              setDimensionPreviews((previous) => {
-                                const result = { ...previous };
-                                if (
-                                  next.allowedValueIds.length === 0 &&
-                                  !next.defaultValueId
-                                )
-                                  delete result[dimension.id];
-                                else result[dimension.id] = next;
-                                return result;
-                              })
+                              setDimensionPreviews((previous) => ({
+                                ...previous,
+                                [dimension.id]: next,
+                              }))
                             }
                           />
                         ))}

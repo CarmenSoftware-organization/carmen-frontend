@@ -1,5 +1,52 @@
 import type { EntityRef } from "./entity-ref";
 import type { Audit } from "./audit";
+import type { DimensionDataType } from "./accounting-master";
+import type { DimensionRequirement } from "@/lib/coa-dimension-rules";
+
+export interface AccountCostCenter {
+  cost_center_id: string;
+  code: string;
+  name: string;
+  is_active: boolean;
+}
+
+export interface AccountDimensionValue {
+  id: string;
+  code: string;
+  name: string;
+  is_active: boolean;
+}
+
+export interface AccountDimension {
+  gl_dimension_id: string;
+  code: string;
+  name: string;
+  data_type: DimensionDataType;
+  requirement: DimensionRequirement;
+  config: {
+    default_value_id: string | null;
+    default_value: AccountDimensionValue | null;
+    allowed_values: AccountDimensionValue[];
+  };
+}
+
+export interface AccountLinksInput {
+  cost_centers?: {
+    add: { cost_center_id: string }[];
+    remove: { cost_center_id: string }[];
+  };
+  dimensions?: {
+    add: AccountDimensionInput[];
+    update: AccountDimensionInput[];
+    remove: { gl_dimension_id: string }[];
+  };
+}
+
+interface AccountDimensionInput {
+  gl_dimension_id: string;
+  requirement: DimensionRequirement;
+  config?: { default_value_id: string | null; allowed_value_ids: string[] };
+}
 
 export enum ACCOUNT_NATURE {
   DEBIT = "debit",
@@ -102,3 +149,11 @@ export interface CreateChartOfAccountDto {
   department_required?: boolean;
   grouping_path?: Array<{ code: string; name: string; level: number }> | null;
 }
+
+export interface ChartOfAccountDetail extends ChartOfAccount {
+  cost_centers: AccountCostCenter[];
+  dimensions: AccountDimension[];
+}
+
+export type UpdateChartOfAccountDto = CreateChartOfAccountDto &
+  AccountLinksInput;

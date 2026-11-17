@@ -13,6 +13,10 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { useGlDimensionValues } from "@/hooks/use-gl-dimensions";
 import type { DimensionMaster } from "@/types/accounting-master";
+import type {
+  AccountDimension,
+  AccountDimensionValue,
+} from "@/types/chart-of-accounts";
 import { CoaMultiSelect } from "./coa-multi-select";
 
 import {
@@ -20,16 +24,20 @@ import {
   type DimensionPreview,
 } from "./coa-dimension-preview-state";
 
+type Dimension = Pick<DimensionMaster, "id" | "code" | "name" | "data_type">;
+
 export function CoaDimensionPreview({
   dimension,
   value,
   onChange,
   readOnly,
+  savedValues,
 }: {
-  dimension: DimensionMaster;
+  dimension: Dimension;
   value: DimensionPreview;
   onChange: (value: DimensionPreview) => void;
   readOnly: boolean;
+  savedValues?: AccountDimension["config"];
 }) {
   const t = useTranslations("config.chartOfAccounts.dimensionPreview");
   const [open, setOpen] = useState(false);
@@ -60,6 +68,7 @@ export function CoaDimensionPreview({
           value={value}
           onChange={onChange}
           readOnly={readOnly}
+          savedValues={savedValues}
           onClose={() => setOpen(false)}
         />
       )}
@@ -73,27 +82,36 @@ function DimensionPreviewDialog({
   onChange,
   readOnly,
   onClose,
+  savedValues,
 }: {
-  dimension: DimensionMaster;
+  dimension: Dimension;
   value: DimensionPreview;
   onChange: (value: DimensionPreview) => void;
   readOnly: boolean;
   onClose: () => void;
+  savedValues?: AccountDimension["config"];
 }) {
   const t = useTranslations("config.chartOfAccounts.dimensionPreview");
   const [draft, setDraft] = useState(value);
   const isLookup = !dimension.data_type || dimension.data_type === "lookup";
-  const query = useGlDimensionValues(isLookup);
+  const query = useGlDimensionValues(isLookup && !readOnly);
   const selectedIds = new Set([
     ...draft.allowedValueIds,
     ...(draft.defaultValueId ? [draft.defaultValueId] : []),
   ]);
-  const options = (query.data ?? [])
-    .filter(
-      (item) =>
-        item.dimension_id === dimension.id &&
-        (item.is_active || selectedIds.has(item.id)),
-    )
+  const values = new Map<string, AccountDimensionValue>(
+    (readOnly ? [] : (query.data ?? []))
+      .filter((item) => item.dimension_id === dimension.id)
+      .map((item) => [item.id, item]),
+  );
+  for (const item of [
+    ...(savedValues?.allowed_values ?? []),
+    ...(savedValues?.default_value ? [savedValues.default_value] : []),
+  ]) {
+    if (!values.has(item.id)) values.set(item.id, item);
+  }
+  const options = [...values.values()]
+    .filter((item) => item.is_active || selectedIds.has(item.id))
     .map((item) => ({ value: item.id, code: item.code, name: item.name }));
   const allowedSet = new Set(draft.allowedValueIds);
   const defaults = draft.allowedValueIds.length
@@ -113,7 +131,7 @@ function DimensionPreviewDialog({
         </DialogHeader>
         {!isLookup ? (
           <p className="text-muted-foreground text-xs">{t("listOnly")}</p>
-        ) : query.isError ? (
+        ) : !readOnly && query.isError ? (
           <div role="alert" className="space-y-2 text-xs">
             <p className="text-destructive">{t("loadError")}</p>
             <Button
@@ -134,7 +152,7 @@ function DimensionPreviewDialog({
                 options={options}
                 value={draft.allowedValueIds}
                 onChange={(ids) => setDraft(updateAllowedValues(draft, ids))}
-                disabled={query.isLoading}
+                disabled={!readOnly && query.isLoading}
                 readOnly={readOnly}
               />
               <p className="text-micro text-muted-foreground">
@@ -151,7 +169,7 @@ function DimensionPreviewDialog({
                 onChange={(ids) =>
                   setDraft({ ...draft, defaultValueId: ids[0] ?? null })
                 }
-                disabled={query.isLoading}
+                disabled={!readOnly && query.isLoading}
                 readOnly={readOnly}
               />
               <p className="text-micro text-muted-foreground">

@@ -66,6 +66,8 @@ export function cleanServerMessage(
 interface UseApiMutationOptions<TVariables> {
   mutationFn: (variables: TVariables, buCode: string) => Promise<Response>;
   invalidateKeys?: readonly unknown[];
+  /** Mark caches stale without refetching a form that is about to navigate away. */
+  invalidateRefetchType?: "active" | "none";
   errorMessage?: string;
   meta?: ApiErrorMeta;
   optimistic?: {
@@ -81,6 +83,7 @@ interface UseApiMutationOptions<TVariables> {
 export function useApiMutation<TVariables, TResponse = unknown>({
   mutationFn,
   invalidateKeys,
+  invalidateRefetchType,
   errorMessage = "Request failed",
   meta,
   optimistic,
@@ -173,6 +176,9 @@ export function useApiMutation<TVariables, TResponse = unknown>({
       invalidateKeys?.forEach((key) => {
         queryClient.invalidateQueries({
           queryKey: Array.isArray(key) ? key : [key],
+          ...(invalidateRefetchType
+            ? { refetchType: invalidateRefetchType }
+            : {}),
         });
       });
     },

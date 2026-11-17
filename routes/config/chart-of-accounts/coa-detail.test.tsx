@@ -1,12 +1,6 @@
 import { CoaForm } from "./coa-form";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -14,8 +8,7 @@ import { IntlProvider } from "use-intl";
 import en from "@/messages/en.json";
 import { Component as CoaEditRoute } from "./coa-edit.route";
 import * as useCoaModule from "./use-coa";
-import * as dimensionRulesModule from "./coa-dimension-rules";
-import * as costCenterModule from "./coa-cost-centers";
+import * as dimensionRulesModule from "@/lib/coa-dimension-rules";
 
 vi.mock("@/components/ui/virtual-command-list", () => ({
   VirtualCommandList: ({
@@ -40,32 +33,24 @@ const costCenterQuery = vi.hoisted(() => ({
       code: "CC100",
       name: "Front Office",
       is_active: true,
-      accounts: [
-        { chart_of_accounts_id: "dbf8801e-8b11-4870-b1e1-cd58523bbb0c" },
-      ],
     },
     {
       id: "cc-2",
       code: "CC200",
       name: "Finance",
       is_active: false,
-      accounts: [
-        { chart_of_accounts_id: "dbf8801e-8b11-4870-b1e1-cd58523bbb0c" },
-      ],
     },
     {
       id: "cc-3",
       code: "CC300",
       name: "Kitchen",
       is_active: true,
-      accounts: [],
     },
     {
       id: "cc-4",
       code: "CC400",
       name: "Closed",
       is_active: false,
-      accounts: [],
     },
   ],
   isLoading: false,
@@ -74,10 +59,8 @@ const costCenterQuery = vi.hoisted(() => ({
   refetch: vi.fn(),
 }));
 
-vi.mock("./coa-cost-centers", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("./coa-cost-centers")>()),
-  useCoaCostCenters: () => costCenterQuery,
-  saveCoaCostCenters: vi.fn(async () => costCenterQuery.data),
+vi.mock("@/hooks/use-cost-center", () => ({
+  useCostCenterAll: () => costCenterQuery,
 }));
 
 beforeEach(() => {
@@ -89,7 +72,8 @@ beforeEach(() => {
 import {
   ACCOUNT_NATURE,
   CHART_OF_ACCOUNT_TYPE,
-  type ChartOfAccount,
+  type ChartOfAccountDetail,
+  type AccountDimension,
 } from "@/types/chart-of-accounts";
 
 vi.mock("@/hooks/use-bu-code", () => ({
@@ -123,7 +107,16 @@ vi.mock("@/hooks/use-gl-dimensions", () => ({
   }),
 }));
 
-const mockTargetAccount: ChartOfAccount = {
+const mockDimension: AccountDimension = {
+  gl_dimension_id: "project",
+  code: "project",
+  name: "Project",
+  data_type: "lookup",
+  requirement: "optional",
+  config: { default_value_id: null, default_value: null, allowed_values: [] },
+};
+
+const mockTargetAccount: ChartOfAccountDetail = {
   id: "dbf8801e-8b11-4870-b1e1-cd58523bbb0c",
   doc_version: 1,
   code: "111000",
@@ -137,6 +130,13 @@ const mockTargetAccount: ChartOfAccount = {
   is_require_cost_center: true,
   allowed_dimensions: [],
   dimension_required: false,
+  cost_centers: costCenterQuery.data.slice(0, 2).map((item) => ({
+    cost_center_id: item.id,
+    code: item.code,
+    name: item.name,
+    is_active: item.is_active,
+  })),
+  dimensions: [],
   attributes: { PMS_Mapping: "CASH_MAIN" },
   grouping_path: [
     { code: "1000", name: "Assets", level: 1 },
@@ -163,24 +163,16 @@ function renderWithProviders(ui: React.ReactElement, initialPath: string) {
 }
 
 describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => {
-  it("does not submit unsaved List Master or Default preview settings to the backend", async () => {
-    const update = vi.fn();
-    const error = vi.spyOn(toast, "error");
+  it("saves List Master and Default in the account PATCH", async () => {
+    const update = vi.fn().mockResolvedValue({
+      data: { id: mockTargetAccount.id, doc_version: 2 },
+    });
     vi.spyOn(useCoaModule, "useUpdateChartOfAccount").mockReturnValue({
       mutateAsync: update,
     } as unknown as ReturnType<typeof useCoaModule.useUpdateChartOfAccount>);
     renderWithProviders(
       <CoaForm
-        account={mockTargetAccount}
-        rules={[
-          {
-            id: "rule",
-            chart_of_accounts_id: mockTargetAccount.id,
-            gl_dimension_id: "project",
-            requirement: "mandatory",
-            doc_version: 1,
-          },
-        ]}
+        account={{ ...mockTargetAccount, dimensions: [mockDimension] }}
         initialEdit
       />,
       "/config/chart-of-accounts/account",
@@ -192,16 +184,26 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
     fireEvent.click(
       screen.getByRole("checkbox", { name: "P01 — Project One" }),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Apply preview" }));
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() =>
-      expect(error).toHaveBeenCalledWith(
-        en.config.chartOfAccounts.dimensionPreview.saveUnavailable,
+      expect(update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dimensions: {
+            add: [],
+            remove: [],
+            update: [
+              {
+                gl_dimension_id: "project",
+                requirement: "optional",
+                config: { default_value_id: "p1", allowed_value_ids: [] },
+              },
+            ],
+          },
+        }),
       ),
     );
-    expect(update).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Clear preview" }));
-    expect(screen.queryByRole("button", { name: "Clear preview" })).toBeNull();
+    expect(update).toHaveBeenCalledTimes(1);
   });
   it("uses Cost Center account mappings and preserves inactive selections", () => {
     renderWithProviders(
@@ -248,14 +250,13 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
     ).toBeNull();
   });
 
-  it("saves the real requirement flag and then the selected Cost Center mappings", async () => {
+  it("saves the requirement flag and only changed Cost Center links in one PATCH", async () => {
     const update = vi.fn().mockResolvedValue({
       data: { id: mockTargetAccount.id, doc_version: 2 },
     });
     vi.spyOn(useCoaModule, "useUpdateChartOfAccount").mockReturnValue({
       mutateAsync: update,
     } as unknown as ReturnType<typeof useCoaModule.useUpdateChartOfAccount>);
-    vi.spyOn(dimensionRulesModule, "saveCoaRules").mockResolvedValue(undefined);
     renderWithProviders(
       <CoaForm account={mockTargetAccount} initialEdit />,
       "/config/chart-of-accounts/account",
@@ -273,17 +274,11 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
       expect(update).toHaveBeenCalledWith(
         expect.objectContaining({
           is_require_cost_center: true,
+          cost_centers: { add: [{ cost_center_id: "cc-3" }], remove: [] },
         }),
       ),
     );
-    await waitFor(() =>
-      expect(costCenterModule.saveCoaCostCenters).toHaveBeenCalledWith(
-        "BU001",
-        mockTargetAccount.id,
-        ["CC100", "CC200", "CC300"],
-        true,
-      ),
-    );
+    expect(update).toHaveBeenCalledTimes(1);
     expect(update.mock.calls[0][0]).not.toHaveProperty("department_required");
   });
 
@@ -307,15 +302,10 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
   });
 
   it("does not report success when mapping persistence fails", async () => {
-    const update = vi.fn().mockResolvedValue({
-      data: { id: mockTargetAccount.id, doc_version: 2 },
-    });
+    const update = vi.fn().mockRejectedValue(new Error("Mappings rejected"));
     vi.spyOn(useCoaModule, "useUpdateChartOfAccount").mockReturnValue({
       mutateAsync: update,
     } as unknown as ReturnType<typeof useCoaModule.useUpdateChartOfAccount>);
-    vi.mocked(costCenterModule.saveCoaCostCenters).mockRejectedValueOnce(
-      new Error("Mappings rejected"),
-    );
     const error = vi.spyOn(toast, "error");
     const success = vi.spyOn(toast, "success");
     renderWithProviders(
@@ -331,7 +321,7 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
     expect(success).not.toHaveBeenCalled();
   });
 
-  it("เรนเดอร์หน้า detail สำเร็จแม้ว่า readCoaRules จะล้มเหลว (404/API error)", async () => {
+  it("renders directly from account detail without requesting dimension rules", async () => {
     vi.spyOn(useCoaModule, "useChartOfAccountById").mockReturnValue({
       data: mockTargetAccount,
       isLoading: false,
@@ -356,10 +346,11 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
       0,
     );
     expect(screen.getByText("CASH_MAIN")).toBeDefined();
+    expect(dimensionRulesModule.readCoaRules).not.toHaveBeenCalled();
   });
   it("selects dimensions with checkboxes without requirement status choices", () => {
     renderWithProviders(
-      <CoaForm account={mockTargetAccount} rules={[]} initialEdit />,
+      <CoaForm account={mockTargetAccount} initialEdit />,
       "/config/chart-of-accounts/account",
     );
     fireEvent.click(screen.getByRole("switch", { name: /Require Dimension/i }));
@@ -376,31 +367,37 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
     expect(screen.queryByText("Mandatory")).toBeNull();
   });
 
-  it("waits for saved rules before initializing the dimension checkboxes", async () => {
-    let finish!: (rules: dimensionRulesModule.CoaDimensionRule[]) => void;
+  it("initializes dimension checkboxes and saved config from the detail arrays", async () => {
     vi.spyOn(useCoaModule, "useChartOfAccountById").mockReturnValue({
-      data: mockTargetAccount,
+      data: {
+        ...mockTargetAccount,
+        dimensions: [
+          {
+            ...mockDimension,
+            config: {
+              default_value_id: "p1",
+              default_value: {
+                id: "p1",
+                code: "P01",
+                name: "Project One",
+                is_active: false,
+              },
+              allowed_values: [
+                {
+                  id: "p1",
+                  code: "P01",
+                  name: "Project One",
+                  is_active: false,
+                },
+              ],
+            },
+          },
+        ],
+      },
       isLoading: false,
       error: null,
     } as unknown as ReturnType<typeof useCoaModule.useChartOfAccountById>);
-    vi.spyOn(dimensionRulesModule, "readCoaRules").mockReturnValue(
-      new Promise((resolve) => {
-        finish = resolve;
-      }),
-    );
     renderWithProviders(<CoaEditRoute />, "/config/chart-of-accounts/account");
-    expect(screen.queryByText("111000")).toBeNull();
-    await act(async () => {
-      finish([
-        {
-          id: "rule",
-          chart_of_accounts_id: mockTargetAccount.id,
-          gl_dimension_id: "project",
-          requirement: "mandatory",
-          doc_version: 1,
-        },
-      ]);
-    });
     await screen.findByRole("combobox", { name: "Required dimensions" });
     fireEvent.click(
       screen.getByRole("combobox", { name: "Required dimensions" }),
@@ -408,5 +405,84 @@ describe("COA Detail Route (:id = dbf8801e-8b11-4870-b1e1-cd58523bbb0c)", () => 
     expect(
       screen.getByRole("checkbox", { name: "project — Project" }),
     ).toBeChecked();
+    fireEvent.keyDown(
+      screen.getByRole("textbox", { name: "Search Required dimensions" }),
+      { key: "Escape" },
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "List Master / Default" }),
+    );
+    expect(screen.getByRole("combobox", { name: "Default" })).toHaveTextContent(
+      "P01 · Project One",
+    );
+  });
+
+  it("blocks editing when a stale backend omits either relationship array", () => {
+    vi.spyOn(useCoaModule, "useChartOfAccountById").mockReturnValue({
+      data: { ...mockTargetAccount, cost_centers: undefined },
+      isLoading: false,
+      error: null,
+    } as unknown as ReturnType<typeof useCoaModule.useChartOfAccountById>);
+    renderWithProviders(<CoaEditRoute />, "/config/chart-of-accounts/account");
+    expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+  });
+
+  it("retries failed link persistence after Create using the saved ID/version without creating a duplicate account", async () => {
+    const create = vi
+      .fn()
+      .mockResolvedValue({ data: { id: "new-account", doc_version: 1 } });
+    const update = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Links rejected"))
+      .mockResolvedValue({ data: { id: "new-account", doc_version: 2 } });
+    vi.spyOn(useCoaModule, "useCreateChartOfAccount").mockReturnValue({
+      mutateAsync: create,
+    } as unknown as ReturnType<typeof useCoaModule.useCreateChartOfAccount>);
+    vi.spyOn(useCoaModule, "useUpdateChartOfAccount").mockReturnValue({
+      mutateAsync: update,
+    } as unknown as ReturnType<typeof useCoaModule.useUpdateChartOfAccount>);
+    const error = vi.spyOn(toast, "error");
+    renderWithProviders(<CoaForm />, "/config/chart-of-accounts/new");
+    fireEvent.change(screen.getByRole("textbox", { name: /^Code/ }), {
+      target: { value: "100" },
+    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /Account Description \(English\)/ }),
+      { target: { value: "New account" } },
+    );
+    fireEvent.click(screen.getAllByRole("combobox")[0]);
+    fireEvent.click(await screen.findByRole("option", { name: "Assets" }));
+    fireEvent.click(screen.getAllByRole("combobox")[1]);
+    fireEvent.click(
+      await screen.findByRole("option", { name: /Balance sheet/i }),
+    );
+    fireEvent.click(
+      screen.getByRole("switch", { name: "Require Cost Center" }),
+    );
+    fireEvent.click(
+      screen.getByRole("combobox", { name: "Allowed Cost Centers" }),
+    );
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "CC100 — Front Office" }),
+    );
+    fireEvent.keyDown(
+      screen.getByRole("textbox", { name: "Search Allowed Cost Centers" }),
+      { key: "Escape" },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Create" }));
+    await waitFor(() => expect(error).toHaveBeenCalledWith("Links rejected"));
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(update).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: "Create" }));
+    await waitFor(() => expect(update).toHaveBeenCalledTimes(2));
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(update.mock.calls[1][0]).toEqual(
+      expect.objectContaining({
+        id: "new-account",
+        doc_version: 1,
+        cost_centers: { add: [{ cost_center_id: "cc-1" }], remove: [] },
+      }),
+    );
   });
 });
