@@ -190,6 +190,7 @@ async function buildLineRequests(
       if (line.comment || fallbackDescription) {
         lineObj.description = line.comment || fallbackDescription;
       }
+      // ไม่ส่งเมื่อว่าง — ตอน update บรรทัดถูกสร้างใหม่ทั้งชุด ไม่ส่ง = ไม่มี dimension (ล้างค่าเดิมได้)
       if (line.dimension.length > 0) {
         lineObj.dimensions = toDimensionPayload(line.dimension);
       }
@@ -234,15 +235,26 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
 
     const mappedItems: JournalVoucher[] = items.map((item) => {
       const raw = item as unknown as Record<string, unknown>;
-      const rawJvNo = typeof raw.jv_no === "string" && raw.jv_no.trim() ? raw.jv_no.trim() : null;
-      const rawPrefix = typeof raw.prefix_code === "string" && raw.prefix_code.trim() ? raw.prefix_code.trim() : null;
-      const rawDraftRef = typeof raw.draft_reference === "string" && raw.draft_reference.trim() ? raw.draft_reference.trim() : null;
+      const rawJvNo =
+        typeof raw.jv_no === "string" && raw.jv_no.trim()
+          ? raw.jv_no.trim()
+          : null;
+      const rawPrefix =
+        typeof raw.prefix_code === "string" && raw.prefix_code.trim()
+          ? raw.prefix_code.trim()
+          : null;
+      const rawDraftRef =
+        typeof raw.draft_reference === "string" && raw.draft_reference.trim()
+          ? raw.draft_reference.trim()
+          : null;
       const rawId = String(raw.id ?? "");
       const shortId = rawId ? rawId.slice(0, 8) : "";
 
       let displayNo = "";
       if (rawPrefix && rawJvNo) {
-        displayNo = rawJvNo.startsWith(rawPrefix) ? rawJvNo : `${rawPrefix}-${rawJvNo}`;
+        displayNo = rawJvNo.startsWith(rawPrefix)
+          ? rawJvNo
+          : `${rawPrefix}-${rawJvNo}`;
       } else if (rawJvNo) {
         displayNo = rawJvNo;
       } else if (rawDraftRef) {
@@ -264,12 +276,17 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
       const mapped: JournalVoucher = {
         ...item,
         id: rawId,
-        prefix: rawPrefix ?? (typeof raw.prefix === "string" ? raw.prefix : "JV"),
+        prefix:
+          rawPrefix ?? (typeof raw.prefix === "string" ? raw.prefix : "JV"),
         display_no: displayNo,
         jv_no: rawJvNo,
-        draft_reference: rawDraftRef ?? (rawJvNo ?? (shortId ? `DRAFT-${shortId}` : "DRAFT")),
+        draft_reference:
+          rawDraftRef ?? rawJvNo ?? (shortId ? `DRAFT-${shortId}` : "DRAFT"),
         jv_status: (raw.jv_status as JournalVoucherStatus) ?? "draft",
-        jv_date: typeof raw.jv_date === "string" ? raw.jv_date : new Date().toISOString(),
+        jv_date:
+          typeof raw.jv_date === "string"
+            ? raw.jv_date
+            : new Date().toISOString(),
         total_debit: String(raw.total_debit ?? 0),
         total_credit: String(raw.total_credit ?? 0),
         source_type: sourceType,
@@ -462,7 +479,10 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
       payload.currency_id = input.functional_currency_id;
     }
 
-    const res = await httpClient.post(API_ENDPOINTS.GL_JV_LIST(buCode), payload);
+    const res = await httpClient.post(
+      API_ENDPOINTS.GL_JV_LIST(buCode),
+      payload,
+    );
     if (!res.ok) {
       throw await ApiError.from(res, "Failed to create journal voucher");
     }
@@ -549,11 +569,21 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
     if (input.is_adjustment !== undefined) {
       patchPayload.is_adjustment = Boolean(input.is_adjustment);
     }
-    if (
-      input.functional_currency_id &&
-      UUID_REGEX.test(input.functional_currency_id)
-    ) {
-      patchPayload.currency_id = input.functional_currency_id;
+    if (input.lines?.length) {
+      // backend แทนที่บรรทัดทั้งชุด (เฉพาะใบ manual ที่เป็น draft) และ currency ของ header มีผลเฉพาะตอนส่งบรรทัด
+      patchPayload.details = {
+        replace: await buildLineRequests(
+          buCode,
+          input.lines,
+          input.description,
+        ),
+      };
+      if (
+        input.functional_currency_id &&
+        UUID_REGEX.test(input.functional_currency_id)
+      ) {
+        patchPayload.currency_id = input.functional_currency_id;
+      }
     }
     const res = await httpClient.patch(
       API_ENDPOINTS.GL_JV_DETAIL(buCode, id),
@@ -587,10 +617,14 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
     }
     let endpoint: string | null = null;
     if (action === "submit") endpoint = API_ENDPOINTS.GL_JV_SUBMIT(buCode, id);
-    else if (action === "approve") endpoint = API_ENDPOINTS.GL_JV_APPROVE(buCode, id);
-    else if (action === "reject") endpoint = API_ENDPOINTS.GL_JV_REJECT(buCode, id);
-    else if (action === "void") endpoint = API_ENDPOINTS.GL_POSTING_VOID(buCode, id);
-    else if (action === "reverse") endpoint = API_ENDPOINTS.GL_POSTING_REVERSE(buCode, id);
+    else if (action === "approve")
+      endpoint = API_ENDPOINTS.GL_JV_APPROVE(buCode, id);
+    else if (action === "reject")
+      endpoint = API_ENDPOINTS.GL_JV_REJECT(buCode, id);
+    else if (action === "void")
+      endpoint = API_ENDPOINTS.GL_POSTING_VOID(buCode, id);
+    else if (action === "reverse")
+      endpoint = API_ENDPOINTS.GL_POSTING_REVERSE(buCode, id);
 
     if (endpoint) {
       // approve/reject รับ body เฉพาะของตัวเอง (post_at / reason) — ไม่ส่ง doc_version

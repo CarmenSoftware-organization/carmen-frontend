@@ -148,7 +148,7 @@ describe("RecipeCookView — รูปของสูตร", () => {
       .querySelector("img")
       ?.getAttribute("src");
 
-  it("รูปใหญ่เริ่มที่รูปหลัก + แถบรูปย่อทั้งหมดข้างใต้ เรียงตาม sort_order อยู่ซ้ายของ hero คู่กับชื่อสูตร ก่อนคอลัมน์ขั้นตอน", () => {
+  it("รูปใหญ่เริ่มที่รูปหลัก + แถบรูปย่อทั้งหมดข้างใต้ เรียงตาม sort_order อยู่ช่องแรกของข้อมูลสูตร ก่อนคอลัมน์ขั้นตอน", () => {
     renderForm(<RecipeCookView recipe={{ ...RECIPE, images: IMAGES }} />);
     expect(heroSrc(2)).toBe("https://files.test/b.jpg");
 
@@ -164,11 +164,13 @@ describe("RecipeCookView — รูปของสูตร", () => {
       "https://files.test/b.jpg",
       "https://files.test/c.jpg",
     ]);
-    // hero แบบหน้าสินค้า: รูปอยู่ช่องแรก (ซ้าย) ชื่อสูตรอยู่ช่องถัดไป (ขวา) ในกริดเดียวกัน
-    const title = screen.getByRole("heading", { level: 1, name: RECIPE.name });
-    const hero = title.parentElement?.parentElement;
+    // hero แบบหน้าสินค้า: แกลเลอรีเป็นช่องแรก (ซ้าย) ของข้อมูลสูตร · ชื่อสูตรอยู่หัวหน้า (2026-11-17 จัดใหม่แบบ iPad)
+    const hero = strip.parentElement?.parentElement;
     expect(hero?.firstElementChild).toContainElement(strip);
-    expect(hero?.lastElementChild).toContainElement(title);
+    expect(hero?.className).toContain("@lg/info:grid-cols-[15rem");
+    const title = screen.getByRole("heading", { level: 1, name: RECIPE.name });
+    expect(title.closest("header")).not.toBeNull();
+    expect(title.closest("header")).not.toContainElement(strip);
     // รูปไม่อยู่ในคอลัมน์ขั้นตอนแล้ว และมาก่อนคอลัมน์นั้น
     const steps = screen.getByRole("region", {
       name: en.operationPlan.recipe.stepsSection,
@@ -345,11 +347,8 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     );
     const steps = screen.getByRole("region", { name: R.stepsSection });
     expect(steps).not.toContainElement(frames[0]);
-    // กรอบใหญ่กับชื่อสูตรอยู่ hero เดียวกัน (แกลเลอรีซ้าย ชื่อขวา)
-    const title = screen.getByRole("heading", { level: 1, name: RECIPE.name });
-    expect(
-      title.parentElement?.parentElement?.firstElementChild,
-    ).toContainElement(frames[0]);
+    // กรอบใหญ่อยู่แกลเลอรีเดียวกับแถบรูปย่อ (ช่องแรกของข้อมูลสูตร)
+    expect(gallery().parentElement).toContainElement(frames[0]);
 
     fireEvent.click(
       screen.getByRole("button", {
@@ -360,31 +359,57 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     expect(heroPhoto(2)).toHaveAttribute("src", "https://files.test/b.jpg");
   });
 
-  it("จอกว้าง: ขั้นตอนอยู่คอลัมน์ซ้าย ข้อมูลสูตรอยู่คอลัมน์ขวา · จอแคบข้อมูลสูตรยังอยู่บน", () => {
+  it("จอกว้าง: ขั้นตอนอยู่คอลัมน์ซ้าย (ตรึงไว้) ข้อมูลสูตรอยู่คอลัมน์ขวา · จอแคบข้อมูลสูตรยังอยู่บน", () => {
     renderForm(<RecipeCookView recipe={withPhotos} />);
     const steps = screen.getByRole("region", { name: R.stepsSection });
     const layout = steps.parentElement!;
     expect(layout.className).toContain("@3xl:grid-cols-[minmax(0,1fr)_20rem]");
     expect(steps.className).toContain("@3xl:col-start-1");
+    expect(steps.className).toContain("@3xl:row-span-2");
+    // เลื่อนดูวัตถุดิบด้านขวาแล้วขั้นที่ทำอยู่ไม่หลุดจอ
+    expect(steps.className).toContain("@3xl:sticky");
     const info = layout.firstElementChild!;
-    expect(info).toContainElement(
-      screen.getByRole("heading", { level: 1, name: RECIPE.name }),
-    );
+    expect(info).toContainElement(gallery());
     expect(info.className).toContain("@3xl:col-start-2");
+  });
+
+  it("การจัดจาน/การเก็บรักษาอยู่หลังขั้นตอน (จอแคบ = ท้ายหน้า) · จอกว้างอยู่ใต้ข้อมูลสูตรในคอลัมน์ขวา", () => {
+    renderForm(
+      <RecipeCookView
+        recipe={
+          {
+            ...withPhotos,
+            plating_instructions: "Plate it",
+            storage_instructions: "Keep cold",
+          } as unknown as Recipe
+        }
+      />,
+    );
+    const steps = screen.getByRole("region", { name: R.stepsSection });
+    const plating = screen.getByText("Plate it");
+    expect(screen.getByText("Keep cold")).toBeInTheDocument();
+    expect(
+      steps.compareDocumentPosition(plating) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    const after = steps.nextElementSibling!;
+    expect(after).toContainElement(plating);
+    expect(after.className).toContain("@3xl:col-start-2");
+    expect(after.className).toContain("@3xl:row-start-2");
   });
 
   it("มีวิดีโอแต่ไม่มีรูป → แกลเลอรีมีแค่วิดีโอ ไม่มีแถบรูปย่อ", () => {
     const { container } = renderForm(<RecipeCookView recipe={recipe} />);
     expect(container.querySelector("iframe")).toHaveAttribute("src", EMBED);
     expect(screen.queryByRole("list", { name: R.cookImages })).toBeNull();
-    // ยังแบ่งคอลัมน์ให้แกลเลอรีข้างชื่อสูตร
-    const title = screen.getByRole("heading", { level: 1, name: RECIPE.name });
-    expect(title.parentElement?.parentElement?.className).toContain(
-      "grid-cols-[13rem",
-    );
+    // ยังแบ่งคอลัมน์ให้แกลเลอรีข้างข้อมูลสรุป
+    expect(
+      container
+        .querySelector("iframe")
+        ?.closest('[class*="@lg/info:grid-cols-[15rem"]'),
+    ).not.toBeNull();
   });
 
-  it("ขั้นที่มีรูป → รูปอยู่ข้างการ์ดของขั้น (นอกการ์ด) กดรูปย่อเปลี่ยนรูปใหญ่", () => {
+  it("ขั้นที่มีรูป → รูปอยู่ในการ์ดของขั้น (ขวาของข้อความเมื่อการ์ดกว้าง) กดรูปย่อเปลี่ยนรูปใหญ่", () => {
     stepImagesById = {
       s1: [
         stepImg("a", 0, "https://files.test/s1-a.jpg"),
@@ -397,12 +422,14 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     const list = stepList(1);
     expect(list).not.toBeNull();
     expect(list!.querySelectorAll("img")).toHaveLength(2);
-    expect(list!.closest("article")).toBeNull();
     const card = screen.getByRole("article");
+    expect(list!.closest("article")).toBe(card);
     expect(card).toHaveTextContent("Step 1 text");
-    expect(card.parentElement).toContainElement(list);
+    expect(card.firstElementChild?.className).toContain(
+      "@2xl/steps:grid-cols-[minmax(0,1fr)_15rem]",
+    );
 
-    const big = () => card.parentElement!.querySelector(".cursor-zoom-in img");
+    const big = () => card.querySelector(".cursor-zoom-in img");
     expect(big()).toHaveAttribute("src", "https://files.test/s1-a.jpg");
     fireEvent.click(list!.querySelectorAll("button")[1]);
     expect(big()).toHaveAttribute("src", "https://files.test/s1-b.jpg");
@@ -414,8 +441,8 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     goNext();
     const card = screen.getByRole("article");
     expect(card).toHaveTextContent("Step 2 text");
-    expect(card.parentElement!.querySelector(".cursor-zoom-in")).toBeNull();
-    expect(card.parentElement!.className).not.toContain("grid-cols");
+    expect(card.querySelector(".cursor-zoom-in")).toBeNull();
+    expect(card.firstElementChild?.className).not.toContain("grid-cols");
   });
 });
 
@@ -493,5 +520,96 @@ describe("RecipeCookView — ปุ่มเลขขั้นตอน", () => 
     ).toBeDisabled();
     fireEvent.click(within(nav).getByRole("button", { name: R.cookPrev }));
     expect(screen.getByRole("article")).toHaveTextContent("Step 3 text");
+  });
+
+  // iPad: ปัดนิ้วบนการ์ดขั้นแทนการกดปุ่มเลข (2026-11-17)
+  const swipe = (dx: number, dy = 0) => {
+    const card = screen.getByRole("article");
+    fireEvent.touchStart(card, { touches: [{ clientX: 300, clientY: 200 }] });
+    fireEvent.touchEnd(card, {
+      changedTouches: [{ clientX: 300 + dx, clientY: 200 + dy }],
+    });
+  };
+
+  it("ปัดซ้ายบนการ์ดขั้น = ขั้นถัดไป · ปัดขวา = ขั้นก่อนหน้า · ไม่เลยขั้นแรก/ขั้นสุดท้าย", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    swipe(-120);
+    expect(screen.getByRole("article")).toHaveTextContent("Step 2 text");
+    expect(goTo(2)).toHaveAttribute("aria-current", "step");
+    swipe(120);
+    expect(screen.getByRole("article")).toHaveTextContent("Step 1 text");
+    swipe(120);
+    expect(screen.getByRole("article")).toHaveTextContent("Step 1 text");
+    fireEvent.click(goTo(4));
+    swipe(-120);
+    expect(screen.getByRole("article")).toHaveTextContent("Step 4 text");
+  });
+
+  it("ลากสั้น หรือลากแนวตั้งเป็นหลัก (เลื่อนหน้า) → ไม่เปลี่ยนขั้น", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    swipe(-30);
+    expect(screen.getByRole("article")).toHaveTextContent("Step 1 text");
+    swipe(-90, 200);
+    expect(screen.getByRole("article")).toHaveTextContent("Step 1 text");
+  });
+});
+
+describe("RecipeCookView — หัวหน้า + วัตถุดิบ", () => {
+  const R = en.operationPlan.recipe;
+  const line = (id: string, n: number, name: string) => ({
+    id,
+    sequence_no: n,
+    deleted_at: null,
+    ingredient_type: "product",
+    qty: 1,
+    note: null,
+    product: { id: `p-${id}`, code: `P-${id}`, name },
+    ingredient_unit: { id: "u", name: "KG" },
+  });
+  const recipe = {
+    ...RECIPE,
+    category: { id: "c", name: "Main Courses" },
+    cuisine: { id: "q", name: "Thai" },
+    ingredients: [line("a", 1, "Shrimp"), line("b", 2, "Lime")],
+  } as unknown as Recipe;
+
+  it("ชื่อสูตรเป็นหัวหน้า + บรรทัดรอง รหัส · หมวดหมู่ · ประเภทอาหาร", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    const header = screen
+      .getByRole("heading", { level: 1, name: RECIPE.name })
+      .closest("header")!;
+    expect(header).toHaveTextContent("RCP-001");
+    expect(within(header).getByTitle(en.field.category)).toHaveTextContent(
+      "Main Courses",
+    );
+    expect(within(header).getByTitle(en.field.cuisine)).toHaveTextContent(
+      "Thai",
+    );
+    // ปุ่มพิมพ์/แก้ไขอยู่หัวเดียวกัน
+    expect(
+      within(header).getByRole("button", { name: en.common.print }),
+    ).toBeInTheDocument();
+    expect(
+      within(header).getByRole("link", { name: R.editRecipe }),
+    ).toBeInTheDocument();
+  });
+
+  it("ติ๊กวัตถุดิบ → ขึ้นจำนวนที่เช็กแล้ว · กดล้าง → เอาติ๊กออกทั้งหมด", () => {
+    renderForm(<RecipeCookView recipe={recipe} />);
+    expect(
+      screen.queryByRole("button", { name: R.cookClearChecks }),
+    ).toBeNull();
+    fireEvent.click(screen.getByRole("checkbox", { name: "Shrimp" }));
+    expect(
+      screen.getByText(
+        R.cookChecked.replace("{n}", "1").replace("{total}", "2"),
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: R.cookClearChecks }));
+    expect(screen.getByRole("checkbox", { name: "Shrimp" })).not.toBeChecked();
+    expect(
+      screen.queryByRole("button", { name: R.cookClearChecks }),
+    ).toBeNull();
   });
 });
