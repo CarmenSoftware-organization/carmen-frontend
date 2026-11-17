@@ -141,24 +141,6 @@ export function useGrnItemTable({
             onPicked={() => onLocationPicked(row.id)}
           />
         ),
-        // แถว dimension ใต้บรรทัด — ใส่เฉพาะเมื่อเปิดใช้ ไม่งั้น DataGrid วาดแถว
-        // footer ว่างทุกบรรทัด · เริ่มที่คอลัมน์คลัง (ข้ามเลขลำดับ) กินถึงคอลัมน์ยอดรวม
-        meta: dimensionsEnabled
-          ? {
-              footerContent: (item: GrnItemField) => {
-                const index = itemFields.findIndex((f) => f.id === item.id);
-                if (index === -1) return null;
-                return (
-                  <GrnItemDimensions
-                    form={form}
-                    index={index}
-                    disabled={disabled || isLocked(index)}
-                  />
-                );
-              },
-              footerColSpan: 11,
-            }
-          : undefined,
       },
       {
         id: "product",
@@ -317,6 +299,24 @@ export function useGrnItemTable({
           />
         ),
       },
+      // ปุ่ม popover dimension ต่อบรรทัด — ใส่เฉพาะเมื่อเปิดใช้ ไม่งั้น BU ที่ไม่มี license จะเห็นคอลัมน์ว่าง
+      ...(dimensionsEnabled
+        ? [
+            {
+              id: "dimensions",
+              header: "Dim",
+              size: 90,
+              enableSorting: false,
+              cell: ({ row }) => (
+                <GrnItemDimensions
+                  form={form}
+                  index={row.index}
+                  disabled={disabled || isLocked(row.index)}
+                />
+              ),
+            } satisfies ColumnDef<GrnItemField>,
+          ]
+        : []),
     ];
 
     // โหมดอ่าน = ปุ่มดูเอกสารต้นทาง (PO/CN ที่บรรทัดนี้อ้างถึง) · โหมดแก้ = ปุ่มลบ
