@@ -16,6 +16,7 @@ import { DataGridPagination } from "@/components/ui/data-grid/data-grid-paginati
 import { usePrt, useDeletePrt, useExportPrt } from "./use-prt";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import type { PurchaseRequestTemplate } from "@/types/purchase-request";
@@ -146,6 +147,8 @@ export default function PrtComponent() {
     }
   };
 
+  // ตารางเลือกคอลัมน์จากความกว้างของกล่องตัวเอง (ลบขอบ 1px สองข้างของ DataGridContainer)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
   const table = usePrtTable({
     templates,
     totalRecords,
@@ -157,6 +160,7 @@ export default function PrtComponent() {
         listReturnState(),
       ),
     onDelete: setDeleteTarget,
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
   });
 
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
@@ -271,25 +275,27 @@ export default function PrtComponent() {
         </DataGrid>
       )}
       {!isGridMode && (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          tableLayout={{ headerSticky: true }}
-          emptyMessage={<EmptyComponent />}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              listGridMaxH(lf.activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            tableLayout={{ headerSticky: true }}
+            emptyMessage={<EmptyComponent />}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                listGridMaxH(lf.activeFilters.length > 0),
+              )}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       <DeleteDialog
