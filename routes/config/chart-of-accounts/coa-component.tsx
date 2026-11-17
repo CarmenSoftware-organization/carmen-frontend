@@ -6,6 +6,7 @@ import type { ChartOfAccount } from "@/types/chart-of-accounts";
 import { ConfigListTemplate } from "@/components/templates/config-list-template";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import { Button } from "@/components/ui/button";
+import { LIST_HEADER_LABEL_HIDE } from "@/components/share/list-page-shell";
 import { useCoaTable } from "./use-coa-table";
 import { COA_FILTER_FIELDS } from "./coa-filter-fields";
 import CoaCard from "./coa-card";
@@ -33,19 +34,24 @@ export default function CoaComponent() {
         getEditPath={(account) => `/config/chart-of-accounts/${account.id}`}
         filterFields={COA_FILTER_FIELDS}
         extraActions={
-          <div className="flex flex-wrap items-center gap-2">
+          // ไม่ห่อด้วย flex-wrap — ปุ่มต้องอยู่แถวเดียวกับ Export/Print/New
+          // หัวแคบ (< @4xl ของ list-header) ปุ่มรองเหลือไอคอน ปุ่มหลัก New เก็บป้าย
+          <>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setWizardOpen(true)}
               className="gap-1.5"
+              title={t("wizard.button")}
             >
               <Sparkles className="text-primary size-4" />
-              <span>{t("wizard.button")}</span>
+              <span className={LIST_HEADER_LABEL_HIDE}>
+                {t("wizard.button")}
+              </span>
             </Button>
             <CoaImportCarmenGlButton />
-          </div>
+          </>
         }
         renderDeleteDialog={({
           target,

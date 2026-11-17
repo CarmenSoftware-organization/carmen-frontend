@@ -3,6 +3,7 @@ import { Download, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { Button } from "@/components/ui/button";
+import { LIST_HEADER_LABEL_HIDE } from "@/components/share/list-page-shell";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -99,13 +100,14 @@ export function CoaImportCarmenGlButton() {
         size="sm"
         onClick={() => setOpen(true)}
         disabled={importMutation.isPending}
+        title={t("action")}
       >
         {importMutation.isPending ? (
           <Loader2 className="animate-spin" />
         ) : (
           <Download />
         )}
-        {t("action")}
+        <span className={LIST_HEADER_LABEL_HIDE}>{t("action")}</span>
       </Button>
       <AlertDialog
         open={open}
