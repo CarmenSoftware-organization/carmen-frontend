@@ -45,8 +45,7 @@ export function useShelfTable({
           {row.getValue("code") || "..."}
         </CellAction>
       ),
-      meta: { headerTitle: tfl("code"), skeleton: columnSkeletons.text },
-      size: 90,
+      meta: { headerTitle: tfl("code"), skeleton: columnSkeletons.textShort },
     },
     {
       accessorKey: "name",
@@ -61,10 +60,10 @@ export function useShelfTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("description")} />
       ),
-      // ยาวเกิน 2 บรรทัดตัดด้วย ellipsis — ข้อความเต็มดูจาก title ตอน hover
+      // คอลัมน์ grow — ตัดบรรทัดเดียวตามความกว้างคอลัมน์ ข้อความเต็มดูจาก title ตอน hover
       cell: ({ row }) => (
         <span
-          className="text-muted-foreground line-clamp-2"
+          className="text-muted-foreground block truncate"
           title={row.original.description ?? undefined}
         >
           {row.original.description || "-"}
@@ -79,7 +78,17 @@ export function useShelfTable({
 
   return useConfigListTable<Shelf>({
     containerWidth,
-    layout: { grow: "name", widths: { code: 100, name: 180 } },
+    // description เป็นข้อความยาว → เป็นตัว grow (เดิม grow ที่ name ทำให้ name กว้างพันกว่า px
+    // ขณะที่ description เหลือ 150 ตัดสองบรรทัด) · code 130 = รหัสยาวสุด ~96px + padding 24
+    // (100 เดิมทำ CHRONO-04 ตัดบรรทัด) · name 220 = ชื่อยาวสุด ~177px + padding
+    // ชุดเต็ม 55+60+130+220+110+100+60 = 735 (พอที่กล่อง 1024 = 742)
+    // ตัด description แล้ว 625 (กล่อง tablet 662) — แบ่งตามสัดส่วนแทนจะบีบ code จนตัดบรรทัด
+    // description ยังดูได้ใน dialog และ card view
+    layout: {
+      grow: "description",
+      widths: { code: 130, name: 220, description: 110 },
+      secondary: ["description"],
+    },
     data,
     columns,
     totalRecords,
