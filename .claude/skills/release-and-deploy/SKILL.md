@@ -25,3 +25,11 @@ backend CORS, การเลือก `config.<env>.json`) อยู่ใน `
 - `build:force` ลบ `dist/` · `node_modules/.vite` · `tsconfig.tsbuildinfo` แล้ว build ใหม่ — ที่มีผลจริงคือ
   บังคับ tsc ตรวจใหม่ทั้งหมด (vite build ไม่ใช้ `.vite/deps` และล้าง dist เองอยู่แล้ว) · ใช้คู่
   `BUILD_CONFIG_FILE=…` ได้
+
+## ข้อควรรู้อื่น (ย้ายมาจาก CLAUDE.md ราก)
+
+- Backend CORS ต้องเปิดก่อนขึ้น production บน S3/GCS static hosting (dev ใช้ Vite proxy;
+  **Docker image ไม่ต้องใช้ CORS** — nginx ของมัน proxy `/api/*` เอง)
+- regex conventional-commit ใน `scripts/changelog.ts` จับเครื่องหมาย breaking-change `!`
+  (เช่น `feat(api)!: …`) แต่ไม่มีใครอ่าน — ตั้งใจยังไม่ทำ badge breaking change ใน What's New;
+  commit แบบนั้นแสดงเหมือน feature ปกติ

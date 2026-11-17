@@ -482,3 +482,12 @@ Carmen Blue is desktop-first: it is a working tool for people at a desk, and the
 - **`styles/module-colors.css` is documented in its own header only.** Since the identity tokens were removed it holds only the app-tile derivation (single-accent tints mixed in sRGB, deliberately not oklch, to avoid a hue shift toward pink) — read that header before touching tile colour.
 - **Empty, loading and error states** have implementations (`ErrorState`, `Empty`, skeletons) but no documented rules about when each applies.
 - **This document was previously an analysis of apple.com** — a teardown that arrived as the project's design doc and accumulated Carmen-specific corrections as marginal notes. The Apple-only material (product tiles, store pages, photography geometry, an eight-step breakpoint matrix) has been removed. If a rule here reads like it came from a marketing site rather than from this codebase, it is a bug — check it against the code and fix it.
+
+## Dark mode
+
+`ThemeProvider` ของ next-themes (`components/providers.tsx`, `attribute="class"`, ค่าเริ่มต้น `system`)
+ตั้งคลาส `.dark` ที่ `<html>` ตามที่ผู้ใช้เลือกใน `ThemeSwitch` (เมนูโปรไฟล์) หรือตามธีมของ OS
+UI ใหม่ทุกชิ้นต้องอ่านออกทั้งสองธีม — ของ third-party ที่ออกแบบมาบนพื้นขาวอย่างเดียว ให้วางบนพื้นสว่างเสมอ
+(ของที่มีธีมมืดเองอย่าง Scalar ใน `/developers/api` ให้ส่งธีมของแอปเข้าไป) ปุ่มสลับธีมในหน้า
+`/design-system` ผูกคลาสไว้ที่ container ของหน้าเอง (`&:is(.dark *)` ต้องการแค่ ancestor)
+ใช้ดูงานได้โดยไม่กระทบทั้งแอป
