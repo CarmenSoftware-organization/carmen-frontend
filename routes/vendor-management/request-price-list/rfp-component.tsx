@@ -49,6 +49,7 @@ import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
+import { useElementWidth } from "@/hooks/use-element-width";
 
 // ไม่กรองสถานะ — หน้า list ต้องกรอง RFP เก่าที่อ้าง template ที่ปิดไปแล้วได้
 const TEMPLATE_ENTITY = defineEntitySource<PriceListTemplate>({
@@ -207,6 +208,9 @@ export default function RequestPriceListComponent() {
     ? grid.totalRecords
     : (data?.paginate?.total ?? 0);
 
+  // ตารางเลือกคอลัมน์จากความกว้างกล่องของมันเอง (ลบขอบ 1px สองข้างของ DataGridContainer)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+
   const table = useRequestPriceListTable({
     items,
     totalRecords,
@@ -218,6 +222,7 @@ export default function RequestPriceListComponent() {
         listReturnState(),
       ),
     onDelete: setDeleteTarget,
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
   });
 
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
@@ -326,25 +331,27 @@ export default function RequestPriceListComponent() {
       )}
 
       {!isGridMode && (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          tableLayout={{ headerSticky: true }}
-          emptyMessage={<EmptyComponent />}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              listGridMaxH(activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            tableLayout={{ headerSticky: true }}
+            emptyMessage={<EmptyComponent />}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                listGridMaxH(activeFilters.length > 0),
+              )}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       <DeleteDialog
