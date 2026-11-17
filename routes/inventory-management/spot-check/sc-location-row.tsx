@@ -29,9 +29,13 @@ import type {
   SpotCheckLocationLatest,
 } from "@/types/spot-check";
 
-/** คอลัมน์กว้างคงที่ทุกแถว — ดูเหตุผลที่ `PC_ROW_GRID` */
+/**
+ * คอลัมน์กว้างคงที่ทุกแถว — ดูเหตุผลที่ `PC_ROW_GRID` · ตัดสินจากความกว้างแถวเอง (LocationRow เป็น
+ * `@container`) ไม่ใช่ของจอ · คอลัมน์คงที่ 13+10+9rem = 512 + ช่องว่าง 48 → ต้องการเนื้อใน ≥ 768
+ * (`@3xl`) ชื่อจึงเหลือ ≥ ~200px — เดิม `sm:` ที่จอ 768 ชื่อเหลือ 74px
+ */
 const SC_ROW_GRID =
-  "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 sm:grid-cols-[minmax(0,1fr)_13rem_10rem_9rem]";
+  "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 @3xl:grid-cols-[minmax(0,1fr)_13rem_10rem_9rem]";
 
 interface ScLocationRowProps {
   readonly item: SpotCheckLocation;
@@ -76,17 +80,15 @@ export function ScLocationRow({
   return (
     <LocationRow tone={tone}>
       <div className={SC_ROW_GRID}>
-        <div className="order-1 min-w-0 sm:order-none">
+        <div className="order-1 min-w-0 @3xl:order-none">
           <div className="flex min-w-0 items-center gap-1.5">
             <Link
               to={`/config/location/${item.location_id}`}
+              title={item.name || undefined}
               className="text-foreground truncate text-sm font-semibold tracking-tight hover:underline"
             >
               {item.name || "..."}
             </Link>
-            <span className="text-muted-foreground text-micro-legal shrink-0 tracking-wide uppercase">
-              {item.code}
-            </span>
             {/* ขึ้นเฉพาะข้อยกเว้น — แถวที่ต้องนับคือค่าปกติ */}
             {item.physical_count_type !== "yes" && (
               <span
@@ -99,6 +101,11 @@ export function ScLocationRow({
             )}
           </div>
           <div className="text-muted-foreground text-micro mt-0.5 flex items-center gap-1">
+            {/* รหัสลงบรรทัดรอง ชื่อจึงได้ที่เต็มบรรทัด (เหมือน PcLocationRow) */}
+            <span className="shrink-0 tracking-wide uppercase">
+              {item.code}
+            </span>
+            <span aria-hidden="true">·</span>
             <Warehouse className="size-2.5 shrink-0" aria-hidden="true" />
             <span className="truncate">
               {getLocationTypeLabel(t, item.location_type)}
@@ -106,7 +113,7 @@ export function ScLocationRow({
           </div>
         </div>
 
-        <div className="order-3 min-w-0 sm:order-none">
+        <div className="order-3 min-w-0 @3xl:order-none">
           {latest && (
             <ScDocStatusRow
               docNo={latest.spot_check_no}
@@ -118,7 +125,7 @@ export function ScLocationRow({
           )}
         </div>
 
-        <div className="order-4 min-w-0 sm:order-none">
+        <div className="order-4 min-w-0 @3xl:order-none">
           {latest && (
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -148,7 +155,7 @@ export function ScLocationRow({
           )}
         </div>
 
-        <div className="order-2 flex items-center justify-end gap-1 sm:order-none">
+        <div className="order-2 flex items-center justify-end gap-1 @3xl:order-none">
           {latest ? (
             <>
               <TooltipProvider delayDuration={100}>

@@ -190,11 +190,11 @@ function LocationRowSkeleton() {
 
 export function LocationListSkeleton({
   count = 4,
-  grid = false,
+  grid,
 }: {
   readonly count?: number;
-  /** โครงเดียวกับ `layout="grid"` — ไม่งั้นเนื้อหากระโดดตอนข้อมูลมา */
-  readonly grid?: boolean;
+  /** โครงเดียวกับ `layout="grid"` (ขั้นต่ำเดียวกัน) — ไม่งั้นเนื้อหากระโดดตอนข้อมูลมา */
+  readonly grid?: InvGridMin;
 }) {
   const keys = SKELETON_KEYS.slice(0, count);
   return (
@@ -204,7 +204,7 @@ export function LocationListSkeleton({
         <Skeleton className="h-3 w-24 rounded" />
       </div>
       {grid ? (
-        <div className={GRID_COLS}>
+        <div className={GRID_COLS[grid]}>
           {keys.map((id) => (
             <div key={id} className={GRID_CELL}>
               <LocationRowSkeleton />
@@ -331,18 +331,24 @@ export function SectionHeader({
 }
 
 /**
- * ขั้นต่ำของการ์ด = ความกว้างที่แถวยังโชว์ครบในบรรทัดเดียว (PcLocationRow: ชื่อ ~200 + 11+8+7rem
- * + ช่องว่าง 48 + padding 28 + ขอบ 2 ≈ 694px) · `auto-fill` ไม่ใช่ `auto-fit` — กรองเหลือ
- * สถานที่เดียวการ์ดต้องไม่ยืดเต็มแถว · `min(100%, …)` กันล้นในกล่องที่แคบกว่าขั้นต่ำ
+ * ขั้นต่ำของการ์ด = ความกว้างที่แถวยังโชว์ครบในบรรทัดเดียว (ชื่อ ~200 + คอลัมน์คงที่ + ช่องว่าง 48
+ * + padding 28 + ขอบ 2):
+ *   `md` 44rem — PcLocationRow (11+8+7rem)      ≈ 694px
+ *   `lg` 50rem — ScLocationRow (13+10+9rem)     ≈ 790px · เนื้อในการ์ด 800−30 = 770 ถึง @3xl (768)
+ *     และกล่องที่จอ 1920 (1638) ยังได้ 2 ใบ (1608)
+ * `auto-fill` ไม่ใช่ `auto-fit` — กรองเหลือสถานที่เดียวการ์ดต้องไม่ยืดเต็มแถว ·
+ * `min(100%, …)` กันล้นในกล่องที่แคบกว่าขั้นต่ำ · เขียนเต็มทั้งสตริงให้ Tailwind หาเจอ
  */
-const GRID_COLS =
-  "grid grid-cols-[repeat(auto-fill,minmax(min(100%,44rem),1fr))] gap-2";
+const GRID_COLS = {
+  md: "grid grid-cols-[repeat(auto-fill,minmax(min(100%,44rem),1fr))] gap-2",
+  lg: "grid grid-cols-[repeat(auto-fill,minmax(min(100%,50rem),1fr))] gap-2",
+} as const;
+export type InvGridMin = keyof typeof GRID_COLS;
 const GRID_CELL = "bg-card overflow-hidden rounded-xl border";
 
 const SECTION_BODY = {
   rows: "bg-card divide-y overflow-hidden rounded-xl border",
   cards: "flex flex-col gap-2",
-  grid: GRID_COLS,
 } as const;
 
 interface InvStatusSectionsListProps<T> {
@@ -358,6 +364,8 @@ interface InvStatusSectionsListProps<T> {
    * `grid` = การ์ดแยกใบไหลเป็นคอลัมน์ตามความกว้างกล่อง (จอกว้างได้หลายใบต่อบรรทัด แทนแถวยืดเต็มจอ)
    */
   readonly layout?: "rows" | "cards" | "grid";
+  /** ขั้นต่ำของการ์ดเมื่อ `layout="grid"` — ตามความกว้างที่แถวต้องใช้ */
+  readonly gridMin?: InvGridMin;
 }
 
 export function InvStatusSectionsList<T>({
@@ -369,10 +377,14 @@ export function InvStatusSectionsList<T>({
   skeletonCount = 4,
   showGlobalEmpty = true,
   layout = "rows",
+  gridMin = "md",
 }: InvStatusSectionsListProps<T>) {
   if (isLoading)
     return (
-      <LocationListSkeleton count={skeletonCount} grid={layout === "grid"} />
+      <LocationListSkeleton
+        count={skeletonCount}
+        grid={layout === "grid" ? gridMin : undefined}
+      />
     );
 
   const allEmpty = sections.every((s) => s.items.length === 0);
@@ -389,7 +401,11 @@ export function InvStatusSectionsList<T>({
           {section.items.length === 0 ? (
             <SectionEmpty icon={section.icon} title={emptyTitle} />
           ) : (
-            <div className={SECTION_BODY[layout]}>
+            <div
+              className={
+                layout === "grid" ? GRID_COLS[gridMin] : SECTION_BODY[layout]
+              }
+            >
               {section.items.map((item) => (
                 <div
                   key={getItemKey(item)}
