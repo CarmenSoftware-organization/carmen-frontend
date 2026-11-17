@@ -163,6 +163,8 @@ export default function ScComponent() {
         )}
         getItemKey={(item) => item.location_id}
         isLoading={isLoading}
+        layout="grid"
+        gridMin="lg"
       />
     </ListPageShell>
   );
