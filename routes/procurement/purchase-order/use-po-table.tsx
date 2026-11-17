@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { useTranslations } from "use-intl";
 import { HiddenValue } from "@/components/share/hidden-value";
 import { isPriceHidden } from "@/types/workflows";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, VisibilityState } from "@tanstack/react-table";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
 import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
@@ -26,6 +27,31 @@ interface UsePoTableOptions {
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onEdit: (po: PurchaseOrder) => void;
   onDelete: (po: PurchaseOrder) => void;
+  /** ความกว้างกล่องตาราง (px) — `undefined` = ยังไม่ได้วัด ใช้ชุดคอลัมน์จอกว้าง */
+  containerWidth?: number;
+}
+
+/**
+ * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
+ *
+ * "ผู้ขาย" รับที่เหลือ (`meta.grow`) ที่เหลือกว้างคงที่ ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`
+ * (นับคอลัมน์ select 55 ที่ไม่ได้เรนเดอร์ · ไม่นับ delivery/audit ที่ซ่อนเป็น default):
+ *   ครบ  55+60+225+140+90+145+90+130+150+60 = 1145
+ *   ไม่มี #                                  = 1085
+ *   ไม่มี workflow                           =  995
+ *   ไม่มีผู้จัดซื้อ                             =  905
+ *   กล่องแคบ (ไม่มีวันที่ · เลขที่ 140 · ผู้ขาย 120)  55+140+120+130+150+60 = 655  (กล่องที่จอ 768 = 662)
+ * จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px · ผู้จัดซื้อที่ถูกซ่อนลงบรรทัดรองใต้ผู้ขาย
+ * วันที่สั่งลงบรรทัดรองใต้เลขที่ · # และ workflow ดูได้ในหน้าเอกสาร
+ */
+function columnTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  return {
+    showIndex: w >= 1150,
+    showWorkflow: w >= 1090,
+    showBuyer: w >= 1000,
+    wide: w >= 910,
+  };
 }
 
 export function usePoTable({
@@ -35,7 +61,18 @@ export function usePoTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UsePoTableOptions) {
+  "use no memo";
+  const { showIndex, showWorkflow, showBuyer, wide } =
+    columnTier(containerWidth);
+  // คอลัมน์ที่ผู้ใช้เปิด/ปิดเองจากเมนู Toggle Columns — delivery/audit ซ่อนเป็น default
+  // ขั้นตามความกว้างกล่องทับเฉพาะคอลัมน์ที่บังคับซ่อน
+  const [userVisibility, setUserVisibility] = useState<VisibilityState>({
+    delivery_date: false,
+    created_at: false,
+    updated_at: false,
+  });
   const tfl = useTranslations("field");
   const t = useTranslations("procurement.purchaseOrder");
   const { dateFormat, dateTimeFormat } = useProfile();
@@ -54,26 +91,46 @@ export function usePoTable({
         const type = row.original.po_type ?? PO_TYPE.MANUAL;
         const typeConfig =
           PO_TYPE_CONFIG[type] ?? PO_TYPE_CONFIG[PO_TYPE.MANUAL];
+        const sendBack = (
+          <PoSendBackHint
+            poId={row.original.id}
+            lastAction={row.original.last_action}
+          />
+        );
+        if (wide)
+          return (
+            <div data-slot="cell-stack" className="flex flex-col items-start">
+              <div className="flex items-center gap-1.5">
+                <CellAction onClick={() => onEdit(row.original)}>
+                  {row.getValue("po_no")}
+                </CellAction>
+                {sendBack}
+              </div>
+              <span className="text-muted-foreground text-xs">
+                {typeConfig.label}
+              </span>
+            </div>
+          );
+        // กล่องแคบ: คอลัมน์วันที่ถูกซ่อน — ชนิด / วันที่สั่ง / ป้ายส่งกลับ เรียงเป็นบรรทัดรอง
+        // บรรทัดละอย่าง ("Purchase Request · 2026-06-25" บรรทัดเดียวต้องการ 179px)
         return (
           <div data-slot="cell-stack" className="flex flex-col items-start">
-            <div className="flex items-center gap-1.5">
-              <CellAction onClick={() => onEdit(row.original)}>
-                {row.getValue("po_no")}
-              </CellAction>
-              <PoSendBackHint
-                poId={row.original.id}
-                lastAction={row.original.last_action}
-              />
-            </div>
+            <CellAction onClick={() => onEdit(row.original)}>
+              {row.getValue("po_no")}
+            </CellAction>
             <span className="text-muted-foreground text-xs">
               {typeConfig.label}
             </span>
+            <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
+              {formatDate(row.original.order_date, dateFormat)}
+            </span>
+            {sendBack}
           </div>
         );
       },
       // 225 = เลขที่ยาว (108px) + ป้าย SEND BACK (85px) + padding เซลล์ 24px
-      // ไม่ถูกตัดที่ 1366px — ตารางนี้ไม่ถูกยืดเหมือน PR list size จึงต้องพอเอง
-      size: 225,
+      // กล่องแคบป้ายลงบรรทัดรอง เหลือ 140 (เลขที่ 108 + padding)
+      size: wide ? 225 : 140,
       meta: { headerTitle: tfl("poNo"), skeleton: columnSkeletons.text },
     },
     {
@@ -83,15 +140,31 @@ export function usePoTable({
         <DataGridColumnHeader column={column} title={tfl("vendor")} />
       ),
       cell: ({ row }) => (
-        <span
-          className="block truncate"
-          title={row.original.vendor?.name ?? undefined}
-        >
-          {row.original.vendor?.name}
-        </span>
+        <div data-slot="cell-stack" className="flex min-w-0 flex-col">
+          <span
+            className="block truncate"
+            title={row.original.vendor?.name ?? undefined}
+          >
+            {row.original.vendor?.name}
+          </span>
+          {/* คอลัมน์ผู้จัดซื้อถูกซ่อนในกล่องแคบ — ย้ายมาเป็นบรรทัดรอง */}
+          {!showBuyer && row.original.audit?.created?.name && (
+            <span
+              className="text-muted-foreground block truncate text-xs"
+              title={row.original.audit.created.name}
+            >
+              {row.original.audit.created.name}
+            </span>
+          )}
+        </div>
       ),
-      size: 120,
-      meta: { headerTitle: tfl("vendor"), skeleton: columnSkeletons.text },
+      // ข้อความยาวได้ — รับที่เหลือ ไม่ให้คอลัมน์สั้นห่างกันเป็นร้อยพิกเซลที่ 4K · size = ขั้นต่ำ
+      size: wide ? 140 : 120,
+      meta: {
+        headerTitle: tfl("vendor"),
+        skeleton: columnSkeletons.text,
+        grow: true,
+      },
     },
     {
       // คนที่เปิดใบสั่งซื้อใบนี้ — ใบเดียวกันคนละคนสั่งคนละเงื่อนไข ต้องรู้ว่าจะไป
@@ -126,8 +199,8 @@ export function usePoTable({
           className="justify-center"
         />
       ),
-      // 140 ให้บรรทัดรอง "Delivery 2026-04-09" ไม่ถูกตัด
-      size: 140,
+      // 145 ให้บรรทัดรอง "Delivery 2026-06-26" (118px + padding 24) ไม่ถูกตัด
+      size: 145,
       // วันที่ส่งเป็นบรรทัดรองแทนคอลัมน์แยก ให้ตารางพอดีจอ 1366px
       cell: ({ row }) => {
         const { delivery_date } = row.original;
@@ -251,7 +324,8 @@ export function usePoTable({
           </span>
         );
       },
-      size: 115,
+      // 150 = "242,490.20 USD" (121px) + padding 24 — เดิม 115 ตัดสกุลเงินของยอด 6 หลัก
+      size: 150,
       meta: {
         headerTitle: tfl("totalAmount"),
         skeleton: columnSkeletons.text,
@@ -261,21 +335,30 @@ export function usePoTable({
     ...auditColumns<PurchaseOrder>(tfl, dateTimeFormat),
   ];
 
+  // ส่งเป็นตัวแปร (ไม่ใช่ literal) — type ของ tableConfig ประกาศ state แค่ pagination/sorting
+  const responsiveTableConfig = {
+    ...tableConfig,
+    state: {
+      ...tableConfig.state,
+      columnVisibility: {
+        ...userVisibility,
+        ...(!showIndex && { index: false }),
+        ...(!showWorkflow && { workflow_name: false }),
+        ...(!showBuyer && { created_by: false }),
+        ...(!wide && { order_date: false }),
+      },
+    },
+    onColumnVisibilityChange: setUserVisibility,
+  };
+
   return useConfigTable<PurchaseOrder>({
     data: purchaseOrders,
     columns,
     totalRecords,
     params,
-    tableConfig,
     onDelete,
     hideStatus: true,
-    initialState: {
-      columnVisibility: {
-        delivery_date: false,
-        created_at: false,
-        updated_at: false,
-      },
-    },
+    tableConfig: responsiveTableConfig,
     activity: { id: (r) => r.id, label: (r) => r.po_no },
   });
 }
