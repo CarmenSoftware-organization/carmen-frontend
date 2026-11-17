@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useTranslations } from "use-intl";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, VisibilityState } from "@tanstack/react-table";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
 import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
@@ -25,6 +26,30 @@ interface UseCnTableOptions {
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onEdit: (cn: CreditNote) => void;
   onDelete: (cn: CreditNote) => void;
+  /** ความกว้างกล่องตาราง (px) — `undefined` = ยังไม่ได้วัด ใช้ชุดคอลัมน์จอกว้าง */
+  containerWidth?: number;
+}
+
+/**
+ * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
+ *
+ * "ผู้ขาย" รับที่เหลือ (`meta.grow`) ที่เหลือกว้างคงที่ ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`
+ * (นับคอลัมน์ select 55 ที่ไม่ได้เรนเดอร์ · ไม่นับ audit ที่ซ่อนเป็น default):
+ *   ครบ  55+60+130+150+135+140+115+135+150+60 = 1130
+ *   ไม่มี #                                     = 1070
+ *   ไม่มีชนิดใบ (ลงบรรทัดรองใต้เลขที่)              =  935
+ *   ไม่มีผู้สร้าง (ลงบรรทัดรองใต้ผู้ขาย)              =  795
+ *   กล่องแคบ (ไม่มีวันที่ ลงใต้เลขที่ · ผู้ขาย 120)  55+130+120+135+150+60 = 650  (กล่องที่จอ 768 = 662)
+ * จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px · # ดูได้ในหน้าเอกสาร
+ */
+function columnTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  return {
+    showIndex: w >= 1135,
+    showType: w >= 1075,
+    showCreatedBy: w >= 940,
+    wide: w >= 800,
+  };
 }
 
 export function useCnTable({
@@ -34,7 +59,17 @@ export function useCnTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseCnTableOptions) {
+  "use no memo";
+  const { showIndex, showType, showCreatedBy, wide } =
+    columnTier(containerWidth);
+  // คอลัมน์ที่ผู้ใช้เปิด/ปิดเองจากเมนู Toggle Columns — audit ซ่อนเป็น default
+  // ขั้นตามความกว้างกล่องทับเฉพาะคอลัมน์ที่บังคับซ่อน
+  const [userVisibility, setUserVisibility] = useState<VisibilityState>({
+    created_at: false,
+    updated_at: false,
+  });
   const tfl = useTranslations("field");
   const { dateFormat, dateTimeFormat } = useProfile();
 
@@ -44,14 +79,32 @@ export function useCnTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("cnNo")} />
       ),
-      cell: ({ row }) => (
-        <CellAction
-          onClick={() => onEdit(row.original)}
-          className="whitespace-nowrap"
-        >
-          {row.original.cn_no}
-        </CellAction>
-      ),
+      // คอลัมน์ชนิดใบ/วันที่ถูกซ่อนในกล่องแคบ — ลงเป็นบรรทัดรองใต้เลขที่ บรรทัดละอย่าง
+      cell: ({ row }) => {
+        const no = (
+          <CellAction
+            onClick={() => onEdit(row.original)}
+            className="whitespace-nowrap"
+          >
+            {row.original.cn_no}
+          </CellAction>
+        );
+        if (showType) return no;
+        const type = row.original.credit_note_type;
+        return (
+          <div data-slot="cell-stack" className="flex flex-col items-start">
+            {no}
+            <span className="text-muted-foreground text-xs whitespace-nowrap">
+              {CN_TYPE_CONFIG[type]?.label ?? type}
+            </span>
+            {!wide && (
+              <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
+                {formatDate(row.original.cn_date, dateFormat)}
+              </span>
+            )}
+          </div>
+        );
+      },
       size: 130,
       meta: { headerTitle: tfl("cnNo"), skeleton: columnSkeletons.text },
     },
@@ -62,15 +115,31 @@ export function useCnTable({
       ),
       // ตัดคำพร้อม title แทนการขึ้นบรรทัดใหม่ — แถวสูงไม่เท่ากันทำให้กวาดตาลงยาก
       cell: ({ row }) => (
-        <span
-          className="block truncate"
-          title={row.original.vendor_name || undefined}
-        >
-          {row.original.vendor_name}
-        </span>
+        <div data-slot="cell-stack" className="flex min-w-0 flex-col">
+          <span
+            className="block truncate"
+            title={row.original.vendor_name || undefined}
+          >
+            {row.original.vendor_name}
+          </span>
+          {/* คอลัมน์ผู้สร้างถูกซ่อนในกล่องแคบ — ย้ายมาเป็นบรรทัดรอง */}
+          {!showCreatedBy && row.original.audit?.created?.name && (
+            <span
+              className="text-muted-foreground block truncate text-xs"
+              title={row.original.audit.created.name}
+            >
+              {row.original.audit.created.name}
+            </span>
+          )}
+        </div>
       ),
-      size: 200,
-      meta: { headerTitle: tfl("vendor"), skeleton: columnSkeletons.text },
+      // ข้อความยาวได้ — รับที่เหลือ ไม่ให้คอลัมน์สั้นห่างกันเป็นร้อยพิกเซลที่ 4K · size = ขั้นต่ำ
+      size: wide ? 150 : 120,
+      meta: {
+        headerTitle: tfl("vendor"),
+        skeleton: columnSkeletons.text,
+        grow: true,
+      },
     },
     {
       accessorKey: "credit_note_type",
@@ -103,7 +172,7 @@ export function useCnTable({
       id: "created_by",
       accessorFn: (row) => row.audit?.created?.name ?? "",
       header: tfl("createdBy"),
-      size: 150,
+      size: 140,
       cell: ({ row }) => (
         <span
           className="text-muted-foreground block truncate"
@@ -188,22 +257,36 @@ export function useCnTable({
         skeleton: columnSkeletons.text,
         cellClassName: "text-right",
       },
-      size: 135,
+      // 150 = ยอด 6 หลัก + สกุลเงิน (~121px) + padding 24
+      size: 150,
     },
     ...auditColumns<CreditNote>(tfl, dateTimeFormat),
   ];
+
+  // ส่งเป็นตัวแปร (ไม่ใช่ literal) — type ของ tableConfig ประกาศ state แค่ pagination/sorting
+  const responsiveTableConfig = {
+    ...tableConfig,
+    state: {
+      ...tableConfig.state,
+      columnVisibility: {
+        ...userVisibility,
+        ...(!showIndex && { index: false }),
+        ...(!showType && { credit_note_type: false }),
+        ...(!showCreatedBy && { created_by: false }),
+        ...(!wide && { cn_date: false }),
+      },
+    },
+    onColumnVisibilityChange: setUserVisibility,
+  };
 
   return useConfigTable<CreditNote>({
     data: creditNotes,
     columns,
     totalRecords,
     params,
-    tableConfig,
+    tableConfig: responsiveTableConfig,
     onDelete,
     hideStatus: true,
-    initialState: {
-      columnVisibility: { created_at: false, updated_at: false },
-    },
     activity: { id: (r) => r.id, label: (r) => r.cn_no },
   });
 }

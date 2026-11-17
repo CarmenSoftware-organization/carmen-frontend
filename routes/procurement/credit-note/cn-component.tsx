@@ -4,6 +4,7 @@ import { listReturnState } from "@/hooks/use-list-return";
 import { useTranslations } from "use-intl";
 import { Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { useGridPagination } from "@/hooks/use-grid-pagination";
 import { toast } from "sonner";
 import {
@@ -97,7 +98,10 @@ export default function CnComponent() {
     }
   };
 
+  // ลบขอบ 1px สองข้างของ DataGridContainer ออก ได้ความกว้างที่ตารางใช้จริง
+  const [setGridBox, gridBoxWidth] = useElementWidth();
   const table = useCnTable({
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
     creditNotes,
     totalRecords,
     params,
@@ -138,25 +142,27 @@ export default function CnComponent() {
       }
     >
       {!isGridMode && (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          tableLayout={{ headerSticky: true }}
-          emptyMessage={<EmptyComponent />}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              listGridMaxH(lf.activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            tableLayout={{ headerSticky: true }}
+            emptyMessage={<EmptyComponent />}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                listGridMaxH(lf.activeFilters.length > 0),
+              )}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       {isGridMode && useInfiniteScroll && (
