@@ -41,6 +41,8 @@ import type {
 import type { FormMode } from "@/types/form";
 import { STAGE_ROLE } from "@/types/stage-role";
 import type { SrFormValues } from "./sr-form-schema";
+import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
+import { clearDimensionsDirty } from "@/lib/dimension-payload";
 import { mapSrItemToPayload } from "./sr-form-helpers";
 
 export type SrActionDialogType =
@@ -159,6 +161,7 @@ export function useSrFormActions({
 
   const currentRole = storeRequisition?.role ?? STAGE_ROLE.CREATE;
   const buCode = useBuCode();
+  const dimensionsEnabled = useLineDimensionsEnabled();
   const { currentPeriod } = useProfile();
   // ส่งใบแล้ว backend ลงวันนี้ ถ้าวันนี้อยู่นอกงวด active (งวดที่ profile ส่งมา) มันจะตีกลับ
   // SR_DATE_PATTERN_REQUIRED แน่ ๆ — รู้ล่วงหน้าได้ จึงถามในกล่องส่งใบเลย
@@ -206,7 +209,7 @@ export function useSrFormActions({
     store_requisition_detail: buildItemChanges(
       values.items,
       defaultValues.items,
-      mapSrItemToPayload,
+      (i) => mapSrItemToPayload(i, { dimensionsEnabled }),
     ),
   });
 
@@ -220,7 +223,7 @@ export function useSrFormActions({
         {
           onSuccess: () => {
             toast.success(tt("updateSuccess", { entity: t("entity") }));
-            form.reset(values);
+            form.reset(clearDimensionsDirty(values));
             queryClient.invalidateQueries({
               queryKey: [QUERY_KEYS.STORE_REQUISITIONS],
             });

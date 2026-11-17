@@ -39,6 +39,8 @@ import {
   InputSuffixQty,
 } from "@/components/ui/input/input-suffix";
 import { coerceNumberInput } from "@/lib/form-helpers";
+import { SrItemDimensions } from "./sr-item-dimensions";
+import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 
 const ProductCell = memo(function ProductCell({
   control,
@@ -446,6 +448,7 @@ export function useSrItemTable({
   const lockNonIssued = isApproverOnly || isViewOnly;
   const lockApproved = isIssuerOnly || isViewOnly;
   const lockIssued = isViewOnly;
+  const dimensionsEnabled = useLineDimensionsEnabled();
 
   const allColumns = useMemo<ColumnDef<SrItemField>[]>(() => {
     const indexColumn: ColumnDef<SrItemField> = {
@@ -651,6 +654,25 @@ export function useSrItemTable({
       ...(showSelect ? [srSelectColumn] : []),
       indexColumn,
       ...dataColumns,
+      // ปุ่ม popover dimension ต่อบรรทัด — อยู่นอกเงื่อนไข action column จึงยังเห็นตอน view/approve
+      // (lock แค่ทำให้ช่องข้างในอ่านอย่างเดียว ปุ่มยังเปิดดูได้) · ใช้ lock ฝั่งผู้ขอเหมือนช่อง product
+      ...(dimensionsEnabled
+        ? [
+            {
+              id: "dimensions",
+              header: "Dim",
+              size: 90,
+              enableSorting: false,
+              cell: ({ row }) => (
+                <SrItemDimensions
+                  form={form}
+                  index={row.index}
+                  disabled={disabled || lockNonApproved}
+                />
+              ),
+            } satisfies ColumnDef<SrItemField>,
+          ]
+        : []),
       ...(canDelete || hasAnyHistory ? [actionColumn] : []),
     ].map((col) => ({
       ...col,
@@ -676,6 +698,7 @@ export function useSrItemTable({
     tc,
     translateStageStatus,
     itemFields,
+    dimensionsEnabled,
   ]);
 
   const table = useReactTable({

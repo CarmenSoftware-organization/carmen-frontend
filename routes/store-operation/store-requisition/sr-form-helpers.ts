@@ -3,6 +3,7 @@ import type {
   SrStockMovementItem,
   StoreRequisition,
 } from "@/types/store-requisition";
+import { lineDimensionsPayload } from "@/lib/dimension-payload";
 import type { SrFormValues } from "./sr-form-schema";
 
 export function buildSrDefaultValues(
@@ -52,6 +53,8 @@ export function buildSrDefaultValues(
         _initial_stage_status: d.current_stage_status ?? "pending",
         stage_message: "",
         history: d.history ?? [],
+        dimensions: d.dimensions ?? [],
+        dimensions_dirty: false,
       })) ?? [],
   };
 }
@@ -94,6 +97,8 @@ export function buildSrDuplicateValues(
         stage_status: "",
         _initial_stage_status: "pending",
         stage_message: "",
+        dimensions: d.dimensions ?? [],
+        dimensions_dirty: false,
       })) ?? [],
   };
 }
@@ -165,7 +170,10 @@ export function srGrandTotal(items: SrFormValues["items"]): number {
   return items.reduce((sum, item) => sum + srItemAmount(item), 0);
 }
 
-export function mapSrItemToPayload(item: SrFormValues["items"][number]) {
+export function mapSrItemToPayload(
+  item: SrFormValues["items"][number],
+  options?: { dimensionsEnabled?: boolean },
+) {
   return {
     ...(item.doc_version != null ? { doc_version: item.doc_version } : {}),
     product_id: item.product_id,
@@ -174,5 +182,6 @@ export function mapSrItemToPayload(item: SrFormValues["items"][number]) {
     approved_qty: item.approved_qty,
     issued_qty: item.issued_qty,
     current_stage_status: item.current_stage_status || "pending",
+    ...lineDimensionsPayload(item, options?.dimensionsEnabled ?? false),
   };
 }
