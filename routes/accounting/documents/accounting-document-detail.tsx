@@ -389,6 +389,13 @@ export default function AccountingDocumentDetail() {
     accountingDetailInitialMode(id),
   );
   const isView = mode === "view" || sourceGenerated;
+  const canEditAccountingLines =
+    !isJournalVoucher ||
+    isNew ||
+    (journal?.source_type === "manual" &&
+      journal.jv_status === "draft" &&
+      journalCapabilities?.can_edit_accounting_fields !== false);
+  const isLineView = isView || !canEditAccountingLines;
   const editActivatedAtRef = useRef(0);
   const [documentStatus, setDocumentStatus] = useState<string>(
     isNew ? "Draft" : document.status,
@@ -606,6 +613,7 @@ export default function AccountingDocumentDetail() {
   };
 
   const addLine = useCallback(() => {
+    if (isLineView) return;
     const defaultDept = isGlVoucher ? undefined : departments[0];
     setLines((current) => [
       ...current,
@@ -627,9 +635,10 @@ export default function AccountingDocumentDetail() {
         exchangeRate: 1,
       },
     ]);
-  }, [departments, isGlVoucher]);
+  }, [departments, isGlVoucher, isLineView]);
 
   const autoBalanceEntry = useCallback(() => {
+    if (isLineView) return;
     if (
       isGlVoucher &&
       !lines.some((line) => line.account && (line.debit > 0 || line.credit > 0))
@@ -701,10 +710,10 @@ export default function AccountingDocumentDetail() {
       ];
     });
     toast.success("คำนวณและปรับยอดให้สมดุลแล้ว (Auto balanced)");
-  }, [lines, isGlVoucher]);
+  }, [lines, isGlVoucher, isLineView]);
 
   useEffect(() => {
-    if (isView) return;
+    if (isLineView) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.altKey && event.key.toLowerCase() === "a") {
         event.preventDefault();
@@ -716,9 +725,10 @@ export default function AccountingDocumentDetail() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [addLine, autoBalanceEntry, isView]);
+  }, [addLine, autoBalanceEntry, isLineView]);
 
   const updateLine = (lineId: string, patch: Partial<JournalLine>) => {
+    if (isLineView) return;
     setLines((current) =>
       current.map((line) =>
         line.id === lineId
@@ -738,6 +748,7 @@ export default function AccountingDocumentDetail() {
   };
 
   const moveLine = (lineId: string, offset: -1 | 1) => {
+    if (isLineView) return;
     setLines((current) => {
       const index = current.findIndex((line) => line.id === lineId);
       const targetIndex = index + offset;
@@ -806,6 +817,7 @@ export default function AccountingDocumentDetail() {
     }
     if (isJournalVoucher) {
       if (
+        !canEditAccountingLines &&
         !isNew &&
         journal &&
         (lines.length !== journal.lines.length ||
@@ -951,7 +963,7 @@ export default function AccountingDocumentDetail() {
                 ...input,
                 // backend แทนที่บรรทัดได้เฉพาะใบ manual — ใบจาก template (recurring/allocation/…)
                 // ส่งบรรทัดไปจะโดน 409 จึงแก้แค่ header เหมือนเดิม
-                lines: journal!.source_type === "manual" ? input.lines : [],
+                lines: canEditAccountingLines ? input.lines : [],
                 id: journal!.id,
                 doc_version: journal!.doc_version,
               })
@@ -1065,6 +1077,7 @@ export default function AccountingDocumentDetail() {
   };
 
   const deleteSelectedLines = () => {
+    if (isLineView) return;
     setLines((current) =>
       current.filter((line) => !selectedLineIds.includes(line.id)),
     );
@@ -1991,7 +2004,7 @@ export default function AccountingDocumentDetail() {
           {/* JV ไม่มีหัวตาราง "Journal Entry Details" แล้ว (PR/PO/GRN ไม่มีหัวก้อน
               รายการ — เส้นคั่นใต้ฟอร์มหัวใบบอกจังหวะเอง) แถบนี้เหลือไว้เฉพาะเมื่อมี
               ป้ายงวดปิด หรือปุ่มแก้แถวตอนแก้ไข */}
-          {(!isJournalVoucher || isPeriodLocked || !isView) && (
+          {(!isJournalVoucher || isPeriodLocked || !isLineView) && (
             <CardHeader className={usesVoucherDetailPattern ? "px-0" : "px-4"}>
               <div className="flex flex-wrap items-center gap-2">
                 {!isJournalVoucher && (
@@ -2011,7 +2024,7 @@ export default function AccountingDocumentDetail() {
                   </Badge>
                 )}
               </div>
-              {!isView && (
+              {!isLineView && (
                 <CardAction className="flex flex-wrap items-center gap-2">
                   {!isBalanced && (!isGlVoucher || transactionCount > 0) && (
                     <Button
@@ -2164,7 +2177,7 @@ export default function AccountingDocumentDetail() {
                           </td>
                           <td className="h-12 px-3">
                             {isGlVoucher ? (
-                              isView ? (
+                              isLineView ? (
                                 (line.accountLabel ??
                                 optionLabel(accounts, line.account))
                               ) : (
@@ -2189,7 +2202,7 @@ export default function AccountingDocumentDetail() {
                                   fitContent
                                 />
                               )
-                            ) : isView ? (
+                            ) : isLineView ? (
                               line.departmentLabel &&
                               line.departmentLabel !== "—" &&
                               line.departmentLabel !== line.department ? (
@@ -2222,7 +2235,7 @@ export default function AccountingDocumentDetail() {
                           </td>
                           <td className="h-12 px-3 font-medium">
                             {isGlVoucher ? (
-                              isView ? (
+                              isLineView ? (
                                 line.departmentLabel &&
                                 line.departmentLabel !== "—" &&
                                 line.departmentLabel !== line.department ? (
@@ -2255,7 +2268,7 @@ export default function AccountingDocumentDetail() {
                                   fitContent
                                 />
                               )
-                            ) : isView ? (
+                            ) : isLineView ? (
                               (line.accountLabel ??
                               optionLabel(accounts, line.account))
                             ) : (
@@ -2274,7 +2287,7 @@ export default function AccountingDocumentDetail() {
                             )}
                           </td>
                           <td className="h-12 px-3">
-                            {isView ? (
+                            {isLineView ? (
                               line.comment
                             ) : (
                               <Input
@@ -2292,7 +2305,7 @@ export default function AccountingDocumentDetail() {
                             )}
                           </td>
                           <td className="h-12 px-3">
-                            {isGlVoucher && !isView ? (
+                            {isGlVoucher && !isLineView ? (
                               <LookupCurrency
                                 value={currencyIdFor(line.currency ?? "THB")}
                                 onValueChange={(currency) =>
@@ -2305,7 +2318,7 @@ export default function AccountingDocumentDetail() {
                             )}
                           </td>
                           <td className="h-12 px-3 text-right tabular-nums">
-                            {isGlVoucher && !isView ? (
+                            {isGlVoucher && !isLineView ? (
                               <Input
                                 type="number"
                                 min={0.00001}
@@ -2324,7 +2337,7 @@ export default function AccountingDocumentDetail() {
                             )}
                           </td>
                           <td className="h-12 px-3 text-right tabular-nums">
-                            {isView ? (
+                            {isLineView ? (
                               line.debit.toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                               })
@@ -2353,7 +2366,7 @@ export default function AccountingDocumentDetail() {
                             )}
                           </td>
                           <td className="h-12 px-3 text-right tabular-nums">
-                            {isView ? (
+                            {isLineView ? (
                               line.credit.toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                               })
@@ -2421,7 +2434,8 @@ export default function AccountingDocumentDetail() {
                               {/* GL: เปิดดูได้เฉพาะบรรทัดที่บัญชีมี dimension ตามกฎผังบัญชี
                                   (หรือมีค่าบันทึกไว้) — ไม่มีเลยกดแล้วได้ dialog ว่าง */}
                               {(!isGlVoucher ||
-                                (isView && visibleDimensions.length > 0)) && (
+                                (isLineView &&
+                                  visibleDimensions.length > 0)) && (
                                 <Button
                                   type="button"
                                   variant="ghost"
@@ -2438,7 +2452,7 @@ export default function AccountingDocumentDetail() {
                                   />
                                 </Button>
                               )}
-                              {!isView && lines.length > 1 && (
+                              {!isLineView && lines.length > 1 && (
                                 <Button
                                   type="button"
                                   variant="ghost"
@@ -2465,7 +2479,7 @@ export default function AccountingDocumentDetail() {
                           className={`bg-muted/20 border-b ${isSelected ? "bg-muted/40" : ""}`}
                         >
                           <td className="w-16 px-2 py-0.5">
-                            {!isView && (
+                            {!isLineView && (
                               <div className="bg-muted/40 mx-auto flex w-fit rounded-md border p-0.5">
                                 <Button
                                   type="button"
@@ -2541,7 +2555,7 @@ export default function AccountingDocumentDetail() {
                                       : (selected?.code ??
                                         lineRef.value_code ??
                                         "—");
-                                  if (!isView && isTyped) {
+                                  if (!isLineView && isTyped) {
                                     return (
                                       <div
                                         key={dimension.id}
@@ -2576,7 +2590,7 @@ export default function AccountingDocumentDetail() {
                                       </div>
                                     );
                                   }
-                                  if (!isView) {
+                                  if (!isLineView) {
                                     return (
                                       <Select
                                         key={dimension.id}
@@ -2973,7 +2987,7 @@ export default function AccountingDocumentDetail() {
                     <FieldLabel>
                       {isJournalVoucher ? t("costCenter") : t("department")}
                     </FieldLabel>
-                    {isView ? (
+                    {isLineView ? (
                       <FieldPlainText>
                         {selectedLine.departmentLabel &&
                         selectedLine.departmentLabel !== "—" &&
@@ -3016,7 +3030,7 @@ export default function AccountingDocumentDetail() {
                   </Field>
                   <Field>
                     <FieldLabel>{t("chartOfAccount")}</FieldLabel>
-                    {isView ? (
+                    {isLineView ? (
                       <FieldPlainText>
                         {optionLabel(accounts, selectedLine.account)}
                       </FieldPlainText>
@@ -3037,7 +3051,7 @@ export default function AccountingDocumentDetail() {
                   </Field>
                   <Field>
                     <FieldLabel>{t("comment")}</FieldLabel>
-                    {isView ? (
+                    {isLineView ? (
                       <FieldPlainText>{selectedLine.comment}</FieldPlainText>
                     ) : (
                       <Input
@@ -3054,7 +3068,7 @@ export default function AccountingDocumentDetail() {
                   <div className="grid grid-cols-2 gap-4">
                     <Field>
                       <FieldLabel>{t("debit")}</FieldLabel>
-                      {isView ? (
+                      {isLineView ? (
                         <FieldPlainText className="tabular-nums">
                           {selectedLine.debit.toLocaleString(undefined, {
                             minimumFractionDigits: 2,
@@ -3079,7 +3093,7 @@ export default function AccountingDocumentDetail() {
                     </Field>
                     <Field>
                       <FieldLabel>{t("credit")}</FieldLabel>
-                      {isView ? (
+                      {isLineView ? (
                         <FieldPlainText className="tabular-nums">
                           {selectedLine.credit.toLocaleString(undefined, {
                             minimumFractionDigits: 2,
@@ -3106,7 +3120,7 @@ export default function AccountingDocumentDetail() {
                   <div className="grid grid-cols-2 gap-4">
                     <Field>
                       <FieldLabel>{t("currency")}</FieldLabel>
-                      {isView ? (
+                      {isLineView ? (
                         <FieldPlainText>
                           {selectedLine.currency ?? "THB"}
                         </FieldPlainText>
@@ -3122,7 +3136,7 @@ export default function AccountingDocumentDetail() {
                     </Field>
                     <Field>
                       <FieldLabel>Exchange Rate</FieldLabel>
-                      {isView ? (
+                      {isLineView ? (
                         <FieldPlainText className="tabular-nums">
                           {selectedLine.exchangeRate ?? 1}
                         </FieldPlainText>
@@ -3152,7 +3166,7 @@ export default function AccountingDocumentDetail() {
                   <div className="grid grid-cols-2 gap-4">
                     <Field>
                       <FieldLabel>{t("taxCode")}</FieldLabel>
-                      {isView ? (
+                      {isLineView ? (
                         <FieldPlainText>
                           {optionLabel(TAX_CODES, selectedLine.taxCode)}
                         </FieldPlainText>
@@ -3173,7 +3187,7 @@ export default function AccountingDocumentDetail() {
                     </Field>
                     <Field>
                       <FieldLabel>{t("whtCode")}</FieldLabel>
-                      {isView ? (
+                      {isLineView ? (
                         <FieldPlainText>
                           {optionLabel(WHT_CODES, selectedLine.whtCode)}
                         </FieldPlainText>
@@ -3205,7 +3219,7 @@ export default function AccountingDocumentDetail() {
                     <FieldLabel htmlFor="budget-control">
                       {t("applyBudgetControl")}
                     </FieldLabel>
-                    {isView ? (
+                    {isLineView ? (
                       <Badge
                         variant={
                           selectedLine.budgetControlled
@@ -3227,7 +3241,7 @@ export default function AccountingDocumentDetail() {
                   </div>
                   <Field>
                     <FieldLabel>{t("budget")}</FieldLabel>
-                    {isView ? (
+                    {isLineView ? (
                       <FieldPlainText>
                         {optionLabel(BUDGETS, selectedLine.budget)}
                       </FieldPlainText>
@@ -3255,7 +3269,7 @@ export default function AccountingDocumentDetail() {
                   <h3 className="text-sm font-semibold">{t("dimension")}</h3>
                   <Field>
                     <FieldLabel>{t("dimension")}</FieldLabel>
-                    {isView ? (
+                    {isLineView ? (
                       <FieldPlainText>
                         {optionLabel(DIMENSIONS, selectedLine.dimension)}
                       </FieldPlainText>
@@ -3282,7 +3296,7 @@ export default function AccountingDocumentDetail() {
       </Sheet>
 
       <Dialog
-        open={isGlVoucher && isView && !!selectedLine}
+        open={isGlVoucher && isLineView && !!selectedLine}
         onOpenChange={(open) => !open && setSelectedLineId(null)}
       >
         <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-2xl">

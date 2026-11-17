@@ -1,5 +1,5 @@
 import { DimensionValueInput } from "@/components/dimension/dimension-value-input";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "use-intl";
 import { LookupChartOfAccountById } from "@/components/lookup/lookup-chart-of-account-by-id";
@@ -15,7 +15,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldInput, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldInput,
+  FieldLabel,
+  FieldPlainText,
+} from "@/components/ui/field";
+import { Textarea } from "@/components/ui/textarea";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useChartOfAccountById } from "@/hooks/use-chart-of-account";
 import {

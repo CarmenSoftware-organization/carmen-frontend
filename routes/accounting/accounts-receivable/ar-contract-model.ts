@@ -1,4 +1,5 @@
 import { round2 } from "@/lib/currency-utils";
+import type { DimensionRef } from "@/types/gl-dimension";
 import { arLineAmounts, type ArDraftLine } from "./ar-invoice-draft-model";
 
 export interface ArContractDocument {
@@ -102,7 +103,30 @@ const legacyKey = "carmen.ar-preview.customer-master.v1";
 
 export function readContractSamples(bu: string): ContractSamples {
   const stored = sessionStorage.getItem(storageKey(bu));
-  if (stored) return JSON.parse(stored);
+  if (stored) {
+    const data = JSON.parse(stored) as ContractSamples;
+    // Normalize old session keys on read; the next save persists the renamed fields.
+    for (const record of data.records) {
+      for (const line of record.lines ?? []) {
+        line.dimensions = line.dimensions?.map((raw) => {
+          const { gl_dimension_id, gl_dimension_value_id, ...ref } =
+            raw as DimensionRef & {
+              gl_dimension_id?: string;
+              gl_dimension_value_id?: string | null;
+            };
+          return {
+            ...ref,
+            dimension_id: ref.dimension_id ?? gl_dimension_id!,
+            ...(ref.dimension_value_id === undefined &&
+            gl_dimension_value_id !== undefined
+              ? { dimension_value_id: gl_dimension_value_id }
+              : {}),
+          };
+        });
+      }
+    }
+    return data;
+  }
   const legacy = sessionStorage.getItem(legacyKey);
   const migrated = sessionStorage.getItem(`${legacyKey}.migrated-bu`);
   if (legacy && !migrated) {

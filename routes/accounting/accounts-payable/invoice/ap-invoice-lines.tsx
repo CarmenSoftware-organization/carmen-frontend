@@ -875,11 +875,27 @@ function InvoiceDimensions({
         );
         return (
           <Field key={dimension.id}>
-            <FieldLabel>{dimension.name}</FieldLabel>
+            <FieldLabel
+              required={rules.data?.some(
+                (rule) =>
+                  rule.dimension_id === dimension.id &&
+                  rule.requirement === "mandatory",
+              )}
+            >
+              {dimension.name}
+            </FieldLabel>
             <DimensionValueInput
               dimension={dimension}
               value={value}
-              disabled={!editable || dimensions.isLoading || values.isLoading}
+              disabled={
+                !editable ||
+                state.isError ||
+                !accountQuery.data ||
+                accountQuery.isLoading ||
+                rules.isLoading ||
+                dimensions.isLoading ||
+                values.isLoading
+              }
               onChange={(next) => {
                 const rest = selected.filter(
                   (item) => item.dimension_id !== dimension.id,

@@ -21,6 +21,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
+import { useDimensionValueFormatter } from "@/hooks/use-dimension-value-formatter";
 import { formatDate } from "@/lib/date-utils";
 import { ApDetailGrid } from "../accounts-payable/shared/ap-detail-grid";
 import { arLineAmounts, type ArDraftLine } from "./ar-invoice-draft-model";
@@ -412,25 +413,37 @@ function CostCenterValue({ id }: { readonly id?: string | null }) {
   return <>{data ? `${data.code} · ${data.name}` : "—"}</>;
 }
 function ContractDimensions({ line }: { readonly line: ArDraftLine }) {
-  const { data } = useGlDimensions();
+  const dimensions = line.dimensions ?? [];
+  const { data } = useGlDimensions(dimensions.length > 0);
+  const values = useGlDimensionValues(
+    dimensions.some((item) => !!item.dimension_value_id && !item.value_code),
+  );
+  const formatValue = useDimensionValueFormatter();
   return (
     <>
-      {line.dimensions?.map((dimension) => (
-        <Field key={dimension.gl_dimension_id}>
+      {dimensions.map((dimension) => (
+        <Field key={dimension.dimension_id}>
           <FieldLabel>
-            {data?.find((item) => item.id === dimension.gl_dimension_id)
-              ?.name ?? "Dimension"}
+            {data?.find((item) => item.id === dimension.dimension_id)?.name ??
+              dimension.dimension_name ??
+              dimension.dimension_code ??
+              "Dimension"}
           </FieldLabel>
           <FieldPlainText>
-            <ContractDimensionValue valueId={dimension.gl_dimension_value_id} />
+            {formatValue(
+              {
+                ...dimension,
+                value_code:
+                  dimension.value_code ??
+                  values.data?.find(
+                    (item) => item.id === dimension.dimension_value_id,
+                  )?.code,
+              },
+              data?.find((item) => item.id === dimension.dimension_id),
+            ) || "—"}
           </FieldPlainText>
         </Field>
       ))}
     </>
   );
-}
-function ContractDimensionValue({ valueId }: { readonly valueId: string }) {
-  const { data } = useGlDimensionValues();
-  const value = data?.find((item) => item.id === valueId);
-  return <>{value ? `${value.code} · ${value.name}` : "—"}</>;
 }

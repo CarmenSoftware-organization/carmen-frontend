@@ -160,7 +160,7 @@ vi.mock("./ar-invoice-line-dialog", () => ({
           vat_chart_of_accounts_id: "tax",
           vat_cost_center_id: "general",
           dimensions: [
-            { gl_dimension_id: "market", gl_dimension_value_id: "direct" },
+            { dimension_id: "market", dimension_value_id: "direct" },
           ],
         })
       }
@@ -245,7 +245,7 @@ it("creates a real invoice with the complete header and detail payload", async (
             vat_tax_profile_id: "vat",
             vat_chart_of_accounts_id: "tax",
             dimensions: [
-              { gl_dimension_id: "market", gl_dimension_value_id: "direct" },
+              { dimension_id: "market", dimension_value_id: "direct" },
             ],
           }),
         ],
@@ -289,7 +289,7 @@ it("updates the original document version and preserves untouched line metadata"
         discount_is_override: true,
         discount_amount: 0,
         tb_ar_invoice_detail_dimension: [
-          { gl_dimension_id: "market", gl_dimension_value_id: "direct" },
+          { dimension_id: "market", dimension_value_id: "direct" },
         ],
       },
     ],

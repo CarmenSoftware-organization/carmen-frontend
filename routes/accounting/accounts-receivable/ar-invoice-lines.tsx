@@ -12,6 +12,11 @@ import {
 import { Field, FieldLabel, FieldPlainText } from "@/components/ui/field";
 import { CellAction } from "@/components/ui/cell-action";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
+import { useDimensionValueFormatter } from "@/hooks/use-dimension-value-formatter";
+import {
+  useGlDimensions,
+  useGlDimensionValues,
+} from "@/hooks/use-gl-dimensions";
 import { ApDetailGrid } from "../accounts-payable/shared/ap-detail-grid";
 import {
   arLineAmounts,
@@ -193,6 +198,11 @@ function InvoiceLineView({
     line.dimensions ??
     (line as ArInvoiceLineRecord).tb_ar_invoice_detail_dimension ??
     [];
+  const definitions = useGlDimensions(dimensions.length > 0);
+  const values = useGlDimensionValues(
+    dimensions.some((item) => !!item.dimension_value_id && !item.value_code),
+  );
+  const formatValue = useDimensionValueFormatter();
   return (
     <Dialog
       open
@@ -254,11 +264,25 @@ function InvoiceLineView({
           {dimensions.length > 0 && (
             <div className="flex flex-wrap gap-3">
               {dimensions.map((item) => (
-                <Field key={item.gl_dimension_id}>
+                <Field key={item.dimension_id}>
                   <FieldLabel>
                     {item.dimension_code || t("dimensions")}
                   </FieldLabel>
-                  <FieldPlainText>{item.value_code || "—"}</FieldPlainText>
+                  <FieldPlainText>
+                    {formatValue(
+                      {
+                        ...item,
+                        value_code:
+                          item.value_code ??
+                          values.data?.find(
+                            (value) => value.id === item.dimension_value_id,
+                          )?.code,
+                      },
+                      definitions.data?.find(
+                        (dimension) => dimension.id === item.dimension_id,
+                      ),
+                    ) || "—"}
+                  </FieldPlainText>
                 </Field>
               ))}
             </div>

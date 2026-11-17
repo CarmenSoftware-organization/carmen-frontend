@@ -1,4 +1,5 @@
 import { toDimensionPayload } from "@/lib/dimension-payload";
+import { round2 } from "@/lib/currency-utils";
 import type { DimensionRef } from "@/types/gl-dimension";
 export type ArAmount = number | string;
 
@@ -52,6 +53,9 @@ export interface ArDraftLine extends ArInvoiceLineInput {
 
 export interface ArInvoiceLineRecord extends Omit<ArDraftLine, "dimensions"> {
   total_amount: ArAmount;
+  sub_total_amount?: ArAmount;
+  net_amount?: ArAmount;
+  unpaid_amount?: ArAmount;
   tb_ar_invoice_detail_dimension?: DimensionRef[];
 }
 

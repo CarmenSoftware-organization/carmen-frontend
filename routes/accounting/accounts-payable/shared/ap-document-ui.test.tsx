@@ -514,9 +514,7 @@ describe("AP document layout and persistence contract", () => {
         lines: [
           {
             description: "Changed service",
-            dimensions: [
-              { dimension_id: "project", dimension_value_id: "p1" },
-            ],
+            dimensions: [{ dimension_id: "project", dimension_value_id: "p1" }],
             vat_chart_of_accounts_id: "vat-account",
             vat_cost_center_id: "vat-cc",
             cr_chart_of_accounts_id: "ap-account",
@@ -525,6 +523,133 @@ describe("AP document layout and persistence contract", () => {
         ],
       },
     });
+  });
+
+  it("marks mandatory typed dimensions and locks them until account/rules are safe to edit", async () => {
+    state.invoice = {
+      ...invoice,
+      lines: invoice.lines!.map((line) => ({
+        ...line,
+        dimensions: [
+          { dimension_id: "project", value: "Direct", data_type: "string" },
+        ],
+      })),
+    };
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    let accountReady = false;
+    let failRules = false;
+    let finishAccount!: (response: Response) => void;
+    const account = {
+      id: "account",
+      code: "5000",
+      description_1: "Expense",
+      allowed_dimensions: ["project"],
+    };
+    const response = (data: unknown) =>
+      new Response(
+        JSON.stringify({
+          data,
+          ...(Array.isArray(data)
+            ? {
+                paginate: {
+                  total: data.length,
+                  page: 1,
+                  perpage: 100,
+                  pages: 1,
+                },
+              }
+            : {}),
+        }),
+      );
+    vi.spyOn(httpClient, "get").mockImplementation(async (url) => {
+      const path = String(url);
+      if (path.includes("/chart-of-accounts/account")) {
+        if (!accountReady)
+          return new Promise<Response>((resolve) => {
+            finishAccount = resolve;
+          });
+        return response(account);
+      }
+      if (path.includes("/account-dimension-rules")) {
+        if (failRules)
+          return new Response(
+            JSON.stringify({ message: "Rules unavailable" }),
+            { status: 500 },
+          );
+        return response([
+          {
+            id: "rule",
+            chart_of_accounts_id: "account",
+            dimension_id: "project",
+            requirement: "mandatory",
+            doc_version: 1,
+          },
+        ]);
+      }
+      if (path.includes("/dimensions"))
+        return response([
+          {
+            id: "project",
+            code: "PRJ",
+            name: "Project",
+            is_active: true,
+            data_type: "string",
+            doc_version: 1,
+          },
+        ]);
+      return response([]);
+    });
+    render(
+      <MemoryRouter initialEntries={["/invoice"]}>
+        <QueryClientProvider client={client}>
+          <IntlProvider locale="en" messages={en}>
+            <Routes>
+              <Route path="/:id" element={<ApInvoiceDetail />} />
+            </Routes>
+          </IntlProvider>
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Edit" }));
+    await userEvent.click(screen.getByRole("button", { name: "Edit item 1" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: /^Dimensions/ }),
+    );
+    const input = await screen.findByRole("textbox", { name: "Project" });
+    expect(input).toBeDisabled();
+    expect(
+      within(input.closest<HTMLElement>("[data-slot=field]")!).getByText("*"),
+    ).toBeVisible();
+    accountReady = true;
+    await act(async () => finishAccount(response(account)));
+    await waitFor(() => expect(input).toBeEnabled());
+    fireEvent.change(input, { target: { value: "Business" } });
+    failRules = true;
+    await act(async () => {
+      await client.invalidateQueries({
+        queryKey: ["coa-dimension-rules", "BU", "account"],
+      });
+    });
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      en.accounting.accountsPayable.ui.dimensionLoadError,
+    );
+    expect(input).toBeDisabled();
+    failRules = false;
+    await userEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(input).toBeEnabled());
+    expect(input).toHaveValue("Business");
+    await userEvent.click(
+      within(screen.getByRole("dialog")).getAllByRole("button", {
+        name: "Close",
+      })[0],
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Save Draft" }));
+    await waitFor(() => expect(state.save).toHaveBeenCalled());
+    expect(state.save.mock.calls[0][0].input.lines[0].dimensions).toEqual([
+      { dimension_id: "project", value: "Business" },
+    ]);
   });
 
   it("opens existing Invoice line details without writable controls in view mode", async () => {

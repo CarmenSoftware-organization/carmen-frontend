@@ -28,9 +28,7 @@ describe("Contract sample persistence", () => {
     reference_info: "Booking A\nGuest B",
     date_from: "2026-01-01",
     date_to: "2026-01-31",
-    dimensions: [
-      { gl_dimension_id: "department", gl_dimension_value_id: "rooms" },
-    ],
+    dimensions: [{ dimension_id: "department", dimension_value_id: "rooms" }],
   };
 
   it("saves complete contract lines and derives the header amount instead of trusting an entered total", () => {
@@ -78,6 +76,56 @@ describe("Contract sample persistence", () => {
         { ...completeLine, vat_rate: 0, vat_chart_of_accounts_id: null },
       ]),
     ).toBeUndefined();
+  });
+  it("preserves legacy lookup and typed values when saved session keys are renamed", () => {
+    const original = readContractSamples("A").records[0];
+    const expectedDimensions = [
+      {
+        dimension_id: "department",
+        dimension_value_id: "rooms",
+        value_code: "ROOM",
+      },
+      { dimension_id: "quantity", value_number: 0, data_type: "number" },
+      { dimension_id: "enabled", value_boolean: false, data_type: "boolean" },
+      { dimension_id: "visit", value_date: "2026-11-17", data_type: "date" },
+      { dimension_id: "channel", value: "Direct", data_type: "string" },
+    ];
+    sessionStorage.setItem(
+      "carmen.ar.contract-samples.v1.A",
+      JSON.stringify({
+        records: [
+          {
+            ...original,
+            lines: [
+              {
+                ...completeLine,
+                dimensions: [
+                  {
+                    gl_dimension_id: "department",
+                    gl_dimension_value_id: "rooms",
+                    value_code: "ROOM",
+                  },
+                  ...expectedDimensions.slice(1),
+                ],
+              },
+            ],
+          },
+        ],
+        counters: { "2026": 7 },
+      }),
+    );
+    const read = readContractSamples("A");
+    expect(read.records[0].lines?.[0].dimensions).toEqual(expectedDimensions);
+    expect(read.counters).toEqual({ "2026": 7 });
+    saveContractSample("A", {
+      ...read.records[0],
+      description: "Updated header",
+    });
+    const stored = JSON.parse(
+      sessionStorage.getItem("carmen.ar.contract-samples.v1.A")!,
+    );
+    expect(stored.records[0].lines[0].dimensions).toEqual(expectedDimensions);
+    expect(JSON.stringify(stored)).not.toContain("gl_dimension_");
   });
   it("numbers by start year and keeps the sequence after edits and deletions", () => {
     const original = readContractSamples("A").records[0];
