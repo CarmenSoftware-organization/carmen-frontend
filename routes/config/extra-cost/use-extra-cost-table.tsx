@@ -41,7 +41,11 @@ export function useExtraCostTable({
         <DataGridColumnHeader column={column} title={tfl("name")} />
       ),
       cell: ({ row }) => (
-        <CellAction onClick={() => onEdit(row.original)}>
+        <CellAction
+          className="block max-w-full truncate"
+          title={row.original.name}
+          onClick={() => onEdit(row.original)}
+        >
           {row.getValue("name") || "..."}
         </CellAction>
       ),
@@ -52,9 +56,11 @@ export function useExtraCostTable({
     ...auditColumns<ExtraCost>(tfl, dateTimeFormat),
   ];
 
+  // tablet budget: select 55 + index 60 + actions 60 + name 320 + status 100 = 595 ≤ 662
+
   return useConfigListTable<ExtraCost>({
     containerWidth,
-    layout: { grow: "is_active", widths: { name: 240 } },
+    layout: { grow: "is_active", widths: { name: 320 } },
     data,
     columns,
     totalRecords,
