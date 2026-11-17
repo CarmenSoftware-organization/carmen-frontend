@@ -74,9 +74,9 @@ export function StatusStrip<K extends string>({
 }) {
   const total = segments.reduce((sum, s) => sum + s.value, 0);
   return (
-    <div className="bg-card mt-4 rounded-xl border">
+    <div className="bg-card @container mt-4 rounded-xl border">
       {header && (
-        <div className="flex flex-col gap-3 border-b px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b px-3 py-2.5 @xl:flex-row @xl:items-center @xl:justify-between">
           {header}
         </div>
       )}
@@ -100,7 +100,8 @@ export function StatusStrip<K extends string>({
               />
             ))}
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        {/* ปุ่มสถานะกับตัวเลขความคืบหน้าอยู่ด้วยกันทางซ้าย — จอ 4K ไม่ถ่างห่างกันสุดขอบ */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="-ml-2 flex flex-wrap items-center gap-0.5">
             <StripChip
               label={allLabel}
@@ -163,7 +164,8 @@ export function LocationRow({
   readonly children: React.ReactNode;
 }) {
   return (
-    <div className="hover:bg-muted/40 relative py-2.5 pr-3 pl-4 transition-colors">
+    // @container — แถวเลือกเลย์เอาต์จากความกว้างของตัวเอง (การ์ดในกริดแคบได้แม้จอกว้าง)
+    <div className="hover:bg-muted/40 @container relative py-2.5 pr-3 pl-4 transition-colors">
       <span
         className={cn("absolute inset-y-0 left-0 w-1", SECTION_TONE_BG[tone])}
         aria-hidden="true"
@@ -188,20 +190,34 @@ function LocationRowSkeleton() {
 
 export function LocationListSkeleton({
   count = 4,
+  grid = false,
 }: {
   readonly count?: number;
+  /** โครงเดียวกับ `layout="grid"` — ไม่งั้นเนื้อหากระโดดตอนข้อมูลมา */
+  readonly grid?: boolean;
 }) {
+  const keys = SKELETON_KEYS.slice(0, count);
   return (
     <div className="mt-5" aria-busy="true" aria-live="polite">
       <div className="mb-2 flex items-center gap-2 px-1">
         <Skeleton className="size-2 rounded-full" />
         <Skeleton className="h-3 w-24 rounded" />
       </div>
-      <div className="bg-card divide-y overflow-hidden rounded-xl border">
-        {SKELETON_KEYS.slice(0, count).map((id) => (
-          <LocationRowSkeleton key={id} />
-        ))}
-      </div>
+      {grid ? (
+        <div className={GRID_COLS}>
+          {keys.map((id) => (
+            <div key={id} className={GRID_CELL}>
+              <LocationRowSkeleton />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-card divide-y overflow-hidden rounded-xl border">
+          {keys.map((id) => (
+            <LocationRowSkeleton key={id} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -263,17 +279,20 @@ export function InvSearchBar({
   readonly extras?: React.ReactNode;
 }) {
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2">
-      <div className="min-w-40 flex-1 [&>div]:w-full">
-        <SearchInput
-          defaultValue={search}
-          onSearch={onSearch}
-          onInputChange={onSearch}
-          containerClassName="w-full"
-          inputClassName="border-border/40 hover:border-foreground/50 focus-visible:border-primary bg-card h-9 rounded-lg border pr-9 text-sm shadow-none transition-colors focus-visible:ring-0"
-        />
+    // ช่องค้นหากว้างคงที่เมื่อแถบกว้างพอ — ตัวกรอง (extras) อยู่ติดช่องค้นหา ไม่ถูกดันไปขอบขวา
+    <div className="@container mt-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="min-w-40 flex-1 @xl:w-[23.75rem] @xl:flex-none [&>div]:w-full">
+          <SearchInput
+            defaultValue={search}
+            onSearch={onSearch}
+            onInputChange={onSearch}
+            containerClassName="w-full"
+            inputClassName="border-border/40 hover:border-foreground/50 focus-visible:border-primary bg-card h-9 rounded-lg border pr-9 text-sm shadow-none transition-colors focus-visible:ring-0"
+          />
+        </div>
+        {extras}
       </div>
-      {extras}
     </div>
   );
 }
@@ -311,6 +330,21 @@ export function SectionHeader({
   );
 }
 
+/**
+ * ขั้นต่ำของการ์ด = ความกว้างที่แถวยังโชว์ครบในบรรทัดเดียว (PcLocationRow: ชื่อ ~200 + 11+8+7rem
+ * + ช่องว่าง 48 + padding 28 + ขอบ 2 ≈ 694px) · `auto-fill` ไม่ใช่ `auto-fit` — กรองเหลือ
+ * สถานที่เดียวการ์ดต้องไม่ยืดเต็มแถว · `min(100%, …)` กันล้นในกล่องที่แคบกว่าขั้นต่ำ
+ */
+const GRID_COLS =
+  "grid grid-cols-[repeat(auto-fill,minmax(min(100%,44rem),1fr))] gap-2";
+const GRID_CELL = "bg-card overflow-hidden rounded-xl border";
+
+const SECTION_BODY = {
+  rows: "bg-card divide-y overflow-hidden rounded-xl border",
+  cards: "flex flex-col gap-2",
+  grid: GRID_COLS,
+} as const;
+
 interface InvStatusSectionsListProps<T> {
   readonly sections: ReadonlyArray<InvStatusSection<T>>;
   readonly emptyTitle: string;
@@ -319,8 +353,11 @@ interface InvStatusSectionsListProps<T> {
   readonly isLoading?: boolean;
   readonly skeletonCount?: number;
   readonly showGlobalEmpty?: boolean;
-  /** `rows` = แถวต่อกันในกรอบเดียว (หน้ารายการสถานที่) · `cards` = การ์ดแยกใบ (ประวัติ) */
-  readonly layout?: "rows" | "cards";
+  /**
+   * `rows` = แถวต่อกันในกรอบเดียว · `cards` = การ์ดแยกใบเรียงลง (ประวัติ) ·
+   * `grid` = การ์ดแยกใบไหลเป็นคอลัมน์ตามความกว้างกล่อง (จอกว้างได้หลายใบต่อบรรทัด แทนแถวยืดเต็มจอ)
+   */
+  readonly layout?: "rows" | "cards" | "grid";
 }
 
 export function InvStatusSectionsList<T>({
@@ -333,7 +370,10 @@ export function InvStatusSectionsList<T>({
   showGlobalEmpty = true,
   layout = "rows",
 }: InvStatusSectionsListProps<T>) {
-  if (isLoading) return <LocationListSkeleton count={skeletonCount} />;
+  if (isLoading)
+    return (
+      <LocationListSkeleton count={skeletonCount} grid={layout === "grid"} />
+    );
 
   const allEmpty = sections.every((s) => s.items.length === 0);
 
@@ -349,15 +389,12 @@ export function InvStatusSectionsList<T>({
           {section.items.length === 0 ? (
             <SectionEmpty icon={section.icon} title={emptyTitle} />
           ) : (
-            <div
-              className={
-                layout === "rows"
-                  ? "bg-card divide-y overflow-hidden rounded-xl border"
-                  : "flex flex-col gap-2"
-              }
-            >
+            <div className={SECTION_BODY[layout]}>
               {section.items.map((item) => (
-                <div key={getItemKey(item)}>
+                <div
+                  key={getItemKey(item)}
+                  className={cn(layout === "grid" && GRID_CELL)}
+                >
                   {renderItem(item, section.tone)}
                 </div>
               ))}

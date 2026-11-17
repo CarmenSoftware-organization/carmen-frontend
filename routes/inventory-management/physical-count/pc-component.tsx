@@ -338,6 +338,7 @@ export default function PcComponent() {
           )}
           getItemKey={(item) => item.id}
           isLoading={isLoading}
+          layout="grid"
         />
       )}
 

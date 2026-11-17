@@ -40,10 +40,11 @@ const PROGRESS_TONE: Record<SectionTone, "warning" | "success" | "info"> = {
 
 /**
  * คอลัมน์ของแถวต้องกว้างคงที่ทุกแถว — แต่ละแถวเป็น grid ของตัวเอง ถ้าใช้ `auto`
- * ตัวเลข/ปุ่มจะเยื้องกันตามความยาวข้อความของแต่ละแถว
+ * ตัวเลข/ปุ่มจะเยื้องกันตามความยาวข้อความของแต่ละแถว · `@xl:` วัดจากความกว้างของแถวเอง
+ * (LocationRow เป็น `@container`) ไม่ใช่ของจอ — แถวอยู่ในการ์ดที่แคบได้แม้จอกว้าง
  */
 const PC_ROW_GRID =
-  "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 sm:grid-cols-[minmax(0,1fr)_11rem_8rem_7rem]";
+  "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 @xl:grid-cols-[minmax(0,1fr)_11rem_8rem_7rem]";
 
 interface PcLocationRowProps {
   readonly item: PhysicalCountLocation;
@@ -83,17 +84,15 @@ export function PcLocationRow({
   return (
     <LocationRow tone={tone}>
       <div className={PC_ROW_GRID}>
-        <div className="order-1 min-w-0 sm:order-none">
+        <div className="order-1 min-w-0 @xl:order-none">
           <div className="flex min-w-0 items-center gap-1.5">
             <Link
               to={`/config/location/${item.id}`}
+              title={item.name}
               className="text-foreground truncate text-sm font-semibold tracking-tight hover:underline"
             >
               {item.name}
             </Link>
-            <span className="text-muted-foreground text-micro-legal shrink-0 tracking-wide uppercase">
-              {item.code}
-            </span>
             {/* ป้ายขึ้นเฉพาะข้อยกเว้น — ถ้าทุกแถวเขียน "Count" ก็ไม่ได้บอกอะไร */}
             {item.physical_count_type !== "yes" && (
               <Badge
@@ -105,6 +104,11 @@ export function PcLocationRow({
             )}
           </div>
           <div className="text-muted-foreground text-micro mt-0.5 flex items-center gap-1">
+            {/* รหัสลงบรรทัดรอง ชื่อจึงได้ที่เต็มบรรทัด (เดิม "Rooms-Housekee…" ถูกตัดที่ tablet) */}
+            <span className="shrink-0 tracking-wide uppercase">
+              {item.code}
+            </span>
+            <span aria-hidden="true">·</span>
             <Warehouse className="size-2.5 shrink-0" aria-hidden="true" />
             <span className="truncate">
               {getLocationTypeLabel(t, item.location_type)}
@@ -112,7 +116,7 @@ export function PcLocationRow({
           </div>
         </div>
 
-        <div className="order-3 flex items-center gap-2 sm:order-none">
+        <div className="order-3 flex items-center gap-2 @xl:order-none">
           <Progress
             value={progress}
             variant={progress > 0 ? PROGRESS_TONE[tone] : "muted"}
@@ -125,13 +129,13 @@ export function PcLocationRow({
           </span>
         </div>
 
-        <div className="text-muted-foreground text-micro order-4 truncate text-right tabular-nums sm:order-none sm:text-left">
+        <div className="text-muted-foreground text-micro order-4 truncate text-right tabular-nums @xl:order-none @xl:text-left">
           {startedAt
             ? t("started", { date: formatDate(startedAt, dateFormat) })
             : null}
         </div>
 
-        <div className="order-2 justify-self-end sm:order-none">
+        <div className="order-2 justify-self-end @xl:order-none">
           {actionType === "done" ? (
             <span className="text-muted-foreground text-micro inline-flex items-center gap-1 font-semibold tracking-wider uppercase">
               <CheckCircle2
