@@ -4,6 +4,7 @@ import { listReturnState } from "@/hooks/use-list-return";
 import { useTranslations } from "use-intl";
 import { CheckCircle2, Trash2, XCircle, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { useGridPagination } from "@/hooks/use-grid-pagination";
 import { toast } from "sonner";
 import {
@@ -204,7 +205,10 @@ export default function PurchaseRequestComponent() {
     setBatchDeleteOpen(true);
   };
 
+  // ลบขอบ 1px สองข้างของ DataGridContainer ออก ได้ความกว้างที่ตารางใช้จริง
+  const [setGridBox, gridBoxWidth] = useElementWidth();
   const table = usePrTable({
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
     items,
     totalRecords,
     params,
@@ -309,32 +313,33 @@ export default function PurchaseRequestComponent() {
       )}
 
       {!isGridMode && (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          tableLayout={{
-            checkbox: true,
-            headerSticky: true,
-            // คอลัมน์เยอะจนบีบกันแน่นในความกว้างจอ — เปิดตัวนี้แล้ว table ได้
-            // width = getTotalSize() (ผลรวม size ที่แต่ละคอลัมน์ประกาศไว้) แทน
-            // w-full ที่หารพื้นที่ให้ทุกคอลัมน์เท่าไรก็ได้ ล้นแล้วเลื่อนแนวนอนเอา
-            columnsResizable: true,
-          }}
-          emptyMessage={<EmptyComponent />}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              listGridMaxH(lf.activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            tableLayout={{
+              checkbox: true,
+              headerSticky: true,
+              // ไม่เปิด columnsResizable — โหมดนั้น DataGrid ข้าม meta.grow คอลัมน์จึงถูกยืด
+              // ตามสัดส่วนจนห่างกันที่ 4K · คอลัมน์ที่ไม่พอใส่ซ่อนตามความกว้างกล่องแทน
+              // (columnTier ใน use-pr-table.tsx)
+            }}
+            emptyMessage={<EmptyComponent />}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                listGridMaxH(lf.activeFilters.length > 0),
+              )}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       {isGridMode && (
