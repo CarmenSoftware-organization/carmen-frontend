@@ -1,9 +1,20 @@
 import { z } from "zod";
 import type { TranslationFn } from "@/lib/i18n-schema";
+import { lineDimensionsPayload } from "@/lib/dimension-payload";
+import type { DimensionRef } from "@/types/gl-dimension";
 import type {
   AdjustmentDetailItemPayload,
   InventoryAdjustment,
 } from "@/types/inventory-adjustment";
+
+const dimensionRefSchema = z.object({
+  gl_dimension_id: z.string(),
+  gl_dimension_value_id: z.string(),
+  dimension_code: z.string().optional(),
+  value_code: z.string().optional(),
+  dimension_name: z.string().optional(),
+  value_name: z.string().optional(),
+});
 
 function createDetailSchema(tv: TranslationFn, tf: TranslationFn) {
   return z.object({
@@ -27,6 +38,9 @@ function createDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     description: z
       .string()
       .max(256, tv("maxLength", { field: tf("description"), max: 256 })),
+    dimensions: z.array(dimensionRefSchema).optional(),
+    // ผู้ใช้แก้ช่อง dimension ของบรรทัดนี้ — ไม่ตั้งธงนี้ payload จะไม่ส่ง dimensions
+    dimensions_dirty: z.boolean().optional(),
   });
 }
 
@@ -78,10 +92,13 @@ export const ADJ_ITEM: AdjFormValues["items"][number] = {
   cost_per_unit: 0,
   total_cost: 0,
   description: "",
+  dimensions: [] as DimensionRef[],
+  dimensions_dirty: false,
 };
 
 export function mapItemToPayload(
   item: AdjFormValues["items"][number],
+  options?: { dimensionsEnabled?: boolean },
 ): AdjustmentDetailItemPayload {
   return {
     // แถวที่มีอยู่แล้วต้องส่ง doc_version กลับ ไม่งั้น /save ตอบ 400
@@ -93,7 +110,44 @@ export function mapItemToPayload(
     cost_per_unit: item.cost_per_unit,
     total_cost: item.total_cost,
     description: item.description,
+    ...lineDimensionsPayload(item, options?.dimensionsEnabled ?? false),
   };
+}
+
+/**
+ * บรรทัดที่แก้แค่ dimension ต้องส่งต้นทุนที่เก็บไว้เดิมกลับไป — backend ใช้
+ * `cost_per_unit` default 0 ในบรรทัด update ถ้าไม่ส่งค่าจะถูกเขียนเป็น 0 และ
+ * `CostProbe` ก็เขียนต้นทุนประมาณการทับค่าในฟอร์มตั้งแต่ mount (ใบ SO ร่างเก็บ 0)
+ * เข้าเงื่อนไขเมื่อ: แก้ dimension, product/qty/description ไม่เปลี่ยน และ
+ * คลัง/วันที่ของใบไม่เปลี่ยน (ถ้าเปลี่ยน ต้นทุนใหม่ที่ probe ดึงมาคือความตั้งใจ)
+ * @param update - `buildItemChanges(...).update`
+ * @param current - ค่าในฟอร์มตอนกด Save
+ * @param original - `defaultValues` ที่โหลดมา (ถือต้นทุนที่เก็บไว้)
+ * @returns update ที่ใส่ต้นทุนเดิมคืนให้บรรทัด dimension-only แล้ว
+ */
+export function restoreStoredCost<U extends { id: string }>(
+  update: U[] | undefined,
+  current: AdjFormValues,
+  original: AdjFormValues,
+): U[] | undefined {
+  const isHeaderSame =
+    current.location_id === original.location_id &&
+    current.date === original.date;
+  return update?.map((u) => {
+    const cur = current.items.find((i) => i.id === u.id);
+    const orig = original.items.find((i) => i.id === u.id);
+    if (!cur || !orig || !cur.dimensions_dirty || !isHeaderSame) return u;
+    const isDimensionOnly =
+      cur.product_id === orig.product_id &&
+      Number(cur.qty) === Number(orig.qty) &&
+      cur.description === orig.description;
+    if (!isDimensionOnly) return u;
+    return {
+      ...u,
+      cost_per_unit: orig.cost_per_unit,
+      total_cost: orig.total_cost,
+    };
+  });
 }
 
 function minDate(a: Date, b: Date): Date {
@@ -152,6 +206,8 @@ export function getDefaultValues(
         cost_per_unit: d.cost_per_unit ?? 0,
         total_cost: d.total_cost ?? 0,
         description: d.description ?? "",
+        dimensions: d.dimensions ?? [],
+        dimensions_dirty: false,
       })),
     };
   }

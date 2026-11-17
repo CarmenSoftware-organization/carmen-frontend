@@ -38,6 +38,8 @@ import {
 import { cn } from "@/lib/utils";
 import type { InventoryAdjustmentType } from "@/types/inventory-adjustment";
 import type { AdjFormValues } from "./ia-form-schema";
+import { IaItemDimensions } from "./ia-item-dimensions";
+import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 
 const ProductInventoryDialog = memo(function ProductInventoryDialog({
   control,
@@ -486,6 +488,7 @@ export function useAdjItemTable({
 }: UseAdjItemTableOptions) {
   "use no memo";
   const tfl = useTranslations("field");
+  const dimensionsEnabled = useLineDimensionsEnabled();
   const allColumns = useMemo<ColumnDef<AdjItemField>[]>(() => {
     const recalcTotal = (
       index: number,
@@ -657,6 +660,25 @@ export function useAdjItemTable({
         size: 100,
         meta: { headerClassName: "text-right" },
       },
+      // ปุ่ม popover dimension ต่อบรรทัด — ใส่เฉพาะเมื่อเปิดใช้ และไม่ถูกกรองออกตอน view
+      // (disabled แค่ทำให้ช่องข้างในอ่านอย่างเดียว ปุ่มยังเปิดดูได้)
+      ...(dimensionsEnabled
+        ? [
+            {
+              id: "dimensions",
+              header: "Dim",
+              size: 90,
+              enableSorting: false,
+              cell: ({ row }) => (
+                <IaItemDimensions
+                  form={form}
+                  index={row.index}
+                  disabled={disabled}
+                />
+              ),
+            } satisfies ColumnDef<AdjItemField>,
+          ]
+        : []),
     ];
 
     const actionColumn: ColumnDef<AdjItemField> = {
@@ -701,6 +723,7 @@ export function useAdjItemTable({
     adjustmentType,
     autoOpenFirst,
     onProductPicked,
+    dimensionsEnabled,
   ]);
 
   const table = useReactTable({
