@@ -22,7 +22,10 @@ import { cn } from "@/lib/utils";
 import EmptyComponent from "@/components/empty-component";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { AnimationStyles, Reveal } from "@/components/share/reveal";
-import { useTransactionTable } from "./use-transaction-table";
+import {
+  transactionTableTier,
+  useTransactionTable,
+} from "./use-transaction-table";
 import { TransactionSummary } from "./transaction-summary";
 import type { TransactionSummary as TransactionSummaryType } from "@/types/transaction";
 import { DateRangeFilter, type DateRangeValue } from "./date-range-filter";
@@ -30,6 +33,7 @@ import { useListFilters } from "@/hooks/use-list-filters";
 import { ViewSelector } from "@/components/list-filter/view-selector";
 import { ListFilter } from "@/components/list-filter/list-filter";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
 
@@ -312,11 +316,17 @@ export default function TransactionComponent() {
   const items = data?.data ?? [];
   const totalRecords = data?.paginate?.total ?? 0;
 
+  // ตารางเลือกคอลัมน์จากความกว้างกล่องของมันเอง (ลบขอบ 1px สองข้างของ DataGridContainer)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const tableWidth = gridBoxWidth == null ? undefined : gridBoxWidth - 2;
+  const { compact } = transactionTableTier(tableWidth);
+
   const table = useTransactionTable({
     items,
     totalRecords,
     params,
     tableConfig,
+    containerWidth: tableWidth,
   });
 
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
@@ -375,12 +385,16 @@ export default function TransactionComponent() {
 
       {/* ── Data grid (glass card) ─────────── */}
       <Reveal delay={240}>
-        <div className="border-border/60 bg-card overflow-hidden rounded-xl border">
+        <div
+          ref={setGridBox}
+          className="border-border/60 bg-card overflow-hidden rounded-xl border"
+        >
           <DataGrid
             table={table}
             recordCount={totalRecords}
             isLoading={isLoading}
-            tableLayout={{ headerSticky: true }}
+            // กล่องแคบเป็นเซลล์เดียวสามบรรทัด — clamp สองบรรทัดจะตัดบรรทัดสุดท้ายทิ้ง
+            tableLayout={{ headerSticky: true, rowClamp: !compact }}
             emptyMessage={<EmptyComponent />}
           >
             <DataGridContainer>

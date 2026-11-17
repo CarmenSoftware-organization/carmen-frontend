@@ -19,6 +19,34 @@ interface UseTransactionTableOptions {
   totalRecords: number;
   params: ParamsDto;
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
+  /** ความกว้างของกล่องตาราง (px) — `undefined` = ยังไม่ได้วัด ใช้ตารางเต็ม */
+  containerWidth?: number;
+}
+
+/**
+ * ขั้นของตารางตามความกว้างกล่อง (ไม่ใช่ของจอ — sidebar พับ/กางได้) · หน้าใช้ `compact`
+ * ปิด rowClamp ด้วย จึง export ให้ใช้เกณฑ์เดียวกัน
+ *
+ * สินค้ารับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมแบ่งสัดส่วน ที่ tablet ชิปชนิด
+ * เลขที่เอกสาร และยอดรวมล้นเซลล์ (ชิปล้นแม้ที่ 1366) · ไม่มีคอลัมน์ select ผลรวมจึงเป็นขั้นต่ำจริง:
+ *   ครบ             60+110+90+170+200+180+80+80+60+150 = 1180
+ *   ไม่มีเลขลำดับ                                       = 1120
+ *   ไม่มีจำนวนรายการ                                    = 1060
+ *   ไม่มีคลัง (ลงใต้สินค้า)                              = 880
+ *   รวมคอลัมน์ (merged)  เอกสาร 220 + สินค้า 190 + จำนวน 90 + ยอดรวม 150 = 650
+ *                       ชิปชนิดอยู่หน้าเลขที่ วันที่ลงใต้เลขที่ · เข้า/ออกรวมเป็นคอลัมน์เดียว
+ *   ต่ำกว่านั้น (compact) เซลล์เดียวสามบรรทัด
+ * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35px (ขั้น compact ใช้ 10px ให้ tablet 662 ยังเป็นตาราง)
+ */
+export function transactionTableTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  return {
+    compact: w < 660,
+    merged: w < 915,
+    showLocation: w >= 1095,
+    showItems: w >= 1155,
+    showIndex: w >= 1215,
+  };
 }
 
 /**
@@ -66,8 +94,11 @@ export function useTransactionTable({
   totalRecords,
   params,
   tableConfig,
+  containerWidth,
 }: UseTransactionTableOptions) {
   "use no memo";
+  const { compact, merged, showLocation, showItems, showIndex } =
+    transactionTableTier(containerWidth);
   const { dateFormat, amountFormat, defaultCurrencyCode } = useProfile();
   const tfl = useTranslations("field");
   const t = useTranslations("inventoryManagement.transaction");
@@ -85,8 +116,9 @@ export function useTransactionTable({
       cell: ({ row }) => formatDate(row.original.audit.created.at, dateFormat),
       meta: {
         skeleton: columnSkeletons.text,
-        cellClassName: "text-center",
+        cellClassName: "text-center whitespace-nowrap",
       },
+      size: 110,
     },
     {
       accessorKey: "inventory_doc_type",
@@ -105,16 +137,21 @@ export function useTransactionTable({
       meta: {
         skeleton: columnSkeletons.badge,
       },
-      size: 80,
+      // ชิป "GRN" + จุด ~52px และหัว "Type" + ไอคอนเรียง ~49px บวก padding เซลล์ 24
+      size: 90,
     },
     {
       accessorKey: "parent_document_no",
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={t("parentDocNo")} />
       ),
-      cell: ({ row }) => row.original.parent_document_no ?? "-",
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap">
+          {row.original.parent_document_no ?? "-"}
+        </span>
+      ),
       meta: { skeleton: columnSkeletons.text },
-      size: 220,
+      size: 170,
     },
     {
       accessorKey: "product",
@@ -126,6 +163,28 @@ export function useTransactionTable({
           row.original.details,
           (d) => d.product?.name,
         );
+        // กล่องแคบ: คลังที่ถูกซ่อนลงมาเป็นบรรทัดรองใต้สินค้า (สินค้าเหลือบรรทัดเดียว)
+        if (!showLocation) {
+          const location = joinDetailNames(
+            row.original.details,
+            (d) => d.location?.name,
+          );
+          return (
+            <div className="min-w-0">
+              <span className="block truncate" title={text || undefined}>
+                {text || "-"}
+              </span>
+              {location && (
+                <span
+                  className="text-muted-foreground block truncate text-xs"
+                  title={location}
+                >
+                  {location}
+                </span>
+              )}
+            </div>
+          );
+        }
         if (!text) return "-";
         // ใบเดียวมีได้หลายสินค้า ต่อกันแล้วยาวจนดันแถวสูงกว่าเพื่อนหลายเท่า —
         // ตัดที่ 2 บรรทัดแล้วใส่จุดไข่ปลา · ตัวเต็มดูได้จาก tooltip ของเบราว์เซอร์
@@ -135,8 +194,8 @@ export function useTransactionTable({
           </span>
         );
       },
-      meta: { skeleton: columnSkeletons.text },
-      size: 220,
+      meta: { skeleton: columnSkeletons.text, grow: true },
+      size: merged ? 190 : 200,
     },
     {
       accessorKey: "location",
@@ -156,7 +215,7 @@ export function useTransactionTable({
         );
       },
       meta: { skeleton: columnSkeletons.text },
-      size: 220,
+      size: 180,
     },
     {
       id: "qty_in",
@@ -232,16 +291,144 @@ export function useTransactionTable({
       },
       meta: {
         skeleton: columnSkeletons.text,
-        cellClassName: "text-right",
+        cellClassName: "text-right whitespace-nowrap",
         headerClassName: "text-right",
       },
+      size: 150,
     },
   ];
 
-  const allColumns: ColumnDef<Transaction>[] = [
-    indexColumn<Transaction>(params),
-    ...dataColumns,
-  ];
+  // ---- ชิ้นที่ใช้ซ้ำในขั้น merged / compact ----
+  const docTypeChip = (row: Transaction) => {
+    const config = DOC_TYPE_CONFIG[row.inventory_doc_type];
+    return (
+      <StatusDotBadge tone={config?.tone ?? "neutral"} size="sm">
+        {config?.label ?? row.inventory_doc_type}
+      </StatusDotBadge>
+    );
+  };
+  const qtyTotals = (row: Transaction) => ({
+    in: row.details.reduce((sum, d) => sum + d.qty_in, 0),
+    out: row.details.reduce((sum, d) => sum + d.qty_out, 0),
+  });
+  const qtyText = (row: Transaction) => {
+    const q = qtyTotals(row);
+    if (q.in === 0 && q.out === 0) return <span>-</span>;
+    return (
+      <span className="tabular-nums">
+        {q.in > 0 && <span className="text-success-ink">+{q.in}</span>}
+        {q.in > 0 && q.out > 0 && " "}
+        {q.out > 0 && <span className="text-destructive">−{q.out}</span>}
+      </span>
+    );
+  };
+  const columnById = (id: string) =>
+    dataColumns.find(
+      (c) => (c.id ?? ("accessorKey" in c ? String(c.accessorKey) : "")) === id,
+    )!;
+
+  // ขั้น merged: ชนิด + วันที่รวมเข้าคอลัมน์เอกสาร · เข้า/ออกรวมเป็นคอลัมน์จำนวน
+  // id คอลัมน์เอกสารคงเดิม (parent_document_no) — การเรียงของผู้ใช้ไม่หลุด
+  const mergedDocColumn: ColumnDef<Transaction> = {
+    ...columnById("parent_document_no"),
+    cell: ({ row }) => (
+      <div className="min-w-0">
+        <div className="flex items-center gap-1.5">
+          {docTypeChip(row.original)}
+          <span className="truncate whitespace-nowrap">
+            {row.original.parent_document_no ?? "-"}
+          </span>
+        </div>
+        <span className="text-muted-foreground block text-xs tabular-nums">
+          {formatDate(row.original.audit.created.at, dateFormat)}
+        </span>
+      </div>
+    ),
+    size: 220,
+  };
+  const mergedQtyColumn: ColumnDef<Transaction> = {
+    id: "qty",
+    header: tfl("qty"),
+    cell: ({ row }) => qtyText(row.original),
+    meta: {
+      skeleton: columnSkeletons.text,
+      cellClassName: "text-right whitespace-nowrap",
+      headerClassName: "text-right",
+    },
+    size: 90,
+  };
+
+  // ขั้น compact: เซลล์เดียว — ชนิด เลขที่ · ยอดรวม / สินค้า · จำนวน / วันที่ · คลัง
+  const compactColumn: ColumnDef<Transaction> = {
+    id: "compact",
+    header: t("parentDocNo"),
+    cell: ({ row }) => {
+      const it = row.original;
+      const products = joinDetailNames(it.details, (d) => d.product?.name);
+      const locations = joinDetailNames(it.details, (d) => d.location?.name);
+      const total = it.details.reduce((sum, d) => sum + d.total_cost, 0);
+      return (
+        <div className="min-w-0 space-y-0.5">
+          <div className="flex items-center gap-2">
+            {docTypeChip(it)}
+            <span className="min-w-0 flex-1 truncate">
+              {it.parent_document_no ?? "-"}
+            </span>
+            <span className="shrink-0 font-medium tabular-nums">
+              {formatAmount(total, amountFormat)}
+              {defaultCurrencyCode && (
+                <span className="text-muted-foreground ms-1 text-xs font-normal">
+                  {defaultCurrencyCode}
+                </span>
+              )}
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span
+              className="min-w-0 flex-1 truncate"
+              title={products || undefined}
+            >
+              {products || "-"}
+            </span>
+            <span className="shrink-0 text-xs">{qtyText(it)}</span>
+          </div>
+          <div
+            className="text-muted-foreground truncate text-xs"
+            title={locations || undefined}
+          >
+            {[formatDate(it.audit.created.at, dateFormat), locations]
+              .filter(Boolean)
+              .join(" · ")}
+          </div>
+        </div>
+      );
+    },
+    enableSorting: false,
+  };
+
+  // ซ่อนผ่านรายการคอลัมน์ ไม่ใช่ CSS — ความกว้างขั้นต่ำของตารางที่มีคอลัมน์ยืดคิดจากทุกคอลัมน์
+  // ที่ TanStack ถือว่ามองเห็น
+  const visibleDataColumns: ColumnDef<Transaction>[] = merged
+    ? [
+        mergedDocColumn,
+        columnById("product"),
+        mergedQtyColumn,
+        columnById("total_cost"),
+      ]
+    : dataColumns.filter((c) => {
+        const key =
+          c.id ?? ("accessorKey" in c ? String(c.accessorKey) : undefined);
+        if (key === "location") return showLocation;
+        if (key === "items_count") return showItems;
+        return true;
+      });
+
+  const allColumns: ColumnDef<Transaction>[] = compact
+    ? [compactColumn]
+    : [
+        ...(showIndex ? [indexColumn<Transaction>(params)] : []),
+        ...visibleDataColumns,
+      ];
 
   return useReactTable({
     data: items,
