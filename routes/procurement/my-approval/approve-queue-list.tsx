@@ -29,6 +29,29 @@ import { DataGridPagination } from "@/components/ui/data-grid/data-grid-paginati
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import type { ParamsDto } from "@/types/params";
 import EmptyComponent from "@/components/empty-component";
+import { useElementWidth } from "@/hooks/use-element-width";
+
+/**
+ * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
+ *
+ * "รายละเอียด" รับที่เหลือ (`meta.grow`) ที่เหลือกว้างคงที่ ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`:
+ * ครบ 1050 (#60 เอกสาร 200 รายละเอียด 240 ผู้ขอ 160 ขั้น 140 ยอด 140 รอ 110) · ไม่มีผู้ขอ 890 ·
+ * ไม่มีเลขลำดับ 830 · ไม่มีขั้น + รายละเอียดขั้นต่ำ 200 = 650 (กล่องที่จอ 768 = 660)
+ * จุดเปลี่ยนตั้งสูงกว่าผลรวมราว 70–80px — คอลัมน์รองกลับมาเมื่อรายละเอียดได้ที่ราว 310px แล้ว
+ * ยกเว้นผู้ขอ (1075 = เหลือ 265px) ให้ขึ้นที่จอ 1366 กาง sidebar (กล่อง 1083) และขั้น (885)
+ * ให้ขึ้นที่ iPad 1180 (กล่อง 896) — ผู้อนุมัติดูสองคอลัมน์นี้บ่อย
+ * แคบกว่า 650 (มือถือ): ตัดคอลัมน์รายละเอียด ย้ายผู้ขาย/แผนกเป็นบรรทัดรองใต้เลขเอกสาร
+ * และเลิก grow ให้สามคอลัมน์ที่เหลือแบ่งตามสัดส่วน · ของที่ซ่อนยังดูได้ในหน้าเอกสาร
+ */
+function columnTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  return {
+    showRequester: w >= 1075,
+    showIndex: w >= 970,
+    showStage: w >= 885,
+    showDetails: w >= 650,
+  };
+}
 
 interface ApprovalQueueListProps {
   readonly items: ApprovalItem[];
@@ -52,6 +75,11 @@ export default function ApprovalQueueList({
   const tfl = useTranslations("field");
 
   const formatAmount = useAmountFormatter();
+  // ลบขอบ 1px สองข้างของ DataGridContainer ออก ได้ความกว้างที่ตารางใช้จริง
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const { showRequester, showIndex, showStage, showDetails } = columnTier(
+    gridBoxWidth == null ? undefined : gridBoxWidth - 2,
+  );
 
   const DOC_TYPE_CONFIG: Record<
     string,
@@ -93,20 +121,23 @@ export default function ApprovalQueueList({
       cell: ({ row }) => {
         const item = row.original;
         const typeConfig = DOC_TYPE_CONFIG[item.doc_type];
+        const typeBadge = (
+          <Badge variant={typeConfig?.variant ?? "secondary"} size="xs">
+            {typeConfig?.label ?? item.doc_type.toUpperCase()}
+          </Badge>
+        );
         return (
           // data-slot ให้ rowClamp ของ DataGrid ข้ามกล่องนี้ — ไม่งั้นมันกลายเป็น
           // -webkit-box แล้วสองบรรทัดถูกบีบเป็นบรรทัดเดียว
           <div
             data-slot="cell-stack"
-            className="flex flex-col items-start gap-1"
+            className="flex max-w-full flex-col items-start gap-1"
           >
             <div className="flex items-center gap-1.5">
-              <Badge variant={typeConfig?.variant ?? "secondary"} size="xs">
-                {typeConfig?.label ?? item.doc_type.toUpperCase()}
-              </Badge>
+              {showDetails && typeBadge}
               <Link
                 to={typeConfig?.href(item.id) ?? "#"}
-                className="text-primary text-xs font-semibold hover:underline"
+                className="text-primary text-xs font-semibold whitespace-nowrap hover:underline"
               >
                 {item.doc_no}
               </Link>
@@ -116,11 +147,25 @@ export default function ApprovalQueueList({
                 </Badge>
               )}
             </div>
+            {/* กล่องแคบ: คอลัมน์รายละเอียดถูกซ่อน — ป้ายประเภทลงมาคู่กับผู้ขาย/แผนก
+                ใต้เลขเอกสาร ให้เลขเอกสารได้ทั้งบรรทัด (ป้าย + เลข 136px ไม่พอในคอลัมน์มือถือ) */}
+            {!showDetails && (
+              <div className="flex max-w-full min-w-0 items-center gap-1.5">
+                {typeBadge}
+                {(item.vendor_name || item.department_name) && (
+                  <span className="text-muted-foreground truncate text-xs">
+                    {item.vendor_name || item.department_name}
+                  </span>
+                )}
+              </div>
+            )}
             <SendBackStatus lastAction={item.last_action} />
           </div>
         );
       },
-      size: 200,
+      // กล่องแคบไม่มีคอลัมน์ grow → แบ่งตามสัดส่วน 130 : 90 : 95 (มือถือ 332px ≈ 137/95/100)
+      // เนื้อหาที่ต้องการ: เลขเอกสาร 102 · ยอด 67 · วันที่ 70 (+ padding 24 ทุกช่อง)
+      size: showDetails ? 200 : 130,
       meta: { headerTitle: t("document"), skeleton: columnSkeletons.text },
     },
     {
@@ -146,8 +191,13 @@ export default function ApprovalQueueList({
         );
       },
       enableSorting: false,
-      size: 240,
-      meta: { headerTitle: t("details"), skeleton: columnSkeletons.text },
+      // คอลัมน์ข้อความยาวคอลัมน์เดียว — รับที่เหลือ ไม่ให้คอลัมน์สั้นห่างกันบนจอกว้าง
+      size: showStage ? 240 : 200,
+      meta: {
+        headerTitle: t("details"),
+        skeleton: columnSkeletons.text,
+        grow: true,
+      },
     },
     {
       accessorKey: "requestor_name",
@@ -197,16 +247,25 @@ export default function ApprovalQueueList({
         if (isPriceHidden(item.hidden_fields, "total_price")) {
           return <HiddenValue />;
         }
+        // กล่องแคบ: สกุลเงินลงบรรทัดรอง ไม่งั้นยอดหกหลักถูกตัดในคอลัมน์ ~90px
         return (
-          <span className="text-xs tabular-nums">
+          <span
+            data-slot="cell-stack"
+            className={cn(
+              "text-xs whitespace-nowrap tabular-nums",
+              !showDetails && "flex flex-col items-end",
+            )}
+          >
             {formatAmount(item.total_amount)}
-            <span className="text-muted-foreground ml-1">
+            <span
+              className={cn("text-muted-foreground", showDetails && "ml-1")}
+            >
               {item.currency_code}
             </span>
           </span>
         );
       },
-      size: 140,
+      size: showDetails ? 140 : 90,
       meta: {
         headerTitle: tfl("amount"),
         cellClassName: "text-right",
@@ -245,13 +304,13 @@ export default function ApprovalQueueList({
             >
               {t("daysWaiting", { count: days })}
             </span>
-            <span className="text-muted-foreground text-xs tabular-nums">
+            <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
               {formatDate(doc_date, dateFormat)}
             </span>
           </div>
         );
       },
-      size: 110,
+      size: showDetails ? 110 : 95,
       meta: {
         headerTitle: t("waiting"),
         cellClassName: "text-right",
@@ -269,28 +328,39 @@ export default function ApprovalQueueList({
     getCoreRowModel: getCoreRowModel(),
     ...tableConfig,
     pageCount: Math.ceil(totalRecords / pageSize),
+    state: {
+      ...tableConfig.state,
+      columnVisibility: {
+        index: showIndex,
+        details: showDetails,
+        requestor_name: showRequester,
+        workflow_current_stage: showStage,
+      },
+    },
   });
 
   return (
-    <DataGrid
-      table={table}
-      recordCount={totalRecords}
-      isLoading={isLoading}
-      emptyMessage={
-        <EmptyComponent
-          icon={Clock}
-          title={t("noPendingApprovals")}
-          description={t("noPendingApprovalsDesc")}
-        />
-      }
-      tableLayout={{ headerSticky: true }}
-    >
-      <DataGridContainer className="flex max-h-[calc(100vh-13rem-3rem)] flex-col">
-        <DataGridScrollArea>
-          <DataGridTable />
-        </DataGridScrollArea>
-        <DataGridPagination />
-      </DataGridContainer>
-    </DataGrid>
+    <div ref={setGridBox}>
+      <DataGrid
+        table={table}
+        recordCount={totalRecords}
+        isLoading={isLoading}
+        emptyMessage={
+          <EmptyComponent
+            icon={Clock}
+            title={t("noPendingApprovals")}
+            description={t("noPendingApprovalsDesc")}
+          />
+        }
+        tableLayout={{ headerSticky: true }}
+      >
+        <DataGridContainer className="flex max-h-[calc(100vh-13rem-3rem)] flex-col">
+          <DataGridScrollArea>
+            <DataGridTable />
+          </DataGridScrollArea>
+          <DataGridPagination />
+        </DataGridContainer>
+      </DataGrid>
+    </div>
   );
 }
