@@ -807,9 +807,12 @@ export default function AccountingDocumentDetail() {
       return;
     }
     if (isJournalVoucher) {
+      // ใบ manual แก้บรรทัดได้แล้ว (details.replace) — ใบจาก template/recurring/allocation
+      // ยังส่งได้แค่ส่วนหัว จึงต้องกันไว้ ไม่งั้นบรรทัดที่แก้หายเงียบ ๆ
       if (
         !isNew &&
         journal &&
+        journal.source_type !== "manual" &&
         (lines.length !== journal.lines.length ||
           lines.some((line, index) => {
             const saved = journal.lines[index];
@@ -829,7 +832,7 @@ export default function AccountingDocumentDetail() {
           }))
       ) {
         toast.error(
-          "API ยังไม่รองรับการแก้ไขบรรทัด JV หลังสร้าง กรุณาสร้าง JV ใหม่",
+          "แก้บรรทัดได้เฉพาะ JV ที่สร้างเอง (Manual) — ใบนี้แก้ได้แค่ส่วนหัว",
         );
         return;
       }
