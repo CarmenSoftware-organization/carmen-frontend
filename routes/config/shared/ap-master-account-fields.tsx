@@ -6,6 +6,7 @@ import {
   FieldPlainText,
   FieldDescription,
 } from "@/components/ui/field";
+import { formatDimensionValue } from "@/lib/dimension-value";
 import type {
   ApMasterDimension,
   ApMasterMapping,
@@ -74,6 +75,7 @@ export function MasterAccountFields({
 }) {
   const t = useTranslations("config.apMaster");
   const tf = useTranslations("field");
+  const tc = useTranslations("common");
   const accounts = endpoint("").endsWith("/payment-types")
     ? MOCK_ACCOUNTS.slice(0, 5)
     : MOCK_ACCOUNTS.slice(5);
@@ -163,9 +165,14 @@ export function MasterAccountFields({
                   tf("dimension")}
               </FieldLabel>
               <FieldPlainText>
-                {[dimension.value_code, dimension.value_name]
-                  .filter(Boolean)
-                  .join(" · ") || "—"}
+                {dimension.dimension_value_id
+                  ? [dimension.value_code, dimension.value_name]
+                      .filter(Boolean)
+                      .join(" · ") || "—"
+                  : formatDimensionValue(dimension, undefined, {
+                      yes: tc("yes"),
+                      no: tc("no"),
+                    }) || "—"}
               </FieldPlainText>
             </Field>
           ))
