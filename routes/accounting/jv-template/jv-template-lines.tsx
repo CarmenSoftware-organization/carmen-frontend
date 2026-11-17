@@ -17,6 +17,7 @@ import {
 import { SelectContent, SelectItem } from "@/components/ui/select";
 import { InputAmount } from "@/components/ui/input/input-amount";
 import { StatusDotBadge } from "@/components/ui/status-dot-badge";
+import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { LookupChartOfAccountById } from "@/components/lookup/lookup-chart-of-account-by-id";
 import { LookupCostCenter } from "@/components/lookup/lookup-cost-center";
 import { useCostCenterById } from "@/hooks/use-cost-center";
@@ -31,8 +32,8 @@ import {
   type JvTemplateFormValues,
 } from "./jv-template-form-schema";
 
-const TH = "text-muted-foreground px-2 py-2 text-left text-xs font-medium";
-const TD = "px-2 py-1.5 align-top";
+const TH = "h-10 px-3 py-2 text-left text-xs font-medium";
+const TD = "px-3 py-2 align-top";
 
 /**
  * ตารางบรรทัดของ template — คอลัมน์ตามชนิด
@@ -63,22 +64,41 @@ export function JvTemplateLines({
   const lineErr = (i: number) => errors.lines?.[i];
   const gridError = errors.lines?.message ?? errors.lines?.root?.message;
 
-  const totals = lines.reduce(
-    (acc, l) => {
-      acc.debit += moneyUnits(l?.debit);
-      acc.credit += moneyUnits(l?.credit);
-      if (l?.side) acc.ratio[l.side] += ratioUnits(l.allocation_ratio);
-      return acc;
-    },
-    { debit: 0, credit: 0, ratio: { debit: 0, credit: 0 } },
-  );
-
   const sideLabel = (side: string | null) =>
     side === "debit" ? t("debit") : side === "credit" ? t("credit") : "";
 
   return (
-    <div className="space-y-2">
-      <div className="overflow-x-auto rounded-lg border">
+    <div className="flex min-w-0 flex-1 flex-col gap-3">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t pt-3">
+        <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2">
+          <h2 className="text-sm font-semibold">{t("lines")}</h2>
+          <p className="text-muted-foreground text-xs">
+            {t(`linesDesc_${type}`)}
+          </p>
+        </div>
+        {canEditRows && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              append(
+                type === "allocation"
+                  ? {
+                      ...defaultLinesFor("allocation")[0],
+                      allocation_ratio: null,
+                    }
+                  : defaultLinesFor(type)[0],
+              )
+            }
+          >
+            <Plus />
+            {t("addLine")}
+          </Button>
+        )}
+      </div>
+      {gridError && <FieldError>{gridError}</FieldError>}
+      <div className="min-w-0 shrink-0 overflow-x-auto">
         <table className="w-full min-w-[860px] border-collapse text-xs">
           <thead className="bg-muted/40 border-b">
             <tr>
@@ -202,7 +222,9 @@ export function JvTemplateLines({
                 {type !== "recurring" && (
                   <td className={TD}>
                     {fixedRows || readOnly ? (
-                      <FieldPlainText>{sideLabel(lines[i]?.side)}</FieldPlainText>
+                      <FieldPlainText>
+                        {sideLabel(lines[i]?.side)}
+                      </FieldPlainText>
                     ) : (
                       <Controller
                         control={control}
@@ -215,7 +237,9 @@ export function JvTemplateLines({
                             error={lineErr(i)?.side?.message}
                           >
                             <SelectContent>
-                              <SelectItem value="debit">{t("debit")}</SelectItem>
+                              <SelectItem value="debit">
+                                {t("debit")}
+                              </SelectItem>
                               <SelectItem value="credit">
                                 {t("credit")}
                               </SelectItem>
@@ -261,7 +285,8 @@ export function JvTemplateLines({
                     >
                       {formatCurrency(
                         (Number(allocateAmount) || 0) *
-                          (ratioUnits(lines[i]?.allocation_ratio) / RATIO_SCALE),
+                          (ratioUnits(lines[i]?.allocation_ratio) /
+                            RATIO_SCALE),
                       )}
                     </td>
                   </>
@@ -284,64 +309,96 @@ export function JvTemplateLines({
               </tr>
             ))}
           </tbody>
-
-          {type === "recurring" && (
-            <tfoot className="bg-muted/40 border-t">
-              <tr>
-                <td colSpan={4} className={cn(TD, "py-2")}>
-                  <TotalChip
-                    ok={totals.debit === totals.credit}
-                    okLabel={t("balanced")}
-                    badLabel={t("unbalanced")}
-                  />
-                </td>
-                <td className={cn(TD, "py-2 text-right font-medium tabular-nums")}>
-                  {formatCurrency(totals.debit / 100)}
-                </td>
-                <td className={cn(TD, "py-2 text-right font-medium tabular-nums")}>
-                  {formatCurrency(totals.credit / 100)}
-                </td>
-                {canEditRows && <td />}
-              </tr>
-            </tfoot>
-          )}
         </table>
       </div>
-
-      {type === "allocation" && (
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="text-muted-foreground">{t("ratioSum")}</span>
-          {(["debit", "credit"] as const).map((side) => (
-            <TotalChip
-              key={side}
-              ok={totals.ratio[side] === RATIO_SCALE}
-              okLabel={`${t(side)} ${(totals.ratio[side] / RATIO_SCALE).toFixed(4)}`}
-              badLabel={`${t(side)} ${(totals.ratio[side] / RATIO_SCALE).toFixed(4)}`}
-            />
-          ))}
-        </div>
-      )}
-
-      {gridError && <FieldError>{gridError}</FieldError>}
-
-      {canEditRows && (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            append(
-              type === "allocation"
-                ? { ...defaultLinesFor("allocation")[0], allocation_ratio: null }
-                : defaultLinesFor(type)[0],
-            )
-          }
-        >
-          <Plus />
-          {t("addLine")}
-        </Button>
-      )}
     </div>
+  );
+}
+
+export function JvTemplateSummary({
+  type,
+  control,
+}: {
+  readonly type: JvTemplateType;
+  readonly control: Control<JvTemplateFormValues>;
+}) {
+  const t = useTranslations("accounting.jvTemplate");
+  const lines = useWatch({ control, name: "lines" }) ?? [];
+  const allocateAmount = useWatch({ control, name: "allocate_amount" }) ?? 0;
+  const totalAmount = useWatch({ control, name: "total_amount" }) ?? 0;
+  const totals = lines.reduce(
+    (acc, l) => {
+      acc.debit += moneyUnits(l?.debit);
+      acc.credit += moneyUnits(l?.credit);
+      if (l?.side) acc.ratio[l.side] += ratioUnits(l.allocation_ratio);
+      return acc;
+    },
+    { debit: 0, credit: 0, ratio: { debit: 0, credit: 0 } },
+  );
+
+  return (
+    <SummaryFooterBar
+      hasRecord
+      items={[
+        { key: "lines", label: t("lines"), value: lines.length },
+        ...(type === "recurring"
+          ? [
+              {
+                key: "debit",
+                label: t("debit"),
+                value: formatCurrency(totals.debit / 100),
+              },
+              {
+                key: "credit",
+                label: t("credit"),
+                value: formatCurrency(totals.credit / 100),
+              },
+            ]
+          : type === "allocation"
+            ? [
+                {
+                  key: "debit-ratio",
+                  label: `${t("ratioSum")} · ${t("debit")}`,
+                  value: (totals.ratio.debit / RATIO_SCALE).toFixed(4),
+                },
+                {
+                  key: "credit-ratio",
+                  label: `${t("ratioSum")} · ${t("credit")}`,
+                  value: (totals.ratio.credit / RATIO_SCALE).toFixed(4),
+                },
+                {
+                  key: "amount",
+                  label: t("allocateAmount"),
+                  value: formatCurrency(allocateAmount),
+                },
+              ]
+            : [
+                {
+                  key: "amount",
+                  label: t("totalAmount"),
+                  value: formatCurrency(totalAmount),
+                },
+              ]),
+      ]}
+    >
+      {type === "recurring" && (
+        <TotalChip
+          ok={totals.debit === totals.credit}
+          okLabel={t("balanced")}
+          badLabel={t("unbalanced")}
+        />
+      )}
+      {type === "allocation" && (
+        <TotalChip
+          ok={
+            totals.ratio.debit === RATIO_SCALE &&
+            totals.ratio.credit === RATIO_SCALE
+          }
+          okLabel={t("balanced")}
+          badLabel={t("unbalanced")}
+        />
+      )}
+    </SummaryFooterBar>
   );
 }
 

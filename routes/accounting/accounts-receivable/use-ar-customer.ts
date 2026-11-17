@@ -3,10 +3,17 @@ import { QUERY_KEYS } from "@/constant/query-keys";
 import { createConfigCrud } from "@/hooks/use-config-crud";
 import { CACHE_DYNAMIC } from "@/lib/cache-config";
 
-interface CustomerAddress {
+export interface CustomerAddress {
   id: string;
   address_type: string;
   address_line1?: string | null;
+  address_line2?: string | null;
+  sub_district?: string | null;
+  district?: string | null;
+  city?: string | null;
+  province?: string | null;
+  postal_code?: string | null;
+  country?: string | null;
   is_active?: boolean | null;
 }
 
@@ -24,6 +31,10 @@ export interface ArCustomer {
   credit_limit?: number | string | null;
   ar_chart_of_accounts_id?: string | null;
   default_currency_code?: string | null;
+  default_currency_id?: string | null;
+  note?: string | null;
+  customer_group?: { id: string; name: string }[] | null;
+  tax_profile_id?: string | null;
   customer_address?: CustomerAddress[];
 }
 
@@ -37,9 +48,15 @@ export interface ArCustomerInput {
   credit_term_id?: string | null;
   credit_limit: string;
   ar_chart_of_accounts_id?: string | null;
+  note?: string | null;
+  customer_group?: { id: string; name: string }[];
+  tax_profile_id?: string | null;
+  default_currency_id?: string | null;
   customer_address?: {
-    add?: { address_type: "billing_address"; address_line1: string }[];
-    update?: { customer_address_id: string; address_line1: string | null }[];
+    add?: Omit<CustomerAddress, "id">[];
+    update?: (Partial<Omit<CustomerAddress, "id">> & {
+      customer_address_id: string;
+    })[];
   };
 }
 

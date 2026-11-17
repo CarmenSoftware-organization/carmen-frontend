@@ -11,9 +11,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { ErrorState } from "@/components/ui/error-state";
-import { SettingSection } from "@/components/ui/setting-section";
-import { FormPageSkeleton } from "@/components/loader/form-page-skeleton";
-import { FormPageShell } from "@/components/share/form-page-shell";
+import { FormPageHeaderSkeleton } from "@/components/loader/form-page-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { FormToolbar, ToolbarLabel } from "@/components/share/form-toolbar";
 import { useEntityForm } from "@/hooks/use-entity-form";
 import { useCan } from "@/hooks/use-can";
@@ -40,7 +39,7 @@ import {
   useUpdateJvTemplate,
 } from "./use-jv-template";
 import { JvTemplateHeaderFields } from "./jv-template-header-fields";
-import { JvTemplateLines } from "./jv-template-lines";
+import { JvTemplateLines, JvTemplateSummary } from "./jv-template-lines";
 import { JvTemplateGenerateDialog } from "./jv-template-generate-dialog";
 
 const FORM_ID = "jv-template-form";
@@ -49,7 +48,7 @@ const PERMISSION_PREFIX = "accounting.gl.jv_template";
 /**
  * หน้ารายละเอียด template (add / view / edit) — `:id` = `new` คือสร้างใหม่
  * ชนิดมาจากหน้าที่เปิด (recurring/allocation ล็อก) หรือ `?type=` · หน้ารวมไม่ระบุชนิด
- * ต้องเลือกชนิดก่อนกรอกส่วนอื่น · ชนิดเปลี่ยนไม่ได้หลังสร้าง
+ * หน้ารวมเริ่มด้วย recurring และเปลี่ยนชนิดได้ตอนสร้าง · ชนิดเปลี่ยนไม่ได้หลังสร้าง
  */
 export function JvTemplateDetail({
   kind,
@@ -64,7 +63,7 @@ export function JvTemplateDetail({
   );
 
   if (isNew) return <JvTemplateForm kind={kind} />;
-  if (isLoading) return <FormPageSkeleton />;
+  if (isLoading) return <JvTemplateSkeleton />;
   if (error || !data) {
     return (
       <ErrorState
@@ -78,6 +77,53 @@ export function JvTemplateDetail({
   return <JvTemplateForm key={data.id} kind={kind} template={data} />;
 }
 
+function JvTemplateSkeleton() {
+  return (
+    <div
+      className="@container/jvt-loading flex min-h-0 w-full min-w-0 flex-1 flex-col gap-3 px-4"
+      aria-busy="true"
+    >
+      <FormPageHeaderSkeleton />
+      <div className="grid grid-cols-1 gap-3 @md/jvt-loading:grid-cols-2 @3xl/jvt-loading:grid-cols-4 @min-[96rem]/jvt-loading:grid-cols-6">
+        {Array.from({ length: 3 }, (_, i) => (
+          <div
+            key={i}
+            className={
+              i === 1
+                ? "space-y-1.5 @3xl/jvt-loading:col-span-2 @min-[96rem]/jvt-loading:col-span-4"
+                : "space-y-1.5"
+            }
+          >
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-8 w-full" />
+          </div>
+        ))}
+      </div>
+      <div className="space-y-3 border-t pt-3">
+        <Skeleton className="h-5 w-20" />
+        <div className="grid grid-cols-1 gap-3 @md/jvt-loading:grid-cols-2 @3xl/jvt-loading:grid-cols-3 @min-[96rem]/jvt-loading:grid-cols-6">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="space-y-1.5">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-3 @md/jvt-loading:grid-cols-2">
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full" />
+      </div>
+      <div className="min-h-0 flex-1 space-y-2 overflow-hidden border-t pt-3">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <Skeleton className="h-10 w-full shrink-0" />
+    </div>
+  );
+}
+
 function JvTemplateForm({
   kind,
   template,
@@ -88,6 +134,15 @@ function JvTemplateForm({
   "use no memo";
   const page = JV_TEMPLATE_PAGES[kind];
   const t = useTranslations("accounting.jvTemplate");
+  const tc = useTranslations("common");
+  const tm = useTranslations("modules");
+  const pageTitle = tm(
+    kind === "all"
+      ? "templateVoucher"
+      : kind === "recurring"
+        ? "recurringVoucher"
+        : "allocationVoucher",
+  );
   const tv = useTranslations("validation");
   const tt = useTranslations("toast");
   const navigate = useNavigate();
@@ -110,7 +165,10 @@ function JvTemplateForm({
   const [showDelete, setShowDelete] = useState(false);
   const [showGenerate, setShowGenerate] = useState(false);
 
-  const defaultValues = getJvTemplateDefaultValues(template, presetType);
+  const defaultValues = getJvTemplateDefaultValues(
+    template,
+    presetType || page.creatableTypes[0],
+  );
   const f = useEntityForm<JvTemplateFormValues>({
     entity: template,
     resolver: zodResolver(
@@ -207,79 +265,74 @@ function JvTemplateForm({
     isView && !!template && template.is_active && canGenerate;
 
   return (
-    <FormPageShell
-      width="wide"
-      header={
-        <FormToolbar
-          entity={t("entity")}
-          mode={f.mode}
-          formId={FORM_ID}
-          isPending={isPending}
-          title={isAdd ? undefined : watchedName || template?.name}
-          onBack={f.handleBack}
-          onCancel={f.handleCancel}
-          onEdit={handleEdit}
-          onDelete={template ? () => setShowDelete(true) : undefined}
-          deleteIsPending={deleteTemplate.isPending}
-          permissionPrefix={PERMISSION_PREFIX}
-          badges={
-            <>
-              {!isAdd && watchedCode && (
-                <span className="text-muted-foreground shrink-0 text-sm">
-                  · {watchedCode}
-                </span>
-              )}
-              {watchedType && (
-                <Badge variant="outline" size="sm" className="shrink-0">
-                  {jvTemplateTypeLabel(t, watchedType)}
-                </Badge>
-              )}
-              {!isAdd && <StatusBadge active={watchedActive} />}
-            </>
-          }
-        >
-          {showGenerateButton && (
-            <Button
-              title={t("generate")}
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowGenerate(true)}
-            >
-              <Play />
-              <ToolbarLabel>{t("generate")}</ToolbarLabel>
-            </Button>
-          )}
-        </FormToolbar>
-      }
-    >
+    <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-3 px-4">
+      <FormToolbar
+        entity={t("entity")}
+        mode={f.mode}
+        formId={FORM_ID}
+        isPending={isPending}
+        title={isAdd ? pageTitle : watchedCode || template?.code || pageTitle}
+        subtitle={isAdd ? undefined : watchedName || template?.name}
+        submitLabel={tc("save")}
+        onBack={f.handleBack}
+        onCancel={f.handleCancel}
+        onEdit={handleEdit}
+        onDelete={template ? () => setShowDelete(true) : undefined}
+        deleteIsPending={deleteTemplate.isPending}
+        permissionPrefix={PERMISSION_PREFIX}
+        badges={
+          <>
+            {watchedType && (
+              <Badge variant="outline" size="sm" className="shrink-0">
+                {jvTemplateTypeLabel(t, watchedType)}
+              </Badge>
+            )}
+            {!isAdd && <StatusBadge active={watchedActive} />}
+          </>
+        }
+      >
+        {showGenerateButton && (
+          <Button
+            title={t("generate")}
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowGenerate(true)}
+          >
+            <Play />
+            <ToolbarLabel>{t("generate")}</ToolbarLabel>
+          </Button>
+        )}
+      </FormToolbar>
       <form
         id={FORM_ID}
+        className="flex min-h-0 flex-1 flex-col gap-3"
         noValidate
         onSubmit={form.handleSubmit(onSubmit, () =>
           scrollToFirstInvalidField(),
         )}
       >
-        <JvTemplateHeaderFields
-          form={form}
-          isView={isView}
-          isDisabled={isDisabled}
-          typeChoices={typeChoices}
-          onTypeChange={handleTypeChange}
-        />
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto">
+          <div className="shrink-0">
+            <JvTemplateHeaderFields
+              form={form}
+              isView={isView}
+              isDisabled={isDisabled}
+              typeChoices={typeChoices}
+              onTypeChange={handleTypeChange}
+            />
+          </div>
 
-        {watchedType && (
-          <SettingSection
-            wide
-            title={t("lines")}
-            description={t(`linesDesc_${watchedType}`)}
-          >
+          {watchedType && (
             <JvTemplateLines
               type={watchedType}
               control={form.control}
               readOnly={isDisabled}
             />
-          </SettingSection>
+          )}
+        </div>
+        {watchedType && (
+          <JvTemplateSummary type={watchedType} control={form.control} />
         )}
       </form>
 
@@ -314,6 +367,6 @@ function JvTemplateForm({
           template={template}
         />
       )}
-    </FormPageShell>
+    </div>
   );
 }

@@ -17,13 +17,21 @@ import {
 import ApInvoiceList from "../invoice/ap-invoice-list";
 import ApPaymentList from "../payment/ap-payment-list";
 
-const { listData } = vi.hoisted(() => ({ listData: { rows: [] as object[] } }));
+const { listData } = vi.hoisted(() => ({
+  listData: {
+    rows: [] as object[],
+    pathname: "/accounting/accounts-payable/invoice",
+  },
+}));
 
 vi.mock("@/hooks/use-bu-code", () => ({ useBuCode: () => "DEV" }));
 vi.mock("use-intl", () => ({
   useTranslations: () => (key: string) => key,
 }));
-vi.mock("react-router", () => ({ useNavigate: () => vi.fn() }));
+vi.mock("react-router", () => ({
+  useNavigate: () => vi.fn(),
+  useLocation: () => ({ pathname: listData.pathname }),
+}));
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => true }));
 vi.mock("@/hooks/use-profile", () => ({
   useProfile: () => ({
@@ -91,7 +99,11 @@ vi.mock("@/lib/xlsx-utils", () => ({
   downloadXlsx: vi.fn(),
   buildXlsxFileName: (prefix: string) => prefix,
 }));
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  listData.rows = [];
+  listData.pathname = "/accounting/accounts-payable/invoice";
+});
 
 it("exports every filtered invoice page while preserving decimal values", async () => {
   const rows = Array.from({ length: 101 }, (_, index) => ({
@@ -237,3 +249,24 @@ it("shows and exports applied amount, WHT, reference and workflow without roundi
     workflow: "Manager review",
   });
 });
+
+for (const [segment, docType] of [
+  ["deposit", "deposit"],
+  ["debit-note", "debit_note"],
+  ["credit-note", "credit_note"],
+]) {
+  it(`keeps ${segment} export scoped to its document type`, async () => {
+    listData.pathname = `/accounting/accounts-payable/${segment}`;
+    vi.mocked(httpApRepository.listInvoices).mockResolvedValueOnce({
+      data: [],
+    } as never);
+    render(<ApInvoiceList />);
+    await userEvent.click(screen.getByRole("button", { name: /^export$/ }));
+    await waitFor(() =>
+      expect(httpApRepository.listInvoices).toHaveBeenCalledWith(
+        "DEV",
+        expect.objectContaining({ filter: `doc_type|string:${docType}` }),
+      ),
+    );
+  });
+}

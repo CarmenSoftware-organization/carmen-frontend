@@ -4,7 +4,6 @@ import { useTranslations } from "use-intl";
 import {
   Field,
   FieldDatePicker,
-  FieldDescription,
   FieldInput,
   FieldLabel,
   FieldPlainText,
@@ -13,9 +12,8 @@ import {
 import { SelectContent, SelectItem } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { InputAmount } from "@/components/ui/input/input-amount";
-import { StatusSwitch } from "@/components/ui/status-switch";
+import { Switch } from "@/components/ui/switch";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { SettingSection } from "@/components/ui/setting-section";
 import { LookupCurrency } from "@/components/lookup/lookup-currency";
 import { formatCurrency } from "@/lib/currency-utils";
 import { formatDate } from "@/lib/date-utils";
@@ -65,8 +63,7 @@ function Item({
 }
 
 /**
- * หมวด General (ชนิด · code · ชื่อ · prefix · คำอธิบาย · active · note) และหมวดช่วงงวด/ยอด
- * ที่ช่องเปลี่ยนตามชนิด — แยกจาก `jv-template-detail.tsx` ให้ไฟล์หน้าเหลือแค่ลำดับงาน
+ * เรียงข้อมูลแม่แบบ → งวด/เงื่อนไขและการลงบัญชี → คำอธิบาย/หมายเหตุ
  */
 export function JvTemplateHeaderFields({
   form,
@@ -78,153 +75,132 @@ export function JvTemplateHeaderFields({
   readonly form: Form;
   readonly isView: boolean;
   readonly isDisabled: boolean;
-  /** มีค่า = add บนหน้ารวมที่ต้องเลือกชนิดก่อน · null = ชนิดล็อกแล้ว */
+  /** มีค่า = เปลี่ยนชนิดได้ตอนสร้างบนหน้ารวม · null = ชนิดล็อกแล้ว */
   readonly typeChoices: JvTemplateType[] | null;
   readonly onTypeChange: (type: JvTemplateType) => void;
 }) {
   const t = useTranslations("accounting.jvTemplate");
   const tfl = useTranslations("field");
   const { errors } = form.formState;
-  const { options: prefixOptions, isLoading: prefixLoading } =
-    useGlJvPrefixOptions();
   const v = useWatch({ control: form.control });
   const type = v.template_type ?? "";
 
   return (
-    <>
-      <SettingSection
-        first
-        title={tfl("general")}
-        description={t("generalDesc")}
-      >
-        <Field>
-          <FieldLabel>
-            {t("type")}
-            {typeChoices && <Required />}
-          </FieldLabel>
-          {typeChoices ? (
-            <Controller
-              control={form.control}
-              name="template_type"
-              render={({ field }) => (
-                <FieldSelect
-                  value={field.value}
-                  onValueChange={(next) => onTypeChange(next as JvTemplateType)}
-                  placeholder={t("chooseType")}
-                  error={errors.template_type?.message}
-                >
-                  <SelectContent>
-                    {typeChoices.map((ty) => (
-                      <SelectItem key={ty} value={ty}>
-                        {jvTemplateTypeLabel(t, ty)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </FieldSelect>
-              )}
+    <div className="@container/jvt-header space-y-3">
+      <section aria-label={tfl("general")}>
+        <div className="grid grid-cols-1 gap-3 @md/jvt-header:grid-cols-2 @3xl/jvt-header:grid-cols-4 @min-[96rem]/jvt-header:grid-cols-6">
+          {typeChoices && (
+            <Field>
+              <FieldLabel>
+                {t("type")}
+                <Required />
+              </FieldLabel>
+              <Controller
+                control={form.control}
+                name="template_type"
+                render={({ field }) => (
+                  <FieldSelect
+                    disabled={isDisabled}
+                    value={field.value}
+                    onValueChange={(next) =>
+                      onTypeChange(next as JvTemplateType)
+                    }
+                    placeholder={t("chooseType")}
+                    error={errors.template_type?.message}
+                  >
+                    <SelectContent>
+                      {typeChoices.map((ty) => (
+                        <SelectItem key={ty} value={ty}>
+                          {jvTemplateTypeLabel(t, ty)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </FieldSelect>
+                )}
+              />
+            </Field>
+          )}
+
+          <Item
+            label={t("code")}
+            htmlFor="jvt-code"
+            isView={isView}
+            required
+            view={v.code}
+          >
+            <FieldInput
+              id="jvt-code"
+              maxLength={50}
+              autoComplete="off"
+              disabled={isDisabled}
+              error={errors.code?.message}
+              {...form.register("code")}
             />
-          ) : (
-            <FieldPlainText>
-              {type ? jvTemplateTypeLabel(t, type) : ""}
-            </FieldPlainText>
-          )}
-          {/* ชนิดเลือกได้ครั้งเดียวตอนสร้าง — บอกตอนแก้ว่าทำไมช่องนี้ไม่ให้เปลี่ยน */}
-          {!typeChoices && !isView && (
-            <FieldDescription>{t("typeLocked")}</FieldDescription>
-          )}
-        </Field>
-        <span className="hidden sm:block" />
+          </Item>
+          <Item
+            label={t("name")}
+            htmlFor="jvt-name"
+            isView={isView}
+            required
+            className={
+              typeChoices
+                ? "@min-[96rem]/jvt-header:col-span-3"
+                : "@3xl/jvt-header:col-span-2 @min-[96rem]/jvt-header:col-span-4"
+            }
+            view={v.name}
+          >
+            <FieldInput
+              id="jvt-name"
+              autoComplete="off"
+              disabled={isDisabled}
+              error={errors.name?.message}
+              {...form.register("name")}
+            />
+          </Item>
 
-        <Item
-          label={t("code")}
-          htmlFor="jvt-code"
-          isView={isView}
-          required
-          view={v.code}
-        >
-          <FieldInput
-            id="jvt-code"
-            maxLength={50}
-            autoComplete="off"
-            disabled={isDisabled}
-            error={errors.code?.message}
-            {...form.register("code")}
-          />
-        </Item>
-        <Item
-          label={t("name")}
-          htmlFor="jvt-name"
-          isView={isView}
-          required
-          view={v.name}
-        >
-          <FieldInput
-            id="jvt-name"
-            autoComplete="off"
-            disabled={isDisabled}
-            error={errors.name?.message}
-            {...form.register("name")}
-          />
-        </Item>
-
-        <Item
-          label={t("prefix")}
-          isView={isView}
-          required
-          view={prefixOptions.find((o) => o.value === v.prefix_id)?.label}
-        >
-          <Controller
-            control={form.control}
-            name="prefix_id"
-            render={({ field }) => (
-              <FieldSelect
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isDisabled || prefixLoading}
-                placeholder={t("prefix")}
-                error={errors.prefix_id?.message}
-              >
-                <SelectContent>
-                  {prefixOptions.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </FieldSelect>
+          <Field>
+            <FieldLabel htmlFor={isView ? undefined : "jvt-active"}>
+              {t("active")}
+            </FieldLabel>
+            {isView ? (
+              <FieldPlainText>
+                <StatusBadge active={!!v.is_active} />
+              </FieldPlainText>
+            ) : (
+              <Controller
+                control={form.control}
+                name="is_active"
+                render={({ field }) => (
+                  <div className="flex min-h-8 items-center">
+                    <Switch
+                      id="jvt-active"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isDisabled}
+                      aria-label={t("active")}
+                    />
+                  </div>
+                )}
+              />
             )}
-          />
-        </Item>
-        <Field>
-          <FieldLabel htmlFor={isView ? undefined : "jvt-active"}>
-            {t("active")}
-          </FieldLabel>
-          {isView ? (
-            <FieldPlainText>
-              <StatusBadge active={!!v.is_active} />
-            </FieldPlainText>
-          ) : (
-            <Controller
-              control={form.control}
-              name="is_active"
-              render={({ field }) => (
-                <StatusSwitch
-                  id="jvt-active"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isDisabled}
-                  hideBadge
-                />
-              )}
-            />
-          )}
-        </Field>
+          </Field>
+        </div>
+      </section>
 
+      {type && (
+        <ScheduleSection
+          form={form}
+          type={type}
+          isView={isView}
+          isDisabled={isDisabled}
+        />
+      )}
+
+      <div className="grid grid-cols-1 gap-3 @md/jvt-header:grid-cols-2">
         <Item
           label={tfl("description")}
           htmlFor="jvt-description"
           isView={isView}
-          className="sm:col-span-2"
           view={v.description?.trim()}
         >
           <Textarea
@@ -239,7 +215,6 @@ export function JvTemplateHeaderFields({
           label={t("note")}
           htmlFor="jvt-note"
           isView={isView}
-          className="sm:col-span-2"
           view={v.note?.trim()}
         >
           <Textarea
@@ -250,17 +225,8 @@ export function JvTemplateHeaderFields({
             {...form.register("note")}
           />
         </Item>
-      </SettingSection>
-
-      {type && (
-        <ScheduleSection
-          form={form}
-          type={type}
-          isView={isView}
-          isDisabled={isDisabled}
-        />
-      )}
-    </>
+      </div>
+    </div>
   );
 }
 
@@ -277,6 +243,8 @@ function ScheduleSection({
 }) {
   const t = useTranslations("accounting.jvTemplate");
   const { dateFormat } = useProfile();
+  const { options: prefixOptions, isLoading: prefixLoading } =
+    useGlJvPrefixOptions();
   const { errors } = form.formState;
   const v = useWatch({ control: form.control });
   const amount = (n: number | null | undefined) =>
@@ -343,138 +311,173 @@ function ScheduleSection({
   );
 
   return (
-    <SettingSection
-      title={t("sectionSchedule")}
-      description={t(`scheduleDesc_${type}`)}
+    <section
+      className="space-y-3 border-t pt-3"
+      aria-labelledby="jvt-schedule-heading"
     >
-      {periodPair("from", "from_fiscal_year", "from_period_no")}
-      {periodPair("to", "to_fiscal_year", "to_period_no")}
+      <h2 id="jvt-schedule-heading" className="text-sm font-semibold">
+        {t("sectionSchedule")}
+      </h2>
+      <div className="grid grid-cols-1 gap-3 @md/jvt-header:grid-cols-2 @3xl/jvt-header:grid-cols-3 @min-[96rem]/jvt-header:grid-cols-6">
+        {periodPair("from", "from_fiscal_year", "from_period_no")}
+        {periodPair("to", "to_fiscal_year", "to_period_no")}
 
-      {type === "recurring" && (
-        <Item
-          label={t("frequencyMonths")}
-          htmlFor="jvt-frequency"
-          isView={isView}
-          required
-          view={v.frequency_months}
-        >
-          <FieldInput
-            id="jvt-frequency"
-            type="number"
-            inputMode="numeric"
-            min={1}
-            disabled={isDisabled}
-            error={errors.frequency_months?.message}
-            {...form.register("frequency_months", { valueAsNumber: true })}
-          />
-        </Item>
-      )}
-
-      {type === "allocation" && (
-        <Item
-          label={t("allocateAmount")}
-          isView={isView}
-          required
-          view={amount(v.allocate_amount)}
-        >
-          {nullableAmount("allocate_amount")}
-        </Item>
-      )}
-
-      {type === "amortize" && (
-        <>
+        {type === "recurring" && (
           <Item
-            label={t("amortizeType")}
+            label={t("frequencyMonths")}
+            htmlFor="jvt-frequency"
             isView={isView}
             required
-            view={v.amortize_type ? t(`amortize_${v.amortize_type}`) : ""}
+            view={v.frequency_months}
           >
-            <Controller
-              control={form.control}
-              name="amortize_type"
-              render={({ field }) => (
-                <FieldSelect
-                  value={field.value ?? ""}
-                  onValueChange={field.onChange}
-                  disabled={isDisabled}
-                  error={errors.amortize_type?.message}
-                >
-                  <SelectContent>
-                    <SelectItem value="monthly">
-                      {t("amortize_monthly")}
-                    </SelectItem>
-                    <SelectItem value="day_in_month">
-                      {t("amortize_day_in_month")}
-                    </SelectItem>
-                  </SelectContent>
-                </FieldSelect>
-              )}
+            <FieldInput
+              id="jvt-frequency"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              disabled={isDisabled}
+              error={errors.frequency_months?.message}
+              {...form.register("frequency_months", { valueAsNumber: true })}
             />
           </Item>
+        )}
+        {type === "allocation" && (
           <Item
-            label={t("totalAmount")}
+            label={t("allocateAmount")}
             isView={isView}
             required
-            view={amount(v.total_amount)}
+            view={amount(v.allocate_amount)}
           >
-            {nullableAmount("total_amount")}
+            {nullableAmount("allocate_amount")}
           </Item>
-          {(["start_date", "end_date"] as const).map((name) => (
+        )}
+
+        {type === "amortize" && (
+          <>
             <Item
-              key={name}
-              label={t(name === "start_date" ? "startDate" : "endDate")}
+              label={t("amortizeType")}
               isView={isView}
               required
-              view={v[name] ? formatDate(ymdToPicker(v[name]), dateFormat) : ""}
+              view={v.amortize_type ? t(`amortize_${v.amortize_type}`) : ""}
             >
               <Controller
                 control={form.control}
-                name={name}
+                name="amortize_type"
                 render={({ field }) => (
-                  <FieldDatePicker
-                    value={ymdToPicker(field.value)}
-                    onValueChange={(iso) => field.onChange(ymdFromPicker(iso))}
+                  <FieldSelect
+                    value={field.value ?? ""}
+                    onValueChange={field.onChange}
                     disabled={isDisabled}
-                    className="w-full"
-                    error={errors[name]?.message}
-                  />
+                    error={errors.amortize_type?.message}
+                  >
+                    <SelectContent>
+                      <SelectItem value="monthly">
+                        {t("amortize_monthly")}
+                      </SelectItem>
+                      <SelectItem value="day_in_month">
+                        {t("amortize_day_in_month")}
+                      </SelectItem>
+                    </SelectContent>
+                  </FieldSelect>
                 )}
               />
             </Item>
-          ))}
-        </>
-      )}
-
-      {/* LookupCurrency มีโหมด readOnly ของตัวเอง (แสดงป้ายสกุลเงิน) — Item จึงไม่ต้องสลับให้ */}
-      <Item label={t("currency")} isView={false} view={null}>
-        <Controller
-          control={form.control}
-          name="currency_id"
-          render={({ field }) => (
-            <LookupCurrency
-              value={field.value}
-              onValueChange={field.onChange}
-              onItemChange={(c) => {
-                if (c.exchange_rate && c.exchange_rate > 0) {
-                  form.setValue("exchange_rate", c.exchange_rate, {
-                    shouldDirty: true,
-                  });
+            <Item
+              label={t("totalAmount")}
+              isView={isView}
+              required
+              view={amount(v.total_amount)}
+            >
+              {nullableAmount("total_amount")}
+            </Item>
+            {(["start_date", "end_date"] as const).map((name) => (
+              <Item
+                key={name}
+                label={t(name === "start_date" ? "startDate" : "endDate")}
+                isView={isView}
+                required
+                view={
+                  v[name] ? formatDate(ymdToPicker(v[name]), dateFormat) : ""
                 }
-              }}
-              readOnly={isView}
-              disabled={isDisabled}
-              fullWidth
-            />
-          )}
-        />
-      </Item>
-      <Item
-        label={t("exchangeRate")}
-        isView={isView}
-        view={v.exchange_rate == null ? "" : String(v.exchange_rate)}
-      >
-        {nullableAmount("exchange_rate", 5)}
-      </Item>
-    </SettingSection>
+              >
+                <Controller
+                  control={form.control}
+                  name={name}
+                  render={({ field }) => (
+                    <FieldDatePicker
+                      value={ymdToPicker(field.value)}
+                      onValueChange={(iso) =>
+                        field.onChange(ymdFromPicker(iso))
+                      }
+                      disabled={isDisabled}
+                      className="w-full"
+                      error={errors[name]?.message}
+                    />
+                  )}
+                />
+              </Item>
+            ))}
+          </>
+        )}
+        <Item
+          label={t("prefix")}
+          isView={isView}
+          required
+          view={prefixOptions.find((o) => o.value === v.prefix_id)?.label}
+        >
+          <Controller
+            control={form.control}
+            name="prefix_id"
+            render={({ field }) => (
+              <FieldSelect
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isDisabled || prefixLoading}
+                placeholder={t("prefix")}
+                error={errors.prefix_id?.message}
+              >
+                <SelectContent>
+                  {prefixOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </FieldSelect>
+            )}
+          />
+        </Item>
+        {/* LookupCurrency มีโหมด readOnly ของตัวเอง (แสดงป้ายสกุลเงิน) — Item จึงไม่ต้องสลับให้ */}
+        <Item label={t("currency")} isView={false} view={null}>
+          <Controller
+            control={form.control}
+            name="currency_id"
+            render={({ field }) => (
+              <LookupCurrency
+                value={field.value}
+                onValueChange={field.onChange}
+                onItemChange={(c) => {
+                  if (c.exchange_rate && c.exchange_rate > 0) {
+                    form.setValue("exchange_rate", c.exchange_rate, {
+                      shouldDirty: true,
+                    });
+                  }
+                }}
+                readOnly={isView}
+                disabled={isDisabled}
+                fullWidth
+              />
+            )}
+          />
+        </Item>
+        <Item
+          label={t("exchangeRate")}
+          isView={isView}
+          view={v.exchange_rate == null ? "" : String(v.exchange_rate)}
+        >
+          {nullableAmount("exchange_rate", 5)}
+        </Item>
+      </div>
+    </section>
   );
 }

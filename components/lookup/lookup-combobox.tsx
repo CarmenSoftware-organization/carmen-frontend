@@ -65,6 +65,7 @@ interface LookupComboboxProps<T> {
   readonly getLabel: (item: T) => string;
   readonly placeholder?: string;
   readonly searchPlaceholder?: string;
+  /** Trigger fills its field/cell by default; use an explicit width or w-fit for inline controls. */
   readonly className?: string;
   readonly disabled?: boolean;
   readonly isLoading?: boolean;
@@ -292,7 +293,7 @@ export function LookupCombobox<T>({
                 aria-expanded={open}
                 aria-invalid={!!error}
                 className={cn(
-                  "bg-field flex items-center justify-between pr-1 pl-3 text-xs",
+                  "bg-field flex w-full min-w-0 items-center justify-between pr-1 pl-3 text-xs",
                   size === "default" && "h-9",
                   size === "sm" && "h-8",
                   size === "xs" && "h-6 gap-1 px-2 text-xs",

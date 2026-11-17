@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router";
+import { createBrowserRouter, Navigate, redirect } from "react-router";
 import { RequireAuth } from "@/components/auth/require-auth";
 import LandingRedirect from "./landing-redirect";
 import AppRoot from "./app-root";
@@ -945,6 +945,64 @@ export const router = createBrowserRouter([
                   import("./accounting/settings/accounting-settings.route"),
               },
               {
+                path: "cheque-reconciliation",
+                loader: ({ request }) =>
+                  redirect(
+                    `/accounting/accounts-receivable/cheque-reconciliation${new URL(request.url).search}`,
+                  ),
+              },
+              {
+                path: "accounts-receivable/cheque-reconciliation",
+                lazy: () =>
+                  import("./accounting/operations/cheque-reconciliation.route"),
+              },
+              {
+                path: "output-tax",
+                loader: ({ request }) =>
+                  redirect(
+                    `/accounting/accounts-receivable/output-tax${new URL(request.url).search}`,
+                  ),
+              },
+              {
+                path: "accounts-receivable/output-tax",
+                lazy: () => import("./accounting/operations/output-tax.route"),
+              },
+              {
+                path: "accounts-receivable/advance-deposit",
+                lazy: () =>
+                  import("./accounting/accounts-receivable/ar-advance-deposit.route"),
+              },
+              {
+                path: "accounts-payable/deposit",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-list.route"),
+              },
+              {
+                path: "accounts-payable/deposit/:id",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-detail.route"),
+              },
+              {
+                path: "accounts-payable/debit-note",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-list.route"),
+              },
+              {
+                path: "accounts-payable/debit-note/:id",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-detail.route"),
+              },
+              {
+                path: "accounts-payable/credit-note",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-list.route"),
+              },
+              {
+                path: "accounts-payable/credit-note/:id",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-detail.route"),
+              },
+              {
                 path: "accounts-payable",
                 lazy: () =>
                   import("./accounting/accounts-payable/ap-dashboard.route"),
@@ -985,6 +1043,11 @@ export const router = createBrowserRouter([
                   import("./accounting/accounts-receivable/ar-profile.route"),
               },
               {
+                path: "accounts-receivable/profile/:id",
+                lazy: () =>
+                  import("./accounting/accounts-receivable/ar-profile-detail.route"),
+              },
+              {
                 path: "accounts-receivable/invoice",
                 lazy: () =>
                   import("./accounting/accounts-receivable/ar-invoice-list.route"),
@@ -996,45 +1059,78 @@ export const router = createBrowserRouter([
               },
               {
                 path: "accounts-receivable/preview",
-                element: <Navigate to="/accounting/accounts-receivable" replace />,
+                element: (
+                  <Navigate to="/accounting/accounts-receivable" replace />
+                ),
               },
               {
                 path: "accounts-receivable/preview/invoice",
-                element: <Navigate to="/accounting/accounts-receivable/invoice" replace />,
+                element: (
+                  <Navigate
+                    to="/accounting/accounts-receivable/invoice"
+                    replace
+                  />
+                ),
               },
               {
                 path: "accounts-receivable/preview/invoice/:id",
-                element: <Navigate to="/accounting/accounts-receivable/invoice" replace />,
+                element: (
+                  <Navigate
+                    to="/accounting/accounts-receivable/invoice"
+                    replace
+                  />
+                ),
               },
               {
                 path: "accounts-receivable/preview/folio",
-                element: <Navigate to="/accounting/accounts-receivable/folio" replace />,
+                element: (
+                  <Navigate
+                    to="/accounting/accounts-receivable/folio"
+                    replace
+                  />
+                ),
               },
               {
                 path: "accounts-receivable/preview/contracts",
-                element: <Navigate to="/accounting/accounts-receivable/contract" replace />,
+                element: (
+                  <Navigate
+                    to="/accounting/accounts-receivable/contract"
+                    replace
+                  />
+                ),
               },
               {
                 path: "accounts-receivable/preview/profiles",
-                element: <Navigate to="/accounting/accounts-receivable/profile" replace />,
+                element: (
+                  <Navigate
+                    to="/accounting/accounts-receivable/profile"
+                    replace
+                  />
+                ),
               },
               {
                 path: "accounts-receivable/folio",
-                lazy: () => import("./accounting/accounts-receivable/ar-folio.route"),
+                lazy: () =>
+                  import("./accounting/accounts-receivable/ar-folio.route"),
               },
               {
                 path: "accounts-receivable/contract",
-                lazy: () => import("./accounting/accounts-receivable/ar-contract.route"),
+                element: (
+                  <Navigate
+                    to="/accounting/accounts-receivable/profile"
+                    replace
+                  />
+                ),
               },
               {
                 path: "accounts-receivable/receipt",
                 lazy: () =>
-                  import("./accounting/documents/accounting-document-list.route"),
+                  import("./accounting/accounts-receivable/ar-receipt-list.route"),
               },
               {
                 path: "accounts-receivable/receipt/:id",
                 lazy: () =>
-                  import("./accounting/documents/accounting-document-detail.route"),
+                  import("./accounting/accounts-receivable/ar-receipt-detail.route"),
               },
               {
                 path: "financial-reports",

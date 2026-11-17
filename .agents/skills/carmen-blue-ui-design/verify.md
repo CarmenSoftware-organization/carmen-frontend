@@ -25,6 +25,10 @@ locale and any temporary theme override when finished.
 With read-only DOM inspection when supported, check:
 
 - Page scroll width does not exceed the viewport width.
+- Form/table lookups fill their available content box, including empty, selected,
+  loading and disabled states; compare with adjacent inputs. Check compact inline
+  exceptions separately. Run `bun run test:ui` for the shared browser geometry
+  contract (also included in the full `bun test:run` suite).
 - A table's width does not exceed its frame; intentionally scrollable editable grids stay inside
   their own scroll container rather than creating page scroll.
 - Footer/bar groups have a nonnegative gap and no clipped or overlapping text.
@@ -36,6 +40,11 @@ With read-only DOM inspection when supported, check:
 
 Capture screenshots of relevant states. If a requested viewport or inspection capability is not
 available, report that limitation; source inspection does not prove visual correctness.
+
+Source callsite coverage and browser coverage are different evidence. State the exact
+routes/modes/viewports exercised; a mocked lookup in a unit test does not verify that
+lookup's appearance. Do not report an entire page or module verified from a shared
+component check alone.
 
 ## Exercise real behavior
 

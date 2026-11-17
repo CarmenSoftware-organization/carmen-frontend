@@ -79,7 +79,11 @@ export function useApPaymentTable({
         </span>
       ),
       size: 220,
-      meta: { headerTitle: t("vendor"), skeleton: columnSkeletons.text },
+      meta: {
+        headerTitle: t("vendor"),
+        skeleton: columnSkeletons.text,
+        grow: true,
+      },
     },
     {
       accessorKey: "bank_account_name",

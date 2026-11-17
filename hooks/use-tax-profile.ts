@@ -14,6 +14,7 @@ const crud = createConfigCrud<TaxProfile, CreateTaxProfileDto>({
 });
 
 export const useTaxProfile = crud.useList;
+export const useTaxProfileById = crud.useById;
 
 export const useCreateTaxProfile = crud.useCreate;
 

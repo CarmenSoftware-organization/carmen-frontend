@@ -836,6 +836,7 @@ function useVisibleInvoiceDimensions(line: InvoiceFormLine) {
     dimensions,
     values,
     rules,
+    accountQuery,
     isError:
       rules.isError ||
       (selected.length > 0 && accountQuery.isError) ||
@@ -855,38 +856,54 @@ function InvoiceDimensions({
   readonly onChange: (patch: Patch) => void;
 }) {
   const ui = useTranslations("accounting.accountsPayable.ui");
-  const { dimensions, values, rules, visible } = state;
+  const { dimensions, values, rules, visible, accountQuery } = state;
   const selected = line.carry?.dimensions ?? [];
-  if (state.isError)
-    return (
-      <div role="alert" className="text-destructive text-xs">
-        {ui("dimensionLoadError")}
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            void rules.refetch();
-            void dimensions.refetch();
-            void values.refetch();
-          }}
-        >
-          {ui("retry")}
-        </Button>
-      </div>
-    );
   return (
     <div className="grid gap-3 border-b pb-4 sm:grid-cols-2">
+      {state.isError && (
+        <div role="alert" className="text-destructive text-xs">
+          {ui("dimensionLoadError")}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              void accountQuery.refetch();
+              void rules.refetch();
+              void dimensions.refetch();
+              void values.refetch();
+            }}
+          >
+            {ui("retry")}
+          </Button>
+        </div>
+      )}
       {visible.map((dimension) => {
         const value = selected.find(
           (item) => item.gl_dimension_id === dimension.id,
         )?.gl_dimension_value_id;
         return (
           <Field key={dimension.id}>
-            <FieldLabel>{dimension.name}</FieldLabel>
+            <FieldLabel
+              required={rules.data?.some(
+                (rule) =>
+                  rule.gl_dimension_id === dimension.id &&
+                  rule.requirement === "mandatory",
+              )}
+            >
+              {dimension.name}
+            </FieldLabel>
             <Select
               value={value ?? "__none__"}
-              disabled={!editable || dimensions.isLoading || values.isLoading}
+              disabled={
+                !editable ||
+                state.isError ||
+                !accountQuery.data ||
+                accountQuery.isLoading ||
+                rules.isLoading ||
+                dimensions.isLoading ||
+                values.isLoading
+              }
               onValueChange={(id) => {
                 const next = selected.filter(
                   (item) => item.gl_dimension_id !== dimension.id,

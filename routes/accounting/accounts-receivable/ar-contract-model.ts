@@ -1,3 +1,13 @@
+import { round2 } from "@/lib/currency-utils";
+import { arLineAmounts, type ArDraftLine } from "./ar-invoice-draft-model";
+
+export interface ArContractDocument {
+  name: string;
+  mime: string;
+  data: string;
+  size?: number;
+}
+
 export interface ArContract {
   id: string;
   contractNo: string;
@@ -12,7 +22,55 @@ export interface ArContract {
   currency: string;
   rate: number;
   amount: number;
-  document?: { name: string; mime: string; data: string };
+  lines?: ArDraftLine[];
+  document?: ArContractDocument;
+  documents?: ArContractDocument[];
+}
+
+/** Existing header-only samples keep their amount until their first line edit. */
+export function contractAmount(record: Pick<ArContract, "amount" | "lines">) {
+  return record.lines
+    ? round2(
+        record.lines.reduce((sum, line) => sum + arLineAmounts(line).total, 0),
+      )
+    : record.amount;
+}
+
+export function contractLineError(lines: ArDraftLine[]) {
+  if (!lines.length) return "lineRequired";
+  for (const line of lines) {
+    if (
+      !line.cr_chart_of_accounts_id ||
+      !line.cr_cost_center_id ||
+      !line.dr_chart_of_accounts_id ||
+      !line.dr_cost_center_id
+    )
+      return "lineAccountsRequired";
+    const amounts = arLineAmounts(line);
+    if (
+      !Number.isFinite(amounts.total) ||
+      !Number.isFinite(Number(line.quantity)) ||
+      !Number.isFinite(Number(line.unit_price)) ||
+      !String(line.unit_price).trim() ||
+      Number(line.quantity) <= 0 ||
+      Number(line.unit_price) < 0 ||
+      amounts.discount < 0 ||
+      amounts.discount > amounts.subtotal ||
+      amounts.vat < 0 ||
+      amounts.tax2 < 0
+    )
+      return "lineAmountsInvalid";
+    if (line.date_from && line.date_to && line.date_from > line.date_to)
+      return "dateOrder";
+    if (
+      (amounts.vat > 0 &&
+        (!line.vat_chart_of_accounts_id || !line.vat_cost_center_id)) ||
+      (amounts.tax2 > 0 &&
+        (!line.tax2_chart_of_accounts_id || !line.tax2_cost_center_id))
+    )
+      return "lineTaxAccountsRequired";
+  }
+  return undefined;
 }
 
 interface ContractSamples {
@@ -107,9 +165,17 @@ export function nextContractNo(data: ContractSamples, startDate: string) {
 export function saveContractSample(bu: string, record: ArContract) {
   const current = readContractSamples(bu);
   const exists = current.records.some((item) => item.id === record.id);
+  const normalized = {
+    ...record,
+    amount: contractAmount(record),
+    lines: record.lines?.map((line, index) => ({
+      ...line,
+      sequence_no: index + 1,
+    })),
+  };
   const saved = exists
-    ? record
-    : { ...record, contractNo: nextContractNo(current, record.startDate) };
+    ? normalized
+    : { ...normalized, contractNo: nextContractNo(current, record.startDate) };
   const year = saved.contractNo.slice(0, 4);
   const next: ContractSamples = {
     records: exists

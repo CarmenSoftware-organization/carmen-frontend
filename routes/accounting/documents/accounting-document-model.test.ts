@@ -24,7 +24,15 @@ describe("accounting navigation", () => {
       accounting.subModules
         ?.find((item) => item.name === "accountsPayable")
         ?.subModules?.map((item) => item.name),
-    ).toEqual(["apDashboard", "apInvoice", "apPayment", "apPaymentApprovals"]);
+    ).toEqual([
+      "apDashboard",
+      "apInvoice",
+      "apDeposit",
+      "apDebitNote",
+      "apCreditNote",
+      "apPayment",
+      "apPaymentApprovals",
+    ]);
   });
 
   it("keeps existing documents read-only until edit and opens new documents in add mode", () => {

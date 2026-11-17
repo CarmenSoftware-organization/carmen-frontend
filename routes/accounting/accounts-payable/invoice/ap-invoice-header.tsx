@@ -46,6 +46,7 @@ export function InvoiceHeader({
   status = "draft",
   source = "manual",
   sourceDoc,
+  fixedDocType = false,
 }: {
   readonly form: InvoiceForm;
   readonly onChange: (patch: Partial<InvoiceForm>) => void;
@@ -58,6 +59,7 @@ export function InvoiceHeader({
   readonly status?: ApDocStatus;
   readonly source?: ApDocSource;
   readonly sourceDoc?: string;
+  readonly fixedDocType?: boolean;
 }) {
   const t = useTranslations("accounting.accountsPayable.invoice");
   const ui = useTranslations("accounting.accountsPayable.ui");
@@ -236,7 +238,7 @@ export function InvoiceHeader({
           {editable ? (
             <Select
               value={form.doc_type}
-              disabled={!isNew}
+              disabled={!isNew || fixedDocType}
               onValueChange={(value) =>
                 onChange({ doc_type: value as ApDocType })
               }

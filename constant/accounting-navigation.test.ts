@@ -33,6 +33,9 @@ describe("accounting launcher navigation", () => {
     expect(accountsPayable.subModules?.map((item) => item.name)).toEqual([
       "apDashboard",
       "apInvoice",
+      "apDeposit",
+      "apDebitNote",
+      "apCreditNote",
       "apPayment",
       "apPaymentApprovals",
     ]);
@@ -46,10 +49,32 @@ describe("accounting launcher navigation", () => {
       "arFolio",
       "arInvoice",
       "arReceipt",
-      "arContract",
+      "arAdvanceDeposit",
+      "chequeReconciliation",
+      "outputTax",
     ]);
     expect(ar.subModules?.some(({ path }) => path.includes("/preview"))).toBe(
       false,
     );
+  });
+
+  it("keeps received-cheque and output VAT governance under AR per FRD v1.1", () => {
+    for (const path of [
+      "/accounting/accounts-receivable/cheque-reconciliation",
+      "/accounting/accounts-receivable/output-tax",
+    ]) {
+      expect(findAccountingSection(path).name).toBe("accountsReceivable");
+      expect(
+        findAccountingSection(path).subModules?.some(
+          (item) =>
+            item.path === path && item.licenseFeature === "accounting.ar",
+        ),
+      ).toBe(true);
+      expect(
+        accountingModuleSections[0].subModules?.some(
+          (item) => item.path === path,
+        ),
+      ).toBe(false);
+    }
   });
 });

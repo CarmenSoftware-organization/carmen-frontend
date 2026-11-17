@@ -31,7 +31,6 @@ import {
   ReceiptText,
   Save,
   Send,
-  ShieldCheck,
   ThumbsDown,
   Trash2,
   Undo2,
@@ -274,7 +273,6 @@ export default function AccountingDocumentDetail() {
   const { id } = useParams<{ id: string }>();
   const t = useTranslations("accounting.documents");
   const tc = useTranslations("common");
-  const tfl = useTranslations("field");
   const errorToast = useErrorToast();
   const config = accountingDocumentFromPath(pathname);
   const isJournalVoucher = config.kind === "journalVoucher";
@@ -1120,7 +1118,7 @@ export default function AccountingDocumentDetail() {
       : (journal?.source_no ?? journal?.source_id ?? "—")
     : "AP-102934";
 
-  // หัวเอกสารทรงเดียวกับ PR/PO/GRN: เลขที่ใบ │ สถานะ · ที่มา · รุ่น แล้วแถบ
+  // หัวเอกสารทรงเดียวกับ PR/PO/GRN: เลขที่ใบ │ สถานะ แล้วแถบ
   // workflow อยู่ใต้เลขที่ใบ (กดเปิดประวัติได้) — เดิมสถานะ/ที่มาไปอยู่ขวาสุดของ
   // แถบ Schedule Post และ workflow track ปนอยู่กลางแถบเดียวกัน
   const jvHistory: WorkflowHistoryTimelineEntry[] = Array.isArray(
@@ -1136,11 +1134,6 @@ export default function AccountingDocumentDetail() {
           status={journal.jv_status}
           label={jvStatusLabel(journal.jv_status)}
         />
-        {journal.doc_version != null && (
-          <span className="text-muted-foreground text-micro">
-            {tfl("version")} {journal.doc_version}
-          </span>
-        )}
       </div>
     ) : undefined;
   const jvWorkflowStep =
@@ -1916,25 +1909,6 @@ export default function AccountingDocumentDetail() {
                   className="bg-border hidden h-8 w-px xl:block"
                   aria-hidden="true"
                 />
-              )}
-
-              {sourceGenerated && journal && (
-                <div className="flex min-h-8 flex-wrap items-center gap-2 text-xs">
-                  <ShieldCheck
-                    className="text-primary size-4"
-                    aria-hidden="true"
-                  />
-                  <span className="font-medium">
-                    Source-generated · Read-only
-                  </span>
-                  <span className="text-muted-foreground">
-                    v{journal.source_version ?? "—"} ·{" "}
-                    {journal.event_type ?? "—"}
-                    {journal.posting_rule_code
-                      ? ` · ${journal.posting_rule_code}`
-                      : ""}
-                  </span>
-                </div>
               )}
 
               {isJournalVoucher ? (

@@ -1,0 +1,580 @@
+{
+  "date": "2026-11-17",
+  "backend": "https://dev.blueledgers.com:4001",
+  "bu": "CARMEN-FIFO",
+  "run": "20261117-904355",
+  "noApiMocking": true,
+  "baseline": [],
+  "temporary": [
+    {
+      "id": "56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "code": "QA-CRUD-REC-20261117-904355",
+      "type": "recurring",
+      "deleted": true
+    },
+    {
+      "id": "7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "code": "QA-CRUD-ALLOCATION-20261117-904355",
+      "type": "allocation",
+      "deleted": true
+    },
+    {
+      "id": "1e0b9ad4-4fe0-44c7-9404-62eb1005e666",
+      "code": "QA-CRUD-AMORTIZE-20261117-904355",
+      "type": "amortize",
+      "deleted": true
+    },
+    {
+      "id": "42181158-a692-4031-b933-03452484b4fd",
+      "code": "QA-CRUD-TPL-20261117-904355",
+      "type": "template-menu-recurring",
+      "deleted": true
+    }
+  ],
+  "retained": [
+    {
+      "id": "02af86a2-4f2c-4ee6-ad7f-0e49c56444b1",
+      "code": "DEMO-REC-20261117-904355",
+      "type": "recurring",
+      "name": "ตัวอย่าง Recurring — ค่าใช้จ่ายรายเดือน",
+      "is_active": false
+    },
+    {
+      "id": "65b17b30-9d7f-4b72-93b8-a66e3109fda1",
+      "code": "DEMO-ALLOC-20261117-904355",
+      "type": "allocation",
+      "name": "ตัวอย่าง Allocation — ปันส่วนค่าใช้จ่าย 60/40",
+      "is_active": false
+    }
+  ],
+  "checks": [
+    {
+      "type": "recurring",
+      "createRead": true,
+      "id": "56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "version": 0,
+      "lines": 2
+    },
+    {
+      "type": "allocation",
+      "createRead": true,
+      "id": "7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "version": 0,
+      "lines": 2
+    },
+    {
+      "type": "amortize",
+      "createRead": true,
+      "id": "1e0b9ad4-4fe0-44c7-9404-62eb1005e666",
+      "version": 0,
+      "lines": 2
+    },
+    {
+      "type": "recurring",
+      "uiUpdate": true,
+      "currencyRateRetained": true,
+      "version": 1
+    },
+    {
+      "type": "recurring",
+      "rapidUiEdits": 2,
+      "version": 4,
+      "currencyRateRetained": true
+    },
+    {
+      "check": "staleVersion",
+      "status": 409,
+      "error": "COMMON_DOC_VERSION_CONFLICT"
+    },
+    {
+      "check": "duplicateCode",
+      "status": 409
+    },
+    {
+      "check": "unbalancedRejected",
+      "status": 422,
+      "error": "GL_JV_TEMPLATE_NOT_BALANCED"
+    },
+    {
+      "type": "allocation",
+      "uiUpdate": true,
+      "amount": 1500,
+      "version": 2,
+      "lineEdit": true
+    },
+    {
+      "type": "amortize",
+      "uiUpdate": true,
+      "amount": 2400,
+      "version": 2,
+      "lineEdit": true,
+      "datesRetained": true
+    },
+    {
+      "type": "amortize",
+      "uiDelete": true,
+      "getAfterDelete": 404
+    },
+    {
+      "type": "allocation",
+      "uiDelete": true,
+      "getAfterDelete": 404
+    },
+    {
+      "type": "recurring",
+      "uiDelete": true,
+      "getAfterDelete": 404
+    },
+    {
+      "type": "recurring",
+      "uiCreate": true,
+      "amount": 1000,
+      "retainedId": "02af86a2-4f2c-4ee6-ad7f-0e49c56444b1"
+    },
+    {
+      "type": "allocation",
+      "uiCreate": true,
+      "amount": 1200,
+      "ratioSplit": [0.6, 1, 0.4],
+      "retainedId": "65b17b30-9d7f-4b72-93b8-a66e3109fda1"
+    },
+    {
+      "menu": "template-voucher",
+      "uiCreate": true,
+      "id": "42181158-a692-4031-b933-03452484b4fd",
+      "optionalFieldsAccepted": true
+    },
+    {
+      "menu": "template-voucher",
+      "uiDelete": true,
+      "id": "42181158-a692-4031-b933-03452484b4fd",
+      "getAfterDelete": 404
+    }
+  ],
+  "httpEvents": [
+    {
+      "method": "POST",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 401,
+      "at": "2026-11-17T08:59:36.967Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 201,
+      "at": "2026-11-17T08:59:37.944Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T08:59:38.060Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 200,
+      "at": "2026-11-17T08:59:38.680Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T08:59:59.657Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 201,
+      "at": "2026-11-17T09:00:39.425Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "status": 200,
+      "at": "2026-11-17T09:00:39.513Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 201,
+      "at": "2026-11-17T09:00:39.654Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/1e0b9ad4-4fe0-44c7-9404-62eb1005e666",
+      "status": 200,
+      "at": "2026-11-17T09:00:39.766Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:00:39.836Z"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:01:02.533Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:01:02.691Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:01:02.811Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:01:25.140Z"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:01:25.349Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:01:25.494Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "status": 200,
+      "at": "2026-11-17T09:01:25.639Z"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "status": 200,
+      "at": "2026-11-17T09:01:25.854Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "status": 200,
+      "at": "2026-11-17T09:01:25.973Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/1e0b9ad4-4fe0-44c7-9404-62eb1005e666",
+      "status": 200,
+      "at": "2026-11-17T09:01:26.083Z"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/1e0b9ad4-4fe0-44c7-9404-62eb1005e666",
+      "status": 200,
+      "at": "2026-11-17T09:01:26.228Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/1e0b9ad4-4fe0-44c7-9404-62eb1005e666",
+      "status": 200,
+      "at": "2026-11-17T09:01:26.325Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:01:27.949Z"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:01:59.719Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:01:59.852Z"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:02:07.169Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:02:07.312Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:02:07.782Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:02:58.283Z"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 409,
+      "at": "2026-11-17T09:02:58.591Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 409,
+      "at": "2026-11-17T09:02:58.831Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 422,
+      "at": "2026-11-17T09:02:58.988Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:02:59.094Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "status": 200,
+      "at": "2026-11-17T09:03:00.983Z"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "status": 200,
+      "at": "2026-11-17T09:03:32.765Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "status": 200,
+      "at": "2026-11-17T09:03:32.916Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "status": 200,
+      "at": "2026-11-17T09:03:33.166Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/1e0b9ad4-4fe0-44c7-9404-62eb1005e666",
+      "status": 200,
+      "at": "2026-11-17T09:03:35.315Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "status": 200,
+      "at": "2026-11-17T09:04:48.836Z"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "status": 200,
+      "at": "2026-11-17T09:04:54.866Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "status": 404,
+      "at": "2026-11-17T09:04:55.213Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/7ebe3fa6-6d4c-469b-8209-f47b729af285",
+      "status": 404,
+      "at": "2026-11-17T09:04:55.299Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:04:56.930Z"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 200,
+      "at": "2026-11-17T09:04:58.954Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 404,
+      "at": "2026-11-17T09:04:59.102Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/56b2fba6-9717-40f6-b7fa-a9a889a207fb",
+      "status": 404,
+      "at": "2026-11-17T09:04:59.291Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 200,
+      "at": "2026-11-17T09:04:59.645Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 200,
+      "at": "2026-11-17T09:04:59.815Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 201,
+      "at": "2026-11-17T09:08:04.294Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/02af86a2-4f2c-4ee6-ad7f-0e49c56444b1",
+      "status": 200,
+      "at": "2026-11-17T09:08:04.564Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 200,
+      "at": "2026-11-17T09:08:04.661Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/02af86a2-4f2c-4ee6-ad7f-0e49c56444b1",
+      "status": 200,
+      "at": "2026-11-17T09:08:04.849Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 201,
+      "at": "2026-11-17T09:10:38.428Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/65b17b30-9d7f-4b72-93b8-a66e3109fda1",
+      "status": 200,
+      "at": "2026-11-17T09:10:38.975Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 200,
+      "at": "2026-11-17T09:10:39.074Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/65b17b30-9d7f-4b72-93b8-a66e3109fda1",
+      "status": 200,
+      "at": "2026-11-17T09:10:39.199Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 200,
+      "at": "2026-11-17T09:10:39.585Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 200,
+      "at": "2026-11-17T09:10:39.729Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 200,
+      "at": "2026-11-17T09:10:39.876Z"
+    },
+    {
+      "method": "POST",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 201,
+      "at": "2026-11-17T09:13:11.508Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/42181158-a692-4031-b933-03452484b4fd",
+      "status": 200,
+      "at": "2026-11-17T09:13:11.853Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 200,
+      "at": "2026-11-17T09:13:11.934Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/42181158-a692-4031-b933-03452484b4fd",
+      "status": 200,
+      "at": "2026-11-17T09:13:12.092Z"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/42181158-a692-4031-b933-03452484b4fd",
+      "status": 200,
+      "at": "2026-11-17T09:13:16.819Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/42181158-a692-4031-b933-03452484b4fd",
+      "status": 404,
+      "at": "2026-11-17T09:13:16.972Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates/42181158-a692-4031-b933-03452484b4fd",
+      "status": 404,
+      "at": "2026-11-17T09:13:17.119Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 200,
+      "at": "2026-11-17T09:13:17.722Z"
+    },
+    {
+      "method": "GET",
+      "path": "/api/CARMEN-FIFO/gl-jv-templates",
+      "status": 200,
+      "at": "2026-11-17T09:13:42.849Z"
+    }
+  ],
+  "additionalNetworkEvidence": [
+    {
+      "method": "DELETE",
+      "id": "1e0b9ad4-4fe0-44c7-9404-62eb1005e666",
+      "status": 200,
+      "browserRequestId": 3026
+    }
+  ],
+  "final": {
+    "templateCount": 2,
+    "retainedCount": 2,
+    "temporaryDeleted": 4,
+    "jvCountBefore": 4,
+    "jvCountAfter": 4,
+    "postingOrGenerateCalled": false
+  }
+}

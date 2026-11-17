@@ -19,6 +19,7 @@ bun run build:{local,dev,uat,prod}   # เหมือน build แต่เล�
 bun run typecheck    # tsc --noEmit เดี่ยว ๆ (gate ของ build:bump)
 bun run lint         # ESLint        bun test          # Vitest watch
 bun test:run         # Single run    bun test:run path # Single file
+bun run test:ui      # Real Chrome layout gate (also included in full test:run); CHROME_PATH overrides browser binary
 # e2e: moved to ../carmen-frontend-e2e (E2E_FRONTEND_DIR=../carmen-frontend bun e2e)
 ```
 

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
 import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
@@ -34,7 +34,7 @@ import {
 import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { VENDOR_ENTITY } from "@/components/filter/entity-sources";
-import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
+import { apDocumentFilter, apDocumentPage } from "./ap-document-page";
 import { formatDate } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 import type { FilterFieldDef } from "@/types/list-filter";
@@ -69,6 +69,8 @@ const DOC_TYPES: ApDocType[] = [
  * ไม่มีใครอ่าน จึงถูกข้ามเงียบ ๆ
  */
 export default function ApInvoiceList() {
+  "use no memo";
+  const page = apDocumentPage(useLocation().pathname);
   const t = useTranslations("accounting.accountsPayable.invoice");
   const tc = useTranslations("common");
   const tfl = useTranslations("field");
@@ -88,7 +90,7 @@ export default function ApInvoiceList() {
     defaultSort: DEFAULT_SORT,
   });
 
-  const filterFields = useMemo<FilterFieldDef[]>(
+  const allFilterFields = useMemo<FilterFieldDef[]>(
     () => [
       {
         key: "filter",
@@ -152,13 +154,20 @@ export default function ApInvoiceList() {
     [t],
   );
 
+  const filterFields = page.docType
+    ? allFilterFields.filter((field) => field.key !== "doc_type")
+    : allFilterFields;
+
   const lf = useListFilters({
-    pageKey: LIST_PAGE_KEYS.AP_INVOICE,
+    pageKey: page.pageKey,
     fields: filterFields,
     defaultSort: DEFAULT_SORT,
   });
 
-  const queryParams = { ...params, filter: lf.filterParam };
+  const queryParams = {
+    ...params,
+    filter: apDocumentFilter(lf.filterParam, page.docType),
+  };
   const { data, isLoading, error, refetch } = useApInvoices(queryParams, {
     enabled: !useInfiniteScroll,
   });
@@ -174,10 +183,7 @@ export default function ApInvoiceList() {
   const cardsLoading = useInfiniteScroll ? grid.isLoading : isLoading;
 
   const openInvoice = (invoice: ApInvoice) =>
-    navigate(
-      `/accounting/accounts-payable/invoice/${invoice.id}`,
-      listReturnState(),
-    );
+    navigate(`${page.path}/${invoice.id}`, listReturnState());
 
   async function handleExport() {
     try {
@@ -228,18 +234,13 @@ export default function ApInvoiceList() {
 
   return (
     <ListPageShell
-      title={t("title")}
-      description={t("desc")}
+      title={page.docType ? t(`pages.${page.docType}.title`) : t("title")}
+      description={page.docType ? t(`pages.${page.docType}.desc`) : t("desc")}
       count={totalRecords}
       actions={
         <DocumentListActions
-          onAdd={() =>
-            navigate(
-              "/accounting/accounts-payable/invoice/new",
-              listReturnState(),
-            )
-          }
-          addLabel={t("add")}
+          onAdd={() => navigate(`${page.path}/new`, listReturnState())}
+          addLabel={page.docType ? t(`pages.${page.docType}.add`) : t("add")}
           onExport={() => void handleExport()}
           isExporting={isExporting}
         />

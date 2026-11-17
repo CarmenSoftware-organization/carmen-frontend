@@ -6,6 +6,12 @@
 export const LIST_PAGE_KEYS = {
   // accounting
   AP_INVOICE: "ap_invoice",
+  AP_DEPOSIT: "ap_deposit",
+  AP_DEBIT_NOTE: "ap_debit_note",
+  AP_CREDIT_NOTE: "ap_credit_note",
+  AR_ADVANCE_DEPOSIT: "ar_advance_deposit",
+  CHEQUE_RECONCILIATION: "cheque_reconciliation",
+  OUTPUT_TAX: "output_tax",
   AP_PAYMENT: "ap_payment",
   AP_PAYMENT_APPROVALS: "ap_payment_approvals",
   AR_INVOICE: "ar_invoice",

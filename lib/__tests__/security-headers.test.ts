@@ -52,7 +52,8 @@ function inlineScriptBodies(html: string): string[] {
  * ผลคือสคริปต์นั้นถูกบล็อกเงียบ ๆ ใน production ซึ่งคือสิ่งที่ไฟล์นี้มีไว้กัน
  */
 function cspHashesOfInlineScripts(html: string): string[] {
-  const bodies = inlineScriptBodies(html);
+  // HTML parser แปลง CRLF/CR เป็น LF ก่อนสร้างข้อความของ script
+  const bodies = inlineScriptBodies(html.replace(/\r\n?/g, "\n"));
   if (bodies.length === 0)
     throw new Error("index.html has no inline <script> block");
   return bodies.map(
@@ -91,6 +92,16 @@ describe("security headers", () => {
       "attrEnd()",
     ]);
   });
+
+  it.each(["\n", "\r\n", "\r"])(
+    "CSP hash ตรงกันสำหรับ newline %j",
+    (newline) => {
+      const html = "<script>\nrun()\n</script>";
+      expect(cspHashesOfInlineScripts(html.replaceAll("\n", newline))).toEqual(
+        cspHashesOfInlineScripts(html),
+      );
+    },
+  );
 
   // ชื่อ header ที่ห้ามหายไปจากปลายทางไหน — ค่าของแต่ละตัวต่างกันได้ตามปลายทาง
   // (เช่น connect-src ของ Docker เป็น same-origin แต่ของ CDN ต้องระบุ backend origin)

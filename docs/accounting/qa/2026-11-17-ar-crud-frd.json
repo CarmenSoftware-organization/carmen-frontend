@@ -1,0 +1,967 @@
+{
+  "date": "2026-11-17",
+  "environment": {
+    "frontend": "http://localhost:3000",
+    "backend": "https://dev.blueledgers.com:4001",
+    "bu": "CARMEN-FIFO",
+    "node": "25.6.1",
+    "bun": "1.3.9",
+    "ciBun": "1.3.13"
+  },
+  "apiInterceptionUsed": false,
+  "postingActionsExecuted": [],
+  "temporaryRecords": [
+    {
+      "entity": "customer",
+      "id": "5830f12c-ca34-4111-a98c-d2e3bca76fd4",
+      "code": "QAR261117A",
+      "createdViaUI": true,
+      "updatedViaUI": true,
+      "statusToggleViaUI": true,
+      "addressesBeforeAndAfter": 3,
+      "addressIDsPreserved": true,
+      "deletedViaUI": true,
+      "readAfterDelete": 404
+    },
+    {
+      "entity": "AR invoice",
+      "id": "f79b4bc2-7446-41e2-895f-a41025b62836",
+      "number": "ARIV26110001",
+      "createStatus": 200,
+      "readStatus": 200,
+      "updateMethod": "PUT",
+      "updateStatus": 200,
+      "versions": [
+        0,
+        1
+      ],
+      "createTotals": {
+        "subtotal": 2000,
+        "discount": 200,
+        "net": 1800,
+        "vat": 126,
+        "total": 1926
+      },
+      "updateTotals": {
+        "subtotal": 3000,
+        "discount": 300,
+        "net": 2700,
+        "vat": 189,
+        "total": 2889
+      },
+      "multilineReferencePreserved": true,
+      "accountAndCostCenterIDsPreserved": true,
+      "journalPreview": {
+        "debit": 2889,
+        "credit": 2889,
+        "variance": 0
+      },
+      "deletedViaUI": true,
+      "readAfterDelete": 404
+    }
+  ],
+  "mockCrud": [
+    {
+      "entity": "contract",
+      "customerId": "5830f12c-ca34-4111-a98c-d2e3bca76fd4",
+      "id": "8a4eaefa-7b3a-49ad-9cab-c51a51e8f8c4",
+      "number": "202600002",
+      "createViewEditDeleteViaUI": true,
+      "lines": 1,
+      "total": 1000,
+      "remainingQAContracts": 0
+    },
+    {
+      "entity": "receipt",
+      "id": "06866f64-29e7-40fe-928e-133bf8911c32",
+      "number": "ARRC-MOCK-06866F64",
+      "copyCreateViewEditDeleteViaUI": true,
+      "paymentReference": "QA-RECEIPT-20261117",
+      "bank": "QA Bank",
+      "netReceived": 10700,
+      "remainingRecords": [
+        "sample-receipt-1",
+        "sample-receipt-2"
+      ]
+    }
+  ],
+  "geometry": {
+    "arProfileNewGeometry": [
+      {
+        "viewport": 390,
+        "heading": "New Profile",
+        "fieldCount": 32,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 287,
+            "button": 287
+          }
+        ]
+      },
+      {
+        "viewport": 768,
+        "heading": "New Profile",
+        "fieldCount": 32,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 298,
+            "button": 298
+          }
+        ]
+      },
+      {
+        "viewport": 1366,
+        "heading": "New Profile",
+        "fieldCount": 32,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 281,
+            "button": 281
+          }
+        ]
+      },
+      {
+        "viewport": 1920,
+        "heading": "New Profile",
+        "fieldCount": 32,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 251,
+            "button": 251
+          }
+        ]
+      },
+      {
+        "viewport": 3840,
+        "heading": "New Profile",
+        "fieldCount": 32,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 571,
+            "button": 571
+          }
+        ]
+      }
+    ],
+    "arProfileViewGeometry": [
+      {
+        "viewport": 390,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 287,
+            "button": 0
+          }
+        ]
+      },
+      {
+        "viewport": 768,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 298,
+            "button": 0
+          }
+        ]
+      },
+      {
+        "viewport": 1366,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 281,
+            "button": 0
+          }
+        ]
+      },
+      {
+        "viewport": 1920,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 251,
+            "button": 0
+          }
+        ]
+      },
+      {
+        "viewport": 3840,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 571,
+            "button": 0
+          }
+        ]
+      }
+    ],
+    "arProfileEditGeometry": [
+      {
+        "viewport": 390,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 287,
+            "button": 287
+          }
+        ]
+      },
+      {
+        "viewport": 768,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 298,
+            "button": 298
+          }
+        ]
+      },
+      {
+        "viewport": 1366,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 281,
+            "button": 281
+          }
+        ]
+      },
+      {
+        "viewport": 1920,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 251,
+            "button": 251
+          }
+        ]
+      },
+      {
+        "viewport": 3840,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": [
+          {
+            "label": "Receivable account",
+            "width": 571,
+            "button": 571
+          }
+        ]
+      }
+    ],
+    "arInvoiceNewGeometry": [
+      {
+        "viewport": 390,
+        "heading": "New Invoice",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 768,
+        "heading": "New Invoice",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 1366,
+        "heading": "New Invoice",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 1920,
+        "heading": "New Invoice",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 3840,
+        "heading": "New Invoice",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      }
+    ],
+    "arInvoiceViewGeometry": [
+      {
+        "viewport": 390,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 768,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 1366,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 1920,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 3840,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      }
+    ],
+    "arInvoiceEditGeometry": [
+      {
+        "viewport": 390,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 768,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 1366,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 1920,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 3840,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      }
+    ],
+    "arContractLineGeometry": [
+      {
+        "viewport": 390,
+        "rootOverflow": false,
+        "dialogs": [
+          {
+            "width": 390,
+            "inside": true,
+            "overflow": false
+          },
+          {
+            "width": 390,
+            "inside": true,
+            "overflow": false
+          }
+        ],
+        "fields": [
+          {
+            "label": "Revenue account*",
+            "width": 325,
+            "button": 325
+          },
+          {
+            "label": "Revenue cost center*",
+            "width": 325,
+            "button": 325
+          },
+          {
+            "label": "Tax account",
+            "width": 325,
+            "button": 325
+          },
+          {
+            "label": "Tax cost center",
+            "width": 325,
+            "button": 325
+          },
+          {
+            "label": "Tax account",
+            "width": 325,
+            "button": 325
+          },
+          {
+            "label": "Tax cost center",
+            "width": 325,
+            "button": 325
+          },
+          {
+            "label": "Receivable account",
+            "width": 325,
+            "button": 325
+          },
+          {
+            "label": "Receivable cost center",
+            "width": 325,
+            "button": 325
+          }
+        ]
+      },
+      {
+        "viewport": 768,
+        "rootOverflow": false,
+        "dialogs": [
+          {
+            "width": 768,
+            "inside": true,
+            "overflow": false
+          },
+          {
+            "width": 768,
+            "inside": true,
+            "overflow": false
+          }
+        ],
+        "fields": [
+          {
+            "label": "Revenue account*",
+            "width": 344,
+            "button": 344
+          },
+          {
+            "label": "Revenue cost center*",
+            "width": 344,
+            "button": 344
+          },
+          {
+            "label": "Tax account",
+            "width": 703,
+            "button": 703
+          },
+          {
+            "label": "Tax cost center",
+            "width": 703,
+            "button": 703
+          },
+          {
+            "label": "Tax account",
+            "width": 703,
+            "button": 703
+          },
+          {
+            "label": "Tax cost center",
+            "width": 703,
+            "button": 703
+          },
+          {
+            "label": "Receivable account",
+            "width": 344,
+            "button": 344
+          },
+          {
+            "label": "Receivable cost center",
+            "width": 344,
+            "button": 344
+          }
+        ]
+      },
+      {
+        "viewport": 1366,
+        "rootOverflow": false,
+        "dialogs": [
+          {
+            "width": 1152,
+            "inside": true,
+            "overflow": false
+          },
+          {
+            "width": 896,
+            "inside": true,
+            "overflow": false
+          }
+        ],
+        "fields": [
+          {
+            "label": "Revenue account*",
+            "width": 266,
+            "button": 266
+          },
+          {
+            "label": "Revenue cost center*",
+            "width": 266,
+            "button": 266
+          },
+          {
+            "label": "Tax account",
+            "width": 408,
+            "button": 408
+          },
+          {
+            "label": "Tax cost center",
+            "width": 408,
+            "button": 408
+          },
+          {
+            "label": "Tax account",
+            "width": 408,
+            "button": 408
+          },
+          {
+            "label": "Tax cost center",
+            "width": 408,
+            "button": 408
+          },
+          {
+            "label": "Receivable account",
+            "width": 266,
+            "button": 266
+          },
+          {
+            "label": "Receivable cost center",
+            "width": 266,
+            "button": 266
+          }
+        ]
+      },
+      {
+        "viewport": 1920,
+        "rootOverflow": false,
+        "dialogs": [
+          {
+            "width": 1152,
+            "inside": true,
+            "overflow": false
+          },
+          {
+            "width": 896,
+            "inside": true,
+            "overflow": false
+          }
+        ],
+        "fields": [
+          {
+            "label": "Revenue account*",
+            "width": 266,
+            "button": 266
+          },
+          {
+            "label": "Revenue cost center*",
+            "width": 266,
+            "button": 266
+          },
+          {
+            "label": "Tax account",
+            "width": 408,
+            "button": 408
+          },
+          {
+            "label": "Tax cost center",
+            "width": 408,
+            "button": 408
+          },
+          {
+            "label": "Tax account",
+            "width": 408,
+            "button": 408
+          },
+          {
+            "label": "Tax cost center",
+            "width": 408,
+            "button": 408
+          },
+          {
+            "label": "Receivable account",
+            "width": 266,
+            "button": 266
+          },
+          {
+            "label": "Receivable cost center",
+            "width": 266,
+            "button": 266
+          }
+        ]
+      },
+      {
+        "viewport": 3840,
+        "rootOverflow": false,
+        "dialogs": [
+          {
+            "width": 1152,
+            "inside": true,
+            "overflow": false
+          },
+          {
+            "width": 896,
+            "inside": true,
+            "overflow": false
+          }
+        ],
+        "fields": [
+          {
+            "label": "Revenue account*",
+            "width": 272,
+            "button": 272
+          },
+          {
+            "label": "Revenue cost center*",
+            "width": 272,
+            "button": 272
+          },
+          {
+            "label": "Tax account",
+            "width": 415,
+            "button": 415
+          },
+          {
+            "label": "Tax cost center",
+            "width": 415,
+            "button": 415
+          },
+          {
+            "label": "Tax account",
+            "width": 415,
+            "button": 415
+          },
+          {
+            "label": "Tax cost center",
+            "width": 415,
+            "button": 415
+          },
+          {
+            "label": "Receivable account",
+            "width": 272,
+            "button": 272
+          },
+          {
+            "label": "Receivable cost center",
+            "width": 272,
+            "button": 272
+          }
+        ]
+      }
+    ],
+    "arReceiptNewGeometry": [
+      {
+        "viewport": 390,
+        "heading": "New Receipt",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 768,
+        "heading": "New Receipt",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 1366,
+        "heading": "New Receipt",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 1920,
+        "heading": "New Receipt",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 3840,
+        "heading": "New Receipt",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      }
+    ],
+    "arReceiptViewGeometry": [
+      {
+        "viewport": 390,
+        "heading": "ARRC-MOCK-06866F64",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 768,
+        "heading": "ARRC-MOCK-06866F64",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 1366,
+        "heading": "ARRC-MOCK-06866F64",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 1920,
+        "heading": "ARRC-MOCK-06866F64",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 3840,
+        "heading": "ARRC-MOCK-06866F64",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      }
+    ],
+    "arReceiptEditGeometry": [
+      {
+        "viewport": 390,
+        "heading": "ARRC-MOCK-06866F64",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 768,
+        "heading": "ARRC-MOCK-06866F64",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 1366,
+        "heading": "ARRC-MOCK-06866F64",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 1920,
+        "heading": "ARRC-MOCK-06866F64",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      },
+      {
+        "viewport": 3840,
+        "heading": "ARRC-MOCK-06866F64",
+        "fieldCount": 12,
+        "rootOverflow": false,
+        "dialogs": [],
+        "fields": []
+      }
+    ],
+    "arReceiptPaymentGeometry": [
+      {
+        "viewport": 390,
+        "heading": "New Receipt",
+        "fieldCount": 23,
+        "rootOverflow": false,
+        "dialogs": [
+          {
+            "width": 390,
+            "inside": true,
+            "overflow": false
+          }
+        ],
+        "fields": [
+          {
+            "label": "Bank Account No.",
+            "width": 325,
+            "button": 0
+          },
+          {
+            "label": "Cash / Bank GL Account",
+            "width": 325,
+            "button": 325
+          },
+          {
+            "label": "Cost Center",
+            "width": 325,
+            "button": 325
+          }
+        ]
+      },
+      {
+        "viewport": 768,
+        "heading": "New Receipt",
+        "fieldCount": 23,
+        "rootOverflow": false,
+        "dialogs": [
+          {
+            "width": 710,
+            "inside": true,
+            "overflow": false
+          }
+        ],
+        "fields": [
+          {
+            "label": "Bank Account No.",
+            "width": 661,
+            "button": 0
+          },
+          {
+            "label": "Cash / Bank GL Account",
+            "width": 322,
+            "button": 322
+          },
+          {
+            "label": "Cost Center",
+            "width": 322,
+            "button": 322
+          }
+        ]
+      },
+      {
+        "viewport": 1366,
+        "heading": "New Receipt",
+        "fieldCount": 23,
+        "rootOverflow": false,
+        "dialogs": [
+          {
+            "width": 672,
+            "inside": true,
+            "overflow": false
+          }
+        ],
+        "fields": [
+          {
+            "label": "Bank Account No.",
+            "width": 623,
+            "button": 0
+          },
+          {
+            "label": "Cash / Bank GL Account",
+            "width": 303,
+            "button": 303
+          },
+          {
+            "label": "Cost Center",
+            "width": 303,
+            "button": 303
+          }
+        ]
+      },
+      {
+        "viewport": 1920,
+        "heading": "New Receipt",
+        "fieldCount": 23,
+        "rootOverflow": false,
+        "dialogs": [
+          {
+            "width": 672,
+            "inside": true,
+            "overflow": false
+          }
+        ],
+        "fields": [
+          {
+            "label": "Bank Account No.",
+            "width": 623,
+            "button": 0
+          },
+          {
+            "label": "Cash / Bank GL Account",
+            "width": 303,
+            "button": 303
+          },
+          {
+            "label": "Cost Center",
+            "width": 303,
+            "button": 303
+          }
+        ]
+      },
+      {
+        "viewport": 3840,
+        "heading": "New Receipt",
+        "fieldCount": 23,
+        "rootOverflow": false,
+        "dialogs": [
+          {
+            "width": 672,
+            "inside": true,
+            "overflow": false
+          }
+        ],
+        "fields": [
+          {
+            "label": "Bank Account No.",
+            "width": 623,
+            "button": 0
+          },
+          {
+            "label": "Cash / Bank GL Account",
+            "width": 303,
+            "button": 303
+          },
+          {
+            "label": "Cost Center",
+            "width": 303,
+            "button": 303
+          }
+        ]
+      }
+    ]
+  },
+  "notes": [
+    "One QA browser connection reset; successful Profile measurements were rerun. Mock session data is intentionally not durable across browser contexts.",
+    "Invoice view/edit geometry predates the heading readiness marker; screenshot review and actual CRUD/tabs were also performed.",
+    "No approval, submit, posting, bank clearing, filing or receipt settlement was executed."
+  ]
+}

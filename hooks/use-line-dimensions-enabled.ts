@@ -11,7 +11,7 @@ const DIMENSION_LICENSE_FEATURE = "configuration.dimension";
  */
 function isLineDimensionsSwitchOn(): boolean {
   try {
-    return getRuntimeConfig().LINE_DIMENSIONS_ENABLED ?? false;
+    return getRuntimeConfig().LINE_DIMENSIONS_ENABLED === true;
   } catch {
     return false;
   }

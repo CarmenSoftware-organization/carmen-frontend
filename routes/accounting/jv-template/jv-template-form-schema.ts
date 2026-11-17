@@ -44,6 +44,8 @@ export interface JvTemplateLineValues {
   credit: number;
   side: JvTemplateSide | null;
   allocation_ratio: number | null;
+  currency_id?: string | null;
+  exchange_rate?: number | null;
 }
 
 export interface JvTemplateFormValues {
@@ -154,6 +156,10 @@ export function getJvTemplateDefaultValues(
         credit: l.credit,
         side: l.side,
         allocation_ratio: l.allocation_ratio,
+        ...(l.currency_id !== undefined ? { currency_id: l.currency_id } : {}),
+        ...(l.exchange_rate !== undefined
+          ? { exchange_rate: l.exchange_rate }
+          : {}),
       })),
   };
 }
@@ -184,6 +190,8 @@ export function createJvTemplateFormSchema(
     credit: z.number(),
     side: z.enum(["debit", "credit"]).nullable(),
     allocation_ratio: numOrNull,
+    currency_id: z.string().uuid().nullable().optional(),
+    exchange_rate: z.number().positive().nullable().optional(),
   });
 
   return z
@@ -371,6 +379,10 @@ export function toJvTemplateInput(
       credit: type === "recurring" ? l.credit : 0,
       side: type === "recurring" ? null : l.side,
       allocation_ratio: type === "allocation" ? l.allocation_ratio : null,
+      ...(l.currency_id !== undefined ? { currency_id: l.currency_id } : {}),
+      ...(l.exchange_rate !== undefined
+        ? { exchange_rate: l.exchange_rate }
+        : {}),
     })),
   };
 }

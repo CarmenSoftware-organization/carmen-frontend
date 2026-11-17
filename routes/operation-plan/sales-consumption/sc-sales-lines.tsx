@@ -100,6 +100,7 @@ export function ScSalesLines({ sc, canWrite }: ScSalesLinesProps) {
               {editable ? (
                 <div className="flex items-center gap-1">
                   <LookupLocation
+                    className="min-w-0 flex-1"
                     size="xs"
                     value={loc?.id ?? ""}
                     defaultLabel={loc ? `${loc.code} · ${loc.name}` : undefined}
@@ -175,6 +176,7 @@ export function ScSalesLines({ sc, canWrite }: ScSalesLinesProps) {
             <div className="min-w-56 space-y-0.5">
               <div className="flex items-center gap-1">
                 <LookupRecipe
+                  className="min-w-0 flex-1"
                   size="xs"
                   value={line.is_ignored ? "" : (recipe?.id ?? "")}
                   defaultLabel={

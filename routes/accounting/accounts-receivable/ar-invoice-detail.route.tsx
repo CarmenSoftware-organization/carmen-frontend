@@ -2,8 +2,18 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
-import { FormToolbar } from "@/components/share/form-toolbar";
+import { Ban, Send } from "lucide-react";
+import { FormToolbar, ToolbarLabel } from "@/components/share/form-toolbar";
 import { Field, FieldLabel, FieldPlainText } from "@/components/ui/field";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { ErrorState } from "@/components/ui/error-state";
@@ -18,11 +28,29 @@ import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { ApDetailGrid } from "../accounts-payable/shared/ap-detail-grid";
+import { ArInvoiceTaxLines } from "./ar-invoice-tax-lines";
+import { ArInvoiceLines } from "./ar-invoice-lines";
+import {
+  InvoiceTaxEntityFields,
+  InvoiceMockDeposits,
+} from "./ar-invoice-supplement";
+import {
+  invoiceTaxEntity,
+  readInvoiceSupplement,
+} from "./ar-invoice-supplement-model";
+import {
+  AR_RECEIPT_PATH,
+  readReceipts,
+  receiptTotals,
+} from "./ar-receipt-model";
+import { InvoiceJournal } from "./ar-invoice-journal";
+import { draftLineFromRecord } from "./ar-invoice-draft-model";
 import { ArInvoiceDraftForm } from "./ar-invoice-draft-form";
 import {
   AR_REGISTER_PATH,
   useArRegisterDocument,
   useDeleteArInvoice,
+  useArInvoiceAction,
   type ArRegisterDocument,
 } from "./use-ar-register";
 
@@ -57,6 +85,12 @@ function RegisterDetail({ id }: { readonly id?: string }) {
     null,
   );
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [confirmation, setConfirmation] = useState<"submit" | "void" | null>(
+    null,
+  );
+  const [reason, setReason] = useState("");
+  const action = useArInvoiceAction();
+  const tc = useTranslations("common");
   const doc = useArRegisterDocument(id);
   const remove = useDeleteArInvoice();
 
@@ -97,8 +131,93 @@ function RegisterDetail({ id }: { readonly id?: string }) {
         back={remove.isPending ? undefined : () => toList()}
         edit={editable ? () => setEditDocument(row) : undefined}
         remove={draft ? () => setDeleteOpen(true) : undefined}
-        deleting={remove.isPending}
+        deleting={remove.isPending || action.isPending}
+        submit={
+          draft && canWrite && row.doc_version != null
+            ? () => setConfirmation("submit")
+            : undefined
+        }
+        voidDocument={
+          row.doc_status !== "void" && canWrite
+            ? () => setConfirmation("void")
+            : undefined
+        }
       />
+      <Dialog
+        open={confirmation !== null}
+        onOpenChange={(open) => {
+          if (!open && !action.isPending) {
+            setConfirmation(null);
+            setReason("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {t(confirmation === "void" ? "voidTitle" : "submitTitle")}
+            </DialogTitle>
+            <DialogDescription>
+              {t(confirmation === "void" ? "voidConfirm" : "submitConfirm", {
+                number: row.doc_no,
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          {confirmation === "void" && (
+            <Field>
+              <FieldLabel htmlFor="ar-void-reason" required>
+                {t("reason")}
+              </FieldLabel>
+              <Textarea
+                id="ar-void-reason"
+                value={reason}
+                maxLength={255}
+                onChange={(event) => setReason(event.target.value)}
+              />
+            </Field>
+          )}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={action.isPending}
+              onClick={() => {
+                setConfirmation(null);
+                setReason("");
+              }}
+            >
+              {tc("cancel")}
+            </Button>
+            <Button
+              type="button"
+              variant={confirmation === "void" ? "destructive" : "default"}
+              disabled={
+                action.isPending || (confirmation === "void" && !reason.trim())
+              }
+              onClick={() => {
+                if (!confirmation || !canWrite) return;
+                action.mutate(
+                  {
+                    id: row.id,
+                    action: confirmation,
+                    doc_version: row.doc_version ?? undefined,
+                    ...(confirmation === "void" && { reason: reason.trim() }),
+                  },
+                  {
+                    onSuccess: () => {
+                      setConfirmation(null);
+                      setReason("");
+                      void doc.refetch();
+                    },
+                  },
+                );
+              }}
+            >
+              {t(confirmation === "void" ? "void" : "submit")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <DeleteDialog
         open={deleteOpen}
         title={t("deleteTitle")}
@@ -125,37 +244,58 @@ function InvoiceView({
   edit,
   remove,
   deleting,
+  submit,
+  voidDocument,
 }: {
   readonly row: ArRegisterDocument;
   readonly back?: () => void;
   readonly edit?: () => void;
   readonly remove?: () => void;
   readonly deleting: boolean;
+  readonly submit?: () => void;
+  readonly voidDocument?: () => void;
 }) {
   const t = useTranslations("accounting.arRegister");
-  const { dateFormat } = useProfile();
+  const { dateFormat, defaultCurrencyCode } = useProfile();
+  const bu = useBuCode();
   const money = useAmountFormatter();
-  const amount = (value: number | string) => money(Number(value));
-  const noRecords = t("noRecords");
+  const navigate = useNavigate();
+  const supplement = bu ? readInvoiceSupplement(bu, row.id) : undefined;
+  const receipts = bu
+    ? readReceipts(bu).filter((receipt) =>
+        receipt.allocations.some((line) => line.id === row.id),
+      )
+    : [];
   const fields = [
     [t("type"), t(`types.${row.doc_type}`)],
+    [t("date"), formatDate(row.doc_date, dateFormat)],
     [
       t("customer"),
       [row.customer_code, row.customer_name].filter(Boolean).join(" · "),
     ],
-    [t("date"), formatDate(row.doc_date, dateFormat)],
+    [t("currency"), row.currency_code],
+    [t("exchangeRate"), String(row.exchange_rate ?? 1)],
+    [t("source"), row.doc_source ?? t("manual")],
+    [t("sourceDoc"), row.source_doc_ref],
+    [t("creditDays"), String(row.credit_term_days ?? 0)],
     [t("due"), formatDate(row.due_date, dateFormat)],
-    [t("source"), row.source_doc_ref],
+    [
+      t("taxInvoiceEnabled"),
+      row.is_tax_invoice
+        ? row.tax_invoice?.tax_invoice_no || t("taxNumberOnSubmit")
+        : "—",
+    ],
+    [t("whtAmount"), money(Number(row.wht_amount ?? 0))],
     [t("stage"), row.workflow_current_stage],
     [t("memo"), row.description],
   ];
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
+    <div className="@container flex min-h-0 min-w-0 flex-1 flex-col gap-3">
       <FormToolbar
         title={row.doc_no}
         mode="view"
         formId="ar-invoice-view"
-        isPending={false}
+        isPending={deleting}
         onBack={back}
         onCancel={() => back?.()}
         onEdit={edit}
@@ -168,10 +308,28 @@ function InvoiceView({
             label={t(`statuses.${row.doc_status}`)}
           />
         }
-      />
-      <div className="grid gap-4 border-b pb-4 sm:grid-cols-2 lg:grid-cols-4">
+      >
+        {voidDocument && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            title={t("void")}
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            disabled={deleting}
+            onClick={voidDocument}
+          >
+            <Ban />
+            <ToolbarLabel>{t("void")}</ToolbarLabel>
+          </Button>
+        )}
+      </FormToolbar>
+      <div className="grid min-w-0 gap-x-4 gap-y-3 border-b pb-3 @md:grid-cols-2 @3xl:grid-cols-4 @5xl:grid-cols-6">
         {fields.map(([label, value]) => (
-          <Field key={label}>
+          <Field
+            key={label}
+            className={label === t("memo") ? "@md:col-span-2" : ""}
+          >
             <FieldLabel>{label}</FieldLabel>
             <FieldPlainText className="wrap-anywhere">
               {value || "—"}
@@ -180,104 +338,241 @@ function InvoiceView({
         ))}
       </div>
       <Tabs defaultValue="items" className="min-w-0 flex-1">
-        <div className="overflow-x-auto">
+        <div className="shrink-0 overflow-x-auto overflow-y-hidden pb-1">
           <TabsList variant="line">
-            {(["items", "tax", "references", "journal"] as const).map((tab) => (
-              <TabsTrigger key={tab} value={tab}>
+            {(
+              ["items", "tax", "references", "receipt", "journal"] as const
+            ).map((tab) => (
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                disabled={tab === "references" && row.doc_type !== "invoice"}
+              >
                 {t(tab)}
               </TabsTrigger>
             ))}
           </TabsList>
         </div>
         <TabsContent value="items">
-          <ApDetailGrid
-            rows={row.tb_ar_invoice_detail ?? []}
-            empty={noRecords}
-            columns={[
-              { accessorKey: "sequence_no", header: "#" },
-              { accessorKey: "description", header: t("memo") },
-              { accessorKey: "quantity", header: t("quantity") },
-              {
-                accessorKey: "unit_price",
-                header: t("unitPrice"),
-                cell: ({ row }) => amount(row.original.unit_price),
-              },
-              { accessorKey: "cr_account_code", header: t("revenueAccount") },
-              { accessorKey: "dr_account_code", header: t("arAccount") },
-              {
-                accessorKey: "total_amount",
-                header: t("total"),
-                cell: ({ row }) => amount(row.original.total_amount),
-              },
-            ]}
+          <ArInvoiceLines
+            lines={(row.tb_ar_invoice_detail ?? []).map(draftLineFromRecord)}
           />
         </TabsContent>
         <TabsContent value="tax">
-          {row.tax_invoice ? (
-            <Field>
-              <FieldLabel>{t("tax")}</FieldLabel>
-              <FieldPlainText>
-                {row.tax_invoice.tax_invoice_no} ·{" "}
-                {formatDate(row.tax_invoice.tax_invoice_date, dateFormat)}
-              </FieldPlainText>
-            </Field>
-          ) : (
-            <p className="text-muted-foreground text-sm">{noRecords}</p>
+          <InvoiceTaxEntityFields
+            value={supplement?.taxEntity ?? invoiceTaxEntity(row)}
+          />
+          {supplement && (
+            <p className="text-muted-foreground mt-2 text-xs">
+              {t("taxEntityMock")}
+            </p>
           )}
+          <div className="mt-3">
+            <ArInvoiceTaxLines
+              lines={(row.tb_ar_invoice_detail ?? []).map(draftLineFromRecord)}
+              exchangeRate={Number(row.exchange_rate ?? 1)}
+              baseCurrency={row.base_currency_code ?? defaultCurrencyCode}
+            />
+          </div>
         </TabsContent>
         <TabsContent value="references">
           <ApDetailGrid
             rows={row.tb_ar_invoice_reference ?? []}
-            empty={noRecords}
+            empty={t("noRecords")}
             columns={[
               {
                 accessorKey: "ref_ar_invoice_id",
                 header: t("number"),
-                cell: ({ row }) => (
+                cell: ({ row: item }) => (
                   <Button asChild variant="link" size="sm">
                     <Link
-                      to={`${AR_REGISTER_PATH}/${row.original.ref_ar_invoice_id}`}
+                      to={`${AR_REGISTER_PATH}/${item.original.ref_ar_invoice_id}`}
                     >
-                      {row.original.ref_ar_invoice_id}
+                      {item.original.ref_ar_invoice_no ||
+                        item.original.ref_ar_invoice_id}
                     </Link>
                   </Button>
                 ),
               },
               {
-                accessorKey: "applied_amount",
+                id: "net",
+                header: t("net"),
+                cell: ({ row: item }) => (
+                  <span className="text-destructive">
+                    −{money(Number(item.original.applied_net_amount ?? 0))}
+                  </span>
+                ),
+              },
+              {
+                id: "vat",
+                header: t("vat"),
+                cell: ({ row: item }) => (
+                  <span className="text-destructive">
+                    −{money(Number(item.original.applied_vat_amount ?? 0))}
+                  </span>
+                ),
+              },
+              {
+                id: "applied",
                 header: t("applied"),
-                cell: ({ row }) => amount(row.original.applied_amount),
+                cell: ({ row: item }) => (
+                  <span className="text-destructive">
+                    −{money(Number(item.original.applied_amount))}
+                  </span>
+                ),
+              },
+            ]}
+          />
+          <InvoiceMockDeposits
+            rows={supplement?.deposits ?? []}
+            rate={Number(row.exchange_rate ?? 1)}
+            currency={row.currency_code}
+            maxAmount={Number(row.outstanding_amount)}
+          />
+        </TabsContent>
+        <TabsContent value="receipt">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold">{t("receiptHistory")}</h2>
+            {Number(row.outstanding_amount) > 0 &&
+              row.doc_status === "posted" && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    navigate(`${AR_RECEIPT_PATH}/new`, {
+                      state: { receiptInvoice: row },
+                    })
+                  }
+                >
+                  {t("getReceipt")}
+                </Button>
+              )}
+          </div>
+          <p className="text-muted-foreground mb-2 text-xs">
+            {t("receiptMock")}
+          </p>
+          <ApDetailGrid
+            rows={receipts}
+            empty={t("noRecords")}
+            columns={[
+              {
+                accessorKey: "number",
+                header: t("number"),
+                cell: ({ row: item }) => (
+                  <Button asChild variant="link" size="sm">
+                    <Link to={`${AR_RECEIPT_PATH}/${item.original.id}`}>
+                      {item.original.number}
+                    </Link>
+                  </Button>
+                ),
+              },
+              { accessorKey: "date", header: t("date") },
+              {
+                id: "payType",
+                header: t("payType"),
+                cell: ({ row: item }) =>
+                  item.original.payments
+                    .map((payment) => payment.type)
+                    .join(", ") || "—",
+              },
+              {
+                id: "paid",
+                header: t("paidAmount"),
+                cell: ({ row: item }) =>
+                  money(
+                    item.original.allocations
+                      .filter((line) => line.id === row.id)
+                      .reduce((sum, line) => sum + line.amount, 0),
+                  ),
+              },
+              {
+                id: "wht",
+                header: t("whtAmount"),
+                cell: ({ row: item }) =>
+                  money(receiptTotals(item.original).wht),
+              },
+              {
+                id: "received",
+                header: t("netReceived"),
+                cell: ({ row: item }) =>
+                  money(receiptTotals(item.original).received),
+              },
+              {
+                accessorKey: "status",
+                header: t("status"),
+                cell: ({ row: item }) => (
+                  <StatusChip
+                    status={item.original.status}
+                    label={t(`statuses.${item.original.status}`)}
+                  />
+                ),
               },
             ]}
           />
         </TabsContent>
         <TabsContent value="journal">
-          {row.gl_jv_id ? (
-            <Button asChild variant="outline" size="sm">
-              <Link to={`/accounting/journal-voucher/${row.gl_jv_id}`}>
-                {row.gl_jv_no || t("journal")}
-              </Link>
-            </Button>
-          ) : (
-            <p className="text-muted-foreground text-sm">{noRecords}</p>
-          )}
+          <InvoiceJournal document={row} />
         </TabsContent>
       </Tabs>
       <SummaryFooterBar
         hasRecord
         items={[
-          { key: "net", label: t("net"), value: amount(row.net_amount) },
-          { key: "vat", label: t("vat"), value: amount(row.vat_amount) },
-          { key: "total", label: t("total"), value: amount(row.total_amount) },
+          {
+            key: "subtotal",
+            label: t("subtotal"),
+            value: money(Number(row.sub_total_amount ?? 0)),
+          },
+          {
+            key: "discount",
+            label: t("discount"),
+            value: money(Number(row.discount_amount ?? 0)),
+            valueClassName: "text-destructive",
+          },
+          { key: "net", label: t("net"), value: money(Number(row.net_amount)) },
+          {
+            key: "vat",
+            label: t("tax1Amount"),
+            value: money(Number(row.vat_amount)),
+          },
+          {
+            key: "tax2",
+            label: t("tax2Amount"),
+            value: money(Number(row.tax2_amount ?? 0)),
+          },
+          {
+            key: "total",
+            label: t("total"),
+            value: money(Number(row.total_amount)),
+            suffix: row.currency_code,
+          },
           {
             key: "outstanding",
             label: t("outstanding"),
-            value: amount(row.outstanding_amount),
+            value: money(Number(row.outstanding_amount)),
             suffix: row.currency_code,
             emphasis: true,
           },
+          {
+            key: "base",
+            label: t("baseTotal"),
+            value: money(
+              Number(
+                row.base_total_amount ??
+                  Number(row.total_amount) * Number(row.exchange_rate ?? 1),
+              ),
+            ),
+            suffix: row.base_currency_code ?? defaultCurrencyCode,
+          },
         ]}
-      />
+      >
+        {submit && (
+          <Button type="button" size="sm" disabled={deleting} onClick={submit}>
+            <Send />
+            {t("submit")}
+          </Button>
+        )}
+      </SummaryFooterBar>
     </div>
   );
 }

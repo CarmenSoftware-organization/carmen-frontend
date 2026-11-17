@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ComponentProps } from "react";
 import {
   getCoreRowModel,
   getPaginationRowModel,
@@ -13,6 +13,7 @@ import EmptyComponent from "@/components/empty-component";
 import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { DocumentListActions } from "@/components/share/document-list-actions";
+import { CompactSection } from "@/components/share/compact-section";
 import {
   ListCard,
   ListCardActiveRow,
@@ -45,6 +46,7 @@ import { round2 } from "@/lib/currency-utils";
 import { formatDate } from "@/lib/date-utils";
 import { buildXlsxFileName, downloadXlsx } from "@/lib/xlsx-utils";
 import type { FilterFieldDef } from "@/types/list-filter";
+import type { ArCustomer } from "./use-ar-customer";
 import { ContractDialog, ContractDocumentDialog } from "./ar-contract-dialog";
 import {
   deleteContractSample,
@@ -72,11 +74,37 @@ const fields: FilterFieldDef[] = [
 ];
 
 export function Component() {
-  const bu = useBuCode();
-  return bu ? <ContractList key={bu} bu={bu} /> : null;
+  return <ContractList />;
 }
 
-function ContractList({ bu }: { readonly bu: string }) {
+/** Profile owns the selected customer; contracts save independently of Profile edit mode. */
+export function ContractList({
+  customer,
+  embedded = false,
+}: {
+  readonly customer?: ArCustomer;
+  readonly embedded?: boolean;
+}) {
+  const bu = useBuCode();
+  return bu ? (
+    <ContractListContent
+      key={`${bu}-${customer?.id ?? "all"}`}
+      bu={bu}
+      customer={customer}
+      embedded={embedded}
+    />
+  ) : null;
+}
+
+function ContractListContent({
+  bu,
+  customer,
+  embedded,
+}: {
+  readonly bu: string;
+  readonly customer?: ArCustomer;
+  readonly embedded: boolean;
+}) {
   "use no memo";
   const t = useTranslations("accounting.arContract");
   const tc = useTranslations("common");
@@ -106,6 +134,7 @@ function ContractList({ bu }: { readonly bu: string }) {
     () =>
       data.records.filter(
         (record) =>
+          (!customer || record.customerId === customer.id) &&
           (!lf.values.status ||
             record.active === (lf.values.status === "active")) &&
           (!from || record.startDate >= from) &&
@@ -120,7 +149,7 @@ function ContractList({ bu }: { readonly bu: string }) {
             .toLowerCase()
             .includes(query),
       ),
-    [data.records, lf.values.status, from, to, query],
+    [data.records, lf.values.status, from, to, query, customer],
   );
   const open = (record: ArContract) => setEditor({ mode: "view", record });
   const actions = (record: ArContract) => (
@@ -291,7 +320,8 @@ function ContractList({ bu }: { readonly bu: string }) {
   }
   const cards = mobile || display === "grid";
   return (
-    <ListPageShell
+    <ContractListFrame
+      embedded={embedded}
       title={t("title")}
       description={t("description")}
       count={rows.length}
@@ -302,7 +332,7 @@ function ContractList({ bu }: { readonly bu: string }) {
             if (canWrite) setEditor({ mode: "add" });
           }}
           addLabel={t("add")}
-          addDisabled={!canWrite}
+          addDisabled={!canWrite || customer?.is_active === false}
           onExport={() => void exportRows()}
           isExporting={exporting}
         />
@@ -399,6 +429,7 @@ function ContractList({ bu }: { readonly bu: string }) {
           key={`${editor.mode}-${editor.record?.id ?? "new"}`}
           {...editor}
           canWrite={canWrite}
+          lockedCustomer={customer}
           data={data}
           close={() => setEditor(null)}
           edit={() => setEditor({ ...editor, mode: "edit" })}
@@ -407,6 +438,7 @@ function ContractList({ bu }: { readonly bu: string }) {
             try {
               setData(saveContractSample(bu, record));
               setEditor(null);
+              toast.success(t("saved"));
             } catch {
               toast.error(t("storageError"));
             }
@@ -442,6 +474,46 @@ function ContractList({ bu }: { readonly bu: string }) {
         existingNames={lf.view.existingNames}
         onSave={lf.view.saveOrUpdate}
       />
-    </ListPageShell>
+    </ContractListFrame>
+  );
+}
+
+function ContractListFrame({
+  embedded,
+  children,
+  toolbar,
+  actions,
+  title,
+  description,
+  count,
+  ...props
+}: ComponentProps<typeof ListPageShell> & { readonly embedded: boolean }) {
+  if (!embedded)
+    return (
+      <ListPageShell
+        title={title}
+        description={description}
+        count={count}
+        actions={actions}
+        toolbar={toolbar}
+        {...props}
+      >
+        {children}
+      </ListPageShell>
+    );
+  return (
+    <CompactSection
+      first
+      frameless
+      title={title}
+      description={description}
+      count={count}
+      action={actions}
+    >
+      <div className="space-y-3">
+        {toolbar}
+        {children}
+      </div>
+    </CompactSection>
   );
 }

@@ -12,7 +12,7 @@ import { Component as ArDashboard } from "./ar-dashboard.route";
 import { Component as ContractList } from "./ar-contract.route";
 import { ContractDialog } from "./ar-contract-dialog";
 import { FolioDialog } from "./ar-folio-actions";
-import { readContractSamples } from "./ar-contract-model";
+import { readContractSamples, saveContractSample } from "./ar-contract-model";
 import { FOLIO_SAMPLES, saveFolioSamples } from "./ar-folio-model";
 import { Component as AccountingList } from "../documents/accounting-document-list.route";
 import { downloadXlsx } from "@/lib/xlsx-utils";
@@ -99,15 +99,9 @@ it("gives AR Receipt the standard actions and exports the combined date and stat
     "/accounting/accounts-receivable/receipt",
   );
   setup(<AccountingList />);
-  expect(
-    screen.getByRole("button", { name: "Print" }),
-  ).toBeVisible();
-  expect(
-    screen.getByRole("button", { name: "Filter" }),
-  ).toBeVisible();
-  expect(
-    screen.getByRole("button", { name: "New" }),
-  ).toBeVisible();
+  expect(screen.getByRole("button", { name: "Print" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "Filter" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "New" })).toBeVisible();
   act(() =>
     setURLParams({
       status: "draft",
@@ -118,9 +112,7 @@ it("gives AR Receipt the standard actions and exports the combined date and stat
   const table = screen.getByRole("table");
   expect(within(table).getByText("RC2607-0005")).toBeVisible();
   expect(within(table).queryByText("RC2607-0001")).not.toBeInTheDocument();
-  await userEvent.click(
-    screen.getByRole("button", { name: "Export" }),
-  );
+  await userEvent.click(screen.getByRole("button", { name: "Export" }));
   expect(downloadXlsx).toHaveBeenCalledWith(
     expect.objectContaining({
       rows: [
@@ -240,7 +232,30 @@ it("blocks switching a partly billed Folio even if its dialog is opened directly
   expect(screen.getByRole("alert")).toHaveTextContent("Only pending folios");
 });
 
+function seedDetailedContract() {
+  const record = readContractSamples("TEST").records[0];
+  saveContractSample("TEST", {
+    ...record,
+    lines: [
+      {
+        id: "contract-line",
+        sequence_no: 1,
+        quantity: 1,
+        unit_price: 12000,
+        cr_chart_of_accounts_id: "revenue",
+        cr_cost_center_id: "rooms",
+        dr_chart_of_accounts_id: "receivable",
+        dr_cost_center_id: "general",
+        cr_account_code: "4010",
+        dr_account_code: "1130",
+        cr_cost_center_code: "ROOMS",
+      },
+    ],
+  });
+}
+
 it("edits a contract from its standard list and preserves the header after remounting", async () => {
+  seedDetailedContract();
   const view = setup(<ContractList />);
   expect(
     within(screen.getByRole("table")).getByRole("columnheader", {
@@ -252,10 +267,10 @@ it("edits a contract from its standard list and preserves the header after remou
   ).toBeDisabled();
   await userEvent.click(screen.getByRole("button", { name: "202600001" }));
   await userEvent.click(screen.getByRole("button", { name: "Edit" }));
-  fireEvent.change(screen.getByLabelText("Description"), {
+  fireEvent.change(screen.getByLabelText(/^Description/), {
     target: { value: "Quarterly accommodation" },
   });
-  fireEvent.change(screen.getByLabelText("Charge Every"), {
+  fireEvent.change(screen.getByLabelText(/^Charge Every/), {
     target: { value: "3" },
   });
   await userEvent.click(screen.getByRole("button", { name: "Save" }));
@@ -268,10 +283,11 @@ it("edits a contract from its standard list and preserves the header after remou
 });
 
 it("preserves the contract form if session storage cannot save the changes", async () => {
+  seedDetailedContract();
   setup(<ContractList />);
   await userEvent.click(screen.getByRole("button", { name: "202600001" }));
   await userEvent.click(screen.getByRole("button", { name: "Edit" }));
-  fireEvent.change(screen.getByLabelText("Description"), {
+  fireEvent.change(screen.getByLabelText(/^Description/), {
     target: { value: "Unsaved accommodation" },
   });
   const write = vi
@@ -281,7 +297,7 @@ it("preserves the contract form if session storage cannot save the changes", asy
     });
   await userEvent.click(screen.getByRole("button", { name: "Save" }));
   expect(screen.getByRole("dialog")).toBeVisible();
-  expect(screen.getByLabelText("Description")).toHaveValue(
+  expect(screen.getByLabelText(/^Description/)).toHaveValue(
     "Unsaved accommodation",
   );
   expect(readContractSamples("TEST").records[0].description).toBe(
@@ -309,6 +325,7 @@ it("requires a void reason and a trimmed remark before changing any Folio amount
 });
 
 it("validates contract dates and billing intervals while keeping the assigned number", () => {
+  seedDetailedContract();
   const record = readContractSamples("TEST").records[0];
   const save = vi.fn();
   setup(
@@ -323,22 +340,22 @@ it("validates contract dates and billing intervals while keeping the assigned nu
     />,
   );
   expect(screen.getByRole("switch", { name: "Active" })).toBeChecked();
-  fireEvent.change(screen.getByLabelText("End Date"), {
+  fireEvent.change(screen.getByLabelText(/^End Date/), {
     target: { value: "2025-01-01" },
   });
   fireEvent.submit(document.querySelector("form")!);
   expect(save).not.toHaveBeenCalled();
   expect(screen.getByRole("alert")).toHaveTextContent("End date");
-  fireEvent.change(screen.getByLabelText("End Date"), {
+  fireEvent.change(screen.getByLabelText(/^End Date/), {
     target: { value: "2026-12-31" },
   });
-  fireEvent.change(screen.getByLabelText("Charge Every"), {
+  fireEvent.change(screen.getByLabelText(/^Charge Every/), {
     target: { value: "1.5" },
   });
   fireEvent.submit(document.querySelector("form")!);
   expect(save).not.toHaveBeenCalled();
   expect(screen.getByRole("alert")).toHaveTextContent("whole billing interval");
-  fireEvent.change(screen.getByLabelText("Charge Every"), {
+  fireEvent.change(screen.getByLabelText(/^Charge Every/), {
     target: { value: "3" },
   });
   fireEvent.submit(document.querySelector("form")!);

@@ -37,6 +37,8 @@ export interface ArRegisterRow {
   currency_code: string;
   total_amount: ArAmount;
   outstanding_amount: ArAmount;
+  exchange_rate?: ArAmount;
+  reference_applied_amount?: ArAmount;
 }
 
 export interface ArRegisterDocument extends ArRegisterRow {
@@ -45,6 +47,18 @@ export interface ArRegisterDocument extends ArRegisterRow {
   is_pms_folio?: boolean;
   description?: string | null;
   source_doc_ref?: string | null;
+  doc_source?: string;
+  credit_term_days?: number;
+  currency_id?: string;
+  exchange_rate?: ArAmount;
+  base_currency_code?: string;
+  sub_total_amount?: ArAmount;
+  base_total_amount?: ArAmount;
+  discount_amount?: ArAmount;
+  tax2_amount?: ArAmount;
+  is_tax_invoice?: boolean;
+  is_wht_recorded?: boolean;
+  wht_amount?: ArAmount;
   workflow_current_stage?: string | null;
   net_amount: ArAmount;
   vat_amount: ArAmount;
@@ -54,12 +68,27 @@ export interface ArRegisterDocument extends ArRegisterRow {
     tax_invoice_no: string;
     tax_invoice_date: string;
     status: string;
+    customer_registered_name?: string;
+    customer_tax_no?: string | null;
+    customer_branch_no?: string | null;
+    address_line1?: string | null;
+    address_line2?: string | null;
+    province?: string | null;
+    postal_code?: string | null;
+    base_amount?: ArAmount;
+    vat_rate?: ArAmount;
+    vat_amount?: ArAmount;
+    total_amount?: ArAmount;
   } | null;
   tb_ar_invoice_detail?: ArInvoiceLineRecord[];
   tb_ar_invoice_reference?: {
     ref_ar_invoice_id: string;
     ref_ar_invoice_no?: string | null;
     applied_amount: ArAmount;
+    applied_net_amount?: ArAmount;
+    applied_vat_amount?: ArAmount;
+    realized_fx_amount?: ArAmount;
+    remarks?: string | null;
   }[];
 }
 
@@ -70,11 +99,14 @@ async function readAr(url: string) {
   return response.json();
 }
 
-export function useArRegister(params: ParamsDto) {
+export function useArRegister(
+  params: ParamsDto,
+  options?: { enabled?: boolean },
+) {
   const bu = useBuCode();
   return useQuery({
     queryKey: [QUERY_KEY, bu, "list", params],
-    enabled: !!bu,
+    enabled: !!bu && options?.enabled !== false,
     queryFn: () => fetchArRegister(bu!, params),
   });
 }
@@ -155,6 +187,28 @@ export function useDeleteArInvoice() {
       ),
     invalidateKeys: [QUERY_KEY],
     errorMessage: "Unable to delete AR invoice",
+    meta: { preferServerMessage: true },
+  });
+}
+
+export type ArInvoiceAction =
+  "submit" | "approve" | "review" | "reject" | "void";
+
+export function useArInvoiceAction() {
+  return useApiMutation<{
+    id: string;
+    action: ArInvoiceAction;
+    doc_version?: number;
+    reason?: string;
+    stage?: string;
+  }>({
+    mutationFn: ({ id, action, ...body }, bu) =>
+      httpClient.post(
+        `${API_ENDPOINTS.AR_INVOICE_LIST(bu)}/${encodeURIComponent(id)}/${action}`,
+        body,
+      ),
+    invalidateKeys: [QUERY_KEY, "ar-receipt"],
+    errorMessage: "Unable to update AR invoice status",
     meta: { preferServerMessage: true },
   });
 }

@@ -621,6 +621,7 @@ function ApPaymentEditor({
               <Button
                 size="sm"
                 variant="outline"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                 disabled={busy}
                 onClick={() => setReasonAction("void")}
               >

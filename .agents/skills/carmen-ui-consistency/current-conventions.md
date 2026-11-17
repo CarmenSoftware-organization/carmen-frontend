@@ -10,6 +10,11 @@ gotchas in the relevant recipe rather than growing the skill entrypoint.
   max-width. Wider boxes add field columns rather than stretching inputs.
 - Use container queries for fields, cards and bars; an ancestor must establish
   `@container`. Use `useElementWidth` for TanStack column state/sizes.
+- `LookupCombobox` fills the available field/cell width by default. Keep explicit
+  `w-fit`/fixed widths for compact inline controls; use `flex-1 min-w-0` when a
+  lookup shares a row with action buttons. Do not patch widths separately in
+  each page. `bun run test:ui` measures the real shared control in Chrome;
+  the full `bun test:run` suite includes this browser gate.
 - Reuse `CompactSection`, `FieldGrid`, `SECTION_PAIR`, `SettingField` and the page
   shell. Paired sections start at 1700px, align at both edges and have equal
   heights; avoid `items-start` on framed cards. Long descriptions go inside.

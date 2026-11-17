@@ -20,6 +20,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:ui": "bun scripts/check-ui-layout.ts",
     "lint": "eslint .",
     "clear": "rm -rf dist node_modules",
     "docs:i18n-check": "bun scripts/docs-i18n-check.ts",

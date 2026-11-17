@@ -1,4 +1,5 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
+import { useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { RefreshCw } from "lucide-react";
@@ -19,7 +20,7 @@ import { QUERY_KEYS } from "@/constant/query-keys";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useCan } from "@/hooks/use-can";
 import type { FilterFieldDef } from "@/types/list-filter";
-import { ArProfileDialog } from "./ar-profile-dialog";
+import { readProfileExtension } from "./ar-profile-model";
 import {
   useArCustomers,
   useDeleteArCustomer,
@@ -55,6 +56,7 @@ export function Component() {
       useDelete={useDeleteArCustomer}
       useTable={useArProfileTable}
       defaultSort="code:asc"
+      fixedColumnWidths
       pageKey={LIST_PAGE_KEYS.AR_PROFILE}
       filterFields={PROFILE_FILTERS}
       extraActions={
@@ -81,16 +83,9 @@ export function Component() {
           value: (row) => ts(row.is_active !== false ? "active" : "inactive"),
         },
       ]}
-      renderDialog={({ open, onOpenChange, entity, readOnly }) =>
-        open && (
-          <ArProfileDialog
-            key={entity?.id ?? "new"}
-            id={entity?.id}
-            mode={entity ? (readOnly ? "view" : "edit") : "add"}
-            canWrite={canWrite && !readOnly}
-            close={() => onOpenChange(false)}
-          />
-        )
+      addPath="/accounting/accounts-receivable/profile/new"
+      getEditPath={(entity) =>
+        `/accounting/accounts-receivable/profile/${entity.id}?mode=edit`
       }
       renderCard={({ item, onDelete }) => (
         <ProfileView id={item.id} canWrite={canWrite}>
@@ -118,17 +113,35 @@ function useArProfileTable(options: ConfigTableHookOptions<ArCustomer>) {
   "use no memo";
   const t = useTranslations("accounting.arProfile");
   const { canWrite } = useCan();
+  const bu = useBuCode() ?? "";
   const columns = useMemo<ColumnDef<ArCustomer>[]>(
     () =>
       (
         [
           ["code", t("code")],
-          ["name", t("name")],
+          ["registerDate", t("registerDate")],
+          ["title", t("contactTitle")],
+          ["firstName", t("firstName")],
+          ["lastName", t("lastName")],
+          ["name", t("companyName")],
+          ["telephone", t("telephone")],
           ["tax_no", t("taxId")],
-          ["credit_term_name", t("creditTerm")],
         ] as const
       ).map(([key, title]) => ({
-        accessorKey: key,
+        id: key,
+        enableSorting: ["code", "name", "tax_no"].includes(key),
+        accessorFn: (row) =>
+          key in row
+            ? row[key as keyof ArCustomer]
+            : readProfileExtension(bu, row.id)[
+                key as
+                  | "registerDate"
+                  | "title"
+                  | "firstName"
+                  | "lastName"
+                  | "telephone"
+              ],
+        size: key === "name" ? 250 : key === "tax_no" ? 160 : 145,
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title={title} />
         ),
@@ -141,10 +154,21 @@ function useArProfileTable(options: ConfigTableHookOptions<ArCustomer>) {
               )}
             </ProfileView>
           ) : (
-            original[key] || "—"
+            String(
+              key in original
+                ? (original[key as keyof ArCustomer] ?? "—")
+                : readProfileExtension(bu, original.id)[
+                    key as
+                      | "registerDate"
+                      | "title"
+                      | "firstName"
+                      | "lastName"
+                      | "telephone"
+                  ] || "—",
+            )
           ),
       })),
-    [canWrite, t],
+    [canWrite, bu, t],
   );
   return useConfigTable({
     ...options,
@@ -155,25 +179,17 @@ function useArProfileTable(options: ConfigTableHookOptions<ArCustomer>) {
 
 function ProfileView({
   id,
-  canWrite,
   children,
 }: {
   readonly id: string;
   readonly canWrite: boolean;
   readonly children: (open: () => void) => ReactNode;
 }) {
-  const [mode, setMode] = useState<"view" | "edit" | null>(null);
+  const navigate = useNavigate();
   return (
     <>
-      {children(() => setMode("view"))}
-      {mode && (
-        <ArProfileDialog
-          id={id}
-          mode={mode}
-          canWrite={canWrite}
-          close={() => setMode(null)}
-          edit={() => setMode("edit")}
-        />
+      {children(() =>
+        navigate(`/accounting/accounts-receivable/profile/${id}`),
       )}
     </>
   );

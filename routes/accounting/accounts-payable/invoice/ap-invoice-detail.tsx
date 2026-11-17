@@ -9,7 +9,7 @@ import {
   Undo2,
   X,
 } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import { DocFormHeader } from "@/components/share/doc-form-header";
@@ -40,7 +40,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-profile";
 import { ApiError } from "@/lib/api-error";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
-import type { ApInvoice, ApUiAction } from "@/types/accounts-payable";
+import type {
+  ApDocType,
+  ApInvoice,
+  ApUiAction,
+} from "@/types/accounts-payable";
+import { apDocumentPage } from "./ap-document-page";
 import { apActions, apCanEdit, apIsAutoFromGrn } from "../shared/ap-status";
 import {
   useApInvoice,
@@ -70,10 +75,10 @@ import {
   multiplyDecimal,
 } from "../shared/ap-decimal";
 
-const LIST_PATH = "/accounting/accounts-payable/invoice";
 const NO_ERRORS: ReadonlySet<InvoiceErrorKey> = new Set();
 
 export default function ApInvoiceDetail() {
+  const page = apDocumentPage(useLocation().pathname);
   const t = useTranslations("accounting.accountsPayable.invoice.detail");
   const { id = "new" } = useParams<{ id: string }>();
   const query = useApInvoice(id);
@@ -87,12 +92,17 @@ export default function ApInvoiceDetail() {
         onRetry={() => void query.refetch()}
       />
     );
-  if (id !== "new" && !query.data)
+  if (
+    id !== "new" &&
+    (!query.data || (page.docType && query.data.doc_type !== page.docType))
+  )
     return <ErrorState message={t("notFound")} />;
   return (
     <ApInvoiceEditor
       // เปลี่ยน version = โหลดใหม่ → ฟอร์มเริ่มจากข้อมูลล่าสุดเสมอ
-      key={`${id}:${query.data?.doc_version ?? 0}`}
+      key={`${page.path}:${id}:${query.data?.doc_version ?? 0}`}
+      listPath={page.path}
+      docType={page.docType}
       loaded={id === "new" ? null : query.data}
       refetch={() => void query.refetch()}
     />
@@ -104,9 +114,13 @@ type ReasonAction = Extract<ApUiAction, "void" | "reject" | "return">;
 function ApInvoiceEditor({
   loaded,
   refetch,
+  listPath,
+  docType,
 }: {
   readonly loaded: ApInvoice | null | undefined;
   readonly refetch: () => void;
+  readonly listPath: string;
+  readonly docType?: ApDocType;
 }) {
   const t = useTranslations("accounting.accountsPayable.invoice");
   const td = useTranslations("accounting.accountsPayable.invoice.detail");
@@ -123,12 +137,13 @@ function ApInvoiceEditor({
   const [editing, setEditing] = useState(isNew);
   const [showErrors, setShowErrors] = useState(false);
   const [activeTab, setActiveTab] = useState("items");
-  const [form, setForm] = useState<InvoiceForm>(() =>
-    initialInvoiceForm(loaded, {
+  const [form, setForm] = useState<InvoiceForm>(() => ({
+    ...initialInvoiceForm(loaded, {
       currencyId: defaultCurrencyId,
       currencyCode: defaultCurrencyCode,
     }),
-  );
+    ...(!loaded && docType ? { doc_type: docType } : {}),
+  }));
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [reasonAction, setReasonAction] = useState<ReasonAction | null>(null);
   const [reason, setReason] = useState("");
@@ -222,7 +237,7 @@ function ApInvoiceEditor({
       } else {
         const result = await saveMutation.mutateAsync({ input });
         toast.success(td("saved"));
-        navigate(`${LIST_PATH}/${result.id}`, { replace: true });
+        navigate(`${listPath}/${result.id}`, { replace: true });
       }
     } catch (error) {
       onFailure(error);
@@ -259,7 +274,7 @@ function ApInvoiceEditor({
       // ไปหน้า list ก่อน กัน detail ที่ถูกลบ refetch แล้วเจอ 404
       await deleteMutation.mutateAsync(loaded.id);
       toast.success(td("done.delete"));
-      navigate(LIST_PATH, { replace: true });
+      navigate(listPath, { replace: true });
     } catch (error) {
       setConfirmDelete(false);
       onFailure(error);
@@ -340,10 +355,13 @@ function ApInvoiceEditor({
         </div>
       )}
       <DocFormHeader
-        title={loaded?.doc_no || td("newTitle")}
-        subtitle={td("subtitle")}
-        backLabel={td("back")}
-        onBack={() => navigate(LIST_PATH)}
+        title={
+          loaded?.doc_no ||
+          (docType ? t(`pages.${docType}.add`) : td("newTitle"))
+        }
+        subtitle={docType ? t(`pages.${docType}.desc`) : td("subtitle")}
+        backLabel={docType ? t(`pages.${docType}.title`) : td("back")}
+        onBack={() => navigate(listPath)}
         badges={
           loaded ? (
             <StatusChip
@@ -362,7 +380,7 @@ function ApInvoiceEditor({
                   disabled={busy}
                   onClick={() => {
                     attachmentState.reset();
-                    if (isNew) navigate(LIST_PATH);
+                    if (isNew) navigate(listPath);
                     else {
                       setEditing(false);
                       setShowErrors(false);
@@ -430,6 +448,7 @@ function ApInvoiceEditor({
               <Button
                 size="sm"
                 variant="outline"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                 disabled={busy}
                 onClick={() => setReasonAction("void")}
               >
@@ -456,7 +475,6 @@ function ApInvoiceEditor({
               !primaryIsSubmit && (
                 <Button
                   size="sm"
-                  variant="outline"
                   onClick={() =>
                     navigate(
                       `/accounting/accounts-payable/payment/new?vendor_id=${encodeURIComponent(loaded.vendor_id)}&invoice_ids=${encodeURIComponent(loaded.id)}`,
@@ -470,18 +488,9 @@ function ApInvoiceEditor({
         }
       />
 
-      {loaded && (
-        <ApPostingBanner
-          status={loaded.doc_status}
-          jvId={loaded.gl_jv_id}
-          jvNo={loaded.gl_jv_no}
-          reversalJvId={loaded.void_gl_jv_id}
-          voidReason={loaded.void_reason}
-        />
-      )}
-
       <InvoiceHeader
         form={form}
+        fixedDocType={!!docType}
         onChange={patchForm}
         isNew={isNew}
         editable={editable}
@@ -618,6 +627,15 @@ function ApInvoiceEditor({
           value="journal"
           className="mt-3 min-h-0 min-w-0 flex-auto overflow-visible lg:flex-1 lg:overflow-auto"
         >
+          {loaded?.doc_status === "void" && (
+            <ApPostingBanner
+              status={loaded.doc_status}
+              jvId={null}
+              jvNo={null}
+              reversalJvId={loaded.void_gl_jv_id}
+              voidReason={loaded.void_reason}
+            />
+          )}
           <ApJournalTab id={loaded?.gl_jv_id} />
         </TabsContent>
       </Tabs>
@@ -739,6 +757,7 @@ function ApInvoiceEditor({
               {td("cancel")}
             </Button>
             <Button
+              variant={reasonAction === "void" ? "destructive" : "default"}
               disabled={
                 actionMutation.isPending || (needsReason && !reason.trim())
               }

@@ -249,6 +249,91 @@ it("displays a credit-note reference as an offset without changing its stored po
 });
 
 describe("AP document layout and persistence contract", () => {
+  it("keeps the posted JV in Journal (GL), with Delete-style Void and primary Pay Invoice", async () => {
+    state.invoice = {
+      ...invoice,
+      doc_status: "posted",
+      gl_jv_id: "posted-jv",
+      gl_jv_no: "JV-POSTED",
+    };
+    wrap(
+      <Routes>
+        <Route path="/:id" element={<ApInvoiceDetail />} />
+      </Routes>,
+      "/invoice",
+    );
+    expect(
+      screen.queryByRole("link", { name: /Journal|JV-POSTED/i }),
+    ).toBeNull();
+    expect(screen.getByRole("button", { name: "Void" })).toHaveAttribute(
+      "data-variant",
+      "outline",
+    );
+    expect(screen.getByRole("button", { name: "Void" })).toHaveClass(
+      "text-destructive",
+    );
+    expect(screen.getByRole("button", { name: "Pay invoice" })).toHaveAttribute(
+      "data-variant",
+      "default",
+    );
+    await userEvent.click(screen.getByRole("tab", { name: "Journal (GL)" }));
+    expect(
+      screen
+        .getAllByRole("link")
+        .filter(
+          (link) =>
+            link.getAttribute("href") ===
+            "/accounting/journal-voucher/posted-jv",
+        ),
+    ).toHaveLength(1);
+    await userEvent.click(screen.getByRole("button", { name: "Void" }));
+    expect(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "Void" }),
+    ).toHaveAttribute("data-variant", "destructive");
+  });
+
+  it("preserves void reason and reversal JV inside Journal (GL)", async () => {
+    state.invoice = {
+      ...invoice,
+      doc_status: "void",
+      gl_jv_id: "posted-jv",
+      void_gl_jv_id: "reversal-jv",
+      void_reason: "Duplicate supplier invoice",
+    };
+    wrap(
+      <Routes>
+        <Route path="/:id" element={<ApInvoiceDetail />} />
+      </Routes>,
+      "/invoice",
+    );
+    expect(screen.queryByText("Duplicate supplier invoice")).toBeNull();
+    await userEvent.click(screen.getByRole("tab", { name: "Journal (GL)" }));
+    expect(screen.getByText(/Duplicate supplier invoice/)).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("link").map((link) => link.getAttribute("href")),
+    ).toEqual(
+      expect.arrayContaining([
+        "/accounting/journal-voucher/posted-jv",
+        "/accounting/journal-voucher/reversal-jv",
+      ]),
+    );
+  });
+
+  it.each([
+    ["deposit", "Deposit", "New deposit"],
+    ["debit-note", "Debit Note", "New debit note"],
+    ["credit-note", "Credit Note", "New credit note"],
+  ])(
+    "starts a scoped %s draft with its document type locked",
+    (segment, label, title) => {
+      wrap(<ApInvoiceDetail />, `/accounting/accounts-payable/${segment}/new`);
+      expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
+      const selector = screen.getByRole("combobox", { name: /^Type/ });
+      expect(selector).toBeDisabled();
+      expect(selector).toHaveTextContent(label);
+    },
+  );
+
   it.each(["invoice", "payment"])(
     "blocks %s edits while uploads hold the save snapshot",
     async (kind) => {

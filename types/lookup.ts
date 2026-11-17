@@ -33,6 +33,8 @@ export type LookupResource =
   | "product_category"
   | "product"
   | "tax_profile"
+  | "cost_center"
+  | "chart_of_accounts"
   | "currency"
   | "credit_term"
   | "recipe_category"
