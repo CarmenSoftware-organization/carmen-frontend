@@ -1,4 +1,5 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { DimensionValueInput } from "@/components/dimension/dimension-value-input";
+import { useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "use-intl";
 import { LookupChartOfAccountById } from "@/components/lookup/lookup-chart-of-account-by-id";
@@ -14,20 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Field,
-  FieldInput,
-  FieldLabel,
-  FieldPlainText,
-} from "@/components/ui/field";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Field, FieldInput, FieldLabel } from "@/components/ui/field";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useChartOfAccountById } from "@/hooks/use-chart-of-account";
 import {
@@ -491,7 +479,6 @@ function ArLineDimensions({
   readonly change: (values: NonNullable<ArDraftLine["dimensions"]>) => void;
 }) {
   const t = useTranslations("accounting.arRegister");
-  const tc = useTranslations("common");
   const bu = useBuCode();
   const id = line.cr_chart_of_accounts_id;
   const rules = useQuery({
@@ -511,10 +498,7 @@ function ArLineDimensions({
     dimensions.data ?? [],
     account,
     rules.data ?? [],
-    selected.map((item) => ({
-      dimension_id: item.gl_dimension_id,
-      dimension_value_id: item.gl_dimension_value_id,
-    })),
+    selected,
   );
 
   if (
@@ -528,61 +512,30 @@ function ArLineDimensions({
     );
   }
   return visible.map((dimension) => {
-    const current = selected.find(
-      (item) => item.gl_dimension_id === dimension.id,
-    )?.gl_dimension_value_id;
-    const options = (values.data ?? []).filter(
-      (value) =>
-        value.dimension_id === dimension.id &&
-        (value.is_active || value.id === current),
-    );
     const labelId = `ar-line-dimension-${dimension.id}`;
     return (
       <Field key={dimension.id}>
         <FieldLabel
-          htmlFor={labelId}
+          id={labelId}
           required={rules.data?.some(
             (rule) =>
-              rule.gl_dimension_id === dimension.id &&
+              rule.dimension_id === dimension.id &&
               rule.requirement === "mandatory",
           )}
         >
           {dimension.name}
         </FieldLabel>
-        <Select
-          value={current ?? "none"}
-          onValueChange={(id) =>
+        <DimensionValueInput
+          dimension={dimension}
+          value={selected.find((item) => item.dimension_id === dimension.id)}
+          disabled={values.isPending}
+          onChange={(next) =>
             change([
-              ...selected.filter(
-                (item) => item.gl_dimension_id !== dimension.id,
-              ),
-              ...(id === "none"
-                ? []
-                : [
-                    {
-                      gl_dimension_id: dimension.id,
-                      gl_dimension_value_id: id,
-                    },
-                  ]),
+              ...selected.filter((item) => item.dimension_id !== dimension.id),
+              ...(next ? [next] : []),
             ])
           }
-        >
-          <SelectTrigger
-            id={labelId}
-            className="w-full"
-            disabled={values.isPending}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">{tc("select")}</SelectItem>
-            {options.map((value) => (
-              <SelectItem key={value.id} value={value.id}>
-                {value.code} · {value.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
       </Field>
     );
   });

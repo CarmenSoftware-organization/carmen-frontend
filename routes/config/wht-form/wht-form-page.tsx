@@ -8,6 +8,7 @@ import {
   ListCardRow,
   ListCardAuditRows,
 } from "@/components/share/list-card";
+import { useDimensionValueFormatter } from "@/hooks/use-dimension-value-formatter";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { WhtFormMaster } from "@/types/accounting-master";
 import {
@@ -52,6 +53,7 @@ export default function WhtFormPage() {
   const tf = useTranslations("field");
   const ts = useTranslations("status");
   const deletion = whtFormCrud.useDeleteVersioned();
+  const formatDimensionValue = useDimensionValueFormatter();
   return (
     <ConfigListTemplate<WhtFormMaster>
       translationNamespace="config.whtForm"
@@ -127,7 +129,7 @@ export default function WhtFormPage() {
             {item.dimensions
               .map(
                 (dimension) =>
-                  `${dimension.dimension_code}: ${dimension.value_code || "—"}`,
+                  `${dimension.dimension_code}: ${formatDimensionValue(dimension) || "—"}`,
               )
               .join(" · ") || "—"}
           </ListCardRow>

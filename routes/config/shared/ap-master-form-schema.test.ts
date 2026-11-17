@@ -54,7 +54,7 @@ describe("AP master validation", () => {
     expect(
       schema.safeParse({
         ...form,
-        dimensions: [{ gl_dimension_id: id, gl_dimension_value_id: "DEPT01" }],
+        dimensions: [{ dimension_id: id, dimension_value_id: "DEPT01" }],
       }).success,
     ).toBe(false);
     expect(schema.safeParse({ ...form, code: "PND 53" }).success).toBe(false);

@@ -32,8 +32,8 @@ describe("httpJournalVoucherRepository", () => {
             tb_gl_jv_detail: [{
               id: "line-1",
               tb_gl_jv_detail_dimension: [{
-                gl_dimension_id: "66666666-6666-6666-6666-666666666666",
-                gl_dimension_value_id: "77777777-7777-7777-7777-777777777777",
+                dimension_id: "66666666-6666-6666-6666-666666666666",
+                dimension_value_id: "77777777-7777-7777-7777-777777777777",
               }],
             }],
           } }),
@@ -44,10 +44,12 @@ describe("httpJournalVoucherRepository", () => {
       "44444444-4444-4444-4444-444444444444",
     );
 
-    expect(voucher?.lines[0].dimension).toEqual([{
-      dimension_id: "66666666-6666-6666-6666-666666666666",
-      dimension_value_id: "77777777-7777-7777-7777-777777777777",
-    }]);
+    expect(voucher?.lines[0].dimension).toEqual([
+      {
+        dimension_id: "66666666-6666-6666-6666-666666666666",
+        dimension_value_id: "77777777-7777-7777-7777-777777777777",
+      },
+    ]);
   });
 
   describe("create", () => {
@@ -115,10 +117,12 @@ describe("httpJournalVoucherRepository", () => {
             rate_source: null,
             debit: "1500.00",
             credit: "0.00",
-            dimension: [{
-              dimension_id: "66666666-6666-6666-6666-666666666666",
-              dimension_value_id: "77777777-7777-7777-7777-777777777777",
-            }],
+            dimension: [
+              {
+                dimension_id: "66666666-6666-6666-6666-666666666666",
+                dimension_value_id: "77777777-7777-7777-7777-777777777777",
+              },
+            ],
           },
           {
             account_id: "33333333-3333-3333-3333-333333333333",
@@ -159,8 +163,8 @@ describe("httpJournalVoucherRepository", () => {
               exchange_rate: 1,
               description: "Electricity line",
               dimensions: [{
-                gl_dimension_id: "66666666-6666-6666-6666-666666666666",
-                gl_dimension_value_id: "77777777-7777-7777-7777-777777777777",
+                dimension_id: "66666666-6666-6666-6666-666666666666",
+                dimension_value_id: "77777777-7777-7777-7777-777777777777",
               }],
             },
             {
@@ -232,7 +236,7 @@ describe("httpJournalVoucherRepository", () => {
       });
     });
 
-    it("does not send line changes that the API ignores", async () => {
+    it("sends the full line set as details.replace", async () => {
       vi.mocked(httpClient.patch).mockResolvedValueOnce(
         mockResponse({
           success: true,
@@ -304,6 +308,28 @@ describe("httpJournalVoucherRepository", () => {
         jv_date: "2026-09-30T00:00:00.000Z",
         description: "Updated description",
         note: "Updated note",
+        details: {
+          replace: [
+            {
+              sequence_no: 1,
+              chart_of_accounts_id: "22222222-2222-2222-2222-222222222222",
+              cost_center_id: "99999999-9999-9999-9999-999999999999",
+              debit: 2000,
+              credit: 0,
+              exchange_rate: 1,
+              description: "Line 1 comment",
+            },
+            {
+              sequence_no: 2,
+              chart_of_accounts_id: "33333333-3333-3333-3333-333333333333",
+              cost_center_id: "88888888-8888-8888-8888-888888888888",
+              debit: 0,
+              credit: 2000,
+              exchange_rate: 1,
+              description: "Line 2 comment",
+            },
+          ],
+        },
       });
     });
   });

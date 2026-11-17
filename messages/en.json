@@ -634,7 +634,6 @@
       "dimensionsLoadError": "Unable to load dimensions",
       "lineDimensionLabel": "{name}, row {row}",
       "clearLineDimension": "Clear dimension",
-      "savedDimensionsReadOnly": "Dimensions are read-only after the draft is created.",
       "prefix": "Voucher Type",
       "rate": "Rate",
       "baseDebit": "Base Debit",
@@ -1770,6 +1769,12 @@
     "noBuRetry": "Check again",
     "signedInAs": "Signed in as {name}",
     "signOut": "Sign out"
+  },
+  "dimensionValue": {
+    "notSelected": "Not selected",
+    "enterText": "Enter text",
+    "enterNumber": "Enter number",
+    "pickDate": "Pick a date"
   },
   "notFound": {
     "metaTitle": "Page not found",
@@ -5651,6 +5656,8 @@
       "shareOfTotal": "% of total",
       "ingredientCostFromLines": "Total of the ingredient lines — change the ingredients to change it",
       "cookIngredients": "Ingredients",
+      "cookChecked": "{n}/{total} checked",
+      "cookClearChecks": "Clear",
       "categoryDefaultHint": "Category: {pct}%",
       "applyCategoryDefault": "Apply",
       "categoryRatio": "(category {pct}%)",

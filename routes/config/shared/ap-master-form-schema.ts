@@ -1,3 +1,4 @@
+import { dimensionRefSchema } from "@/lib/dimension-schema";
 import { z } from "zod";
 import type { TranslationFn } from "@/lib/i18n-schema";
 
@@ -30,9 +31,9 @@ function baseSchema(
   });
 }
 const dimensions = z.array(
-  z.object({
-    gl_dimension_id: z.string().uuid(),
-    gl_dimension_value_id: z.string().uuid(),
+  dimensionRefSchema.extend({
+    dimension_id: z.string().uuid(),
+    dimension_value_id: z.string().uuid().nullish(),
   }),
 );
 const mapping = {

@@ -37,11 +37,12 @@ interface RecipeCookImagesProps {
 type Selection = "video" | number;
 
 /**
- * รูปของสูตรบนหน้าสูตร (หน้าที่เปิดเมื่อกดการ์ดสูตร) แบบหน้าสินค้า: รูปหลักสี่เหลี่ยมจัตุรัส + แถบรูปย่อ
+ * รูปของสูตรบนหน้าสูตร (หน้าที่เปิดเมื่อกดการ์ดสูตร) แบบหน้าสินค้า: รูปหลักกรอบ 4:3 + แถบรูปย่อ
  * ทั้งหมดอยู่ข้างใต้ เรียงตามลำดับที่จัดไว้ในฟอร์ม (sort_order) เริ่มที่รูปหลัก
  *
- * ความกว้างมาจากคอลัมน์ซ้ายของ hero ใน `RecipeCookView` (ต้องอยู่ใต้ `@container` ของหน้านั้น)
- * จอแคบที่ยังไม่แบ่งคอลัมน์ = จำกัดไว้ 20rem กลางแถว ไม่ขยายเต็มจอ
+ * กรอบ 4:3 แบบเต็มกรอบ (object-cover) — รูปจากกล้องมือถือ/รูปเมนูส่วนใหญ่เป็นแนวนอน กรอบจัตุรัสแบบ
+ * object-contain ของเดิมเหลือแถบเทาบน-ล่างเต็มไปหมดบน iPad (ผู้ใช้บ่น "เละ" 2026-11-17) · ส่วนที่ถูกตัด
+ * ขอบยังเห็นครบใน popup · ความกว้างมาจากผู้เรียก (`className`) — หน้าสูตรส่งเองทั้งแกลเลอรีเมนูและรูปของขั้น
  *
  * ใช้ซ้ำกับรูปของขั้นตอน (ส่ง `label` + `className`) — กดแล้วได้ popup แบบเดียวกับรูปหลักของสูตร
  *
@@ -87,15 +88,11 @@ export function RecipeCookImages({
   const hero = sorted[active];
 
   return (
-    <div
-      className={
-        className ?? "mx-auto w-full max-w-80 min-w-0 @lg:mx-0 @lg:max-w-none"
-      }
-    >
+    <div className={className ?? "w-full min-w-0"}>
       {showVideo && videoId ? (
-        // กรอบเดียวกับรูปใหญ่ (จัตุรัส) — player 16:9 มีแถบดำบนล่าง กดเต็มจอได้จากปุ่มของ YouTube
+        // กรอบเดียวกับรูปใหญ่ (4:3) สลับรูป↔วิดีโอแล้วหน้าไม่กระโดด — player 16:9 มีแถบดำบนล่าง กดเต็มจอได้จากปุ่มของ YouTube
         // youtube-nocookie ตรงกับ frame-src ใน CSP · referrerPolicy ต้องส่ง origin ไม่งั้น YouTube ตอบ Error 153
-        <div className="relative aspect-square w-full overflow-hidden rounded-lg border bg-black">
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border bg-black">
           <iframe
             src={youtubeEmbedUrl(videoId)}
             title={videoTitle ?? recipeName}
@@ -111,12 +108,12 @@ export function RecipeCookImages({
           type="button"
           onClick={() => setLightboxOpen(true)}
           aria-label={t("cookViewImage", { n: active + 1, total })}
-          className="bg-muted focus-visible:ring-ring relative flex aspect-square w-full cursor-zoom-in items-center justify-center overflow-hidden rounded-lg border focus-visible:ring-2 focus-visible:outline-none"
+          className="bg-muted focus-visible:ring-ring relative flex aspect-[4/3] w-full cursor-zoom-in items-center justify-center overflow-hidden rounded-lg border focus-visible:ring-2 focus-visible:outline-none"
         >
           <img
             src={hero.url}
             alt={names[active]}
-            className="size-full object-contain"
+            className="size-full object-cover"
           />
           {total > 1 && (
             <span className="bg-foreground/70 text-background text-micro-legal absolute top-2 right-2 rounded px-2 py-0.5 tabular-nums">

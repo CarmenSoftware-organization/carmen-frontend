@@ -634,7 +634,6 @@
       "dimensionsLoadError": "โหลด Dimension ไม่สำเร็จ",
       "lineDimensionLabel": "{name} บรรทัดที่ {row}",
       "clearLineDimension": "ล้างค่ามิติข้อมูล",
-      "savedDimensionsReadOnly": "ดูมิติข้อมูลได้ แต่แก้ไขไม่ได้หลังสร้างฉบับร่าง",
       "prefix": "ประเภทใบสำคัญ",
       "rate": "อัตรา",
       "baseDebit": "เดบิตสกุลเงินหลัก",
@@ -1770,6 +1769,12 @@
     "noBuRetry": "ตรวจอีกครั้ง",
     "signedInAs": "เข้าใช้งานในชื่อ {name}",
     "signOut": "ออกจากระบบ"
+  },
+  "dimensionValue": {
+    "notSelected": "ยังไม่เลือก",
+    "enterText": "กรอกข้อความ",
+    "enterNumber": "กรอกตัวเลข",
+    "pickDate": "เลือกวันที่"
   },
   "notFound": {
     "metaTitle": "ไม่พบหน้านี้",
@@ -5651,6 +5656,8 @@
       "shareOfTotal": "% ของรวม",
       "ingredientCostFromLines": "ยอดรวมของบรรทัดวัตถุดิบ — แก้ที่วัตถุดิบเพื่อเปลี่ยนค่านี้",
       "cookIngredients": "วัตถุดิบ",
+      "cookChecked": "เช็กแล้ว {n}/{total}",
+      "cookClearChecks": "ล้าง",
       "categoryDefaultHint": "หมวด: {pct}%",
       "applyCategoryDefault": "ใช้ค่านี้",
       "categoryRatio": "(หมวด {pct}%)",

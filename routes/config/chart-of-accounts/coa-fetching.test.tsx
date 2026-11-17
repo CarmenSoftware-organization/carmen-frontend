@@ -44,7 +44,7 @@ const detail: ChartOfAccountDetail = {
   ],
   dimensions: [
     {
-      gl_dimension_id: "project",
+      dimension_id: "project",
       code: "PROJECT",
       name: "Project",
       data_type: "lookup",

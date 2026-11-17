@@ -1,15 +1,8 @@
 import { z } from "zod";
+import { dimensionRefSchema } from "@/lib/dimension-schema";
 import type { TranslationFn } from "@/lib/i18n-schema";
 import type { DimensionRef } from "@/types/gl-dimension";
 
-const dimensionRefSchema = z.object({
-  gl_dimension_id: z.string(),
-  gl_dimension_value_id: z.string(),
-  dimension_code: z.string().optional(),
-  value_code: z.string().optional(),
-  dimension_name: z.string().optional(),
-  value_name: z.string().optional(),
-});
 
 function createSrDetailSchema(tv: TranslationFn, tf: TranslationFn) {
   return z.object({

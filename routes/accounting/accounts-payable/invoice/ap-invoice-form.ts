@@ -1,3 +1,5 @@
+import { toDimensionPayload } from "@/lib/dimension-payload";
+import type { DimensionRef } from "@/types/gl-dimension";
 import { isoToDateInput } from "@/lib/date-utils";
 import type {
   ApDocType,
@@ -47,15 +49,17 @@ export interface InvoiceFormLine {
   grn_id: string | null;
   source_labels: Record<string, string>;
   /** ฟิลด์ของบรรทัดเดิมที่ UI ไม่แก้ (dimension / cr_* / vat_* account / sources) — ส่งกลับตามเดิมตอน PUT; บรรทัดใหม่ไม่มี */
-  carry: Pick<
+  carry: (Pick<
     ApInvoiceLineInput,
-    | "dimensions"
     | "sources"
     | "vat_chart_of_accounts_id"
     | "vat_cost_center_id"
     | "cr_chart_of_accounts_id"
     | "cr_cost_center_id"
-  > | null;
+  > & {
+    /** เก็บเป็น ref เต็ม (มี value_code/ชนิด) เพื่อแสดงผล — แปลงเป็น payload ตอนส่ง */
+    dimensions?: DimensionRef[] | null;
+  }) | null;
 }
 
 export interface InvoiceForm {
@@ -148,10 +152,7 @@ function fromDocLine(line: ApInvoiceLine): InvoiceFormLine {
       ]),
     ),
     carry: {
-      dimensions: line.dimensions.map((d) => ({
-        gl_dimension_id: d.gl_dimension_id,
-        gl_dimension_value_id: d.gl_dimension_value_id,
-      })),
+      dimensions: line.dimensions,
       sources: line.sources.map((src) => ({
         good_received_note_detail_item_id:
           src.good_received_note_detail_item_id,
@@ -347,6 +348,9 @@ function toLineInput(
     vat_amount: line.vat_is_override ? num(line.vat_amount) : null,
     wht_tax_profile_id: line.wht_tax_profile_id,
     ...(line.carry ?? {}),
+    ...(line.carry?.dimensions
+      ? { dimensions: toDimensionPayload(line.carry.dimensions) }
+      : {}),
   };
 }
 

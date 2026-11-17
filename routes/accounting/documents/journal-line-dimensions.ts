@@ -19,7 +19,7 @@ export function visibleLineDimensions(
       return true;
     if (!dimension.is_active) return false;
     const rule = accountRules.find(
-      (item) => item.gl_dimension_id === dimension.id,
+      (item) => item.dimension_id === dimension.id,
     );
     if (rule) return rule.requirement !== "prohibited";
     return (

@@ -199,7 +199,7 @@ export function useMasterAccountMapping(
         cost_centers: MOCK_COST_CENTERS,
         default_cost_center_id: selected.cost_center_id,
         dimensions: selected.dimensions.map((item) => ({
-          gl_dimension_id: item.gl_dimension_id,
+          dimension_id: item.dimension_id,
           code: item.dimension_code!,
           name: item.dimension_name!,
           requirement: "optional",
