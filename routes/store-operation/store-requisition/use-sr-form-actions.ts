@@ -44,6 +44,7 @@ import type { SrFormValues } from "./sr-form-schema";
 import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 import { clearDimensionsDirty } from "@/lib/dimension-payload";
 import { mapSrItemToPayload } from "./sr-form-helpers";
+import { withFreshDetailVersions } from "@/lib/doc-version";
 
 export type SrActionDialogType =
   "approve" | "issue" | "reject" | "review" | null;
@@ -187,15 +188,29 @@ export function useSrFormActions({
     return null;
   };
 
-  const fetchFreshSr = async (): Promise<{ doc_version?: number } | null> =>
+  const fetchFreshSr = async (): Promise<StoreRequisition | null> =>
     storeRequisition ? fetchSrById(storeRequisition.id) : null;
 
   const resolveDocVersion = (fresh: { doc_version?: number } | null): number =>
     fresh?.doc_version ?? storeRequisition?.doc_version ?? 0;
 
+  // lock ของ backend เช็คราย detail ด้วย — หลัง /save แถวที่แก้ถูก bump แต่ฟอร์ม
+  // ยังถือเลขเดิม save รอบสองจึงได้ 409 ทับด้วยเลขสดหลัง buildItemChanges เสมอ
+  // (ทับก่อนจะทำให้ทุกแถวกลายเป็น update ดู withFreshDetailVersions)
+  const withFreshLineVersions = <T extends { update?: { id: string }[] }>(
+    changes: T,
+    fresh: Pick<StoreRequisition, "store_requisition_detail"> | null,
+  ): T => ({
+    ...changes,
+    update: withFreshDetailVersions(
+      changes.update,
+      fresh?.store_requisition_detail,
+    ),
+  });
+
   const buildSaveDetails = (
     values: SrFormValues,
-    fresh: { doc_version?: number } | null,
+    fresh: Pick<StoreRequisition, "doc_version" | "store_requisition_detail"> | null,
   ): CreateStoreRequisitionDto["details"] => ({
     sr_date: values.sr_date,
     expected_date: values.expected_date,
@@ -206,10 +221,11 @@ export function useSrFormActions({
     from_location_id: values.from_location_id,
     to_location_id: values.to_location_id,
     doc_version: resolveDocVersion(fresh),
-    store_requisition_detail: buildItemChanges(
-      values.items,
-      defaultValues.items,
-      (i) => mapSrItemToPayload(i, { dimensionsEnabled }),
+    store_requisition_detail: withFreshLineVersions(
+      buildItemChanges(values.items, defaultValues.items, (i) =>
+        mapSrItemToPayload(i, { dimensionsEnabled }),
+      ),
+      fresh,
     ),
   });
 

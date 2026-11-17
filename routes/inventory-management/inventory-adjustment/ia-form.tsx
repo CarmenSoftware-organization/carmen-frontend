@@ -26,6 +26,10 @@ import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 import { clearDimensionsDirty } from "@/lib/dimension-payload";
+import { pickDocVersion, withFreshDetailVersions } from "@/lib/doc-version";
+import { httpClient } from "@/lib/http-client";
+import { API_ENDPOINTS } from "@/constant/api-endpoints";
+import { useBuCode } from "@/hooks/use-bu-code";
 import { useErrorToast } from "@/hooks/use-error-toast";
 import { ApiError, ERROR_CODES, isAppStatusErrorCode } from "@/lib/api-error";
 import { VoidDialog } from "@/components/share/void-dialog";
@@ -95,6 +99,7 @@ export function InventoryAdjustmentForm({
   const formatter = useFormatter();
 
   const { currentPeriod, dateFormat } = useProfile();
+  const buCode = useBuCode();
   const dimensionsEnabled = useLineDimensionsEnabled();
   const adjTypeFilter =
     adjustmentType === "stock-in"
@@ -212,8 +217,35 @@ export function InventoryAdjustmentForm({
   const detailsKey =
     adjustmentType === "stock-in" ? "stock_in_detail" : "stock_out_detail";
 
+  type FreshAdj = Pick<
+    InventoryAdjustment,
+    "doc_version" | "stock_in_detail" | "stock_out_detail"
+  >;
+
+  // GET ใบสดก่อน /save — /save bump doc_version ทั้งหัวและแถวที่แก้ แต่ฟอร์มยังถือ
+  // เลขเดิม (reset ด้วย getValues()) save รอบสองจึงได้ 409 ราย detail
+  const fetchFreshAdj = async (id: string): Promise<FreshAdj | null> => {
+    if (!buCode) return null;
+    const endpoint =
+      adjustmentType === "stock-in"
+        ? API_ENDPOINTS.STOCK_IN
+        : API_ENDPOINTS.STOCK_OUT;
+    try {
+      const res = await httpClient.get(`${endpoint(buCode)}/${id}`);
+      if (res.ok) return (await res.json())?.data ?? null;
+      if (import.meta.env.DEV)
+        console.warn("[IA] ดึง doc_version สดไม่สำเร็จ", res.status, id);
+    } catch (err) {
+      // GET ล้มไม่ควรทำให้บันทึกไม่ได้ — fallback เลขเดิม แต่ต้องไม่เงียบ
+      if (import.meta.env.DEV)
+        console.warn("[IA] ดึง doc_version สดไม่สำเร็จ", err);
+    }
+    return null;
+  };
+
   // บรรทัดที่แก้แค่ dimension ต้องไม่ทำให้ต้นทุนเปลี่ยน (ดู restoreStoredCost)
-  const buildUpdateChanges = (values: AdjFormValues) => {
+  // เลขสดราย detail ทับหลัง buildItemChanges เสมอ (ดู withFreshDetailVersions)
+  const buildUpdateChanges = (values: AdjFormValues, fresh: FreshAdj | null) => {
     const changes = buildItemChanges(
       values.items,
       defaultValues.items,
@@ -222,19 +254,29 @@ export function InventoryAdjustmentForm({
     if (!changes.update) return changes;
     return {
       ...changes,
-      update: restoreStoredCost(changes.update, values, defaultValues, {
-        isStockOut: adjustmentType === "stock-out",
-      }),
+      update: withFreshDetailVersions(
+        restoreStoredCost(changes.update, values, defaultValues, {
+          isStockOut: adjustmentType === "stock-out",
+        }),
+        fresh?.[detailsKey],
+      ),
     };
   };
 
-  const buildUpdatePayload = (values: AdjFormValues) => ({
-    id: inventoryAdjustment!.id,
-    type: adjustmentType,
-    doc_version: inventoryAdjustment!.doc_version,
-    ...buildBasePayload(values),
-    [detailsKey]: buildUpdateChanges(values),
-  });
+  const buildUpdatePayload = async (values: AdjFormValues) => {
+    const fresh = await fetchFreshAdj(inventoryAdjustment!.id);
+    return {
+      id: inventoryAdjustment!.id,
+      type: adjustmentType,
+      doc_version: pickDocVersion(
+        fresh?.doc_version,
+        undefined,
+        inventoryAdjustment!.doc_version,
+      ),
+      ...buildBasePayload(values),
+      [detailsKey]: buildUpdateChanges(values, fresh),
+    };
+  };
 
   const buildCreatePayload = (values: AdjFormValues) => ({
     type: adjustmentType,
@@ -246,9 +288,9 @@ export function InventoryAdjustmentForm({
     },
   });
 
-  const submitUpdate = (values: AdjFormValues) => {
+  const submitUpdate = async (values: AdjFormValues) => {
     if (!inventoryAdjustment) return;
-    updateAdj.mutate(buildUpdatePayload(values), {
+    updateAdj.mutate(await buildUpdatePayload(values), {
       onSuccess: handleUpdateSuccess,
       onError: handleMutationError,
     });
@@ -315,7 +357,7 @@ export function InventoryAdjustmentForm({
           let docVersion = inventoryAdjustment.doc_version;
           if (form.formState.isDirty) {
             const saved = await updateAdj.mutateAsync(
-              buildUpdatePayload(values),
+              await buildUpdatePayload(values),
             );
             docVersion = saved?.data?.doc_version ?? docVersion;
           }
