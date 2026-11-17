@@ -9,7 +9,7 @@ import { PR_STATUS_CONFIG } from "@/constant/purchase-request";
 import type { ApprovalItem } from "@/types/approval";
 import { formatDate } from "@/lib/date-utils";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
   columnSkeletons,
   indexColumn,
@@ -30,6 +30,12 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import type { ParamsDto } from "@/types/params";
 import EmptyComponent from "@/components/empty-component";
 import { useElementWidth } from "@/hooks/use-element-width";
+import {
+  ListCard,
+  ListCardRow,
+  ListCardSendBackRow,
+  ListCardSkeleton,
+} from "@/components/share/list-card";
 
 /**
  * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
@@ -40,8 +46,8 @@ import { useElementWidth } from "@/hooks/use-element-width";
  * จุดเปลี่ยนตั้งสูงกว่าผลรวมราว 70–80px — คอลัมน์รองกลับมาเมื่อรายละเอียดได้ที่ราว 310px แล้ว
  * ยกเว้นผู้ขอ (1075 = เหลือ 265px) ให้ขึ้นที่จอ 1366 กาง sidebar (กล่อง 1083) และขั้น (885)
  * ให้ขึ้นที่ iPad 1180 (กล่อง 896) — ผู้อนุมัติดูสองคอลัมน์นี้บ่อย
- * แคบกว่า 650 (มือถือ): ตัดคอลัมน์รายละเอียด ย้ายผู้ขาย/แผนกเป็นบรรทัดรองใต้เลขเอกสาร
- * และเลิก grow ให้สามคอลัมน์ที่เหลือแบ่งตามสัดส่วน · ของที่ซ่อนยังดูได้ในหน้าเอกสาร
+ * แคบกว่า 650 (มือถือ): เลิกเป็นตาราง เปลี่ยนเป็นการ์ดใบละเอกสาร ที่ถือทุกช่องของตาราง
+ * (ตารางสามคอลัมน์ที่บีบไว้เดิมต้องซ่อนผู้ขอ/ขั้น/คำอธิบาย ผู้อนุมัติบนมือถือจึงไม่เห็น)
  */
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
@@ -49,8 +55,67 @@ function columnTier(width: number | undefined) {
     showRequester: w >= 1075,
     showIndex: w >= 970,
     showStage: w >= 885,
-    showDetails: w >= 650,
+    cardView: w < 650,
   };
+}
+
+/** ยอดเงินของหนึ่งใบ — SR ไม่มียอด (0 ของมันไม่ใช่ศูนย์บาทจริง) · ใช้ทั้งตารางและการ์ด */
+function ApprovalAmount({ item }: { readonly item: ApprovalItem }) {
+  const formatAmount = useAmountFormatter();
+  if (item.doc_type === "sr") {
+    return <span className="text-muted-foreground">—</span>;
+  }
+  if (isPriceHidden(item.hidden_fields, "total_price")) {
+    return <HiddenValue />;
+  }
+  return (
+    <span className="text-xs whitespace-nowrap tabular-nums">
+      {formatAmount(item.total_amount)}
+      <span className="text-muted-foreground ml-1">{item.currency_code}</span>
+    </span>
+  );
+}
+
+/** จำนวนวันที่รอ (สีตามความเร่ง) + วันที่เอกสาร — ใช้ทั้งตารางและการ์ด */
+function WaitingDays({
+  docDate,
+  dateFormat,
+  today,
+}: {
+  readonly docDate: string;
+  readonly dateFormat: string;
+  readonly today: Date;
+}) {
+  const t = useTranslations("procurement.approval");
+  if (!docDate) return <span className="text-muted-foreground">—</span>;
+  const days = Math.max(0, differenceInCalendarDays(today, new Date(docDate)));
+  return (
+    <div data-slot="cell-stack" className="flex flex-col items-end">
+      <span
+        className={cn(
+          "text-xs font-semibold tabular-nums",
+          days > 7
+            ? "text-destructive"
+            : days > 3
+              ? "text-warning-ink"
+              : "text-muted-foreground",
+        )}
+      >
+        {t("daysWaiting", { count: days })}
+      </span>
+      <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
+        {formatDate(docDate, dateFormat)}
+      </span>
+    </div>
+  );
+}
+
+/** ขั้นของ workflow — ใบที่ยังไม่มีขั้น (เช่น PO ที่ไม่ผูก stage) ถอยไปโชว์สถานะเอกสาร */
+function StageValue({ item }: { readonly item: ApprovalItem }) {
+  const { workflow_current_stage: stage, status } = item;
+  if (stage) return <span className="truncate text-xs">{stage}</span>;
+  const config = PR_STATUS_CONFIG[status || "draft"] ?? PR_STATUS_CONFIG.draft;
+  return <StatusChip status={status || "draft"} label={config.label} />;
 }
 
 interface ApprovalQueueListProps {
@@ -74,10 +139,10 @@ export default function ApprovalQueueList({
   const t = useTranslations("procurement.approval");
   const tfl = useTranslations("field");
 
-  const formatAmount = useAmountFormatter();
+  const navigate = useNavigate();
   // ลบขอบ 1px สองข้างของ DataGridContainer ออก ได้ความกว้างที่ตารางใช้จริง
   const [setGridBox, gridBoxWidth] = useElementWidth();
-  const { showRequester, showIndex, showStage, showDetails } = columnTier(
+  const { showRequester, showIndex, showStage, cardView } = columnTier(
     gridBoxWidth == null ? undefined : gridBoxWidth - 2,
   );
 
@@ -121,11 +186,6 @@ export default function ApprovalQueueList({
       cell: ({ row }) => {
         const item = row.original;
         const typeConfig = DOC_TYPE_CONFIG[item.doc_type];
-        const typeBadge = (
-          <Badge variant={typeConfig?.variant ?? "secondary"} size="xs">
-            {typeConfig?.label ?? item.doc_type.toUpperCase()}
-          </Badge>
-        );
         return (
           // data-slot ให้ rowClamp ของ DataGrid ข้ามกล่องนี้ — ไม่งั้นมันกลายเป็น
           // -webkit-box แล้วสองบรรทัดถูกบีบเป็นบรรทัดเดียว
@@ -134,7 +194,9 @@ export default function ApprovalQueueList({
             className="flex max-w-full flex-col items-start gap-1"
           >
             <div className="flex items-center gap-1.5">
-              {showDetails && typeBadge}
+              <Badge variant={typeConfig?.variant ?? "secondary"} size="xs">
+                {typeConfig?.label ?? item.doc_type.toUpperCase()}
+              </Badge>
               <Link
                 to={typeConfig?.href(item.id) ?? "#"}
                 className="text-primary text-xs font-semibold whitespace-nowrap hover:underline"
@@ -147,25 +209,11 @@ export default function ApprovalQueueList({
                 </Badge>
               )}
             </div>
-            {/* กล่องแคบ: คอลัมน์รายละเอียดถูกซ่อน — ป้ายประเภทลงมาคู่กับผู้ขาย/แผนก
-                ใต้เลขเอกสาร ให้เลขเอกสารได้ทั้งบรรทัด (ป้าย + เลข 136px ไม่พอในคอลัมน์มือถือ) */}
-            {!showDetails && (
-              <div className="flex max-w-full min-w-0 items-center gap-1.5">
-                {typeBadge}
-                {(item.vendor_name || item.department_name) && (
-                  <span className="text-muted-foreground truncate text-xs">
-                    {item.vendor_name || item.department_name}
-                  </span>
-                )}
-              </div>
-            )}
             <SendBackStatus lastAction={item.last_action} />
           </div>
         );
       },
-      // กล่องแคบไม่มีคอลัมน์ grow → แบ่งตามสัดส่วน 130 : 90 : 95 (มือถือ 332px ≈ 137/95/100)
-      // เนื้อหาที่ต้องการ: เลขเอกสาร 102 · ยอด 67 · วันที่ 70 (+ padding 24 ทุกช่อง)
-      size: showDetails ? 200 : 130,
+      size: 200,
       meta: { headerTitle: t("document"), skeleton: columnSkeletons.text },
     },
     {
@@ -219,13 +267,7 @@ export default function ApprovalQueueList({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("stage")} />
       ),
-      cell: ({ row }) => {
-        const { workflow_current_stage: stage, status } = row.original;
-        if (stage) return <span className="truncate text-xs">{stage}</span>;
-        const config =
-          PR_STATUS_CONFIG[status || "draft"] ?? PR_STATUS_CONFIG.draft;
-        return <StatusChip status={status || "draft"} label={config.label} />;
-      },
+      cell: ({ row }) => <StageValue item={row.original} />,
       size: 140,
       meta: { headerTitle: tfl("stage"), skeleton: columnSkeletons.text },
     },
@@ -238,34 +280,8 @@ export default function ApprovalQueueList({
           className="justify-end"
         />
       ),
-      cell: ({ row }) => {
-        const item = row.original;
-        // ใบเบิกสินค้าไม่มียอดเงิน — 0 ของมันไม่ใช่ศูนย์บาทจริง
-        if (item.doc_type === "sr") {
-          return <span className="text-muted-foreground">—</span>;
-        }
-        if (isPriceHidden(item.hidden_fields, "total_price")) {
-          return <HiddenValue />;
-        }
-        // กล่องแคบ: สกุลเงินลงบรรทัดรอง ไม่งั้นยอดหกหลักถูกตัดในคอลัมน์ ~90px
-        return (
-          <span
-            data-slot="cell-stack"
-            className={cn(
-              "text-xs whitespace-nowrap tabular-nums",
-              !showDetails && "flex flex-col items-end",
-            )}
-          >
-            {formatAmount(item.total_amount)}
-            <span
-              className={cn("text-muted-foreground", showDetails && "ml-1")}
-            >
-              {item.currency_code}
-            </span>
-          </span>
-        );
-      },
-      size: showDetails ? 140 : 90,
+      cell: ({ row }) => <ApprovalAmount item={row.original} />,
+      size: 140,
       meta: {
         headerTitle: tfl("amount"),
         cellClassName: "text-right",
@@ -283,34 +299,14 @@ export default function ApprovalQueueList({
           className="justify-end"
         />
       ),
-      cell: ({ row }) => {
-        const { doc_date } = row.original;
-        if (!doc_date) return <span className="text-muted-foreground">—</span>;
-        const days = Math.max(
-          0,
-          differenceInCalendarDays(today, new Date(doc_date)),
-        );
-        return (
-          <div data-slot="cell-stack" className="flex flex-col items-end">
-            <span
-              className={cn(
-                "text-xs font-semibold tabular-nums",
-                days > 7
-                  ? "text-destructive"
-                  : days > 3
-                    ? "text-warning-ink"
-                    : "text-muted-foreground",
-              )}
-            >
-              {t("daysWaiting", { count: days })}
-            </span>
-            <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
-              {formatDate(doc_date, dateFormat)}
-            </span>
-          </div>
-        );
-      },
-      size: showDetails ? 110 : 95,
+      cell: ({ row }) => (
+        <WaitingDays
+          docDate={row.original.doc_date}
+          dateFormat={dateFormat}
+          today={today}
+        />
+      ),
+      size: 110,
       meta: {
         headerTitle: t("waiting"),
         cellClassName: "text-right",
@@ -332,34 +328,107 @@ export default function ApprovalQueueList({
       ...tableConfig.state,
       columnVisibility: {
         index: showIndex,
-        details: showDetails,
         requestor_name: showRequester,
         workflow_current_stage: showStage,
       },
     },
   });
 
+  const emptyMessage = (
+    <EmptyComponent
+      icon={Clock}
+      title={t("noPendingApprovals")}
+      description={t("noPendingApprovalsDesc")}
+    />
+  );
+
+  // กล่องที่ผูก ref วัดความกว้างต้องอยู่ทั้งสองโหมด ไม่งั้นสลับกลับเป็นตารางไม่ได้
   return (
     <div ref={setGridBox}>
       <DataGrid
         table={table}
         recordCount={totalRecords}
         isLoading={isLoading}
-        emptyMessage={
-          <EmptyComponent
-            icon={Clock}
-            title={t("noPendingApprovals")}
-            description={t("noPendingApprovalsDesc")}
-          />
-        }
+        emptyMessage={emptyMessage}
         tableLayout={{ headerSticky: true }}
       >
-        <DataGridContainer className="flex max-h-[calc(100vh-13rem-3rem)] flex-col">
-          <DataGridScrollArea>
-            <DataGridTable />
-          </DataGridScrollArea>
-          <DataGridPagination />
-        </DataGridContainer>
+        {cardView ? (
+          <div className="flex flex-col gap-2">
+            {isLoading
+              ? Array.from({ length: 3 }).map((_, i) => (
+                  <ListCardSkeleton
+                    key={`skeleton-${i}`}
+                    rows={6}
+                    hasFooter={false}
+                  />
+                ))
+              : items.length === 0
+                ? emptyMessage
+                : items.map((item) => {
+                    const typeConfig = DOC_TYPE_CONFIG[item.doc_type];
+                    return (
+                      <ListCard
+                        key={`${item.doc_type}-${item.id}`}
+                        title={item.doc_no}
+                        onOpen={
+                          typeConfig
+                            ? () => navigate(typeConfig.href(item.id))
+                            : undefined
+                        }
+                        badge={
+                          <span className="flex shrink-0 items-center gap-1.5">
+                            {multiBu && (
+                              <Badge variant="outline" size="xs">
+                                {item.bu_code}
+                              </Badge>
+                            )}
+                            <Badge
+                              variant={typeConfig?.variant ?? "secondary"}
+                              size="xs"
+                            >
+                              {typeConfig?.label ?? item.doc_type.toUpperCase()}
+                            </Badge>
+                          </span>
+                        }
+                      >
+                        <ListCardRow label={t("details")}>
+                          {item.vendor_name || item.department_name || "—"}
+                        </ListCardRow>
+                        {item.description && (
+                          <ListCardRow label={tfl("description")}>
+                            {item.description}
+                          </ListCardRow>
+                        )}
+                        <ListCardRow label={tfl("requester")}>
+                          {item.requestor_name || "—"}
+                        </ListCardRow>
+                        <ListCardRow label={tfl("stage")}>
+                          <StageValue item={item} />
+                        </ListCardRow>
+                        <ListCardRow label={tfl("amount")}>
+                          <ApprovalAmount item={item} />
+                        </ListCardRow>
+                        <ListCardRow label={t("waiting")}>
+                          <WaitingDays
+                            docDate={item.doc_date}
+                            dateFormat={dateFormat}
+                            today={today}
+                          />
+                        </ListCardRow>
+                        <ListCardSendBackRow lastAction={item.last_action} />
+                      </ListCard>
+                    );
+                  })}
+            <DataGridPagination className="bg-card rounded-xl border" />
+          </div>
+        ) : (
+          <DataGridContainer className="flex max-h-[calc(100vh-13rem-3rem)] flex-col">
+            <DataGridScrollArea>
+              <DataGridTable />
+            </DataGridScrollArea>
+            <DataGridPagination />
+          </DataGridContainer>
+        )}
       </DataGrid>
     </div>
   );
