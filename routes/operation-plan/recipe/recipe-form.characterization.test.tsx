@@ -306,6 +306,25 @@ describe("RecipeForm — รูปของขั้นตอน (ไม่เ�
     expect(syncedDrafts()[0].image_files.map((f) => f.name)).toEqual(["a.png"]);
   });
 
+  // การ์ดขั้นจัดใหม่ให้เข้าชุดกับหน้าดูสูตร (2026-11-17) — ช่องชื่อขั้นถูกห่อด้วย div ของแถวหัวการ์ด
+  it("การ์ดขั้น: ป้าย Step n of total + พิมพ์ชื่อขั้น → ส่งให้ sync ตอน Save", async () => {
+    renderForm(<RecipeForm recipe={withStep} />);
+    expect(
+      screen.getByText(
+        R.cookStepOf.replace("{n}", "1").replace("{total}", "1"),
+      ),
+    ).toBeInTheDocument();
+    fireEvent.change(screen.getByRole("textbox", { name: R.stepTitle }), {
+      target: { value: "Make stock" },
+    });
+    await act(async () => submitForm("recipe-form"));
+
+    expect(
+      (firstPayload(syncStepsMut) as { drafts: { title: string }[] }).drafts[0]
+        .title,
+    ).toBe("Make stock");
+  });
+
   it("ไฟล์ที่ไม่ใช่รูป → ไม่รับ", async () => {
     renderForm(<RecipeForm recipe={withStep} />);
     pick(new File(["x"], "a.pdf", { type: "application/pdf" }));

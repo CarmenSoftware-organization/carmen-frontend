@@ -6,7 +6,17 @@ import {
   type UseFormReturn,
 } from "react-hook-form";
 import { useTranslations } from "use-intl";
-import { ArrowDown, ArrowUp, Plus, Trash2, X } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  CookingPot,
+  Plus,
+  Thermometer,
+  Timer,
+  Trash2,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -100,7 +110,8 @@ export function RecipeStepsFields({
             <p className="text-muted-foreground text-sm">{t("noSteps")}</p>
           )}
           {/* การ์ดกว้าง (80rem+) = ขั้นตอน 2 คอลัมน์ เรียงซ้ายไปขวาตามเลขขั้น — การ์ดในแถวเดียวกันสูงเท่ากัน
-              (ห้าม items-start) · แต่ละขั้นมีแถบหัวสีพื้น + เลขขั้นสีหลัก + เงา ให้แยกจากกันชัด
+              (ห้าม items-start) · หน้าตาเข้าชุดกับการ์ดขั้นของหน้าดูสูตร (2026-11-17): การ์ดมุมโค้ง xl + ป้าย
+              "ขั้นที่ n / ทั้งหมด" สีหลัก + ไอคอนเวลา/อุณหภูมิ/อุปกรณ์ตัวเดียวกับชิปในหน้าดู · ปุ่มบนหัว 36px ให้นิ้วกดบน iPad
               ธีมมืดเงาแทบมองไม่เห็น จึงยกพื้นการ์ดให้สว่างกว่าพื้นหลังและเข้มขอบแทน */}
           <div className="grid gap-4 @7xl:grid-cols-2">
             {fields.map((field, i) => {
@@ -108,27 +119,32 @@ export function RecipeStepsFields({
               return (
                 <div
                   key={field.key}
-                  className="bg-card dark:border-foreground/25 @container rounded-lg border p-3 shadow-md"
+                  className="bg-card dark:border-foreground/25 @container rounded-xl border p-4 shadow-sm @lg:p-5"
                 >
-                  <div className="bg-muted/60 -mx-3 -mt-3 mb-3 flex items-center gap-2 rounded-t-lg border-b px-3 py-2">
-                    <span className="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums">
-                      {i + 1}
+                  {/* การ์ดแคบ (มือถือ): ป้าย + ปุ่มอยู่บรรทัดบน ชื่อขั้นลงบรรทัดของตัวเองเต็มความกว้าง
+                      ≥ 32rem: ป้าย · ชื่อขั้น · ปุ่ม อยู่บรรทัดเดียว */}
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
+                    <span className="bg-primary text-primary-foreground shrink-0 rounded-full px-3 py-1 text-sm font-semibold tabular-nums">
+                      {t("cookStepOf", { n: i + 1, total: fields.length })}
                     </span>
-                    <FieldInput
-                      aria-label={t("stepTitle")}
-                      placeholder={t("stepTitle")}
-                      size="sm"
-                      disabled={isDisabled}
-                      maxLength={500}
-                      className="min-w-0 flex-1"
-                      {...form.register(`preparation_steps.${i}.title`)}
-                    />
+                    {/* ห่อเอง: FieldInput วาง <div relative> ไว้นอก input และ className ลงที่ input — ใส่คลาส flex
+                        ให้ FieldInput ตรง ๆ จะไม่ยืด (ของเดิมค้างกว้าง ~160px ทุกจอ) */}
+                    <div className="order-last min-w-0 basis-full @lg:order-none @lg:flex-1 @lg:basis-0">
+                      <FieldInput
+                        aria-label={t("stepTitle")}
+                        placeholder={t("stepTitle")}
+                        disabled={isDisabled}
+                        maxLength={500}
+                        className="font-semibold"
+                        {...form.register(`preparation_steps.${i}.title`)}
+                      />
+                    </div>
                     {!isDisabled && (
-                      <div className="flex shrink-0 gap-1">
+                      <div className="ml-auto flex shrink-0 gap-1 @lg:ml-0">
                         <Button
                           type="button"
                           variant="ghost"
-                          size="icon-sm"
+                          size="icon"
                           aria-label={t("moveUp")}
                           disabled={i === 0}
                           onClick={() => move(i, i - 1)}
@@ -138,7 +154,7 @@ export function RecipeStepsFields({
                         <Button
                           type="button"
                           variant="ghost"
-                          size="icon-sm"
+                          size="icon"
                           aria-label={t("moveDown")}
                           disabled={i === fields.length - 1}
                           onClick={() => move(i, i + 1)}
@@ -148,7 +164,7 @@ export function RecipeStepsFields({
                         <Button
                           type="button"
                           variant="ghost"
-                          size="icon-sm"
+                          size="icon"
                           aria-label={t("removeStep")}
                           onClick={() => {
                             form
@@ -180,6 +196,7 @@ export function RecipeStepsFields({
                   <div className="mt-3 grid gap-3 @lg:grid-cols-[8rem_12rem_minmax(0,1fr)]">
                     <Field>
                       <FieldLabel htmlFor={`recipe-step-${i}-duration`}>
+                        <LabelIcon icon={Timer} />
                         {t("stepDuration")}
                       </FieldLabel>
                       <FieldInput
@@ -200,6 +217,7 @@ export function RecipeStepsFields({
                     </Field>
                     <Field>
                       <FieldLabel htmlFor={`recipe-step-${i}-temperature`}>
+                        <LabelIcon icon={Thermometer} />
                         {t("stepTemperature")}
                       </FieldLabel>
                       <div className="flex gap-1.5">
@@ -242,7 +260,10 @@ export function RecipeStepsFields({
                       </div>
                     </Field>
                     <Field>
-                      <FieldLabel>{t("stepEquipment")}</FieldLabel>
+                      <FieldLabel>
+                        <LabelIcon icon={CookingPot} />
+                        {t("stepEquipment")}
+                      </FieldLabel>
                       <Controller
                         control={form.control}
                         name={`preparation_steps.${i}.equipment`}
@@ -359,5 +380,15 @@ export function RecipeStepsFields({
         </div>
       )}
     </CompactSection>
+  );
+}
+
+/** ไอคอนหน้าป้ายช่อง — ตัวเดียวกับชิปเวลา/อุณหภูมิ/อุปกรณ์ในการ์ดขั้นของหน้าดูสูตร ให้กรอกกับที่เห็นจับคู่กันได้ */
+function LabelIcon({ icon: Icon }: { readonly icon: LucideIcon }) {
+  return (
+    <Icon
+      className="text-muted-foreground size-3.5 shrink-0 self-center"
+      aria-hidden="true"
+    />
   );
 }
