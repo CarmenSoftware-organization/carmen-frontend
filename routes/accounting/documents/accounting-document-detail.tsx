@@ -948,6 +948,9 @@ export default function AccountingDocumentDetail() {
           : (
               await updateJournal.mutateAsync({
                 ...input,
+                // backend แทนที่บรรทัดได้เฉพาะใบ manual — ใบจาก template (recurring/allocation/…)
+                // ส่งบรรทัดไปจะโดน 409 จึงแก้แค่ header เหมือนเดิม
+                lines: journal!.source_type === "manual" ? input.lines : [],
                 id: journal!.id,
                 doc_version: journal!.doc_version,
               })
