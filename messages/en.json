@@ -475,6 +475,7 @@
       "taxDetail": "Tax Detail",
       "checkBudget": "Check Budget",
       "allDimensions": "All Dimensions",
+      "dimensionsLoadError": "Unable to load dimensions",
       "lineDimensionLabel": "{name}, row {row}",
       "clearLineDimension": "Clear dimension",
       "savedDimensionsReadOnly": "Dimensions are read-only after the draft is created.",
