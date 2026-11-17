@@ -27,6 +27,41 @@ interface UsePriceListTableOptions {
   onVoid: (priceList: PriceList) => void;
   /** แท็บหมดช่วงแล้ว — ส่งต่อให้ PlPeriodCell */
   quietExpired?: boolean;
+  /** ความกว้างของกล่องตาราง (px) — `undefined` = ยังไม่ได้วัด โชว์ครบทุกคอลัมน์ */
+  containerWidth?: number;
+}
+
+/**
+ * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
+ *
+ * ชื่อรับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมแบ่งสัดส่วน ที่ tablet เลขที่ ช่วงวันที่
+ * และชิปสถานะล้นเซลล์ ส่วนบน Full HD ชื่อกับผู้ขายกว้าง 364px ห่างจากค่าของมันเอง
+ * ความกว้างขั้นต่ำของตาราง = ผลรวม `size` ซึ่งนับคอลัมน์ select (55) ที่หน้านี้ไม่ได้เรนเดอร์ด้วย:
+ *   ครบ             55+60+130+180+200+200+120+60 = 1005
+ *   ไม่มีเลขลำดับ                                 = 945
+ *   ไม่มีผู้ขาย                                    = 745
+ *   ไม่มีชื่อ                                     = 565  (กล่องที่จอ 768 = 662)
+ * ขั้นสุดท้ายเลขที่ (ลิงก์ของแถว) กลายเป็นคอลัมน์ยืดแทนชื่อ · จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35px
+ * ของที่ซ่อนยังเห็น: ผู้ขายลงบรรทัดรองใต้ชื่อ · ชื่อ (+ผู้ขาย) ลงบรรทัดรองใต้เลขที่
+ * คอลัมน์ที่ผู้ใช้เปิดเพิ่มเอง (created, updated) ไม่นับในงบ — เกินกล่องก็เลื่อนแนวนอนในกรอบเอง
+ */
+function columnTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  return {
+    showIndex: w >= 1040,
+    showVendor: w >= 980,
+    showName: w >= 780,
+  };
+}
+
+/** บรรทัดรองสีจางใต้ค่าหลักของเซลล์ — ใช้แทนคอลัมน์ที่ถูกซ่อน */
+function subLine(text: string) {
+  if (!text) return null;
+  return (
+    <span className="text-muted-foreground block truncate text-xs" title={text}>
+      {text}
+    </span>
+  );
 }
 
 export function usePriceListTable({
@@ -37,6 +72,7 @@ export function usePriceListTable({
   onEdit,
   onVoid,
   quietExpired = false,
+  containerWidth,
 }: UsePriceListTableOptions) {
   "use no memo";
   const { dateTimeFormat } = useProfile();
@@ -44,6 +80,7 @@ export function usePriceListTable({
   const ts = useTranslations("status");
   const t = useTranslations("vendorManagement.priceList");
   const deleteGate = useDeleteGate();
+  const { showIndex, showVendor, showName } = columnTier(containerWidth);
 
   const dataColumns: ColumnDef<PriceList>[] = [
     {
@@ -54,29 +91,53 @@ export function usePriceListTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("no")} />
       ),
+      // กล่องแคบสุด: ชื่อ (และผู้ขาย) ที่ถูกซ่อนลงมาเป็นบรรทัดรองใต้เลขที่
       cell: ({ row }) => (
-        <CellAction
-          onClick={() => onEdit(row.original)}
-          className="whitespace-nowrap"
-        >
-          {row.original.no}
-        </CellAction>
+        <div className="min-w-0">
+          <CellAction
+            onClick={() => onEdit(row.original)}
+            className="whitespace-nowrap"
+          >
+            {row.original.no}
+          </CellAction>
+          {!showName &&
+            subLine(
+              [row.original.name, row.original.vendor?.name]
+                .filter(Boolean)
+                .join(" · "),
+            )}
+        </div>
       ),
-      size: 160,
-      meta: { headerTitle: tfl("no"), skeleton: columnSkeletons.textShort },
+      size: 130,
+      meta: {
+        headerTitle: tfl("no"),
+        skeleton: columnSkeletons.textShort,
+        grow: !showName,
+      },
     },
     {
       accessorKey: "name",
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("name")} />
       ),
+      // กล่องกลาง: ผู้ขายที่ถูกซ่อนลงมาเป็นบรรทัดรองใต้ชื่อ
       cell: ({ row }) => (
-        <span className="block truncate" title={row.original.name || undefined}>
-          {row.original.name}
-        </span>
+        <div className="min-w-0">
+          <span
+            className="block truncate"
+            title={row.original.name || undefined}
+          >
+            {row.original.name}
+          </span>
+          {!showVendor && subLine(row.original.vendor?.name ?? "")}
+        </div>
       ),
-      meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
-      size: 240,
+      meta: {
+        headerTitle: tfl("name"),
+        skeleton: columnSkeletons.text,
+        grow: true,
+      },
+      size: 180,
     },
     {
       id: "vendor_name",
@@ -94,7 +155,7 @@ export function usePriceListTable({
         );
       },
       meta: { headerTitle: tfl("vendor"), skeleton: columnSkeletons.text },
-      size: 240,
+      size: 200,
     },
     {
       // id เป็นชื่อคอลัมน์จริงใน DB เพื่อให้ sort ฝั่ง server ได้ (เรียงช่วงเวลา = เรียงวันเริ่ม)
@@ -114,7 +175,7 @@ export function usePriceListTable({
         headerTitle: tfl("effectivePeriod"),
         skeleton: columnSkeletons.text,
       },
-      size: 220,
+      size: 200,
     },
     {
       accessorKey: "status",
@@ -141,10 +202,22 @@ export function usePriceListTable({
     ...auditColumns<PriceList>(tfl, dateTimeFormat),
   ];
 
+  // ซ่อนผ่านรายการคอลัมน์ ไม่ใช่ CSS — ความกว้างขั้นต่ำของตารางที่มีคอลัมน์ยืดคิดจากทุกคอลัมน์
+  // ที่ TanStack ถือว่ามองเห็น · ตัดออกจากรายการเลย เมนู Toggle Columns ของผู้ใช้จึงไม่ถูกทับ
+  const hidden = new Set([
+    ...(showVendor ? [] : ["vendor_name"]),
+    ...(showName ? [] : ["name"]),
+  ]);
+  const visibleDataColumns = dataColumns.filter((c) => {
+    const key =
+      c.id ?? ("accessorKey" in c ? String(c.accessorKey) : undefined);
+    return !key || !hidden.has(key);
+  });
+
   const allColumns: ColumnDef<PriceList>[] = [
     selectColumn<PriceList>(),
-    indexColumn<PriceList>(params),
-    ...dataColumns,
+    ...(showIndex ? [indexColumn<PriceList>(params)] : []),
+    ...visibleDataColumns,
     actionColumn<PriceList>(onVoid, {
       ...deleteGate,
       deleteLabel: t("void"),
