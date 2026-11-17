@@ -31,7 +31,15 @@ interface RecipeCookImagesProps {
   readonly videoUrl?: string | null;
   /** ชื่อของ player ที่ screen reader อ่าน เช่น "วิดีโอ: <ชื่อสูตร>" */
   readonly videoTitle?: string;
+  /**
+   * `menu` (ค่าเริ่มต้น) = แกลเลอรีรูปเมนู กรอบ 4:3 รูปย่อ 48px
+   * `step` = รูปของขั้นในเวทีขั้น กรอบ 16:10 เต็มความกว้างการ์ด รูปย่อ 56px แตะง่ายบนแท็บเล็ตในครัว
+   */
+  readonly variant?: "menu" | "step";
 }
+
+const FRAME = { menu: "aspect-[4/3]", step: "aspect-[16/10]" } as const;
+const THUMB = { menu: "size-12", step: "size-14" } as const;
 
 /** ช่องที่เปิดอยู่ในกรอบใหญ่ — วิดีโอ หรือรูปลำดับที่ n (นับเฉพาะรูป) */
 type Selection = "video" | number;
@@ -60,6 +68,7 @@ export function RecipeCookImages({
   className,
   videoUrl,
   videoTitle,
+  variant = "menu",
 }: RecipeCookImagesProps) {
   const t = useTranslations("operationPlan.recipe");
   const sorted = [...(images ?? [])].sort(
@@ -92,7 +101,12 @@ export function RecipeCookImages({
       {showVideo && videoId ? (
         // กรอบเดียวกับรูปใหญ่ (4:3) สลับรูป↔วิดีโอแล้วหน้าไม่กระโดด — player 16:9 มีแถบดำบนล่าง กดเต็มจอได้จากปุ่มของ YouTube
         // youtube-nocookie ตรงกับ frame-src ใน CSP · referrerPolicy ต้องส่ง origin ไม่งั้น YouTube ตอบ Error 153
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border bg-black">
+        <div
+          className={cn(
+            "relative w-full overflow-hidden rounded-lg border bg-black",
+            FRAME[variant],
+          )}
+        >
           <iframe
             src={youtubeEmbedUrl(videoId)}
             title={videoTitle ?? recipeName}
@@ -108,7 +122,10 @@ export function RecipeCookImages({
           type="button"
           onClick={() => setLightboxOpen(true)}
           aria-label={t("cookViewImage", { n: active + 1, total })}
-          className="bg-muted focus-visible:ring-ring relative flex aspect-[4/3] w-full cursor-zoom-in items-center justify-center overflow-hidden rounded-lg border focus-visible:ring-2 focus-visible:outline-none"
+          className={cn(
+            "bg-muted focus-visible:ring-ring relative flex w-full cursor-zoom-in items-center justify-center overflow-hidden rounded-lg border focus-visible:ring-2 focus-visible:outline-none",
+            FRAME[variant],
+          )}
         >
           <img
             src={hero.url}
@@ -137,7 +154,8 @@ export function RecipeCookImages({
                 aria-label={t("cookShowImage", { n: i + 1, total })}
                 aria-current={!showVideo && i === active}
                 className={cn(
-                  "bg-muted focus-visible:ring-ring block size-12 overflow-hidden rounded-md border transition-opacity focus-visible:ring-2 focus-visible:outline-none",
+                  "bg-muted focus-visible:ring-ring block overflow-hidden rounded-md border transition-opacity focus-visible:ring-2 focus-visible:outline-none",
+                  THUMB[variant],
                   !showVideo && i === active
                     ? "ring-primary ring-2 ring-offset-1"
                     : "opacity-70 hover:opacity-100",
@@ -160,7 +178,8 @@ export function RecipeCookImages({
                 aria-label={t("cookShowVideo")}
                 aria-current={showVideo}
                 className={cn(
-                  "focus-visible:ring-ring relative block size-12 overflow-hidden rounded-md border bg-black transition-opacity focus-visible:ring-2 focus-visible:outline-none",
+                  "focus-visible:ring-ring relative block overflow-hidden rounded-md border bg-black transition-opacity focus-visible:ring-2 focus-visible:outline-none",
+                  THUMB[variant],
                   showVideo
                     ? "ring-primary ring-2 ring-offset-1"
                     : "opacity-70 hover:opacity-100",
