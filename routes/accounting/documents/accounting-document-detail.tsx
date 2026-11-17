@@ -2443,7 +2443,10 @@ export default function AccountingDocumentDetail() {
                                   />
                                 </Button>
                               )}
-                              {(!isGlVoucher || isView) && (
+                              {/* GL: เปิดดูได้เฉพาะบรรทัดที่บัญชีมี dimension ตามกฎผังบัญชี
+                                  (หรือมีค่าบันทึกไว้) — ไม่มีเลยกดแล้วได้ dialog ว่าง */}
+                              {(!isGlVoucher ||
+                                (isView && visibleDimensions.length > 0)) && (
                                 <Button
                                   type="button"
                                   variant="ghost"
@@ -2527,14 +2530,9 @@ export default function AccountingDocumentDetail() {
                                     (query) => query.isError,
                                   )) && (
                                   <span className="text-destructive text-xs">
-                                    Unable to load dimensions
+                                    {t("dimensionsLoadError")}
                                   </span>
                                 )}
-                              {isGlVoucher && !visibleDimensions.length && (
-                                <span className="text-muted-foreground text-xs">
-                                  {t("allDimensions")}: —
-                                </span>
-                              )}
                               {isGlVoucher ? (
                                 visibleDimensions.map((dimension) => {
                                   const selectedValue = line.dimensions?.find(

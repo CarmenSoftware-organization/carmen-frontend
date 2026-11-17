@@ -4,5 +4,6 @@
   "WS_URL": "wss://<backend-host>/ws (optional — omit to disable real-time notifications)",
   "LICENSE_ENFORCEMENT": true,
   "OTEL_ENABLED": true,
-  "OTEL_ENVIRONMENT": "prod (ชื่อ environment ที่ติดไปกับ trace/error — ไม่ตั้ง = dev)"
+  "OTEL_ENVIRONMENT": "prod (ชื่อ environment ที่ติดไปกับ trace/error — ไม่ตั้ง = dev)",
+  "LINE_DIMENSIONS_ENABLED": false
 }
