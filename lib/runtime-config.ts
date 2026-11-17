@@ -44,6 +44,18 @@ export interface RuntimeConfig {
    * อันไหนกระทบลูกค้าจริง — ตั้งให้ตรงกับ environment เสมอเมื่อเปิด `OTEL_ENABLED`
    */
   OTEL_ENVIRONMENT?: string;
+  /**
+   * สวิตช์เปิดช่อง dimension รายบรรทัดในเอกสารซื้อ/คลัง (PR · PO · GRN · SR · IA)
+   * — gate ตัวแรกของ `useLineDimensionsEnabled()` ก่อนเช็ก license / dimension active
+   *
+   * ฟีเจอร์นี้ยังไม่พร้อมให้ลูกค้าใช้ (ตัดสิน 2026-11-17) จึง **ไม่ตั้ง = ปิด** แล้วเปิด
+   * เฉพาะ local/dev เพื่อให้ทีมยังทดสอบได้ ปิดอยู่ = ไม่แสดงช่อง ไม่ส่ง `dimensions`
+   * ใน payload (ค่าที่บันทึกไว้แล้วจึงไม่ถูกแตะ) และไม่ยิง query gl-dimension
+   *
+   * ⚠️ `public/config*.json` ถูก gitignore — ต้องเติมคีย์นี้ **ด้วยมือ** ใน env ที่จะเปิด
+   * ลืมเติม = ฟีเจอร์ซ่อนเงียบ ๆ โดยไม่มี error (ด้านที่ปลอดภัย)
+   */
+  LINE_DIMENSIONS_ENABLED?: boolean;
 }
 
 let config: RuntimeConfig | null = null;
@@ -72,6 +84,9 @@ export async function loadRuntimeConfig(): Promise<RuntimeConfig> {
       : {}),
     ...(typeof json.OTEL_ENVIRONMENT === "string" && json.OTEL_ENVIRONMENT
       ? { OTEL_ENVIRONMENT: json.OTEL_ENVIRONMENT }
+      : {}),
+    ...(typeof json.LINE_DIMENSIONS_ENABLED === "boolean"
+      ? { LINE_DIMENSIONS_ENABLED: json.LINE_DIMENSIONS_ENABLED }
       : {}),
   };
   return config;
