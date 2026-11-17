@@ -5,6 +5,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { cn } from "@/lib/utils";
 
+/**
+ * ป้ายของปุ่มรองที่หน้าใส่เพิ่มบนหัว list (`actions` / `extraActions`) —
+ * หัวแคบกว่า @4xl (896px วัดจากกล่องหัวเอง ไม่ใช่จอ) เหลือไอคอนอย่างเดียว
+ * ปุ่มต้องใส่ `title` ด้วย · ปุ่มหลัก (New) ไม่ต้องใช้ เก็บป้ายไว้เสมอ
+ */
+export const LIST_HEADER_LABEL_HIDE = "@max-4xl/list-header:sr-only";
+
 interface ListPageShellProps {
   readonly title: string;
   readonly description: string;
@@ -72,7 +79,7 @@ export function ListPageShell({
       <div className="bg-background sticky top-0 z-20 space-y-3 pb-3 sm:static sm:pb-0">
         <div
           data-testid="list-page-header"
-          className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+          className="@container/list-header flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
         >
           <DocumentListHeader
             title={title}
