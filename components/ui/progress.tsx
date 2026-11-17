@@ -47,9 +47,16 @@ function Progress({
   const resolved: ProgressTone =
     variant === "auto" ? pickAutoTone(value ?? 0) : variant;
   const tone = TONE_CLASSES[resolved];
+  // ส่งค่าให้ Root ด้วย — ไม่ส่ง = Radix ไม่ใส่ aria-valuenow (screen reader อ่านเป็นแถบไม่ทราบค่า)
+  // บีบ 0–100 ก่อนส่ง: ค่าที่เกิน max Radix ถือว่าไม่ถูกต้อง (console error + ทิ้งค่า) — แถบเองยังวาดจากค่าดิบเหมือนเดิม
+  const ariaValue =
+    value === null || value === undefined || Number.isNaN(value)
+      ? null
+      : Math.min(100, Math.max(0, value));
   return (
     <ProgressPrimitive.Root
       data-slot="progress"
+      value={ariaValue}
       className={cn(
         "relative h-2 w-full overflow-hidden rounded-full",
         tone.track,
