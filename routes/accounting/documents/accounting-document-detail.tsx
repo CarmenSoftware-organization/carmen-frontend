@@ -889,7 +889,7 @@ export default function AccountingDocumentDetail() {
                 rule.requirement === "mandatory" &&
                 !line.dimensions?.some(
                   (item) =>
-                    item.dimension_id === rule.gl_dimension_id &&
+                    item.dimension_id === rule.dimension_id &&
                     item.dimension_value_id,
                 ),
             ),

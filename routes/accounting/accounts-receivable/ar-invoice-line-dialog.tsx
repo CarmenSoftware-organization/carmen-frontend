@@ -255,8 +255,8 @@ function ArLineDimensions({
     account,
     rules.data ?? [],
     selected.map((item) => ({
-      dimension_id: item.gl_dimension_id,
-      dimension_value_id: item.gl_dimension_value_id,
+      dimension_id: item.dimension_id,
+      dimension_value_id: item.dimension_value_id,
     })),
   );
 
@@ -272,8 +272,8 @@ function ArLineDimensions({
   }
   return visible.map((dimension) => {
     const current = selected.find(
-      (item) => item.gl_dimension_id === dimension.id,
-    )?.gl_dimension_value_id;
+      (item) => item.dimension_id === dimension.id,
+    )?.dimension_value_id;
     const options = (values.data ?? []).filter(
       (value) =>
         value.dimension_id === dimension.id &&
@@ -286,7 +286,7 @@ function ArLineDimensions({
           htmlFor={labelId}
           required={rules.data?.some(
             (rule) =>
-              rule.gl_dimension_id === dimension.id &&
+              rule.dimension_id === dimension.id &&
               rule.requirement === "mandatory",
           )}
         >
@@ -297,14 +297,14 @@ function ArLineDimensions({
           onValueChange={(id) =>
             change([
               ...selected.filter(
-                (item) => item.gl_dimension_id !== dimension.id,
+                (item) => item.dimension_id !== dimension.id,
               ),
               ...(id === "none"
                 ? []
                 : [
                     {
-                      gl_dimension_id: dimension.id,
-                      gl_dimension_value_id: id,
+                      dimension_id: dimension.id,
+                      dimension_value_id: id,
                     },
                   ]),
             ])

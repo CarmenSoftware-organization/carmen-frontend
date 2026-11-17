@@ -31,8 +31,8 @@ function baseSchema(
 }
 const dimensions = z.array(
   z.object({
-    gl_dimension_id: z.string().uuid(),
-    gl_dimension_value_id: z.string().uuid(),
+    dimension_id: z.string().uuid(),
+    dimension_value_id: z.string().uuid(),
   }),
 );
 const mapping = {

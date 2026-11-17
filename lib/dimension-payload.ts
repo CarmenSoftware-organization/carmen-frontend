@@ -5,8 +5,8 @@ export function toDimensionPayload(
   dimensions: readonly DimensionRef[] | undefined,
 ): DimensionPayload[] {
   return (dimensions ?? []).map((d) => ({
-    gl_dimension_id: d.gl_dimension_id,
-    gl_dimension_value_id: d.gl_dimension_value_id,
+    dimension_id: d.dimension_id,
+    dimension_value_id: d.dimension_value_id,
   }));
 }
 

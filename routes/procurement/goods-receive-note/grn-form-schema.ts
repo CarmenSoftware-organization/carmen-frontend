@@ -10,8 +10,8 @@ import type {
 } from "@/types/goods-receive-note";
 
 const dimensionRefSchema = z.object({
-  gl_dimension_id: z.string(),
-  gl_dimension_value_id: z.string(),
+  dimension_id: z.string(),
+  dimension_value_id: z.string(),
   dimension_code: z.string().optional(),
   value_code: z.string().optional(),
   dimension_name: z.string().optional(),

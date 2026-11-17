@@ -195,7 +195,7 @@ const invoice: ApInvoice = {
       cr_cost_center_id: "ap-cc",
       total_amount: "107",
       unpaid_amount: "107",
-      dimensions: [{ gl_dimension_id: "project", gl_dimension_value_id: "p1" }],
+      dimensions: [{ dimension_id: "project", dimension_value_id: "p1" }],
       sources: [],
     },
   ],
@@ -430,7 +430,7 @@ describe("AP document layout and persistence contract", () => {
           {
             description: "Changed service",
             dimensions: [
-              { gl_dimension_id: "project", gl_dimension_value_id: "p1" },
+              { dimension_id: "project", dimension_value_id: "p1" },
             ],
             vat_chart_of_accounts_id: "vat-account",
             vat_cost_center_id: "vat-cc",

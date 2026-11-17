@@ -56,8 +56,8 @@ export interface ApWorkflowFields {
 }
 
 export interface ApDimensionRef {
-  gl_dimension_id: string;
-  gl_dimension_value_id: string;
+  dimension_id: string;
+  dimension_value_id: string;
   dimension_code?: string;
   value_code?: string;
 }
@@ -202,7 +202,7 @@ export interface ApInvoiceLineInput {
   vat_is_override?: boolean;
   wht_tax_profile_id?: string | null;
   dimensions?:
-    { gl_dimension_id: string; gl_dimension_value_id: string }[] | null;
+    { dimension_id: string; dimension_value_id: string }[] | null;
   /** ฟิลด์ที่ UI ไม่ได้แก้ — ส่งกลับตามเดิมตอน PUT (กันถูกล้าง) */
   vat_chart_of_accounts_id?: string | null;
   vat_cost_center_id?: string | null;

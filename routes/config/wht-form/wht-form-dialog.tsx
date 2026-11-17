@@ -60,9 +60,9 @@ export function WhtFormDialog({
           ...values,
           ...(!current ? { code } : {}),
           dimensions: values.dimensions.map(
-            ({ gl_dimension_id, gl_dimension_value_id }) => ({
-              gl_dimension_id,
-              gl_dimension_value_id,
+            ({ dimension_id, dimension_value_id }) => ({
+              dimension_id,
+              dimension_value_id,
             }),
           ),
         })}

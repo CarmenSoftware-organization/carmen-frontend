@@ -824,12 +824,12 @@ function useVisibleInvoiceDimensions(line: InvoiceFormLine) {
         account,
         rules.data ?? [],
         selected.map((item) => ({
-          dimension_id: item.gl_dimension_id,
-          dimension_value_id: item.gl_dimension_value_id,
+          dimension_id: item.dimension_id,
+          dimension_value_id: item.dimension_value_id,
         })),
       )
     : (dimensions.data ?? []).filter((dimension) =>
-        selected.some((item) => item.gl_dimension_id === dimension.id),
+        selected.some((item) => item.dimension_id === dimension.id),
       );
   return {
     visible,
@@ -879,8 +879,8 @@ function InvoiceDimensions({
     <div className="grid gap-3 border-b pb-4 sm:grid-cols-2">
       {visible.map((dimension) => {
         const value = selected.find(
-          (item) => item.gl_dimension_id === dimension.id,
-        )?.gl_dimension_value_id;
+          (item) => item.dimension_id === dimension.id,
+        )?.dimension_value_id;
         return (
           <Field key={dimension.id}>
             <FieldLabel>{dimension.name}</FieldLabel>
@@ -889,12 +889,12 @@ function InvoiceDimensions({
               disabled={!editable || dimensions.isLoading || values.isLoading}
               onValueChange={(id) => {
                 const next = selected.filter(
-                  (item) => item.gl_dimension_id !== dimension.id,
+                  (item) => item.dimension_id !== dimension.id,
                 );
                 if (id !== "__none__")
                   next.push({
-                    gl_dimension_id: dimension.id,
-                    gl_dimension_value_id: id,
+                    dimension_id: dimension.id,
+                    dimension_value_id: id,
                   });
                 onChange({ carry: { ...line.carry, dimensions: next } });
               }}

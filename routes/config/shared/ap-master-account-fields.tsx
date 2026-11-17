@@ -32,7 +32,7 @@ function MasterDimensionLookup({
     MOCK_DIMENSIONS.find((item) => item.id === dimensionId)?.values ?? [];
   return (
     <LookupCombobox
-      value={value?.gl_dimension_value_id ?? ""}
+      value={value?.dimension_value_id ?? ""}
       onValueChange={(id) => onChange(id)}
       items={items}
       getId={(item) => item.id}
@@ -156,7 +156,7 @@ export function MasterAccountFields({
       )}
       {readOnly
         ? value.dimensions.map((dimension) => (
-            <Field key={dimension.gl_dimension_id}>
+            <Field key={dimension.dimension_id}>
               <FieldLabel>
                 {dimension.dimension_name ||
                   dimension.dimension_code ||
@@ -170,14 +170,14 @@ export function MasterAccountFields({
             </Field>
           ))
         : visibleRules.map((rule) => (
-            <Field key={rule.gl_dimension_id}>
+            <Field key={rule.dimension_id}>
               <FieldLabel required={rule.requirement === "mandatory"}>
                 {rule.code} · {rule.name}
               </FieldLabel>
               <MasterDimensionLookup
-                dimensionId={rule.gl_dimension_id}
+                dimensionId={rule.dimension_id}
                 value={value.dimensions.find(
-                  (item) => item.gl_dimension_id === rule.gl_dimension_id,
+                  (item) => item.dimension_id === rule.dimension_id,
                 )}
                 disabled={disabled}
                 onChange={(id) =>
@@ -186,13 +186,13 @@ export function MasterAccountFields({
                     cost_center_id: value.cost_center_id,
                     dimensions: [
                       ...value.dimensions.filter(
-                        (item) => item.gl_dimension_id !== rule.gl_dimension_id,
+                        (item) => item.dimension_id !== rule.dimension_id,
                       ),
                       ...(id
                         ? [
                             {
-                              gl_dimension_id: rule.gl_dimension_id,
-                              gl_dimension_value_id: id,
+                              dimension_id: rule.dimension_id,
+                              dimension_value_id: id,
                             },
                           ]
                         : []),

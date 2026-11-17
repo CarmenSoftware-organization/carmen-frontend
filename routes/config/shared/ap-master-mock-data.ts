@@ -82,8 +82,8 @@ function dimensions(values: Record<string, string>): ApMasterDimension[] {
     const category = MOCK_DIMENSIONS.find((item) => item.code === code)!;
     const value = category.values.find((item) => item.code === valueCode)!;
     return {
-      gl_dimension_id: category.id,
-      gl_dimension_value_id: value.id,
+      dimension_id: category.id,
+      dimension_value_id: value.id,
       dimension_code: code,
       dimension_name: category.name,
       value_code: value.code,
@@ -187,10 +187,10 @@ export function enrichMockMaster<T extends MockMasterRow>(row: T): T {
     cheque_form_name: cheque?.name,
     dimensions: row.dimensions.map((dimension) => {
       const category = MOCK_DIMENSIONS.find(
-        (item) => item.id === dimension.gl_dimension_id,
+        (item) => item.id === dimension.dimension_id,
       );
       const value = category?.values.find(
-        (item) => item.id === dimension.gl_dimension_value_id,
+        (item) => item.id === dimension.dimension_value_id,
       );
       return {
         ...dimension,

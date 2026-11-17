@@ -32,8 +32,8 @@ describe("httpJournalVoucherRepository", () => {
             tb_gl_jv_detail: [{
               id: "line-1",
               tb_gl_jv_detail_dimension: [{
-                gl_dimension_id: "66666666-6666-6666-6666-666666666666",
-                gl_dimension_value_id: "77777777-7777-7777-7777-777777777777",
+                dimension_id: "66666666-6666-6666-6666-666666666666",
+                dimension_value_id: "77777777-7777-7777-7777-777777777777",
               }],
             }],
           } }),
@@ -159,8 +159,8 @@ describe("httpJournalVoucherRepository", () => {
               exchange_rate: 1,
               description: "Electricity line",
               dimensions: [{
-                gl_dimension_id: "66666666-6666-6666-6666-666666666666",
-                gl_dimension_value_id: "77777777-7777-7777-7777-777777777777",
+                dimension_id: "66666666-6666-6666-6666-666666666666",
+                dimension_value_id: "77777777-7777-7777-7777-777777777777",
               }],
             },
             {

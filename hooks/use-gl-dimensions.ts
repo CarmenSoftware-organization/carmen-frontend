@@ -6,7 +6,7 @@ import { fetchAllPages } from "@/lib/fetch-all-pages";
 import type { DimensionMaster, DimensionValueMaster } from "@/types/accounting-master";
 
 const dimensionsApi = createConfigApi<DimensionMaster, never>({ endpoint: API_ENDPOINTS.DIMENSIONS, label: "dimensions" });
-const valuesApi = createConfigApi<DimensionValueMaster & { gl_dimension_id: string }, never>({ endpoint: API_ENDPOINTS.DIMENSION_VALUES, label: "dimension values" });
+const valuesApi = createConfigApi<DimensionValueMaster & { dimension_id: string }, never>({ endpoint: API_ENDPOINTS.DIMENSION_VALUES, label: "dimension values" });
 
 export function useGlDimensions(enabled = true) {
   const buCode = useBuCode();
@@ -23,6 +23,6 @@ export function useGlDimensionValues(enabled = true) {
     queryKey: ["accounting-master", "dimension-values", buCode],
     enabled: enabled && !!buCode,
     queryFn: async () => (await fetchAllPages((page, perpage) => valuesApi.getList(buCode!, { page, perpage })))
-      .map((value) => ({ ...value, dimension_id: value.gl_dimension_id })),
+      .map((value) => ({ ...value, dimension_id: value.dimension_id })),
   });
 }

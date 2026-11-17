@@ -59,12 +59,12 @@ export function LineDimensionFields({
         .filter(
           (dimension) =>
             dimension.is_active ||
-            value.some((item) => item.gl_dimension_id === dimension.id),
+            value.some((item) => item.dimension_id === dimension.id),
         )
         .map((dimension) => {
           const current = value.find(
-            (item) => item.gl_dimension_id === dimension.id,
-          )?.gl_dimension_value_id;
+            (item) => item.dimension_id === dimension.id,
+          )?.dimension_value_id;
           return (
             <Field key={dimension.id}>
               <FieldLabel className="text-muted-foreground text-xs">
@@ -75,12 +75,12 @@ export function LineDimensionFields({
                 disabled={disabled || dimensions.isLoading || values.isLoading}
                 onValueChange={(id) => {
                   const next = value.filter(
-                    (item) => item.gl_dimension_id !== dimension.id,
+                    (item) => item.dimension_id !== dimension.id,
                   );
                   if (id !== NONE)
                     next.push({
-                      gl_dimension_id: dimension.id,
-                      gl_dimension_value_id: id,
+                      dimension_id: dimension.id,
+                      dimension_value_id: id,
                     });
                   onChange(next);
                 }}

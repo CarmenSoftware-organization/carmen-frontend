@@ -149,8 +149,8 @@ function fromDocLine(line: ApInvoiceLine): InvoiceFormLine {
     ),
     carry: {
       dimensions: line.dimensions.map((d) => ({
-        gl_dimension_id: d.gl_dimension_id,
-        gl_dimension_value_id: d.gl_dimension_value_id,
+        dimension_id: d.dimension_id,
+        dimension_value_id: d.dimension_value_id,
       })),
       sources: line.sources.map((src) => ({
         good_received_note_detail_item_id:

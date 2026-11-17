@@ -99,8 +99,8 @@ export interface ApMasterBase {
 }
 
 export interface ApMasterDimension {
-  gl_dimension_id: string;
-  gl_dimension_value_id: string;
+  dimension_id: string;
+  dimension_value_id: string;
   dimension_code?: string;
   dimension_name?: string;
   value_code?: string;
@@ -147,7 +147,7 @@ export interface ApMasterAccountMapping {
   is_require_cost_center: boolean;
   cost_centers: { id: string; code: string; name: string }[];
   dimensions: {
-    gl_dimension_id: string;
+    dimension_id: string;
     code: string;
     name: string;
     requirement: "mandatory" | "optional" | "prohibited";

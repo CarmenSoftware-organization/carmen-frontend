@@ -91,9 +91,9 @@ export function PaymentTypeDialog({
           ...values,
           ...(!current ? { code } : {}),
           dimensions: values.dimensions.map(
-            ({ gl_dimension_id, gl_dimension_value_id }) => ({
-              gl_dimension_id,
-              gl_dimension_value_id,
+            ({ dimension_id, dimension_value_id }) => ({
+              dimension_id,
+              dimension_value_id,
             }),
           ),
           cheque_form_id: values.is_cheque ? values.cheque_form_id : null,

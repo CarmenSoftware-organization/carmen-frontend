@@ -1,8 +1,8 @@
 export type ArAmount = number | string;
 
 interface LineDimension {
-  gl_dimension_id: string;
-  gl_dimension_value_id: string;
+  dimension_id: string;
+  dimension_value_id: string;
 }
 
 export interface ArInvoiceLineInput {
@@ -113,9 +113,9 @@ export function draftLineToInput(line: ArDraftLine): ArInvoiceLineInput {
     dr_cost_center_id: line.dr_cost_center_id,
     is_pms_folio: line.is_pms_folio,
     dimensions: line.dimensions?.map(
-      ({ gl_dimension_id, gl_dimension_value_id }) => ({
-        gl_dimension_id,
-        gl_dimension_value_id,
+      ({ dimension_id, dimension_value_id }) => ({
+        dimension_id,
+        dimension_value_id,
       }),
     ),
   };

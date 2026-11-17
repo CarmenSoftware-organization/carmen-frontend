@@ -18,7 +18,7 @@ export interface AccountDimensionValue {
 }
 
 export interface AccountDimension {
-  gl_dimension_id: string;
+  dimension_id: string;
   code: string;
   name: string;
   data_type: DimensionDataType;
@@ -38,12 +38,12 @@ export interface AccountLinksInput {
   dimensions?: {
     add: AccountDimensionInput[];
     update: AccountDimensionInput[];
-    remove: { gl_dimension_id: string }[];
+    remove: { dimension_id: string }[];
   };
 }
 
 interface AccountDimensionInput {
-  gl_dimension_id: string;
+  dimension_id: string;
   requirement: DimensionRequirement;
   config?: { default_value_id: string | null; allowed_value_ids: string[] };
 }
