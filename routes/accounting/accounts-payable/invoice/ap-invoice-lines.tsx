@@ -1,6 +1,7 @@
 "use no memo";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, Trash2, X, Pencil, Eye } from "lucide-react";
 import {
@@ -24,6 +25,10 @@ import {
   useGlDimensionValues,
 } from "@/hooks/use-gl-dimensions";
 import type { ApInvoiceLine } from "@/types/accounts-payable";
+import { useBuCode } from "@/hooks/use-bu-code";
+import { useChartOfAccountById } from "@/hooks/use-chart-of-account";
+import { coaRulesKey, readCoaRules } from "@/lib/coa-dimension-rules";
+import { visibleLineDimensions } from "../../documents/journal-line-dimensions";
 import { useTranslations } from "use-intl";
 import { LookupChartOfAccountById } from "@/components/lookup/lookup-chart-of-account-by-id";
 import { LookupCostCenter } from "@/components/lookup/lookup-cost-center";
@@ -556,6 +561,9 @@ function InvoiceLineDialog({
     "accounting.accountsPayable.invoice.detail.base",
   );
   const [dimensionsOpen, setDimensionsOpen] = useState(false);
+  const lineDimensions = useVisibleInvoiceDimensions(line);
+  const showDimensions =
+    lineDimensions.visible.length > 0 || lineDimensions.isError;
   const amounts =
     !editable && savedLine
       ? {
@@ -574,17 +582,20 @@ function InvoiceLineDialog({
         <DialogHeader>
           <DialogTitle>{ui("itemDetail")}</DialogTitle>
         </DialogHeader>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => setDimensionsOpen(!dimensionsOpen)}
-        >
-          {ui("dimensions")} · {line.carry?.dimensions?.length ?? 0}
-        </Button>
-        {dimensionsOpen && (
+        {showDimensions && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setDimensionsOpen(!dimensionsOpen)}
+          >
+            {ui("dimensions")} · {line.carry?.dimensions?.length ?? 0}
+          </Button>
+        )}
+        {showDimensions && dimensionsOpen && (
           <InvoiceDimensions
             line={line}
+            state={lineDimensions}
             editable={editable}
             onChange={onChange}
           />
@@ -782,20 +793,63 @@ function InvoiceLineDialog({
   );
 }
 
+/**
+ * dimension ที่บรรทัด AP เลือกได้ — ตามกฎผังบัญชีของบัญชีค่าใช้จ่าย
+ * (`dr_chart_of_accounts_id`) เหมือน AR/JV: ยังไม่เลือกบัญชี = ไม่มี, prohibited = ไม่แสดง
+ * ค่าที่บันทึกไว้แล้วยังเห็นเสมอแม้กฎหรือ master เปลี่ยน (`visibleLineDimensions`)
+ */
+function useVisibleInvoiceDimensions(line: InvoiceFormLine) {
+  const bu = useBuCode();
+  const accountId = line.dr_chart_of_accounts_id || undefined;
+  const { data: account } = useChartOfAccountById(accountId);
+  const rules = useQuery({
+    queryKey: coaRulesKey(bu, accountId),
+    queryFn: () => readCoaRules(bu!, accountId!),
+    enabled: !!bu && !!accountId,
+  });
+  const selected = line.carry?.dimensions ?? [];
+  const hasDimensions = Boolean(
+    rules.data?.length ||
+    account?.allowed_dimensions?.length ||
+    selected.length,
+  );
+  const dimensions = useGlDimensions(hasDimensions);
+  const values = useGlDimensionValues(hasDimensions);
+  const visible = visibleLineDimensions(
+    dimensions.data ?? [],
+    account,
+    rules.data ?? [],
+    selected.map((item) => ({
+      dimension_id: item.gl_dimension_id,
+      dimension_value_id: item.gl_dimension_value_id,
+    })),
+  );
+  return {
+    visible,
+    dimensions,
+    values,
+    rules,
+    isError:
+      rules.isError ||
+      (hasDimensions && (dimensions.isError || values.isError)),
+  };
+}
+
 function InvoiceDimensions({
   line,
+  state,
   editable,
   onChange,
 }: {
   readonly line: InvoiceFormLine;
+  readonly state: ReturnType<typeof useVisibleInvoiceDimensions>;
   readonly editable: boolean;
   readonly onChange: (patch: Patch) => void;
 }) {
   const ui = useTranslations("accounting.accountsPayable.ui");
-  const dimensions = useGlDimensions();
-  const values = useGlDimensionValues();
+  const { dimensions, values, rules, visible } = state;
   const selected = line.carry?.dimensions ?? [];
-  if (dimensions.isError || values.isError)
+  if (state.isError)
     return (
       <div role="alert" className="text-destructive text-xs">
         {ui("dimensionLoadError")}
@@ -804,6 +858,7 @@ function InvoiceDimensions({
           size="sm"
           variant="outline"
           onClick={() => {
+            void rules.refetch();
             void dimensions.refetch();
             void values.refetch();
           }}
@@ -814,55 +869,49 @@ function InvoiceDimensions({
     );
   return (
     <div className="grid gap-3 border-b pb-4 sm:grid-cols-2">
-      {(dimensions.data ?? [])
-        .filter(
-          (dimension) =>
-            dimension.is_active ||
-            selected.some((item) => item.gl_dimension_id === dimension.id),
-        )
-        .map((dimension) => {
-          const value = selected.find(
-            (item) => item.gl_dimension_id === dimension.id,
-          )?.gl_dimension_value_id;
-          return (
-            <Field key={dimension.id}>
-              <FieldLabel>{dimension.name}</FieldLabel>
-              <Select
-                value={value ?? "__none__"}
-                disabled={!editable || dimensions.isLoading || values.isLoading}
-                onValueChange={(id) => {
-                  const next = selected.filter(
-                    (item) => item.gl_dimension_id !== dimension.id,
-                  );
-                  if (id !== "__none__")
-                    next.push({
-                      gl_dimension_id: dimension.id,
-                      gl_dimension_value_id: id,
-                    });
-                  onChange({ carry: { ...line.carry, dimensions: next } });
-                }}
-              >
-                <SelectTrigger size="sm" aria-label={dimension.name}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">{ui("noDimension")}</SelectItem>
-                  {(values.data ?? [])
-                    .filter(
-                      (item) =>
-                        item.dimension_id === dimension.id &&
-                        (item.is_active || item.id === value),
-                    )
-                    .map((item) => (
-                      <SelectItem key={item.id} value={item.id}>
-                        {item.code} · {item.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          );
-        })}
+      {visible.map((dimension) => {
+        const value = selected.find(
+          (item) => item.gl_dimension_id === dimension.id,
+        )?.gl_dimension_value_id;
+        return (
+          <Field key={dimension.id}>
+            <FieldLabel>{dimension.name}</FieldLabel>
+            <Select
+              value={value ?? "__none__"}
+              disabled={!editable || dimensions.isLoading || values.isLoading}
+              onValueChange={(id) => {
+                const next = selected.filter(
+                  (item) => item.gl_dimension_id !== dimension.id,
+                );
+                if (id !== "__none__")
+                  next.push({
+                    gl_dimension_id: dimension.id,
+                    gl_dimension_value_id: id,
+                  });
+                onChange({ carry: { ...line.carry, dimensions: next } });
+              }}
+            >
+              <SelectTrigger size="sm" aria-label={dimension.name}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">{ui("noDimension")}</SelectItem>
+                {(values.data ?? [])
+                  .filter(
+                    (item) =>
+                      item.dimension_id === dimension.id &&
+                      (item.is_active || item.id === value),
+                  )
+                  .map((item) => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.code} · {item.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        );
+      })}
     </div>
   );
 }
