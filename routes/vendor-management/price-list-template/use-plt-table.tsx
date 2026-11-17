@@ -24,6 +24,29 @@ interface UsePriceListTemplateTableOptions {
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onEdit: (template: PriceListTemplate) => void;
   onDelete: (template: PriceListTemplate) => void;
+  /** ความกว้างของกล่องตาราง (px) — `undefined` = ยังไม่ได้วัด โชว์ครบทุกคอลัมน์ */
+  containerWidth?: number;
+}
+
+/**
+ * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
+ *
+ * ชื่อรับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมแบ่งสัดส่วน บน Full HD สกุลเงินกว้าง
+ * 173px สถานะ 208px ห่างจากค่าของมันเองโดยไม่จำเป็น ส่วนที่ tablet หัว Currency ทับ Validity Period
+ * ความกว้างขั้นต่ำของตาราง = ผลรวม `size` ซึ่งนับคอลัมน์ select (55) ที่หน้านี้ไม่ได้เรนเดอร์ด้วย:
+ *   ครบ                     55+60+200+120+110+150+120+60 = 875
+ *   ไม่มีเลขลำดับ                                          = 815
+ *   ไม่มีสกุลเงิน/ระยะเวลามีผล                               = 555  (กล่องที่จอ 768 = 662)
+ * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35px — คอลัมน์รองกลับมาเมื่อชื่อได้ที่ ~235px แล้วเท่านั้น
+ * ของที่ซ่อนยังเห็น: สกุลเงิน · ระยะเวลามีผล ย้ายลงบรรทัดรองใต้ชื่อ
+ * คอลัมน์ที่ผู้ใช้เปิดเพิ่มเอง (created, updated) ไม่นับในงบ — เกินกล่องก็เลื่อนแนวนอนในกรอบเอง
+ */
+function columnTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  return {
+    showIndex: w >= 910,
+    showTerms: w >= 850,
+  };
 }
 
 export function usePriceListTemplateTable({
@@ -33,6 +56,7 @@ export function usePriceListTemplateTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UsePriceListTemplateTableOptions) {
   "use no memo";
   const { dateTimeFormat } = useProfile();
@@ -40,6 +64,7 @@ export function usePriceListTemplateTable({
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
   const deleteGate = useDeleteGate();
+  const { showIndex, showTerms } = columnTier(containerWidth);
 
   const dataColumns: ColumnDef<PriceListTemplate>[] = [
     {
@@ -49,8 +74,22 @@ export function usePriceListTemplateTable({
       ),
       // คำอธิบายซ้อนใต้ชื่อเฉพาะใบที่กรอก — template ชื่อสั้นคล้ายกันหลายใบ
       // คำอธิบายคือสิ่งที่แยกว่าใบไหนส่งให้ใคร
+      // กล่องแคบ: สกุลเงิน · ระยะเวลามีผลที่ถูกซ่อนมาต่อหน้าคำอธิบายในบรรทัดเดียวกัน
       cell: ({ row }) => {
-        const description = row.original.description?.trim();
+        const { currency, validity_period } = row.original;
+        const description = [
+          ...(showTerms
+            ? []
+            : [
+                currency?.code,
+                validity_period == null
+                  ? undefined
+                  : t("validityDays", { count: validity_period }),
+              ]),
+          row.original.description?.trim(),
+        ]
+          .filter(Boolean)
+          .join(" · ");
         return (
           <div className="min-w-0">
             <CellAction
@@ -70,8 +109,12 @@ export function usePriceListTemplateTable({
           </div>
         );
       },
-      size: 360,
-      meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
+      size: 200,
+      meta: {
+        headerTitle: tfl("name"),
+        skeleton: columnSkeletons.text,
+        grow: true,
+      },
     },
     {
       // จำนวนสินค้าในแม่แบบ — ใบที่ยังว่างส่งขอราคาไม่ได้ จึงต้องเห็นจากหน้ารายการ
@@ -88,7 +131,7 @@ export function usePriceListTemplateTable({
           <span className="tabular-nums">{t("productsCount", { count })}</span>
         );
       },
-      size: 130,
+      size: 120,
       enableSorting: false,
       meta: {
         headerTitle: tfl("products"),
@@ -106,7 +149,7 @@ export function usePriceListTemplateTable({
           className="justify-center"
         />
       ),
-      size: 100,
+      size: 110,
       meta: {
         headerTitle: tfl("currency"),
         cellClassName: "text-center",
@@ -131,7 +174,7 @@ export function usePriceListTemplateTable({
           t("validityDays", { count: val })
         );
       },
-      size: 140,
+      size: 150,
       meta: {
         headerTitle: tfl("validityPeriod"),
         cellClassName: "text-right whitespace-nowrap tabular-nums",
@@ -163,10 +206,19 @@ export function usePriceListTemplateTable({
     ...auditColumns<PriceListTemplate>(tfl, dateTimeFormat),
   ];
 
+  // ซ่อนผ่านรายการคอลัมน์ ไม่ใช่ CSS — ความกว้างขั้นต่ำของตารางที่มีคอลัมน์ยืดคิดจากทุกคอลัมน์
+  // ที่ TanStack ถือว่ามองเห็น · ตัดออกจากรายการเลย เมนู Toggle Columns ของผู้ใช้จึงไม่ถูกทับ
+  const hidden = new Set(showTerms ? [] : ["currency_code", "validity_period"]);
+  const visibleDataColumns = dataColumns.filter((c) => {
+    const key =
+      c.id ?? ("accessorKey" in c ? String(c.accessorKey) : undefined);
+    return !key || !hidden.has(key);
+  });
+
   const allColumns: ColumnDef<PriceListTemplate>[] = [
     selectColumn<PriceListTemplate>(),
-    indexColumn<PriceListTemplate>(params),
-    ...dataColumns,
+    ...(showIndex ? [indexColumn<PriceListTemplate>(params)] : []),
+    ...visibleDataColumns,
     actionColumn<PriceListTemplate>(onDelete, {
       ...deleteGate,
       activity: { id: (r) => r.id, label: (r) => r.name },
