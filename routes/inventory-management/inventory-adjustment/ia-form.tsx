@@ -213,28 +213,27 @@ export function InventoryAdjustmentForm({
     adjustmentType === "stock-in" ? "stock_in_detail" : "stock_out_detail";
 
   // บรรทัดที่แก้แค่ dimension ต้องไม่ทำให้ต้นทุนเปลี่ยน (ดู restoreStoredCost)
-  const withStoredCost = <C extends { update?: { id: string }[] }>(
-    changes: C,
-    values: AdjFormValues,
-  ): C =>
-    changes.update
-      ? {
-          ...changes,
-          update: restoreStoredCost(changes.update, values, defaultValues),
-        }
-      : changes;
+  const buildUpdateChanges = (values: AdjFormValues) => {
+    const changes = buildItemChanges(
+      values.items,
+      defaultValues.items,
+      (item) => mapItemToPayload(item, { dimensionsEnabled }),
+    );
+    if (!changes.update) return changes;
+    return {
+      ...changes,
+      update: restoreStoredCost(changes.update, values, defaultValues, {
+        isStockOut: adjustmentType === "stock-out",
+      }),
+    };
+  };
 
   const buildUpdatePayload = (values: AdjFormValues) => ({
     id: inventoryAdjustment!.id,
     type: adjustmentType,
     doc_version: inventoryAdjustment!.doc_version,
     ...buildBasePayload(values),
-    [detailsKey]: withStoredCost(
-      buildItemChanges(values.items, defaultValues.items, (item) =>
-        mapItemToPayload(item, { dimensionsEnabled }),
-      ),
-      values,
-    ),
+    [detailsKey]: buildUpdateChanges(values),
   });
 
   const buildCreatePayload = (values: AdjFormValues) => ({

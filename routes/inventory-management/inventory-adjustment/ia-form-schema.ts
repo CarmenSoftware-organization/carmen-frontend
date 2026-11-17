@@ -118,18 +118,24 @@ export function mapItemToPayload(
  * บรรทัดที่แก้แค่ dimension ต้องส่งต้นทุนที่เก็บไว้เดิมกลับไป — backend ใช้
  * `cost_per_unit` default 0 ในบรรทัด update ถ้าไม่ส่งค่าจะถูกเขียนเป็น 0 และ
  * `CostProbe` ก็เขียนต้นทุนประมาณการทับค่าในฟอร์มตั้งแต่ mount (ใบ SO ร่างเก็บ 0)
+ * ใช้เฉพาะ stock-out: ใบจ่ายออกกรอกต้นทุนเองไม่ได้ ค่าในฟอร์มมาจาก probe เท่านั้น
+ * ส่วน stock-in ผู้ใช้แก้ต้นทุนเองได้ และ probe ไม่ทับบรรทัดที่เก็บไว้ตอน mount
+ * บรรทัด dimension-only จึงมีต้นทุนเดิมอยู่แล้ว — คืน `u` ตามเดิม ไม่งั้นต้นทุนที่ผู้ใช้แก้จะหาย
  * เข้าเงื่อนไขเมื่อ: แก้ dimension, product/qty/description ไม่เปลี่ยน และ
  * คลัง/วันที่ของใบไม่เปลี่ยน (ถ้าเปลี่ยน ต้นทุนใหม่ที่ probe ดึงมาคือความตั้งใจ)
  * @param update - `buildItemChanges(...).update`
  * @param current - ค่าในฟอร์มตอนกด Save
  * @param original - `defaultValues` ที่โหลดมา (ถือต้นทุนที่เก็บไว้)
+ * @param options - `isStockOut` ต้องเป็น true ถึงจะคืนต้นทุนเดิม
  * @returns update ที่ใส่ต้นทุนเดิมคืนให้บรรทัด dimension-only แล้ว
  */
 export function restoreStoredCost<U extends { id: string }>(
   update: U[] | undefined,
   current: AdjFormValues,
   original: AdjFormValues,
+  options: { isStockOut: boolean },
 ): U[] | undefined {
+  if (!options.isStockOut) return update;
   const isHeaderSame =
     current.location_id === original.location_id &&
     current.date === original.date;
