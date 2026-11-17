@@ -21,6 +21,29 @@ interface UseRequestPriceListTableOptions {
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onEdit: (item: RequestPriceList) => void;
   onDelete: (item: RequestPriceList) => void;
+  /** ความกว้างของกล่องตาราง (px) — `undefined` = ยังไม่ได้วัด โชว์ครบทุกคอลัมน์ */
+  containerWidth?: number;
+}
+
+/**
+ * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
+ *
+ * ชื่อรับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมไม่ได้ตั้ง size เลย ทุกคอลัมน์ได้ 150
+ * แล้วแบ่งสัดส่วน บน Full HD กว้างคอลัมน์ละ 376px ส่วนที่ tablet ช่วงวันที่ถูกตัดกลางวันที่
+ * ความกว้างขั้นต่ำของตาราง = ผลรวม `size` ซึ่งนับคอลัมน์ select (55) ที่หน้านี้ไม่ได้เรนเดอร์ด้วย:
+ *   ครบ                55+60+180+180+200+120+60 = 855
+ *   ไม่มีเลขลำดับ                               = 795
+ *   ไม่มีแม่แบบ                                 = 615  (กล่องที่จอ 768 = 662)
+ * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35px — คอลัมน์รองกลับมาเมื่อชื่อได้ที่ ~215px แล้วเท่านั้น
+ * ของที่ซ่อนยังเห็น: ชื่อแม่แบบย้ายลงบรรทัดรองใต้ชื่อ
+ * คอลัมน์ที่ผู้ใช้เปิดเพิ่มเอง (created, updated) ไม่นับในงบ — เกินกล่องก็เลื่อนแนวนอนในกรอบเอง
+ */
+function columnTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  return {
+    showIndex: w >= 890,
+    showTemplate: w >= 830,
+  };
 }
 
 export function useRequestPriceListTable({
@@ -30,10 +53,12 @@ export function useRequestPriceListTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseRequestPriceListTableOptions) {
   "use no memo";
   const { dateFormat, dateTimeFormat } = useProfile();
   const tfl = useTranslations("field");
+  const { showIndex, showTemplate } = columnTier(containerWidth);
 
   const formatPeriod = (startDate: string, endDate: string): string => {
     const from = formatDate(startDate, dateFormat);
@@ -48,12 +73,36 @@ export function useRequestPriceListTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("name")} />
       ),
-      cell: ({ row }) => (
-        <CellAction onClick={() => onEdit(row.original)}>
-          {row.original.name || "..."}
-        </CellAction>
-      ),
-      meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
+      // กล่องแคบ: แม่แบบที่ถูกซ่อนลงมาเป็นบรรทัดรองใต้ชื่อ
+      cell: ({ row }) => {
+        const template = showTemplate
+          ? undefined
+          : row.original.pricelist_template?.name;
+        return (
+          <div className="min-w-0">
+            <CellAction
+              onClick={() => onEdit(row.original)}
+              className="block truncate"
+            >
+              {row.original.name || "..."}
+            </CellAction>
+            {template && (
+              <span
+                className="text-muted-foreground block truncate text-xs"
+                title={template}
+              >
+                {template}
+              </span>
+            )}
+          </div>
+        );
+      },
+      size: 180,
+      meta: {
+        headerTitle: tfl("name"),
+        skeleton: columnSkeletons.text,
+        grow: true,
+      },
     },
     {
       id: "template_name",
@@ -63,8 +112,14 @@ export function useRequestPriceListTable({
       ),
       enableSorting: false,
       cell: ({ getValue }) => (
-        <span className="text-muted-foreground">{getValue<string>()}</span>
+        <span
+          className="text-muted-foreground block truncate"
+          title={getValue<string>()}
+        >
+          {getValue<string>()}
+        </span>
       ),
+      size: 180,
       meta: { headerTitle: tfl("template"), skeleton: columnSkeletons.text },
     },
     {
@@ -79,10 +134,13 @@ export function useRequestPriceListTable({
           data-slot="cell-stack"
           className="flex flex-col items-start gap-0.5"
         >
-          <span className="tabular-nums">{getValue<string>()}</span>
+          <span className="whitespace-nowrap tabular-nums">
+            {getValue<string>()}
+          </span>
           <RfpWindowBadge item={row.original} size="sm" />
         </div>
       ),
+      size: 200,
       meta: {
         headerTitle: tfl("effectivePeriod"),
         skeleton: columnSkeletons.text,
@@ -106,9 +164,16 @@ export function useRequestPriceListTable({
     ...auditColumns<RequestPriceList>(tfl, dateTimeFormat),
   ];
 
+  // ซ่อนผ่านรายการคอลัมน์ ไม่ใช่ CSS — ความกว้างขั้นต่ำของตารางที่มีคอลัมน์ยืดคิดจากทุกคอลัมน์
+  // ที่ TanStack ถือว่ามองเห็น · ตัดออกจากรายการเลย เมนู Toggle Columns ของผู้ใช้จึงไม่ถูกทับ
+  const visibleColumns = showTemplate
+    ? columns
+    : columns.filter((c) => c.id !== "template_name");
+
   return useConfigTable<RequestPriceList>({
     data: items,
-    columns,
+    columns: visibleColumns,
+    hideIndex: !showIndex,
     totalRecords,
     params,
     tableConfig,
