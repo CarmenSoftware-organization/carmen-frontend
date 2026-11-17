@@ -71,7 +71,7 @@ Channel เป็นแค่ตัวอย่าง
 ### 2. สัญญา API (เหมือนกันทุกเอกสาร)
 - request ต่อ dimension ของบรรทัด: `{ gl_dimension_id, gl_dimension_value_id?: uuid | null, value?: string | number | boolean | null }`
   - ชนิด `lookup` → ต้องส่ง `gl_dimension_value_id` (เหมือนเดิม ไม่ส่ง `value`)
-  - ชนิดอื่น → ต้องส่ง `value` (date เป็น `"YYYY-MM-DD"`) และไม่ส่ง `gl_dimension_value_id`
+  - ชนิดอื่น → ต้องส่ง `value` (date เป็น `"YYYY-MM-DD"`) และไม่ส่งทั้งคู่พร้อมกัน; ถ้าส่งเฉพาะ `gl_dimension_value_id` (ไม่มี `value`) ตัวตรวจรับเป็นค่าแบบรายการเดิม ตราบที่ค่านั้นมีอยู่ เป็นของ dimension นี้ และ active (ตรวจเหมือน lookup) — ไม่ต้องรู้ว่าบรรทัดเก็บค่านั้นอยู่หรือไม่
   - client เดิมที่ส่งแค่ `gl_dimension_value_id` ทำงานต่อได้ไม่ต้องแก้
 - response: ทุก ref คืน `gl_dimension_id`, `gl_dimension_value_id` (nullable), `value_text`, `value_number`, `value_date`, `value_boolean`,
   `dimension_code`, `value_code` และ `data_type` ของ dimension (FE ใช้เลือกวิธีแสดง)
@@ -112,7 +112,7 @@ Channel เป็นแค่ตัวอย่าง
 - **(ผมตัดสิน)** การแก้ที่ไม่แตะ dimension (เช่นแก้จำนวน) ไม่บังคับให้กรอก dimension ใหม่: writer ที่ทำงานแบบ
   "ไม่ส่ง dimensions = ไม่แตะค่าเดิม" (PR/PO/GRN/SR/IA) ไม่ตรวจแถวเดิม ส่วนเอกสารที่ส่งบรรทัดทั้งชุดทุกครั้ง (JV `details.replace`,
   AP/AR) FE จะส่งค่าเดิมกลับไปตามที่เก็บอยู่ ตัวตรวจจึงต้องยอมรับค่าแบบรายการเดิมของ dimension ที่ชนิดเปลี่ยนไปแล้ว
-  **เฉพาะเมื่อเป็นค่าเดิมของบรรทัดนั้น** (ส่ง `gl_dimension_value_id` เดิมกลับมา) ค่าใหม่ต้องตรงชนิดปัจจุบันเสมอ
+  (ส่ง `gl_dimension_value_id` กลับมาโดยไม่มี `value` — ผ่อนปรนแล้ว ไม่ต้องเป็นค่าเดิมของบรรทัดนั้น เพื่อให้ AP-from-GRN และ PR duplicate ของแถวเก่าทำงานได้) ค่า `value` ใหม่ต้องตรงชนิดปัจจุบันเสมอ
 
 ### 6. Frontend
 - type `DimensionRef` (`types/gl-dimension.ts`) และ `JournalLineDimensionInput` เพิ่มฟิลด์ตามข้อ 2 · `DimensionMaster.data_type` มีอยู่แล้ว

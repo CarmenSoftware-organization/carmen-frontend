@@ -51,7 +51,7 @@ export function DimensionValueInput({
   const type = dimension.data_type ?? "lookup";
   const legacyCode =
     type !== "lookup" && value?.dimension_value_id && !value.value
-      ? value.value_code
+      ? (value.value_code ?? undefined)
       : undefined;
 
   const emit = (next: string | number | boolean) =>

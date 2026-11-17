@@ -9,10 +9,10 @@ export const dimensionRefSchema = z.object({
   value_number: z.union([z.string(), z.number()]).nullish(),
   value_date: z.string().nullish(),
   value_boolean: z.boolean().nullish(),
-  dimension_code: z.string().optional(),
-  value_code: z.string().optional(),
-  dimension_name: z.string().optional(),
-  value_name: z.string().optional(),
+  dimension_code: z.string().nullish(),
+  value_code: z.string().nullish(),
+  dimension_name: z.string().nullish(),
+  value_name: z.string().nullish(),
   data_type: z
     .enum(["string", "number", "date", "lookup", "boolean"])
     .optional(),

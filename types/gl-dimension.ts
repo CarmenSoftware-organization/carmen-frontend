@@ -16,10 +16,10 @@ export interface DimensionRef {
   value_number?: string | number | null;
   value_date?: string | null;
   value_boolean?: boolean | null;
-  dimension_code?: string;
-  value_code?: string;
-  dimension_name?: string;
-  value_name?: string;
+  dimension_code?: string | null;
+  value_code?: string | null;
+  dimension_name?: string | null;
+  value_name?: string | null;
   data_type?: DimensionDataType;
 }
 
