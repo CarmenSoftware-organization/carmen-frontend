@@ -18,8 +18,7 @@ bun run build        # tsc + bump patch ใน package.json + vite build → dis
 bun run build:{local,dev,uat,prod}   # เหมือน build แต่เลือก public/config.<env>.json → dist/config.json — มีผลกับ `bun run preview` ในเครื่องเท่านั้น · **deploy Vercel = `vercel --prod` จากเครื่องเท่านั้น** (รายละเอียด → skill `release-and-deploy`)
 bun run build:force  # บังคับ tsc ตรวจใหม่ทั้งหมด · dev เสิร์ฟของค้างใช้ `bun dev --force`
 bun run typecheck    # tsc --noEmit เดี่ยว ๆ (gate ของ build:bump)
-bun run lint         # ESLint        bun test          # Vitest watch
-bun test:run         # Single run    bun test:run path # Single file
+bun test:run [path]  # Vitest single run (`bun test` = watch)
 # e2e: moved to ../carmen-frontend-e2e (E2E_FRONTEND_DIR=../carmen-frontend bun e2e)
 ```
 
@@ -50,25 +49,12 @@ bun test:run         # Single run    bun test:run path # Single file
 - **Where a hook lives:** the smallest scope that owns it. Used by one feature →
   `routes/<module>/<feature>/use-x.ts` (its test sits flat beside it); used by two or more
   features of the same module → `routes/<module>/shared/`; used across modules, or by
-  another hook in `hooks/` → stays in `hooks/`. `hooks/` is therefore the cross-cutting
-  layer only (93 files: infra, lookups every module needs, `use-can`/`use-mobile` and
-  friends), not a dumping ground for every `use-<entity>`. Two hooks stay global despite
-  a single caller today — `use-locale` and `use-number-formatter` are generic, and burying
-  them in physical-count / purchase-request would just hide them. No `index.ts` barrels.
-
-- **Module boundary (enforced by ESLint):** `routes/<A>/` may not import from
-  `routes/<B>/`, and the shared layer (`components/` `hooks/` `lib/` `constant/` `types/`)
-  may not import from `routes/` at all. `eslint.config.mjs` reads the module list off disk
-  and emits one `no-restricted-imports` block per module, so a new module is covered the
-  moment its folder exists. When two modules need the same thing, its home is
-  `components/` / `hooks/` / `lib/` / `types/` — never the other module. Only the alias
-  form (`@/routes/...`) is checked; relative escapes are not, because nobody writes them
-  here (0 in the repo) and guarding them false-positives on feature sub-folders.
-
-- **Error boundaries:** every route is covered. Module section parents and the standalone
-  shell routes carry `RouteErrorBoundaryAdapter` (in-layout error UI); the root route
-  has `RootErrorBoundary` (`routes/root-error-boundary.tsx`) as a full-page catch-all so
-  React Router's default error screen never shows. Both render `ModuleError` → `ErrorState`.
+  another hook in `hooks/` → stays in `hooks/`. `hooks/` is the cross-cutting layer only,
+  not a dumping ground for every `use-<entity>`. `use-locale` and `use-number-formatter`
+  stay global despite a single caller (generic). No `index.ts` barrels.
+- **Module boundary (ESLint-enforced, alias imports only):** `routes/<A>/` ↛ `routes/<B>/`,
+  shared layer ↛ `routes/`. Code two modules need lives in `components/` / `hooks/` /
+  `lib/` / `types/` — never the other module.
 - **Runtime config:** `public/config.json` (`BACKEND_URL`, `X_APP_ID`) fetched at boot —
   never hardcode backend URLs in the bundle.
 
@@ -117,11 +103,8 @@ inline script ใน `index.html`** แก้สคริปต์นั้น�
 - ห้ามประกาศ `--spacing-md` (รวมถึง sm/lg/xl/2xl) — Tailwind v4 ใช้คีย์ร่วมกับสเกล container แล้ว `max-w-md` ทั้งแอปจะยุบ
 - ขนาดตัวอักษรดิบนอก ladder เป็นบั๊ก design system — `components/ui/type-ladder.test.ts` แดงทันที
 
-**dark mode เปิดให้ผู้ใช้จริงแล้ว** — `ThemeProvider` ของ next-themes (`components/providers.tsx`,
-`attribute="class"`, ค่าเริ่มต้น `system`) ตั้งคลาส `.dark` ที่ `<html>` ตามที่ผู้ใช้เลือกใน
-`ThemeSwitch` (เมนูโปรไฟล์) หรือตามธีมของ OS UI ใหม่ทุกชิ้นต้องอ่านออกทั้งสองธีม — ของ third-party
-ที่ออกแบบมาบนพื้นขาวอย่างเดียว ให้วางบนพื้นสว่างเสมอ (ของที่มีธีมมืดเองอย่าง Scalar ใน `/developers/api` ให้ส่งธีมของแอปเข้าไป) ปุ่มสลับธีมในหน้า
-`/design-system` ยังผูกคลาสไว้ที่ container ของหน้าเอง (`&:is(.dark *)` ต้องการแค่ ancestor) ใช้ดูงานได้โดยไม่กระทบทั้งแอป
+**dark mode เปิดให้ผู้ใช้จริงแล้ว** — UI ใหม่ทุกชิ้นต้องอ่านออกทั้งสองธีม (third-party
+ที่ทำมาบนพื้นขาวอย่างเดียว ให้วางบนพื้นสว่างเสมอ) รายละเอียด → `docs/DESIGN.md` §Dark mode
 
 ## Known open items
 
@@ -129,15 +112,9 @@ inline script ใน `index.html`** แก้สคริปต์นั้น�
 - Exchange-rate live-rates fetch needs a backend endpoint (`GET /api/exchange-rate?base=XXX`,
   same shape as the old Next route, which held the provider API key server-side). Config
   CRUD works; the live-rates panel degrades gracefully until then.
-- Backend CORS required before production on S3/GCS static hosting (dev uses the Vite
-  proxy; the **Docker image needs no CORS** — its nginx proxies `/api/*` itself).
-- Local dev against the local backend: `VITE_DEV_PROXY_TARGET=http://localhost:4000 bun dev`.
 - Backend bug ที่ผูกกับโมดูลเดียว ย้ายไปอยู่ข้างโมดูลแล้ว (โหลดเองเมื่อทำงานในโฟลเดอร์นั้น):
   decimal qty ที่ `.int()` ปัด → `routes/CLAUDE.md` · dashboard-widgets 500 →
   `routes/dashboard/CLAUDE.md` · PR list ไม่มี `audit` → `routes/procurement/CLAUDE.md`
-- `scripts/changelog.ts`'s conventional-commit regex captures the breaking-change `!`
-  marker (e.g. `feat(api)!: …`) but nothing reads it — deliberately not implementing a
-  breaking-change badge in What's New for now; such commits render like ordinary features.
 - **`LICENSE_ENFORCEMENT` เปิดอยู่จริงแล้วทุก environment** (config ที่ gitignore ตั้ง `true` ครบ
   อย่าเชื่อ default `false`) — ผูก leaf กับ **license feature key ใหม่ = หน้าล็อกทันทีที่ deploy**;
   ลำดับเสมอ: deploy backend → `db:seed.license-feature` → assign feature ทุก BU ที่ carmen-backstage → deploy FE
