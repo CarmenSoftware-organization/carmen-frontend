@@ -19,7 +19,12 @@ vi.mock("./use-account-mapping", () => ({
     };
   },
   useReviewAccountMapping: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateAccountMapping: () => ({ mutate: vi.fn(), isPending: false }),
 }));
+vi.mock("../shared/use-accounting-config-edit", () => ({
+  useAccountingConfigEdit: () => true,
+}));
+vi.mock("@/hooks/use-error-toast", () => ({ useErrorToast: () => vi.fn() }));
 vi.mock("./use-coam-table", () => ({
   useCoamTable: () => ({
     resetRowSelection: vi.fn(),

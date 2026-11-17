@@ -1,5 +1,5 @@
 "use no memo";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "use-intl";
 import { CheckCheck, Pencil, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -29,10 +29,15 @@ import type {
   MappingStatus,
   MappingType,
 } from "@/types/chart-of-account-mapping";
+import { ApiError } from "@/lib/api-error";
+import { useErrorToast } from "@/hooks/use-error-toast";
+import { useAccountingConfigEdit } from "../shared/use-accounting-config-edit";
+import type { CellMenuHandlers, MappingField } from "./coam-cells";
 import {
   EMPTY_COUNTS,
   useAccountMappingList,
   useReviewAccountMapping,
+  useUpdateAccountMapping,
   type AccountMappingListParams,
 } from "./use-account-mapping";
 import { useCoamTable } from "./use-coam-table";
@@ -105,10 +110,53 @@ export default function CoamComponent() {
   };
   const { data, isLoading, error, refetch } = useAccountMappingList(query);
   const review = useReviewAccountMapping();
+  const update = useUpdateAccountMapping();
+  const errorToast = useErrorToast();
+  const canEdit = useAccountingConfigEdit(
+    "configuration.chart_of_account_mapping",
+  );
+  const tt = useTranslations("toast");
 
   const rows = data?.data ?? [];
   const totalRecords = data?.paginate.total ?? 0;
   const counts = data?.counts ?? EMPTY_COUNTS;
+
+  // "ใช้ค่าเริ่มต้น" จากเมนูในเซลล์ — ส่ง null = ลบค่าแก้ทับของช่องนั้น
+  // columns ของตาราง memo ด้วย menu — handler ต้องคงที่ ไม่งั้นตารางสร้าง column ใหม่ทุก render
+  const { mutate: updateMutate } = update;
+  const resetField = useCallback(
+    (row: AccountMappingRow, field: MappingField) =>
+      updateMutate(
+        {
+          id: row.id,
+          doc_version: row.doc_version,
+          ...(field === "account"
+            ? { account_code: null }
+            : { cost_center_id: null }),
+        },
+        {
+          onSuccess: () =>
+            toast.success(tt("updateSuccess", { entity: t("title") })),
+          onError: (err) => {
+            if (
+              err instanceof ApiError &&
+              err.statusCode === 409 &&
+              !err.appCode
+            ) {
+              toast.error(t("conflict"));
+              return;
+            }
+            errorToast(err);
+          },
+        },
+      ),
+    [updateMutate, t, tt, errorToast],
+  );
+  const pendingId = update.isPending ? (update.variables?.id ?? null) : null;
+  const menu = useMemo<CellMenuHandlers>(
+    () => ({ canEdit, onEdit: setEditing, onReset: resetField, pendingId }),
+    [canEdit, resetField, pendingId],
+  );
 
   const table = useCoamTable({
     data: rows,
@@ -117,6 +165,7 @@ export default function CoamComponent() {
     tableConfig,
     tab,
     onOpen: setEditing,
+    menu,
   });
   // เลือกแถวข้ามหน้าไม่ได้ — ล้างทุกครั้งที่ขอบเขตของรายการเปลี่ยน
   // เพื่อไม่ให้ "ยืนยันว่าตรวจแล้ว" ทิ้งแถวที่เลือกไว้นอกหน้าไปเงียบ ๆ

@@ -21,7 +21,12 @@ import type {
   MappingType,
   Ref,
 } from "@/types/chart-of-account-mapping";
-import { AccountCell, CostCenterCell, StatusCell } from "./coam-cells";
+import {
+  AccountCell,
+  CostCenterCell,
+  StatusCell,
+  type CellMenuHandlers,
+} from "./coam-cells";
 
 export const MOVEMENT_KEY = {
   grn: "movementGrn",
@@ -51,6 +56,8 @@ interface UseCoamTableOptions {
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   tab: MappingType;
   onOpen: (row: AccountMappingRow) => void;
+  /** เมนูบนค่า cost center / account */
+  menu: CellMenuHandlers;
 }
 
 /**
@@ -67,6 +74,7 @@ export function useCoamTable({
   tableConfig,
   tab,
   onOpen,
+  menu,
 }: UseCoamTableOptions) {
   "use no memo";
   const t = useTranslations("config.chartOfAccountMapping");
@@ -178,7 +186,7 @@ export function useCoamTable({
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title={t("costCenter")} />
         ),
-        cell: ({ row }) => <CostCenterCell row={row.original} />,
+        cell: ({ row }) => <CostCenterCell row={row.original} menu={menu} />,
         size: 200,
         meta: { headerTitle: t("costCenter"), skeleton: columnSkeletons.text },
       },
@@ -188,7 +196,7 @@ export function useCoamTable({
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title={t("account")} />
         ),
-        cell: ({ row }) => <AccountCell row={row.original} />,
+        cell: ({ row }) => <AccountCell row={row.original} menu={menu} />,
         size: 240,
         meta: { headerTitle: t("account"), skeleton: columnSkeletons.text },
       },
@@ -201,7 +209,7 @@ export function useCoamTable({
         meta: { headerTitle: t("status"), skeleton: columnSkeletons.badge },
       },
     ],
-    [t, tl, tfl, tab, onOpen, page, perpage],
+    [t, tl, tfl, tab, onOpen, menu, page, perpage],
   );
 
   return useReactTable({
