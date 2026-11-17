@@ -4,6 +4,7 @@ import { listReturnState } from "@/hooks/use-list-return";
 import { useTranslations } from "use-intl";
 import { Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { useGridPagination } from "@/hooks/use-grid-pagination";
 import { toast } from "sonner";
 import {
@@ -359,7 +360,10 @@ export default function StoreRequisitionComponent() {
     }
   };
 
+  // ลบขอบ 1px สองข้างของ DataGridContainer ออก ได้ความกว้างที่ตารางใช้จริง
+  const [setGridBox, gridBoxWidth] = useElementWidth();
   const table = useStoreRequisitionTable({
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
     items,
     totalRecords,
     params,
@@ -413,29 +417,31 @@ export default function StoreRequisitionComponent() {
     >
       {/* Content */}
       {!isGridMode && (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          tableLayout={{ headerSticky: true }}
-          // เดิมตั้ง `min-w-max` เพราะ 11 คอลัมน์ยัดให้พอดีจอไม่ได้ — ตอนนี้ Send Back,
-          // Type และ Current Stage ย้ายไปเป็นบรรทัดรองแล้ว เหลือ 8 คอลัมน์ที่พอดีจอ
-          // 1366px แบบเดียวกับ PR/PO list · min-w-max ทำให้ตารางกว้างตามข้อความยาว
-          // สุดในแต่ละช่อง `truncate` จึงไม่มีผล
-          emptyMessage={<EmptyComponent />}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              listGridMaxH(lf.activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            tableLayout={{ headerSticky: true }}
+            // เดิมตั้ง `min-w-max` เพราะ 11 คอลัมน์ยัดให้พอดีจอไม่ได้ — ตอนนี้ Send Back,
+            // Type และ Current Stage ย้ายไปเป็นบรรทัดรองแล้ว เหลือ 8 คอลัมน์ที่พอดีจอ
+            // 1366px แบบเดียวกับ PR/PO list · min-w-max ทำให้ตารางกว้างตามข้อความยาว
+            // สุดในแต่ละช่อง `truncate` จึงไม่มีผล
+            emptyMessage={<EmptyComponent />}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                listGridMaxH(lf.activeFilters.length > 0),
+              )}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       {isGridMode && (

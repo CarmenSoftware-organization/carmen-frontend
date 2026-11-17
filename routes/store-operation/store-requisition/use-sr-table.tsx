@@ -1,4 +1,5 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import { useState } from "react";
+import type { ColumnDef, VisibilityState } from "@tanstack/react-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
@@ -30,6 +31,31 @@ interface UseStoreRequisitionTableOptions {
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onEdit: (item: StoreRequisition) => void;
   onDelete: (item: StoreRequisition) => void;
+  /** ความกว้างกล่องตาราง (px) — `undefined` = ยังไม่ได้วัด ใช้ชุดคอลัมน์จอกว้าง */
+  containerWidth?: number;
+}
+
+/**
+ * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
+ *
+ * "From → To" รับที่เหลือ (`meta.grow`) ที่เหลือกว้างคงที่ ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`
+ * (นับคอลัมน์ select 55 ที่ไม่ได้เรนเดอร์ · ไม่นับ audit ที่ซ่อนเป็น default):
+ *   ครบ  55+60+225+105+100+170+140+160+140+60 = 1215
+ *   ไม่มี #                                     = 1155
+ *   ไม่มี workflow                              = 1055
+ *   ไม่มีผู้ขอ (ลงบรรทัดรองใต้แผนก)                 =  915
+ *   กล่องแคบ (ไม่มีวันที่ ลงใต้เลขที่ · เลขที่ 150 · From → To ขั้นต่ำ 110 · แผนก 130)
+ *        55+150+110+130+140+60 = 645  (กล่องที่จอ 768 = 662)
+ * จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px · # และ workflow ดูได้ในหน้าเอกสาร
+ */
+function columnTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  return {
+    showIndex: w >= 1220,
+    showWorkflow: w >= 1160,
+    showRequester: w >= 1060,
+    wide: w >= 920,
+  };
 }
 
 export function useStoreRequisitionTable({
@@ -39,8 +65,17 @@ export function useStoreRequisitionTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseStoreRequisitionTableOptions) {
   "use no memo";
+  const { showIndex, showWorkflow, showRequester, wide } =
+    columnTier(containerWidth);
+  // คอลัมน์ที่ผู้ใช้เปิด/ปิดเองจากเมนู Toggle Columns — audit ซ่อนเป็น default
+  // ขั้นตามความกว้างกล่องทับเฉพาะคอลัมน์ที่บังคับซ่อน
+  const [userVisibility, setUserVisibility] = useState<VisibilityState>({
+    created_at: false,
+    updated_at: false,
+  });
   const { dateFormat, dateTimeFormat } = useProfile();
   const tfl = useTranslations("field");
   const tc = useTranslations("common");
@@ -59,28 +94,48 @@ export function useStoreRequisitionTable({
       // data-slot ให้ rowClamp ของ DataGrid ข้ามกล่องนี้
       cell: ({ row }) => {
         const type = row.original.sr_type as StoreRequisitionType | null;
+        const no = (
+          <CellAction onClick={() => onEdit(row.original)}>
+            {row.getValue("sr_no")}
+          </CellAction>
+        );
+        const sendBack = (
+          <SrSendBackHint
+            srId={row.original.id}
+            lastAction={row.original.last_action}
+          />
+        );
+        const typeLine = type && (
+          <span className="text-muted-foreground text-xs uppercase">
+            {type}
+          </span>
+        );
+        if (wide)
+          return (
+            <div data-slot="cell-stack" className="flex flex-col items-start">
+              <div className="flex items-center gap-1.5">
+                {no}
+                {sendBack}
+              </div>
+              {typeLine}
+            </div>
+          );
+        // กล่องแคบ: คอลัมน์วันที่ถูกซ่อน — ชนิด / วันที่ / ป้ายส่งกลับ ลงบรรทัดรองบรรทัดละอย่าง
         return (
           <div data-slot="cell-stack" className="flex flex-col items-start">
-            <div className="flex items-center gap-1.5">
-              <CellAction onClick={() => onEdit(row.original)}>
-                {row.getValue("sr_no")}
-              </CellAction>
-              <SrSendBackHint
-                srId={row.original.id}
-                lastAction={row.original.last_action}
-              />
-            </div>
-            {type && (
-              <span className="text-muted-foreground text-xs uppercase">
-                {type}
-              </span>
-            )}
+            {no}
+            {typeLine}
+            <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
+              {formatDate(row.original.sr_date, dateFormat)}
+            </span>
+            {sendBack}
           </div>
         );
       },
       meta: { headerTitle: tfl("srNo"), skeleton: columnSkeletons.text },
       // เลขที่ยาว + ป้าย SEND BACK ไม่ถูกตัดที่ 1366px (ค่าเดียวกับ PO list)
-      size: 225,
+      // กล่องแคบป้ายลงบรรทัดรอง เหลือ 150
+      size: wide ? 225 : 150,
     },
     {
       accessorKey: "sr_date",
@@ -128,8 +183,13 @@ export function useStoreRequisitionTable({
           {getValue<string>()}
         </span>
       ),
-      meta: { headerTitle: tfl("fromTo"), skeleton: columnSkeletons.text },
-      size: 170,
+      // ข้อความยาวได้ — รับที่เหลือ ไม่ให้คอลัมน์สั้นห่างกันเป็นร้อยพิกเซลที่ 4K · size = ขั้นต่ำ
+      meta: {
+        headerTitle: tfl("fromTo"),
+        skeleton: columnSkeletons.text,
+        grow: true,
+      },
+      size: wide ? 170 : 110,
     },
     {
       accessorKey: "requestor_name",
@@ -145,7 +205,8 @@ export function useStoreRequisitionTable({
         </span>
       ),
       meta: { headerTitle: tfl("requester"), skeleton: columnSkeletons.text },
-      size: 120,
+      // 140 ให้ชื่อ-นามสกุลอ่านออก (120 ตัดเหลือ "ศิริวรรณ Purcha…")
+      size: 140,
     },
     {
       accessorKey: "department_name",
@@ -153,14 +214,26 @@ export function useStoreRequisitionTable({
         <DataGridColumnHeader column={column} title={tfl("department")} />
       ),
       cell: ({ row }) => (
-        <span
-          className="block truncate"
-          title={row.original.department_name ?? undefined}
-        >
-          {row.original.department_name}
-        </span>
+        <div data-slot="cell-stack" className="flex min-w-0 flex-col">
+          <span
+            className="block truncate"
+            title={row.original.department_name ?? undefined}
+          >
+            {row.original.department_name}
+          </span>
+          {/* คอลัมน์ผู้ขอถูกซ่อนในกล่องแคบ — ย้ายมาเป็นบรรทัดรอง */}
+          {!showRequester && row.original.requestor_name && (
+            <span
+              className="text-muted-foreground block truncate text-xs"
+              title={row.original.requestor_name}
+            >
+              {row.original.requestor_name}
+            </span>
+          )}
+        </div>
       ),
-      size: 130,
+      // จอกว้าง 160 ให้ "Guest Service and …" อ่านออก · กล่องแคบ 130 ให้พองบ 662
+      size: wide ? 160 : 130,
       meta: { headerTitle: tfl("department"), skeleton: columnSkeletons.text },
     },
     {
@@ -214,10 +287,18 @@ export function useStoreRequisitionTable({
     data: items,
     columns: allColumns,
     getCoreRowModel: getCoreRowModel(),
-    initialState: {
-      columnVisibility: { created_at: false, updated_at: false },
-    },
     ...tableConfig,
+    state: {
+      ...tableConfig.state,
+      columnVisibility: {
+        ...userVisibility,
+        ...(!showIndex && { index: false }),
+        ...(!showWorkflow && { workflow_name: false }),
+        ...(!showRequester && { requestor_name: false }),
+        ...(!wide && { sr_date: false }),
+      },
+    },
+    onColumnVisibilityChange: setUserVisibility,
     pageCount: Math.ceil(totalRecords / (Number(params.perpage) || 10)),
   });
 }
