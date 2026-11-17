@@ -1,4 +1,5 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import { useState } from "react";
+import type { ColumnDef, VisibilityState } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
@@ -22,6 +23,32 @@ interface UseGrnTableOptions {
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onEdit: (grn: GoodsReceiveNote) => void;
   onDelete: (grn: GoodsReceiveNote) => void;
+  /** ความกว้างกล่องตาราง (px) — `undefined` = ยังไม่ได้วัด ใช้ชุดคอลัมน์จอกว้าง */
+  containerWidth?: number;
+}
+
+/**
+ * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
+ *
+ * "ผู้ขาย" รับที่เหลือ (`meta.grow`) ที่เหลือกว้างคงที่ ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`
+ * (นับคอลัมน์ select 55 ที่ไม่ได้เรนเดอร์ · ไม่นับ invoice date/audit ที่ซ่อนเป็น default):
+ *   ครบ  55+60+180+150+125+160+140+130+140+150+60 = 1350
+ *   ไม่มี #                                         = 1290
+ *   ไม่มีชนิดใบ (ลงบรรทัดรองใต้เลขที่)                  = 1160
+ *   ไม่มีผู้รับ (ลงบรรทัดรองใต้ผู้ขาย)                    = 1020
+ *   ไม่มีเลขใบแจ้งหนี้                                  =  860
+ *   กล่องแคบ (ไม่มีวันที่ · เลขที่ 140 · ผู้ขาย 115)  55+140+115+140+150+60 = 660  (กล่องที่จอ 768 = 662)
+ * จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px · # และเลขใบแจ้งหนี้ดูได้ในหน้าเอกสาร
+ */
+function columnTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  return {
+    showIndex: w >= 1355,
+    showType: w >= 1295,
+    showReceivedBy: w >= 1165,
+    showInvoice: w >= 1025,
+    wide: w >= 865,
+  };
 }
 
 export function useGrnTable({
@@ -31,7 +58,18 @@ export function useGrnTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseGrnTableOptions) {
+  "use no memo";
+  const { showIndex, showType, showReceivedBy, showInvoice, wide } =
+    columnTier(containerWidth);
+  // คอลัมน์ที่ผู้ใช้เปิด/ปิดเองจากเมนู Toggle Columns — invoice date/audit ซ่อนเป็น default
+  // ขั้นตามความกว้างกล่องทับเฉพาะคอลัมน์ที่บังคับซ่อน
+  const [userVisibility, setUserVisibility] = useState<VisibilityState>({
+    invoice_date: false,
+    created_at: false,
+    updated_at: false,
+  });
   const { dateFormat, dateTimeFormat } = useProfile();
   const tfl = useTranslations("field");
 
@@ -41,15 +79,33 @@ export function useGrnTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("grnNo")} />
       ),
-      cell: ({ row }) => (
-        <CellAction
-          onClick={() => onEdit(row.original)}
-          className="whitespace-nowrap"
-        >
-          {row.original.grn_no}
-        </CellAction>
-      ),
-      size: 180,
+      // คอลัมน์ชนิดใบ/วันที่ถูกซ่อนในกล่องแคบ — ลงเป็นบรรทัดรองใต้เลขที่ บรรทัดละอย่าง
+      cell: ({ row }) => {
+        const no = (
+          <CellAction
+            onClick={() => onEdit(row.original)}
+            className="whitespace-nowrap"
+          >
+            {row.original.grn_no}
+          </CellAction>
+        );
+        if (showType) return no;
+        return (
+          <div data-slot="cell-stack" className="flex flex-col items-start">
+            {no}
+            <span className="text-muted-foreground text-xs">
+              {getGrnDocTypeLabel(tfl, row.original.doc_type)}
+            </span>
+            {!wide && (
+              <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
+                {formatDate(row.original.grn_date, dateFormat)}
+              </span>
+            )}
+          </div>
+        );
+      },
+      // กล่องแคบเหลือ 140 (เลขที่ยาว ~110px + padding)
+      size: wide ? 180 : 140,
       meta: { headerTitle: tfl("grnNo") },
     },
     {
@@ -57,8 +113,28 @@ export function useGrnTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("vendor")} />
       ),
-      size: 165,
-      meta: { headerTitle: tfl("vendor") },
+      cell: ({ row }) => (
+        <div data-slot="cell-stack" className="flex min-w-0 flex-col">
+          <span
+            className="block truncate"
+            title={row.original.vendor_name || undefined}
+          >
+            {row.original.vendor_name}
+          </span>
+          {/* คอลัมน์ผู้รับถูกซ่อนในกล่องแคบ — ย้ายมาเป็นบรรทัดรอง */}
+          {!showReceivedBy && row.original.audit?.created?.name && (
+            <span
+              className="text-muted-foreground block truncate text-xs"
+              title={row.original.audit.created.name}
+            >
+              {row.original.audit.created.name}
+            </span>
+          )}
+        </div>
+      ),
+      // ข้อความยาวได้ — รับที่เหลือ ไม่ให้คอลัมน์สั้นห่างกันเป็นร้อยพิกเซลที่ 4K · size = ขั้นต่ำ
+      size: wide ? 150 : 115,
+      meta: { headerTitle: tfl("vendor"), grow: true },
     },
     {
       accessorKey: "grn_date",
@@ -101,7 +177,7 @@ export function useGrnTable({
           </div>
         );
       },
-      size: 190,
+      size: 160,
       meta: { headerTitle: tfl("invoiceNo") },
     },
     {
@@ -168,7 +244,8 @@ export function useGrnTable({
       // ไม่เรียงลำดับเพราะ audit เป็น object ซ้อน backend เรียงให้ไม่ได้
       id: "created_by",
       accessorFn: (row) => row.audit?.created?.name ?? "",
-      size: 115,
+      // 140 ให้ชื่อ-นามสกุลผู้รับอ่านออก (115 ตัดเหลือ "Admin Fernan…")
+      size: 140,
       header: tfl("receivedBy"),
       cell: ({ row }) => (
         <span
@@ -209,27 +286,38 @@ export function useGrnTable({
         headerTitle: tfl("totalAmount"),
         cellClassName: "text-right",
       },
-      size: 135,
+      // 150 = ยอด 6 หลัก + สกุลเงิน (~121px) + padding 24
+      size: 150,
     },
 
     ...auditColumns<GoodsReceiveNote>(tfl, dateTimeFormat),
   ];
+
+  // ส่งเป็นตัวแปร (ไม่ใช่ literal) — type ของ tableConfig ประกาศ state แค่ pagination/sorting
+  const responsiveTableConfig = {
+    ...tableConfig,
+    state: {
+      ...tableConfig.state,
+      columnVisibility: {
+        ...userVisibility,
+        ...(!showIndex && { index: false }),
+        ...(!showType && { doc_type: false }),
+        ...(!showReceivedBy && { created_by: false }),
+        ...(!showInvoice && { invoice_no: false }),
+        ...(!wide && { grn_date: false }),
+      },
+    },
+    onColumnVisibilityChange: setUserVisibility,
+  };
 
   return useConfigTable<GoodsReceiveNote>({
     data: goodsReceiveNotes,
     columns,
     totalRecords,
     params,
-    tableConfig,
+    tableConfig: responsiveTableConfig,
     onDelete,
     hideStatus: true,
-    initialState: {
-      columnVisibility: {
-        invoice_date: false,
-        created_at: false,
-        updated_at: false,
-      },
-    },
     activity: { id: (r) => r.id, label: (r) => r.grn_no },
   });
 }
