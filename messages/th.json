@@ -3259,7 +3259,8 @@
       "editCostCenter": "แก้ไขศูนย์ต้นทุน…",
       "viewDetail": "ดูรายละเอียด",
       "editAtSource": "ไปแก้ที่ต้นทาง",
-      "setOverride": "กำหนด"
+      "setOverride": "กำหนด",
+      "loadedOf": "แสดง {loaded} จาก {total}"
     },
     "accountGrouping": {
       "title": "กลุ่มรหัสบัญชี (Account Code Group)",

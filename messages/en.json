@@ -3259,7 +3259,8 @@
       "editCostCenter": "Edit cost center…",
       "viewDetail": "View details",
       "editAtSource": "Edit at source",
-      "setOverride": "Set"
+      "setOverride": "Set",
+      "loadedOf": "Showing {loaded} of {total}"
     },
     "accountGrouping": {
       "title": "Account Code Groups",

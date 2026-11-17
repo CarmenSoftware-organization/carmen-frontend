@@ -53,7 +53,7 @@ import { listGridMaxH } from "@/components/share/list-grid-max-h";
 import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
 import { DocumentIconGrid } from "./document-icon-grid";
 import { DocumentPreviewView } from "./document-preview-view";
-import { DocumentLoadMore } from "./document-load-more";
+import { ListLoadMore } from "@/components/share/list-load-more";
 import { useElementWidth } from "@/hooks/use-element-width";
 import { useStorageUsage } from "@/hooks/use-storage-usage";
 import { useCan } from "@/hooks/use-can";
@@ -144,9 +144,9 @@ export default function DocumentComponent() {
   const firstPage = data?.pages[0]?.paginate;
   const totalRecords = firstPage?.total ?? 0;
   const loadMore = (
-    <DocumentLoadMore
+    <ListLoadMore
+      label={t("loadedOf", { loaded: documents.length, total: totalRecords })}
       loaded={documents.length}
-      total={totalRecords}
       hasMore={!!hasNextPage}
       isLoadingMore={isFetchingNextPage}
       onLoadMore={() => fetchNextPage()}
