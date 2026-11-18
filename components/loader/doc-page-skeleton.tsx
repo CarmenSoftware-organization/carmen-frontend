@@ -32,9 +32,16 @@ export function DocPageSkeleton({
 }) {
   const fieldsSkeleton =
     ribbon === "text" ? (
-      <FieldGrid>
+      // dense เหมือนหัวเอกสารโหมดดูของหน้าจริง (2 คอลัมน์ตั้งแต่กล่องแคบสุด) · data-wide ให้ช่อง
+      // span 2 กินเต็มแถวเหมือน SettingField fullWidth — ไม่งั้นบนมือถือโครงเรียงคอลัมน์เดียว
+      // สูงกว่าหน้าจริงเกือบเท่าตัว ข้อมูลมาแล้วหัวหดลงฮวบ
+      <FieldGrid dense>
         {fields.map((span, i) => (
-          <div key={i} className={cn(span === 2 && "@md:col-span-2")}>
+          <div
+            key={i}
+            className={cn(span === 2 && "@md:col-span-2")}
+            data-wide={span === 2 ? "" : undefined}
+          >
             <TextFieldSkeleton />
           </div>
         ))}
