@@ -12,6 +12,11 @@ import { cn } from "@/lib/utils";
  * @param specimen - true = ตัวอย่างคือสิ่งที่ผู้ใช้อยากรู้ (วันที่/ตัวเลขจะออกมาหน้าตา
  *   ยังไง) จึงขึ้นเป็นค่าหลัก ส่วนค่าตั้งดิบ (`yyyy-MM-dd`, `th-TH`) ลงไปเป็นบรรทัดรอง
  *   ไม่มีตัวอย่าง (pattern/locale ใช้ไม่ได้) → ค่าดิบกลับมาเป็นค่าหลัก
+ * @param trailing - ค่ารองที่อ่านคู่กับค่าหลักในบรรทัดเดียว คั่นด้วย `|` จาง (สกุลเงิน | เรต:
+ *   `USD | 1.00000`) — ต่างจาก `example` ที่ลงบรรทัดใต้ ใช้เมื่อสองค่าเป็นข้อมูลชุดเดียวกัน
+ *   แยกบรรทัดแล้วหัวเอกสารสูงขึ้นทุกช่องในแถวเดียวกัน
+ * @example
+ * <SettingField label={tfl("currency")} value="USD" trailing="1.00000" />
  */
 export function SettingField({
   label,
@@ -20,6 +25,7 @@ export function SettingField({
   fullWidth,
   example,
   specimen,
+  trailing,
 }: {
   readonly label: string;
   readonly value?: string | number | null;
@@ -27,6 +33,7 @@ export function SettingField({
   readonly fullWidth?: boolean;
   readonly example?: string | null;
   readonly specimen?: boolean;
+  readonly trailing?: string | null;
 }) {
   const isEmpty = value === null || value === undefined || value === "";
   const lead = specimen && example ? example : value;
@@ -52,6 +59,21 @@ export function SettingField({
             )}
           >
             {lead}
+            {trailing && (
+              <>
+                {/* ตัวคั่นเป็นของตกแต่ง — screen reader อ่าน "USD 1.00000" */}
+                <span
+                  aria-hidden="true"
+                  className="text-muted-foreground/60 mx-1.5"
+                >
+                  |
+                </span>
+                <span className="sr-only"> </span>
+                <span className="text-muted-foreground font-normal">
+                  {trailing}
+                </span>
+              </>
+            )}
           </FieldPlainText>
           {caption && (
             <div

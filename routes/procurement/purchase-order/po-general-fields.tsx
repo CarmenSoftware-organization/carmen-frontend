@@ -240,7 +240,7 @@ export function PoGeneralFields({
         <SettingField
           label={tfl("currency")}
           value={values.currency_code}
-          example={rateText}
+          trailing={rateText}
         />
       ) : (
         <Field>
