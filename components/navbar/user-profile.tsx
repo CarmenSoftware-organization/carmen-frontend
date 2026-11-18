@@ -157,7 +157,10 @@ export function UserProfile() {
         aria-live="polite"
         aria-busy="true"
       >
-        <div className="hidden items-center sm:grid" aria-hidden="true">
+        <div
+          className="hidden items-center @2xl/navbar:grid"
+          aria-hidden="true"
+        >
           <Skeleton className="mb-1 h-3 w-24" />
           <Skeleton className="ml-auto h-2.5 w-16" />
         </div>
@@ -178,8 +181,8 @@ export function UserProfile() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="group data-[state=open]:bg-muted/60 data-[state=open]:border-border/60 flex cursor-pointer items-center gap-2 rounded-lg border border-transparent px-1.5 py-1 text-right transition-colors outline-none hover:border-none hover:bg-none">
-        <div className="hidden text-xs leading-tight sm:grid">
+      <DropdownMenuTrigger className="group data-[state=open]:bg-muted/60 data-[state=open]:border-border/60 flex cursor-pointer items-center gap-2 rounded-lg border border-transparent px-1 py-1 text-right transition-colors outline-none hover:border-none hover:bg-none @2xl/navbar:px-1.5">
+        <div className="hidden text-xs leading-tight @2xl/navbar:grid">
           <span className="w-content truncate font-semibold">{name}</span>
           <span
             className={`text-micro-legal w-full truncate text-right ${department ? "text-muted-foreground" : "text-warning-ink"}`}
@@ -196,7 +199,7 @@ export function UserProfile() {
           eager
         />
         <ChevronDown
-          className="size-3 shrink-0 opacity-50 transition-opacity group-hover:opacity-80 group-data-[state=open]:opacity-100"
+          className="hidden size-3 shrink-0 opacity-50 transition-opacity group-hover:opacity-80 group-data-[state=open]:opacity-100 @2xl/navbar:block"
           aria-hidden="true"
         />
       </DropdownMenuTrigger>

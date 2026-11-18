@@ -92,16 +92,19 @@ export default function BuSwitcher() {
   if (isLoading || isSwitching || !currentDept) {
     return (
       <div
-        className="flex h-8 items-center gap-2 rounded-lg border border-transparent px-2"
+        className="flex h-8 items-center gap-1.5 rounded-lg border border-transparent px-1.5 @2xl/navbar:gap-2 @2xl/navbar:px-2"
         aria-live="polite"
         aria-busy="true"
       >
-        <Skeleton className="ring-primary/20 size-7 shrink-0 rounded-full ring-2" />
-        <Skeleton className="h-3 w-28" />
+        <Skeleton className="ring-primary/20 hidden size-7 shrink-0 rounded-full ring-2 @2xl/navbar:block" />
+        <Skeleton className="h-3 w-8 @2xl/navbar:w-28" />
         <Skeleton className="size-3 shrink-0 rounded-sm" />
       </div>
     );
   }
+
+  const alias = currentDept.alias_name?.trim() || "";
+  const buLabel = alias ? `${alias} - ${currentDept.name}` : currentDept.name;
 
   return (
     <DropdownMenu>
@@ -109,19 +112,30 @@ export default function BuSwitcher() {
         <Button
           variant="ghost"
           size="sm"
-          className="group data-[state=open]:border-border/60 data-[state=open]:bg-muted/60 h-8 gap-2 rounded-lg border border-transparent px-2 text-xs font-semibold hover:border-none hover:bg-none"
+          title={buLabel}
+          className="group data-[state=open]:border-border/60 data-[state=open]:bg-muted/60 h-8 gap-1.5 rounded-lg border border-transparent px-1.5 text-xs font-semibold hover:border-none hover:bg-none @2xl/navbar:gap-2 @2xl/navbar:px-2"
         >
-          <BuAvatar
-            avatarUrl={currentDept.avatar_url}
-            alt={currentDept.name}
-            isActive
-            eager
-          />
-          <span className="hidden w-fit min-w-24 truncate text-left font-semibold sm:block">
-            {currentDept.alias_name && `${currentDept.alias_name} -`}{" "}
-            {currentDept.name}
+          {/* แถบแคบ: รหัส BU (alias) แทนโลโก้ — มือถือต้องรู้ว่าอยู่กิจการไหนโดยไม่ต้องกด
+              ไม่มี alias ก็ใช้โลโก้แทน · แถบกว้าง (@2xl/navbar): โลโก้ + ชื่อเต็ม */}
+          <span
+            className={alias ? "hidden @2xl/navbar:inline-flex" : "inline-flex"}
+          >
+            <BuAvatar
+              avatarUrl={currentDept.avatar_url}
+              alt={currentDept.name}
+              isActive
+              eager
+            />
           </span>
-          <ChevronsUpDown className="size-3 opacity-50 transition-opacity group-hover:opacity-80" />
+          {alias && (
+            <span className="max-w-16 truncate font-semibold @2xl/navbar:hidden">
+              {alias}
+            </span>
+          )}
+          <span className="hidden max-w-60 min-w-24 truncate text-left font-semibold @2xl/navbar:block">
+            {buLabel}
+          </span>
+          <ChevronsUpDown className="size-3 shrink-0 opacity-50 transition-opacity group-hover:opacity-80" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
