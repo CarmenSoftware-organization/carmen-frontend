@@ -79,7 +79,8 @@ export function VendorContact({
         ) : undefined
       }
     >
-      <div>
+      {/* h-full ทั้งชั้นนี้และกริด: วางคู่กับที่อยู่ การ์ดสองฝั่งสูงเท่ากัน (ดู vendor-address) */}
+      <div className="h-full">
         {contactFields.length === 0 ? (
           isView ? null : (
             // โหมดแก้ก็บรรทัดเดียว (ไอคอน + ข้อความ) — กล่องประสูง ~125px ซ้ำกับปุ่มเพิ่มบนหัวหมวด
@@ -93,7 +94,7 @@ export function VendorContact({
           )
         ) : (
           // การ์ดผู้ติดต่อเรียงเป็นกริดตามความกว้างของหมวด ไม่ยืดเต็มแถว
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-2">
+          <div className="grid h-full grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-2">
             {contactFields.map((field, index) => (
               <ContactCard
                 key={field.id}
