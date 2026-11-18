@@ -7064,7 +7064,8 @@
       "noPendingApprovalsDesc": "You have no documents waiting for your approval at the moment.",
       "details": "Details",
       "waiting": "Waiting",
-      "daysWaiting": "{count, plural, =0 {Today} one {# day} other {# days}}"
+      "daysWaiting": "{count, plural, =0 {Today} one {# day} other {# days}}",
+      "totalShort": "All"
     }
   },
   "dashboard": {
