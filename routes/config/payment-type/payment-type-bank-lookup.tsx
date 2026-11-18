@@ -1,5 +1,6 @@
 import { LookupCombobox } from "@/components/lookup/lookup-combobox";
-import { MOCK_BANKS } from "../shared/ap-master-mock-data";
+import { useBankAccounts } from "@/hooks/use-accounting-master";
+import { useTranslations } from "use-intl";
 
 export function PaymentTypeBankLookup({
   value,
@@ -14,16 +15,22 @@ export function PaymentTypeBankLookup({
   readonly disabled: boolean;
   readonly readOnly?: boolean;
 }) {
+  const banks = useBankAccounts();
+  const t = useTranslations("config.apMaster");
   return (
     <LookupCombobox
       value={value ?? ""}
       onValueChange={(id) => onChange(id || null)}
-      items={MOCK_BANKS}
+      items={banks.data?.filter((bank) => bank.is_active) ?? []}
       getId={(item) => item.id}
-      getLabel={(item) => item.code}
-      getSearchValue={(item) => item.code}
+      getLabel={(item) =>
+        [item.code, item.account_name].filter(Boolean).join(" · ")
+      }
+      getSearchValue={(item) => `${item.code} ${item.account_name}`}
       defaultLabel={defaultLabel}
-      disabled={disabled}
+      disabled={disabled || banks.isLoading || !!banks.error}
+      isLoading={banks.isLoading}
+      error={banks.error ? t("bankAccountsLoadFailed") : undefined}
       readOnly={readOnly}
       allowDeselect
       modal

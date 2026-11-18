@@ -57,7 +57,6 @@ export default function WhtFormPage() {
   return (
     <ConfigListTemplate<WhtFormMaster>
       translationNamespace="config.whtForm"
-      mock
       entityNameField="code"
       useList={whtFormCrud.useList}
       useDelete={whtFormCrud.useDelete}

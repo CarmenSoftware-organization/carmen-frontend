@@ -72,25 +72,15 @@ function usePaymentTypeTable(
       enableSorting: false,
       meta: { headerTitle: tf("costCenter") },
     });
-  if ((options.containerWidth ?? 1000) >= 1200)
-    columns.push({
-      accessorKey: "cheque_form_name",
-      size: 170,
-      header: t("chequeForm"),
-      cell: ({ row }) =>
-        row.original.is_cheque ? row.original.cheque_form_name || "—" : "—",
-      enableSorting: false,
-      meta: { headerTitle: t("chequeForm") },
-    });
   if ((options.containerWidth ?? 1000) >= 1000)
     columns.push({
       accessorKey: "is_cheque",
       size: 90,
       header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={t("isCheque")} />
+        <DataGridColumnHeader column={column} title={t("cheque")} />
       ),
       cell: ({ row }) => (row.original.is_cheque ? "✓" : "—"),
-      meta: { headerTitle: t("isCheque") },
+      meta: { headerTitle: t("cheque") },
     });
   return useApMasterTable(options, columns);
 }
@@ -104,7 +94,6 @@ export default function PaymentTypePage() {
   return (
     <ConfigListTemplate<PaymentTypeMaster>
       translationNamespace="config.paymentType"
-      mock
       entityNameField="code"
       useList={paymentTypeCrud.useList}
       useDelete={paymentTypeCrud.useDelete}
@@ -144,7 +133,7 @@ export default function PaymentTypePage() {
           width: 25,
         },
         {
-          header: t("isCheque"),
+          header: t("cheque"),
           value: (row) => tc(row.is_cheque ? "yes" : "no"),
           width: 12,
         },
@@ -190,17 +179,12 @@ export default function PaymentTypePage() {
               .filter(Boolean)
               .join(" · ") || "—"}
           </ListCardRow>
-          <ListCardRow label={t("isCheque")}>
+          <ListCardRow label={t("cheque")}>
             {tc(item.is_cheque ? "yes" : "no")}
           </ListCardRow>
           <ListCardRow label={t("bankAccount")}>
             {item.bank_account_name || "—"}
           </ListCardRow>
-          {item.is_cheque && (
-            <ListCardRow label={t("chequeForm")}>
-              {item.cheque_form_name || "—"}
-            </ListCardRow>
-          )}
           <ListCardAuditRows audit={item.audit} />
         </ListCard>
       )}

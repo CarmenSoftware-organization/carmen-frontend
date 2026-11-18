@@ -2753,7 +2753,7 @@
     "paymentType": {
       "entity": "Payment Type",
       "title": "Payment Types",
-      "desc": "Sample payment types while the API is pending. Changes stay in this session and reset on reload.",
+      "desc": "Payment methods and their default accounting, bank and cheque settings.",
       "add": "Add Payment Type",
       "deleteTitle": "Delete Payment Type",
       "deleteConfirm": "Delete payment type {name}?"
@@ -2761,7 +2761,7 @@
     "whtForm": {
       "entity": "WHT Form",
       "title": "WHT Forms",
-      "desc": "Sample WHT forms while the API is pending. Changes stay in this session and reset on reload.",
+      "desc": "Withholding tax forms and their default accounting settings.",
       "add": "Add WHT Form",
       "deleteTitle": "Delete WHT Form",
       "deleteConfirm": "Delete WHT form {name}?"
@@ -2769,31 +2769,26 @@
     "whtServiceType": {
       "entity": "WHT Service Type",
       "title": "WHT Service Types",
-      "desc": "Sample WHT services while the API is pending. Changes stay in this session and reset on reload.",
+      "desc": "Withholding service types and their default tax rates.",
       "add": "Add WHT Service Type",
       "deleteTitle": "Delete WHT Service Type",
       "deleteConfirm": "Delete WHT service type {name}?"
     },
     "apMaster": {
-      "mockStatus": "MOCKUP",
-      "selectMockAccount": "Select GL account",
-      "mockDuplicateCode": "This code already exists in the mockup.",
-      "mockCodeRequired": "Enter a code.",
-      "mockCodeImmutable": "The code cannot be changed after creation.",
-      "mockVersionConflict": "This sample changed. Close and reopen the form before saving.",
-      "mockNotFound": "This sample has already been removed.",
+      "selectAccount": "Select GL account",
       "bankAccountsLoadFailed": "Unable to load bank accounts. Reopen the selector to retry.",
       "dimensionValuesLoadFailed": "Unable to load dimension values. Reopen the selector to retry.",
       "deleteSuccess": "Record deleted",
       "availableModules": "Available modules",
       "bankAccount": "Bank account",
       "isCheque": "Cheque payment",
+      "cheque": "Cheque",
       "chequeForm": "Cheque form",
       "defaultRate": "Default WHT rate (%)",
       "noChequeForms": "No active cheque forms are configured for this business unit.",
       "chequeFormsLoadFailed": "Unable to load cheque forms. Close and reopen to retry.",
       "mappingLoadFailed": "Unable to load account mapping. Re-select the account to retry.",
-      "accountChangeHint": "Changing the account replaces the Cost Center and dimension values with that account's defaults.",
+      "accountChangeHint": "Changing the account clears Cost Center and dimension values. Select values allowed by the new account.",
       "dependencyTitle": "Record is in use",
       "dependencyDescription": "Resolve these references before deactivating or deleting this record.",
       "otherReferences": "Other references",

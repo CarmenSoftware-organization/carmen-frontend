@@ -50,7 +50,6 @@ export default function WhtServiceTypePage() {
   return (
     <ConfigListTemplate<WhtServiceTypeMaster>
       translationNamespace="config.whtServiceType"
-      mock
       entityNameField="code"
       useList={whtServiceTypeCrud.useList}
       useDelete={whtServiceTypeCrud.useDelete}

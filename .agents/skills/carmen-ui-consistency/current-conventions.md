@@ -104,14 +104,11 @@ gotchas in the relevant recipe rather than growing the skill entrypoint.
   and the owning backend schemas for writable fields.
 - AP Payment currently uses a payment-method enum and real Tax Profile metadata
   (PND enum, income-type text). Config Payment Type, WHT Form and WHT Service
-  Type are explicitly session-only mockups while their APIs await release. Follow
-  the linked HTML logic using the existing Carmen theme; GL selection replaces
-  defaults, bank/cheque selection resolves the print form, and fixture references
-  protect used records. Their CRUD and reference lookups make no HTTP requests;
-  reload resets sample changes. Backend source/migration exist separately and
-  master IDs are not wired into AP/AR writers. Successful AP posting does not
-  prove master integration. See
-  `docs/accounting/accounting-master-mockup-2026-11-15.md` for references and QA.
+  Type use the live BU-scoped master APIs, including GL mapping, bank/cheque
+  lookups, dependency checks and versioned updates/deletes. Master dimension
+  references use `gl_dimension_id` / `gl_dimension_value_id` at the API boundary.
+  Master IDs are not yet wired into AP/AR document writers; master CRUD does not
+  prove document integration.
 - Tax Profile config edits only name, tax rate and active status. API read types
   retain VAT/WHT metadata for existing AP lookups; do not restore the removed
   `TAX_PROFILE_TYPES` / `WHT_PND_FORMS` runtime option arrays or WHT config fields

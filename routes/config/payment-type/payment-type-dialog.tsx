@@ -1,4 +1,4 @@
-import { toDimensionPayload } from "@/lib/dimension-payload";
+import { masterDimensionsPayload } from "../shared/ap-master-crud";
 import { dependencyDetails } from "../shared/ap-master-crud";
 import { PaymentTypeBankLookup } from "./payment-type-bank-lookup";
 import { Controller } from "react-hook-form";
@@ -15,11 +15,10 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { LookupCombobox } from "@/components/lookup/lookup-combobox";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
-import {
-  MOCK_ACCOUNTS,
-  MOCK_CHEQUE_FORMS,
-  mockChequeForm,
-} from "../shared/ap-master-mock-data";
+import { useQuery } from "@tanstack/react-query";
+import { useBuCode } from "@/hooks/use-bu-code";
+import { useBankAccounts } from "@/hooks/use-accounting-master";
+import { readMasterData } from "../shared/ap-master-crud";
 import type { PaymentTypeMaster } from "@/types/accounting-master";
 import { MasterAccountFields } from "../shared/ap-master-account-fields";
 import {
@@ -65,11 +64,16 @@ export function PaymentTypeDialog({
   const tf = useTranslations("field");
   const tc = useTranslations("common");
   const update = paymentTypeCrud.useUpdate();
-  const chequeForms = {
-    data: MOCK_CHEQUE_FORMS,
-    isLoading: false,
-    error: null,
-  };
+  const bu = useBuCode();
+  const banks = useBankAccounts();
+  const chequeForms = useQuery({
+    queryKey: ["payment-type-cheque-forms", bu],
+    enabled: open && !readOnly && !!bu,
+    queryFn: () =>
+      readMasterData<{ id: string; name: string }[]>(
+        `${API_ENDPOINTS.PAYMENT_TYPES(bu!)}/cheque-forms`,
+      ),
+  });
   return (
     <>
       <ConfigEntityDialog<
@@ -91,7 +95,7 @@ export function PaymentTypeDialog({
         toPayload={({ code, ...values }, current) => ({
           ...values,
           ...(!current ? { code } : {}),
-          dimensions: toDimensionPayload(values.dimensions),
+          dimensions: masterDimensionsPayload(values.dimensions),
           cheque_form_id: values.is_cheque ? values.cheque_form_id : null,
         })}
         contentClassName="@container max-h-[90dvh] overflow-y-auto sm:max-w-2xl"
@@ -187,17 +191,17 @@ export function PaymentTypeDialog({
                     patch.chart_of_accounts_id !== value.chart_of_accounts_id
                   ) {
                     const bank =
-                      MOCK_ACCOUNTS.find(
-                        (item) => item.id === patch.chart_of_accounts_id,
-                      )?.bank_account_id ?? null;
+                      banks.data?.find(
+                        (item) =>
+                          item.is_active &&
+                          item.gl_account_id === patch.chart_of_accounts_id,
+                      )?.id ?? null;
                     form.setValue("bank_account_id", bank, {
                       shouldDirty: true,
                     });
-                    form.setValue(
-                      "cheque_form_id",
-                      value.is_cheque ? mockChequeForm(bank) : null,
-                      { shouldDirty: true },
-                    );
+                    form.setValue("cheque_form_id", null, {
+                      shouldDirty: true,
+                    });
                   }
                   form.setValue(
                     "chart_of_accounts_id",
@@ -225,11 +229,9 @@ export function PaymentTypeDialog({
                       onChange={(bank) => {
                         field.onChange(bank);
                         if (value.is_cheque)
-                          form.setValue(
-                            "cheque_form_id",
-                            mockChequeForm(bank),
-                            { shouldDirty: true },
-                          );
+                          form.setValue("cheque_form_id", null, {
+                            shouldDirty: true,
+                          });
                       }}
                       defaultLabel={entity?.bank_account_name ?? undefined}
                       disabled={disabled}
@@ -254,15 +256,9 @@ export function PaymentTypeDialog({
                           checked={field.value}
                           onCheckedChange={(checked) => {
                             field.onChange(checked === true);
-                            form.setValue(
-                              "cheque_form_id",
-                              checked === true
-                                ? mockChequeForm(value.bank_account_id)
-                                : null,
-                              {
-                                shouldDirty: true,
-                              },
-                            );
+                            form.setValue("cheque_form_id", null, {
+                              shouldDirty: true,
+                            });
                           }}
                           disabled={disabled}
                         />

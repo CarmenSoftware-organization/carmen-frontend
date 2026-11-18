@@ -12,11 +12,13 @@ import type {
   ApMasterMapping,
 } from "@/types/accounting-master";
 import { useMasterAccountMapping } from "./ap-master-crud";
+import { useState } from "react";
+import { useChartOfAccount } from "@/hooks/use-chart-of-account";
 import {
-  MOCK_ACCOUNTS,
-  MOCK_DIMENSIONS,
-  mockAccountDefaults,
-} from "./ap-master-mock-data";
+  useLookupPagination,
+  ACTIVE_ONLY_FILTER,
+} from "@/hooks/use-lookup-pagination";
+import { useGlDimensionValues } from "@/hooks/use-gl-dimensions";
 
 function MasterDimensionLookup({
   dimensionId,
@@ -29,8 +31,11 @@ function MasterDimensionLookup({
   readonly onChange: (id: string) => void;
   readonly disabled: boolean;
 }) {
+  const values = useGlDimensionValues();
   const items =
-    MOCK_DIMENSIONS.find((item) => item.id === dimensionId)?.values ?? [];
+    values.data?.filter(
+      (item) => item.dimension_id === dimensionId && item.is_active,
+    ) ?? [];
   return (
     <LookupCombobox
       value={value?.dimension_value_id ?? ""}
@@ -44,7 +49,9 @@ function MasterDimensionLookup({
           ? `${value.value_code} · ${value.value_name ?? ""}`
           : undefined
       }
-      disabled={disabled}
+      disabled={disabled || values.isLoading || !!values.error}
+      isLoading={values.isLoading}
+      error={values.error?.message}
       allowDeselect
       modal
     />
@@ -76,14 +83,22 @@ export function MasterAccountFields({
   const t = useTranslations("config.apMaster");
   const tf = useTranslations("field");
   const tc = useTranslations("common");
-  const accounts = endpoint("").endsWith("/payment-types")
-    ? MOCK_ACCOUNTS.slice(0, 5)
-    : MOCK_ACCOUNTS.slice(5);
+  const [search, setSearch] = useState("");
+  const accounts = useLookupPagination({
+    useListHook: useChartOfAccount,
+    search,
+    enabled: !readOnly,
+    selectedIds: value.chart_of_accounts_id ? [value.chart_of_accounts_id] : [],
+    serverFilter: `${ACTIVE_ONLY_FILTER},type|string:balance_sheet,income_statement,statistic`,
+  });
   const mapping = useMasterAccountMapping(
     endpoint,
     readOnly ? null : value.chart_of_accounts_id,
   );
-  const accountLabel = [value.account_code, value.account_name]
+  const accountLabel = [
+    mapping.data?.account.code ?? value.account_code,
+    mapping.data?.account.name ?? value.account_name,
+  ]
     .filter(Boolean)
     .join(" · ");
   const ccLabel = [value.cost_center_code, value.cost_center_name]
@@ -102,16 +117,29 @@ export function MasterAccountFields({
         ) : (
           <LookupCombobox
             value={value.chart_of_accounts_id ?? ""}
-            items={accounts}
+            onValueChange={(id) =>
+              onChange({
+                chart_of_accounts_id: id || null,
+                cost_center_id: null,
+                dimensions: [],
+              })
+            }
+            items={accounts.items}
+            selectedItems={accounts.selectedItems}
             getId={(item) => item.id}
-            getLabel={(item) => `${item.code} · ${item.name}`}
-            getSearchValue={(item) => `${item.code} ${item.name}`}
+            getLabel={(item) => `${item.code} · ${item.description_1}`}
+            getSearchValue={(item) => `${item.code} ${item.description_1}`}
             defaultLabel={accountLabel || undefined}
-            placeholder={t("selectMockAccount")}
-            onValueChange={(id) => onChange(mockAccountDefaults(id))}
-            disabled={disabled}
-            error={accountError}
+            placeholder={t("selectAccount")}
+            serverSideSearch
+            onSearchChange={setSearch}
+            onLoadMore={accounts.loadMore}
+            hasMore={accounts.hasMore}
+            isLoading={accounts.isLoading}
+            isLoadingMore={accounts.isLoadingMore}
             allowDeselect={!required}
+            disabled={disabled}
+            error={accountError || accounts.error?.message}
             modal
           />
         )}

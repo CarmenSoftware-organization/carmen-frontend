@@ -63,8 +63,9 @@ vi.mock("@/hooks/use-accounting-master", () => ({
     isLoading: false,
   }),
 }));
+const emptyAccounts = vi.hoisted(() => ({ data: { data: [] } }));
 vi.mock("@/hooks/use-chart-of-account", () => ({
-  useChartOfAccount: () => ({ data: { data: [] } }),
+  useChartOfAccount: () => emptyAccounts,
   useChartOfAccountById: () => ({ data: undefined }),
 }));
 vi.mock("@/hooks/use-currency", () => ({
@@ -163,24 +164,24 @@ const pages = [
     plainView: true,
     name: "Payment Type",
     Page: PaymentTypePage,
-    code: "CASH",
-    description: "Petty Cash Payment",
+    code: "QA",
+    description: "QA Master",
     prefix: "accounting.config.ap",
   },
   {
     plainView: true,
     name: "WHT Service Type",
     Page: WhtServiceTypePage,
-    code: "01",
-    description: "ค่าบริการ / Service Fee (P.N.D. 3/53)",
+    code: "QA",
+    description: "QA Master",
     prefix: "accounting.config.ap",
   },
   {
     plainView: true,
     name: "WHT Form",
     Page: WhtFormPage,
-    code: "1",
-    description: "ภ.ง.ด. 1 (Personal Employment)",
+    code: "QA",
+    description: "QA Master",
     prefix: "accounting.config.ap",
   },
   {

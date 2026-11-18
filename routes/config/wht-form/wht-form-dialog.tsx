@@ -1,4 +1,4 @@
-import { toDimensionPayload } from "@/lib/dimension-payload";
+import { masterDimensionsPayload } from "../shared/ap-master-crud";
 import { dependencyDetails } from "../shared/ap-master-crud";
 import { Controller } from "react-hook-form";
 import { FileSpreadsheet } from "lucide-react";
@@ -60,7 +60,7 @@ export function WhtFormDialog({
         toPayload={({ code, ...values }, current) => ({
           ...values,
           ...(!current ? { code } : {}),
-          dimensions: toDimensionPayload(values.dimensions),
+          dimensions: masterDimensionsPayload(values.dimensions),
         })}
         contentClassName="@container max-h-[90dvh] overflow-y-auto sm:max-w-xl"
       >
