@@ -104,7 +104,8 @@ export function PrHeader({
     // แยกเป็นคนละกลุ่มกับเลขที่ใบด้วยเส้นคั่น + ระยะห่าง — เลขที่ใบคือตัวตนของ
     // เอกสาร ส่วนสถานะกับรุ่นคือ "ตอนนี้มันอยู่ตรงไหน" คนละคำถามกัน ก่อนหน้านี้
     // นั่งติดกันด้วย gap เท่ากันหมดจนอ่านเป็นพวงเดียว
-    <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3">
+    // หัวแคบ (มือถือ) กลุ่มนี้มักตกไปบรรทัดใต้เลขที่ใบ เส้นคั่นจะค้างหัวบรรทัด จึงเอาออก
+    <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3 @max-md/doc-header:ms-0 @max-md/doc-header:border-s-0 @max-md/doc-header:ps-0">
       {statusCfg && purchaseRequest && (
         <StatusChip
           status={purchaseRequest.pr_status}
@@ -149,7 +150,7 @@ export function PrHeader({
   // ไม่ใช่ความกว้างจอ — description กิน 2 ช่อง · ml-4 หักล้าง -ml-4 ของ DocFormHeader
   const ribbon = (workflowCell || descriptionCell) && (
     <div className="ml-4 min-w-0 flex-1">
-      <FieldGrid>
+      <FieldGrid dense={!workflowField && !descriptionField}>
         {workflowCell}
         {descriptionCell}
       </FieldGrid>
