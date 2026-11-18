@@ -421,7 +421,6 @@ export function CnForm({ creditNote }: CnFormProps) {
       }
       footer={
         <CnFooterAction
-          audit={creditNote?.audit}
           control={form.control}
           canSubmit={
             isAdd || (!isLocked && creditNote?.doc_status === CN_STATUS.DRAFT)

@@ -2653,6 +2653,7 @@
     "createdBy": "ผู้สร้าง",
     "auditCreatedBy": "สร้างโดย",
     "auditUpdatedBy": "แก้ไขล่าสุด",
+    "auditInfo": "สร้าง / แก้ไขล่าสุด",
     "by": "โดย",
     "stage": "ขั้นตอน",
     "subtotal": "ยอดรวมย่อย",

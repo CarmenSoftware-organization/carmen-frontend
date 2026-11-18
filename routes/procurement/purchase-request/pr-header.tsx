@@ -7,6 +7,10 @@ import { useListReturn } from "@/hooks/use-list-return";
 import { useCreatableWorkflows } from "@/hooks/use-workflow";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
 import { DocActions } from "@/components/share/doc-actions";
+import {
+  DocAuditButton,
+  DocAuditLine,
+} from "@/components/share/doc-audit-line";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { WorkflowTrack } from "@/components/share/workflow-track";
 import { WorkflowStepButton } from "@/components/share/workflow-step-button";
@@ -142,18 +146,33 @@ export function PrHeader({
 
   // โชว์เสมอแม้ยังไม่ได้กรอก (ค่าว่างขึ้น —) — ช่องที่หายไปทั้งช่องทำให้หัวเอกสาร
   // ของใบที่มีคำอธิบายกับใบที่ไม่มีเป็นคนละทรง
+  // data-wide = เต็มแถวบนมือถือ (dense 2 คอลัมน์) · ตั้งแต่ @md เหลือคอลัมน์เดียว เพราะตาราง audit
+  // กินที่ขวาของแถบ grid จึงแคบลง ถ้ายังกิน 2 ช่อง Workflow กับ Description จะตกเป็นสองแถว
   const descriptionCell = descriptionField ?? (
-    <SettingField label={tfl("description")} value={description} fullWidth />
+    <div data-wide="" className="min-w-0 @md:col-span-1!">
+      <SettingField label={tfl("description")} value={description} />
+    </div>
   );
 
   // FieldGrid เดียวกับหน้าฟอร์มอื่น: คอลัมน์ตามความกว้างกล่อง (container query)
   // ไม่ใช่ความกว้างจอ — description กิน 2 ช่อง · ml-4 หักล้าง -ml-4 ของ DocFormHeader
+  // ตาราง audit (สร้างโดย/แก้ไขล่าสุด) ชิดขวาล่างของแถบเดียวกัน — อยู่คู่ตัวตนของใบ ไม่ใช่แถบท้าย
+  // ที่ค้างบนจอตลอด · กล่องแคบจนไม่พอวางข้างกัน ตารางตกลงใต้ฟิลด์แล้วชิดขวาเหมือนเดิม
+  // เฉพาะโหมดดู — ตอนแก้ช่องกรอกต้องการความกว้างเต็ม (ไม่งั้น Workflow/Description ตกเป็นสองแถว)
   const ribbon = (workflowCell || descriptionCell) && (
-    <div className="ml-4 min-w-0 flex-1">
-      <FieldGrid dense={!workflowField && !descriptionField}>
-        {workflowCell}
-        {descriptionCell}
-      </FieldGrid>
+    <div className="ml-4 flex min-w-0 flex-1 flex-wrap items-end gap-x-5 gap-y-3">
+      <div className="min-w-0 flex-1 basis-72">
+        <FieldGrid dense={!workflowField && !descriptionField}>
+          {workflowCell}
+          {descriptionCell}
+        </FieldGrid>
+      </div>
+      {isView && (
+        <DocAuditLine
+          audit={purchaseRequest?.audit}
+          className="ms-auto hidden sm:table"
+        />
+      )}
     </div>
   );
 
@@ -191,6 +210,13 @@ export function PrHeader({
             <CalendarDays className="size-3 shrink-0" aria-hidden="true" />
             {prDateDisplay}
           </span>
+        )}
+        {/* มือถือ: ตาราง audit เต็มซ่อนอยู่ เหลือไอคอนท้ายบรรทัดนี้ กด/hover เปิดดู */}
+        {isView && (
+          <DocAuditButton
+            audit={purchaseRequest?.audit}
+            className="-my-1 sm:hidden"
+          />
         )}
       </span>
     ) : null;

@@ -1,5 +1,3 @@
-import { DocAuditLine } from "@/components/share/doc-audit-line";
-import type { Audit } from "@/types/audit";
 import { useTranslations } from "use-intl";
 import { useWatch, type Control } from "react-hook-form";
 import { SendHorizontal } from "lucide-react";
@@ -13,7 +11,6 @@ import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import type { CnFormValues } from "./cn-form-schema";
 
 interface CnFooterActionProps {
-  readonly audit?: Audit;
   readonly control: Control<CnFormValues>;
   readonly canSubmit: boolean;
   readonly isPending: boolean;
@@ -21,7 +18,6 @@ interface CnFooterActionProps {
 }
 
 export function CnFooterAction({
-  audit,
   control,
   canSubmit,
   isPending,
@@ -59,7 +55,6 @@ export function CnFooterAction({
 
   return (
     <SummaryFooterBar
-      meta={<DocAuditLine audit={audit} />}
       hasRecord={items.length > 0}
       items={[
         {

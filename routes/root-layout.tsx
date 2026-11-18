@@ -67,7 +67,7 @@ export default function RootLayout() {
             ของ SidebarInset (@container/main) ไม่ใช่จอ เพราะ sidebar พับ/กางได้ */}
         <div
           id="main-content"
-          className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-3 @2xl/main:m-3 @2xl/main:p-0 @2xl/main:px-4"
+          className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-3 pb-1 @2xl/main:m-3 @2xl/main:mb-1 @2xl/main:p-0 @2xl/main:px-4"
         >
           <ProfileGate>
             <RouteGuard>

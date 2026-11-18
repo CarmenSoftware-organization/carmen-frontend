@@ -2653,6 +2653,7 @@
     "createdBy": "Created By",
     "auditCreatedBy": "Created by",
     "auditUpdatedBy": "Last updated",
+    "auditInfo": "Created / last updated",
     "by": "By",
     "stage": "Stage",
     "subtotal": "Subtotal",

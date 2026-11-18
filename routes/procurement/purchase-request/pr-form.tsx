@@ -305,7 +305,6 @@ export function PurchaseRequestForm({
           prStatus={purchaseRequest?.pr_status}
           isPending={actions.isPending}
           hasRecord={!!purchaseRequest}
-          audit={purchaseRequest?.audit}
           control={form.control}
           currencyCode={defaultBu?.config?.default_currency?.code ?? ""}
           previousStages={previousStages}
