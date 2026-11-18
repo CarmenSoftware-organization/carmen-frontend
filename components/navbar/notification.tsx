@@ -220,10 +220,21 @@ export default function Notification() {
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {isLoading ? (
-            <div className="space-y-2 p-3">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
+            // โครงเดียวกับแถวจริง (ไอคอน 28px + ชื่อเรื่อง + บรรทัด meta) ข้อมูลมาแล้วไม่กระโดด
+            <div className="divide-border/60 flex flex-col divide-y">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-2.5 px-3 py-2 pe-10"
+                >
+                  <span className="w-2 shrink-0" />
+                  <Skeleton className="size-7 shrink-0 rounded-lg" />
+                  <div className="min-w-0 flex-1 space-y-1.5 py-0.5">
+                    <Skeleton className="h-3 w-3/4" />
+                    <Skeleton className="h-2.5 w-1/2" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : notifications.length === 0 ? (
             <EmptyComponent

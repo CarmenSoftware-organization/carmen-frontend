@@ -58,7 +58,9 @@ export function NotificationItemContent({
     <span
       title={fullTime || undefined}
       className={cn(
-        "text-muted-foreground text-micro shrink-0 cursor-default whitespace-nowrap tabular-nums",
+        "shrink-0 cursor-default whitespace-nowrap tabular-nums",
+        // compact รับสี/ขนาดจากบรรทัด meta ที่ครอบอยู่
+        !compact && "text-muted-foreground text-micro",
         clampMessage && "ms-auto",
       )}
     >
@@ -135,7 +137,7 @@ export function NotificationItemContent({
           {isUnread && <span className="sr-only">{unreadLabel}</span>}
           <p
             className={cn(
-              "group-hover:text-primary line-clamp-2 text-sm leading-snug break-words transition-colors",
+              "group-hover:text-primary line-clamp-2 text-xs leading-snug break-words transition-colors",
               isUnread
                 ? "text-foreground font-semibold"
                 : "text-foreground/80 font-medium",
@@ -143,19 +145,28 @@ export function NotificationItemContent({
           >
             {sanitizeText(notification.title)}
           </p>
-          <div className="text-muted-foreground mt-0.5 flex min-w-0 items-center gap-1.5 text-xs leading-tight">
+          {/* text-foreground/70 ไม่ใช่ text-muted-foreground: 11px บนพื้นแถวยังไม่อ่าน
+              (bg-primary/5) ใน dark mode ได้ 4.47:1 ตก AA · ป้าย BU ก็เช่นกัน
+              (text-primary บน bg-primary/10 dark = 4.19:1) จึงใช้พื้น muted */}
+          <div className="text-foreground/70 text-micro mt-0.5 flex min-w-0 items-center gap-1.5 leading-tight">
             {notification.metadata?.bu_code ? (
-              <span className="bg-primary/10 text-primary text-micro-legal shrink-0 rounded px-1 font-bold tracking-wide uppercase">
+              <span className="bg-muted text-foreground text-micro-legal shrink-0 rounded px-1 font-bold tracking-wide uppercase">
                 {notification.metadata.bu_code as string}
               </span>
             ) : null}
             {timeLabel}
-            <span aria-hidden="true" className="shrink-0">
-              ·
-            </span>
-            <span className="min-w-0 truncate">
-              {formatMessage(notification.message)}
-            </span>
+            {notification.message ? (
+              <>
+                {timeLabel && (
+                  <span aria-hidden="true" className="shrink-0">
+                    ·
+                  </span>
+                )}
+                <span className="min-w-0 truncate">
+                  {formatMessage(notification.message)}
+                </span>
+              </>
+            ) : null}
           </div>
         </div>
       ) : (
