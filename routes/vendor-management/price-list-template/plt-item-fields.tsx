@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useFieldArray, useWatch, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection } from "@/components/share/compact-section";
 import { TreeProductLookup } from "@/components/share/tree-product-lookup";
 import { useProductAll } from "@/hooks/use-product";
 import { EmptyProducts } from "../price-list/pl-empty-states";
@@ -132,8 +132,7 @@ export function PltItemFields({
 
   return (
     <>
-      <SettingSection
-        wide
+      <CompactSection
         frameless
         title={t("productsTitle")}
         description={isView ? undefined : t("detail.noItemsDesc")}
@@ -153,37 +152,39 @@ export function PltItemFields({
           )
         ) : (
           // edit/add → ซ้าย: tree เลือก product · ขวา: ตารางกรอก unit/qty/note
-          // จอเล็กซ้อนลงล่าง (grid-cols-1) จอ lg ขึ้นไปแยกซ้าย-ขวา
-          <div className="grid gap-4 lg:grid-cols-[22rem_minmax(0,1fr)] lg:items-start">
-            <TreeProductLookup
-              products={allProducts}
-              selectedProductIds={selectedProductIds}
-              onSelectionChange={handleTreeSelectionChange}
-              disabled={isDisabled}
-              loading={productsLoading}
-            />
-            <div className="min-w-0">
-              {detailFields.length === 0 ? (
-                <div className="text-muted-foreground flex h-full min-h-40 flex-col items-center justify-center gap-1 rounded-lg border border-dashed p-6 text-center">
-                  <p className="text-sm font-medium">{t("detail.noItems")}</p>
-                  <p className="text-xs">{t("detail.noItemsDesc")}</p>
-                </div>
-              ) : (
-                <PltItemCards
-                  form={form}
-                  detailFields={detailFields}
-                  isDisabled={isDisabled}
-                  onRequestRemoveTier={setRemoveDetailIndex}
-                  onAddTier={handleAddTier}
-                  onRequestRemoveProduct={setRemoveProductId}
-                  getProductName={getProductName}
-                  getOrderUnitName={getOrderUnitName}
-                />
-              )}
+          // กล่องแคบซ้อนลงล่าง กล่องกว้าง (≥56rem วัดจากกล่อง ไม่ใช่จอ) แยกซ้าย-ขวา
+          <div className="@container">
+            <div className="grid gap-4 @4xl:grid-cols-[22rem_minmax(0,1fr)] @4xl:items-start">
+              <TreeProductLookup
+                products={allProducts}
+                selectedProductIds={selectedProductIds}
+                onSelectionChange={handleTreeSelectionChange}
+                disabled={isDisabled}
+                loading={productsLoading}
+              />
+              <div className="min-w-0">
+                {detailFields.length === 0 ? (
+                  <div className="text-muted-foreground flex h-full min-h-40 flex-col items-center justify-center gap-1 rounded-lg border border-dashed p-6 text-center">
+                    <p className="text-sm font-medium">{t("detail.noItems")}</p>
+                    <p className="text-xs">{t("detail.noItemsDesc")}</p>
+                  </div>
+                ) : (
+                  <PltItemCards
+                    form={form}
+                    detailFields={detailFields}
+                    isDisabled={isDisabled}
+                    onRequestRemoveTier={setRemoveDetailIndex}
+                    onAddTier={handleAddTier}
+                    onRequestRemoveProduct={setRemoveProductId}
+                    getProductName={getProductName}
+                    getOrderUnitName={getOrderUnitName}
+                  />
+                )}
+              </div>
             </div>
           </div>
         )}
-      </SettingSection>
+      </CompactSection>
 
       <DeleteDialog
         open={removeDetailIndex !== null}

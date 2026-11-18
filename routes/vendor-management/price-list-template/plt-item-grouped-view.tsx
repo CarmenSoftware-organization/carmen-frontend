@@ -13,15 +13,18 @@ export function PltItemGroupedView({ products }: PltItemGroupedViewProps) {
   const t = useTranslations("vendorManagement.priceListTemplate");
   const tf = useTranslations("field");
   return (
-    <div className="border-border/60 bg-card w-full overflow-x-auto rounded-lg border">
+    // คอลัมน์ข้อมูลกว้างเท่าเนื้อหา (w-px) ให้ MOQ/หน่วยอยู่ติดชื่อสินค้า หมายเหตุรับที่เหลือ —
+    // เดิมทุกคอลัมน์แบ่งความกว้างกัน จอกว้างแล้ว MOQ ห่างชื่อสินค้าเกือบเต็มจอ
+    // กล่องแคบ (< @3xl = ความกว้างขั้นต่ำของตารางแบบไม่ห่อ ~734px) ชื่อสินค้าห่อบรรทัดได้ ตารางจึงไม่ล้นกรอบ
+    <div className="border-border/60 bg-card @container w-full overflow-x-auto rounded-lg border">
       <table className="text-foreground w-full border-collapse text-xs">
         <thead>
           <tr className="bg-muted/60 text-muted-foreground border-border/60 border-b">
-            <Th className="w-14 text-center">#</Th>
-            <Th className="text-left">{t("product")}</Th>
-            <Th className="w-24 text-right">{t("moq")}</Th>
-            <Th className="w-28 text-left">{t("unit")}</Th>
-            <Th className="text-left">{tf("note")}</Th>
+            <Th className="w-px text-center">#</Th>
+            <Th className="text-left @3xl:w-px @3xl:pr-10">{t("product")}</Th>
+            <Th className="w-px text-right @3xl:pr-6">{t("moq")}</Th>
+            <Th className="w-px text-left @3xl:pr-10">{t("unit")}</Th>
+            <Th className="text-left @3xl:w-full">{tf("note")}</Th>
           </tr>
         </thead>
         <tbody>
@@ -61,7 +64,8 @@ export function PltItemGroupedView({ products }: PltItemGroupedViewProps) {
                       </Td>
                       <Td
                         rowSpan={tiers.length}
-                        className="border-border/50 border-b align-middle"
+                        // NameWithSubtext เป็น truncate (nowrap) — กล่องแคบปลดให้ห่อบรรทัด ตารางจะได้ไม่ล้นกรอบ
+                        className="border-border/50 border-b align-middle @3xl:pr-10 [&_p]:break-words [&_p]:whitespace-normal @3xl:[&_p]:whitespace-nowrap"
                       >
                         <NameWithSubtext
                           primary={product.product?.name ?? ""}
@@ -78,13 +82,19 @@ export function PltItemGroupedView({ products }: PltItemGroupedViewProps) {
                     className={cn(
                       "text-right tabular-nums",
                       qty === 0 && "text-muted-foreground italic",
+                      "@3xl:pr-6",
                       tierClass,
                     )}
                   >
                     {qty || "—"}
                   </Td>
-                  <Td className={tierClass}>
-                    <span className="flex items-center gap-1.5">
+                  <Td
+                    className={cn(
+                      "@3xl:pr-10 @3xl:whitespace-nowrap",
+                      tierClass,
+                    )}
+                  >
+                    <span className="flex flex-wrap items-center gap-x-1.5 @3xl:flex-nowrap">
                       {tier.unit_name || "—"}
                       {orderUnitId && tier.unit_id === orderUnitId && (
                         <span className="text-muted-foreground text-micro-legal">
@@ -114,7 +124,12 @@ function Th({
   readonly children: React.ReactNode;
 }) {
   return (
-    <th className={cn("px-3 py-2 font-medium whitespace-nowrap", className)}>
+    <th
+      className={cn(
+        "px-2 py-2 font-medium whitespace-nowrap @3xl:px-3",
+        className,
+      )}
+    >
       {children}
     </th>
   );
@@ -130,7 +145,7 @@ function Td({
   readonly children: React.ReactNode;
 }) {
   return (
-    <td rowSpan={rowSpan} className={cn("px-3 py-2", className)}>
+    <td rowSpan={rowSpan} className={cn("px-2 py-2 @3xl:px-3", className)}>
       {children}
     </td>
   );

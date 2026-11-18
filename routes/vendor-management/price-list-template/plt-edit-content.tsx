@@ -2,7 +2,7 @@ import { useTranslations } from "use-intl";
 import { usePriceListTemplateById } from "@/hooks/use-price-list-template";
 import { PriceListTemplateForm } from "./plt-form";
 import { ErrorState } from "@/components/ui/error-state";
-import { FormPageSkeleton } from "@/components/loader/form-page-skeleton";
+import { PltFormSkeleton } from "./plt-form-skeleton";
 
 export function PltEditContent({ id }: { id: string }) {
   const tErr = useTranslations("vendorManagement.priceListTemplate");
@@ -13,7 +13,7 @@ export function PltEditContent({ id }: { id: string }) {
     refetch,
   } = usePriceListTemplateById(id);
 
-  if (isLoading) return <FormPageSkeleton width="wide" />;
+  if (isLoading) return <PltFormSkeleton />;
   if (error || !priceListTemplate)
     return (
       <ErrorState

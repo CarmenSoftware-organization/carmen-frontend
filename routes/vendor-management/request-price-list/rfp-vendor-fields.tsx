@@ -17,7 +17,8 @@ import {
   DataGridContainer,
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection } from "@/components/share/compact-section";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { countSubmitted } from "./rfp-window";
 import { EmptyProducts } from "../price-list/pl-empty-states";
 import type { Vendor } from "@/types/vendor";
@@ -119,6 +120,13 @@ export function RfpVendorFields({
     setIsAdding(false);
   };
 
+  // ผลรวม size ทุกคอลัมน์ = 44+200+150+160+220+120+120+132 = 1146 · กล่องกว้างกว่านั้น
+  // ให้คอลัมน์ปุ่มรับที่เหลือ (grow) แล้วปุ่มชิดซ้ายติด Price List — เดิมแบ่งตามสัดส่วน
+  // จอกว้างแล้วปุ่มไปอยู่ขอบขวาสุด ห่างแถวของมันเกือบเต็มจอ · กล่องแคบกว่านั้นไม่ grow
+  // (grow ทำคอลัมน์อื่นเป็น px ตายตัว ตารางจะล้นกรอบ) ตารางเลื่อนแนวนอนในกรอบเอง
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const growActions = gridBoxWidth != null && gridBoxWidth - 2 >= 1146;
+
   const columns = useMemo<ColumnDef<VendorRow>[]>(() => {
     return [
       {
@@ -207,10 +215,13 @@ export function RfpVendorFields({
             onRemove={() => remove(row.index)}
           />
         ),
-        meta: { headerClassName: "text-center", cellClassName: "text-right" },
+        meta: growActions
+          ? { grow: true, cellClassName: "[&>div]:justify-start" }
+          : { headerClassName: "text-center", cellClassName: "text-right" },
       },
     ];
   }, [
+    growActions,
     tfl,
     isDisabled,
     remove,
@@ -231,8 +242,7 @@ export function RfpVendorFields({
   });
 
   return (
-    <SettingSection
-      wide
+    <CompactSection
       frameless
       title={t("vendors.title")}
       // โหมดดูไม่มีปุ่มเพิ่ม — คำชวน "Add vendors…" จึงเปลี่ยนเป็นยอดผู้ขายที่ส่งราคามาแล้ว
@@ -266,19 +276,24 @@ export function RfpVendorFields({
           description={t("vendors.noVendorsDesc")}
         />
       ) : (
-        <DataGrid
-          table={table}
-          recordCount={vendorRows.length}
-          tableLayout={{
-            headerSticky: true,
-            // โหมดอ่านชิดบน — ชื่อผู้ขายมีรหัสเป็นบรรทัดรอง เซลล์อื่นไม่มี
-            cellAlign: isDisabled ? "top" : "middle",
-          }}
-        >
-          <DataGridContainer>
-            <DataGridTable />
-          </DataGridContainer>
-        </DataGrid>
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            // กล่องแคบกว่าผลรวมคอลัมน์: เลื่อนแนวนอนในกรอบแทนการบีบช่องเหลือ ~30px จนข้อความล้น
+            // (ท่าเดียวกับตารางของ PR template) · 1146 = ผลรวม size ด้านบน
+            tableClassNames={{ base: "min-w-[1146px]" }}
+            recordCount={vendorRows.length}
+            tableLayout={{
+              headerSticky: true,
+              // โหมดอ่านชิดบน — ชื่อผู้ขายมีรหัสเป็นบรรทัดรอง เซลล์อื่นไม่มี
+              cellAlign: isDisabled ? "top" : "middle",
+            }}
+          >
+            <DataGridContainer>
+              <DataGridTable />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       <RfpVendorAddDialog
@@ -287,6 +302,6 @@ export function RfpVendorFields({
         selectedVendorIds={selectedVendorIds}
         onAdd={handleAddVendors}
       />
-    </SettingSection>
+    </CompactSection>
   );
 }
