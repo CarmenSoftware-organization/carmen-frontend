@@ -27,13 +27,7 @@ const PrNewInner = () => {
   // ดึงใบเดิมพลาด → ตกไปฟอร์มเปล่าแทนที่จะค้าง skeleton
   if (duplicateId && !duplicateFrom && !duplicateError) {
     return (
-      <DocPageSkeleton
-        ribbon="text"
-        fields={[1, 2]}
-        tabs={false}
-        toolbar
-        headerCard
-      />
+      <DocPageSkeleton ribbon="text" fields={[1, 2]} tabs={false} toolbar />
     );
   }
 
@@ -52,13 +46,7 @@ export function PrNewContent() {
     >
       <Suspense
         fallback={
-          <DocPageSkeleton
-            ribbon="text"
-            fields={[1, 2]}
-            tabs={false}
-            toolbar
-            headerCard
-          />
+          <DocPageSkeleton ribbon="text" fields={[1, 2]} tabs={false} toolbar />
         }
       >
         <PrNewInner />

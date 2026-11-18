@@ -218,7 +218,7 @@ export function PrHeader({
 
   // หัวเอกสารอยู่ในการ์ดมีพื้น แยกจากตัวรายการชัด ๆ (แทนเส้น hr ใต้หัว) · inlineBack ให้ปุ่ม
   // ย้อนกลับอยู่ในแถวชื่อ — แบบลอยออกซ้ายต้องเว้นที่ซ้ายทั้งการ์ด แถวปุ่มบนมือถือจะตกสองบรรทัด
-  // โครงตอนโหลดต้องเป็นการ์ดเดียวกัน — DocPageSkeleton `headerCard`
+  // โครงตอนโหลด (DocPageSkeleton) เป็นการ์ดเดียวกัน
   return (
     <div className={DOC_HEADER_CARD}>
       <FormToolbar

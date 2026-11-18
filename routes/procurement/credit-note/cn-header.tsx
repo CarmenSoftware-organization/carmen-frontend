@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
 import { useTranslations } from "use-intl";
 import { PersonAvatar } from "@/components/share/person-avatar";
 import { DocActions } from "@/components/share/doc-actions";
@@ -21,6 +23,8 @@ interface CnHeaderProps {
   readonly onCancel: () => void;
   readonly onShowDelete: () => void;
   readonly onShowComment: () => void;
+  /** ช่องข้อมูลหัวใบ — อยู่ในการ์ดเดียวกับหัวเอกสาร (ส่งต่อ FormToolbar.ribbon) */
+  readonly ribbon?: ReactNode;
 }
 
 export function CnHeader({
@@ -36,6 +40,7 @@ export function CnHeader({
   onCancel,
   onShowDelete,
   onShowComment,
+  ribbon,
 }: CnHeaderProps) {
   const t = useTranslations("procurement.creditNote");
   const tfl = useTranslations("field");
@@ -86,40 +91,48 @@ export function CnHeader({
   ) : undefined;
 
   return (
-    <FormToolbar
-      mode={mode}
-      formId="cn-form"
-      isPending={isPending}
-      title={creditNote?.cn_no ?? t("entity")}
-      subtitle={subtitle}
-      badges={badges}
-      onBack={onBack}
-      onCancel={onCancel}
-      // ส่งใบย้ายไป footer ขวาล่าง (CnFooterAction) — หัวมีแค่ Edit
-      onEdit={isLocked ? undefined : onEnterEdit}
-      // ลบได้เฉพาะตอนแก้ใบที่ยังไม่ล็อก — หน้าดูเป็นที่ทำงาน workflow
-      onDelete={!isView && creditNote && !isLocked ? onShowDelete : undefined}
-      deleteIsPending={deleteIsPending}
-    >
-      {/* comment / activity / print อยู่ใน DocActions — ไม่ส่ง activity ให้ toolbar ซ้ำ */}
-      {creditNote && (
-        <DocActions
-          onComment={onShowComment}
-          commentCount={commentCount}
-          activity={{ id: creditNote.id, label: creditNote.cn_no }}
-          print={
-            isView && creditNote.id
-              ? {
-                  documentType: "CN",
-                  documentId: creditNote.id,
-                  filters: creditNote.cn_no
-                    ? { DocumentNo: creditNote.cn_no }
-                    : undefined,
-                }
-              : undefined
-          }
-        />
-      )}
-    </FormToolbar>
+    <div className={DOC_HEADER_CARD}>
+      <FormToolbar
+        inlineBack
+        ribbon={
+          ribbon ? (
+            <div className="ml-4 min-w-0 flex-1">{ribbon}</div>
+          ) : undefined
+        }
+        mode={mode}
+        formId="cn-form"
+        isPending={isPending}
+        title={creditNote?.cn_no ?? t("entity")}
+        subtitle={subtitle}
+        badges={badges}
+        onBack={onBack}
+        onCancel={onCancel}
+        // ส่งใบย้ายไป footer ขวาล่าง (CnFooterAction) — หัวมีแค่ Edit
+        onEdit={isLocked ? undefined : onEnterEdit}
+        // ลบได้เฉพาะตอนแก้ใบที่ยังไม่ล็อก — หน้าดูเป็นที่ทำงาน workflow
+        onDelete={!isView && creditNote && !isLocked ? onShowDelete : undefined}
+        deleteIsPending={deleteIsPending}
+      >
+        {/* comment / activity / print อยู่ใน DocActions — ไม่ส่ง activity ให้ toolbar ซ้ำ */}
+        {creditNote && (
+          <DocActions
+            onComment={onShowComment}
+            commentCount={commentCount}
+            activity={{ id: creditNote.id, label: creditNote.cn_no }}
+            print={
+              isView && creditNote.id
+                ? {
+                    documentType: "CN",
+                    documentId: creditNote.id,
+                    filters: creditNote.cn_no
+                      ? { DocumentNo: creditNote.cn_no }
+                      : undefined,
+                  }
+                : undefined
+            }
+          />
+        )}
+      </FormToolbar>
+    </div>
   );
 }

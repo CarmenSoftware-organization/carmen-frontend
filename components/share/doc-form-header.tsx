@@ -88,7 +88,7 @@ export function DocFormHeader({
               // บรรทัดแรก (ปุ่ม h-8) ให้ลูกศรอยู่ข้าง title เสมอ
               className={
                 inlineBack
-                  ? "-ms-1 shrink-0"
+                  ? "-ms-1 shrink-0 self-start"
                   : "absolute top-4 left-0 -translate-x-[calc(100%+0.25rem)] -translate-y-1/2"
               }
             />
