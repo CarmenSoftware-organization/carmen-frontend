@@ -171,6 +171,7 @@ export function PrtForm({ template }: PrtFormProps) {
 
   return (
     <FormPageShell
+      width="wide"
       header={
         <FormToolbar
           entity={template?.name || t("entity")}
