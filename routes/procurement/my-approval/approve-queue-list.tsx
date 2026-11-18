@@ -42,8 +42,10 @@ import { rowNumber } from "@/lib/row-number";
  * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
  *
  * "รายละเอียด" รับที่เหลือ (`meta.grow`) ที่เหลือกว้างคงที่ ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`:
- * ครบ 1050 (#60 เอกสาร 200 รายละเอียด 240 ผู้ขอ 160 ขั้น 140 ยอด 140 รอ 110) · ไม่มีผู้ขอ 890 ·
- * ไม่มีเลขลำดับ 830 · ไม่มีขั้น + รายละเอียดขั้นต่ำ 200 = 650 (กล่องที่จอ 768 = 660)
+ * ครบ 1038 (#48 เอกสาร 200 รายละเอียด 240 ผู้ขอ 160 ขั้น 140 ยอด 140 รอ 110) · ไม่มีผู้ขอ 878 ·
+ * ไม่มีขั้น + รายละเอียดขั้นต่ำ 200 = 698 · ไม่มีคอลัมน์รอ (ลงใต้ยอด) = 588 (กล่องที่จอ 768 = 660)
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) — ขั้นแคบสุดจึงย้าย
+ * "รอมาแล้ว" ลงบรรทัดรองใต้ยอดเงินแทน
  * จุดเปลี่ยนตั้งสูงกว่าผลรวมราว 70–80px — คอลัมน์รองกลับมาเมื่อรายละเอียดได้ที่ราว 310px แล้ว
  * ยกเว้นผู้ขอ (1075 = เหลือ 265px) ให้ขึ้นที่จอ 1366 กาง sidebar (กล่อง 1083) และขั้น (885)
  * ให้ขึ้นที่ iPad 1180 (กล่อง 896) — ผู้อนุมัติดูสองคอลัมน์นี้บ่อย
@@ -54,8 +56,8 @@ function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
     showRequester: w >= 1075,
-    showIndex: w >= 970,
     showStage: w >= 885,
+    showWaiting: w >= 703,
     cardView: w < 650,
   };
 }
@@ -143,7 +145,7 @@ export default function ApprovalQueueList({
   const navigate = useNavigate();
   // ลบขอบ 1px สองข้างของ DataGridContainer ออก ได้ความกว้างที่ตารางใช้จริง
   const [setGridBox, gridBoxWidth] = useElementWidth();
-  const { showRequester, showIndex, showStage, cardView } = columnTier(
+  const { showRequester, showStage, showWaiting, cardView } = columnTier(
     gridBoxWidth == null ? undefined : gridBoxWidth - 2,
   );
 
@@ -281,7 +283,20 @@ export default function ApprovalQueueList({
           className="justify-end"
         />
       ),
-      cell: ({ row }) => <ApprovalAmount item={row.original} />,
+      cell: ({ row }) =>
+        showWaiting ? (
+          <ApprovalAmount item={row.original} />
+        ) : (
+          // คอลัมน์ "รอมาแล้ว" ถูกซ่อนในกล่องแคบสุด — ย้ายมาเป็นบรรทัดรองใต้ยอด
+          <div data-slot="cell-stack" className="flex flex-col items-end">
+            <ApprovalAmount item={row.original} />
+            <WaitingDays
+              docDate={row.original.doc_date}
+              dateFormat={dateFormat}
+              today={today}
+            />
+          </div>
+        ),
       size: 140,
       meta: {
         headerTitle: tfl("amount"),
@@ -328,7 +343,7 @@ export default function ApprovalQueueList({
     state: {
       ...tableConfig.state,
       columnVisibility: {
-        index: showIndex,
+        doc_date: showWaiting,
         requestor_name: showRequester,
         workflow_current_stage: showStage,
       },

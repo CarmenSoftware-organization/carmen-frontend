@@ -29,23 +29,22 @@ interface UseTransactionTableOptions {
  *
  * สินค้ารับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมแบ่งสัดส่วน ที่ tablet ชิปชนิด
  * เลขที่เอกสาร และยอดรวมล้นเซลล์ (ชิปล้นแม้ที่ 1366) · ไม่มีคอลัมน์ select ผลรวมจึงเป็นขั้นต่ำจริง:
- *   ครบ             60+110+90+170+200+180+80+80+60+150 = 1180
- *   ไม่มีเลขลำดับ                                       = 1120
- *   ไม่มีจำนวนรายการ                                    = 1060
- *   ไม่มีคลัง (ลงใต้สินค้า)                              = 880
- *   รวมคอลัมน์ (merged)  เอกสาร 220 + สินค้า 190 + จำนวน 90 + ยอดรวม 150 = 650
+ *   ครบ             48+110+90+170+200+180+80+80+60+150 = 1168
+ *   ไม่มีจำนวนรายการ                                    = 1108
+ *   ไม่มีคลัง (ลงใต้สินค้า)                              = 928
+ *   รวมคอลัมน์ (merged)  # 48 + เอกสาร 220 + สินค้า 190 + จำนวน 90 + ยอดรวม 150 = 698
  *                       ชิปชนิดอยู่หน้าเลขที่ วันที่ลงใต้เลขที่ · เข้า/ออกรวมเป็นคอลัมน์เดียว
- *   ต่ำกว่านั้น (compact) เซลล์เดียวสามบรรทัด
- * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35px (ขั้น compact ใช้ 10px ให้ tablet 662 ยังเป็นตาราง)
+ *   ต่ำกว่านั้น (compact) # + เซลล์เดียวสามบรรทัด — tablet 662 อยู่ขั้นนี้
+ * `#` แสดงตลอดทุกขั้น รวมถึง compact (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน)
+ * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35px (ขั้น compact ใช้ 10px)
  */
 export function transactionTableTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    compact: w < 660,
-    merged: w < 915,
-    showLocation: w >= 1095,
-    showItems: w >= 1155,
-    showIndex: w >= 1215,
+    compact: w < 708,
+    merged: w < 963,
+    showLocation: w >= 1143,
+    showItems: w >= 1203,
   };
 }
 
@@ -97,7 +96,7 @@ export function useTransactionTable({
   containerWidth,
 }: UseTransactionTableOptions) {
   "use no memo";
-  const { compact, merged, showLocation, showItems, showIndex } =
+  const { compact, merged, showLocation, showItems } =
     transactionTableTier(containerWidth);
   const { dateFormat, amountFormat, defaultCurrencyCode } = useProfile();
   const tfl = useTranslations("field");
@@ -423,12 +422,10 @@ export function useTransactionTable({
         return true;
       });
 
-  const allColumns: ColumnDef<Transaction>[] = compact
-    ? [compactColumn]
-    : [
-        ...(showIndex ? [indexColumn<Transaction>(params)] : []),
-        ...visibleDataColumns,
-      ];
+  const allColumns: ColumnDef<Transaction>[] = [
+    indexColumn<Transaction>(params),
+    ...(compact ? [compactColumn] : visibleDataColumns),
+  ];
 
   return useReactTable({
     data: items,

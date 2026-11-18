@@ -39,17 +39,20 @@ interface UseDocumentTableOptions {
  * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
  *
  * คอลัมน์สั้นกว้างคงที่ ชื่อไฟล์รับที่เหลือ (`meta.grow`) ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`:
- * ครบ 980 · ไม่มีผู้อัปโหลด 840 · ไม่มีชนิด 740 · ไม่มีเลขลำดับและ "แนบมาจาก" เหลือ 160 = 640
- * (กล่องที่จอ 768 = 662) จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวมนั้นโดยตั้งใจ — คอลัมน์รองกลับมาเมื่อ
+ * ครบ 968 · ไม่มีผู้อัปโหลด 828 · ไม่มีชนิด 728 · "แนบมาจาก" เหลือ 160 = 688 ·
+ * ไม่มีคอลัมน์ขนาด (ลงใต้ชื่อไฟล์) 603 (กล่องที่จอ 768 = 662)
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) — ขั้นแคบสุดจึงย้ายขนาดไฟล์
+ * ลงบรรทัดรองใต้ชื่อแทน · จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวมนั้นโดยตั้งใจ — คอลัมน์รองกลับมาเมื่อ
  * ชื่อไฟล์ได้ที่ราว 230–250px แล้วเท่านั้น ไม่งั้นพอข้ามขั้นชื่อไฟล์จะหดเหลือขั้นต่ำ 170px
  * ของที่ซ่อนยังดูได้: ชนิด = ไอคอนหน้าชื่อไฟล์ · ผู้อัปโหลด = มุมมอง preview
  */
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    showUploader: w >= 1060,
-    showType: w >= 890,
-    showIndex: w >= 800,
+    showUploader: w >= 1048,
+    showType: w >= 878,
+    wideReference: w >= 788,
+    showSize: w >= 700,
   };
 }
 
@@ -69,7 +72,8 @@ export function useDocumentTable({
   const t = useTranslations("systemAdmin.document");
   const tfl = useTranslations("field");
   const deleteGate = useDeleteGate();
-  const { showUploader, showType, showIndex } = columnTier(containerWidth);
+  const { showUploader, showType, wideReference, showSize } =
+    columnTier(containerWidth);
 
   const columns: ColumnDef<DocumentFile>[] = [
     selectColumn<DocumentFile>(),
@@ -94,9 +98,21 @@ export function useDocumentTable({
             {!showType && (
               <Icon className={`size-3.5 shrink-0 ${className}`} aria-hidden />
             )}
-            <span className="truncate text-xs font-semibold" title={name}>
-              {name}
-            </span>
+            {showSize ? (
+              <span className="truncate text-xs font-semibold" title={name}>
+                {name}
+              </span>
+            ) : (
+              // คอลัมน์ขนาดถูกซ่อนในกล่องแคบสุด — ย้ายมาเป็นบรรทัดรองใต้ชื่อ
+              <span data-slot="cell-stack" className="flex min-w-0 flex-col">
+                <span className="truncate text-xs font-semibold" title={name}>
+                  {name}
+                </span>
+                <span className="text-muted-foreground text-xs tabular-nums">
+                  {formatFileSize(row.original.size)}
+                </span>
+              </span>
+            )}
           </div>
         );
       },
@@ -152,7 +168,7 @@ export function useDocumentTable({
       cell: ({ row }) => (
         <DocumentReference doc={row.original} className="max-w-full" />
       ),
-      size: showIndex ? 200 : 160,
+      size: wideReference ? 200 : 160,
     },
     {
       id: "uploader",
@@ -206,7 +222,7 @@ export function useDocumentTable({
       ...tableConfig.state,
       rowSelection,
       columnVisibility: {
-        index: showIndex,
+        size: showSize,
         contentType: showType,
         uploader: showUploader,
       },

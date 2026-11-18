@@ -40,21 +40,23 @@ interface UseStoreRequisitionTableOptions {
  *
  * "From → To" รับที่เหลือ (`meta.grow`) ที่เหลือกว้างคงที่ ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`
  * (นับคอลัมน์ select 55 ที่ไม่ได้เรนเดอร์ · ไม่นับ audit ที่ซ่อนเป็น default):
- *   ครบ  55+60+225+105+100+170+140+160+140+60 = 1215
- *   ไม่มี #                                     = 1155
- *   ไม่มี workflow                              = 1055
- *   ไม่มีผู้ขอ (ลงบรรทัดรองใต้แผนก)                 =  915
+ *   ครบ  55+48+225+105+100+170+140+160+140+60 = 1203
+ *   ไม่มี workflow                              = 1103
+ *   ไม่มีผู้ขอ (ลงบรรทัดรองใต้แผนก)                 =  963
  *   กล่องแคบ (ไม่มีวันที่ ลงใต้เลขที่ · เลขที่ 150 · From → To ขั้นต่ำ 110 · แผนก 130)
- *        55+150+110+130+140+60 = 645  (กล่องที่จอ 768 = 662)
- * จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px · # และ workflow ดูได้ในหน้าเอกสาร
+ *        55+48+150+110+130+140+60 = 693
+ *   ไม่มีคอลัมน์สถานะ (ชิปลงใต้แผนก)              =  553  (กล่องที่จอ 768 = 662)
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) — ขั้นแคบสุดจึงย้ายสถานะ
+ * ลงบรรทัดรองใต้แผนกแทน (ช่องเลขที่สูง 4 บรรทัดอยู่แล้ว)
+ * จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px · workflow ดูได้ในหน้าเอกสาร
  */
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    showIndex: w >= 1220,
-    showWorkflow: w >= 1160,
-    showRequester: w >= 1060,
-    wide: w >= 920,
+    showWorkflow: w >= 1208,
+    showRequester: w >= 1108,
+    wide: w >= 968,
+    showStatus: w >= 698,
   };
 }
 
@@ -68,7 +70,7 @@ export function useStoreRequisitionTable({
   containerWidth,
 }: UseStoreRequisitionTableOptions) {
   "use no memo";
-  const { showIndex, showWorkflow, showRequester, wide } =
+  const { showStatus, showWorkflow, showRequester, wide } =
     columnTier(containerWidth);
   // คอลัมน์ที่ผู้ใช้เปิด/ปิดเองจากเมนู Toggle Columns — audit ซ่อนเป็น default
   // ขั้นตามความกว้างกล่องทับเฉพาะคอลัมน์ที่บังคับซ่อน
@@ -81,6 +83,25 @@ export function useStoreRequisitionTable({
   const tc = useTranslations("common");
   const ts = useTranslations("status");
   const deleteGate = useDeleteGate();
+
+  // ชิปสถานะ + ชื่อ stage — ใช้ทั้งในคอลัมน์สถานะและเป็นบรรทัดรองใต้แผนกในกล่องแคบสุด
+  const statusStack = (sr: StoreRequisition) => {
+    const status = sr.doc_status as StoreRequisitionStatus;
+    const stage = sr.workflow_current_stage;
+    return (
+      <div data-slot="cell-stack" className="flex min-w-0 flex-col items-start">
+        <StatusChip status={status} label={ts(status)} />
+        {stage && (
+          <span
+            className="text-muted-foreground truncate text-xs"
+            title={stage}
+          >
+            {stage}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   const dataColumns: ColumnDef<StoreRequisition>[] = [
     {
@@ -221,6 +242,8 @@ export function useStoreRequisitionTable({
           >
             {row.original.department_name}
           </span>
+          {/* คอลัมน์สถานะถูกซ่อนในกล่องแคบสุด — ชิปย้ายมาเป็นบรรทัดรอง */}
+          {!showStatus && statusStack(row.original)}
           {/* คอลัมน์ผู้ขอถูกซ่อนในกล่องแคบ — ย้ายมาเป็นบรรทัดรอง */}
           {!showRequester && row.original.requestor_name && (
             <span
@@ -243,23 +266,7 @@ export function useStoreRequisitionTable({
       ),
       // ชื่อ stage เป็นบรรทัดรองของสถานะ แทนคอลัมน์ Current Stage แยก
       // (ท่าเดียวกับ PR/PO list)
-      cell: ({ row }) => {
-        const status = row.getValue("doc_status") as StoreRequisitionStatus;
-        const stage = row.original.workflow_current_stage;
-        return (
-          <div data-slot="cell-stack" className="flex min-w-0 flex-col">
-            <StatusChip status={status} label={ts(status)} />
-            {stage && (
-              <span
-                className="text-muted-foreground truncate text-xs"
-                title={stage}
-              >
-                {stage}
-              </span>
-            )}
-          </div>
-        );
-      },
+      cell: ({ row }) => statusStack(row.original),
       meta: {
         headerTitle: tfl("status"),
         skeleton: columnSkeletons.badge,
@@ -292,7 +299,7 @@ export function useStoreRequisitionTable({
       ...tableConfig.state,
       columnVisibility: {
         ...userVisibility,
-        ...(!showIndex && { index: false }),
+        ...(!showStatus && { doc_status: false }),
         ...(!showWorkflow && { workflow_name: false }),
         ...(!showRequester && { requestor_name: false }),
         ...(!wide && { sr_date: false }),
