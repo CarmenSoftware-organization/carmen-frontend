@@ -34,9 +34,9 @@ interface UsePriceListTemplateTableOptions {
  * ชื่อรับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมแบ่งสัดส่วน บน Full HD สกุลเงินกว้าง
  * 173px สถานะ 208px ห่างจากค่าของมันเองโดยไม่จำเป็น ส่วนที่ tablet หัว Currency ทับ Validity Period
  * ความกว้างขั้นต่ำของตาราง = ผลรวม `size` ซึ่งนับคอลัมน์ select (55) ที่หน้านี้ไม่ได้เรนเดอร์ด้วย:
- *   ครบ                     55+60+200+120+110+150+120+60 = 875
- *   ไม่มีเลขลำดับ                                          = 815
- *   ไม่มีสกุลเงิน/ระยะเวลามีผล                               = 555  (กล่องที่จอ 768 = 662)
+ *   ครบ                     55+48+200+120+110+150+120+60 = 863
+ *   ไม่มีสกุลเงิน/ระยะเวลามีผล                               = 593  (กล่องที่จอ 768 = 662)
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) — ไม่อยู่ในขั้นที่ซ่อน
  * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35px — คอลัมน์รองกลับมาเมื่อชื่อได้ที่ ~235px แล้วเท่านั้น
  * ของที่ซ่อนยังเห็น: สกุลเงิน · ระยะเวลามีผล ย้ายลงบรรทัดรองใต้ชื่อ
  * คอลัมน์ที่ผู้ใช้เปิดเพิ่มเอง (created, updated) ไม่นับในงบ — เกินกล่องก็เลื่อนแนวนอนในกรอบเอง
@@ -44,8 +44,7 @@ interface UsePriceListTemplateTableOptions {
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    showIndex: w >= 910,
-    showTerms: w >= 850,
+    showTerms: w >= 900,
   };
 }
 
@@ -64,7 +63,7 @@ export function usePriceListTemplateTable({
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
   const deleteGate = useDeleteGate();
-  const { showIndex, showTerms } = columnTier(containerWidth);
+  const { showTerms } = columnTier(containerWidth);
 
   const dataColumns: ColumnDef<PriceListTemplate>[] = [
     {
@@ -217,7 +216,7 @@ export function usePriceListTemplateTable({
 
   const allColumns: ColumnDef<PriceListTemplate>[] = [
     selectColumn<PriceListTemplate>(),
-    ...(showIndex ? [indexColumn<PriceListTemplate>(params)] : []),
+    indexColumn<PriceListTemplate>(params),
     ...visibleDataColumns,
     actionColumn<PriceListTemplate>(onDelete, {
       ...deleteGate,
