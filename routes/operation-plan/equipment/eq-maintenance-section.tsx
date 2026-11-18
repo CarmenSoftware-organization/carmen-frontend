@@ -2,11 +2,11 @@ import { Controller, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { Field, FieldLabel, FieldDatePicker } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
+import { useLocale } from "use-intl";
+import { formatLocalizedDate } from "@/lib/date-utils";
+import { EqTextField } from "./eq-text-field";
 import type { EquipmentFormValues } from "./eq-form-schema";
-
-/** ขีดแทนช่องว่างในโหมดอ่าน — placeholder ตัวอย่างอย่าง "e.g. Samsung" ดูเหมือนค่าจริง */
-const READ_MODE_EMPTY = "—";
 
 interface EqMaintenanceSectionProps {
   readonly form: UseFormReturn<EquipmentFormValues>;
@@ -23,64 +23,80 @@ export function EqMaintenanceSection({
   const t = useTranslations("operationPlan.equipment");
   const tfl = useTranslations("field");
   const errors = form.formState.errors;
+  const locale = useLocale();
+  const date = (d?: string | null) =>
+    d ? formatLocalizedDate(d, locale) : null;
 
   return (
-    <SettingSection
-      plain
-      title={t("maintenance")}
-      description={t("maintenanceDesc")}
-    >
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field>
-          <FieldLabel>{t("lastMaintenanceDate")}</FieldLabel>
-          <Controller
-            control={form.control}
-            name="last_maintenance_date"
-            render={({ field }) => (
-              <FieldDatePicker
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isDisabled}
-                placeholder={isView ? READ_MODE_EMPTY : tfl("pickDate")}
-                className="h-8 w-full text-sm"
-                error={errors.last_maintenance_date?.message}
-              />
-            )}
+    <CompactSection title={t("maintenance")} description={t("maintenanceDesc")}>
+      {isView ? (
+        <FieldGrid>
+          <EqTextField
+            label={t("lastMaintenanceDate")}
+            value={date(form.getValues("last_maintenance_date"))}
           />
-        </Field>
-
-        <Field>
-          <FieldLabel>{t("nextMaintenanceDate")}</FieldLabel>
-          <Controller
-            control={form.control}
-            name="next_maintenance_date"
-            render={({ field }) => (
-              <FieldDatePicker
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={isDisabled}
-                placeholder={isView ? READ_MODE_EMPTY : tfl("pickDate")}
-                className="h-8 w-full text-sm"
-                error={errors.next_maintenance_date?.message}
-              />
-            )}
+          <EqTextField
+            label={t("nextMaintenanceDate")}
+            value={date(form.getValues("next_maintenance_date"))}
           />
-        </Field>
-      </div>
+          <EqTextField
+            label={t("maintenanceSchedule")}
+            value={form.getValues("maintenance_schedule")}
+            wide
+          />
+        </FieldGrid>
+      ) : (
+        <FieldGrid>
+          <Field>
+            <FieldLabel>{t("lastMaintenanceDate")}</FieldLabel>
+            <Controller
+              control={form.control}
+              name="last_maintenance_date"
+              render={({ field }) => (
+                <FieldDatePicker
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isDisabled}
+                  placeholder={tfl("pickDate")}
+                  className="h-8 w-full text-sm"
+                  error={errors.last_maintenance_date?.message}
+                />
+              )}
+            />
+          </Field>
 
-      <Field className="mt-3">
-        <FieldLabel htmlFor="equipment-maintenance-schedule">
-          {t("maintenanceSchedule")}
-        </FieldLabel>
-        <Textarea
-          id="equipment-maintenance-schedule"
-          placeholder={isView ? READ_MODE_EMPTY : tfl("optional")}
-          rows={2}
-          disabled={isDisabled}
-          maxLength={isView ? undefined : 256}
-          {...form.register("maintenance_schedule")}
-        />
-      </Field>
-    </SettingSection>
+          <Field>
+            <FieldLabel>{t("nextMaintenanceDate")}</FieldLabel>
+            <Controller
+              control={form.control}
+              name="next_maintenance_date"
+              render={({ field }) => (
+                <FieldDatePicker
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isDisabled}
+                  placeholder={tfl("pickDate")}
+                  className="h-8 w-full text-sm"
+                  error={errors.next_maintenance_date?.message}
+                />
+              )}
+            />
+          </Field>
+          <Field className="@md:col-span-2">
+            <FieldLabel htmlFor="equipment-maintenance-schedule">
+              {t("maintenanceSchedule")}
+            </FieldLabel>
+            <Textarea
+              id="equipment-maintenance-schedule"
+              placeholder={tfl("optional")}
+              rows={2}
+              disabled={isDisabled}
+              maxLength={256}
+              {...form.register("maintenance_schedule")}
+            />
+          </Field>
+        </FieldGrid>
+      )}
+    </CompactSection>
   );
 }

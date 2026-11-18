@@ -1,58 +1,83 @@
 import type { UseFormReturn, FieldPath } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { Field, FieldLabel, FieldInput } from "@/components/ui/field";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
+import { EqTextField } from "./eq-text-field";
 import type { EquipmentFormValues } from "./eq-form-schema";
 
 interface EqQuantitySectionProps {
   readonly form: UseFormReturn<EquipmentFormValues>;
   readonly isDisabled: boolean;
+  /** โหมดอ่าน — ตัวเลขเป็นข้อความ ไม่ใช่ input ที่ disable */
+  readonly isView: boolean;
 }
 
 export function EqQuantitySection({
   form,
   isDisabled,
+  isView,
 }: EqQuantitySectionProps) {
   const t = useTranslations("operationPlan.equipment");
   const tfl = useTranslations("field");
 
   return (
-    <SettingSection
-      plain
-      title={t("qtySettings")}
-      description={t("qtySettingsDesc")}
-    >
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <NumberField
-          form={form}
-          name="available_qty"
-          id="equipment-available-qty"
-          label={tfl("availableQty")}
-          isDisabled={isDisabled}
-        />
-        <NumberField
-          form={form}
-          name="total_qty"
-          id="equipment-total-qty"
-          label={tfl("totalQty")}
-          isDisabled={isDisabled}
-        />
-        <NumberField
-          form={form}
-          name="usage_count"
-          id="equipment-usage-count"
-          label={tfl("usageCount")}
-          isDisabled={isDisabled}
-        />
-        <NumberField
-          form={form}
-          name="average_usage_time"
-          id="equipment-average-usage-time"
-          label={t("avgUsageTime")}
-          isDisabled={isDisabled}
-        />
-      </div>
-    </SettingSection>
+    <CompactSection title={t("qtySettings")} description={t("qtySettingsDesc")}>
+      {isView ? (
+        <FieldGrid>
+          <EqTextField
+            label={tfl("availableQty")}
+            value={form.getValues("available_qty")}
+            numeric
+          />
+          <EqTextField
+            label={tfl("totalQty")}
+            value={form.getValues("total_qty")}
+            numeric
+          />
+          <EqTextField
+            label={tfl("usageCount")}
+            value={form.getValues("usage_count")}
+            numeric
+          />
+          <EqTextField
+            label={t("avgUsageTime")}
+            value={form.getValues("average_usage_time")}
+            numeric
+          />
+        </FieldGrid>
+      ) : (
+        <FieldGrid>
+          <NumberField
+            form={form}
+            name="available_qty"
+            id="equipment-available-qty"
+            label={tfl("availableQty")}
+            isDisabled={isDisabled}
+          />
+          <NumberField
+            form={form}
+            name="total_qty"
+            id="equipment-total-qty"
+            label={tfl("totalQty")}
+            isDisabled={isDisabled}
+          />
+          <NumberField
+            form={form}
+            name="usage_count"
+            id="equipment-usage-count"
+            label={tfl("usageCount")}
+            isDisabled={isDisabled}
+          />
+          <NumberField
+            form={form}
+            name="average_usage_time"
+            id="equipment-average-usage-time"
+            label={t("avgUsageTime")}
+            isDisabled={isDisabled}
+          />
+        </FieldGrid>
+      )}
+    </CompactSection>
   );
 }
 
