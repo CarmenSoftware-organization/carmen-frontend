@@ -100,7 +100,10 @@ export function McpTokensSection() {
 
   return (
     <>
+      {/* frameless: การ์ด token มีกรอบของตัวเองอยู่แล้ว — ห่อการ์ดของหมวดอีกชั้นเป็นการ์ดซ้อนการ์ด
+          เสีย padding สองชั้นบนมือถือ */}
       <CompactSection
+        frameless
         title={t("title")}
         count={tokens.isSuccess ? activeRows.length : undefined}
         action={
@@ -110,7 +113,7 @@ export function McpTokensSection() {
           </Button>
         }
       >
-        {/* คำอธิบายยาวสามประโยค — อยู่ในการ์ด ไม่ใช่บรรทัดหัวข้อ ไม่งั้นดันปุ่ม Create ตกบรรทัด */}
+        {/* คำอธิบายยาวสามประโยค — อยู่ใต้หัวข้อ ไม่ใช่บรรทัดหัวข้อ ไม่งั้นดันปุ่ม Create ตกบรรทัด */}
         <p className="text-muted-foreground mb-3 max-w-3xl text-xs">
           {t("description")}
         </p>
@@ -303,7 +306,7 @@ function TokenGrid({
         <div
           key={row.id}
           className={cn(
-            "flex min-w-0 flex-col gap-2 rounded-lg border p-3 text-xs",
+            "bg-card flex min-w-0 flex-col gap-2 rounded-lg border p-3 text-xs",
             isMuted && "text-muted-foreground",
           )}
         >
