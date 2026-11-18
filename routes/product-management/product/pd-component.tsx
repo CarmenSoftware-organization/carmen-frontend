@@ -45,6 +45,7 @@ import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
+import { useElementWidth } from "@/hooks/use-element-width";
 
 const CATEGORY_ENTITY = defineEntitySource<CategoryDto>({
   fieldKey: "product_category_id",
@@ -195,6 +196,7 @@ export default function ProductComponent() {
     }
   };
 
+  const [setGridBox, gridBoxWidth] = useElementWidth();
   const table = useProductTable({
     products,
     totalRecords,
@@ -203,6 +205,8 @@ export default function ProductComponent() {
     onEdit: (product) =>
       navigate(`/product-management/product/${product.id}`, listReturnState()),
     onDelete: setDeleteTarget,
+    // ลบเส้นขอบ 1px สองข้างของ DataGridContainer
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
   });
 
   if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
@@ -247,7 +251,9 @@ export default function ProductComponent() {
       )}
       {isGridMode && !grid.isLoading && !grid.error && products.length > 0 && (
         <>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {/* จำนวนการ์ดต่อแถวตามความกว้างกล่อง (ไม่ใช่ breakpoint ของจอ) — 4K ได้หลายคอลัมน์
+              แทนการ์ดสามใบที่กว้างใบละพันกว่าพิกเซล */}
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(min(18rem,100%),1fr))] gap-3">
             {products.map((item) => (
               <ProductCard
                 key={item.id}
@@ -276,29 +282,29 @@ export default function ProductComponent() {
         !grid.error &&
         products.length === 0 && <EmptyComponent />}
       {!isGridMode && (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          tableLayout={{ headerSticky: true }}
-          isLoading={isLoading}
-          emptyMessage={<EmptyComponent />}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              listGridMaxH(lf.activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            tableLayout={{ headerSticky: true }}
+            isLoading={isLoading}
+            emptyMessage={<EmptyComponent />}
           >
-            <div className="flex-1 overflow-auto">
-              {/* 960px: หลังรวมชื่อไทย/หมวดเข้าคอลัมน์เดียว ตารางพอดีจอ 1366 (พื้นที่
-                  ~1080px) — เดิม 1200px ดัน Status กับปุ่ม ⋯ ตกขอบขวา */}
-              <div className="min-w-240">
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                listGridMaxH(lf.activeFilters.length > 0),
+              )}
+            >
+              <div className="flex-1 overflow-auto">
+                {/* ไม่มีความกว้างขั้นต่ำตายตัว (เดิม min-w-240 = 960px ทำให้ tablet ต้องเลื่อนแนวนอน)
+                  — useProductTable เลือกคอลัมน์และขนาดจากความกว้างกล่องนี้ */}
                 <DataGridTable />
               </div>
-            </div>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       <DeleteDialog
