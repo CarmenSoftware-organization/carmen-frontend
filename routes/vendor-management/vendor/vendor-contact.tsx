@@ -57,7 +57,13 @@ export function VendorContact({
     <CompactSection
       frameless
       title={t("contactsLabel")}
-      description={t("contactsDesc")}
+      // โหมดดูที่ไม่มีรายการ: ข้อความว่างขึ้นแทนคำอธิบายหมวดบนบรรทัดหัว ไม่มีบรรทัดว่างแยก
+      // หมวดว่างจึงเหลือบรรทัดเดียว (~40px แทน 72px) ข้อมูลจริงด้านล่างขึ้นมาในจอแรกเร็วขึ้น
+      description={
+        isView && contactFields.length === 0
+          ? t("contact.noContacts")
+          : t("contactsDesc")
+      }
       count={contactFields.length}
       action={
         !isView ? (
@@ -75,12 +81,16 @@ export function VendorContact({
     >
       <div>
         {contactFields.length === 0 ? (
-          <VendorEmptySection
-            compact={isView}
-            icon={User}
-            title={t("contact.noContacts")}
-            description={t("contact.noContactsDesc")}
-          />
+          isView ? null : (
+            // โหมดแก้ก็บรรทัดเดียว (ไอคอน + ข้อความ) — กล่องประสูง ~125px ซ้ำกับปุ่มเพิ่มบนหัวหมวด
+            // สามกล่องเรียงกันดันใบรับรองตกจอ
+            <VendorEmptySection
+              compact
+              icon={User}
+              title={t("contact.noContacts")}
+              description={t("contact.noContactsDesc")}
+            />
+          )
         ) : (
           // การ์ดผู้ติดต่อเรียงเป็นกริดตามความกว้างของหมวด ไม่ยืดเต็มแถว
           <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-2">

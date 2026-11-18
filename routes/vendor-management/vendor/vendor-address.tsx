@@ -66,7 +66,13 @@ export function VendorAddress({
     <CompactSection
       frameless
       title={t("addressesLabel")}
-      description={t("addressesDesc")}
+      // โหมดดูที่ไม่มีรายการ: ข้อความว่างขึ้นแทนคำอธิบายหมวดบนบรรทัดหัว ไม่มีบรรทัดว่างแยก
+      // หมวดว่างจึงเหลือบรรทัดเดียว (~40px แทน 72px) ข้อมูลจริงด้านล่างขึ้นมาในจอแรกเร็วขึ้น
+      description={
+        isView && addressFields.length === 0
+          ? t("address.noAddresses")
+          : t("addressesDesc")
+      }
       count={addressFields.length}
       action={
         !isView ? (
@@ -83,12 +89,16 @@ export function VendorAddress({
       }
     >
       {addressFields.length === 0 ? (
-        <VendorEmptySection
-          compact={isView}
-          icon={MapPin}
-          title={t("address.noAddresses")}
-          description={t("address.noAddressesDesc")}
-        />
+        isView ? null : (
+          // โหมดแก้ก็บรรทัดเดียว (ไอคอน + ข้อความ) — กล่องประสูง ~125px ซ้ำกับปุ่มเพิ่มบนหัวหมวด
+          // สามกล่องเรียงกันดันใบรับรองตกจอ
+          <VendorEmptySection
+            compact
+            icon={MapPin}
+            title={t("address.noAddresses")}
+            description={t("address.noAddressesDesc")}
+          />
+        )
       ) : (
         // การ์ดที่อยู่เรียงเป็นกริด — จอกว้างขึ้นได้การ์ดเคียงกันมากขึ้น ไม่ใช่การ์ดยืดเต็มแถว
         // โหมดแก้ต้องการที่กว้างกว่า (ช่องเลือกจังหวัด/อำเภอ/ตำบล) ขั้นต่ำจึงต่างกัน

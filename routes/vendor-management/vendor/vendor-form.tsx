@@ -10,10 +10,16 @@ import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useEntityForm } from "@/hooks/use-entity-form";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
-import { SECTION_PAIR } from "@/components/share/compact-section";
 import { FormPageShell } from "@/components/share/form-page-shell";
+import { SECTION_PAIR } from "@/components/share/compact-section";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { PrintDocumentButton } from "@/components/print-document-button";
+import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
+import {
+  DocAuditButton,
+  DocAuditLine,
+} from "@/components/share/doc-audit-line";
+import { Briefcase, Hash } from "lucide-react";
 import { VENDOR_DETAIL_TEMPLATE_ID } from "@/lib/print-document";
 import {
   useCreateVendor,
@@ -43,6 +49,17 @@ const EntityCommentSheet = lazy(() =>
 );
 
 const FORM_ID = "vendor-form";
+
+/**
+ * ที่อยู่ | ผู้ติดต่อ — วางคู่ตั้งแต่กล่องกว้าง 56rem (HD 1366 ขึ้นไป) ไม่ใช่ 1700px ของ
+ * `SECTION_PAIR` (ผู้ใช้สั่ง 2026-11-19) — สองหมวดนี้เป็นการ์ดรายการสั้น ๆ ที่เรียงกริดตาม
+ * ความกว้างหมวดเอง ครึ่งกล่องที่ HD (~450px) ยังพอการ์ดหนึ่งใบต่อแถว · ตัดสินจากกล่อง
+ * (`@container`) ไม่ใช่จอ · ไม่มี items-start: สองหมวดสูงเท่ากัน
+ * เฉพาะโหมดดู — โหมดแก้ใช้ `SECTION_PAIR` (คู่ตั้งแต่ 1700px) เหมือนเดิม: ครึ่งกล่อง HD หัวหมวด
+ * ผู้ติดต่อ (คำอธิบาย + ปุ่ม Add Contact) ตกสองบรรทัด การ์ดสองฝั่งเริ่มคนละระดับ และช่องอีเมล/
+ * โทรศัพท์ของการ์ดผู้ติดต่อถูกบีบ
+ */
+export const VENDOR_SECTION_PAIR = "grid gap-x-5 @4xl:grid-cols-2";
 
 interface VendorFormProps {
   readonly vendor?: VendorDetail;
@@ -147,6 +164,41 @@ export function VendorForm({ vendor }: VendorFormProps) {
   const watchedName = useWatch({ control: form.control, name: "name" });
   const watchedCode = useWatch({ control: form.control, name: "code" });
   const watchedActive = useWatch({ control: form.control, name: "is_active" });
+  const isView = f.mode === "view";
+
+  // บรรทัดตัวตนใต้ชื่อ ทรงเดียวกับบรรทัดผู้ขอ · แผนก · วันที่ ของหัว PR — รหัส · ประเภทธุรกิจ
+  // อ่านจากค่าที่บันทึกแล้ว (`vendor`) หัวจึงไม่เปลี่ยนตามทุกการพิมพ์
+  const businessTypeNames = (vendor?.business_type ?? [])
+    .map((b) => b.name)
+    .filter(Boolean)
+    .join(", ");
+  const identityLine =
+    vendor?.code || businessTypeNames ? (
+      <span className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+        {vendor?.code && (
+          <span className="flex items-center gap-1">
+            <Hash className="size-3 shrink-0" aria-hidden="true" />
+            <span className="text-foreground font-medium tabular-nums">
+              {vendor.code}
+            </span>
+          </span>
+        )}
+        {businessTypeNames && (
+          <span className="flex items-center gap-1">
+            <Briefcase className="size-3 shrink-0" aria-hidden="true" />
+            {businessTypeNames}
+          </span>
+        )}
+        {/* มือถือ: ตาราง audit เต็มซ่อนอยู่ เหลือไอคอนท้ายบรรทัดนี้ */}
+        {isView && (
+          <DocAuditButton
+            audit={vendor?.audit}
+            docVersion={vendor?.doc_version}
+            className="-my-1 sm:hidden"
+          />
+        )}
+      </span>
+    ) : undefined;
 
   const onSubmit = (values: VendorFormValues) => {
     const { dirtyFields } = form.formState;
@@ -249,49 +301,77 @@ export function VendorForm({ vendor }: VendorFormProps) {
   return (
     <FormPageShell
       width="wide"
+      // หัวอยู่ในการ์ดมีพื้น ทรงเดียวกับหัวเอกสาร PR: ชื่อ+ปุ่ม · บรรทัดตัวตน · ช่อง General
+      // (ribbon) + ตาราง audit ชิดขวา — หมวด General แยกการ์ดของตัวเองไม่มีแล้ว
       header={
-        <FormToolbar
-          mode={f.mode}
-          formId={FORM_ID}
-          isPending={isPending}
-          title={watchedName || t("namePlaceholder")}
-          titleMuted={!watchedName}
-          onBack={f.handleBack}
-          onCancel={f.handleCancel}
-          onEdit={f.handleEdit}
-          onDelete={vendor ? () => setShowDelete(true) : undefined}
-          deleteIsPending={deleteVendor.isPending}
-          activity={vendor && { id: vendor.id, label: vendor.code }}
-          onComment={vendor ? () => setShowComment(true) : undefined}
-          badges={
-            <>
-              {watchedCode && (
-                <span className="text-muted-foreground shrink-0 text-sm">
-                  · {watchedCode}
-                </span>
-              )}
-              {!isAdd && <StatusBadge active={watchedActive} />}
-            </>
-          }
-        >
-          {/* Vendor Detail Report ของผู้ขายรายนี้ — ไม่อยู่ในหน้ารายการรายงาน
+        <div className={DOC_HEADER_CARD}>
+          <FormToolbar
+            inlineBack
+            mode={f.mode}
+            formId={FORM_ID}
+            isPending={isPending}
+            title={watchedName || t("namePlaceholder")}
+            titleMuted={!watchedName}
+            onBack={f.handleBack}
+            onCancel={f.handleCancel}
+            onEdit={f.handleEdit}
+            onDelete={vendor ? () => setShowDelete(true) : undefined}
+            deleteIsPending={deleteVendor.isPending}
+            activity={vendor && { id: vendor.id, label: vendor.code }}
+            onComment={vendor ? () => setShowComment(true) : undefined}
+            subtitle={identityLine}
+            badges={
+              <>
+                {/* โหมดเพิ่ม (ยังไม่มีบรรทัดตัวตน): รหัสที่กำลังพิมพ์โชว์ข้างชื่อ · ใบที่บันทึกแล้วอยู่ในบรรทัดตัวตน */}
+                {!vendor && watchedCode && (
+                  <span className="text-muted-foreground shrink-0 text-sm">
+                    · {watchedCode}
+                  </span>
+                )}
+                {!isAdd && <StatusBadge active={watchedActive} />}
+              </>
+            }
+            // ช่อง General อยู่นอก <form> (แบบ PR — ปุ่มบนหัวไม่กลายเป็น submit) RHF ยังเก็บค่าครบ
+            // แค่กด Enter ในช่องเหล่านี้ไม่ submit · ตาราง audit เฉพาะโหมดดู ตอนแก้ช่องกรอกต้องการที่เต็ม
+            // โหมดดู: กริด General ได้ความกว้างเต็มการ์ด แล้วตาราง audit ปิดท้ายการ์ด ชิดขวาล่าง
+            // (ผู้ใช้สั่ง 2026-11-19) — ไม่นั่งข้างกริด เพราะกินที่ ~280px ที่ HD กริดเหลือ 3 คอลัมน์ 3 แถว
+            // บรรทัดตัวตนกลับไปเป็น subtitle ใต้ชื่อ · มือถือซ่อนตาราง เหลือไอคอนท้ายบรรทัดตัวตน
+            ribbon={
+              isView ? (
+                <div className="ml-4 flex min-w-0 flex-1 flex-col gap-2">
+                  <VendorGeneral form={form} isDisabled={isDisabled} />
+                  <DocAuditLine
+                    audit={vendor?.audit}
+                    docVersion={vendor?.doc_version}
+                    className="ms-auto hidden sm:table"
+                  />
+                </div>
+              ) : (
+                <div className="ml-4 min-w-0 flex-1">
+                  <VendorGeneral form={form} isDisabled={isDisabled} />
+                </div>
+              )
+            }
+          >
+            {/* Vendor Detail Report ของผู้ขายรายนี้ — ไม่อยู่ในหน้ารายการรายงาน
               PrintSingle: ใบเดียว micro-report ไม่พิมพ์บล็อกตัวกรองบนหัวรายงาน
               RecordType/RecordId: QR มุมขวาบนที่สแกนแล้วกลับมาหน้าผู้ขายรายนี้ (/qr/vendor/<id>) */}
-          {f.mode === "view" && vendor?.code && (
-            <PrintDocumentButton
-              documentType="VENDOR"
-              templateId={VENDOR_DETAIL_TEMPLATE_ID}
-              filters={{
-                VendorFrom: vendor.code,
-                VendorTo: vendor.code,
-                Status: "ALL",
-                PrintSingle: true,
-                RecordType: "vendor",
-                RecordId: vendor.id,
-              }}
-            />
-          )}
-        </FormToolbar>
+            {isView && vendor?.code && (
+              <PrintDocumentButton
+                documentType="VENDOR"
+                templateId={VENDOR_DETAIL_TEMPLATE_ID}
+                filters={{
+                  VendorFrom: vendor.code,
+                  VendorTo: vendor.code,
+                  Status: "ALL",
+                  PrintSingle: true,
+                  RecordType: "vendor",
+                  RecordId: vendor.id,
+                }}
+              />
+            )}
+          </FormToolbar>
+        </div>
       }
     >
       <form
@@ -300,23 +380,24 @@ export function VendorForm({ vendor }: VendorFormProps) {
           scrollToFirstInvalidField(),
         )}
       >
-        <VendorGeneral form={form} isDisabled={isDisabled} />
         {/* ที่อยู่ | ผู้ติดต่อ — สองรายการคู่กัน วางเคียงกันบนจอกว้าง */}
-        <div className={SECTION_PAIR}>
-          <VendorAddress
-            form={form}
-            isDisabled={isDisabled}
-            addressFields={addressFields}
-            prependAddress={prependAddress}
-            removeAddress={handleRemoveAddress}
-          />
-          <VendorContact
-            form={form}
-            isDisabled={isDisabled}
-            contactFields={contactFields}
-            prependContact={prependContact}
-            removeContact={handleRemoveContact}
-          />
+        <div className="@container">
+          <div className={isView ? VENDOR_SECTION_PAIR : SECTION_PAIR}>
+            <VendorAddress
+              form={form}
+              isDisabled={isDisabled}
+              addressFields={addressFields}
+              prependAddress={prependAddress}
+              removeAddress={handleRemoveAddress}
+            />
+            <VendorContact
+              form={form}
+              isDisabled={isDisabled}
+              contactFields={contactFields}
+              prependContact={prependContact}
+              removeContact={handleRemoveContact}
+            />
+          </div>
         </div>
         <VendorInfo
           form={form}
