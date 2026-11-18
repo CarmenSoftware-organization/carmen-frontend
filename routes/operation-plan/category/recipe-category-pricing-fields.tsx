@@ -1,7 +1,7 @@
 import { useWatch, type FieldPath, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { Field, FieldLabel, FieldInput } from "@/components/ui/field";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
 import { cn } from "@/lib/utils";
 import type { RecipeCategoryFormValues } from "./recipe-category-form-schema";
 import {
@@ -54,11 +54,12 @@ export function RecipeCategoryPricingFields({
   );
 
   return (
-    <SettingSection
-      plain
-      title={t("pricingTargets")}
-      description={t("pricingTargetsDesc")}
-    >
+    <CompactSection title={t("pricingTargets")}>
+      {/* คำอธิบายยาวสองประโยค — อยู่ในการ์ด ไม่ใช่บนบรรทัดหัวข้อ เพราะหมวดนี้วางคู่กับ
+          General บนจอกว้าง ข้อความห่อบรรทัดแล้วหัวข้อสองฝั่งไม่เสมอกัน */}
+      <p className="text-muted-foreground mb-3 text-xs">
+        {t("pricingTargetsDesc")}
+      </p>
       <RecipeCategoryPriceBreakdown
         food={food}
         labor={labor}
@@ -67,44 +68,46 @@ export function RecipeCategoryPricingFields({
         marginTarget={marginTarget}
       />
 
-      <div className="border-border/70 mt-5 grid grid-cols-1 gap-3 border-t pt-4 sm:grid-cols-3">
-        {field(
-          "cost_target_food_cost_percentage",
-          "rc-cost-food",
-          t("foodCostShort"),
-          food,
-          dot(SEGMENT_COLOR.food),
-        )}
-        {field(
-          "cost_labor_percentage",
-          "rc-cost-labor",
-          t("laborShort"),
-          labor,
-          dot(SEGMENT_COLOR.labor),
-        )}
-        {field(
-          "cost_overhead_percentage",
-          "rc-cost-overhead",
-          t("overheadShort"),
-          overhead,
-          dot(SEGMENT_COLOR.overhead),
-        )}
-        {field(
-          "margin_minimum",
-          "rc-margin-min",
-          t("minMarginShort"),
-          marginMin,
-          MARKER_CLASS.min,
-        )}
-        {field(
-          "margin_target",
-          "rc-margin-target",
-          t("targetMarginShort"),
-          marginTarget,
-          MARKER_CLASS.target,
-        )}
+      <div className="border-border/70 mt-4 border-t pt-4">
+        <FieldGrid>
+          {field(
+            "cost_target_food_cost_percentage",
+            "rc-cost-food",
+            t("foodCostShort"),
+            food,
+            dot(SEGMENT_COLOR.food),
+          )}
+          {field(
+            "cost_labor_percentage",
+            "rc-cost-labor",
+            t("laborShort"),
+            labor,
+            dot(SEGMENT_COLOR.labor),
+          )}
+          {field(
+            "cost_overhead_percentage",
+            "rc-cost-overhead",
+            t("overheadShort"),
+            overhead,
+            dot(SEGMENT_COLOR.overhead),
+          )}
+          {field(
+            "margin_minimum",
+            "rc-margin-min",
+            t("minMarginShort"),
+            marginMin,
+            MARKER_CLASS.min,
+          )}
+          {field(
+            "margin_target",
+            "rc-margin-target",
+            t("targetMarginShort"),
+            marginTarget,
+            MARKER_CLASS.target,
+          )}
+        </FieldGrid>
       </div>
-    </SettingSection>
+    </CompactSection>
   );
 }
 
@@ -133,6 +136,24 @@ function PercentField({
   const isRead = readValue !== undefined;
   const unset = isRead && readValue <= 0;
 
+  // โหมดอ่าน: ข้อความ (ป้ายจาง + ค่าเด่น ทรงเดียวกับ SettingField) ไม่ใช่ input ที่ disable
+  // จุดสีหน้าป้ายคงไว้ — มันคือคำอธิบายสีของแถบสรุปด้านบน
+  if (isRead) {
+    return (
+      <div className="min-w-0">
+        <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+          <span aria-hidden className={swatch} />
+          {label}
+        </div>
+        {unset ? (
+          <div className="text-muted-foreground/60 mt-0.5 text-sm">—</div>
+        ) : (
+          <div className="mt-0.5 text-sm tabular-nums">{readValue} %</div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <Field>
       <FieldLabel htmlFor={id} className="items-center">
@@ -140,35 +161,22 @@ function PercentField({
         {label}
       </FieldLabel>
       <div className="relative">
-        {isRead ? (
-          <FieldInput
-            id={id}
-            className={cn("h-8 text-right", unset ? "pr-3" : "pr-10")}
-            disabled
-            readOnly
-            value={unset ? "" : readValue}
-            placeholder="—"
-          />
-        ) : (
-          <FieldInput
-            id={id}
-            type="number"
-            inputMode="decimal"
-            step="0.01"
-            min={0}
-            placeholder="0"
-            className="h-8 pr-10 text-right"
-            disabled={isDisabled}
-            error={error}
-            errorIconAlign="left"
-            {...form.register(name)}
-          />
-        )}
-        {!unset && (
-          <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm">
-            %
-          </span>
-        )}
+        <FieldInput
+          id={id}
+          type="number"
+          inputMode="decimal"
+          step="0.01"
+          min={0}
+          placeholder="0"
+          className="h-8 pr-10 text-right"
+          disabled={isDisabled}
+          error={error}
+          errorIconAlign="left"
+          {...form.register(name)}
+        />
+        <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm">
+          %
+        </span>
       </div>
     </Field>
   );

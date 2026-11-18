@@ -2,7 +2,7 @@ import { useTranslations } from "use-intl";
 import { useRecipeCategoryById } from "@/hooks/use-recipe-category";
 import { RecipeCategoryForm } from "./recipe-category-form";
 import { ErrorState } from "@/components/ui/error-state";
-import { FormPageSkeleton } from "@/components/loader/form-page-skeleton";
+import { RecipeCategoryFormSkeleton } from "./recipe-category-form-skeleton";
 
 export function RecipeCategoryEditContent({ id }: { id: string }) {
   const tErr = useTranslations("operationPlan.recipeCategory");
@@ -13,7 +13,7 @@ export function RecipeCategoryEditContent({ id }: { id: string }) {
     refetch,
   } = useRecipeCategoryById(id);
 
-  if (isLoading) return <FormPageSkeleton width="wide" />;
+  if (isLoading) return <RecipeCategoryFormSkeleton />;
   if (error || !category)
     return (
       <ErrorState
