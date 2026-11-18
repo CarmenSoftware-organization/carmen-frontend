@@ -15,7 +15,13 @@ export function PoEditContent({ id }: { id: string }) {
 
   if (isLoading)
     return (
-      <DocPageSkeleton fields={[1, 2, 1, 1, 1, 1, 2, 2]} tabs={false} toolbar />
+      // หน้าเปิดมาเป็นโหมดดู ช่องหัวใบเป็นข้อความ (FieldGrid dense) — ribbon="text"
+      <DocPageSkeleton
+        ribbon="text"
+        fields={[1, 2, 1, 1, 1, 1, 2, 2]}
+        tabs={false}
+        toolbar
+      />
     );
   if (error || !purchaseOrder)
     return (
