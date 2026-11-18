@@ -33,6 +33,7 @@ import PdTabLocations from "./pd-tab-locations";
 import PdTabUnitConversion from "./pd-tab-unit-conversion";
 import TabArrayCount, { TabEcoLabelCount } from "./pd-tab-count";
 import { PdTabEco } from "./pd-tab-eco";
+import { PdTabScroller } from "./pd-tab-scroller";
 import { productCommentCrud } from "./use-product-comments";
 
 const EntityCommentSheet = lazy(() =>
@@ -446,32 +447,35 @@ export function ProductForm({ product }: ProductFormProps) {
         className="space-y-4"
       >
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList variant="line">
-            <TabsTrigger value="general">
-              {t("tabGeneral")}
-              <TabArrayCount form={form} name="info" />
-              {hasGeneralError && <TabErrorDot />}
-            </TabsTrigger>
-            <TabsTrigger value="units">
-              {t("tabUnits")}
-              <TabArrayCount
-                form={form}
-                name={["order_units", "ingredient_units"]}
-              />
-              {hasUnitsError && <TabErrorDot />}
-            </TabsTrigger>
-            <TabsTrigger value="locations">
-              {t("tabLocations")}
-              <TabArrayCount form={form} name="locations" />
-              {hasLocationsError && <TabErrorDot />}
-            </TabsTrigger>
-            {product?.id && (
-              <TabsTrigger value="eco-labels">
-                {t("tabEcoLabels")}
-                <TabEcoLabelCount productId={product.id} />
+          {/* มือถือ 4 แท็บกว้างเกินกล่อง → เลื่อนในแถบ + ขอบจาง + เลื่อนแท็บที่เลือกเข้าจอ */}
+          <PdTabScroller active={tab}>
+            <TabsList variant="line" className="w-max justify-start">
+              <TabsTrigger value="general">
+                {t("tabGeneral")}
+                <TabArrayCount form={form} name="info" />
+                {hasGeneralError && <TabErrorDot />}
               </TabsTrigger>
-            )}
-          </TabsList>
+              <TabsTrigger value="units">
+                {t("tabUnits")}
+                <TabArrayCount
+                  form={form}
+                  name={["order_units", "ingredient_units"]}
+                />
+                {hasUnitsError && <TabErrorDot />}
+              </TabsTrigger>
+              <TabsTrigger value="locations">
+                {t("tabLocations")}
+                <TabArrayCount form={form} name="locations" />
+                {hasLocationsError && <TabErrorDot />}
+              </TabsTrigger>
+              {product?.id && (
+                <TabsTrigger value="eco-labels">
+                  {t("tabEcoLabels")}
+                  <TabEcoLabelCount productId={product.id} />
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </PdTabScroller>
           <TabsContent value="general">
             <PdTabGeneral
               form={form}
