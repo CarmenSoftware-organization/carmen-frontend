@@ -378,7 +378,7 @@ export default function StoreRequisitionComponent() {
           table={table}
           displayMode={displayMode}
           onDisplayModeChange={setDisplayMode}
-          beforeViewSelector={
+          scope={
             <ViewModeToggle
               value={viewMode}
               onChange={handleViewModeChange}

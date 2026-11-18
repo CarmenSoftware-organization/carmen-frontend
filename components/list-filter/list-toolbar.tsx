@@ -24,10 +24,17 @@ interface ListToolbarProps {
   readonly table?: AnyTable;
   readonly displayMode?: "list" | "grid";
   readonly onDisplayModeChange?: (mode: "list" | "grid") => void;
-  readonly beforeViewSelector?: ReactNode;
   /**
-   * ปุ่มชิดขวาของแถบ (เช่นสลับมุมมองของหน้าที่ไม่มี `table`) — ต่างจาก `beforeViewSelector`
-   * ที่แทรกระหว่างช่องค้นกับตัวกรอง ทำให้ตัวกรองถูกดันห่างจากช่องค้น
+   * ปุ่มเลือกขอบเขตข้อมูล (My pending / All Documents) — แถบกว้างพอ (≥56rem ของแถบ
+   * ไม่ใช่จอ) อยู่ระหว่างช่องค้นกับ View แถวเดียว · แถบแคบกว่านั้นขึ้นเป็นบรรทัดแรก
+   * ของแถบ ให้ช่องค้น + View + Filter ยังติดกันในบรรทัดที่สอง (กฎข้อ 12) และปุ่มตาราง
+   * ชิดขวาบรรทัดเดียวกัน แทนที่ View/Filter จะตกบรรทัดใหม่ห่างจากช่องค้น
+   * ใช้ได้กับ `variant="wrap"` เท่านั้น
+   */
+  readonly scope?: ReactNode;
+  /**
+   * ปุ่มชิดขวาของแถบ (เช่นสลับมุมมองของหน้าที่ไม่มี `table`) — ไม่แทรกระหว่างช่องค้น
+   * กับตัวกรอง ตัวกรองจึงอยู่ติดช่องค้นเสมอ
    */
   readonly trailing?: ReactNode;
   /**
@@ -68,7 +75,7 @@ export function ListToolbar({
   table,
   displayMode,
   onDisplayModeChange,
-  beforeViewSelector,
+  scope,
   trailing,
   variant = "wrap",
 }: ListToolbarProps) {
@@ -82,6 +89,73 @@ export function ListToolbar({
   const showRight = !!table || !!trailing;
   const isRow = variant === "row";
 
+  const viewAndFilter = (
+    <>
+      <ViewSelector
+        view={lf.view}
+        snapshot={{ filters: lf.values, sort: lf.sortParam || undefined }}
+      />
+      <ListFilter
+        fields={fields}
+        values={lf.values}
+        setValue={lf.setValue}
+        onClearAll={lf.clearAll}
+        onSaveClick={onSaveViewClick}
+        activeCount={lf.activeFilters.length}
+      />
+    </>
+  );
+
+  const right = showRight && (
+    <div className="ml-auto hidden shrink-0 items-center gap-2 sm:flex">
+      {table && (
+        <>
+          <DataGridSortMenu table={table} />
+          <DataGridColumnVisibility
+            table={table}
+            trigger={
+              <Button
+                size="icon-sm"
+                variant="outline"
+                aria-label={tc("aria.toggleColumns")}
+              >
+                <Columns3 className="size-4" />
+              </Button>
+            }
+          />
+        </>
+      )}
+      {displayMode && onDisplayModeChange && (
+        <DisplayModeToggle value={displayMode} onChange={onDisplayModeChange} />
+      )}
+      {trailing}
+    </div>
+  );
+
+  if (scope && !isRow) {
+    // ลูกทุกตัวอยู่ใน flex-wrap ชั้นเดียว จะได้ย้าย scope ขึ้นบรรทัดแรกด้วย order ได้
+    // (ถ้าอยู่ในกลุ่มซ้ายซ้อนอีกชั้น order ข้ามกลุ่มไม่ได้ และปุ่มตาราง
+    // จะลอยกลางระหว่างสองบรรทัด)
+    return (
+      <>
+        <div className="@container/list-toolbar">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="w-full sm:w-auto">
+              <SearchInput defaultValue={search} onSearch={onSearch} />
+            </div>
+            <span className="bg-border hidden h-4 w-px sm:block" />
+            <div className="order-first w-full @4xl/list-toolbar:order-none @4xl/list-toolbar:w-auto">
+              {scope}
+            </div>
+            {viewAndFilter}
+            {right}
+          </div>
+        </div>
+        <ActiveFilterBar filters={lf.activeFilters} onClearAll={lf.clearAll} />
+      </>
+    );
+  }
+
   return (
     <>
       <div
@@ -91,8 +165,8 @@ export function ListToolbar({
             : "flex flex-wrap items-center justify-between gap-2"
         }
       >
-        {/* wrap: ไม่ใส่ nowrap — กลุ่มซ้ายตัดสินจากความกว้างของตัวเอง ไม่ใช่จอ ที่ไม่พอ (หน้า PR/PO
-            มีปุ่ม My pending / All Documents แทรก) ปุ่ม View/Filter ขึ้นบรรทัดใหม่แทนการล้นขอบ */}
+        {/* wrap: ไม่ใส่ nowrap — กลุ่มซ้ายตัดสินจากความกว้างของตัวเอง ไม่ใช่จอ ที่ไม่พอ
+            ปุ่ม View/Filter ขึ้นบรรทัดใหม่แทนการล้นขอบ */}
         <div
           className={
             isRow
@@ -113,48 +187,9 @@ export function ListToolbar({
             <SearchInput defaultValue={search} onSearch={onSearch} />
           </div>
           <span className="bg-border hidden h-4 w-px sm:block" />
-          {beforeViewSelector}
-          <ViewSelector
-            view={lf.view}
-            snapshot={{ filters: lf.values, sort: lf.sortParam || undefined }}
-          />
-          <ListFilter
-            fields={fields}
-            values={lf.values}
-            setValue={lf.setValue}
-            onClearAll={lf.clearAll}
-            onSaveClick={onSaveViewClick}
-            activeCount={lf.activeFilters.length}
-          />
+          {viewAndFilter}
         </div>
-        {showRight && (
-          <div className="hidden shrink-0 items-center gap-2 sm:flex">
-            {table && (
-              <>
-                <DataGridSortMenu table={table} />
-                <DataGridColumnVisibility
-                  table={table}
-                  trigger={
-                    <Button
-                      size="icon-sm"
-                      variant="outline"
-                      aria-label={tc("aria.toggleColumns")}
-                    >
-                      <Columns3 className="size-4" />
-                    </Button>
-                  }
-                />
-              </>
-            )}
-            {displayMode && onDisplayModeChange && (
-              <DisplayModeToggle
-                value={displayMode}
-                onChange={onDisplayModeChange}
-              />
-            )}
-            {trailing}
-          </div>
-        )}
+        {right}
       </div>
 
       <ActiveFilterBar filters={lf.activeFilters} onClearAll={lf.clearAll} />

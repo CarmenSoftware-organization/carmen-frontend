@@ -260,7 +260,7 @@ export default function PurchaseRequestComponent() {
           table={table}
           displayMode={displayMode}
           onDisplayModeChange={setDisplayMode}
-          beforeViewSelector={
+          scope={
             <ViewModeToggle
               value={viewMode}
               onChange={handleViewModeChange}

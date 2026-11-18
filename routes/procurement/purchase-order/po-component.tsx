@@ -352,7 +352,7 @@ export default function PoComponent() {
           table={table}
           displayMode={displayMode}
           onDisplayModeChange={setDisplayMode}
-          beforeViewSelector={
+          scope={
             <ViewModeToggle
               value={viewMode}
               onChange={handleViewModeChange}
