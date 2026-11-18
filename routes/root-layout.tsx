@@ -47,7 +47,7 @@ export default function RootLayout() {
     <SidebarShell>
       <AnalyticsBridge />
       {hasSidebar && <AppSidebar />}
-      <SidebarInset className="space-main-gradient relative h-dvh overflow-hidden">
+      <SidebarInset className="space-main-gradient @container/main relative h-dvh overflow-hidden">
         <Navbar hasSidebar={hasSidebar} />
         <OfflineBanner />
         {/* อ่านอย่างเดียว / ผู้ได้รับยกเว้น — ดู components/app-status-banner.tsx */}
@@ -62,9 +62,12 @@ export default function RootLayout() {
         <StorageQuotaBannerHost />
         {/* ขึ้นทุกคนเมื่อ BU ไม่มี default currency ที่ใช้ได้ (ยอดเงิน fallback เป็น THB) */}
         <BuCurrencyBanner />
+        {/* ขอบข้างเนื้อหา: กล่องแคบกว่า 672px (มือถือ) 12px ต่อข้าง — เดิม m-3 + px-4
+            = 28px ต่อข้าง กินจอ 390 ไปถึง 56px · กว้างกว่านั้นคงเดิม · ตัดสินจากความกว้าง
+            ของ SidebarInset (@container/main) ไม่ใช่จอ เพราะ sidebar พับ/กางได้ */}
         <div
           id="main-content"
-          className="m-3 flex min-h-0 flex-1 flex-col gap-4 overflow-auto px-4"
+          className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-3 @2xl/main:m-3 @2xl/main:p-0 @2xl/main:px-4"
         >
           <ProfileGate>
             <RouteGuard>

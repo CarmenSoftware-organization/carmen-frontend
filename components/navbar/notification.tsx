@@ -67,10 +67,9 @@ const NotificationItem = ({
   return (
     <div
       className={cn(
-        "group flex items-start gap-3 rounded-lg border p-3 pr-10 backdrop-blur-sm transition-colors",
-        isUnread
-          ? "bg-muted/50 border-border/50 hover:bg-muted/70"
-          : "bg-background/40 hover:bg-muted/30 border-transparent",
+        // แถวแบนคั่นเส้น (divide-y ที่ list) ไม่ใช่การ์ดในการ์ด · ยังไม่อ่าน = พื้นจาง ๆ + จุด
+        "group relative flex items-start gap-2.5 px-3 py-2 pe-10 transition-colors",
+        isUnread ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/50",
       )}
     >
       {safeLink ? (
@@ -100,6 +99,9 @@ const NotificationItem = ({
         locale={locale}
         unreadLabel={t("unread")}
         commentLabel={tRoot("notifications.commentLabel")}
+        // ชื่อเรื่อง 2 บรรทัด + BU · เวลา · ข้อความบรรทัดเดียว — แผงแคบบนมือถือ
+        // เคยตัดชื่อเรื่องเหลือครึ่งและดันเวลาตกขอบ
+        compact
       />
       <button
         onClick={(e) => {
@@ -107,7 +109,8 @@ const NotificationItem = ({
           e.stopPropagation();
           onMarkAsRead(notification);
         }}
-        className="text-muted-foreground/60 hover:text-foreground hover:bg-background/80 absolute top-1/2 right-2 z-20 -translate-y-1/2 rounded-full p-1.5 opacity-0 shadow-sm backdrop-blur-sm transition-all duration-300 group-hover:opacity-100"
+        // จอสัมผัสไม่มี hover — ปุ่มต้องเห็นตลอด · เมาส์ (pointer-fine) ซ่อนจนกว่าจะชี้แถว
+        className="text-muted-foreground hover:text-foreground hover:bg-muted absolute end-1 top-1.5 z-20 flex size-8 items-center justify-center rounded-full transition-opacity pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:focus-visible:opacity-100"
         type="button"
         title={dismissLabel}
         aria-label={dismissLabel}
@@ -162,11 +165,14 @@ export default function Notification() {
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="bg-background/70 border-border/40 supports-backdrop-filter:bg-background/50 mx-4 max-h-136 w-108 p-0 shadow-lg backdrop-blur-xl"
+        // กว้างไม่เกินจอ (เหลือขอบ 8px) — เดิม w-108 (432px) ล้นจอ 360 จนปุ่มหัวแผงหาย
+        // พื้นทึบ: พื้นโปร่ง + blur ทำให้ตารางข้างหลังทะลุขึ้นมาแย่งสายตา
+        className="flex max-h-[min(34rem,var(--radix-popover-content-available-height))] w-[min(27rem,calc(100vw-1rem))] flex-col overflow-hidden p-0 shadow-lg"
         align="end"
         sideOffset={6}
+        collisionPadding={8}
       >
-        <div className="border-border/40 bg-background/20 flex items-center justify-between border-b px-4 py-3">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b py-2 ps-4 pe-2">
           <div className="flex items-center gap-2">
             <Bell className="text-muted-foreground size-4 shrink-0" />
             <span className="text-sm font-semibold tracking-tight">
@@ -182,7 +188,7 @@ export default function Notification() {
             {notificationCount > 0 && (
               <Button
                 variant="ghost"
-                className="text-muted-foreground h-6 px-2 text-xs"
+                className="text-muted-foreground h-8 px-2 text-xs"
                 size="sm"
                 onClick={() => markAllRead.mutate()}
                 disabled={markAllRead.isPending}
@@ -212,12 +218,23 @@ export default function Notification() {
           </div>
         </div>
 
-        <div className="max-h-112 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {isLoading ? (
-            <div className="space-y-2 p-3">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
+            // โครงเดียวกับแถวจริง (ไอคอน 28px + ชื่อเรื่อง + บรรทัด meta) ข้อมูลมาแล้วไม่กระโดด
+            <div className="divide-border/60 flex flex-col divide-y">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-2.5 px-3 py-2 pe-10"
+                >
+                  <span className="w-2 shrink-0" />
+                  <Skeleton className="size-7 shrink-0 rounded-lg" />
+                  <div className="min-w-0 flex-1 space-y-1.5 py-0.5">
+                    <Skeleton className="h-3 w-3/4" />
+                    <Skeleton className="h-2.5 w-1/2" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : notifications.length === 0 ? (
             <EmptyComponent
@@ -227,7 +244,7 @@ export default function Notification() {
               classNames="py-10"
             />
           ) : (
-            <div className="flex flex-col gap-1 p-2">
+            <div className="divide-border/60 flex flex-col divide-y">
               {notifications.map((notification) => (
                 <NotificationItem
                   key={notification.id}

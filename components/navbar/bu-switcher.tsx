@@ -97,7 +97,7 @@ export default function BuSwitcher() {
         aria-busy="true"
       >
         <Skeleton className="ring-primary/20 hidden size-7 shrink-0 rounded-full ring-2 @2xl/navbar:block" />
-        <Skeleton className="h-3 w-8 @2xl/navbar:w-28" />
+        <Skeleton className="hidden h-3 w-8 @xs/navbar:block @2xl/navbar:w-28" />
         <Skeleton className="size-3 shrink-0 rounded-sm" />
       </div>
     );
@@ -113,6 +113,7 @@ export default function BuSwitcher() {
           variant="ghost"
           size="sm"
           title={buLabel}
+          aria-label={buLabel}
           className="group data-[state=open]:border-border/60 data-[state=open]:bg-muted/60 h-8 gap-1.5 rounded-lg border border-transparent px-1.5 text-xs font-semibold hover:border-none hover:bg-none @2xl/navbar:gap-2 @2xl/navbar:px-2"
         >
           {/* แถบแคบ: รหัส BU (alias) แทนโลโก้ — มือถือต้องรู้ว่าอยู่กิจการไหนโดยไม่ต้องกด
@@ -127,8 +128,10 @@ export default function BuSwitcher() {
               eager
             />
           </span>
+          {/* แถบแคบกว่า 320px (Galaxy Fold 280): ซ่อนรหัสด้วย ให้ชื่อหน้ามีที่พอ — ไม่งั้น
+              เหลือ "Purchas…" · ปุ่มยังกดได้จาก ⇅ และชื่อเต็มอยู่ใน title */}
           {alias && (
-            <span className="max-w-16 truncate font-semibold @2xl/navbar:hidden">
+            <span className="hidden max-w-16 truncate font-semibold @xs/navbar:inline @2xl/navbar:hidden">
               {alias}
             </span>
           )}

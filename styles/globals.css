@@ -1,4 +1,8 @@
 @import "tailwindcss";
+/* นิยามคลาส animate-in / animate-out / slide-* / fade-* / zoom-* ที่ components/ui
+   ของ shadcn ใช้อยู่ — ก่อนหน้านี้ไม่มี Sheet/Dialog/Popover/Dropdown/Tooltip จึงโผล่
+   และหายทันทีไม่มี transition · reduced-motion ด้านล่างตัดให้เหลือ 0.01ms */
+@import "tw-animate-css";
 @import "./module-colors.css";
 
 /* เอกสาร/สกิลไม่ใช่ซอร์สรันไทม์ — Tailwind auto-detect กวาด .md ด้วย แล้วเก็บข้อความ

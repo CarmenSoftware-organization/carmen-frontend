@@ -196,9 +196,26 @@ function Sidebar({
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
           </SheetHeader>
+          {/* กดลิงก์ในเมนูแล้วปิดแผ่น — เดิมหน้าเปลี่ยนอยู่ข้างหลังแต่แผ่นเมนูยังทับอยู่
+              ต้องกดปิดเองทุกครั้ง · ปุ่มกาง/หุบกลุ่ม (button) ไม่ปิด · กดค้าง ⌘/Ctrl/
+              Shift เพื่อเปิดแท็บใหม่ก็ไม่ปิด เพราะหน้านี้ไม่ได้เปลี่ยน */}
           <nav
             aria-label="Main navigation"
             className="flex h-full w-full flex-col"
+            onClick={(event) => {
+              // ไม่เช็ก defaultPrevented: <Link> ของ React Router เรียก preventDefault()
+              // เองทุกครั้งที่นำทางในแอป เช็กแล้วจะไม่ปิดเลย
+              if (
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey
+              )
+                return;
+              if ((event.target as Element).closest("a[href]")) {
+                setOpenMobile(false);
+              }
+            }}
           >
             {children}
           </nav>
