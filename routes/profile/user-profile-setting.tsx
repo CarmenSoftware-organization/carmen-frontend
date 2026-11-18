@@ -54,8 +54,12 @@ import {
 } from "@/lib/image-upload";
 import { BackButton } from "@/components/share/back-button";
 
-/** ช่องชื่อ/โทรศัพท์ของฟอร์ม: กว้างขั้นต่ำ 176px โตได้ถึง 320px แล้วหยุด (จอกว้างไม่ทำให้ช่องยืด) */
-const NAME_FIELD = "w-auto max-w-xs min-w-44 flex-1 basis-44";
+/**
+ * ช่องชื่อ/โทรศัพท์ของฟอร์ม: กว้างขั้นต่ำ 144px โตได้ถึง 320px แล้วหยุด (จอกว้างไม่ทำให้ช่องยืด)
+ * 144 ไม่ใช่ 176: การ์ดมือถือ 390 เหลือ ~334px — 176 วางได้แถวละช่องเดียว (ฟอร์ม 5 แถว)
+ * 144 ได้แถวละสอง (First|Middle · Last|Telephone · Alias+Save = 3 แถว)
+ */
+const NAME_FIELD = "w-auto max-w-xs min-w-36 flex-1 basis-36";
 
 export default function UserProfileSetting() {
   const navigate = useNavigate();
