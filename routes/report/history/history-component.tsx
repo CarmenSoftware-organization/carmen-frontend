@@ -134,7 +134,7 @@ function GridContent({
   }
   return (
     <>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-3">
         {items.map((item) => (
           <HistoryCard key={item.job_id} item={item} />
         ))}

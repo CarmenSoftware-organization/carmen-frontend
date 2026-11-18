@@ -11,6 +11,8 @@ import type { ReportFormatRaw, ReportHistory } from "@/types/report-history";
 export function useHistoryTable(): ColumnDef<ReportHistory>[] {
   const t = useTranslations("reportHistory");
 
+  // ชื่อรายงานรับความกว้างที่เหลือ ที่เหลือคงที่ — แบ่งตามสัดส่วนเดิม Format/Rows ยืดถึง 484px ที่ 4K
+  // tablet budget 662px: # 50 + ชื่อ 180 (ขั้นต่ำของ grow) + ประเภท 140 + รูปแบบ 80 + สถานะ 130 + แถว 80 = 660
   return [
     {
       id: "index",
@@ -40,13 +42,18 @@ export function useHistoryTable(): ColumnDef<ReportHistory>[] {
         }
         return <span className="text-xs">{name}</span>;
       },
+      size: 180,
+      meta: { grow: true },
     },
     {
       accessorKey: "report_type",
       header: t("reportType"),
       cell: ({ getValue }) => (
-        <span className="text-xs">{getValue<string>()}</span>
+        <span className="block truncate text-xs" title={getValue<string>()}>
+          {getValue<string>()}
+        </span>
       ),
+      size: 140,
     },
     {
       accessorKey: "format",
@@ -66,7 +73,7 @@ export function useHistoryTable(): ColumnDef<ReportHistory>[] {
         if (!key) return "-";
         return <StatusChip status={key} label={t(key)} />;
       },
-      size: 120,
+      size: 130,
     },
     {
       accessorKey: "row_count",
