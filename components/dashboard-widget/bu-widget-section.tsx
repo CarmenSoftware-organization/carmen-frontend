@@ -1,3 +1,4 @@
+import { WIDGET_GRID_CLASS } from "./widget-display";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   closestCorners,
@@ -271,11 +272,7 @@ export function BuWidgetSection({
       </div>
 
       {isLoading && (
-        <div
-          aria-busy="true"
-          aria-live="polite"
-          className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12"
-        >
+        <div aria-busy="true" aria-live="polite" className={WIDGET_GRID_CLASS}>
           <WidgetSkeletonCards />
         </div>
       )}
@@ -291,7 +288,7 @@ export function BuWidgetSection({
           onDragEnd={canEdit ? handleDragEnd : undefined}
         >
           <SortableContext items={ids} strategy={rectSortingStrategy}>
-            <ul className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
+            <ul className={WIDGET_GRID_CLASS}>
               {items.map((w, i) => (
                 <SortableWidgetItem
                   key={w.id}

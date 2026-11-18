@@ -98,19 +98,23 @@ describe("sizeOptionsFor / minSizeFor", () => {
 describe("gridClasses", () => {
   it("emits full literal classes (Tailwind scans source, not runtime strings)", () => {
     expect(gridClasses("kpi")).toBe(
-      "@min-[38rem]:col-span-2 @5xl:col-span-3 row-span-2",
+      "@min-[38rem]:col-span-3 @5xl:col-span-3 row-span-2",
     );
     expect(gridClasses("table")).toBe(
       "@min-[38rem]:col-span-6 @5xl:col-span-12 row-span-4",
     );
   });
 
-  it("halves the width on the medium 6-column grid, rounding up", () => {
+  // tablet = 2 ใบ/แถว: เล็กกว่าครึ่งแถวได้ครึ่ง ตั้งแต่ครึ่งแถวขึ้นไปเต็มแถว
+  it("uses only half or full width on the medium 6-column grid", () => {
     expect(gridClasses("bar", { width: 4, height: 3 })).toContain(
-      "@min-[38rem]:col-span-2",
+      "@min-[38rem]:col-span-3",
+    );
+    expect(gridClasses("bar", { width: 6, height: 3 })).toContain(
+      "@min-[38rem]:col-span-6",
     );
     expect(gridClasses("bar", { width: 9, height: 3 })).toContain(
-      "@min-[38rem]:col-span-5",
+      "@min-[38rem]:col-span-6",
     );
   });
 

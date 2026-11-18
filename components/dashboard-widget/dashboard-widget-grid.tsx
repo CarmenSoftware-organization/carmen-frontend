@@ -65,6 +65,7 @@ import {
   gaugeRange,
   gridClasses,
   thresholdColor,
+  WIDGET_GRID_CLASS,
 } from "@/components/dashboard-widget/widget-display";
 import { dashboardDatasetDataQueryOptions } from "@/hooks/use-dashboard-dataset";
 import {
@@ -177,7 +178,7 @@ export function DashboardWidgetGrid({
       <section
         aria-busy={isLoading}
         aria-live="polite"
-        className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12"
+        className={WIDGET_GRID_CLASS}
       >
         {isLoading ? (
           <WidgetSkeletonCards />

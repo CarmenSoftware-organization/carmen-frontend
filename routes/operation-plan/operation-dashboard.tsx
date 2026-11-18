@@ -8,7 +8,10 @@ import {
   WidgetSkeleton,
 } from "@/components/dashboard-widget/dashboard-widget-grid";
 import { BuWidgetSection } from "@/components/dashboard-widget/bu-widget-section";
-import { gridClasses } from "@/components/dashboard-widget/widget-display";
+import {
+  gridClasses,
+  WIDGET_GRID_CLASS,
+} from "@/components/dashboard-widget/widget-display";
 import { AppTile } from "@/components/icons/tiles";
 import { useOperationPlanWidgets } from "@/hooks/use-dashboard-widgets";
 
@@ -79,11 +82,7 @@ export default function OperationDashboard() {
       )}
 
       {isLoading && (
-        <div
-          aria-busy="true"
-          aria-live="polite"
-          className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12"
-        >
+        <div aria-busy="true" aria-live="polite" className={WIDGET_GRID_CLASS}>
           {Array.from({ length: 4 }).map((_, i) => (
             <WidgetSkeleton
               key={`opd-skeleton-${i}`}
@@ -102,7 +101,7 @@ export default function OperationDashboard() {
 
       {kpis.length > 0 && (
         <Section heading={td("sectionKpi")}>
-          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
+          <div className={WIDGET_GRID_CLASS}>
             {kpis.map((w) => (
               <LazyWidget
                 key={w.dataset_id}
@@ -124,7 +123,7 @@ export default function OperationDashboard() {
 
       {lines.length > 0 && (
         <Section heading={td("sectionTrends")}>
-          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
+          <div className={WIDGET_GRID_CLASS}>
             {lines.map((w) => (
               <LazyWidget
                 key={w.dataset_id}
@@ -146,7 +145,7 @@ export default function OperationDashboard() {
 
       {bars.length > 0 && (
         <Section heading={td("sectionComparison")}>
-          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
+          <div className={WIDGET_GRID_CLASS}>
             {bars.map((w) => (
               <LazyWidget
                 key={w.dataset_id}
@@ -168,7 +167,7 @@ export default function OperationDashboard() {
 
       {pies.length > 0 && (
         <Section heading={td("sectionDistribution")}>
-          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
+          <div className={WIDGET_GRID_CLASS}>
             {pies.map((w) => (
               <LazyWidget
                 key={w.dataset_id}
