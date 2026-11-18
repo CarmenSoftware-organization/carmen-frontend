@@ -52,11 +52,14 @@ export function PrItemCards({
   const selectHeader = table
     .getHeaderGroups()[0]
     ?.headers.find((h) => h.column.id === "select");
-  const selectAll = selectHeader
-    ? flexRender(
-        selectHeader.column.columnDef.header,
-        selectHeader.getContext(),
-      )
+  // เรียกฟังก์ชัน header ตรง ๆ ไม่ผ่าน flexRender — flexRender ห่อฟังก์ชันเป็น element
+  // เสมอ ผลจึงไม่เคยเป็น null ทั้งที่ header คืน null ในโหมดดู ป้าย "เลือกทั้งหมด" เลยลอย
+  // อยู่โดยไม่มี checkbox · header นี้อ่าน state ของ table เท่านั้น ไม่เรียก hook
+  const selectHeaderDef = selectHeader?.column.columnDef.header;
+  const selectAll: ReactNode = selectHeader
+    ? typeof selectHeaderDef === "function"
+      ? (selectHeaderDef(selectHeader.getContext()) as ReactNode)
+      : (selectHeaderDef ?? null)
     : null;
 
   const expandedCol = table
@@ -151,7 +154,10 @@ export function PrItemCards({
               {row.getIsExpanded() && expandedCol && (
                 <div className="border-border/60 flex gap-2 border-t p-3">
                   {leading && <div className="shrink-0">{leading}</div>}
-                  <div className="min-w-0 flex-1">
+                  {/* overflow-x-auto: PrItemExpand (ราคาจาก price list ฯลฯ) เป็นกริดแนวนอน
+                      ที่ออกแบบตามความกว้างตาราง ในการ์ดมือถือ/tablet คอลัมน์ท้าย ๆ จะเกินขอบ
+                      ให้เลื่อนดูในกล่องตัวเองแทนการโดนตัดทิ้ง */}
+                  <div className="min-w-0 flex-1 overflow-x-auto">
                     {expandedCol.columnDef.meta?.expandedContent?.(
                       row.original,
                     )}
