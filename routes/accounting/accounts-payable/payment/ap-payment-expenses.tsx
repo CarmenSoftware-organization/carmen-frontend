@@ -166,7 +166,11 @@ export function PaymentExpensesSection({
         <Dialog open onOpenChange={(open) => !open && setDraft(null)}>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle>{ui("editExpense")}</DialogTitle>
+              <DialogTitle>
+                {rows.some((row) => row.key === draft.key)
+                  ? ui("editExpense")
+                  : t("add")}
+              </DialogTitle>
             </DialogHeader>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field>

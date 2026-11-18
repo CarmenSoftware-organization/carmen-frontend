@@ -806,6 +806,7 @@ function ApPaymentEditor({
 
           <PaymentHeader
             expectedAmount={preview.net}
+            baseDisbursedAmount={view ? loaded.base_net_paid_amount : undefined}
             section="methods"
             form={effectiveForm}
             docNo={loaded?.doc_no}
@@ -827,6 +828,8 @@ function ApPaymentEditor({
 
           <PaymentWhtSection
             payee={loaded}
+            condition={form.wht_condition}
+            onConditionChange={(wht_condition) => patchForm({ wht_condition })}
             rows={form.wht}
             manual={form.wht_manual}
             editable={editable}

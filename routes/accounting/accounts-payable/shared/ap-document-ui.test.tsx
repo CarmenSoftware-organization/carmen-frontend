@@ -14,6 +14,8 @@ import { IntlProvider } from "use-intl";
 import en from "@/messages/en.json";
 import ApInvoiceDetail from "../invoice/ap-invoice-detail";
 import ApPaymentDetail from "../payment/ap-payment-detail";
+import { PaymentHeader } from "../payment/ap-payment-header";
+import { initialPaymentForm } from "../payment/ap-payment-form";
 import { PaymentAllocationsEditor } from "../payment/ap-payment-allocations";
 import { PaymentExpensesSection } from "../payment/ap-payment-expenses";
 import { InvoiceReferenceEditor } from "../invoice/ap-invoice-reference-editor";
@@ -378,6 +380,7 @@ describe("AP document layout and persistence contract", () => {
           total_wht_amount: "3",
           total_expense_amount: "0",
           net_paid_amount: "104",
+          wht_condition: "paid_once",
           wht: [
             {
               id: "wht",
@@ -402,7 +405,20 @@ describe("AP document layout and persistence contract", () => {
         </Routes>,
         `/${kind}`,
       );
+      if (kind === "payment")
+        expect(screen.getByText("3: Paid once")).toBeInTheDocument();
       await userEvent.click(screen.getByRole("button", { name: "Edit" }));
+      if (kind === "payment") {
+        const condition = screen.getByRole("combobox", {
+          name: "Condition",
+        });
+        expect(condition).toHaveTextContent("3: Paid once");
+        await userEvent.click(condition);
+        await userEvent.click(
+          screen.getByRole("option", { name: "2: Paid permanently" }),
+        );
+        expect(condition).toHaveTextContent("2: Paid permanently");
+      }
       await userEvent.click(screen.getByRole("tab", { name: "Attachments" }));
       fireEvent.change(screen.getByLabelText("Attach files"), {
         target: {
@@ -434,6 +450,8 @@ describe("AP document layout and persistence contract", () => {
       );
       await waitFor(() => expect(state.save).toHaveBeenCalledOnce());
       const input = state.save.mock.calls[0][0].input;
+      if (kind === "payment")
+        expect(input.wht_condition).toBe("paid_permanently");
       expect(
         kind === "invoice"
           ? input.lines[0].unit_price
@@ -710,6 +728,11 @@ describe("AP document layout and persistence contract", () => {
     expect(
       screen.getByRole("button", { name: "Save Draft" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        en.accounting.accountsPayable.payment.detail.currencySelectInvoice,
+      ),
+    ).toBeInTheDocument();
   });
 
   it("keeps a saved Payment in view mode until Edit, and Cancel restores view", async () => {
@@ -766,6 +789,11 @@ describe("AP document layout and persistence contract", () => {
       </Routes>,
       "/payment",
     );
+    expect(
+      screen.getByText(
+        "Payment currency (THB) is set automatically from the selected invoices and cannot be changed here.",
+      ),
+    ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Save Draft" })).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Edit" }));
     expect(
@@ -877,6 +905,35 @@ const docs: ApOutstandingDocument[] = [
   },
 ];
 
+it.each([
+  ["base currency", "THB", "99", true, undefined, "100.00"],
+  ["foreign currency", "USD", "35.12345", true, undefined, "3,512.35"],
+  ["automatic rate pending", "USD", "", true, undefined, "—"],
+  ["persisted base amount", "USD", "35", false, "3500.01", "3,500.01"],
+] as const)(
+  "displays payment base amount for %s",
+  (_name, currency, rate, editable, stored, expected) => {
+    wrap(
+      <PaymentHeader
+        section="methods"
+        form={{
+          ...initialPaymentForm(null),
+          payment_amount: "100",
+          exchange_rate: rate,
+        }}
+        onChange={vi.fn()}
+        isNew={editable}
+        editable={editable}
+        errors={new Set()}
+        currencyCode={currency}
+        baseCurrencyCode="THB"
+        baseDisbursedAmount={stored}
+      />,
+    );
+    expect(screen.getByText(`Base Amount (THB): ${expected}`)).toBeInTheDocument();
+  },
+);
+
 it("selects partial payment only on Select and discards cancelled dialog edits", async () => {
   const changed = vi.fn();
   wrap(
@@ -941,6 +998,9 @@ it("edits an existing expense in a dialog without applying cancelled changes", a
     />,
   );
   await userEvent.click(screen.getByRole("button", { name: "Edit expense" }));
+  expect(
+    screen.getByRole("heading", { name: "Edit expense" }),
+  ).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText("Amount"), { target: { value: "-10" } });
   expect(screen.getByLabelText("Amount")).toHaveValue("10");
   await userEvent.click(within(screen.getByRole("dialog")).getByRole("combobox"));
@@ -968,4 +1028,8 @@ it("edits an existing expense in a dialog without applying cancelled changes", a
     })[0],
   );
   expect(changed).not.toHaveBeenCalled();
+  await userEvent.click(screen.getByRole("button", { name: "Add expense" }));
+  expect(
+    screen.getByRole("heading", { name: "Add expense" }),
+  ).toBeInTheDocument();
 });
