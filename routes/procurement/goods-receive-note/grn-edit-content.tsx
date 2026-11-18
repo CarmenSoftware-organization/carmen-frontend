@@ -13,7 +13,8 @@ export function GrnEditContent({ id }: { id: string }) {
     refetch,
   } = useGoodsReceiveNoteById(id);
 
-  if (isLoading) return <DocPageSkeleton />;
+  if (isLoading)
+    return <DocPageSkeleton fields={[2, 1, 1, 1, 1, 1, 1, 1, 2]} />;
   if (error || !goodsReceiveNote)
     return (
       <ErrorState

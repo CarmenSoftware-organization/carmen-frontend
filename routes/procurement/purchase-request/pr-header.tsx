@@ -13,8 +13,8 @@ import { WorkflowStepButton } from "@/components/share/workflow-step-button";
 import { PR_STATUS, type PurchaseRequest } from "@/types/purchase-request";
 import { StatusChip } from "@/components/ui/status-chip";
 import { PR_STATUS_CONFIG } from "@/constant/purchase-request";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { SettingField } from "@/components/share/setting-field";
+import { FieldGrid } from "@/components/share/compact-section";
 import { WORKFLOW_TYPE } from "@/types/workflows";
 import { STAGE_ROLE } from "@/types/stage-role";
 import type { FormMode } from "@/types/form";
@@ -129,38 +129,29 @@ export function PrHeader({
   // แถบข้อมูลหัวเอกสาร — ทุกฟิลด์ของใบอยู่ที่นี่ที่เดียว ไม่มีบล็อกซ้ำในตัวฟอร์ม
   // ช่องที่แก้ได้ (workflow/description) ส่งเป็น node มาวางในเซลล์ของตัวเอง
   // ฟิลด์เดียวกันจึงอยู่ตำแหน่งเดิมเสมอ สลับ view/edit แล้วไม่ต้องไล่หาใหม่
+  // ช่องที่แก้ไม่ได้ (โหมดดู / role อื่น / workflow ที่ล็อกหลังสร้าง) เป็นข้อความ
+  // ป้ายจาง + ค่าเด่น ไม่ใช่ input ที่ถูก disable — กรอบมีเฉพาะช่องที่กรอกได้จริง
+  // ตำแหน่งยังเป็นเซลล์เดิมใน grid เดียวกัน สลับโหมดแล้วฟิลด์ไม่ย้ายที่
   const workflowCell =
     workflowField ??
     (workflowName ? (
-      <Field>
-        {/* ดาวแดงติดอยู่กับ "ช่องนี้ต้องมีค่า" ไม่ใช่ "ตอนนี้กรอกได้" — โหมดอ่าน
-            กับใบที่มาจากเทมเพลต (workflow ถูกล็อก) จึงต้องมีเหมือนกัน ไม่งั้น
-            ฟิลด์เดียวกันหน้าตาเปลี่ยนไปมาตามโหมดโดยไม่มีเหตุผลที่คนใช้อธิบายได้ */}
-        <FieldLabel required>{tfl("workflow")}</FieldLabel>
-        <Input value={workflowName} disabled />
-      </Field>
+      <SettingField label={tfl("workflow")} value={workflowName} />
     ) : null);
 
-  // โชว์เสมอแม้ยังไม่ได้กรอก — ช่องที่หายไปทั้งช่องทำให้หัวเอกสารของใบที่มีคำอธิบาย
-  // กับใบที่ไม่มีเป็นคนละทรง และคนอ่านแยกไม่ออกว่า "ไม่มีคำอธิบาย" กับ "ไม่มีช่องนี้"
+  // โชว์เสมอแม้ยังไม่ได้กรอก (ค่าว่างขึ้น —) — ช่องที่หายไปทั้งช่องทำให้หัวเอกสาร
+  // ของใบที่มีคำอธิบายกับใบที่ไม่มีเป็นคนละทรง
   const descriptionCell = descriptionField ?? (
-    <Field className="lg:col-span-2">
-      <FieldLabel>{tfl("description")}</FieldLabel>
-      <Input value={description ?? ""} disabled />
-    </Field>
+    <SettingField label={tfl("description")} value={description} fullWidth />
   );
 
-  // สองแถวเป็นคนละ grid แต่ track เดียวกัน — บังคับให้ workflow/description
-  // ขึ้นบรรทัดใหม่เสมอ ไม่ว่าแถวบนจะมีกี่ช่อง (ถ้าใช้ grid เดียวแล้วปล่อยไหลเอง
-  // ช่องจะเลื่อนไปต่อท้ายแถวบนเมื่อจอกว้างพอ) · ml-4 หักล้าง -ml-4 ของ DocFormHeader
-  const ribbonRow =
-    "grid w-full grid-cols-1 gap-x-2 gap-y-4 sm:grid-cols-2 lg:grid-cols-6";
+  // FieldGrid เดียวกับหน้าฟอร์มอื่น: คอลัมน์ตามความกว้างกล่อง (container query)
+  // ไม่ใช่ความกว้างจอ — description กิน 2 ช่อง · ml-4 หักล้าง -ml-4 ของ DocFormHeader
   const ribbon = (workflowCell || descriptionCell) && (
-    <div className="ml-4 w-full">
-      <div className={ribbonRow}>
+    <div className="ml-4 min-w-0 flex-1">
+      <FieldGrid>
         {workflowCell}
         {descriptionCell}
-      </div>
+      </FieldGrid>
     </div>
   );
 

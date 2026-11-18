@@ -8,7 +8,10 @@ export function CnEditContent({ id }: { id: string }) {
   const tErr = useTranslations("procurement.creditNote");
   const { data: creditNote, isLoading, error, refetch } = useCreditNoteById(id);
 
-  if (isLoading) return <DocPageSkeleton />;
+  if (isLoading)
+    return (
+      <DocPageSkeleton fields={[2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2]} toolbar />
+    );
   if (error || !creditNote)
     return (
       <ErrorState

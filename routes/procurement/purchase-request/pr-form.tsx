@@ -291,7 +291,7 @@ export function PurchaseRequestForm({
               <PrDescriptionField
                 form={form}
                 disabled={actions.isPending}
-                className="lg:col-span-2"
+                className="@md:col-span-2"
               />
             )
           }
