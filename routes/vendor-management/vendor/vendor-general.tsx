@@ -30,9 +30,22 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
 
   const master = useTranslations("accounting.accountsPayable.master");
   // ไม่มีการ์ด/หัวหมวดของตัวเองแล้ว — ช่องชุดนี้วางเป็น ribbon ในการ์ดหัวหน้า (ทรงเดียวกับหัว PR)
-  // โหมดดู dense = 2 คอลัมน์ตั้งแต่กล่องแคบสุด (ข้อความล้วน) · โหมดแก้ยังคอลัมน์เดียวบนมือถือ
-  return (
-    <FieldGrid dense={isView}>
+  // โหมดแก้: FieldGrid ปกติ (ช่องกรอกต้องการความกว้าง)
+  // โหมดดู: ข้อความล้วน ค่าสั้น จึงแน่นกว่า FieldGrid — 2 คอลัมน์บนมือถือ · 4 ตั้งแต่ @2xl (HD 1366
+  // กล่อง ~900px = 2 แถว) · 8 ตั้งแต่ 96rem (Full HD ขึ้นไป = แถวเดียว) · ค่าไม่ต้องสูงเท่าช่องกรอก
+  // (min-h-8) ป้ายชิดค่า เท่า SettingField ของหัว PR
+  const fields = (children: React.ReactNode) =>
+    isView ? (
+      <div className="@container">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-2.5 @2xl:grid-cols-4 @min-[96rem]:grid-cols-8 [&_[data-slot=field-plain-text]]:min-h-0 [&_[data-slot=field]]:gap-0.5">
+          {children}
+        </div>
+      </div>
+    ) : (
+      <FieldGrid>{children}</FieldGrid>
+    );
+  return fields(
+    <>
       {/* Name / Code / Status ไม่แสดงในโหมดดู — แถบหัว (FormToolbar) มีครบทั้งสามค่าแล้ว
           การ์ดนี้เคยซ้ำของบนหัวเกือบครึ่งการ์ด */}
       {/* Name */}
@@ -213,8 +226,12 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
           />
         </Field>
       ))}
-      {/* Description — data-wide = เต็มแถวในกริด dense บนมือถือ */}
-      <Field data-wide="" className="@md:col-span-2">
+      {/* Description — โหมดดูเต็มแถวบนมือถือ · ช่องเดียวตั้งแต่ @2xl
+          (แบบหัว PR) ช่องโหมดดู 8 ช่องจึงลงตัว 2 แถวที่ 4 คอลัมน์ / แถวเดียวที่ 8 คอลัมน์ */}
+      <Field
+        data-wide=""
+        className={isView ? "col-span-2 @2xl:col-span-1" : "@md:col-span-2"}
+      >
         <FieldLabel htmlFor="vendor-description">
           {tfl("description")}
         </FieldLabel>
@@ -253,7 +270,7 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
           />
         </Field>
       )}
-    </FieldGrid>
+    </>,
   );
 }
 

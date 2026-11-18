@@ -308,7 +308,7 @@ export function VendorForm({ vendor }: VendorFormProps) {
             deleteIsPending={deleteVendor.isPending}
             activity={vendor && { id: vendor.id, label: vendor.code }}
             onComment={vendor ? () => setShowComment(true) : undefined}
-            subtitle={identityLine}
+            subtitle={isView ? undefined : identityLine}
             badges={
               <>
                 {/* โหมดเพิ่ม (ยังไม่มีบรรทัดตัวตน): รหัสที่กำลังพิมพ์โชว์ข้างชื่อ · ใบที่บันทึกแล้วอยู่ในบรรทัดตัวตน */}
@@ -322,19 +322,27 @@ export function VendorForm({ vendor }: VendorFormProps) {
             }
             // ช่อง General อยู่นอก <form> (แบบ PR — ปุ่มบนหัวไม่กลายเป็น submit) RHF ยังเก็บค่าครบ
             // แค่กด Enter ในช่องเหล่านี้ไม่ submit · ตาราง audit เฉพาะโหมดดู ตอนแก้ช่องกรอกต้องการที่เต็ม
+            // โหมดดู: บรรทัดตัวตน (ซ้าย) กับตาราง audit (ขวา) อยู่แถวเดียวกัน แล้วกริด General
+            // ได้ความกว้างเต็มการ์ด — เดิมตาราง audit นั่งข้างกริด กินที่ ~280px ที่ HD กริดเหลือ
+            // 3 คอลัมน์ 3 แถว · -mt-3.5 หักล้าง pt-4 ของ ribbon ให้บรรทัดตัวตนชิดชื่อเท่า subtitle
             ribbon={
-              <div className="ml-4 flex min-w-0 flex-1 flex-wrap items-end gap-x-5 gap-y-3">
-                <div className="min-w-0 flex-1 basis-72">
+              isView ? (
+                <div className="-mt-3.5 ml-4 flex min-w-0 flex-1 flex-col gap-2">
+                  <div className="flex min-w-0 flex-wrap items-start justify-between gap-x-5 gap-y-2">
+                    {identityLine}
+                    <DocAuditLine
+                      audit={vendor?.audit}
+                      docVersion={vendor?.doc_version}
+                      className="ms-auto hidden sm:table"
+                    />
+                  </div>
                   <VendorGeneral form={form} isDisabled={isDisabled} />
                 </div>
-                {isView && (
-                  <DocAuditLine
-                    audit={vendor?.audit}
-                    docVersion={vendor?.doc_version}
-                    className="ms-auto hidden sm:table"
-                  />
-                )}
-              </div>
+              ) : (
+                <div className="ml-4 min-w-0 flex-1">
+                  <VendorGeneral form={form} isDisabled={isDisabled} />
+                </div>
+              )
             }
           >
             {/* Vendor Detail Report ของผู้ขายรายนี้ — ไม่อยู่ในหน้ารายการรายงาน
