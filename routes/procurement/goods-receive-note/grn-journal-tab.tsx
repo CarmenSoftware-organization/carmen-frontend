@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { Link } from "react-router";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
@@ -100,35 +101,49 @@ function JvCard({ view }: { readonly view: GrnJvView }) {
         </thead>
         <tbody>
           {jv.lines.map((l) => (
-            <tr key={l.id} className="border-b align-top last:border-0">
-              <td className="py-1.5">
-                {/* รหัสกับชื่อแยกบรรทัด — ต่อกันด้วย " - " แล้วตัดบรรทัดกลางขีดบนมือถือ */}
-                <span className="block font-medium tabular-nums">
-                  {l.account_code}
-                </span>
-                {l.account_name && (
-                  <span className="text-muted-foreground block break-words">
-                    {l.account_name}
-                  </span>
+            <Fragment key={l.id}>
+              {/* กล่องแคบ: คำอธิบายเป็นแถวเต็มความกว้างใต้บรรทัด — ซ้อนใต้ชื่อบัญชีในคอลัมน์
+                  ~130px แล้วข้อความไทยยาวหักเป็น 4–5 บรรทัด · เส้นคั่นย้ายไปอยู่ใต้แถวคำอธิบาย */}
+              <tr
+                className={cn(
+                  "border-b align-top",
+                  l.comment && "@max-lg:border-0",
                 )}
-                {l.comment && (
-                  <span className="text-muted-foreground mt-0.5 block break-words @lg:hidden">
-                    {l.comment}
+              >
+                <td className="py-1.5">
+                  {/* รหัสกับชื่อแยกบรรทัด — ต่อกันด้วย " - " แล้วตัดบรรทัดกลางขีดบนมือถือ */}
+                  <span className="block font-medium tabular-nums">
+                    {l.account_code}
                   </span>
-                )}
-              </td>
-              {hasComment && (
-                <td className="text-muted-foreground hidden py-1.5 ps-3 break-words @lg:table-cell">
-                  {l.comment}
+                  {l.account_name && (
+                    <span className="text-muted-foreground block break-words">
+                      {l.account_name}
+                    </span>
+                  )}
                 </td>
+                {hasComment && (
+                  <td className="text-muted-foreground hidden py-1.5 ps-3 break-words @lg:table-cell">
+                    {l.comment}
+                  </td>
+                )}
+                <td className={amountCell}>
+                  {l.debit ? formatAmount(l.debit) : ""}
+                </td>
+                <td className={amountCell}>
+                  {l.credit ? formatAmount(l.credit) : ""}
+                </td>
+              </tr>
+              {l.comment && (
+                <tr className="border-b @lg:hidden">
+                  <td
+                    colSpan={3}
+                    className="text-muted-foreground pb-1.5 break-words"
+                  >
+                    {l.comment}
+                  </td>
+                </tr>
               )}
-              <td className={amountCell}>
-                {l.debit ? formatAmount(l.debit) : ""}
-              </td>
-              <td className={amountCell}>
-                {l.credit ? formatAmount(l.credit) : ""}
-              </td>
-            </tr>
+            </Fragment>
           ))}
         </tbody>
         <tfoot>
