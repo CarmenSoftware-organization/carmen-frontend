@@ -226,11 +226,36 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
           />
         </Field>
       ))}
+      {/* Status — โหมดดูมี badge บนแถบหัวแล้ว · มาก่อน Description ให้ไปเติมช่องท้ายแถวของ
+          WHT (3 คอลัมน์ไม่เหลือช่องโหว่) แล้ว Description เต็มแถวสุดท้าย */}
+      {!isView && (
+        <Field>
+          <FieldLabel>{tfl("status")}</FieldLabel>
+          <Controller
+            control={form.control}
+            name="is_active"
+            render={({ field }) => (
+              // บรรทัดเดียวสูงเท่าช่องกรอก: ไม่มีคำอธิบาย ("Enable or disable this record" ซ้ำป้าย)
+              // และไม่มีป้ายสถานะ (ซ้ำป้ายข้างชื่อบนหัวการ์ด) — เดิมกล่องนี้สูง ~80px ดันแถวทั้งแถว
+              <StatusSwitch
+                id="vendor-is-active"
+                checked={field.value}
+                onCheckedChange={field.onChange}
+                disabled={isDisabled}
+                description=""
+                hideBadge
+              />
+            )}
+          />
+        </Field>
+      )}
+
       {/* Description — โหมดดูเต็มแถวบนมือถือ · ช่องเดียวตั้งแต่ @2xl
-          (แบบหัว PR) ช่องโหมดดู 8 ช่องจึงลงตัว 2 แถวที่ 4 คอลัมน์ / แถวเดียวที่ 8 คอลัมน์ */}
+          (แบบหัว PR) ช่องโหมดดู 8 ช่องจึงลงตัว 2 แถวที่ 4 คอลัมน์ / แถวเดียวที่ 8 คอลัมน์
+          โหมดแก้เต็มแถวสุดท้าย — ช่องอื่น 12 ช่องลงตัวพอดีที่ 3 / 4 / 6 คอลัมน์ */}
       <Field
         data-wide=""
-        className={isView ? "col-span-2 @2xl:col-span-1" : "@md:col-span-2"}
+        className={isView ? "col-span-2 @2xl:col-span-1" : "@md:col-span-full"}
       >
         <FieldLabel htmlFor="vendor-description">
           {tfl("description")}
@@ -251,25 +276,6 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
           />
         )}
       </Field>
-
-      {/* Status — โหมดดูมี badge บนแถบหัวแล้ว */}
-      {!isView && (
-        <Field>
-          <FieldLabel>{tfl("status")}</FieldLabel>
-          <Controller
-            control={form.control}
-            name="is_active"
-            render={({ field }) => (
-              <StatusSwitch
-                id="vendor-is-active"
-                checked={field.value}
-                onCheckedChange={field.onChange}
-                disabled={isDisabled}
-              />
-            )}
-          />
-        </Field>
-      )}
     </>,
   );
 }

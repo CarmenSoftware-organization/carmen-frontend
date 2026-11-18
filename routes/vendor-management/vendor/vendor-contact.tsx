@@ -82,7 +82,10 @@ export function VendorContact({
       <div>
         {contactFields.length === 0 ? (
           isView ? null : (
+            // โหมดแก้ก็บรรทัดเดียว (ไอคอน + ข้อความ) — กล่องประสูง ~125px ซ้ำกับปุ่มเพิ่มบนหัวหมวด
+            // สามกล่องเรียงกันดันใบรับรองตกจอ
             <VendorEmptySection
+              compact
               icon={User}
               title={t("contact.noContacts")}
               description={t("contact.noContactsDesc")}

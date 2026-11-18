@@ -90,7 +90,10 @@ export function VendorAddress({
     >
       {addressFields.length === 0 ? (
         isView ? null : (
+          // โหมดแก้ก็บรรทัดเดียว (ไอคอน + ข้อความ) — กล่องประสูง ~125px ซ้ำกับปุ่มเพิ่มบนหัวหมวด
+          // สามกล่องเรียงกันดันใบรับรองตกจอ
           <VendorEmptySection
+            compact
             icon={MapPin}
             title={t("address.noAddresses")}
             description={t("address.noAddressesDesc")}

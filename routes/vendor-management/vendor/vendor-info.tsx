@@ -66,7 +66,10 @@ export function VendorInfo({
     >
       {infoFields.length === 0 ? (
         isView ? null : (
+          // โหมดแก้ก็บรรทัดเดียว (ไอคอน + ข้อความ) — กล่องประสูง ~125px ซ้ำกับปุ่มเพิ่มบนหัวหมวด
+          // สามกล่องเรียงกันดันใบรับรองตกจอ
           <VendorEmptySection
+            compact
             icon={Info}
             title={t("info.noInfo")}
             description={t("info.noInfoDesc")}
