@@ -10,8 +10,8 @@ import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useEntityForm } from "@/hooks/use-entity-form";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
-import { SECTION_PAIR } from "@/components/share/compact-section";
 import { FormPageShell } from "@/components/share/form-page-shell";
+import { SECTION_PAIR } from "@/components/share/compact-section";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { PrintDocumentButton } from "@/components/print-document-button";
 import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
@@ -49,6 +49,17 @@ const EntityCommentSheet = lazy(() =>
 );
 
 const FORM_ID = "vendor-form";
+
+/**
+ * ที่อยู่ | ผู้ติดต่อ — วางคู่ตั้งแต่กล่องกว้าง 56rem (HD 1366 ขึ้นไป) ไม่ใช่ 1700px ของ
+ * `SECTION_PAIR` (ผู้ใช้สั่ง 2026-11-19) — สองหมวดนี้เป็นการ์ดรายการสั้น ๆ ที่เรียงกริดตาม
+ * ความกว้างหมวดเอง ครึ่งกล่องที่ HD (~450px) ยังพอการ์ดหนึ่งใบต่อแถว · ตัดสินจากกล่อง
+ * (`@container`) ไม่ใช่จอ · ไม่มี items-start: สองหมวดสูงเท่ากัน
+ * เฉพาะโหมดดู — โหมดแก้ใช้ `SECTION_PAIR` (คู่ตั้งแต่ 1700px) เหมือนเดิม: ครึ่งกล่อง HD หัวหมวด
+ * ผู้ติดต่อ (คำอธิบาย + ปุ่ม Add Contact) ตกสองบรรทัด การ์ดสองฝั่งเริ่มคนละระดับ และช่องอีเมล/
+ * โทรศัพท์ของการ์ดผู้ติดต่อถูกบีบ
+ */
+export const VENDOR_SECTION_PAIR = "grid gap-x-5 @4xl:grid-cols-2";
 
 interface VendorFormProps {
   readonly vendor?: VendorDetail;
@@ -370,21 +381,23 @@ export function VendorForm({ vendor }: VendorFormProps) {
         )}
       >
         {/* ที่อยู่ | ผู้ติดต่อ — สองรายการคู่กัน วางเคียงกันบนจอกว้าง */}
-        <div className={SECTION_PAIR}>
-          <VendorAddress
-            form={form}
-            isDisabled={isDisabled}
-            addressFields={addressFields}
-            prependAddress={prependAddress}
-            removeAddress={handleRemoveAddress}
-          />
-          <VendorContact
-            form={form}
-            isDisabled={isDisabled}
-            contactFields={contactFields}
-            prependContact={prependContact}
-            removeContact={handleRemoveContact}
-          />
+        <div className="@container">
+          <div className={isView ? VENDOR_SECTION_PAIR : SECTION_PAIR}>
+            <VendorAddress
+              form={form}
+              isDisabled={isDisabled}
+              addressFields={addressFields}
+              prependAddress={prependAddress}
+              removeAddress={handleRemoveAddress}
+            />
+            <VendorContact
+              form={form}
+              isDisabled={isDisabled}
+              contactFields={contactFields}
+              prependContact={prependContact}
+              removeContact={handleRemoveContact}
+            />
+          </div>
         </div>
         <VendorInfo
           form={form}

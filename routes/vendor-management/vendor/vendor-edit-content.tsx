@@ -1,12 +1,9 @@
 import { useTranslations } from "use-intl";
 import { useVendorById } from "@/hooks/use-vendor";
-import { VendorForm } from "./vendor-form";
+import { VENDOR_SECTION_PAIR, VendorForm } from "./vendor-form";
 import { ErrorState } from "@/components/ui/error-state";
 import { FormPageHeaderSkeleton } from "@/components/loader/form-page-skeleton";
-import {
-  CompactSectionSkeleton,
-  SECTION_PAIR,
-} from "@/components/share/compact-section";
+import { CompactSectionSkeleton } from "@/components/share/compact-section";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,9 +24,11 @@ export function VendorEditContent({ id }: { id: string }) {
           </div>
         }
       >
-        <div className={SECTION_PAIR}>
-          <CompactSectionSkeleton className="h-28" />
-          <CompactSectionSkeleton className="h-28" />
+        <div className="@container">
+          <div className={VENDOR_SECTION_PAIR}>
+            <CompactSectionSkeleton className="h-28" />
+            <CompactSectionSkeleton className="h-28" />
+          </div>
         </div>
         <CompactSectionSkeleton className="h-16" />
         <CompactSectionSkeleton className="h-32" />

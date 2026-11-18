@@ -44,7 +44,11 @@ export function VendorInfo({
       // โหมดดู: ป้าย–ค่าเป็นช่องของกริดในการ์ดเดียว · โหมดแก้: แต่ละแถวมีกรอบของตัวเอง
       frameless={!isView || infoFields.length === 0}
       title={t("info.title")}
-      description={t("infoDesc")}
+      // โหมดดูที่ไม่มีรายการ: ข้อความว่างขึ้นแทนคำอธิบายหมวดบนบรรทัดหัว ไม่มีบรรทัดว่างแยก
+      // หมวดว่างจึงเหลือบรรทัดเดียว (~40px แทน 72px) ข้อมูลจริงด้านล่างขึ้นมาในจอแรกเร็วขึ้น
+      description={
+        isView && infoFields.length === 0 ? t("info.noInfo") : t("infoDesc")
+      }
       count={infoFields.length}
       action={
         !isView ? (
@@ -61,12 +65,13 @@ export function VendorInfo({
       }
     >
       {infoFields.length === 0 ? (
-        <VendorEmptySection
-          compact={isView}
-          icon={Info}
-          title={t("info.noInfo")}
-          description={t("info.noInfoDesc")}
-        />
+        isView ? null : (
+          <VendorEmptySection
+            icon={Info}
+            title={t("info.noInfo")}
+            description={t("info.noInfoDesc")}
+          />
+        )
       ) : isView ? (
         <FieldGrid>
           {infoFields.map((field, index) => {
