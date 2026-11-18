@@ -105,7 +105,9 @@ export function VendorAddress({
         <div
           className={
             isView
-              ? "grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-2"
+              ? // h-full: วางคู่กับผู้ติดต่อ (VENDOR_SECTION_PAIR) การ์ดสองฝั่งสูงเท่ากัน — แถวของกริด
+                // ยืดเต็มความสูงหมวดที่ grid ของคู่ยืดให้ · ซ้อนกันอยู่ก็ไม่มีผล (หมวดสูงเท่าเนื้อหา)
+                "grid h-full grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-2"
               : "grid grid-cols-[repeat(auto-fill,minmax(min(100%,26rem),1fr))] gap-2"
           }
         >
