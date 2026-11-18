@@ -1,3 +1,6 @@
+import { flexRender, type Table } from "@tanstack/react-table";
+import { cn } from "@/lib/utils";
+
 /**
  * แถวของตารางในฟอร์มสินค้าเมื่อกล่องแคบ (< 560px วัดจากกล่องเอง) — การ์ดทีละใบแทนตารางที่ถูกบีบ
  * (skill `carmen-blue-ui-design` §Tables: table on a detail page) หน้าตาเดียวกับ `CertificateCards`
@@ -62,5 +65,88 @@ export function RowCardField({
       <dt className="text-muted-foreground">{label}</dt>
       <dd>{children}</dd>
     </div>
+  );
+}
+
+/**
+ * โหมดแก้ของตารางกรอกในแถวเมื่อกล่องแคบกว่าความกว้างขั้นต่ำของตาราง — การ์ดทีละแถว ช่องกรอก
+ * เรียงเป็นกริด (มือถือ 2 ช่องต่อแถว กว้างขึ้นได้มากขึ้น) ไม่มีการเลื่อนแนวนอน (เดิมตาราง 852–904px เลื่อนในกล่อง 304–334px ของมือถือ)
+ *
+ * render `cell` ของแต่ละคอลัมน์ตัวเดิมผ่าน `flexRender` — ช่องกรอก / lookup / radio / checkbox /
+ * ปุ่มลบผูกกับฟอร์มที่ column def ที่เดียว ไม่มีชุดที่สองให้หลุดกัน · ป้ายมาจาก `header` (string)
+ * · `*:justify-start` ล้าง justify-end / justify-center ที่ cell ใส่ไว้ให้ตรงกับหัวคอลัมน์ของตาราง
+ */
+export function RowEditCards<T>({
+  table,
+  wide = [],
+  titleColumnId = "index",
+  actionColumnId = "action",
+  empty,
+}: {
+  readonly table: Table<T>;
+  /** คอลัมน์ที่กินเต็มแถวของการ์ด (lookup ชื่อยาว · ค่าที่แสดงยาว) */
+  readonly wide?: readonly string[];
+  /** คอลัมน์ลำดับ — ไม่เป็นช่อง แต่เป็น "#n" หัวการ์ด */
+  readonly titleColumnId?: string;
+  /** คอลัมน์ปุ่มของแถว — อยู่มุมขวาบนของการ์ด */
+  readonly actionColumnId?: string;
+  readonly empty?: React.ReactNode;
+}) {
+  "use no memo"; // table instance mutate ข้างในตัวเอง — ห้ามคอมไพเลอร์แช่ผลลัพธ์ (routes/CLAUDE.md)
+  const rows = table.getRowModel().rows;
+  if (rows.length === 0) return <>{empty}</>;
+  return (
+    <ul className="flex flex-col gap-2">
+      {rows.map((row) => {
+        const cells = row.getVisibleCells();
+        const action = cells.find((c) => c.column.id === actionColumnId);
+        const fields = cells.filter(
+          (c) =>
+            c.column.id !== titleColumnId && c.column.id !== actionColumnId,
+        );
+        return (
+          <li
+            key={row.id}
+            className="border-border/60 bg-card rounded-lg border p-3 text-xs"
+          >
+            <div className="mb-2 flex min-h-6 items-center justify-between gap-2">
+              <span className="text-muted-foreground tabular-nums">
+                #{row.index + 1}
+              </span>
+              {action &&
+                flexRender(action.column.columnDef.cell, action.getContext())}
+            </div>
+            {/* auto-fill 8rem: การ์ดกว้างขึ้น = ช่องต่อแถวมากขึ้น ไม่ใช่ช่องยืด (กฎข้อ 2) · มือถือ 360 การ์ดใน
+                กว้าง ~278px ยังได้ 2 ช่อง (2×128 + 12) · tablet 768 ได้ 4 */}
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-x-3 gap-y-3">
+              {fields.map((cell) => {
+                const header = cell.column.columnDef.header;
+                return (
+                  <div
+                    key={cell.id}
+                    className={cn(
+                      "min-w-0",
+                      wide.includes(cell.column.id) && "col-span-2",
+                    )}
+                  >
+                    <div className="text-muted-foreground mb-1">
+                      {typeof header === "string" ? header : cell.column.id}
+                    </div>
+                    <div className="flex min-h-8 items-center">
+                      <div className="w-full min-w-0 *:justify-start">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

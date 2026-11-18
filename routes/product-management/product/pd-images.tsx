@@ -8,10 +8,7 @@ import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { fileRejectMessage } from "@/lib/image-upload";
-import {
-  useDeleteProductImage,
-  useProductImages,
-} from "./use-product-image";
+import { useDeleteProductImage, useProductImages } from "./use-product-image";
 import type { ProductImage } from "@/types/product-image";
 import { type MockImage, validateImageFiles } from "./pd-image-utils";
 import { ImageLightbox } from "./pd-image-lightbox";
@@ -20,6 +17,8 @@ import { EmptyImage } from "./pd-image-empty";
 interface ProductImagesProps {
   readonly productId?: string;
   readonly readOnly?: boolean;
+  /** โหมดดูที่ไม่มีรูป = ไม่ render เลย (แยกจาก readOnly ที่รวมตอนกำลังบันทึกด้วย) */
+  readonly hideWhenEmpty?: boolean;
   readonly pendingFiles?: readonly File[];
   readonly onPendingFilesChange?: (files: File[]) => void;
 }
@@ -40,6 +39,7 @@ function toDisplayImage(
 export function ProductImages({
   productId,
   readOnly,
+  hideWhenEmpty,
   pendingFiles = [],
   onPendingFilesChange,
 }: ProductImagesProps) {
@@ -127,7 +127,10 @@ export function ProductImages({
     return <Skeleton className="aspect-square w-full rounded-lg" />;
   }
 
+  // โหมดดูไม่มีรูป = ไม่ render เลย กรอบ "No images" เป็นแค่ที่ว่างที่ไม่บอกอะไร · ตัวห่อฝั่ง
+  // pd-tab-general ใช้ empty:hidden ช่องข้างรูปจึงขยายเต็มการ์ด โหมดแก้ยังมีช่องอัปโหลดเหมือนเดิม
   if (total === 0) {
+    if (hideWhenEmpty) return null;
     if (readOnly) {
       return (
         <div className="text-muted-foreground flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed">
