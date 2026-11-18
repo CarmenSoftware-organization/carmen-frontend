@@ -28,6 +28,8 @@ import { PO_ITEM } from "./po-form-schema";
 import { PoActionDialog } from "./po-action-dialog";
 import { PoWorkflowRequiredDialog } from "./po-workflow-required-dialog";
 import { usePoItemTable } from "./use-po-item-table";
+import { PoItemCards } from "./po-item-cards";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { PoItemComputedSync } from "./po-item-cells";
 import type { HiddenPriceField } from "@/types/workflows";
 import { getPoHiddenFlags } from "./po-hidden-fields";
@@ -42,6 +44,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+/**
+ * กล่องรายการโหมดดูแคบกว่านี้ (px) = การ์ดแถวละใบ — วัดจากความกว้าง "กล่อง" ไม่ใช่จอ
+ * เพราะ HD ที่กาง sidebar ได้กล่อง ~1,080px ซึ่งต้องยังเป็นตาราง (เพดานเดียวกับ PR / CN)
+ */
+const PO_ITEM_CARDS_MAX_WIDTH = 900;
 
 interface PoItemFieldsProps {
   form: UseFormReturn<PoFormValues>;
@@ -125,6 +133,21 @@ export function PoItemFields({
     onDelete: setDeleteIndex,
     hiddenFields,
   });
+
+  // โหมดดูเท่านั้น · ยังไม่ได้วัด (undefined) = ตาราง · โหมดแก้ยังเป็นตาราง
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const asCards =
+    isViewMode &&
+    disabled &&
+    gridBoxWidth !== undefined &&
+    gridBoxWidth < PO_ITEM_CARDS_MAX_WIDTH;
+  const itemsEmptyMessage = (
+    <EmptyComponent
+      icon={BoxIcon}
+      title={t("noItems")}
+      description={t("noItemsDesc")}
+    />
+  );
 
   const handleAddItem = () => {
     // แถวใหม่ขึ้นบนสุด "รายการก่อนหน้า" จึงคือแถวแรกปัจจุบัน — คนสั่งซื้อมักสั่ง
@@ -435,36 +458,37 @@ export function PoItemFields({
         />
       ))}
 
-      <DataGrid
-        table={table}
-        recordCount={itemFields.length}
-        tableLayout={{
-          rowClamp: false,
-          checkbox: showApproveCheckbox,
-          // โหมดอ่านชิดบน — บางเซลล์มีบรรทัดรอง (รหัสคลัง · ชื่อท้องถิ่น ·
-          // เปอร์เซ็นต์ใต้ยอดเงิน) บางเซลล์ไม่มี กึ่งกลางแล้วเซลล์บรรทัดเดียว
-          // จะลอยอยู่ระหว่างสองบรรทัดของเพื่อนบ้าน
-          cellAlign: disabled || readOnly ? "top" : "middle",
-          // table กว้างเกิน container → scroll แนวนอน (เหมือน PR): width =
-          // getTotalSize(), column กว้างตาม size px ที่กำหนด
-          columnsResizable: true,
-        }}
-        emptyMessage={
-          <EmptyComponent
-            icon={BoxIcon}
-            title={t("noItems")}
-            description={t("noItemsDesc")}
-          />
-        }
-      >
-        {/* DataGridContainer = native overflow-auto (เลี่ยง nested scroll ของ
-              Radix ScrollArea ที่ทำ scroll แนวนอนสะดุด)
-              · pb-3 = ที่ว่างให้ scrollbar แนวนอนยืน — บน macOS แถบนี้ลอยทับ
-              เนื้อหาโดยไม่กินที่ ไม่เว้นไว้มันจะไปบังตัวเลขแถวสุดท้าย */}
-        <DataGridContainer scroll>
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+      {/* กล่องที่ผูก ref ต้องอยู่ทั้งสองแบบ ไม่งั้นสลับแล้ววัดไม่ได้อีก */}
+      <div ref={setGridBox}>
+        {asCards ? (
+          <PoItemCards table={table} emptyMessage={itemsEmptyMessage} />
+        ) : (
+          <DataGrid
+            table={table}
+            recordCount={itemFields.length}
+            tableLayout={{
+              rowClamp: false,
+              checkbox: showApproveCheckbox,
+              // โหมดอ่านชิดบน — บางเซลล์มีบรรทัดรอง (รหัสคลัง · ชื่อท้องถิ่น ·
+              // เปอร์เซ็นต์ใต้ยอดเงิน) บางเซลล์ไม่มี กึ่งกลางแล้วเซลล์บรรทัดเดียว
+              // จะลอยอยู่ระหว่างสองบรรทัดของเพื่อนบ้าน
+              cellAlign: disabled || readOnly ? "top" : "middle",
+              // table กว้างเกิน container → scroll แนวนอน (เหมือน PR): width =
+              // getTotalSize(), column กว้างตาม size px ที่กำหนด
+              columnsResizable: true,
+            }}
+            emptyMessage={itemsEmptyMessage}
+          >
+            {/* DataGridContainer = native overflow-auto (เลี่ยง nested scroll ของ
+                  Radix ScrollArea ที่ทำ scroll แนวนอนสะดุด)
+                  · pb-3 = ที่ว่างให้ scrollbar แนวนอนยืน — บน macOS แถบนี้ลอยทับ
+                  เนื้อหาโดยไม่กินที่ ไม่เว้นไว้มันจะไปบังตัวเลขแถวสุดท้าย */}
+            <DataGridContainer scroll>
+              <DataGridTable />
+            </DataGridContainer>
+          </DataGrid>
+        )}
+      </div>
 
       <DeleteDialog
         open={deleteIndex !== null}

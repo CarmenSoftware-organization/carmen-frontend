@@ -8,17 +8,19 @@ import {
 import type { ChartOfAccount } from "@/types/chart-of-accounts";
 
 interface Props {
+  readonly rowNo?: number;
   readonly item: ChartOfAccount;
   readonly onEdit: (item: ChartOfAccount) => void;
   readonly onDelete?: (item: ChartOfAccount) => void;
 }
 
-export default function CoaCard({ item, onEdit, onDelete }: Props) {
+export default function CoaCard({ item, onEdit, onDelete, rowNo }: Props) {
   const t = useTranslations("config.chartOfAccounts");
   const tfl = useTranslations("field");
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.code || "..."}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}

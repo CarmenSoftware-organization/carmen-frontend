@@ -2,8 +2,12 @@ import type { PurchaseOrder } from "@/types/purchase-order";
 import EmptyComponent from "@/components/empty-component";
 import { ListCardSkeleton } from "@/components/share/list-card";
 import PoCard from "./po-card";
+import { rowNumber } from "@/lib/row-number";
+import type { ParamsDto } from "@/types/params";
 
 interface PoCardListProps {
+  /** `params` ของหน้าเมื่อแบ่งหน้า · `undefined` = รายการสะสม (infinite) นับจาก 1 */
+  readonly pageParams?: ParamsDto;
   readonly items: PurchaseOrder[];
   readonly isLoading?: boolean;
   readonly onEdit: (item: PurchaseOrder) => void;
@@ -12,6 +16,7 @@ interface PoCardListProps {
 }
 
 export default function PoCardList({
+  pageParams,
   items,
   isLoading,
   onEdit,
@@ -34,8 +39,9 @@ export default function PoCardList({
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {items.map((item) => (
+      {items.map((item, i) => (
         <PoCard
+          rowNo={rowNumber(pageParams, i)}
           key={item.id}
           item={item}
           onEdit={onEdit}

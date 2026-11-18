@@ -30,6 +30,7 @@ import {
   useAccountingMasterMock,
 } from "../accounting-master-mock";
 import { LookupChartOfAccount } from "@/components/lookup/lookup-chart-of-account";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 export default function AssetCategoryPage() {
   "use no memo";
@@ -53,6 +54,7 @@ export default function AssetCategoryPage() {
 
   const columns = useMemo<ColumnDef<AssetCategoryMaster>[]>(
     () => [
+      indexColumn<AssetCategoryMaster>(),
       {
         accessorKey: "code",
         header: ({ column }) => (

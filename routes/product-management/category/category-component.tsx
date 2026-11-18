@@ -26,6 +26,7 @@ import {
   useDeleteItemGroup,
 } from "@/hooks/use-item-group";
 import { NODE_TYPE, type CategoryNode } from "@/types/category";
+import { cn } from "@/lib/utils";
 import { useCategoryTree } from "./use-category-tree";
 import { useCategoryDialog } from "./use-category-dialog";
 import { CategoryDialog } from "./category-dialog";
@@ -45,6 +46,32 @@ import { ListPageShell } from "@/components/share/list-page-shell";
 import { DocumentListActions } from "@/components/share/document-list-actions";
 import { CategoryReportDialog } from "./category-report-dialog";
 import { useCategoryReport } from "./use-category-report";
+import { CategoryDetailPanel } from "./category-detail-panel";
+import { useElementWidth } from "@/hooks/use-element-width";
+
+// ความสูงกล่องเลื่อนของต้นไม้และของแผงรายละเอียด — ใช้ชุดเดียวกัน การ์ดสองใบจึงสูงเท่ากัน
+const TREE_SCROLL_HEIGHT =
+  "h-[calc(100vh-21rem-1.5rem)] sm:h-[calc(100vh-11rem-1.5rem)]";
+
+// กล่องของหน้า (จอ − sidebar) กว้างตั้งแต่ 88rem (1408px) ขึ้นไป = มีแผงรายละเอียดข้างต้นไม้
+// ต้นไม้ใช้ไม่เกิน 62rem (แถวเต็มทุกคอลัมน์ ~976px) ที่เหลือเป็นของแผง — HD 1366 ไม่ถึง จึงเป็นต้นไม้เต็มกล่องเหมือนเดิม
+const DETAIL_PANEL_MIN_WIDTH = 1408;
+
+/** หา node ตาม id พร้อมบรรพบุรุษ (บนสุด → แม่) */
+function findWithAncestors(
+  nodes: CategoryNode[],
+  id: string,
+  trail: CategoryNode[] = [],
+): { node: CategoryNode; ancestors: CategoryNode[] } | undefined {
+  for (const n of nodes) {
+    if (n.id === id) return { node: n, ancestors: trail };
+    const hit = n.children?.length
+      ? findWithAncestors(n.children, id, [...trail, n])
+      : undefined;
+    if (hit) return hit;
+  }
+  return undefined;
+}
 
 export default function CategoryComponent() {
   const t = useTranslations("productManagement.category");
@@ -68,6 +95,8 @@ export default function CategoryComponent() {
   // Product Category Report — Print / Export เปิด dialog ช่วงรหัสเดียวกัน ต่างกันแค่ปุ่มยืนยัน
   const [reportMode, setReportMode] = useState<"print" | "export" | null>(null);
   const categoryReport = useCategoryReport();
+  const [splitRef, splitWidth] = useElementWidth();
+  const showPanel = (splitWidth ?? 0) >= DETAIL_PANEL_MIN_WIDTH;
 
   // Data
   const { data: catData, isLoading: catLoading } = useCategoryAll();
@@ -144,8 +173,24 @@ export default function CategoryComponent() {
     const cats = catData?.length ?? 0;
     const subs = subData?.length ?? 0;
     const igs = igData?.length ?? 0;
-    return { cats, subs, igs, total: cats + subs + igs };
+    // จำนวนสินค้าของหมวดบนสุดรวมจากลูกแล้ว — undefined เมื่อ backend ยังไม่ส่ง product_count
+    const products = categoryData.some((c) => c.product_count !== undefined)
+      ? categoryData.reduce((sum, c) => sum + (c.product_count ?? 0), 0)
+      : undefined;
+    return { cats, subs, igs, products, total: cats + subs + igs };
   })();
+
+  // แถวที่เลือกในแผงรายละเอียด — หาจากต้นไม้ทั้งหมด (ไม่ใช่ผลค้นหา) แถวที่ถูกลบไปแล้ว = ภาพรวม
+  const selected = selectedId
+    ? findWithAncestors(categoryData, selectedId)
+    : undefined;
+  // คลิกลูก/path ในแผง: เลือกแถวนั้นแล้วกางบรรพบุรุษให้เห็นไฮไลต์ในต้นไม้
+  const selectFromPanel = (node: CategoryNode) => {
+    setSelectedId(node.id);
+    const hit = findWithAncestors(categoryData, node.id);
+    for (const a of hit?.ancestors ?? [])
+      if (!expanded[a.id]) toggleExpand(a.id);
+  };
 
   // Dialog
   const {
@@ -334,70 +379,98 @@ export default function CategoryComponent() {
         </div>
       }
     >
-      {/* Tree — @container: แถบสถิติ หัวตาราง และทุกแถวเลือกสิ่งที่แสดงจากความกว้างการ์ดนี้ */}
-      <div className="bg-card @container rounded-md border">
-        {/* Header row — สถิติทั้งต้นไม้ หรือจำนวนที่ค้นเจอระหว่างค้นหา */}
-        <div className="text-muted-foreground flex h-9 items-center justify-between gap-2 border-b px-3 text-xs">
-          <div className="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap tabular-nums">
-            {isLoading ? null : search ? (
-              <span className="text-foreground/80 font-semibold">
-                {t("nMatches", { count: matchCount })}
-              </span>
-            ) : (
-              <>
+      {/* กล่องของหน้า — วัดความกว้างเพื่อตัดสินว่ามีแผงรายละเอียดไหม (ไม่ใช่ความกว้างจอ)
+          ไม่มี items-start: การ์ดสองใบสูงเท่ากัน */}
+      <div
+        ref={splitRef}
+        className={cn(
+          "grid gap-3",
+          showPanel && "grid-cols-[minmax(0,62rem)_minmax(0,1fr)]",
+        )}
+      >
+        {/* Tree — @container: แถบสถิติ หัวตาราง และทุกแถวเลือกสิ่งที่แสดงจากความกว้างการ์ดนี้ */}
+        <div className="bg-card @container min-w-0 rounded-md border">
+          {/* Header row — สถิติทั้งต้นไม้ หรือจำนวนที่ค้นเจอระหว่างค้นหา */}
+          <div className="text-muted-foreground flex h-9 items-center justify-between gap-2 border-b px-3 text-xs">
+            <div className="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap tabular-nums">
+              {isLoading ? null : search ? (
                 <span className="text-foreground/80 font-semibold">
-                  {t("nItems", { count: stats.total })}
+                  {t("nMatches", { count: matchCount })}
                 </span>
-                <span className="text-border hidden @xl:inline" aria-hidden>
-                  ·
-                </span>
-                <span className="hidden @xl:inline">
-                  {t("nCategories", { count: stats.cats })}
-                </span>
-                <span className="text-border hidden @xl:inline" aria-hidden>
-                  ·
-                </span>
-                <span className="hidden @xl:inline">
-                  {t("nSubcategories", { count: stats.subs })}
-                </span>
-                <span className="text-border hidden @xl:inline" aria-hidden>
-                  ·
-                </span>
-                <span className="hidden @xl:inline">
-                  {t("nItemGroups", { count: stats.igs })}
-                </span>
-              </>
+              ) : (
+                <>
+                  <span className="text-foreground/80 font-semibold">
+                    {t("nItems", { count: stats.total })}
+                  </span>
+                  <span className="text-border hidden @xl:inline" aria-hidden>
+                    ·
+                  </span>
+                  <span className="hidden @xl:inline">
+                    {t("nCategories", { count: stats.cats })}
+                  </span>
+                  <span className="text-border hidden @xl:inline" aria-hidden>
+                    ·
+                  </span>
+                  <span className="hidden @xl:inline">
+                    {t("nSubcategories", { count: stats.subs })}
+                  </span>
+                  <span className="text-border hidden @xl:inline" aria-hidden>
+                    ·
+                  </span>
+                  <span className="hidden @xl:inline">
+                    {t("nItemGroups", { count: stats.igs })}
+                  </span>
+                </>
+              )}
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              <Button onClick={expandAll} size="xs" variant="ghost">
+                <ChevronDown className="h-3 w-3" />
+                {t("expand")}
+              </Button>
+              <Button onClick={collapseAll} size="xs" variant="ghost">
+                <ChevronUp className="h-3 w-3" />
+                {t("collapse")}
+              </Button>
+            </div>
+          </div>
+
+          {/* Radix ห่อ viewport ด้วย display:table ซึ่งกว้างตามเนื้อหา ทำให้แถวล้นออกนอก
+            viewport และปุ่มลบท้ายแถวโดนตัด — บังคับเป็น block ให้แถวกว้างเท่ากล่อง */}
+          <ScrollArea
+            className={cn(
+              TREE_SCROLL_HEIGHT,
+              "[&_[data-slot=scroll-area-viewport]>div]:block!",
             )}
-          </div>
-          <div className="flex shrink-0 items-center gap-1">
-            <Button onClick={expandAll} size="xs" variant="ghost">
-              <ChevronDown className="h-3 w-3" />
-              {t("expand")}
-            </Button>
-            <Button onClick={collapseAll} size="xs" variant="ghost">
-              <ChevronUp className="h-3 w-3" />
-              {t("collapse")}
-            </Button>
-          </div>
+          >
+            {!isLoading && filteredData.length > 0 && <TreeColumnsHeader />}
+            <TreeContent
+              isLoading={isLoading}
+              filteredData={filteredData}
+              expanded={search ? searchExpanded : expanded}
+              toggleExpand={toggleExpand}
+              onEdit={handleEdit}
+              onAdd={handleAdd}
+              onDelete={setDeleteTarget}
+              search={search}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+            />
+          </ScrollArea>
         </div>
 
-        {/* Radix ห่อ viewport ด้วย display:table ซึ่งกว้างตามเนื้อหา ทำให้แถวล้นออกนอก
-            viewport และปุ่มลบท้ายแถวโดนตัด — บังคับเป็น block ให้แถวกว้างเท่ากล่อง */}
-        <ScrollArea className="h-[calc(100vh-21rem-1.5rem)] sm:h-[calc(100vh-11rem-1.5rem)] [&_[data-slot=scroll-area-viewport]>div]:block!">
-          {!isLoading && filteredData.length > 0 && <TreeColumnsHeader />}
-          <TreeContent
-            isLoading={isLoading}
-            filteredData={filteredData}
-            expanded={search ? searchExpanded : expanded}
-            toggleExpand={toggleExpand}
-            onEdit={handleEdit}
+        {showPanel && (
+          <CategoryDetailPanel
+            node={selected?.node}
+            ancestors={selected?.ancestors ?? []}
+            stats={stats}
+            scrollClassName={TREE_SCROLL_HEIGHT}
+            onSelect={selectFromPanel}
             onAdd={handleAdd}
+            onEdit={handleEdit}
             onDelete={setDeleteTarget}
-            search={search}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
           />
-        </ScrollArea>
+        )}
       </div>
 
       <CategoryDialog

@@ -19,7 +19,12 @@ import { fieldFocusRef } from "@/lib/field-focus";
 import { CN_ITEM } from "./cn-form-schema";
 import { CnItemComputedSync } from "./cn-item-cells";
 import { useCnItemTable } from "./use-cn-item-table";
+import { useElementWidth } from "@/hooks/use-element-width";
+import { CnItemCards } from "./cn-item-cards";
 import { CnAddItemDialog, type CnGrnLine } from "./cn-add-item-dialog";
+
+/** กล่องรายการโหมดดูแคบกว่านี้ (px) = การ์ด (เพดานเดียวกับรายการของ PR) */
+const CN_ITEM_CARDS_MAX_WIDTH = 900;
 
 interface Props {
   readonly form: UseFormReturn<CnFormValues>;
@@ -171,6 +176,23 @@ export function CnItem({ form, disabled }: Props) {
     onDelete: setDeleteIndex,
   });
 
+  // โหมดดูบนกล่องแคบ (มือถือ/tablet) = การ์ดแถวละใบ — ตารางโหมดดูคิดคอลัมน์เป็น % ของกล่อง
+  // คอลัมน์ 12 ตัวในกล่อง ~330px ถูกบีบจนหัวทับกัน · ไม่เทียบกับผลรวม size ตรง ๆ เพราะ HD ที่
+  // กาง sidebar ได้กล่อง ~1,080px ซึ่งน้อยกว่าผลรวม แต่ % ยังอ่านได้ · โหมดแก้ยังเป็นตาราง
+  // (เลื่อนแนวนอน) ยังไม่ได้วัด (undefined) = ตาราง
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const asCards =
+    disabled &&
+    gridBoxWidth !== undefined &&
+    gridBoxWidth < CN_ITEM_CARDS_MAX_WIDTH;
+  const itemsEmptyMessage = (
+    <EmptyComponent
+      icon={BoxIcon}
+      title={t("noItems")}
+      description={t("noItemsDesc")}
+    />
+  );
+
   // ปุ่มยังกดได้ตลอดแล้วค่อยบอกว่าขาดอะไร — ปุ่มที่จางแล้วกดไม่ติดไม่ได้บอก
   // ว่าต้องทำอะไรก่อน · เตือนตามลำดับที่ต้องกรอกจริง (ผู้ขาย → ใบรับของ)
   const handleAddClick = () => {
@@ -239,40 +261,45 @@ export function CnItem({ form, disabled }: Props) {
         />
       ))}
 
-      <DataGrid
-        table={table}
-        recordCount={itemFields.length}
-        // โหมดแก้ไข: คอลัมน์กว้างตาม size (px) จริง เกินจอก็เลื่อนแนวนอน (เหมือน
-        // PO/GRN) เคยลองบีบให้พอดีจอด้วย table-fixed w-full แล้ว combo
-        // discount/tax หดจนกรอก rate กับยอดไม่ได้
-        //
-        // โหมดดู: ปิด resizable → กลับไปใช้ width "fixed" ซึ่งแปลง size เป็น % ของ
-        // ความกว้างจริง ตารางเลยพอดีจอไม่ต้องเลื่อน และสัดส่วนคอลัมน์ยังเท่าเดิม
-        // ซึ่งจำเป็น เพราะแถว "คืน" เป็นตารางซ้อนที่คิด % จาก CN_COL ชุดเดียวกัน
-        // (table-auto ทำให้คอลัมน์จัดตามเนื้อหา สัดส่วนไม่ตรง แถวคืนเลยเหลื่อม)
-        tableLayout={
-          // โหมดอ่านชิดบน — เซลล์ที่มีบรรทัดรอง (รหัสคลัง · ชื่อท้องถิ่น ·
-          // เปอร์เซ็นต์ใต้ยอดเงิน) กับเซลล์บรรทัดเดียวจะได้เริ่มที่เส้นเดียวกัน
-          disabled
-            ? { cellAlign: "top" }
-            : { columnsResizable: true, cellAlign: "middle" }
-        }
-        emptyMessage={
-          <EmptyComponent
-            icon={BoxIcon}
-            title={t("noItems")}
-            description={t("noItemsDesc")}
+      {/* กล่องที่ผูก ref ต้องอยู่ทั้งสองแบบ ไม่งั้นสลับแล้ววัดไม่ได้อีก */}
+      <div ref={setGridBox}>
+        {asCards ? (
+          <CnItemCards
+            table={table}
+            form={form}
+            emptyMessage={itemsEmptyMessage}
           />
-        }
-      >
-        {/* native scroll (overflow-auto) ไม่ห่อ Radix ScrollArea — เลี่ยง nested
-            scroll ที่สะดุด · scroll (pb-3) เฉพาะโหมดแก้ไขที่ตารางกว้างเกินจอจริง
-            ไม่งั้นแถบเลื่อนลอย (macOS) ไปบังตัวเลขแถวสุดท้าย เพราะ CN เป็นตาราง
-            แบน ไม่มีแถวกาง · โหมดดูไม่มีแถบเลื่อน จะเว้นที่ไว้ก็เป็นช่องว่างเปล่า */}
-        <DataGridContainer scroll={!disabled}>
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+        ) : (
+          <DataGrid
+            table={table}
+            recordCount={itemFields.length}
+            // โหมดแก้ไข: คอลัมน์กว้างตาม size (px) จริง เกินจอก็เลื่อนแนวนอน (เหมือน
+            // PO/GRN) เคยลองบีบให้พอดีจอด้วย table-fixed w-full แล้ว combo
+            // discount/tax หดจนกรอก rate กับยอดไม่ได้
+            //
+            // โหมดดู: ปิด resizable → กลับไปใช้ width "fixed" ซึ่งแปลง size เป็น % ของ
+            // ความกว้างจริง ตารางเลยพอดีจอไม่ต้องเลื่อน และสัดส่วนคอลัมน์ยังเท่าเดิม
+            // ซึ่งจำเป็น เพราะแถว "คืน" เป็นตารางซ้อนที่คิด % จาก CN_COL ชุดเดียวกัน
+            // (table-auto ทำให้คอลัมน์จัดตามเนื้อหา สัดส่วนไม่ตรง แถวคืนเลยเหลื่อม)
+            tableLayout={
+              // โหมดอ่านชิดบน — เซลล์ที่มีบรรทัดรอง (รหัสคลัง · ชื่อท้องถิ่น ·
+              // เปอร์เซ็นต์ใต้ยอดเงิน) กับเซลล์บรรทัดเดียวจะได้เริ่มที่เส้นเดียวกัน
+              disabled
+                ? { cellAlign: "top" }
+                : { columnsResizable: true, cellAlign: "middle" }
+            }
+            emptyMessage={itemsEmptyMessage}
+          >
+            {/* native scroll (overflow-auto) ไม่ห่อ Radix ScrollArea — เลี่ยง nested
+                scroll ที่สะดุด · scroll (pb-3) เฉพาะโหมดแก้ไขที่ตารางกว้างเกินจอจริง
+                ไม่งั้นแถบเลื่อนลอย (macOS) ไปบังตัวเลขแถวสุดท้าย เพราะ CN เป็นตาราง
+                แบน ไม่มีแถวกาง · โหมดดูไม่มีแถบเลื่อน จะเว้นที่ไว้ก็เป็นช่องว่างเปล่า */}
+            <DataGridContainer scroll={!disabled}>
+              <DataGridTable />
+            </DataGridContainer>
+          </DataGrid>
+        )}
+      </div>
 
       <CnAddItemDialog
         open={addOpen}

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import type { ReportFormat, ReportSchedule } from "@/types/report-schedule";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 const FORMAT_LABELS: Record<ReportFormat, string> = {
   REPORT_FORMAT_PDF: "PDF",
@@ -87,24 +88,25 @@ export function useWeekdayShort(): string[] {
   ];
 }
 
-/** กล่องแคบกว่านี้ (px) แสดงเป็นการ์ดแถวละใบ — ตารางขั้นต่ำ 620px ใส่ไม่ลง */
-export const SCHEDULE_CARD_BELOW = 560;
+/** กล่องแคบกว่านี้ (px) แสดงเป็นการ์ดแถวละใบ — ตารางขั้นต่ำ 708px ใส่ไม่ลง (รวม tablet 662) */
+export const SCHEDULE_CARD_BELOW = 718;
 
 /**
  * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
  *
  * คอลัมน์สั้นกว้างคงที่ ชื่อรับที่เหลือ (`meta.grow`) ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`:
- * ชื่อ 160 + ความถี่ 150 + สถานะ 120 + รอบถัดไป 170 + ปุ่ม 60 = 660 (กล่องที่จอ 768 = 662)
- * · + รูปแบบ 80 = 740 · + # 50 = 790 · + แจ้งเตือน 190 = 980 · + ประเภท 160 = 1140
- * · + รอบล่าสุด 170 = 1310 — จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวมราว 80–100px ให้ชื่อมีที่ก่อน
+ * # 48 + ชื่อ 160 + ความถี่ 150 + สถานะ 120 + รอบถัดไป 170 + ปุ่ม 60 = 708
+ * · + รูปแบบ 80 = 788 · + แจ้งเตือน 190 = 978 · + ประเภท 160 = 1138
+ * · + รอบล่าสุด 170 = 1308 — จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวมราว 80–100px ให้ชื่อมีที่ก่อน
+ * `#` แสดงตลอด (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) ขั้นต่ำ 708 จึงเกินกล่อง tablet
+ * (662) — ต่ำกว่า `SCHEDULE_CARD_BELOW` (718) เป็นการ์ดที่ถือทุกช่องพร้อมเลขลำดับแทน
  * ของที่ซ่อนยังเห็นได้: ประเภท/รูปแบบ = บรรทัดรองใต้ชื่อ · แจ้งเตือน = บรรทัดรองใต้ความถี่
  * · รอบล่าสุด = บรรทัดรองใต้รอบถัดไป
  */
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    showFormat: w >= 820,
-    showIndex: w >= 880,
+    showFormat: w >= 868,
     showNotify: w >= 1070,
     showType: w >= 1230,
     showLastRun: w >= 1400,
@@ -130,16 +132,11 @@ export function useScheduleTable({
   const t = useTranslations("reportSchedule");
   const tc = useTranslations("common");
   const weekdayShort = useWeekdayShort();
-  const { showFormat, showIndex, showNotify, showType, showLastRun } =
+  const { showFormat, showNotify, showType, showLastRun } =
     columnTier(containerWidth);
 
   const columns: ColumnDef<ReportSchedule>[] = [
-    {
-      id: "index",
-      header: "#",
-      cell: ({ row }) => row.index + 1,
-      size: 50,
-    },
+    indexColumn<ReportSchedule>(),
     {
       accessorKey: "name",
       header: t("name"),
@@ -282,7 +279,6 @@ export function useScheduleTable({
     getCoreRowModel: getCoreRowModel(),
     state: {
       columnVisibility: {
-        index: showIndex,
         report_type: showType,
         format: showFormat,
         notify_at: showNotify,

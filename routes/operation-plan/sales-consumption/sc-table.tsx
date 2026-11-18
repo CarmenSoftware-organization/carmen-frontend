@@ -10,7 +10,10 @@ import {
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
-import { columnSkeletons } from "@/components/ui/data-grid/columns";
+import {
+  columnSkeletons,
+  indexColumn,
+} from "@/components/ui/data-grid/columns";
 import { StatusDotBadge, type DotTone } from "@/components/ui/status-dot-badge";
 import EmptyComponent from "@/components/empty-component";
 import { ErrorState } from "@/components/ui/error-state";
@@ -55,6 +58,7 @@ export function ScTable() {
 
   const columns = useMemo<ColumnDef<ScListItem>[]>(
     () => [
+      indexColumn<ScListItem>(),
       {
         id: "sc_no",
         header: t("columns.docNo"),

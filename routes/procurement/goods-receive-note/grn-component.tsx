@@ -321,6 +321,7 @@ export default function GrnComponent() {
       {isGridMode && useInfiniteScroll && (
         <>
           <GrnCardList
+            pageParams={useInfiniteScroll ? undefined : params}
             items={goodsReceiveNotes}
             isLoading={grid.isLoading}
             onEdit={(grn) =>
@@ -330,6 +331,7 @@ export default function GrnComponent() {
               )
             }
             onDelete={setDeleteTarget}
+            compact
           />
           {grid.hasMore && (
             <div ref={grid.sentinelRef} className="flex justify-center py-4">

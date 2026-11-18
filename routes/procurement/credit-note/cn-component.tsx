@@ -168,12 +168,14 @@ export default function CnComponent() {
       {isGridMode && useInfiniteScroll && (
         <>
           <CnCardList
+            pageParams={useInfiniteScroll ? undefined : params}
             items={creditNotes}
             isLoading={grid.isLoading}
             onEdit={(cn) =>
               navigate(`/procurement/credit-note/${cn.id}`, listReturnState())
             }
             onDelete={setDeleteTarget}
+            compact
           />
           {grid.hasMore && (
             <div ref={grid.sentinelRef} className="flex justify-center py-4">

@@ -30,9 +30,16 @@ export const SECTION_PAIR =
  */
 export function FieldGrid({
   size = "field",
+  dense = false,
   children,
 }: {
   readonly size?: "field" | "item";
+  /**
+   * โหมดดู (ข้อความล้วน ไม่มีช่องกรอก): 2 คอลัมน์ตั้งแต่กล่องแคบสุด — ค่าส่วนใหญ่สั้น
+   * (วันที่ เลขที่ใบ รหัสสกุลเงิน) คอลัมน์เดียวบนมือถือทำให้หัวเอกสารสูงเกินจอ ช่องที่ยาว
+   * (`SettingField fullWidth` = `data-wide`) ยังกินเต็มแถว · ห้ามใช้กับช่องกรอก (แคบเกิน)
+   */
+  readonly dense?: boolean;
   readonly children: React.ReactNode;
 }) {
   return (
@@ -40,6 +47,7 @@ export function FieldGrid({
       <div
         className={cn(
           "grid gap-x-5 gap-y-3",
+          dense && "grid-cols-2 [&>[data-wide]]:col-span-2",
           size === "field"
             ? "@md:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 @min-[96rem]:grid-cols-6"
             : "@xl:grid-cols-2 @5xl:grid-cols-3 @min-[96rem]:grid-cols-4 @min-[128rem]:grid-cols-6",

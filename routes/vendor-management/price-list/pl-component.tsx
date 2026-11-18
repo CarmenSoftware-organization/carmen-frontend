@@ -46,6 +46,7 @@ import { setURLParams, useURL } from "@/hooks/use-url";
 import { encodeFilterParam, clauseTokens } from "@/lib/list-filter-encode";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, subDays } from "date-fns";
+import { rowNumber } from "@/lib/row-number";
 
 // "current" ไม่ใช่ "active" — คำว่า active เป็นสถานะเอกสารอยู่แล้ว (ใบ DRAFT ก็ยังอยู่ในช่วงราคาได้)
 const VALIDITY_TABS = ["current", "expired", "all"] as const;
@@ -364,8 +365,9 @@ export default function PriceListComponent() {
       {isGridMode && !grid.isLoading && priceLists.length > 0 && (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {priceLists.map((item) => (
+            {priceLists.map((item, i) => (
               <PriceListCard
+                rowNo={rowNumber(undefined, i)}
                 key={item.id}
                 item={item}
                 onEdit={(pl) =>

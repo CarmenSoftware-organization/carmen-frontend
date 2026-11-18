@@ -46,8 +46,8 @@ export default function CreditNoteReasonComponent() {
           readOnly={readOnly}
         />
       )}
-      renderCard={({ item, onEdit, onDelete }) => (
-        <CreditNoteReasonCard item={item} onEdit={onEdit} onDelete={onDelete} />
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
+        <CreditNoteReasonCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
       )}
     />
   );

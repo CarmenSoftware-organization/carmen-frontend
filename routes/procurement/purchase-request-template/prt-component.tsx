@@ -35,6 +35,7 @@ import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
 import { DocumentListActions } from "@/components/share/document-list-actions";
+import { rowNumber } from "@/lib/row-number";
 
 export default function PrtComponent() {
   const t = useTranslations("procurement.purchaseRequestTemplate");
@@ -206,8 +207,9 @@ export default function PrtComponent() {
         ) : (
           <>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {templates.map((item) => (
+              {templates.map((item, i) => (
                 <PrtCard
+                  rowNo={rowNumber(useInfiniteScroll ? undefined : params, i)}
                   key={item.id}
                   item={item}
                   onEdit={(t) =>
@@ -217,6 +219,7 @@ export default function PrtComponent() {
                     )
                   }
                   onDelete={setDeleteTarget}
+                  compact
                 />
               ))}
             </div>
@@ -254,8 +257,12 @@ export default function PrtComponent() {
                 <EmptyComponent />
               ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {templates.map((item) => (
+                  {templates.map((item, i) => (
                     <PrtCard
+                      rowNo={rowNumber(
+                        useInfiniteScroll ? undefined : params,
+                        i,
+                      )}
                       key={item.id}
                       item={item}
                       onEdit={(t) =>

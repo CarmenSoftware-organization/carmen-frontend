@@ -234,6 +234,16 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
       width="wide"
       header={
         <PoHeader
+          ribbon={
+            <PoGeneralFields
+              form={form}
+              disabled={fieldsDisabled || isView}
+              isManual={isManual}
+              readOnly={isReadOnly}
+              isDraft={isPoDraft}
+              isAdd={!purchaseOrder}
+            />
+          }
           purchaseOrder={purchaseOrder}
           mode={mode}
           canEdit={canEdit}
@@ -283,20 +293,6 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
         onSubmit={draftSaveHandler(form, onSubmit)}
         className="flex flex-col gap-4"
       >
-        <PoGeneralFields
-          form={form}
-          disabled={fieldsDisabled || isView}
-          isManual={isManual}
-          readOnly={isReadOnly}
-          isDraft={isPoDraft}
-          isAdd={!purchaseOrder}
-        />
-
-        {/* เส้นคั่นเต็มความกว้าง แยกข้อมูลหัวใบ (ผู้ขาย/สกุลเงิน/วันที่/หมายเหตุ)
-            ออกจากตารางรายการ — สองก้อนนี้อ่านคนละจังหวะกัน ก้อนบนอ่านทีเดียวจบ
-            ก้อนล่างกวาดตาทีละแถว */}
-        <hr className="border-border" />
-
         <PoItemFields
           form={form}
           prSourcesByDetailId={prSourcesByDetailId}

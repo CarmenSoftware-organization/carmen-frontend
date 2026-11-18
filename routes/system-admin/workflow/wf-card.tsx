@@ -16,10 +16,12 @@ import { cn } from "@/lib/utils";
 import WfFlowStrip from "./wf-flow-strip";
 import WfScopeLine from "./wf-scope-line";
 import WfRowActions from "./wf-row-actions";
+import { ListCardRowNo } from "@/components/share/list-card";
 
 interface WfCardProps {
   readonly item: WorkflowDto;
-  readonly index?: number;
+  /** เลขลำดับแถว (`rowNumber()`) */
+  readonly rowNo?: number;
   readonly onEdit: (item: WorkflowDto) => void;
   readonly onToggleActive?: (item: WorkflowDto) => void;
   readonly onDuplicate?: (item: WorkflowDto) => void;
@@ -29,7 +31,7 @@ interface WfCardProps {
 
 export default function WfCard({
   item,
-  index,
+  rowNo,
   onEdit,
   onToggleActive,
   onDuplicate,
@@ -62,11 +64,7 @@ export default function WfCard({
     >
       <CardHeader className="p-4">
         <div className="flex items-start gap-2">
-          {typeof index === "number" && (
-            <span className="bg-muted text-muted-foreground mt-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums">
-              {index + 1}
-            </span>
-          )}
+          <ListCardRowNo rowNo={rowNo} />
           <div className="min-w-0 flex-1">
             <CardTitle
               className={cn(

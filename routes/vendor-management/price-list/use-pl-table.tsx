@@ -37,10 +37,10 @@ interface UsePriceListTableOptions {
  * ชื่อรับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมแบ่งสัดส่วน ที่ tablet เลขที่ ช่วงวันที่
  * และชิปสถานะล้นเซลล์ ส่วนบน Full HD ชื่อกับผู้ขายกว้าง 364px ห่างจากค่าของมันเอง
  * ความกว้างขั้นต่ำของตาราง = ผลรวม `size` ซึ่งนับคอลัมน์ select (55) ที่หน้านี้ไม่ได้เรนเดอร์ด้วย:
- *   ครบ             55+60+130+180+200+200+120+60 = 1005
- *   ไม่มีเลขลำดับ                                 = 945
- *   ไม่มีผู้ขาย                                    = 745
- *   ไม่มีชื่อ                                     = 565  (กล่องที่จอ 768 = 662)
+ *   ครบ             55+48+130+180+200+200+120+60 = 993
+ *   ไม่มีผู้ขาย                                    = 793
+ *   ไม่มีชื่อ                                     = 613  (กล่องที่จอ 768 = 662)
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) — ไม่อยู่ในขั้นที่ซ่อน
  * ขั้นสุดท้ายเลขที่ (ลิงก์ของแถว) กลายเป็นคอลัมน์ยืดแทนชื่อ · จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35px
  * ของที่ซ่อนยังเห็น: ผู้ขายลงบรรทัดรองใต้ชื่อ · ชื่อ (+ผู้ขาย) ลงบรรทัดรองใต้เลขที่
  * คอลัมน์ที่ผู้ใช้เปิดเพิ่มเอง (created, updated) ไม่นับในงบ — เกินกล่องก็เลื่อนแนวนอนในกรอบเอง
@@ -48,9 +48,8 @@ interface UsePriceListTableOptions {
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    showIndex: w >= 1040,
-    showVendor: w >= 980,
-    showName: w >= 780,
+    showVendor: w >= 1030,
+    showName: w >= 830,
   };
 }
 
@@ -80,7 +79,7 @@ export function usePriceListTable({
   const ts = useTranslations("status");
   const t = useTranslations("vendorManagement.priceList");
   const deleteGate = useDeleteGate();
-  const { showIndex, showVendor, showName } = columnTier(containerWidth);
+  const { showVendor, showName } = columnTier(containerWidth);
 
   const dataColumns: ColumnDef<PriceList>[] = [
     {
@@ -216,7 +215,7 @@ export function usePriceListTable({
 
   const allColumns: ColumnDef<PriceList>[] = [
     selectColumn<PriceList>(),
-    ...(showIndex ? [indexColumn<PriceList>(params)] : []),
+    indexColumn<PriceList>(params),
     ...visibleDataColumns,
     actionColumn<PriceList>(onVoid, {
       ...deleteGate,

@@ -8,18 +8,26 @@ import {
 import type { PriceListTemplate } from "@/types/price-list-template";
 
 interface PltCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: PriceListTemplate;
   readonly onEdit: (item: PriceListTemplate) => void;
   readonly onDelete: (item: PriceListTemplate) => void;
 }
 
-export default function PltCard({ item, onEdit, onDelete }: PltCardProps) {
+export default function PltCard({
+  item,
+  onEdit,
+  onDelete,
+  rowNo,
+}: PltCardProps) {
   const t = useTranslations("vendorManagement.priceListTemplate");
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       badge={
         <StatusChip

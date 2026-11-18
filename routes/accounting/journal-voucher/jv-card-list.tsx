@@ -11,8 +11,12 @@ import { formatDate } from "@/lib/date-utils";
 import { formatCurrency } from "@/lib/currency-utils";
 import type { JournalVoucher } from "@/types/journal-voucher";
 import { jvSourceLabel, jvStatusLabel } from "./jv-status";
+import { rowNumber } from "@/lib/row-number";
+import type { ParamsDto } from "@/types/params";
 
 interface JvCardListProps {
+  /** `params` ของหน้าเมื่อแบ่งหน้า · `undefined` = รายการสะสม (infinite) นับจาก 1 */
+  readonly pageParams?: ParamsDto;
   readonly items: JournalVoucher[];
   readonly isLoading?: boolean;
   readonly onEdit: (item: JournalVoucher) => void;
@@ -21,6 +25,7 @@ interface JvCardListProps {
 
 /** การ์ด JV สำหรับโหมด grid/มือถือ — ท่าเดียวกับ `PoCardList` */
 export default function JvCardList({
+  pageParams,
   items,
   isLoading,
   onEdit,
@@ -44,10 +49,11 @@ export default function JvCardList({
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {items.map((item) => {
+      {items.map((item, i) => {
         const debit = Number(item.total_debit);
         return (
           <ListCard
+            rowNo={rowNumber(pageParams, i)}
             key={item.id}
             title={item.display_no}
             onOpen={() => onEdit(item)}

@@ -48,6 +48,8 @@ export interface DeleteDialogRenderProps<TEntity> {
 export interface CardRenderProps<TEntity> {
   item: TEntity;
   index?: number;
+  /** เลขลำดับที่ผู้ใช้เห็น (`rowNumber`) — ส่งต่อให้ `ListCard rowNo` */
+  rowNo: number;
   onEdit: (item: TEntity) => void;
   onDelete: (item: TEntity) => void;
 }

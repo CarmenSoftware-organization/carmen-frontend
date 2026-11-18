@@ -329,8 +329,6 @@ export function PurchaseRequestForm({
         }}
         className="space-y-4"
       >
-        <hr className="border-border" />
-
         <PrItemFields
           form={form}
           isDisabled={isDisabled}

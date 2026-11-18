@@ -3,12 +3,14 @@ import { ListCard, ListCardRow } from "@/components/share/list-card";
 import type { User } from "@/types/workflows";
 
 interface Props {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: User;
   readonly onEdit: (item: User) => void;
   readonly onDelete?: (item: User) => void;
 }
 
-export default function UserCard({ item, onEdit, onDelete }: Props) {
+export default function UserCard({ item, onEdit, onDelete, rowNo }: Props) {
   const tfl = useTranslations("field");
 
   const fullName = [item.firstname, item.middlename, item.lastname]
@@ -17,6 +19,7 @@ export default function UserCard({ item, onEdit, onDelete }: Props) {
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={fullName || "..."}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}

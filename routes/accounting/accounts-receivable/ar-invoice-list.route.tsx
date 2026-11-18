@@ -48,6 +48,7 @@ import {
   useExportArRegister,
   type ArRegisterRow,
 } from "./use-ar-register";
+import { rowNumber } from "@/lib/row-number";
 
 const fields: FilterFieldDef[] = [
   {
@@ -251,8 +252,9 @@ export function Component() {
                 <EmptyComponent />
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {rows.map((row) => (
+                  {rows.map((row, i) => (
                     <ListCard
+                      rowNo={rowNumber(params, i)}
                       key={row.id}
                       title={row.doc_no}
                       onOpen={() => open(row)}

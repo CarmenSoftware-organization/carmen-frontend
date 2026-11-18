@@ -8,16 +8,18 @@ import {
 import type { Currency } from "@/types/currency";
 
 interface Props {
+  readonly rowNo?: number;
   readonly item: Currency;
   readonly onEdit: (item: Currency) => void;
   readonly onDelete?: (item: Currency) => void;
 }
 
-export default function CurrencyCard({ item, onEdit, onDelete }: Props) {
+export default function CurrencyCard({ item, onEdit, onDelete, rowNo }: Props) {
   const tfl = useTranslations("field");
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}

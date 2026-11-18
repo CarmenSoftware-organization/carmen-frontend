@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
 import { useTranslations } from "use-intl";
 import { Building2, FileText, Save } from "lucide-react";
 import { PersonAvatar } from "@/components/share/person-avatar";
@@ -29,6 +31,8 @@ interface GrnHeaderProps {
   readonly onShowDelete: () => void;
   readonly onSaveDraft: () => void;
   readonly onSave: () => void;
+  /** ช่องข้อมูลหัวใบ — อยู่ในการ์ดเดียวกับหัวเอกสาร (ส่งต่อ FormToolbar.ribbon) */
+  readonly ribbon?: ReactNode;
 }
 
 export function GrnHeader({
@@ -48,6 +52,7 @@ export function GrnHeader({
   onShowDelete,
   onSaveDraft,
   onSave,
+  ribbon,
 }: GrnHeaderProps) {
   const t = useTranslations("procurement.goodsReceiveNote");
   const tc = useTranslations("common");
@@ -77,7 +82,8 @@ export function GrnHeader({
   // แยกเป็นคนละกลุ่มกับเลขที่ใบด้วยเส้นคั่น + ระยะห่าง — เลขที่ใบคือตัวตนของ
   // เอกสาร ส่วนสถานะ/ชนิดใบ/รุ่นคือ "ตอนนี้มันอยู่ตรงไหน" คนละคำถามกัน
   const badges = (
-    <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3">
+    // หัวแคบ (มือถือ) กลุ่มนี้มักตกไปบรรทัดใต้เลขที่ใบ เส้นคั่นจะค้างหัวบรรทัด จึงเอาออก
+    <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3 @max-md/doc-header:ms-0 @max-md/doc-header:border-s-0 @max-md/doc-header:ps-0">
       {statusCfg && goodsReceiveNote && (
         <StatusChip
           status={goodsReceiveNote.doc_status}
@@ -162,54 +168,62 @@ export function GrnHeader({
   );
 
   return (
-    <FormToolbar
-      mode={mode}
-      formId="grn-form"
-      isPending={isPending}
-      title={goodsReceiveNote?.grn_no ?? t("entity")}
-      subtitle={subtitle}
-      badges={badges}
-      submitSlot={submitSlot}
-      onBack={onBack}
-      onCancel={onCancel}
-      // AP ดึงใบ committed ไปแล้ว = ปุ่ม Edit ยังโชว์แต่กดไม่ได้พร้อมเหตุผล คนที่เคยแก้
-      // ใบ committed ได้จะได้ไม่งงว่าทำไมใบนี้แก้ไม่ได้ (commit/void อยู่ที่ footer)
-      onEdit={
-        goodsReceiveNote && (canEdit || apLocked) ? onEnterEdit : undefined
-      }
-      writeDisabledReason={
-        isView && apLocked
-          ? t("editLockedByAp", { docNos: apInvoiceNos.join(", ") })
-          : undefined
-      }
-      // หลังบ้านลบได้เฉพาะใบร่าง และลบจากโหมดแก้เท่านั้น
-      onDelete={
-        isEdit && goodsReceiveNote && !isPastDraft ? onShowDelete : undefined
-      }
-      deleteIsPending={deleteIsPending}
-    >
-      {/* comment / activity / print อยู่ใน DocActions — ไม่ส่ง activity ให้ toolbar ซ้ำ */}
-      {goodsReceiveNote && (
-        <DocActions
-          onComment={onShowComment}
-          commentCount={commentCount}
-          activity={{
-            id: goodsReceiveNote.id,
-            label: goodsReceiveNote.grn_no,
-          }}
-          print={
-            isView && goodsReceiveNote.id
-              ? {
-                  documentType: "GRN",
-                  documentId: goodsReceiveNote.id,
-                  filters: goodsReceiveNote.grn_no
-                    ? { DocumentNo: goodsReceiveNote.grn_no }
-                    : undefined,
-                }
-              : undefined
-          }
-        />
-      )}
-    </FormToolbar>
+    <div className={DOC_HEADER_CARD}>
+      <FormToolbar
+        inlineBack
+        ribbon={
+          ribbon ? (
+            <div className="ml-4 min-w-0 flex-1">{ribbon}</div>
+          ) : undefined
+        }
+        mode={mode}
+        formId="grn-form"
+        isPending={isPending}
+        title={goodsReceiveNote?.grn_no ?? t("entity")}
+        subtitle={subtitle}
+        badges={badges}
+        submitSlot={submitSlot}
+        onBack={onBack}
+        onCancel={onCancel}
+        // AP ดึงใบ committed ไปแล้ว = ปุ่ม Edit ยังโชว์แต่กดไม่ได้พร้อมเหตุผล คนที่เคยแก้
+        // ใบ committed ได้จะได้ไม่งงว่าทำไมใบนี้แก้ไม่ได้ (commit/void อยู่ที่ footer)
+        onEdit={
+          goodsReceiveNote && (canEdit || apLocked) ? onEnterEdit : undefined
+        }
+        writeDisabledReason={
+          isView && apLocked
+            ? t("editLockedByAp", { docNos: apInvoiceNos.join(", ") })
+            : undefined
+        }
+        // หลังบ้านลบได้เฉพาะใบร่าง และลบจากโหมดแก้เท่านั้น
+        onDelete={
+          isEdit && goodsReceiveNote && !isPastDraft ? onShowDelete : undefined
+        }
+        deleteIsPending={deleteIsPending}
+      >
+        {/* comment / activity / print อยู่ใน DocActions — ไม่ส่ง activity ให้ toolbar ซ้ำ */}
+        {goodsReceiveNote && (
+          <DocActions
+            onComment={onShowComment}
+            commentCount={commentCount}
+            activity={{
+              id: goodsReceiveNote.id,
+              label: goodsReceiveNote.grn_no,
+            }}
+            print={
+              isView && goodsReceiveNote.id
+                ? {
+                    documentType: "GRN",
+                    documentId: goodsReceiveNote.id,
+                    filters: goodsReceiveNote.grn_no
+                      ? { DocumentNo: goodsReceiveNote.grn_no }
+                      : undefined,
+                  }
+                : undefined
+            }
+          />
+        )}
+      </FormToolbar>
+    </div>
   );
 }

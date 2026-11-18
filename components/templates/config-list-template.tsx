@@ -41,6 +41,8 @@ import { dispatchPermissionDenied } from "@/components/permission-denied-dialog"
 import { buildPermissionKey } from "@/constant/permissions";
 import type { CardRenderProps, ConfigListTemplateProps } from "./types";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
+import { rowNumber } from "@/lib/row-number";
+import type { ParamsDto } from "@/types/params";
 
 interface GridContentArgs<TEntity extends { id: string }> {
   readonly isLoading: boolean;
@@ -49,6 +51,7 @@ interface GridContentArgs<TEntity extends { id: string }> {
   readonly handleEdit: (entity: TEntity) => void;
   readonly handleDelete: (entity: TEntity) => void;
   readonly useInfiniteScroll: boolean;
+  readonly params: ParamsDto;
   readonly grid: {
     readonly hasMore: boolean;
     readonly isLoadingMore: boolean;
@@ -68,6 +71,7 @@ function renderGridContent<TEntity extends { id: string }>({
   handleEdit,
   handleDelete,
   useInfiniteScroll,
+  params,
   grid,
 }: GridContentArgs<TEntity>) {
   if (isLoading) return <CardSkeletonGrid />;
@@ -82,6 +86,8 @@ function renderGridContent<TEntity extends { id: string }>({
               onEdit: handleEdit,
               onDelete: handleDelete,
               index,
+              // มือถือเป็นรายการสะสม (infinite) จึงนับจาก 1 ต่อเนื่อง ไม่คูณเลขหน้า
+              rowNo: rowNumber(useInfiniteScroll ? undefined : params, index),
             })}
           </div>
         ))}
@@ -413,6 +419,7 @@ export function ConfigListTemplate<TEntity extends { id: string }>({
           handleEdit,
           handleDelete: setDeleteTarget,
           useInfiniteScroll,
+          params,
           grid,
         })
       ) : (

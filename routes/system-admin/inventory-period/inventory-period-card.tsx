@@ -9,6 +9,8 @@ import type { InventoryPeriod } from "@/types/inventory-period";
 import { getInventoryPeriodPhase } from "./inventory-period-phase";
 
 interface Props {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: InventoryPeriod;
   /** เป็นรอบปัจจุบันของ BU (`useProfile().currentPeriod`) */
   readonly isCurrent?: boolean;
@@ -24,7 +26,12 @@ interface Props {
  * period-end ใช้ — ของเดิม map เป็น success/secondary/destructive ซึ่งยืม token
  * ความหมาย "สำเร็จ/ผิดพลาด" มาใช้กับ lifecycle ผิดชั้นสีตาม DESIGN.md
  */
-export default function InventoryPeriodCard({ item, isCurrent, today }: Props) {
+export default function InventoryPeriodCard({
+  item,
+  isCurrent,
+  today,
+  rowNo,
+}: Props) {
   const t = useTranslations("systemAdmin.inventoryPeriod");
   const { dateFormat } = useProfile();
 
@@ -33,6 +40,7 @@ export default function InventoryPeriodCard({ item, isCurrent, today }: Props) {
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={
         <span className="flex items-center gap-2">
           <span className="tabular-nums">{item.period}</span>

@@ -34,6 +34,11 @@ interface DocFormHeaderProps {
    * ห่อหลายบรรทัดข้างปุ่ม (หัว workflow ที่ 400–575px)
    */
   readonly titleClassName?: string;
+  /**
+   * ปุ่มย้อนกลับอยู่ในแถวเดียวกับชื่อ ไม่ลอยออกซ้าย — หัวที่อยู่ในการ์ด (PR) ปุ่มลอยจะทับขอบการ์ด
+   * ถ้าเว้นที่ซ้ายให้มันทั้งการ์ด แถวปุ่มบนมือถือจะเหลือที่ไม่พอแล้วตกเป็นสองบรรทัด
+   */
+  readonly inlineBack?: boolean;
 }
 
 export function DocFormHeader({
@@ -49,6 +54,7 @@ export function DocFormHeader({
   leading,
   flush = false,
   titleClassName,
+  inlineBack = false,
 }: DocFormHeaderProps) {
   const { pathname } = useLocation();
   const { buCode } = useProfile();
@@ -80,7 +86,11 @@ export function DocFormHeader({
               label={backLabel}
               // top-4 ไม่ใช่ top-1/2: จอแคบปุ่มตกบรรทัด แถวสูงสองบรรทัด — ยึดกลาง
               // บรรทัดแรก (ปุ่ม h-8) ให้ลูกศรอยู่ข้าง title เสมอ
-              className="absolute top-4 left-0 -translate-x-[calc(100%+0.25rem)] -translate-y-1/2"
+              className={
+                inlineBack
+                  ? "-ms-1 shrink-0 self-start"
+                  : "absolute top-4 left-0 -translate-x-[calc(100%+0.25rem)] -translate-y-1/2"
+              }
             />
           )}
           {leading}

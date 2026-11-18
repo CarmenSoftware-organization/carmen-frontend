@@ -2,8 +2,12 @@ import type { PurchaseRequest } from "@/types/purchase-request";
 import EmptyComponent from "@/components/empty-component";
 import { ListCardSkeleton } from "@/components/share/list-card";
 import PrCard from "./pr-card";
+import { rowNumber } from "@/lib/row-number";
+import type { ParamsDto } from "@/types/params";
 
 interface PrCardListProps {
+  /** `params` ของหน้าเมื่อแบ่งหน้า · `undefined` = รายการสะสม (infinite) นับจาก 1 */
+  readonly pageParams?: ParamsDto;
   readonly items: PurchaseRequest[];
   readonly isLoading?: boolean;
   readonly onEdit: (item: PurchaseRequest) => void;
@@ -15,6 +19,7 @@ interface PrCardListProps {
 }
 
 export default function PrCardList({
+  pageParams,
   items,
   isLoading,
   onEdit,
@@ -44,8 +49,9 @@ export default function PrCardList({
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {items.map((item) => (
+      {items.map((item, i) => (
         <PrCard
+          rowNo={rowNumber(pageParams, i)}
           key={item.id}
           item={item}
           onEdit={onEdit}

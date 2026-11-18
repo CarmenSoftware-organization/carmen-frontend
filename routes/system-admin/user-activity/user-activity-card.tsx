@@ -4,16 +4,18 @@ import { useProfile } from "@/hooks/use-profile";
 import { ActivityActionLabel } from "../shared/activity-action-label";
 import { formatDate } from "@/lib/date-utils";
 import { getLogCreatedAt, type ActivityLog } from "@/types/activity-log";
+import { ListCardRowNo } from "@/components/share/list-card";
 
 interface UserActivityCardProps {
   log: ActivityLog;
-  index?: number;
+  /** เลขลำดับแถว (`rowNumber()`) */
+  readonly rowNo?: number;
   onClick?: () => void;
 }
 
 export function UserActivityCard({
   log,
-  index,
+  rowNo,
   onClick,
 }: UserActivityCardProps) {
   const { dateFormat } = useProfile();
@@ -41,11 +43,7 @@ export function UserActivityCard({
       {/* Header: action badge + timestamp */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          {typeof index === "number" && (
-            <span className="bg-muted text-muted-foreground text-micro-legal inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 font-semibold tabular-nums">
-              {index + 1}
-            </span>
-          )}
+          <ListCardRowNo rowNo={rowNo} />
           <ActivityActionLabel action={log.action} />
         </div>
         <div className="text-muted-foreground flex items-center gap-1">

@@ -10,12 +10,19 @@ import type { RequestPriceList } from "@/types/request-price-list";
 import { RfpResponses, RfpWindowBadge } from "./rfp-list-cells";
 
 interface RfpCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: RequestPriceList;
   readonly onEdit: (item: RequestPriceList) => void;
   readonly onDelete: (item: RequestPriceList) => void;
 }
 
-export default function RfpCard({ item, onEdit, onDelete }: RfpCardProps) {
+export default function RfpCard({
+  item,
+  onEdit,
+  onDelete,
+  rowNo,
+}: RfpCardProps) {
   const tfl = useTranslations("field");
   const { dateFormat } = useProfile();
 
@@ -28,6 +35,7 @@ export default function RfpCard({ item, onEdit, onDelete }: RfpCardProps) {
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       badge={<RfpWindowBadge item={item} />}
       onOpen={() => onEdit(item)}

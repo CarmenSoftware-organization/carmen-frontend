@@ -9,17 +9,19 @@ import type { Certification } from "@/types/certification";
 import { CertificationHoldings } from "./certification-holdings";
 
 interface Props {
+  readonly rowNo?: number;
   readonly item: Certification;
   readonly onEdit: (item: Certification) => void;
   readonly onDelete?: (item: Certification) => void;
 }
 
-export default function CertificationCard({ item, onEdit, onDelete }: Props) {
+export default function CertificationCard({ item, onEdit, onDelete, rowNo }: Props) {
   const tfl = useTranslations("field");
   const t = useTranslations("vendorManagement.certification");
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}

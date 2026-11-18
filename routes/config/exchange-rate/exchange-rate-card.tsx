@@ -10,6 +10,8 @@ import { formatCurrency } from "@/lib/currency-utils";
 import type { ExchangeRateItem } from "@/types/exchange-rate";
 
 interface Props {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: ExchangeRateItem;
   readonly baseCurrency?: string;
   readonly onEdit: (item: ExchangeRateItem) => void;
@@ -21,12 +23,14 @@ export default function ExchangeRateCard({
   baseCurrency,
   onEdit,
   onDelete,
+  rowNo,
 }: Props) {
   const tfl = useTranslations("field");
   const { dateFormat } = useProfile();
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.currency?.code}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}

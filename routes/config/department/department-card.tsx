@@ -8,12 +8,13 @@ import {
 import type { Department } from "@/types/department";
 
 interface Props {
+  readonly rowNo?: number;
   readonly item: Department;
   readonly onEdit: (item: Department) => void;
   readonly onDelete?: (item: Department) => void;
 }
 
-export default function DepartmentCard({ item, onEdit, onDelete }: Props) {
+export default function DepartmentCard({ item, onEdit, onDelete, rowNo }: Props) {
   const t = useTranslations("config.department");
   const tfl = useTranslations("field");
 
@@ -21,6 +22,7 @@ export default function DepartmentCard({ item, onEdit, onDelete }: Props) {
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}

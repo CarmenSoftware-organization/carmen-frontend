@@ -53,8 +53,8 @@ export default function TaxProfileComponent() {
           />
         </Suspense>
       )}
-      renderCard={({ item, onEdit, onDelete }) => (
-        <TaxProfileCard item={item} onEdit={onEdit} onDelete={onDelete} />
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
+        <TaxProfileCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
       )}
     />
   );

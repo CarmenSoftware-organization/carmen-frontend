@@ -50,6 +50,7 @@ import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { useElementWidth } from "@/hooks/use-element-width";
+import { rowNumber } from "@/lib/row-number";
 
 // ไม่กรองสถานะ — หน้า list ต้องกรอง RFP เก่าที่อ้าง template ที่ปิดไปแล้วได้
 const TEMPLATE_ENTITY = defineEntitySource<PriceListTemplate>({
@@ -303,8 +304,9 @@ export default function RequestPriceListComponent() {
       {isGridMode && !grid.isLoading && items.length > 0 && (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((item) => (
+            {items.map((item, i) => (
               <RfpCard
+                rowNo={rowNumber(undefined, i)}
                 key={item.id}
                 item={item}
                 onEdit={(rfp) =>

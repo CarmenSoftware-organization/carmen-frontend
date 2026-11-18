@@ -51,8 +51,8 @@ export default function BusinessTypeComponent() {
           />
         </Suspense>
       )}
-      renderCard={({ item, onEdit, onDelete }) => (
-        <BusinessTypeCard item={item} onEdit={onEdit} onDelete={onDelete} />
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
+        <BusinessTypeCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
       )}
     />
   );

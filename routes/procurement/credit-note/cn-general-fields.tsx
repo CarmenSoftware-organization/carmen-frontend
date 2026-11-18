@@ -77,7 +77,7 @@ export function CnGeneralFields({
   return (
     // FieldGrid: คอลัมน์ตามความกว้างกล่อง (container query) ไม่ใช่ความกว้างจอ
     // ช่องที่แก้ไม่ได้ (โหมดดู หรือค่าที่ตามมาจาก GRN) เป็นข้อความ — กรอบมีเฉพาะช่องที่กรอกได้จริง
-    <FieldGrid>
+    <FieldGrid dense={isView}>
       {isView ? (
         <SettingField label={tfl("vendor")} value={vendorName} fullWidth />
       ) : (

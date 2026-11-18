@@ -1,6 +1,7 @@
 import { flexRender, type Table } from "@tanstack/react-table";
 import type { RefCallback } from "react";
 import { ListCard, ListCardRow } from "@/components/share/list-card";
+import { rowNumber } from "@/lib/row-number";
 import { CardSkeletonGrid } from "@/components/loader/card-skeleton";
 import EmptyComponent from "@/components/empty-component";
 import {
@@ -34,9 +35,11 @@ export function ConfigMasterGrid<T extends object>({
           <EmptyComponent />
         ) : (
           <div className="grid gap-3 @xl:grid-cols-2">
-            {table.getRowModel().rows.map((row) => (
+            {/* ตารางกลุ่มนี้ไม่แบ่งหน้า (core row model) — เลขจึงนับจาก 1 ต่อเนื่อง */}
+            {table.getRowModel().rows.map((row, i) => (
               <ListCard
                 key={row.id}
+                rowNo={rowNumber(undefined, i)}
                 title={String(row.getValue(titleColumn) ?? "—")}
               >
                 {row

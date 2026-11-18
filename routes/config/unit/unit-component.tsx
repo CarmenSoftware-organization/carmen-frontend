@@ -47,8 +47,8 @@ export default function UnitComponent() {
           readOnly={readOnly}
         />
       )}
-      renderCard={({ item, onEdit, onDelete }) => (
-        <UnitCard item={item} onEdit={onEdit} onDelete={onDelete} />
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
+        <UnitCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
       )}
     />
   );

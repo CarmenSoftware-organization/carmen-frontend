@@ -11,6 +11,8 @@ import { EqMaintenanceBadge } from "./eq-maintenance-badge";
 import { EqAvailability } from "./eq-availability";
 
 interface EqCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: Equipment;
   readonly categoryName?: string;
   readonly onEdit: (item: Equipment) => void;
@@ -22,6 +24,7 @@ export default function EqCard({
   categoryName,
   onEdit,
   onDelete,
+  rowNo,
 }: EqCardProps) {
   const tfl = useTranslations("field");
   const t = useTranslations("operationPlan.equipment");
@@ -29,6 +32,7 @@ export default function EqCard({
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}

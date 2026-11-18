@@ -342,6 +342,7 @@ export default function PurchaseRequestComponent() {
       {isGridMode && (
         <>
           <PrCardList
+            pageParams={useInfiniteScroll ? undefined : params}
             items={items}
             isLoading={useInfiniteScroll ? grid.isLoading : isLoading}
             onEdit={(item) =>

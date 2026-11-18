@@ -392,6 +392,17 @@ export function CnForm({ creditNote }: CnFormProps) {
       width="wide"
       header={
         <CnHeader
+          ribbon={
+            <CnGeneralFields
+              form={form}
+              disabled={isDisabled || isView}
+              isView={isView}
+              vendorName={creditNote?.vendor?.name ?? undefined}
+              reasonName={creditNote?.cn_reason?.name}
+              currencyCode={creditNote?.currency?.code}
+              savedGrn={creditNote?.grn}
+            />
+          }
           creditNote={creditNote}
           mode={mode}
           isPending={isPending}
@@ -424,17 +435,6 @@ export function CnForm({ creditNote }: CnFormProps) {
         onSubmit={draftSaveHandler(form, onSubmit)}
         className="space-y-3"
       >
-        <CnGeneralFields
-          form={form}
-          disabled={isDisabled || isView}
-          isView={isView}
-          vendorName={creditNote?.vendor?.name ?? undefined}
-          reasonName={creditNote?.cn_reason?.name}
-          currencyCode={creditNote?.currency?.code}
-          savedGrn={creditNote?.grn}
-        />
-        <hr className="border-border" />
-
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList variant="line">
             <TabsTrigger value="items">{t("tabItems")}</TabsTrigger>

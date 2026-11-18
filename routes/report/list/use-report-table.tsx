@@ -6,7 +6,10 @@ import {
 } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
-import { columnSkeletons } from "@/components/ui/data-grid/columns";
+import {
+  columnSkeletons,
+  indexColumn,
+} from "@/components/ui/data-grid/columns";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import type { Report } from "@/types/report";
 
@@ -25,18 +28,10 @@ export function useReportTable({
 }: UseReportTableOptions) {
   "use no memo";
   const tfl = useTranslations("field");
-  // tablet budget 662px (ไม่มีคอลัมน์ select): # 50 + Name 400 (ขั้นต่ำของ grow) + Type 160 = 610
+  // tablet budget 662px (ไม่มีคอลัมน์ select): # 48 + Name 400 (ขั้นต่ำของ grow) + Type 160 = 608
   const columns: ColumnDef<Report>[] = useMemo(
     () => [
-      {
-        id: "index",
-        header: "#",
-        size: 50,
-        cell: ({ row }) => (
-          <span className="text-muted-foreground text-xs">{row.index + 1}</span>
-        ),
-        meta: { skeleton: columnSkeletons.number },
-      },
+      indexColumn<Report>(),
       {
         accessorKey: "ReportName",
         // คอลัมน์ข้อความยาว (ชื่อ + คำอธิบาย) รับความกว้างที่เหลือ — แบ่งตามสัดส่วนเดิม
