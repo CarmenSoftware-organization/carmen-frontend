@@ -25,6 +25,7 @@ export function useReportTable({
 }: UseReportTableOptions) {
   "use no memo";
   const tfl = useTranslations("field");
+  // tablet budget 662px (ไม่มีคอลัมน์ select): # 50 + Name 400 (ขั้นต่ำของ grow) + Type 160 = 610
   const columns: ColumnDef<Report>[] = useMemo(
     () => [
       {
@@ -38,9 +39,9 @@ export function useReportTable({
       },
       {
         accessorKey: "ReportName",
-        // DataGridTable แปลง size เป็น % ของผลรวม — ไม่ตั้ง = 150 เท่า Type แล้ว
-        // คอลัมน์ # (50) กินไป ~14% ของตาราง
-        size: 800,
+        // คอลัมน์ข้อความยาว (ชื่อ + คำอธิบาย) รับความกว้างที่เหลือ — แบ่งตามสัดส่วนเดิม
+        // Type ยืดตามจอไปถึง 585px ที่ 4K ทั้งที่ค่าสั้นแค่คำเดียว
+        size: 400,
         header: ({ column }) => (
           <DataGridColumnHeader column={column} title={tfl("name")} />
         ),
@@ -68,7 +69,11 @@ export function useReportTable({
             )}
           </div>
         ),
-        meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.text },
+        meta: {
+          headerTitle: tfl("name"),
+          skeleton: columnSkeletons.text,
+          grow: true,
+        },
       },
       {
         accessorKey: "ReportGroup",
