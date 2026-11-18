@@ -26,7 +26,9 @@ const PrNewInner = () => {
   // ฟอร์มจะ mount เปล่า ๆ แล้ว defaultValues ถูกแช่ไปตลอด (useForm อ่านครั้งเดียว)
   // ดึงใบเดิมพลาด → ตกไปฟอร์มเปล่าแทนที่จะค้าง skeleton
   if (duplicateId && !duplicateFrom && !duplicateError) {
-    return <DocPageSkeleton ribbon="text" />;
+    return (
+      <DocPageSkeleton ribbon="text" fields={[1, 2]} tabs={false} toolbar />
+    );
   }
 
   return (
@@ -42,7 +44,11 @@ export function PrNewContent() {
       workflowType={WORKFLOW_TYPE.PR}
       description={t("noCreatableWorkflow")}
     >
-      <Suspense fallback={<DocPageSkeleton ribbon="text" />}>
+      <Suspense
+        fallback={
+          <DocPageSkeleton ribbon="text" fields={[1, 2]} tabs={false} toolbar />
+        }
+      >
         <PrNewInner />
       </Suspense>
     </CreateWorkflowGate>

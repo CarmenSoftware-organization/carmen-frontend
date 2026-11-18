@@ -18,11 +18,17 @@ import { LookupVendor } from "@/components/lookup/lookup-vendor";
 import { addDays } from "@/lib/date-utils";
 import { LookupCurrency } from "@/components/lookup/lookup-currency";
 import { LookupCreditTerm } from "@/components/lookup/lookup-credit-term";
+import { FieldGrid } from "@/components/share/compact-section";
+import { SettingField } from "@/components/share/setting-field";
+import { useProfile } from "@/hooks/use-profile";
+import { formatDate } from "@/lib/date-utils";
 import type { GrnFormValues } from "./grn-form-schema";
 
 interface GrnFormHeaderProps {
   readonly form: UseFormReturn<GrnFormValues>;
   readonly disabled: boolean;
+  /** โหมดดู: ทุกช่องเป็นข้อความ (ป้ายจาง + ค่าเด่น) ไม่ใช่ input ที่ disable */
+  readonly isView?: boolean;
   readonly fromWizard?: boolean;
   /** ใบ saved: ผู้ขายกับวันที่รับล็อกไว้ แม้ช่องอื่นจะแก้ได้ */
   readonly lockIdentity?: boolean;
@@ -33,6 +39,7 @@ interface GrnFormHeaderProps {
 export function GrnFormHeader({
   form,
   disabled,
+  isView = false,
   fromWizard = false,
   lockIdentity = false,
   lockCommercial = false,
@@ -48,6 +55,23 @@ export function GrnFormHeader({
   const isPo = docType === "purchase_order";
   const invoiceDate = useWatch({ control: form.control, name: "invoice_date" });
   const viewFieldGap = "gap-1";
+  const { dateFormat } = useProfile();
+
+  // ค่าที่ใช้ตอนช่องเป็นข้อความ — โหมดดูทั้งใบ หรือโหมดแก้ที่ช่องนั้นถูกล็อก
+  // (ผู้ขายของใบจาก PO / ใบ saved, วันที่รับของใบ saved, สกุลเงินใบ committed)
+  // กรอบมีเฉพาะช่องที่กรอกได้จริง (กฎ 7 ของ carmen-blue-ui-design)
+  const values = useWatch({ control: form.control });
+  const date = (v?: string | null) => formatDate(v, dateFormat) || null;
+  const rate = Number(values.exchange_rate);
+  const rateText = Number.isFinite(rate)
+    ? rate.toLocaleString(undefined, {
+        minimumFractionDigits: 5,
+        maximumFractionDigits: 5,
+      })
+    : null;
+  const vendorLocked = isView || isPo || lockIdentity;
+  const grnDateLocked = isView || lockIdentity;
+  const currencyLocked = isView || lockCommercial;
 
   const syncDueDate = (invoiceDate?: string | null, days?: number | null) => {
     if (!invoiceDate) return;
@@ -64,9 +88,13 @@ export function GrnFormHeader({
   };
 
   return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
-        <Field className={`${viewFieldGap ?? ""} lg:col-span-2`}>
+    // FieldGrid: คอลัมน์ตามความกว้างกล่อง (container query) ไม่ใช่ความกว้างจอ
+    // ผู้ขาย + คำอธิบายกิน 2 ช่อง · ลำดับช่องเท่าเดิมทั้งสองโหมด สลับแล้วไม่ย้ายที่
+    <FieldGrid>
+      {vendorLocked ? (
+        <SettingField label={tfl("vendor")} value={vendorName} fullWidth />
+      ) : (
+        <Field className={`${viewFieldGap} @md:col-span-2`}>
           <FieldLabel required>{tfl("vendor")}</FieldLabel>
           <Controller
             control={form.control}
@@ -84,6 +112,10 @@ export function GrnFormHeader({
             )}
           />
         </Field>
+      )}
+      {grnDateLocked ? (
+        <SettingField label={tfl("grnDate")} value={date(values.grn_date)} />
+      ) : (
         <Field className={viewFieldGap}>
           <FieldLabel required>{tfl("grnDate")}</FieldLabel>
           <Controller
@@ -103,7 +135,15 @@ export function GrnFormHeader({
             )}
           />
         </Field>
+      )}
 
+      {currencyLocked ? (
+        <SettingField
+          label={tfl("currency")}
+          value={values.currency_name}
+          example={rateText}
+        />
+      ) : (
         <Field className={viewFieldGap}>
           <FieldLabel htmlFor="grn-exchange-rate" required>
             {tfl("currency")}
@@ -149,7 +189,14 @@ export function GrnFormHeader({
             />
           </InputSuffixField>
         </Field>
+      )}
 
+      {isView ? (
+        <SettingField
+          label={t("postType")}
+          value={values.post_type ? t(values.post_type) : null}
+        />
+      ) : (
         <Field className={viewFieldGap}>
           <FieldLabel>{t("postType")}</FieldLabel>
           <Controller
@@ -174,7 +221,14 @@ export function GrnFormHeader({
             )}
           />
         </Field>
+      )}
 
+      {isView ? (
+        <SettingField
+          label={tfl("creditTerm")}
+          value={values.credit_term_name}
+        />
+      ) : (
         <Field className={viewFieldGap}>
           <FieldLabel>{tfl("creditTerm")}</FieldLabel>
           <Controller
@@ -200,7 +254,11 @@ export function GrnFormHeader({
             )}
           />
         </Field>
+      )}
 
+      {isView ? (
+        <SettingField label={tfl("invoiceNo")} value={values.invoice_no} />
+      ) : (
         <Field className={viewFieldGap}>
           <FieldLabel htmlFor="grn-invoice-no" required>
             {tfl("invoiceNo")}
@@ -216,7 +274,14 @@ export function GrnFormHeader({
             {...form.register("invoice_no")}
           />
         </Field>
+      )}
 
+      {isView ? (
+        <SettingField
+          label={t("invoiceDate")}
+          value={date(values.invoice_date)}
+        />
+      ) : (
         <Field className={viewFieldGap}>
           <FieldLabel required>{t("invoiceDate")}</FieldLabel>
           <Controller
@@ -237,7 +302,14 @@ export function GrnFormHeader({
             )}
           />
         </Field>
+      )}
 
+      {isView ? (
+        <SettingField
+          label={t("dueDate")}
+          value={date(values.payment_due_date)}
+        />
+      ) : (
         <Field className={viewFieldGap}>
           <FieldLabel required>{t("dueDate")}</FieldLabel>
           <Controller
@@ -257,7 +329,15 @@ export function GrnFormHeader({
             )}
           />
         </Field>
-        <Field className="lg:col-span-2">
+      )}
+      {isView ? (
+        <SettingField
+          label={tfl("description")}
+          value={values.description}
+          fullWidth
+        />
+      ) : (
+        <Field className={`${viewFieldGap} @md:col-span-2`}>
           <FieldLabel htmlFor="grn-description">
             {tfl("description")}
           </FieldLabel>
@@ -270,7 +350,7 @@ export function GrnFormHeader({
             {...form.register("description")}
           />
         </Field>
-      </div>
-    </div>
+      )}
+    </FieldGrid>
   );
 }

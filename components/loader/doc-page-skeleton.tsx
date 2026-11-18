@@ -11,8 +11,9 @@ import { cn } from "@/lib/utils";
  *   6 คอลัมน์แบบเดียวกับหน้าจริง · `fields` = ความกว้างของแต่ละช่อง (1 หรือ 2 คอลัมน์)
  *   ตามลำดับบนหน้าจริงโหมดดู จำนวนแถวจึงเท่าของจริง · `tabs` = แท็บเหนือตาราง
  *   (GRN/CN/SR) · `toolbar` = แถวปุ่มชิดขวาเหนือตาราง (PO: Expand all, CN: Collapse all)
- * - `ribbon="text"` (PR) หัวใบมีแค่ workflow + description เป็นข้อความ (ป้าย + ค่า
- *   ไม่มีกรอบ) ใน `FieldGrid` เดียวกับหน้าจริง ไม่มีแท็บ มีแต่ปุ่ม Filter ชิดขวา
+ * - `ribbon="text"` (PR, GRN) ช่องหัวใบโหมดดูเป็นข้อความ (ป้าย + ค่า ไม่มีกรอบ)
+ *   ใน `FieldGrid` เดียวกับหน้าจริง · `fields` ใช้ความหมายเดิม (2 = `@md:col-span-2`)
+ *   · PR: `fields={[1, 2]}` ไม่มีแท็บ มีแต่ปุ่ม Filter ชิดขวา (`toolbar`)
  *
  * แก้ช่องบนหัวเอกสารไหน ให้แก้ `fields` ที่จุดเรียกของเอกสารนั้นด้วย
  */
@@ -37,15 +38,24 @@ export function DocPageSkeleton({
         {ribbon === "text" ? (
           <>
             <FieldGrid>
-              <TextFieldSkeleton />
-              <div className="@md:col-span-2">
-                <TextFieldSkeleton />
-              </div>
+              {fields.map((span, i) => (
+                <div key={i} className={cn(span === 2 && "@md:col-span-2")}>
+                  <TextFieldSkeleton />
+                </div>
+              ))}
             </FieldGrid>
             <Skeleton className="h-px w-full" />
-            <div className="flex justify-end">
-              <Skeleton className="h-8 w-20 rounded-md" />
-            </div>
+            {tabs && (
+              <div className="flex h-9 items-center gap-4">
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-6 w-20" />
+              </div>
+            )}
+            {toolbar && (
+              <div className="flex justify-end">
+                <Skeleton className="h-8 w-20 rounded-md" />
+              </div>
+            )}
           </>
         ) : (
           <>
