@@ -292,6 +292,9 @@ export function StoreRequisitionForm({
           onToLocInfoChange={setToLocInfo}
           savedFromLocation={storeRequisition?.from_location}
           savedToLocation={storeRequisition?.to_location}
+          workflowName={
+            storeRequisition?.workflow?.name ?? storeRequisition?.workflow_name
+          }
           role={storeRequisition?.role ?? STAGE_ROLE.CREATE}
           isDraft={
             !storeRequisition?.doc_status ||

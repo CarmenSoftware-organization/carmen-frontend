@@ -13,7 +13,8 @@ export function SrEditContent({ id }: { id: string }) {
     refetch,
   } = useStoreRequisitionById(id);
 
-  if (isLoading) return <DocPageSkeleton fields={[1, 1, 1, 1, 2]} />;
+  if (isLoading)
+    return <DocPageSkeleton ribbon="text" fields={[1, 1, 1, 1, 2]} />;
   if (error || !storeRequisition)
     return (
       <ErrorState
