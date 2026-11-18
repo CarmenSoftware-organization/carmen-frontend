@@ -13,6 +13,13 @@ import { LookupChartOfAccountById } from "@/components/lookup/lookup-chart-of-ac
 import { LookupCostCenter } from "@/components/lookup/lookup-cost-center";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import type { PaymentErrorKey, PaymentExpenseRow } from "./ap-payment-form";
@@ -74,6 +81,7 @@ export function PaymentExpensesSection({
                   <th className={TH}>{t("account")}</th>
                   <th className={TH}>{t("costCenter")}</th>
                   <th className={TH}>{t("description")}</th>
+                  <th className={TH}>{ui("postingSide")}</th>
                   <th className={`${TH} text-right`}>{t("amount")}</th>
                   {!editable && (
                     <th className={`${TH} text-right`}>
@@ -107,6 +115,7 @@ export function PaymentExpensesSection({
                     <td className={`${TD} min-w-40`}>
                       <span>{row.description || "—"}</span>
                     </td>
+                    <td className={TD}>{row.is_credit ? "Credit" : "Debit"}</td>
                     <td className={TD}>
                       <span className="block text-right tabular-nums">
                         {format(Number(row.amount || 0))}
@@ -190,6 +199,23 @@ export function PaymentExpensesSection({
                     setDraft({ ...draft, description: event.target.value })
                   }
                 />
+              </Field>
+              <Field>
+                <FieldLabel>{ui("postingSide")}</FieldLabel>
+                <Select
+                  value={draft.is_credit ? "credit" : "debit"}
+                  onValueChange={(value) =>
+                    setDraft({ ...draft, is_credit: value === "credit" })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="debit">Debit</SelectItem>
+                    <SelectItem value="credit">Credit</SelectItem>
+                  </SelectContent>
+                </Select>
               </Field>
               <Field>
                 <FieldLabel htmlFor="ap-expense-amount">

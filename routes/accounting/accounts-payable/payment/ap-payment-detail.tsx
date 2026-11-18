@@ -25,7 +25,13 @@ import { ApJournalTab } from "../shared/ap-journal-tab";
 import { ApWorkflowStatus } from "../shared/ap-workflow-status";
 import { Textarea } from "@/components/ui/textarea";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
-import { useBankAccounts } from "@/hooks/use-accounting-master";
+import {
+  useBankAccounts,
+  usePaymentTypeById,
+  useWhtForms,
+  useWhtServiceTypeById,
+} from "@/hooks/use-accounting-master";
+import { useVendorById } from "@/hooks/use-vendor";
 import { useProfile } from "@/hooks/use-profile";
 import { ApiError } from "@/lib/api-error";
 import { getUserErrorMessage } from "@/lib/error-message";
@@ -52,6 +58,7 @@ import {
 import { PaymentExpensesSection } from "./ap-payment-expenses";
 import {
   allocatedLines,
+  applyVendorPaymentDefaults,
   formTotals,
   initialPaymentForm,
   lineCap,
@@ -160,6 +167,54 @@ function ApPaymentEditor({
     editable && form.vendor_id ? form.vendor_id : undefined,
   );
   const docs = outstanding.data;
+  const vendorDefaults = useVendorById(
+    isNew && editable ? form.vendor_id || undefined : undefined,
+  );
+  const defaultPaymentType = usePaymentTypeById(
+    vendorDefaults.data?.payment_type_id ?? undefined,
+  );
+  const defaultService = useWhtServiceTypeById(
+    vendorDefaults.data?.wht_service_type_id ?? undefined,
+  );
+  const defaultForms = useWhtForms(
+    { filter: "is_active|boolean:true,code|string:PND53", perpage: 1 },
+    { enabled: editable },
+  );
+  const defaultFormId =
+    vendorDefaults.data?.wht_form_id ?? defaultForms.data?.data[0]?.id;
+  const appliedDefaults = useRef<string | null>(null);
+  useEffect(() => {
+    const vendor = vendorDefaults.data;
+    if (
+      !isNew ||
+      !editable ||
+      !vendor ||
+      vendor.id !== form.vendor_id ||
+      appliedDefaults.current === vendor.id ||
+      (vendor.payment_type_id && !defaultPaymentType.data) ||
+      (vendor.wht_service_type_id && !defaultService.data) ||
+      (vendor.wht_service_type_id && !vendor.wht_form_id && defaultForms.isPending)
+    )
+      return;
+    appliedDefaults.current = vendor.id;
+    setForm((current) =>
+      applyVendorPaymentDefaults(current, {
+        vendor_id: vendor.id,
+        payment: defaultPaymentType.data,
+        service: defaultService.data,
+        wht_form_id: defaultFormId,
+      }),
+    );
+  }, [
+    isNew,
+    editable,
+    form.vendor_id,
+    vendorDefaults.data,
+    defaultPaymentType.data,
+    defaultService.data,
+    defaultFormId,
+    defaultForms.isPending,
+  ]);
 
   // ยอดที่ใบนี้จองไว้เอง (ต่อบรรทัด): available ของ backend หักการจองของทุกใบ draft/in_review รวมใบนี้
   const ownReserved = useMemo(() => {
@@ -703,6 +758,16 @@ function ApPaymentEditor({
                   {td("errors.overAllocated")}
                 </p>
               )}
+              {errors.has("balance") && (
+                <p className="text-destructive mb-2 text-xs">
+                  {td("errors.balance")}
+                </p>
+              )}
+              {errors.has("paymentType") && (
+                <p className="text-destructive mb-2 text-xs">
+                  {td("errors.paymentType")}
+                </p>
+              )}
               {errors.has("netPositive") && (
                 <p className="text-destructive mb-2 text-xs">
                   {td("errors.netPositive")}
@@ -740,6 +805,7 @@ function ApPaymentEditor({
           </Card>
 
           <PaymentHeader
+            expectedAmount={preview.net}
             section="methods"
             form={effectiveForm}
             docNo={loaded?.doc_no}
@@ -779,7 +845,9 @@ function ApPaymentEditor({
                         ...current.wht,
                         {
                           key: crypto.randomUUID(),
-                          wht_tax_profile_id: "",
+                          wht_tax_profile_id: null,
+                          wht_service_type_id: null,
+                          wht_form_id: defaultFormId ?? null,
                           name: "",
                           rate: "0",
                           base_amount: "0",

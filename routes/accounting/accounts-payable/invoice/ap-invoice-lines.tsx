@@ -1,5 +1,7 @@
 "use no memo";
 
+import { LookupAccountingMaster } from "@/components/lookup/lookup-accounting-master";
+
 import { DimensionValueInput } from "@/components/dimension/dimension-value-input";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -115,25 +117,56 @@ function TaxCell({
   if (!editable)
     return (
       <span className="block text-right tabular-nums">
-        {profileId ? `${Number(rate)}%` : "—"}
+        {profileId || (kind === "wht" && line.wht_service_type_id)
+          ? `${kind === "wht" && line.wht_service_label ? line.wht_service_label + " · " : ""}${Number(rate)}%`
+          : "—"}
       </span>
+    );
+  if (kind === "wht")
+    return (
+      <div className="flex min-w-44 flex-col gap-1">
+        <LookupAccountingMaster
+          kind="service"
+          value={line.wht_service_type_id}
+          defaultLabel={line.wht_service_label}
+          onChange={(id, item) =>
+            onChange({
+              wht_service_type_id: id,
+              wht_service_label: item
+                ? `${item.code} · ${item.description}`
+                : undefined,
+              wht_tax_profile_id: null,
+              wht_rate: String(item?.rate_percent ?? 0),
+            })
+          }
+        />
+        {profileId && (
+          <LookupTaxProfile
+            value={profileId}
+            taxType="wht"
+            onValueChange={(id, rate) =>
+              onChange({
+                wht_tax_profile_id: id,
+                wht_service_type_id: null,
+                wht_rate: String(rate),
+              })
+            }
+          />
+        )}
+      </div>
     );
   return (
     <div className="flex min-w-44 items-center gap-1">
       <LookupTaxProfile
         value={profileId ?? ""}
-        taxType={kind}
-        placeholder={t(kind === "vat" ? "vatProfile" : "whtProfile")}
+        taxType="vat"
+        placeholder={t("vatProfile")}
         onValueChange={(id, taxRate) =>
-          onChange(
-            kind === "vat"
-              ? {
-                  vat_tax_profile_id: id,
-                  vat_rate: String(taxRate),
-                  vat_is_override: false,
-                }
-              : { wht_tax_profile_id: id, wht_rate: String(taxRate) },
-          )
+          onChange({
+            vat_tax_profile_id: id,
+            vat_rate: String(taxRate),
+            vat_is_override: false,
+          })
         }
       />
       {profileId && (
@@ -143,15 +176,11 @@ function TaxCell({
           variant="ghost"
           aria-label={t("clearTax")}
           onClick={() =>
-            onChange(
-              kind === "vat"
-                ? {
-                    vat_tax_profile_id: null,
-                    vat_rate: "0",
-                    vat_is_override: false,
-                  }
-                : { wht_tax_profile_id: null, wht_rate: "0" },
-            )
+            onChange({
+              vat_tax_profile_id: null,
+              vat_rate: "0",
+              vat_is_override: false,
+            })
           }
         >
           <X className="size-4" />
@@ -701,7 +730,7 @@ function InvoiceLineDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel>{t("whtProfile")}</FieldLabel>
+                <FieldLabel>{ui("whtServiceType")}</FieldLabel>
                 <TaxCell
                   kind="wht"
                   line={line}

@@ -43,23 +43,27 @@ export interface InvoiceFormLine {
   /** ใช้เฉพาะเมื่อ vat_is_override (ค่าที่ backend คำนวณ/ผู้ใช้ override ไว้เดิม) */
   vat_amount: DecimalString;
   wht_tax_profile_id: string | null;
+  wht_service_type_id?: string | null;
+  wht_service_label?: string;
   wht_rate: DecimalString;
   /** เลข GRN ที่ใบนี้อ้างถึง (อ่านอย่างเดียว) */
   grn_no: string | null;
   grn_id: string | null;
   source_labels: Record<string, string>;
   /** ฟิลด์ของบรรทัดเดิมที่ UI ไม่แก้ (dimension / cr_* / vat_* account / sources) — ส่งกลับตามเดิมตอน PUT; บรรทัดใหม่ไม่มี */
-  carry: (Pick<
-    ApInvoiceLineInput,
-    | "sources"
-    | "vat_chart_of_accounts_id"
-    | "vat_cost_center_id"
-    | "cr_chart_of_accounts_id"
-    | "cr_cost_center_id"
-  > & {
-    /** เก็บเป็น ref เต็ม (มี value_code/ชนิด) เพื่อแสดงผล — แปลงเป็น payload ตอนส่ง */
-    dimensions?: DimensionRef[] | null;
-  }) | null;
+  carry:
+    | (Pick<
+        ApInvoiceLineInput,
+        | "sources"
+        | "vat_chart_of_accounts_id"
+        | "vat_cost_center_id"
+        | "cr_chart_of_accounts_id"
+        | "cr_cost_center_id"
+      > & {
+        /** เก็บเป็น ref เต็ม (มี value_code/ชนิด) เพื่อแสดงผล — แปลงเป็น payload ตอนส่ง */
+        dimensions?: DimensionRef[] | null;
+      })
+    | null;
 }
 
 export interface InvoiceForm {
@@ -113,6 +117,7 @@ export const emptyLine = (): InvoiceFormLine => ({
   vat_is_override: false,
   vat_amount: "0",
   wht_tax_profile_id: null,
+  wht_service_type_id: null,
   wht_rate: "0",
   grn_no: null,
   grn_id: null,
@@ -142,6 +147,10 @@ function fromDocLine(line: ApInvoiceLine): InvoiceFormLine {
     vat_is_override: line.vat_is_override,
     vat_amount: line.vat_amount,
     wht_tax_profile_id: line.wht_tax_profile_id,
+    wht_service_type_id: line.wht_service_type_id,
+    wht_service_label: line.wht_service_snapshot
+      ? `${line.wht_service_snapshot.code} · ${line.wht_service_snapshot.description}`
+      : undefined,
     wht_rate: line.wht_rate ?? "0",
     grn_no: source?.grn_no ?? null,
     grn_id: source?.good_received_note_id ?? null,
@@ -347,6 +356,7 @@ function toLineInput(
     // ไม่ override = ให้ backend คำนวณเอง
     vat_amount: line.vat_is_override ? num(line.vat_amount) : null,
     wht_tax_profile_id: line.wht_tax_profile_id,
+    wht_service_type_id: line.wht_service_type_id,
     ...(line.carry ?? {}),
     ...(line.carry?.dimensions
       ? { dimensions: toDimensionPayload(line.carry.dimensions) }

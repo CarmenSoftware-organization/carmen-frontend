@@ -193,6 +193,15 @@ export function VendorForm({ vendor }: VendorFormProps) {
       payload.ap_chart_of_accounts_id = values.ap_chart_of_accounts_id;
     }
 
+    for (const key of [
+      "payment_type_id",
+      "wht_form_id",
+      "wht_service_type_id",
+    ] as const) {
+      if (isEdit ? dirtyFields[key] : values[key] != null)
+        payload[key] = values[key];
+    }
+
     if (isEdit && vendor) {
       updateVendor.mutate(
         // doc_version round-trips the loaded record's version — backend requires
