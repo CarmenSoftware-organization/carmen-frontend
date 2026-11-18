@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LookupChartOfAccountById } from "@/components/lookup/lookup-chart-of-account-by-id";
 import { LookupBuType } from "@/components/lookup/lookup-bu-type";
 import { StatusSwitch } from "@/components/ui/status-switch";
-import { CompactSection, FieldGrid } from "@/components/share/compact-section";
+import { FieldGrid } from "@/components/share/compact-section";
 import { useChartOfAccountById } from "@/hooks/use-chart-of-account";
 import type { VendorFormValues } from "./vendor-form-schema";
 import { VendorRatingInput, VendorRatingStars } from "./vendor-rating";
@@ -26,247 +26,234 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
   const tfl = useTranslations("field");
   const isView = isDisabled && !form.formState.isSubmitting;
 
-  const businessTypes = form.getValues("business_types");
   const rating = form.getValues("rating");
 
   const master = useTranslations("accounting.accountsPayable.master");
+  // ไม่มีการ์ด/หัวหมวดของตัวเองแล้ว — ช่องชุดนี้วางเป็น ribbon ในการ์ดหัวหน้า (ทรงเดียวกับหัว PR)
+  // โหมดดู dense = 2 คอลัมน์ตั้งแต่กล่องแคบสุด (ข้อความล้วน) · โหมดแก้ยังคอลัมน์เดียวบนมือถือ
   return (
-    <CompactSection
-      first
-      title={tfl("general")}
-      // โหมดดูไม่มีรหัส/ชื่อ/สถานะในการ์ดแล้ว คำอธิบายเดิมจะพูดถึงของที่ไม่อยู่บนจอ
-      description={t(isView ? "generalDescView" : "generalDesc")}
-    >
-      {/* ช่องกว้าง 2 คอลัมน์มีแค่ชื่อกับคำอธิบาย — ช่องกว้างสองช่องติดกันในกริด 3 คอลัมน์จะตกไป
-          คนละแถวและเหลือช่องว่าง */}
-      <FieldGrid>
-        {/* Name / Code / Status ไม่แสดงในโหมดดู — แถบหัว (FormToolbar) มีครบทั้งสามค่าแล้ว
+    <FieldGrid dense={isView}>
+      {/* Name / Code / Status ไม่แสดงในโหมดดู — แถบหัว (FormToolbar) มีครบทั้งสามค่าแล้ว
           การ์ดนี้เคยซ้ำของบนหัวเกือบครึ่งการ์ด */}
-        {/* Name */}
-        {!isView && (
-          <Field className="@md:col-span-2">
-            <FieldLabel htmlFor="vendor-name">
-              {tfl("name")}
-              {!isView && <span className="text-destructive"> *</span>}
-            </FieldLabel>
-            {isView ? (
-              <FieldPlainText>{form.getValues("name")}</FieldPlainText>
-            ) : (
-              <FieldInput
-                id="vendor-name"
-                placeholder={t("namePlaceholder")}
-                disabled={isDisabled}
-                error={form.formState.errors.name?.message}
-                maxLength={100}
-                {...form.register("name")}
-              />
-            )}
-          </Field>
-        )}
-
-        {/* Code */}
-        {!isView && (
-          <Field>
-            <FieldLabel htmlFor="vendor-code">
-              {tfl("code")}
-              {!isView && <span className="text-destructive"> *</span>}
-            </FieldLabel>
-            {isView ? (
-              <FieldPlainText>{form.getValues("code")}</FieldPlainText>
-            ) : (
-              <FieldInput
-                id="vendor-code"
-                placeholder={t("codePlaceholder")}
-                disabled={isDisabled}
-                error={form.formState.errors.code?.message}
-                maxLength={10}
-                {...form.register("code")}
-              />
-            )}
-          </Field>
-        )}
-
-        {/* Rating */}
-        <Field>
-          <FieldLabel htmlFor="vendor-rating">{t("rating")}</FieldLabel>
-          {isView ? (
-            <FieldPlainText>
-              {rating == null ? (
-                <span className="text-muted-foreground font-normal">
-                  {t("notRated")}
-                </span>
-              ) : (
-                <VendorRatingStars value={rating} />
-              )}
-            </FieldPlainText>
-          ) : (
-            <Controller
-              control={form.control}
-              name="rating"
-              render={({ field }) => (
-                <VendorRatingInput
-                  id="vendor-rating"
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={isDisabled}
-                />
-              )}
-            />
-          )}
-        </Field>
-
-        {/* Business type — ช่องเดียวของกริด ชื่อยาว ("Furniture, Fixtures & Equipment (FF&E)") ตัดบรรทัดในช่อง */}
-        <Field>
-          <FieldLabel>{tfl("businessType")}</FieldLabel>
-          {isView ? (
-            <FieldPlainText>
-              {businessTypes && businessTypes.length > 0
-                ? businessTypes.map((b) => b.name).join(", ")
-                : null}
-            </FieldPlainText>
-          ) : (
-            <Controller
-              control={form.control}
-              name="business_types"
-              render={({ field }) => (
-                <LookupBuType
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  disabled={isDisabled}
-                />
-              )}
-            />
-          )}
-        </Field>
-
-        {/* Tax ID + Branch No. — คู่กันในแถวเดียว ใบกำกับภาษีอ้างถึงทั้งสองค่าพร้อมกัน */}
-        <Field>
-          <FieldLabel htmlFor="vendor-tax-no">{t("taxNo")}</FieldLabel>
-          {isView ? (
-            <FieldPlainText className="tabular-nums">
-              {form.getValues("tax_no") || null}
-            </FieldPlainText>
-          ) : (
-            <FieldInput
-              id="vendor-tax-no"
-              placeholder={t("taxNoPlaceholder")}
-              disabled={isDisabled}
-              error={form.formState.errors.tax_no?.message}
-              maxLength={20}
-              autoComplete="off"
-              className="tabular-nums"
-              {...form.register("tax_no")}
-            />
-          )}
-        </Field>
-
-        <Field>
-          <FieldLabel htmlFor="vendor-branch-no">{t("branchNo")}</FieldLabel>
-          {isView ? (
-            <FieldPlainText className="tabular-nums">
-              {form.getValues("branch_no") || null}
-            </FieldPlainText>
-          ) : (
-            <FieldInput
-              id="vendor-branch-no"
-              placeholder={t("branchNoPlaceholder")}
-              disabled={isDisabled}
-              error={form.formState.errors.branch_no?.message}
-              maxLength={10}
-              autoComplete="off"
-              className="tabular-nums"
-              {...form.register("branch_no")}
-            />
-          )}
-        </Field>
-
-        {/* บัญชีเจ้าหนี้ default — เปิดใบ AP จาก vendor นี้จะดึงบัญชีนี้ไปใช้ */}
-        <Field>
-          <FieldLabel>{t("apAccount")}</FieldLabel>
-          <Controller
-            control={form.control}
-            name="ap_chart_of_accounts_id"
-            render={({ field }) =>
-              isView ? (
-                <VendorApAccountText id={field.value} />
-              ) : (
-                <LookupChartOfAccountById
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  disabled={isDisabled}
-                />
-              )
-            }
-          />
-        </Field>
-
-        {(
-          [
-            { kind: "payment", name: "payment_type_id" },
-            { kind: "form", name: "wht_form_id" },
-            { kind: "service", name: "wht_service_type_id" },
-          ] as const
-        ).map(({ kind, name }) => (
-          <Field key={name}>
-            <FieldLabel>{master(kind)}</FieldLabel>
-            <Controller
-              control={form.control}
-              name={name}
-              render={({ field }) => (
-                <LookupAccountingMaster
-                  kind={kind}
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={isDisabled}
-                  readOnly={isView}
-                  allowDeselect
-                />
-              )}
-            />
-          </Field>
-        ))}
-        {/* Description */}
+      {/* Name */}
+      {!isView && (
         <Field className="@md:col-span-2">
-          <FieldLabel htmlFor="vendor-description">
-            {tfl("description")}
+          <FieldLabel htmlFor="vendor-name">
+            {tfl("name")}
+            {!isView && <span className="text-destructive"> *</span>}
           </FieldLabel>
           {isView ? (
-            <FieldPlainText className="whitespace-pre-wrap">
-              {form.getValues("description")?.trim() || null}
-            </FieldPlainText>
+            <FieldPlainText>{form.getValues("name")}</FieldPlainText>
           ) : (
-            <Textarea
-              id="vendor-description"
-              placeholder={tfl("optional")}
-              rows={2}
-              maxLength={256}
+            <FieldInput
+              id="vendor-name"
+              placeholder={t("namePlaceholder")}
               disabled={isDisabled}
-              className="resize-none"
-              {...form.register("description")}
+              error={form.formState.errors.name?.message}
+              maxLength={100}
+              {...form.register("name")}
             />
           )}
         </Field>
+      )}
 
-        {/* Status — โหมดดูมี badge บนแถบหัวแล้ว */}
-        {!isView && (
-          <Field>
-            <FieldLabel>{tfl("status")}</FieldLabel>
-            <Controller
-              control={form.control}
-              name="is_active"
-              render={({ field }) => (
-                <StatusSwitch
-                  id="vendor-is-active"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isDisabled}
-                />
-              )}
+      {/* Code */}
+      {!isView && (
+        <Field>
+          <FieldLabel htmlFor="vendor-code">
+            {tfl("code")}
+            {!isView && <span className="text-destructive"> *</span>}
+          </FieldLabel>
+          {isView ? (
+            <FieldPlainText>{form.getValues("code")}</FieldPlainText>
+          ) : (
+            <FieldInput
+              id="vendor-code"
+              placeholder={t("codePlaceholder")}
+              disabled={isDisabled}
+              error={form.formState.errors.code?.message}
+              maxLength={10}
+              {...form.register("code")}
             />
-          </Field>
+          )}
+        </Field>
+      )}
+
+      {/* Rating */}
+      <Field>
+        <FieldLabel htmlFor="vendor-rating">{t("rating")}</FieldLabel>
+        {isView ? (
+          <FieldPlainText>
+            {rating == null ? (
+              <span className="text-muted-foreground font-normal">
+                {t("notRated")}
+              </span>
+            ) : (
+              <VendorRatingStars value={rating} />
+            )}
+          </FieldPlainText>
+        ) : (
+          <Controller
+            control={form.control}
+            name="rating"
+            render={({ field }) => (
+              <VendorRatingInput
+                id="vendor-rating"
+                value={field.value}
+                onChange={field.onChange}
+                disabled={isDisabled}
+              />
+            )}
+          />
         )}
-      </FieldGrid>
-    </CompactSection>
+      </Field>
+
+      {/* Business type — ช่องเดียวของกริด ชื่อยาว ("Furniture, Fixtures & Equipment (FF&E)") ตัดบรรทัดในช่อง
+            โหมดดูอยู่ในบรรทัดตัวตนใต้ชื่อแล้ว (ทรงเดียวกับบรรทัดผู้ขอ · แผนก ของหัว PR) */}
+      {!isView && (
+        <Field>
+          <FieldLabel>{tfl("businessType")}</FieldLabel>
+          <Controller
+            control={form.control}
+            name="business_types"
+            render={({ field }) => (
+              <LookupBuType
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isDisabled}
+              />
+            )}
+          />
+        </Field>
+      )}
+
+      {/* Tax ID + Branch No. — คู่กันในแถวเดียว ใบกำกับภาษีอ้างถึงทั้งสองค่าพร้อมกัน */}
+      <Field>
+        <FieldLabel htmlFor="vendor-tax-no">{t("taxNo")}</FieldLabel>
+        {isView ? (
+          <FieldPlainText className="tabular-nums">
+            {form.getValues("tax_no") || null}
+          </FieldPlainText>
+        ) : (
+          <FieldInput
+            id="vendor-tax-no"
+            placeholder={t("taxNoPlaceholder")}
+            disabled={isDisabled}
+            error={form.formState.errors.tax_no?.message}
+            maxLength={20}
+            autoComplete="off"
+            className="tabular-nums"
+            {...form.register("tax_no")}
+          />
+        )}
+      </Field>
+
+      <Field>
+        <FieldLabel htmlFor="vendor-branch-no">{t("branchNo")}</FieldLabel>
+        {isView ? (
+          <FieldPlainText className="tabular-nums">
+            {form.getValues("branch_no") || null}
+          </FieldPlainText>
+        ) : (
+          <FieldInput
+            id="vendor-branch-no"
+            placeholder={t("branchNoPlaceholder")}
+            disabled={isDisabled}
+            error={form.formState.errors.branch_no?.message}
+            maxLength={10}
+            autoComplete="off"
+            className="tabular-nums"
+            {...form.register("branch_no")}
+          />
+        )}
+      </Field>
+
+      {/* บัญชีเจ้าหนี้ default — เปิดใบ AP จาก vendor นี้จะดึงบัญชีนี้ไปใช้ */}
+      <Field>
+        <FieldLabel>{t("apAccount")}</FieldLabel>
+        <Controller
+          control={form.control}
+          name="ap_chart_of_accounts_id"
+          render={({ field }) =>
+            isView ? (
+              <VendorApAccountText id={field.value} />
+            ) : (
+              <LookupChartOfAccountById
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isDisabled}
+              />
+            )
+          }
+        />
+      </Field>
+
+      {(
+        [
+          { kind: "payment", name: "payment_type_id" },
+          { kind: "form", name: "wht_form_id" },
+          { kind: "service", name: "wht_service_type_id" },
+        ] as const
+      ).map(({ kind, name }) => (
+        <Field key={name}>
+          <FieldLabel>{master(kind)}</FieldLabel>
+          <Controller
+            control={form.control}
+            name={name}
+            render={({ field }) => (
+              <LookupAccountingMaster
+                kind={kind}
+                value={field.value}
+                onChange={field.onChange}
+                disabled={isDisabled}
+                readOnly={isView}
+                allowDeselect
+              />
+            )}
+          />
+        </Field>
+      ))}
+      {/* Description — data-wide = เต็มแถวในกริด dense บนมือถือ */}
+      <Field data-wide="" className="@md:col-span-2">
+        <FieldLabel htmlFor="vendor-description">
+          {tfl("description")}
+        </FieldLabel>
+        {isView ? (
+          <FieldPlainText className="whitespace-pre-wrap">
+            {form.getValues("description")?.trim() || null}
+          </FieldPlainText>
+        ) : (
+          <Textarea
+            id="vendor-description"
+            placeholder={tfl("optional")}
+            rows={2}
+            maxLength={256}
+            disabled={isDisabled}
+            className="resize-none"
+            {...form.register("description")}
+          />
+        )}
+      </Field>
+
+      {/* Status — โหมดดูมี badge บนแถบหัวแล้ว */}
+      {!isView && (
+        <Field>
+          <FieldLabel>{tfl("status")}</FieldLabel>
+          <Controller
+            control={form.control}
+            name="is_active"
+            render={({ field }) => (
+              <StatusSwitch
+                id="vendor-is-active"
+                checked={field.value}
+                onCheckedChange={field.onChange}
+                disabled={isDisabled}
+              />
+            )}
+          />
+        </Field>
+      )}
+    </FieldGrid>
   );
 }
 

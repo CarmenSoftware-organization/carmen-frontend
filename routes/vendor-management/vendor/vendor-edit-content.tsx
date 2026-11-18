@@ -8,16 +8,25 @@ import {
   SECTION_PAIR,
 } from "@/components/share/compact-section";
 import { FormPageShell } from "@/components/share/form-page-shell";
+import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function VendorEditContent({ id }: { id: string }) {
   const tErr = useTranslations("vendorManagement.vendor");
   const { data: vendor, isLoading, error, refetch } = useVendorById(id);
 
-  // โครงเดียวกับหน้าจริง: General · ที่อยู่ | ผู้ติดต่อ · ข้อมูลเพิ่มเติม · ใบรับรอง
+  // โครงเดียวกับหน้าจริง: การ์ดหัว (ชื่อ + ช่อง General) · ที่อยู่ | ผู้ติดต่อ · ข้อมูลเพิ่มเติม · ใบรับรอง
   if (isLoading)
     return (
-      <FormPageShell width="wide" header={<FormPageHeaderSkeleton />}>
-        <CompactSectionSkeleton first className="h-28" />
+      <FormPageShell
+        width="wide"
+        header={
+          <div className={DOC_HEADER_CARD}>
+            <FormPageHeaderSkeleton />
+            <Skeleton className="mt-4 h-20 w-full" />
+          </div>
+        }
+      >
         <div className={SECTION_PAIR}>
           <CompactSectionSkeleton className="h-28" />
           <CompactSectionSkeleton className="h-28" />
