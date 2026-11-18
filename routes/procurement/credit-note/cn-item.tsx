@@ -19,7 +19,11 @@ import { fieldFocusRef } from "@/lib/field-focus";
 import { CN_ITEM } from "./cn-form-schema";
 import { CnItemComputedSync } from "./cn-item-cells";
 import { useCnItemTable } from "./use-cn-item-table";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { CnAddItemDialog, type CnGrnLine } from "./cn-add-item-dialog";
+
+/** กล่องตารางโหมดดูแคบกว่านี้ (px) = ล็อกความกว้างขั้นต่ำแล้วเลื่อนแนวนอน */
+const CN_VIEW_MIN_WIDTH_BELOW = 900;
 
 interface Props {
   readonly form: UseFormReturn<CnFormValues>;
@@ -171,6 +175,16 @@ export function CnItem({ form, disabled }: Props) {
     onDelete: setDeleteIndex,
   });
 
+  // โหมดดูใช้ % ของกล่อง พอดีจอตั้งแต่ HD ขึ้นไป แต่กล่องแคบ (มือถือ/tablet) คอลัมน์ 12 ตัว
+  // ถูกบีบจนหัวทับกัน → ล็อกขั้นต่ำเท่าผลรวม size แล้วเลื่อนแนวนอน (ต้องเว้นที่ให้แถบเลื่อน)
+  // ไม่เทียบกับผลรวม size ตรง ๆ เพราะ HD ที่กาง sidebar ได้กล่อง ~1,080px ซึ่งน้อยกว่าผลรวม
+  // แต่ % ยังอ่านได้ — ล็อกที่นั่นจะดัน Tax/Total ออกนอกจอ
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const viewOverflows =
+    disabled &&
+    gridBoxWidth !== undefined &&
+    gridBoxWidth < CN_VIEW_MIN_WIDTH_BELOW;
+
   // ปุ่มยังกดได้ตลอดแล้วค่อยบอกว่าขาดอะไร — ปุ่มที่จางแล้วกดไม่ติดไม่ได้บอก
   // ว่าต้องทำอะไรก่อน · เตือนตามลำดับที่ต้องกรอกจริง (ผู้ขาย → ใบรับของ)
   const handleAddClick = () => {
@@ -242,6 +256,9 @@ export function CnItem({ form, disabled }: Props) {
       <DataGrid
         table={table}
         recordCount={itemFields.length}
+        tableClassNames={
+          viewOverflows ? { base: "min-w-[var(--cn-table-min)]" } : undefined
+        }
         // โหมดแก้ไข: คอลัมน์กว้างตาม size (px) จริง เกินจอก็เลื่อนแนวนอน (เหมือน
         // PO/GRN) เคยลองบีบให้พอดีจอด้วย table-fixed w-full แล้ว combo
         // discount/tax หดจนกรอก rate กับยอดไม่ได้
@@ -269,9 +286,21 @@ export function CnItem({ form, disabled }: Props) {
             scroll ที่สะดุด · scroll (pb-3) เฉพาะโหมดแก้ไขที่ตารางกว้างเกินจอจริง
             ไม่งั้นแถบเลื่อนลอย (macOS) ไปบังตัวเลขแถวสุดท้าย เพราะ CN เป็นตาราง
             แบน ไม่มีแถวกาง · โหมดดูไม่มีแถบเลื่อน จะเว้นที่ไว้ก็เป็นช่องว่างเปล่า */}
-        <DataGridContainer scroll={!disabled}>
-          <DataGridTable />
-        </DataGridContainer>
+        <div
+          ref={setGridBox}
+          // โหมดดูกว้างตาม % ของกล่อง — กล่องแคบกว่าผลรวม size (มือถือ) คอลัมน์จะถูกบีบ
+          // จนหัวทับกัน จึงล็อกขั้นต่ำไว้ที่ผลรวม size แล้วเลื่อนแนวนอนแทน · % ของแถว "คืน"
+          // ยังตรงกัน เพราะ % ของความกว้างขั้นต่ำก็คือ px ชุดเดียวกับ CN_COL
+          style={
+            {
+              "--cn-table-min": `${table.getTotalSize()}px`,
+            } as React.CSSProperties
+          }
+        >
+          <DataGridContainer scroll={!disabled || viewOverflows}>
+            <DataGridTable />
+          </DataGridContainer>
+        </div>
       </DataGrid>
 
       <CnAddItemDialog
