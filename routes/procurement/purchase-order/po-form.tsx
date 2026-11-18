@@ -266,6 +266,7 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
       }
       footer={
         <PoFooterAction
+          audit={purchaseOrder?.audit}
           control={form.control}
           currencyCode={form.getValues("currency_code")}
           isPending={isPending}

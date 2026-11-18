@@ -282,6 +282,7 @@ export function StoreRequisitionForm({
       }
       footer={
         <SrFooter
+          audit={storeRequisition?.audit}
           canSubmit={!!canSubmit}
           isPending={actions.isPending}
           role={storeRequisition?.role}

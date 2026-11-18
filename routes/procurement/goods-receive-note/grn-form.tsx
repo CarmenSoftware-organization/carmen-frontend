@@ -249,6 +249,7 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
       }
       footer={
         <GrnSummaryFooter
+          audit={goodsReceiveNote?.audit}
           form={form}
           isActionPending={actions.isActionPending}
           hasRecord={!!goodsReceiveNote}

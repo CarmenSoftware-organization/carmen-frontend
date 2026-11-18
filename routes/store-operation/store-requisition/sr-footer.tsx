@@ -1,3 +1,5 @@
+import { DocAuditLine } from "@/components/share/doc-audit-line";
+import type { Audit } from "@/types/audit";
 import { useTranslations } from "use-intl";
 import { Check, Eye, PackageCheck, SendHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +14,7 @@ import type { StageActionFlags } from "@/lib/workflow-stage-actions";
 type SrAction = "none" | "review" | "rejected" | "approved";
 
 interface SrFooterProps {
+  readonly audit?: Audit;
   readonly canSubmit: boolean;
   readonly isPending: boolean;
   readonly role?: string;
@@ -35,6 +38,7 @@ interface SrFooterProps {
 }
 
 export function SrFooter({
+  audit,
   canSubmit,
   isPending,
   role,
@@ -128,7 +132,11 @@ export function SrFooter({
   if (!showBar) return null;
 
   return (
-    <SummaryFooterBar hasRecord={hasItems} items={summaryItems}>
+    <SummaryFooterBar
+      meta={<DocAuditLine audit={audit} />}
+      hasRecord={hasItems}
+      items={summaryItems}
+    >
       {showActions && (
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
           {isWorkflowReviewer && showSendBack && (

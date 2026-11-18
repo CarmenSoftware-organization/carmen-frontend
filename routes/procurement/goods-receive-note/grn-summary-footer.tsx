@@ -1,3 +1,5 @@
+import { DocAuditLine } from "@/components/share/doc-audit-line";
+import type { Audit } from "@/types/audit";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { formatCurrency } from "@/lib/currency-utils";
@@ -10,6 +12,7 @@ import type { GrnFormValues } from "./grn-form-schema";
 import { GrnFooterAction } from "./grn-footer-action";
 
 interface GrnSummaryFooterProps {
+  readonly audit?: Audit;
   readonly form: UseFormReturn<GrnFormValues>;
   readonly isActionPending: boolean;
   readonly hasRecord: boolean;
@@ -21,6 +24,7 @@ interface GrnSummaryFooterProps {
 }
 
 export function GrnSummaryFooter({
+  audit,
   form,
   isActionPending,
   hasRecord,
@@ -51,6 +55,7 @@ export function GrnSummaryFooter({
 
   return (
     <SummaryFooterBar
+      meta={<DocAuditLine audit={audit} />}
       hasRecord
       items={[
         {

@@ -1,3 +1,5 @@
+import { DocAuditLine } from "@/components/share/doc-audit-line";
+import type { Audit } from "@/types/audit";
 import { useState } from "react";
 import { useTranslations } from "use-intl";
 import { useWatch, type Control } from "react-hook-form";
@@ -22,6 +24,7 @@ import {
 } from "./po-action-dialog";
 
 interface PoFooterActionProps {
+  readonly audit?: Audit;
   readonly control: Control<PoFormValues>;
   readonly currencyCode?: string;
   readonly isPending: boolean;
@@ -57,6 +60,7 @@ type ConfirmConfig = {
 };
 
 export function PoFooterAction({
+  audit,
   control,
   isPending,
   role,
@@ -190,6 +194,7 @@ export function PoFooterAction({
   return (
     <>
       <SummaryFooterBar
+        meta={<DocAuditLine audit={audit} />}
         hasRecord={hasItems}
         items={[
           {
