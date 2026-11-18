@@ -39,7 +39,8 @@ export default function UserProfileDetails() {
 
   const personal = (
     <CompactSection title={t("personalInfo")}>
-      <FieldGrid>
+      {/* dense: ชื่อสั้น ๆ สี่ช่อง — บนมือถือวางคู่กันสองคอลัมน์ ไม่ต้องเลื่อนผ่านสี่แถว */}
+      <FieldGrid dense>
         <SettingField label={t("firstName")} value={user_info.firstname} />
         <SettingField label={t("middleName")} value={user_info.middlename} />
         <SettingField label={t("lastName")} value={user_info.lastname} />
@@ -130,7 +131,7 @@ export default function UserProfileDetails() {
         personal
       )}
 
-      {/* Business Units — หนึ่ง BU หนึ่งการ์ดเต็มความกว้าง ช่องข้างในแตกคอลัมน์ตามความกว้างการ์ด */}
+      {/* Business Units — การ์ด BU ไหลเป็นคอลัมน์ตามความกว้าง ช่องข้างในแตกคอลัมน์ตามความกว้างการ์ด */}
       <section className="mt-5">
         <div className="mb-2 flex min-h-8 items-center gap-x-2">
           <h2 className="text-sm font-semibold tracking-tight">
@@ -141,7 +142,9 @@ export default function UserProfileDetails() {
           </span>
         </div>
         {profile.business_unit.length > 0 ? (
-          <div className="space-y-3">
+          // auto-fit ขั้นต่ำ 56rem: 4K วาง 3 BU ในแถวเดียว · Full HD (sidebar พับ) 2 · HD ลงไป 1
+          // การ์ดในแถวเดียวกันสูงเท่ากัน (grid stretch) — ห้ามใส่ items-start · min(100%,…) กันล้นบนจอแคบ
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,56rem),1fr))] gap-3">
             {profile.business_unit.map((bu) => (
               <BUSection key={bu.id} bu={bu} />
             ))}
