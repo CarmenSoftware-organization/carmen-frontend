@@ -8,16 +8,18 @@ import {
 import type { CostCenter } from "@/types/cost-center";
 
 interface Props {
+  readonly rowNo?: number;
   readonly item: CostCenter;
   readonly onEdit: (item: CostCenter) => void;
   readonly onDelete?: (item: CostCenter) => void;
 }
 
-export default function CostCenterCard({ item, onEdit, onDelete }: Props) {
+export default function CostCenterCard({ item, onEdit, onDelete, rowNo }: Props) {
   const tfl = useTranslations("field");
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={`${item.code} · ${item.name}`}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}

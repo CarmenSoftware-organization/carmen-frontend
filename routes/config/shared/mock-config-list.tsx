@@ -18,6 +18,7 @@ import { listGridMaxH } from "@/components/share/list-grid-max-h";
 import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
 import { DocumentListActions } from "@/components/share/document-list-actions";
 import { ListCard, ListCardActiveRow } from "@/components/share/list-card";
+import { rowNumber } from "@/lib/row-number";
 import { Button } from "@/components/ui/button";
 import {
   DataGrid,
@@ -259,9 +260,11 @@ export function MockConfigList<T extends MockConfigRow>({
             <EmptyComponent />
           ) : (
             <div className="grid grid-cols-1 gap-3 @xl:grid-cols-2 @5xl:grid-cols-3 @min-[96rem]:grid-cols-4">
-              {table.getSortedRowModel().rows.map(({ original: item }) => (
+              {/* การ์ดแสดงทุกแถวที่เรียงแล้ว (ไม่แบ่งหน้า) — เลขนับต่อเนื่องจาก 1 */}
+              {table.getSortedRowModel().rows.map(({ original: item }, i) => (
                 <ListCard
                   key={item.id}
+                  rowNo={rowNumber(undefined, i)}
                   title={item.code}
                   onOpen={() => onEdit(item)}
                   onDelete={() => onDelete(item)}

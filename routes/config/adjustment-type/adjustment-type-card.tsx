@@ -9,16 +9,18 @@ import { ADJUSTMENT_TYPE } from "@/types/adjustment-type";
 import type { AdjustmentType } from "@/types/adjustment-type";
 
 interface Props {
+  readonly rowNo?: number;
   readonly item: AdjustmentType;
   readonly onEdit: (item: AdjustmentType) => void;
   readonly onDelete?: (item: AdjustmentType) => void;
 }
 
-export default function AdjustmentTypeCard({ item, onEdit, onDelete }: Props) {
+export default function AdjustmentTypeCard({ item, onEdit, onDelete, rowNo }: Props) {
   const tfl = useTranslations("field");
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}
