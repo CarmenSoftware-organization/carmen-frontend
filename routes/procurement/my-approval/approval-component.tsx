@@ -27,6 +27,8 @@ export default function ApprovalComponent() {
   const SUMMARY_CARDS: {
     key: keyof ApprovalPendingSummary;
     label: string;
+    /** ป้ายสั้นเมื่อแถบเครื่องมือแคบ (มือถือ) — ชื่อเต็มยังอยู่ใน title / aria-label */
+    shortLabel: string;
     icon: LucideIcon;
     // class เต็มเป็น string คงที่ — Tailwind สแกนเจอเฉพาะ class ที่เขียนครบในซอร์ส
     // เดิมประกอบเป็น `bg-${color}/10` ทำให้ PR / SR ไม่มีสีเลย
@@ -35,24 +37,28 @@ export default function ApprovalComponent() {
     {
       key: "total",
       label: t("totalPending"),
+      shortLabel: t("totalShort"),
       icon: ClipboardList,
       iconClassName: "bg-primary/10 text-primary",
     },
     {
       key: "pr",
       label: t("purchaseRequest"),
+      shortLabel: t("pr"),
       icon: FileText,
       iconClassName: "bg-info/10 text-info-ink",
     },
     {
       key: "po",
       label: t("purchaseOrder"),
+      shortLabel: t("po"),
       icon: ShoppingCart,
       iconClassName: "bg-warning/10 text-warning-ink",
     },
     {
       key: "sr",
       label: t("storeRequisition"),
+      shortLabel: t("sr"),
       icon: PackageOpen,
       iconClassName: "bg-success/10 text-success-ink",
     },
@@ -114,98 +120,116 @@ export default function ApprovalComponent() {
       // ไม่ใช้ ListToolbar — หน้านี้ไม่มีฟิลด์ให้กรอง ปุ่ม Filter กับ saved view จึง
       // เปิดมาเจอแค่ของว่าง ตัวกรองจริงคือชิปประเภท/ตีกลับ วางแถวเดียวกับช่องค้น
       // (ชิปซ้ายเป็นตัวหลัก ช่องค้นชิดขวา) · ค้นหาและ filter ทำที่ SQL ทั้งคู่ ใช้ร่วมกันได้
+      // มือถือ (แถบแคบกว่า 896px): ชิปใช้ป้ายสั้น (ทั้งหมด / PR / PO / SR) ได้สองแถว
+      // แทนห้าแถว (ป้ายเต็มภาษาไทยยาวจนชิปละบรรทัด กิน ~230px ก่อนถึงรายการ) ·
+      // แคบกว่า 672px ช่องค้นลงบรรทัดใหม่เต็มความกว้าง — ตัดสินจากความกว้างแถบเอง
       toolbar={
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          {/* แถบกรองตามประเภท — ตัวเลขคือจำนวนที่รอ คลิกเพื่อกรองตาราง */}
-          <div className="flex flex-wrap items-center gap-2" role="group">
-            {SUMMARY_CARDS.map((card) => {
-              const Icon = card.icon;
-              if (summaryLoading) {
+        <div className="@container/approval-toolbar">
+          <div className="flex flex-col gap-2 @2xl/approval-toolbar:flex-row @2xl/approval-toolbar:flex-wrap @2xl/approval-toolbar:items-center @2xl/approval-toolbar:justify-between">
+            {/* แถบกรองตามประเภท — ตัวเลขคือจำนวนที่รอ คลิกเพื่อกรองตาราง */}
+            <div className="flex flex-wrap items-center gap-2" role="group">
+              {SUMMARY_CARDS.map((card) => {
+                const Icon = card.icon;
+                if (summaryLoading) {
+                  return (
+                    <Skeleton
+                      key={card.key}
+                      className="h-8 w-20 rounded-md @4xl/approval-toolbar:w-40"
+                    />
+                  );
+                }
+                const active = activeType === card.key;
                 return (
-                  <Skeleton key={card.key} className="h-8 w-40 rounded-md" />
+                  <button
+                    type="button"
+                    key={card.key}
+                    className={cn(
+                      "bg-card flex h-8 cursor-pointer items-center gap-2 rounded-md border pr-3 pl-1.5 text-left transition-colors",
+                      active
+                        ? "border-primary ring-primary ring-1"
+                        : "hover:bg-accent",
+                    )}
+                    onClick={() => handleCardClick(card.key)}
+                    aria-pressed={active}
+                    title={card.label}
+                  >
+                    <span
+                      className={cn(
+                        "flex size-6 items-center justify-center rounded",
+                        card.iconClassName,
+                      )}
+                    >
+                      <Icon className="size-3.5" />
+                    </span>
+                    <span
+                      className={cn(
+                        "text-xs",
+                        active ? "text-foreground" : "text-muted-foreground",
+                      )}
+                    >
+                      <span className="@4xl/approval-toolbar:hidden">
+                        {card.shortLabel}
+                      </span>
+                      <span className="sr-only @4xl/approval-toolbar:not-sr-only">
+                        {card.label}
+                      </span>
+                    </span>
+                    <span className="text-sm font-semibold tabular-nums">
+                      {summary?.[card.key] ?? 0}
+                    </span>
+                  </button>
                 );
-              }
-              const active = activeType === card.key;
-              return (
-                <button
-                  type="button"
-                  key={card.key}
-                  className={cn(
-                    "bg-card flex h-8 cursor-pointer items-center gap-2 rounded-md border pr-3 pl-1.5 text-left transition-colors",
-                    active
-                      ? "border-primary ring-primary ring-1"
-                      : "hover:bg-accent",
-                  )}
-                  onClick={() => handleCardClick(card.key)}
-                  aria-pressed={active}
-                >
-                  <span
-                    className={cn(
-                      "flex size-6 items-center justify-center rounded",
-                      card.iconClassName,
-                    )}
-                  >
-                    <Icon className="size-3.5" />
-                  </span>
-                  <span
-                    className={cn(
-                      "text-xs",
-                      active ? "text-foreground" : "text-muted-foreground",
-                    )}
-                  >
-                    {card.label}
-                  </span>
-                  <span className="text-sm font-semibold tabular-nums">
-                    {summary?.[card.key] ?? 0}
-                  </span>
-                </button>
-              );
-            })}
+              })}
 
-            <span aria-hidden className="bg-border mx-1 h-6 w-px self-center" />
+              <span
+                aria-hidden
+                className="bg-border mx-1 hidden h-6 w-px self-center @4xl/approval-toolbar:block"
+              />
 
-            {/* ใบที่ถูกตีกลับมาหาฉัน — ใช้ร่วมกับตัวกรองประเภทได้ (เช่น PO ที่ถูกตีกลับ)
+              {/* ใบที่ถูกตีกลับมาหาฉัน — ใช้ร่วมกับตัวกรองประเภทได้ (เช่น PO ที่ถูกตีกลับ)
                 ไฮไลต์ตัวเลขเมื่อมีค้าง เพราะเป็นงานที่ต้องรีบแก้ก่อนใบใหม่ */}
-            <button
-              type="button"
-              className={cn(
-                "bg-card flex h-8 cursor-pointer items-center gap-2 rounded-md border pr-3 pl-1.5 text-left transition-colors",
-                sendBackOnly
-                  ? "border-primary ring-primary ring-1"
-                  : "hover:bg-accent",
-              )}
-              onClick={() => applyFilter(activeType, !sendBackOnly)}
-              aria-pressed={sendBackOnly}
-            >
-              <span className="flex size-6 items-center justify-center rounded bg-[var(--status-review)]">
-                <Undo2 className="size-3.5 text-[var(--status-review-fg)]" />
-              </span>
-              <span
+              <button
+                type="button"
                 className={cn(
-                  "text-xs",
-                  sendBackOnly ? "text-foreground" : "text-muted-foreground",
+                  "bg-card flex h-8 cursor-pointer items-center gap-2 rounded-md border pr-3 pl-1.5 text-left transition-colors",
+                  sendBackOnly
+                    ? "border-primary ring-primary ring-1"
+                    : "hover:bg-accent",
                 )}
+                onClick={() => applyFilter(activeType, !sendBackOnly)}
+                aria-pressed={sendBackOnly}
               >
-                {tc("sendBack")}
-              </span>
-              <span
-                className={cn(
-                  "text-sm font-semibold tabular-nums",
-                  sendBackCount > 0 && "text-destructive",
-                )}
-              >
-                {sendBackCount}
-              </span>
-            </button>
-          </div>
-          {/* ยืดเต็มที่เหลือข้างชิป (กว้างสุด max-w-xs) — ความกว้างตายตัวของ
-              SearchInput (xl 380px) ดันตัวเองลงบรรทัดใหม่บนจอ laptop */}
-          <div className="flex min-w-48 flex-1 justify-end">
-            <SearchInput
-              defaultValue={search}
-              onSearch={setSearch}
-              containerClassName="w-full sm:max-w-xs"
-            />
+                <span className="flex size-6 items-center justify-center rounded bg-[var(--status-review)]">
+                  <Undo2 className="size-3.5 text-[var(--status-review-fg)]" />
+                </span>
+                <span
+                  className={cn(
+                    "text-xs",
+                    sendBackOnly ? "text-foreground" : "text-muted-foreground",
+                  )}
+                >
+                  {tc("sendBack")}
+                </span>
+                <span
+                  className={cn(
+                    "text-sm font-semibold tabular-nums",
+                    sendBackCount > 0 && "text-destructive",
+                  )}
+                >
+                  {sendBackCount}
+                </span>
+              </button>
+            </div>
+            {/* แถบกว้าง: ยืดเต็มที่เหลือข้างชิป (กว้างสุด max-w-xs) ชิดขวา — ความกว้างตายตัว
+              ของ SearchInput (xl 380px) ดันตัวเองลงบรรทัดใหม่บนจอ laptop · แถบแคบ: เต็มบรรทัด
+              ([&>div]:w-full = กล่องนอกของ SearchInput ที่ปกติกว้างเท่าเนื้อหา) */}
+            <div className="w-full @2xl/approval-toolbar:ml-auto @2xl/approval-toolbar:w-auto @2xl/approval-toolbar:max-w-xs @2xl/approval-toolbar:min-w-48 @2xl/approval-toolbar:flex-1 [&>div]:w-full">
+              <SearchInput
+                defaultValue={search}
+                onSearch={setSearch}
+                containerClassName="w-full"
+              />
+            </div>
           </div>
         </div>
       }
