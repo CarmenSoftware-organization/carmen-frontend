@@ -6,7 +6,7 @@ import type { Audit, AuditEntry } from "@/types/audit";
 /**
  * บรรทัดบันทึกของเอกสารในแถบท้ายหน้า: "สร้างโดย: ชื่อ (วันเวลา) | แก้ไขล่าสุด: ชื่อ (วันเวลา)"
  *
- * ตัวเล็ก (text-xs) สีจางทั้งบรรทัด ไม่แย่งความสนใจจากยอดรวมและปุ่ม Save/Submit ข้าง ๆ
+ * ตัว 10px (text-micro-legal — ขั้นของ ladder สำหรับ inline meta) สีจางทั้งบรรทัด ไม่แย่งความสนใจจากยอดรวมและปุ่ม Save/Submit ข้าง ๆ
  * ตัวคั่นเป็น border-s ของช่องที่สอง (ทรงเดียวกับ SummaryBar) ไม่ใช่ตัวอักษร "|" —
  * กล่องแคบจนช่องที่สองตกบรรทัด เส้นจะถูก overflow-hidden ตัดทิ้ง ไม่ค้างหัวบรรทัด
  *
@@ -21,7 +21,7 @@ export function DocAuditLine({ audit }: { readonly audit?: Audit }) {
   if (!audit?.created?.at && !audit?.updated?.at) return null;
 
   return (
-    <div className="text-muted-foreground overflow-hidden text-xs">
+    <div className="text-muted-foreground text-micro-legal overflow-hidden">
       <div className="-ms-[17px] flex flex-wrap items-center gap-x-4 gap-y-0.5">
         <AuditPart
           label={tfl("auditCreatedBy")}
