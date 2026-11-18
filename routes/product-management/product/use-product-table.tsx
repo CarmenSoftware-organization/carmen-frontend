@@ -1,4 +1,5 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import { useState } from "react";
+import type { ColumnDef, VisibilityState } from "@tanstack/react-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
@@ -42,6 +43,62 @@ interface UseProductTableOptions {
   tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
+  /** ความกว้างของกล่องตาราง (px) — `undefined` = ยังไม่ได้วัด ใช้ชุดของกล่องกว้าง */
+  containerWidth?: number;
+}
+
+/**
+ * ขนาดคอลัมน์และคอลัมน์ที่ต้องซ่อน ตามความกว้างของกล่องตาราง (ไม่ใช่จอ — sidebar พับ/กางได้)
+ * กล่อง ≥ 1500: Status (คอลัมน์ข้อมูลตัวสุดท้าย) ยืด ที่เหลือกว้างคงที่ รหัส ชื่อ หน่วย หมวด
+ * จึงอยู่ติดกันทางซ้าย — เดิมแบ่งตามสัดส่วน ที่ 4K ชื่อกว้าง 1,303px หน่วยห่างจากชื่อเป็นพันพิกเซล
+ * 1050–1500: หมวดยืด (ชื่อกับหน่วยยังติดกัน ที่ว่างไปอยู่หลังเส้นทางหมวดซึ่งยาวและถูกตัดบ่อยสุด)
+ * ต่ำกว่านั้น (ไม่มีหมวด): ชื่อยืด ให้ชื่อที่ถูกตัดได้ใช้ที่เหลือ ไม่ใช่ Status
+ *
+ * ผลรวม `size` นับ select (55, ไม่ได้เรนเดอร์) + # (60) + ปุ่มแถว (60) = 175 ด้วย
+ * และต้องน้อยกว่าจุดสลับขั้นของตัวเอง ไม่งั้นตารางล้นกล่อง:
+ *   ≥ 1500  175 + 150 + 520 + 90 + 380 + 110 = 1425   (Full HD 1638 · 4K)
+ *   ≥ 1050  175 + 120 + 300 + 70 + 280 + 100 = 1045   (HD 1084)
+ *   ≥ 780   175 + 120 + 300 + 70 +  —  + 100 =  765   ซ่อนหมวด
+ *   <  780  175 + 120 + 240 +  — +  —  + 100 =  635   ซ่อนหมวด + หน่วย (tablet 662)
+ * ที่ซ่อนยังดูได้จากหน้ารายการสินค้าและมุมมองการ์ด
+ */
+function columnTier(width: number | undefined) {
+  const w = width ?? Number.POSITIVE_INFINITY;
+  if (w >= 1500)
+    return {
+      code: 150,
+      name: 520,
+      unit: 90,
+      category: 380,
+      status: 110,
+      grow: "status" as const,
+    };
+  if (w >= 1050)
+    return {
+      code: 120,
+      name: 300,
+      unit: 70,
+      category: 280,
+      status: 100,
+      grow: "category" as const,
+    };
+  if (w >= 780)
+    return {
+      code: 120,
+      name: 300,
+      unit: 70,
+      category: 0,
+      status: 100,
+      grow: "name" as const,
+    };
+  return {
+    code: 120,
+    name: 240,
+    unit: 0,
+    category: 0,
+    status: 100,
+    grow: "name" as const,
+  };
 }
 
 export function useProductTable({
@@ -51,8 +108,19 @@ export function useProductTable({
   tableConfig,
   onEdit,
   onDelete,
+  containerWidth,
 }: UseProductTableOptions) {
   "use no memo";
+  const sizes = columnTier(containerWidth);
+  // ที่ผู้ใช้เลือกจากเมนูคอลัมน์ — คุมเองเพราะต้องรวมกับคอลัมน์ที่กล่องแคบบังคับซ่อน
+  const [userVisibility, setUserVisibility] = useState<VisibilityState>({
+    local_name: false,
+    product_category_name: false,
+    product_sub_category_name: false,
+    product_item_group_name: false,
+    created_at: false,
+    updated_at: false,
+  });
 
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
@@ -76,6 +144,7 @@ export function useProductTable({
           {row.original.code}
         </CellAction>
       ),
+      size: sizes.code,
       meta: { headerTitle: tfl("code"), skeleton: columnSkeletons.text },
     },
     {
@@ -106,8 +175,12 @@ export function useProductTable({
           </div>
         );
       },
-      size: 380,
-      meta: { headerTitle: tfl("name"), skeleton: columnSkeletons.textShort },
+      size: sizes.name,
+      meta: {
+        headerTitle: tfl("name"),
+        skeleton: columnSkeletons.textShort,
+        grow: sizes.grow === "name",
+      },
     },
     {
       accessorKey: "local_name",
@@ -124,7 +197,7 @@ export function useProductTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("unit")} />
       ),
-      size: 70,
+      size: sizes.unit || 70,
       meta: { headerTitle: tfl("unit"), skeleton: columnSkeletons.textShort },
     },
     {
@@ -160,10 +233,11 @@ export function useProductTable({
         );
       },
       enableSorting: false,
-      size: 260,
+      size: sizes.category || 240,
       meta: {
         headerTitle: tfl("categoryPath"),
         skeleton: columnSkeletons.text,
+        grow: sizes.grow === "category",
       },
     },
     {
@@ -214,10 +288,11 @@ export function useProductTable({
           </StatusDotBadge>
         );
       },
-      size: 100,
+      size: sizes.status,
       meta: {
         headerTitle: tfl("status"),
         skeleton: columnSkeletons.badge,
+        grow: sizes.grow === "status",
       },
     },
     ...auditColumns<Product>(tfl, dateTimeFormat),
@@ -237,17 +312,18 @@ export function useProductTable({
     data: products,
     columns: allColumns,
     getCoreRowModel: getCoreRowModel(),
-    initialState: {
+    ...tableConfig,
+    onColumnVisibilityChange: setUserVisibility,
+    state: {
+      ...tableConfig.state,
+      // กล่องแคบบังคับซ่อนทับที่ผู้ใช้เลือก (ซ่อนด้วย CSS ไม่ได้ — ตารางที่มีคอลัมน์ยืดคำนวณ
+      // ความกว้างขั้นต่ำจากทุกคอลัมน์ที่ TanStack ถือว่ามองเห็น)
       columnVisibility: {
-        local_name: false,
-        product_category_name: false,
-        product_sub_category_name: false,
-        product_item_group_name: false,
-        created_at: false,
-        updated_at: false,
+        ...userVisibility,
+        ...(sizes.category === 0 && { category_path: false }),
+        ...(sizes.unit === 0 && { inventory_unit_name: false }),
       },
     },
-    ...tableConfig,
     pageCount: Math.ceil(totalRecords / (Number(params.perpage) || 10)),
   });
 }
