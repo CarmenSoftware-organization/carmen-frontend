@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { useTranslations } from "use-intl";
 import { BoxIcon } from "lucide-react";
 import {
@@ -17,10 +17,23 @@ import { ErrorState } from "@/components/ui/error-state";
 import EmptyComponent from "@/components/empty-component";
 import { formatCurrency } from "@/lib/currency-utils";
 import { cn } from "@/lib/utils";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { CN_STATUS, type CnStockMovementItem } from "@/types/credit-note";
 import { useCnStockMovements } from "./use-credit-note";
 
 const NO_LOT = "-";
+
+/**
+ * กล่องแคบกว่านี้การ์ดแถวละใบ (แนวเดียวกับตารางสต๊อกของ GRN) — มือถือ 9 คอลัมน์บีบเหลือ
+ * 26–58px หัว "Returned"/"Out" ทับกัน ตัวเลขเหลือ "0" · tablet แนวตั้ง (กล่อง ~630px)
+ * ก็ยังตัดหน่วย "PACK" และหัว "Returned" เกินช่อง จึงสูงกว่าของ GRN (600, 8 คอลัมน์)
+ */
+const CARD_BELOW = 700;
+/**
+ * กล่องกว้างกว่านี้ให้คอลัมน์สินค้ารับที่เหลือ ที่เหลือกว้างคงที่ — ต้องเกินผลรวม size
+ * (1160) ไม่งั้น grow ล็อกตารางที่ผลรวมแล้วเลื่อนแนวนอน
+ */
+const GROW_FROM = 1200;
 
 /**
  * ใบนี้ดูการเคลื่อนไหวสต๊อกได้หรือยัง — เกณฑ์เดียวกับ SR: เฉพาะใบที่ปิดจบแล้ว
@@ -56,11 +69,15 @@ export function CnStockTable({
   );
 
   const rows = useMemo(() => data?.items ?? [], [data]);
+  const [setBoxEl, boxWidth] = useElementWidth();
+  const asCards = boxWidth !== undefined && boxWidth < CARD_BELOW;
+  const growProduct = (boxWidth ?? 0) >= GROW_FROM;
 
   const columns = useMemo<ColumnDef<CnStockMovementItem>[]>(() => {
+    // String(): FieldPlainText แสดง "—" เมื่อ children เป็น falsy — เลข 0 จริงต้องขึ้น 0
     const qtyCell = (value: number) => (
       <FieldPlainText className="justify-end tabular-nums">
-        {value}
+        {String(value ?? 0)}
       </FieldPlainText>
     );
     const moneyCell = (value: number) => (
@@ -102,6 +119,7 @@ export function CnStockTable({
           />
         ),
         size: 220,
+        meta: growProduct ? { grow: true } : undefined,
       },
       {
         accessorKey: "inventory_unit_name",
@@ -164,7 +182,7 @@ export function CnStockTable({
         cellClassName: cn("py-2 align-middle", col.meta?.cellClassName),
       },
     }));
-  }, [t, tfl]);
+  }, [t, tfl, growProduct]);
 
   const table = useReactTable({
     data: rows,
@@ -182,29 +200,156 @@ export function CnStockTable({
   }
 
   return (
-    <div className="space-y-3">
+    <div ref={setBoxEl} className="space-y-3">
       {/* เทียบกับ false ตรง ๆ — ฟิลด์นี้อาจไม่มีใน response ซึ่งแปลว่า "ไม่รู้"
           ไม่ใช่ "ยังไม่ได้ตัด" บอกผิดคือบอกว่าตัวเลขจริงเป็นตัวเลขคาดการณ์ */}
       {data?.is_posted === false && (
         <p className="text-muted-foreground text-xs">{t("stockNotPosted")}</p>
       )}
 
-      <DataGrid
-        table={table}
-        recordCount={rows.length}
-        isLoading={isLoading}
-        emptyMessage={
-          <EmptyComponent
-            icon={BoxIcon}
-            title={tc("noDataFound")}
-            description={t("stockNoItemsDesc")}
-          />
-        }
-      >
-        <DataGridContainer>
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+      {asCards && !isLoading ? (
+        <CnStockCards
+          rows={rows}
+          empty={
+            <EmptyComponent
+              icon={BoxIcon}
+              title={tc("noDataFound")}
+              description={t("stockNoItemsDesc")}
+            />
+          }
+        />
+      ) : (
+        <DataGrid
+          table={table}
+          recordCount={rows.length}
+          isLoading={isLoading}
+          emptyMessage={
+            <EmptyComponent
+              icon={BoxIcon}
+              title={tc("noDataFound")}
+              description={t("stockNoItemsDesc")}
+            />
+          }
+        >
+          <DataGridContainer>
+            <DataGridTable />
+          </DataGridContainer>
+        </DataGrid>
+      )}
     </div>
+  );
+}
+
+/**
+ * แถวสต๊อกของใบลดหนี้แบบการ์ด (กล่องแคบ) — หัวการ์ด = ลำดับ + สินค้า · กริดมีป้าย
+ * แบบเดียวกับการ์ดสต๊อกของ GRN · จำนวน + หน่วยในช่องเดียว ("2 PCS")
+ */
+function CnStockCards({
+  rows,
+  empty,
+}: {
+  readonly rows: CnStockMovementItem[];
+  readonly empty: ReactNode;
+}) {
+  const t = useTranslations("procurement.creditNote");
+  const tfl = useTranslations("field");
+
+  if (rows.length === 0) {
+    return (
+      <div className="border-border/60 bg-card rounded-lg border py-6">
+        {empty}
+      </div>
+    );
+  }
+
+  return (
+    <ul className="flex flex-col gap-2">
+      {rows.map((row) => {
+        const lot = row.lot_no && row.lot_no !== NO_LOT ? row.lot_no : null;
+        const qty = (value: number) => (
+          <>
+            {value ?? 0}
+            {row.inventory_unit_name && (
+              <span className="text-muted-foreground ms-1">
+                {row.inventory_unit_name}
+              </span>
+            )}
+          </>
+        );
+        const fields: {
+          key: string;
+          label: string;
+          value: ReactNode;
+          wide?: boolean;
+        }[] = [
+          {
+            key: "location",
+            label: tfl("location"),
+            value: row.location_name,
+            wide: true,
+          },
+          { key: "lot", label: tfl("lotNo"), value: lot },
+          {
+            key: "return",
+            label: t("stockReturnQty"),
+            value: qty(row.return_qty),
+          },
+          { key: "out", label: tfl("out"), value: qty(row.qty_out) },
+          {
+            key: "price",
+            label: tfl("unitPrice"),
+            value: formatCurrency(row.cost_per_unit),
+          },
+          {
+            key: "total",
+            label: tfl("totalAmount"),
+            value: formatCurrency(row.total_cost),
+          },
+        ];
+        return (
+          <li
+            key={row.id}
+            className="border-border/60 bg-card @container rounded-lg border text-xs"
+          >
+            <div className="flex items-start gap-2 p-3 pb-2">
+              <span className="text-muted-foreground shrink-0 pt-0.5 tabular-nums">
+                {row.sequence_no}
+              </span>
+              <div className="min-w-0 flex-1">
+                <NameWithSubtext
+                  primary={row.product_name}
+                  secondary={row.product_local_name ?? undefined}
+                  wrap
+                />
+              </div>
+            </div>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 px-3 pb-3 @md:grid-cols-3">
+              {fields.map((f) => (
+                <div
+                  key={f.key}
+                  className={cn(
+                    "min-w-0",
+                    f.wide && "col-span-2 @md:col-span-1",
+                  )}
+                >
+                  <dt className="text-muted-foreground text-micro mb-0.5">
+                    {f.label}
+                  </dt>
+                  <dd className="break-words tabular-nums">
+                    {f.value === null ||
+                    f.value === undefined ||
+                    f.value === "" ? (
+                      <span className="text-muted-foreground">—</span>
+                    ) : (
+                      f.value
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

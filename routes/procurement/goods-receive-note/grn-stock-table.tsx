@@ -316,6 +316,7 @@ function GrnStockCards({
                 <NameWithSubtext
                   primary={row.product_name}
                   secondary={row.product_local_name ?? undefined}
+                  wrap
                 />
               </div>
             </div>
