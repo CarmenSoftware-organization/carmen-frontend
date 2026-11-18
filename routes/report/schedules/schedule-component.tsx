@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useTranslations } from "use-intl";
-import { useReactTable, getCoreRowModel } from "@tanstack/react-table";
 import {
   DataGrid,
   DataGridContainer,
@@ -18,7 +17,9 @@ import {
 } from "./use-report-schedule";
 import type { ReportSchedule } from "@/types/report-schedule";
 import { CreateScheduleDialog } from "./create-schedule-dialog";
-import { useScheduleTableColumns } from "./use-schedule-table";
+import { SCHEDULE_CARD_BELOW, useScheduleTable } from "./use-schedule-table";
+import { ScheduleCards } from "./schedule-cards";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { cn } from "@/lib/utils";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
@@ -50,12 +51,18 @@ export default function ScheduleComponent() {
     }
   };
 
-  const columns = useScheduleTableColumns({ onDelete: setPendingDelete });
+  // เลือกคอลัมน์จากความกว้างกล่องตาราง (หักขอบ DataGridContainer ข้างละ 1px)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const containerWidth = gridBoxWidth == null ? undefined : gridBoxWidth - 2;
+  const asCards =
+    containerWidth != null &&
+    containerWidth < SCHEDULE_CARD_BELOW &&
+    schedules.length > 0;
 
-  const table = useReactTable({
-    data: schedules,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
+  const table = useScheduleTable({
+    schedules,
+    onDelete: setPendingDelete,
+    containerWidth,
   });
 
   return (
@@ -71,19 +78,30 @@ export default function ScheduleComponent() {
         />
       }
     >
-      <DataGrid
-        table={table}
-        recordCount={schedules.length}
-        isLoading={isLoading}
-        tableLayout={{ headerSticky: true }}
-        emptyMessage={<EmptyComponent />}
-      >
-        <DataGridContainer className={cn("flex flex-col", listGridMaxH(false))}>
-          <DataGridScrollArea>
-            <DataGridTable />
-          </DataGridScrollArea>
-        </DataGridContainer>
-      </DataGrid>
+      <div ref={setGridBox}>
+        <DataGrid
+          table={table}
+          recordCount={schedules.length}
+          isLoading={isLoading}
+          tableLayout={{ headerSticky: true }}
+          emptyMessage={<EmptyComponent />}
+        >
+          <DataGridContainer
+            className={cn("flex flex-col", listGridMaxH(false))}
+          >
+            <DataGridScrollArea>
+              {asCards ? (
+                <ScheduleCards
+                  schedules={schedules}
+                  onDelete={setPendingDelete}
+                />
+              ) : (
+                <DataGridTable />
+              )}
+            </DataGridScrollArea>
+          </DataGridContainer>
+        </DataGrid>
+      </div>
 
       <CreateScheduleDialog
         open={createOpen}

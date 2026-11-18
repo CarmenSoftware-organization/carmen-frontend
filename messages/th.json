@@ -7622,6 +7622,7 @@
     "notifyAtHintTooClose": "ห่างจากเวลารันน้อยกว่า {minutes} นาที ผู้รับจะได้รับแจ้งเกือบจะทันทีที่รอบรันเริ่ม ตัวรายงานถูกสร้างตอนผู้รับกดเปิดลิงก์ ช่วงเวลานี้จึงไม่ใช่เวลาประมวลผล",
     "notifyAtNextDayBadge": "+1 วัน",
     "notifyImmediately": "ทันทีที่รันเสร็จ",
+    "notifyImmediatelyShort": "ทันที",
     "notifyAtColumn": "แจ้งเตือน",
     "namePlaceholder": "รายงานคงคลังประจำวัน",
     "creating": "กำลังสร้าง…",
