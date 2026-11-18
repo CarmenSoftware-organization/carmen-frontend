@@ -1,7 +1,11 @@
 import type { WidgetDisplay } from "@/types/dashboard-widget";
 
 /**
- * กริดของ dashboard — 12 คอลัมน์เมื่อกล่องกว้าง 64rem ขึ้นไป · 6 ตั้งแต่ 38rem · ต่ำกว่านั้นเต็มแถว
+ * กริดของ dashboard — นับ widget ขนาดเล็กสุด (KPI กว้าง 3) ต่อแถว:
+ *   กล่อง ≥ 150rem (4K) = 24 คอลัมน์ → 8 ใบ · ≥ 64rem (Full HD / HD) = 12 → 4 ใบ ·
+ *   ≥ 38rem (tablet) = 6 → 2 ใบ · ต่ำกว่านั้น (mobile) = 1 ใบเต็มแถว
+ * ความกว้างที่ตั้งต่อ widget (หน่วยของกริด 12) ใช้ span เดิมทั้งบนกริด 12 และ 24 —
+ * บน 4K ทุกใบจึงกว้างครึ่งหนึ่งของบน Full HD ตามสัดส่วน (กราฟครึ่งแถว → 4 ใบ/แถว)
  * 1 แถว = 4rem (คู่กับ `auto-rows-[4rem]` ของ container)
  *
  * ตัดสินจาก **ความกว้างของกล่อง** (container query) ไม่ใช่ของจอ: จอ 1024 ที่กาง sidebar เหลือกล่อง
@@ -11,6 +15,10 @@ import type { WidgetDisplay } from "@/types/dashboard-widget";
  * ต้องเป็น string เต็มตัวในตาราง ไม่ใช่ประกอบด้วย template literal — Tailwind
  * สแกน class จาก source แบบ static ถ้าประกอบชื่อตอน runtime จะไม่มี class นั้นใน bundle
  */
+/** class ของตัวห่อกริด — ทุก dashboard ใช้ตัวนี้ตัวเดียว ต้องอยู่ใต้ `@container` */
+export const WIDGET_GRID_CLASS =
+  "grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12 @min-[150rem]:grid-cols-24";
+
 const COL_SPAN_WIDE: Record<number, string> = {
   1: "@5xl:col-span-1",
   2: "@5xl:col-span-2",
@@ -26,15 +34,13 @@ const COL_SPAN_WIDE: Record<number, string> = {
   12: "@5xl:col-span-12",
 };
 
-/** กล่องกลาง 6 คอลัมน์ = ครึ่งหนึ่งของความกว้างที่ตั้งไว้ (ปัดขึ้น, อย่างน้อย 1) */
-const COL_SPAN_MID: Record<number, string> = {
-  1: "@min-[38rem]:col-span-1",
-  2: "@min-[38rem]:col-span-2",
-  3: "@min-[38rem]:col-span-3",
-  4: "@min-[38rem]:col-span-4",
-  5: "@min-[38rem]:col-span-5",
-  6: "@min-[38rem]:col-span-6",
-};
+/**
+ * กล่องกลาง (tablet) 6 คอลัมน์ — สองขนาดเท่านั้น: widget ที่บนจอกว้างเล็กกว่าครึ่งแถว
+ * (กว้าง < 6) ได้ครึ่งแถว → 2 ใบ/แถว · ตั้งแต่ครึ่งแถวขึ้นไปเต็มแถว (กราฟบนกล่อง ~700px
+ * ถ้าแบ่งครึ่งเหลือ ~340px อ่านแกนไม่ออก)
+ */
+const COL_SPAN_MID_HALF = "@min-[38rem]:col-span-3";
+const COL_SPAN_MID_FULL = "@min-[38rem]:col-span-6";
 
 const ROW_SPAN: Record<number, string> = {
   1: "row-span-1",
@@ -206,8 +212,8 @@ export function gridClasses(
   display?: WidgetDisplay | null,
 ): string {
   const { width, height } = gridSize(widgetType, display);
-  const md = clamp(Math.ceil(width / 2), 1, 6);
-  return `${COL_SPAN_MID[md]} ${COL_SPAN_WIDE[width]} ${ROW_SPAN[height]}`;
+  const md = width < 6 ? COL_SPAN_MID_HALF : COL_SPAN_MID_FULL;
+  return `${md} ${COL_SPAN_WIDE[width]} ${ROW_SPAN[height]}`;
 }
 
 /**

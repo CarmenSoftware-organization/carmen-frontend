@@ -1,3 +1,4 @@
+import { WIDGET_GRID_CLASS } from "@/components/dashboard-widget/widget-display";
 import { useCallback, useState, useSyncExternalStore } from "react";
 import {
   closestCorners,
@@ -441,11 +442,7 @@ const SavedWidgetsSection = () => {
       {/* ระหว่างรอ list ของ user (ยังไม่รู้ว่ามีกี่ใบ/ทรงอะไร) โชว์ bento ชุดเดียว
           กับ module dashboard — เดิมตรงนี้ว่างเปล่าจนกว่า list จะมา แล้วของโผล่ทีเดียว */}
       {isLoading && (
-        <div
-          aria-busy="true"
-          aria-live="polite"
-          className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12"
-        >
+        <div aria-busy="true" aria-live="polite" className={WIDGET_GRID_CLASS}>
           <WidgetSkeletonCards />
         </div>
       )}
@@ -494,7 +491,7 @@ const SavedWidgetsSection = () => {
             items={renderable.map(({ widget }) => widget.id)}
             strategy={rectSortingStrategy}
           >
-            <ul className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
+            <ul className={WIDGET_GRID_CLASS}>
               {renderable.map(({ widget, query }) => (
                 <SortableWidgetItem
                   key={widget.id}

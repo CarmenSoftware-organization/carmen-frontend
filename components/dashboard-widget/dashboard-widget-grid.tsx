@@ -65,6 +65,7 @@ import {
   gaugeRange,
   gridClasses,
   thresholdColor,
+  WIDGET_GRID_CLASS,
 } from "@/components/dashboard-widget/widget-display";
 import { dashboardDatasetDataQueryOptions } from "@/hooks/use-dashboard-dataset";
 import {
@@ -177,7 +178,7 @@ export function DashboardWidgetGrid({
       <section
         aria-busy={isLoading}
         aria-live="polite"
-        className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12"
+        className={WIDGET_GRID_CLASS}
       >
         {isLoading ? (
           <WidgetSkeletonCards />
@@ -1499,30 +1500,18 @@ export function WidgetSkeleton({
 export function WidgetSkeletonCards() {
   return (
     <>
-      <WidgetSkeleton
-        variant="kpi"
-        className="row-span-2 @min-[38rem]:col-span-2 @5xl:col-span-3"
-      />
-      <WidgetSkeleton
-        variant="kpi"
-        className="row-span-2 @min-[38rem]:col-span-2 @5xl:col-span-3"
-      />
+      <WidgetSkeleton variant="kpi" className={gridClasses("kpi")} />
+      <WidgetSkeleton variant="kpi" className={gridClasses("kpi")} />
       <WidgetSkeleton
         variant="pie"
-        className="row-span-3 @min-[38rem]:col-span-3 @5xl:col-span-6"
+        className={gridClasses("bar", { width: 6, height: 3 })}
       />
       <WidgetSkeleton
         variant="bar"
-        className="row-span-3 @min-[38rem]:col-span-3 @5xl:col-span-6"
+        className={gridClasses("bar", { width: 6, height: 3 })}
       />
-      <WidgetSkeleton
-        variant="kpi"
-        className="row-span-2 @min-[38rem]:col-span-2 @5xl:col-span-3"
-      />
-      <WidgetSkeleton
-        variant="kpi"
-        className="row-span-2 @min-[38rem]:col-span-2 @5xl:col-span-3"
-      />
+      <WidgetSkeleton variant="kpi" className={gridClasses("kpi")} />
+      <WidgetSkeleton variant="kpi" className={gridClasses("kpi")} />
     </>
   );
 }

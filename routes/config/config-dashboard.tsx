@@ -7,7 +7,10 @@ import {
   WidgetSkeleton,
 } from "@/components/dashboard-widget/dashboard-widget-grid";
 import { BuWidgetSection } from "@/components/dashboard-widget/bu-widget-section";
-import { gridClasses } from "@/components/dashboard-widget/widget-display";
+import {
+  gridClasses,
+  WIDGET_GRID_CLASS,
+} from "@/components/dashboard-widget/widget-display";
 import { AppTile } from "@/components/icons/tiles";
 import { useConfigWidgets } from "@/hooks/use-dashboard-widgets";
 
@@ -70,16 +73,12 @@ export default function ConfigDashboard() {
       )}
 
       {isLoading && (
-        <div
-          aria-busy="true"
-          aria-live="polite"
-          className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12"
-        >
+        <div aria-busy="true" aria-live="polite" className={WIDGET_GRID_CLASS}>
           {Array.from({ length: 4 }).map((_, i) => (
             <WidgetSkeleton
               key={`cd-skeleton-${i}`}
               // ต้องบอกขนาดช่องเอง — ไม่ใส่ = กว้าง 1 คอลัมน์ สูง 1 แถว (โครงการ์ดบีบเหลือ ~50–110px)
-              className="row-span-2 @min-[38rem]:col-span-2 @5xl:col-span-3"
+              className={gridClasses("kpi")}
             />
           ))}
         </div>
@@ -93,7 +92,7 @@ export default function ConfigDashboard() {
 
       {kpis.length > 0 && (
         <Section heading={td("sectionKpi")}>
-          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
+          <div className={WIDGET_GRID_CLASS}>
             {kpis.map((w) => (
               <LazyWidget
                 key={w.dataset_id}
@@ -115,7 +114,7 @@ export default function ConfigDashboard() {
 
       {bars.length > 0 && (
         <Section heading={td("sectionComparison")}>
-          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
+          <div className={WIDGET_GRID_CLASS}>
             {bars.map((w) => (
               <LazyWidget
                 key={w.dataset_id}
@@ -137,7 +136,7 @@ export default function ConfigDashboard() {
 
       {pies.length > 0 && (
         <Section heading={td("sectionDistribution")}>
-          <div className="grid auto-rows-[4rem] grid-cols-1 gap-3 @min-[38rem]:grid-cols-6 @5xl:grid-cols-12">
+          <div className={WIDGET_GRID_CLASS}>
             {pies.map((w) => (
               <LazyWidget
                 key={w.dataset_id}
