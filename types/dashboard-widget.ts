@@ -44,6 +44,12 @@ export interface DatasetMeta {
   readonly dimension?: string;
   /** แถว (series) ของ matrix เก็บอะไร — "period" ของชุดเทียบงวด, "vendor" ของยอด vendor × เดือน */
   readonly series_dimension?: string;
+  /**
+   * `prev` ของ scalar_delta คืออะไร — "aged" (ส่วนของ value ที่ค้างเกิน N วัน) ·
+   * "previous_window" (ช่วงก่อนหน้าที่ยาวเท่ากัน) · "compare_period" (งวดใน compare_to)
+   * micro-data `service/dashboard/delta.go` · ไม่มี = backend รุ่นเก่า
+   */
+  readonly delta_kind?: string;
 }
 
 // -------------------------------------------------------------

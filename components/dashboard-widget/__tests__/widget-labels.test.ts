@@ -6,7 +6,7 @@ import { formatMetric, makeWidgetLabels } from "../widget-labels";
 
 type Messages = typeof en;
 
-function labelsFor(locale: "en" | "th", messages: Messages) {
+function labelsFor(locale: "en" | "th", messages: Messages, currencyCode = "") {
   const t = createTranslator({
     locale,
     messages,
@@ -16,6 +16,7 @@ function labelsFor(locale: "en" | "th", messages: Messages) {
   return makeWidgetLabels(
     t as unknown as Parameters<typeof makeWidgetLabels>[0],
     tStatus as unknown as Parameters<typeof makeWidgetLabels>[1],
+    currencyCode,
   );
 }
 
@@ -23,7 +24,8 @@ describe("formatMetric", () => {
   it("rounds to the unit's default decimals", () => {
     expect(formatMetric(28.148, "days")).toBe("28.1"); // วันรออนุมัติ เดิมโชว์ 28.148
     expect(formatMetric(13, "items")).toBe("13");
-    expect(formatMetric(24594.6, "฿")).toBe("24,595");
+    expect(formatMetric(24594.6, "currency")).toBe("24,595");
+    expect(formatMetric(24594.6, "฿")).toBe("24,595"); // backend รุ่นก่อนเปลี่ยนเป็น token
     expect(formatMetric(0.028512, "rate")).toBe("0.0285");
   });
 
@@ -52,7 +54,8 @@ describe("makeWidgetLabels", () => {
 
   it("titles the value column by unit instead of 'Value (items)'", () => {
     expect(l.valueHeader("items")).toBe("Count");
-    expect(l.valueHeader("฿")).toBe("Amount (฿)");
+    // ไม่รู้สกุลของ BU = ไม่พิมพ์สกุล (ห้ามเดาเป็นบาท)
+    expect(l.valueHeader("currency")).toBe("Amount");
     expect(l.valueHeader("days")).toBe("Days");
     expect(l.valueHeader("widgets")).toBe(
       `${en.dashboardWidget.tableCol.value} (widgets)`,
@@ -72,12 +75,24 @@ describe("makeWidgetLabels", () => {
   });
 
   it("writes a number with its unit", () => {
-    expect(l.withUnit(1200, "฿")).toBe("฿1,200");
+    expect(l.withUnit(1200, "currency")).toBe("1,200");
     expect(l.withUnit(13, "items")).toBe("13 items");
     expect(l.withUnit(28.148, "days")).toBe("28.1 days");
     expect(l.withUnit(5, "qty")).toBe("5");
     expect(l.withUnit(5, "widgets")).toBe("5 widgets");
-    expect(l.unitSuffix("฿")).toBe("");
+    expect(l.unitSuffix("currency")).toBe("");
+  });
+
+  // ยอดเงินเป็นสกุลหลักของ BU — พิมพ์รหัสสกุลของ BU นั้น ไม่ล็อก ฿
+  it("prints money in the BU's base currency, whichever it is", () => {
+    const usd = labelsFor("en", en, "USD");
+    expect(usd.withUnit(1200, "currency")).toBe("1,200 USD");
+    expect(usd.unitSuffix("currency")).toBe("USD");
+    expect(usd.valueHeader("currency")).toBe("Amount (USD)");
+    // "฿" จาก backend รุ่นเก่าก็คือสกุลหลักเหมือนกัน — ไม่ใช่บาทตามตัวอักษร
+    expect(usd.withUnit(1200, "฿")).toBe("1,200 USD");
+    const thb = labelsFor("th", th as unknown as Messages, "THB");
+    expect(thb.valueHeader("currency")).toBe("ยอดเงิน (THB)");
   });
 
   it("speaks Thai on the Thai UI", () => {

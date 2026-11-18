@@ -103,6 +103,7 @@ export function sampleAxis(
 /** ขนาดของตัวเลขตามหน่วย — เงินเป็นหลักพัน วันมีทศนิยม จำนวนเป็นจำนวนเต็มเล็ก ๆ */
 function valueMaker(unit: string | undefined, rand: () => number) {
   switch (unit) {
+    case "currency":
     case "฿":
       return () => Math.round(5_000 + rand() * 55_000);
     case "days":
@@ -142,6 +143,7 @@ export function sampleWidget(
     unit: dataset.unit,
     dimension: dataset.dimension,
     series_dimension: dataset.series_dimension,
+    delta_kind: dataset.delta_kind,
   };
 
   switch (shape) {
@@ -149,7 +151,12 @@ export function sampleWidget(
       return { meta, data: { value: value() } };
     case "scalar_delta": {
       const now = value();
-      return { meta, data: { value: now, prev: Math.max(0, now - 4) } };
+      // การ์ดเอกสารค้าง: prev = ส่วนของ value ที่ค้างนาน (ไม่ใช่ค่าก่อนหน้า) → ต้องไม่เกิน value
+      const prev =
+        dataset.delta_kind === "aged"
+          ? Math.max(1, Math.round(now / 4))
+          : Math.max(0, now - 4);
+      return { meta, data: { value: now, prev } };
     }
     case "time_series": {
       let level = value();

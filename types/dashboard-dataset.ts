@@ -26,4 +26,6 @@ export interface DashboardDataset {
   readonly dimension?: string;
   /** แถว (series) ของ matrix เก็บอะไร — ตัวเดียวกับ `DatasetMeta.series_dimension` */
   readonly series_dimension?: string;
+  /** `prev` ของ scalar_delta คืออะไร — ตัวเดียวกับ `DatasetMeta.delta_kind` */
+  readonly delta_kind?: string;
 }

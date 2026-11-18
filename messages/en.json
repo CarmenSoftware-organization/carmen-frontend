@@ -1712,6 +1712,9 @@
     "noData": "No data",
     "aboutWidget": "About this widget",
     "deltaCompare": "vs. previous period",
+    "deltaPreviousWindow": "vs. the range before",
+    "deltaVsPeriod": "vs. {period}",
+    "deltaAged": "{count} waiting {days}+ days",
     "sectionKpi": "Metrics",
     "sectionDistribution": "Distribution",
     "sectionComparison": "Comparison",
@@ -1748,7 +1751,8 @@
     },
     "unitHeader": {
       "items": "Count",
-      "baht": "Amount (฿)",
+      "amount": "Amount ({currency})",
+      "amountPlain": "Amount",
       "days": "Days",
       "transactions": "Transactions",
       "qty": "Quantity",
@@ -7098,6 +7102,8 @@
       "loadError": "Failed to load saved widgets: {message}",
       "unsupportedTitle": "Not yet supported",
       "unsupportedDescription": "Widget shape \"{shape}\" cannot be rendered yet",
+      "dataErrorDescription": "Couldn't load this widget's data.",
+      "dataErrorRetry": "Try again",
       "deleteTitle": "Delete Widget",
       "deleteConfirm": "Remove \"{title}\" from your dashboard? This action cannot be undone.",
       "deleteAria": "Delete widget {title}",
@@ -7266,6 +7272,19 @@
         "vendor-by-business-type": "Vendors by business type"
       },
       "document": {
+        "grn-count__vs-period": "Good Received Note count vs period",
+        "grn-created-series__by-period": "Good Received Note per day — by period",
+        "grn-by-status__by-period": "Good Received Note by status — by period",
+        "sr-count__vs-period": "Store Requisition count vs period",
+        "sr-created-series__by-period": "Store Requisition per day — by period",
+        "sr-by-status__by-period": "Store Requisition by status — by period",
+        "po-count__vs-period": "Purchase Order count vs period",
+        "po-created-series__by-period": "Purchase Order per day — by period",
+        "po-by-status__by-period": "Purchase Order by status — by period",
+        "pr-count__vs-period": "Purchase Request count vs period",
+        "pr-created-series__by-period": "Purchase Request per day — by period",
+        "pr-by-status__by-period": "Purchase Request by status — by period",
+        "sr-top-products": "Top requested products (Store Requisition)",
         "grn-by-status": "Good Received Note by status",
         "grn-count": "Good Received Note count",
         "grn-created-series": "Good Received Note created (series)",
@@ -7296,12 +7315,19 @@
         "total-active": "Active equipment"
       },
       "inventory": {
+        "movement-by-location-period": "Movement by location — by period",
+        "issue-by-priority__by-period": "Issues by priority — by period",
+        "stock-out-by-status__by-period": "Stock Out by status — by period",
+        "stock-in-by-status__by-period": "Stock In by status — by period",
+        "spot-check-by-status__by-period": "Spot Check by status — by period",
+        "physical-count-by-status__by-period": "Physical count by status — by period",
+        "slow-moving": "Slow moving items",
         "below-par-by-location": "Below par by location",
         "below-par-count": "Items below par",
         "below-par-items": "Replenishment list",
         "issue-by-priority": "Issues by priority",
         "issue-open": "Open issues",
-        "low-stock-count": "Low stock items",
+        "low-stock-count": "Items with a reorder point",
         "most-active-products": "Most active products (inventory)",
         "physical-count-by-status": "Physical count by status",
         "physical-count-pending": "Pending physical counts",
@@ -7326,9 +7352,13 @@
         "active-count": "Active pricelists",
         "by-status": "Pricelists by status",
         "by-vendor-top": "Pricelists by vendor (top N)",
-        "expiring-soon": "Pricelists expiring (≤30d)"
+        "expiring-soon": "Pricelists expiring soon"
       },
       "procurement": {
+        "pr-by-department__by-period": "PR by department — by period",
+        "pr-by-status__by-period": "PR by status — by period",
+        "top-purchasing-vendors": "Top purchasing vendors",
+        "top-purchased-products": "Top purchased products",
         "po-by-vendor-top": "Top vendors by PO spend",
         "pr-by-department": "PR by department",
         "pr-by-status": "PR by status",
@@ -7339,7 +7369,7 @@
         "top-products-by-quantity": "Top products by PR quantity"
       },
       "product": {
-        "added-7d": "Products added (7d)",
+        "added-7d": "Products added",
         "added-daily": "Products added (daily)",
         "by-category-top": "Products by category (top N)",
         "by-item-group-top": "Products by item group (top N)",
@@ -7353,7 +7383,7 @@
         "without-vendor": "Products without vendor"
       },
       "recipe": {
-        "added-7d": "Recipes added (7d)",
+        "added-7d": "Recipes added",
         "added-daily": "Recipes added (daily)",
         "average-ingredients": "Avg ingredients per recipe",
         "by-category-top": "Recipes by category (top N)",
@@ -7365,16 +7395,16 @@
       "rfp": {
         "active": "Active RFPs",
         "issued-daily": "RFPs issued (daily)",
-        "upcoming-7d": "Upcoming RFPs (7d)"
+        "upcoming-7d": "Upcoming RFPs"
       },
       "vendor": {
-        "added-7d": "Vendors added (7d)",
+        "added-7d": "Vendors added",
         "total-active": "Active vendors",
         "without-products": "Vendors without products"
       },
       "workflow": {
         "cn-pending-approval": "Pending CN approvals",
-        "my-pending-pr": "My pending PRs"
+        "my-pending-pr": "My PRs awaiting approval"
       }
     }
   },

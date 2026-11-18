@@ -296,6 +296,8 @@ export function BuWidgetSection({
                   dataset={datasetsById.get(w.dataset_id)}
                   detail={dataQueries[i]?.data}
                   isLoading={dataQueries[i]?.isLoading ?? true}
+                  isError={dataQueries[i]?.isError ?? false}
+                  onRetry={() => void dataQueries[i]?.refetch()}
                   editable={canEdit}
                   onDelete={() => setPendingDelete(w)}
                   onConfigure={() => setPendingConfig(w)}

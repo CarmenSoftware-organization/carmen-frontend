@@ -1712,6 +1712,9 @@
     "noData": "ไม่มีข้อมูล",
     "aboutWidget": "เกี่ยวกับวิดเจ็ตนี้",
     "deltaCompare": "เทียบรอบก่อน",
+    "deltaPreviousWindow": "เทียบช่วงก่อนหน้า",
+    "deltaVsPeriod": "เทียบ{period}",
+    "deltaAged": "ค้างเกิน {days} วัน {count} รายการ",
     "sectionKpi": "ตัวชี้วัด",
     "sectionDistribution": "สัดส่วน",
     "sectionComparison": "เปรียบเทียบ",
@@ -1748,7 +1751,8 @@
     },
     "unitHeader": {
       "items": "จำนวน",
-      "baht": "ยอดเงิน (฿)",
+      "amount": "ยอดเงิน ({currency})",
+      "amountPlain": "ยอดเงิน",
       "days": "วัน",
       "transactions": "จำนวนรายการ",
       "qty": "ปริมาณ",
@@ -7098,6 +7102,8 @@
       "loadError": "โหลดวิดเจ็ตที่บันทึกไว้ไม่สำเร็จ: {message}",
       "unsupportedTitle": "ยังไม่รองรับ",
       "unsupportedDescription": "วิดเจ็ตนี้รูปแบบ \"{shape}\" ยังแสดงผลไม่ได้",
+      "dataErrorDescription": "โหลดข้อมูลของวิดเจ็ตนี้ไม่สำเร็จ",
+      "dataErrorRetry": "ลองใหม่",
       "deleteTitle": "ลบวิดเจ็ต",
       "deleteConfirm": "ลบ \"{title}\" ออกจากแดชบอร์ด? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
       "deleteAria": "ลบวิดเจ็ต {title}",
@@ -7266,6 +7272,19 @@
         "vendor-by-business-type": "Vendor แยกตามประเภทธุรกิจ"
       },
       "document": {
+        "grn-count__vs-period": "จำนวนใบรับสินค้า — เทียบกับงวดอื่น",
+        "grn-created-series__by-period": "ใบรับสินค้ารายวัน — เทียบงวด",
+        "grn-by-status__by-period": "ใบรับสินค้าแยกตามสถานะ — เทียบงวด",
+        "sr-count__vs-period": "จำนวนใบเบิกสินค้า — เทียบกับงวดอื่น",
+        "sr-created-series__by-period": "ใบเบิกสินค้ารายวัน — เทียบงวด",
+        "sr-by-status__by-period": "ใบเบิกสินค้าแยกตามสถานะ — เทียบงวด",
+        "po-count__vs-period": "จำนวนใบสั่งซื้อ — เทียบกับงวดอื่น",
+        "po-created-series__by-period": "ใบสั่งซื้อรายวัน — เทียบงวด",
+        "po-by-status__by-period": "ใบสั่งซื้อแยกตามสถานะ — เทียบงวด",
+        "pr-count__vs-period": "จำนวนใบขอซื้อ — เทียบกับงวดอื่น",
+        "pr-created-series__by-period": "ใบขอซื้อรายวัน — เทียบงวด",
+        "pr-by-status__by-period": "ใบขอซื้อแยกตามสถานะ — เทียบงวด",
+        "sr-top-products": "สินค้าที่ขอเบิกมากสุด",
         "grn-by-status": "ใบรับสินค้าแยกตามสถานะ",
         "grn-count": "จำนวนใบรับสินค้า",
         "grn-created-series": "ใบรับสินค้าที่สร้าง (ซีรีส์)",
@@ -7296,12 +7315,19 @@
         "total-active": "อุปกรณ์ที่ใช้งาน"
       },
       "inventory": {
+        "movement-by-location-period": "ยอดเคลื่อนไหวตามคลัง — เทียบงวด",
+        "issue-by-priority__by-period": "ปัญหาแยกตามความสำคัญ — เทียบงวด",
+        "stock-out-by-status__by-period": "Stock Out แยกตามสถานะ — เทียบงวด",
+        "stock-in-by-status__by-period": "Stock In แยกตามสถานะ — เทียบงวด",
+        "spot-check-by-status__by-period": "Spot Check แยกตามสถานะ — เทียบงวด",
+        "physical-count-by-status__by-period": "การตรวจนับแยกตามสถานะ — เทียบงวด",
+        "slow-moving": "สินค้าเคลื่อนไหวช้า",
         "below-par-by-location": "สินค้าต่ำกว่า par แยกตามสถานที่",
         "below-par-count": "สินค้าที่ต่ำกว่า par",
         "below-par-items": "รายการที่ต้องเติมสต๊อก",
         "issue-by-priority": "ปัญหาแยกตามความสำคัญ",
         "issue-open": "ปัญหาที่ยังเปิดอยู่",
-        "low-stock-count": "สินค้าใกล้หมด",
+        "low-stock-count": "สินค้าที่ตั้งจุดสั่งซื้อ",
         "most-active-products": "สินค้าที่เคลื่อนไหวมากที่สุด (สต๊อก)",
         "physical-count-by-status": "ตรวจนับสินค้าแยกตามสถานะ",
         "physical-count-pending": "ตรวจนับสินค้าที่ค้างอยู่",
@@ -7326,9 +7352,13 @@
         "active-count": "รายการราคาที่ใช้งาน",
         "by-status": "รายการราคาแยกตามสถานะ",
         "by-vendor-top": "รายการราคาแยกตาม vendor (Top N)",
-        "expiring-soon": "รายการราคาใกล้หมดอายุ (≤30 วัน)"
+        "expiring-soon": "รายการราคาใกล้หมดอายุ"
       },
       "procurement": {
+        "pr-by-department__by-period": "ใบขอซื้อแยกตามแผนก — เทียบงวด",
+        "pr-by-status__by-period": "ใบขอซื้อแยกตามสถานะ — เทียบงวด",
+        "top-purchasing-vendors": "ผู้ขายที่สั่งซื้อมากสุด",
+        "top-purchased-products": "สินค้าที่สั่งซื้อมากสุด",
         "po-by-vendor-top": "Vendor ที่มียอดสั่งซื้อสูงสุด",
         "pr-by-department": "ใบขอซื้อแยกตามแผนก",
         "pr-by-status": "ใบขอซื้อแยกตามสถานะ",
@@ -7339,7 +7369,7 @@
         "top-products-by-quantity": "สินค้าที่ขอซื้อมากที่สุด"
       },
       "product": {
-        "added-7d": "สินค้าที่เพิ่ม (7 วัน)",
+        "added-7d": "สินค้าที่เพิ่มใหม่",
         "added-daily": "สินค้าที่เพิ่ม (รายวัน)",
         "by-category-top": "สินค้าแยกตามหมวดหมู่ (Top N)",
         "by-item-group-top": "สินค้าแยกตามกลุ่มสินค้า (Top N)",
@@ -7353,7 +7383,7 @@
         "without-vendor": "สินค้าที่ไม่มี vendor"
       },
       "recipe": {
-        "added-7d": "สูตรอาหารที่เพิ่ม (7 วัน)",
+        "added-7d": "สูตรอาหารที่เพิ่มใหม่",
         "added-daily": "สูตรอาหารที่เพิ่ม (รายวัน)",
         "average-ingredients": "วัตถุดิบเฉลี่ยต่อสูตร",
         "by-category-top": "สูตรอาหารแยกตามหมวดหมู่ (Top N)",
@@ -7365,16 +7395,16 @@
       "rfp": {
         "active": "RFP ที่เปิดอยู่",
         "issued-daily": "RFP ที่ออก (รายวัน)",
-        "upcoming-7d": "RFP ที่จะเปิด (7 วัน)"
+        "upcoming-7d": "RFP ที่จะเปิด"
       },
       "vendor": {
-        "added-7d": "Vendor ที่เพิ่ม (7 วัน)",
+        "added-7d": "Vendor ที่เพิ่มใหม่",
         "total-active": "Vendor ที่ใช้งาน",
         "without-products": "Vendor ที่ไม่มีสินค้า"
       },
       "workflow": {
         "cn-pending-approval": "ใบลดหนี้รออนุมัติ",
-        "my-pending-pr": "ใบขอซื้อที่รอฉันดำเนินการ"
+        "my-pending-pr": "ใบขอซื้อของฉันที่รออนุมัติ"
       }
     }
   },

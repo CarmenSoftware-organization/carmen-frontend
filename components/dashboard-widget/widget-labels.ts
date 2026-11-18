@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useTranslations } from "use-intl";
+import { useBaseCurrencyCode } from "@/hooks/use-base-currency-code";
 
 /**
  * ป้ายของการ์ด widget ที่ไม่ผูกกับชนิดกราฟ — หัวคอลัมน์ ชื่อแกน หน่วย ชื่อหมวด และทศนิยม
@@ -11,7 +12,17 @@ import { useTranslations } from "use-intl";
  * = พฤติกรรมเดิม
  */
 
-export const CURRENCY_UNIT = "฿";
+/**
+ * หน่วยเงินของ backend — เป็น token ไม่ใช่สัญลักษณ์: ยอดทุกตัวเป็น **สกุลหลักของ BU**
+ * (micro-data `UnitCurrency`) จะเป็นสกุลไหนอยู่ที่ BU จึงพิมพ์รหัสสกุลของ BU เอง ห้ามล็อก ฿
+ * `"฿"` = backend รุ่นก่อนเปลี่ยนเป็น token — รับไว้ให้ deploy หน้าบ้านก่อนได้
+ */
+export const CURRENCY_UNIT = "currency";
+const LEGACY_CURRENCY_UNIT = "฿";
+
+export function isCurrencyUnit(unit: string | undefined): boolean {
+  return unit === CURRENCY_UNIT || unit === LEGACY_CURRENCY_UNIT;
+}
 
 /**
  * token ที่มีคำแปลใน `dashboardWidget.dimension.*` — status / priority เป็นรหัส enum ที่ต้องแปล
@@ -42,17 +53,18 @@ const KNOWN_DIMENSIONS: ReadonlySet<string> = new Set([
   "date",
 ]);
 
-/** หน่วยของ backend → คีย์ i18n ("฿" เป็นคีย์ไม่ได้) */
+/** หน่วยของ backend → คีย์ i18n */
 const UNIT_KEYS: Readonly<Record<string, string>> = {
   items: "items",
-  [CURRENCY_UNIT]: "baht",
+  [CURRENCY_UNIT]: "amount",
+  [LEGACY_CURRENCY_UNIT]: "amount",
   days: "days",
   transactions: "transactions",
   qty: "qty",
   rate: "rate",
 };
 
-/** หน่วยที่มีคำต่อท้ายตัวเลข (เงินใช้ ฿ นำหน้า · ปริมาณ/อัตราไม่ต่อ) */
+/** หน่วยที่มีคำต่อท้ายตัวเลข (เงินต่อรหัสสกุลของ BU — ดู unitSuffix · ปริมาณ/อัตราไม่ต่อ) */
 const SUFFIX_UNITS: ReadonlySet<string> = new Set([
   "items",
   "days",
@@ -67,6 +79,7 @@ const UNIT_DECIMALS: Readonly<Record<string, number>> = {
   items: 0,
   transactions: 0,
   [CURRENCY_UNIT]: 0,
+  [LEGACY_CURRENCY_UNIT]: 0,
   days: 1,
   qty: 2,
   rate: 4,
@@ -94,7 +107,7 @@ export function formatMetric(
     decimals === undefined ? undefined : Math.min(Math.max(decimals, 0), 4);
   const max = fixed ?? UNIT_DECIMALS[unit ?? ""];
   if (max === undefined) return value.toLocaleString();
-  return new Intl.NumberFormat(unit === CURRENCY_UNIT ? "th-TH" : undefined, {
+  return new Intl.NumberFormat(undefined, {
     minimumFractionDigits: fixed ?? 0,
     maximumFractionDigits: max,
   }).format(value);
@@ -108,13 +121,13 @@ interface Translator {
 export interface WidgetLabels {
   /** ชื่อแกน/หัวคอลัมน์ของมิติ — ไม่มี token = หัวกลางเดิม ("รายการ") */
   dimension(token: string | undefined): string;
-  /** หัวคอลัมน์ค่า — "จำนวน", "ยอดเงิน (฿)" · หน่วยที่ไม่รู้จัก = "ค่า (<หน่วย>)" เดิม */
+  /** หัวคอลัมน์ค่า — "จำนวน", "ยอดเงิน (THB)" · หน่วยที่ไม่รู้จัก = "ค่า (<หน่วย>)" เดิม */
   valueHeader(unit: string | undefined): string;
   /** ชื่อหมวดบนแกน/ในตาราง — สถานะ/ความสำคัญแปล · ชื่อจริงคงเดิม · ไม่รู้มิติ = humanize */
   category(dimension: string | undefined, raw: string): string;
-  /** ตัวเลข + หน่วย — "฿1,200" · "13 รายการ" · "28.1 วัน" */
+  /** ตัวเลข + หน่วย — "1,200 THB" · "13 รายการ" · "28.1 วัน" */
   withUnit(value: number, unit: string | undefined, decimals?: number): string;
-  /** คำต่อท้ายตัวเลขบน KPI/เกจ — "" เมื่อไม่ต่อ (เงิน ปริมาณ อัตรา ไม่มีหน่วย) */
+  /** คำต่อท้ายตัวเลขบน KPI/เกจ — เงิน = รหัสสกุลหลักของ BU · "" เมื่อไม่ต่อ (ปริมาณ อัตรา) */
   unitSuffix(unit: string | undefined): string;
 }
 
@@ -123,12 +136,15 @@ export interface WidgetLabels {
  *
  * @param t - translator ของ `dashboardWidget`
  * @param tStatus - translator ของ `status`
+ * @param currencyCode - รหัสสกุลหลักของ BU (เช่น "THB") — ว่าง = ไม่ต่อหน่วยเงิน
  */
 export function makeWidgetLabels(
   t: Translator,
   tStatus: Translator,
+  currencyCode = "",
 ): WidgetLabels {
   const unitSuffix = (unit: string | undefined): string => {
+    if (isCurrencyUnit(unit)) return currencyCode;
     if (!unit || !SUFFIX_UNITS.has(unit)) {
       // หน่วยที่ไม่รู้จักแสดงดิบเหมือนเดิม — ดีกว่าหายไปเฉย ๆ
       return unit && !UNIT_KEYS[unit] ? unit : "";
@@ -142,6 +158,10 @@ export function makeWidgetLabels(
         : t("tableCol.label"),
     valueHeader: (unit) => {
       const key = unit ? UNIT_KEYS[unit] : undefined;
+      if (key === "amount")
+        return currencyCode
+          ? t("unitHeader.amount", { currency: currencyCode })
+          : t("unitHeader.amountPlain");
       if (key) return t(`unitHeader.${key}`);
       return unit ? `${t("tableCol.value")} (${unit})` : t("tableCol.value");
     },
@@ -158,7 +178,6 @@ export function makeWidgetLabels(
     },
     withUnit: (value, unit, decimals) => {
       const n = formatMetric(value, unit, decimals);
-      if (unit === CURRENCY_UNIT) return `${CURRENCY_UNIT}${n}`;
       const suffix = unitSuffix(unit);
       return suffix ? `${n} ${suffix}` : n;
     },
@@ -170,8 +189,10 @@ export function makeWidgetLabels(
 export function useWidgetLabels(): WidgetLabels {
   const t = useTranslations("dashboardWidget");
   const tStatus = useTranslations("status");
+  const currencyCode = useBaseCurrencyCode();
   return useMemo(
-    () => makeWidgetLabels(t as Translator, tStatus as Translator),
-    [t, tStatus],
+    () =>
+      makeWidgetLabels(t as Translator, tStatus as Translator, currencyCode),
+    [t, tStatus, currencyCode],
   );
 }
