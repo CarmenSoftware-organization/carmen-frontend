@@ -141,7 +141,7 @@ export function GrnFormHeader({
         <SettingField
           label={tfl("currency")}
           value={values.currency_name}
-          example={rateText}
+          trailing={rateText}
         />
       ) : (
         <Field className={viewFieldGap}>

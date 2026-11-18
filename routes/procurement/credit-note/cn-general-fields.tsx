@@ -273,7 +273,7 @@ export function CnGeneralFields({
         <SettingField
           label={tfl("currency")}
           value={currencyText ?? currencyCode}
-          example={rateText}
+          trailing={rateText}
         />
       ) : (
         <Field>
