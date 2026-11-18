@@ -82,7 +82,9 @@ export function SummaryFooterBar({
         .join(" ")}
     >
       {hasRecord && <SummaryBar items={items} />}
-      {children}
+      {/* ms-auto: แถบแคบจนปุ่มตกบรรทัดใหม่ (มือถือ/tablet) ปุ่มยังชิดขวา — justify-between
+          ของแถวไม่มีผลกับลูกที่ขึ้นบรรทัดเองคนเดียว มันจะไปเริ่มที่ซ้าย */}
+      {children && <div className="ms-auto">{children}</div>}
     </div>
   );
 }

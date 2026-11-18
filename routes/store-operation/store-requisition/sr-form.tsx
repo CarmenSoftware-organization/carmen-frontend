@@ -238,6 +238,26 @@ export function StoreRequisitionForm({
       width="wide"
       header={
         <SrHeader
+          ribbon={
+            <SrRequestDetails
+              form={form}
+              readOnly={isView}
+              disabled={actions.isPending}
+              onToLocInfoChange={setToLocInfo}
+              savedFromLocation={storeRequisition?.from_location}
+              savedToLocation={storeRequisition?.to_location}
+              workflowName={
+                storeRequisition?.workflow?.name ??
+                storeRequisition?.workflow_name
+              }
+              role={storeRequisition?.role ?? STAGE_ROLE.CREATE}
+              isDraft={
+                !storeRequisition?.doc_status ||
+                storeRequisition.doc_status === "draft"
+              }
+              isAdd={isAdd}
+            />
+          }
           storeRequisition={storeRequisition}
           srType={derivedSrType}
           mode={mode}
@@ -285,28 +305,6 @@ export function StoreRequisitionForm({
         onSubmit={draftSaveHandler(form, actions.onSubmit)}
         className="space-y-4"
       >
-        <SrRequestDetails
-          form={form}
-          readOnly={isView}
-          disabled={actions.isPending}
-          onToLocInfoChange={setToLocInfo}
-          savedFromLocation={storeRequisition?.from_location}
-          savedToLocation={storeRequisition?.to_location}
-          workflowName={
-            storeRequisition?.workflow?.name ?? storeRequisition?.workflow_name
-          }
-          role={storeRequisition?.role ?? STAGE_ROLE.CREATE}
-          isDraft={
-            !storeRequisition?.doc_status ||
-            storeRequisition.doc_status === "draft"
-          }
-          isAdd={isAdd}
-        />
-
-        {/* เส้นคั่นเต็มความกว้าง แยกข้อมูลหัวใบออกจากตารางรายการ (เหมือน PO/GRN)
-            สองก้อนนี้อ่านคนละจังหวะ ก้อนบนอ่านทีเดียวจบ ก้อนล่างกวาดตาทีละแถว */}
-        <hr className="border-border" />
-
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList variant="line">
             <TabsTrigger value="items">{t("tabItems")}</TabsTrigger>

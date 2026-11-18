@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
 import { useState } from "react";
 import { useTranslations } from "use-intl";
 import { Building2, Lock, Mail } from "lucide-react";
@@ -42,6 +44,8 @@ interface PoHeaderProps {
   readonly onShowDelete: () => void;
   readonly hasHistory?: boolean;
   readonly onShowHistory?: () => void;
+  /** ช่องข้อมูลหัวใบ — อยู่ในการ์ดเดียวกับหัวเอกสาร (ส่งต่อ FormToolbar.ribbon) */
+  readonly ribbon?: ReactNode;
 }
 
 export function PoHeader({
@@ -63,6 +67,7 @@ export function PoHeader({
   onShowDelete,
   hasHistory,
   onShowHistory,
+  ribbon,
 }: PoHeaderProps) {
   const t = useTranslations("procurement.purchaseOrder");
   const tc = useTranslations("common");
@@ -87,7 +92,8 @@ export function PoHeader({
   // แยกเป็นคนละกลุ่มกับเลขที่ใบด้วยเส้นคั่น + ระยะห่าง — เลขที่ใบคือตัวตนของ
   // เอกสาร ส่วนสถานะ/ประเภท/รุ่นคือ "ตอนนี้มันอยู่ตรงไหน" คนละคำถามกัน
   const badges = (
-    <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3">
+    // หัวแคบ (มือถือ) กลุ่มนี้มักตกไปบรรทัดใต้เลขที่ใบ เส้นคั่นจะค้างหัวบรรทัด จึงเอาออก
+    <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3 @max-md/doc-header:ms-0 @max-md/doc-header:border-s-0 @max-md/doc-header:ps-0">
       {poStatusConfig && purchaseOrder && (
         <StatusChip
           status={purchaseOrder.po_status}
@@ -164,83 +170,93 @@ export function PoHeader({
 
   return (
     <>
-      <FormToolbar
-        mode={mode}
-        formId="po-form"
-        isPending={isPending}
-        title={purchaseOrder?.po_no ?? t("entity")}
-        subtitle={
-          docMeta || workflowStep ? (
-            <span className="flex flex-col gap-1">
-              {docMeta}
-              {workflowStep}
-            </span>
-          ) : undefined
-        }
-        badges={badges}
-        onBack={onBack}
-        onCancel={onCancel}
-        onEdit={purchaseOrder && canEdit ? onEnterEdit : undefined}
-        // view + edit เหมือนเดิม — PO ลบได้ทั้งสองโหมดตราบที่ยังไม่ถึงสถานะปลายทาง
-        onDelete={
-          purchaseOrder && canEdit && !terminalStatus ? onShowDelete : undefined
-        }
-        deleteIsPending={deletePoIsPending}
-        // เดิมป้าย Save ทุกโหมด — ไม่ให้โหมด add กลายเป็น "Create"
-        submitLabel={tc("save")}
-        pendingLabel={tf("saving")}
-      >
-        {/* Close/Send email ต่อท้าย Delete (เดิม Close อยู่หน้าสุด — spec §3 ยอมรับ)
+      <div className={DOC_HEADER_CARD}>
+        <FormToolbar
+          inlineBack
+          ribbon={
+            ribbon ? (
+              <div className="ml-4 min-w-0 flex-1">{ribbon}</div>
+            ) : undefined
+          }
+          mode={mode}
+          formId="po-form"
+          isPending={isPending}
+          title={purchaseOrder?.po_no ?? t("entity")}
+          subtitle={
+            docMeta || workflowStep ? (
+              <span className="flex flex-col gap-1">
+                {docMeta}
+                {workflowStep}
+              </span>
+            ) : undefined
+          }
+          badges={badges}
+          onBack={onBack}
+          onCancel={onCancel}
+          onEdit={purchaseOrder && canEdit ? onEnterEdit : undefined}
+          // view + edit เหมือนเดิม — PO ลบได้ทั้งสองโหมดตราบที่ยังไม่ถึงสถานะปลายทาง
+          onDelete={
+            purchaseOrder && canEdit && !terminalStatus
+              ? onShowDelete
+              : undefined
+          }
+          deleteIsPending={deletePoIsPending}
+          // เดิมป้าย Save ทุกโหมด — ไม่ให้โหมด add กลายเป็น "Create"
+          submitLabel={tc("save")}
+          pendingLabel={tf("saving")}
+        >
+          {/* Close/Send email ต่อท้าย Delete (เดิม Close อยู่หน้าสุด — spec §3 ยอมรับ)
             comment / activity / print อยู่ใน DocActions — ไม่ส่ง activity ให้ toolbar ซ้ำ */}
-        {purchaseOrder && (
-          <>
-            {canClose &&
-              (purchaseOrder.po_status === PO_STATUS.APPROVED ||
-                purchaseOrder.po_status === PO_STATUS.SENT_OR_PRINT) && (
+          {purchaseOrder && (
+            <>
+              {canClose &&
+                (purchaseOrder.po_status === PO_STATUS.APPROVED ||
+                  purchaseOrder.po_status === PO_STATUS.SENT_OR_PRINT) && (
+                  <Button
+                    title={tc("close")}
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isPending}
+                    onClick={onShowClose}
+                  >
+                    <Lock aria-hidden="true" />
+                    <ToolbarLabel>{tc("close")}</ToolbarLabel>
+                  </Button>
+                )}
+              {canSendEmail && (
                 <Button
-                  title={tc("close")}
+                  title={t("sendEmail.button")}
                   type="button"
                   size="sm"
                   variant="outline"
                   disabled={isPending}
-                  onClick={onShowClose}
+                  onClick={() => setShowSendEmail(true)}
                 >
-                  <Lock aria-hidden="true" />
-                  <ToolbarLabel>{tc("close")}</ToolbarLabel>
+                  <Mail aria-hidden="true" />
+                  <ToolbarLabel>{t("sendEmail.button")}</ToolbarLabel>
                 </Button>
               )}
-            {canSendEmail && (
-              <Button
-                title={t("sendEmail.button")}
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={isPending}
-                onClick={() => setShowSendEmail(true)}
-              >
-                <Mail aria-hidden="true" />
-                <ToolbarLabel>{t("sendEmail.button")}</ToolbarLabel>
-              </Button>
-            )}
-            <DocActions
-              onComment={onShowComment}
-              commentCount={commentCount}
-              activity={{ id: purchaseOrder.id, label: purchaseOrder.po_no }}
-              print={
-                isView
-                  ? {
-                      documentType: "PO",
-                      documentId: purchaseOrder.id,
-                      filters: purchaseOrder.po_no
-                        ? { DocumentNo: purchaseOrder.po_no }
-                        : undefined,
-                    }
-                  : undefined
-              }
-            />
-          </>
-        )}
-      </FormToolbar>
+              <DocActions
+                onComment={onShowComment}
+                commentCount={commentCount}
+                activity={{ id: purchaseOrder.id, label: purchaseOrder.po_no }}
+                print={
+                  isView
+                    ? {
+                        documentType: "PO",
+                        documentId: purchaseOrder.id,
+                        filters: purchaseOrder.po_no
+                          ? { DocumentNo: purchaseOrder.po_no }
+                          : undefined,
+                      }
+                    : undefined
+                }
+              />
+            </>
+          )}
+        </FormToolbar>
+      </div>
       {/* mount เฉพาะตอน dialog เปิดจริง (ไม่ใช่แค่เช็คสถานะ PO) — ใบที่ส่งได้แล้ว
           (sent/partial/closed/completed) คือใบส่วนใหญ่ที่คนเปิดดู เช็คแค่ canSendEmail
           จะทำให้ useEmailProfiles/useVendorById ยิงทุกครั้งที่เปิดหน้า PO เหล่านี้

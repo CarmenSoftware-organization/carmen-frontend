@@ -63,6 +63,8 @@ interface FormToolbarProps {
   readonly ribbon?: ReactNode;
   /** ส่งต่อ `DocFormHeader.titleClassName` */
   readonly titleClassName?: string;
+  /** ส่งต่อ `DocFormHeader.inlineBack` — หัวที่อยู่ในการ์ด */
+  readonly inlineBack?: boolean;
 }
 
 /**
@@ -125,6 +127,7 @@ export function FormToolbar({
   onComment,
   ribbon,
   titleClassName,
+  inlineBack,
 }: FormToolbarProps) {
   const tc = useTranslations("common");
   const tf = useTranslations("form");
@@ -321,6 +324,7 @@ export function FormToolbar({
       ribbon={ribbon}
       flush={flush}
       titleClassName={titleClassName}
+      inlineBack={inlineBack}
     />
   );
 }

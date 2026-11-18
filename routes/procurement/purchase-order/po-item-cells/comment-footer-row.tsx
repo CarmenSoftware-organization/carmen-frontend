@@ -58,7 +58,7 @@ export const CommentFooterRow = memo(function CommentFooterRow({
           id={`items-${index}-comment`}
           placeholder={placeholder}
           maxLength={256}
-          className="w-96 text-xs"
+          className="w-96 max-w-full min-w-0 text-xs"
           disabled={isDisabled}
           {...form.register(`items.${index}.comment`)}
         />

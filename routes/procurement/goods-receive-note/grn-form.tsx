@@ -209,6 +209,18 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
       width="wide"
       header={
         <GrnHeader
+          ribbon={
+            <GrnFormHeader
+              form={form}
+              disabled={isDisabled || isView}
+              isView={isView}
+              fromWizard={fromWizard}
+              lockIdentity={
+                goodsReceiveNote?.doc_status === "saved" || isCommitted
+              }
+              lockCommercial={isCommitted || hasStockLock}
+            />
+          }
           goodsReceiveNote={goodsReceiveNote}
           mode={mode}
           isPending={actions.isPending}
@@ -253,19 +265,6 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
         onSubmit={draftSaveHandler(form, actions.onSubmit)}
         className="space-y-3"
       >
-        <GrnFormHeader
-          form={form}
-          disabled={isDisabled || isView}
-          isView={isView}
-          fromWizard={fromWizard}
-          lockIdentity={goodsReceiveNote?.doc_status === "saved" || isCommitted}
-          lockCommercial={isCommitted || hasStockLock}
-        />
-
-        {/* เส้นคั่นเต็มความกว้าง แยกข้อมูลหัวใบออกจากตารางรายการ (เหมือน PO)
-            สองก้อนนี้อ่านคนละจังหวะ ก้อนบนอ่านทีเดียวจบ ก้อนล่างกวาดตาทีละแถว */}
-        <hr className="border-border" />
-
         <Tabs defaultValue="general">
           <TabsList variant="line">
             <TabsTrigger value="general">{t("tabItems")}</TabsTrigger>

@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
  *   ใน `FieldGrid` เดียวกับหน้าจริง · `fields` ใช้ความหมายเดิม (2 = `@md:col-span-2`)
  *   · PR: `fields={[1, 2]}` ไม่มีแท็บ มีแต่ปุ่ม Filter ชิดขวา (`toolbar`)
  *
+ * - หัวเอกสาร + ช่องหัวใบอยู่ในการ์ดมีพื้น (`DOC_HEADER_CARD`) ทุกเอกสาร ไม่มีเส้นคั่นใต้หัว
+ *
  * แก้ช่องบนหัวเอกสารไหน ให้แก้ `fields` ที่จุดเรียกของเอกสารนั้นด้วย
  */
 export function DocPageSkeleton({
@@ -28,62 +30,51 @@ export function DocPageSkeleton({
   readonly tabs?: boolean;
   readonly toolbar?: boolean;
 }) {
+  const fieldsSkeleton =
+    ribbon === "text" ? (
+      <FieldGrid>
+        {fields.map((span, i) => (
+          <div key={i} className={cn(span === 2 && "@md:col-span-2")}>
+            <TextFieldSkeleton />
+          </div>
+        ))}
+      </FieldGrid>
+    ) : (
+      // track เดียวกับ grid ช่องหัวใบของหน้าจริง (sm:/lg: ตามของจริง)
+      <div className="grid grid-cols-1 gap-x-2 gap-y-4 sm:grid-cols-2 lg:grid-cols-6">
+        {fields.map((span, i) => (
+          <div
+            key={i}
+            className={cn("space-y-1.5", span === 2 && "lg:col-span-2")}
+          >
+            <Skeleton className="h-3.5 w-20" />
+            <Skeleton className="h-8 w-full" />
+          </div>
+        ))}
+      </div>
+    );
   return (
     <FormPageShell
       width="wide"
-      header={<DocHeaderSkeleton />}
+      header={
+        <div className={DOC_HEADER_CARD}>
+          <DocHeaderSkeleton />
+          <div className="pt-4">{fieldsSkeleton}</div>
+        </div>
+      }
       footer={<DocFooterSkeleton />}
     >
       <div className="space-y-4">
-        {ribbon === "text" ? (
-          <>
-            <FieldGrid>
-              {fields.map((span, i) => (
-                <div key={i} className={cn(span === 2 && "@md:col-span-2")}>
-                  <TextFieldSkeleton />
-                </div>
-              ))}
-            </FieldGrid>
-            <Skeleton className="h-px w-full" />
-            {tabs && (
-              <div className="flex h-9 items-center gap-4">
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-6 w-20" />
-              </div>
-            )}
-            {toolbar && (
-              <div className="flex justify-end">
-                <Skeleton className="h-8 w-20 rounded-md" />
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            {/* track เดียวกับ grid ช่องหัวใบของหน้าจริง (sm:/lg: ตามของจริง) */}
-            <div className="grid grid-cols-1 gap-x-2 gap-y-4 sm:grid-cols-2 lg:grid-cols-6">
-              {fields.map((span, i) => (
-                <div
-                  key={i}
-                  className={cn("space-y-1.5", span === 2 && "lg:col-span-2")}
-                >
-                  <Skeleton className="h-3.5 w-20" />
-                  <Skeleton className="h-8 w-full" />
-                </div>
-              ))}
-            </div>
-            <Skeleton className="h-px w-full" />
-            {tabs && (
-              <div className="flex h-9 items-center gap-4">
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-6 w-20" />
-              </div>
-            )}
-            {toolbar && (
-              <div className="flex justify-end">
-                <Skeleton className="h-8 w-24 rounded-md" />
-              </div>
-            )}
-          </>
+        {tabs && (
+          <div className="flex h-9 items-center gap-4">
+            <Skeleton className="h-6 w-20" />
+            <Skeleton className="h-6 w-20" />
+          </div>
+        )}
+        {toolbar && (
+          <div className="flex justify-end">
+            <Skeleton className="h-8 w-24 rounded-md" />
+          </div>
         )}
         <div className="space-y-2 rounded-lg border p-3">
           <Skeleton className="h-6 w-full" />
@@ -95,6 +86,12 @@ export function DocPageSkeleton({
     </FormPageShell>
   );
 }
+
+/**
+ * การ์ดหัวเอกสาร (PR/PO/GRN/CN/SR) — หน้าจริงกับโครงตอนโหลดใช้ค่านี้ร่วมกัน · หน้าจริงต้องส่ง
+ * `inlineBack` ให้ FormToolbar ปุ่มย้อนกลับจึงอยู่ในแถวชื่อ ไม่ลอยทับขอบการ์ด
+ */
+export const DOC_HEADER_CARD = "bg-card border-border/60 rounded-lg border p-3";
 
 /** ป้ายจาง + ค่า ทรงเดียวกับ `SettingField` */
 function TextFieldSkeleton() {
