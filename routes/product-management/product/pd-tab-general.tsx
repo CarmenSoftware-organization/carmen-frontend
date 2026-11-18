@@ -47,6 +47,8 @@ import { usePdInfoColumns } from "./use-pd-info-columns";
 interface PdTabGeneralProps {
   readonly form: ProductFormInstance;
   readonly isDisabled: boolean;
+  /** โหมดดูจริง (ไม่รวมตอนกำลังบันทึก) — ใช้ตัดของที่มีประโยชน์เฉพาะตอนแก้ ไม่ให้กะพริบตอนกด Save */
+  readonly isView?: boolean;
   readonly product?: ProductDetail;
   readonly onGroupChange?: (
     categoryName: string,
@@ -59,6 +61,7 @@ interface PdTabGeneralProps {
 function PdTabGeneral({
   form,
   isDisabled,
+  isView = false,
   product,
   onGroupChange,
   pendingImages,
@@ -193,7 +196,7 @@ function PdTabGeneral({
       <FieldGrid>
         <ToggleCell
           title={tfl("status")}
-          desc={t("statusToggleDesc")}
+          desc={isView ? undefined : t("statusToggleDesc")}
           isDisabled={isDisabled}
           on={v.product_status_type === "active"}
           onLabel={ts("active")}
@@ -216,7 +219,7 @@ function PdTabGeneral({
         </ToggleCell>
         <ToggleCell
           title={t("usedInRecipe")}
-          desc={t("usedInRecipeShort")}
+          desc={isView ? undefined : t("usedInRecipeShort")}
           isDisabled={isDisabled}
           on={!!v.is_used_in_recipe}
           onLabel={tc("yes")}
@@ -237,7 +240,7 @@ function PdTabGeneral({
         </ToggleCell>
         <ToggleCell
           title={t("soldDirectly")}
-          desc={t("soldDirectlyShort")}
+          desc={isView ? undefined : t("soldDirectlyShort")}
           isDisabled={isDisabled}
           on={!!v.is_sold_directly}
           onLabel={tc("yes")}
@@ -276,10 +279,11 @@ function PdTabGeneral({
         <div className="@container">
           <div className="flex flex-col gap-4 @2xl:flex-row @2xl:gap-5">
             {product && (
-              <div className="w-40 shrink-0 self-start">
+              <div className="w-40 shrink-0 self-start empty:hidden">
                 <ProductImages
                   productId={product.id}
                   readOnly={isDisabled}
+                  hideWhenEmpty={isView}
                   pendingFiles={pendingImages}
                   onPendingFilesChange={onPendingImagesChange}
                 />
@@ -578,7 +582,8 @@ function PdTabGeneral({
       {/* Attributes — ตารางแก้ไขมีกรอบของตัวเอง (frameless) · โหมดดู/ว่าง อยู่ในการ์ด */}
       <CompactSection
         title={t("sectionAttributes")}
-        description={t("sectionAttributesDesc")}
+        // คำชวนกรอก — มีประโยชน์เฉพาะตอนแก้ โหมดดูตัดออก (กฎข้อ 9)
+        description={isView ? undefined : t("sectionAttributesDesc")}
         count={infoFields.length}
         frameless={attributesEditing}
         action={
@@ -676,7 +681,8 @@ function ToggleCell({
   children,
 }: Readonly<{
   title: string;
-  desc: string;
+  /** ไม่ส่ง = ไม่มีบรรทัดคำอธิบาย (โหมดดู) */
+  desc?: string;
   isDisabled: boolean;
   /** ค่าปัจจุบัน + ข้อความของสองสถานะ — ใช้แสดงป้ายในโหมดดู */
   on: boolean;
@@ -707,7 +713,10 @@ function ToggleCell({
           children
         )}
       </div>
-      <div className="text-muted-foreground text-micro mt-1">{desc}</div>
+      {/* โหมดดูป้าย Yes/No อ่านเข้าใจอยู่แล้ว คำอธิบายช่วยตอนตัดสินใจกดสวิตช์เท่านั้น — ผู้เรียกไม่ส่ง desc */}
+      {desc && (
+        <div className="text-muted-foreground text-micro mt-1">{desc}</div>
+      )}
     </div>
   );
 }

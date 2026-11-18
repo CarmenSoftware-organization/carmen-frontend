@@ -476,6 +476,7 @@ export function ProductForm({ product }: ProductFormProps) {
             <PdTabGeneral
               form={form}
               isDisabled={isDisabled}
+              isView={f.isView}
               product={product}
               pendingImages={pendingImages}
               onPendingImagesChange={setPendingImages}
