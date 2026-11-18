@@ -253,11 +253,13 @@ export function useGrnFormActions({
       // doc_version ไม่ได้อยู่ตรงนี้ — สาขา PATCH เซ็ตทับด้วยเลขสดข้างล่างอยู่แล้ว
       // ส่วนใบใหม่ (create) ไม่มีเวอร์ชันให้ส่ง วางไว้ตรงนี้มีแต่จะทำให้คนอ่านคิดว่า
       // ค่าในฟอร์มคือค่าที่ถูกส่งจริง
-      note: values.note || undefined,
+      // ข้อความอิสระส่ง "" ได้ — `|| undefined` ทำให้ค่าว่างถูกกรองทิ้งข้างล่าง ผู้ใช้ลบคำอธิบาย
+      // ออกจนว่างแล้วกด Save ค่าเดิมยังอยู่ (ล้างไม่ได้) · PO ส่ง "" ตรง ๆ แล้วหลังบ้านรับได้
+      note: values.note ?? "",
       grn_date: values.grn_date || undefined,
       invoice_no: values.invoice_no || undefined,
       invoice_date: values.invoice_date || undefined,
-      description: values.description || undefined,
+      description: values.description ?? "",
       doc_status: values.doc_status ?? "draft",
       doc_type: values.doc_type,
       post_type: values.post_type,
