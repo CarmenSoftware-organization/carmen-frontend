@@ -316,7 +316,13 @@ function PdTabUnitConversion({
             unitDecimalsMap.get(
               form.getValues(`${name}.${row.index}.to_unit_id`) ?? "",
             ) ?? DEFAULT_QTY_DECIMALS;
-          const registered = form.register(`${name}.${row.index}.to_unit_qty`);
+          // เก็บเป็นตัวเลข ไม่ใช่ข้อความจาก input — ค่าเดิมจากเซิร์ฟเวอร์เป็น number ถ้าเก็บ "1"
+          // RHF เทียบกับ 1 ไม่เท่ากัน แก้แล้วคืนค่าเดิม Save ยังเปิดค้าง (isDirty ไม่กลับเป็น false)
+          // ไม่ใช้ valueAsNumber: ช่องว่างได้ NaN แล้ว zod ขึ้นข้อความดิบ "Expected number" แทน
+          // ข้อความแปลของ min(1) — ช่องว่างจึงเป็น 0 เหมือนที่ z.coerce ทำกับ "" อยู่เดิม
+          const registered = form.register(`${name}.${row.index}.to_unit_qty`, {
+            setValueAs: (v: unknown) => (v === "" || v == null ? 0 : Number(v)),
+          });
           return (
             <FieldInput
               type="number"
