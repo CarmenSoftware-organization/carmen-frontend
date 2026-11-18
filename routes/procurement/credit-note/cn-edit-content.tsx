@@ -10,7 +10,11 @@ export function CnEditContent({ id }: { id: string }) {
 
   if (isLoading)
     return (
-      <DocPageSkeleton fields={[2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2]} toolbar />
+      <DocPageSkeleton
+        ribbon="text"
+        fields={[2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2]}
+        toolbar
+      />
     );
   if (error || !creditNote)
     return (
