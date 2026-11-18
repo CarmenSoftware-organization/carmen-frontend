@@ -8,6 +8,7 @@ interface CnCardListProps {
   readonly isLoading?: boolean;
   readonly onEdit: (item: CreditNote) => void;
   readonly onDelete: (item: CreditNote) => void;
+  readonly compact?: boolean;
 }
 
 export default function CnCardList({
@@ -15,12 +16,13 @@ export default function CnCardList({
   isLoading,
   onEdit,
   onDelete,
+  compact = false,
 }: CnCardListProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <ListCardSkeleton key={`skeleton-${i}`} />
+          <ListCardSkeleton key={`skeleton-${i}`} rows={compact ? 3 : 5} />
         ))}
       </div>
     );
@@ -33,7 +35,13 @@ export default function CnCardList({
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {items.map((item) => (
-        <CnCard key={item.id} item={item} onEdit={onEdit} onDelete={onDelete} />
+        <CnCard
+          key={item.id}
+          item={item}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          compact={compact}
+        />
       ))}
     </div>
   );

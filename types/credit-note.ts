@@ -69,11 +69,10 @@ export enum CN_STATUS {
  * แถวของ **list** `GET /{bu}/credit-notes` เท่านั้น — ไม่ใช่รูปร่างของใบเดี่ยว
  * (นั่นคือ `CreditNoteDetail` ซึ่งมี field คนละชุด)
  *
- * list endpoint **ไม่ส่ง** `invoice_no` / `invoice_date` / `tax_invoice_*` /
- * `credit_note_detail` กลับมา (ยืนยันจาก response จริง) การเคยประกาศไว้ทำให้ tsc
- * ปล่อยผ่านโค้ดที่อ่านค่าเหล่านี้แล้วได้ `undefined` เงียบ ๆ — filter "Invoice No."
- * ของหน้า list เคยว่างเปล่าตลอดเพราะเหตุนี้ จะเพิ่มกลับได้ต่อเมื่อยิง API จริง
- * แล้วเห็นฟิลด์นั้นใน response
+ * list endpoint **ไม่ส่ง** `tax_invoice_*` / `credit_note_detail` กลับมา (ยืนยันจาก response
+ * จริง) การเคยประกาศไว้ทำให้ tsc ปล่อยผ่านโค้ดที่อ่านค่าเหล่านี้แล้วได้ `undefined` เงียบ ๆ
+ * `grn_no` / `grn_date` / `invoice_no` / `invoice_date` ส่งมาตั้งแต่ BE เพิ่มเข้า list
+ * (2026-11-18) — BE ที่ยังไม่ deploy จะไม่ส่ง คอลัมน์ในตารางจะว่าง (ไม่พัง)
  */
 export interface CreditNote {
   id: string;
@@ -90,7 +89,9 @@ export interface CreditNote {
   exchange_rate_date?: string | null;
   grn_id: string;
   grn_no?: string | null;
-  grn_date: string;
+  grn_date?: string | null;
+  invoice_no?: string | null;
+  invoice_date?: string | null;
   cn_reason_id: string | null;
   cn_reason_name?: string | null;
   cn_reason_description?: string | null;

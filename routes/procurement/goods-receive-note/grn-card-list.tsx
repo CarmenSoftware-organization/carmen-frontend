@@ -8,6 +8,7 @@ interface GrnCardListProps {
   readonly isLoading?: boolean;
   readonly onEdit: (item: GoodsReceiveNote) => void;
   readonly onDelete: (item: GoodsReceiveNote) => void;
+  readonly compact?: boolean;
 }
 
 export default function GrnCardList({
@@ -15,12 +16,13 @@ export default function GrnCardList({
   isLoading,
   onEdit,
   onDelete,
+  compact = false,
 }: GrnCardListProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <ListCardSkeleton key={`skeleton-${i}`} />
+          <ListCardSkeleton key={`skeleton-${i}`} rows={compact ? 3 : 5} />
         ))}
       </div>
     );
@@ -38,6 +40,7 @@ export default function GrnCardList({
           item={item}
           onEdit={onEdit}
           onDelete={onDelete}
+          compact={compact}
         />
       ))}
     </div>

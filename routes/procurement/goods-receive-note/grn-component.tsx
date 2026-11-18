@@ -330,6 +330,7 @@ export default function GrnComponent() {
               )
             }
             onDelete={setDeleteTarget}
+            compact
           />
           {grid.hasMore && (
             <div ref={grid.sentinelRef} className="flex justify-center py-4">
