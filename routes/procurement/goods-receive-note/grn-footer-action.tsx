@@ -47,15 +47,19 @@ export function GrnFooterAction({
       </Button>
       {/* outline ไม่ย้อมแดง — กติกาเดียวกับปุ่มลบ · สีแดงไปอยู่ที่ปุ่มยืนยัน
           ใน dialog ซึ่งเป็นจุดที่ตัดสินใจจริง */}
+      {/* แถบแคบ (มือถือ — แถบท้ายเป็น @container) ปุ่มรองเหลือไอคอน ให้ยอดรวมกับปุ่ม
+          หลักอยู่บรรทัดเดียวโดยไม่ถูกตัด — แนวเดียวกับกฎปุ่มหัวเอกสาร */}
       <Button
         type="button"
         variant="outline"
         size="sm"
         disabled={isActionPending}
         onClick={() => onVoid?.()}
+        title={tc("void")}
+        aria-label={tc("void")}
       >
         <Ban aria-hidden="true" />
-        {tc("void")}
+        <span className="hidden @sm:inline">{tc("void")}</span>
       </Button>
     </div>
   );

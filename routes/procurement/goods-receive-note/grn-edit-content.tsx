@@ -15,7 +15,11 @@ export function GrnEditContent({ id }: { id: string }) {
 
   if (isLoading)
     return (
-      <DocPageSkeleton ribbon="text" fields={[2, 1, 1, 1, 1, 1, 1, 1, 2]} />
+      <DocPageSkeleton
+        ribbon="text"
+        fields={[2, 1, 1, 1, 1, 1, 1, 1, 2]}
+        footerCollapse
+      />
     );
   if (error || !goodsReceiveNote)
     return (

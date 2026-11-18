@@ -52,6 +52,7 @@ export function GrnSummaryFooter({
   return (
     <SummaryFooterBar
       hasRecord
+      collapseOnNarrow
       items={[
         {
           key: "subtotal",
