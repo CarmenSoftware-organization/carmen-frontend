@@ -32,6 +32,29 @@ const overridden: PaymentWhtRow = {
 };
 
 describe("AP payment field round trips", () => {
+  it.each([
+    ["", false],
+    ["0.00001", false],
+    [".5", false],
+    ["35.12345", false],
+    ["0", true],
+    ["0.000001", true],
+    ["1.123456", true],
+    ["invalid", true],
+  ])(
+    "validates payment exchange rate %s against the FRD precision and minimum",
+    (exchange_rate, invalid) => {
+      expect(
+        validatePaymentForm(
+          { ...initialPaymentForm(null), exchange_rate },
+          "create",
+          [],
+          false,
+        ).has("exchangeRate"),
+      ).toBe(invalid);
+    },
+  );
+
   it("creates WHT from vendor defaults without overwriting manual choices or another vendor", () => {
     const form = { ...initialPaymentForm(null), vendor_id: "vendor" };
     const defaults = {

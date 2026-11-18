@@ -211,8 +211,12 @@ export function PaymentWhtSection({
             <table className="w-full min-w-[44rem] text-left">
               <thead>
                 <tr className="border-b">
-                  <th className={TH}>{ui("whtServiceType")}</th>
-                  <th className={TH}>{ui("whtForm")}</th>
+                  <th className={TH}>
+                    <FieldLabel required>{ui("whtServiceType")}</FieldLabel>
+                  </th>
+                  <th className={TH}>
+                    <FieldLabel required>{ui("whtForm")}</FieldLabel>
+                  </th>
                   <th className={TH}>{t("incomeType")}</th>
                   <th className={`${TH} text-right`}>{t("rate")}</th>
                   <th className={`${TH} text-right`}>{t("base")}</th>

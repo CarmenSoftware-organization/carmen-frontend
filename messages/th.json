@@ -1138,6 +1138,8 @@
           "chequeNo": "เลขที่เช็ค",
           "chequeDate": "วันที่เช็ค",
           "currency": "สกุลเงิน",
+          "currencySelectInvoice": "เลือก Invoice ก่อน ระบบจะกำหนดสกุลเงิน Payment ตาม Invoice ที่เลือกให้อัตโนมัติ",
+          "currencyFromInvoice": "สกุลเงิน Payment ({currency}) กำหนดอัตโนมัติจาก Invoice ที่เลือก และเปลี่ยนจากช่องนี้ไม่ได้",
           "exchangeRate": "อัตราแลกเปลี่ยน",
           "exchangeRateAuto": "อัตโนมัติ (อัตราของระบบ)",
           "description": "คำอธิบาย",
@@ -1195,7 +1197,7 @@
             "staleBlocksSave": "กรุณาคำนวณภาษีหัก ณ ที่จ่ายใหม่ก่อนบันทึก",
             "previewFailed": "คำนวณภาษีหัก ณ ที่จ่ายใหม่ไม่สำเร็จ: {message}",
             "errors": {
-              "amount": "เลือกโปรไฟล์ภาษี และใส่ฐานภาษีกับยอดภาษีที่ไม่ติดลบทุกแถว"
+              "amount": "เลือก WHT Service Type และ WHT Form พร้อมกรอกฐานภาษีและยอด WHT ที่ไม่ติดลบให้ครบทุกแถว"
             }
           },
           "expenses": {
@@ -1265,7 +1267,7 @@
             "balance": "ยอด Invoice ต้องเท่ากับ Payment + WHT - Other Expense และยอด Invoice/Payment ห้ามติดลบ",
             "paymentType": "กรุณาเลือก Payment Type",
             "bank": "เลือกบัญชีธนาคารที่สกุลเงินตรงกับใบแจ้งหนี้",
-            "exchangeRate": "อัตราแลกเปลี่ยนต้องมากกว่า 0",
+            "exchangeRate": "อัตราแลกเปลี่ยนต้องไม่น้อยกว่า 0.00001 และมีทศนิยมไม่เกิน 5 ตำแหน่ง",
             "allocations": "ใส่ยอดอย่างน้อยหนึ่งบรรทัดของใบแจ้งหนี้",
             "overAllocated": "มีบรรทัดที่เกินยอดที่จ่ายได้",
             "netPositive": "ยอดจ่ายสุทธิต้องไม่น้อยกว่า 0"

@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBankAccounts } from "@/hooks/use-accounting-master";
+import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { isoToDateInput } from "@/lib/date-utils";
 import type { ApPaymentMethod } from "@/types/accounts-payable";
 import {
@@ -22,8 +23,9 @@ import {
   type PaymentForm,
 } from "./ap-payment-form";
 import { ApReadValue } from "../shared/ap-read-value";
+import { multiplyDecimal } from "../shared/ap-decimal";
 
-const DECIMAL_RE = /^\d*(\.\d*)?$/;
+const DECIMAL_RE = /^\d*(\.\d{0,5})?$/;
 
 export function PaymentHeader({
   form,
@@ -35,6 +37,7 @@ export function PaymentHeader({
   baseCurrencyCode,
   bankLabel,
   expectedAmount,
+  baseDisbursedAmount,
   section = "header",
   docNo,
   status = "draft",
@@ -50,6 +53,7 @@ export function PaymentHeader({
   /** ชื่อบัญชีธนาคารจาก response (โหมดอ่าน) */
   readonly bankLabel?: string;
   readonly expectedAmount?: string;
+  readonly baseDisbursedAmount?: string;
   readonly section?: "header" | "methods";
   readonly docNo?: string;
   readonly status?: import("@/types/accounts-payable").ApDocStatus;
@@ -74,6 +78,11 @@ export function PaymentHeader({
     bankLabel ||
     banks.find((b) => b.id === form.bank_account_id)?.account_name ||
     "—";
+  const rate = foreign ? form.exchange_rate : "1";
+  const baseAmount =
+    editable && currencyCode && baseCurrencyCode && Number(rate) > 0
+      ? multiplyDecimal(form.payment_amount || expectedAmount || "0", rate)
+      : baseDisbursedAmount;
 
   if (section === "methods")
     return (
@@ -86,6 +95,8 @@ export function PaymentHeader({
         bankDisplay={bankDisplay}
         banks={banks}
         expectedAmount={expectedAmount}
+        baseCurrencyCode={baseCurrencyCode}
+        baseDisbursedAmount={baseAmount}
       />
     );
   return (
@@ -168,8 +179,13 @@ export function PaymentHeader({
           </Field>
         }
       </div>
+      <p className="text-muted-foreground text-xs">
+        {currencyCode
+          ? td("currencyFromInvoice", { currency: currencyCode })
+          : td("currencySelectInvoice")}
+      </p>
       <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Field className="sm:col-span-2">
+        <Field className="sm:col-span-2 lg:col-span-4">
           <FieldLabel>{td("description")}</FieldLabel>
           {editable ? (
             <Input
@@ -206,9 +222,18 @@ function PaymentMethods({
   bankDisplay,
   banks,
   expectedAmount,
+  baseCurrencyCode,
+  baseDisbursedAmount,
 }: Pick<
   Parameters<typeof PaymentHeader>[0],
-  "form" | "onChange" | "editable" | "errors" | "isNew" | "expectedAmount"
+  | "form"
+  | "onChange"
+  | "editable"
+  | "errors"
+  | "isNew"
+  | "expectedAmount"
+  | "baseCurrencyCode"
+  | "baseDisbursedAmount"
 > & {
   readonly bankDisplay: string;
   readonly banks: readonly BankAccountMaster[];
@@ -216,6 +241,7 @@ function PaymentMethods({
   const t = useTranslations("accounting.accountsPayable.payment");
   const td = useTranslations("accounting.accountsPayable.payment.detail");
   const ui = useTranslations("accounting.accountsPayable.ui");
+  const format = useAmountFormatter();
   const err = (key: PaymentErrorKey) =>
     errors.has(key) ? <FieldError>{td(`errors.${key}`)}</FieldError> : null;
   return (
@@ -265,6 +291,13 @@ function PaymentMethods({
           ) : (
             <ApReadValue>{form.payment_amount || "0"}</ApReadValue>
           )}
+          <p className="text-muted-foreground text-xs">
+            {td("expenses.baseAmount", { currency: baseCurrencyCode || "—" })}
+            :{" "}
+            {baseDisbursedAmount !== undefined
+              ? format(Number(baseDisbursedAmount))
+              : "—"}
+          </p>
           {err("balance")}
         </Field>
         <Field className="sm:col-span-2">

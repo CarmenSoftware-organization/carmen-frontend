@@ -369,7 +369,11 @@ export function validatePaymentForm(
   if (!form.payment_date) errors.add("paymentDate");
   if (mode === "create" && !form.payment_type_id) errors.add("paymentType");
   if (!form.bank_account_id) errors.add("bank");
-  if (form.exchange_rate.trim() && !isPositive(form.exchange_rate))
+  if (
+    form.exchange_rate.trim() &&
+    (!/^(?:\d+|\d*\.\d{1,5})$/.test(form.exchange_rate.trim()) ||
+      compareDecimal(form.exchange_rate, "0.00001") < 0)
+  )
     errors.add("exchangeRate");
   if (allocationInputs.length === 0) errors.add("allocations");
   if (overCap) errors.add("overAllocated");

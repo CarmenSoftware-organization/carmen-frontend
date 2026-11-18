@@ -1138,6 +1138,8 @@
           "chequeNo": "Cheque No.",
           "chequeDate": "Cheque Date",
           "currency": "Currency",
+          "currencySelectInvoice": "Select an invoice first. Payment currency is set automatically from the selected invoices.",
+          "currencyFromInvoice": "Payment currency ({currency}) is set automatically from the selected invoices and cannot be changed here.",
           "exchangeRate": "Exchange Rate",
           "exchangeRateAuto": "Auto (system rate)",
           "description": "Description",
@@ -1195,7 +1197,7 @@
             "staleBlocksSave": "Recalculate the withholding tax before saving",
             "previewFailed": "Withholding tax could not be recalculated: {message}",
             "errors": {
-              "amount": "Select a WHT profile and enter a non-negative base and WHT amount for every row"
+              "amount": "Select a WHT Service Type and WHT Form, and enter a non-negative tax base and WHT amount for every row"
             }
           },
           "expenses": {
@@ -1265,7 +1267,7 @@
             "balance": "Invoices must equal payment + WHT - other expenses; invoice and payment totals cannot be negative.",
             "paymentType": "Select a Payment Type.",
             "bank": "Select a bank account in the invoice currency",
-            "exchangeRate": "Exchange rate must be greater than 0",
+            "exchangeRate": "Exchange rate must be at least 0.00001 with no more than 5 decimal places",
             "allocations": "Enter an amount for at least one invoice line",
             "overAllocated": "A line exceeds its available amount",
             "netPositive": "Net paid must be zero or greater"
