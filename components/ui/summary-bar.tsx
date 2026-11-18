@@ -60,6 +60,8 @@ interface SummaryFooterBarProps {
   hasRecord: boolean;
   items: SummaryItemConfig[];
   children?: ReactNode; // e.g. action buttons rendered alongside the summary
+  /** บรรทัดเล็กสีจางใต้ยอดรวม/ปุ่ม เช่น DocAuditLine (สร้างโดย · แก้ไขล่าสุด) */
+  meta?: ReactNode;
   className?: string;
 }
 
@@ -69,22 +71,34 @@ export function SummaryFooterBar({
   hasRecord,
   items,
   children,
+  meta,
   className,
 }: SummaryFooterBarProps) {
-  return (
+  const row = (
     <div
-      className={[
-        "bg-background sticky bottom-0 z-20 mt-auto flex flex-wrap items-center gap-3 border-t p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:gap-4 lg:flex-nowrap",
+      className={cn(
+        "flex flex-wrap items-center gap-3 sm:gap-4 lg:flex-nowrap",
         hasRecord ? "justify-between" : "justify-end",
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      )}
     >
       {hasRecord && <SummaryBar items={items} />}
       {/* ms-auto: แถบแคบจนปุ่มตกบรรทัดใหม่ (มือถือ/tablet) ปุ่มยังชิดขวา — justify-between
           ของแถวไม่มีผลกับลูกที่ขึ้นบรรทัดเองคนเดียว มันจะไปเริ่มที่ซ้าย */}
       {children && <div className="ms-auto">{children}</div>}
+    </div>
+  );
+
+  // meta อยู่บรรทัดล่างสุดของแถบ (ใต้ยอดรวมกับปุ่ม) — อยู่แถวเดียวกันจะเบียดยอดรวม
+  // และดันปุ่มตกบรรทัดเร็วขึ้นบนจอกลาง
+  return (
+    <div
+      className={cn(
+        "bg-background sticky bottom-0 z-20 mt-auto flex flex-col gap-1 border-t p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]",
+        className,
+      )}
+    >
+      {row}
+      {meta}
     </div>
   );
 }

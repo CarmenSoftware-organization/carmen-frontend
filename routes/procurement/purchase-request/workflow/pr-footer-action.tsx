@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Check, Eye, SendHorizontal, ShoppingCart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
+import { DocAuditLine } from "@/components/share/doc-audit-line";
+import type { Audit } from "@/types/audit";
 import { useClaimFormPrimary } from "@/components/share/form-primary-action";
 import { STAGE_ROLE } from "@/types/stage-role";
 import { formatCurrency } from "@/lib/currency-utils";
@@ -27,6 +29,7 @@ interface PrFooterActionProps {
   readonly prStatus?: string;
   readonly isPending: boolean;
   readonly hasRecord: boolean;
+  readonly audit?: Audit;
   readonly control: Control<PrFormValues>;
   readonly currencyCode?: string;
   readonly previousStages?: StageOption[];
@@ -64,6 +67,7 @@ export function PrFooterAction({
   prStatus,
   isPending,
   hasRecord,
+  audit,
   control,
   currencyCode,
   previousStages,
@@ -156,6 +160,7 @@ export function PrFooterAction({
     <>
       <SummaryFooterBar
         hasRecord={hasRecord}
+        meta={<DocAuditLine audit={audit} />}
         items={[
           {
             key: "subtotal",

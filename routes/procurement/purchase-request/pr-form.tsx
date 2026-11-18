@@ -33,7 +33,6 @@ import { dispatchPermissionDenied } from "@/components/permission-denied-dialog"
 import { canDeletePr } from "./pr-ownership";
 import { usePrPreviousStages } from "./use-purchase-request";
 import { formatDate } from "@/lib/date-utils";
-import { DocAuditCard } from "@/components/share/doc-audit-card";
 import { PrHeader } from "./pr-header";
 
 interface PurchaseRequestFormProps {
@@ -306,6 +305,7 @@ export function PurchaseRequestForm({
           prStatus={purchaseRequest?.pr_status}
           isPending={actions.isPending}
           hasRecord={!!purchaseRequest}
+          audit={purchaseRequest?.audit}
           control={form.control}
           currencyCode={defaultBu?.config?.default_currency?.code ?? ""}
           previousStages={previousStages}
@@ -347,8 +347,6 @@ export function PurchaseRequestForm({
           onBulkReview={actions.handleBulkReview}
         />
       </form>
-
-      <DocAuditCard audit={purchaseRequest?.audit} />
 
       <PrFormDialogs
         purchaseRequest={purchaseRequest}
