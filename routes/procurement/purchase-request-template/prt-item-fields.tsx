@@ -18,6 +18,22 @@ import { PRT_ITEM } from "./prt-form-schema";
 import EmptyComponent from "@/components/empty-component";
 import { getDeleteDescription } from "@/lib/form-utils";
 import { useElementWidth } from "@/hooks/use-element-width";
+import { ItemCards } from "../shared/item-cards";
+
+/**
+ * กล่องรายการแคบกว่านี้ (px) = การ์ดแถวละใบ (มือถือ / tablet) — เกณฑ์เดียวกับ PR
+ * (iPad Pro 1024 แนวตั้งได้กล่อง ~920 จึงยังเป็นตาราง) แทนตารางที่เลื่อนแนวนอน ซึ่งซ่อน
+ * จำนวน/สกุลเงิน/จุดส่งของไว้หลังขอบ
+ */
+const ITEM_CARDS_MAX_WIDTH = 900;
+
+/** ป้ายของช่องในการ์ด (column id → คีย์ใต้ `field`) */
+const PRT_ITEM_CARD_LABELS = {
+  location_id: "location",
+  requested_qty: "requested",
+  currency_id: "currency",
+  delivery_point_id: "deliveryPoint",
+} as const;
 
 interface PrtItemFieldsProps {
   readonly form: UseFormReturn<PrtFormValues>;
@@ -85,9 +101,20 @@ export function PrtItemFields({
     readOnly,
     onDelete: setDeleteIndex,
   });
+  // ยังไม่ได้วัด (undefined) = ตาราง เหมือน PR
+  const asCards =
+    gridBoxWidth !== undefined && gridBoxWidth < ITEM_CARDS_MAX_WIDTH;
+  const emptyMessage = (
+    <EmptyComponent
+      icon={BoxIcon}
+      title={t("noItems")}
+      description={t("noItemsDesc")}
+    />
+  );
 
   return (
     <CompactSection
+      first
       frameless
       title={tfl("items")}
       description={t("itemsDesc")}
@@ -106,27 +133,32 @@ export function PrtItemFields({
         ) : undefined
       }
     >
+      {/* กล่องที่ผูก ref ต้องอยู่ทั้งสองโหมด ไม่งั้นสลับแล้ววัดไม่ได้อีก */}
       <div ref={setGridBox}>
-        <DataGrid
-          table={table}
-          // กล่องแคบ: เลื่อนแนวนอนแทนการบีบช่องกรอก/lookup จนเหลือ ~60px (ตารางแก้ไขห้ามใช้ grow
-          // ตอนกล่องแคบ) · 760 ≈ ผลรวม size ชุดแบ่งสัดส่วน 740 + เผื่อ
-          tableClassNames={{ base: "min-w-[760px]" }}
-          recordCount={itemFields.length}
-          // โหมดอ่านชิดบน — คลังมีรหัสเป็นบรรทัดรอง เซลล์อื่นไม่มี
-          tableLayout={{ cellAlign: readOnly ? "top" : "middle" }}
-          emptyMessage={
-            <EmptyComponent
-              icon={BoxIcon}
-              title={t("noItems")}
-              description={t("noItemsDesc")}
-            />
-          }
-        >
-          <DataGridContainer>
-            <DataGridTable />
-          </DataGridContainer>
-        </DataGrid>
+        {asCards ? (
+          <ItemCards
+            table={table}
+            emptyMessage={emptyMessage}
+            labelKeys={PRT_ITEM_CARD_LABELS}
+            // 4 ช่อง: การ์ดกว้างตั้งแต่ ~576px (tablet) เรียงแถวเดียว · มือถือ 2 คอลัมน์
+            columnsClassName="@xl:grid-cols-4"
+          />
+        ) : (
+          <DataGrid
+            table={table}
+            // กล่อง 900–1140: เลื่อนแนวนอนแทนการบีบช่องกรอก/lookup (ตารางแก้ไขห้ามใช้ grow
+            // ตอนกล่องแคบ) · 760 ≈ ผลรวม size ชุดแบ่งสัดส่วน 740 + เผื่อ
+            tableClassNames={{ base: "min-w-[760px]" }}
+            recordCount={itemFields.length}
+            // โหมดอ่านชิดบน — คลังมีรหัสเป็นบรรทัดรอง เซลล์อื่นไม่มี
+            tableLayout={{ cellAlign: readOnly ? "top" : "middle" }}
+            emptyMessage={emptyMessage}
+          >
+            <DataGridContainer>
+              <DataGridTable />
+            </DataGridContainer>
+          </DataGrid>
+        )}
       </div>
 
       <DeleteDialog

@@ -44,7 +44,7 @@ import type { BusinessUnit } from "@/types/profile";
 import type { PrFormValues } from "./pr-form-schema";
 import { usePrItemTable } from "./use-pr-item-table";
 import { usePrItemFilter } from "./use-pr-item-filter";
-import { PrItemCards } from "./pr-item-cards";
+import { ItemCards } from "../shared/item-cards";
 import { useElementWidth } from "@/hooks/use-element-width";
 import {
   PrActionDialog,
@@ -76,6 +76,17 @@ import {
 
 /** กล่องรายการแคบกว่านี้ (px) = การ์ด — iPad Pro 1024 แนวตั้งได้กล่อง ~920 จึงยังเป็นตาราง */
 const ITEM_CARDS_MAX_WIDTH = 900;
+
+/** ป้ายของช่องในการ์ดรายการ (column id → คีย์ใต้ `field`) */
+const PR_ITEM_CARD_LABELS = {
+  location_id: "location",
+  requested: "requested",
+  approved: "approved",
+  foc: "foc",
+  amount: "amountCur",
+  delivery_point_id: "deliveryPoint",
+  delivery_date: "deliveryDate",
+} as const;
 
 interface PrItemFieldsProps {
   readonly form: UseFormReturn<PrFormValues>;
@@ -175,7 +186,7 @@ export function PrItemFields({
     // Focus the Location lookup trigger in the new (first) row after React commits
     setTimeout(() => {
       // โหมดการ์ด (กล่องแคบ) ไม่มี tbody — แถวแรกคือการ์ดใบแรก
-      const firstRow = document.querySelector("tbody tr, [data-pr-item-card]");
+      const firstRow = document.querySelector("tbody tr, [data-item-card]");
       const trigger = firstRow?.querySelector<HTMLButtonElement>(
         "button[aria-expanded]",
       );
@@ -613,7 +624,11 @@ export function PrItemFields({
         {/* กล่องที่ผูก ref ต้องอยู่ทั้งสองโหมด ไม่งั้นสลับแล้ววัดไม่ได้อีก */}
         <div ref={setItemsBox}>
           {asCards ? (
-            <PrItemCards table={table} emptyMessage={itemsEmptyMessage} />
+            <ItemCards
+              table={table}
+              emptyMessage={itemsEmptyMessage}
+              labelKeys={PR_ITEM_CARD_LABELS}
+            />
           ) : (
             <DataGrid
               table={table}

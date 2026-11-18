@@ -4,45 +4,44 @@ import type { ReactNode } from "react";
 import { flexRender, type Cell, type Table } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { cn } from "@/lib/utils";
-import type { ItemField } from "./use-pr-item-table";
-
-/**
- * ป้ายของแต่ละช่องในการ์ด — header ของตารางเป็นปุ่มเรียง (ฟังก์ชัน) ใช้ตรง ๆ ไม่ได้
- * คีย์ = column id (accessorKey ของคอลัมน์ที่มี accessor)
- */
-const FIELD_LABEL_KEY: Record<string, string> = {
-  location_id: "location",
-  requested: "requested",
-  approved: "approved",
-  foc: "foc",
-  amount: "amountCur",
-  delivery_point_id: "deliveryPoint",
-  delivery_date: "deliveryDate",
-};
 
 /** คอลัมน์ที่อยู่หัวการ์ด ไม่ใช่ช่องในกริด */
 const HEAD_COLUMNS = new Set(["select", "index", "product_id", "action"]);
 
-function renderCell(cell: Cell<ItemField, unknown> | undefined) {
+function renderCell<T>(cell: Cell<T, unknown> | undefined) {
   return cell
     ? flexRender(cell.column.columnDef.cell, cell.getContext())
     : null;
 }
 
 /**
- * รายการของ PR แบบการ์ดแถวละใบ — ใช้เมื่อกล่องแคบกว่าตารางเต็ม (มือถือ / tablet)
+ * รายการสินค้าแบบการ์ดแถวละใบ — ใช้เมื่อกล่องแคบกว่าตารางเต็ม (มือถือ / tablet) ของ PR และ
+ * PR Template (เดิมเป็น `PrItemCards` ใน purchase-request/ ย้ายมา shared เมื่อมีผู้ใช้สองฟีเจอร์)
+ *
+ * ตารางต้องตั้ง column id ตามสัญญา: `index` · `product_id` (หัวการ์ด) · `select` / `action`
+ * (ถ้ามี) ที่เหลือเป็นช่องในกริด ป้ายมาจาก `labelKeys` (คีย์ i18n ใต้ `field`) — header ของ
+ * ตารางเป็นปุ่มเรียง (ฟังก์ชัน) ใช้ตรง ๆ ไม่ได้
  *
  * ไม่ได้เขียน cell ใหม่: วาด cell ของคอลัมน์เดิมด้วย `flexRender` จาก table ตัวเดียวกัน
  * ช่องกรอก การติ๊กเลือก การกางแถว และช่องหมายเหตุจึงทำงานเหมือนในตารางทุกอย่าง
  * แถวมาจาก `getRowModel()` (ผ่านตัวกรอง + การเรียงแล้ว) และ `row.index` ยังเป็น index
  * ใน form array ตามที่ทุก cell ผูก `items.${index}` ไว้
  */
-export function PrItemCards({
+export function ItemCards<T>({
   table,
   emptyMessage,
+  labelKeys,
+  columnsClassName = "@md:grid-cols-3 @2xl:grid-cols-4",
 }: {
-  readonly table: Table<ItemField>;
+  readonly table: Table<T>;
   readonly emptyMessage: ReactNode;
+  /** column id → คีย์ใต้ `field` · คอลัมน์ที่ไม่มีในนี้ไม่มีป้าย */
+  readonly labelKeys: Readonly<Record<string, string>>;
+  /**
+   * จำนวนคอลัมน์ของช่องในการ์ดตั้งแต่กล่องการ์ดกว้างขึ้น (ฐานคือ 2 คอลัมน์) — ค่าเริ่มต้นของ PR
+   * (ช่องเยอะ) · ใบที่ช่องน้อยส่งของตัวเองให้ช่องอยู่แถวเดียวเร็วขึ้น ไม่ตกไปโดด ๆ แถวสอง
+   */
+  readonly columnsClassName?: string;
 }) {
   const tfl = useTranslations("field");
   const rows = table.getRowModel().rows;
@@ -100,7 +99,7 @@ export function PrItemCards({
           return (
             <li
               key={row.id}
-              data-pr-item-card=""
+              data-item-card=""
               data-state={row.getIsSelected() ? "selected" : undefined}
               className="border-border/60 bg-card data-[state=selected]:bg-muted/50 @container rounded-lg border text-xs"
             >
@@ -123,9 +122,14 @@ export function PrItemCards({
                 )}
               </div>
 
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 px-3 pb-3 @md:grid-cols-3 @2xl:grid-cols-4">
+              <dl
+                className={cn(
+                  "grid grid-cols-2 gap-x-4 gap-y-2 px-3 pb-3",
+                  columnsClassName,
+                )}
+              >
                 {fieldCells.map((cell) => {
-                  const labelKey = FIELD_LABEL_KEY[cell.column.id];
+                  const labelKey = labelKeys[cell.column.id];
                   return (
                     <div
                       key={cell.id}
@@ -142,8 +146,10 @@ export function PrItemCards({
                         </dt>
                       )}
                       {/* cell ตัวเลขจัดชิดขวาไว้สำหรับคอลัมน์ตาราง — ในการ์ดป้ายอยู่บนค่า
-                          ชิดซ้ายทั้งคู่ถึงจะอ่านเป็นคู่เดียวกัน ป้ายกระจายคนละฝั่งไม่ได้ */}
-                      <dd className="[&_.items-end]:items-start [&_.justify-end]:justify-start [&_.text-right]:text-left">
+                          ชิดซ้ายทั้งคู่ถึงจะอ่านเป็นคู่เดียวกัน ป้ายกระจายคนละฝั่งไม่ได้ · กึ่งกลาง
+                          (สกุลเงินของ PR Template) ก็เช่นกัน · min-h-0: ค่าจาก lookup โหมดอ่าน
+                          (FieldPlainText min-h-8) ลอยต่ำกว่าค่าข้าง ๆ ที่เป็นข้อความธรรมดา */}
+                      <dd className="[&_.items-end]:items-start [&_.justify-center]:justify-start [&_.justify-end]:justify-start [&_.text-center]:text-left [&_.text-right]:text-left [&_[data-slot=field-plain-text]]:min-h-0">
                         {renderCell(cell)}
                       </dd>
                     </div>
