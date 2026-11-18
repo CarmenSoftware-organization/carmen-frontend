@@ -256,6 +256,7 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
         <GrnFormHeader
           form={form}
           disabled={isDisabled || isView}
+          isView={isView}
           fromWizard={fromWizard}
           lockIdentity={goodsReceiveNote?.doc_status === "saved" || isCommitted}
           lockCommercial={isCommitted || hasStockLock}

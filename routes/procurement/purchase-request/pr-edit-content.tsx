@@ -13,7 +13,10 @@ export function PrEditContent({ id }: { id: string }) {
     refetch,
   } = usePurchaseRequestById(id);
 
-  if (isLoading) return <DocPageSkeleton ribbon="text" />;
+  if (isLoading)
+    return (
+      <DocPageSkeleton ribbon="text" fields={[1, 2]} tabs={false} toolbar />
+    );
   if (error || !purchaseRequest)
     return (
       <ErrorState

@@ -14,7 +14,9 @@ export function GrnEditContent({ id }: { id: string }) {
   } = useGoodsReceiveNoteById(id);
 
   if (isLoading)
-    return <DocPageSkeleton fields={[2, 1, 1, 1, 1, 1, 1, 1, 2]} />;
+    return (
+      <DocPageSkeleton ribbon="text" fields={[2, 1, 1, 1, 1, 1, 1, 1, 2]} />
+    );
   if (error || !goodsReceiveNote)
     return (
       <ErrorState
