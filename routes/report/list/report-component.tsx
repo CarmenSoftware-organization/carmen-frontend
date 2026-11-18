@@ -12,7 +12,6 @@ import { useBuCode } from "@/hooks/use-bu-code";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
 import { useTranslations } from "use-intl";
-import SearchInput from "@/components/search-input";
 import { cn } from "@/lib/utils";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
@@ -20,7 +19,6 @@ import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
 import { CardSkeletonGrid } from "@/components/loader/card-skeleton";
 import EmptyComponent from "@/components/empty-component";
 import { ErrorState } from "@/components/ui/error-state";
-import { ActiveFilterBar } from "@/components/ui/active-filter-bar";
 import type { Report, ReportTemplate } from "@/types/report";
 import {
   useExportReportMutation,
@@ -33,8 +31,7 @@ import { ReportParamDialog } from "./report-param-dialog";
 import ReportCard from "./report-card";
 import { ReportGroupFilter } from "./report-group-filter";
 import { useListFilters } from "@/hooks/use-list-filters";
-import { ViewSelector } from "@/components/list-filter/view-selector";
-import { ListFilter } from "@/components/list-filter/list-filter";
+import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
@@ -255,32 +252,17 @@ export default function ReportComponent() {
       description={t("desc")}
       count={totalRecords}
       toolbar={
-        <>
-          <div className="flex w-full items-center gap-2">
-            <div className="flex-1">
-              <SearchInput defaultValue={search} onSearch={setSearch} />
-            </div>
-            <span className="bg-border hidden h-4 w-px sm:block" />
-            <ViewSelector
-              view={lf.view}
-              snapshot={{ filters: lf.values, sort: lf.sortParam || undefined }}
-            />
-            <ListFilter
-              fields={reportFilterFields}
-              values={lf.values}
-              setValue={lf.setValue}
-              onClearAll={lf.clearAll}
-              onSaveClick={() => setSaveViewDialogOpen(true)}
-              activeCount={lf.activeFilters.length}
-            />
+        <ListToolbar
+          variant="row"
+          search={search}
+          onSearch={setSearch}
+          lf={lf}
+          fields={reportFilterFields}
+          onSaveViewClick={() => setSaveViewDialogOpen(true)}
+          trailing={
             <DisplayModeToggle value={displayMode} onChange={setDisplayMode} />
-          </div>
-
-          <ActiveFilterBar
-            filters={lf.activeFilters}
-            onClearAll={lf.clearAll}
-          />
-        </>
+          }
+        />
       }
     >
       {error && (
@@ -306,7 +288,7 @@ export default function ReportComponent() {
                 isLoading && filteredReports.length === 0 ? (
                   <CardSkeletonGrid count={6} />
                 ) : (
-                  <div className="grid grid-cols-1 gap-3 p-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-3 p-1">
                     {filteredReports.map((report) => (
                       <ReportCard
                         key={`${report.ReportGroup}-${report.ReportName}`}
