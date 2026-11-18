@@ -42,6 +42,7 @@ import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
 import { useElementWidth } from "@/hooks/use-element-width";
+import { rowNumber } from "@/lib/row-number";
 
 type DisplayMode = "list" | "grid";
 
@@ -307,7 +308,7 @@ export default function UserActivityComponent() {
                 <UserActivityCard
                   key={log.id}
                   log={log}
-                  index={i}
+                  rowNo={rowNumber(undefined, i)}
                   onClick={() => setSelectedLog(log)}
                 />
               ))}

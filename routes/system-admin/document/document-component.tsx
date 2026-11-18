@@ -59,6 +59,7 @@ import { useStorageUsage } from "@/hooks/use-storage-usage";
 import { useCan } from "@/hooks/use-can";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { PERMISSIONS } from "@/constant/permissions";
+import { rowNumber } from "@/lib/row-number";
 
 type DocumentDisplayMode = "list" | "grid" | "preview";
 const DOCUMENT_DISPLAY_MODES: readonly DocumentDisplayMode[] = [
@@ -389,7 +390,11 @@ export default function DocumentComponent() {
           <>
             <div className="grid grid-cols-1 gap-3">
               {documents.map((doc, i) => (
-                <DocumentCard key={doc.fileToken} item={doc} index={i} />
+                <DocumentCard
+                  key={doc.fileToken}
+                  item={doc}
+                  rowNo={rowNumber(undefined, i)}
+                />
               ))}
             </div>
             {loadMore}

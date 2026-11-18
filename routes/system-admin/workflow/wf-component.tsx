@@ -32,6 +32,7 @@ import { listGridMaxH } from "@/components/share/list-grid-max-h";
 import { cn } from "@/lib/utils";
 import { DocumentListActions } from "@/components/share/document-list-actions";
 import SearchInput from "@/components/search-input";
+import { rowNumber } from "@/lib/row-number";
 
 interface WorkflowComponentProps {
   readonly docType: WorkflowDocType;
@@ -126,7 +127,7 @@ export default function WorkflowComponent({ docType }: WorkflowComponentProps) {
               <WfCard
                 key={wf.id}
                 item={wf}
-                index={i}
+                rowNo={rowNumber(useInfiniteScroll ? undefined : params, i)}
                 onEdit={(w) =>
                   navigate(`/system-admin/workflow/${w.id}`, listReturnState())
                 }

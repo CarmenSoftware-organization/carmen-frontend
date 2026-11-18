@@ -4,13 +4,16 @@ import { useTranslations } from "use-intl";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Report } from "@/types/report";
+import { ListCardRowNo } from "@/components/share/list-card";
 
 interface ReportCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) */
+  readonly rowNo?: number;
   readonly item: Report;
   readonly onSelect: (item: Report) => void;
 }
 
-export default function ReportCard({ item, onSelect }: ReportCardProps) {
+export default function ReportCard({ item, rowNo, onSelect }: ReportCardProps) {
   const t = useTranslations("report");
   return (
     <div
@@ -50,6 +53,7 @@ export default function ReportCard({ item, onSelect }: ReportCardProps) {
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start gap-1.5">
+            <ListCardRowNo rowNo={rowNo} />
             <h3 className="text-foreground line-clamp-2 text-sm leading-tight font-semibold tracking-tight">
               {item.ReportName}
             </h3>

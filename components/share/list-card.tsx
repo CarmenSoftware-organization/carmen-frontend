@@ -85,6 +85,19 @@ interface ListCardProps {
 }
 
 /**
+ * เลขลำดับแถว `#27` หน้าชื่อการ์ด — ใช้ใน `ListCard` และการ์ดที่เขียนเองที่ไม่ได้ใช้
+ * `ListCard` ให้เลขหน้าตาเดียวกันทุกการ์ด · ไม่หด (`shrink-0`) ชื่อเป็นตัวที่ truncate แทน
+ */
+export function ListCardRowNo({ rowNo }: { readonly rowNo?: number }) {
+  if (rowNo === undefined) return null;
+  return (
+    <span className="text-muted-foreground shrink-0 text-sm font-normal tabular-nums">
+      #{rowNo}
+    </span>
+  );
+}
+
+/**
  * แถวข้อมูล label/value ในการ์ดรายการ — label ชิดซ้าย ค่าชิดขวา
  *
  * ค่าตัดบรรทัดได้ (ไม่ truncate) เพราะข้อมูลในการ์ดต้องครบเท่าคอลัมน์ในตาราง
@@ -307,11 +320,7 @@ export function ListCard({
           {/* เลขห้ามหด (shrink-0) — ชื่อเป็นตัวที่ truncate แทน · ห่อด้วย flex min-w-0
               เพื่อให้ badge ยังชิดขวาเหมือนการ์ดที่ไม่มีเลข */}
           <div className="flex min-w-0 items-baseline gap-1.5">
-            {rowNo !== undefined && (
-              <span className="text-muted-foreground shrink-0 text-sm tabular-nums">
-                #{rowNo}
-              </span>
-            )}
+            <ListCardRowNo rowNo={rowNo} />
             <CardTitle
               className="min-w-0 truncate text-sm"
               title={typeof title === "string" ? title : undefined}

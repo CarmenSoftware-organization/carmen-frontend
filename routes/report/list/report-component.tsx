@@ -35,6 +35,7 @@ import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
+import { rowNumber } from "@/lib/row-number";
 
 const templateToReport = (t: ReportTemplate): Report => {
   return {
@@ -289,8 +290,9 @@ export default function ReportComponent() {
                   <CardSkeletonGrid count={6} />
                 ) : (
                   <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-3 p-1">
-                    {filteredReports.map((report) => (
+                    {filteredReports.map((report, i) => (
                       <ReportCard
+                        rowNo={rowNumber(undefined, i)}
                         key={`${report.ReportGroup}-${report.ReportName}`}
                         item={report}
                         onSelect={handleSelect}
