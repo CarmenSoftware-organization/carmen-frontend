@@ -31,10 +31,10 @@ interface UseCertificationTableOptions {
  * คำอธิบายรับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมแบ่งสัดส่วน ที่ tablet ชิปสถานะ
  * ถูกบีบเหลือ 34px ส่วนบน Full HD คำอธิบายกว้าง 486px ห่างจากค่าอื่น
  * ความกว้างขั้นต่ำของตาราง = ผลรวม `size` ซึ่งนับคอลัมน์ select (55) ที่หน้านี้ไม่ได้เรนเดอร์ด้วย:
- *   ครบ             55+60+110+200+180+200+100+60 = 965
- *   ไม่มีเลขลำดับ                                 = 905
- *   ไม่มีคำอธิบาย                                 = 725  (ชื่อยืดแทน)
- *   ไม่มีชื่อ                                     = 525  (รหัสยืดแทน · กล่องที่จอ 768 = 662)
+ *   ครบ             55+48+110+200+180+200+100+60 = 953
+ *   ไม่มีคำอธิบาย                                 = 773  (ชื่อยืดแทน)
+ *   ไม่มีชื่อ                                     = 573  (รหัสยืดแทน · กล่องที่จอ 768 = 662)
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) — ไม่อยู่ในขั้นที่ซ่อน
  * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35px
  * ของที่ซ่อนยังเห็น: คำอธิบายลงบรรทัดรองใต้ชื่อ · ชื่อ (+คำอธิบาย) ลงบรรทัดรองใต้รหัส
  * คอลัมน์ที่ผู้ใช้เปิดเพิ่มเอง (created, updated) ไม่นับในงบ — เกินกล่องก็เลื่อนแนวนอนในกรอบเอง
@@ -42,9 +42,8 @@ interface UseCertificationTableOptions {
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    showIndex: w >= 1000,
-    showDescription: w >= 940,
-    showName: w >= 760,
+    showDescription: w >= 990,
+    showName: w >= 810,
   };
 }
 
@@ -71,7 +70,7 @@ export function useCertificationTable({
   const tfl = useTranslations("field");
   const t = useTranslations("vendorManagement.certification");
   const { dateTimeFormat } = useProfile();
-  const { showIndex, showDescription, showName } = columnTier(containerWidth);
+  const { showDescription, showName } = columnTier(containerWidth);
   const columns: ColumnDef<Certification>[] = [
     {
       accessorKey: "code",
@@ -179,7 +178,6 @@ export function useCertificationTable({
   return useConfigTable<Certification>({
     data,
     columns: visibleColumns,
-    hideIndex: !showIndex,
     totalRecords,
     params,
     tableConfig,

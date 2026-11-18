@@ -30,10 +30,10 @@ interface UsePrtTableOptions {
  * คอลัมน์สั้นกว้างคงที่ คำอธิบายรับที่เหลือ (`meta.grow`) — เดิมแบ่งสัดส่วนเท่ากัน บน Full HD
  * แต่ละคอลัมน์กว้าง 275px ชื่อกับเวิร์กโฟลว์ห่างกันโดยไม่จำเป็น ตารางกว้างขั้นต่ำเท่าผลรวม `size`
  * ซึ่งนับคอลัมน์ select (55) ที่หน้านี้ไม่ได้เรนเดอร์ด้วย:
- *   ครบ             55+60+220+160+160+160+100+60 = 975
- *   ไม่มีเลขลำดับ                                   = 915
- *   ไม่มีผู้สร้าง                                    = 755
- *   ไม่มีเวิร์กโฟลว์                                  = 595  (กล่องที่จอ 768 = 662)
+ *   ครบ             55+48+220+160+160+160+100+60 = 963
+ *   ไม่มีผู้สร้าง                                    = 803
+ *   ไม่มีเวิร์กโฟลว์                                  = 643  (กล่องที่จอ 768 = 662)
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) — ไม่อยู่ในขั้นที่ซ่อน
  * ซ่อนเลขลำดับก่อน (บอกอะไรน้อยสุด) แล้วผู้สร้าง แล้วเวิร์กโฟลว์ · จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม
  * 35px — คอลัมน์รองกลับมาเมื่อคำอธิบายได้ที่ ~195px แล้วเท่านั้น
  * ของที่ซ่อนยังดูได้: เวิร์กโฟลว์ = มุมมองการ์ด/หน้ารายละเอียด · ผู้สร้าง = Activity ของแถว ·
@@ -42,9 +42,8 @@ interface UsePrtTableOptions {
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    showIndex: w >= 1010,
-    showCreatedBy: w >= 950,
-    showWorkflow: w >= 790,
+    showCreatedBy: w >= 1000,
+    showWorkflow: w >= 840,
   };
 }
 
@@ -61,7 +60,7 @@ export function usePrtTable({
 
   const tfl = useTranslations("field");
   const { dateTimeFormat } = useProfile();
-  const { showCreatedBy, showIndex, showWorkflow } = columnTier(containerWidth);
+  const { showCreatedBy, showWorkflow } = columnTier(containerWidth);
 
   const columns: ColumnDef<PurchaseRequestTemplate>[] = [
     {
@@ -162,7 +161,6 @@ export function usePrtTable({
   return useConfigTable<PurchaseRequestTemplate>({
     data: templates,
     columns: visibleColumns,
-    hideIndex: !showIndex,
     totalRecords,
     params,
     tableConfig,
