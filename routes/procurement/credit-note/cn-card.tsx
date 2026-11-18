@@ -1,3 +1,4 @@
+import { FileText, PackageCheck, type LucideIcon } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { StatusChip } from "@/components/ui/status-chip";
 import {
@@ -23,6 +24,40 @@ interface CnCardProps {
    * การ์ดเต็มยังใช้กับโหมด grid บนจอกว้าง
    */
   readonly compact?: boolean;
+}
+
+/**
+ * บรรทัดอ้างอิงในการ์ดกระชับ: ไอคอน (ป้ายอยู่ใน sr-only + title) · เลข · วันที่
+ * ไม่มีทั้งเลขและวันที่ = ไม่ render
+ */
+function RefLine({
+  icon: Icon,
+  label,
+  no,
+  date,
+}: {
+  readonly icon: LucideIcon;
+  readonly label: string;
+  readonly no?: string | null;
+  readonly date?: string;
+}) {
+  if (!no && !date) return null;
+  return (
+    <div
+      className="text-muted-foreground flex min-w-0 items-center gap-1.5"
+      title={label}
+    >
+      <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+      <span className="sr-only">{label}</span>
+      <span className="text-foreground truncate">{no || "—"}</span>
+      {date && (
+        <>
+          <span aria-hidden="true">·</span>
+          <span className="shrink-0 tabular-nums">{date}</span>
+        </>
+      )}
+    </div>
+  );
 }
 
 export default function CnCard({
@@ -83,6 +118,18 @@ export default function CnCard({
             {item.vendor_name}
           </div>
         )}
+        <RefLine
+          icon={PackageCheck}
+          label={`${tfl("grnNo")} · ${tfl("grnDate")}`}
+          no={item.grn_no}
+          date={formatDate(item.grn_date, dateFormat) || undefined}
+        />
+        <RefLine
+          icon={FileText}
+          label={`${tfl("invoiceNo")} · ${tfl("invoiceDate")}`}
+          no={item.invoice_no}
+          date={formatDate(item.invoice_date, dateFormat) || undefined}
+        />
         <div className="flex min-w-0 items-baseline justify-between gap-3">
           <span
             className="text-muted-foreground truncate"
@@ -120,6 +167,26 @@ export default function CnCard({
       </ListCardRow>
       {item.vendor_name && (
         <ListCardRow label={tfl("vendor")}>{item.vendor_name}</ListCardRow>
+      )}
+      {item.grn_no && (
+        <ListCardRow label={tfl("grnNo")}>{item.grn_no}</ListCardRow>
+      )}
+      {item.grn_date && (
+        <ListCardRow label={tfl("grnDate")}>
+          <span className="tabular-nums">
+            {formatDate(item.grn_date, dateFormat)}
+          </span>
+        </ListCardRow>
+      )}
+      {item.invoice_no && (
+        <ListCardRow label={tfl("invoiceNo")}>{item.invoice_no}</ListCardRow>
+      )}
+      {item.invoice_date && (
+        <ListCardRow label={tfl("invoiceDate")}>
+          <span className="tabular-nums">
+            {formatDate(item.invoice_date, dateFormat)}
+          </span>
+        </ListCardRow>
       )}
       {amountNode && (
         <ListCardRow label={tfl("totalAmount")}>{amountNode}</ListCardRow>
