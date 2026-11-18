@@ -32,16 +32,15 @@ import { LangSwitch } from "./lang-switch";
 import { ThemeSwitch } from "./theme-switch";
 import { FontScaleSwitch } from "./font-scale-switch";
 
+/** รูปประกอบล้วน — ชื่ออยู่ข้าง ๆ เสมอ (ข้อความ หรือ sr-only) จึง alt="" ไม่ให้อ่านชื่อซ้ำ/อ่านอักษรย่อ */
 function UserAvatar({
   avatarUrl,
-  name,
   fallbackText,
   size,
   interactive,
   eager,
 }: {
   readonly avatarUrl: string | null | undefined;
-  readonly name: string;
   readonly fallbackText: string;
   readonly size: "sm" | "md";
   readonly interactive?: boolean;
@@ -61,13 +60,14 @@ function UserAvatar({
       {avatarUrl && (
         <AvatarImage
           src={avatarUrl}
-          alt={name}
+          alt=""
           className="object-cover"
           loading={eager ? "eager" : undefined}
           fetchPriority={eager ? "high" : undefined}
         />
       )}
       <AvatarFallback
+        aria-hidden="true"
         className={cn(
           "bg-primary text-primary-foreground font-semibold",
           isLarge ? "text-sm" : "text-micro-legal",
@@ -103,10 +103,9 @@ export function UserProfile() {
     return (
       <>
         <DropdownMenu>
-          <DropdownMenuTrigger className="data-[state=open]:bg-muted/60 flex cursor-pointer items-center gap-2 rounded-lg border border-transparent px-1.5 py-1 outline-none">
+          <DropdownMenuTrigger className="data-[state=open]:bg-muted/60 focus-visible:ring-ring/50 flex cursor-pointer items-center gap-2 rounded-lg border border-transparent px-1.5 py-1 outline-none focus-visible:ring-[3px]">
             <UserAvatar
               avatarUrl={undefined}
-              name=""
               fallbackText="?"
               size="sm"
               interactive
@@ -181,7 +180,7 @@ export function UserProfile() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="group data-[state=open]:bg-muted/60 data-[state=open]:border-border/60 flex cursor-pointer items-center gap-2 rounded-lg border border-transparent px-1 py-1 text-right transition-colors outline-none hover:border-none hover:bg-none @2xl/navbar:px-1.5">
+      <DropdownMenuTrigger className="group data-[state=open]:bg-muted/60 data-[state=open]:border-border/60 focus-visible:ring-ring/50 flex cursor-pointer items-center gap-2 rounded-lg border border-transparent px-1 py-1 text-right transition-colors outline-none hover:border-none hover:bg-none focus-visible:ring-[3px] @2xl/navbar:px-1.5">
         <div className="hidden text-xs leading-tight @2xl/navbar:grid">
           <span className="w-content truncate font-semibold">{name}</span>
           <span
@@ -192,7 +191,6 @@ export function UserProfile() {
         </div>
         <UserAvatar
           avatarUrl={avatarUrl}
-          name={name}
           fallbackText={fallbackText}
           size="sm"
           interactive
@@ -202,12 +200,15 @@ export function UserProfile() {
           className="hidden size-3 shrink-0 opacity-50 transition-opacity group-hover:opacity-80 group-data-[state=open]:opacity-100 @2xl/navbar:block"
           aria-hidden="true"
         />
+        {/* แถบแคบซ่อนชื่อ — ปุ่มเหลือแต่รูป ซึ่งเป็นภาพประกอบ (alt="") จึงต้องมีชื่อให้ screen reader */}
+        <span className="sr-only @2xl/navbar:hidden">
+          {t("profile")}: {name}
+        </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-72 p-2" align="end" sideOffset={6}>
         <div className="flex items-start gap-3 px-2 py-2">
           <UserAvatar
             avatarUrl={avatarUrl}
-            name={name}
             fallbackText={fallbackText}
             size="md"
           />

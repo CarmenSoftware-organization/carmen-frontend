@@ -90,6 +90,8 @@ export function FontScaleSwitch() {
               key={option}
               onClick={() => select(option)}
               className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm"
+              // menuitem ไม่รองรับ aria-checked — ตัวเลือกแบบเลือกได้หนึ่งเดียวต้องเป็น menuitemradio
+              role="menuitemradio"
               aria-checked={isActive}
             >
               {/* กว้างคงที่เพื่อให้ชื่อระดับทั้ง 5 เรียงตรงกัน ไม่เต้นตามความกว้าง

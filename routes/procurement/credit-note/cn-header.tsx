@@ -47,7 +47,6 @@ export function CnHeader({
   ribbon,
 }: CnHeaderProps) {
   const t = useTranslations("procurement.creditNote");
-  const tfl = useTranslations("field");
   const { total: commentCount } = useCreditNoteComments(creditNote?.id);
 
   const isView = mode === "view";
@@ -66,11 +65,6 @@ export function CnHeader({
           // เบากว่าในตาราง: ตัวเอกของแถบนี้คือเลขที่ใบ สถานะเป็นข้อมูลประกอบ
           // เหลือสีไว้ที่ไอคอนจุดเดียวซึ่งเป็นสัญญาณที่ต้องเห็นจริง ๆ
         />
-      )}
-      {creditNote?.doc_version != null && (
-        <span className="text-muted-foreground text-micro">
-          {tfl("version")} {creditNote.doc_version}
-        </span>
       )}
     </div>
   );
@@ -93,7 +87,11 @@ export function CnHeader({
         </span>
       )}
       {isView && (
-        <DocAuditButton audit={creditNote?.audit} className="-my-1 sm:hidden" />
+        <DocAuditButton
+          audit={creditNote?.audit}
+          docVersion={creditNote?.doc_version}
+          className="-my-1 sm:hidden"
+        />
       )}
     </span>
   ) : undefined;
@@ -112,6 +110,7 @@ export function CnHeader({
               {isView && (
                 <DocAuditLine
                   audit={creditNote?.audit}
+                  docVersion={creditNote?.doc_version}
                   className="ms-auto hidden sm:table"
                 />
               )}

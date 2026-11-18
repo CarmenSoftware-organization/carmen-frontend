@@ -2707,6 +2707,7 @@
     "document": "Document",
     "requester": "Requester",
     "version": "Edition",
+    "revision": "rev.",
     "addressType": "Address Type",
     "city": "City",
     "alias": "Alias",

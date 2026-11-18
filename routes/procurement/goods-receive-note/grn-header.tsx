@@ -60,7 +60,6 @@ export function GrnHeader({
 }: GrnHeaderProps) {
   const t = useTranslations("procurement.goodsReceiveNote");
   const tc = useTranslations("common");
-  const tfl = useTranslations("field");
   const { total: commentCount } = useGoodsReceiveNoteComments(
     goodsReceiveNote?.id,
   );
@@ -103,14 +102,7 @@ export function GrnHeader({
           className="text-muted-foreground text-micro [&>svg]:size-3"
         />
       )}
-      {/* เลขที่ใบ · สถานะ · ชนิดใบ · รุ่น = ตัวตนของเอกสาร อยู่บรรทัดเดียวกันหมด
-          (ทรงเดียวกับใบลดหนี้) — ไม่ใช่ Badge เพราะรุ่นเป็นตัวเลขอ้างอิง ไม่ใช่
-          สถานะที่ต้องสะดุดตา */}
-      {goodsReceiveNote?.doc_version != null && (
-        <span className="text-muted-foreground text-micro">
-          {tfl("version")} {goodsReceiveNote.doc_version}
-        </span>
-      )}
+      {/* รุ่นเอกสาร (doc_version) อยู่ในตาราง audit ของ ribbon ไม่ใช่แถวนี้ */}
     </div>
   );
 
@@ -144,6 +136,7 @@ export function GrnHeader({
       {isView && (
         <DocAuditButton
           audit={goodsReceiveNote?.audit}
+          docVersion={goodsReceiveNote?.doc_version}
           className="-my-1 sm:hidden"
         />
       )}
@@ -191,6 +184,7 @@ export function GrnHeader({
               {isView && (
                 <DocAuditLine
                   audit={goodsReceiveNote?.audit}
+                  docVersion={goodsReceiveNote?.doc_version}
                   className="ms-auto hidden sm:table"
                 />
               )}

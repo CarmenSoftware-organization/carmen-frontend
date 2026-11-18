@@ -119,11 +119,6 @@ export function PrHeader({
           // จุดเดียวซึ่งเป็นสัญญาณที่ต้องเห็นจริง ๆ
         />
       )}
-      {purchaseRequest?.doc_version != null && (
-        <span className="text-muted-foreground text-micro">
-          {tfl("version")} {purchaseRequest.doc_version}
-        </span>
-      )}
     </div>
   );
 
@@ -170,6 +165,7 @@ export function PrHeader({
       {isView && (
         <DocAuditLine
           audit={purchaseRequest?.audit}
+          docVersion={purchaseRequest?.doc_version}
           className="ms-auto hidden sm:table"
         />
       )}
@@ -215,6 +211,7 @@ export function PrHeader({
         {isView && (
           <DocAuditButton
             audit={purchaseRequest?.audit}
+            docVersion={purchaseRequest?.doc_version}
             className="-my-1 sm:hidden"
           />
         )}
