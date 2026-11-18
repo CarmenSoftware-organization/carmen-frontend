@@ -14,6 +14,7 @@ import { PR_STATUS, type PurchaseRequest } from "@/types/purchase-request";
 import { StatusChip } from "@/components/ui/status-chip";
 import { PR_STATUS_CONFIG } from "@/constant/purchase-request";
 import { SettingField } from "@/components/share/setting-field";
+import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
 import { FieldGrid } from "@/components/share/compact-section";
 import { WORKFLOW_TYPE } from "@/types/workflows";
 import { STAGE_ROLE } from "@/types/stage-role";
@@ -215,54 +216,60 @@ export function PrHeader({
     </WorkflowStepButton>
   ) : undefined;
 
+  // หัวเอกสารอยู่ในการ์ดมีพื้น แยกจากตัวรายการชัด ๆ (แทนเส้น hr ใต้หัว) · inlineBack ให้ปุ่ม
+  // ย้อนกลับอยู่ในแถวชื่อ — แบบลอยออกซ้ายต้องเว้นที่ซ้ายทั้งการ์ด แถวปุ่มบนมือถือจะตกสองบรรทัด
+  // โครงตอนโหลดต้องเป็นการ์ดเดียวกัน — DocPageSkeleton `headerCard`
   return (
-    <FormToolbar
-      mode={mode}
-      formId="purchase-request-form"
-      isPending={isPending}
-      title={purchaseRequest?.pr_no ?? t("title")}
-      subtitle={
-        workflowStep || docMeta ? (
-          <span className="flex flex-col gap-1">
-            {docMeta}
-            {workflowStep}
-          </span>
-        ) : undefined
-      }
-      badges={badges}
-      ribbon={ribbon}
-      onBack={onBack}
-      onCancel={onCancel}
-      // แก้ได้เว้นแต่ใบถูก void หรือ role ของ stage นี้อ่านอย่างเดียว
-      onEdit={!isViewOnly && !isVoided ? onEdit : undefined}
-      // ลบได้ทั้ง view/edit ตราบที่ยังเป็น draft — เช็คเจ้าของใบอยู่ที่ handler ของฟอร์ม
-      onDelete={
-        purchaseRequest?.pr_status === PR_STATUS.DRAFT ? onDelete : undefined
-      }
-      deleteIsPending={isDeletePending}
-      // เดิมป้าย Save ทุกโหมด — ไม่ให้โหมด add กลายเป็น "Create"
-      submitLabel={tc("save")}
-      pendingLabel={tf("saving")}
-    >
-      {/* comment / activity / duplicate / print อยู่ใน DocActions — ไม่ส่ง activity
+    <div className={DOC_HEADER_CARD}>
+      <FormToolbar
+        inlineBack
+        mode={mode}
+        formId="purchase-request-form"
+        isPending={isPending}
+        title={purchaseRequest?.pr_no ?? t("title")}
+        subtitle={
+          workflowStep || docMeta ? (
+            <span className="flex flex-col gap-1">
+              {docMeta}
+              {workflowStep}
+            </span>
+          ) : undefined
+        }
+        badges={badges}
+        ribbon={ribbon}
+        onBack={onBack}
+        onCancel={onCancel}
+        // แก้ได้เว้นแต่ใบถูก void หรือ role ของ stage นี้อ่านอย่างเดียว
+        onEdit={!isViewOnly && !isVoided ? onEdit : undefined}
+        // ลบได้ทั้ง view/edit ตราบที่ยังเป็น draft — เช็คเจ้าของใบอยู่ที่ handler ของฟอร์ม
+        onDelete={
+          purchaseRequest?.pr_status === PR_STATUS.DRAFT ? onDelete : undefined
+        }
+        deleteIsPending={isDeletePending}
+        // เดิมป้าย Save ทุกโหมด — ไม่ให้โหมด add กลายเป็น "Create"
+        submitLabel={tc("save")}
+        pendingLabel={tf("saving")}
+      >
+        {/* comment / activity / duplicate / print อยู่ใน DocActions — ไม่ส่ง activity
           ให้ toolbar ซ้ำ · Duplicate/Print เฉพาะ view (ตอน edit ค่าบนจออาจยังไม่ save) */}
-      {purchaseRequest && (
-        <DocActions
-          onDuplicate={isView && prId ? handleDuplicate : undefined}
-          onComment={onComment}
-          commentCount={commentCount}
-          activity={prId ? { id: prId, label: prNo } : undefined}
-          print={
-            isView && prId
-              ? {
-                  documentType: "PR",
-                  documentId: prId,
-                  filters: prNo ? { DocumentNo: prNo } : undefined,
-                }
-              : undefined
-          }
-        />
-      )}
-    </FormToolbar>
+        {purchaseRequest && (
+          <DocActions
+            onDuplicate={isView && prId ? handleDuplicate : undefined}
+            onComment={onComment}
+            commentCount={commentCount}
+            activity={prId ? { id: prId, label: prNo } : undefined}
+            print={
+              isView && prId
+                ? {
+                    documentType: "PR",
+                    documentId: prId,
+                    filters: prNo ? { DocumentNo: prNo } : undefined,
+                  }
+                : undefined
+            }
+          />
+        )}
+      </FormToolbar>
+    </div>
   );
 }

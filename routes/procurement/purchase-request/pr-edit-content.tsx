@@ -15,7 +15,13 @@ export function PrEditContent({ id }: { id: string }) {
 
   if (isLoading)
     return (
-      <DocPageSkeleton ribbon="text" fields={[1, 2]} tabs={false} toolbar />
+      <DocPageSkeleton
+        ribbon="text"
+        fields={[1, 2]}
+        tabs={false}
+        toolbar
+        headerCard
+      />
     );
   if (error || !purchaseRequest)
     return (
