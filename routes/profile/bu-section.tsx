@@ -136,84 +136,91 @@ function ImageUploadField({
   else if (hasImage) primaryButtonText = text.change;
   else primaryButtonText = text.upload;
 
-  // โลโก้ช่องว่างเป็น 4:1 (h-16 w-64) — มีรูปแล้วสูงเท่าเดิม กว้างตามสัดส่วนรูป ไม่เกิน 4:1
-  const landscapeBox = displayUrl ? "h-16 w-auto min-w-16 max-w-64" : "h-16 w-64";
-  const boxClass = cn(
-    "bg-muted/50 relative flex shrink-0 items-center justify-center overflow-hidden border",
-    shape === "landscape"
-      ? cn(landscapeBox, "rounded-md")
-      : "size-16 rounded-full",
-  );
-  const imageClass =
-    shape === "landscape"
-      ? "h-full w-auto max-w-full object-contain"
-      : "absolute inset-0 size-full object-cover";
-
   return (
     <>
-      <div className="flex min-w-0 flex-wrap items-center gap-3">
-        <div className={boxClass}>
+      {/* ไทล์ = ช่องรูปสูงคงที่ + แถวชื่อกับปุ่มไอคอน · โลโก้กับ avatar ใช้โครงเดียวกัน จึงตรงแนวกัน
+          ทุกขนาดไม่ว่ารูปจะกว้างเท่าไร · ไม่มีกรอบไทล์ซ้อนในการ์ด BU — กรอบมีแค่ช่องรูป */}
+      <div className="flex min-w-0 flex-col gap-1">
+        <div className="bg-muted/50 relative flex h-16 items-center justify-center overflow-hidden rounded-md border">
           {displayUrl ? (
-            <img
-              src={displayUrl}
-              alt={text.title}
-              className={imageClass}
-              loading={priority ? "eager" : "lazy"}
-            />
+            shape === "landscape" ? (
+              <img
+                src={displayUrl}
+                alt={text.title}
+                className="size-full object-contain p-1"
+                loading={priority ? "eager" : "lazy"}
+              />
+            ) : (
+              <img
+                src={displayUrl}
+                alt={text.title}
+                className="size-13 rounded-full border object-cover"
+                loading={priority ? "eager" : "lazy"}
+              />
+            )
           ) : (
             <ImageIcon
-              className="text-muted-foreground size-6"
+              className={cn(
+                "text-muted-foreground size-5",
+                // avatar ว่าง: วงกลมจาง ๆ บอกรูปทรงที่จะได้ ต่างจากช่องโลโก้ว่าง
+                shape === "round" &&
+                  "bg-background size-13 rounded-full border p-3.5",
+              )}
               aria-hidden="true"
             />
           )}
         </div>
-        {/* min-w-48: กล่องโลโก้ว่าง (256px) บนมือถือเหลือที่ไม่พอ — ให้ข้อความตกลงบรรทัดใหม่ ไม่ใช่บีบจนปุ่มล้นการ์ด */}
-        <div className="min-w-48 flex-1 space-y-1">
-          <p className="text-muted-foreground text-xs">{text.title}</p>
+        <div className="flex min-w-0 items-center gap-0.5">
+          <span className="text-muted-foreground min-w-0 flex-1 text-xs">
+            {text.title}
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            disabled={isBusy}
+            onClick={() => fileInputRef.current?.click()}
+            aria-label={primaryButtonText}
+            title={primaryButtonText}
+          >
+            {isUploading ? (
+              <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+            ) : (
+              <Upload className="size-3.5" aria-hidden="true" />
+            )}
+          </Button>
+          {hasImage && !isUploading && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              disabled={isDeleting}
+              onClick={handleRemoveClick}
+              aria-label={isDeleting ? text.removing : text.remove}
+              title={text.remove}
+            >
+              {isDeleting ? (
+                <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+              ) : (
+                <Trash2 className="size-3.5" aria-hidden="true" />
+              )}
+            </Button>
+          )}
+        </div>
+        {/* คำแนะนำ (ชนิดไฟล์ ขนาด) ต้องใช้ตอนจะอัปโหลดครั้งแรกเท่านั้น — มีรูปแล้วซ่อน
+            ไม่งั้นซ้ำทุก BU · ไฟล์ผิดชนิด/ใหญ่เกินยังมี toast เตือนอยู่ */}
+        {!hasImage && (
           <p className="text-muted-foreground/80 text-micro leading-snug">
             {text.hint}
           </p>
-          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-            <Button
-              type="button"
-              variant="outline"
-              size="xs"
-              disabled={isBusy}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {isUploading ? (
-                <Loader2 className="size-3 animate-spin" aria-hidden="true" />
-              ) : (
-                <Upload className="size-3" aria-hidden="true" />
-              )}
-              {primaryButtonText}
-            </Button>
-            {hasImage && !isUploading && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                disabled={isDeleting}
-                onClick={handleRemoveClick}
-                aria-label={text.remove}
-              >
-                {isDeleting ? (
-                  <Loader2 className="size-3 animate-spin" aria-hidden="true" />
-                ) : (
-                  <Trash2 className="size-3" aria-hidden="true" />
-                )}
-                {isDeleting ? text.removing : text.remove}
-              </Button>
-            )}
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={IMAGE_ACCEPT_ATTR}
-            className="hidden"
-            onChange={handleChange}
-          />
-        </div>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={IMAGE_ACCEPT_ATTR}
+          className="hidden"
+          onChange={handleChange}
+        />
       </div>
 
       <AlertDialog
@@ -262,6 +269,8 @@ function SubSection({
   return (
     <div className="min-w-0">
       <h4 className="mb-2 text-xs font-semibold">{title}</h4>
+      {/* ไม่ dense: ชื่อบริษัท อีเมล ที่อยู่ ยาวทั้งนั้น — ครึ่งการ์ดมือถือตัดอีเมลกลางคำ
+          และชื่อบริษัทยาว 4 บรรทัด ข้างกันเหลือแค่เบอร์โทร */}
       <FieldGrid>{children}</FieldGrid>
     </div>
   );
@@ -327,8 +336,8 @@ export default function BUSection({ bu }: { bu: BusinessUnit }) {
         )}
       </div>
 
-      {/* โลโก้กับ avatar กว้างเท่าเนื้อหา อยู่ติดกันชิดซ้าย — ไม่ยืดตามจอ */}
-      <div className="flex flex-wrap gap-x-10 gap-y-3">
+      {/* สองไทล์เคียงกันเท่ากัน — มือถือแบ่งครึ่งการ์ด · การ์ดกว้างไทล์ละ 15rem ชิดซ้าย ไม่ยืดตามจอ */}
+      <div className="grid grid-cols-2 gap-3 @md:grid-cols-[repeat(2,15rem)]">
         <ImageUploadField
           imageUrl={bu.logo_url}
           entityId={bu.id}
@@ -349,14 +358,12 @@ export default function BUSection({ bu }: { bu: BusinessUnit }) {
         />
       </div>
 
+      {/* dense: ค่าสั้น (รหัส ชื่อย่อ เลขภาษี) สองคอลัมน์ตั้งแต่จอแคบสุด — ช่อง fullWidth ยังกินเต็มแถว */}
       <div className="mt-4">
-        <FieldGrid>
+        <FieldGrid dense>
           <SettingField label={t("buCode")} value={bu.code} />
           <SettingField label={t("alias")} value={bu.alias_name} />
-          <SettingField
-            label={tfl("department")}
-            value={bu.department?.name}
-          />
+          <SettingField label={tfl("department")} value={bu.department?.name} />
           <SettingField label={t("systemLevel")} value={bu.system_level} />
           <SettingField
             label={t("hodDepartments")}
@@ -392,14 +399,8 @@ export default function BUSection({ bu }: { bu: BusinessUnit }) {
           {config.company && (
             <SubSection title={t("company")}>
               <SettingField label={tfl("name")} value={config.company.name} />
-              <SettingField
-                label={t("telephone")}
-                value={config.company.tel}
-              />
-              <SettingField
-                label={tfl("email")}
-                value={config.company.email}
-              />
+              <SettingField label={t("telephone")} value={config.company.tel} />
+              <SettingField label={tfl("email")} value={config.company.email} />
               <SettingField
                 label={t("address")}
                 value={config.company.address}
