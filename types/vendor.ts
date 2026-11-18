@@ -46,6 +46,9 @@ export interface Vendor {
   rating?: number | null;
   // บัญชีเจ้าหนี้ default (uuid ของ tb_chart_of_accounts) — response ไม่มี code ปนมา
   ap_chart_of_accounts_id?: string | null;
+  payment_type_id?: string | null;
+  wht_form_id?: string | null;
+  wht_service_type_id?: string | null;
   // list ส่งแบบ flat (VendorListItemResponseSchema) — detail ไม่ได้ใช้สองตัวนี้
   credit_term_name?: string | null;
   credit_term_days?: number | null;
@@ -76,6 +79,9 @@ export interface CreateVendorDto {
   branch_no: string | null;
   rating: number | null;
   ap_chart_of_accounts_id?: string | null;
+  payment_type_id?: string | null;
+  wht_form_id?: string | null;
+  wht_service_type_id?: string | null;
   business_type: { id: string; name: string }[];
   info: VendorInfoItem[];
   vendor_address: {

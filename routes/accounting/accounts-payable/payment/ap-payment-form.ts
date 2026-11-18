@@ -1,4 +1,8 @@
 import type {
+  PaymentTypeMaster,
+  WhtServiceTypeMaster,
+} from "@/types/accounting-master";
+import type {
   ApOutstandingDocument,
   ApOutstandingLine,
   ApPayment,
@@ -27,7 +31,10 @@ export const PAYMENT_METHODS: ApPaymentMethod[] = [
 
 export interface PaymentWhtRow {
   key: string;
-  wht_tax_profile_id: string;
+  wht_tax_profile_id: string | null;
+  wht_service_type_id?: string | null;
+  wht_form_id?: string | null;
+  wht_form_label?: string;
   name: string;
   pnd_form?: string | null;
   income_type?: string | null;
@@ -43,6 +50,7 @@ export interface PaymentExpenseRow {
   cost_center_id: string | null;
   description: string;
   amount: DecimalString;
+  is_credit?: boolean;
   base_amount?: DecimalString;
 }
 
@@ -54,6 +62,10 @@ export interface PaymentForm {
   paid_date: string;
   bank_account_id: string;
   payment_method: ApPaymentMethod;
+  payment_type_id?: string | null;
+  payment_type_label?: string;
+  payment_amount?: DecimalString;
+  wht_condition?: "withholding" | "paid_permanently" | "paid_once";
   cheque_no: string;
   cheque_date: string;
   reference_no: string;
@@ -72,6 +84,8 @@ export type PaymentErrorKey =
   | "vendor"
   | "paymentDate"
   | "bank"
+  | "balance"
+  | "paymentType"
   | "exchangeRate"
   | "allocations"
   | "overAllocated"
@@ -128,6 +142,9 @@ export function initialPaymentForm(
       paid_date: "",
       bank_account_id: "",
       payment_method: "bank_transfer",
+      payment_type_id: null,
+      payment_amount: "",
+      wht_condition: "withholding",
       cheque_no: "",
       cheque_date: "",
       reference_no: "",
@@ -146,6 +163,12 @@ export function initialPaymentForm(
     paid_date: toYmd(loaded.paid_date),
     bank_account_id: loaded.bank_account_id,
     payment_method: loaded.payment_method,
+    payment_type_id: loaded.payment_type_id,
+    payment_amount: loaded.net_paid_amount,
+    wht_condition: loaded.wht_condition ?? "withholding",
+    payment_type_label: loaded.master_snapshots?.payment_type
+      ? `${loaded.master_snapshots.payment_type.code} · ${loaded.master_snapshots.payment_type.description}`
+      : undefined,
     cheque_no: loaded.cheque_no ?? "",
     cheque_date: toYmd(loaded.cheque_date),
     reference_no: loaded.reference_no ?? "",
@@ -163,7 +186,15 @@ export function initialPaymentForm(
     wht: (loaded.wht ?? []).map((w) => ({
       key: w.id,
       wht_tax_profile_id: w.wht_tax_profile_id,
-      name: w.wht_tax_profile_name,
+      wht_service_type_id: w.wht_service_type_id,
+      wht_form_id: w.wht_form_id,
+      wht_form_label: loaded.master_snapshots?.wht_forms.find(
+        (form) => form.id === w.wht_form_id,
+      )?.code,
+      name:
+        loaded.master_snapshots?.wht_services.find(
+          (service) => service.id === w.wht_service_type_id,
+        )?.description ?? w.wht_tax_profile_name,
       pnd_form: w.pnd_form,
       income_type: w.income_type,
       rate: w.wht_rate,
@@ -177,9 +208,50 @@ export function initialPaymentForm(
       chart_of_accounts_id: e.chart_of_accounts_id,
       cost_center_id: e.cost_center_id,
       description: e.description ?? "",
-      amount: e.amount,
+      amount: e.amount.startsWith("-") ? e.amount.slice(1) : e.amount,
+      is_credit: e.amount.startsWith("-"),
       base_amount: e.base_amount,
     })),
+  };
+}
+
+/** Apply configured vendor defaults without replacing values the user already edited. */
+export function applyVendorPaymentDefaults(
+  current: PaymentForm,
+  defaults: {
+    vendor_id: string;
+    payment?: PaymentTypeMaster;
+    service?: WhtServiceTypeMaster;
+    wht_form_id?: string;
+  },
+): PaymentForm {
+  if (current.vendor_id !== defaults.vendor_id) return current;
+  const payment = current.payment_type_id ? undefined : defaults.payment;
+  const service = defaults.service;
+  return {
+    ...current,
+    payment_type_id: current.payment_type_id ?? payment?.id,
+    payment_type_label:
+      current.payment_type_label ??
+      (payment ? `${payment.code} · ${payment.description}` : undefined),
+    bank_account_id: current.bank_account_id || payment?.bank_account_id || "",
+    payment_method: payment?.is_cheque ? "cheque" : current.payment_method,
+    wht:
+      current.wht.length || current.wht_manual || !service
+        ? current.wht
+        : [
+            {
+              key: newKey(),
+              wht_tax_profile_id: null,
+              wht_service_type_id: service.id,
+              wht_form_id: defaults.wht_form_id ?? null,
+              name: service.description,
+              rate: String(service.rate_percent),
+              base_amount: "0",
+              wht_amount: "0",
+              is_override: false,
+            },
+          ],
   };
 }
 
@@ -251,6 +323,18 @@ export function mergeWhtPreview(
   return preview.map((row) => ({
     key: newKey(),
     wht_tax_profile_id: row.wht_tax_profile_id,
+    wht_service_type_id: row.wht_service_type_id,
+    wht_form_id:
+      current.find(
+        (old) =>
+          old.wht_service_type_id &&
+          old.wht_service_type_id === row.wht_service_type_id,
+      )?.wht_form_id ?? row.wht_form_id,
+    wht_form_label: current.find(
+      (old) =>
+        old.wht_service_type_id &&
+        old.wht_service_type_id === row.wht_service_type_id,
+    )?.wht_form_label,
     name: row.wht_tax_profile_name,
     pnd_form: row.pnd_form,
     income_type: row.income_type,
@@ -268,7 +352,9 @@ export function formTotals(
   return paymentSummary({
     allocations: allocations.map((a) => a.applied_amount),
     wht: form.wht.map((w) => w.wht_amount || "0"),
-    expenses: form.expenses.map((e) => e.amount || "0"),
+    expenses: form.expenses.map((e) =>
+      e.is_credit ? subtractDecimal("0", e.amount || "0") : e.amount || "0",
+    ),
   });
 }
 
@@ -281,6 +367,7 @@ export function validatePaymentForm(
   const errors = new Set<PaymentErrorKey>();
   if (mode === "create" && !form.vendor_id) errors.add("vendor");
   if (!form.payment_date) errors.add("paymentDate");
+  if (mode === "create" && !form.payment_type_id) errors.add("paymentType");
   if (!form.bank_account_id) errors.add("bank");
   if (form.exchange_rate.trim() && !isPositive(form.exchange_rate))
     errors.add("exchangeRate");
@@ -289,7 +376,7 @@ export function validatePaymentForm(
   if (
     form.wht.some(
       (w) =>
-        !w.wht_tax_profile_id ||
+        (!w.wht_tax_profile_id && (!w.wht_service_type_id || !w.wht_form_id)) ||
         !/^\d+(\.\d{1,2})?$/.test(w.base_amount) ||
         !/^\d+(\.\d{1,2})?$/.test(w.wht_amount),
     )
@@ -301,9 +388,18 @@ export function validatePaymentForm(
     errors.add("expense");
   if (
     allocationInputs.length > 0 &&
-    compareDecimal(formTotals(allocationInputs, form).net, "0") <= 0
+    compareDecimal(formTotals(allocationInputs, form).net, "0") < 0
   )
     errors.add("netPositive");
+  const totals = formTotals(allocationInputs, form);
+  if (
+    compareDecimal(totals.applied, "0") < 0 ||
+    (form.payment_amount?.trim() &&
+      (!/^\d+(\.\d{1,2})?$/.test(form.payment_amount) ||
+        compareDecimal(form.payment_amount, totals.net) !== 0))
+  )
+    errors.add("balance");
+  if (form.wht.length && !form.wht_condition) errors.add("whtAmount");
   return errors;
 }
 
@@ -318,6 +414,10 @@ export function toPaymentInput(
     paid_date: form.paid_date || null,
     bank_account_id: form.bank_account_id,
     payment_method: form.payment_method,
+    payment_type_id: form.payment_type_id,
+    payment_amount:
+      form.payment_amount?.trim() || formTotals(allocations, form).net,
+    wht_condition: form.wht_condition ?? "withholding",
     cheque_no: cheque ? form.cheque_no.trim() || null : null,
     cheque_date: cheque ? form.cheque_date || null : null,
     reference_no: form.reference_no.trim() || null,
@@ -326,6 +426,8 @@ export function toPaymentInput(
     allocations,
     wht: form.wht.map((w) => ({
       wht_tax_profile_id: w.wht_tax_profile_id,
+      wht_service_type_id: w.wht_service_type_id,
+      wht_form_id: w.wht_form_id,
       base_amount: w.base_amount || "0",
       wht_amount: w.wht_amount || "0",
       is_override: w.is_override,
@@ -335,6 +437,7 @@ export function toPaymentInput(
       cost_center_id: e.cost_center_id,
       description: e.description.trim() || null,
       amount: e.amount,
+      is_credit: e.is_credit,
     })),
   };
 }

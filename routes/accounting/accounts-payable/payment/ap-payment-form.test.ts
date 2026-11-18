@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ApPayment, ApWhtPreviewRow } from "@/types/accounts-payable";
 import {
   initialPaymentForm,
+  applyVendorPaymentDefaults,
   mergeWhtPreview,
   toPaymentInput,
   validatePaymentForm,
@@ -31,6 +32,149 @@ const overridden: PaymentWhtRow = {
 };
 
 describe("AP payment field round trips", () => {
+  it("creates WHT from vendor defaults without overwriting manual choices or another vendor", () => {
+    const form = { ...initialPaymentForm(null), vendor_id: "vendor" };
+    const defaults = {
+      vendor_id: "vendor",
+      payment: {
+        id: "type",
+        code: "BANK",
+        description: "Bank",
+        bank_account_id: "bank",
+        is_cheque: false,
+      },
+      service: { id: "service", description: "Service 3%", rate_percent: 3 },
+      wht_form_id: "pnd53",
+    } as Parameters<typeof applyVendorPaymentDefaults>[1];
+    const result = applyVendorPaymentDefaults(form, defaults);
+    expect(result).toMatchObject({
+      payment_type_id: "type",
+      bank_account_id: "bank",
+      wht: [
+        { wht_service_type_id: "service", wht_form_id: "pnd53", rate: "3" },
+      ],
+    });
+    expect(
+      applyVendorPaymentDefaults(
+        { ...form, payment_type_id: "manual", wht_manual: true },
+        defaults,
+      ),
+    ).toMatchObject({
+      payment_type_id: "manual",
+      bank_account_id: "",
+      wht: [],
+    });
+    expect(
+      applyVendorPaymentDefaults({ ...form, vendor_id: "other" }, defaults).wht,
+    ).toEqual([]);
+    expect(
+      applyVendorPaymentDefaults(form, { vendor_id: "vendor" }).wht,
+    ).toEqual([]);
+  });
+  it("allows zero payments with credit expenses and rejects negative or unbalanced payment input", () => {
+    const form = {
+      ...initialPaymentForm(null),
+      vendor_id: "vendor",
+      payment_type_id: "type",
+      bank_account_id: "bank",
+      payment_amount: "0",
+      expenses: [
+        {
+          key: "expense",
+          chart_of_accounts_id: "rounding",
+          cost_center_id: null,
+          description: "Credit adjustment",
+          amount: "100",
+          is_credit: true,
+        },
+      ],
+    };
+    const allocations = [
+      { ap_invoice_detail_id: "line", applied_amount: "100" },
+    ];
+    expect(validatePaymentForm(form, "create", allocations, false).size).toBe(
+      0,
+    );
+    expect(toPaymentInput(form, allocations).expenses?.[0]).toMatchObject({
+      amount: "100",
+      is_credit: true,
+    });
+    expect(
+      validatePaymentForm(
+        { ...form, payment_amount: "1" },
+        "create",
+        allocations,
+        false,
+      ).has("balance"),
+    ).toBe(true);
+    expect(
+      validatePaymentForm(
+        { ...form, payment_amount: "-1" },
+        "create",
+        allocations,
+        false,
+      ).has("balance"),
+    ).toBe(true);
+    expect(
+      validatePaymentForm(
+        { ...form, expenses: [{ ...form.expenses[0], amount: "-100" }] },
+        "create",
+        allocations,
+        false,
+      ).has("expense"),
+    ).toBe(true);
+  });
+  it("retains Payment Type, WHT Form and Service Type IDs and preserves the form on recalculation", () => {
+    const loaded = {
+      payment_type_id: "payment-type",
+      wht: [
+        {
+          id: "row",
+          wht_tax_profile_id: null,
+          wht_service_type_id: "service",
+          wht_form_id: "form",
+          wht_rate: "3",
+          base_amount: "1000",
+          wht_amount: "30",
+          is_override: false,
+        },
+      ],
+      master_snapshots: {
+        payment_type: {
+          id: "payment-type",
+          code: "BANK",
+          description: "Transfer",
+        },
+        wht_forms: [{ id: "form", code: "PND53", description: "Company WHT" }],
+        wht_services: [{ id: "service", description: "Service 3%" }],
+      },
+    } as unknown as ApPayment;
+    const form = initialPaymentForm(loaded);
+    expect(form.payment_type_label).toBe("BANK · Transfer");
+    expect(form.wht[0].name).toBe("Service 3%");
+    const rows = mergeWhtPreview(
+      form.wht,
+      [
+        {
+          ...preview,
+          wht_tax_profile_id: null,
+          wht_service_type_id: "service",
+        },
+      ],
+      false,
+    );
+    expect(rows[0].wht_form_id).toBe("form");
+    const input = toPaymentInput(
+      { ...form, exchange_rate: "1", description: "", reference_no: "" },
+      [],
+    );
+    expect(input.payment_type_id).toBe("payment-type");
+    expect(input.wht?.[0]).toMatchObject({
+      wht_tax_profile_id: null,
+      wht_service_type_id: "service",
+      wht_form_id: "form",
+    });
+  });
   it("retains WHT income type and canonical expense base amounts when loading", () => {
     const loaded = {
       wht: [
@@ -130,6 +274,7 @@ describe("AP payment field round trips", () => {
     const form = {
       ...initialPaymentForm(null),
       vendor_id: "vendor",
+      payment_type_id: "type",
       bank_account_id: "bank",
       wht: mergeWhtPreview([overridden], [preview], true),
     };

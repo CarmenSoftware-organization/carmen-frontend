@@ -41,6 +41,26 @@ const raw = {
 };
 
 describe("Invoice stored amounts and GRN matches", () => {
+  it("retains the WHT Service Type identity, saved label and rate through reload and save", () => {
+    const invoice = mapInvoice({
+      ...raw,
+      tb_ap_invoice_detail: [
+        {
+          ...raw.tb_ap_invoice_detail[0],
+          wht_service_type_id: "service",
+          wht_service_snapshot: { code: "S3", description: "Services" },
+          wht_rate: 3,
+        },
+      ],
+    });
+    const form = initialInvoiceForm(invoice, {});
+    expect(form.lines[0].wht_service_label).toBe("S3 · Services");
+    expect(form.lines[0].wht_rate).toBe("3.00");
+    expect(toInvoiceInput(form).lines[0]).toMatchObject({
+      wht_service_type_id: "service",
+      wht_tax_profile_id: null,
+    });
+  });
   it("retains backend base amounts rather than deriving them from the current rate", () => {
     const invoice = mapInvoice(raw);
     expect(invoice).toMatchObject({

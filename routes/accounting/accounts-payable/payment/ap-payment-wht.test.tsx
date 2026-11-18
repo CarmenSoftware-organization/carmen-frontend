@@ -3,7 +3,6 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { IntlProvider } from "use-intl";
 import en from "@/messages/en.json";
-import { QUERY_KEYS } from "@/constant/query-keys";
 import { PaymentWhtSection } from "./ap-payment-wht";
 
 const getList = vi.hoisted(() =>
@@ -66,7 +65,7 @@ describe("Payment WHT editing", () => {
     );
     expect(
       screen.getByRole("button", { name: "Add WHT service" }),
-    ).toBeDisabled();
+    ).toBeEnabled();
     expect(
       await screen.findByText(
         "No active WHT profiles are configured for this business unit.",
@@ -84,16 +83,10 @@ describe("Payment WHT editing", () => {
     });
   });
 
-  it("refreshes an empty cached list after a tax profile is created", async () => {
-    const client = new QueryClient({
-      defaultOptions: { queries: { retry: false, staleTime: 5 * 60 * 1000 } },
-    });
-    getList.mockResolvedValueOnce({
-      data: [],
-      paginate: { total: 0, pages: 1, page: 1, perpage: 100 },
-    });
+  it("allows adding a master WHT row without legacy tax profiles", () => {
+    const add = vi.fn();
     render(
-      <QueryClientProvider client={client}>
+      <QueryClientProvider client={new QueryClient()}>
         <IntlProvider locale="en" messages={en}>
           <PaymentWhtSection
             rows={[]}
@@ -103,29 +96,15 @@ describe("Payment WHT editing", () => {
             error={null}
             errors={new Set()}
             onChange={() => {}}
-            onAdd={() => {}}
+            onAdd={add}
             onRemove={() => {}}
             onRecalculate={() => {}}
           />
         </IntlProvider>
       </QueryClientProvider>,
     );
-    const add = screen.getByRole("button", { name: "Add WHT service" });
-    await screen.findByText(
-      "No active WHT profiles are configured for this business unit.",
-    );
-    expect(add).toBeDisabled();
-    getList.mockResolvedValueOnce({
-      data: [{ id: "service3", name: "Service 3%", tax_rate: 3 }],
-      paginate: { total: 1, pages: 1, page: 1, perpage: 100 },
-    } as never);
-    await client.invalidateQueries({ queryKey: [QUERY_KEYS.TAX_PROFILES] });
-    await waitFor(() => expect(add).toBeEnabled());
-    expect(
-      screen.queryByText(
-        "No active WHT profiles are configured for this business unit.",
-      ),
-    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Add WHT service" }));
+    expect(add).toHaveBeenCalledOnce();
   });
 
   it("keeps a new row controlled when its selected profile becomes populated", async () => {
@@ -166,10 +145,14 @@ describe("Payment WHT editing", () => {
       );
       const view = render(section(""));
       view.rerender(section("service3"));
-      expect(screen.getByRole("combobox")).toHaveTextContent("Service 3%");
+      expect(
+        screen.getByRole("combobox", { name: "Tax Profile Service 3%" }),
+      ).toHaveTextContent("Service 3%");
       expect(screen.getByText("PND.53")).toBeInTheDocument();
       await waitFor(() =>
-        expect(screen.getByRole("combobox")).not.toBeDisabled(),
+        expect(
+          screen.getByRole("combobox", { name: "Tax Profile Service 3%" }),
+        ).not.toBeDisabled(),
       );
       expect(
         [...warn.mock.calls, ...error.mock.calls].flat().join(" "),

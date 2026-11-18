@@ -70,6 +70,11 @@ vi.mock("@/routes/accounting/journal-voucher/use-journal-voucher", () => ({
 }));
 vi.mock("@/hooks/use-accounting-master", () => ({
   useBankAccounts: () => ({ data: [] }),
+  usePaymentTypeById: () => ({ data: undefined }),
+  useWhtServiceTypeById: () => ({ data: undefined }),
+  useWhtForms: () => ({ data: undefined }),
+  usePaymentTypes: () => ({ data: undefined }),
+  useWhtServiceTypes: () => ({ data: undefined }),
 }));
 vi.mock("@/hooks/use-goods-receive-note", () => ({
   useGoodsReceiveNote: () => ({
@@ -936,6 +941,10 @@ it("edits an existing expense in a dialog without applying cancelled changes", a
     />,
   );
   await userEvent.click(screen.getByRole("button", { name: "Edit expense" }));
+  fireEvent.change(screen.getByLabelText("Amount"), { target: { value: "-10" } });
+  expect(screen.getByLabelText("Amount")).toHaveValue("10");
+  await userEvent.click(within(screen.getByRole("dialog")).getByRole("combobox"));
+  await userEvent.click(screen.getByRole("option", { name: "Credit" }));
   fireEvent.change(screen.getByLabelText("Description"), {
     target: { value: "Updated fee" },
   });
@@ -946,7 +955,7 @@ it("edits an existing expense in a dialog without applying cancelled changes", a
   );
   expect(changed).toHaveBeenCalledWith(
     "expense",
-    expect.objectContaining({ description: "Updated fee", amount: "10" }),
+    expect.objectContaining({ description: "Updated fee", amount: "10", is_credit: true }),
   );
   changed.mockClear();
   await userEvent.click(screen.getByRole("button", { name: "Edit expense" }));

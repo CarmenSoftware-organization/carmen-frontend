@@ -18,6 +18,7 @@ import { useBuCode } from "@/hooks/use-bu-code";
 import { ACTIVE_ONLY_FILTER } from "@/hooks/use-lookup-pagination";
 import { createConfigApi } from "@/lib/config-crud";
 import { fetchAllPages } from "@/lib/fetch-all-pages";
+import { LookupAccountingMaster } from "@/components/lookup/lookup-accounting-master";
 import { ApReadValue } from "../shared/ap-read-value";
 import type { ApPayment } from "@/types/accounts-payable";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
@@ -56,6 +57,8 @@ export function PaymentWhtSection({
   onRemove,
   onRecalculate,
   payee,
+  condition = "withholding",
+  onConditionChange,
 }: {
   readonly rows: readonly PaymentWhtRow[];
   readonly manual?: boolean;
@@ -71,6 +74,10 @@ export function PaymentWhtSection({
   readonly onRemove: (key: string) => void;
   readonly onRecalculate: () => void;
   readonly payee?: ApPayment | null;
+  readonly condition?: "withholding" | "paid_permanently" | "paid_once";
+  readonly onConditionChange?: (
+    condition: "withholding" | "paid_permanently" | "paid_once",
+  ) => void;
 }) {
   const t = useTranslations("accounting.accountsPayable.payment.detail.wht");
   const format = useAmountFormatter();
@@ -79,7 +86,7 @@ export function PaymentWhtSection({
   const bu = useBuCode();
   const profiles = useQuery({
     queryKey: [QUERY_KEYS.TAX_PROFILES, bu, "ap-wht-profiles"],
-    enabled: editable && !!bu,
+    enabled: editable && !!bu && rows.some((row) => !!row.wht_tax_profile_id),
     queryFn: () =>
       fetchAllPages((page, perpage) =>
         profileApi.getList(bu!, {
@@ -101,20 +108,8 @@ export function PaymentWhtSection({
               size="sm"
               variant="outline"
               onClick={onAdd}
-              disabled={
-                rows.length >= 3 ||
-                calculating ||
-                profiles.isPending ||
-                profiles.isError ||
-                noProfiles
-              }
-              title={
-                rows.length >= 3
-                  ? t("limit")
-                  : noProfiles
-                    ? t("noProfiles")
-                    : undefined
-              }
+              disabled={rows.length >= 3 || calculating}
+              title={rows.length >= 3 ? t("limit") : undefined}
             >
               <Plus className="size-4" />
               {t("add")}
@@ -142,6 +137,34 @@ export function PaymentWhtSection({
           <p className="text-muted-foreground mb-2 text-xs">
             {t("manualOverride")}
           </p>
+        )}
+        {rows.length > 0 && (
+          <Field className="mb-4 max-w-sm">
+            <FieldLabel required>{ui("whtCondition")}</FieldLabel>
+            {editable ? (
+              <Select
+                value={condition}
+                onValueChange={(value) =>
+                  onConditionChange?.(value as typeof condition)
+                }
+              >
+                <SelectTrigger aria-label={ui("whtCondition")}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(
+                    ["withholding", "paid_permanently", "paid_once"] as const
+                  ).map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {ui(`whtConditions.${value}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <ApReadValue>{ui(`whtConditions.${condition}`)}</ApReadValue>
+            )}
+          </Field>
         )}
         {payee && (
           <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -188,7 +211,7 @@ export function PaymentWhtSection({
             <table className="w-full min-w-[44rem] text-left">
               <thead>
                 <tr className="border-b">
-                  <th className={TH}>{t("profile")}</th>
+                  <th className={TH}>{ui("whtServiceType")}</th>
                   <th className={TH}>{ui("whtForm")}</th>
                   <th className={TH}>{t("incomeType")}</th>
                   <th className={`${TH} text-right`}>{t("rate")}</th>
@@ -201,9 +224,30 @@ export function PaymentWhtSection({
                 {rows.map((row) => (
                   <tr key={row.key} className="border-b last:border-b-0">
                     <td className={TD}>
-                      {editable ? (
+                      {editable && !row.wht_tax_profile_id ? (
+                        <LookupAccountingMaster
+                          kind="service"
+                          value={row.wht_service_type_id}
+                          defaultLabel={row.name}
+                          disabled={calculating}
+                          onChange={(id, item) =>
+                            onChange(row.key, {
+                              wht_tax_profile_id: null,
+                              wht_service_type_id: id,
+                              name: item?.description ?? "",
+                              income_type: item?.description ?? null,
+                              rate: String(item?.rate_percent ?? 0),
+                              wht_amount: percentOf(
+                                row.base_amount || "0",
+                                String(item?.rate_percent ?? 0),
+                              ),
+                              is_override: false,
+                            })
+                          }
+                        />
+                      ) : editable ? (
                         <Select
-                          value={row.wht_tax_profile_id}
+                          value={row.wht_tax_profile_id ?? ""}
                           disabled={
                             profiles.isLoading ||
                             profiles.isError ||
@@ -246,7 +290,7 @@ export function PaymentWhtSection({
                             ) &&
                               row.wht_tax_profile_id && (
                                 <SelectItem
-                                  value={row.wht_tax_profile_id}
+                                  value={row.wht_tax_profile_id ?? ""}
                                   disabled
                                 >
                                   {row.name}
@@ -269,11 +313,29 @@ export function PaymentWhtSection({
                       )}
                     </td>
                     <td className={TD}>
-                      {row.pnd_form
-                        ? taxProfile.has(row.pnd_form)
-                          ? taxProfile(row.pnd_form)
-                          : row.pnd_form
-                        : "—"}
+                      {editable && !row.wht_tax_profile_id ? (
+                        <LookupAccountingMaster
+                          kind="form"
+                          value={row.wht_form_id}
+                          defaultLabel={row.wht_form_label}
+                          disabled={calculating}
+                          onChange={(id, item) =>
+                            onChange(row.key, {
+                              wht_form_id: id,
+                              wht_form_label: item
+                                ? `${item.code} · ${item.description}`
+                                : undefined,
+                            })
+                          }
+                        />
+                      ) : (
+                        row.wht_form_label ||
+                        (row.pnd_form
+                          ? taxProfile.has(row.pnd_form)
+                            ? taxProfile(row.pnd_form)
+                            : row.pnd_form
+                          : "—")
+                      )}
                     </td>
                     <td className={TD}>{row.income_type || "—"}</td>
                     <td className={`${TD} text-right tabular-nums`}>

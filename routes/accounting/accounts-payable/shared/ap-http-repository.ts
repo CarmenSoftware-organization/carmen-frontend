@@ -101,6 +101,8 @@ function mapLine(raw: Raw): ApInvoiceLine {
     vat_chart_of_accounts_id: str(raw.vat_chart_of_accounts_id),
     vat_cost_center_id: str(raw.vat_cost_center_id),
     wht_tax_profile_id: str(raw.wht_tax_profile_id),
+    wht_service_type_id: str(raw.wht_service_type_id),
+    wht_service_snapshot: raw.wht_service_snapshot as ApInvoiceLine["wht_service_snapshot"],
     wht_rate: toDecimalOrNull(raw.wht_rate),
     wht_estimate_amount: toDecimal(raw.wht_estimate_amount),
     cr_chart_of_accounts_id: String(raw.cr_chart_of_accounts_id),
@@ -244,6 +246,9 @@ export function mapPayment(raw: Raw): ApPayment {
     bank_account_code: String(raw.bank_account_code ?? ""),
     bank_account_name: String(raw.bank_account_name ?? ""),
     payment_method: raw.payment_method as ApPayment["payment_method"],
+    payment_type_id: str(raw.payment_type_id),
+    wht_condition: raw.wht_condition as ApPayment["wht_condition"],
+    master_snapshots: raw.master_snapshots as ApPayment["master_snapshots"],
     cheque_no: str(raw.cheque_no),
     cheque_date: iso(raw.cheque_date),
     currency_id: String(raw.currency_id),
@@ -293,7 +298,9 @@ export function mapPayment(raw: Raw): ApPayment {
       ? arr(raw.tb_ap_payment_wht).map(
           (w): ApPaymentWht => ({
             id: String(w.id),
-            wht_tax_profile_id: String(w.wht_tax_profile_id),
+            wht_tax_profile_id: str(w.wht_tax_profile_id),
+            wht_service_type_id: str(w.wht_service_type_id),
+            wht_form_id: str(w.wht_form_id),
             wht_tax_profile_name: String(w.wht_tax_profile_name ?? ""),
             pnd_form: str(w.pnd_form),
             income_type: str(w.income_type),
@@ -380,6 +387,7 @@ function paymentBody(input: Partial<ApPaymentInput>): Raw {
   const body: Raw = { ...input };
   if (input.exchange_rate !== undefined)
     body.exchange_rate = toNumberOrNull(input.exchange_rate);
+  if (input.payment_amount !== undefined) body.payment_amount = toNumber(input.payment_amount);
   if (input.allocations)
     body.allocations = input.allocations.map((a) => ({
       ap_invoice_detail_id: a.ap_invoice_detail_id,
@@ -634,7 +642,9 @@ export const httpApRepository: ApRepository = {
     const data = await unwrap(res, "Failed to preview WHT");
     return arr(data).map(
       (w): ApWhtPreviewRow => ({
-        wht_tax_profile_id: String(w.wht_tax_profile_id),
+        wht_tax_profile_id: str(w.wht_tax_profile_id),
+            wht_service_type_id: str(w.wht_service_type_id),
+            wht_form_id: str(w.wht_form_id),
         wht_tax_profile_name: String(w.wht_tax_profile_name ?? ""),
         pnd_form: str(w.pnd_form),
         income_type: str(w.income_type),

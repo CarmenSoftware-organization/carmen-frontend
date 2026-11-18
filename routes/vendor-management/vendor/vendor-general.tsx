@@ -1,3 +1,4 @@
+import { LookupAccountingMaster } from "@/components/lookup/lookup-accounting-master";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import {
@@ -28,6 +29,7 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
   const businessTypes = form.getValues("business_types");
   const rating = form.getValues("rating");
 
+  const master = useTranslations("accounting.accountsPayable.master");
   return (
     <CompactSection
       first
@@ -198,6 +200,31 @@ export function VendorGeneral({ form, isDisabled }: VendorGeneralProps) {
           />
         </Field>
 
+        {(
+          [
+            { kind: "payment", name: "payment_type_id" },
+            { kind: "form", name: "wht_form_id" },
+            { kind: "service", name: "wht_service_type_id" },
+          ] as const
+        ).map(({ kind, name }) => (
+          <Field key={name}>
+            <FieldLabel>{master(kind)}</FieldLabel>
+            <Controller
+              control={form.control}
+              name={name}
+              render={({ field }) => (
+                <LookupAccountingMaster
+                  kind={kind}
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={isDisabled}
+                  readOnly={isView}
+                  allowDeselect
+                />
+              )}
+            />
+          </Field>
+        ))}
         {/* Description */}
         <Field className="@md:col-span-2">
           <FieldLabel htmlFor="vendor-description">

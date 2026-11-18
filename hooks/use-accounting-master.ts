@@ -1,3 +1,10 @@
+import { createConfigCrud } from "@/hooks/use-config-crud";
+import { QUERY_KEYS } from "@/constant/query-keys";
+import type {
+  PaymentTypeMaster,
+  WhtFormMaster,
+  WhtServiceTypeMaster,
+} from "@/types/accounting-master";
 import { useQuery } from "@tanstack/react-query";
 import { httpClient } from "@/lib/http-client";
 import { ApiError } from "@/lib/api-error";
@@ -58,7 +65,8 @@ export function useBankAccounts() {
     queryKey: ["accounting-master", "bank-accounts", buCode],
     queryFn: async (): Promise<BankAccountMaster[]> => {
       const res = await httpClient.get(API_ENDPOINTS.GL_BANK_ACCOUNTS(buCode!));
-      if (!res.ok) throw await ApiError.from(res, "Failed to load bank accounts");
+      if (!res.ok)
+        throw await ApiError.from(res, "Failed to load bank accounts");
       const json = await res.json();
       const items = Array.isArray(json) ? json : (json?.data ?? []);
       return items.map((item: Record<string, unknown>) => ({
@@ -86,7 +94,9 @@ export function useTitles() {
     queryFn: async (): Promise<TitleMaster[]> => {
       if (!buCode) return DEFAULT_TITLES;
       try {
-        const res = await httpClient.get(`/api/proxy/api/config/${buCode}/titles`);
+        const res = await httpClient.get(
+          `/api/proxy/api/config/${buCode}/titles`,
+        );
         if (!res.ok) return DEFAULT_TITLES;
         const json = await res.json();
         const items = Array.isArray(json) ? json : (json?.data ?? []);
@@ -121,3 +131,25 @@ export function useGlPeriods() {
     enabled: !!buCode,
   });
 }
+
+const paymentTypeCrud = createConfigCrud<PaymentTypeMaster, never>({
+  endpoint: API_ENDPOINTS.PAYMENT_TYPES,
+  queryKey: QUERY_KEYS.PAYMENT_TYPES,
+  label: "payment types",
+});
+const whtFormCrud = createConfigCrud<WhtFormMaster, never>({
+  endpoint: API_ENDPOINTS.WHT_FORMS,
+  queryKey: QUERY_KEYS.WHT_FORMS,
+  label: "WHT forms",
+});
+const whtServiceCrud = createConfigCrud<WhtServiceTypeMaster, never>({
+  endpoint: API_ENDPOINTS.WHT_SERVICE_TYPES,
+  queryKey: QUERY_KEYS.WHT_SERVICE_TYPES,
+  label: "WHT service types",
+});
+export const usePaymentTypes = paymentTypeCrud.useList;
+export const usePaymentTypeById = paymentTypeCrud.useById;
+export const useWhtForms = whtFormCrud.useList;
+export const useWhtServiceTypes = whtServiceCrud.useList;
+
+export const useWhtServiceTypeById = whtServiceCrud.useById;

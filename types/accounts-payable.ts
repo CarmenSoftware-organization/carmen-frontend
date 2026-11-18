@@ -94,6 +94,8 @@ export interface ApInvoiceLine {
   vat_chart_of_accounts_id: string | null;
   vat_cost_center_id: string | null;
   wht_tax_profile_id: string | null;
+  wht_service_type_id?: string | null;
+  wht_service_snapshot?: { code: string; description: string } | null;
   wht_rate: DecimalString | null;
   wht_estimate_amount: DecimalString;
   cr_chart_of_accounts_id: string;
@@ -197,8 +199,8 @@ export interface ApInvoiceLineInput {
   vat_amount?: DecimalString | null;
   vat_is_override?: boolean;
   wht_tax_profile_id?: string | null;
-  dimensions?:
-    DimensionPayload[] | null;
+  wht_service_type_id?: string | null;
+  dimensions?: DimensionPayload[] | null;
   /** ฟิลด์ที่ UI ไม่ได้แก้ — ส่งกลับตามเดิมตอน PUT (กันถูกล้าง) */
   vat_chart_of_accounts_id?: string | null;
   vat_cost_center_id?: string | null;
@@ -253,7 +255,9 @@ export interface ApPaymentAllocation {
 
 export interface ApPaymentWht {
   id: string;
-  wht_tax_profile_id: string;
+  wht_tax_profile_id: string | null;
+  wht_service_type_id?: string | null;
+  wht_form_id?: string | null;
   wht_tax_profile_name: string;
   pnd_form?: string | null;
   income_type?: string | null;
@@ -281,6 +285,17 @@ export interface ApPaymentTaxInvoice {
   vat_amount: DecimalString;
 }
 
+export interface ApPaymentMasterSnapshots {
+  payment_type?: { id: string; code: string; description: string } | null;
+  wht_forms: { id: string; code: string; description: string }[];
+  wht_services: {
+    id: string;
+    code: string;
+    description: string;
+    rate_percent: number;
+  }[];
+}
+
 export interface ApPayment extends ApWorkflowFields {
   id: string;
   doc_version: number | null;
@@ -300,6 +315,9 @@ export interface ApPayment extends ApWorkflowFields {
   bank_account_code: string;
   bank_account_name: string;
   payment_method: ApPaymentMethod;
+  payment_type_id?: string | null;
+  wht_condition?: "withholding" | "paid_permanently" | "paid_once";
+  master_snapshots?: ApPaymentMasterSnapshots;
   cheque_no: string | null;
   cheque_date: string | null;
   currency_id: string;
@@ -339,7 +357,9 @@ export interface ApPaymentAllocationInput {
 }
 
 export interface ApPaymentWhtInput {
-  wht_tax_profile_id: string;
+  wht_tax_profile_id: string | null;
+  wht_service_type_id?: string | null;
+  wht_form_id?: string | null;
   base_amount: DecimalString;
   wht_amount: DecimalString;
   is_override?: boolean;
@@ -350,6 +370,7 @@ export interface ApPaymentExpenseInput {
   cost_center_id?: string | null;
   description?: string | null;
   amount: DecimalString;
+  is_credit?: boolean;
 }
 
 /** ตอนแก้ repository ตัด `vendor_id` ออก (backend ห้ามแก้หลังสร้าง) */
@@ -360,6 +381,9 @@ export interface ApPaymentInput {
   paid_date?: string | null;
   bank_account_id: string;
   payment_method?: ApPaymentMethod;
+  payment_type_id?: string | null;
+  payment_amount?: DecimalString;
+  wht_condition?: "withholding" | "paid_permanently" | "paid_once";
   cheque_no?: string | null;
   cheque_date?: string | null;
   reference_no?: string | null;
@@ -397,7 +421,9 @@ export interface ApOutstandingDocument {
 }
 
 export interface ApWhtPreviewRow {
-  wht_tax_profile_id: string;
+  wht_tax_profile_id: string | null;
+  wht_service_type_id?: string | null;
+  wht_form_id?: string | null;
   wht_tax_profile_name: string;
   pnd_form?: string | null;
   income_type?: string | null;

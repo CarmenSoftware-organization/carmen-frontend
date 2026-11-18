@@ -1,3 +1,5 @@
+import type { BankAccountMaster } from "@/types/accounting-master";
+import { LookupAccountingMaster } from "@/components/lookup/lookup-accounting-master";
 import { useTranslations } from "use-intl";
 import { LookupVendor } from "@/components/lookup/lookup-vendor";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -32,6 +34,7 @@ export function PaymentHeader({
   currencyCode,
   baseCurrencyCode,
   bankLabel,
+  expectedAmount,
   section = "header",
   docNo,
   status = "draft",
@@ -46,6 +49,7 @@ export function PaymentHeader({
   readonly baseCurrencyCode: string | null;
   /** ชื่อบัญชีธนาคารจาก response (โหมดอ่าน) */
   readonly bankLabel?: string;
+  readonly expectedAmount?: string;
   readonly section?: "header" | "methods";
   readonly docNo?: string;
   readonly status?: import("@/types/accounts-payable").ApDocStatus;
@@ -71,110 +75,20 @@ export function PaymentHeader({
     banks.find((b) => b.id === form.bank_account_id)?.account_name ||
     "—";
 
-  return section === "methods" ? (
-    <section className="space-y-3 border-b pb-4">
-      <h3 className="text-sm font-semibold">{ui("paymentMethods")}</h3>
-      <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Field className="sm:col-span-2">
-          <FieldLabel required>{t("bankAccount")}</FieldLabel>
-          {editable ? (
-            <Select
-              value={form.bank_account_id}
-              onValueChange={(value) => onChange({ bank_account_id: value })}
-            >
-              <SelectTrigger
-                size="sm"
-                aria-invalid={errors.has("bank") || undefined}
-              >
-                <SelectValue placeholder={td("selectBank")} />
-              </SelectTrigger>
-              <SelectContent>
-                {banks.map((bank) => (
-                  <SelectItem key={bank.id} value={bank.id}>
-                    {[bank.code, bank.account_name, bank.currency_code]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <span className="inline-flex min-h-8 items-center text-xs font-medium">
-              {bankDisplay}
-            </span>
-          )}
-          {err("bank")}
-        </Field>
-        <Field>
-          <FieldLabel>{t("method")}</FieldLabel>
-          {editable ? (
-            <Select
-              value={form.payment_method}
-              onValueChange={(value) =>
-                onChange({ payment_method: value as ApPaymentMethod })
-              }
-            >
-              <SelectTrigger size="sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAYMENT_METHODS.map((method) => (
-                  <SelectItem key={method} value={method}>
-                    {t(`methods.${method}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <ApReadValue>{t(`methods.${form.payment_method}`)}</ApReadValue>
-          )}
-        </Field>
-        <Field>
-          <FieldLabel>{t("referenceNo")}</FieldLabel>
-          {editable ? (
-            <Input
-              value={form.reference_no}
-              maxLength={100}
-              onChange={(event) =>
-                onChange({ reference_no: event.target.value })
-              }
-            />
-          ) : (
-            <ApReadValue>{form.reference_no}</ApReadValue>
-          )}
-        </Field>
-        {form.payment_method === "cheque" && (
-          <>
-            <Field>
-              <FieldLabel>{td("chequeNo")}</FieldLabel>
-              {editable ? (
-                <Input
-                  value={form.cheque_no}
-                  maxLength={50}
-                  onChange={(event) =>
-                    onChange({ cheque_no: event.target.value })
-                  }
-                />
-              ) : (
-                <ApReadValue>{form.cheque_no}</ApReadValue>
-              )}
-            </Field>
-            <Field>
-              <FieldLabel>{td("chequeDate")}</FieldLabel>
-              <DatePicker
-                value={ymdToPickerValue(form.cheque_date)}
-                onValueChange={(iso) =>
-                  onChange({ cheque_date: isoToDateInput(iso) })
-                }
-                readOnly={!editable}
-                className="w-full"
-              />
-            </Field>
-          </>
-        )}
-      </div>
-    </section>
-  ) : (
+  if (section === "methods")
+    return (
+      <PaymentMethods
+        form={form}
+        onChange={onChange}
+        editable={editable}
+        errors={errors}
+        isNew={isNew}
+        bankDisplay={bankDisplay}
+        banks={banks}
+        expectedAmount={expectedAmount}
+      />
+    );
+  return (
     <div className="space-y-3 border-b pb-4">
       <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-12">
         <Field className="lg:col-span-2">
@@ -280,5 +194,177 @@ export function PaymentHeader({
         </Field>
       </div>
     </div>
+  );
+}
+
+function PaymentMethods({
+  form,
+  onChange,
+  editable,
+  errors,
+  isNew,
+  bankDisplay,
+  banks,
+  expectedAmount,
+}: Pick<
+  Parameters<typeof PaymentHeader>[0],
+  "form" | "onChange" | "editable" | "errors" | "isNew" | "expectedAmount"
+> & {
+  readonly bankDisplay: string;
+  readonly banks: readonly BankAccountMaster[];
+}) {
+  const t = useTranslations("accounting.accountsPayable.payment");
+  const td = useTranslations("accounting.accountsPayable.payment.detail");
+  const ui = useTranslations("accounting.accountsPayable.ui");
+  const err = (key: PaymentErrorKey) =>
+    errors.has(key) ? <FieldError>{td(`errors.${key}`)}</FieldError> : null;
+  return (
+    <section className="space-y-3 border-b pb-4">
+      <h3 className="text-sm font-semibold">{ui("paymentMethods")}</h3>
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Field>
+          <FieldLabel required={isNew}>{ui("paymentType")}</FieldLabel>
+          {editable ? (
+            <LookupAccountingMaster
+              kind="payment"
+              value={form.payment_type_id}
+              defaultLabel={form.payment_type_label}
+              onChange={(id, item) =>
+                onChange({
+                  payment_type_id: id,
+                  payment_type_label: item
+                    ? `${item.code} · ${item.description}`
+                    : undefined,
+                  bank_account_id:
+                    item?.bank_account_id ?? form.bank_account_id,
+                  payment_method: item?.is_cheque
+                    ? "cheque"
+                    : form.payment_method === "cheque"
+                      ? "bank_transfer"
+                      : form.payment_method,
+                })
+              }
+            />
+          ) : (
+            <ApReadValue>{form.payment_type_label ?? "—"}</ApReadValue>
+          )}
+          {err("paymentType")}
+        </Field>
+        <Field>
+          <FieldLabel required>{ui("paymentAmount")}</FieldLabel>
+          {editable ? (
+            <Input
+              aria-label={ui("paymentAmount")}
+              inputMode="decimal"
+              value={form.payment_amount || expectedAmount || "0"}
+              onChange={(event) => {
+                if (/^\d*(\.\d{0,2})?$/.test(event.target.value))
+                  onChange({ payment_amount: event.target.value });
+              }}
+            />
+          ) : (
+            <ApReadValue>{form.payment_amount || "0"}</ApReadValue>
+          )}
+          {err("balance")}
+        </Field>
+        <Field className="sm:col-span-2">
+          <FieldLabel required>{t("bankAccount")}</FieldLabel>
+          {editable ? (
+            <Select
+              value={form.bank_account_id}
+              onValueChange={(value) => onChange({ bank_account_id: value })}
+            >
+              <SelectTrigger
+                size="sm"
+                aria-invalid={errors.has("bank") || undefined}
+              >
+                <SelectValue placeholder={td("selectBank")} />
+              </SelectTrigger>
+              <SelectContent>
+                {banks.map((bank) => (
+                  <SelectItem key={bank.id} value={bank.id}>
+                    {[bank.code, bank.account_name, bank.currency_code]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <span className="inline-flex min-h-8 items-center text-xs font-medium">
+              {bankDisplay}
+            </span>
+          )}
+          {err("bank")}
+        </Field>
+        <Field>
+          <FieldLabel>{t("method")}</FieldLabel>
+          {editable ? (
+            <Select
+              value={form.payment_method}
+              onValueChange={(value) =>
+                onChange({ payment_method: value as ApPaymentMethod })
+              }
+            >
+              <SelectTrigger size="sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAYMENT_METHODS.map((method) => (
+                  <SelectItem key={method} value={method}>
+                    {t(`methods.${method}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <ApReadValue>{t(`methods.${form.payment_method}`)}</ApReadValue>
+          )}
+        </Field>
+        <Field>
+          <FieldLabel>{t("referenceNo")}</FieldLabel>
+          {editable ? (
+            <Input
+              value={form.reference_no}
+              maxLength={100}
+              onChange={(event) =>
+                onChange({ reference_no: event.target.value })
+              }
+            />
+          ) : (
+            <ApReadValue>{form.reference_no}</ApReadValue>
+          )}
+        </Field>
+        {form.payment_method === "cheque" && (
+          <>
+            <Field>
+              <FieldLabel>{td("chequeNo")}</FieldLabel>
+              {editable ? (
+                <Input
+                  value={form.cheque_no}
+                  maxLength={50}
+                  onChange={(event) =>
+                    onChange({ cheque_no: event.target.value })
+                  }
+                />
+              ) : (
+                <ApReadValue>{form.cheque_no}</ApReadValue>
+              )}
+            </Field>
+            <Field>
+              <FieldLabel>{td("chequeDate")}</FieldLabel>
+              <DatePicker
+                value={ymdToPickerValue(form.cheque_date)}
+                onValueChange={(iso) =>
+                  onChange({ cheque_date: isoToDateInput(iso) })
+                }
+                readOnly={!editable}
+                className="w-full"
+              />
+            </Field>
+          </>
+        )}
+      </div>
+    </section>
   );
 }
