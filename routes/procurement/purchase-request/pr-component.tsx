@@ -129,10 +129,7 @@ export default function PurchaseRequestComponent() {
     defaultSort: viewMode === "my-pending" ? "pr_date:asc" : "pr_date:desc",
   });
 
-  const prFilterFields = usePrFilterFields({
-    viewMode,
-    onViewModeChange: handleViewModeChange,
-  });
+  const prFilterFields = usePrFilterFields();
 
   const lf = useListFilters({
     pageKey: LIST_PAGE_KEYS.PURCHASE_REQUEST,
@@ -269,7 +266,7 @@ export default function PurchaseRequestComponent() {
               onChange={handleViewModeChange}
               myPendingLabel={t("myPending")}
               allDocumentsLabel={t("allDocuments")}
-              className="hidden items-center gap-2 sm:flex"
+              className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto"
             />
           }
         />
@@ -357,6 +354,7 @@ export default function PurchaseRequestComponent() {
             onReject={setRejectTarget}
             onDelete={requestDelete}
             isMyPending={viewMode === "my-pending"}
+            compact={!!isMobile}
           />
           {useInfiniteScroll && grid.hasMore && (
             <div ref={grid.sentinelRef} className="flex justify-center py-4">

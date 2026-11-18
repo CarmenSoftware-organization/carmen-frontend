@@ -42,7 +42,6 @@ import { DocumentListActions } from "@/components/share/document-list-actions";
 import { useCreatableWorkflows } from "@/hooks/use-workflow";
 import { WORKFLOW_TYPE, isPriceHidden } from "@/types/workflows";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
-import { FieldLabel } from "@/components/ui/field";
 import { useListFilters } from "@/hooks/use-list-filters";
 import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
@@ -131,26 +130,6 @@ export default function PoComponent() {
   // เหมือน PR pilot) ไม่มี value จริงจึงไม่ถูกนับใน filterParam/activeFilters
   const poFilterFields = useMemo<FilterFieldDef[]>(
     () => [
-      {
-        key: "view_mode_toggle",
-        control: "custom",
-        labelKey: "",
-        // ไม่มี value จริง (ปุ่ม toggle ไม่ผ่าน setValue) — ประกาศ toClause ว่างชัดเจน
-        // ให้ตรงกับ pattern ของ field หลอกตัวอื่น (เช่น transaction's dateRange)
-        toClause: () => "",
-        render: () => (
-          <div className="space-y-1.5 sm:hidden">
-            <FieldLabel className="text-xs">{tc("view")}</FieldLabel>
-            <ViewModeToggle
-              value={viewMode}
-              onChange={handleViewModeChange}
-              myPendingLabel={t("myPending")}
-              allDocumentsLabel={t("allDocuments")}
-              className="grid grid-cols-2 gap-2"
-            />
-          </div>
-        ),
-      },
       {
         // สถานะเอกสาร (po_status) — เดิมช่องนี้เป็น active/inactive จาก is_active
         // ซึ่งคนอ่านเข้าใจว่าเป็นสถานะเอกสารตลอด ทั้งที่สถานะจริงไม่มีให้กรองเลย
@@ -241,7 +220,7 @@ export default function PoComponent() {
         section: "listView.sectionDate",
       },
     ],
-    [viewMode, stages, handleViewModeChange, t, tc],
+    [stages],
   );
 
   const lf = useListFilters({
@@ -379,7 +358,7 @@ export default function PoComponent() {
               onChange={handleViewModeChange}
               myPendingLabel={t("myPending")}
               allDocumentsLabel={t("allDocuments")}
-              className="hidden items-center gap-2 sm:flex"
+              className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto"
             />
           }
         />
