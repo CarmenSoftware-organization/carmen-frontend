@@ -9,9 +9,13 @@ import type { GrnItemField } from "./use-grn-item-table";
 /** คอลัมน์ที่อยู่หัวการ์ด ไม่ใช่ช่องในกริด */
 const HEAD_COLUMNS = new Set(["index", "product", "action"]);
 
-/** ค่าตัวเลขของ cell จัดชิดขวาไว้สำหรับตาราง — ในการ์ดป้ายอยู่บนค่า ชิดซ้ายทั้งคู่ */
+/**
+ * ค่าตัวเลขของ cell จัดชิดขวาไว้สำหรับตาราง — ในการ์ดป้ายอยู่บนค่า ชิดซ้ายทั้งคู่ ·
+ * min-h-8 ของวันที่โหมดอ่าน (date-picker) มีไว้ให้แถวตารางสูงเท่าช่องกรอก ในการ์ดมันดัน
+ * "—" ลงต่ำกว่าค่าของช่องข้าง ๆ จึงปิดทิ้ง
+ */
 const LEFT_ALIGN =
-  "[&_.items-end]:items-start [&_.justify-end]:justify-start [&_.text-right]:text-left";
+  "[&_.items-end]:items-start [&_.justify-end]:justify-start [&_.text-right]:text-left [&_.min-h-8]:min-h-0";
 
 const GRID =
   "grid grid-cols-2 gap-x-4 gap-y-2 @md:grid-cols-3 @2xl:grid-cols-4";

@@ -17,6 +17,9 @@ import { cn } from "@/lib/utils";
  *
  * - หัวเอกสาร + ช่องหัวใบอยู่ในการ์ดมีพื้น (`DOC_HEADER_CARD`) ทุกเอกสาร ไม่มีเส้นคั่นใต้หัว
  *
+ * - `footerCollapse` (GRN) = แถบท้ายใช้ `SummaryFooterBar collapseOnNarrow` — แถบแคบเหลือ
+ *   ยอดรวมบรรทัดเดียวกับปุ่ม โครงจึงต้องเป็นบรรทัดเดียวด้วย
+ *
  * แก้ช่องบนหัวเอกสารไหน ให้แก้ `fields` ที่จุดเรียกของเอกสารนั้นด้วย
  */
 export function DocPageSkeleton({
@@ -24,11 +27,13 @@ export function DocPageSkeleton({
   fields = [1, 1, 1, 1, 1, 1],
   tabs = true,
   toolbar = false,
+  footerCollapse = false,
 }: {
   readonly ribbon?: "inputs" | "text";
   readonly fields?: readonly (1 | 2)[];
   readonly tabs?: boolean;
   readonly toolbar?: boolean;
+  readonly footerCollapse?: boolean;
 }) {
   const fieldsSkeleton =
     ribbon === "text" ? (
@@ -69,7 +74,7 @@ export function DocPageSkeleton({
           <div className="pt-4">{fieldsSkeleton}</div>
         </div>
       }
-      footer={<DocFooterSkeleton />}
+      footer={<DocFooterSkeleton collapse={footerCollapse} />}
     >
       <div className="space-y-4">
         {tabs && (
@@ -137,12 +142,19 @@ function DocHeaderSkeleton() {
  * แถบสรุปยอด + ปุ่ม workflow ด้านล่าง ตำแหน่งเดียวกับ `SummaryFooterBar` —
  * แถบแคบ สรุปยอดห่อสองบรรทัดและปุ่มตกลงบรรทัดถัดไปเหมือนของจริง
  */
-function DocFooterSkeleton() {
+function DocFooterSkeleton({ collapse }: { readonly collapse: boolean }) {
   return (
     <div className="bg-background @container sticky bottom-0 z-20 mt-auto flex flex-wrap items-center justify-between gap-3 border-t p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-      <div className="w-72 max-w-full space-y-1.5">
+      <div
+        className={cn(
+          "max-w-full space-y-1.5",
+          collapse ? "w-36 @lg:w-72" : "w-72",
+        )}
+      >
         <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-40 @4xl:hidden" />
+        <Skeleton
+          className={cn("h-4 w-40 @4xl:hidden", collapse && "hidden @lg:block")}
+        />
       </div>
       <Skeleton className="h-8 w-24 rounded-md" />
     </div>

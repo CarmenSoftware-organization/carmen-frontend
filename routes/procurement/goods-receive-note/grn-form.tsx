@@ -266,25 +266,29 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
         className="space-y-3"
       >
         <Tabs defaultValue="general">
-          <TabsList variant="line">
-            <TabsTrigger value="general">{t("tabItems")}</TabsTrigger>
-            <TabsTrigger value="extra-cost">
-              {t("tabExtraCost")}
-              {extraCostCount > 0 && (
-                <Badge
-                  variant="secondary"
-                  size="xs"
-                  className="ml-1.5 tabular-nums"
-                >
-                  {extraCostCount}
-                </Badge>
+          {/* มือถือ 4 แท็บกว้างเกินกล่อง (~370 > 334px) → เลื่อนแนวนอนในแถบแทนล้นจอ ·
+              pb-1.5 เผื่อเส้นใต้แท็บที่เลือก (after:bottom-[-5px]) ไม่ให้ overflow ตัดทิ้ง */}
+          <div className="-mb-1.5 overflow-x-auto overflow-y-hidden pb-1.5">
+            <TabsList variant="line" className="w-max justify-start">
+              <TabsTrigger value="general">{t("tabItems")}</TabsTrigger>
+              <TabsTrigger value="extra-cost">
+                {t("tabExtraCost")}
+                {extraCostCount > 0 && (
+                  <Badge
+                    variant="secondary"
+                    size="xs"
+                    className="ml-1.5 tabular-nums"
+                  >
+                    {extraCostCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="stock">{t("tabStock")}</TabsTrigger>
+              {goodsReceiveNote && (
+                <TabsTrigger value="journal">{t("tabJournal")}</TabsTrigger>
               )}
-            </TabsTrigger>
-            <TabsTrigger value="stock">{t("tabStock")}</TabsTrigger>
-            {goodsReceiveNote && (
-              <TabsTrigger value="journal">{t("tabJournal")}</TabsTrigger>
-            )}
-          </TabsList>
+            </TabsList>
+          </div>
           <TabsContent value="general">
             <GrnItemTable
               form={form}
@@ -301,6 +305,7 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
             <GrnExtraCostFields
               form={form}
               disabled={isDisabled || isCommitted || hasStockLock}
+              readOnly={isView || isCommitted || hasStockLock}
             />
           </TabsContent>
           <TabsContent value="stock">
