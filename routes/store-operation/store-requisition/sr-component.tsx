@@ -36,7 +36,6 @@ import { useCreatableWorkflows } from "@/hooks/use-workflow";
 import { WORKFLOW_TYPE } from "@/types/workflows";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
 import { setURLParams, useURL } from "@/hooks/use-url";
-import { FieldLabel } from "@/components/ui/field";
 import { MultiSelectFilter } from "@/components/ui/multi-select-filter";
 import { STORE_REQUISITION_STATUS_OPTIONS } from "@/constant/store-requisition";
 import { SR_TYPE } from "@/types/store-requisition";
@@ -135,30 +134,6 @@ export default function StoreRequisitionComponent() {
   const srFilterFields = useMemo<FilterFieldDef[]>(
     () => [
       {
-        // field แรกเป็น custom control ล้วน ๆ — ยืม slot ใน ListFilter เพื่อวาง
-        // toggle my-pending/all-document สำหรับมือถือเท่านั้น (ของเดิมอยู่ใน sheet
-        // มือถือคู่กับปุ่ม inline บน desktop) ไม่มี value จริงจึงไม่ถูกนับใน
-        // filterParam/activeFilters — key ตั้งไม่ให้ชนกับ "view" ของ tab บน URL จริง
-        key: "view_mode_toggle",
-        control: "custom",
-        labelKey: "",
-        // ไม่มี value จริง (ปุ่ม toggle ไม่ผ่าน setValue) — ประกาศ toClause ว่างชัดเจน
-        // ให้ตรงกับ pattern ของ field หลอกตัวอื่น (เช่น transaction's dateRange)
-        toClause: () => "",
-        render: () => (
-          <div className="space-y-1.5 sm:hidden">
-            <FieldLabel className="text-xs">{tc("view")}</FieldLabel>
-            <ViewModeToggle
-              value={viewMode}
-              onChange={handleViewModeChange}
-              myPendingLabel={t("myPending")}
-              allDocumentsLabel={t("allDocuments")}
-              className="grid grid-cols-2 gap-2"
-            />
-          </div>
-        ),
-      },
-      {
         // ประเภทมีสองค่าคงที่ label เป็น i18n key — ใช้ control กลางตรง ๆ ได้เลย
         key: "sr_type",
         control: "multi-select",
@@ -253,7 +228,7 @@ export default function StoreRequisitionComponent() {
         section: "listView.sectionDate",
       },
     ],
-    [viewMode, stages, t, tc],
+    [stages],
   );
 
   const lf = useListFilters({
@@ -403,13 +378,13 @@ export default function StoreRequisitionComponent() {
           table={table}
           displayMode={displayMode}
           onDisplayModeChange={setDisplayMode}
-          beforeViewSelector={
+          scope={
             <ViewModeToggle
               value={viewMode}
               onChange={handleViewModeChange}
               myPendingLabel={t("myPending")}
               allDocumentsLabel={t("allDocuments")}
-              className="hidden items-center gap-2 sm:flex"
+              className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto"
             />
           }
         />

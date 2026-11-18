@@ -8,6 +8,7 @@ interface PoCardListProps {
   readonly isLoading?: boolean;
   readonly onEdit: (item: PurchaseOrder) => void;
   readonly onDelete: (item: PurchaseOrder) => void;
+  readonly compact?: boolean;
 }
 
 export default function PoCardList({
@@ -15,12 +16,13 @@ export default function PoCardList({
   isLoading,
   onEdit,
   onDelete,
+  compact = false,
 }: PoCardListProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <ListCardSkeleton key={`skeleton-${i}`} />
+          <ListCardSkeleton key={`skeleton-${i}`} rows={compact ? 3 : 5} />
         ))}
       </div>
     );
@@ -33,7 +35,13 @@ export default function PoCardList({
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {items.map((item) => (
-        <PoCard key={item.id} item={item} onEdit={onEdit} onDelete={onDelete} />
+        <PoCard
+          key={item.id}
+          item={item}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          compact={compact}
+        />
       ))}
     </div>
   );

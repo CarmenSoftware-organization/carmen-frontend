@@ -1,4 +1,7 @@
+import { Truck } from "lucide-react";
 import { useTranslations } from "use-intl";
+import { StatusChip } from "@/components/ui/status-chip";
+import { isSentBack } from "@/constant/last-action";
 import { HiddenValue } from "@/components/share/hidden-value";
 import { isPriceHidden } from "@/types/workflows";
 import {
@@ -19,6 +22,12 @@ interface PoCardProps {
   readonly item: PurchaseOrder;
   readonly onEdit: (item: PurchaseOrder) => void;
   readonly onDelete: (item: PurchaseOrder) => void;
+  /**
+   * การ์ดกระชับสำหรับมือถือ (แบบเดียวกับการ์ด PR) — เลขที่ + ชิปสถานะบนหัว แล้วเป็น
+   * บรรทัดสรุปไม่มี label: วันที่สั่ง·ชนิด / ผู้ขาย / วันส่ง (ไอคอนรถ) + ยอดเงิน
+   * ไม่มีแถว audit เปิดใบดูได้ · การ์ดเต็มยังใช้กับโหมด grid บนจอกว้าง
+   */
+  readonly compact?: boolean;
 }
 
 /**
@@ -35,8 +44,14 @@ interface PoCardProps {
  * @param props.onEdit - callback เมื่อคลิกการ์ด
  * @param props.onDelete - callback เมื่อกดปุ่มลบ
  */
-export default function PoCard({ item, onEdit, onDelete }: PoCardProps) {
+export default function PoCard({
+  item,
+  onEdit,
+  onDelete,
+  compact = false,
+}: PoCardProps) {
   const tfl = useTranslations("field");
+  const tc = useTranslations("common");
   const { dateFormat } = useProfile();
 
   const statusConfig = item.po_status
@@ -48,6 +63,80 @@ export default function PoCard({ item, onEdit, onDelete }: PoCardProps) {
   const amount = item.total_amount;
   const totalHidden = isPriceHidden(item.hidden_fields, "total_price");
   const hasAmount = amount != null && !Number.isNaN(Number(amount));
+
+  const amountNode = totalHidden ? (
+    <HiddenValue />
+  ) : hasAmount ? (
+    <span className="font-semibold tabular-nums">
+      {formatCurrency(Number(amount))}
+      {item.currency?.code && (
+        <span className="text-muted-foreground ml-1 font-normal">
+          {item.currency.code}
+        </span>
+      )}
+    </span>
+  ) : null;
+
+  if (compact) {
+    return (
+      <ListCard
+        title={item.po_no}
+        badge={
+          statusConfig?.label || isSentBack(item.last_action) ? (
+            <div className="flex shrink-0 items-center gap-1">
+              {isSentBack(item.last_action) && (
+                <StatusChip status="send_back" label={tc("sendBack")} />
+              )}
+              {item.po_status && statusConfig?.label && (
+                <StatusChip
+                  status={item.po_status}
+                  label={statusConfig.label}
+                />
+              )}
+            </div>
+          ) : undefined
+        }
+        onOpen={() => onEdit(item)}
+        onDelete={() => onDelete(item)}
+      >
+        <div className="text-muted-foreground flex min-w-0 items-center gap-1.5">
+          <span className="shrink-0 tabular-nums">
+            {formatDate(item.order_date, dateFormat)}
+          </span>
+          {typeConfig?.label && (
+            <>
+              <span aria-hidden="true">·</span>
+              <StatusIconLabel
+                status={item.po_type ?? PO_TYPE.MANUAL}
+                label={typeConfig.label}
+                className="text-muted-foreground min-w-0 truncate"
+              />
+            </>
+          )}
+        </div>
+        {item.vendor?.name && (
+          <div className="truncate font-medium" title={item.vendor.name}>
+            {item.vendor.name}
+          </div>
+        )}
+        <div className="flex min-w-0 items-baseline justify-between gap-3">
+          {item.delivery_date ? (
+            <span
+              className="text-muted-foreground flex items-center gap-1 tabular-nums"
+              title={tfl("deliveryDate")}
+            >
+              <Truck className="size-3.5 shrink-0" aria-hidden="true" />
+              <span className="sr-only">{tfl("deliveryDate")}</span>
+              {formatDate(item.delivery_date, dateFormat)}
+            </span>
+          ) : (
+            <span />
+          )}
+          {amountNode && <span className="shrink-0">{amountNode}</span>}
+        </div>
+      </ListCard>
+    );
+  }
 
   return (
     <ListCard
@@ -81,22 +170,8 @@ export default function PoCard({ item, onEdit, onDelete }: PoCardProps) {
           </span>
         </ListCardRow>
       )}
-      {totalHidden && (
-        <ListCardRow label={tfl("totalAmount")}>
-          <HiddenValue />
-        </ListCardRow>
-      )}
-      {!totalHidden && hasAmount && (
-        <ListCardRow label={tfl("totalAmount")}>
-          <span className="font-semibold tabular-nums">
-            {formatCurrency(Number(amount))}
-            {item.currency?.code && (
-              <span className="text-muted-foreground ml-1 font-normal">
-                {item.currency.code}
-              </span>
-            )}
-          </span>
-        </ListCardRow>
+      {amountNode && (
+        <ListCardRow label={tfl("totalAmount")}>{amountNode}</ListCardRow>
       )}
       <ListCardAuditRows audit={item.audit} />
     </ListCard>

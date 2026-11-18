@@ -57,8 +57,11 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
  * (ไม่นับ audit ที่ซ่อนเป็น default) — All documents ไม่มีช่องติ๊ก 55 + ปุ่มแถว 60 จึงลบ 115:
  * ครบ 1075 / 960 (ติ๊ก 55 # 60 เลขที่ 210 วันที่ 95 workflow 100 สถานะ 140 ผู้ขอ 110
  * แผนก 125 ยอด 120 ปุ่ม 60) · ไม่มี # 1015 / 900 · ไม่มี workflow 915 / 800 ·
- * ไม่มีผู้ขอ 805 / 690 · กล่องแคบ (วันที่+ป้ายส่งกลับลงใต้เลขที่ เลขที่ 150) 650 / 535
+ * กล่องแคบ (วันที่+ป้ายส่งกลับลงใต้เลขที่ เลขที่ 150) 760 / 645 · ไม่มีผู้ขอ 650 / 535
  * — กล่องที่จอ 768 = 660 · จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px
+ * กล่องกว้างมาก (≥1400 หลังหัก) ผู้ขอ 110→200 — ผลรวมครบ 1050 ยังต่ำกว่าจุดเปลี่ยน
+ * ยุบวันที่ลงใต้เลขที่**ก่อน**ซ่อนผู้ขอ — คอลัมน์เลขที่ 210 ใช้จริงแค่ ~90px (ที่ 1024
+ * กางเมนู แผนกเหลือ 177 ถูกตัด ทั้งที่ยุบวันที่แล้วได้คอลัมน์ผู้ขอคืนมาด้วย)
  * ผู้ขอที่ถูกซ่อนย้ายเป็นบรรทัดรองใต้แผนก · # และ workflow ดูได้ในหน้าเอกสาร
  */
 function columnTier(width: number | undefined, isMyPending: boolean) {
@@ -66,8 +69,9 @@ function columnTier(width: number | undefined, isMyPending: boolean) {
   return {
     showIndex: w >= 965,
     showWorkflow: w >= 905,
-    showRequester: w >= 805,
-    wide: w >= 695,
+    roomy: w >= 1400,
+    wide: w >= 805,
+    showRequester: w >= 650,
   };
 }
 
@@ -106,7 +110,7 @@ export function usePrTable({
   containerWidth,
 }: UsePurchaseRequestTableOptions) {
   "use no memo";
-  const { showIndex, showWorkflow, showRequester, wide } = columnTier(
+  const { showIndex, showWorkflow, showRequester, wide, roomy } = columnTier(
     containerWidth,
     isMyPending,
   );
@@ -260,7 +264,40 @@ export function usePrTable({
         </span>
       ),
       meta: { headerTitle: tfl("requester"), skeleton: columnSkeletons.text },
-      size: 110,
+      // กล่องกว้างมาก (4K) ชื่อเต็มไม่ถูกตัด — แผนกยืดอยู่แล้ว ไม่เสียอะไร
+      size: roomy ? 200 : 110,
+    },
+    {
+      // ก่อนแผนก (คอลัมน์ยืด) — วางหลังแผนกแล้วที่ 4K ยอดเงินห่างจากข้อมูลอื่น ~2,700px
+      accessorKey: "base_total_amount",
+      header: ({ column }) => (
+        <DataGridColumnHeader
+          column={column}
+          title={tfl("amount")}
+          className="justify-end"
+        />
+      ),
+      cell: ({ row }) => {
+        if (isPriceHidden(row.original.hidden_fields, "total_price"))
+          return <HiddenValue />;
+        const amount = row.original.base_total_amount;
+        if (amount == null) return <span></span>;
+        return (
+          <p className="font-medium whitespace-nowrap tabular-nums">
+            {formatAmount(amount, amountFormat)}
+            <span className="text-muted-foreground ms-1 text-xs font-normal">
+              {defaultCurrencyCode}
+            </span>
+          </p>
+        );
+      },
+      meta: {
+        headerTitle: tfl("amount"),
+        skeleton: columnSkeletons.text,
+        cellClassName: "text-right",
+        headerClassName: "text-right",
+      },
+      size: 120,
     },
     {
       accessorKey: "department_name",
@@ -294,37 +331,6 @@ export function usePrTable({
         skeleton: columnSkeletons.text,
         grow: true,
       },
-    },
-    {
-      accessorKey: "base_total_amount",
-      header: ({ column }) => (
-        <DataGridColumnHeader
-          column={column}
-          title={tfl("amount")}
-          className="justify-end"
-        />
-      ),
-      cell: ({ row }) => {
-        if (isPriceHidden(row.original.hidden_fields, "total_price"))
-          return <HiddenValue />;
-        const amount = row.original.base_total_amount;
-        if (amount == null) return <span></span>;
-        return (
-          <p className="font-medium whitespace-nowrap tabular-nums">
-            {formatAmount(amount, amountFormat)}
-            <span className="text-muted-foreground ms-1 text-xs font-normal">
-              {defaultCurrencyCode}
-            </span>
-          </p>
-        );
-      },
-      meta: {
-        headerTitle: tfl("amount"),
-        skeleton: columnSkeletons.text,
-        cellClassName: "text-right",
-        headerClassName: "text-right",
-      },
-      size: 120,
     },
     ...auditColumns<PurchaseRequest>(tfl, dateTimeFormat),
   ];

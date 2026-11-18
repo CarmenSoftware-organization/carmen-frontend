@@ -11,6 +11,7 @@ interface PrCardListProps {
   readonly onReject?: (item: PurchaseRequest) => void;
   readonly onDelete?: (item: PurchaseRequest) => void;
   readonly isMyPending?: boolean;
+  readonly compact?: boolean;
 }
 
 export default function PrCardList({
@@ -21,12 +22,17 @@ export default function PrCardList({
   onReject,
   onDelete,
   isMyPending = false,
+  compact = false,
 }: PrCardListProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <ListCardSkeleton key={`skeleton-${i}`} />
+          <ListCardSkeleton
+            key={`skeleton-${i}`}
+            rows={compact ? 3 : 5}
+            hasFooter={!compact}
+          />
         ))}
       </div>
     );
@@ -47,6 +53,7 @@ export default function PrCardList({
           onReject={onReject}
           onDelete={onDelete}
           isMyPending={isMyPending}
+          compact={compact}
         />
       ))}
     </div>
