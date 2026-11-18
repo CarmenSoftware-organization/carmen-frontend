@@ -29,6 +29,7 @@ import { AnimationStyles, Reveal } from "@/components/share/reveal";
 import { AppTile } from "@/components/icons/tiles";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { EyeBrow } from "@/components/ui/eye-brow";
+import { ApiError } from "@/lib/api-error";
 import { formatLocalizedDate } from "@/lib/date-utils";
 import { QUERY_KEYS } from "@/constant/query-keys";
 import { useBuCode } from "@/hooks/use-bu-code";
@@ -144,6 +145,10 @@ export default function DashboardComponent() {
   );
 }
 
+/** widget ที่ resolve ไม่ได้ใน BU นี้ (backend ตอบ 404) — กรณีเดียวที่ซ่อนการ์ดโดยไม่บอก */
+const isNotFound = (error: unknown): boolean =>
+  error instanceof ApiError && error.statusCode === 404;
+
 const SavedWidgetsSection = () => {
   const t = useTranslations("dashboard.savedWidget");
   const tt = useTranslations("toast");
@@ -220,10 +225,12 @@ const SavedWidgetsSection = () => {
     ),
   });
 
-  // ตัวที่พังทิ้งไปเงียบๆ — ผู้ใช้ยังเห็นมันตอนสลับกลับไป BU เดิม
+  // ซ่อนเงียบ ๆ เฉพาะ 404 (dataset/widget ไม่มีใน BU นี้ — ผู้ใช้ยังเห็นมันตอนสลับกลับไป BU เดิม)
+  // error อื่น (500 / เครือข่าย / param ไม่ผ่าน) การ์ดยังอยู่และบอกว่าโหลดไม่สำเร็จ + ลองใหม่ได้
+  // เดิมทิ้งทุก error → widget หายจากหน้าโดยผู้ใช้ไม่รู้ว่าเกิดอะไร
   const renderable = normalItems
     .map((widget, i) => ({ widget, query: detailQueries[i] }))
-    .filter(({ query }) => !query?.isError);
+    .filter(({ query }) => !isNotFound(query?.error));
 
   const handleAdd = (
     ds: DashboardDataset,
@@ -499,6 +506,8 @@ const SavedWidgetsSection = () => {
                   dataset={datasetById.get(widget.dataset_id)}
                   detail={query?.data}
                   isLoading={query?.isLoading ?? true}
+                  isError={query?.isError ?? false}
+                  onRetry={() => void query?.refetch()}
                   onDelete={() => setPendingDelete(widget)}
                   onConfigure={() => setPendingConfig(widget)}
                   onVisible={markVisible}

@@ -53,6 +53,12 @@ interface SortableWidgetItemProps {
    */
   readonly detail: DashboardDatasetDetail | undefined;
   readonly isLoading: boolean;
+  /**
+   * โหลดข้อมูลไม่สำเร็จ — การ์ดบอกตรง ๆ พร้อมปุ่มลองใหม่ (`onRetry`) เดิมการ์ดส่วนตัวหายไป
+   * จากหน้าเฉย ๆ และการ์ด BU ค้างเป็นโครงเทาตลอด ผู้ใช้แยกไม่ออกว่า "ยังโหลด" กับ "พัง"
+   */
+  readonly isError?: boolean;
+  readonly onRetry?: () => void;
   readonly onDelete: () => void;
   readonly dataset?: DashboardDataset;
   readonly onConfigure?: () => void;
@@ -66,6 +72,8 @@ export function SortableWidgetItem({
   widget,
   detail,
   isLoading,
+  isError = false,
+  onRetry,
   onDelete,
   dataset,
   onConfigure,
@@ -188,7 +196,9 @@ export function SortableWidgetItem({
         </div>
       )}
 
-      {isLoading || !detail ? (
+      {isError && !detail ? (
+        <WidgetErrorCard title={displayTitle} onRetry={onRetry} />
+      ) : isLoading || !detail ? (
         <WidgetSkeleton />
       ) : SUPPORTED_SHAPES.includes(
           detail.meta.shape as (typeof SUPPORTED_SHAPES)[number],
@@ -207,6 +217,39 @@ export function SortableWidgetItem({
         <UnsupportedCard title={displayTitle} shape={detail.meta.shape} />
       )}
     </li>
+  );
+}
+
+function WidgetErrorCard({
+  title,
+  onRetry,
+}: {
+  readonly title: string;
+  readonly onRetry?: () => void;
+}) {
+  const t = useTranslations("dashboard.savedWidget");
+  return (
+    <Card className="border-destructive/30 h-full gap-2 py-4">
+      <CardContent className="flex items-start gap-3 px-4">
+        <span className="bg-destructive/10 text-destructive inline-flex size-8 shrink-0 items-center justify-center rounded-lg">
+          <CircleAlert className="size-4" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1 space-y-1">
+          <p className="truncate text-sm leading-snug font-semibold">{title}</p>
+          <p
+            role="alert"
+            className="text-muted-foreground text-xs leading-snug"
+          >
+            {t("dataErrorDescription")}
+          </p>
+          {onRetry && (
+            <Button variant="outline" size="xs" onClick={onRetry}>
+              {t("dataErrorRetry")}
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

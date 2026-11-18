@@ -1,5 +1,6 @@
 import {
   CircleX,
+  Clock,
   Info,
   TrendingDown,
   TrendingUp,
@@ -69,8 +70,8 @@ import {
 } from "@/components/dashboard-widget/widget-display";
 import { dashboardDatasetDataQueryOptions } from "@/hooks/use-dashboard-dataset";
 import {
-  CURRENCY_UNIT,
   formatMetric,
+  isCurrencyUnit,
   useWidgetLabels,
   type WidgetLabels,
 } from "@/components/dashboard-widget/widget-labels";
@@ -93,6 +94,7 @@ import {
   type TableColumn,
   type TableData,
   type TimeSeriesPoint,
+  type WidgetParams,
 } from "@/types/dashboard-widget";
 
 export type ResolvedWidget = CompositeWidgetItem & {
@@ -435,6 +437,16 @@ function WidgetHeader({ widget, moduleName, subTileFor }: WidgetCardProps) {
   const status = statusOf(widget.params);
   // document.* ตรงตัวอยู่แล้ว (ชื่อ + badge สื่อความหมายครบ) → ไม่ต้องมี description
   const isDocumentWidget = widget.dataset_id.startsWith("document.");
+  // กราฟ/ตารางยอดเงิน: ตัวเลขบนแท่งเป็นเลขล้วน จึงบอกสกุลหลักของ BU ไว้ข้างชื่อการ์ด
+  // (อยู่บรรทัดเดียวกับชื่อ — ไม่เพิ่มแถว) · KPI/เกจมีรหัสสกุลต่อท้ายตัวเลขอยู่แล้ว
+  const labels = useWidgetLabels();
+  const shape = widget.meta.shape;
+  const currency =
+    shape !== "scalar" && shape !== "scalar_delta"
+      ? labels.unitSuffix(
+          isCurrencyUnit(widget.meta.unit) ? widget.meta.unit : undefined,
+        )
+      : "";
   return (
     <div className="flex items-start gap-3">
       <span className="shrink-0">
@@ -474,6 +486,11 @@ function WidgetHeader({ widget, moduleName, subTileFor }: WidgetCardProps) {
               </UiTooltip>
             </UiTooltipProvider>
           )}
+          {currency && (
+            <span className="text-muted-foreground bg-muted text-micro-legal mt-px shrink-0 rounded-md px-1.5 py-0.5 font-medium">
+              {currency}
+            </span>
+          )}
         </div>
         <WidgetParamsBadges params={widget.params} />
       </div>
@@ -507,7 +524,14 @@ export function KpiCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
             <span className="text-muted-foreground text-xs">{suffix}</span>
           )}
         </div>
-        {hasDelta && <DeltaIndicator value={raw} prev={prev} />}
+        {hasDelta && (
+          <DeltaIndicator
+            value={raw}
+            prev={prev}
+            kind={widget.meta.delta_kind}
+            params={widget.params}
+          />
+        )}
       </CardContent>
     </Card>
   );
@@ -716,7 +740,6 @@ export function BarCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
           name: labels.category(dimension, d.label),
           value: d.value,
         }));
-  const isCurrency = unit === CURRENCY_UNIT;
   // แท่งบางเกินไปเมื่อบีบให้พอดีกล่อง — คงความสูงต่อแท่งไว้แล้วให้กล่องเลื่อนแทน
   const chartHeight = Math.max(120, sorted.length * 26);
 
@@ -774,12 +797,8 @@ export function BarCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
                   <LabelList
                     dataKey="value"
                     position="right"
-                    // ตัวเลขล้วน (หน่วยอยู่ใน tooltip) · เงินคง ฿ นำหน้าเหมือนเดิม
-                    formatter={(v: number) =>
-                      isCurrency
-                        ? `${CURRENCY_UNIT}${formatMetric(v, unit)}`
-                        : formatMetric(v, unit)
-                    }
+                    // ตัวเลขล้วน — หน่วย (รวมรหัสสกุลเงินของ BU) อยู่ใน tooltip
+                    formatter={(v: number) => formatMetric(v, unit)}
                     style={{ fontSize: 10, fill: "var(--foreground)" }}
                   />
                 </Bar>
@@ -1203,7 +1222,8 @@ function formatTableCell(
   if (value === null || value === undefined || value === "") return "—";
   if (isNumericColumn(type) && typeof value === "number") {
     const n = unit ? formatMetric(value, unit) : value.toLocaleString();
-    return type === "currency" ? `฿${n}` : n;
+    // สกุลเงินอยู่ที่หัวคอลัมน์ — เป็นสกุลหลักของ BU ไม่ใช่บาทเสมอไป
+    return n;
   }
   return String(value);
 }
@@ -1564,14 +1584,52 @@ function lineAxisWidth(values: readonly number[]): number {
   return Math.min(72, Math.max(28, longest * 6 + 10));
 }
 
+/** ป้ายของงวดที่เทียบ — token แปล ("งวดที่แล้ว") · รหัสงวดแสดงตามจริง */
+function comparePeriodLabel(
+  raw: unknown,
+  tRange: ReturnType<typeof useTranslations>,
+): string {
+  const v = typeof raw === "string" && raw ? raw : "@previous_period";
+  const key = v.replace(/^@/, "");
+  return v.startsWith("@") && tRange.has(key) ? tRange(key) : v;
+}
+
+/**
+ * บรรทัดใต้ตัวเลข KPI — `prev` ของ backend มี 3 ความหมาย (`meta.delta_kind`, micro-data
+ * `service/dashboard/delta.go`) คำบรรยายต้องตรงกับที่คำนวณจริง:
+ *  - `aged` (การ์ดเอกสารค้าง): prev = จำนวนใน `value` ที่ค้างเกิน N วัน — เป็น **ส่วนหนึ่ง**
+ *    ของตัวเลข ไม่ใช่ค่าก่อนหน้า เดิมเอามาลบกันแล้วเขียน "เทียบรอบก่อน" (ค้าง 10 เกิน 7 วัน 3
+ *    กลายเป็น "+7 (233%)") — ตอนนี้บอกตรง ๆ "ค้างเกิน 7 วัน 3"
+ *  - `previous_window`: เทียบช่วงก่อนหน้าที่ยาวเท่ากัน
+ *  - `compare_period`: เทียบกับงวดที่เลือกใน compare_to
+ *  - ไม่มี (backend รุ่นเก่า): ข้อความกลางเดิม
+ */
 function DeltaIndicator({
   value,
   prev,
+  kind,
+  params,
 }: {
   readonly value: number;
   readonly prev: number;
+  readonly kind?: string;
+  readonly params?: WidgetParams | null;
 }) {
   const t = useTranslations("dashboardWidget");
+  const tRange = useTranslations("dashboard.savedWidget.timeRange");
+
+  if (kind === "aged") {
+    // ไม่มีใบไหนค้างนาน = ไม่ต้องพูด (หลักเดียวกับ diff 0 ด้านล่าง)
+    if (prev <= 0) return null;
+    const days = Number(params?.aging_days) || 7;
+    return (
+      <p className="text-warning-ink mt-1 flex h-4 flex-wrap items-center gap-x-1 overflow-hidden text-xs whitespace-nowrap">
+        <Clock className="size-3 shrink-0" aria-hidden="true" />
+        <span>{t("deltaAged", { days, count: prev.toLocaleString() })}</span>
+      </p>
+    );
+  }
+
   const diff = value - prev;
   const pct = prev === 0 ? null : Math.round((diff / Math.abs(prev)) * 100);
 
@@ -1583,10 +1641,16 @@ function DeltaIndicator({
   const Icon = isUp ? TrendingUp : TrendingDown;
   const tone = isUp ? "text-positive-ink" : "text-negative-ink";
   const sign = isUp ? "+" : "";
+  let caption = t("deltaCompare");
+  if (kind === "previous_window") caption = t("deltaPreviousWindow");
+  else if (kind === "compare_period")
+    caption = t("deltaVsPeriod", {
+      period: comparePeriodLabel(params?.compare_to, tRange),
+    });
 
   return (
     // บรรทัดเดียวเสมอ (h-4 + overflow-hidden): การ์ดสูงตายตัว ถ้าบรรทัดนี้ห่อเป็นสองบรรทัดบนการ์ดแคบ
-    // ขอบล่างจะตัดมัน — คำว่า "เทียบงวดก่อน" ที่ไม่พอที่จึงตกไปบรรทัดสองแล้วถูกซ่อนทั้งคำ
+    // ขอบล่างจะตัดมัน — คำบรรยายที่ไม่พอที่จึงตกไปบรรทัดสองแล้วถูกซ่อนทั้งคำ
     // ตัวเลขยังอยู่ครบ (ไม่ใช้ truncate: ตัดเหลือ "vs. pr…" อ่านไม่รู้เรื่อง)
     <p
       className={cn(
@@ -1600,7 +1664,7 @@ function DeltaIndicator({
         {diff.toLocaleString()}
         {pct !== null && ` (${sign}${pct}%)`}
       </span>
-      <span className="text-muted-foreground">{t("deltaCompare")}</span>
+      <span className="text-muted-foreground">{caption}</span>
     </p>
   );
 }
