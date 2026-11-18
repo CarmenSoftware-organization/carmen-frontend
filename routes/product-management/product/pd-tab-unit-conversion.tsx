@@ -30,6 +30,7 @@ import {
   RowCard,
   RowCardField,
   RowCards,
+  RowEditCards,
 } from "./pd-row-cards";
 import {
   capQtyDecimals,
@@ -188,10 +189,13 @@ function PdTabUnitConversion({
   const [setGridBox, gridBoxWidth] = useElementWidth();
   const fixedColumns =
     (gridBoxWidth ?? Number.POSITIVE_INFINITY) >= (isDisabled ? 830 : 870);
-  // กล่องแคบ + โหมดดู → การ์ดทีละใบ · โหมดแก้ยังเป็นตารางเลื่อนแนวนอน (ช่องกรอก/lookup ในแถว
-  // ผูกกับ column cell) · undefined = ยังไม่ได้วัด ใช้ตารางไปก่อน
+  // กล่องแคบ + โหมดดู → การ์ดทีละใบ (ข้อความล้วน) · undefined = ยังไม่ได้วัด ใช้ตารางไปก่อน
   const asCards =
     isDisabled && gridBoxWidth !== undefined && gridBoxWidth < ROW_CARDS_BELOW;
+  // โหมดแก้ + กล่องแคบกว่าความกว้างขั้นต่ำของตาราง (852) → การ์ดกรอกทีละแถว แทนตารางเลื่อนแนวนอน
+  // (มือถือ 304–334px / tablet 632px) · ตั้งแต่ 852 ขึ้นไปตารางพอดีกล่อง ไม่ต้องเลื่อน
+  const asEditCards =
+    !isDisabled && gridBoxWidth !== undefined && gridBoxWidth < 852;
 
   /* ---- Column definitions ---- */
   const columns = useMemo<ColumnDef<UnitField>[]>(() => {
@@ -524,6 +528,17 @@ function PdTabUnitConversion({
               })}
             </RowCards>
           )
+        ) : asEditCards ? (
+          <RowEditCards
+            table={table}
+            wide={["conversion"]}
+            empty={
+              <EmptyComponent
+                title={t("noUnits", { label })}
+                description={t("addFirstConversionHint")}
+              />
+            }
+          />
         ) : (
           <DataGrid
             table={table}

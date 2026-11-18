@@ -27,7 +27,7 @@ import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { CompactSection } from "@/components/share/compact-section";
 import { useElementWidth } from "@/hooks/use-element-width";
-import { RowCard, RowCardField, RowCards } from "./pd-row-cards";
+import { RowCard, RowCardField, RowCards, RowEditCards } from "./pd-row-cards";
 import { LookupLocation } from "@/components/lookup/lookup-location";
 import { LookupShelf } from "@/components/lookup/lookup-shelf";
 import EmptyComponent from "@/components/empty-component";
@@ -163,6 +163,9 @@ function PdTabLocations({ form, isDisabled }: PdTabLocationsProps) {
   // เหลือ 75px ป้ายประเภทล้นช่อง
   const asCards =
     isDisabled && gridBoxWidth !== undefined && gridBoxWidth < 760;
+  // โหมดแก้ + กล่องแคบกว่าความกว้างขั้นต่ำของตาราง (900) → การ์ดกรอกทีละแถว แทนตารางเลื่อนแนวนอน
+  const asEditCards =
+    !isDisabled && gridBoxWidth !== undefined && gridBoxWidth < 900;
 
   const columns = useMemo<ColumnDef<LocationRow>[]>(() => {
     const indexCol: ColumnDef<LocationRow> = {
@@ -501,6 +504,17 @@ function PdTabLocations({ form, isDisabled }: PdTabLocationsProps) {
               ))}
             </RowCards>
           )
+        ) : asEditCards ? (
+          <RowEditCards
+            table={table}
+            wide={["location"]}
+            empty={
+              <EmptyComponent
+                title={t("noLocations")}
+                description={t("addFirstLocationHint")}
+              />
+            }
+          />
         ) : (
           <DataGrid
             table={table}
