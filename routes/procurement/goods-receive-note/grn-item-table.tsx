@@ -23,6 +23,12 @@ import type { PoForGrn, PoGrnDetail } from "@/types/purchase-order";
 import type { GrnStockLockReason } from "@/types/goods-receive-note";
 import { useGrnItemTable } from "./use-grn-item-table";
 import { GrnItemComputedSync } from "./grn-item-cells";
+import { GrnItemCards } from "./grn-item-cards";
+import { useElementWidth } from "@/hooks/use-element-width";
+
+// โหมดดูบนกล่องแคบ (มือถือ/tablet) = การ์ดแถวละใบ — วัดจากความกว้างของกล่องรายการ ไม่ใช่
+// หน้าจอ: HD ที่กาง sidebar ได้กล่อง ~1,080px ซึ่งต้องยังเป็นตาราง · โหมดแก้ยังเป็นตารางเสมอ
+const GRN_ITEM_CARDS_MAX_WIDTH = 900;
 
 export const mapPoDetailToItems = (
   d: PoGrnDetail,
@@ -261,6 +267,20 @@ export function GrnItemTable({
     lockedLines,
   });
 
+  // ยังไม่ได้วัด (undefined) = ตาราง
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const asCards =
+    disabled &&
+    gridBoxWidth !== undefined &&
+    gridBoxWidth < GRN_ITEM_CARDS_MAX_WIDTH;
+  const itemsEmptyMessage = (
+    <EmptyComponent
+      icon={BoxIcon}
+      title={t("noItems")}
+      description={t("noItemsDesc")}
+    />
+  );
+
   const handleAddItem = () => {
     // แถวใหม่ขึ้นบนสุด "รายการก่อนหน้า" จึงคือแถวแรกปัจจุบัน — ของที่มาส่งพร้อมกัน
     // ใบเดียวมักเข้าคลังเดิมติดกันหลายรายการ เติมคลังให้ล่วงหน้าแล้วแก้เองได้
@@ -327,8 +347,7 @@ export function GrnItemTable({
     if (deleteIndex == null) return undefined;
     const row = form.getValues(`items.${deleteIndex}`);
     const product =
-      row?.product_name ||
-      t("removeItemUntitled", { index: deleteIndex + 1 });
+      row?.product_name || t("removeItemUntitled", { index: deleteIndex + 1 });
     return row?.location_name
       ? t("removeItemConfirm", { product, location: row.location_name })
       : t("removeItemConfirmNoLocation", { product });
@@ -347,30 +366,31 @@ export function GrnItemTable({
         <GrnItemComputedSync key={item.id} form={form} index={i} />
       ))}
 
-      <DataGrid
-        table={table}
-        recordCount={itemFields.length}
-        tableLayout={{
-          // เซลล์มีช่องกรอก — clamp สองบรรทัดทำ layout ของ control เพี้ยน
-          rowClamp: false,
-          columnsResizable: true,
-          // โหมดอ่านชิดบน — บางเซลล์มีบรรทัดรอง (รหัสคลัง · ชื่อท้องถิ่น ·
-          // เปอร์เซ็นต์ใต้ยอดเงิน) บางเซลล์ไม่มี กึ่งกลางแล้วเซลล์บรรทัดเดียว
-          // จะลอยอยู่ระหว่างสองบรรทัดของเพื่อนบ้าน (ทรงเดียวกับ PO)
-          cellAlign: disabled ? "top" : "middle",
-        }}
-        emptyMessage={
-          <EmptyComponent
-            icon={BoxIcon}
-            title={t("noItems")}
-            description={t("noItemsDesc")}
-          />
-        }
-      >
-        <DataGridContainer scroll>
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+      {/* กล่องที่ผูก ref ต้องอยู่ทั้งสองแบบ ไม่งั้นสลับแล้ววัดไม่ได้อีก */}
+      <div ref={setGridBox}>
+        {asCards ? (
+          <GrnItemCards table={table} emptyMessage={itemsEmptyMessage} />
+        ) : (
+          <DataGrid
+            table={table}
+            recordCount={itemFields.length}
+            tableLayout={{
+              // เซลล์มีช่องกรอก — clamp สองบรรทัดทำ layout ของ control เพี้ยน
+              rowClamp: false,
+              columnsResizable: true,
+              // โหมดอ่านชิดบน — บางเซลล์มีบรรทัดรอง (รหัสคลัง · ชื่อท้องถิ่น ·
+              // เปอร์เซ็นต์ใต้ยอดเงิน) บางเซลล์ไม่มี กึ่งกลางแล้วเซลล์บรรทัดเดียว
+              // จะลอยอยู่ระหว่างสองบรรทัดของเพื่อนบ้าน (ทรงเดียวกับ PO)
+              cellAlign: disabled ? "top" : "middle",
+            }}
+            emptyMessage={itemsEmptyMessage}
+          >
+            <DataGridContainer scroll>
+              <DataGridTable />
+            </DataGridContainer>
+          </DataGrid>
+        )}
+      </div>
 
       <DeleteDialog
         open={deleteIndex !== null}

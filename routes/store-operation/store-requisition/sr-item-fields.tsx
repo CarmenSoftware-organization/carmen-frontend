@@ -20,6 +20,8 @@ import { SrItemPostedCostSync } from "./sr-item-posted-cost-sync";
 import { srStockVisible } from "./sr-form-helpers";
 import { useSrStockMovements } from "./use-sr";
 import { useSrItemTable } from "./use-sr-item-table";
+import { SrItemCards } from "./sr-item-cards";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { SrSelectDialog } from "./sr-select-dialog";
 import { SrActionDialog } from "./sr-action-dialog";
 import { getDeleteDescription } from "@/lib/form-utils";
@@ -32,6 +34,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+/**
+ * กล่องรายการโหมดดูแคบกว่านี้ (px) = การ์ด (เพดานเดียวกับ PR/CN) — วัดจากความกว้างของกล่อง
+ * ไม่ใช่หน้าจอ: HD ที่กาง sidebar ได้กล่อง ~1,080px ต้องยังเป็นตาราง · โหมดแก้ยังเป็นตาราง
+ */
+const SR_ITEM_CARDS_MAX_WIDTH = 900;
 
 interface SrItemFieldsProps {
   readonly form: UseFormReturn<SrFormValues>;
@@ -165,6 +173,20 @@ export function SrItemFields({
     workflowId,
     role,
   });
+
+  // ยังไม่ได้วัด (undefined) = ตาราง
+  const [setGridBox, gridBoxWidth] = useElementWidth();
+  const asCards =
+    disabled &&
+    gridBoxWidth !== undefined &&
+    gridBoxWidth < SR_ITEM_CARDS_MAX_WIDTH;
+  const itemsEmptyMessage = (
+    <EmptyComponent
+      icon={BoxIcon}
+      title={t("noItems")}
+      description={t("noItemsDesc")}
+    />
+  );
 
   const selectedRows = table.getSelectedRowModel().rows;
   const watchedItems = useWatch({ control: form.control, name: "items" });
@@ -302,30 +324,31 @@ export function SrItemFields({
         ))
       )}
 
-      <DataGrid
-        table={table}
-        recordCount={itemFields.length}
-        tableLayout={{
-          rowClamp: false,
-          checkbox: !disabled,
-          // โหมดอ่านชิดบน — เซลล์ที่มีบรรทัดรอง (ชื่อท้องถิ่นใต้ชื่อสินค้า) กับเซลล์
-          // บรรทัดเดียวจะได้เริ่มที่เส้นเดียวกัน · โหมดแก้ไขกึ่งกลางทั้งแถว เพราะ
-          // เซลล์ส่วนใหญ่เป็นช่องกรอกสูงเท่ากัน ชิดบนแล้วช่องที่เป็นตัวหนังสือจะ
-          // ลอยอยู่เหนือช่องกรอกที่อยู่ข้าง ๆ
-          cellAlign: disabled ? "top" : "middle",
-        }}
-        emptyMessage={
-          <EmptyComponent
-            icon={BoxIcon}
-            title={t("noItems")}
-            description={t("noItemsDesc")}
-          />
-        }
-      >
-        <DataGridContainer>
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+      {/* กล่องที่ผูก ref ต้องอยู่ทั้งสองแบบ ไม่งั้นสลับแล้ววัดไม่ได้อีก */}
+      <div ref={setGridBox}>
+        {asCards ? (
+          <SrItemCards table={table} emptyMessage={itemsEmptyMessage} />
+        ) : (
+          <DataGrid
+            table={table}
+            recordCount={itemFields.length}
+            tableLayout={{
+              rowClamp: false,
+              checkbox: !disabled,
+              // โหมดอ่านชิดบน — เซลล์ที่มีบรรทัดรอง (ชื่อท้องถิ่นใต้ชื่อสินค้า) กับเซลล์
+              // บรรทัดเดียวจะได้เริ่มที่เส้นเดียวกัน · โหมดแก้ไขกึ่งกลางทั้งแถว เพราะ
+              // เซลล์ส่วนใหญ่เป็นช่องกรอกสูงเท่ากัน ชิดบนแล้วช่องที่เป็นตัวหนังสือจะ
+              // ลอยอยู่เหนือช่องกรอกที่อยู่ข้าง ๆ
+              cellAlign: disabled ? "top" : "middle",
+            }}
+            emptyMessage={itemsEmptyMessage}
+          >
+            <DataGridContainer>
+              <DataGridTable />
+            </DataGridContainer>
+          </DataGrid>
+        )}
+      </div>
 
       <DeleteDialog
         open={deleteIndex !== null}
