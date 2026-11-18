@@ -1,10 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  CalendarPlus,
-  Download,
-  MoreHorizontal,
-  Printer,
-} from "lucide-react";
+import { CalendarPlus, Download, MoreHorizontal, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "use-intl";
 import {
@@ -56,6 +51,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useProfile } from "@/hooks/use-profile";
 import { InventoryPeriodTimeline } from "./inventory-period-timeline";
 import { todayDateInput } from "./inventory-period-phase";
+import { rowNumber } from "@/lib/row-number";
 
 /** จำนวนรอบที่เปิดอยู่ที่ปุ่ม "เติมรอบ" จะเติมให้ครบ */
 const GENERATE_TARGET = 12;
@@ -288,8 +284,9 @@ export default function InventoryPeriodComponent() {
         ) : periods.length > 0 ? (
           <>
             <div className="grid grid-cols-1 gap-3">
-              {periods.map((p) => (
+              {periods.map((p, i) => (
                 <InventoryPeriodCard
+                  rowNo={rowNumber(useInfiniteScroll ? undefined : params, i)}
                   key={p.id}
                   item={p}
                   isCurrent={p.id === currentPeriod?.id}

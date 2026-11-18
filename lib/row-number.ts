@@ -18,3 +18,11 @@ export function rowNumber(
   const perpage = Number(params.perpage) || 10;
   return (page - 1) * perpage + index + 1;
 }
+
+/** state `pagination` ของ TanStack (0-based) → รูปแบบ `params` ที่ `rowNumber` รับ */
+export function pageParamsOf(pagination: {
+  pageIndex: number;
+  pageSize: number;
+}): Pick<ParamsDto, "page" | "perpage"> {
+  return { page: pagination.pageIndex + 1, perpage: pagination.pageSize };
+}

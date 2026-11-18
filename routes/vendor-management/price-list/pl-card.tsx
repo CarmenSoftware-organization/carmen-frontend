@@ -9,6 +9,8 @@ import type { PriceList, PriceListStatus } from "@/types/price-list";
 import { PlPeriodCell } from "./pl-period-cell";
 
 interface PriceListCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: PriceList;
   readonly onEdit: (item: PriceList) => void;
   readonly onVoid: (item: PriceList) => void;
@@ -20,6 +22,7 @@ export default function PriceListCard({
   onEdit,
   onVoid,
   quietExpired = false,
+  rowNo,
 }: PriceListCardProps) {
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
@@ -27,6 +30,7 @@ export default function PriceListCard({
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       badge={
         <StatusChip

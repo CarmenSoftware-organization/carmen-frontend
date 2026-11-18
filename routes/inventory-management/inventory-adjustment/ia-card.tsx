@@ -20,12 +20,14 @@ import {
 } from "@/types/inventory-adjustment";
 
 interface IaCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: InventoryAdjustment;
   readonly onEdit: (item: InventoryAdjustment) => void;
   readonly onDelete: (item: InventoryAdjustment) => void;
 }
 
-export default function IaCard({ item, onEdit, onDelete }: IaCardProps) {
+export default function IaCard({ item, onEdit, onDelete, rowNo }: IaCardProps) {
   const tfl = useTranslations("field");
   const { dateFormat, amountFormat, defaultCurrencyCode } = useProfile();
 
@@ -46,6 +48,7 @@ export default function IaCard({ item, onEdit, onDelete }: IaCardProps) {
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={docNo}
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}

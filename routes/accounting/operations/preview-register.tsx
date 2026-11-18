@@ -30,6 +30,7 @@ import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import type { FilterFieldDef } from "@/types/list-filter";
+import { pageParamsOf, rowNumber } from "@/lib/row-number";
 
 export interface PreviewRecord {
   id: string;
@@ -227,8 +228,12 @@ export function PreviewRegister<T extends PreviewRecord>({
           {cards ? (
             rows.length ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {table.getRowModel().rows.map(({ original: row }) => (
+                {table.getRowModel().rows.map(({ original: row }, i) => (
                   <ListCard
+                    rowNo={rowNumber(
+                      pageParamsOf(table.getState().pagination),
+                      i,
+                    )}
                     key={row.id}
                     title={row.number}
                     onOpen={() => onOpen(row)}

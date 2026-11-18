@@ -2,8 +2,12 @@ import type { InventoryAdjustment } from "@/types/inventory-adjustment";
 import EmptyComponent from "@/components/empty-component";
 import { ListCardSkeleton } from "@/components/share/list-card";
 import IaCard from "./ia-card";
+import { rowNumber } from "@/lib/row-number";
+import type { ParamsDto } from "@/types/params";
 
 interface IaCardListProps {
+  /** `params` ของหน้าเมื่อแบ่งหน้า · `undefined` = รายการสะสม (infinite) นับจาก 1 */
+  readonly pageParams?: ParamsDto;
   readonly items: InventoryAdjustment[];
   readonly isLoading?: boolean;
   readonly onEdit: (item: InventoryAdjustment) => void;
@@ -11,6 +15,7 @@ interface IaCardListProps {
 }
 
 export default function IaCardList({
+  pageParams,
   items,
   isLoading,
   onEdit,
@@ -37,8 +42,14 @@ export default function IaCardList({
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((item) => (
-        <IaCard key={item.id} item={item} onEdit={onEdit} onDelete={onDelete} />
+      {items.map((item, i) => (
+        <IaCard
+          rowNo={rowNumber(pageParams, i)}
+          key={item.id}
+          item={item}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       ))}
     </div>
   );

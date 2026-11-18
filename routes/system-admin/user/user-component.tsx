@@ -43,6 +43,7 @@ import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
+import { rowNumber } from "@/lib/row-number";
 
 // แผนกของผู้ใช้ — `department_id|string:a,b` (users รับ IN) ค่าเดียวของ saved view เดิมอ่านได้
 const USER_DEPARTMENT_ENTITY = defineEntitySource<Department>({
@@ -192,8 +193,9 @@ export default function UserComponent() {
         ) : users.length > 0 ? (
           <>
             <div className="grid grid-cols-1 gap-3">
-              {users.map((u) => (
+              {users.map((u, i) => (
                 <UserCard
+                  rowNo={rowNumber(useInfiniteScroll ? undefined : params, i)}
                   key={u.user_id}
                   item={u}
                   onEdit={(user) =>

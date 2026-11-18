@@ -313,6 +313,7 @@ export default function JvTemplateList({
       {isGridMode && (
         <>
           <JvTemplateCardList
+            pageParams={useInfiniteScroll ? undefined : params}
             kind={kind}
             items={templates}
             isLoading={useInfiniteScroll ? grid.isLoading : isLoading}

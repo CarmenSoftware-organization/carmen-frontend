@@ -168,6 +168,7 @@ export default function CnComponent() {
       {isGridMode && useInfiniteScroll && (
         <>
           <CnCardList
+            pageParams={useInfiniteScroll ? undefined : params}
             items={creditNotes}
             isLoading={grid.isLoading}
             onEdit={(cn) =>

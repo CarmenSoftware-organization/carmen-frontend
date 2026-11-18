@@ -4,12 +4,14 @@ import { ListCard, ListCardRow } from "@/components/share/list-card";
 import type { Role } from "@/types/role";
 
 interface Props {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: Role;
   readonly onEdit: (item: Role) => void;
   readonly onDelete?: (item: Role) => void;
 }
 
-export default function RoleCard({ item, onEdit, onDelete }: Props) {
+export default function RoleCard({ item, onEdit, onDelete, rowNo }: Props) {
   const t = useTranslations("systemAdmin.role");
   const tfl = useTranslations("field");
 
@@ -17,6 +19,7 @@ export default function RoleCard({ item, onEdit, onDelete }: Props) {
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       badge={
         <Badge variant="secondary" size="xs">

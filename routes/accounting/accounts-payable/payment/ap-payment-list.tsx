@@ -53,6 +53,7 @@ import {
 } from "../shared/use-accounts-payable";
 import { useApPaymentTable } from "./use-ap-payment-table";
 import { canBatchApprovePayment } from "./ap-payment-approval";
+import { rowNumber } from "@/lib/row-number";
 
 /** ใหม่สุดขึ้นก่อน */
 const DEFAULT_SORT = "payment_date:desc";
@@ -410,8 +411,9 @@ export default function ApPaymentList({
           <EmptyComponent />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {payments.map((payment) => (
+            {payments.map((payment, i) => (
               <ListCard
+                rowNo={rowNumber(undefined, i)}
                 key={payment.id}
                 title={payment.doc_no}
                 onOpen={() => openPayment(payment)}

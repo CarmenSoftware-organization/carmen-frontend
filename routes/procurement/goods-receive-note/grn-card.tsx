@@ -16,6 +16,8 @@ import { GRN_STATUS_CONFIG } from "@/constant/goods-receive-note";
 import { getGrnDocTypeLabel } from "@/constant/grn-doc-type";
 
 interface GrnCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: GoodsReceiveNote;
   readonly onEdit: (item: GoodsReceiveNote) => void;
   readonly onDelete: (item: GoodsReceiveNote) => void;
@@ -32,6 +34,7 @@ export default function GrnCard({
   onEdit,
   onDelete,
   compact = false,
+  rowNo,
 }: GrnCardProps) {
   const tfl = useTranslations("field");
   const { dateFormat } = useProfile();
@@ -56,6 +59,7 @@ export default function GrnCard({
   if (compact) {
     return (
       <ListCard
+        rowNo={rowNo}
         title={item.grn_no}
         badge={
           <StatusChip
@@ -105,6 +109,7 @@ export default function GrnCard({
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.grn_no}
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}

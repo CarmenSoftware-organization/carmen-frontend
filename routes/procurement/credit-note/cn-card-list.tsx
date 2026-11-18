@@ -2,8 +2,12 @@ import type { CreditNote } from "@/types/credit-note";
 import EmptyComponent from "@/components/empty-component";
 import { ListCardSkeleton } from "@/components/share/list-card";
 import CnCard from "./cn-card";
+import { rowNumber } from "@/lib/row-number";
+import type { ParamsDto } from "@/types/params";
 
 interface CnCardListProps {
+  /** `params` ของหน้าเมื่อแบ่งหน้า · `undefined` = รายการสะสม (infinite) นับจาก 1 */
+  readonly pageParams?: ParamsDto;
   readonly items: CreditNote[];
   readonly isLoading?: boolean;
   readonly onEdit: (item: CreditNote) => void;
@@ -12,6 +16,7 @@ interface CnCardListProps {
 }
 
 export default function CnCardList({
+  pageParams,
   items,
   isLoading,
   onEdit,
@@ -34,8 +39,9 @@ export default function CnCardList({
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {items.map((item) => (
+      {items.map((item, i) => (
         <CnCard
+          rowNo={rowNumber(pageParams, i)}
           key={item.id}
           item={item}
           onEdit={onEdit}

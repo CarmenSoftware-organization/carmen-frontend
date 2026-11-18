@@ -45,6 +45,7 @@ import {
   receiptTotals,
   type ArReceipt,
 } from "./ar-receipt-model";
+import { pageParamsOf, rowNumber } from "@/lib/row-number";
 
 const fields: FilterFieldDef[] = [
   {
@@ -286,8 +287,12 @@ function ReceiptList({ bu }: { readonly bu: string }) {
               <DataGridScrollArea>
                 {!rows.length && <EmptyComponent />}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {table.getRowModel().rows.map(({ original: row }) => (
+                  {table.getRowModel().rows.map(({ original: row }, i) => (
                     <ListCard
+                      rowNo={rowNumber(
+                        pageParamsOf(table.getState().pagination),
+                        i,
+                      )}
                       key={row.id}
                       title={row.number}
                       badge={

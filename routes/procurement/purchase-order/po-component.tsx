@@ -396,6 +396,7 @@ export default function PoComponent() {
       {isGridMode && (
         <>
           <PoCardList
+            pageParams={useInfiniteScroll ? undefined : params}
             items={purchaseOrders}
             isLoading={useInfiniteScroll ? grid.isLoading : isLoading}
             onEdit={(po) =>

@@ -46,6 +46,7 @@ import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { useElementWidth } from "@/hooks/use-element-width";
+import { rowNumber } from "@/lib/row-number";
 
 const CATEGORY_ENTITY = defineEntitySource<CategoryDto>({
   fieldKey: "product_category_id",
@@ -254,8 +255,9 @@ export default function ProductComponent() {
           {/* จำนวนการ์ดต่อแถวตามความกว้างกล่อง (ไม่ใช่ breakpoint ของจอ) — 4K ได้หลายคอลัมน์
               แทนการ์ดสามใบที่กว้างใบละพันกว่าพิกเซล */}
           <div className="grid grid-cols-[repeat(auto-fill,minmax(min(18rem,100%),1fr))] gap-3">
-            {products.map((item) => (
+            {products.map((item, i) => (
               <ProductCard
+                rowNo={rowNumber(undefined, i)}
                 key={item.id}
                 item={item}
                 onEdit={(p) =>

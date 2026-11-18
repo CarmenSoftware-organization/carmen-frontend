@@ -36,6 +36,7 @@ import {
   ListCardSendBackRow,
   ListCardSkeleton,
 } from "@/components/share/list-card";
+import { rowNumber } from "@/lib/row-number";
 
 /**
  * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
@@ -364,10 +365,11 @@ export default function ApprovalQueueList({
                 ))
               : items.length === 0
                 ? emptyMessage
-                : items.map((item) => {
+                : items.map((item, i) => {
                     const typeConfig = DOC_TYPE_CONFIG[item.doc_type];
                     return (
                       <ListCard
+                        rowNo={rowNumber(params, i)}
                         key={`${item.doc_type}-${item.id}`}
                         title={item.doc_no}
                         onOpen={

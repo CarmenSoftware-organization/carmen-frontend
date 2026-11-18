@@ -61,6 +61,7 @@ import {
   saveFolioSamples,
   type ArFolio,
 } from "./ar-folio-model";
+import { pageParamsOf, rowNumber } from "@/lib/row-number";
 
 const fields: FilterFieldDef[] = [
   {
@@ -420,8 +421,12 @@ function FolioList({ bu }: { readonly bu: string }) {
           {cards ? (
             rows.length ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {table.getRowModel().rows.map(({ original: folio }) => (
+                {table.getRowModel().rows.map(({ original: folio }, i) => (
                   <ListCard
+                    rowNo={rowNumber(
+                      pageParamsOf(table.getState().pagination),
+                      i,
+                    )}
                     key={folio.id}
                     title={folio.folioNo}
                     onOpen={() => open(folio)}

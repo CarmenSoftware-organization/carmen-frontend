@@ -49,6 +49,7 @@ import {
 } from "../shared/use-accounts-payable";
 import { ApFromGrnBadge, ApSettlementBadge } from "./ap-invoice-badges";
 import { useApInvoiceTable } from "./use-ap-invoice-table";
+import { rowNumber } from "@/lib/row-number";
 
 /** ใหม่สุดขึ้นก่อน */
 const DEFAULT_SORT = "doc_date:desc";
@@ -302,8 +303,9 @@ export default function ApInvoiceList() {
           <EmptyComponent />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {invoices.map((invoice) => (
+            {invoices.map((invoice, i) => (
               <ListCard
+                rowNo={rowNumber(undefined, i)}
                 key={invoice.id}
                 title={invoice.doc_no}
                 badge={<ApFromGrnBadge invoice={invoice} />}

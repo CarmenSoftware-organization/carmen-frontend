@@ -19,6 +19,8 @@ import { PO_STATUS_CONFIG, PO_TYPE_CONFIG } from "@/constant/purchase-order";
 import { PO_TYPE, type PurchaseOrder } from "@/types/purchase-order";
 
 interface PoCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: PurchaseOrder;
   readonly onEdit: (item: PurchaseOrder) => void;
   readonly onDelete: (item: PurchaseOrder) => void;
@@ -49,6 +51,7 @@ export default function PoCard({
   onEdit,
   onDelete,
   compact = false,
+  rowNo,
 }: PoCardProps) {
   const tfl = useTranslations("field");
   const tc = useTranslations("common");
@@ -80,6 +83,7 @@ export default function PoCard({
   if (compact) {
     return (
       <ListCard
+        rowNo={rowNo}
         title={item.po_no}
         badge={
           statusConfig?.label || isSentBack(item.last_action) ? (
@@ -140,6 +144,7 @@ export default function PoCard({
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.po_no}
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}

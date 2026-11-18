@@ -17,6 +17,8 @@ import {
 } from "./recipe-list-cells";
 
 interface RecipeCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: Recipe;
   readonly cuisines: Cuisine[];
   readonly categories: RecipeCategory[];
@@ -47,6 +49,7 @@ export default function RecipeCard({
   categories,
   onEdit,
   onDelete,
+  rowNo,
 }: RecipeCardProps) {
   const t = useTranslations("operationPlan.recipe");
   const tfl = useTranslations("field");
@@ -60,6 +63,7 @@ export default function RecipeCard({
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={
         <span className="flex min-w-0 items-center gap-2.5" title={name}>
           <RecipeThumb image={item.primary_image} />

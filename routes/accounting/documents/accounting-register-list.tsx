@@ -48,6 +48,7 @@ import {
   type AccountingDocument,
   type AccountingDocumentConfig,
 } from "./accounting-document-model";
+import { pageParamsOf, rowNumber } from "@/lib/row-number";
 
 const fields: FilterFieldDef[] = [
   {
@@ -228,8 +229,12 @@ export default function AccountingRegisterList({
           {cards ? (
             rows.length ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {table.getRowModel().rows.map(({ original: row }) => (
+                {table.getRowModel().rows.map(({ original: row }, i) => (
                   <ListCard
+                    rowNo={rowNumber(
+                      pageParamsOf(table.getState().pagination),
+                      i,
+                    )}
                     key={row.id}
                     title={row.number}
                     onOpen={() => open(row)}
