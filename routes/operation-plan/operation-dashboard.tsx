@@ -87,7 +87,7 @@ export default function OperationDashboard() {
             <WidgetSkeleton
               key={`opd-skeleton-${i}`}
               // ต้องบอกขนาดช่องเอง — ไม่ใส่ = กว้าง 1 คอลัมน์ สูง 1 แถว (โครงการ์ดบีบเหลือ ~50–110px)
-              className="row-span-2 @min-[38rem]:col-span-2 @5xl:col-span-3"
+              className={gridClasses("kpi")}
             />
           ))}
         </div>
