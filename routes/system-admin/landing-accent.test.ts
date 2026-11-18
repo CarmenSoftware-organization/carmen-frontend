@@ -3,16 +3,21 @@ import { join } from "node:path";
 import { describe, it, expect } from "vitest";
 
 const DIR = "routes/system-admin";
+// การ์ด หัวหน้า และตัวช่วยวาดเส้นย้ายไปเป็นของกลางแล้ว — ยังต้องอยู่ใต้กติกาสีเดียวเหมือนเดิม
+const SHARED_DIR = "components/share/landing";
 
 const SECOND_ACCENTS =
   /var\(--(positive|destructive|success|warning|info|chart-\d+)\)/;
 
-const landingFiles = readdirSync(join(import.meta.dirname))
-  .filter((f) => f.startsWith("landing-") && !f.includes(".test."))
-  .map((f) => ({
-    file: `${DIR}/${f}`,
-    src: readFileSync(join(import.meta.dirname, f), "utf-8"),
-  }));
+const read = (dir: string) =>
+  readdirSync(dir)
+    .filter((f) => f.startsWith("landing-") && !f.includes(".test."))
+    .map((f) => ({
+      file: `${dir}/${f}`,
+      src: readFileSync(join(dir, f), "utf-8"),
+    }));
+
+const landingFiles = [...read(DIR), ...read(SHARED_DIR)];
 
 describe("the admin landing carries a single accent", () => {
   it("reads every landing file", () => {

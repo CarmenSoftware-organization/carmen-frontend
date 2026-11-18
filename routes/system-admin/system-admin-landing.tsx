@@ -1,11 +1,11 @@
 import { useTranslations } from "use-intl";
+import { LandingHero } from "@/components/share/landing/landing-hero";
 import { moduleList } from "@/constant/module-list";
 import {
   useVisibleModules,
   type ModuleWithAccess,
 } from "@/hooks/use-visible-modules";
 import { LandingChapter } from "./landing-chapter";
-import { LandingHero } from "./landing-hero";
 import { CHAPTERS } from "./landing-types";
 
 const SYSTEM_ADMIN_SUBS =
@@ -52,7 +52,7 @@ export default function SystemAdminLanding() {
 
   return (
     <div className="w-full">
-      <LandingHero t={t} />
+      <LandingHero title={t("title")} kicker={t("kicker")} lede={t("lede")} />
       <div
         className="gap-x-5"
         style={{ columns: `20rem ${Math.max(chapters.length, 1)}` }}

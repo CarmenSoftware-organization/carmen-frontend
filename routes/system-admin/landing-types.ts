@@ -1,4 +1,4 @@
-import type { ComponentType, SVGProps } from "react";
+import type { LucideIcon } from "@/components/share/landing/landing-card";
 import {
   Activity,
   BellRing,
@@ -17,9 +17,7 @@ import {
   Workflow,
 } from "lucide-react";
 
-export type LucideIcon = ComponentType<
-  SVGProps<SVGSVGElement> & { size?: number | string }
->;
+export type { LucideIcon };
 
 export type VisualKey =
   | "roles"
@@ -46,8 +44,7 @@ export type ModuleDef = {
 };
 
 export type ChapterDef = {
-  readonly key:
-    "business" | "access" | "process" | "observe" | "config";
+  readonly key: "business" | "access" | "process" | "observe" | "config";
   readonly modules: readonly ModuleDef[];
 };
 
