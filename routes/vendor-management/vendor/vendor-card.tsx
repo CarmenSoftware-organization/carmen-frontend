@@ -10,6 +10,8 @@ import { VendorRatingStars } from "./vendor-rating";
 import type { Vendor } from "@/types/vendor";
 
 interface VendorCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: Vendor;
   readonly onEdit: (item: Vendor) => void;
   readonly onDelete: (item: Vendor) => void;
@@ -19,6 +21,7 @@ export default function VendorCard({
   item,
   onEdit,
   onDelete,
+  rowNo,
 }: VendorCardProps) {
   const tfl = useTranslations("field");
   const t = useTranslations("vendorManagement.vendor");
@@ -30,6 +33,7 @@ export default function VendorCard({
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}

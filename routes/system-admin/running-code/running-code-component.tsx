@@ -39,6 +39,7 @@ import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
 import { cn } from "@/lib/utils";
+import { rowNumber } from "@/lib/row-number";
 
 export default function RunningCodeComponent() {
   const [deleteTarget, setDeleteTarget] = useState<RunningCode | null>(null);
@@ -222,8 +223,9 @@ export default function RunningCodeComponent() {
         ) : runningCodes.length > 0 ? (
           <>
             <div className="grid grid-cols-1 gap-3">
-              {runningCodes.map((rc) => (
+              {runningCodes.map((rc, i) => (
                 <RunningCodeCard
+                  rowNo={rowNumber(useInfiniteScroll ? undefined : params, i)}
                   key={rc.id}
                   item={rc}
                   onEdit={(item) => {

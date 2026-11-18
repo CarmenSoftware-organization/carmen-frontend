@@ -63,8 +63,8 @@ export default function CurrencyComponent() {
           />
         </Suspense>
       )}
-      renderCard={({ item, onEdit, onDelete }) => (
-        <CurrencyCard item={item} onEdit={onEdit} onDelete={onDelete} />
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
+        <CurrencyCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
       )}
     />
   );

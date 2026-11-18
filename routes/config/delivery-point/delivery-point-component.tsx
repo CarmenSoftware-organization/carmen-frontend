@@ -41,8 +41,8 @@ export default function DeliveryPointComponent() {
           readOnly={readOnly}
         />
       )}
-      renderCard={({ item, onEdit, onDelete }) => (
-        <DeliveryPointCard item={item} onEdit={onEdit} onDelete={onDelete} />
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
+        <DeliveryPointCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
       )}
     />
   );

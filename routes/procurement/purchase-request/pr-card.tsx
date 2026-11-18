@@ -20,6 +20,8 @@ import { HiddenValue } from "@/components/share/hidden-value";
 import { isPriceHidden } from "@/types/workflows";
 
 interface PrCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: PurchaseRequest;
   readonly onEdit: (item: PurchaseRequest) => void;
   readonly onApprove?: (item: PurchaseRequest) => void;
@@ -42,6 +44,7 @@ export default function PrCard({
   onDelete,
   isMyPending = false,
   compact = false,
+  rowNo,
 }: PrCardProps) {
   const tfl = useTranslations("field");
   const tc = useTranslations("common");
@@ -110,6 +113,7 @@ export default function PrCard({
       .join(" · ");
     return (
       <ListCard
+        rowNo={rowNo}
         title={item.pr_no}
         badge={
           <div className="flex shrink-0 items-center gap-1">
@@ -156,6 +160,7 @@ export default function PrCard({
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.pr_no}
       onOpen={() => onEdit(item)}
       onDelete={canDelete ? () => onDelete?.(item) : undefined}

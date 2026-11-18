@@ -72,8 +72,8 @@ export default function CertificationComponent() {
           />
         </Suspense>
       )}
-      renderCard={({ item, onEdit, onDelete }) => (
-        <CertificationCard item={item} onEdit={onEdit} onDelete={onDelete} />
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
+        <CertificationCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
       )}
     />
   );

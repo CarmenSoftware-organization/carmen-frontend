@@ -8,15 +8,17 @@ import {
 import type { Shelf } from "@/types/shelf";
 
 interface Props {
+  readonly rowNo?: number;
   readonly item: Shelf;
   readonly onEdit: (item: Shelf) => void;
   readonly onDelete?: (item: Shelf) => void;
 }
 
-export default function ShelfCard({ item, onEdit, onDelete }: Props) {
+export default function ShelfCard({ item, onEdit, onDelete, rowNo }: Props) {
   const tfl = useTranslations("field");
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}

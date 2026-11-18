@@ -83,8 +83,8 @@ export default function AdjustmentTypeComponent() {
           readOnly={readOnly}
         />
       )}
-      renderCard={({ item, onEdit, onDelete }) => (
-        <AdjustmentTypeCard item={item} onEdit={onEdit} onDelete={onDelete} />
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
+        <AdjustmentTypeCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
       )}
     />
   );

@@ -38,6 +38,7 @@ import { MultiSelectFilter } from "@/components/ui/multi-select-filter";
 import type { FilterFieldDef } from "@/types/list-filter";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { useElementWidth } from "@/hooks/use-element-width";
+import { rowNumber } from "@/lib/row-number";
 
 export default function PriceListTemplateComponent() {
   const navigate = useNavigate();
@@ -222,8 +223,9 @@ export default function PriceListTemplateComponent() {
       {isGridMode && !grid.isLoading && templates.length > 0 && (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {templates.map((item) => (
+            {templates.map((item, i) => (
               <PltCard
+                rowNo={rowNumber(undefined, i)}
                 key={item.id}
                 item={item}
                 onEdit={(tpl) =>

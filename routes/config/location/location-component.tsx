@@ -53,8 +53,8 @@ export default function LocationComponent() {
           width: 10,
         },
       ]}
-      renderCard={({ item, onEdit, onDelete }) => (
-        <LocationCard item={item} onEdit={onEdit} onDelete={onDelete} />
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
+        <LocationCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
       )}
     />
   );

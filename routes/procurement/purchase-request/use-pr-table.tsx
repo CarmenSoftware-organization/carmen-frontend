@@ -55,24 +55,43 @@ import type { useDataGridState } from "@/hooks/use-data-grid-state";
  *
  * "แผนก" รับที่เหลือ (`meta.grow`) ที่เหลือกว้างคงที่ ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`
  * (ไม่นับ audit ที่ซ่อนเป็น default) — All documents ไม่มีช่องติ๊ก 55 + ปุ่มแถว 60 จึงลบ 115:
- * ครบ 1075 / 960 (ติ๊ก 55 # 60 เลขที่ 210 วันที่ 95 workflow 100 สถานะ 140 ผู้ขอ 110
- * แผนก 125 ยอด 120 ปุ่ม 60) · ไม่มี # 1015 / 900 · ไม่มี workflow 915 / 800 ·
- * กล่องแคบ (วันที่+ป้ายส่งกลับลงใต้เลขที่ เลขที่ 150) 760 / 645 · ไม่มีผู้ขอ 650 / 535
+ * ครบ 1063 / 948 (ติ๊ก 55 # 48 เลขที่ 210 วันที่ 95 workflow 100 สถานะ 140 ผู้ขอ 110
+ * แผนก 125 ยอด 120 ปุ่ม 60) · ไม่มี workflow 963 / 848 ·
+ * กล่องแคบ (วันที่+ป้ายส่งกลับลงใต้เลขที่ เลขที่ 150) 808 / 693 · ไม่มีผู้ขอ 698 / 583 ·
+ * ไม่มีคอลัมน์สถานะ (ชิปลงใต้เลขที่) 558 / 443
  * — กล่องที่จอ 768 = 660 · จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px
- * กล่องกว้างมาก (≥1400 หลังหัก) ผู้ขอ 110→200 — ผลรวมครบ 1050 ยังต่ำกว่าจุดเปลี่ยน
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) — My pending ที่ tablet
+ * จึงย้ายสถานะลงใต้เลขที่ (All documents ที่ tablet ยังมีคอลัมน์สถานะ)
+ * กล่องกว้างมาก (≥1400 หลังหัก) ผู้ขอ 110→200 — ผลรวมครบ 1038 ยังต่ำกว่าจุดเปลี่ยน
  * ยุบวันที่ลงใต้เลขที่**ก่อน**ซ่อนผู้ขอ — คอลัมน์เลขที่ 210 ใช้จริงแค่ ~90px (ที่ 1024
  * กางเมนู แผนกเหลือ 177 ถูกตัด ทั้งที่ยุบวันที่แล้วได้คอลัมน์ผู้ขอคืนมาด้วย)
- * ผู้ขอที่ถูกซ่อนย้ายเป็นบรรทัดรองใต้แผนก · # และ workflow ดูได้ในหน้าเอกสาร
+ * ผู้ขอที่ถูกซ่อนย้ายเป็นบรรทัดรองใต้แผนก · workflow ดูได้ในหน้าเอกสาร
  */
 function columnTier(width: number | undefined, isMyPending: boolean) {
   const w = (width ?? Number.POSITIVE_INFINITY) - (isMyPending ? 115 : 0);
   return {
-    showIndex: w >= 965,
-    showWorkflow: w >= 905,
+    showWorkflow: w >= 953,
     roomy: w >= 1400,
-    wide: w >= 805,
-    showRequester: w >= 650,
+    wide: w >= 853,
+    showRequester: w >= 698,
+    showStatus: w >= 588,
   };
+}
+
+/** ชิปสถานะ + ชื่อ stage — ใช้ทั้งในคอลัมน์สถานะและเป็นบรรทัดรองใต้เลขที่ในกล่องแคบสุด */
+function PrStatusStack({ pr }: { readonly pr: PurchaseRequest }) {
+  const { pr_status: status, workflow_current_stage: stage } = pr;
+  const config = PR_STATUS_CONFIG[status] ?? PR_STATUS_CONFIG.draft;
+  return (
+    <div data-slot="cell-stack" className="flex min-w-0 flex-col items-start">
+      <StatusChip status={status} label={config.label} />
+      {stage && (
+        <span className="text-muted-foreground truncate text-xs" title={stage}>
+          {stage}
+        </span>
+      )}
+    </div>
+  );
 }
 
 interface UsePurchaseRequestTableOptions {
@@ -110,7 +129,7 @@ export function usePrTable({
   containerWidth,
 }: UsePurchaseRequestTableOptions) {
   "use no memo";
-  const { showIndex, showWorkflow, showRequester, wide, roomy } = columnTier(
+  const { showStatus, showWorkflow, showRequester, wide, roomy } = columnTier(
     containerWidth,
     isMyPending,
   );
@@ -175,6 +194,8 @@ export function usePrTable({
               </span>
               {sendBack}
             </div>
+            {/* คอลัมน์สถานะถูกซ่อนในกล่องแคบสุด — ชิปย้ายมาเป็นบรรทัดรอง */}
+            {!showStatus && <PrStatusStack pr={row.original} />}
           </div>
         );
       },
@@ -226,24 +247,7 @@ export function usePrTable({
       ),
       // ชื่อ stage เป็นบรรทัดรองของสถานะ แทนคอลัมน์ Stage แยก — สองคอลัมน์นั้นพูด
       // เรื่องเดียวกันซ้ำ (Create Request คู่ DRAFT, Completed คู่ COMPLETED)
-      cell: ({ row }): React.ReactNode => {
-        const { pr_status: status, workflow_current_stage: stage } =
-          row.original;
-        const config = PR_STATUS_CONFIG[status] ?? PR_STATUS_CONFIG.draft;
-        return (
-          <div data-slot="cell-stack" className="flex min-w-0 flex-col">
-            <StatusChip status={status} label={config.label} />
-            {stage && (
-              <span
-                className="text-muted-foreground truncate text-xs"
-                title={stage}
-              >
-                {stage}
-              </span>
-            )}
-          </div>
-        );
-      },
+      cell: ({ row }) => <PrStatusStack pr={row.original} />,
       meta: {
         headerTitle: tfl("status"),
         skeleton: columnSkeletons.badge,
@@ -462,7 +466,7 @@ export function usePrTable({
       rowSelection,
       columnVisibility: {
         ...userVisibility,
-        ...(!showIndex && { index: false }),
+        ...(!showStatus && { pr_status: false }),
         ...(!showWorkflow && { workflow_name: false }),
         ...(!showRequester && { requestor_name: false }),
         ...(!wide && { pr_date: false }),

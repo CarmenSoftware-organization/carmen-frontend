@@ -422,6 +422,7 @@ export default function StoreRequisitionComponent() {
       {isGridMode && (
         <>
           <SrCardList
+            pageParams={useInfiniteScroll ? undefined : params}
             items={items}
             isLoading={useInfiniteScroll ? grid.isLoading : isLoading}
             onEdit={(item) =>

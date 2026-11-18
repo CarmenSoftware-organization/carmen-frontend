@@ -47,8 +47,8 @@ export default function ExtraCostComponent() {
           />
         </Suspense>
       )}
-      renderCard={({ item, onEdit, onDelete }) => (
-        <ExtraCostCard item={item} onEdit={onEdit} onDelete={onDelete} />
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
+        <ExtraCostCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
       )}
     />
   );

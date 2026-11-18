@@ -8,16 +8,18 @@ import {
 import type { TaxProfile } from "@/types/tax-profile";
 
 interface Props {
+  readonly rowNo?: number;
   readonly item: TaxProfile;
   readonly onEdit: (item: TaxProfile) => void;
   readonly onDelete?: (item: TaxProfile) => void;
 }
 
-export default function TaxProfileCard({ item, onEdit, onDelete }: Props) {
+export default function TaxProfileCard({ item, onEdit, onDelete, rowNo }: Props) {
   const tfl = useTranslations("field");
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}

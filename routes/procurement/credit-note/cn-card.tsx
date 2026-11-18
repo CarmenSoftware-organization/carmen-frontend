@@ -15,6 +15,8 @@ import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { CN_STATUS_CONFIG, CN_TYPE_CONFIG } from "@/constant/credit-note";
 
 interface CnCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: CreditNote;
   readonly onEdit: (item: CreditNote) => void;
   readonly onDelete: (item: CreditNote) => void;
@@ -65,6 +67,7 @@ export default function CnCard({
   onEdit,
   onDelete,
   compact = false,
+  rowNo,
 }: CnCardProps) {
   const tfl = useTranslations("field");
   const { dateFormat } = useProfile();
@@ -89,6 +92,7 @@ export default function CnCard({
     const by = item.audit?.created?.name;
     return (
       <ListCard
+        rowNo={rowNo}
         title={item.cn_no}
         badge={
           item.doc_status ? (
@@ -145,6 +149,7 @@ export default function CnCard({
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.cn_no}
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}

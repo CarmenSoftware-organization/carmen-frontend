@@ -37,11 +37,12 @@ interface UseVendorTableOptions {
  *
  * คอลัมน์สั้นกว้างคงที่ ชื่อผู้ขายรับที่เหลือ (`meta.grow`) ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`
  * ซึ่งนับคอลัมน์ select (55) ที่หน้านี้ไม่ได้เรนเดอร์ด้วย:
- *   ครบ            55+60+90+180+160+190+130+100+60 = 1025
- *   ไม่มีประเภทธุรกิจ                                  =  865
- *   ไม่มีคะแนน                                        =  735
- *   ไม่มีเลขลำดับ + ผู้ติดต่อเหลือ 170   55+90+180+170+100+60 = 655  (กล่องที่จอ 768 = 662)
- * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 25–35px โดยตั้งใจ — คอลัมน์รองกลับมาเมื่อชื่อได้ที่ ~205px แล้ว
+ *   ครบ            55+48+90+180+160+190+130+100+60 = 1013
+ *   ไม่มีประเภทธุรกิจ                                  =  853
+ *   ไม่มีคะแนน                                        =  723
+ *   ไม่มีสถานะ                    55+48+90+180+190+60 =  623  (กล่องที่จอ 768 = 662)
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) — ขั้นแคบสุดจึงซ่อนสถานะแทน
+ * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35–40px โดยตั้งใจ — คอลัมน์รองกลับมาเมื่อชื่อได้ที่ ~215px แล้ว
  * เท่านั้น ไม่งั้นพอข้ามขั้นชื่อจะหดเหลือขั้นต่ำ 180px
  * ผู้ติดต่ออยู่ถึงขั้นสุดท้าย (จัดซื้อเปิดหน้านี้เพื่อหาว่าจะโทรหาใคร) · ของที่ซ่อนยังดูได้จาก
  * มุมมองการ์ดและหน้ารายละเอียด · คอลัมน์ที่ผู้ใช้เปิดเพิ่มเอง (credit term, created, updated)
@@ -50,9 +51,9 @@ interface UseVendorTableOptions {
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    showBusinessType: w >= 1060,
+    showBusinessType: w >= 1050,
     showRating: w >= 890,
-    showIndex: w >= 770,
+    showStatus: w >= 760,
   };
 }
 
@@ -70,7 +71,7 @@ export function useVendorTable({
   const tfl = useTranslations("field");
   const t = useTranslations("vendorManagement.vendor");
   const { dateTimeFormat } = useProfile();
-  const { showBusinessType, showRating, showIndex } =
+  const { showBusinessType, showRating, showStatus } =
     columnTier(containerWidth);
 
   const columns: ColumnDef<Vendor>[] = [
@@ -173,7 +174,7 @@ export function useVendorTable({
           </div>
         );
       },
-      size: showIndex ? 190 : 170,
+      size: 190,
       enableSorting: false,
       meta: { headerTitle: tfl("contact"), skeleton: columnSkeletons.text },
     },
@@ -223,6 +224,7 @@ export function useVendorTable({
   const hidden = new Set<string>([
     ...(showBusinessType ? [] : ["business_type_names"]),
     ...(showRating ? [] : ["rating"]),
+    ...(showStatus ? [] : ["is_active"]),
   ]);
   const visibleColumns = columns.filter((c) => {
     const key =
@@ -233,7 +235,6 @@ export function useVendorTable({
   return useConfigTable<Vendor>({
     data: vendors,
     columns: visibleColumns,
-    hideIndex: !showIndex,
     totalRecords,
     params,
     tableConfig,

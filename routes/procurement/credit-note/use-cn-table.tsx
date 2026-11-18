@@ -35,32 +35,44 @@ interface UseCnTableOptions {
  *
  * "ผู้ขาย" รับที่เหลือ (`meta.grow`) ที่เหลือกว้างคงที่ ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`
  * (นับคอลัมน์ select 55 ที่ไม่ได้เรนเดอร์ · ไม่นับ audit ที่ซ่อนเป็น default):
- *   ครบ  55+60+130+150+140+115+140+115+135+140+115+135+150+60 = 1640
- *   ไม่มี #                                         = 1580
- *   ไม่มีชนิดใบ (ลงบรรทัดรองใต้เลขที่)                  = 1445
- *   ไม่มีผู้สร้าง (ลงบรรทัดรองใต้ผู้ขาย)                  = 1305
- *   ไม่มีวันที่ใบแจ้งหนี้ (ลงบรรทัดรองใต้เลขใบแจ้งหนี้)     = 1190
- *   ไม่มีวันที่ GRN (ลงบรรทัดรองใต้เลข GRN)              = 1075  (กล่องที่ 1366 เมนูกาง = 1084)
- *   ไม่มีเลขใบแจ้งหนี้                                  =  935
- *   ไม่มีเลข GRN                                       =  795
- *   กล่องแคบ (ไม่มีวันที่ ลงใต้เลขที่ · ผู้ขาย 120)  55+130+120+135+150+60 = 650  (กล่องที่จอ 768 = 662)
- *   กล่องกว้างมาก (≥1705): ผู้สร้าง 140→200 (ครบ 1700)
+ *   ครบ  55+48+130+150+140+115+140+115+135+140+115+135+150+60 = 1628
+ *   ไม่มีชนิดใบ (ลงบรรทัดรองใต้เลขที่)                  = 1493
+ *   ไม่มีผู้สร้าง (ลงบรรทัดรองใต้ผู้ขาย)                  = 1353
+ *   ไม่มีวันที่ใบแจ้งหนี้ (ลงบรรทัดรองใต้เลขใบแจ้งหนี้)     = 1238
+ *   ไม่มีวันที่ GRN (ลงบรรทัดรองใต้เลข GRN)              = 1123
+ *   ไม่มีเลขใบแจ้งหนี้                                  =  983  (กล่องที่ 1366 เมนูกาง = 1084)
+ *   ไม่มีเลข GRN                                       =  843
+ *   กล่องแคบ (ไม่มีวันที่ ลงใต้เลขที่ · ผู้ขาย 120)  55+48+130+120+135+150+60 = 698
+ *   ไม่มีคอลัมน์สถานะ (ชิปลงใต้ผู้ขาย)                  = 563  (กล่องที่จอ 768 = 662)
+ *   กล่องกว้างมาก (≥1693): ผู้สร้าง 140→200 (ครบ 1688)
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) — ทุกขั้นจึงขยับขึ้น 48px
+ * (1366 เมนูกางเสียคอลัมน์เลขใบแจ้งหนี้) และขั้นแคบสุดย้ายสถานะลงบรรทัดรองใต้ผู้ขาย
  * GRN No / GRN Date / Invoice No / Invoice Date ผู้ใช้สั่ง 2026-11-18 (list endpoint ต้องส่ง
- * 4 ฟิลด์นี้ — BE เพิ่มพร้อมกัน) · จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px · # ดูได้ในหน้าเอกสาร
+ * 4 ฟิลด์นี้ — BE เพิ่มพร้อมกัน) · จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px
  */
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    showIndex: w >= 1645,
-    showType: w >= 1585,
-    showCreatedBy: w >= 1450,
-    showInvoiceDate: w >= 1310,
-    showGrnDate: w >= 1195,
-    showInvoice: w >= 1080,
-    showGrn: w >= 940,
-    wide: w >= 800,
-    roomy: w >= 1705,
+    showType: w >= 1633,
+    showCreatedBy: w >= 1498,
+    showInvoiceDate: w >= 1358,
+    showGrnDate: w >= 1243,
+    showInvoice: w >= 1128,
+    showGrn: w >= 988,
+    wide: w >= 848,
+    showStatus: w >= 703,
+    roomy: w >= 1693,
   };
+}
+
+/** ชิปสถานะ — ใช้ทั้งในคอลัมน์สถานะและเป็นบรรทัดรองใต้ผู้ขายในกล่องแคบสุด */
+function CnStatusChip({
+  status,
+}: {
+  readonly status: CreditNote["doc_status"];
+}) {
+  const config = CN_STATUS_CONFIG[status];
+  return <StatusChip status={status} label={config?.label ?? status} />;
 }
 
 export function useCnTable({
@@ -74,7 +86,7 @@ export function useCnTable({
 }: UseCnTableOptions) {
   "use no memo";
   const {
-    showIndex,
+    showStatus,
     showType,
     showCreatedBy,
     showInvoiceDate,
@@ -188,6 +200,8 @@ export function useCnTable({
           >
             {row.original.vendor_name}
           </span>
+          {/* คอลัมน์สถานะถูกซ่อนในกล่องแคบสุด — ชิปย้ายมาเป็นบรรทัดรอง */}
+          {!showStatus && <CnStatusChip status={row.original.doc_status} />}
           {/* คอลัมน์ผู้สร้างถูกซ่อนในกล่องแคบ — ย้ายมาเป็นบรรทัดรอง */}
           {!showCreatedBy && row.original.audit?.created?.name && (
             <span
@@ -303,11 +317,7 @@ export function useCnTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("status")} />
       ),
-      cell: ({ row }) => {
-        const status = row.original.doc_status;
-        const config = CN_STATUS_CONFIG[status];
-        return <StatusChip status={status} label={config?.label ?? status} />;
-      },
+      cell: ({ row }) => <CnStatusChip status={row.original.doc_status} />,
       // กว้างพอให้ COMPLETED ไม่ถูกตัด
       size: 135,
       meta: {
@@ -364,7 +374,7 @@ export function useCnTable({
       ...tableConfig.state,
       columnVisibility: {
         ...userVisibility,
-        ...(!showIndex && { index: false }),
+        ...(!showStatus && { doc_status: false }),
         ...(!showType && { credit_note_type: false }),
         ...(!showCreatedBy && { created_by: false }),
         ...(!showInvoiceDate && { invoice_date: false }),

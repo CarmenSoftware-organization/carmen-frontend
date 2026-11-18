@@ -54,6 +54,8 @@ import {
   saveContractSample,
   type ArContract,
 } from "./ar-contract-model";
+import { pageParamsOf, rowNumber } from "@/lib/row-number";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 const fields: FilterFieldDef[] = [
   {
@@ -193,6 +195,7 @@ function ContractListContent({
     ),
   });
   const columns: ColumnDef<ArContract>[] = [
+    indexColumn<ArContract>(),
     {
       id: "document",
       header: "DOC",
@@ -376,8 +379,12 @@ function ContractListContent({
           {cards ? (
             rows.length ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {table.getRowModel().rows.map(({ original: record }) => (
+                {table.getRowModel().rows.map(({ original: record }, i) => (
                   <ListCard
+                    rowNo={rowNumber(
+                      pageParamsOf(table.getState().pagination),
+                      i,
+                    )}
                     key={record.id}
                     title={record.contractNo}
                     onOpen={() => open(record)}

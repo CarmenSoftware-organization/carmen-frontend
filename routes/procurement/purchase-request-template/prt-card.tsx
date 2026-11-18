@@ -11,6 +11,8 @@ import { formatDate } from "@/lib/date-utils";
 import type { PurchaseRequestTemplate } from "@/types/purchase-request";
 
 interface PrtCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: PurchaseRequestTemplate;
   readonly onEdit: (item: PurchaseRequestTemplate) => void;
   readonly onDelete: (item: PurchaseRequestTemplate) => void;
@@ -27,6 +29,7 @@ export default function PrtCard({
   onEdit,
   onDelete,
   compact = false,
+  rowNo,
 }: PrtCardProps) {
   const tfl = useTranslations("field");
   const { dateFormat } = useProfile();
@@ -39,6 +42,7 @@ export default function PrtCard({
     const at = item.audit?.updated?.at ?? item.audit?.created?.at;
     return (
       <ListCard
+        rowNo={rowNo}
         title={item.name || "..."}
         badge={<StatusBadge active={item.is_active} className="shrink-0" />}
         onOpen={() => onEdit(item)}
@@ -70,6 +74,7 @@ export default function PrtCard({
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}

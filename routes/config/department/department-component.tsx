@@ -37,8 +37,8 @@ export default function DepartmentComponent() {
           width: 10,
         },
       ]}
-      renderCard={({ item, onEdit, onDelete }) => (
-        <DepartmentCard item={item} onEdit={onEdit} onDelete={onDelete} />
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
+        <DepartmentCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
       )}
     />
   );

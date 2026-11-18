@@ -38,12 +38,12 @@ interface StockReplLocationProps {
  * สินค้ารับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมแบ่งสัดส่วน บน Full HD แถบสต็อก
  * ยืดเป็น 623px · checkbox ถูกเรนเดอร์จริง (`tableLayout.checkbox`) จึงนับ 40 ไม่ใช่ select ล่องหน:
  *   ครบ             40+40+200+190+110+110 = 690
- *   ไม่มีเลขลำดับ                          = 650  (กล่องที่จอ 768 = 662)
- *   ต่ำกว่านั้น      checkbox + เซลล์สองชั้น (compact)
+ *   ต่ำกว่านั้น      checkbox + # + เซลล์สองชั้น (compact) — tablet 662 อยู่ขั้นนี้
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน)
  */
 function tableTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
-  return { compact: w < 660, showIndex: w >= 725 };
+  return { compact: w < 700 };
 }
 
 export function StockReplLocation({
@@ -59,7 +59,7 @@ export function StockReplLocation({
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
   const tl = useTranslations("lookup");
-  const { compact, showIndex } = tableTier(boxWidth);
+  const { compact } = tableTier(boxWidth);
 
   // สีอยู่ที่ dot ตัวเดียว chip เป็นกลาง ตาม pattern StatusDotBadge ของแอป
   const STATUS_CONFIG = {
@@ -208,10 +208,11 @@ export function StockReplLocation({
   const table = useReactTable({
     data: products,
     columns: compact
-      ? [...columns.filter((c) => c.id === "select"), compactColumn]
-      : showIndex
-        ? columns
-        : columns.filter((c) => c.id !== "index"),
+      ? [
+          ...columns.filter((c) => c.id === "select" || c.id === "index"),
+          compactColumn,
+        ]
+      : columns,
     getCoreRowModel: getCoreRowModel(),
     getRowId: (row) => row.id,
   });

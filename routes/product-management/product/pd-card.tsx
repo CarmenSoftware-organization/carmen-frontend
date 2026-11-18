@@ -8,6 +8,8 @@ import {
 import type { Product } from "@/types/product";
 
 interface ProductCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: Product;
   readonly onEdit: (item: Product) => void;
   readonly onDelete: (item: Product) => void;
@@ -17,6 +19,7 @@ export default function ProductCard({
   item,
   onEdit,
   onDelete,
+  rowNo,
 }: ProductCardProps) {
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
@@ -31,6 +34,7 @@ export default function ProductCard({
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       badge={
         <StatusDotBadge tone={isActive ? "success" : "neutral"} size="xs">

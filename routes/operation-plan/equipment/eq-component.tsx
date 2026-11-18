@@ -36,6 +36,7 @@ import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
+import { rowNumber } from "@/lib/row-number";
 
 const EQUIPMENT_CATEGORY_ENTITY = defineEntitySource<EquipmentCategory>({
   fieldKey: "category_id",
@@ -166,8 +167,9 @@ export default function EquipmentComponent() {
       {isGridMode && !grid.isLoading && equipments.length > 0 && (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {equipments.map((item) => (
+            {equipments.map((item, i) => (
               <EqCard
+                rowNo={rowNumber(undefined, i)}
                 key={item.id}
                 item={item}
                 categoryName={

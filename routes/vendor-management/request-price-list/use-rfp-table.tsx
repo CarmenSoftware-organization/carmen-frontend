@@ -31,9 +31,10 @@ interface UseRequestPriceListTableOptions {
  * ชื่อรับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมไม่ได้ตั้ง size เลย ทุกคอลัมน์ได้ 150
  * แล้วแบ่งสัดส่วน บน Full HD กว้างคอลัมน์ละ 376px ส่วนที่ tablet ช่วงวันที่ถูกตัดกลางวันที่
  * ความกว้างขั้นต่ำของตาราง = ผลรวม `size` ซึ่งนับคอลัมน์ select (55) ที่หน้านี้ไม่ได้เรนเดอร์ด้วย:
- *   ครบ                55+60+180+180+200+120+60 = 855
- *   ไม่มีเลขลำดับ                               = 795
- *   ไม่มีแม่แบบ                                 = 615  (กล่องที่จอ 768 = 662)
+ *   ครบ                55+48+170+180+200+120+60 = 833
+ *   ไม่มีแม่แบบ                                 = 653  (กล่องที่จอ 768 = 662)
+ * ชื่อขั้นต่ำ 170 (ไม่ใช่ 180) เพื่อให้ `#` พอในกล่อง tablet — ชื่อยาวตัดด้วย … อยู่แล้ว
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) — ไม่อยู่ในขั้นที่ซ่อน
  * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35px — คอลัมน์รองกลับมาเมื่อชื่อได้ที่ ~215px แล้วเท่านั้น
  * ของที่ซ่อนยังเห็น: ชื่อแม่แบบย้ายลงบรรทัดรองใต้ชื่อ
  * คอลัมน์ที่ผู้ใช้เปิดเพิ่มเอง (created, updated) ไม่นับในงบ — เกินกล่องก็เลื่อนแนวนอนในกรอบเอง
@@ -41,8 +42,7 @@ interface UseRequestPriceListTableOptions {
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    showIndex: w >= 890,
-    showTemplate: w >= 830,
+    showTemplate: w >= 870,
   };
 }
 
@@ -58,7 +58,7 @@ export function useRequestPriceListTable({
   "use no memo";
   const { dateFormat, dateTimeFormat } = useProfile();
   const tfl = useTranslations("field");
-  const { showIndex, showTemplate } = columnTier(containerWidth);
+  const { showTemplate } = columnTier(containerWidth);
 
   const formatPeriod = (startDate: string, endDate: string): string => {
     const from = formatDate(startDate, dateFormat);
@@ -97,7 +97,7 @@ export function useRequestPriceListTable({
           </div>
         );
       },
-      size: 180,
+      size: 170,
       meta: {
         headerTitle: tfl("name"),
         skeleton: columnSkeletons.text,
@@ -173,7 +173,6 @@ export function useRequestPriceListTable({
   return useConfigTable<RequestPriceList>({
     data: items,
     columns: visibleColumns,
-    hideIndex: !showIndex,
     totalRecords,
     params,
     tableConfig,

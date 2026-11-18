@@ -47,8 +47,8 @@ export default function CostCenterGroupComponent() {
           readOnly={readOnly}
         />
       )}
-      renderCard={({ item, onEdit, onDelete }) => (
-        <CostCenterGroupCard item={item} onEdit={onEdit} onDelete={onDelete} />
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
+        <CostCenterGroupCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
       )}
     />
   );

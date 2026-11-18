@@ -3,6 +3,7 @@ import { File } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { DocumentFile } from "@/types/document";
+import { ListCardRowNo } from "@/components/share/list-card";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -12,13 +13,14 @@ function formatSize(bytes: number): string {
 
 interface DocumentCardProps {
   readonly item: DocumentFile;
-  readonly index?: number;
+  /** เลขลำดับแถว (`rowNumber()`) */
+  readonly rowNo?: number;
   readonly onClick?: (item: DocumentFile) => void;
 }
 
 export default function DocumentCard({
   item,
-  index,
+  rowNo,
   onClick,
 }: DocumentCardProps) {
   return (
@@ -36,11 +38,7 @@ export default function DocumentCard({
     >
       <CardHeader className="px-4 py-3">
         <CardTitle className="flex items-center gap-2 truncate text-sm">
-          {typeof index === "number" && (
-            <span className="bg-muted text-muted-foreground text-micro-legal inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 font-semibold tabular-nums">
-              {index + 1}
-            </span>
-          )}
+          <ListCardRowNo rowNo={rowNo} />
           <File
             className="text-muted-foreground size-4 shrink-0"
             aria-hidden="true"

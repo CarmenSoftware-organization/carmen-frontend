@@ -104,8 +104,8 @@ export default function CoaComponent() {
             width: 10,
           },
         ]}
-        renderCard={({ item, onEdit, onDelete }) => (
-          <CoaCard item={item} onEdit={onEdit} onDelete={onDelete} />
+        renderCard={({ item, onEdit, onDelete, rowNo }) => (
+          <CoaCard rowNo={rowNo} item={item} onEdit={onEdit} onDelete={onDelete} />
         )}
       />
 

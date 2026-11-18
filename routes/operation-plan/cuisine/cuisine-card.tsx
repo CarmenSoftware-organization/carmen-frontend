@@ -9,6 +9,8 @@ import type { Cuisine } from "@/types/cuisine";
 import { CuisineRegionLabel } from "./cuisine-region-label";
 
 interface CuisineCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: Cuisine;
   readonly onEdit: (item: Cuisine) => void;
   readonly onDelete: (item: Cuisine) => void;
@@ -28,12 +30,14 @@ export default function CuisineCard({
   item,
   onEdit,
   onDelete,
+  rowNo,
 }: CuisineCardProps) {
   const t = useTranslations("operationPlan.cuisine");
   const tfl = useTranslations("field");
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}

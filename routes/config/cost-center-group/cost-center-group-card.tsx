@@ -8,16 +8,18 @@ import {
 import type { CostCenterGroup } from "@/types/cost-center-group";
 
 interface Props {
+  readonly rowNo?: number;
   readonly item: CostCenterGroup;
   readonly onEdit: (item: CostCenterGroup) => void;
   readonly onDelete?: (item: CostCenterGroup) => void;
 }
 
-export default function CostCenterGroupCard({ item, onEdit, onDelete }: Props) {
+export default function CostCenterGroupCard({ item, onEdit, onDelete, rowNo }: Props) {
   const tfl = useTranslations("field");
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={`${item.code} · ${item.name}`}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}

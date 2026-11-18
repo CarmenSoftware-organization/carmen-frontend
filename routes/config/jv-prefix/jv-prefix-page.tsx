@@ -41,6 +41,7 @@ import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { ApiError } from "@/lib/api-error";
 import { httpClient } from "@/lib/http-client";
 import type { JvPrefixMaster } from "@/types/accounting-master";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 export default function JvPrefixPage() {
   "use no memo";
@@ -85,6 +86,7 @@ export default function JvPrefixPage() {
 
   const columns = useMemo<ColumnDef<JvPrefixMaster>[]>(
     () => [
+      indexColumn<JvPrefixMaster>(),
       {
         accessorKey: "code",
         header: ({ column }) => (

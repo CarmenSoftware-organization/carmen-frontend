@@ -37,6 +37,7 @@ import { ApiError } from "@/lib/api-error";
 import { httpClient } from "@/lib/http-client";
 import type { BankAccountMaster } from "@/types/accounting-master";
 import { LookupChartOfAccount } from "@/components/lookup/lookup-chart-of-account";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 export default function BankAccountPage() {
   "use no memo";
@@ -102,6 +103,7 @@ export default function BankAccountPage() {
 
   const columns = useMemo<ColumnDef<BankAccountMaster>[]>(
     () => [
+      indexColumn<BankAccountMaster>(),
       {
         accessorKey: "bank_name",
         header: ({ column }) => (

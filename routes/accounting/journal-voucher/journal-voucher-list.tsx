@@ -252,6 +252,7 @@ export default function JournalVoucherList() {
       {isGridMode && (
         <>
           <JvCardList
+            pageParams={useInfiniteScroll ? undefined : params}
             items={journals}
             isLoading={useInfiniteScroll ? grid.isLoading : isLoading}
             onEdit={openJournal}

@@ -88,8 +88,9 @@ export default function WhtServiceTypePage() {
           reset={deletion.reset}
         />
       )}
-      renderCard={({ item, onEdit, onDelete }) => (
+      renderCard={({ item, onEdit, onDelete, rowNo }) => (
         <ListCard
+          rowNo={rowNo}
           title={item.code}
           onOpen={() => onEdit(item)}
           onDelete={() => onDelete(item)}
