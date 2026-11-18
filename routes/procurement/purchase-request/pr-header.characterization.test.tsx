@@ -208,15 +208,14 @@ describe("PrHeader — characterization", () => {
     expect(screen.queryByText(en.form.creating)).not.toBeInTheDocument();
   });
 
-  it("ribbon: โหมดอ่านโชว์ workflow + description เป็นช่อง disabled ใต้แถวหัว", () => {
+  it("ribbon: โหมดอ่านโชว์ workflow + description เป็นข้อความ (ไม่ใช่ input) ใต้แถวหัว", () => {
     renderHeader("view", DRAFT, {
       workflowName: "PR Standard",
       description: "Need for event",
     });
-    const wf = screen.getByDisplayValue("PR Standard");
-    const desc = screen.getByDisplayValue("Need for event");
-    expect(wf).toBeDisabled();
-    expect(desc).toBeDisabled();
+    const wf = screen.getByText("PR Standard");
+    expect(screen.getByText("Need for event")).toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
     expect(headerRow().contains(wf)).toBe(false);
   });
 

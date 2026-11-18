@@ -13,7 +13,10 @@ export function PoEditContent({ id }: { id: string }) {
     refetch,
   } = usePurchaseOrderById(id);
 
-  if (isLoading) return <DocPageSkeleton />;
+  if (isLoading)
+    return (
+      <DocPageSkeleton fields={[1, 2, 1, 1, 1, 1, 2, 2]} tabs={false} toolbar />
+    );
   if (error || !purchaseOrder)
     return (
       <ErrorState

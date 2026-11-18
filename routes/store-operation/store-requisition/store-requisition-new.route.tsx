@@ -23,7 +23,7 @@ export function Component() {
           (รอ buCode) isLoading เป็น false ฟอร์มจะ mount เปล่าแล้ว defaultValues
           โดนแช่ (บทเรียนจาก PR) ดึงพลาด → ตกไปฟอร์มเปล่าแทนค้าง skeleton */}
       {duplicateId && !duplicateFrom && !duplicateError ? (
-        <DocPageSkeleton />
+        <DocPageSkeleton fields={[1, 1, 1, 1, 2]} />
       ) : (
         <StoreRequisitionForm duplicateFrom={duplicateFrom} />
       )}
