@@ -46,6 +46,7 @@ import {
   type ArReceipt,
 } from "./ar-receipt-model";
 import { pageParamsOf, rowNumber } from "@/lib/row-number";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 const fields: FilterFieldDef[] = [
   {
@@ -125,6 +126,7 @@ function ReceiptList({ bu }: { readonly bu: string }) {
     meta: { headerTitle: label },
   });
   const columns: ColumnDef<ArReceipt>[] = [
+    indexColumn<ArReceipt>(),
     {
       ...column("number", t("number")),
       cell: ({ row }) => (

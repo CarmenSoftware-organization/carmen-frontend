@@ -7,19 +7,15 @@ import {
 } from "@/constant/report-history";
 import { safeNavigationHref } from "@/lib/utils";
 import type { ReportFormatRaw, ReportHistory } from "@/types/report-history";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 export function useHistoryTable(): ColumnDef<ReportHistory>[] {
   const t = useTranslations("reportHistory");
 
   // ชื่อรายงานรับความกว้างที่เหลือ ที่เหลือคงที่ — แบ่งตามสัดส่วนเดิม Format/Rows ยืดถึง 484px ที่ 4K
-  // tablet budget 662px: # 50 + ชื่อ 180 (ขั้นต่ำของ grow) + ประเภท 140 + รูปแบบ 80 + สถานะ 130 + แถว 80 = 660
+  // tablet budget 662px: # 48 + ชื่อ 180 (ขั้นต่ำของ grow) + ประเภท 140 + รูปแบบ 80 + สถานะ 130 + แถว 80 = 658
   return [
-    {
-      id: "index",
-      header: "#",
-      cell: ({ row }) => row.index + 1,
-      size: 50,
-    },
+    indexColumn<ReportHistory>(),
     {
       accessorKey: "file_name",
       header: t("reportName"),

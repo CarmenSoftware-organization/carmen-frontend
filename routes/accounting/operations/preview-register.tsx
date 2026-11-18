@@ -31,6 +31,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import type { FilterFieldDef } from "@/types/list-filter";
 import { pageParamsOf, rowNumber } from "@/lib/row-number";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 export interface PreviewRecord {
   id: string;
@@ -146,6 +147,7 @@ export function PreviewRegister<T extends PreviewRecord>({
       ),
     });
     return [
+      indexColumn<T>(),
       {
         ...column("number", t("number"), 145),
         cell: ({ row }) => (

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import type { ReportFormat, ReportSchedule } from "@/types/report-schedule";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 const FORMAT_LABELS: Record<ReportFormat, string> = {
   REPORT_FORMAT_PDF: "PDF",
@@ -134,12 +135,7 @@ export function useScheduleTable({
     columnTier(containerWidth);
 
   const columns: ColumnDef<ReportSchedule>[] = [
-    {
-      id: "index",
-      header: "#",
-      cell: ({ row }) => row.index + 1,
-      size: 50,
-    },
+    indexColumn<ReportSchedule>(),
     {
       accessorKey: "name",
       header: t("name"),

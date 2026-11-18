@@ -31,6 +31,7 @@ import {
   type AccountingDocument,
 } from "./accounting-document-model";
 import { rowNumber } from "@/lib/row-number";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 const ACCOUNTING_STATUS = createStatusConfig(
   ["draft", "pending", "approved", "posted", "paid", "overdue"] as const,
@@ -77,6 +78,7 @@ export default function AccountingDocumentList() {
 
   const columns = useMemo<ColumnDef<AccountingDocument>[]>(
     () => [
+      indexColumn<AccountingDocument>(),
       {
         accessorKey: "number",
         header: ({ column }) => (

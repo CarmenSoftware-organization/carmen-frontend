@@ -55,6 +55,7 @@ import {
   type ArContract,
 } from "./ar-contract-model";
 import { pageParamsOf, rowNumber } from "@/lib/row-number";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 const fields: FilterFieldDef[] = [
   {
@@ -194,6 +195,7 @@ function ContractListContent({
     ),
   });
   const columns: ColumnDef<ArContract>[] = [
+    indexColumn<ArContract>(),
     {
       id: "document",
       header: "DOC",

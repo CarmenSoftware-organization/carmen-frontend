@@ -62,6 +62,7 @@ import {
   type ArFolio,
 } from "./ar-folio-model";
 import { pageParamsOf, rowNumber } from "@/lib/row-number";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 const fields: FilterFieldDef[] = [
   {
@@ -195,6 +196,7 @@ function FolioList({ bu }: { readonly bu: string }) {
     meta: { headerTitle: label },
   });
   const columns: ColumnDef<ArFolio>[] = [
+    indexColumn<ArFolio>(),
     {
       ...column("date", t("folioDate"), 150),
       cell: ({ row: { original: folio } }) => (

@@ -15,7 +15,7 @@ import type { RowWithLastAction } from "@/constant/last-action";
 import type { Permission } from "@/constant/permissions";
 import type { ParamsDto } from "@/types/params";
 import type { AuditEntry } from "@/types/audit";
-import { rowNumber } from "@/lib/row-number";
+import { pageParamsOf, rowNumber } from "@/lib/row-number";
 
 export const columnSkeletons = {
   checkbox: <Skeleton className="mx-auto h-2.5 w-2.5 rounded" />,
@@ -42,14 +42,31 @@ export function selectColumn<T>(): ColumnDef<T> {
   };
 }
 
-export function indexColumn<T>(params: ParamsDto): ColumnDef<T> {
+/**
+ * คอลัมน์ `#` — เลขเดียวกับ `ListCard rowNo` (ทั้งคู่ใช้ `rowNumber`)
+ *
+ * - ส่ง `params` = ตารางแบ่งหน้าฝั่ง server → นับต่อข้ามหน้าจาก page/perpage
+ * - ไม่ส่ง = อ่านหน้าจาก state `pagination` ของตารางเองเมื่อตารางแบ่งหน้า
+ *   (server หรือ client) ไม่งั้นนับ 1…n
+ */
+export function indexColumn<T>(params?: ParamsDto): ColumnDef<T> {
   return {
     id: "index",
     header: "#",
     // ตำแหน่งที่แสดงจริง ไม่ใช่ row.index — row.index คือลำดับในข้อมูลดิบ
     // ตารางที่เรียง/กรองฝั่ง client เลขจะสลับกันถ้าใช้ตัวนั้น
-    cell: ({ row, table }) =>
-      rowNumber(params, table.getRowModel().rows.indexOf(row)),
+    cell: ({ row, table }) => {
+      // แบ่งหน้าแบบใดแบบหนึ่ง (server = manualPagination ผูก state กับ URL ผ่าน
+      // useDataGridState · client = getPaginationRowModel) → state pagination คือหน้าจริง
+      // ตารางที่ไม่แบ่งหน้าเลยแสดงทุกแถว จึงนับ 1…n
+      const paged =
+        !!table.options.manualPagination ||
+        !!table.options.getPaginationRowModel;
+      const page =
+        params ??
+        (paged ? pageParamsOf(table.getState().pagination) : undefined);
+      return rowNumber(page, table.getRowModel().rows.indexOf(row));
+    },
     enableSorting: false,
     enableHiding: false,
     size: 48,
