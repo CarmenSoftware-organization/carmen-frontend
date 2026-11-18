@@ -68,7 +68,7 @@ const NotificationItem = ({
     <div
       className={cn(
         // แถวแบนคั่นเส้น (divide-y ที่ list) ไม่ใช่การ์ดในการ์ด · ยังไม่อ่าน = พื้นจาง ๆ + จุด
-        "group relative flex items-start gap-3 px-3 py-2.5 pe-11 transition-colors",
+        "group relative flex items-start gap-2.5 px-3 py-2 pe-10 transition-colors",
         isUnread ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/50",
       )}
     >
@@ -99,9 +99,9 @@ const NotificationItem = ({
         locale={locale}
         unreadLabel={t("unread")}
         commentLabel={tRoot("notifications.commentLabel")}
-        // ชื่อเรื่อง 2 บรรทัด + ป้าย BU/เวลา wrap ได้ — แบบเดียวกับหน้า /notifications
-        // แผงแคบบนมือถือเคยตัดชื่อเรื่องเหลือครึ่งและดันเวลาตกขอบ
-        clampMessage
+        // ชื่อเรื่อง 2 บรรทัด + BU · เวลา · ข้อความบรรทัดเดียว — แผงแคบบนมือถือ
+        // เคยตัดชื่อเรื่องเหลือครึ่งและดันเวลาตกขอบ
+        compact
       />
       <button
         onClick={(e) => {
@@ -110,7 +110,7 @@ const NotificationItem = ({
           onMarkAsRead(notification);
         }}
         // จอสัมผัสไม่มี hover — ปุ่มต้องเห็นตลอด · เมาส์ (pointer-fine) ซ่อนจนกว่าจะชี้แถว
-        className="text-muted-foreground hover:text-foreground hover:bg-muted absolute end-1.5 top-2 z-20 flex size-8 items-center justify-center rounded-full transition-opacity pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:focus-visible:opacity-100"
+        className="text-muted-foreground hover:text-foreground hover:bg-muted absolute end-1 top-1.5 z-20 flex size-8 items-center justify-center rounded-full transition-opacity pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:focus-visible:opacity-100"
         type="button"
         title={dismissLabel}
         aria-label={dismissLabel}
