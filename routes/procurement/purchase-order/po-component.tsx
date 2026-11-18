@@ -405,6 +405,7 @@ export default function PoComponent() {
               )
             }
             onDelete={setDeleteTarget}
+            compact={!!isMobile}
           />
           {useInfiniteScroll && grid.hasMore && (
             <div ref={grid.sentinelRef} className="flex justify-center py-4">
