@@ -14,9 +14,20 @@ interface SummaryItemConfig {
 interface SummaryBarProps {
   items: SummaryItemConfig[];
   className?: string;
+  /**
+   * `end` = ชิดขวา (แถบ footer ของเอกสาร) — ตัวคั่นย้ายไปฝั่งขวาของแต่ละช่อง
+   * เพราะทุกบรรทัดจบที่ขอบขวา เส้นท้ายบรรทัดจึงถูกตัดทิ้งแทนเส้นหัวบรรทัด
+   * (บรรทัดที่ตกลงมาเริ่มกลางกล่อง เส้นซ้ายของมันจะค้างให้เห็น)
+   */
+  align?: "start" | "end";
 }
 
-export function SummaryBar({ items, className }: SummaryBarProps) {
+export function SummaryBar({
+  items,
+  className,
+  align = "start",
+}: SummaryBarProps) {
+  const end = align === "end";
   return (
     // ทุกบรรทัดอยู่ที่ 12px เท่ากันหมด (text-xs = body จริงของแอปตาม DESIGN.md)
     // ยอดรวมแยกตัวเองด้วย "น้ำหนัก" ไม่ใช่ "ขนาด" — ของเดิมรายการย่อยไม่ได้ระบุ
@@ -27,11 +38,19 @@ export function SummaryBar({ items, className }: SummaryBarProps) {
     // (gap 16 + เส้น 1) แล้วกรอบนอก overflow-hidden ตัดเส้นของช่องที่ขึ้นต้นบรรทัดทิ้ง
     // ตัวคั่นจึงไม่ค้างหัว/ท้ายบรรทัดไม่ว่าจะตัดตรงไหน
     <div className={cn("overflow-hidden text-xs tabular-nums", className)}>
-      <div className="-ml-[17px] flex flex-wrap items-center gap-x-4 gap-y-1">
+      <div
+        className={cn(
+          "flex flex-wrap items-center gap-x-4 gap-y-1",
+          end ? "-mr-[17px] justify-end" : "-ml-[17px]",
+        )}
+      >
         {items.map((item) => (
           <div
             key={item.key}
-            className="border-border flex items-center gap-1.5 border-l pl-4 whitespace-nowrap"
+            className={cn(
+              "border-border flex items-center gap-1.5 whitespace-nowrap",
+              end ? "border-r pr-4" : "border-l pl-4",
+            )}
           >
             {/* label muted + value 500 = คู่ label→value มาตรฐานของ DESIGN.md
                 (ของเดิม label เป็น 600 เท่าค่า ป้ายเลยดังเท่าตัวเลข) */}
@@ -81,7 +100,10 @@ export function SummaryFooterBar({
         .filter(Boolean)
         .join(" ")}
     >
-      {hasRecord && <SummaryBar items={items} />}
+      {/* ชิดขวาคู่กับปุ่ม — ยอดรวมกับปุ่ม submit เป็นจุดจบของเอกสารชุดเดียวกัน */}
+      {hasRecord && (
+        <SummaryBar items={items} align="end" className="ms-auto" />
+      )}
       {/* ms-auto: แถบแคบจนปุ่มตกบรรทัดใหม่ (มือถือ/tablet) ปุ่มยังชิดขวา — justify-between
           ของแถวไม่มีผลกับลูกที่ขึ้นบรรทัดเองคนเดียว มันจะไปเริ่มที่ซ้าย */}
       {children && <div className="ms-auto">{children}</div>}
