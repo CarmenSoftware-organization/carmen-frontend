@@ -5,13 +5,6 @@ import { BookOpenText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Empty,
   EmptyContent,
   EmptyDescription,
@@ -24,6 +17,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useCan } from "@/hooks/use-can";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { PERMISSIONS } from "@/constant/permissions";
 import type { GoodsReceiveNote } from "@/types/goods-receive-note";
@@ -54,86 +48,99 @@ function JvCard({ view }: { readonly view: GrnJvView }) {
   const totalDebit = jv.lines.reduce((s, l) => s + l.debit, 0);
   const totalCredit = jv.lines.reduce((s, l) => s + l.credit, 0);
 
+  // คอลัมน์คำอธิบายมีเฉพาะเมื่อมีบรรทัดไหนมีคำอธิบาย — ว่างทั้งคอลัมน์บนมือถือกินที่จนยอด
+  // เครดิตล้นการ์ด · กล่องแคบ (< @lg) คำอธิบายลงไปอยู่ใต้ชื่อบัญชีแทนคอลัมน์ของตัวเอง
+  const hasComment = jv.lines.some((l) => l.comment);
+  // w-px = กว้างเท่าเนื้อหา บัญชีรับที่เหลือ — ไม่งั้นตาราง w-full แบ่งเท่า ๆ กัน เดบิต
+  // ไปลอยกลางจอห่างจากเครดิตหลายร้อย px บนจอกว้าง · min-w ให้สองคอลัมน์ตรงกันทุกการ์ด
+  const amountCell =
+    "w-px min-w-24 py-1.5 ps-3 text-right whitespace-nowrap tabular-nums";
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex flex-wrap items-center gap-2">
-          <Link
-            to={`/accounting/journal-voucher/${jv.id}`}
-            className="text-primary hover:underline"
-          >
-            {jv.jv_no ?? t("jvNoNumber")}
-          </Link>
-          <Badge variant="secondary" size="xs">
-            {statusLabel}
+    <section className="border-border/60 bg-card @container rounded-lg border p-3 text-xs">
+      <header className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <Link
+          to={`/accounting/journal-voucher/${jv.id}`}
+          className="text-primary text-sm font-semibold hover:underline"
+        >
+          {jv.jv_no ?? t("jvNoNumber")}
+        </Link>
+        <Badge variant="secondary" size="xs">
+          {statusLabel}
+        </Badge>
+        {kind === "voided" && (
+          <Badge variant="destructive-outline" size="xs">
+            {t("jvReversed")}
           </Badge>
-          {kind === "voided" && (
-            <Badge variant="destructive-outline" size="xs">
-              {t("jvReversed")}
-            </Badge>
-          )}
-          {kind === "reversal" && (
-            <Badge variant="warning-outline" size="xs">
-              {t("jvReversal")}
-            </Badge>
-          )}
-        </CardTitle>
-        <CardAction className="text-muted-foreground text-sm">
-          {/* ข้อความธรรมดา ไม่ใช่ลิงก์ — หน้า AP invoice ยังเป็น mock บน localStorage */}
+        )}
+        {kind === "reversal" && (
+          <Badge variant="warning-outline" size="xs">
+            {t("jvReversal")}
+          </Badge>
+        )}
+        {/* ข้อความธรรมดา ไม่ใช่ลิงก์ — หน้า AP invoice ยังเป็น mock บน localStorage ·
+            basis-full บนกล่องแคบ = ลงบรรทัดใหม่ทั้งก้อน ไม่หักกลางวลี */}
+        <span className="text-muted-foreground basis-full @lg:ms-auto @lg:basis-auto">
           {t("jvApInvoice")}: {apInvoice.doc_no}
           {jv.jv_date ? ` · ${formatDate(jv.jv_date, dateFormat)}` : ""}
-        </CardAction>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-muted-foreground border-b text-left">
-                <th className="py-2 pr-3 font-medium">{t("jvAccount")}</th>
-                <th className="py-2 pr-3 font-medium">{t("jvDescription")}</th>
-                <th className="py-2 pr-3 text-right font-medium">
-                  {t("jvDebit")}
-                </th>
-                <th className="py-2 text-right font-medium">{t("jvCredit")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {jv.lines.map((l) => (
-                <tr key={l.id} className="border-b last:border-0">
-                  <td className="py-2 pr-3">
-                    {[l.account_code, l.account_name]
-                      .filter(Boolean)
-                      .join(" - ")}
-                  </td>
-                  <td className="text-muted-foreground py-2 pr-3">
+        </span>
+      </header>
+      <table className="w-full">
+        <thead>
+          <tr className="text-muted-foreground border-b text-left">
+            <th className="py-1.5 font-medium">{t("jvAccount")}</th>
+            {hasComment && (
+              <th className="hidden py-1.5 ps-3 font-medium @lg:table-cell">
+                {t("jvDescription")}
+              </th>
+            )}
+            <th className={cn(amountCell, "font-medium")}>{t("jvDebit")}</th>
+            <th className={cn(amountCell, "font-medium")}>{t("jvCredit")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {jv.lines.map((l) => (
+            <tr key={l.id} className="border-b align-top last:border-0">
+              <td className="py-1.5">
+                {/* รหัสกับชื่อแยกบรรทัด — ต่อกันด้วย " - " แล้วตัดบรรทัดกลางขีดบนมือถือ */}
+                <span className="block font-medium tabular-nums">
+                  {l.account_code}
+                </span>
+                {l.account_name && (
+                  <span className="text-muted-foreground block break-words">
+                    {l.account_name}
+                  </span>
+                )}
+                {l.comment && (
+                  <span className="text-muted-foreground mt-0.5 block break-words @lg:hidden">
                     {l.comment}
-                  </td>
-                  <td className="py-2 pr-3 text-right tabular-nums">
-                    {l.debit ? formatAmount(l.debit) : ""}
-                  </td>
-                  <td className="py-2 text-right tabular-nums">
-                    {l.credit ? formatAmount(l.credit) : ""}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="font-semibold">
-                <td className="py-2 pr-3" colSpan={2}>
-                  {t("jvTotal")}
+                  </span>
+                )}
+              </td>
+              {hasComment && (
+                <td className="text-muted-foreground hidden py-1.5 ps-3 break-words @lg:table-cell">
+                  {l.comment}
                 </td>
-                <td className="py-2 pr-3 text-right tabular-nums">
-                  {formatAmount(totalDebit)}
-                </td>
-                <td className="py-2 text-right tabular-nums">
-                  {formatAmount(totalCredit)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
+              )}
+              <td className={amountCell}>
+                {l.debit ? formatAmount(l.debit) : ""}
+              </td>
+              <td className={amountCell}>
+                {l.credit ? formatAmount(l.credit) : ""}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr className="border-t font-semibold">
+            <td className="py-1.5">{t("jvTotal")}</td>
+            {hasComment && <td className="hidden @lg:table-cell" />}
+            <td className={amountCell}>{formatAmount(totalDebit)}</td>
+            <td className={amountCell}>{formatAmount(totalCredit)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
   );
 }
 

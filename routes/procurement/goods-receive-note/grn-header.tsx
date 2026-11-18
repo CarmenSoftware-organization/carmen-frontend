@@ -12,7 +12,7 @@ import { StatusChip } from "@/components/ui/status-chip";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { GRN_FORM_STATUS_CONFIG } from "@/constant/goods-receive-note";
 import { getGrnDocTypeLabel } from "@/constant/grn-doc-type";
-import { FormToolbar } from "@/components/share/form-toolbar";
+import { FormToolbar, ToolbarLabel } from "@/components/share/form-toolbar";
 import {
   DocAuditButton,
   DocAuditLine,
@@ -158,9 +158,11 @@ export function GrnHeader({
           size="sm"
           disabled={isPending}
           onClick={onSaveDraft}
+          title={tc("saveDraft")}
         >
           <FileText aria-hidden="true" />
-          {tc("saveDraft")}
+          {/* ปุ่มรอง — หัวแคบเหลือไอคอน ให้ปุ่มทั้งแถวอยู่บรรทัดเดียว (กฎข้อ 13) */}
+          <ToolbarLabel>{tc("saveDraft")}</ToolbarLabel>
         </Button>
       )}
       <Button type="button" size="sm" disabled={isPending} onClick={onSave}>

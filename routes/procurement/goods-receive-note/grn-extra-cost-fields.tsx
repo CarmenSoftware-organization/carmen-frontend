@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useCallback, useState, useMemo, type ReactNode } from "react";
 import {
   useFieldArray,
   useWatch,
@@ -85,6 +85,63 @@ export function GrnExtraCostFields({
   // 32 + 200 + 120 + 200 = 552 คือผลรวมคอลัมน์ บวกเผื่อขอบ
   const [setBoxEl, boxWidth] = useElementWidth();
   const growNote = readOnly && (boxWidth ?? 0) >= 600;
+  // โหมดแก้บนกล่องแคบ: ตาราง 4 คอลัมน์บีบช่องยอดเงินเหลือไม่กี่ px (เห็นแค่ "TH") ประเภท
+  // เหลือ "Sele…" ปุ่มลบหลุดกรอบ → การ์ดกรอกแถวละใบ · โหมดอ่านเป็นข้อความ ตารางยังพอ
+  const editAsCards = !readOnly && boxWidth !== undefined && boxWidth < 600;
+
+  // ช่องกรอกใช้ร่วมกันทั้งตารางและการ์ด — แสดงทีละแบบ register ชื่อเดิมจึงไม่ชนกัน
+  const typeEditor = useCallback(
+    (index: number, size: "xs" | "sm") => (
+      <Controller
+        control={form.control}
+        name={`extra_cost_details.${index}.extra_cost_type_id`}
+        render={({ field }) => (
+          <LookupExtraCost
+            value={field.value}
+            onValueChange={field.onChange}
+            disabled={disabled}
+            size={size}
+            className="w-full text-xs"
+          />
+        )}
+      />
+    ),
+    [form, disabled],
+  );
+  const amountEditor = useCallback(
+    (index: number, className: string) => (
+      <InputSuffixField className={className} disabled={disabled}>
+        <InputSuffixInput
+          type="number"
+          inputMode="decimal"
+          min={0}
+          step="0.01"
+          {...form.register(`extra_cost_details.${index}.amount`, {
+            valueAsNumber: true,
+          })}
+        />
+        {currencyCode && (
+          <InputSuffixAddon>
+            <span className="text-muted-foreground px-1.5 text-xs">
+              {currencyCode}
+            </span>
+          </InputSuffixAddon>
+        )}
+      </InputSuffixField>
+    ),
+    [form, disabled, currencyCode],
+  );
+  const noteEditor = useCallback(
+    (index: number, className: string) => (
+      <Input
+        className={className}
+        disabled={disabled}
+        maxLength={256}
+        {...form.register(`extra_cost_details.${index}.note`)}
+      />
+    ),
+    [form, disabled],
+  );
 
   const columns = useMemo<ColumnDef<ExtraCostField>[]>(() => {
     const indexCol: ColumnDef<ExtraCostField> = {
@@ -107,19 +164,7 @@ export function GrnExtraCostFields({
           readOnly ? (
             <ExtraCostTypeText id={row.original.extra_cost_type_id} />
           ) : (
-            <Controller
-              control={form.control}
-              name={`extra_cost_details.${row.index}.extra_cost_type_id`}
-              render={({ field }) => (
-                <LookupExtraCost
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  disabled={disabled}
-                  size="xs"
-                  className="w-full text-xs"
-                />
-              )}
-            />
+            typeEditor(row.index, "xs")
           ),
         size: 200,
       },
@@ -137,24 +182,7 @@ export function GrnExtraCostFields({
               )}
             </span>
           ) : (
-            <InputSuffixField className="h-6 w-full" disabled={disabled}>
-              <InputSuffixInput
-                type="number"
-                inputMode="decimal"
-                min={0}
-                step="0.01"
-                {...form.register(`extra_cost_details.${row.index}.amount`, {
-                  valueAsNumber: true,
-                })}
-              />
-              {currencyCode && (
-                <InputSuffixAddon>
-                  <span className="text-muted-foreground px-1.5 text-xs">
-                    {currencyCode}
-                  </span>
-                </InputSuffixAddon>
-              )}
-            </InputSuffixField>
+            amountEditor(row.index, "h-6 w-full")
           ),
         size: 120,
         meta: { headerClassName: "text-right" },
@@ -170,12 +198,7 @@ export function GrnExtraCostFields({
               )}
             </span>
           ) : (
-            <Input
-              className="h-6 text-xs"
-              disabled={disabled}
-              maxLength={256}
-              {...form.register(`extra_cost_details.${row.index}.note`)}
-            />
+            noteEditor(row.index, "h-6 text-xs")
           ),
         size: 200,
         // โหมดอ่านไม่มีปุ่มลบท้ายแถว — โน้ตรับที่เหลือ ไม่งั้นคอลัมน์ Type ยืดจนยอดเงิน
@@ -208,7 +231,16 @@ export function GrnExtraCostFields({
     };
 
     return [indexCol, ...dataCols, ...(disabled ? [] : [actionCol])];
-  }, [form, disabled, readOnly, growNote, tfl, currencyCode]);
+  }, [
+    disabled,
+    readOnly,
+    growNote,
+    tfl,
+    currencyCode,
+    typeEditor,
+    amountEditor,
+    noteEditor,
+  ]);
 
   const allocateOptions = [
     { value: "by_qty", label: t("byQuantity") },
@@ -288,36 +320,60 @@ export function GrnExtraCostFields({
           )}
         </div>
 
-        <DataGrid
-          tableLayout={{ rowClamp: false }}
-          table={table}
-          recordCount={costFields.length}
-          emptyMessage={
-            <EmptyComponent
-              icon={DollarSign}
-              title={t("noExtraCosts")}
-              description={t("noExtraCostsDesc")}
-              content={
-                !disabled && (
-                  <Button
-                    type="button"
-                    size="xs"
-                    onClick={() => prependCost({ ...EMPTY_EXTRA_COST })}
-                  >
-                    <Plus /> {t("addCost")}
-                  </Button>
-                )
-              }
-            />
-          }
-        >
-          <DataGridContainer>
-            <ScrollArea className="w-full pb-2">
-              <DataGridTable />
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-          </DataGridContainer>
-        </DataGrid>
+        {editAsCards ? (
+          <ExtraCostEditCards
+            count={costFields.length}
+            ids={costFields.map((f) => f.id)}
+            empty={
+              <EmptyComponent
+                icon={DollarSign}
+                title={t("noExtraCosts")}
+                description={t("noExtraCostsDesc")}
+              />
+            }
+            labels={{
+              type: tfl("type"),
+              amount: tfl("amount"),
+              note: tfl("note"),
+            }}
+            canRemove={!disabled}
+            onRemove={setDeleteIndex}
+            renderType={(i) => typeEditor(i, "sm")}
+            renderAmount={(i) => amountEditor(i, "h-8 w-full")}
+            renderNote={(i) => noteEditor(i, "h-8 text-xs")}
+          />
+        ) : (
+          <DataGrid
+            tableLayout={{ rowClamp: false }}
+            table={table}
+            recordCount={costFields.length}
+            emptyMessage={
+              <EmptyComponent
+                icon={DollarSign}
+                title={t("noExtraCosts")}
+                description={t("noExtraCostsDesc")}
+                content={
+                  !disabled && (
+                    <Button
+                      type="button"
+                      size="xs"
+                      onClick={() => prependCost({ ...EMPTY_EXTRA_COST })}
+                    >
+                      <Plus /> {t("addCost")}
+                    </Button>
+                  )
+                }
+              />
+            }
+          >
+            <DataGridContainer>
+              <ScrollArea className="w-full pb-2">
+                <DataGridTable />
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            </DataGridContainer>
+          </DataGrid>
+        )}
       </div>
 
       <DeleteDialog
@@ -349,5 +405,79 @@ function ExtraCostTypeText({ id }: { readonly id: string }) {
     <span className="break-words">{lookupLabel(item)}</span>
   ) : (
     <span className="text-muted-foreground/60">—</span>
+  );
+}
+
+/** แถวค่าใช้จ่ายเพิ่มเติมแบบการ์ดสำหรับกรอกบนกล่องแคบ — ประเภทเต็มแถว ยอดเงิน + หมายเหตุคู่กัน */
+function ExtraCostEditCards({
+  count,
+  ids,
+  empty,
+  labels,
+  canRemove,
+  onRemove,
+  renderType,
+  renderAmount,
+  renderNote,
+}: {
+  readonly count: number;
+  readonly ids: readonly string[];
+  readonly empty: ReactNode;
+  readonly labels: { type: string; amount: string; note: string };
+  readonly canRemove: boolean;
+  readonly onRemove: (index: number) => void;
+  readonly renderType: (index: number) => ReactNode;
+  readonly renderAmount: (index: number) => ReactNode;
+  readonly renderNote: (index: number) => ReactNode;
+}) {
+  if (count === 0) {
+    return (
+      <div className="border-border/60 bg-card rounded-lg border py-6">
+        {empty}
+      </div>
+    );
+  }
+  const label = "text-muted-foreground text-micro mb-1 block";
+  return (
+    <ul className="flex flex-col gap-2">
+      {ids.map((id, index) => (
+        <li
+          key={id}
+          className="border-border/60 bg-card space-y-2 rounded-lg border p-3 text-xs"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground tabular-nums">
+              {index + 1}
+            </span>
+            {canRemove && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Remove"
+                className="-my-1 -me-1"
+                onClick={() => onRemove(index)}
+              >
+                <Trash2 />
+              </Button>
+            )}
+          </div>
+          <div>
+            <span className={label}>{labels.type}</span>
+            {renderType(index)}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="min-w-0">
+              <span className={label}>{labels.amount}</span>
+              {renderAmount(index)}
+            </div>
+            <div className="min-w-0">
+              <span className={label}>{labels.note}</span>
+              {renderNote(index)}
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }
