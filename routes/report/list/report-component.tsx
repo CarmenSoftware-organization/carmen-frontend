@@ -292,7 +292,8 @@ export default function ReportComponent() {
                   <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-3 p-1">
                     {filteredReports.map((report, i) => (
                       <ReportCard
-                        rowNo={rowNumber(undefined, i)}
+                        // catalog แบ่งหน้าฝั่ง server — นับต่อข้ามหน้าเหมือนคอลัมน์ # ของตาราง
+                        rowNo={rowNumber(params, i)}
                         key={`${report.ReportGroup}-${report.ReportName}`}
                         item={report}
                         onSelect={handleSelect}

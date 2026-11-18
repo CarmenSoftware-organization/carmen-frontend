@@ -77,7 +77,8 @@ export function useDocumentTable({
 
   const columns: ColumnDef<DocumentFile>[] = [
     selectColumn<DocumentFile>(),
-    indexColumn<DocumentFile>(params),
+    // รายการสะสม (lazy load ไม่มี pager) — ไม่ใช้ page จาก URL ให้ตรงกับการ์ดที่นับ 1…n
+    indexColumn<DocumentFile>({}),
     {
       accessorKey: "originalName",
       header: ({ column }) => (
