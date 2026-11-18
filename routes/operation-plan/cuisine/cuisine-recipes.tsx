@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { useTranslations } from "use-intl";
 import { ChevronRight } from "lucide-react";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection } from "@/components/share/compact-section";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCuisineRecipes } from "./use-cuisine-recipes";
 
@@ -24,8 +24,7 @@ export function CuisineRecipes({ cuisineId }: CuisineRecipesProps) {
   const rest = total - recipes.length;
 
   return (
-    <SettingSection
-      plain
+    <CompactSection
       title={t("recipes")}
       description={t("recipesDesc")}
       count={isLoading || isError ? undefined : total}
@@ -47,7 +46,7 @@ export function CuisineRecipes({ cuisineId }: CuisineRecipesProps) {
       )}
 
       {recipes.length > 0 && (
-        <ul className="divide-border border-border divide-y rounded-md border">
+        <ul className="divide-border border-border @container divide-y rounded-md border">
           {recipes.map((recipe) => (
             <li key={recipe.id}>
               <Link
@@ -61,7 +60,7 @@ export function CuisineRecipes({ cuisineId }: CuisineRecipesProps) {
                   {recipe.name}
                 </span>
                 {recipe.category?.name && (
-                  <span className="text-muted-foreground hidden max-w-40 truncate sm:inline">
+                  <span className="text-muted-foreground hidden max-w-40 truncate @md:inline">
                     {recipe.category.name}
                   </span>
                 )}
@@ -80,6 +79,6 @@ export function CuisineRecipes({ cuisineId }: CuisineRecipesProps) {
           {t("recipesMore", { count: rest })}
         </p>
       )}
-    </SettingSection>
+    </CompactSection>
   );
 }

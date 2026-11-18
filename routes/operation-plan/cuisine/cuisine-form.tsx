@@ -24,6 +24,7 @@ import { CuisineToolbar } from "./cuisine-toolbar";
 import { CuisineGeneralFields } from "./cuisine-general-fields";
 import { CuisineDetailFields } from "./cuisine-detail-fields";
 import { CuisineAdditionalFields } from "./cuisine-additional-fields";
+import { SECTION_PAIR } from "@/components/share/compact-section";
 import { CuisineRecipes } from "./cuisine-recipes";
 import { recipeCuisineCommentCrud } from "./use-recipe-cuisine-comments";
 
@@ -115,24 +116,33 @@ export function CuisineForm({ cuisine }: CuisineFormProps) {
           scrollToFirstInvalidField(),
         )}
       >
-        <CuisineGeneralFields
-          form={form}
-          isDisabled={isDisabled}
-          isView={isView}
-        />
-        <CuisineDetailFields
-          form={form}
-          isDisabled={isDisabled}
-          isView={isView}
-        />
-        <CuisineAdditionalFields
-          form={form}
-          isDisabled={isDisabled}
-          isView={isView}
-        />
+        {/* จอ ≥1700px วางเป็นคู่: General | Details แล้ว Additional | Recipes
+            คู่แรกอยู่บนสุดของฟอร์ม — ก้อนขวาต้องตัด mt-5 ตอนวางคู่ ไม่งั้นต่ำกว่าซ้าย 20px */}
+        <div className={SECTION_PAIR}>
+          <CuisineGeneralFields
+            form={form}
+            isDisabled={isDisabled}
+            isView={isView}
+          />
+          <div className="min-[1700px]:[&>section]:mt-0">
+            <CuisineDetailFields
+              form={form}
+              isDisabled={isDisabled}
+              isView={isView}
+            />
+          </div>
+        </div>
+        {/* Recipes อยู่ในฟอร์มเพื่อวางคู่กับ Additional ได้ — มีแค่ลิงก์ ไม่มีช่องกรอก
+            ใบใหม่ยังไม่มี Recipes → Additional เต็มแถว ไม่ใช่ครึ่งแถวที่ว่างข้างหนึ่ง */}
+        <div className={cuisine ? SECTION_PAIR : undefined}>
+          <CuisineAdditionalFields
+            form={form}
+            isDisabled={isDisabled}
+            isView={isView}
+          />
+          {cuisine && <CuisineRecipes cuisineId={cuisine.id} />}
+        </div>
       </form>
-
-      {cuisine && <CuisineRecipes cuisineId={cuisine.id} />}
 
       {cuisine && (
         <Suspense fallback={null}>
