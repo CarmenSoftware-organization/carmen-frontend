@@ -128,7 +128,10 @@ export function SrFooter({
   if (!showBar) return null;
 
   return (
-    <SummaryFooterBar hasRecord={hasItems} items={summaryItems}>
+    <SummaryFooterBar
+      hasRecord={hasItems}
+      items={summaryItems}
+    >
       {showActions && (
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
           {isWorkflowReviewer && showSendBack && (

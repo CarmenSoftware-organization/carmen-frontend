@@ -33,7 +33,6 @@ import { dispatchPermissionDenied } from "@/components/permission-denied-dialog"
 import { canDeletePr } from "./pr-ownership";
 import { usePrPreviousStages } from "./use-purchase-request";
 import { formatDate } from "@/lib/date-utils";
-import { DocAuditCard } from "@/components/share/doc-audit-card";
 import { PrHeader } from "./pr-header";
 
 interface PurchaseRequestFormProps {
@@ -347,8 +346,6 @@ export function PurchaseRequestForm({
           onBulkReview={actions.handleBulkReview}
         />
       </form>
-
-      <DocAuditCard audit={purchaseRequest?.audit} />
 
       <PrFormDialogs
         purchaseRequest={purchaseRequest}

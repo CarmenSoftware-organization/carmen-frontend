@@ -13,6 +13,10 @@ import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { GRN_FORM_STATUS_CONFIG } from "@/constant/goods-receive-note";
 import { getGrnDocTypeLabel } from "@/constant/grn-doc-type";
 import { FormToolbar } from "@/components/share/form-toolbar";
+import {
+  DocAuditButton,
+  DocAuditLine,
+} from "@/components/share/doc-audit-line";
 
 interface GrnHeaderProps {
   readonly goodsReceiveNote?: GoodsReceiveNote;
@@ -137,6 +141,12 @@ export function GrnHeader({
           {departmentName}
         </span>
       )}
+      {isView && (
+        <DocAuditButton
+          audit={goodsReceiveNote?.audit}
+          className="-my-1 sm:hidden"
+        />
+      )}
     </span>
   );
 
@@ -173,7 +183,18 @@ export function GrnHeader({
         inlineBack
         ribbon={
           ribbon ? (
-            <div className="ml-4 min-w-0 flex-1">{ribbon}</div>
+            <div className="ml-4 flex min-w-0 flex-1 flex-wrap items-end gap-x-5 gap-y-3">
+              <div className="min-w-0 flex-1 basis-[min(100%,64rem)]">
+                {ribbon}
+              </div>
+              {/* ผู้สร้าง/ผู้แก้ล่าสุด ชิดขวาล่างของแถบ เฉพาะโหมดดู · basis 64rem กัน grid ฟิลด์ไว้ 4 คอลัมน์ ที่ไม่พอตารางตกบรรทัดใหม่แทนบีบ grid · มือถือเหลือไอคอนในบรรทัดเมตา */}
+              {isView && (
+                <DocAuditLine
+                  audit={goodsReceiveNote?.audit}
+                  className="ms-auto hidden sm:table"
+                />
+              )}
+            </div>
           ) : undefined
         }
         mode={mode}
