@@ -24,7 +24,12 @@ import { useProfile } from "@/hooks/use-profile";
 import type { PriceListTemplate } from "@/types/price-list-template";
 import type { FormMode } from "@/types/form";
 
-import { SettingSection } from "@/components/ui/setting-section";
+import {
+  CompactSection,
+  FieldGrid,
+  SECTION_PAIR,
+} from "@/components/share/compact-section";
+import { SettingField } from "@/components/share/setting-field";
 
 import {
   createPltSchema,
@@ -157,176 +162,174 @@ export function PriceListTemplateForm({
           scrollToFirstInvalidField(),
         )}
       >
-        {/* General */}
-        <SettingSection
-          first
-          title={tfl("general")}
-          description={t(isView ? "generalDescView" : "generalDesc")}
-        >
-          <div className="grid grid-cols-2 gap-4 sm:col-span-2">
-            {/* Name — โหมดดูไม่แสดง แถบหัวมีชื่อเป็นตัวเอกอยู่แล้ว (ท่าเดียวกับหน้า price list) */}
-            {!isView && (
-              <Field>
-                <FieldLabel htmlFor="plt-name">
-                  {tfl("name")}
-                  <span className="text-destructive"> *</span>
-                </FieldLabel>
-                <FieldInput
-                  id="plt-name"
-                  placeholder={t("namePlaceholder")}
-                  disabled={isDisabled}
-                  error={form.formState.errors.name?.message}
-                  maxLength={100}
-                  {...form.register("name")}
+        {/* General คู่กับ Instructions — วางเคียงกันบนจอ ≥1700px ต่ำกว่านั้นซ้อนกัน */}
+        <div className={SECTION_PAIR}>
+          <CompactSection
+            first
+            title={tfl("general")}
+            description={t(isView ? "generalDescView" : "generalDesc")}
+          >
+            {isView ? (
+              // ชื่อกับสถานะไม่แสดง — แถบหัวมีทั้งสองอย่างเป็นตัวเอกอยู่แล้ว
+              <FieldGrid>
+                <SettingField
+                  label={tfl("currency")}
+                  value={priceListTemplate?.currency?.code}
                 />
-              </Field>
-            )}
+                <SettingField
+                  label={tfl("validityPeriod")}
+                  value={
+                    watchedValidity
+                      ? t("daysSuffix", { count: watchedValidity })
+                      : null
+                  }
+                />
+                <SettingField
+                  label={tfl("description")}
+                  value={priceListTemplate?.description}
+                  fullWidth
+                />
+              </FieldGrid>
+            ) : (
+              <FieldGrid>
+                <Field>
+                  <FieldLabel htmlFor="plt-name">
+                    {tfl("name")}
+                    <span className="text-destructive"> *</span>
+                  </FieldLabel>
+                  <FieldInput
+                    id="plt-name"
+                    placeholder={t("namePlaceholder")}
+                    disabled={isDisabled}
+                    error={form.formState.errors.name?.message}
+                    maxLength={100}
+                    {...form.register("name")}
+                  />
+                </Field>
 
-            {/* Currency */}
-            <Field>
-              <FieldLabel>
-                {tfl("currency")}
-                {!isView && <span className="text-destructive"> *</span>}
-              </FieldLabel>
+                <Field>
+                  <FieldLabel>
+                    {tfl("currency")}
+                    <span className="text-destructive"> *</span>
+                  </FieldLabel>
+                  <Controller
+                    control={form.control}
+                    name="currency_id"
+                    render={({ field }) => (
+                      <LookupCurrency
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isDisabled}
+                        fullWidth
+                        error={form.formState.errors.currency_id?.message}
+                      />
+                    )}
+                  />
+                </Field>
+
+                <Field>
+                  <FieldLabel>{tfl("status")}</FieldLabel>
+                  <Controller
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FieldSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isDisabled}
+                        placeholder={tfl("selectStatus")}
+                        error={form.formState.errors.status?.message}
+                      >
+                        <SelectContent>
+                          {PRICE_LIST_TEMPLATE_STATUS_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              <StatusIconLabel
+                                status={opt.value}
+                                label={tsStatus(
+                                  opt.value as "draft" | "active" | "inactive",
+                                )}
+                                className="uppercase"
+                              />
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </FieldSelect>
+                    )}
+                  />
+                </Field>
+
+                {/* stepper มีปุ่ม preset ต่อท้าย ต้องการที่ 2 ช่อง */}
+                <Field className="@md:col-span-2">
+                  <FieldLabel>{tfl("validityPeriod")}</FieldLabel>
+                  <FieldDescription>{stepperLabels.hint}</FieldDescription>
+                  <Controller
+                    control={form.control}
+                    name="validity_period"
+                    render={({ field }) => (
+                      <PltValidityStepper
+                        value={field.value}
+                        onChange={field.onChange}
+                        disabled={isDisabled}
+                        labels={stepperLabels}
+                      />
+                    )}
+                  />
+                </Field>
+
+                {/* ช่องเดียว (ไม่ span) — ช่องกว้าง 2 ช่องสองช่องติดกันตกคนละแถวในกริด 3 คอลัมน์ */}
+                <Field>
+                  <FieldLabel>{tfl("description")}</FieldLabel>
+                  <Textarea
+                    placeholder={tfl("optional")}
+                    rows={2}
+                    maxLength={256}
+                    disabled={isDisabled}
+                    className="resize-none"
+                    {...form.register("description")}
+                  />
+                </Field>
+              </FieldGrid>
+            )}
+          </CompactSection>
+
+          {/* คู่นี้อยู่บนสุดของฟอร์ม: ก้อนซ้ายเป็น first (ไม่มี mt-5) ก้อนขวาต้องตัด mt-5 ทิ้ง
+              ตอนวางเคียงกัน ไม่งั้นการ์ดขวาต่ำกว่าซ้าย 20px · ซ้อนกันเมื่อไรยังต้องมีระยะ */}
+          <div className="min-[1700px]:[&>section]:mt-0">
+            <CompactSection
+              title={t("vendorInstructionTitle")}
+              // คำอธิบายโหมดแก้ยาว ห่อบรรทัดบนหัวข้อคู่แล้วหัวข้อสองฝั่งไม่เสมอกัน → ย้ายเข้าการ์ด
+              description={isView ? t("vendorInstructionHelpView") : undefined}
+            >
               {isView ? (
-                <FieldPlainText>
-                  {priceListTemplate?.currency?.code}
+                // ไม่มี label (ซ้ำกับหัว section ทั้งคำ) — ค่าว่างบอกเป็นคำ ไม่ใช่ "—" ลอย ๆ
+                <FieldPlainText className="whitespace-pre-wrap">
+                  {priceListTemplate?.vendor_instructions || (
+                    <span className="text-muted-foreground font-normal">
+                      {t("vendorInstructionEmpty")}
+                    </span>
+                  )}
                 </FieldPlainText>
               ) : (
-                <Controller
-                  control={form.control}
-                  name="currency_id"
-                  render={({ field }) => (
-                    <LookupCurrency
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isDisabled}
-                      fullWidth
-                      error={form.formState.errors.currency_id?.message}
-                    />
-                  )}
-                />
-              )}
-            </Field>
-
-            {/* Validity period — โหมดดูเหลือแค่ค่าสั้น ๆ จึงนั่งข้างสกุลเงินในแถวเดียวกัน */}
-            {isView && (
-              <Field>
-                <FieldLabel>{tfl("validityPeriod")}</FieldLabel>
-                <FieldPlainText>
-                  {watchedValidity
-                    ? t("daysSuffix", { count: watchedValidity })
-                    : null}
-                </FieldPlainText>
-              </Field>
-            )}
-          </div>
-
-          {/* Validity period — โหมดแก้ใช้ stepper เต็มแถว */}
-          {!isView && (
-            <Field className="sm:col-span-2">
-              <FieldLabel>{tfl("validityPeriod")}</FieldLabel>
-              <FieldDescription>{stepperLabels.hint}</FieldDescription>
-              <Controller
-                control={form.control}
-                name="validity_period"
-                render={({ field }) => (
-                  <PltValidityStepper
-                    value={field.value}
-                    onChange={field.onChange}
+                <Field>
+                  <FieldLabel className="sr-only">
+                    {t("vendorInstructionTitle")}
+                  </FieldLabel>
+                  <FieldDescription>
+                    {t("vendorInstructionHelp")}
+                  </FieldDescription>
+                  <Textarea
+                    placeholder={t("vendorInstructionPlaceholder")}
+                    rows={5}
+                    maxLength={1000}
                     disabled={isDisabled}
-                    labels={stepperLabels}
+                    className="resize-none leading-relaxed"
+                    {...form.register("vendor_instruction")}
                   />
-                )}
-              />
-            </Field>
-          )}
-
-          {/* Description */}
-          <Field className="sm:col-span-2">
-            <FieldLabel>{tfl("description")}</FieldLabel>
-            {isView ? (
-              <FieldPlainText className="whitespace-pre-wrap">
-                {priceListTemplate?.description}
-              </FieldPlainText>
-            ) : (
-              <Textarea
-                placeholder={tfl("optional")}
-                rows={2}
-                maxLength={256}
-                disabled={isDisabled}
-                className="resize-none"
-                {...form.register("description")}
-              />
-            )}
-          </Field>
-
-          {/* Status — โหมดดูไม่แสดง แถบหัวมีสถานะอยู่แล้ว */}
-          {!isView && (
-            <Field className="sm:col-span-2">
-              <FieldLabel>{tfl("status")}</FieldLabel>
-              <Controller
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FieldSelect
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={isDisabled}
-                    placeholder={tfl("selectStatus")}
-                    error={form.formState.errors.status?.message}
-                  >
-                    <SelectContent>
-                      {PRICE_LIST_TEMPLATE_STATUS_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          <StatusIconLabel
-                            status={opt.value}
-                            label={tsStatus(
-                              opt.value as "draft" | "active" | "inactive",
-                            )}
-                            className="uppercase"
-                          />
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </FieldSelect>
-                )}
-              />
-            </Field>
-          )}
-        </SettingSection>
-
-        {/* Vendor instructions */}
-        <SettingSection
-          title={t("vendorInstructionTitle")}
-          description={t(
-            isView ? "vendorInstructionHelpView" : "vendorInstructionHelp",
-          )}
-        >
-          <Field className="sm:col-span-2">
-            {/* โหมดดู label ซ้ำกับหัว section ทั้งคำ — ตัดทิ้ง เหลือแค่ข้อความ */}
-            {!isView && <FieldLabel>{t("vendorInstructionTitle")}</FieldLabel>}
-            {isView ? (
-              <FieldPlainText className="whitespace-pre-wrap">
-                {/* ไม่มี label แล้ว "—" ลอย ๆ อ่านไม่ออกว่าหมายถึงอะไร — บอกเป็นคำ */}
-                {priceListTemplate?.vendor_instructions || (
-                  <span className="text-muted-foreground font-normal">
-                    {t("vendorInstructionEmpty")}
-                  </span>
-                )}
-              </FieldPlainText>
-            ) : (
-              <Textarea
-                placeholder={t("vendorInstructionPlaceholder")}
-                rows={5}
-                maxLength={1000}
-                disabled={isDisabled}
-                className="resize-none leading-relaxed"
-                {...form.register("vendor_instruction")}
-              />
-            )}
-          </Field>
-        </SettingSection>
+                </Field>
+              )}
+            </CompactSection>
+          </div>
+        </div>
 
         <PltItemFields
           form={form}

@@ -33,7 +33,8 @@ import type {
   RequestPriceList,
 } from "@/types/request-price-list";
 
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
+import { SettingField } from "@/components/share/setting-field";
 import {
   buildVendorChanges,
   createRfpSchema,
@@ -176,9 +177,7 @@ export function RequestPriceListForm({
           onEdit={f.handleEdit}
           onDelete={requestPriceList ? () => setShowDelete(true) : undefined}
           deleteIsPending={deleteRfp.isPending}
-          onComment={
-            requestPriceList ? () => setShowComment(true) : undefined
-          }
+          onComment={requestPriceList ? () => setShowComment(true) : undefined}
           activity={
             requestPriceList && {
               id: requestPriceList.id,
@@ -207,82 +206,81 @@ export function RequestPriceListForm({
         )}
       >
         {/* General */}
-        <SettingSection
+        <CompactSection
           first
           title={tfl("general")}
           description={t(isView ? "generalDescView" : "generalDesc")}
         >
-          {/* Name — โหมดดูไม่แสดง แถบหัวมีชื่อเป็นตัวเอกอยู่แล้ว (ท่าเดียวกับหน้า price list) */}
-          {!isView && (
-            <Field>
-              <FieldLabel htmlFor="rfp-name">
-                {tfl("name")}
-                <span className="text-destructive"> *</span>
-              </FieldLabel>
-              <FieldInput
-                id="rfp-name"
-                placeholder={t("namePlaceholder")}
-                disabled={isDisabled}
-                error={form.formState.errors.name?.message}
-                maxLength={100}
-                {...form.register("name")}
-              />
-            </Field>
-          )}
-
-          {/* Template */}
-          <Field>
-            <FieldLabel>
-              {tfl("template")}
-              {!isView && <span className="text-destructive"> *</span>}
-            </FieldLabel>
-            {isView ? (
-              <FieldPlainText>
-                {requestPriceList?.pricelist_template?.name}
-              </FieldPlainText>
-            ) : (
-              <Controller
-                control={form.control}
-                name="pricelist_template_id"
-                render={({ field }) => (
-                  <LookupPrt
-                    value={field.value ?? ""}
-                    onValueChange={(value) => field.onChange(value)}
-                    defaultLabel={
-                      field.value &&
-                      field.value === requestPriceList?.pricelist_template?.id
-                        ? (requestPriceList.pricelist_template.name ??
-                          undefined)
-                        : undefined
-                    }
-                    disabled={isDisabled}
-                    className="w-full"
-                    error={form.formState.errors.pricelist_template_id?.message}
-                  />
-                )}
-              />
-            )}
-          </Field>
-
-          {/* Request period — โหมดดูรวมเป็นช่องเดียวพร้อม badge บอกว่ารอบรับราคายังเปิดอยู่ไหม
-              (ตัวเดียวกับคอลัมน์ในหน้า list) นั่งข้าง Template ในแถวเดียวกัน */}
           {isView ? (
-            <Field>
-              <FieldLabel>{t("requestPeriod")}</FieldLabel>
+            // ชื่อไม่แสดง — แถบหัวมีชื่อเป็นตัวเอกอยู่แล้ว (ท่าเดียวกับหน้า price list)
+            <FieldGrid>
+              <SettingField
+                label={tfl("template")}
+                value={requestPriceList?.pricelist_template?.name}
+              />
+              {/* ช่วงรับราคา + badge บอกว่ารอบยังเปิดอยู่ไหม (ตัวเดียวกับคอลัมน์ในหน้า list)
+                  ทรงเดียวกับ SettingField แต่มี badge ใต้ค่า */}
               {startDate && endDate && requestPriceList ? (
-                <FieldPlainText className="flex-col items-start gap-1">
-                  <span className="tabular-nums">
+                <div className="min-w-0">
+                  <div className="text-muted-foreground text-xs">
+                    {t("requestPeriod")}
+                  </div>
+                  <div className="mt-0.5 text-sm tabular-nums">
                     {formatDate(startDate, dateFormat)} -{" "}
                     {formatDate(endDate, dateFormat)}
-                  </span>
-                  <RfpWindowBadge item={requestPriceList} />
-                </FieldPlainText>
+                  </div>
+                  <div className="mt-1">
+                    <RfpWindowBadge item={requestPriceList} />
+                  </div>
+                </div>
               ) : (
-                <FieldPlainText />
+                <SettingField label={t("requestPeriod")} value={null} />
               )}
-            </Field>
+            </FieldGrid>
           ) : (
-            <>
+            <FieldGrid>
+              <Field>
+                <FieldLabel htmlFor="rfp-name">
+                  {tfl("name")}
+                  <span className="text-destructive"> *</span>
+                </FieldLabel>
+                <FieldInput
+                  id="rfp-name"
+                  placeholder={t("namePlaceholder")}
+                  disabled={isDisabled}
+                  error={form.formState.errors.name?.message}
+                  maxLength={100}
+                  {...form.register("name")}
+                />
+              </Field>
+              <Field>
+                <FieldLabel>
+                  {tfl("template")}
+                  <span className="text-destructive"> *</span>
+                </FieldLabel>
+                <Controller
+                  control={form.control}
+                  name="pricelist_template_id"
+                  render={({ field }) => (
+                    <LookupPrt
+                      value={field.value ?? ""}
+                      onValueChange={(value) => field.onChange(value)}
+                      defaultLabel={
+                        field.value &&
+                        field.value === requestPriceList?.pricelist_template?.id
+                          ? (requestPriceList.pricelist_template.name ??
+                            undefined)
+                          : undefined
+                      }
+                      disabled={isDisabled}
+                      className="w-full"
+                      error={
+                        form.formState.errors.pricelist_template_id?.message
+                      }
+                    />
+                  )}
+                />
+              </Field>
               <Field>
                 <FieldLabel>{tfl("startDate")}</FieldLabel>
                 <Controller
@@ -319,9 +317,9 @@ export function RequestPriceListForm({
                   )}
                 />
               </Field>
-            </>
+            </FieldGrid>
           )}
-        </SettingSection>
+        </CompactSection>
 
         <RfpVendorFields
           form={form}
@@ -331,15 +329,19 @@ export function RequestPriceListForm({
         />
 
         {/* Custom message */}
-        <SettingSection
+        <CompactSection
           title={t("customMessageTitle")}
           description={t(
             isView ? "customMessageHelpView" : "customMessageHelp",
           )}
         >
-          <Field className="sm:col-span-2">
-            {/* โหมดดู label ซ้ำกับหัว section ทั้งคำ — ตัดทิ้ง เหลือแค่ข้อความ */}
-            {!isView && <FieldLabel>{t("customMessageTitle")}</FieldLabel>}
+          <Field>
+            {/* label ซ้ำกับหัว section ทั้งคำ — โชว์เฉพาะ screen reader */}
+            {!isView && (
+              <FieldLabel className="sr-only">
+                {t("customMessageTitle")}
+              </FieldLabel>
+            )}
             {isView ? (
               <FieldPlainText className="whitespace-pre-wrap">
                 {/* ไม่มี label แล้ว "—" ลอย ๆ อ่านไม่ออกว่าหมายถึงอะไร — บอกเป็นคำ */}
@@ -359,7 +361,7 @@ export function RequestPriceListForm({
               />
             )}
           </Field>
-        </SettingSection>
+        </CompactSection>
       </form>
 
       <DiscardDialog {...f.discard.dialogProps} variant="warning" />
