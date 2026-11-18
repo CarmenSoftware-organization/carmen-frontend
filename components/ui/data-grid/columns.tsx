@@ -15,6 +15,7 @@ import type { RowWithLastAction } from "@/constant/last-action";
 import type { Permission } from "@/constant/permissions";
 import type { ParamsDto } from "@/types/params";
 import type { AuditEntry } from "@/types/audit";
+import { rowNumber } from "@/lib/row-number";
 
 export const columnSkeletons = {
   checkbox: <Skeleton className="mx-auto h-2.5 w-2.5 rounded" />,
@@ -45,13 +46,13 @@ export function indexColumn<T>(params: ParamsDto): ColumnDef<T> {
   return {
     id: "index",
     header: "#",
-    cell: ({ row }) =>
-      row.index +
-      1 +
-      ((Number(params.page) || 1) - 1) * (Number(params.perpage) || 10),
+    // ตำแหน่งที่แสดงจริง ไม่ใช่ row.index — row.index คือลำดับในข้อมูลดิบ
+    // ตารางที่เรียง/กรองฝั่ง client เลขจะสลับกันถ้าใช้ตัวนั้น
+    cell: ({ row, table }) =>
+      rowNumber(params, table.getRowModel().rows.indexOf(row)),
     enableSorting: false,
     enableHiding: false,
-    size: 60,
+    size: 48,
     meta: {
       headerClassName: "text-center",
       cellClassName: "text-center",

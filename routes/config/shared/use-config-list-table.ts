@@ -64,7 +64,7 @@ export function useConfigListTable<T>({
   // Include the 55px select column even though ConfigListTemplate does not render it.
   const chromeWidth =
     55 +
-    (options.hideIndex ? 0 : 60) +
+    (options.hideIndex ? 0 : 48) +
     (options.hideStatus ? 0 : 100) +
     (options.onDelete ? 60 : 0);
   const responsive = useConfigTableLayout(
