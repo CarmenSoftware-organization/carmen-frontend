@@ -34,6 +34,8 @@ export function LangSwitch() {
               onClick={() => switchLocale(loc)}
               disabled={isPending}
               className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm"
+              // menuitem ไม่รองรับ aria-checked — ตัวเลือกแบบเลือกได้หนึ่งเดียวต้องเป็น menuitemradio
+              role="menuitemradio"
               aria-checked={isActive}
             >
               <span className="flex-1">{LOCALE_LABELS[loc]}</span>

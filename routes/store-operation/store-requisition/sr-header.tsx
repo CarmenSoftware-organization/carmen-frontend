@@ -87,7 +87,6 @@ export function SrHeader({
   const t = useTranslations("storeOperation.storeRequisition");
   const tc = useTranslations("common");
   const ts = useTranslations("status");
-  const tfl = useTranslations("field");
   const tf = useTranslations("form");
   const { total: commentCount } = useStoreRequisitionComments(
     storeRequisition?.id,
@@ -150,13 +149,7 @@ export function SrHeader({
           {t("breadcrumbNew")}
         </Badge>
       )}
-      {/* เลขที่ใบ · สถานะ · รุ่น = ตัวตนของเอกสาร อยู่บรรทัดเดียวกันหมด
-          เพื่อคืนบรรทัด subtitle ให้แถบขั้นตอน */}
-      {storeRequisition?.doc_version != null && (
-        <span className="text-muted-foreground text-micro">
-          {tfl("version")} {storeRequisition.doc_version}
-        </span>
-      )}
+      {/* รุ่นเอกสาร (doc_version) อยู่ในตาราง audit ของ ribbon ไม่ใช่แถวนี้ */}
     </div>
   );
 
@@ -232,6 +225,7 @@ export function SrHeader({
       {isView && (
         <DocAuditButton
           audit={storeRequisition?.audit}
+          docVersion={storeRequisition?.doc_version}
           className="-my-1 sm:hidden"
         />
       )}
@@ -278,6 +272,7 @@ export function SrHeader({
                 {isView && (
                   <DocAuditLine
                     audit={storeRequisition?.audit}
+                    docVersion={storeRequisition?.doc_version}
                     className="ms-auto hidden sm:table"
                   />
                 )}

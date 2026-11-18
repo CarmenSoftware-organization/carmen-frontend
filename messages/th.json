@@ -2707,6 +2707,7 @@
     "document": "เอกสาร",
     "requester": "ผู้ขอ",
     "version": "ฉบับที่",
+    "revision": "rev.",
     "addressType": "ประเภทที่อยู่",
     "city": "เมือง",
     "alias": "ชื่อย่อ",

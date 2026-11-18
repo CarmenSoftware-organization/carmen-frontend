@@ -75,7 +75,6 @@ export function PoHeader({
 }: PoHeaderProps) {
   const t = useTranslations("procurement.purchaseOrder");
   const tc = useTranslations("common");
-  const tfl = useTranslations("field");
   const tf = useTranslations("form");
   const { total: commentCount } = usePurchaseOrderComments(purchaseOrder?.id);
   const [showSendEmail, setShowSendEmail] = useState(false);
@@ -113,13 +112,7 @@ export function PoHeader({
           className="text-muted-foreground text-micro [&>svg]:size-3"
         />
       )}
-      {/* รุ่นเอกสารย้ายมาอยู่แถวเดียวกับเลขที่ใบ เพื่อคืนบรรทัด subtitle
-          ให้แถบขั้นตอน — เลขที่ใบ · สถานะ · รุ่น คือตัวตนของเอกสารชุดเดียวกัน */}
-      {purchaseOrder?.doc_version != null && (
-        <span className="text-muted-foreground text-micro">
-          {tfl("version")} {purchaseOrder.doc_version}
-        </span>
-      )}
+      {/* รุ่นเอกสาร (doc_version) อยู่ในตาราง audit ของ ribbon ไม่ใช่แถวนี้ */}
     </div>
   );
 
@@ -154,6 +147,7 @@ export function PoHeader({
         {isView && (
           <DocAuditButton
             audit={purchaseOrder?.audit}
+            docVersion={purchaseOrder?.doc_version}
             className="-my-1 sm:hidden"
           />
         )}
@@ -193,6 +187,7 @@ export function PoHeader({
                 {isView && (
                   <DocAuditLine
                     audit={purchaseOrder?.audit}
+                    docVersion={purchaseOrder?.doc_version}
                     className="ms-auto hidden sm:table"
                   />
                 )}
