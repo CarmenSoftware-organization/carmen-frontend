@@ -99,7 +99,7 @@ export function SrRequestDetails({
           : saved.name
         : null;
     return (
-      <FieldGrid>
+      <FieldGrid dense>
         <SettingField label={tfl("workflow")} value={workflowName} />
         <SettingField
           label={tfl("expectedDate")}

@@ -61,6 +61,8 @@ import {
   saveFolioSamples,
   type ArFolio,
 } from "./ar-folio-model";
+import { pageParamsOf, rowNumber } from "@/lib/row-number";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 const fields: FilterFieldDef[] = [
   {
@@ -194,6 +196,7 @@ function FolioList({ bu }: { readonly bu: string }) {
     meta: { headerTitle: label },
   });
   const columns: ColumnDef<ArFolio>[] = [
+    indexColumn<ArFolio>(),
     {
       ...column("date", t("folioDate"), 150),
       cell: ({ row: { original: folio } }) => (
@@ -420,8 +423,12 @@ function FolioList({ bu }: { readonly bu: string }) {
           {cards ? (
             rows.length ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {table.getRowModel().rows.map(({ original: folio }) => (
+                {table.getRowModel().rows.map(({ original: folio }, i) => (
                   <ListCard
+                    rowNo={rowNumber(
+                      pageParamsOf(table.getState().pagination),
+                      i,
+                    )}
                     key={folio.id}
                     title={folio.folioNo}
                     onOpen={() => open(folio)}

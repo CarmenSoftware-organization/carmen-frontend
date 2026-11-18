@@ -48,6 +48,8 @@ import {
   type AccountingDocument,
   type AccountingDocumentConfig,
 } from "./accounting-document-model";
+import { pageParamsOf, rowNumber } from "@/lib/row-number";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 const fields: FilterFieldDef[] = [
   {
@@ -109,36 +111,39 @@ export default function AccountingRegisterList({
   }, [allRows, search, lf.values]);
   const open = (row: AccountingDocument) =>
     navigate(`${config.path}/${row.id}`, listReturnState());
-  const columns: ColumnDef<AccountingDocument>[] = (
-    ["number", "date", "description", "party", "status", "amount"] as const
-  ).map((key) => ({
-    accessorKey: key,
-    header: ({ column }) => (
-      <DataGridColumnHeader column={column} title={t(key)} />
-    ),
-    meta: {
-      headerTitle: t(key),
-      ...(key === "amount" && {
-        headerClassName: "text-right",
-        cellClassName: "text-right tabular-nums",
-      }),
-    },
-    cell: ({ row: { original: row } }) =>
-      key === "number" ? (
-        <CellAction onClick={() => open(row)}>{row.number}</CellAction>
-      ) : key === "date" ? (
-        formatDate(row.date, dateFormat)
-      ) : key === "status" ? (
-        <StatusChip
-          status={row.status.toLowerCase()}
-          label={t(`statuses.${row.status.toLowerCase()}`)}
-        />
-      ) : key === "amount" ? (
-        money(row.amount)
-      ) : (
-        row[key]
+  const columns: ColumnDef<AccountingDocument>[] = [
+    indexColumn<AccountingDocument>(),
+    ...(
+      ["number", "date", "description", "party", "status", "amount"] as const
+    ).map((key): ColumnDef<AccountingDocument> => ({
+      accessorKey: key,
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={t(key)} />
       ),
-  }));
+      meta: {
+        headerTitle: t(key),
+        ...(key === "amount" && {
+          headerClassName: "text-right",
+          cellClassName: "text-right tabular-nums",
+        }),
+      },
+      cell: ({ row: { original: row } }) =>
+        key === "number" ? (
+          <CellAction onClick={() => open(row)}>{row.number}</CellAction>
+        ) : key === "date" ? (
+          formatDate(row.date, dateFormat)
+        ) : key === "status" ? (
+          <StatusChip
+            status={row.status.toLowerCase()}
+            label={t(`statuses.${row.status.toLowerCase()}`)}
+          />
+        ) : key === "amount" ? (
+          money(row.amount)
+        ) : (
+          row[key]
+        ),
+    })),
+  ];
   const table = useReactTable({
     ...tableConfig,
     data: rows,
@@ -228,8 +233,12 @@ export default function AccountingRegisterList({
           {cards ? (
             rows.length ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {table.getRowModel().rows.map(({ original: row }) => (
+                {table.getRowModel().rows.map(({ original: row }, i) => (
                   <ListCard
+                    rowNo={rowNumber(
+                      pageParamsOf(table.getState().pagination),
+                      i,
+                    )}
                     key={row.id}
                     title={row.number}
                     onOpen={() => open(row)}

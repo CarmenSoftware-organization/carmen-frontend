@@ -90,7 +90,7 @@ export function GrnFormHeader({
   return (
     // FieldGrid: คอลัมน์ตามความกว้างกล่อง (container query) ไม่ใช่ความกว้างจอ
     // ผู้ขาย + คำอธิบายกิน 2 ช่อง · ลำดับช่องเท่าเดิมทั้งสองโหมด สลับแล้วไม่ย้ายที่
-    <FieldGrid>
+    <FieldGrid dense={isView}>
       {vendorLocked ? (
         <SettingField label={tfl("vendor")} value={vendorName} fullWidth />
       ) : (

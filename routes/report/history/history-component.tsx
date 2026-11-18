@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
 import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
+import { rowNumber } from "@/lib/row-number";
 
 export default function HistoryComponent() {
   const t = useTranslations("reportHistory");
@@ -135,8 +136,13 @@ function GridContent({
   return (
     <>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-3">
-        {items.map((item) => (
-          <HistoryCard key={item.job_id} item={item} />
+        {/* การ์ดแสดงเฉพาะโหมด grid ซึ่งเป็นรายการสะสม (grid.items) */}
+        {items.map((item, i) => (
+          <HistoryCard
+            key={item.job_id}
+            item={item}
+            rowNo={rowNumber(undefined, i)}
+          />
         ))}
       </div>
 

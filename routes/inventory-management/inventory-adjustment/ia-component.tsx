@@ -412,6 +412,7 @@ export default function InventoryAdjustmentComponent() {
       {isGridMode && (
         <>
           <IaCardList
+            pageParams={useInfiniteScroll ? undefined : params}
             items={items}
             isLoading={useInfiniteScroll ? grid.isLoading : isLoading}
             onEdit={navigateToItem}

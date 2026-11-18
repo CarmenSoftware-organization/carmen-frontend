@@ -321,6 +321,7 @@ export default function GrnComponent() {
       {isGridMode && useInfiniteScroll && (
         <>
           <GrnCardList
+            pageParams={useInfiniteScroll ? undefined : params}
             items={goodsReceiveNotes}
             isLoading={grid.isLoading}
             onEdit={(grn) =>

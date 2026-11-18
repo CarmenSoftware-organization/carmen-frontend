@@ -33,6 +33,7 @@ import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
+import { rowNumber } from "@/lib/row-number";
 
 // แทน next/dynamic ด้วย React.lazy (code-split dialog chunk เหมือนเดิม)
 const EquipmentCategoryDialog = lazy(() =>
@@ -164,8 +165,9 @@ export default function EquipmentCategoryComponent() {
       {isGridMode && !grid.isLoading && equipmentCategories.length > 0 && (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {equipmentCategories.map((item) => (
+            {equipmentCategories.map((item, i) => (
               <EquipmentCategoryCard
+                rowNo={rowNumber(undefined, i)}
                 key={item.id}
                 item={item}
                 onEdit={handleEdit}

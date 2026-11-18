@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useListReturn } from "@/hooks/use-list-return";
@@ -53,6 +55,8 @@ interface SrHeaderProps {
   readonly onCancel: () => void;
   readonly onDelete: () => void;
   readonly onComment?: () => void;
+  /** ช่องข้อมูลหัวใบ — อยู่ในการ์ดเดียวกับหัวเอกสาร (ส่งต่อ FormToolbar.ribbon) */
+  readonly ribbon?: ReactNode;
 }
 
 export function SrHeader({
@@ -74,6 +78,7 @@ export function SrHeader({
   onCancel,
   onDelete,
   onComment,
+  ribbon,
 }: SrHeaderProps) {
   const t = useTranslations("storeOperation.storeRequisition");
   const tc = useTranslations("common");
@@ -119,7 +124,8 @@ export function SrHeader({
   // แยกเป็นคนละกลุ่มกับเลขที่ใบด้วยเส้นคั่น + ระยะห่าง — เลขที่ใบคือตัวตนของ
   // เอกสาร ส่วนสถานะ/ชนิดใบ/รุ่นคือ "ตอนนี้มันอยู่ตรงไหน" คนละคำถามกัน
   const badges = (
-    <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3">
+    // หัวแคบ (มือถือ) กลุ่มนี้มักตกไปบรรทัดใต้เลขที่ใบ เส้นคั่นจะค้างหัวบรรทัด จึงเอาออก
+    <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3 @max-md/doc-header:ms-0 @max-md/doc-header:border-s-0 @max-md/doc-header:ps-0">
       {docStatus && (
         <StatusChip
           status={docStatus}
@@ -249,64 +255,77 @@ export function SrHeader({
 
   return (
     <>
-      <FormToolbar
-        mode={mode}
-        formId="store-requisition-form"
-        isPending={isPending}
-        title={storeRequisition?.sr_no ?? t("title")}
-        subtitle={
-          <span className="flex flex-col gap-1">
-            {docMeta}
-            {workflowStep}
-          </span>
-        }
-        badges={badges}
-        onBack={onBack}
-        onCancel={onCancel}
-        // แก้ได้เฉพาะ stage role ที่กรอกใบได้ (create / approve / issue)
-        onEdit={canEdit ? onEdit : undefined}
-        // ลบได้เฉพาะตอนแก้ — หน้าดูเป็นที่ทำงาน workflow
-        onDelete={!isView && storeRequisition ? onDelete : undefined}
-        deleteIsPending={isDeletePending}
-        // เดิมป้าย Save ทุกโหมด — ไม่ให้โหมด add กลายเป็น "Create"
-        submitLabel={tc("save")}
-        pendingLabel={tf("saving")}
-        // ไม่มีแผนก = บันทึกไม่ได้ ปิดปุ่มพร้อมเหตุผล — มีแผนกแล้วใช้ปุ่มมาตรฐาน
-        // (ผ่านด่าน license ของ toolbar)
-        submitSlot={
-          hasDepartment ? undefined : (
-            <Button type="button" size="sm" disabled title={t("noDepartment")}>
-              <Save aria-hidden="true" />
-              {tc("save")}
-            </Button>
-          )
-        }
-      >
-        {/* Duplicate/Print เฉพาะ view (ตอน edit ค่าบนจออาจยังไม่ save) ·
+      <div className={DOC_HEADER_CARD}>
+        <FormToolbar
+          inlineBack
+          ribbon={
+            ribbon ? (
+              <div className="ml-4 min-w-0 flex-1">{ribbon}</div>
+            ) : undefined
+          }
+          mode={mode}
+          formId="store-requisition-form"
+          isPending={isPending}
+          title={storeRequisition?.sr_no ?? t("title")}
+          subtitle={
+            <span className="flex flex-col gap-1">
+              {docMeta}
+              {workflowStep}
+            </span>
+          }
+          badges={badges}
+          onBack={onBack}
+          onCancel={onCancel}
+          // แก้ได้เฉพาะ stage role ที่กรอกใบได้ (create / approve / issue)
+          onEdit={canEdit ? onEdit : undefined}
+          // ลบได้เฉพาะตอนแก้ — หน้าดูเป็นที่ทำงาน workflow
+          onDelete={!isView && storeRequisition ? onDelete : undefined}
+          deleteIsPending={isDeletePending}
+          // เดิมป้าย Save ทุกโหมด — ไม่ให้โหมด add กลายเป็น "Create"
+          submitLabel={tc("save")}
+          pendingLabel={tf("saving")}
+          // ไม่มีแผนก = บันทึกไม่ได้ ปิดปุ่มพร้อมเหตุผล — มีแผนกแล้วใช้ปุ่มมาตรฐาน
+          // (ผ่านด่าน license ของ toolbar)
+          submitSlot={
+            hasDepartment ? undefined : (
+              <Button
+                type="button"
+                size="sm"
+                disabled
+                title={t("noDepartment")}
+              >
+                <Save aria-hidden="true" />
+                {tc("save")}
+              </Button>
+            )
+          }
+        >
+          {/* Duplicate/Print เฉพาะ view (ตอน edit ค่าบนจออาจยังไม่ save) ·
             comment / activity อยู่ใน DocActions — ไม่ส่ง activity ให้ toolbar ซ้ำ */}
-        {storeRequisition && (
-          <DocActions
-            onDuplicate={isView ? handleDuplicate : undefined}
-            onComment={onComment}
-            commentCount={commentCount}
-            activity={{
-              id: storeRequisition.id,
-              label: storeRequisition.sr_no,
-            }}
-            print={
-              isView && storeRequisition.id
-                ? {
-                    documentType: "SR",
-                    documentId: storeRequisition.id,
-                    filters: storeRequisition.sr_no
-                      ? { DocumentNo: storeRequisition.sr_no }
-                      : undefined,
-                  }
-                : undefined
-            }
-          />
-        )}
-      </FormToolbar>
+          {storeRequisition && (
+            <DocActions
+              onDuplicate={isView ? handleDuplicate : undefined}
+              onComment={onComment}
+              commentCount={commentCount}
+              activity={{
+                id: storeRequisition.id,
+                label: storeRequisition.sr_no,
+              }}
+              print={
+                isView && storeRequisition.id
+                  ? {
+                      documentType: "SR",
+                      documentId: storeRequisition.id,
+                      filters: storeRequisition.sr_no
+                        ? { DocumentNo: storeRequisition.sr_no }
+                        : undefined,
+                    }
+                  : undefined
+              }
+            />
+          )}
+        </FormToolbar>
+      </div>
       {workflowHistorySheet}
     </>
   );

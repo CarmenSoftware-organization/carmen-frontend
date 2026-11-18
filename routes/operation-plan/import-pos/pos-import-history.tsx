@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
-import { columnSkeletons } from "@/components/ui/data-grid/columns";
+import {
+  columnSkeletons,
+  indexColumn,
+} from "@/components/ui/data-grid/columns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -90,6 +93,7 @@ export function PosImportHistory({
 
   const columns = useMemo<ColumnDef<PosImportListItem>[]>(
     () => [
+      indexColumn<PosImportListItem>(),
       {
         id: "doc_date",
         header: t("columns.docDate"),

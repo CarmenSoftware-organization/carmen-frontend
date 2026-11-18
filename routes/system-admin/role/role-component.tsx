@@ -27,6 +27,7 @@ import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
 import { cn } from "@/lib/utils";
 import { DocumentListActions } from "@/components/share/document-list-actions";
+import { rowNumber } from "@/lib/row-number";
 
 export default function RoleComponent() {
   const navigate = useNavigate();
@@ -95,8 +96,9 @@ export default function RoleComponent() {
         ) : items.length > 0 ? (
           <>
             <div className="grid grid-cols-1 gap-3">
-              {items.map((item) => (
+              {items.map((item, i) => (
                 <RoleCard
+                  rowNo={rowNumber(useInfiniteScroll ? undefined : params, i)}
                   key={item.id}
                   item={item}
                   onEdit={(r) =>

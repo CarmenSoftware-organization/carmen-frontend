@@ -87,10 +87,11 @@ export function Component() {
       getEditPath={(entity) =>
         `/accounting/accounts-receivable/profile/${entity.id}?mode=edit`
       }
-      renderCard={({ item, onDelete }) => (
+      renderCard={({ item, onDelete, rowNo }) => (
         <ProfileView id={item.id} canWrite={canWrite}>
           {(open) => (
             <ListCard
+              rowNo={rowNo}
               title={item.code}
               onOpen={open}
               onDelete={() => onDelete(item)}

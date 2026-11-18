@@ -16,8 +16,12 @@ import {
   jvTemplatePeriodRange,
   jvTemplateTypeLabel,
 } from "./jv-template-labels";
+import { rowNumber } from "@/lib/row-number";
+import type { ParamsDto } from "@/types/params";
 
 interface JvTemplateCardListProps {
+  /** `params` ของหน้าเมื่อแบ่งหน้า · `undefined` = รายการสะสม (infinite) นับจาก 1 */
+  readonly pageParams?: ParamsDto;
   readonly kind: JvTemplatePageKind;
   readonly items: JvTemplate[];
   readonly isLoading?: boolean;
@@ -27,6 +31,7 @@ interface JvTemplateCardListProps {
 
 /** การ์ด template สำหรับโหมด grid/มือถือ — ท่าเดียวกับ `JvCardList` */
 export default function JvTemplateCardList({
+  pageParams,
   kind,
   items,
   isLoading,
@@ -49,10 +54,11 @@ export default function JvTemplateCardList({
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {items.map((item) => {
+      {items.map((item, i) => {
         const amount = jvTemplateAmount(item);
         return (
           <ListCard
+            rowNo={rowNumber(pageParams, i)}
             key={item.id}
             title={item.code}
             onOpen={() => onOpen(item)}

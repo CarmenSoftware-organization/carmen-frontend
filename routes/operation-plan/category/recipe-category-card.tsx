@@ -13,6 +13,8 @@ import {
 } from "../shared/recipe-category-defaults";
 
 interface RecipeCategoryCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: RecipeCategory;
   readonly parentName?: string;
   readonly onEdit: (item: RecipeCategory) => void;
@@ -24,6 +26,7 @@ export default function RecipeCategoryCard({
   parentName,
   onEdit,
   onDelete,
+  rowNo,
 }: RecipeCategoryCardProps) {
   const tfl = useTranslations("field");
   const t = useTranslations("operationPlan.recipeCategory");
@@ -32,6 +35,7 @@ export default function RecipeCategoryCard({
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}

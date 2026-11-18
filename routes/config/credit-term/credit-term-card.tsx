@@ -8,16 +8,18 @@ import {
 import type { CreditTerm } from "@/types/credit-term";
 
 interface Props {
+  readonly rowNo?: number;
   readonly item: CreditTerm;
   readonly onEdit: (item: CreditTerm) => void;
   readonly onDelete?: (item: CreditTerm) => void;
 }
 
-export default function CreditTermCard({ item, onEdit, onDelete }: Props) {
+export default function CreditTermCard({ item, onEdit, onDelete, rowNo }: Props) {
   const tfl = useTranslations("field");
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}

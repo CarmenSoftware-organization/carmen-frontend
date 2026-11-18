@@ -61,6 +61,11 @@ export function ListCardSkeleton({
 
 interface ListCardProps {
   readonly title: ReactNode;
+  /**
+   * เลขลำดับแถว (`rowNumber()` จาก `@/lib/row-number`) แสดงเป็น `#27` หน้าชื่อ —
+   * ผู้ใช้ใช้อ้างอิงแถวเวลาคุยกัน ต้องตรงกับคอลัมน์ `#` ในตาราง · ไม่ส่ง = ไม่แสดง
+   */
+  readonly rowNo?: number;
   readonly badge?: ReactNode;
   /** ไม่ส่ง = การ์ดดูอย่างเดียว ไม่เป็นปุ่ม ไม่มี hover/focus แบบกดได้ */
   readonly onOpen?: () => void;
@@ -77,6 +82,19 @@ interface ListCardProps {
   readonly deleteLabel?: string;
   readonly actions?: ReactNode;
   readonly children: ReactNode;
+}
+
+/**
+ * เลขลำดับแถว `#27` หน้าชื่อการ์ด — ใช้ใน `ListCard` และการ์ดที่เขียนเองที่ไม่ได้ใช้
+ * `ListCard` ให้เลขหน้าตาเดียวกันทุกการ์ด · ไม่หด (`shrink-0`) ชื่อเป็นตัวที่ truncate แทน
+ */
+export function ListCardRowNo({ rowNo }: { readonly rowNo?: number }) {
+  if (rowNo === undefined) return null;
+  return (
+    <span className="text-muted-foreground shrink-0 text-sm font-normal tabular-nums">
+      #{rowNo}
+    </span>
+  );
 }
 
 /**
@@ -249,6 +267,7 @@ export function ListCardSendBackRow({
  */
 export function ListCard({
   title,
+  rowNo,
   badge,
   onOpen,
   onDelete,
@@ -298,12 +317,17 @@ export function ListCard({
           {/* ยาวเกินการ์ด = ตัดท้ายด้วย … (ไม่ตัดคำขึ้นบรรทัดใหม่ ไม่งั้นความสูง
               หัวการ์ดไม่เท่ากันทั้งกริด) · ชื่อที่เป็น string ใส่ title ให้ hover
               อ่านเต็มได้ เพราะไม่มีทางอื่นให้เห็นส่วนที่ถูกตัด */}
-          <CardTitle
-            className="min-w-0 truncate text-sm"
-            title={typeof title === "string" ? title : undefined}
-          >
-            {title}
-          </CardTitle>
+          {/* เลขห้ามหด (shrink-0) — ชื่อเป็นตัวที่ truncate แทน · ห่อด้วย flex min-w-0
+              เพื่อให้ badge ยังชิดขวาเหมือนการ์ดที่ไม่มีเลข */}
+          <div className="flex min-w-0 items-baseline gap-1.5">
+            <ListCardRowNo rowNo={rowNo} />
+            <CardTitle
+              className="min-w-0 truncate text-sm"
+              title={typeof title === "string" ? title : undefined}
+            >
+              {title}
+            </CardTitle>
+          </div>
           {badge}
         </div>
       </CardHeader>

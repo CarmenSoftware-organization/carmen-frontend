@@ -12,8 +12,11 @@ import type {
   ReportHistory,
   ReportStatus,
 } from "@/types/report-history";
+import { ListCardRowNo } from "@/components/share/list-card";
 
 interface HistoryCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) */
+  readonly rowNo?: number;
   readonly item: ReportHistory;
 }
 
@@ -25,7 +28,7 @@ const STATUS_COLOR: Record<ReportStatus, string> = {
   cancelled: "var(--status-cancelled)",
 };
 
-export default function HistoryCard({ item }: HistoryCardProps) {
+export default function HistoryCard({ item, rowNo }: HistoryCardProps) {
   const t = useTranslations("reportHistory");
 
   const statusKey = normalizeJobStatus(item.status);
@@ -93,6 +96,7 @@ export default function HistoryCard({ item }: HistoryCardProps) {
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start gap-1.5">
+            <ListCardRowNo rowNo={rowNo} />
             <h3 className="text-foreground truncate text-sm font-semibold tracking-tight">
               {name}
             </h3>

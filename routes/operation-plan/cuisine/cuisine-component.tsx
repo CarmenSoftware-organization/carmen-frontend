@@ -34,6 +34,7 @@ import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
+import { rowNumber } from "@/lib/row-number";
 
 export default function CuisineComponent() {
   const t = useTranslations("operationPlan.cuisine");
@@ -169,8 +170,9 @@ export default function CuisineComponent() {
       {isGridMode && !grid.isLoading && cuisines.length > 0 && (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {cuisines.map((item) => (
+            {cuisines.map((item, i) => (
               <CuisineCard
+                rowNo={rowNumber(undefined, i)}
                 key={item.id}
                 item={item}
                 onEdit={(c) =>

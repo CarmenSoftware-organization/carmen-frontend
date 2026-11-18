@@ -30,23 +30,22 @@ interface UseWastageReportTableOptions {
  * สินค้ารับที่เหลือ (`meta.grow`) คอลัมน์อื่นกว้างคงที่ — เดิมแบ่งสัดส่วน ที่ tablet หัว
  * Remaining Qty / Cost/Unit ล้นเซลล์ ส่วนบน Full HD คอลัมน์ห่างกันเกินจำเป็น
  * ไม่มีคอลัมน์ select ผลรวม `size` จึงเท่ากับความกว้างขั้นต่ำจริง:
- *   ครบ                60+140+200+160+120+130+130+100+140 = 1180
- *   ไม่มีเลขลำดับ                                         = 1120
- *   ไม่มีต้นทุนต่อหน่วย                                     = 1020
- *   ไม่มีล็อต                                             = 900
- *   ไม่มีคลัง                                             = 740
- *   ต่ำกว่านั้น       เซลล์เดียวสามบรรทัด (compact)
+ *   ครบ                48+140+200+160+120+130+130+100+140 = 1168
+ *   ไม่มีต้นทุนต่อหน่วย                                     = 1068
+ *   ไม่มีล็อต                                             = 948
+ *   ไม่มีคลัง                                             = 788
+ *   ต่ำกว่านั้น       # + เซลล์เดียวสามบรรทัด (compact)
+ * `#` แสดงตลอดทุกขั้น รวมถึง compact (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน)
  * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35px · ของที่ซ่อนยังเห็น: ต้นทุนต่อหน่วย = มูลค่า ÷ คงเหลือ
  * (และอยู่ใน GRN) · คลัง/ล็อตลงบรรทัดรองใต้สินค้า
  */
 export function wrTableTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    compact: w < 750,
-    showIndex: w >= 1215,
-    showCost: w >= 1155,
-    showLot: w >= 1055,
-    showLocation: w >= 935,
+    compact: w < 798,
+    showCost: w >= 1203,
+    showLot: w >= 1103,
+    showLocation: w >= 983,
   };
 }
 
@@ -60,7 +59,7 @@ export function useWastageReportTable({
 }: UseWastageReportTableOptions) {
   "use no memo";
   const tfl = useTranslations("field");
-  const { compact, showIndex, showCost, showLot, showLocation } =
+  const { compact, showCost, showLot, showLocation } =
     wrTableTier(containerWidth);
 
   const dataColumns: ColumnDef<WastageItem>[] = [
@@ -284,12 +283,10 @@ export function useWastageReportTable({
     return !key || !hidden.has(key);
   });
 
-  const allColumns: ColumnDef<WastageItem>[] = compact
-    ? [compactColumn]
-    : [
-        ...(showIndex ? [indexColumn<WastageItem>(params)] : []),
-        ...visibleDataColumns,
-      ];
+  const allColumns: ColumnDef<WastageItem>[] = [
+    indexColumn<WastageItem>(params),
+    ...(compact ? [compactColumn] : visibleDataColumns),
+  ];
 
   return useReactTable({
     data: items,

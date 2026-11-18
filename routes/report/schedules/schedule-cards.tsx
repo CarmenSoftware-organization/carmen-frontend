@@ -11,6 +11,7 @@ import {
   formatScheduleConfig,
   useWeekdayShort,
 } from "./use-schedule-table";
+import { ListCardRowNo } from "@/components/share/list-card";
 
 interface ScheduleCardsProps {
   readonly schedules: ReportSchedule[];
@@ -25,7 +26,7 @@ export function ScheduleCards({ schedules, onDelete }: ScheduleCardsProps) {
 
   return (
     <ul className="divide-border divide-y">
-      {schedules.map((s) => {
+      {schedules.map((s, i) => {
         const fields: [string, string][] = [
           [t("frequency"), formatScheduleConfig(s, t, weekdayShort)],
           [t("notifyAtColumn"), formatNotifyAt(s, t)],
@@ -36,8 +37,13 @@ export function ScheduleCards({ schedules, onDelete }: ScheduleCardsProps) {
           <li key={s.id} className="flex flex-col gap-2 px-3 py-2.5">
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold" title={s.name}>
-                  {s.name}
+                <p
+                  className="flex min-w-0 items-baseline gap-1.5 text-sm font-semibold"
+                  title={s.name}
+                >
+                  {/* ตารางนี้ไม่แบ่งหน้า — เลขเดียวกับคอลัมน์ # ของตาราง */}
+                  <ListCardRowNo rowNo={i + 1} />
+                  <span className="truncate">{s.name}</span>
                 </p>
                 <p className="text-muted-foreground truncate text-xs">
                   {s.report_type} · {formatLabel(s.format, t)}

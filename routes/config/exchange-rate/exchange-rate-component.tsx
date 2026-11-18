@@ -59,6 +59,7 @@ import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
 import { cn } from "@/lib/utils";
 import { DisplayModeToggle } from "@/components/share/display-mode-toggle";
+import { rowNumber } from "@/lib/row-number";
 
 export default function ExchangeRateComponent() {
   const { defaultCurrencyCode, defaultCurrencyDecimalPlaces, dateFormat } =
@@ -254,8 +255,9 @@ export default function ExchangeRateComponent() {
         {isGridMode && !grid.isLoading && items.length > 0 && (
           <>
             <div className="grid grid-cols-1 gap-3 @xl:grid-cols-2 @5xl:grid-cols-3 @min-[96rem]:grid-cols-4">
-              {items.map((item) => (
+              {items.map((item, i) => (
                 <ExchangeRateCard
+                  rowNo={rowNumber(undefined, i)}
                   key={item.id}
                   item={item}
                   baseCurrency={baseCurrency}

@@ -44,6 +44,8 @@ import type { BusinessUnit } from "@/types/profile";
 import type { PrFormValues } from "./pr-form-schema";
 import { usePrItemTable } from "./use-pr-item-table";
 import { usePrItemFilter } from "./use-pr-item-filter";
+import { PrItemCards } from "./pr-item-cards";
+import { useElementWidth } from "@/hooks/use-element-width";
 import {
   PrActionDialog,
   type StageOption,
@@ -71,6 +73,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+/** กล่องรายการแคบกว่านี้ (px) = การ์ด — iPad Pro 1024 แนวตั้งได้กล่อง ~920 จึงยังเป็นตาราง */
+const ITEM_CARDS_MAX_WIDTH = 900;
 
 interface PrItemFieldsProps {
   readonly form: UseFormReturn<PrFormValues>;
@@ -169,7 +174,8 @@ export function PrItemFields({
 
     // Focus the Location lookup trigger in the new (first) row after React commits
     setTimeout(() => {
-      const firstRow = document.querySelector("tbody tr");
+      // โหมดการ์ด (กล่องแคบ) ไม่มี tbody — แถวแรกคือการ์ดใบแรก
+      const firstRow = document.querySelector("tbody tr, [data-pr-item-card]");
       const trigger = firstRow?.querySelector<HTMLButtonElement>(
         "button[aria-expanded]",
       );
@@ -216,6 +222,15 @@ export function PrItemFields({
   const hidePrice = isPriceHidden(hiddenFields, "price_per_unit");
 
   const selectedRows = table.getSelectedRowModel().rows;
+
+  // กล่องแคบ (มือถือ / tablet) = การ์ดแถวละใบ ไม่ใช่ตารางที่เลื่อนแนวนอน ซึ่งซ่อนจำนวน
+  // และยอดเงินไว้หลังขอบโดยไม่มีอะไรบอก · ตัดสินจากความกว้างกล่อง ไม่ใช่จอ — sidebar
+  // กาง/หุบเปลี่ยนกล่อง · ไม่เทียบกับความกว้างรวมของตาราง (~1,165px) เพราะ HD 1366 ที่กาง
+  // sidebar ได้กล่อง ~1,080px ก็จะกลายเป็นการ์ดไปด้วย ที่ HD ยังเป็นตารางเหมือนเดิม
+  // ยังไม่ได้วัด (undefined) = ตาราง
+  const [setItemsBox, itemsBoxWidth] = useElementWidth();
+  const asCards =
+    itemsBoxWidth !== undefined && itemsBoxWidth < ITEM_CARDS_MAX_WIDTH;
 
   // HOD กด Edit = ตั้งใจจะตัดสินทั้งใบ ติ๊กทุกแถวให้เลย แล้วค่อยเอาออกเฉพาะแถวที่
   // ไม่เห็นด้วย — เร็วกว่าไล่ติ๊กสิบแถวเพื่อกดอนุมัติรวดเดียว · toggleAllRowsSelected
@@ -419,6 +434,23 @@ export function PrItemFields({
     },
   };
 
+  const itemsEmptyMessage =
+    // กรองจนไม่เหลือแถว ≠ ใบนี้ไม่มีของ — ข้อความ "ยังไม่มีรายการ" ตรงนั้น
+    // จะหลอกให้คนไปกด Add Item ทั้งที่ของอยู่ครบ แค่ถูกซ่อน
+    filter.activeCount > 0 ? (
+      <EmptyComponent
+        icon={FilterX}
+        title={tc("noSearchResult")}
+        description={tl("noFoundDesc")}
+      />
+    ) : (
+      <EmptyComponent
+        icon={BoxIcon}
+        title={t("noItems")}
+        description={t("noItemsDesc")}
+      />
+    );
+
   return (
     <PrStageRoleProvider role={role}>
       <div className="space-y-4">
@@ -578,39 +610,30 @@ export function PrItemFields({
           </div>
         </div>
 
-        <DataGrid
-          table={table}
-          recordCount={itemFields.length}
-          tableLayout={{
-            rowClamp: false,
-            checkbox: !!prStatus && prStatus !== "draft",
-            columnsResizable: true,
-            // โหมดอ่านชิดบน — บางเซลล์มีบรรทัดรอง บางเซลล์ไม่มี กึ่งกลางแล้ว
-            // เซลล์บรรทัดเดียวจะลอยอยู่ระหว่างสองบรรทัดของเพื่อนบ้าน
-            cellAlign: isDisabled ? "top" : "middle",
-          }}
-          emptyMessage={
-            // กรองจนไม่เหลือแถว ≠ ใบนี้ไม่มีของ — ข้อความ "ยังไม่มีรายการ" ตรงนั้น
-            // จะหลอกให้คนไปกด Add Item ทั้งที่ของอยู่ครบ แค่ถูกซ่อน
-            filter.activeCount > 0 ? (
-              <EmptyComponent
-                icon={FilterX}
-                title={tc("noSearchResult")}
-                description={tl("noFoundDesc")}
-              />
-            ) : (
-              <EmptyComponent
-                icon={BoxIcon}
-                title={t("noItems")}
-                description={t("noItemsDesc")}
-              />
-            )
-          }
-        >
-          <DataGridContainer scroll>
-            <DataGridTable />
-          </DataGridContainer>
-        </DataGrid>
+        {/* กล่องที่ผูก ref ต้องอยู่ทั้งสองโหมด ไม่งั้นสลับแล้ววัดไม่ได้อีก */}
+        <div ref={setItemsBox}>
+          {asCards ? (
+            <PrItemCards table={table} emptyMessage={itemsEmptyMessage} />
+          ) : (
+            <DataGrid
+              table={table}
+              recordCount={itemFields.length}
+              tableLayout={{
+                rowClamp: false,
+                checkbox: !!prStatus && prStatus !== "draft",
+                columnsResizable: true,
+                // โหมดอ่านชิดบน — บางเซลล์มีบรรทัดรอง บางเซลล์ไม่มี กึ่งกลางแล้ว
+                // เซลล์บรรทัดเดียวจะลอยอยู่ระหว่างสองบรรทัดของเพื่อนบ้าน
+                cellAlign: isDisabled ? "top" : "middle",
+              }}
+              emptyMessage={itemsEmptyMessage}
+            >
+              <DataGridContainer scroll>
+                <DataGridTable />
+              </DataGridContainer>
+            </DataGrid>
+          )}
+        </div>
 
         <DeleteDialog
           open={deleteIndex !== null}

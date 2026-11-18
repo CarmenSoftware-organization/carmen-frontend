@@ -8,6 +8,7 @@ import {
 import type { CnReason } from "@/types/cn-reason";
 
 interface Props {
+  readonly rowNo?: number;
   readonly item: CnReason;
   readonly onEdit: (item: CnReason) => void;
   readonly onDelete?: (item: CnReason) => void;
@@ -17,11 +18,13 @@ export default function CreditNoteReasonCard({
   item,
   onEdit,
   onDelete,
+  rowNo,
 }: Props) {
   const tfl = useTranslations("field");
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.name || "..."}
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}

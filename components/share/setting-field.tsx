@@ -35,7 +35,11 @@ export function SettingField({
   const captionMono = specimen && mono;
   const leadMono = mono && !(specimen && example);
   return (
-    <div className={cn("min-w-0", fullWidth && "@md:col-span-2")}>
+    <div
+      className={cn("min-w-0", fullWidth && "@md:col-span-2")}
+      // FieldGrid dense ใช้ตัวนี้ให้ช่องยาวกินเต็มแถวตั้งแต่กล่องแคบสุด
+      data-wide={fullWidth ? "" : undefined}
+    >
       <div className="text-muted-foreground text-xs">{label}</div>
       {isEmpty ? (
         <div className="text-muted-foreground/60 mt-0.5 text-sm">—</div>

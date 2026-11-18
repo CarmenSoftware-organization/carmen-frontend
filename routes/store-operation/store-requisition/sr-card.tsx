@@ -12,12 +12,14 @@ import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import type { StoreRequisition } from "@/types/store-requisition";
 
 interface SrCardProps {
+  /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
+  readonly rowNo?: number;
   readonly item: StoreRequisition;
   readonly onEdit: (item: StoreRequisition) => void;
   readonly onDelete: (item: StoreRequisition) => void;
 }
 
-export default function SrCard({ item, onEdit, onDelete }: SrCardProps) {
+export default function SrCard({ item, onEdit, onDelete, rowNo }: SrCardProps) {
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
   const tc = useTranslations("common");
@@ -25,6 +27,7 @@ export default function SrCard({ item, onEdit, onDelete }: SrCardProps) {
 
   return (
     <ListCard
+      rowNo={rowNo}
       title={item.sr_no}
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}
@@ -62,9 +65,7 @@ export default function SrCard({ item, onEdit, onDelete }: SrCardProps) {
         {item.department_name}
       </ListCardRow>
       {item.workflow_name && (
-        <ListCardRow label={tfl("workflow")}>
-          {item.workflow_name}
-        </ListCardRow>
+        <ListCardRow label={tfl("workflow")}>{item.workflow_name}</ListCardRow>
       )}
       {item.workflow_current_stage && (
         <ListCardRow label={tfl("currentStage")}>

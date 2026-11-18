@@ -35,6 +35,7 @@ import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { ApiError } from "@/lib/api-error";
 import { httpClient } from "@/lib/http-client";
 import type { GlPeriodMaster } from "@/types/accounting-master";
+import { indexColumn } from "@/components/ui/data-grid/columns";
 
 export default function GlPeriodPage() {
   "use no memo";
@@ -84,6 +85,7 @@ export default function GlPeriodPage() {
 
   const columns = useMemo<ColumnDef<GlPeriodMaster>[]>(
     () => [
+      indexColumn<GlPeriodMaster>(),
       {
         accessorKey: "period_number",
         header: ({ column }) => (

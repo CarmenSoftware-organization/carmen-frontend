@@ -36,24 +36,42 @@ interface UsePoTableOptions {
  *
  * "ผู้ขาย" รับที่เหลือ (`meta.grow`) ที่เหลือกว้างคงที่ ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`
  * (นับคอลัมน์ select 55 ที่ไม่ได้เรนเดอร์ · ไม่นับ delivery/audit ที่ซ่อนเป็น default):
- *   ครบ  55+60+225+140+90+145+90+130+150+60 = 1145
- *   ไม่มี #                                  = 1085
- *   ไม่มี workflow                           =  995
- *   ไม่มีผู้จัดซื้อ                             =  905
- *   กล่องแคบ (ไม่มีวันที่ · เลขที่ 140 · ผู้ขาย 120)  55+140+120+130+150+60 = 655  (กล่องที่จอ 768 = 662)
+ *   ครบ  55+48+225+140+90+145+90+130+150+60 = 1133
+ *   ไม่มี workflow                           = 1043
+ *   ไม่มีผู้จัดซื้อ                             =  953
+ *   กล่องแคบ (ไม่มีวันที่ · เลขที่ 140 · ผู้ขาย 120)  55+48+140+120+130+150+60 = 703
+ *   ไม่มีคอลัมน์สถานะ (ชิปลงใต้ผู้ขาย)               = 573  (กล่องที่จอ 768 = 662)
+ * `#` แสดงตลอดทุกขั้น (2026-11-18 ผู้ใช้ใช้เลขอ้างอิงแถวเวลาคุยกัน) — ขั้นแคบสุดจึงย้ายสถานะ
+ * ลงบรรทัดรองใต้ผู้ขายแทน (ช่องเลขที่สูง 4 บรรทัดอยู่แล้ว แถวจึงไม่สูงขึ้น)
  *   กล่องกว้างมาก (≥1400): ผู้จัดซื้อ 90→200 (ครบ 1255) ชื่อเต็มไม่ถูกตัด
  * จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px · ผู้จัดซื้อที่ถูกซ่อนลงบรรทัดรองใต้ผู้ขาย
- * วันที่สั่งลงบรรทัดรองใต้เลขที่ · # และ workflow ดูได้ในหน้าเอกสาร
+ * วันที่สั่งลงบรรทัดรองใต้เลขที่ · workflow ดูได้ในหน้าเอกสาร
  */
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    showIndex: w >= 1150,
-    showWorkflow: w >= 1090,
-    showBuyer: w >= 1000,
-    wide: w >= 910,
+    showWorkflow: w >= 1138,
+    showBuyer: w >= 1048,
+    wide: w >= 958,
+    showStatus: w >= 708,
     roomy: w >= 1400,
   };
+}
+
+/** ชิปสถานะ + ชื่อ stage — ใช้ทั้งในคอลัมน์สถานะและเป็นบรรทัดรองใต้ผู้ขายในกล่องแคบสุด */
+function PoStatusStack({ po }: { readonly po: PurchaseOrder }) {
+  const { po_status: status, workflow_current_stage: stage } = po;
+  const config = PO_STATUS_CONFIG[status];
+  return (
+    <div data-slot="cell-stack" className="flex min-w-0 flex-col items-start">
+      <StatusChip status={status} label={config?.label ?? status} />
+      {stage && (
+        <span className="text-muted-foreground truncate text-xs" title={stage}>
+          {stage}
+        </span>
+      )}
+    </div>
+  );
 }
 
 export function usePoTable({
@@ -66,7 +84,7 @@ export function usePoTable({
   containerWidth,
 }: UsePoTableOptions) {
   "use no memo";
-  const { showIndex, showWorkflow, showBuyer, wide, roomy } =
+  const { showStatus, showWorkflow, showBuyer, wide, roomy } =
     columnTier(containerWidth);
   // คอลัมน์ที่ผู้ใช้เปิด/ปิดเองจากเมนู Toggle Columns — delivery/audit ซ่อนเป็น default
   // ขั้นตามความกว้างกล่องทับเฉพาะคอลัมน์ที่บังคับซ่อน
@@ -149,6 +167,8 @@ export function usePoTable({
           >
             {row.original.vendor?.name}
           </span>
+          {/* คอลัมน์สถานะถูกซ่อนในกล่องแคบสุด — ชิปย้ายมาเป็นบรรทัดรอง */}
+          {!showStatus && <PoStatusStack po={row.original} />}
           {/* คอลัมน์ผู้จัดซื้อถูกซ่อนในกล่องแคบ — ย้ายมาเป็นบรรทัดรอง */}
           {!showBuyer && row.original.audit?.created?.name && (
             <span
@@ -277,24 +297,7 @@ export function usePoTable({
       ),
       size: 130,
       // ชื่อ stage เป็นบรรทัดรองของสถานะ (ท่าเดียวกับ PR list)
-      cell: ({ row }) => {
-        const { po_status: status, workflow_current_stage: stage } =
-          row.original;
-        const config = PO_STATUS_CONFIG[status];
-        return (
-          <div data-slot="cell-stack" className="flex min-w-0 flex-col">
-            <StatusChip status={status} label={config?.label ?? status} />
-            {stage && (
-              <span
-                className="text-muted-foreground truncate text-xs"
-                title={stage}
-              >
-                {stage}
-              </span>
-            )}
-          </div>
-        );
-      },
+      cell: ({ row }) => <PoStatusStack po={row.original} />,
       meta: {
         headerTitle: tfl("status"),
         skeleton: columnSkeletons.text,
@@ -344,7 +347,7 @@ export function usePoTable({
       ...tableConfig.state,
       columnVisibility: {
         ...userVisibility,
-        ...(!showIndex && { index: false }),
+        ...(!showStatus && { po_status: false }),
         ...(!showWorkflow && { workflow_name: false }),
         ...(!showBuyer && { created_by: false }),
         ...(!wide && { order_date: false }),
