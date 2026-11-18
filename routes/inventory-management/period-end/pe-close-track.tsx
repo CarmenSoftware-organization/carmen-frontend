@@ -142,10 +142,11 @@ export function PeCloseTrack({ review }: PeCloseTrackProps) {
   const t = useTranslations("inventoryManagement.periodEnd");
   const steps = buildSteps(review, t);
 
+  // สามขั้นเรียงแนวนอนเมื่อการ์ดกว้างพอ — ผู้เรียกต้องห่อด้วย `@container`
   return (
     <ol
       aria-label={t("track.title")}
-      className="grid gap-x-4 gap-y-5 sm:grid-cols-3"
+      className="grid gap-x-4 gap-y-5 @xl:grid-cols-3"
     >
       {steps.map((step, index) => (
         <li

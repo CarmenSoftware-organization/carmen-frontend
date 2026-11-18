@@ -77,7 +77,7 @@ export default function PeComponent() {
   };
 
   return (
-    <div className="animate-fade-in-up space-y-6 p-3 md:p-4">
+    <div className="animate-fade-in-up space-y-6">
       <section className="flex items-center gap-3">
         <span
           aria-hidden="true"
@@ -158,7 +158,7 @@ export default function PeComponent() {
 
           {/* รางสามขั้นอ่านจาก review — ถ้าโหลดไม่ได้ก็แค่ไม่แสดง ไม่บังปุ่มด้านบน */}
           {review && (
-            <div className="bg-muted/30 border-t px-4 py-4 md:px-5">
+            <div className="bg-muted/30 @container border-t px-4 py-4 md:px-5">
               <PeCloseTrack review={review} />
             </div>
           )}
