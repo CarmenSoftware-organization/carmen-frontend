@@ -198,7 +198,6 @@ const ALLOWED_SUB_10PX: Record<string, number> = {
   "routes/inventory-management/shared/filter-pill.tsx": 1, // filter count chip
   "routes/inventory-management/spot-check/sc-product-panel.tsx": 1, // String(length)
   "routes/operation-plan/recipe/recipe-name-field.tsx": 1, // character counter
-  "routes/report/report-landing.tsx": 1, // "07:30" schedule time
 
   // The "caps by nature" section is gone on purpose: its only entry was the
   // wf-stage-users avatar initials, which cc009d2 moved to `text-sm` on a size-8

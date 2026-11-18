@@ -20,6 +20,8 @@ import type { PaginatedResponse, ParamsDto } from "@/types/params";
 interface ReportTemplatesOptions {
   /** ซ่อน template ที่ปิดทั้ง Run และ Export — ส่งเฉพาะ /report/list (ตัวเลือกของ schedule ต้องเห็นครบ) */
   readonly actionable?: boolean;
+  /** ปิดการยิง — landing ไม่ยิงเมื่อผู้ใช้ไม่มีสิทธิ์หน้า list (ยิงแล้วได้ 403) */
+  readonly enabled?: boolean;
 }
 
 export function useReportTemplates(
@@ -52,7 +54,7 @@ export function useReportTemplates(
       }
       return res.json();
     },
-    enabled: !!buCode,
+    enabled: !!buCode && (options?.enabled ?? true),
     ...CACHE_DYNAMIC,
   });
 }

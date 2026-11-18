@@ -73,8 +73,9 @@ export function LandingCard({
         <p className="text-muted-foreground text-xs leading-snug">
           {description}
         </p>
-        {stat != null && (
-          <p className="text-foreground mt-1 text-xs font-medium tabular-nums">
+        {/* min-h กันการ์ดกระโดดตอนตัวเลขมาถึง — ระหว่างโหลดบรรทัดนี้ว่างแต่สูงเท่าเดิม */}
+        {stat !== undefined && (
+          <p className="text-foreground mt-1 min-h-4 text-xs font-medium tabular-nums">
             {stat}
           </p>
         )}

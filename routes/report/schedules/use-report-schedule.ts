@@ -13,7 +13,7 @@ import type {
   ReportSchedule,
 } from "@/types/report-schedule";
 
-export function useReportSchedules() {
+export function useReportSchedules(options?: { enabled?: boolean }) {
   const buCode = useBuCode();
   return useQuery<ReportSchedule[], ApiError>({
     queryKey: [QUERY_KEYS.REPORT_SCHEDULES, buCode],
@@ -25,7 +25,7 @@ export function useReportSchedules() {
       const json = await res.json();
       return json.data ?? [];
     },
-    enabled: !!buCode,
+    enabled: !!buCode && (options?.enabled ?? true),
     ...CACHE_DYNAMIC,
   });
 }
