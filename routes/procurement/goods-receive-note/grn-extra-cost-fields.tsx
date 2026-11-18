@@ -194,7 +194,7 @@ export function GrnExtraCostFields({
           readOnly ? (
             <span className="break-words whitespace-pre-wrap">
               {row.original.note || (
-                <span className="text-muted-foreground/60">—</span>
+                <span className="text-muted-foreground">—</span>
               )}
             </span>
           ) : (
@@ -404,7 +404,7 @@ function ExtraCostTypeText({ id }: { readonly id: string }) {
   return item ? (
     <span className="break-words">{lookupLabel(item)}</span>
   ) : (
-    <span className="text-muted-foreground/60">—</span>
+    <span className="text-muted-foreground">—</span>
   );
 }
 
