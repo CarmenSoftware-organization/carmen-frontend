@@ -11,6 +11,8 @@ import {
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { DocAuditButton } from "@/components/share/doc-audit-line";
+import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
 import { toast } from "sonner";
 import { useCreatePrt, useUpdatePrt, useDeletePrt } from "./use-prt";
 import type {
@@ -173,21 +175,52 @@ export function PrtForm({ template }: PrtFormProps) {
     <FormPageShell
       width="wide"
       header={
-        <FormToolbar
-          entity={template?.name || t("entity")}
-          badges={
-            template && <StatusBadge active={template.is_active} size="xs" />
-          }
-          mode={mode}
-          formId="prt-form"
-          isPending={isPending}
-          onBack={handleBack}
-          onEdit={() => setMode("edit")}
-          onCancel={handleCancel}
-          onDelete={template ? () => setShowDelete(true) : undefined}
-          deleteIsPending={deletePrt.isPending}
-          activity={template && { id: template.id, label: template.name }}
-        />
+        // หัวเอกสารเป็นการ์ดเดียวกับ PR: ชื่อ + สถานะ + ปุ่ม แล้วช่องข้อมูลหัวใบเป็น ribbon
+        // (ไม่มีการ์ด General แยกอีกใบ) · โครงตอนโหลดอยู่ใน prt-form-skeleton.tsx
+        <div className={DOC_HEADER_CARD}>
+          <FormToolbar
+            inlineBack
+            entity={template?.name || t("entity")}
+            badges={
+              template && (
+                // กลุ่มสถานะแยกจากชื่อด้วยเส้นคั่น ทรงเดียวกับ pr-header · หัวแคบเอาเส้นออก
+                <div className="border-border/60 ms-1 flex items-center gap-2 border-s ps-3 @max-md/doc-header:ms-0 @max-md/doc-header:border-s-0 @max-md/doc-header:ps-0">
+                  <StatusBadge active={template.is_active} size="xs" />
+                </div>
+              )
+            }
+            subtitle={
+              // มือถือ: ตาราง audit ใน ribbon ซ่อนอยู่ เหลือไอคอนให้กดดู (เหมือน PR)
+              isView && template?.audit ? (
+                <DocAuditButton
+                  audit={template.audit}
+                  docVersion={template.doc_version}
+                  className="-my-1 self-start sm:hidden"
+                />
+              ) : undefined
+            }
+            ribbon={
+              <PrtGeneralFields
+                form={form}
+                readOnly={isView}
+                disabled={isPending}
+                workflowName={template?.workflow?.name ?? undefined}
+                isAdd={isAdd}
+                audit={template?.audit}
+                docVersion={template?.doc_version}
+              />
+            }
+            mode={mode}
+            formId="prt-form"
+            isPending={isPending}
+            onBack={handleBack}
+            onEdit={() => setMode("edit")}
+            onCancel={handleCancel}
+            onDelete={template ? () => setShowDelete(true) : undefined}
+            deleteIsPending={deletePrt.isPending}
+            activity={template && { id: template.id, label: template.name }}
+          />
+        </div>
       }
     >
       <form
@@ -196,13 +229,6 @@ export function PrtForm({ template }: PrtFormProps) {
           scrollToFirstInvalidField(),
         )}
       >
-        <PrtGeneralFields
-          form={form}
-          readOnly={isView}
-          disabled={isPending}
-          workflowName={template?.workflow?.name ?? undefined}
-          isAdd={isAdd}
-        />
         <PrtItemFields
           form={form}
           readOnly={isView}

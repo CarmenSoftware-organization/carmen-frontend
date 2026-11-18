@@ -88,6 +88,7 @@ export function PrtItemFields({
 
   return (
     <CompactSection
+      first
       frameless
       title={tfl("items")}
       description={t("itemsDesc")}

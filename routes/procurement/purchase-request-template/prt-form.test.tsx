@@ -46,19 +46,20 @@ const plainTexts = () =>
     (el) => el.textContent,
   );
 
-describe("PrtForm — SettingSection layout", () => {
-  it("renders each section heading with its resolved description", () => {
+describe("PrtForm — document header layout", () => {
+  // ช่องหัวใบอยู่ใน ribbon ของการ์ดหัวเอกสาร (ทรง PR) — ไม่มีการ์ด General แยกแล้ว
+  it("renders only the Items section heading with its resolved description", () => {
     renderForm();
 
     const prt = en.procurement.purchaseRequestTemplate;
-    for (const [title, description] of [
-      [en.field.general, prt.generalDesc],
-      [en.field.items, prt.itemsDesc],
-    ]) {
-      expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
-      // asserts the i18n key resolved — a missing key would render the path
-      expect(screen.getByText(description)).toBeInTheDocument();
-    }
+    expect(
+      screen.getByRole("heading", { name: en.field.items }),
+    ).toBeInTheDocument();
+    // asserts the i18n key resolved — a missing key would render the path
+    expect(screen.getByText(prt.itemsDesc)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: en.field.general }),
+    ).toBeNull();
   });
 
   it("renders the general inputs in add mode", () => {
@@ -70,25 +71,26 @@ describe("PrtForm — SettingSection layout", () => {
 });
 
 describe("PrtForm — view mode", () => {
-  // Guards the label muting too, indirectly: Field only mutes its label when a
-  // FieldPlainText is a DIRECT child, so the workflow value going back to
-  // LookupWorkflow's own readOnly <span> would drop it from this list AND leave
-  // its label at full emphasis. Asserting the muting directly is not possible
-  // here — it is a Tailwind has-[] selector and jsdom loads no stylesheet.
-  it("shows workflow, name and description as plain text instead of inputs", () => {
+  // ชื่อแม่แบบอยู่ที่ title ของการ์ดหัวเอกสาร สถานะอยู่ที่ badge — ribbon จึงเหลือ
+  // Workflow + Description เป็นข้อความ (ทรงเดียวกับหัวเอกสาร PR)
+  it("shows workflow and description as plain text, the name as the title", () => {
     renderForm({ template });
 
     expect(plainTexts()).toEqual([
       "PR Approval",
-      "Weekly Produce",
       "Standing order for the kitchen",
     ]);
+    expect(
+      screen.getByRole("heading", { name: "Weekly Produce" }),
+    ).toBeInTheDocument();
     expect(document.getElementById("prt-name")).toBeNull();
     expect(document.getElementById("prt-description")).toBeNull();
   });
 
   it("falls back to an em dash for an empty description", () => {
     renderForm({ template: { ...template, description: "" } });
-    expect(plainTexts()).toContain("—");
+    // SettingField วาดค่าว่างเป็นขีดจาง ไม่ใช่ช่อง plain text
+    expect(plainTexts()).toEqual(["PR Approval"]);
+    expect(screen.getByText("—")).toBeInTheDocument();
   });
 });

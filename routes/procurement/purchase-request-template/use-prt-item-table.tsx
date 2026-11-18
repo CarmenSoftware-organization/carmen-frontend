@@ -27,6 +27,7 @@ import { useUnitDecimals } from "@/hooks/use-product-units";
 import { useQuantityFormatter } from "@/hooks/use-number-formatter";
 import { LookupProductInLocation } from "@/components/lookup/lookup-product-in-location";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
+import { distinctLocalName } from "@/lib/distinct-local-name";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { LookupProductUnit } from "@/components/lookup/lookup-product-unit";
 import { LookupCurrency } from "@/components/lookup/lookup-currency";
@@ -98,7 +99,12 @@ const ProductCell = ({
     form.formState.errors.items?.[index]?.product_id?.message;
   if (readOnly) {
     return (
-      <NameWithSubtext primary={productName} secondary={productLocalName} />
+      <NameWithSubtext
+        primary={productName}
+        // ชื่อท้องถิ่นที่ซ้ำชื่อหลัก (ส่วนใหญ่ของสินค้านำเข้า) = บรรทัดรองที่ไม่บอกอะไรเพิ่ม
+        // · ต้องผ่าน helper ไม่ใช่ `===` — บาง master เก็บ local_name ด้วย NBSP
+        secondary={distinctLocalName(productName, productLocalName)}
+      />
     );
   }
   return (
@@ -266,8 +272,8 @@ interface UsePrtItemTableOptions {
 
 /**
  * กล่องกว้างถึงจุดนี้ = คอลัมน์ข้อมูลกว้างคงที่ แล้วคอลัมน์สุดท้ายรับที่เหลือ (ไม่ให้คอลัมน์
- * ห่างกันหลายร้อย px ที่ Full HD/4K) · ผลรวม size ชุดกว้าง: 50+220+360+150+90+180 = 1050
- * (+ ปุ่มลบ 40 ตอนแก้ = 1090) — จุดสลับต้องสูงกว่าผลรวม ไม่งั้นคอลัมน์ grow ยุบเหลือขั้นต่ำ
+ * ห่างกันหลายร้อย px ที่ Full HD/4K) · ผลรวม size ชุดกว้าง: โหมดแก้ 50+220+360+150+90+180
+ * = 1050 (+ ปุ่มลบ 40 = 1090) · โหมดดู สินค้า 440 = 1130 — จุดสลับต้องสูงกว่าผลรวม ไม่งั้นคอลัมน์ grow ยุบเหลือขั้นต่ำ
  */
 export const PRT_ITEM_WIDE_BOX = 1140;
 
@@ -386,7 +392,9 @@ export function usePrtItemTable({
             readOnly={readOnly}
           />
         ),
-        size: wide ? 360 : 160,
+        // โหมดดูชุดกว้าง 440 — ชื่อสินค้ายาว (รหัส barcode ต่อท้าย) ถูกตัดที่ 360 ทั้งที่
+        // จุดส่งของมีที่ว่างหลายร้อย px · ผลรวมโหมดดู 1130 ยังต่ำกว่า PRT_ITEM_WIDE_BOX
+        size: wide ? (readOnly ? 440 : 360) : 160,
       },
       {
         id: "requested_qty",
