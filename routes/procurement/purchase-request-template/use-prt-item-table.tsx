@@ -257,7 +257,19 @@ interface UsePrtItemTableOptions {
   disabled: boolean;
   readOnly?: boolean;
   onDelete: (index: number) => void;
+  /**
+   * ความกว้างกล่องของตาราง (วัดด้วย `useElementWidth`) — `undefined` = ยังไม่วัด
+   * ใช้ชุดแบ่งตามสัดส่วน
+   */
+  containerWidth?: number;
 }
+
+/**
+ * กล่องกว้างถึงจุดนี้ = คอลัมน์ข้อมูลกว้างคงที่ แล้วคอลัมน์สุดท้ายรับที่เหลือ (ไม่ให้คอลัมน์
+ * ห่างกันหลายร้อย px ที่ Full HD/4K) · ผลรวม size ชุดกว้าง: 50+220+360+150+90+180 = 1050
+ * (+ ปุ่มลบ 40 ตอนแก้ = 1090) — จุดสลับต้องสูงกว่าผลรวม ไม่งั้นคอลัมน์ grow ยุบเหลือขั้นต่ำ
+ */
+export const PRT_ITEM_WIDE_BOX = 1140;
 
 export function usePrtItemTable({
   form,
@@ -265,9 +277,11 @@ export function usePrtItemTable({
   disabled,
   readOnly = false,
   onDelete,
+  containerWidth,
 }: UsePrtItemTableOptions) {
   "use no memo";
   const tfl = useTranslations("field");
+  const wide = (containerWidth ?? 0) >= PRT_ITEM_WIDE_BOX;
   const allColumns = useMemo<ColumnDef<PrtItemField>[]>(() => {
     const indexColumn: ColumnDef<PrtItemField> = {
       id: "index",
@@ -351,7 +365,7 @@ export function usePrtItemTable({
             />
           );
         },
-        size: 160,
+        size: wide ? 220 : 160,
       },
 
       {
@@ -372,7 +386,7 @@ export function usePrtItemTable({
             readOnly={readOnly}
           />
         ),
-        size: 160,
+        size: wide ? 360 : 160,
       },
       {
         id: "requested_qty",
@@ -418,7 +432,7 @@ export function usePrtItemTable({
             />
           );
         },
-        size: 80,
+        size: wide ? 90 : 80,
         meta: {
           headerClassName: "text-center",
         },
@@ -460,7 +474,9 @@ export function usePrtItemTable({
             />
           );
         },
-        size: 100,
+        size: wide ? 180 : 100,
+        // โหมดดูไม่มีคอลัมน์ปุ่ม — คอลัมน์ข้อมูลสุดท้ายรับที่เหลือ
+        meta: { grow: wide && readOnly },
       },
     ];
 
@@ -482,13 +498,15 @@ export function usePrtItemTable({
       enableSorting: false,
       size: 40,
       meta: {
+        // โหมดแก้: ปุ่มลบรับที่เหลือ ช่องกรอกจึงไม่ยืดตามจอ (กฎ 2) และปุ่มชิดขวาของกรอบ
+        grow: wide,
         headerClassName: "text-right",
         cellClassName: "text-right",
       },
     };
 
     return [indexColumn, ...dataColumns, ...(readOnly ? [] : [actionColumn])];
-  }, [tfl, readOnly, form, disabled, onDelete]);
+  }, [tfl, readOnly, form, disabled, onDelete, wide]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
 

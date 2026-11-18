@@ -10,13 +10,14 @@ import {
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection } from "@/components/share/compact-section";
 import type { BusinessUnit } from "@/types/profile";
 import type { PrtFormValues } from "./prt-form-schema";
 import { usePrtItemTable } from "./use-prt-item-table";
 import { PRT_ITEM } from "./prt-form-schema";
 import EmptyComponent from "@/components/empty-component";
 import { getDeleteDescription } from "@/lib/form-utils";
+import { useElementWidth } from "@/hooks/use-element-width";
 
 interface PrtItemFieldsProps {
   readonly form: UseFormReturn<PrtFormValues>;
@@ -74,7 +75,10 @@ export function PrtItemFields({
     });
   };
 
+  // ตัดสินชุดความกว้างคอลัมน์จากกล่องตาราง ไม่ใช่จอ (หัก border 1px สองข้างของ DataGridContainer)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
   const { table } = usePrtItemTable({
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
     form,
     itemFields,
     disabled,
@@ -83,8 +87,7 @@ export function PrtItemFields({
   });
 
   return (
-    <SettingSection
-      wide
+    <CompactSection
       frameless
       title={tfl("items")}
       description={t("itemsDesc")}
@@ -103,23 +106,28 @@ export function PrtItemFields({
         ) : undefined
       }
     >
-      <DataGrid
-        table={table}
-        recordCount={itemFields.length}
-        // โหมดอ่านชิดบน — คลังมีรหัสเป็นบรรทัดรอง เซลล์อื่นไม่มี
-        tableLayout={{ cellAlign: readOnly ? "top" : "middle" }}
-        emptyMessage={
-          <EmptyComponent
-            icon={BoxIcon}
-            title={t("noItems")}
-            description={t("noItemsDesc")}
-          />
-        }
-      >
-        <DataGridContainer>
-          <DataGridTable />
-        </DataGridContainer>
-      </DataGrid>
+      <div ref={setGridBox}>
+        <DataGrid
+          table={table}
+          // กล่องแคบ: เลื่อนแนวนอนแทนการบีบช่องกรอก/lookup จนเหลือ ~60px (ตารางแก้ไขห้ามใช้ grow
+          // ตอนกล่องแคบ) · 760 ≈ ผลรวม size ชุดแบ่งสัดส่วน 740 + เผื่อ
+          tableClassNames={{ base: "min-w-[760px]" }}
+          recordCount={itemFields.length}
+          // โหมดอ่านชิดบน — คลังมีรหัสเป็นบรรทัดรอง เซลล์อื่นไม่มี
+          tableLayout={{ cellAlign: readOnly ? "top" : "middle" }}
+          emptyMessage={
+            <EmptyComponent
+              icon={BoxIcon}
+              title={t("noItems")}
+              description={t("noItemsDesc")}
+            />
+          }
+        >
+          <DataGridContainer>
+            <DataGridTable />
+          </DataGridContainer>
+        </DataGrid>
+      </div>
 
       <DeleteDialog
         open={deleteIndex !== null}
@@ -134,6 +142,6 @@ export function PrtItemFields({
           setDeleteIndex(null);
         }}
       />
-    </SettingSection>
+    </CompactSection>
   );
 }
