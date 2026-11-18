@@ -70,10 +70,13 @@ export default function ModuleApp() {
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="border-border/70 bg-popover w-80 overflow-hidden rounded-2xl border p-0 shadow-lg"
+        collisionPadding={8}
+        // กว้างไม่เกินจอ (เหลือขอบ 8px) — เดิม w-80 ล้นจอ 280 จนคอลัมน์ที่ 3 ถูกตัด
+        // สูงไม่เกินที่เหลือใต้ปุ่ม: 14 แอปเป็น 5 แถว ~520px ล้นจอเตี้ย ให้ grid เลื่อนเอง
+        className="border-border/70 bg-popover @container flex max-h-(--radix-popover-content-available-height) w-[min(20rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-2xl border p-0 shadow-lg"
       >
         {/* Tile grid — 3 cols, no header */}
-        <div className="grid grid-cols-3 gap-0 px-1.5 pt-2 pb-3">
+        <div className="grid min-h-0 grid-cols-3 gap-0 overflow-y-auto overscroll-contain px-1 pt-2 pb-3 @[18rem]:px-1.5">
           {launcherModules.map(({ module: mod, tileParentName }) => (
             <LauncherTile
               key={mod.path}
@@ -89,8 +92,8 @@ export default function ModuleApp() {
           ))}
         </div>
 
-        {/* Shortcut hint — static display */}
-        <div className="border-border/60 text-muted-foreground text-micro flex items-center justify-center gap-1.5 border-t py-2">
+        {/* Shortcut hint — มีความหมายเฉพาะเครื่องที่มีคีย์บอร์ด/เมาส์ จอสัมผัสซ่อน */}
+        <div className="border-border/60 text-muted-foreground text-micro hidden shrink-0 items-center justify-center gap-1.5 border-t py-2 pointer-fine:flex">
           <span>{tn("shortcutOpen")}</span>
           <span className="flex items-center gap-1">
             <HintKey>{modKey}</HintKey>
@@ -133,7 +136,7 @@ const LauncherTile = ({
   onNavigate,
 }: LauncherTileProps) => {
   const tileClass = cn(
-    "group/tile flex min-h-22.5 flex-col items-center justify-start gap-2 rounded-xl px-1 pt-3 pb-2",
+    "group/tile flex min-h-22.5 flex-col items-center justify-start gap-2 rounded-xl px-0.5 pt-3 pb-2 @[18rem]:px-1",
     "hover:bg-muted/60 focus-visible:bg-muted/60 transition-colors",
     "focus-visible:ring-primary/40 focus-visible:ring-2 focus-visible:outline-none",
     (denied || locked) && "opacity-50",
@@ -156,7 +159,9 @@ const LauncherTile = ({
           />
         )}
       </span>
-      <span className="text-foreground/80 max-w-full text-center text-xs leading-tight font-semibold wrap-break-word">
+      {/* แผงแคบกว่า 18rem (จอ 280) คอลัมน์เหลือ ~84px — 12px ทำ "Administration"
+          ขาดกลางคำ จึงลดเป็น 11px ตัวชิด และลด padding ของช่อง จนกว่าแผงจะกว้างพอ */}
+      <span className="text-foreground/80 text-micro max-w-full text-center leading-tight font-semibold tracking-tight wrap-break-word @[18rem]:text-xs @[18rem]:tracking-normal">
         {label}
       </span>
     </>
