@@ -242,6 +242,13 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
               readOnly={isReadOnly}
               isDraft={isPoDraft}
               isAdd={!purchaseOrder}
+              isView={isView}
+              contentLocked={isPriceListLocked}
+              workflowName={
+                purchaseOrder?.workflow?.name ??
+                purchaseOrder?.workflow_name ??
+                undefined
+              }
             />
           }
           purchaseOrder={purchaseOrder}
