@@ -2,11 +2,9 @@ import type { UseFormReturn, FieldPath } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
+import { EqTextField } from "./eq-text-field";
 import type { EquipmentFormValues } from "./eq-form-schema";
-
-/** ขีดแทนช่องว่างในโหมดอ่าน — placeholder ตัวอย่างอย่าง "e.g. Samsung" ดูเหมือนค่าจริง */
-const READ_MODE_EMPTY = "—";
 
 interface EqInstructionsSectionProps {
   readonly form: UseFormReturn<EquipmentFormValues>;
@@ -24,41 +22,54 @@ export function EqInstructionsSection({
   const tfl = useTranslations("field");
 
   return (
-    <SettingSection
-      plain
+    <CompactSection
       title={t("instructions")}
       description={t("instructionsDesc")}
     >
-      <div className="grid grid-cols-1 gap-4">
-        <InstructionTextarea
-          form={form}
-          name="operation_instructions"
-          id="equipment-operation-instructions"
-          label={t("operationInstructions")}
-          placeholder={isView ? READ_MODE_EMPTY : tfl("optional")}
-          isDisabled={isDisabled}
-          isView={isView}
-        />
-        <InstructionTextarea
-          form={form}
-          name="safety_notes"
-          id="equipment-safety-notes"
-          label={t("safetyNotes")}
-          placeholder={isView ? READ_MODE_EMPTY : tfl("optional")}
-          isDisabled={isDisabled}
-          isView={isView}
-        />
-        <InstructionTextarea
-          form={form}
-          name="cleaning_instructions"
-          id="equipment-cleaning-instructions"
-          label={t("cleaningInstructions")}
-          placeholder={isView ? READ_MODE_EMPTY : tfl("optional")}
-          isDisabled={isDisabled}
-          isView={isView}
-        />
-      </div>
-    </SettingSection>
+      {isView ? (
+        <FieldGrid>
+          <EqTextField
+            label={t("operationInstructions")}
+            value={form.getValues("operation_instructions")}
+          />
+          <EqTextField
+            label={t("safetyNotes")}
+            value={form.getValues("safety_notes")}
+          />
+          <EqTextField
+            label={t("cleaningInstructions")}
+            value={form.getValues("cleaning_instructions")}
+          />
+        </FieldGrid>
+      ) : (
+        <FieldGrid>
+          <InstructionTextarea
+            form={form}
+            name="operation_instructions"
+            id="equipment-operation-instructions"
+            label={t("operationInstructions")}
+            placeholder={tfl("optional")}
+            isDisabled={isDisabled}
+          />
+          <InstructionTextarea
+            form={form}
+            name="safety_notes"
+            id="equipment-safety-notes"
+            label={t("safetyNotes")}
+            placeholder={tfl("optional")}
+            isDisabled={isDisabled}
+          />
+          <InstructionTextarea
+            form={form}
+            name="cleaning_instructions"
+            id="equipment-cleaning-instructions"
+            label={t("cleaningInstructions")}
+            placeholder={tfl("optional")}
+            isDisabled={isDisabled}
+          />
+        </FieldGrid>
+      )}
+    </CompactSection>
   );
 }
 
@@ -69,7 +80,6 @@ function InstructionTextarea({
   label,
   placeholder,
   isDisabled,
-  isView,
 }: {
   readonly form: UseFormReturn<EquipmentFormValues>;
   readonly name: FieldPath<EquipmentFormValues>;
@@ -77,7 +87,6 @@ function InstructionTextarea({
   readonly label: string;
   readonly placeholder: string;
   readonly isDisabled: boolean;
-  readonly isView: boolean;
 }) {
   return (
     <Field>
@@ -87,7 +96,7 @@ function InstructionTextarea({
         placeholder={placeholder}
         rows={3}
         disabled={isDisabled}
-        maxLength={isView ? undefined : 256}
+        maxLength={256}
         {...form.register(name)}
       />
     </Field>

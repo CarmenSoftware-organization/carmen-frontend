@@ -26,6 +26,7 @@ import { EqQuantitySection } from "./eq-quantity-section";
 import { EqInstructionsSection } from "./eq-instructions-section";
 import { EqMaintenanceSection } from "./eq-maintenance-section";
 import { EqAdditionalSection } from "./eq-additional-section";
+import { SECTION_PAIR } from "@/components/share/compact-section";
 import { EqSummary } from "./eq-summary";
 import { recipeEquipmentCommentCrud } from "./use-recipe-equipment-comments";
 
@@ -200,22 +201,31 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
               : undefined
           }
         />
-        <EqQuantitySection form={form} isDisabled={isDisabled} />
-        <EqInstructionsSection
-          form={form}
-          isDisabled={isDisabled}
-          isView={isView}
-        />
-        <EqMaintenanceSection
-          form={form}
-          isDisabled={isDisabled}
-          isView={isView}
-        />
-        <EqAdditionalSection
-          form={form}
-          isDisabled={isDisabled}
-          isView={isView}
-        />
+        {/* จอ ≥1700px วางคู่ตามลำดับเดิม: Quantity | Instructions แล้ว Maintenance | Additional */}
+        <div className={SECTION_PAIR}>
+          <EqQuantitySection
+            form={form}
+            isDisabled={isDisabled}
+            isView={isView}
+          />
+          <EqInstructionsSection
+            form={form}
+            isDisabled={isDisabled}
+            isView={isView}
+          />
+        </div>
+        <div className={SECTION_PAIR}>
+          <EqMaintenanceSection
+            form={form}
+            isDisabled={isDisabled}
+            isView={isView}
+          />
+          <EqAdditionalSection
+            form={form}
+            isDisabled={isDisabled}
+            isView={isView}
+          />
+        </div>
       </form>
 
       {equipment && (

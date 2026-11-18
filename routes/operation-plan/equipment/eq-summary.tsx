@@ -38,39 +38,46 @@ export function EqSummary({ form, imageUrl }: EqSummaryProps) {
     });
 
   return (
-    <div className="bg-card mb-6 flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-start">
-      <EqThumbnail src={imageUrl} alt={name} className="size-20 sm:size-24" />
+    // ตัดสินจากความกว้างแถบเอง (container query) ไม่ใช่จอ — sidebar กาง/พับแล้วยังถูก
+    <div className="@container mb-5">
+      <div className="bg-card flex flex-col gap-4 rounded-xl border p-4 shadow-sm @xl:flex-row @xl:items-start">
+        <EqThumbnail
+          src={imageUrl}
+          alt={name}
+          className="size-20 @xl:size-24"
+        />
 
-      <dl className="grid flex-1 grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)]">
-        <SummaryItem
-          label={t("maintenance")}
-          className="col-span-2 sm:col-span-1"
-        >
-          <EqMaintenanceBadge nextDate={nextDate} />
-          {(lastDate || schedule) && (
-            <p className="text-muted-foreground mt-1.5 text-xs">
-              {lastDate &&
-                t("maintLast", {
-                  date: formatLocalizedDate(lastDate, locale),
-                })}
-              {lastDate && schedule && " · "}
-              {schedule}
-            </p>
-          )}
-        </SummaryItem>
+        <dl className="grid flex-1 grid-cols-2 gap-x-6 gap-y-4 @xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)]">
+          <SummaryItem
+            label={t("maintenance")}
+            className="col-span-2 @xl:col-span-1"
+          >
+            <EqMaintenanceBadge nextDate={nextDate} />
+            {(lastDate || schedule) && (
+              <p className="text-muted-foreground mt-1.5 text-xs">
+                {lastDate &&
+                  t("maintLast", {
+                    date: formatLocalizedDate(lastDate, locale),
+                  })}
+                {lastDate && schedule && " · "}
+                {schedule}
+              </p>
+            )}
+          </SummaryItem>
 
-        <SummaryItem label={t("availabilityCol")}>
-          <EqAvailability
-            available={Number(available)}
-            total={Number(total)}
-            className="text-lg"
-          />
-        </SummaryItem>
+          <SummaryItem label={t("availabilityCol")}>
+            <EqAvailability
+              available={Number(available)}
+              total={Number(total)}
+              className="text-lg"
+            />
+          </SummaryItem>
 
-        <SummaryItem label={tfl("station")}>
-          <span className="text-sm font-medium">{station || "—"}</span>
-        </SummaryItem>
-      </dl>
+          <SummaryItem label={tfl("station")}>
+            <span className="text-sm font-medium">{station || "—"}</span>
+          </SummaryItem>
+        </dl>
+      </div>
     </div>
   );
 }
