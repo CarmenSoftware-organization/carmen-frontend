@@ -64,6 +64,7 @@ export function useApMasterTable<T extends ApMasterBase>(
     layout: { grow: "description", widths: {} },
     ...options,
     columns,
+    activity: { id: (row) => row.id, label: (row) => row.code },
     hideIndex: true,
     initialState: {
       columnVisibility: { created_at: false, updated_at: false },
