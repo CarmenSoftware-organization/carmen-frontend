@@ -427,7 +427,10 @@ export function CnForm({ creditNote }: CnFormProps) {
         <CnGeneralFields
           form={form}
           disabled={isDisabled || isView}
+          isView={isView}
           vendorName={creditNote?.vendor?.name ?? undefined}
+          reasonName={creditNote?.cn_reason?.name}
+          currencyCode={creditNote?.currency?.code}
           savedGrn={creditNote?.grn}
         />
         <hr className="border-border" />
