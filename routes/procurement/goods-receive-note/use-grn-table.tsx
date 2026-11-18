@@ -31,23 +31,29 @@ interface UseGrnTableOptions {
  * ขั้นของคอลัมน์ตามความกว้างของกล่องตาราง (ไม่ใช่ของจอ — sidebar พับ/กางได้)
  *
  * "ผู้ขาย" รับที่เหลือ (`meta.grow`) ที่เหลือกว้างคงที่ ตารางจึงกว้างขั้นต่ำเท่าผลรวม `size`
- * (นับคอลัมน์ select 55 ที่ไม่ได้เรนเดอร์ · ไม่นับ invoice date/audit ที่ซ่อนเป็น default):
- *   ครบ  55+60+180+150+125+160+140+130+140+150+60 = 1350
- *   ไม่มี #                                         = 1290
- *   ไม่มีชนิดใบ (ลงบรรทัดรองใต้เลขที่)                  = 1160
- *   ไม่มีผู้รับ (ลงบรรทัดรองใต้ผู้ขาย)                    = 1020
- *   ไม่มีเลขใบแจ้งหนี้                                  =  860
+ * (นับคอลัมน์ select 55 ที่ไม่ได้เรนเดอร์ · ไม่นับ audit ที่ซ่อนเป็น default):
+ *   ครบ  55+60+180+150+125+160+125+140+130+140+150+60 = 1475
+ *   ไม่มี #                                              = 1415
+ *   ไม่มีชนิดใบ (ลงบรรทัดรองใต้เลขที่)                       = 1285
+ *   ไม่มีผู้รับ (ลงบรรทัดรองใต้ผู้ขาย)                         = 1145
+ *   ไม่มีวันที่ใบแจ้งหนี้ (ลงบรรทัดรองใต้เลขใบแจ้งหนี้)          = 1020
+ *   ไม่มีเลขใบแจ้งหนี้                                       =  860
  *   กล่องแคบ (ไม่มีวันที่ · เลขที่ 140 · ผู้ขาย 115)  55+140+115+140+150+60 = 660  (กล่องที่จอ 768 = 662)
+ *   กล่องกว้างมาก (≥1540): ผู้รับ 140→200 (ครบ 1535) ชื่อเต็มไม่ถูกตัดที่ Full HD/4K
+ * วันที่ใบแจ้งหนี้เป็นคอลัมน์ของตัวเอง (ผู้ใช้สั่ง 2026-11-18) — 1366 ที่เมนูกาง (กล่อง 1084)
+ * ยังไม่พอ จึงซ้อนใต้เลขใบแจ้งหนี้แทน
  * จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px · # และเลขใบแจ้งหนี้ดูได้ในหน้าเอกสาร
  */
 function columnTier(width: number | undefined) {
   const w = width ?? Number.POSITIVE_INFINITY;
   return {
-    showIndex: w >= 1355,
-    showType: w >= 1295,
-    showReceivedBy: w >= 1165,
+    showIndex: w >= 1480,
+    showType: w >= 1420,
+    showReceivedBy: w >= 1290,
+    showInvoiceDate: w >= 1150,
     showInvoice: w >= 1025,
     wide: w >= 865,
+    roomy: w >= 1540,
   };
 }
 
@@ -61,17 +67,26 @@ export function useGrnTable({
   containerWidth,
 }: UseGrnTableOptions) {
   "use no memo";
-  const { showIndex, showType, showReceivedBy, showInvoice, wide } =
-    columnTier(containerWidth);
-  // คอลัมน์ที่ผู้ใช้เปิด/ปิดเองจากเมนู Toggle Columns — invoice date/audit ซ่อนเป็น default
+  const {
+    showIndex,
+    showType,
+    showReceivedBy,
+    showInvoiceDate,
+    showInvoice,
+    wide,
+    roomy,
+  } = columnTier(containerWidth);
+  // คอลัมน์ที่ผู้ใช้เปิด/ปิดเองจากเมนู Toggle Columns — audit ซ่อนเป็น default
   // ขั้นตามความกว้างกล่องทับเฉพาะคอลัมน์ที่บังคับซ่อน
   const [userVisibility, setUserVisibility] = useState<VisibilityState>({
-    invoice_date: false,
     created_at: false,
     updated_at: false,
   });
   const { dateFormat, dateTimeFormat } = useProfile();
   const tfl = useTranslations("field");
+  // คอลัมน์วันที่ใบแจ้งหนี้ถูกซ่อน (กล่องแคบ หรือผู้ใช้ปิดเอง) → ซ้อนใต้เลขใบแจ้งหนี้แทน
+  const invoiceDateColumn =
+    showInvoiceDate && userVisibility.invoice_date !== false;
 
   const columns: ColumnDef<GoodsReceiveNote>[] = [
     {
@@ -157,12 +172,12 @@ export function useGrnTable({
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("invoiceNo")} />
       ),
-      // วันที่ใบแจ้งหนี้ซ้อนใต้เลขในเซลล์เดียว — สองค่านี้คือหลักฐานชิ้นเดียวกันจากผู้ขาย
-      // คนเทียบกับกระดาษพร้อมกันอยู่แล้ว และคืนที่ให้ GRN No./Status ไม่ถูกบีบจนตัดคำที่
-      // 1366 (คอลัมน์ invoice_date ยังอยู่ แค่ซ่อนเป็นค่าเริ่มต้น สำหรับคนที่อยากเรียง)
+      // วันที่ใบแจ้งหนี้ซ้อนใต้เลขเฉพาะเมื่อคอลัมน์ของมันถูกซ่อน (กล่องแคบ / ผู้ใช้ปิด)
       cell: ({ row }) => {
         const invoiceNo = row.original.invoice_no;
-        const invoiceDate = formatDate(row.original.invoice_date, dateFormat);
+        const invoiceDate = invoiceDateColumn
+          ? ""
+          : formatDate(row.original.invoice_date, dateFormat);
         if (!invoiceNo && !invoiceDate) return null;
         return (
           <div className="min-w-0">
@@ -190,9 +205,10 @@ export function useGrnTable({
         />
       ),
       cell: ({ row }) => formatDate(row.getValue("invoice_date"), dateFormat),
+      size: 125,
       meta: {
         headerTitle: tfl("invoiceDate"),
-        cellClassName: "text-center",
+        cellClassName: "text-center whitespace-nowrap tabular-nums",
       },
     },
     {
@@ -244,8 +260,9 @@ export function useGrnTable({
       // ไม่เรียงลำดับเพราะ audit เป็น object ซ้อน backend เรียงให้ไม่ได้
       id: "created_by",
       accessorFn: (row) => row.audit?.created?.name ?? "",
-      // 140 ให้ชื่อ-นามสกุลผู้รับอ่านออก (115 ตัดเหลือ "Admin Fernan…")
-      size: 140,
+      // 140 ให้ชื่อ-นามสกุลผู้รับอ่านออก (115 ตัดเหลือ "Admin Fernan…") · กล่องกว้างมาก
+      // 200 ชื่อเต็ม (140 ยังตัด "Admin Fernando Tor…" ที่ Full HD/4K)
+      size: roomy ? 200 : 140,
       header: tfl("receivedBy"),
       cell: ({ row }) => (
         <span
@@ -304,6 +321,7 @@ export function useGrnTable({
         ...(!showType && { doc_type: false }),
         ...(!showReceivedBy && { created_by: false }),
         ...(!showInvoice && { invoice_no: false }),
+        ...(!showInvoiceDate && { invoice_date: false }),
         ...(!wide && { grn_date: false }),
       },
     },

@@ -40,6 +40,7 @@ interface UseCnTableOptions {
  *   ไม่มีชนิดใบ (ลงบรรทัดรองใต้เลขที่)              =  935
  *   ไม่มีผู้สร้าง (ลงบรรทัดรองใต้ผู้ขาย)              =  795
  *   กล่องแคบ (ไม่มีวันที่ ลงใต้เลขที่ · ผู้ขาย 120)  55+130+120+135+150+60 = 650  (กล่องที่จอ 768 = 662)
+ *   กล่องกว้างมาก (≥1195): ผู้สร้าง 140→200 (ครบ 1190) ชื่อเต็มไม่ถูกตัดที่ Full HD/4K
  * จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px · # ดูได้ในหน้าเอกสาร
  */
 function columnTier(width: number | undefined) {
@@ -49,6 +50,7 @@ function columnTier(width: number | undefined) {
     showType: w >= 1075,
     showCreatedBy: w >= 940,
     wide: w >= 800,
+    roomy: w >= 1195,
   };
 }
 
@@ -62,7 +64,7 @@ export function useCnTable({
   containerWidth,
 }: UseCnTableOptions) {
   "use no memo";
-  const { showIndex, showType, showCreatedBy, wide } =
+  const { showIndex, showType, showCreatedBy, wide, roomy } =
     columnTier(containerWidth);
   // คอลัมน์ที่ผู้ใช้เปิด/ปิดเองจากเมนู Toggle Columns — audit ซ่อนเป็น default
   // ขั้นตามความกว้างกล่องทับเฉพาะคอลัมน์ที่บังคับซ่อน
@@ -172,7 +174,8 @@ export function useCnTable({
       id: "created_by",
       accessorFn: (row) => row.audit?.created?.name ?? "",
       header: tfl("createdBy"),
-      size: 140,
+      // กล่องกว้างมาก 200 ชื่อเต็ม (140 ตัด "ศิริวรรณ Purchase…" ที่ Full HD/4K)
+      size: roomy ? 200 : 140,
       cell: ({ row }) => (
         <span
           className="text-muted-foreground block truncate"

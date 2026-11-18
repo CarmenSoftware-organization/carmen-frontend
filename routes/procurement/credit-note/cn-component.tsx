@@ -174,6 +174,7 @@ export default function CnComponent() {
               navigate(`/procurement/credit-note/${cn.id}`, listReturnState())
             }
             onDelete={setDeleteTarget}
+            compact
           />
           {grid.hasMore && (
             <div ref={grid.sentinelRef} className="flex justify-center py-4">
