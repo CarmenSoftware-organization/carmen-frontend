@@ -167,7 +167,7 @@ export default function PathBreadcrumb() {
 
   return (
     <Breadcrumb>
-      <BreadcrumbList>
+      <BreadcrumbList className="flex-nowrap">
         {crumbs.map(
           (
             { segment, href, keyOverride, labelOverride, unroutable },
@@ -188,28 +188,38 @@ export default function PathBreadcrumb() {
                     .replaceAll(/\b\w/g, (c) => c.toUpperCase());
 
             const isCurrentPage = index === crumbs.length - 1 && !onDetailPage;
-            // จอแคบเก็บสองชั้นท้ายไว้ — ชั้นก่อนสุดท้ายคือทางกลับหน้ารายการ
-            // ถ้าซ่อนหมดเหลือคำเดียวก็กดอะไรไม่ได้เลยบนมือถือ
-            const hiddenOnMobile = index < crumbs.length - 2;
+            // ตัดสินจากความกว้างของ navbar (`@container/navbar`) — แถบแคบเหลือ
+            // ชั้นสุดท้ายชั้นเดียวให้อยู่บรรทัดเดียว (หน้าเอกสาร ชั้นสุดท้ายคือลิงก์
+            // กลับหน้ารายการ จึงยังกดกลับได้) · @lg ได้ชั้นแม่ · @4xl ได้ครบทุกชั้น
+            const isLast = index === crumbs.length - 1;
+            const itemClass = isLast
+              ? "min-w-0"
+              : index === crumbs.length - 2
+                ? "hidden shrink-0 @lg/navbar:inline-flex"
+                : "hidden shrink-0 @4xl/navbar:inline-flex";
 
             return (
               <Fragment key={href}>
                 {index > 0 && (
                   <BreadcrumbSeparator
                     className={
-                      index < crumbs.length - 1 ? "hidden md:block" : ""
+                      index < crumbs.length - 1
+                        ? "hidden @4xl/navbar:block"
+                        : "hidden @lg/navbar:block"
                     }
                   />
                 )}
-                <BreadcrumbItem
-                  className={hiddenOnMobile ? "hidden md:block" : ""}
-                >
+                <BreadcrumbItem className={itemClass}>
                   {isCurrentPage ? (
-                    <BreadcrumbPage>{label}</BreadcrumbPage>
+                    <BreadcrumbPage className="truncate">
+                      {label}
+                    </BreadcrumbPage>
                   ) : unroutable ? (
-                    <span className="text-muted-foreground">{label}</span>
+                    <span className="text-muted-foreground truncate">
+                      {label}
+                    </span>
                   ) : (
-                    <BreadcrumbLink asChild>
+                    <BreadcrumbLink asChild className="truncate">
                       <Link to={href}>{label}</Link>
                     </BreadcrumbLink>
                   )}
