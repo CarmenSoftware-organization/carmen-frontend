@@ -41,6 +41,7 @@ interface UsePoTableOptions {
  *   ไม่มี workflow                           =  995
  *   ไม่มีผู้จัดซื้อ                             =  905
  *   กล่องแคบ (ไม่มีวันที่ · เลขที่ 140 · ผู้ขาย 120)  55+140+120+130+150+60 = 655  (กล่องที่จอ 768 = 662)
+ *   กล่องกว้างมาก (≥1400): ผู้จัดซื้อ 90→200 (ครบ 1255) ชื่อเต็มไม่ถูกตัด
  * จุดเปลี่ยนสูงกว่าผลรวมของขั้นนั้น 5px · ผู้จัดซื้อที่ถูกซ่อนลงบรรทัดรองใต้ผู้ขาย
  * วันที่สั่งลงบรรทัดรองใต้เลขที่ · # และ workflow ดูได้ในหน้าเอกสาร
  */
@@ -51,6 +52,7 @@ function columnTier(width: number | undefined) {
     showWorkflow: w >= 1090,
     showBuyer: w >= 1000,
     wide: w >= 910,
+    roomy: w >= 1400,
   };
 }
 
@@ -64,7 +66,7 @@ export function usePoTable({
   containerWidth,
 }: UsePoTableOptions) {
   "use no memo";
-  const { showIndex, showWorkflow, showBuyer, wide } =
+  const { showIndex, showWorkflow, showBuyer, wide, roomy } =
     columnTier(containerWidth);
   // คอลัมน์ที่ผู้ใช้เปิด/ปิดเองจากเมนู Toggle Columns — delivery/audit ซ่อนเป็น default
   // ขั้นตามความกว้างกล่องทับเฉพาะคอลัมน์ที่บังคับซ่อน
@@ -174,7 +176,7 @@ export function usePoTable({
       // · ไม่เรียงลำดับเพราะ audit เป็น object ซ้อน backend เรียงให้ไม่ได้
       id: "created_by",
       accessorFn: (row) => row.audit?.created?.name ?? "",
-      size: 90,
+      size: roomy ? 200 : 90,
       header: tfl("buyer"),
       cell: ({ row }) => (
         <span
