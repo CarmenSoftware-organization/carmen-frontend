@@ -23,7 +23,6 @@ import { FormPageShell } from "@/components/share/form-page-shell";
 import { CuisineToolbar } from "./cuisine-toolbar";
 import { CuisineGeneralFields } from "./cuisine-general-fields";
 import { CuisineDetailFields } from "./cuisine-detail-fields";
-import { CuisineAdditionalFields } from "./cuisine-additional-fields";
 import { SECTION_PAIR } from "@/components/share/compact-section";
 import { CuisineRecipes } from "./cuisine-recipes";
 import { recipeCuisineCommentCrud } from "./use-recipe-cuisine-comments";
@@ -107,6 +106,15 @@ export function CuisineForm({ cuisine }: CuisineFormProps) {
           onDelete={cuisine ? () => setShowDelete(true) : undefined}
           activityId={cuisine?.id}
           onComment={cuisine ? () => setShowComment(true) : undefined}
+          audit={cuisine?.audit}
+          docVersion={cuisine?.doc_version}
+          generalFields={
+            <CuisineGeneralFields
+              form={form}
+              isDisabled={isDisabled}
+              isView={isView}
+            />
+          }
         />
       }
     >
@@ -116,31 +124,21 @@ export function CuisineForm({ cuisine }: CuisineFormProps) {
           scrollToFirstInvalidField(),
         )}
       >
-        {/* จอ ≥1700px วางเป็นคู่: General | Details แล้ว Additional | Recipes
-            คู่แรกอยู่บนสุดของฟอร์ม — ก้อนขวาต้องตัด mt-5 ตอนวางคู่ ไม่งั้นต่ำกว่าซ้าย 20px */}
-        <div className={SECTION_PAIR}>
-          <CuisineGeneralFields
-            form={form}
-            isDisabled={isDisabled}
-            isView={isView}
-          />
-          <div className="min-[1700px]:[&>section]:mt-0">
-            <CuisineDetailFields
-              form={form}
-              isDisabled={isDisabled}
-              isView={isView}
-            />
-          </div>
-        </div>
-        {/* Recipes อยู่ในฟอร์มเพื่อวางคู่กับ Additional ได้ — มีแค่ลิงก์ ไม่มีช่องกรอก
-            ใบใหม่ยังไม่มี Recipes → Additional เต็มแถว ไม่ใช่ครึ่งแถวที่ว่างข้างหนึ่ง */}
+        {/* General (+ Note/Status) ย้ายเข้าการ์ดหัวแล้ว — Details เป็นหมวดแรกของตัวฟอร์ม
+            จอ ≥1700px วางคู่กับ Recipes (ก้อนขวาตัด mt-5 ตอนวางคู่ ไม่งั้นต่ำกว่าซ้าย 20px)
+            ใบใหม่ยังไม่มี Recipes → Details เต็มแถว ไม่ใช่ครึ่งแถวที่ว่างข้างหนึ่ง
+            Recipes อยู่ในฟอร์มเพื่อวางคู่ได้ — มีแค่ลิงก์ ไม่มีช่องกรอก */}
         <div className={cuisine ? SECTION_PAIR : undefined}>
-          <CuisineAdditionalFields
+          <CuisineDetailFields
             form={form}
             isDisabled={isDisabled}
             isView={isView}
           />
-          {cuisine && <CuisineRecipes cuisineId={cuisine.id} />}
+          {cuisine && (
+            <div className="min-[1700px]:[&>section]:mt-0">
+              <CuisineRecipes cuisineId={cuisine.id} />
+            </div>
+          )}
         </div>
       </form>
 
