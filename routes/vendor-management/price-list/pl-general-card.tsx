@@ -13,11 +13,11 @@ import { StatusIconLabel } from "@/components/ui/status-icon-label";
 import { LookupCurrency } from "@/components/lookup/lookup-currency";
 import { LookupVendor } from "@/components/lookup/lookup-vendor";
 import { PRICE_LIST_STATUS_OPTIONS } from "@/constant/price-list";
-import { SettingSection } from "@/components/ui/setting-section";
+import { FieldGrid } from "@/components/share/compact-section";
+import { SettingField } from "@/components/share/setting-field";
 import type { PriceList, PriceListStatus } from "@/types/price-list";
 import type { PriceListFormValues } from "./pl-form-schema";
 import { PlPeriodCell } from "./pl-period-cell";
-import { cn } from "@/lib/utils";
 
 type PlStatus = PriceListStatus;
 
@@ -44,11 +44,11 @@ export function PLGeneralCard({
   t,
   ts,
 }: PLGeneralCardProps) {
-  // โหมดดู: ข้อมูลหัวใบมีแค่ 3–4 ช่อง จึงยุบเป็นแถบเดียวเหนือตาราง แทนโครง 2 คอลัมน์
-  // (ป้ายซ้าย + การ์ดขวา) ที่กินครึ่งจอแรก — ตารางราคาซึ่งเป็นตัวเอกขึ้นมาอยู่ในจอแรก
+  // อยู่ในการ์ดหัว (ribbon ของ FormToolbar) ทรงเดียวกับหัวเอกสาร PR — ไม่มีการ์ด General แยก
+  // โหมดดู: ข้อความล้วน FieldGrid dense (2 คอลัมน์ตั้งแต่กล่องแคบสุด) · โหมดแก้: FieldGrid ปกติ
   if (isView)
     return (
-      <PlViewSummary
+      <PlViewFields
         priceList={priceList}
         from={watchedFrom}
         to={watchedTo}
@@ -56,14 +56,10 @@ export function PLGeneralCard({
       />
     );
   return (
-    <SettingSection
-      first
-      title={tfl("general")}
-      description={t(isView ? "generalDescView" : "generalDesc")}
-    >
+    <FieldGrid>
       {/* Name — โหมดดูไม่แสดง แถบหัวมีชื่อเป็นตัวเอกอยู่แล้ว (ท่าเดียวกับหน้าผู้ขาย) */}
       {!isView && (
-        <Field className="sm:col-span-2">
+        <Field className="@md:col-span-2">
           <FieldLabel htmlFor="pl-name">
             {tfl("name")}
             {!isView && <span className="text-destructive"> *</span>}
@@ -193,7 +189,7 @@ export function PLGeneralCard({
       )}
 
       {/* Description */}
-      <Field className="sm:col-span-2">
+      <Field className="@md:col-span-2">
         <FieldLabel>{tfl("description")}</FieldLabel>
         {isView ? (
           <FieldPlainText className="whitespace-pre-wrap">
@@ -245,11 +241,11 @@ export function PLGeneralCard({
           />
         </Field>
       )}
-    </SettingSection>
+    </FieldGrid>
   );
 }
 
-function PlViewSummary({
+function PlViewFields({
   priceList,
   from,
   to,
@@ -260,53 +256,29 @@ function PlViewSummary({
   readonly to: string;
   readonly tfl: (key: string) => string;
 }) {
-  const description = priceList?.description?.trim();
   return (
-    // mb-8 = ระยะถึงหัวข้อ Products (section นั้นไม่มีเส้นคั่นในโหมดดู)
-    <section className="bg-card mb-8 rounded-xl border px-5 py-4 shadow-sm">
-      {/* กว้างตามเนื้อหา ชิดซ้าย — เดิมแบ่ง 3 คอลัมน์เต็มจอ ข้อมูลสั้นจึงห่างกันเกือบครึ่งจอ */}
-      <dl className="flex flex-wrap gap-x-12 gap-y-4">
-        <SummaryItem label={tfl("vendor")} className="max-w-md">
-          {priceList?.vendor?.name || "—"}
-        </SummaryItem>
-        <SummaryItem label={tfl("currency")}>
-          {priceList?.currency?.code || "—"}
-        </SummaryItem>
-        <SummaryItem label={tfl("effectivePeriod")}>
+    <FieldGrid dense>
+      <SettingField label={tfl("vendor")} value={priceList?.vendor?.name} />
+      <SettingField label={tfl("currency")} value={priceList?.currency?.code} />
+      {/* ช่วงราคา + บรรทัดบอกว่ายังใช้ได้อยู่ไหม (ACTIVE ไม่ได้แปลว่าช่วงยังไม่หมด) */}
+      <div className="min-w-0">
+        <div className="text-muted-foreground text-xs">
+          {tfl("effectivePeriod")}
+        </div>
+        <div className="text-foreground mt-0.5 text-sm font-medium">
           {from && to ? (
             <PlPeriodCell period={`${from} - ${to}`} detail />
           ) : (
             "—"
           )}
-        </SummaryItem>
-        {/* คำอธิบายว่าง = ไม่แสดงทั้งแถว (เดิมกินหนึ่งแถวเต็มเพื่อโชว์ "—") */}
-        {description && (
-          <SummaryItem label={tfl("description")} className="basis-full">
-            <span className="font-normal whitespace-pre-wrap">
-              {description}
-            </span>
-          </SummaryItem>
-        )}
-      </dl>
-    </section>
-  );
-}
-
-function SummaryItem({
-  label,
-  className,
-  children,
-}: {
-  readonly label: string;
-  readonly className?: string;
-  readonly children: React.ReactNode;
-}) {
-  return (
-    <div className={cn("min-w-0 space-y-1", className)}>
-      <dt className="text-muted-foreground text-xs">{label}</dt>
-      <dd className="text-foreground truncate text-sm font-medium">
-        {children}
-      </dd>
-    </div>
+        </div>
+      </div>
+      {/* โชว์เสมอแม้ว่าง (—) ทรงเดียวกับหัว PR — ใบที่มี/ไม่มีคำอธิบายหัวทรงเดียวกัน */}
+      <SettingField
+        fullWidth
+        label={tfl("description")}
+        value={priceList?.description?.trim()}
+      />
+    </FieldGrid>
   );
 }

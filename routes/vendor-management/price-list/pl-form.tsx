@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
-import { Ban, RotateCcw } from "lucide-react";
+import { Ban, Hash, RotateCcw } from "lucide-react";
 
 import { StatusChip } from "@/components/ui/status-chip";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
@@ -17,6 +17,11 @@ import { useDeleteGate } from "@/hooks/use-delete-gate";
 import { useEntityForm } from "@/hooks/use-entity-form";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { FormToolbar, ToolbarLabel } from "@/components/share/form-toolbar";
+import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
+import {
+  DocAuditButton,
+  DocAuditLine,
+} from "@/components/share/doc-audit-line";
 import {
   buildItemChanges,
   scrollToFirstInvalidField,
@@ -218,71 +223,124 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
   const plNo = priceList?.no ?? null;
   const tsStatus = ts as (key: PriceListStatus) => string;
 
+  // บรรทัดตัวตนใต้ชื่อ ทรงเดียวกับบรรทัดผู้ขอ · แผนก · วันที่ ของหัว PR — เลขที่ใบ
+  // มือถือ: ตาราง audit ซ่อน เหลือไอคอนท้ายบรรทัดนี้
+  const identityLine = plNo ? (
+    <span className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+      <span className="flex items-center gap-1">
+        <Hash className="size-3 shrink-0" aria-hidden="true" />
+        <span className="text-foreground font-medium tabular-nums">{plNo}</span>
+      </span>
+      {isView && (
+        <DocAuditButton
+          audit={priceList?.audit}
+          docVersion={priceList?.doc_version}
+          className="-my-1 sm:hidden"
+        />
+      )}
+    </span>
+  ) : undefined;
+
+  const generalFields = (
+    <PLGeneralCard
+      form={form}
+      priceList={priceList}
+      isView={isView}
+      isDisabled={isDisabled}
+      watchedFrom={watchedFrom}
+      watchedTo={watchedTo}
+      tfl={tfl}
+      t={t}
+      ts={tsStatus}
+    />
+  );
+
   return (
     <FormPageShell
       width="wide"
+      // หัวอยู่ในการ์ดมีพื้น ทรงเดียวกับหัวเอกสาร PR: ชื่อ+สถานะ+ปุ่ม · บรรทัดเลขที่ใบ ·
+      // ช่อง General (ribbon) + ตาราง audit ชิดขวาล่าง (โหมดดู) — ไม่มีการ์ด General แยก
+      // ช่อง General อยู่นอก <form> (แบบ PR — ปุ่มบนหัวไม่กลายเป็น submit) RHF ยังเก็บค่าครบ
+      // แค่กด Enter ในช่องเหล่านี้ไม่ submit
       header={
-        <FormToolbar
-          mode={f.mode}
-          formId={FORM_ID}
-          isPending={isPending}
-          title={watchedName || t("namePlaceholder")}
-          titleMuted={!watchedName}
-          onBack={f.handleBack}
-          onCancel={f.handleCancel}
-          onEdit={isVoided ? undefined : f.handleEdit}
-          onDelete={
-            priceList && isAdmin ? () => setShowDelete(true) : undefined
-          }
-          deleteIsPending={deletePriceList.isPending}
-          activity={priceList && { id: priceList.id, label: priceList.no }}
-          onComment={priceList ? () => setShowComment(true) : undefined}
-          badges={
-            <>
-              {plNo && (
-                <span className="text-muted-foreground shrink-0 text-sm">
-                  · {plNo}
-                </span>
-              )}
-              <StatusChip
-                status={watchedStatus}
-                label={tsStatus(watchedStatus)}
-                // เบากว่าในตาราง: ตัวเอกของแถบนี้คือชื่อ/เลขที่ใบ สถานะเป็นข้อมูล
-                // ประกอบ เหลือสีไว้ที่ไอคอนจุดเดียว (ท่าเดียวกับหัวฟอร์ม PR/PO)
-              />
-              {/* ช่วงราคาหมด/ยังไม่เริ่ม/ใกล้หมด — อยู่ข้างสถานะเอกสาร เพราะใบ ACTIVE
+        <div className={DOC_HEADER_CARD}>
+          <FormToolbar
+            inlineBack
+            mode={f.mode}
+            formId={FORM_ID}
+            isPending={isPending}
+            title={watchedName || t("namePlaceholder")}
+            titleMuted={!watchedName}
+            subtitle={identityLine}
+            onBack={f.handleBack}
+            onCancel={f.handleCancel}
+            onEdit={isVoided ? undefined : f.handleEdit}
+            onDelete={
+              priceList && isAdmin ? () => setShowDelete(true) : undefined
+            }
+            deleteIsPending={deletePriceList.isPending}
+            activity={priceList && { id: priceList.id, label: priceList.no }}
+            onComment={priceList ? () => setShowComment(true) : undefined}
+            badges={
+              <>
+                <StatusChip
+                  status={watchedStatus}
+                  label={tsStatus(watchedStatus)}
+                  // เบากว่าในตาราง: ตัวเอกของแถบนี้คือชื่อ/เลขที่ใบ สถานะเป็นข้อมูล
+                  // ประกอบ เหลือสีไว้ที่ไอคอนจุดเดียว (ท่าเดียวกับหัวฟอร์ม PR/PO)
+                />
+                {/* ช่วงราคาหมด/ยังไม่เริ่ม/ใกล้หมด — อยู่ข้างสถานะเอกสาร เพราะใบ ACTIVE
                   ที่หมดช่วงแล้วใช้ออก PO ไม่ได้ ต้องเห็นตั้งแต่หัวใบ · ใบโมฆะไม่ต้องบอก */}
-              {!isVoided && <PlValidityTag from={watchedFrom} to={watchedTo} />}
-            </>
-          }
-        >
-          {canVoidOrRestore &&
-            (isVoided ? (
-              <Button
-                title={t("restore")}
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowRestore(true)}
-                disabled={restorePriceList.isPending}
-              >
-                <RotateCcw />
-                <ToolbarLabel>{t("restore")}</ToolbarLabel>
-              </Button>
-            ) : (
-              <Button
-                title={t("void")}
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowVoid(true)}
-                disabled={voidPriceList.isPending}
-              >
-                <Ban />
-                <ToolbarLabel>{t("void")}</ToolbarLabel>
-              </Button>
-            ))}
-        </FormToolbar>
+                {!isVoided && (
+                  <PlValidityTag from={watchedFrom} to={watchedTo} />
+                )}
+              </>
+            }
+            // ml-4 หักล้าง -ml-4 ของ DocFormHeader (เหมือนหัว PR) · ตาราง audit ชิดขวาล่างข้างกริด
+            // เฉพาะโหมดดู — ตอนแก้ช่องกรอกต้องการความกว้างเต็ม
+            ribbon={
+              isView ? (
+                <div className="ml-4 flex min-w-0 flex-1 flex-wrap items-end gap-x-5 gap-y-3">
+                  <div className="min-w-0 flex-1 basis-72">{generalFields}</div>
+                  <DocAuditLine
+                    audit={priceList?.audit}
+                    docVersion={priceList?.doc_version}
+                    className="ms-auto hidden sm:table"
+                  />
+                </div>
+              ) : (
+                <div className="ml-4 min-w-0 flex-1">{generalFields}</div>
+              )
+            }
+          >
+            {canVoidOrRestore &&
+              (isVoided ? (
+                <Button
+                  title={t("restore")}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowRestore(true)}
+                  disabled={restorePriceList.isPending}
+                >
+                  <RotateCcw />
+                  <ToolbarLabel>{t("restore")}</ToolbarLabel>
+                </Button>
+              ) : (
+                <Button
+                  title={t("void")}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowVoid(true)}
+                  disabled={voidPriceList.isPending}
+                >
+                  <Ban />
+                  <ToolbarLabel>{t("void")}</ToolbarLabel>
+                </Button>
+              ))}
+          </FormToolbar>
+        </div>
       }
     >
       {isVoided && priceList && <PlVoidBanner priceList={priceList} />}
@@ -292,17 +350,6 @@ export function PriceListForm({ priceList }: PriceListFormProps) {
           scrollToFirstInvalidField(),
         )}
       >
-        <PLGeneralCard
-          form={form}
-          priceList={priceList}
-          isView={isView}
-          isDisabled={isDisabled}
-          watchedFrom={watchedFrom}
-          watchedTo={watchedTo}
-          tfl={tfl}
-          t={t}
-          ts={tsStatus}
-        />
         <PlItemFields
           form={form}
           priceList={priceList}
