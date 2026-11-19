@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { ChefHat } from "lucide-react";
 import { useTranslations } from "use-intl";
 import { StatusDotBadge, type DotTone } from "@/components/ui/status-dot-badge";
@@ -83,6 +83,41 @@ export function RecipeThumb({
 }
 
 /**
+ * ภาพปกเต็มกว้างของการ์ดสูตร (สัดส่วน 4:3 คงที่ ทุกใบในกริดสูงเท่ากัน) — ไม่มีรูปหรือ
+ * presigned url หมดอายุ = พื้นจางกับไอคอนหมวกเชฟ ไม่ใช่รูปแตก · `children` = ป้ายที่วางทับมุมภาพ
+ */
+export function RecipeCover({
+  image,
+  children,
+}: {
+  readonly image: RecipePrimaryImage | null | undefined;
+  readonly children?: ReactNode;
+}) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const url = image?.url;
+  const showImage = !!url && failedUrl !== url;
+
+  return (
+    <div className="bg-muted relative aspect-[4/3] w-full overflow-hidden">
+      {showImage ? (
+        <img
+          src={url}
+          alt={image?.alt_text ?? ""}
+          loading="lazy"
+          className="size-full object-cover"
+          onError={() => setFailedUrl(url)}
+        />
+      ) : (
+        <span className="text-muted-foreground/40 flex size-full items-center justify-center">
+          <ChefHat className="size-12" aria-hidden="true" />
+        </span>
+      )}
+      {children}
+    </div>
+  );
+}
+
+/**
  * Food cost % ของจริงเทียบเป้า — ตัวเลข + แถบสั้นที่มีขีดบอกตำแหน่งเป้า
  *
  * นี่คือตัวเลขที่คนคุมต้นทุนกวาดตาหาในหน้ารายการ: สูตรไหนกินต้นทุนเกินเป้า
@@ -94,9 +129,12 @@ export function RecipeThumb({
 export function RecipeFoodCostCell({
   actual,
   target,
+  showBar = true,
 }: {
   readonly actual: number | null | undefined;
   readonly target: number | null | undefined;
+  /** false = ตัวเลขอย่างเดียว (คอลัมน์แคบในกล่องตารางแคบสุด) */
+  readonly showBar?: boolean;
 }) {
   if (actual == null) {
     return <span className="text-muted-foreground">—</span>;
@@ -111,24 +149,26 @@ export function RecipeFoodCostCell({
       className="inline-flex items-center justify-end gap-2"
       title={hasTarget ? `${actual.toFixed(1)}% / ${target}%` : undefined}
     >
-      <span
-        className="bg-muted relative h-1.5 w-12 overflow-hidden rounded-full"
-        aria-hidden="true"
-      >
+      {showBar && (
         <span
-          className={cn(
-            "absolute inset-y-0 left-0 rounded-full",
-            over ? "bg-destructive" : "bg-muted-foreground/50",
-          )}
-          style={{ width: `${clamp(actual)}%` }}
-        />
-        {hasTarget && (
+          className="bg-muted relative h-1.5 w-12 overflow-hidden rounded-full"
+          aria-hidden="true"
+        >
           <span
-            className="bg-foreground absolute inset-y-0 w-px"
-            style={{ left: `${clamp(target)}%` }}
+            className={cn(
+              "absolute inset-y-0 left-0 rounded-full",
+              over ? "bg-destructive" : "bg-muted-foreground/50",
+            )}
+            style={{ width: `${clamp(actual)}%` }}
           />
-        )}
-      </span>
+          {hasTarget && (
+            <span
+              className="bg-foreground absolute inset-y-0 w-px"
+              style={{ left: `${clamp(target)}%` }}
+            />
+          )}
+        </span>
+      )}
       <span
         className={cn(
           "w-12 text-right tabular-nums",

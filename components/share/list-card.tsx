@@ -81,6 +81,11 @@ interface ListCardProps {
   /** tooltip/aria-label ของปุ่มลบแทน `common.delete` — ไม่ส่ง = เดิม */
   readonly deleteLabel?: string;
   readonly actions?: ReactNode;
+  /**
+   * ภาพเต็มกว้างเหนือหัวการ์ด (เช่นรูปสูตรอาหาร) — ไม่ส่ง = การ์ดแบบเดิม
+   * ผู้เรียกคุมสัดส่วนภาพเอง (`aspect-*`) ให้ทุกใบในกริดสูงเท่ากัน
+   */
+  readonly media?: ReactNode;
   readonly children: ReactNode;
 }
 
@@ -274,6 +279,7 @@ export function ListCard({
   deleteDisabledTitle,
   deleteLabel,
   actions,
+  media,
   children,
 }: ListCardProps) {
   const tc = useTranslations("common");
@@ -308,6 +314,7 @@ export function ListCard({
           "hover:border-primary/40 focus-visible:ring-ring cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none",
       )}
     >
+      {media}
       <CardHeader className="gap-0 px-3.5 py-3">
         {/* min-w-0 ต้องมีทั้งตัวนี้และตัว title — CardHeader เป็น grid ที่คอลัมน์
             กว้างตาม min-content ของลูก ถ้าแถวนี้ไม่ยอมยุบ ชื่อยาว ๆ จะดันทั้งแถว
