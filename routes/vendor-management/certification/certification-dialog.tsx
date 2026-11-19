@@ -5,6 +5,7 @@ import { StatusSwitch } from "@/components/ui/status-switch";
 import { Field, FieldInput, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { ConfigEntityDialog } from "@/components/templates/config-entity-dialog";
+import { DocAuditLine } from "@/components/share/doc-audit-line";
 import {
   useCreateCertification,
   useUpdateCertification,
@@ -123,6 +124,16 @@ export function CertificationDialog({
               />
             )}
           />
+
+          {/* ตาราง audit (สร้างโดย/แก้ไขล่าสุด + rev.) ทรงเดียวกับการ์ดหัวเอกสาร PR / Price List
+              ชิดขวาท้ายฟอร์ม · เฉพาะรายการที่มีอยู่แล้ว — ตอนเพิ่มใหม่ไม่มี audit (คืน null เอง) */}
+          {certification && (
+            <DocAuditLine
+              audit={certification.audit}
+              docVersion={certification.doc_version}
+              className="ms-auto"
+            />
+          )}
         </>
       )}
     </ConfigEntityDialog>
