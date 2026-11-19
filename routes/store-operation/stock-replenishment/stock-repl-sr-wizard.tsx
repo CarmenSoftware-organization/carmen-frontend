@@ -101,10 +101,19 @@ export function StockReplSrWizard({
     setRemoved((prev) => new Set(prev).add(product.id));
   }, []);
 
-  const tableRows = activeProducts.map((product) => ({
-    product,
-    qty: qtyOf(product),
-  }));
+  // `data` ต้อง identity คงที่ — ไฟล์นี้ปิด React Compiler ไว้ ไม่มีใครจำให้ ถ้าส่ง array
+  // ใหม่ทุก render getCoreRowModel จะเรียก `_autoResetPageIndex` → setState pagination
+  // (object ใหม่เสมอ) → render ใหม่ → array ใหม่ วนไม่จบ หน้าค้างทั้งแท็บโดยไม่มี error
+  const tableRows = useMemo(
+    () =>
+      products
+        .filter((p) => !removed.has(p.id))
+        .map((product) => ({
+          product,
+          qty: qtys.get(product.id) ?? product.reorder_qty,
+        })),
+    [products, removed, qtys],
+  );
   type SrTableRow = (typeof tableRows)[number];
 
   const columns = useMemo<ColumnDef<SrTableRow>[]>(
