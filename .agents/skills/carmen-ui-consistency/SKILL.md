@@ -25,9 +25,9 @@ When a supplied mockup or specification introduces a new workflow, preserve its 
 
 ## Required workflow
 
-Read `docs/DESIGN.md` first. For layout work, read the matching section of
-`.agents/skills/carmen-blue-ui-design/values.md` (Forms, Lists, Landing pages,
-Tables, or Bars); these are maintained recipes, not a second design system.
+Read `docs/DESIGN.md` first. For layout work, read the matching recipe file in
+`.agents/skills/carmen-blue-ui-design/` (`forms.md`, `lists.md`, `landing.md`,
+`tables.md`, or `bars.md`); these are maintained recipes, not a second design system.
 Read [current-conventions.md](current-conventions.md) for the current shared
 contracts and module-specific exceptions. Use the supported browser viewport
 capability for responsive checks; old iframe/DOM-injection scripts in historical
