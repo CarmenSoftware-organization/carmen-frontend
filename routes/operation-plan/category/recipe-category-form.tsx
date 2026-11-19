@@ -21,7 +21,6 @@ import {
   type RecipeCategoryFormValues,
 } from "./recipe-category-form-schema";
 import { FormPageShell } from "@/components/share/form-page-shell";
-import { SECTION_PAIR } from "@/components/share/compact-section";
 import { RecipeCategoryToolbar } from "./recipe-category-toolbar";
 import { RecipeCategoryGeneralFields } from "./recipe-category-general-fields";
 import { RecipeCategoryPricingFields } from "./recipe-category-pricing-fields";
@@ -118,33 +117,34 @@ export function RecipeCategoryForm({ category }: RecipeCategoryFormProps) {
           onDelete={category ? () => setShowDelete(true) : undefined}
           activityId={category?.id}
           onComment={category ? () => setShowComment(true) : undefined}
+          isActive={category?.is_active}
+          audit={category?.audit}
+          docVersion={category?.doc_version}
+          generalFields={
+            <RecipeCategoryGeneralFields
+              form={form}
+              isDisabled={isDisabled}
+              isView={f.isView}
+              excludeIds={excludeIds}
+              onParentChange={handleParentChange}
+              parentName={category?.parent?.name}
+            />
+          }
         />
       }
     >
       <form
         id="recipe-category-form"
-        className={SECTION_PAIR}
         onSubmit={form.handleSubmit(onSubmit, () =>
           scrollToFirstInvalidField(),
         )}
       >
-        <RecipeCategoryGeneralFields
+        {/* General ย้ายเข้าการ์ดหัวแล้ว — Cost & Margin เป็นหมวดเดียวของตัวฟอร์ม */}
+        <RecipeCategoryPricingFields
           form={form}
           isDisabled={isDisabled}
           isView={f.isView}
-          excludeIds={excludeIds}
-          onParentChange={handleParentChange}
-          parentName={category?.parent?.name}
         />
-        {/* คู่นี้อยู่บนสุดของฟอร์ม: General เป็น first (ไม่มี mt-5) Pricing ต้องตัด mt-5
-            ตอนวางเคียงกัน ไม่งั้นการ์ดขวาต่ำกว่าซ้าย 20px */}
-        <div className="min-[1700px]:[&>section]:mt-0">
-          <RecipeCategoryPricingFields
-            form={form}
-            isDisabled={isDisabled}
-            isView={f.isView}
-          />
-        </div>
       </form>
 
       {category && (

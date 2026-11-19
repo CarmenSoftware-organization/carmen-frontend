@@ -54,7 +54,7 @@ export function RecipeCategoryPricingFields({
   );
 
   return (
-    <CompactSection title={t("pricingTargets")}>
+    <CompactSection first title={t("pricingTargets")}>
       {/* คำอธิบายยาวสองประโยค — อยู่ในการ์ด ไม่ใช่บนบรรทัดหัวข้อ เพราะหมวดนี้วางคู่กับ
           General บนจอกว้าง ข้อความห่อบรรทัดแล้วหัวข้อสองฝั่งไม่เสมอกัน */}
       <p className="text-muted-foreground mb-3 text-xs">

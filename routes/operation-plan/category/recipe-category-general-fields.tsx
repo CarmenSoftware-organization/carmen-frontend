@@ -1,4 +1,4 @@
-import { Controller, type UseFormReturn } from "react-hook-form";
+import { Controller, useFormState, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import {
   Field,
@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { LookupRecipeCategory } from "@/components/lookup/lookup-recipe-category";
-import { CompactSection, FieldGrid } from "@/components/share/compact-section";
+import { FieldGrid } from "@/components/share/compact-section";
 import { SettingField } from "@/components/share/setting-field";
 import type { RecipeCategoryLookup } from "@/types/lookup";
 import type { RecipeCategoryFormValues } from "./recipe-category-form-schema";
@@ -35,25 +35,26 @@ export function RecipeCategoryGeneralFields({
 }: RecipeCategoryGeneralFieldsProps) {
   const t = useTranslations("operationPlan.recipeCategory");
   const tfl = useTranslations("field");
-  const tf = useTranslations("form");
-  const errors = form.formState.errors;
+  // อ่าน error ผ่าน useFormState ในคอมโพเนนต์นี้เอง — ตัวนี้ถูกส่งเป็น ribbon ของการ์ดหัว
+  // React Compiler memo element ที่ props คงที่ไว้ อ่าน form.formState.errors จาก prop
+  // แล้วกด Save ค่าว่าง ช่องจะไม่ขึ้นแดง (บั๊กเดียวกับหัวใบ IA)
+  const { errors } = useFormState({ control: form.control });
 
+  // ribbon ของการ์ดหัว (ทรงหัว PR) — ไม่มีการ์ด General แยกแล้ว
   return (
-    <CompactSection
-      first
-      title={tf("generalInfo")}
-      description={t("generalInfoDesc")}
-    >
+    <>
       {isView ? (
-        <FieldGrid>
-          <SettingField label={tfl("code")} value={form.getValues("code")} />
-          <SettingField label={tfl("name")} value={form.getValues("name")} />
+        // รหัสกับชื่อไม่แสดง — แถวหัวมีทั้งสองอย่างเป็นตัวเอกอยู่แล้ว · dense ทรงหัว PR
+        <FieldGrid dense>
           <SettingField label={tfl("parentCategory")} value={parentName} />
-          <SettingField
-            label={tfl("description")}
-            value={form.getValues("description")}
-            fullWidth
-          />
+          {/* data-wide = เต็มแถวบนมือถือ · ตั้งแต่ @md เหลือช่องเดียว ไม่งั้นตกแถวสอง
+              เพราะตาราง audit กินที่ขวาของแถบ */}
+          <div data-wide="" className="min-w-0 @md:col-span-1!">
+            <SettingField
+              label={tfl("description")}
+              value={form.getValues("description")}
+            />
+          </div>
         </FieldGrid>
       ) : (
         <FieldGrid>
@@ -109,7 +110,8 @@ export function RecipeCategoryGeneralFields({
             />
             <FieldDescription>{t("parentCategoryDesc")}</FieldDescription>
           </Field>
-          <Field className="@md:col-span-2">
+          {/* ช่องเดียว — กล่อง 2 คอลัมน์ (iPad) วางข้าง Parent ไม่เหลือช่องว่างขวา */}
+          <Field>
             <FieldLabel htmlFor="rc-description">
               {tfl("description")}
             </FieldLabel>
@@ -124,6 +126,6 @@ export function RecipeCategoryGeneralFields({
           </Field>
         </FieldGrid>
       )}
-    </CompactSection>
+    </>
   );
 }

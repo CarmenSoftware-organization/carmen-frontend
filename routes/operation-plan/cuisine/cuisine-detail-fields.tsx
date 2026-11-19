@@ -60,6 +60,7 @@ export function CuisineDetailFields({
     const info = (v.info ?? []).filter((r) => r.key.trim());
     return (
       <CompactSection
+        first
         title={t("cuisineDetails")}
         description={t("cuisineDetailsDesc")}
       >
@@ -94,6 +95,7 @@ export function CuisineDetailFields({
 
   return (
     <CompactSection
+      first
       title={t("cuisineDetails")}
       description={t("cuisineDetailsDesc")}
     >
