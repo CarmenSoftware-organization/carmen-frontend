@@ -4,6 +4,179 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.8.0] - 2026-11-19
+
+### Added
+- **recipe:** ตารางเลือกคอลัมน์ตามกล่อง แยกคอลัมน์ Lifecycle และการ์ดแบบภาพนำ (#700) — Thammanoon Semapru `a0409b5b`
+- **procurement:** สกุลเงินหัวเอกสารแสดง รหัส | เรต ในบรรทัดเดียว (#685) — Thammanoon Semapru `811f2adf`
+- **procurement:** ช่องหัวเอกสาร PO โหมดดูเป็นข้อความแบบ PR (#684) — Thammanoon Semapru `e00d52b7`
+- **procurement:** รายการสินค้า PR Template เป็นการ์ดบนมือถือ/tablet (#683) — Thammanoon Semapru `cb19cfa3`
+- **procurement:** หัวเอกสาร PR Template เป็นการ์ดแบบ PR (#683) — Thammanoon Semapru `c533f86e`
+- **procurement:** ย้ายเลขรุ่น (rev.) เข้าตาราง audit + a11y เมนูโปรไฟล์ (#682) — Thammanoon Semapru `866fb078`
+- **procurement:** ย้ายผู้สร้าง/ผู้แก้ล่าสุดเป็นตารางในการ์ดหัวเอกสาร PR, PO, GRN, CN, SR (#681) — Thammanoon Semapru `e6318bd0`
+- **procurement:** บรรทัดผู้สร้าง/ผู้แก้ล่าสุดในแถบท้ายของ PO, GRN, CN, SR (#681) — Thammanoon Semapru `b1351fcb`
+- **purchase-request:** ย้ายผู้สร้าง/ผู้แก้ล่าสุดไปไว้บรรทัดล่างของแถบท้ายหน้า (#681) — Thammanoon Semapru `39eb77f9`
+- **purchase-request:** การ์ดผู้สร้าง/ผู้แก้ล่าสุดท้ายหน้า PR detail (#678) — Thammanoon Semapru `68b3226c`
+- **table:** add activity mapping for row identification — llHorizonll `b4534790`
+- **payment:** enhance currency guidance and validation in payment forms — llHorizonll `b227e62b`
+- **doc:** รายการ GRN/PO/SR โหมดดูบนมือถือ/tablet เป็นการ์ดแถวละใบ (กล่องแคบกว่า 900px) (#672) — Thammanoon Semapru `e567cd07`
+- **cn:** รายการ CN โหมดดูบนมือถือ/tablet เป็นการ์ดแถวละใบ (กล่องแคบกว่า 900px) (#672) — Thammanoon Semapru `0eeda7dc`
+- **doc:** หัวเอกสาร PO/GRN/CN/SR อยู่ในการ์ดมีพื้นหลังเหมือน PR (#672) — Thammanoon Semapru `27b35bed`
+- **pr:** หัวเอกสาร PR อยู่ในการ์ดมีพื้นหลัง แทนเส้นคั่นใต้หัว (#672) — Thammanoon Semapru `e0e5cade`
+- **list:** คอลัมน์ # ในตารางรายการที่ยังไม่มี (#671) — Thammanoon Semapru `3494fc44`
+- **list:** เลขลำดับบนการ์ดที่เขียนเอง (#671) — Thammanoon Semapru `a48cfb78`
+- **list:** เลขลำดับบนการ์ดหน้าเอกสาร (#671) — Thammanoon Semapru `d6bb9a00`
+- **list:** เลขลำดับบนการ์ดหน้า config (#671) — Thammanoon Semapru `5a308f0f`
+- **list:** ฟังก์ชันกลาง rowNumber + เลขลำดับบน ListCard (#671) — Thammanoon Semapru `511baad7`
+- **category:** แผงรายละเอียดข้างต้นไม้บนจอกว้าง (Full HD / 4K) (#669) — Thammanoon Semapru `bd92346e`
+- **cn:** หน้า CN list แสดง GRN No, GRN Date, Invoice No, Invoice Date (#668) — Thammanoon Semapru `1d8a1bbf`
+- integrate accounting master components and update payment handling — llHorizonll `5ec1f8c1`
+- **dashboard:** กริด widget 8/4/2/1 ใบ KPI ต่อแถวตามความกว้างกล่อง (4K/FHD+HD/tablet/mobile) (#662) — Thammanoon Semapru `23612c48`
+- **navbar:** แถบบนบรรทัดเดียวทุกขนาดจอ เลิกซ่อนปุ่มหลัง ⋮ บนมือถือ (#660) — Thammanoon Semapru `1947dcaa`
+- **report:** หน้า landing รายงานแบบเดียวกับ System Admin ตัวเลขจาก API (#647) — Thammanoon Semapru `adbafba2`
+- **coam:** จัดกลุ่มแถวที่ซ้ำ + เปลี่ยนตารางเป็น lazy load (#625) — Thammanoon Semapru `5c415422`
+- **coam:** กดรหัส cost center / บัญชีในตารางแล้วเปิดเมนูแก้ไข (#625) — Thammanoon Semapru `f4f76ef2`
+- **recipe:** หน้าดูสูตรแบบหน้าครัวสำหรับแท็บเล็ต + แถบเลขขั้นลอยก้นการ์ด (#621) — Khafang `1f60eeaf`
+- **recipe:** จัดหน้าดูสูตรใหม่โดยคิดจาก iPad เป็นหลัก — Khafang `b14e9cce`
+- **dimension:** กรอกค่า dimension ตามชนิด (Text/Number/Date/Boolean) ทุกเอกสาร — Thammanoon Semapru `f5dd3edb`
+- **jv:** แก้บรรทัดและ dimension ของ JV ฉบับร่างได้ (ส่ง details.replace) — Thammanoon Semapru `505277ba`
+- **ap:** แสดง dimension ของบรรทัด AP ตามกฎผังบัญชีเหมือน AR/JV (#616) — Thammanoon Semapru `8ab3fbf6`
+- **dimension:** ซ่อน dimension รายบรรทัดด้วยสวิตช์ LINE_DIMENSIONS_ENABLED (ค่าเริ่มต้นปิด) (#616) — Thammanoon Semapru `db78a2c5`
+- **store-requisition:** เลือก dimension ต่อบรรทัดใน SR/transfer (#613) — Thammanoon Semapru `6d32d4f6`
+- **inventory-adjustment:** เลือก dimension ต่อบรรทัดใน stock-in/stock-out (#613) — Thammanoon Semapru `8edf93b4`
+- **dimension:** LineDimensionPopover ปุ่มเปิดเลือก dimension ต่อบรรทัด (#613) — Thammanoon Semapru `0c2f3291`
+- **procurement:** เลือก dimension ต่อบรรทัด PR / PO / GRN (#611) — Thammanoon Semapru `a769a215`
+- **recipe:** หน้าดูสูตร — ถอดลิสต์ "ขั้นตอนทั้งหมด" ด้านล่าง (ใช้ปุ่มเลขเลือกขั้นแทนแล้ว) (#609) — Khafang `d8e6cc93`
+- **recipe:** หน้าดูสูตร — วิดีโอย้ายไปช่องหลังรูปสุดท้าย · จอกว้างขั้นตอนอยู่ซ้าย ข้อมูลสูตรอยู่ขวา (#609) — Khafang `2adac04b`
+- **recipe:** หน้าดูสูตร — ปุ่มก่อนหน้า/ถัดไปเป็นวงกลมเลขขั้น กดข้ามไปขั้นไหนก็ได้ แบบเลขหน้า Google (#609) — Khafang `80f30863`
+- **recipe:** หน้าดูสูตร — วิดีโอย้ายไปอยู่ในแกลเลอรีรูปเมนูเป็นช่องแรก แบบหน้าสินค้า Shopee (#608) — Khafang `b0dcb0b3`
+- **recipe:** ปุ่ม Recalculate → Update price ทับต้นทุนวัตถุดิบด้วยราคาจากใบราคา (ไม่มี = 0) (#607) — Khafang `a991f3fa`
+- **jv-prefix:** ใช้ ListToolbar พร้อม saved view และตัวกรองสถานะเหมือนหน้า Dimension (#605) — Thammanoon Semapru `e9cb5ef3`
+- **dimension:** ใช้ ListToolbar พร้อม saved view และตัวกรองสถานะเหมือนหน้าอื่น (#605) — Thammanoon Semapru `69f1672b`
+- remove mock data for AP master and implement live CRUD operations — llHorizonll `5b46bd5f`
+- enhance AR invoice and contract handling with typed dimensions — llHorizonll `65e32501`
+- update Thai translations and clean up accounting document detail — llHorizonll `7c74eabf`
+
+### Fixed
+- **equipment:** หัวหน้ารายละเอียดเป็นการ์ดแบบหัวเอกสาร PR และตาราง list เลือกคอลัมน์ตามกล่อง (#704) — Thammanoon Semapru `68497daf`
+- **operation-plan:** หัวหน้ารายละเอียด Recipe Category และ Cuisine Type เป็นการ์ดแบบหัวเอกสาร PR (#702) — Thammanoon Semapru `8abcda9c`
+- **recipe-category:** คอลัมน์ Code ไม่หักบรรทัดที่ iPad และ Name รับความกว้างที่เหลือ (#701) — Thammanoon Semapru `48e55a81`
+- **inventory-adjustment:** ช่องหัวใบอ่าน error ด้วย useFormState — อยู่ใน ribbon แล้ว React Compiler memo ทำให้ไม่ขึ้นแดง (#699) — Thammanoon Semapru `263580d0`
+- **inventory-adjustment:** ตาราง list เลือกคอลัมน์ตามกล่อง หัวเอกสารเป็นการ์ดแบบ PR และรายการบนมือถือเป็นการ์ด (#699) — Thammanoon Semapru `60172993`
+- **stock-replenishment:** dialog สร้าง PR บนมือถือเป็นการ์ดแถวละใบ และเลื่อนได้ทั้ง dialog (#698) — Thammanoon Semapru `46587647`
+- **stock-replenishment:** wizard สร้าง PR/SR ค้างทั้งแท็บ — memo ข้อมูลแถวของตาราง (#697) — Thammanoon Semapru `d94a4848`
+- **price-list:** Description ในการ์ดหัวกินช่องเดียวตั้งแต่ @md ไม่ตกแถวสามเมื่อตาราง audit ขึ้น (#696) — Thammanoon Semapru `ecacea6a`
+- **certification:** dialog แก้ใบรับรองแสดงตาราง audit (สร้างโดย/แก้ไขล่าสุด + rev.) ทรงเดียวกับการ์ดหัวเอกสาร (#695) — Thammanoon Semapru `65fe1ed9`
+- **request-price-list:** หัวหน้ารายละเอียด Request for Pricing เป็นการ์ดแบบหัวเอกสาร PR รวมช่อง General ไว้ในการ์ดหัว (#694) — Thammanoon Semapru `70be9b6e`
+- **price-list-template:** หัวหน้ารายละเอียด Price List Template เป็นการ์ดแบบหัวเอกสาร PR รวมช่อง General ไว้ในการ์ดหัว (#693) — Thammanoon Semapru `d693f7f1`
+- **price-list:** หัวหน้ารายละเอียด Price List เป็นการ์ดแบบหัวเอกสาร PR รวมช่อง General ไว้ในการ์ดหัว (#692) — Thammanoon Semapru `df61fadc`
+- **vendor:** การ์ดที่อยู่กับผู้ติดต่อที่วางคู่กันสูงเท่ากัน (#691) — Thammanoon Semapru `d0f94b90`
+- **vendor:** โหมดแก้ Status บรรทัดเดียว เรียงช่องลงตัว และหมวดว่างบรรทัดเดียว (#690) — Thammanoon Semapru `33133c0c`
+- **vendor:** หมวดว่างเหลือบรรทัดเดียว และที่อยู่คู่ผู้ติดต่อตั้งแต่ HD ในโหมดดู (#690) — Thammanoon Semapru `71737624`
+- **vendor:** ย้ายตาราง audit ไปล่างสุดของการ์ดหัว ชิดขวา (#690) — Thammanoon Semapru `598d5153`
+- **vendor:** หัวหน้ารายละเอียดผู้ขายกระชับขึ้นที่ HD (#690) — Thammanoon Semapru `c9c87062`
+- **vendor:** หัวหน้ารายละเอียดผู้ขายเป็นการ์ดแบบหัวเอกสาร PR รวมช่อง General ไว้ในการ์ดหัว (#690) — Thammanoon Semapru `8a8885c0`
+- **product:** Save ไม่ค้างหลังแก้ To Qty แล้วคืนค่าเดิม (#689) — Thammanoon Semapru `c2e7299e`
+- **product:** โหมดแก้แท็บหน่วย/คลังบนกล่องแคบเป็นการ์ดกรอกทีละแถว แทนตารางเลื่อนแนวนอน (#689) — Thammanoon Semapru `2a538cc5`
+- **product:** เปลี่ยนชื่อแท็บ Location Assignment เป็น Location (ไทย: คลัง) (#689) — Thammanoon Semapru `d4f945b3`
+- **product:** แถบแท็บหน้าสินค้าบนมือถือเลื่อนในแถบเอง ไม่ให้ทั้งหน้าเลื่อนซ้าย-ขวา (#689) — Thammanoon Semapru `1ca1fd65`
+- **product:** หัวหน้ารายละเอียดสินค้าเป็นการ์ดแบบ PR พร้อมตาราง audit (#689) — Thammanoon Semapru `32571436`
+- **procurement:** แท็บ Stock Movement ของใบลดหนี้บนมือถือ/แท็บเล็ตเป็นการ์ด (#688) — Thammanoon Semapru `73e8a355`
+- **procurement:** คำอธิบายบรรทัด JV บนมือถือเป็นแถวเต็มความกว้าง (#687) — Thammanoon Semapru `ab8af74b`
+- **procurement:** ขีดว่างในตาราง Extra Cost ใช้สีจางเต็ม ไม่ลดความทึบตัวอักษร (#686) — Thammanoon Semapru `2dcbd3df`
+- **procurement:** แท็บ Journal Voucher และ Extra Cost โหมดแก้ของ GRN บนมือถือ (#686) — Thammanoon Semapru `1454c74c`
+- **procurement:** แท็บ Stock Movement ของ GRN บนมือถือเป็นการ์ด (#686) — Thammanoon Semapru `77f5211d`
+- **procurement:** หน้า GRN detail บนมือถือและแท็บเล็ต (#686) — Thammanoon Semapru `1d114fa2`
+- **dashboard:** การ์ด widget บอกตรงกับที่คำนวณจริง — คำบรรยายบรรทัดเทียบ, สกุลหลักของ BU, error (#680) — Khafang `0d478adc`
+- **profile:** หน้าตั้งค่าโปรไฟล์บนมือถือ — ช่องชื่อแถวละสอง และ MCP tokens ไม่ซ้อนการ์ด (#677) — Thammanoon Semapru `7536be0b`
+- **profile:** จัดหน้าโปรไฟล์ทุกขนาดจอ — ไทล์โลโก้/avatar ของ BU และการ์ด BU เป็นคอลัมน์บนจอกว้าง (#675) — Thammanoon Semapru `6ef21588`
+- **doc:** โครงตอนโหลดของช่องหัวใบแบบข้อความใช้ FieldGrid dense ตรงกับหน้าจริงบนมือถือ (#673) — Thammanoon Semapru `e740037c`
+- **grn:** ล้างคำอธิบาย/หมายเหตุของ GRN ให้ว่างแล้วบันทึกได้ (#673) — Thammanoon Semapru `d0edc468`
+- **pr:** การ์ดรายการ PR ไม่โชว์ป้าย 'เลือกทั้งหมด' ในโหมดดู และแถวกางเลื่อนแนวนอนในการ์ดได้ (#673) — Thammanoon Semapru `3812e710`
+- **cn:** ตารางรายการ CN โหมดดูบนมือถือ/tablet เลื่อนแนวนอนแทนบีบคอลัมน์จนหัวทับกัน (#672) — Thammanoon Semapru `94a90034`
+- **doc:** หัวเอกสารบนมือถือ ช่องโหมดดูแบ่ง 2 คอลัมน์ และเอาเส้นคั่นป้ายสถานะออกเมื่อหัวแคบ (#672) — Thammanoon Semapru `60d14795`
+- **footer:** ยอดรวม Subtotal–Grand Total ชิดขวาคู่กับปุ่ม ตัวคั่นย้ายไปฝั่งขวาไม่ค้างหัวบรรทัด (#672) — Thammanoon Semapru `5da40da9`
+- **footer:** ปุ่ม action ในแถบยอดรวมชิดขวาเสมอ แม้ตกบรรทัดใหม่บนจอแคบ (#672) — Thammanoon Semapru `b0289cff`
+- **pr:** รายการสินค้าในหน้า PR เป็นการ์ดแถวละใบเมื่อกล่องแคบกว่า 900px (#672) — Thammanoon Semapru `2ab996e2`
+- **list:** การ์ด Report นับต่อข้ามหน้า + ตาราง Document ไม่อ่านหน้าจาก URL (#671) — Thammanoon Semapru `d5933556`
+- **list:** ตารางเอกสาร/คลัง/My Approval/Document/Schedules แสดง # ตลอด ย้ายคอลัมน์ลงบรรทัดรองเมื่อกล่องแคบ (#671) — Thammanoon Semapru `022f23d7`
+- **list:** ตาราง Price List / Template แสดง # ตลอดทุกความกว้าง (#671) — Thammanoon Semapru `3bbaa59c`
+- **list:** ตารางผู้ขาย/ใบรับรอง/RFP/PRT แสดง # ตลอดทุกความกว้าง (#671) — Thammanoon Semapru `520e3493`
+- **product:** ตารางและการ์ดรายการสินค้าเลือกคอลัมน์ตามความกว้างกล่อง (#670) — Thammanoon Semapru `cac3a021`
+- **grn,cn:** การ์ดมือถือแบบกระชับ + คอลัมน์ Invoice Date ของ GRN + ผู้รับ/ผู้สร้างกว้างขึ้นในกล่องกว้าง (#668) — Thammanoon Semapru `95be2580`
+- **prt:** การ์ดรายการ PR Template บนมือถือแบบกระชับ (#667) — Thammanoon Semapru `0755ca20`
+- **po:** ตาราง PO กล่องกว้างมาก ผู้จัดซื้อกว้างขึ้น ชื่อไม่ถูกตัด (#666) — Thammanoon Semapru `009da6a4`
+- **po:** การ์ดรายการ PO บนมือถือแบบกระชับ (#664) — Thammanoon Semapru `d6a07ac6`
+- **pr:** ตาราง PR ยอดเงินอยู่ก่อนแผนก + ผู้ขอกว้างขึ้นในกล่องกว้างมาก (#664) — Thammanoon Semapru `3d589422`
+- **list-toolbar:** แถบแคบ ปุ่มขอบเขตขึ้นบรรทัดแรก + ตาราง PR ยุบวันที่ก่อนซ่อนผู้ขอ (#664) — Thammanoon Semapru `6802a125`
+- **pr:** การ์ดรายการ PR บนมือถือแบบกระชับ + ปุ่มขอบเขตเห็นบนมือถือ (#664) — Thammanoon Semapru `6231d974`
+- **my-approval:** แถบชิปกรอง + ช่องค้นบนมือถือกระชับ (#663) — Thammanoon Semapru `c4a603bb`
+- **dashboard:** skeleton ใช้ gridClasses() ตัวเดียวกับการ์ดจริง (#662) — Thammanoon Semapru `1ebc7ffd`
+- **layout:** ลดขอบข้างเนื้อหาบนมือถือจาก 28px เหลือ 12px (#661) — Thammanoon Semapru `2936d5ca`
+- **sidebar:** กดลิงก์ในเมนูซ้ายบนมือถือแล้วปิดแผ่นเมนู (#661) — Thammanoon Semapru `73b4cf96`
+- **ui:** เพิ่ม tw-animate-css ให้ Sheet/Dialog/Popover/Dropdown มี transition (#661) — Thammanoon Semapru `54b45c39`
+- **navbar:** ตัวเปิดแอปพอดีจอมือถือ (#661) — Thammanoon Semapru `2558ea65`
+- **navbar:** แถบแคบกว่า 320px ซ่อนรหัส BU ให้ชื่อหน้ามีที่พอ (#661) — Thammanoon Semapru `34480a67`
+- **notification:** ชื่อเรื่องในแผง 12px + contrast AA ใน dark + skeleton ตรงกับแถวจริง (#661) — Thammanoon Semapru `ed7688cb`
+- **notification:** แถวในแผงแจ้งเตือนแน่นขึ้น — ชื่อเรื่อง 2 บรรทัด + BU · เวลา · ข้อความบรรทัดเดียว (#661) — Thammanoon Semapru `3eae8cba`
+- **notification:** แผงแจ้งเตือนพอดีจอมือถือ พื้นทึบ แถวแบน ปุ่มอ่านแล้วกดได้บนจอสัมผัส (#661) — Thammanoon Semapru `493679df`
+- **equipment:** หน้าอุปกรณ์เต็มความกว้าง โหมดดูเป็นข้อความ และวางหมวดเป็นคู่บนจอกว้าง (#659) — Thammanoon Semapru `c20b0c6f`
+- **cuisine:** หน้า Cuisine Type เต็มความกว้าง โหมดดูเป็นข้อความ และวางหมวดเป็นคู่บนจอกว้าง (#658) — Thammanoon Semapru `8a05df25`
+- **recipe-category:** หน้าหมวดสูตรเต็มความกว้าง โหมดดูเป็นข้อความ และวางสองหมวดคู่กันบนจอกว้าง (#657) — Thammanoon Semapru `0a0ee255`
+- **sr:** หัวเอกสาร SR โหมดดูเป็นข้อความ และคอลัมน์ตามความกว้างกล่อง (#656) — Thammanoon Semapru `b393e60a`
+- **vendor-mgmt:** หน้า Price List Template และ Request for Pricing เต็มความกว้าง กะทัดรัด (#655) — Thammanoon Semapru `73556698`
+- **cn:** หัวเอกสารใบลดหนี้โหมดดูเป็นข้อความ และคอลัมน์ตามความกว้างกล่อง (#654) — Thammanoon Semapru `8b4ac82c`
+- **grn:** หัวเอกสาร GRN โหมดดูเป็นข้อความ และคอลัมน์ตามความกว้างกล่อง (#653) — Thammanoon Semapru `b175d491`
+- **prt:** หน้า PR Template เต็มความกว้าง ข้อมูลทั่วไปเป็น FieldGrid และตารางรายการเลือกขนาดคอลัมน์ตามความกว้างกล่อง (#652) — Thammanoon Semapru `4d8f7a77`
+- **pr:** หัวเอกสาร PR โหมดดูเป็นข้อความ และโครงตอนโหลดของเอกสารตรงกับหน้าจริง (#651) — Thammanoon Semapru `935af256`
+- **report:** ตาราง Report History คอลัมน์สั้นกว้างคงที่ ชื่อรายงานยืด การ์ดเลือกคอลัมน์จากความกว้างกล่อง (#650) — Thammanoon Semapru `d9037735`
+- **report:** ตาราง Report Schedules เลือกคอลัมน์ตามความกว้างกล่อง ไม่บีบข้อความจนโดนตัด (#649) — Thammanoon Semapru `3d0d8a5d`
+- **report:** หน้า Report List ปุ่ม View/Filter ชิดช่องค้น คอลัมน์ Type กว้างคงที่ การ์ดเลือกคอลัมน์จากความกว้างกล่อง (#648) — Thammanoon Semapru `03af4df1`
+- **period-end:** ขอบซ้ายตรงกับหน้าอื่น + รางขั้นและประวัติเลือกเลย์เอาต์จากความกว้างการ์ด (#646) — Thammanoon Semapru `efa0254c`
+- **spot-check:** แถวสถานที่ไหลเป็นการ์ดตามความกว้างกล่อง + แถวเลือกเลย์เอาต์จากความกว้างตัวเอง (#645) — Thammanoon Semapru `309e1d6a`
+- **physical-count:** แถวสถานที่ไหลเป็นการ์ดตามความกว้างกล่อง แทนแถวยืดเต็มจอ (#644) — Thammanoon Semapru `676400e7`
+- **transaction:** สินค้ายืดรับที่เหลือ + เลือกขั้นตารางจากความกว้างกล่อง (รวมคอลัมน์ / เซลล์เดียว) (#643) — Thammanoon Semapru `88558749`
+- **wastage-reporting:** สินค้ายืดรับที่เหลือ + ซ่อนคอลัมน์รองตามความกว้างกล่องตาราง (#642) — Thammanoon Semapru `45710501`
+- **stock-replenishment:** สินค้ายืดรับที่เหลือ + เลือกขั้นตารางจากความกว้างกล่องแทนจอ (#641) — Thammanoon Semapru `50446240`
+- **certification:** คำอธิบายยืดรับที่เหลือ + ซ่อนคอลัมน์รองตามความกว้างกล่องตาราง (#640) — Thammanoon Semapru `37a6ee7a`
+- **price-list:** ชื่อยืดรับที่เหลือ + ซ่อนคอลัมน์รองตามความกว้างกล่องตาราง (#639) — Thammanoon Semapru `30a69b6b`
+- **request-price-list:** ชื่อยืดรับที่เหลือ + ซ่อนคอลัมน์รองตามความกว้างกล่องตาราง (#638) — Thammanoon Semapru `3abb65d9`
+- **price-list-template:** ชื่อยืดรับที่เหลือ + ซ่อนคอลัมน์รองตามความกว้างกล่องตาราง (#637) — Thammanoon Semapru `7fa88819`
+- **store-requisition:** เลือกคอลัมน์ตามความกว้างกล่องตาราง + From → To รับที่เหลือ (#636) — Thammanoon Semapru `830d50f4`
+- **list-toolbar:** ปุ่ม View/Filter ขึ้นบรรทัดใหม่เมื่อที่ไม่พอ แทนการล้นขอบ (#635) — Thammanoon Semapru `9c510378`
+- **credit-note:** เลือกคอลัมน์ตามความกว้างกล่องตาราง + ผู้ขายรับที่เหลือ (#634) — Thammanoon Semapru `27ad7f76`
+- **goods-receive-note:** เลือกคอลัมน์ตามความกว้างกล่องตาราง + ผู้ขายรับที่เหลือ (#633) — Thammanoon Semapru `fc838e25`
+- **purchase-order:** เลือกคอลัมน์ตามความกว้างกล่องตาราง + ผู้ขายรับที่เหลือ (#632) — Thammanoon Semapru `2a259bba`
+- **purchase-request-template:** คอลัมน์สั้นกว้างคงที่ คำอธิบายยืด + ซ่อนคอลัมน์รองตามความกว้างกล่องตาราง (#631) — Thammanoon Semapru `7a89434b`
+- **my-approval:** กล่องแคบแสดงเป็นการ์ดใบละเอกสารแทนตารางที่บีบคอลัมน์ (#630) — Thammanoon Semapru `c71b5b21`
+- **purchase-request:** เลือกคอลัมน์ตามความกว้างกล่องตาราง + แผนกรับที่เหลือ (#629) — Thammanoon Semapru `45ba9d3c`
+- **my-approval:** เลือกคอลัมน์ตามความกว้างกล่องตาราง + Details รับที่เหลือ (#628) — Thammanoon Semapru `6faedb46`
+- **config:** ขยายคอลัมน์ชื่อเป็น 320px ไม่ให้ชื่อยาวตัดบรรทัด (#627) — Thammanoon Semapru `18f0b487`
+- **shelf:** ให้ Description ขยายกินที่ว่างแทน Name + รหัสไม่ตัดบรรทัด (#626) — Thammanoon Semapru `74af1db3`
+- **coa:** ปุ่มบนหัวหน้า Chart of Accounts อยู่บรรทัดเดียวทุกขนาดจอ (#624) — Thammanoon Semapru `a901a969`
+- **cost-center:** ขยายคอลัมน์ชื่อเป็น 270px ไม่ให้ชื่อขึ้นสองบรรทัดแล้วโดนตัด (#623) — Thammanoon Semapru `0d340254`
+- **ui:** Progress ส่งค่าให้ Radix Root — แถบความคืบหน้ามี aria-valuenow (#621) — Khafang `fb120d08`
+- **jv:** บันทึกบรรทัดและ dimension ของ JV manual ที่แก้แล้วได้ — Thammanoon Semapru `a5c0a306`
+- **dimension:** schema ฟอร์มรับ null จากแถว dimension ตามชนิด — Thammanoon Semapru `3c9aa4c3`
+- **dimension:** โหมดดูของบัญชี AP master แสดงค่า dimension ตามชนิด — Thammanoon Semapru `806dc434`
+- **jv:** ส่งบรรทัดตอนแก้เฉพาะใบ manual กัน 409 กับใบจาก template — Thammanoon Semapru `008aef9d`
+- **jv:** ซ่อนแถว "All Dimensions: —" และปุ่ม dimension ในบรรทัดที่บัญชีไม่มี dimension ตามกฎผังบัญชี (#616) — Thammanoon Semapru `488b5bad`
+- **ap:** ค่า dimension ที่บันทึกไว้ยังเห็นได้ขณะบัญชีโหลด/โหลดพลาด/ถูกลบ (#616) — Thammanoon Semapru `fbd74e4b`
+- **ia,sr:** send fresh per-line doc_version on save to avoid 409 on second save (#614) — Thammanoon Semapru `7e704849`
+- **inventory-adjustment:** restoreStoredCost คืนต้นทุนเดิมเฉพาะ stock-out (#613) — Thammanoon Semapru `6e5e1275`
+- **procurement:** ใช้ received_price เป็นราคาเดิมของบรรทัด GRN (#611) — Thammanoon Semapru `2cbe44a6`
+- **procurement:** ลบ type ที่ไม่ได้ใช้ใน grn-form-schema (#611) — Thammanoon Semapru `f23e8cd3`
+- **procurement:** แก้ dimension ของ GRN ไม่คิดราคาใหม่ และล้างธง dirty หลังบันทึก (#611) — Thammanoon Semapru `6b838b7f`
+- **pr:** ผู้ขายล่าสุดแสดงข้างราคาล่าสุดในหน้าต่างเทียบราคา ไม่กรอกลงบรรทัด (#606) — Khafang `22b43166`
+- **dimension:** ตัวกรองสถานะอยู่ข้างช่องค้นหา และคอลัมน์ Data Type ใช้ชื่อสั้น (#605) — Thammanoon Semapru `c52a8520`
+
+### Changed
+- **landing:** ย้ายการ์ด หัวหน้า และตัวช่วยวาดเส้นของ landing ไป components/share/landing (#647) — Thammanoon Semapru `9add5cb1`
+- **dimension:** เปลี่ยนชื่อ gl_dimension เป็น dimension ทั้ง DB/Prisma/API — Thammanoon Semapru `725a6f1e`
+- **grn:** dimension ต่อบรรทัดย้ายจากแถว footer มาเป็นปุ่ม popover (#613) — Thammanoon Semapru `c6cfa8d5`
+- **dimension:** เรียก route dimension ใหม่และใช้สิทธิ์ configuration.dimension (#610) — Thammanoon Semapru `56c5fa87`
+- remove old COA dimension rules implementation and tests — llHorizonll `f9ed27f6`
+
 ## [2.7.0] - 2026-11-16
 
 ### Added

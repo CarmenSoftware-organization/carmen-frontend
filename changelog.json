@@ -1,7 +1,1176 @@
 {
-  "current": "2.7.0",
-  "generated_at": "2026-11-16T09:39:50.775Z",
+  "current": "2.8.0",
+  "generated_at": "2026-11-19T04:35:26.335Z",
   "versions": [
+    {
+      "version": "2.8.0",
+      "build": "2.8.0-build.20261119.2e5135cc",
+      "date": "2026-11-19",
+      "commit": "2e5135cc",
+      "changes": {
+        "added": [
+          {
+            "scope": "recipe",
+            "summary": "ตารางเลือกคอลัมน์ตามกล่อง แยกคอลัมน์ Lifecycle และการ์ดแบบภาพนำ",
+            "hash": "a0409b5b",
+            "author": "Thammanoon Semapru",
+            "pr": 700
+          },
+          {
+            "scope": "procurement",
+            "summary": "สกุลเงินหัวเอกสารแสดง รหัส | เรต ในบรรทัดเดียว",
+            "hash": "811f2adf",
+            "author": "Thammanoon Semapru",
+            "pr": 685
+          },
+          {
+            "scope": "procurement",
+            "summary": "ช่องหัวเอกสาร PO โหมดดูเป็นข้อความแบบ PR",
+            "hash": "e00d52b7",
+            "author": "Thammanoon Semapru",
+            "pr": 684
+          },
+          {
+            "scope": "procurement",
+            "summary": "รายการสินค้า PR Template เป็นการ์ดบนมือถือ/tablet",
+            "hash": "cb19cfa3",
+            "author": "Thammanoon Semapru",
+            "pr": 683
+          },
+          {
+            "scope": "procurement",
+            "summary": "หัวเอกสาร PR Template เป็นการ์ดแบบ PR",
+            "hash": "c533f86e",
+            "author": "Thammanoon Semapru",
+            "pr": 683
+          },
+          {
+            "scope": "procurement",
+            "summary": "ย้ายเลขรุ่น (rev.) เข้าตาราง audit + a11y เมนูโปรไฟล์",
+            "hash": "866fb078",
+            "author": "Thammanoon Semapru",
+            "pr": 682
+          },
+          {
+            "scope": "procurement",
+            "summary": "ย้ายผู้สร้าง/ผู้แก้ล่าสุดเป็นตารางในการ์ดหัวเอกสาร PR, PO, GRN, CN, SR",
+            "hash": "e6318bd0",
+            "author": "Thammanoon Semapru",
+            "pr": 681
+          },
+          {
+            "scope": "procurement",
+            "summary": "บรรทัดผู้สร้าง/ผู้แก้ล่าสุดในแถบท้ายของ PO, GRN, CN, SR",
+            "hash": "b1351fcb",
+            "author": "Thammanoon Semapru",
+            "pr": 681
+          },
+          {
+            "scope": "purchase-request",
+            "summary": "ย้ายผู้สร้าง/ผู้แก้ล่าสุดไปไว้บรรทัดล่างของแถบท้ายหน้า",
+            "hash": "39eb77f9",
+            "author": "Thammanoon Semapru",
+            "pr": 681
+          },
+          {
+            "scope": "purchase-request",
+            "summary": "การ์ดผู้สร้าง/ผู้แก้ล่าสุดท้ายหน้า PR detail",
+            "hash": "68b3226c",
+            "author": "Thammanoon Semapru",
+            "pr": 678
+          },
+          {
+            "scope": "table",
+            "summary": "add activity mapping for row identification",
+            "hash": "b4534790",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": "payment",
+            "summary": "enhance currency guidance and validation in payment forms",
+            "hash": "b227e62b",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": "doc",
+            "summary": "รายการ GRN/PO/SR โหมดดูบนมือถือ/tablet เป็นการ์ดแถวละใบ (กล่องแคบกว่า 900px)",
+            "hash": "e567cd07",
+            "author": "Thammanoon Semapru",
+            "pr": 672
+          },
+          {
+            "scope": "cn",
+            "summary": "รายการ CN โหมดดูบนมือถือ/tablet เป็นการ์ดแถวละใบ (กล่องแคบกว่า 900px)",
+            "hash": "0eeda7dc",
+            "author": "Thammanoon Semapru",
+            "pr": 672
+          },
+          {
+            "scope": "doc",
+            "summary": "หัวเอกสาร PO/GRN/CN/SR อยู่ในการ์ดมีพื้นหลังเหมือน PR",
+            "hash": "27b35bed",
+            "author": "Thammanoon Semapru",
+            "pr": 672
+          },
+          {
+            "scope": "pr",
+            "summary": "หัวเอกสาร PR อยู่ในการ์ดมีพื้นหลัง แทนเส้นคั่นใต้หัว",
+            "hash": "e0e5cade",
+            "author": "Thammanoon Semapru",
+            "pr": 672
+          },
+          {
+            "scope": "list",
+            "summary": "คอลัมน์ # ในตารางรายการที่ยังไม่มี",
+            "hash": "3494fc44",
+            "author": "Thammanoon Semapru",
+            "pr": 671
+          },
+          {
+            "scope": "list",
+            "summary": "เลขลำดับบนการ์ดที่เขียนเอง",
+            "hash": "a48cfb78",
+            "author": "Thammanoon Semapru",
+            "pr": 671
+          },
+          {
+            "scope": "list",
+            "summary": "เลขลำดับบนการ์ดหน้าเอกสาร",
+            "hash": "d6bb9a00",
+            "author": "Thammanoon Semapru",
+            "pr": 671
+          },
+          {
+            "scope": "list",
+            "summary": "เลขลำดับบนการ์ดหน้า config",
+            "hash": "5a308f0f",
+            "author": "Thammanoon Semapru",
+            "pr": 671
+          },
+          {
+            "scope": "list",
+            "summary": "ฟังก์ชันกลาง rowNumber + เลขลำดับบน ListCard",
+            "hash": "511baad7",
+            "author": "Thammanoon Semapru",
+            "pr": 671
+          },
+          {
+            "scope": "category",
+            "summary": "แผงรายละเอียดข้างต้นไม้บนจอกว้าง (Full HD / 4K)",
+            "hash": "bd92346e",
+            "author": "Thammanoon Semapru",
+            "pr": 669
+          },
+          {
+            "scope": "cn",
+            "summary": "หน้า CN list แสดง GRN No, GRN Date, Invoice No, Invoice Date",
+            "hash": "1d8a1bbf",
+            "author": "Thammanoon Semapru",
+            "pr": 668
+          },
+          {
+            "scope": null,
+            "summary": "integrate accounting master components and update payment handling",
+            "hash": "5ec1f8c1",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": "dashboard",
+            "summary": "กริด widget 8/4/2/1 ใบ KPI ต่อแถวตามความกว้างกล่อง (4K/FHD+HD/tablet/mobile)",
+            "hash": "23612c48",
+            "author": "Thammanoon Semapru",
+            "pr": 662
+          },
+          {
+            "scope": "navbar",
+            "summary": "แถบบนบรรทัดเดียวทุกขนาดจอ เลิกซ่อนปุ่มหลัง ⋮ บนมือถือ",
+            "hash": "1947dcaa",
+            "author": "Thammanoon Semapru",
+            "pr": 660
+          },
+          {
+            "scope": "report",
+            "summary": "หน้า landing รายงานแบบเดียวกับ System Admin ตัวเลขจาก API",
+            "hash": "adbafba2",
+            "author": "Thammanoon Semapru",
+            "pr": 647
+          },
+          {
+            "scope": "coam",
+            "summary": "จัดกลุ่มแถวที่ซ้ำ + เปลี่ยนตารางเป็น lazy load",
+            "hash": "5c415422",
+            "author": "Thammanoon Semapru",
+            "pr": 625
+          },
+          {
+            "scope": "coam",
+            "summary": "กดรหัส cost center / บัญชีในตารางแล้วเปิดเมนูแก้ไข",
+            "hash": "f4f76ef2",
+            "author": "Thammanoon Semapru",
+            "pr": 625
+          },
+          {
+            "scope": "recipe",
+            "summary": "หน้าดูสูตรแบบหน้าครัวสำหรับแท็บเล็ต + แถบเลขขั้นลอยก้นการ์ด",
+            "hash": "1f60eeaf",
+            "author": "Khafang",
+            "pr": 621
+          },
+          {
+            "scope": "recipe",
+            "summary": "จัดหน้าดูสูตรใหม่โดยคิดจาก iPad เป็นหลัก",
+            "hash": "b14e9cce",
+            "author": "Khafang",
+            "pr": null
+          },
+          {
+            "scope": "dimension",
+            "summary": "กรอกค่า dimension ตามชนิด (Text/Number/Date/Boolean) ทุกเอกสาร",
+            "hash": "f5dd3edb",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "jv",
+            "summary": "แก้บรรทัดและ dimension ของ JV ฉบับร่างได้ (ส่ง details.replace)",
+            "hash": "505277ba",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "ap",
+            "summary": "แสดง dimension ของบรรทัด AP ตามกฎผังบัญชีเหมือน AR/JV",
+            "hash": "8ab3fbf6",
+            "author": "Thammanoon Semapru",
+            "pr": 616
+          },
+          {
+            "scope": "dimension",
+            "summary": "ซ่อน dimension รายบรรทัดด้วยสวิตช์ LINE_DIMENSIONS_ENABLED (ค่าเริ่มต้นปิด)",
+            "hash": "db78a2c5",
+            "author": "Thammanoon Semapru",
+            "pr": 616
+          },
+          {
+            "scope": "store-requisition",
+            "summary": "เลือก dimension ต่อบรรทัดใน SR/transfer",
+            "hash": "6d32d4f6",
+            "author": "Thammanoon Semapru",
+            "pr": 613
+          },
+          {
+            "scope": "inventory-adjustment",
+            "summary": "เลือก dimension ต่อบรรทัดใน stock-in/stock-out",
+            "hash": "8edf93b4",
+            "author": "Thammanoon Semapru",
+            "pr": 613
+          },
+          {
+            "scope": "dimension",
+            "summary": "LineDimensionPopover ปุ่มเปิดเลือก dimension ต่อบรรทัด",
+            "hash": "0c2f3291",
+            "author": "Thammanoon Semapru",
+            "pr": 613
+          },
+          {
+            "scope": "procurement",
+            "summary": "เลือก dimension ต่อบรรทัด PR / PO / GRN",
+            "hash": "a769a215",
+            "author": "Thammanoon Semapru",
+            "pr": 611
+          },
+          {
+            "scope": "recipe",
+            "summary": "หน้าดูสูตร — ถอดลิสต์ \"ขั้นตอนทั้งหมด\" ด้านล่าง (ใช้ปุ่มเลขเลือกขั้นแทนแล้ว)",
+            "hash": "d8e6cc93",
+            "author": "Khafang",
+            "pr": 609
+          },
+          {
+            "scope": "recipe",
+            "summary": "หน้าดูสูตร — วิดีโอย้ายไปช่องหลังรูปสุดท้าย · จอกว้างขั้นตอนอยู่ซ้าย ข้อมูลสูตรอยู่ขวา",
+            "hash": "2adac04b",
+            "author": "Khafang",
+            "pr": 609
+          },
+          {
+            "scope": "recipe",
+            "summary": "หน้าดูสูตร — ปุ่มก่อนหน้า/ถัดไปเป็นวงกลมเลขขั้น กดข้ามไปขั้นไหนก็ได้ แบบเลขหน้า Google",
+            "hash": "80f30863",
+            "author": "Khafang",
+            "pr": 609
+          },
+          {
+            "scope": "recipe",
+            "summary": "หน้าดูสูตร — วิดีโอย้ายไปอยู่ในแกลเลอรีรูปเมนูเป็นช่องแรก แบบหน้าสินค้า Shopee",
+            "hash": "b0dcb0b3",
+            "author": "Khafang",
+            "pr": 608
+          },
+          {
+            "scope": "recipe",
+            "summary": "ปุ่ม Recalculate → Update price ทับต้นทุนวัตถุดิบด้วยราคาจากใบราคา (ไม่มี = 0)",
+            "hash": "a991f3fa",
+            "author": "Khafang",
+            "pr": 607
+          },
+          {
+            "scope": "jv-prefix",
+            "summary": "ใช้ ListToolbar พร้อม saved view และตัวกรองสถานะเหมือนหน้า Dimension",
+            "hash": "e9cb5ef3",
+            "author": "Thammanoon Semapru",
+            "pr": 605
+          },
+          {
+            "scope": "dimension",
+            "summary": "ใช้ ListToolbar พร้อม saved view และตัวกรองสถานะเหมือนหน้าอื่น",
+            "hash": "69f1672b",
+            "author": "Thammanoon Semapru",
+            "pr": 605
+          },
+          {
+            "scope": null,
+            "summary": "remove mock data for AP master and implement live CRUD operations",
+            "hash": "5b46bd5f",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "enhance AR invoice and contract handling with typed dimensions",
+            "hash": "65e32501",
+            "author": "llHorizonll",
+            "pr": null
+          },
+          {
+            "scope": null,
+            "summary": "update Thai translations and clean up accounting document detail",
+            "hash": "7c74eabf",
+            "author": "llHorizonll",
+            "pr": null
+          }
+        ],
+        "fixed": [
+          {
+            "scope": "equipment",
+            "summary": "หัวหน้ารายละเอียดเป็นการ์ดแบบหัวเอกสาร PR และตาราง list เลือกคอลัมน์ตามกล่อง",
+            "hash": "68497daf",
+            "author": "Thammanoon Semapru",
+            "pr": 704
+          },
+          {
+            "scope": "operation-plan",
+            "summary": "หัวหน้ารายละเอียด Recipe Category และ Cuisine Type เป็นการ์ดแบบหัวเอกสาร PR",
+            "hash": "8abcda9c",
+            "author": "Thammanoon Semapru",
+            "pr": 702
+          },
+          {
+            "scope": "recipe-category",
+            "summary": "คอลัมน์ Code ไม่หักบรรทัดที่ iPad และ Name รับความกว้างที่เหลือ",
+            "hash": "48e55a81",
+            "author": "Thammanoon Semapru",
+            "pr": 701
+          },
+          {
+            "scope": "inventory-adjustment",
+            "summary": "ช่องหัวใบอ่าน error ด้วย useFormState — อยู่ใน ribbon แล้ว React Compiler memo ทำให้ไม่ขึ้นแดง",
+            "hash": "263580d0",
+            "author": "Thammanoon Semapru",
+            "pr": 699
+          },
+          {
+            "scope": "inventory-adjustment",
+            "summary": "ตาราง list เลือกคอลัมน์ตามกล่อง หัวเอกสารเป็นการ์ดแบบ PR และรายการบนมือถือเป็นการ์ด",
+            "hash": "60172993",
+            "author": "Thammanoon Semapru",
+            "pr": 699
+          },
+          {
+            "scope": "stock-replenishment",
+            "summary": "dialog สร้าง PR บนมือถือเป็นการ์ดแถวละใบ และเลื่อนได้ทั้ง dialog",
+            "hash": "46587647",
+            "author": "Thammanoon Semapru",
+            "pr": 698
+          },
+          {
+            "scope": "stock-replenishment",
+            "summary": "wizard สร้าง PR/SR ค้างทั้งแท็บ — memo ข้อมูลแถวของตาราง",
+            "hash": "d94a4848",
+            "author": "Thammanoon Semapru",
+            "pr": 697
+          },
+          {
+            "scope": "price-list",
+            "summary": "Description ในการ์ดหัวกินช่องเดียวตั้งแต่ @md ไม่ตกแถวสามเมื่อตาราง audit ขึ้น",
+            "hash": "ecacea6a",
+            "author": "Thammanoon Semapru",
+            "pr": 696
+          },
+          {
+            "scope": "certification",
+            "summary": "dialog แก้ใบรับรองแสดงตาราง audit (สร้างโดย/แก้ไขล่าสุด + rev.) ทรงเดียวกับการ์ดหัวเอกสาร",
+            "hash": "65fe1ed9",
+            "author": "Thammanoon Semapru",
+            "pr": 695
+          },
+          {
+            "scope": "request-price-list",
+            "summary": "หัวหน้ารายละเอียด Request for Pricing เป็นการ์ดแบบหัวเอกสาร PR รวมช่อง General ไว้ในการ์ดหัว",
+            "hash": "70be9b6e",
+            "author": "Thammanoon Semapru",
+            "pr": 694
+          },
+          {
+            "scope": "price-list-template",
+            "summary": "หัวหน้ารายละเอียด Price List Template เป็นการ์ดแบบหัวเอกสาร PR รวมช่อง General ไว้ในการ์ดหัว",
+            "hash": "d693f7f1",
+            "author": "Thammanoon Semapru",
+            "pr": 693
+          },
+          {
+            "scope": "price-list",
+            "summary": "หัวหน้ารายละเอียด Price List เป็นการ์ดแบบหัวเอกสาร PR รวมช่อง General ไว้ในการ์ดหัว",
+            "hash": "df61fadc",
+            "author": "Thammanoon Semapru",
+            "pr": 692
+          },
+          {
+            "scope": "vendor",
+            "summary": "การ์ดที่อยู่กับผู้ติดต่อที่วางคู่กันสูงเท่ากัน",
+            "hash": "d0f94b90",
+            "author": "Thammanoon Semapru",
+            "pr": 691
+          },
+          {
+            "scope": "vendor",
+            "summary": "โหมดแก้ Status บรรทัดเดียว เรียงช่องลงตัว และหมวดว่างบรรทัดเดียว",
+            "hash": "33133c0c",
+            "author": "Thammanoon Semapru",
+            "pr": 690
+          },
+          {
+            "scope": "vendor",
+            "summary": "หมวดว่างเหลือบรรทัดเดียว และที่อยู่คู่ผู้ติดต่อตั้งแต่ HD ในโหมดดู",
+            "hash": "71737624",
+            "author": "Thammanoon Semapru",
+            "pr": 690
+          },
+          {
+            "scope": "vendor",
+            "summary": "ย้ายตาราง audit ไปล่างสุดของการ์ดหัว ชิดขวา",
+            "hash": "598d5153",
+            "author": "Thammanoon Semapru",
+            "pr": 690
+          },
+          {
+            "scope": "vendor",
+            "summary": "หัวหน้ารายละเอียดผู้ขายกระชับขึ้นที่ HD",
+            "hash": "c9c87062",
+            "author": "Thammanoon Semapru",
+            "pr": 690
+          },
+          {
+            "scope": "vendor",
+            "summary": "หัวหน้ารายละเอียดผู้ขายเป็นการ์ดแบบหัวเอกสาร PR รวมช่อง General ไว้ในการ์ดหัว",
+            "hash": "8a8885c0",
+            "author": "Thammanoon Semapru",
+            "pr": 690
+          },
+          {
+            "scope": "product",
+            "summary": "Save ไม่ค้างหลังแก้ To Qty แล้วคืนค่าเดิม",
+            "hash": "c2e7299e",
+            "author": "Thammanoon Semapru",
+            "pr": 689
+          },
+          {
+            "scope": "product",
+            "summary": "โหมดแก้แท็บหน่วย/คลังบนกล่องแคบเป็นการ์ดกรอกทีละแถว แทนตารางเลื่อนแนวนอน",
+            "hash": "2a538cc5",
+            "author": "Thammanoon Semapru",
+            "pr": 689
+          },
+          {
+            "scope": "product",
+            "summary": "เปลี่ยนชื่อแท็บ Location Assignment เป็น Location (ไทย: คลัง)",
+            "hash": "d4f945b3",
+            "author": "Thammanoon Semapru",
+            "pr": 689
+          },
+          {
+            "scope": "product",
+            "summary": "แถบแท็บหน้าสินค้าบนมือถือเลื่อนในแถบเอง ไม่ให้ทั้งหน้าเลื่อนซ้าย-ขวา",
+            "hash": "1ca1fd65",
+            "author": "Thammanoon Semapru",
+            "pr": 689
+          },
+          {
+            "scope": "product",
+            "summary": "หัวหน้ารายละเอียดสินค้าเป็นการ์ดแบบ PR พร้อมตาราง audit",
+            "hash": "32571436",
+            "author": "Thammanoon Semapru",
+            "pr": 689
+          },
+          {
+            "scope": "procurement",
+            "summary": "แท็บ Stock Movement ของใบลดหนี้บนมือถือ/แท็บเล็ตเป็นการ์ด",
+            "hash": "73e8a355",
+            "author": "Thammanoon Semapru",
+            "pr": 688
+          },
+          {
+            "scope": "procurement",
+            "summary": "คำอธิบายบรรทัด JV บนมือถือเป็นแถวเต็มความกว้าง",
+            "hash": "ab8af74b",
+            "author": "Thammanoon Semapru",
+            "pr": 687
+          },
+          {
+            "scope": "procurement",
+            "summary": "ขีดว่างในตาราง Extra Cost ใช้สีจางเต็ม ไม่ลดความทึบตัวอักษร",
+            "hash": "2dcbd3df",
+            "author": "Thammanoon Semapru",
+            "pr": 686
+          },
+          {
+            "scope": "procurement",
+            "summary": "แท็บ Journal Voucher และ Extra Cost โหมดแก้ของ GRN บนมือถือ",
+            "hash": "1454c74c",
+            "author": "Thammanoon Semapru",
+            "pr": 686
+          },
+          {
+            "scope": "procurement",
+            "summary": "แท็บ Stock Movement ของ GRN บนมือถือเป็นการ์ด",
+            "hash": "77f5211d",
+            "author": "Thammanoon Semapru",
+            "pr": 686
+          },
+          {
+            "scope": "procurement",
+            "summary": "หน้า GRN detail บนมือถือและแท็บเล็ต",
+            "hash": "1d114fa2",
+            "author": "Thammanoon Semapru",
+            "pr": 686
+          },
+          {
+            "scope": "dashboard",
+            "summary": "การ์ด widget บอกตรงกับที่คำนวณจริง — คำบรรยายบรรทัดเทียบ, สกุลหลักของ BU, error",
+            "hash": "0d478adc",
+            "author": "Khafang",
+            "pr": 680
+          },
+          {
+            "scope": "profile",
+            "summary": "หน้าตั้งค่าโปรไฟล์บนมือถือ — ช่องชื่อแถวละสอง และ MCP tokens ไม่ซ้อนการ์ด",
+            "hash": "7536be0b",
+            "author": "Thammanoon Semapru",
+            "pr": 677
+          },
+          {
+            "scope": "profile",
+            "summary": "จัดหน้าโปรไฟล์ทุกขนาดจอ — ไทล์โลโก้/avatar ของ BU และการ์ด BU เป็นคอลัมน์บนจอกว้าง",
+            "hash": "6ef21588",
+            "author": "Thammanoon Semapru",
+            "pr": 675
+          },
+          {
+            "scope": "doc",
+            "summary": "โครงตอนโหลดของช่องหัวใบแบบข้อความใช้ FieldGrid dense ตรงกับหน้าจริงบนมือถือ",
+            "hash": "e740037c",
+            "author": "Thammanoon Semapru",
+            "pr": 673
+          },
+          {
+            "scope": "grn",
+            "summary": "ล้างคำอธิบาย/หมายเหตุของ GRN ให้ว่างแล้วบันทึกได้",
+            "hash": "d0edc468",
+            "author": "Thammanoon Semapru",
+            "pr": 673
+          },
+          {
+            "scope": "pr",
+            "summary": "การ์ดรายการ PR ไม่โชว์ป้าย 'เลือกทั้งหมด' ในโหมดดู และแถวกางเลื่อนแนวนอนในการ์ดได้",
+            "hash": "3812e710",
+            "author": "Thammanoon Semapru",
+            "pr": 673
+          },
+          {
+            "scope": "cn",
+            "summary": "ตารางรายการ CN โหมดดูบนมือถือ/tablet เลื่อนแนวนอนแทนบีบคอลัมน์จนหัวทับกัน",
+            "hash": "94a90034",
+            "author": "Thammanoon Semapru",
+            "pr": 672
+          },
+          {
+            "scope": "doc",
+            "summary": "หัวเอกสารบนมือถือ ช่องโหมดดูแบ่ง 2 คอลัมน์ และเอาเส้นคั่นป้ายสถานะออกเมื่อหัวแคบ",
+            "hash": "60d14795",
+            "author": "Thammanoon Semapru",
+            "pr": 672
+          },
+          {
+            "scope": "footer",
+            "summary": "ยอดรวม Subtotal–Grand Total ชิดขวาคู่กับปุ่ม ตัวคั่นย้ายไปฝั่งขวาไม่ค้างหัวบรรทัด",
+            "hash": "5da40da9",
+            "author": "Thammanoon Semapru",
+            "pr": 672
+          },
+          {
+            "scope": "footer",
+            "summary": "ปุ่ม action ในแถบยอดรวมชิดขวาเสมอ แม้ตกบรรทัดใหม่บนจอแคบ",
+            "hash": "b0289cff",
+            "author": "Thammanoon Semapru",
+            "pr": 672
+          },
+          {
+            "scope": "pr",
+            "summary": "รายการสินค้าในหน้า PR เป็นการ์ดแถวละใบเมื่อกล่องแคบกว่า 900px",
+            "hash": "2ab996e2",
+            "author": "Thammanoon Semapru",
+            "pr": 672
+          },
+          {
+            "scope": "list",
+            "summary": "การ์ด Report นับต่อข้ามหน้า + ตาราง Document ไม่อ่านหน้าจาก URL",
+            "hash": "d5933556",
+            "author": "Thammanoon Semapru",
+            "pr": 671
+          },
+          {
+            "scope": "list",
+            "summary": "ตารางเอกสาร/คลัง/My Approval/Document/Schedules แสดง # ตลอด ย้ายคอลัมน์ลงบรรทัดรองเมื่อกล่องแคบ",
+            "hash": "022f23d7",
+            "author": "Thammanoon Semapru",
+            "pr": 671
+          },
+          {
+            "scope": "list",
+            "summary": "ตาราง Price List / Template แสดง # ตลอดทุกความกว้าง",
+            "hash": "3bbaa59c",
+            "author": "Thammanoon Semapru",
+            "pr": 671
+          },
+          {
+            "scope": "list",
+            "summary": "ตารางผู้ขาย/ใบรับรอง/RFP/PRT แสดง # ตลอดทุกความกว้าง",
+            "hash": "520e3493",
+            "author": "Thammanoon Semapru",
+            "pr": 671
+          },
+          {
+            "scope": "product",
+            "summary": "ตารางและการ์ดรายการสินค้าเลือกคอลัมน์ตามความกว้างกล่อง",
+            "hash": "cac3a021",
+            "author": "Thammanoon Semapru",
+            "pr": 670
+          },
+          {
+            "scope": "grn,cn",
+            "summary": "การ์ดมือถือแบบกระชับ + คอลัมน์ Invoice Date ของ GRN + ผู้รับ/ผู้สร้างกว้างขึ้นในกล่องกว้าง",
+            "hash": "95be2580",
+            "author": "Thammanoon Semapru",
+            "pr": 668
+          },
+          {
+            "scope": "prt",
+            "summary": "การ์ดรายการ PR Template บนมือถือแบบกระชับ",
+            "hash": "0755ca20",
+            "author": "Thammanoon Semapru",
+            "pr": 667
+          },
+          {
+            "scope": "po",
+            "summary": "ตาราง PO กล่องกว้างมาก ผู้จัดซื้อกว้างขึ้น ชื่อไม่ถูกตัด",
+            "hash": "009da6a4",
+            "author": "Thammanoon Semapru",
+            "pr": 666
+          },
+          {
+            "scope": "po",
+            "summary": "การ์ดรายการ PO บนมือถือแบบกระชับ",
+            "hash": "d6a07ac6",
+            "author": "Thammanoon Semapru",
+            "pr": 664
+          },
+          {
+            "scope": "pr",
+            "summary": "ตาราง PR ยอดเงินอยู่ก่อนแผนก + ผู้ขอกว้างขึ้นในกล่องกว้างมาก",
+            "hash": "3d589422",
+            "author": "Thammanoon Semapru",
+            "pr": 664
+          },
+          {
+            "scope": "list-toolbar",
+            "summary": "แถบแคบ ปุ่มขอบเขตขึ้นบรรทัดแรก + ตาราง PR ยุบวันที่ก่อนซ่อนผู้ขอ",
+            "hash": "6802a125",
+            "author": "Thammanoon Semapru",
+            "pr": 664
+          },
+          {
+            "scope": "pr",
+            "summary": "การ์ดรายการ PR บนมือถือแบบกระชับ + ปุ่มขอบเขตเห็นบนมือถือ",
+            "hash": "6231d974",
+            "author": "Thammanoon Semapru",
+            "pr": 664
+          },
+          {
+            "scope": "my-approval",
+            "summary": "แถบชิปกรอง + ช่องค้นบนมือถือกระชับ",
+            "hash": "c4a603bb",
+            "author": "Thammanoon Semapru",
+            "pr": 663
+          },
+          {
+            "scope": "dashboard",
+            "summary": "skeleton ใช้ gridClasses() ตัวเดียวกับการ์ดจริง",
+            "hash": "1ebc7ffd",
+            "author": "Thammanoon Semapru",
+            "pr": 662
+          },
+          {
+            "scope": "layout",
+            "summary": "ลดขอบข้างเนื้อหาบนมือถือจาก 28px เหลือ 12px",
+            "hash": "2936d5ca",
+            "author": "Thammanoon Semapru",
+            "pr": 661
+          },
+          {
+            "scope": "sidebar",
+            "summary": "กดลิงก์ในเมนูซ้ายบนมือถือแล้วปิดแผ่นเมนู",
+            "hash": "73b4cf96",
+            "author": "Thammanoon Semapru",
+            "pr": 661
+          },
+          {
+            "scope": "ui",
+            "summary": "เพิ่ม tw-animate-css ให้ Sheet/Dialog/Popover/Dropdown มี transition",
+            "hash": "54b45c39",
+            "author": "Thammanoon Semapru",
+            "pr": 661
+          },
+          {
+            "scope": "navbar",
+            "summary": "ตัวเปิดแอปพอดีจอมือถือ",
+            "hash": "2558ea65",
+            "author": "Thammanoon Semapru",
+            "pr": 661
+          },
+          {
+            "scope": "navbar",
+            "summary": "แถบแคบกว่า 320px ซ่อนรหัส BU ให้ชื่อหน้ามีที่พอ",
+            "hash": "34480a67",
+            "author": "Thammanoon Semapru",
+            "pr": 661
+          },
+          {
+            "scope": "notification",
+            "summary": "ชื่อเรื่องในแผง 12px + contrast AA ใน dark + skeleton ตรงกับแถวจริง",
+            "hash": "ed7688cb",
+            "author": "Thammanoon Semapru",
+            "pr": 661
+          },
+          {
+            "scope": "notification",
+            "summary": "แถวในแผงแจ้งเตือนแน่นขึ้น — ชื่อเรื่อง 2 บรรทัด + BU · เวลา · ข้อความบรรทัดเดียว",
+            "hash": "3eae8cba",
+            "author": "Thammanoon Semapru",
+            "pr": 661
+          },
+          {
+            "scope": "notification",
+            "summary": "แผงแจ้งเตือนพอดีจอมือถือ พื้นทึบ แถวแบน ปุ่มอ่านแล้วกดได้บนจอสัมผัส",
+            "hash": "493679df",
+            "author": "Thammanoon Semapru",
+            "pr": 661
+          },
+          {
+            "scope": "equipment",
+            "summary": "หน้าอุปกรณ์เต็มความกว้าง โหมดดูเป็นข้อความ และวางหมวดเป็นคู่บนจอกว้าง",
+            "hash": "c20b0c6f",
+            "author": "Thammanoon Semapru",
+            "pr": 659
+          },
+          {
+            "scope": "cuisine",
+            "summary": "หน้า Cuisine Type เต็มความกว้าง โหมดดูเป็นข้อความ และวางหมวดเป็นคู่บนจอกว้าง",
+            "hash": "8a05df25",
+            "author": "Thammanoon Semapru",
+            "pr": 658
+          },
+          {
+            "scope": "recipe-category",
+            "summary": "หน้าหมวดสูตรเต็มความกว้าง โหมดดูเป็นข้อความ และวางสองหมวดคู่กันบนจอกว้าง",
+            "hash": "0a0ee255",
+            "author": "Thammanoon Semapru",
+            "pr": 657
+          },
+          {
+            "scope": "sr",
+            "summary": "หัวเอกสาร SR โหมดดูเป็นข้อความ และคอลัมน์ตามความกว้างกล่อง",
+            "hash": "b393e60a",
+            "author": "Thammanoon Semapru",
+            "pr": 656
+          },
+          {
+            "scope": "vendor-mgmt",
+            "summary": "หน้า Price List Template และ Request for Pricing เต็มความกว้าง กะทัดรัด",
+            "hash": "73556698",
+            "author": "Thammanoon Semapru",
+            "pr": 655
+          },
+          {
+            "scope": "cn",
+            "summary": "หัวเอกสารใบลดหนี้โหมดดูเป็นข้อความ และคอลัมน์ตามความกว้างกล่อง",
+            "hash": "8b4ac82c",
+            "author": "Thammanoon Semapru",
+            "pr": 654
+          },
+          {
+            "scope": "grn",
+            "summary": "หัวเอกสาร GRN โหมดดูเป็นข้อความ และคอลัมน์ตามความกว้างกล่อง",
+            "hash": "b175d491",
+            "author": "Thammanoon Semapru",
+            "pr": 653
+          },
+          {
+            "scope": "prt",
+            "summary": "หน้า PR Template เต็มความกว้าง ข้อมูลทั่วไปเป็น FieldGrid และตารางรายการเลือกขนาดคอลัมน์ตามความกว้างกล่อง",
+            "hash": "4d8f7a77",
+            "author": "Thammanoon Semapru",
+            "pr": 652
+          },
+          {
+            "scope": "pr",
+            "summary": "หัวเอกสาร PR โหมดดูเป็นข้อความ และโครงตอนโหลดของเอกสารตรงกับหน้าจริง",
+            "hash": "935af256",
+            "author": "Thammanoon Semapru",
+            "pr": 651
+          },
+          {
+            "scope": "report",
+            "summary": "ตาราง Report History คอลัมน์สั้นกว้างคงที่ ชื่อรายงานยืด การ์ดเลือกคอลัมน์จากความกว้างกล่อง",
+            "hash": "d9037735",
+            "author": "Thammanoon Semapru",
+            "pr": 650
+          },
+          {
+            "scope": "report",
+            "summary": "ตาราง Report Schedules เลือกคอลัมน์ตามความกว้างกล่อง ไม่บีบข้อความจนโดนตัด",
+            "hash": "3d0d8a5d",
+            "author": "Thammanoon Semapru",
+            "pr": 649
+          },
+          {
+            "scope": "report",
+            "summary": "หน้า Report List ปุ่ม View/Filter ชิดช่องค้น คอลัมน์ Type กว้างคงที่ การ์ดเลือกคอลัมน์จากความกว้างกล่อง",
+            "hash": "03af4df1",
+            "author": "Thammanoon Semapru",
+            "pr": 648
+          },
+          {
+            "scope": "period-end",
+            "summary": "ขอบซ้ายตรงกับหน้าอื่น + รางขั้นและประวัติเลือกเลย์เอาต์จากความกว้างการ์ด",
+            "hash": "efa0254c",
+            "author": "Thammanoon Semapru",
+            "pr": 646
+          },
+          {
+            "scope": "spot-check",
+            "summary": "แถวสถานที่ไหลเป็นการ์ดตามความกว้างกล่อง + แถวเลือกเลย์เอาต์จากความกว้างตัวเอง",
+            "hash": "309e1d6a",
+            "author": "Thammanoon Semapru",
+            "pr": 645
+          },
+          {
+            "scope": "physical-count",
+            "summary": "แถวสถานที่ไหลเป็นการ์ดตามความกว้างกล่อง แทนแถวยืดเต็มจอ",
+            "hash": "676400e7",
+            "author": "Thammanoon Semapru",
+            "pr": 644
+          },
+          {
+            "scope": "transaction",
+            "summary": "สินค้ายืดรับที่เหลือ + เลือกขั้นตารางจากความกว้างกล่อง (รวมคอลัมน์ / เซลล์เดียว)",
+            "hash": "88558749",
+            "author": "Thammanoon Semapru",
+            "pr": 643
+          },
+          {
+            "scope": "wastage-reporting",
+            "summary": "สินค้ายืดรับที่เหลือ + ซ่อนคอลัมน์รองตามความกว้างกล่องตาราง",
+            "hash": "45710501",
+            "author": "Thammanoon Semapru",
+            "pr": 642
+          },
+          {
+            "scope": "stock-replenishment",
+            "summary": "สินค้ายืดรับที่เหลือ + เลือกขั้นตารางจากความกว้างกล่องแทนจอ",
+            "hash": "50446240",
+            "author": "Thammanoon Semapru",
+            "pr": 641
+          },
+          {
+            "scope": "certification",
+            "summary": "คำอธิบายยืดรับที่เหลือ + ซ่อนคอลัมน์รองตามความกว้างกล่องตาราง",
+            "hash": "37a6ee7a",
+            "author": "Thammanoon Semapru",
+            "pr": 640
+          },
+          {
+            "scope": "price-list",
+            "summary": "ชื่อยืดรับที่เหลือ + ซ่อนคอลัมน์รองตามความกว้างกล่องตาราง",
+            "hash": "30a69b6b",
+            "author": "Thammanoon Semapru",
+            "pr": 639
+          },
+          {
+            "scope": "request-price-list",
+            "summary": "ชื่อยืดรับที่เหลือ + ซ่อนคอลัมน์รองตามความกว้างกล่องตาราง",
+            "hash": "3abb65d9",
+            "author": "Thammanoon Semapru",
+            "pr": 638
+          },
+          {
+            "scope": "price-list-template",
+            "summary": "ชื่อยืดรับที่เหลือ + ซ่อนคอลัมน์รองตามความกว้างกล่องตาราง",
+            "hash": "7fa88819",
+            "author": "Thammanoon Semapru",
+            "pr": 637
+          },
+          {
+            "scope": "store-requisition",
+            "summary": "เลือกคอลัมน์ตามความกว้างกล่องตาราง + From → To รับที่เหลือ",
+            "hash": "830d50f4",
+            "author": "Thammanoon Semapru",
+            "pr": 636
+          },
+          {
+            "scope": "list-toolbar",
+            "summary": "ปุ่ม View/Filter ขึ้นบรรทัดใหม่เมื่อที่ไม่พอ แทนการล้นขอบ",
+            "hash": "9c510378",
+            "author": "Thammanoon Semapru",
+            "pr": 635
+          },
+          {
+            "scope": "credit-note",
+            "summary": "เลือกคอลัมน์ตามความกว้างกล่องตาราง + ผู้ขายรับที่เหลือ",
+            "hash": "27ad7f76",
+            "author": "Thammanoon Semapru",
+            "pr": 634
+          },
+          {
+            "scope": "goods-receive-note",
+            "summary": "เลือกคอลัมน์ตามความกว้างกล่องตาราง + ผู้ขายรับที่เหลือ",
+            "hash": "fc838e25",
+            "author": "Thammanoon Semapru",
+            "pr": 633
+          },
+          {
+            "scope": "purchase-order",
+            "summary": "เลือกคอลัมน์ตามความกว้างกล่องตาราง + ผู้ขายรับที่เหลือ",
+            "hash": "2a259bba",
+            "author": "Thammanoon Semapru",
+            "pr": 632
+          },
+          {
+            "scope": "purchase-request-template",
+            "summary": "คอลัมน์สั้นกว้างคงที่ คำอธิบายยืด + ซ่อนคอลัมน์รองตามความกว้างกล่องตาราง",
+            "hash": "7a89434b",
+            "author": "Thammanoon Semapru",
+            "pr": 631
+          },
+          {
+            "scope": "my-approval",
+            "summary": "กล่องแคบแสดงเป็นการ์ดใบละเอกสารแทนตารางที่บีบคอลัมน์",
+            "hash": "c71b5b21",
+            "author": "Thammanoon Semapru",
+            "pr": 630
+          },
+          {
+            "scope": "purchase-request",
+            "summary": "เลือกคอลัมน์ตามความกว้างกล่องตาราง + แผนกรับที่เหลือ",
+            "hash": "45ba9d3c",
+            "author": "Thammanoon Semapru",
+            "pr": 629
+          },
+          {
+            "scope": "my-approval",
+            "summary": "เลือกคอลัมน์ตามความกว้างกล่องตาราง + Details รับที่เหลือ",
+            "hash": "6faedb46",
+            "author": "Thammanoon Semapru",
+            "pr": 628
+          },
+          {
+            "scope": "config",
+            "summary": "ขยายคอลัมน์ชื่อเป็น 320px ไม่ให้ชื่อยาวตัดบรรทัด",
+            "hash": "18f0b487",
+            "author": "Thammanoon Semapru",
+            "pr": 627
+          },
+          {
+            "scope": "shelf",
+            "summary": "ให้ Description ขยายกินที่ว่างแทน Name + รหัสไม่ตัดบรรทัด",
+            "hash": "74af1db3",
+            "author": "Thammanoon Semapru",
+            "pr": 626
+          },
+          {
+            "scope": "coa",
+            "summary": "ปุ่มบนหัวหน้า Chart of Accounts อยู่บรรทัดเดียวทุกขนาดจอ",
+            "hash": "a901a969",
+            "author": "Thammanoon Semapru",
+            "pr": 624
+          },
+          {
+            "scope": "cost-center",
+            "summary": "ขยายคอลัมน์ชื่อเป็น 270px ไม่ให้ชื่อขึ้นสองบรรทัดแล้วโดนตัด",
+            "hash": "0d340254",
+            "author": "Thammanoon Semapru",
+            "pr": 623
+          },
+          {
+            "scope": "ui",
+            "summary": "Progress ส่งค่าให้ Radix Root — แถบความคืบหน้ามี aria-valuenow",
+            "hash": "fb120d08",
+            "author": "Khafang",
+            "pr": 621
+          },
+          {
+            "scope": "jv",
+            "summary": "บันทึกบรรทัดและ dimension ของ JV manual ที่แก้แล้วได้",
+            "hash": "a5c0a306",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "dimension",
+            "summary": "schema ฟอร์มรับ null จากแถว dimension ตามชนิด",
+            "hash": "3c9aa4c3",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "dimension",
+            "summary": "โหมดดูของบัญชี AP master แสดงค่า dimension ตามชนิด",
+            "hash": "806dc434",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "jv",
+            "summary": "ส่งบรรทัดตอนแก้เฉพาะใบ manual กัน 409 กับใบจาก template",
+            "hash": "008aef9d",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "jv",
+            "summary": "ซ่อนแถว \"All Dimensions: —\" และปุ่ม dimension ในบรรทัดที่บัญชีไม่มี dimension ตามกฎผังบัญชี",
+            "hash": "488b5bad",
+            "author": "Thammanoon Semapru",
+            "pr": 616
+          },
+          {
+            "scope": "ap",
+            "summary": "ค่า dimension ที่บันทึกไว้ยังเห็นได้ขณะบัญชีโหลด/โหลดพลาด/ถูกลบ",
+            "hash": "fbd74e4b",
+            "author": "Thammanoon Semapru",
+            "pr": 616
+          },
+          {
+            "scope": "ia,sr",
+            "summary": "send fresh per-line doc_version on save to avoid 409 on second save",
+            "hash": "7e704849",
+            "author": "Thammanoon Semapru",
+            "pr": 614
+          },
+          {
+            "scope": "inventory-adjustment",
+            "summary": "restoreStoredCost คืนต้นทุนเดิมเฉพาะ stock-out",
+            "hash": "6e5e1275",
+            "author": "Thammanoon Semapru",
+            "pr": 613
+          },
+          {
+            "scope": "procurement",
+            "summary": "ใช้ received_price เป็นราคาเดิมของบรรทัด GRN",
+            "hash": "2cbe44a6",
+            "author": "Thammanoon Semapru",
+            "pr": 611
+          },
+          {
+            "scope": "procurement",
+            "summary": "ลบ type ที่ไม่ได้ใช้ใน grn-form-schema",
+            "hash": "f23e8cd3",
+            "author": "Thammanoon Semapru",
+            "pr": 611
+          },
+          {
+            "scope": "procurement",
+            "summary": "แก้ dimension ของ GRN ไม่คิดราคาใหม่ และล้างธง dirty หลังบันทึก",
+            "hash": "6b838b7f",
+            "author": "Thammanoon Semapru",
+            "pr": 611
+          },
+          {
+            "scope": "pr",
+            "summary": "ผู้ขายล่าสุดแสดงข้างราคาล่าสุดในหน้าต่างเทียบราคา ไม่กรอกลงบรรทัด",
+            "hash": "22b43166",
+            "author": "Khafang",
+            "pr": 606
+          },
+          {
+            "scope": "dimension",
+            "summary": "ตัวกรองสถานะอยู่ข้างช่องค้นหา และคอลัมน์ Data Type ใช้ชื่อสั้น",
+            "hash": "c52a8520",
+            "author": "Thammanoon Semapru",
+            "pr": 605
+          }
+        ],
+        "changed": [
+          {
+            "scope": "landing",
+            "summary": "ย้ายการ์ด หัวหน้า และตัวช่วยวาดเส้นของ landing ไป components/share/landing",
+            "hash": "9add5cb1",
+            "author": "Thammanoon Semapru",
+            "pr": 647
+          },
+          {
+            "scope": "dimension",
+            "summary": "เปลี่ยนชื่อ gl_dimension เป็น dimension ทั้ง DB/Prisma/API",
+            "hash": "725a6f1e",
+            "author": "Thammanoon Semapru",
+            "pr": null
+          },
+          {
+            "scope": "grn",
+            "summary": "dimension ต่อบรรทัดย้ายจากแถว footer มาเป็นปุ่ม popover",
+            "hash": "c6cfa8d5",
+            "author": "Thammanoon Semapru",
+            "pr": 613
+          },
+          {
+            "scope": "dimension",
+            "summary": "เรียก route dimension ใหม่และใช้สิทธิ์ configuration.dimension",
+            "hash": "56c5fa87",
+            "author": "Thammanoon Semapru",
+            "pr": 610
+          },
+          {
+            "scope": null,
+            "summary": "remove old COA dimension rules implementation and tests",
+            "hash": "f9ed27f6",
+            "author": "llHorizonll",
+            "pr": null
+          }
+        ]
+      }
+    },
     {
       "version": "2.7.0",
       "build": "2.7.0-build.20261116.e7680c16",
