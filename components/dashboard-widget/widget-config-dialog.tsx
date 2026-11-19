@@ -48,7 +48,9 @@ export function WidgetConfigDialog({
 }: WidgetConfigDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(o) => !isPending && onOpenChange(o)}>
-      <DialogContent className="sm:max-w-lg">
+      {/* เปลือกเดียวกับหน้าปรับแต่งของ AddWidgetDialog: หัว/ท้ายตรึง เนื้อหาเลื่อนเอง —
+          ฟอร์มที่ param เยอะจะไม่ดันปุ่มบันทึกตกใต้จอ */}
+      <DialogContent className="flex h-[min(90vh,48rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-5xl">
         {/* เนื้อหาอยู่ใต้ DialogContent ซึ่ง unmount ตอนปิด — เปิดใหม่ได้ค่าตั้งต้นใหม่เสมอ */}
         <WidgetConfigBody
           key={rest.dataset.id}
@@ -84,21 +86,23 @@ function WidgetConfigBody({
 
   return (
     <>
-      <DialogHeader>
+      <DialogHeader className="border-b px-6 pt-6 pb-4">
         <DialogTitle>{t("configureTitle")}</DialogTitle>
         <DialogDescription>
           {t("configureDescription", { name: dataset.name })}
         </DialogDescription>
       </DialogHeader>
 
-      <WidgetConfigFields
-        dataset={dataset}
-        state={state}
-        widgetType={widgetType ?? defaultWidgetTypeFor(dataset)}
-        disabled={isPending}
-      />
+      <div className="min-h-0 flex-1 overflow-y-auto p-6">
+        <WidgetConfigFields
+          dataset={dataset}
+          state={state}
+          widgetType={widgetType ?? defaultWidgetTypeFor(dataset)}
+          disabled={isPending}
+        />
+      </div>
 
-      <DialogFooter>
+      <DialogFooter className="border-t px-6 py-4">
         <Button
           type="button"
           variant="outline"
