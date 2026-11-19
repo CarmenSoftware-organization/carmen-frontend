@@ -20,15 +20,16 @@ import { PRICE_LIST_TEMPLATE_STATUS_OPTIONS } from "@/constant/price-list-templa
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { FormToolbar } from "@/components/share/form-toolbar";
+import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
+import {
+  DocAuditButton,
+  DocAuditLine,
+} from "@/components/share/doc-audit-line";
 import { useProfile } from "@/hooks/use-profile";
 import type { PriceListTemplate } from "@/types/price-list-template";
 import type { FormMode } from "@/types/form";
 
-import {
-  CompactSection,
-  FieldGrid,
-  SECTION_PAIR,
-} from "@/components/share/compact-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
 import { SettingField } from "@/components/share/setting-field";
 
 import {
@@ -122,38 +123,195 @@ export function PriceListTemplateForm({
 
   const tsStatus = ts as (key: "draft" | "active" | "inactive") => string;
 
+  const generalFields = isView ? (
+    // ชื่อกับสถานะไม่แสดง — แถบหัวมีทั้งสองอย่างเป็นตัวเอกอยู่แล้ว
+    // ข้อความล้วน → dense (2 คอลัมน์ตั้งแต่กล่องแคบสุด) ทรงเดียวกับหัว PR
+    <FieldGrid dense>
+      <SettingField
+        label={tfl("currency")}
+        value={priceListTemplate?.currency?.code}
+      />
+      <SettingField
+        label={tfl("validityPeriod")}
+        value={
+          watchedValidity ? t("daysSuffix", { count: watchedValidity }) : null
+        }
+      />
+      {/* data-wide = เต็มแถวบนมือถือ (dense 2 คอลัมน์) · ตั้งแต่ @md เหลือช่องเดียว (ทรงหัว PR)
+          ตาราง audit กินที่ขวาของแถบ ถ้ายังกิน 2 ช่อง Description จะตกไปแถวสอง */}
+      <div data-wide="" className="min-w-0 @md:col-span-1!">
+        <SettingField
+          label={tfl("description")}
+          value={priceListTemplate?.description}
+        />
+      </div>
+    </FieldGrid>
+  ) : (
+    <FieldGrid>
+      <Field>
+        <FieldLabel htmlFor="plt-name">
+          {tfl("name")}
+          <span className="text-destructive"> *</span>
+        </FieldLabel>
+        <FieldInput
+          id="plt-name"
+          placeholder={t("namePlaceholder")}
+          disabled={isDisabled}
+          error={form.formState.errors.name?.message}
+          maxLength={100}
+          {...form.register("name")}
+        />
+      </Field>
+
+      <Field>
+        <FieldLabel>
+          {tfl("currency")}
+          <span className="text-destructive"> *</span>
+        </FieldLabel>
+        <Controller
+          control={form.control}
+          name="currency_id"
+          render={({ field }) => (
+            <LookupCurrency
+              value={field.value}
+              onValueChange={field.onChange}
+              disabled={isDisabled}
+              fullWidth
+              error={form.formState.errors.currency_id?.message}
+            />
+          )}
+        />
+      </Field>
+
+      <Field>
+        <FieldLabel>{tfl("status")}</FieldLabel>
+        <Controller
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FieldSelect
+              value={field.value}
+              onValueChange={field.onChange}
+              disabled={isDisabled}
+              placeholder={tfl("selectStatus")}
+              error={form.formState.errors.status?.message}
+            >
+              <SelectContent>
+                {PRICE_LIST_TEMPLATE_STATUS_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    <StatusIconLabel
+                      status={opt.value}
+                      label={tsStatus(
+                        opt.value as "draft" | "active" | "inactive",
+                      )}
+                      className="uppercase"
+                    />
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </FieldSelect>
+          )}
+        />
+      </Field>
+
+      {/* stepper มีปุ่ม preset ต่อท้าย ต้องการที่ 2 ช่อง */}
+      <Field className="@md:col-span-2">
+        <FieldLabel>{tfl("validityPeriod")}</FieldLabel>
+        <FieldDescription>{stepperLabels.hint}</FieldDescription>
+        <Controller
+          control={form.control}
+          name="validity_period"
+          render={({ field }) => (
+            <PltValidityStepper
+              value={field.value}
+              onChange={field.onChange}
+              disabled={isDisabled}
+              labels={stepperLabels}
+            />
+          )}
+        />
+      </Field>
+
+      {/* ช่องเดียว (ไม่ span) — ช่องกว้าง 2 ช่องสองช่องติดกันตกคนละแถวในกริด 3 คอลัมน์ */}
+      <Field>
+        <FieldLabel>{tfl("description")}</FieldLabel>
+        <Textarea
+          placeholder={tfl("optional")}
+          rows={2}
+          maxLength={256}
+          disabled={isDisabled}
+          className="resize-none"
+          {...form.register("description")}
+        />
+      </Field>
+    </FieldGrid>
+  );
+
   return (
     <FormPageShell
       width="wide"
+      // หัวอยู่ในการ์ดมีพื้น ทรงเดียวกับหัวเอกสาร PR: ชื่อ+สถานะ+ปุ่ม · ช่อง General (ribbon)
+      // + ตาราง audit ชิดขวาล่าง (โหมดดู) — ไม่มีการ์ด General แยก · ช่อง General อยู่นอก
+      // <form> (แบบ PR — ปุ่มบนหัวไม่กลายเป็น submit) RHF ยังเก็บค่าครบ แค่กด Enter ไม่ submit
       header={
-        <FormToolbar
-          mode={mode}
-          formId={FORM_ID}
-          isPending={actions.isPending}
-          title={watchedName || t("namePlaceholder")}
-          titleMuted={!watchedName}
-          onBack={actions.handleBack}
-          onCancel={actions.handleCancel}
-          onEdit={() => setMode("edit")}
-          onDelete={
-            priceListTemplate ? () => actions.setShowDelete(true) : undefined
-          }
-          deleteIsPending={actions.isDeletePending}
-          onComment={priceListTemplate ? () => setShowComment(true) : undefined}
-          activity={
-            priceListTemplate && {
-              id: priceListTemplate.id,
-              label: priceListTemplate.name,
+        <div className={DOC_HEADER_CARD}>
+          <FormToolbar
+            inlineBack
+            mode={mode}
+            formId={FORM_ID}
+            isPending={actions.isPending}
+            title={watchedName || t("namePlaceholder")}
+            titleMuted={!watchedName}
+            onBack={actions.handleBack}
+            onCancel={actions.handleCancel}
+            onEdit={() => setMode("edit")}
+            onDelete={
+              priceListTemplate ? () => actions.setShowDelete(true) : undefined
             }
-          }
-          badges={
-            <StatusChip
-              status={watchedStatus}
-              label={tsStatus(watchedStatus)}
-              // เบากว่าในตาราง: ตัวเอกของแถบนี้คือชื่อเทมเพลต สถานะเป็นข้อมูลประกอบ
-            />
-          }
-        />
+            deleteIsPending={actions.isDeletePending}
+            onComment={
+              priceListTemplate ? () => setShowComment(true) : undefined
+            }
+            activity={
+              priceListTemplate && {
+                id: priceListTemplate.id,
+                label: priceListTemplate.name,
+              }
+            }
+            badges={
+              <>
+                <StatusChip
+                  status={watchedStatus}
+                  label={tsStatus(watchedStatus)}
+                  // เบากว่าในตาราง: ตัวเอกของแถบนี้คือชื่อเทมเพลต สถานะเป็นข้อมูลประกอบ
+                />
+                {/* มือถือ: ตาราง audit เต็มซ่อนอยู่ เหลือไอคอนข้างสถานะ (เทมเพลตไม่มีเลขที่ใบ/บรรทัดตัวตน) */}
+                {isView && (
+                  <DocAuditButton
+                    audit={priceListTemplate?.audit}
+                    docVersion={priceListTemplate?.doc_version}
+                    className="-my-1 sm:hidden"
+                  />
+                )}
+              </>
+            }
+            // ml-4 หักล้าง -ml-4 ของ DocFormHeader (เหมือนหัว PR) · ตาราง audit เฉพาะโหมดดู
+            ribbon={
+              isView ? (
+                <div className="ml-4 flex min-w-0 flex-1 flex-wrap items-end gap-x-5 gap-y-3">
+                  <div className="min-w-0 flex-1 basis-72">{generalFields}</div>
+                  <DocAuditLine
+                    audit={priceListTemplate?.audit}
+                    docVersion={priceListTemplate?.doc_version}
+                    className="ms-auto hidden sm:table"
+                  />
+                </div>
+              ) : (
+                <div className="ml-4 min-w-0 flex-1">{generalFields}</div>
+              )
+            }
+          />
+        </div>
       }
     >
       <form
@@ -162,174 +320,39 @@ export function PriceListTemplateForm({
           scrollToFirstInvalidField(),
         )}
       >
-        {/* General คู่กับ Instructions — วางเคียงกันบนจอ ≥1700px ต่ำกว่านั้นซ้อนกัน */}
-        <div className={SECTION_PAIR}>
-          <CompactSection
-            first
-            title={tfl("general")}
-            description={t(isView ? "generalDescView" : "generalDesc")}
-          >
-            {isView ? (
-              // ชื่อกับสถานะไม่แสดง — แถบหัวมีทั้งสองอย่างเป็นตัวเอกอยู่แล้ว
-              <FieldGrid>
-                <SettingField
-                  label={tfl("currency")}
-                  value={priceListTemplate?.currency?.code}
-                />
-                <SettingField
-                  label={tfl("validityPeriod")}
-                  value={
-                    watchedValidity
-                      ? t("daysSuffix", { count: watchedValidity })
-                      : null
-                  }
-                />
-                <SettingField
-                  label={tfl("description")}
-                  value={priceListTemplate?.description}
-                  fullWidth
-                />
-              </FieldGrid>
-            ) : (
-              <FieldGrid>
-                <Field>
-                  <FieldLabel htmlFor="plt-name">
-                    {tfl("name")}
-                    <span className="text-destructive"> *</span>
-                  </FieldLabel>
-                  <FieldInput
-                    id="plt-name"
-                    placeholder={t("namePlaceholder")}
-                    disabled={isDisabled}
-                    error={form.formState.errors.name?.message}
-                    maxLength={100}
-                    {...form.register("name")}
-                  />
-                </Field>
-
-                <Field>
-                  <FieldLabel>
-                    {tfl("currency")}
-                    <span className="text-destructive"> *</span>
-                  </FieldLabel>
-                  <Controller
-                    control={form.control}
-                    name="currency_id"
-                    render={({ field }) => (
-                      <LookupCurrency
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={isDisabled}
-                        fullWidth
-                        error={form.formState.errors.currency_id?.message}
-                      />
-                    )}
-                  />
-                </Field>
-
-                <Field>
-                  <FieldLabel>{tfl("status")}</FieldLabel>
-                  <Controller
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FieldSelect
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={isDisabled}
-                        placeholder={tfl("selectStatus")}
-                        error={form.formState.errors.status?.message}
-                      >
-                        <SelectContent>
-                          {PRICE_LIST_TEMPLATE_STATUS_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              <StatusIconLabel
-                                status={opt.value}
-                                label={tsStatus(
-                                  opt.value as "draft" | "active" | "inactive",
-                                )}
-                                className="uppercase"
-                              />
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </FieldSelect>
-                    )}
-                  />
-                </Field>
-
-                {/* stepper มีปุ่ม preset ต่อท้าย ต้องการที่ 2 ช่อง */}
-                <Field className="@md:col-span-2">
-                  <FieldLabel>{tfl("validityPeriod")}</FieldLabel>
-                  <FieldDescription>{stepperLabels.hint}</FieldDescription>
-                  <Controller
-                    control={form.control}
-                    name="validity_period"
-                    render={({ field }) => (
-                      <PltValidityStepper
-                        value={field.value}
-                        onChange={field.onChange}
-                        disabled={isDisabled}
-                        labels={stepperLabels}
-                      />
-                    )}
-                  />
-                </Field>
-
-                {/* ช่องเดียว (ไม่ span) — ช่องกว้าง 2 ช่องสองช่องติดกันตกคนละแถวในกริด 3 คอลัมน์ */}
-                <Field>
-                  <FieldLabel>{tfl("description")}</FieldLabel>
-                  <Textarea
-                    placeholder={tfl("optional")}
-                    rows={2}
-                    maxLength={256}
-                    disabled={isDisabled}
-                    className="resize-none"
-                    {...form.register("description")}
-                  />
-                </Field>
-              </FieldGrid>
-            )}
-          </CompactSection>
-
-          {/* คู่นี้อยู่บนสุดของฟอร์ม: ก้อนซ้ายเป็น first (ไม่มี mt-5) ก้อนขวาต้องตัด mt-5 ทิ้ง
-              ตอนวางเคียงกัน ไม่งั้นการ์ดขวาต่ำกว่าซ้าย 20px · ซ้อนกันเมื่อไรยังต้องมีระยะ */}
-          <div className="min-[1700px]:[&>section]:mt-0">
-            <CompactSection
-              title={t("vendorInstructionTitle")}
-              // คำอธิบายโหมดแก้ยาว ห่อบรรทัดบนหัวข้อคู่แล้วหัวข้อสองฝั่งไม่เสมอกัน → ย้ายเข้าการ์ด
-              description={isView ? t("vendorInstructionHelpView") : undefined}
-            >
-              {isView ? (
-                // ไม่มี label (ซ้ำกับหัว section ทั้งคำ) — ค่าว่างบอกเป็นคำ ไม่ใช่ "—" ลอย ๆ
-                <FieldPlainText className="whitespace-pre-wrap">
-                  {priceListTemplate?.vendor_instructions || (
-                    <span className="text-muted-foreground font-normal">
-                      {t("vendorInstructionEmpty")}
-                    </span>
-                  )}
-                </FieldPlainText>
-              ) : (
-                <Field>
-                  <FieldLabel className="sr-only">
-                    {t("vendorInstructionTitle")}
-                  </FieldLabel>
-                  <FieldDescription>
-                    {t("vendorInstructionHelp")}
-                  </FieldDescription>
-                  <Textarea
-                    placeholder={t("vendorInstructionPlaceholder")}
-                    rows={5}
-                    maxLength={1000}
-                    disabled={isDisabled}
-                    className="resize-none leading-relaxed"
-                    {...form.register("vendor_instruction")}
-                  />
-                </Field>
+        <CompactSection
+          // General ย้ายเข้าการ์ดหัวแล้ว — หมวดนี้เป็นหมวดแรกของตัวฟอร์ม
+          first
+          title={t("vendorInstructionTitle")}
+          // คำอธิบายโหมดแก้ยาว ห่อบรรทัดบนหัวข้อคู่แล้วหัวข้อสองฝั่งไม่เสมอกัน → ย้ายเข้าการ์ด
+          description={isView ? t("vendorInstructionHelpView") : undefined}
+        >
+          {isView ? (
+            // ไม่มี label (ซ้ำกับหัว section ทั้งคำ) — ค่าว่างบอกเป็นคำ ไม่ใช่ "—" ลอย ๆ
+            <FieldPlainText className="whitespace-pre-wrap">
+              {priceListTemplate?.vendor_instructions || (
+                <span className="text-muted-foreground font-normal">
+                  {t("vendorInstructionEmpty")}
+                </span>
               )}
-            </CompactSection>
-          </div>
-        </div>
+            </FieldPlainText>
+          ) : (
+            <Field>
+              <FieldLabel className="sr-only">
+                {t("vendorInstructionTitle")}
+              </FieldLabel>
+              <FieldDescription>{t("vendorInstructionHelp")}</FieldDescription>
+              <Textarea
+                placeholder={t("vendorInstructionPlaceholder")}
+                rows={5}
+                maxLength={1000}
+                disabled={isDisabled}
+                className="resize-none leading-relaxed"
+                {...form.register("vendor_instruction")}
+              />
+            </Field>
+          )}
+        </CompactSection>
 
         <PltItemFields
           form={form}
