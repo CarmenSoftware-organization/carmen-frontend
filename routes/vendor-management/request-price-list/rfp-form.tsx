@@ -20,6 +20,11 @@ import { LookupPrt } from "@/components/lookup/lookup-prt";
 import { Input } from "@/components/ui/input";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { FormToolbar } from "@/components/share/form-toolbar";
+import { DOC_HEADER_CARD } from "@/components/loader/doc-page-skeleton";
+import {
+  DocAuditButton,
+  DocAuditLine,
+} from "@/components/share/doc-audit-line";
 import { formatDate } from "@/lib/date-utils";
 import { useProfile } from "@/hooks/use-profile";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
@@ -162,41 +167,177 @@ export function RequestPriceListForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- form/getDefaultValues stable; mode อ่านโดยไม่ retrigger
   }, [vendorIdsKey, requestPriceList?.id]);
 
+  const generalFields = isView ? (
+    // ชื่อไม่แสดง — แถบหัวมีชื่อเป็นตัวเอกอยู่แล้ว · ข้อความล้วน → dense ทรงหัว PR
+    // badge สถานะรอบรับราคาย้ายไปข้างชื่อ (ท่าเดียวกับป้ายช่วงราคาของ price list)
+    <FieldGrid dense>
+      <SettingField
+        label={tfl("template")}
+        value={requestPriceList?.pricelist_template?.name}
+      />
+      <SettingField
+        label={t("requestPeriod")}
+        value={
+          startDate && endDate
+            ? `${formatDate(startDate, dateFormat)} - ${formatDate(endDate, dateFormat)}`
+            : null
+        }
+      />
+    </FieldGrid>
+  ) : (
+    <FieldGrid>
+      <Field>
+        <FieldLabel htmlFor="rfp-name">
+          {tfl("name")}
+          <span className="text-destructive"> *</span>
+        </FieldLabel>
+        <FieldInput
+          id="rfp-name"
+          placeholder={t("namePlaceholder")}
+          disabled={isDisabled}
+          error={form.formState.errors.name?.message}
+          maxLength={100}
+          {...form.register("name")}
+        />
+      </Field>
+      <Field>
+        <FieldLabel>
+          {tfl("template")}
+          <span className="text-destructive"> *</span>
+        </FieldLabel>
+        <Controller
+          control={form.control}
+          name="pricelist_template_id"
+          render={({ field }) => (
+            <LookupPrt
+              value={field.value ?? ""}
+              onValueChange={(value) => field.onChange(value)}
+              defaultLabel={
+                field.value &&
+                field.value === requestPriceList?.pricelist_template?.id
+                  ? (requestPriceList.pricelist_template.name ?? undefined)
+                  : undefined
+              }
+              disabled={isDisabled}
+              className="w-full"
+              error={form.formState.errors.pricelist_template_id?.message}
+            />
+          )}
+        />
+      </Field>
+      <Field>
+        <FieldLabel>{tfl("startDate")}</FieldLabel>
+        <Controller
+          control={form.control}
+          name="start_date"
+          render={({ field }) => (
+            <FieldDatePicker
+              value={field.value}
+              onValueChange={field.onChange}
+              disabled={isDisabled}
+              className="w-full"
+              placeholder={tfl("pickDate")}
+              fromDate={today}
+              error={form.formState.errors.start_date?.message}
+            />
+          )}
+        />
+      </Field>
+      <Field>
+        <FieldLabel>{tfl("endDate")}</FieldLabel>
+        <Controller
+          control={form.control}
+          name="end_date"
+          render={({ field }) => (
+            <FieldDatePicker
+              value={field.value}
+              onValueChange={field.onChange}
+              disabled={isDisabled}
+              className="w-full"
+              placeholder={tfl("pickDate")}
+              fromDate={startDate ? new Date(startDate) : today}
+              error={form.formState.errors.end_date?.message}
+            />
+          )}
+        />
+      </Field>
+    </FieldGrid>
+  );
+
   return (
     <FormPageShell
       width="wide"
+      // หัวอยู่ในการ์ดมีพื้น ทรงเดียวกับหัวเอกสาร PR: ชื่อ+สถานะรอบ+ปุ่ม · ช่อง General (ribbon)
+      // + ตาราง audit ชิดขวาล่าง (โหมดดู) — ไม่มีการ์ด General แยก · ช่อง General อยู่นอก
+      // <form> (แบบ PR — ปุ่มบนหัวไม่กลายเป็น submit) RHF ยังเก็บค่าครบ แค่กด Enter ไม่ submit
       header={
-        <FormToolbar
-          mode={f.mode}
-          formId={FORM_ID}
-          isPending={isPending}
-          title={watchedName || t("namePlaceholder")}
-          titleMuted={!watchedName}
-          onBack={f.handleBack}
-          onCancel={f.handleCancel}
-          onEdit={f.handleEdit}
-          onDelete={requestPriceList ? () => setShowDelete(true) : undefined}
-          deleteIsPending={deleteRfp.isPending}
-          onComment={requestPriceList ? () => setShowComment(true) : undefined}
-          activity={
-            requestPriceList && {
-              id: requestPriceList.id,
-              label: requestPriceList.name,
+        <div className={DOC_HEADER_CARD}>
+          <FormToolbar
+            inlineBack
+            mode={f.mode}
+            formId={FORM_ID}
+            isPending={isPending}
+            title={watchedName || t("namePlaceholder")}
+            titleMuted={!watchedName}
+            onBack={f.handleBack}
+            onCancel={f.handleCancel}
+            onEdit={f.handleEdit}
+            onDelete={requestPriceList ? () => setShowDelete(true) : undefined}
+            deleteIsPending={deleteRfp.isPending}
+            onComment={
+              requestPriceList ? () => setShowComment(true) : undefined
             }
-          }
-        >
-          {isView && requestPriceList?.id && (
-            <PrintDocumentButton
-              documentType="RFP"
-              documentId={requestPriceList.id}
-              filters={
-                requestPriceList.name
-                  ? { DocumentNo: requestPriceList.name }
-                  : undefined
+            activity={
+              requestPriceList && {
+                id: requestPriceList.id,
+                label: requestPriceList.name,
               }
-            />
-          )}
-        </FormToolbar>
+            }
+            badges={
+              requestPriceList && (
+                <>
+                  {/* รอบรับราคายังเปิดอยู่ไหม — ตัวเดียวกับคอลัมน์ในหน้า list */}
+                  <RfpWindowBadge item={requestPriceList} />
+                  {/* มือถือ: ตาราง audit เต็มซ่อนอยู่ เหลือไอคอนข้างสถานะ (ไม่มีเลขที่ใบ) */}
+                  {isView && (
+                    <DocAuditButton
+                      audit={requestPriceList.audit}
+                      docVersion={requestPriceList.doc_version}
+                      className="-my-1 sm:hidden"
+                    />
+                  )}
+                </>
+              )
+            }
+            // ml-4 หักล้าง -ml-4 ของ DocFormHeader (เหมือนหัว PR) · ตาราง audit เฉพาะโหมดดู
+            ribbon={
+              isView ? (
+                <div className="ml-4 flex min-w-0 flex-1 flex-wrap items-end gap-x-5 gap-y-3">
+                  <div className="min-w-0 flex-1 basis-72">{generalFields}</div>
+                  <DocAuditLine
+                    audit={requestPriceList?.audit}
+                    docVersion={requestPriceList?.doc_version}
+                    className="ms-auto hidden sm:table"
+                  />
+                </div>
+              ) : (
+                <div className="ml-4 min-w-0 flex-1">{generalFields}</div>
+              )
+            }
+          >
+            {isView && requestPriceList?.id && (
+              <PrintDocumentButton
+                documentType="RFP"
+                documentId={requestPriceList.id}
+                filters={
+                  requestPriceList.name
+                    ? { DocumentNo: requestPriceList.name }
+                    : undefined
+                }
+              />
+            )}
+          </FormToolbar>
+        </div>
       }
     >
       <form
@@ -205,122 +346,6 @@ export function RequestPriceListForm({
           scrollToFirstInvalidField(),
         )}
       >
-        {/* General */}
-        <CompactSection
-          first
-          title={tfl("general")}
-          description={t(isView ? "generalDescView" : "generalDesc")}
-        >
-          {isView ? (
-            // ชื่อไม่แสดง — แถบหัวมีชื่อเป็นตัวเอกอยู่แล้ว (ท่าเดียวกับหน้า price list)
-            <FieldGrid>
-              <SettingField
-                label={tfl("template")}
-                value={requestPriceList?.pricelist_template?.name}
-              />
-              {/* ช่วงรับราคา + badge บอกว่ารอบยังเปิดอยู่ไหม (ตัวเดียวกับคอลัมน์ในหน้า list)
-                  ทรงเดียวกับ SettingField แต่มี badge ใต้ค่า */}
-              {startDate && endDate && requestPriceList ? (
-                <div className="min-w-0">
-                  <div className="text-muted-foreground text-xs">
-                    {t("requestPeriod")}
-                  </div>
-                  <div className="mt-0.5 text-sm tabular-nums">
-                    {formatDate(startDate, dateFormat)} -{" "}
-                    {formatDate(endDate, dateFormat)}
-                  </div>
-                  <div className="mt-1">
-                    <RfpWindowBadge item={requestPriceList} />
-                  </div>
-                </div>
-              ) : (
-                <SettingField label={t("requestPeriod")} value={null} />
-              )}
-            </FieldGrid>
-          ) : (
-            <FieldGrid>
-              <Field>
-                <FieldLabel htmlFor="rfp-name">
-                  {tfl("name")}
-                  <span className="text-destructive"> *</span>
-                </FieldLabel>
-                <FieldInput
-                  id="rfp-name"
-                  placeholder={t("namePlaceholder")}
-                  disabled={isDisabled}
-                  error={form.formState.errors.name?.message}
-                  maxLength={100}
-                  {...form.register("name")}
-                />
-              </Field>
-              <Field>
-                <FieldLabel>
-                  {tfl("template")}
-                  <span className="text-destructive"> *</span>
-                </FieldLabel>
-                <Controller
-                  control={form.control}
-                  name="pricelist_template_id"
-                  render={({ field }) => (
-                    <LookupPrt
-                      value={field.value ?? ""}
-                      onValueChange={(value) => field.onChange(value)}
-                      defaultLabel={
-                        field.value &&
-                        field.value === requestPriceList?.pricelist_template?.id
-                          ? (requestPriceList.pricelist_template.name ??
-                            undefined)
-                          : undefined
-                      }
-                      disabled={isDisabled}
-                      className="w-full"
-                      error={
-                        form.formState.errors.pricelist_template_id?.message
-                      }
-                    />
-                  )}
-                />
-              </Field>
-              <Field>
-                <FieldLabel>{tfl("startDate")}</FieldLabel>
-                <Controller
-                  control={form.control}
-                  name="start_date"
-                  render={({ field }) => (
-                    <FieldDatePicker
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isDisabled}
-                      className="w-full"
-                      placeholder={tfl("pickDate")}
-                      fromDate={today}
-                      error={form.formState.errors.start_date?.message}
-                    />
-                  )}
-                />
-              </Field>
-              <Field>
-                <FieldLabel>{tfl("endDate")}</FieldLabel>
-                <Controller
-                  control={form.control}
-                  name="end_date"
-                  render={({ field }) => (
-                    <FieldDatePicker
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isDisabled}
-                      className="w-full"
-                      placeholder={tfl("pickDate")}
-                      fromDate={startDate ? new Date(startDate) : today}
-                      error={form.formState.errors.end_date?.message}
-                    />
-                  )}
-                />
-              </Field>
-            </FieldGrid>
-          )}
-        </CompactSection>
-
         <RfpVendorFields
           form={form}
           requestPriceList={requestPriceList}

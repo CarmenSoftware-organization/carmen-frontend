@@ -243,6 +243,8 @@ export function RfpVendorFields({
 
   return (
     <CompactSection
+      // General ย้ายเข้าการ์ดหัวแล้ว — หมวดผู้ขายเป็นหมวดแรกของตัวฟอร์ม
+      first
       frameless
       title={t("vendors.title")}
       // โหมดดูไม่มีปุ่มเพิ่ม — คำชวน "Add vendors…" จึงเปลี่ยนเป็นยอดผู้ขายที่ส่งราคามาแล้ว
