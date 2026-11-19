@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/date-utils";
 import { formatAmount } from "@/lib/currency-utils";
 import {
-  IA_STATUS_CONFIG,
   IA_TYPE_ICON_COLOR,
   IA_TYPE_SIGN,
 } from "@/constant/inventory-adjustment";
@@ -35,8 +34,8 @@ export default function IaCard({ item, onEdit, onDelete, rowNo }: IaCardProps) {
   const isStockIn = typeKey === "stock-in";
   const docNo = isStockIn ? item.si_no : item.so_no;
   const docDate = isStockIn ? item.si_date : item.so_date;
-  const statusConfig =
-    IA_STATUS_CONFIG[item.doc_status] ?? IA_STATUS_CONFIG.draft;
+  // ป้ายแปลตามภาษา — IA_STATUS_CONFIG เป็นค่าคงที่ ป้ายในนั้นเป็นอังกฤษเสมอ
+  const ts = useTranslations("status");
   const itemCount =
     item.item_count ??
     (isStockIn ? item.stock_in_detail : item.stock_out_detail)?.length ??
@@ -53,7 +52,7 @@ export default function IaCard({ item, onEdit, onDelete, rowNo }: IaCardProps) {
       onOpen={() => onEdit(item)}
       onDelete={() => onDelete(item)}
     >
-      <ListCardStatusRow status={item.doc_status} label={statusConfig.label} />
+      <ListCardStatusRow status={item.doc_status} label={ts(item.doc_status)} />
       {docDate && (
         <ListCardRow label={tfl("date")}>
           <span className="tabular-nums">

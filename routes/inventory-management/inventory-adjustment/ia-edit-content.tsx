@@ -5,7 +5,12 @@ import { useInventoryAdjustmentById } from "./use-inventory-adjustment";
 import { InventoryAdjustmentForm } from "./ia-form";
 import { ErrorState } from "@/components/ui/error-state";
 import type { InventoryAdjustmentType } from "@/types/inventory-adjustment";
-import { FormPageSkeleton } from "@/components/loader/form-page-skeleton";
+import { DocPageSkeleton } from "@/components/loader/doc-page-skeleton";
+
+/** โครงตอนโหลด = หัวเอกสารการ์ด + 4 ช่องข้อความ (วันที่ · เหตุผล · คลัง · คำอธิบาย) ไม่มีแท็บ */
+const IaPageSkeleton = () => (
+  <DocPageSkeleton ribbon="text" fields={[1, 1, 1, 1]} tabs={false} />
+);
 
 const IaEditInner = ({ id }: { id: string }) => {
   const [searchParams] = useSearchParams();
@@ -34,7 +39,7 @@ const EditWithType = ({
     refetch,
   } = useInventoryAdjustmentById(id, type);
 
-  if (isLoading) return <FormPageSkeleton />;
+  if (isLoading) return <IaPageSkeleton />;
   if (error || !inventoryAdjustment)
     return (
       <ErrorState
@@ -62,7 +67,7 @@ const EditWithType = ({
  */
 export function IaEditContent({ id }: { id: string }) {
   return (
-    <Suspense fallback={<FormPageSkeleton />}>
+    <Suspense fallback={<IaPageSkeleton />}>
       <IaEditInner id={id} />
     </Suspense>
   );
