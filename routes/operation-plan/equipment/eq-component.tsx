@@ -15,6 +15,7 @@ import { DataGridPagination } from "@/components/ui/data-grid/data-grid-paginati
 import { useEquipment, useDeleteEquipment } from "./use-eq";
 import { useEquipmentCategory } from "@/hooks/use-equipment-category";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGridPagination } from "@/hooks/use-grid-pagination";
 import type { Equipment } from "@/types/equipment";
@@ -123,7 +124,10 @@ export default function EquipmentComponent() {
   });
   const categories = new Map(categoryItems.map((c) => [c.id, c.name]));
 
+  // เลือกคอลัมน์ตามความกว้างกล่องตาราง (ลบเส้นขอบ DataGridContainer ข้างละ 1px)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
   const table = useEquipmentTable({
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
     equipments,
     categories,
     totalRecords,
@@ -201,25 +205,27 @@ export default function EquipmentComponent() {
       )}
 
       {!isGridMode && (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          tableLayout={{ headerSticky: true }}
-          emptyMessage={<EmptyComponent />}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              listGridMaxH(lf.activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            tableLayout={{ headerSticky: true }}
+            emptyMessage={<EmptyComponent />}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                listGridMaxH(lf.activeFilters.length > 0),
+              )}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       <DeleteDialog

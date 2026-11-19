@@ -1,4 +1,4 @@
-import type { UseFormReturn, FieldPath } from "react-hook-form";
+import { useWatch, type UseFormReturn, type FieldPath } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { Field, FieldLabel, FieldInput } from "@/components/ui/field";
 import { CompactSection, FieldGrid } from "@/components/share/compact-section";
@@ -17,6 +17,9 @@ export function EqQuantitySection({
   isDisabled,
   isView,
 }: EqQuantitySectionProps) {
+  // ค่าโหมดดูอ่านด้วย useWatch ไม่ใช่ getValues — หน้านี้ Save แล้วอยู่หน้าเดิม getValues ไม่ทำให้
+  // วาดใหม่ตอนฟอร์ม reset เป็นค่าที่เพิ่งบันทึก จึงโชว์ค่าเก่าจนกว่าจะ reload
+  const v = useWatch({ control: form.control }) as EquipmentFormValues;
   const t = useTranslations("operationPlan.equipment");
   const tfl = useTranslations("field");
 
@@ -26,22 +29,18 @@ export function EqQuantitySection({
         <FieldGrid>
           <EqTextField
             label={tfl("availableQty")}
-            value={form.getValues("available_qty")}
+            value={v.available_qty}
             numeric
           />
-          <EqTextField
-            label={tfl("totalQty")}
-            value={form.getValues("total_qty")}
-            numeric
-          />
+          <EqTextField label={tfl("totalQty")} value={v.total_qty} numeric />
           <EqTextField
             label={tfl("usageCount")}
-            value={form.getValues("usage_count")}
+            value={v.usage_count}
             numeric
           />
           <EqTextField
             label={t("avgUsageTime")}
-            value={form.getValues("average_usage_time")}
+            value={v.average_usage_time}
             numeric
           />
         </FieldGrid>

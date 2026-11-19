@@ -27,7 +27,7 @@ import { EqInstructionsSection } from "./eq-instructions-section";
 import { EqMaintenanceSection } from "./eq-maintenance-section";
 import { EqAdditionalSection } from "./eq-additional-section";
 import { SECTION_PAIR } from "@/components/share/compact-section";
-import { EqSummary } from "./eq-summary";
+import { EqHeaderFields } from "./eq-header-fields";
 import { recipeEquipmentCommentCrud } from "./use-recipe-equipment-comments";
 
 // sheet comment โหลดเมื่อกดเปิดครั้งแรก ไม่ต้องติดมากับหน้าฟอร์ม
@@ -174,13 +174,24 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
           onDelete={equipment ? () => setShowDelete(true) : undefined}
           activityId={equipment?.id}
           onComment={equipment ? () => setShowComment(true) : undefined}
+          audit={equipment?.audit}
+          docVersion={equipment?.doc_version}
+          headerFields={
+            <EqHeaderFields
+              form={form}
+              isDisabled={isDisabled}
+              isView={isView}
+              imageUrl={equipment?.image_url}
+              savedCategory={
+                equipment
+                  ? { id: equipment.category_id, name: equipment.category_name }
+                  : undefined
+              }
+            />
+          }
         />
       }
     >
-      {equipment && isView && (
-        <EqSummary form={form} imageUrl={equipment.image_url} />
-      )}
-
       <form
         id="equipment-form"
         onSubmit={form.handleSubmit(onSubmit, () =>
@@ -195,11 +206,6 @@ export function EquipmentForm({ equipment }: EquipmentFormProps) {
           imageFile={imageFile}
           imageRemoved={imageRemoved}
           onImageChange={handleImageChange}
-          savedCategory={
-            equipment
-              ? { id: equipment.category_id, name: equipment.category_name }
-              : undefined
-          }
         />
         {/* จอ ≥1700px วางคู่ตามลำดับเดิม: Quantity | Instructions แล้ว Maintenance | Additional */}
         <div className={SECTION_PAIR}>

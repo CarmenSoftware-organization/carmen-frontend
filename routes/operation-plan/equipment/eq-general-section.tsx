@@ -1,8 +1,7 @@
-import { Controller, type UseFormReturn } from "react-hook-form";
+import { useWatch, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldLabel, FieldInput } from "@/components/ui/field";
-import { LookupEquipmentCategory } from "@/components/lookup/lookup-equipment-category";
 import {
   CompactSection,
   FieldGrid,
@@ -21,11 +20,6 @@ interface EqGeneralSectionProps {
   readonly imageFile: File | null;
   readonly imageRemoved: boolean;
   readonly onImageChange: (next: EqImageChange) => void;
-  /**
-   * หมวดที่บันทึกไว้ — เป็น `defaultLabel` ของ lookup หมวด ซึ่งโหลดทีละ 30
-   * หมวดที่อยู่หลังหน้าแรกจะขึ้น placeholder ทั้งที่มีค่า
-   */
-  readonly savedCategory?: { id: string | null; name: string | null };
 }
 
 export function EqGeneralSection({
@@ -36,13 +30,14 @@ export function EqGeneralSection({
   imageFile,
   imageRemoved,
   onImageChange,
-  savedCategory,
 }: EqGeneralSectionProps) {
   const t = useTranslations("operationPlan.equipment");
   const tfl = useTranslations("field");
   const tf = useTranslations("form");
   const errors = form.formState.errors;
-  const v = form.getValues();
+  // ค่าโหมดดูอ่านด้วย useWatch ไม่ใช่ getValues — หน้านี้ Save แล้วอยู่หน้าเดิม getValues ไม่ทำให้
+  // วาดใหม่ตอนฟอร์ม reset เป็นค่าที่เพิ่งบันทึก จึงโชว์ค่าเก่าจนกว่าจะ reload
+  const v = useWatch({ control: form.control }) as EquipmentFormValues;
 
   return (
     <>
@@ -56,12 +51,7 @@ export function EqGeneralSection({
         >
           {isView ? (
             <FieldGrid>
-              <EqTextField label={tfl("code")} value={v.code} />
-              <EqTextField label={tfl("name")} value={v.name} />
-              <EqTextField
-                label={tfl("category")}
-                value={savedCategory?.name}
-              />
+              {/* รหัส · ชื่อ · หมวด อยู่บนการ์ดหัวแล้ว */}
               <EqTextField label={tfl("brand")} value={v.brand} />
               <EqTextField label={tfl("model")} value={v.model} />
               <EqTextField label={tfl("serialNo")} value={v.serial_no} />
@@ -73,57 +63,6 @@ export function EqGeneralSection({
             </FieldGrid>
           ) : (
             <FieldGrid>
-              <Field>
-                <FieldLabel htmlFor="equipment-code" required>
-                  {tfl("code")}
-                </FieldLabel>
-                <FieldInput
-                  id="equipment-code"
-                  placeholder={t("codePlaceholder")}
-                  className="h-8"
-                  disabled={isDisabled}
-                  maxLength={10}
-                  error={errors.code?.message}
-                  {...form.register("code")}
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="equipment-name" required>
-                  {tfl("name")}
-                </FieldLabel>
-                <FieldInput
-                  id="equipment-name"
-                  placeholder={t("namePlaceholder")}
-                  className="h-8"
-                  disabled={isDisabled}
-                  maxLength={100}
-                  error={errors.name?.message}
-                  {...form.register("name")}
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel required>{tfl("category")}</FieldLabel>
-                <Controller
-                  control={form.control}
-                  name="category_id"
-                  render={({ field }) => (
-                    <LookupEquipmentCategory
-                      value={field.value ?? ""}
-                      onValueChange={field.onChange}
-                      defaultLabel={
-                        field.value && field.value === savedCategory?.id
-                          ? (savedCategory.name ?? undefined)
-                          : undefined
-                      }
-                      disabled={isDisabled}
-                      error={errors.category_id?.message}
-                    />
-                  )}
-                />
-              </Field>
-
               <Field>
                 <FieldLabel htmlFor="equipment-brand">
                   {tfl("brand")}
