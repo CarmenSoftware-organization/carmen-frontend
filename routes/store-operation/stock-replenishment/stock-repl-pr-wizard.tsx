@@ -129,10 +129,22 @@ export function StockReplPrWizard({
     setRemoved((prev) => new Set(prev).add(rowKey(row)));
   }, []);
 
-  const tableRows: PrTableRow[] = activeRows.map((row) => ({
-    ...row,
-    draft: draftOf(row),
-  }));
+  // `data` ต้อง identity คงที่ — ไฟล์นี้ปิด React Compiler ไว้ ไม่มีใครจำให้ ถ้าส่ง array
+  // ใหม่ทุก render getCoreRowModel จะเรียก `_autoResetPageIndex` → setState pagination
+  // (object ใหม่เสมอ) → render ใหม่ → array ใหม่ วนไม่จบ หน้าค้างทั้งแท็บโดยไม่มี error
+  const tableRows = useMemo<PrTableRow[]>(
+    () =>
+      rows
+        .filter((row) => !removed.has(rowKey(row)))
+        .map((row) => ({
+          ...row,
+          draft: drafts.get(rowKey(row)) ?? {
+            qty: row.product.reorder_qty,
+            unitId: "",
+          },
+        })),
+    [rows, removed, drafts],
+  );
 
   const columns = useMemo<ColumnDef<PrTableRow>[]>(
     () => [
