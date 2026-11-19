@@ -52,8 +52,8 @@ export function PlItemFields({
   return (
     <>
       <SettingSection
-        // โหมดดู: แถบสรุปข้างบนเป็นการ์ดแยกอยู่แล้ว เส้นคั่นตรงนี้ไม่ได้แบ่งอะไร
-        first={isView}
+        // ช่อง General อยู่ในการ์ดหัวแล้ว — หมวดนี้เป็นหมวดแรกของตัวฟอร์มเสมอ ไม่ต้องมีเส้นคั่น
+        first
         wide
         frameless
         title={t("detail.title")}
