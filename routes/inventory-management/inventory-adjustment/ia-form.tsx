@@ -245,7 +245,10 @@ export function InventoryAdjustmentForm({
 
   // บรรทัดที่แก้แค่ dimension ต้องไม่ทำให้ต้นทุนเปลี่ยน (ดู restoreStoredCost)
   // เลขสดราย detail ทับหลัง buildItemChanges เสมอ (ดู withFreshDetailVersions)
-  const buildUpdateChanges = (values: AdjFormValues, fresh: FreshAdj | null) => {
+  const buildUpdateChanges = (
+    values: AdjFormValues,
+    fresh: FreshAdj | null,
+  ) => {
     const changes = buildItemChanges(
       values.items,
       defaultValues.items,
@@ -424,6 +427,20 @@ export function InventoryAdjustmentForm({
           onEdit={() => setMode("edit")}
           onDelete={() => setShowDelete(true)}
           onComment={() => setShowComment(true)}
+          ribbon={
+            <DocumentInfo
+              form={form}
+              isView={isView}
+              isDisabled={isDisabled}
+              adjustmentKind={adjTypeFilter}
+              inventoryAdjustment={inventoryAdjustment}
+              currentPeriodStart={currentPeriod?.start_at}
+              currentPeriodEnd={currentPeriod?.end_at}
+              dateFormat={dateFormat}
+              tc={tc}
+              tfl={tfl}
+            />
+          }
         />
       }
       footer={
@@ -450,20 +467,6 @@ export function InventoryAdjustmentForm({
         // ที่ sidebar เคยกินคืนไป (DESIGN.md: an ERP table wants the pixels)
         className="min-w-0"
       >
-        <DocumentInfo
-          form={form}
-          isView={isView}
-          isDisabled={isDisabled}
-          adjustmentKind={adjTypeFilter}
-          inventoryAdjustment={inventoryAdjustment}
-          currentPeriodStart={currentPeriod?.start_at}
-          currentPeriodEnd={currentPeriod?.end_at}
-          dateFormat={dateFormat}
-          t={t}
-          tc={tc}
-          tfl={tfl}
-        />
-
         {/* ── Line items ── */}
         <AdjItemFields
           form={form}

@@ -51,6 +51,7 @@ import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { FilterFieldDef } from "@/types/list-filter";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
+import { useElementWidth } from "@/hooks/use-element-width";
 
 // ไม่กรอง is_active — หน้า list ต้องกรองใบเก่าที่อ้างประเภทที่ถูกปิดไปแล้วได้
 const ADJUSTMENT_TYPE_ENTITY = defineEntitySource<AdjustmentType>({
@@ -264,7 +265,10 @@ export default function InventoryAdjustmentComponent() {
       listReturnState(),
     );
 
+  // เลือกคอลัมน์ตามความกว้างกล่องตาราง (ลบเส้นขอบ DataGridContainer ข้างละ 1px)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
   const table = useInventoryAdjustmentTable({
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
     items,
     totalRecords,
     params,
@@ -388,25 +392,27 @@ export default function InventoryAdjustmentComponent() {
     >
       {/* Content */}
       {!isGridMode && (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          tableLayout={{ headerSticky: true }}
-          emptyMessage={<EmptyComponent />}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              listGridMaxH(lf.activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            tableLayout={{ headerSticky: true }}
+            emptyMessage={<EmptyComponent />}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                listGridMaxH(lf.activeFilters.length > 0),
+              )}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       {isGridMode && (
