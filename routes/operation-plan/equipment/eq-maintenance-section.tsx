@@ -1,4 +1,4 @@
-import { Controller, type UseFormReturn } from "react-hook-form";
+import { useWatch, Controller, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { Field, FieldLabel, FieldDatePicker } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +20,9 @@ export function EqMaintenanceSection({
   isDisabled,
   isView,
 }: EqMaintenanceSectionProps) {
+  // ค่าโหมดดูอ่านด้วย useWatch ไม่ใช่ getValues — หน้านี้ Save แล้วอยู่หน้าเดิม getValues ไม่ทำให้
+  // วาดใหม่ตอนฟอร์ม reset เป็นค่าที่เพิ่งบันทึก จึงโชว์ค่าเก่าจนกว่าจะ reload
+  const v = useWatch({ control: form.control }) as EquipmentFormValues;
   const t = useTranslations("operationPlan.equipment");
   const tfl = useTranslations("field");
   const errors = form.formState.errors;
@@ -33,15 +36,15 @@ export function EqMaintenanceSection({
         <FieldGrid>
           <EqTextField
             label={t("lastMaintenanceDate")}
-            value={date(form.getValues("last_maintenance_date"))}
+            value={date(v.last_maintenance_date)}
           />
           <EqTextField
             label={t("nextMaintenanceDate")}
-            value={date(form.getValues("next_maintenance_date"))}
+            value={date(v.next_maintenance_date)}
           />
           <EqTextField
             label={t("maintenanceSchedule")}
-            value={form.getValues("maintenance_schedule")}
+            value={v.maintenance_schedule}
             wide
           />
         </FieldGrid>

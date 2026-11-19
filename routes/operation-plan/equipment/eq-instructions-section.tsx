@@ -1,4 +1,4 @@
-import type { UseFormReturn, FieldPath } from "react-hook-form";
+import { useWatch, type UseFormReturn, type FieldPath } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +18,9 @@ export function EqInstructionsSection({
   isDisabled,
   isView,
 }: EqInstructionsSectionProps) {
+  // ค่าโหมดดูอ่านด้วย useWatch ไม่ใช่ getValues — หน้านี้ Save แล้วอยู่หน้าเดิม getValues ไม่ทำให้
+  // วาดใหม่ตอนฟอร์ม reset เป็นค่าที่เพิ่งบันทึก จึงโชว์ค่าเก่าจนกว่าจะ reload
+  const v = useWatch({ control: form.control }) as EquipmentFormValues;
   const t = useTranslations("operationPlan.equipment");
   const tfl = useTranslations("field");
 
@@ -30,15 +33,12 @@ export function EqInstructionsSection({
         <FieldGrid>
           <EqTextField
             label={t("operationInstructions")}
-            value={form.getValues("operation_instructions")}
+            value={v.operation_instructions}
           />
-          <EqTextField
-            label={t("safetyNotes")}
-            value={form.getValues("safety_notes")}
-          />
+          <EqTextField label={t("safetyNotes")} value={v.safety_notes} />
           <EqTextField
             label={t("cleaningInstructions")}
-            value={form.getValues("cleaning_instructions")}
+            value={v.cleaning_instructions}
           />
         </FieldGrid>
       ) : (

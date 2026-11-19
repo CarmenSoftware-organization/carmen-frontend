@@ -1,4 +1,4 @@
-import { Controller, type UseFormReturn } from "react-hook-form";
+import { useWatch, Controller, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { StatusSwitch } from "@/components/ui/status-switch";
@@ -19,6 +19,9 @@ export function EqAdditionalSection({
   isDisabled,
   isView,
 }: EqAdditionalSectionProps) {
+  // ค่าโหมดดูอ่านด้วย useWatch ไม่ใช่ getValues — หน้านี้ Save แล้วอยู่หน้าเดิม getValues ไม่ทำให้
+  // วาดใหม่ตอนฟอร์ม reset เป็นค่าที่เพิ่งบันทึก จึงโชว์ค่าเก่าจนกว่าจะ reload
+  const v = useWatch({ control: form.control }) as EquipmentFormValues;
   const t = useTranslations("operationPlan.equipment");
   const tfl = useTranslations("field");
   const ts = useTranslations("status");
@@ -28,18 +31,14 @@ export function EqAdditionalSection({
     <CompactSection title={t("additional")} description={t("additionalDesc")}>
       {isView ? (
         <FieldGrid>
-          <EqTextField
-            label={tfl("note")}
-            value={form.getValues("note")}
-            wide
-          />
+          <EqTextField label={tfl("note")} value={v.note} wide />
           <EqTextField
             label={tfl("status")}
-            value={form.getValues("is_active") ? ts("active") : ts("inactive")}
+            value={v.is_active ? ts("active") : ts("inactive")}
           />
           <EqTextField
             label={t("portable")}
-            value={form.getValues("is_portable") ? tc("yes") : tc("no")}
+            value={v.is_portable ? tc("yes") : tc("no")}
           />
         </FieldGrid>
       ) : (

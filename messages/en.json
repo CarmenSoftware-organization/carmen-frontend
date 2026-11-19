@@ -5395,7 +5395,7 @@
       "back": "Back",
       "noCode": "no code",
       "untitledEquipment": "Untitled equipment",
-      "generalInfoDesc": "Name, code, and category of this equipment.",
+      "generalInfoDesc": "Brand, model, serial number, and description.",
       "qtySettingsDesc": "How many you have, how many are in use, and usage stats.",
       "instructionsDesc": "How to operate, safety notes, and cleaning steps.",
       "maintenanceDesc": "Maintenance schedule and history for this equipment.",
