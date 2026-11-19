@@ -25,7 +25,6 @@ import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGridPagination } from "@/hooks/use-grid-pagination";
 import type { Recipe } from "@/types/recipe";
-import { CardSkeletonGrid } from "@/components/loader/card-skeleton";
 import {
   RECIPE_DIFFICULTY_OPTIONS,
   RECIPE_STATUS_OPTIONS,
@@ -40,7 +39,11 @@ import { ListPageShell } from "@/components/share/list-page-shell";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
 import { DocumentListActions } from "@/components/share/document-list-actions";
 import { useRecipeTable } from "./use-recipe-table";
-import RecipeCard from "./recipe-card";
+import { useElementWidth } from "@/hooks/use-element-width";
+import RecipeCard, {
+  RECIPE_CARD_GRID,
+  RecipeCardSkeletonGrid,
+} from "./recipe-card";
 import { useListFilters } from "@/hooks/use-list-filters";
 import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
@@ -207,7 +210,10 @@ export default function RecipeComponent() {
       listReturnState(),
     );
 
+  // เลือกคอลัมน์ตามความกว้างกล่องตาราง (ลบเส้นขอบ DataGridContainer ข้างละ 1px)
+  const [setGridBox, gridBoxWidth] = useElementWidth();
   const table = useRecipeTable({
+    containerWidth: gridBoxWidth == null ? undefined : gridBoxWidth - 2,
     recipes,
     cuisines,
     categories: recipeCategories,
@@ -255,10 +261,10 @@ export default function RecipeComponent() {
         />
       }
     >
-      {isGridMode && grid.isLoading && <CardSkeletonGrid />}
+      {isGridMode && grid.isLoading && <RecipeCardSkeletonGrid />}
       {isGridMode && !grid.isLoading && recipes.length > 0 && (
         <>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className={RECIPE_CARD_GRID}>
             {recipes.map((item, i) => (
               <RecipeCard
                 rowNo={rowNumber(undefined, i)}
@@ -284,25 +290,27 @@ export default function RecipeComponent() {
         <EmptyComponent />
       )}
       {!isGridMode && (
-        <DataGrid
-          table={table}
-          recordCount={totalRecords}
-          isLoading={isLoading}
-          tableLayout={{ headerSticky: true }}
-          emptyMessage={<EmptyComponent />}
-        >
-          <DataGridContainer
-            className={cn(
-              "flex flex-col",
-              listGridMaxH(lf.activeFilters.length > 0),
-            )}
+        <div ref={setGridBox}>
+          <DataGrid
+            table={table}
+            recordCount={totalRecords}
+            isLoading={isLoading}
+            tableLayout={{ headerSticky: true }}
+            emptyMessage={<EmptyComponent />}
           >
-            <DataGridScrollArea>
-              <DataGridTable />
-            </DataGridScrollArea>
-            <DataGridPagination />
-          </DataGridContainer>
-        </DataGrid>
+            <DataGridContainer
+              className={cn(
+                "flex flex-col",
+                listGridMaxH(lf.activeFilters.length > 0),
+              )}
+            >
+              <DataGridScrollArea>
+                <DataGridTable />
+              </DataGridScrollArea>
+              <DataGridPagination />
+            </DataGridContainer>
+          </DataGrid>
+        </div>
       )}
 
       <DeleteDialog
