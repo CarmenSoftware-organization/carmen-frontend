@@ -39,6 +39,9 @@ export function useRecipeCategoryTable({
   const t = useTranslations("operationPlan.recipeCategory");
   const { dateTimeFormat } = useProfile();
 
+  // งบ tablet (useConfigTable = 607px เพราะนับ select 55 ที่ไม่ render):
+  // # 48 + code 80 + name 120 (ขั้นต่ำของ grow) + food 90 + margin 100 + status 100 + ปุ่ม 60 = 598
+  // name เป็น grow — คอลัมน์อื่นกว้างคงที่ ไม่ห่างกันบนจอกว้าง และ code ไม่หักบรรทัดที่ iPad
   const columns: ColumnDef<RecipeCategory>[] = [
     {
       accessorKey: "code",
@@ -46,11 +49,15 @@ export function useRecipeCategoryTable({
         <DataGridColumnHeader column={column} title={tfl("code")} />
       ),
       cell: ({ row }) => (
-        <CellAction onClick={() => onEdit(row.original)}>
+        <CellAction
+          onClick={() => onEdit(row.original)}
+          className="block max-w-full truncate whitespace-nowrap"
+          title={row.original.code}
+        >
           {row.original.code}
         </CellAction>
       ),
-      size: 60,
+      size: 80,
       meta: { headerTitle: tfl("code") },
     },
     {
@@ -80,7 +87,8 @@ export function useRecipeCategoryTable({
           </CellAction>
         </span>
       ),
-      meta: { headerTitle: tfl("name") },
+      size: 120,
+      meta: { headerTitle: tfl("name"), grow: true },
     },
     {
       id: "food_cost",
@@ -105,7 +113,7 @@ export function useRecipeCategoryTable({
         formatMarginRange(readRecipeCategoryDefaults(row.original)) ?? (
           <Unset />
         ),
-      size: 110,
+      size: 100,
       meta: {
         headerTitle: t("marginCol"),
         headerClassName: "text-right",
