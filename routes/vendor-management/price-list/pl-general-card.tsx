@@ -273,12 +273,15 @@ function PlViewFields({
           )}
         </div>
       </div>
-      {/* โชว์เสมอแม้ว่าง (—) ทรงเดียวกับหัว PR — ใบที่มี/ไม่มีคำอธิบายหัวทรงเดียวกัน */}
-      <SettingField
-        fullWidth
-        label={tfl("description")}
-        value={priceList?.description?.trim()}
-      />
+      {/* โชว์เสมอแม้ว่าง (—) ทรงเดียวกับหัว PR — ใบที่มี/ไม่มีคำอธิบายหัวทรงเดียวกัน
+          data-wide = เต็มแถวบนมือถือ (dense 2 คอลัมน์) · ตั้งแต่ @md เหลือช่องเดียว (ทรงหัว PR)
+          ตาราง audit กินที่ขวาของแถบ ถ้ายังกิน 2 ช่อง Description จะตกไปแถวที่สาม */}
+      <div data-wide="" className="min-w-0 @md:col-span-1!">
+        <SettingField
+          label={tfl("description")}
+          value={priceList?.description?.trim()}
+        />
+      </div>
     </FieldGrid>
   );
 }
