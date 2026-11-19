@@ -1,5 +1,11 @@
 import { useTranslations } from "use-intl";
-import { Controller, useForm, useWatch, type Control } from "react-hook-form";
+import {
+  Controller,
+  useForm,
+  useFormState,
+  useWatch,
+  type Control,
+} from "react-hook-form";
 import { FieldGrid } from "@/components/share/compact-section";
 import { SettingField } from "@/components/share/setting-field";
 import {
@@ -44,6 +50,10 @@ export function DocumentInfo({
   tc,
   tfl,
 }: DocumentInfoProps) {
+  // อ่าน error ผ่าน useFormState ในคอมโพเนนต์นี้เอง — ตัวนี้ถูกส่งเป็น ribbon ของหัวเอกสาร
+  // React Compiler memo element ที่ props คงที่ไว้ อ่าน form.formState.errors จาก prop
+  // แล้วกด Save ค่าว่าง ช่องจะไม่ขึ้นแดง
+  const { errors } = useFormState({ control: form.control });
   const locationName =
     inventoryAdjustment?.location?.name ?? inventoryAdjustment?.location_name;
 
@@ -98,7 +108,7 @@ export function DocumentInfo({
               }
               // ไม่เกินวันนี้ และไม่เกินท้ายงวด — ใบรับ/จ่ายลงวันที่อนาคตไม่ได้
               toDate={latestIssuableDate(currentPeriodEnd)}
-              error={form.formState.errors.date?.message}
+              error={errors.date?.message}
             />
           )}
         />
@@ -116,7 +126,7 @@ export function DocumentInfo({
               kind={adjustmentKind}
               disabled={isDisabled}
               className="w-full text-xs"
-              error={form.formState.errors.adjustment_type_id?.message}
+              error={errors.adjustment_type_id?.message}
             />
           )}
         />
@@ -138,7 +148,7 @@ export function DocumentInfo({
                 INVENTORY_TYPE.CONSIGNMENT,
               ]}
               defaultLabel={locationName}
-              error={form.formState.errors.location_id?.message}
+              error={errors.location_id?.message}
               lazy
             />
           )}
@@ -156,11 +166,11 @@ export function DocumentInfo({
           className="text-xs"
           disabled={isDisabled}
           maxLength={256}
-          aria-invalid={!!form.formState.errors.description}
+          aria-invalid={!!errors.description}
           {...form.register("description")}
         />
-        {form.formState.errors.description?.message && (
-          <FieldError>{form.formState.errors.description.message}</FieldError>
+        {errors.description?.message && (
+          <FieldError>{errors.description.message}</FieldError>
         )}
       </Field>
     </FieldGrid>
