@@ -26,6 +26,7 @@ import { InputQty } from "@/components/ui/input/input-qty";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
 import { LookupProductUnit } from "@/components/lookup/lookup-product-unit";
 import { LookupWorkflow } from "@/components/lookup/lookup-workflow";
+import { useElementWidth } from "@/hooks/use-element-width";
 import { useCreateStockReplPr } from "./use-stock-replenishment";
 import { WORKFLOW_TYPE } from "@/types/workflows";
 import type { Location, ProductLocation } from "@/types/stock-replenishment";
@@ -41,6 +42,13 @@ interface StockReplPrWizardProps {
   readonly rows: readonly StockReplPrRow[];
   readonly onCreated?: () => void;
 }
+
+/**
+ * กล่องแคบกว่านี้ (วัดจากกล่องจริง ไม่ใช่จอ) ตารางเป็นการ์ดแถวละใบ — มือถือกล่องเหลือ ~306px
+ * แต่คอลัมน์รวม 844px ตารางบีบจนชื่อคลังทับชื่อสินค้า ช่องจำนวนล้น หน่วยกับปุ่มลบหลุดขอบ
+ * tablet (717px) ยังพอดีตาราง
+ */
+const CARD_BREAKPOINT = 560;
 
 const rowKey = (row: StockReplPrRow) =>
   `${row.location.location_id}:${row.product.id}`;
@@ -84,6 +92,7 @@ export function StockReplPrWizard({
   const tc = useTranslations("common");
   const tfl = useTranslations("field");
   const createPr = useCreateStockReplPr();
+  const [setGridBox, gridBoxWidth] = useElementWidth();
 
   const [workflowId, setWorkflowId] = useState("");
   const [drafts, setDrafts] = useState<Map<string, RowDraft>>(new Map());
@@ -293,7 +302,8 @@ export function StockReplPrWizard({
       open={open}
       onOpenChange={(next) => !createPr.isPending && onOpenChange(next)}
     >
-      <DialogContent className="sm:max-w-4xl">
+      {/* จอเตี้ย (iPhone SE 667px) หัวกับปุ่มหลุดจอ — ให้ทั้ง dialog เลื่อนแทน */}
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{t("createPrTitle")}</DialogTitle>
           <DialogDescription>{t("createPrDesc")}</DialogDescription>
@@ -321,24 +331,88 @@ export function StockReplPrWizard({
           </p>
         </div>
 
-        <DataGrid
-          table={table}
-          recordCount={tableRows.length}
-          tableLayout={{
-            headerSticky: true,
-            // เซลล์มี input/select — clamp ใช้ -webkit-box แล้วทำ layout ของ control เพี้ยน
-            rowClamp: false,
-          }}
-          tableClassNames={{
-            // header ทึบ ไม่งั้นแถวที่เลื่อนอยู่ใต้มันทะลุขึ้นมา (stripped ทำ header โปร่ง)
-            headerRow: "bg-muted",
-            headerSticky: "sticky top-0 z-10",
-          }}
-        >
-          <DataGridContainer scroll className="max-h-96">
-            <DataGridTable />
-          </DataGridContainer>
-        </DataGrid>
+        {/* กล่องวัดต้องอยู่ทั้งสองแบบ — สลับแบบแล้วยังวัดต่อได้ */}
+        <div ref={setGridBox} className="min-w-0">
+          {gridBoxWidth !== undefined && gridBoxWidth < CARD_BREAKPOINT ? (
+            // ไม่ตั้ง max-h — dialog เลื่อนทั้งก้อนอยู่แล้ว scroll ซ้อนบนมือถือนิ้วติดกล่องใน
+            <ul className="flex flex-col gap-2">
+              {tableRows.map((row, index) => (
+                <li
+                  key={rowKey(row)}
+                  className="border-border/60 bg-card rounded-lg border p-3 text-xs"
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="text-muted-foreground w-5 shrink-0 pt-px tabular-nums">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <NameWithSubtext
+                        primary={row.product.name}
+                        secondary={row.product.code}
+                        wrap
+                      />
+                      <p className="text-muted-foreground mt-0.5 break-words">
+                        {row.location.location_name}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="-mt-1 -mr-1 shrink-0"
+                      onClick={() => handleRemove(row)}
+                      aria-label={tc("delete")}
+                    >
+                      <Trash2 className="text-destructive size-4" />
+                    </Button>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 ps-7">
+                    <Field>
+                      <FieldLabel>{t("requestQty")}</FieldLabel>
+                      <InputQty
+                        aria-label={`${t("requestQty")} ${row.product.name}`}
+                        value={row.draft.qty}
+                        onChange={(e) =>
+                          patchDraft(row, {
+                            qty: e.currentTarget.valueAsNumber || 0,
+                          })
+                        }
+                        className="text-right"
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>{tfl("unit")}</FieldLabel>
+                      <LookupProductUnit
+                        productId={row.product.id}
+                        value={row.draft.unitId}
+                        onValueChange={(unitId) => patchDraft(row, { unitId })}
+                      />
+                    </Field>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <DataGrid
+              table={table}
+              recordCount={tableRows.length}
+              tableLayout={{
+                headerSticky: true,
+                // เซลล์มี input/select — clamp ใช้ -webkit-box แล้วทำ layout ของ control เพี้ยน
+                rowClamp: false,
+              }}
+              tableClassNames={{
+                // header ทึบ ไม่งั้นแถวที่เลื่อนอยู่ใต้มันทะลุขึ้นมา (stripped ทำ header โปร่ง)
+                headerRow: "bg-muted",
+                headerSticky: "sticky top-0 z-10",
+              }}
+            >
+              <DataGridContainer scroll className="max-h-96">
+                <DataGridTable />
+              </DataGridContainer>
+            </DataGrid>
+          )}
+        </div>
 
         <DialogFooter>
           <Button
