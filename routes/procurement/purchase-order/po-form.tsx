@@ -42,6 +42,10 @@ import {
 import { usePoDialogState } from "./use-po-dialog-state";
 import { usePoProfileSync } from "./use-po-profile-sync";
 import { usePoFormHandlers } from "./use-po-form-handlers";
+import {
+  ProcurementLineDimensionsContext,
+  useProcurementLineDimensions,
+} from "../shared/use-procurement-line-dimensions";
 // action ของ workflow ใช้คำชุดเดียวกับ PR (workflow engine ตัวเดียวกัน)
 import { PR_WORKFLOW_ACTION_CONFIG } from "@/constant/purchase-request";
 
@@ -162,6 +166,16 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
     scrollToFirstInvalidField();
   };
 
+  // dimension ต่อบรรทัด: กฎตามบัญชี · default · ตรวจก่อน Submit · รับ 422 — แจกให้แถวผ่าน context
+  const lineDimensions = useProcurementLineDimensions({
+    docType: "po",
+    form,
+    readOnly: isView,
+    enterEdit: () => {
+      if (isView) setMode("edit");
+    },
+  });
+
   const {
     deletePo,
     rejectPo,
@@ -180,6 +194,7 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
     discardDialogProps,
     navDiscardDialogProps,
   } = usePoFormHandlers({
+    lineDimensions,
     purchaseOrder,
     form,
     defaultValues,
@@ -230,171 +245,173 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
   );
 
   return (
-    <FormPageShell
-      width="wide"
-      header={
-        <PoHeader
-          ribbon={
-            <PoGeneralFields
-              form={form}
-              disabled={fieldsDisabled || isView}
-              isManual={isManual}
-              readOnly={isReadOnly}
-              isDraft={isPoDraft}
-              isAdd={!purchaseOrder}
-              isView={isView}
-              contentLocked={isPriceListLocked}
-              workflowName={
-                purchaseOrder?.workflow?.name ??
-                purchaseOrder?.workflow_name ??
-                undefined
-              }
-            />
-          }
-          purchaseOrder={purchaseOrder}
-          mode={mode}
-          canEdit={canEdit}
-          canClose={canClose}
-          terminalStatus={terminalStatus}
-          isPending={isPending}
-          deletePoIsPending={deletePo.isPending}
-          departmentName={departmentName}
-          buyerName={purchaseOrder?.buyer_name || buyerName}
-          buyerAvatar={purchaseOrder ? purchaseOrder.buyer_avatar : avatarUrl}
-          onBack={handleBack}
-          onCancel={handleCancel}
-          onEnterEdit={() => setMode("edit")}
-          onShowClose={() => dialogs.setShowClose(true)}
-          onShowComment={() => dialogs.setShowComment(true)}
-          onShowDelete={() => dialogs.setShowDelete(true)}
-          hasHistory={hasHistory}
-          onShowHistory={() => dialogs.setShowHistory(true)}
-        />
-      }
-      footer={
-        <PoFooterAction
-          control={form.control}
-          currencyCode={form.getValues("currency_code")}
-          isPending={isPending}
-          isEditMode={isEditMode}
-          role={role}
-          poStatus={purchaseOrder?.po_status}
-          previousStages={previousStages}
-          stagesLoading={stagesLoading}
-          // ใบใหม่ที่ยังไม่เคยเซฟก็กดส่งได้ — handleSubmitPo สร้างใบให้ก่อนแล้วค่อยส่ง
-          // (ทรงเดียวกับ PR) ของเดิมส่ง undefined ทำให้ปุ่มหายจนกว่าจะกด Save ก่อน
-          onSubmit={handleSubmitPo}
-          onValidateSubmit={validateSubmitPo}
-          onApprove={purchaseOrder ? handleApprovePo : undefined}
-          onReject={
-            purchaseOrder ? () => dialogs.setShowReject(true) : undefined
-          }
-          onReview={purchaseOrder ? handleReviewConfirm : undefined}
-          stageActions={stageActions}
-          hiddenFields={purchaseOrder?.hidden_fields}
-        />
-      }
-    >
-      <form
-        id="po-form"
-        onSubmit={draftSaveHandler(form, onSubmit)}
-        className="flex flex-col gap-4"
-      >
-        <PoItemFields
-          form={form}
-          prSourcesByDetailId={prSourcesByDetailId}
-          grnSourcesByDetailId={grnSourcesByDetailId}
-          disabled={contentLocked}
-          locationsDisabled={locationsDisabled}
-          role={role}
-          poStatus={purchaseOrder?.po_status}
-          isEditMode={isEditMode}
-          isViewMode={isView}
-          isPending={isPending}
-          onApprove={purchaseOrder ? handleApprovePo : undefined}
-          onReject={
-            purchaseOrder ? () => dialogs.setShowReject(true) : undefined
-          }
-          onClose={purchaseOrder ? handleClosePo : undefined}
-          stageActions={stageActions}
-          hiddenFields={purchaseOrder?.hidden_fields}
-        />
-      </form>
-
-      <DiscardDialog {...discardDialogProps} variant="warning" />
-      <DiscardDialog {...navDiscardDialogProps} variant="warning" />
-
-      {purchaseOrder && (
-        <>
-          <DeleteDialog
-            open={showDelete}
-            onOpenChange={(open) =>
-              !open && !deletePo.isPending && dialogs.setShowDelete(false)
+    <ProcurementLineDimensionsContext.Provider value={lineDimensions}>
+      <FormPageShell
+        width="wide"
+        header={
+          <PoHeader
+            ribbon={
+              <PoGeneralFields
+                form={form}
+                disabled={fieldsDisabled || isView}
+                isManual={isManual}
+                readOnly={isReadOnly}
+                isDraft={isPoDraft}
+                isAdd={!purchaseOrder}
+                isView={isView}
+                contentLocked={isPriceListLocked}
+                workflowName={
+                  purchaseOrder?.workflow?.name ??
+                  purchaseOrder?.workflow_name ??
+                  undefined
+                }
+              />
             }
-            title={t("deleteTitle")}
-            description={t("deleteConfirm", { poNo: purchaseOrder.po_no })}
-            isPending={deletePo.isPending}
-            onConfirm={handleDeleteConfirm}
+            purchaseOrder={purchaseOrder}
+            mode={mode}
+            canEdit={canEdit}
+            canClose={canClose}
+            terminalStatus={terminalStatus}
+            isPending={isPending}
+            deletePoIsPending={deletePo.isPending}
+            departmentName={departmentName}
+            buyerName={purchaseOrder?.buyer_name || buyerName}
+            buyerAvatar={purchaseOrder ? purchaseOrder.buyer_avatar : avatarUrl}
+            onBack={handleBack}
+            onCancel={handleCancel}
+            onEnterEdit={() => setMode("edit")}
+            onShowClose={() => dialogs.setShowClose(true)}
+            onShowComment={() => dialogs.setShowComment(true)}
+            onShowDelete={() => dialogs.setShowDelete(true)}
+            hasHistory={hasHistory}
+            onShowHistory={() => dialogs.setShowHistory(true)}
           />
-          <Suspense fallback={null}>
-            <EntityCommentSheet
-              crud={poCommentCrud}
-              entityId={purchaseOrder.id}
-              open={showComment}
-              onOpenChange={dialogs.setShowComment}
+        }
+        footer={
+          <PoFooterAction
+            control={form.control}
+            currencyCode={form.getValues("currency_code")}
+            isPending={isPending}
+            isEditMode={isEditMode}
+            role={role}
+            poStatus={purchaseOrder?.po_status}
+            previousStages={previousStages}
+            stagesLoading={stagesLoading}
+            // ใบใหม่ที่ยังไม่เคยเซฟก็กดส่งได้ — handleSubmitPo สร้างใบให้ก่อนแล้วค่อยส่ง
+            // (ทรงเดียวกับ PR) ของเดิมส่ง undefined ทำให้ปุ่มหายจนกว่าจะกด Save ก่อน
+            onSubmit={handleSubmitPo}
+            onValidateSubmit={validateSubmitPo}
+            onApprove={purchaseOrder ? handleApprovePo : undefined}
+            onReject={
+              purchaseOrder ? () => dialogs.setShowReject(true) : undefined
+            }
+            onReview={purchaseOrder ? handleReviewConfirm : undefined}
+            stageActions={stageActions}
+            hiddenFields={purchaseOrder?.hidden_fields}
+          />
+        }
+      >
+        <form
+          id="po-form"
+          onSubmit={draftSaveHandler(form, onSubmit)}
+          className="flex flex-col gap-4"
+        >
+          <PoItemFields
+            form={form}
+            prSourcesByDetailId={prSourcesByDetailId}
+            grnSourcesByDetailId={grnSourcesByDetailId}
+            disabled={contentLocked}
+            locationsDisabled={locationsDisabled}
+            role={role}
+            poStatus={purchaseOrder?.po_status}
+            isEditMode={isEditMode}
+            isViewMode={isView}
+            isPending={isPending}
+            onApprove={purchaseOrder ? handleApprovePo : undefined}
+            onReject={
+              purchaseOrder ? () => dialogs.setShowReject(true) : undefined
+            }
+            onClose={purchaseOrder ? handleClosePo : undefined}
+            stageActions={stageActions}
+            hiddenFields={purchaseOrder?.hidden_fields}
+          />
+        </form>
+
+        <DiscardDialog {...discardDialogProps} variant="warning" />
+        <DiscardDialog {...navDiscardDialogProps} variant="warning" />
+
+        {purchaseOrder && (
+          <>
+            <DeleteDialog
+              open={showDelete}
+              onOpenChange={(open) =>
+                !open && !deletePo.isPending && dialogs.setShowDelete(false)
+              }
+              title={t("deleteTitle")}
+              description={t("deleteConfirm", { poNo: purchaseOrder.po_no })}
+              isPending={deletePo.isPending}
+              onConfirm={handleDeleteConfirm}
             />
-          </Suspense>
-          {hasHistory && (
-            <Sheet open={showHistory} onOpenChange={dialogs.setShowHistory}>
-              {/* ไม่ override ความกว้าง — ใช้ค่า default ของ SheetContent
+            <Suspense fallback={null}>
+              <EntityCommentSheet
+                crud={poCommentCrud}
+                entityId={purchaseOrder.id}
+                open={showComment}
+                onOpenChange={dialogs.setShowComment}
+              />
+            </Suspense>
+            {hasHistory && (
+              <Sheet open={showHistory} onOpenChange={dialogs.setShowHistory}>
+                {/* ไม่ override ความกว้าง — ใช้ค่า default ของ SheetContent
                   (w-3/4 sm:max-w-sm) ให้เท่ากับ comment sheet */}
-              <SheetContent side="right" className="overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle>{t("tabWorkflowHistory")}</SheetTitle>
-                  <SheetDescription className="sr-only">
-                    {t("tabWorkflowHistory")}
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="px-4 pb-4">
-                  <Suspense fallback={null}>
-                    <WorkflowHistoryTimeline
-                      history={purchaseOrder.workflow_history ?? []}
-                      statusConfig={PR_WORKFLOW_ACTION_CONFIG}
-                      emptyLabel={t("noWorkflowHistory")}
-                      requestorName={purchaseOrder.buyer_name}
-                      createdAt={purchaseOrder.audit?.created?.at}
-                    />
-                  </Suspense>
-                </div>
-              </SheetContent>
-            </Sheet>
-          )}
-          <PoActionDialog
-            open={showReject}
-            onOpenChange={(open) => {
-              if (!open && !rejectPo.isPending) dialogs.setShowReject(false);
-            }}
-            title={t("rejectTitle")}
-            description={t("rejectConfirm")}
-            confirmLabel={tc("reject")}
-            confirmVariant="destructive"
-            isPending={rejectPo.isPending}
-            onConfirm={handleRejectConfirm}
-          />
-          <PoActionDialog
-            open={showClose}
-            onOpenChange={(open) => {
-              if (!open && !closePo.isPending) dialogs.setShowClose(false);
-            }}
-            title={t("closeTitle")}
-            description={t("closeConfirm")}
-            confirmLabel={tc("close")}
-            confirmVariant="warning"
-            isPending={closePo.isPending}
-            onConfirm={() => handleClosePo()}
-          />
-        </>
-      )}
-    </FormPageShell>
+                <SheetContent side="right" className="overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle>{t("tabWorkflowHistory")}</SheetTitle>
+                    <SheetDescription className="sr-only">
+                      {t("tabWorkflowHistory")}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="px-4 pb-4">
+                    <Suspense fallback={null}>
+                      <WorkflowHistoryTimeline
+                        history={purchaseOrder.workflow_history ?? []}
+                        statusConfig={PR_WORKFLOW_ACTION_CONFIG}
+                        emptyLabel={t("noWorkflowHistory")}
+                        requestorName={purchaseOrder.buyer_name}
+                        createdAt={purchaseOrder.audit?.created?.at}
+                      />
+                    </Suspense>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
+            <PoActionDialog
+              open={showReject}
+              onOpenChange={(open) => {
+                if (!open && !rejectPo.isPending) dialogs.setShowReject(false);
+              }}
+              title={t("rejectTitle")}
+              description={t("rejectConfirm")}
+              confirmLabel={tc("reject")}
+              confirmVariant="destructive"
+              isPending={rejectPo.isPending}
+              onConfirm={handleRejectConfirm}
+            />
+            <PoActionDialog
+              open={showClose}
+              onOpenChange={(open) => {
+                if (!open && !closePo.isPending) dialogs.setShowClose(false);
+              }}
+              title={t("closeTitle")}
+              description={t("closeConfirm")}
+              confirmLabel={tc("close")}
+              confirmVariant="warning"
+              isPending={closePo.isPending}
+              onConfirm={() => handleClosePo()}
+            />
+          </>
+        )}
+      </FormPageShell>
+    </ProcurementLineDimensionsContext.Provider>
   );
 }

@@ -24,12 +24,15 @@ import type { PurchaseOrder } from "@/types/purchase-order";
 import { PO_TYPE } from "@/types/purchase-order";
 import type { FormMode } from "@/types/form";
 import { clearDimensionsDirty } from "@/lib/dimension-payload";
+import type { ProcurementLineDimensions } from "../shared/use-procurement-line-dimensions";
 import { pickDocVersion } from "@/lib/doc-version";
 import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 import { buildPoPayload } from "./build-po-payload";
 import type { PoFormValues } from "./po-form-schema";
 
 interface UsePoFormHandlersOptions {
+  /** ตัวตรวจ dimension ต่อบรรทัด — เรียกเฉพาะก่อน Submit (ห้ามตอน Save ร่าง: draftSaveHandler ไม่ผ่าน zod) */
+  lineDimensions: ProcurementLineDimensions;
   purchaseOrder: PurchaseOrder | undefined;
   form: UseFormReturn<PoFormValues>;
   defaultValues: PoFormValues;
@@ -42,6 +45,7 @@ interface UsePoFormHandlersOptions {
 }
 
 export function usePoFormHandlers({
+  lineDimensions,
   purchaseOrder,
   form,
   defaultValues,
@@ -363,6 +367,8 @@ export function usePoFormHandlers({
     // เรียกหลัง trigger เสมอ — trigger เขียน errors ทั้งชุดใหม่จาก resolver
     // เรียกก่อนหน้าจะโดนล้างทิ้ง
     const itemsOk = validateSubmitItems();
+    // dimension เช็คเฉพาะตอนส่ง — ติดแล้ว hook toast + กางแถว + เข้าโหมดแก้ให้เอง
+    if (valid && itemsOk && !lineDimensions.validateBeforeSubmit()) return false;
     if (!valid || !itemsOk) {
       // เด้งเข้าโหมดแก้ไขให้เลย — ในโหมดอ่านทุกเซลล์เป็นตัวหนังสือ ช่องที่ผิดจึง
       // ไม่มีขอบแดงให้เห็นและกดแก้ไม่ได้ ผู้ใช้จะได้แค่ toast แล้วไม่รู้จะทำอะไรต่อ
@@ -424,6 +430,8 @@ export function usePoFormHandlers({
   };
 
   const handleSubmitPo = async () => {
+    // ด่านเดียวกับ validateSubmitPo — กันทางที่ไม่ผ่านกล่องยืนยัน และกฎที่เพิ่งเปลี่ยนระหว่างรอ
+    if (!lineDimensions.validateBeforeSubmit()) return;
     if (!purchaseOrder) {
       await createThenSubmitPo();
       return;

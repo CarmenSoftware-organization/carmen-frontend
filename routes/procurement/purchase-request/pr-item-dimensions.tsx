@@ -1,12 +1,11 @@
-import { useWatch, type UseFormReturn } from "react-hook-form";
-import { LineDimensionFields } from "@/components/dimension/line-dimension-fields";
-import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
+import type { UseFormReturn } from "react-hook-form";
+import { ProcurementLineDimensionRow } from "../shared/procurement-line-dimension-row";
 import type { PrFormValues } from "./pr-form-schema";
 
 /**
- * ช่อง dimension ของบรรทัด PR (อยู่ในแถวกางของรายการ) — ซ่อนเมื่อ BU ไม่มี
- * license / ไม่มี dimension active · แก้แล้วตั้ง `dimensions_dirty` เพื่อให้
- * payload ส่ง dimensions ใน details.update เฉพาะบรรทัดที่แก้
+ * แถบชิป dimension ของบรรทัด PR (อยู่ในแถวกางของรายการ ท้ายการ์ดเมื่อเป็นโหมดการ์ด) —
+ * ซ่อนเมื่อ BU ปิด dimension ของ PR · ชิปที่โชว์ตามกฎของบัญชีบรรทัดนั้น
+ * (ดู `ProcurementLineDimensionRow`) · โหมดดู/ใบที่พ้น stage create มาจาก hook ของฟอร์ม
  */
 export function PrItemDimensions({
   form,
@@ -17,25 +16,12 @@ export function PrItemDimensions({
   readonly index: number;
   readonly disabled: boolean;
 }) {
-  const enabled = useLineDimensionsEnabled("pr");
-  const value = useWatch({
-    control: form.control,
-    name: `items.${Math.max(index, 0)}.dimensions`,
-  });
-  // index -1 = แถวหลุดจาก itemFields ชั่วคราวตอนลบ — ไม่วาดดีกว่าผูกกับ items.-1
-  if (!enabled || index < 0) return null;
   return (
-    <div className="mt-3 border-t pt-3">
-      <LineDimensionFields
-        value={value ?? []}
-        disabled={disabled}
-        onChange={(next) => {
-          form.setValue(`items.${index}.dimensions`, next, {
-            shouldDirty: true,
-          });
-          form.setValue(`items.${index}.dimensions_dirty`, true);
-        }}
-      />
-    </div>
+    <ProcurementLineDimensionRow
+      form={form}
+      index={index}
+      disabled={disabled}
+      className="mt-3 border-t pt-3"
+    />
   );
 }

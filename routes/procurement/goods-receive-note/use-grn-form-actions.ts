@@ -40,8 +40,11 @@ import {
   type GrnFormValues,
 } from "./grn-form-schema";
 import { findExpiredLines } from "./grn-expiry";
+import type { ProcurementLineDimensions } from "../shared/use-procurement-line-dimensions";
 
 interface UseGrnFormActionsParams {
+  /** ตัวตรวจ dimension ต่อบรรทัด — เรียกเฉพาะตอน Save ที่พาใบออกจาก draft และก่อน commit */
+  lineDimensions: ProcurementLineDimensions;
   form: UseFormReturn<GrnFormValues>;
   goodsReceiveNote?: GoodsReceiveNote;
   defaultValues: GrnFormValues;
@@ -51,6 +54,7 @@ interface UseGrnFormActionsParams {
 }
 
 export function useGrnFormActions({
+  lineDimensions,
   form,
   goodsReceiveNote,
   defaultValues,
@@ -506,7 +510,15 @@ export function useGrnFormActions({
       return;
     }
 
-    form.handleSubmit((values) => onSubmit(values, onSaved), (errs) => {
+    form.handleSubmit((values) => {
+      // ขั้น saved คือด่านลงบัญชี (ใบออกจาก draft) — ตรวจ dimension หลัง zod ผ่านแล้ว ไม่ผ่านไม่ส่ง
+      // request ใด ๆ แต่ค้างโหมดแก้พร้อมค่าในฟอร์มให้แก้ต่อ (hook ทำ toast/ชิปแดง/เข้าโหมดแก้ให้)
+      if (!lineDimensions.validateBeforeSubmit()) {
+        finishAction();
+        return;
+      }
+      return onSubmit(values, onSaved);
+    }, (errs) => {
       finishAction(); // validation ไม่ผ่าน → guard กลับมาเฝ้า + ปิด dialog ยืนยัน
       // location/received_qty/discount/tax อยู่ใน group expand → เผย + scroll +
       // บอกว่าขาดกี่รายการ (revealErrors พูดคนเดียว ไม่ต้อง toast ซ้อน)
@@ -607,7 +619,12 @@ export function useGrnFormActions({
       handleSubmitWithStatus("saved", () => void runCommit());
       return;
     }
-    // ใบ `saved` อยู่แล้ว — ไม่มีอะไรให้บันทึก ยิง commit ตรง ๆ
+    // ใบ `saved` อยู่แล้ว — ไม่มีอะไรให้บันทึก ตรวจ dimension ซ้ำ (กฎ/mapping อาจเปลี่ยนหลัง Save)
+    // แล้วยิง commit · ไม่ผ่าน = ค้างโหมดแก้ ผู้ใช้แก้ → Save → commit ใหม่ในหน้าเดิม
+    if (!lineDimensions.validateBeforeSubmit()) {
+      finishAction();
+      return;
+    }
     await runCommit();
   };
 

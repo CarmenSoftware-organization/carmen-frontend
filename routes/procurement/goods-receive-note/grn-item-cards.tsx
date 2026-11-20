@@ -129,6 +129,16 @@ export function GrnItemCards({
                 );
               })}
             </dl>
+            {/* แถบ dimension ท้ายการ์ด — footerContent เดียวกับแถวย่อยของตาราง */}
+            {(() => {
+              const footer = row
+                .getVisibleCells()
+                .find((cell) => cell.column.columnDef.meta?.footerContent)
+                ?.column.columnDef.meta?.footerContent;
+              return footer ? (
+                <div className="px-3">{footer(row.original)}</div>
+              ) : null;
+            })()}
           </li>
         );
       })}

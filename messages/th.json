@@ -2410,7 +2410,10 @@
       "AP_PAYMENT_OVER_ALLOCATED": "ยอดจ่ายเกินยอดค้างจ่ายของ {doc_no} บรรทัดที่ {sequence_no} กรุณาลดยอดลง",
       "AP_PAYMENT_EMPTY": "ยอดจ่ายรวมต้องมากกว่าศูนย์",
       "AP_PAYMENT_BANK_CURRENCY_MISMATCH": "สกุลเงินของบัญชีธนาคารต้องตรงกับสกุลเงินของใบจ่ายเงินหรือสกุลเงินฐาน",
-      "AP_PAYMENT_INVOICE_NOT_POSTED": "เอกสาร {doc_no} ยังไม่ได้ลงบัญชี จึงจ่ายเงินไม่ได้"
+      "AP_PAYMENT_INVOICE_NOT_POSTED": "เอกสาร {doc_no} ยังไม่ได้ลงบัญชี จึงจ่ายเงินไม่ได้",
+      "LINE_DIMENSION_REQUIRED": "บรรทัดที่ {sequence_no}: บัญชี {account_code} ต้องระบุ dimension {dimension_code} กรุณากรอกแล้วลองใหม่",
+      "LINE_DIMENSION_PROHIBITED": "บรรทัดที่ {sequence_no}: บัญชี {account_code} ห้ามระบุ dimension {dimension_code} กรุณาล้างค่าแล้วลองใหม่",
+      "LINE_DIMENSION_RULE_CONFLICT": "บรรทัดที่ {sequence_no}: บัญชีของบรรทัดนี้ขัดกันเรื่อง dimension (บัญชีหนึ่งบังคับ อีกบัญชีห้าม) ให้ฝ่ายบัญชีแก้การผูกบัญชีก่อน"
     }
   },
   "validation": {
@@ -8548,6 +8551,11 @@
     "loadError": "โหลด Dimension ไม่สำเร็จ",
     "lineDimensionLabel": "{name} บรรทัดที่ {row}",
     "clearLineDimension": "ล้างค่ามิติข้อมูล",
-    "selectForJournalLine": "เลือกมิติข้อมูลทางบัญชีของบรรทัดบันทึกบัญชีนี้"
+    "selectForJournalLine": "เลือกมิติข้อมูลทางบัญชีของบรรทัดบันทึกบัญชีนี้",
+    "rulesPending": "ยังตรวจกฎมิติข้อมูลของบรรทัดอยู่ กรุณาลองใหม่อีกครั้งในอีกสักครู่",
+    "blockedSubmit": "{count} บรรทัดขาดมิติข้อมูลที่บังคับหรือมีมิติข้อมูลที่ห้ามระบุ กรุณาแก้ชิปสีแดงแล้วลองใหม่",
+    "conflict": "บัญชีของบรรทัดนี้ขัดกันเรื่องมิติข้อมูล จึงส่งไม่ได้ ให้ฝ่ายบัญชีแก้การผูกบัญชีก่อน",
+    "ruleLoadError": "โหลดกฎมิติข้อมูลของบรรทัดนี้ไม่สำเร็จ",
+    "retry": "ลองใหม่"
   }
 }

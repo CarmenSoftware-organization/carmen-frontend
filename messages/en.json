@@ -2410,7 +2410,10 @@
       "AP_PAYMENT_OVER_ALLOCATED": "The amount paid is more than the unpaid balance of {doc_no} line {sequence_no}. Lower the amount.",
       "AP_PAYMENT_EMPTY": "The total amount paid must be greater than zero.",
       "AP_PAYMENT_BANK_CURRENCY_MISMATCH": "The bank account currency must match the payment currency or the base currency.",
-      "AP_PAYMENT_INVOICE_NOT_POSTED": "Invoice {doc_no} is not posted yet, so it cannot be paid."
+      "AP_PAYMENT_INVOICE_NOT_POSTED": "Invoice {doc_no} is not posted yet, so it cannot be paid.",
+      "LINE_DIMENSION_REQUIRED": "Line {sequence_no}: account {account_code} requires dimension {dimension_code}. Fill it in and try again.",
+      "LINE_DIMENSION_PROHIBITED": "Line {sequence_no}: account {account_code} does not allow dimension {dimension_code}. Clear it and try again.",
+      "LINE_DIMENSION_RULE_CONFLICT": "Line {sequence_no}: the accounts on this line disagree on a dimension (one requires it, another forbids it). Ask accounting to fix the account mapping."
     }
   },
   "validation": {
@@ -8548,6 +8551,11 @@
     "loadError": "Unable to load dimensions",
     "lineDimensionLabel": "{name}, row {row}",
     "clearLineDimension": "Clear dimension",
-    "selectForJournalLine": "Select accounting dimensions for this journal line."
+    "selectForJournalLine": "Select accounting dimensions for this journal line.",
+    "rulesPending": "Still checking dimension rules for these lines. Please try again in a moment.",
+    "blockedSubmit": "{count, plural, one {# line has} other {# lines have}} a missing or disallowed dimension. Fix the red chips and try again.",
+    "conflict": "The accounts on this line disagree on a dimension, so it cannot be submitted. Ask accounting to fix the account mapping.",
+    "ruleLoadError": "Unable to load the dimension rules for this line",
+    "retry": "Retry"
   }
 }

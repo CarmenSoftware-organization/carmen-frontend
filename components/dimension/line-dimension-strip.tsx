@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useDimensionValueFormatter } from "@/hooks/use-dimension-value-formatter";
 import { useGlDimensionValues } from "@/hooks/use-gl-dimensions";
+import { cn } from "@/lib/utils";
 import type { LineDimensionAccount } from "@/lib/line-dimension-rules";
 import type { DimensionMaster } from "@/types/accounting-master";
 import type { DimensionRef } from "@/types/gl-dimension";
@@ -200,7 +201,11 @@ export function LineDimensionStrip({
           return (
             <div
               key={dimension.id}
-              className="flex items-center gap-1"
+              className={cn(
+                "flex items-center gap-1",
+                isInvalid &&
+                  "border-destructive ring-destructive/30 rounded-md border ring-1",
+              )}
               aria-invalid={isInvalid || undefined}
             >
               <span className="text-muted-foreground text-xs">

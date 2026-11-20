@@ -31,7 +31,6 @@ import {
   UnitPriceCell,
 } from "./grn-item-cells";
 import { GrnItemDimensions } from "./grn-item-cells/item-dimensions";
-import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 
 export type GrnItemField = FieldArrayWithId<GrnFormValues, "items", "id">;
 
@@ -71,7 +70,6 @@ export function useGrnItemTable({
   lockedLines,
 }: UseGrnItemTableOptions) {
   "use no memo";
-  const dimensionsEnabled = useLineDimensionsEnabled("grn");
   const tfl = useTranslations("field");
   const t = useTranslations("procurement.goodsReceiveNote");
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -299,24 +297,6 @@ export function useGrnItemTable({
           />
         ),
       },
-      // ปุ่ม popover dimension ต่อบรรทัด — ใส่เฉพาะเมื่อเปิดใช้ ไม่งั้น BU ที่ไม่มี license จะเห็นคอลัมน์ว่าง
-      ...(dimensionsEnabled
-        ? [
-            {
-              id: "dimensions",
-              header: "Dim",
-              size: 90,
-              enableSorting: false,
-              cell: ({ row }) => (
-                <GrnItemDimensions
-                  form={form}
-                  index={row.index}
-                  disabled={disabled || isLocked(row.index)}
-                />
-              ),
-            } satisfies ColumnDef<GrnItemField>,
-          ]
-        : []),
     ];
 
     // โหมดอ่าน = ปุ่มดูเอกสารต้นทาง (PO/CN ที่บรรทัดนี้อ้างถึง) · โหมดแก้ = ปุ่มลบ
@@ -394,6 +374,24 @@ export function useGrnItemTable({
     };
 
     const baseCols = [indexColumn, ...dataColumns, actionColumn];
+    // แถวย่อยแถบ dimension ใต้บรรทัด — ฝากไว้ที่คอลัมน์แรกแล้วกินทุกคอลัมน์
+    // (ตารางโชว์ตอนกล่องกว้าง · การ์ดอ่านจาก meta เดียวกัน) · แก้ได้เสมอตราบใบยังไม่ committed
+    // ไม่ผูกกับ isLocked: การล็อกบรรทัดคือเรื่องสต๊อก ไม่เกี่ยวกับ dimension
+    baseCols[0] = {
+      ...indexColumn,
+      meta: {
+        ...indexColumn.meta,
+        footerColSpan: baseCols.length,
+        footerContent: (item: GrnItemField) => (
+          <GrnItemDimensions
+            form={form}
+            itemFields={itemFields}
+            item={item}
+            disabled={disabled}
+          />
+        ),
+      },
+    };
 
     return baseCols.map((col) => ({
       ...col,
@@ -420,7 +418,6 @@ export function useGrnItemTable({
     qtyRefFor,
     lockedLines,
     itemFields,
-    dimensionsEnabled,
     tfl,
     t,
   ]);
