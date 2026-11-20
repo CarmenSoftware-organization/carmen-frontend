@@ -10,6 +10,7 @@ import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useProfile } from "@/hooks/use-profile";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
+import { isDevAppEnv } from "@/lib/runtime-config";
 import {
   useBusinessUnit,
   useUpdateBusinessUnit,
@@ -105,6 +106,8 @@ export default function DefaultSettingComponent() {
   const update = useUpdateBusinessUnit(buId);
   const formTemplates = useReportFormTemplates();
   const [editing, setEditing] = useState(false);
+  // env dev/local: โชว์ config key ใต้ป้าย ให้ทีมอ้างอิง key ที่เก็บใน BU config ได้ทันที
+  const showKey = isDevAppEnv();
 
   const form = useForm<BusinessSettingFormValues>({
     resolver: zodResolver(
@@ -208,6 +211,7 @@ export default function DefaultSettingComponent() {
               <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,15rem),1fr))] gap-x-5 gap-y-3">
                 {generalSection.entries.map((entry) => (
                   <ConfigField
+                    showKey={showKey}
                     key={entry.item.key}
                     editing={editing}
                     form={form}
@@ -236,6 +240,7 @@ export default function DefaultSettingComponent() {
                 {docSections.flatMap((section) =>
                   section.entries.map((entry) => (
                     <ConfigField
+                      showKey={showKey}
                       key={entry.item.key}
                       editing={editing}
                       form={form}
@@ -290,6 +295,7 @@ export default function DefaultSettingComponent() {
                 <FieldGrid>
                   {printShown.map((entry) => (
                     <ConfigField
+                      showKey={showKey}
                       key={entry.item.key}
                       editing={editing}
                       form={form}

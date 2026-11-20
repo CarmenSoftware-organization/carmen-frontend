@@ -159,7 +159,6 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
         defaultValue: "0",
         label: "Default service charge (%)",
         labelKey: "config.generalDefaultServiceRate",
-        descKey: "config.generalDefaultServiceRateDesc",
         min: 0,
         max: 100,
         suffix: "%",

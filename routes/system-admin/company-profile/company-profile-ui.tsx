@@ -375,6 +375,7 @@ export function ConfigField({
   disabled,
   emptyIsDefault,
   suffix,
+  showKey,
 }: {
   readonly editing: boolean;
   readonly form: Form;
@@ -390,6 +391,8 @@ export function ConfigField({
   readonly emptyIsDefault?: boolean;
   /** datatype "number": หน่วยท้ายค่า เช่น "%" */
   readonly suffix?: string;
+  /** โชว์ `item.key` ใต้ป้าย (เปิดเฉพาะ env dev/local ให้ทีมอ้างอิง key ได้ทันที) */
+  readonly showKey?: boolean;
 }) {
   const isBool = item.datatype === "boolean";
   const isEnum = item.datatype === "enum" && options != null;
@@ -412,6 +415,8 @@ export function ConfigField({
       muted = !!emptyIsDefault && item.value === "";
     } else if (isNumber && item.value !== "") {
       displayValue = `${item.value}${suffix ?? ""}`;
+      // 0 = ไม่มี (เช่น ไม่เก็บค่าบริการ) — จางแบบเดียวกับ boolean "No" ให้ค่าที่ตั้งจริงเด่นกว่า
+      muted = Number(item.value) === 0;
     } else {
       displayValue = item.value;
     }
@@ -520,6 +525,11 @@ export function ConfigField({
           {displayLabel}
         </Label>
       </div>
+      {showKey && (
+        <code className="text-muted-foreground text-micro block font-mono break-all">
+          {item.key}
+        </code>
+      )}
       {/* max-w-sm: ช่องในกริด auto-fit ที่มีไม่กี่รายการกว้างได้หลายร้อย px — คอนโทรลต้องไม่ยืดตาม
           (จอกว้างขึ้น = คอลัมน์เพิ่ม ไม่ใช่ช่องกรอกกว้างขึ้น) ใน `FieldGrid` ปกติช่องแคบกว่านี้อยู่แล้ว */}
       <div className={cn("max-w-sm", editing ? "mt-1" : "mt-0.5")}>

@@ -217,9 +217,8 @@
       "poGroupByPrCommentDesc": "When purchase requests become a purchase order, group lines by their PR comment.",
       "printFormCustomCount": "{n} of {total} customised",
       "generalDefaultVatRate": "Default VAT (%)",
-      "generalDefaultVatRateDesc": "VAT rate suggested for this business unit. Document VAT still comes from the tax profile.",
-      "generalDefaultServiceRate": "Default service charge (%)",
-      "generalDefaultServiceRateDesc": "Service charge rate suggested for this business unit."
+      "generalDefaultVatRateDesc": "Documents still take VAT from the tax profile.",
+      "generalDefaultServiceRate": "Default service charge (%)"
     }
   },
   "accounting": {

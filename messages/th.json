@@ -217,9 +217,8 @@
       "poGroupByPrCommentDesc": "ตอนสร้างใบสั่งซื้อจากใบขอซื้อ จัดกลุ่มบรรทัดตามหมายเหตุของใบขอซื้อ",
       "printFormCustomCount": "ตั้งเอง {n} จาก {total}",
       "generalDefaultVatRate": "VAT ตั้งต้น (%)",
-      "generalDefaultVatRateDesc": "อัตรา VAT ตั้งต้นของหน่วยธุรกิจนี้ ส่วน VAT ในเอกสารยังมาจาก Tax Profile",
-      "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)",
-      "generalDefaultServiceRateDesc": "อัตราค่าบริการ (service charge) ตั้งต้นของหน่วยธุรกิจนี้"
+      "generalDefaultVatRateDesc": "VAT ในเอกสารยังมาจาก Tax Profile",
+      "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)"
     }
   },
   "accounting": {

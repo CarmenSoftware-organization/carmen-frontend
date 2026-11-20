@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getRuntimeConfig,
+  isDevAppEnv,
   loadRuntimeConfig,
   setRuntimeConfigForTests,
 } from "@/lib/runtime-config";
@@ -62,5 +63,35 @@ describe("runtime-config", () => {
 
   it("getRuntimeConfig throws before load", () => {
     expect(() => getRuntimeConfig()).toThrow(/not loaded/);
+  });
+
+  it.each([
+    ["dev", true],
+    ["local", true],
+    [" DEV ", true],
+    ["uat", false],
+    ["prod", false],
+    [undefined, false],
+  ])("isDevAppEnv() with APP_ENV=%s → %s", async (appEnv, expected) => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              BACKEND_URL: "",
+              X_APP_ID: "app-1",
+              APP_ENV: appEnv,
+            }),
+          ),
+        ),
+    );
+    await loadRuntimeConfig();
+    expect(isDevAppEnv()).toBe(expected);
+  });
+
+  it("isDevAppEnv() is false before config loads", () => {
+    expect(isDevAppEnv()).toBe(false);
   });
 });
