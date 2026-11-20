@@ -54,14 +54,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -73,13 +65,7 @@ import {
   FieldPlainText,
   FieldSelect,
 } from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SelectContent, SelectItem } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LookupCombobox } from "@/components/lookup/lookup-combobox";
@@ -93,8 +79,10 @@ import { useBuCode } from "@/hooks/use-bu-code";
 import { ApiError, isAppStatusErrorCode } from "@/lib/api-error";
 import { useErrorToast } from "@/hooks/use-error-toast";
 import { readCoaRules, coaRulesKey } from "@/lib/coa-dimension-rules";
-import { DimensionValueInput } from "@/components/dimension/dimension-value-input";
-import { useDimensionValueFormatter } from "@/hooks/use-dimension-value-formatter";
+import {
+  LineDimensionDialog,
+  LineDimensionStrip,
+} from "@/components/dimension/line-dimension-strip";
 import { toDimensionPayload } from "@/lib/dimension-payload";
 import { dimensionRefHasValue } from "@/lib/dimension-value";
 import type { DimensionRef } from "@/types/gl-dimension";
@@ -275,6 +263,7 @@ export default function AccountingDocumentDetail() {
   const { id } = useParams<{ id: string }>();
   const t = useTranslations("accounting.documents");
   const tc = useTranslations("common");
+  const tLineDimension = useTranslations("lineDimension");
   const errorToast = useErrorToast();
   const config = accountingDocumentFromPath(pathname);
   const isJournalVoucher = config.kind === "journalVoucher";
@@ -282,7 +271,6 @@ export default function AccountingDocumentDetail() {
   const buCode = useBuCode();
   const dimensionQuery = useGlDimensions(isGlVoucher);
   const dimensionValuesQuery = useGlDimensionValues(isGlVoucher);
-  const formatDimensionValue = useDimensionValueFormatter();
   const usesVoucherDetailPattern =
     isGlVoucher ||
     config.kind === "arInvoice" ||
@@ -2157,6 +2145,31 @@ export default function AccountingDocumentDetail() {
                       dimensionRules,
                       line.dimensions ?? [],
                     );
+                    const mandatoryRules = dimensionRules.filter(
+                      (rule) =>
+                        rule.chart_of_accounts_id === lineAccount?.id &&
+                        rule.requirement === "mandatory",
+                    );
+                    const requiredIds = new Set(
+                      mandatoryRules.map((rule) => rule.dimension_id),
+                    );
+                    // เงื่อนไขเดียวกับ toast ตอน Submit: บัญชีบังคับ dimension แต่ไม่มีค่าเลย
+                    // = ทุกชิปผิด · กฎ mandatory ที่ยังไม่มีค่า = ชิปของ dimension นั้น
+                    const invalidIds = new Set(
+                      lineAccount?.dimension_required &&
+                        !line.dimensions?.length
+                        ? visibleDimensions.map((dimension) => dimension.id)
+                        : mandatoryRules
+                            .filter(
+                              (rule) =>
+                                !line.dimensions?.some(
+                                  (item) =>
+                                    item.dimension_id === rule.dimension_id &&
+                                    dimensionRefHasValue(item),
+                                ),
+                            )
+                            .map((rule) => rule.dimension_id),
+                    );
                     return (
                       <Fragment key={line.id}>
                         <tr className={isSelected ? "bg-muted/30" : undefined}>
@@ -2515,167 +2528,32 @@ export default function AccountingDocumentDetail() {
                           </td>
                           <td colSpan={4} className="px-3 py-0.5">
                             <div className="flex flex-wrap items-center gap-1">
-                              {isGlVoucher &&
-                                (dimensionQuery.isError ||
-                                  dimensionValuesQuery.isError ||
-                                  dimensionRuleQueries.some(
-                                    (query) => query.isError,
-                                  )) && (
-                                  <span className="text-destructive text-xs">
-                                    {t("dimensionsLoadError")}
-                                  </span>
-                                )}
                               {isGlVoucher ? (
-                                visibleDimensions.map((dimension) => {
-                                  const lineRef = line.dimensions?.find(
-                                    (item) =>
-                                      item.dimension_id === dimension.id,
-                                  );
-                                  const selectedValue =
-                                    lineRef?.dimension_value_id ?? undefined;
-                                  const isTyped =
-                                    !!dimension.data_type &&
-                                    dimension.data_type !== "lookup";
-                                  const values = (
-                                    dimensionValuesQuery.data ?? []
-                                  ).filter(
-                                    (value) =>
-                                      value.dimension_id === dimension.id &&
-                                      (value.is_active ||
-                                        value.id === selectedValue),
-                                  );
-                                  const selected = values.find(
-                                    (value) => value.id === selectedValue,
-                                  );
-                                  // ข้อความบนชิป: lookup = รหัสค่า · ชนิดอื่น = ค่าที่กรอกตามชนิด
-                                  const chipText = !lineRef
-                                    ? "—"
-                                    : isTyped && !lineRef.dimension_value_id
-                                      ? formatDimensionValue(
-                                          lineRef,
-                                          dimension,
-                                        ) || "—"
-                                      : (selected?.code ??
-                                        lineRef.value_code ??
-                                        "—");
-                                  if (!isLineView && isTyped) {
-                                    return (
-                                      <div
-                                        key={dimension.id}
-                                        className="flex items-center gap-1"
-                                      >
-                                        <span className="text-muted-foreground text-xs">
-                                          {dimension.code}:
-                                        </span>
-                                        <DimensionValueInput
-                                          dimension={dimension}
-                                          size="xs"
-                                          value={lineRef}
-                                          disabled={
-                                            dimensionQuery.isPending ||
-                                            dimensionQuery.isError
-                                          }
-                                          onChange={(next) =>
-                                            updateLine(line.id, {
-                                              dimensions: [
-                                                ...(
-                                                  line.dimensions ?? []
-                                                ).filter(
-                                                  (item) =>
-                                                    item.dimension_id !==
-                                                    dimension.id,
-                                                ),
-                                                ...(next ? [next] : []),
-                                              ],
-                                            })
-                                          }
-                                        />
-                                      </div>
-                                    );
+                                <LineDimensionStrip
+                                  dimensions={visibleDimensions}
+                                  value={line.dimensions ?? []}
+                                  onChange={(next) =>
+                                    updateLine(line.id, { dimensions: next })
                                   }
-                                  if (!isLineView) {
-                                    return (
-                                      <Select
-                                        key={dimension.id}
-                                        value={selectedValue ?? "none"}
-                                        disabled={
-                                          dimensionQuery.isPending ||
-                                          dimensionQuery.isError ||
-                                          dimensionValuesQuery.isPending ||
-                                          dimensionValuesQuery.isError ||
-                                          !values.length
-                                        }
-                                        onValueChange={(valueId) =>
-                                          updateLine(line.id, {
-                                            dimensions: [
-                                              ...(line.dimensions ?? []).filter(
-                                                (item) =>
-                                                  item.dimension_id !==
-                                                  dimension.id,
-                                              ),
-                                              ...(valueId === "none"
-                                                ? []
-                                                : [
-                                                    {
-                                                      dimension_id:
-                                                        dimension.id,
-                                                      dimension_value_id:
-                                                        valueId,
-                                                    },
-                                                  ]),
-                                            ],
-                                          })
-                                        }
-                                      >
-                                        <SelectTrigger
-                                          size="xs"
-                                          aria-label={t("lineDimensionLabel", {
-                                            name: dimension.name,
-                                            row: lineIndex + 1,
-                                          })}
-                                        >
-                                          <span className="text-muted-foreground">
-                                            {dimension.code}:
-                                          </span>
-                                          <SelectValue>
-                                            {selected?.code ?? "—"}
-                                          </SelectValue>
-                                        </SelectTrigger>
-                                        <SelectContent position="popper">
-                                          <SelectItem value="none">
-                                            {t("clearLineDimension")}
-                                          </SelectItem>
-                                          {values.map((value) => (
-                                            <SelectItem
-                                              key={value.id}
-                                              value={value.id}
-                                            >
-                                              {value.code === value.name
-                                                ? value.code
-                                                : `${value.code} — ${value.name}`}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                    );
+                                  readOnly={isLineView}
+                                  disabled={
+                                    dimensionQuery.isPending ||
+                                    dimensionQuery.isError
                                   }
-                                  return (
-                                    <Button
-                                      key={dimension.id}
-                                      type="button"
-                                      variant="outline"
-                                      size="xs"
-                                      onClick={() =>
-                                        openLineDetail(line.id, "dimension")
-                                      }
-                                    >
-                                      {dimension.code}:{" "}
-                                      <span className="text-foreground">
-                                        {chipText}
-                                      </span>
-                                    </Button>
-                                  );
-                                })
+                                  requiredIds={requiredIds}
+                                  invalidIds={
+                                    isLineView ? undefined : invalidIds
+                                  }
+                                  rowLabel={String(lineIndex + 1)}
+                                  message={
+                                    dimensionQuery.isError ||
+                                    dimensionRuleQueries.some(
+                                      (query) => query.isError,
+                                    )
+                                      ? t("dimensionsLoadError")
+                                      : undefined
+                                  }
+                                />
                               ) : (
                                 <Button
                                   type="button"
@@ -2977,7 +2855,7 @@ export default function AccountingDocumentDetail() {
               </SheetTitle>
               <SheetDescription>
                 {isJournalVoucher && lineDetailSection === "dimension"
-                  ? "Select accounting dimensions for this journal line."
+                  ? tLineDimension("selectForJournalLine")
                   : t("lineDetailsDescription")}
               </SheetDescription>
             </div>
@@ -3298,63 +3176,21 @@ export default function AccountingDocumentDetail() {
         </SheetContent>
       </Sheet>
 
-      <Dialog
+      <LineDimensionDialog
         open={isGlVoucher && isLineView && !!selectedLine}
         onOpenChange={(open) => !open && setSelectedLineId(null)}
-      >
-        <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{t("allDimensions")}</DialogTitle>
-            <DialogDescription>{t("lineDetailsDescription")}</DialogDescription>
-          </DialogHeader>
-          {selectedLine && (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {visibleLineDimensions(
+        dimensions={
+          selectedLine
+            ? visibleLineDimensions(
                 dimensionQuery.data ?? [],
                 accountById.get(selectedLine.account),
                 dimensionRules,
                 selectedLine.dimensions ?? [],
-              ).map((dimension) => {
-                const selectedRef = selectedLine.dimensions?.find(
-                  (item) => item.dimension_id === dimension.id,
-                );
-                const selectedValue = selectedRef?.dimension_value_id;
-                const options = (dimensionValuesQuery.data ?? []).filter(
-                  (value) =>
-                    value.dimension_id === dimension.id &&
-                    (value.is_active || value.id === selectedValue),
-                );
-                return (
-                  <Field key={dimension.id}>
-                    <FieldLabel>
-                      {dimension.code} — {dimension.name}
-                    </FieldLabel>
-                    <FieldPlainText>
-                      {selectedValue
-                        ? (options.find((value) => value.id === selectedValue)
-                            ?.name ??
-                          selectedRef?.value_code ??
-                          "—")
-                        : selectedRef
-                          ? formatDimensionValue(selectedRef, dimension) || "—"
-                          : "—"}
-                    </FieldPlainText>
-                  </Field>
-                );
-              })}
-            </div>
-          )}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setSelectedLineId(null)}
-            >
-              {tc("close")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              )
+            : []
+        }
+        value={selectedLine?.dimensions ?? []}
+      />
 
       <Sheet
         open={!!utilityPanel}

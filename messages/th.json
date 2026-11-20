@@ -8541,5 +8541,13 @@
     "toastImportedSkipped": "นำเข้า {applied} รายการ ข้าม {skipped} แถว และบันทึกเป็นฉบับร่างแล้ว",
     "toastImportSaveFailed": "บันทึกข้อมูลที่นำเข้าไม่สำเร็จ",
     "loading": "กำลังโหลดคำขอเสนอราคา"
+  },
+  "lineDimension": {
+    "allDimensions": "มิติข้อมูลทั้งหมด",
+    "dialogDescription": "ค่ามิติข้อมูลของบรรทัดนี้",
+    "loadError": "โหลด Dimension ไม่สำเร็จ",
+    "lineDimensionLabel": "{name} บรรทัดที่ {row}",
+    "clearLineDimension": "ล้างค่ามิติข้อมูล",
+    "selectForJournalLine": "เลือกมิติข้อมูลทางบัญชีของบรรทัดบันทึกบัญชีนี้"
   }
 }

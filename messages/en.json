@@ -8541,5 +8541,13 @@
     "toastImportedSkipped": "Imported {applied, plural, one {# item} other {# items}}, {skipped, plural, one {# row} other {# rows}} skipped and saved as draft",
     "toastImportSaveFailed": "Failed to save imported data",
     "loading": "Loading request for pricing"
+  },
+  "lineDimension": {
+    "allDimensions": "All Dimensions",
+    "dialogDescription": "Dimension values for this line.",
+    "loadError": "Unable to load dimensions",
+    "lineDimensionLabel": "{name}, row {row}",
+    "clearLineDimension": "Clear dimension",
+    "selectForJournalLine": "Select accounting dimensions for this journal line."
   }
 }
