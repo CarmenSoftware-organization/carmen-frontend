@@ -210,6 +210,8 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/config/${buCode}/dimensions`,
   ACCOUNT_DIMENSION_RULES: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/account-dimension-rules`,
+  LINE_DIMENSION_RULES: (buCode: string) =>
+    `/api/proxy/api/config/${buCode}/line-dimension-rules`,
   DIMENSION_VALUES: (buCode: string) =>
     `/api/proxy/api/config/${buCode}/dimension-values`,
   GL_ACCOUNT_GROUPS: (buCode: string) =>

@@ -98,7 +98,7 @@ import { useDimensionValueFormatter } from "@/hooks/use-dimension-value-formatte
 import { toDimensionPayload } from "@/lib/dimension-payload";
 import { dimensionRefHasValue } from "@/lib/dimension-value";
 import type { DimensionRef } from "@/types/gl-dimension";
-import { visibleLineDimensions } from "./journal-line-dimensions";
+import { visibleLineDimensions } from "@/lib/visible-line-dimensions";
 import { multiplyDecimal } from "../accounts-payable/shared/ap-decimal";
 import { CellAction } from "@/components/ui/cell-action";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
