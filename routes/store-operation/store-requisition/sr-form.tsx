@@ -123,7 +123,7 @@ export function StoreRequisitionForm({
   });
   const role = storeRequisition?.role ?? STAGE_ROLE.CREATE;
 
-  // dimension ต่อบรรทัด: กฎรวมของบัญชี sr_out + sr_in จากหัวใบ · default · ตรวจก่อน Submit/ขั้นจ่าย · รับ 422
+  // dimension ต่อบรรทัด: กฎรวมของบัญชี sr_out + sr_in จากหัวใบ · default · ตรวจก่อน Submit เท่านั้น · รับ 422
   // เฉพาะผู้ขอ (role create) แก้ dimension ได้ — ผู้อนุมัติ/ผู้จ่ายอ่านอย่างเดียวและไม่เข้าโหมดแก้
   // (payload ของ approve/issue ไม่รับ dimensions) ถ้าไม่ผ่านต้องส่งกลับผู้ขอ
   const lineDimensions = useDocumentLineDimensions({

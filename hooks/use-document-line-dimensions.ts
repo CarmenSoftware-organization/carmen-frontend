@@ -24,7 +24,6 @@ import {
   type LineDimensionRuleResult,
 } from "@/lib/line-dimension-rules";
 import { registerFieldErrorClaim } from "@/lib/server-field-errors";
-import { useGlDimensions } from "@/hooks/use-gl-dimensions";
 import type { LineDimensionDocType } from "@/lib/line-dimension-scope";
 import type { DimensionRef } from "@/types/gl-dimension";
 
@@ -78,11 +77,8 @@ export interface DocumentLineDimensions {
   readonly revealRequest: DimensionRevealRequest | null;
   /**
    * false = บล็อกแล้ว (toast + ชิปแดง + กางแถว + เข้าโหมดแก้ถ้ามี `enterEdit`) ห้ามเรียกตอน Save ใบ draft
-   *
-   * `lockedStep` = ขั้นที่ผู้ใช้แก้ dimension ไม่ได้ (เช่น ผู้อนุมัติ SR) → toast ระบุบรรทัด/dimension
-   * และให้ส่งกลับผู้ขอแก้ แทนข้อความ "แก้ชิปสีแดง" โดยไม่เข้าโหมดแก้
    */
-  validateBeforeSubmit: (options?: { lockedStep?: boolean }) => boolean;
+  validateBeforeSubmit: () => boolean;
   /** true = เป็น 422 ของ dimension และจัดการแล้ว (toast ของเราเอง) */
   applyServerError: (err: ApiError) => boolean;
 }
@@ -158,7 +154,6 @@ export function useDocumentLineDimensions<T extends FieldValues>({
   const tField = useTranslations("field");
   const enabled = useLineDimensionsEnabled(docType);
   const lineForm = form as unknown as UseFormReturn<LineForm>;
-  const dimensionMasters = useGlDimensions(enabled);
   // เทียบด้วยค่า — หัวใบเปลี่ยนแล้ว `lines` ต้องสร้างใหม่ (ดึงกฎใหม่ทุกบรรทัด)
   const headerKey = JSON.stringify([
     headerInput?.location_id ?? null,
@@ -259,7 +254,6 @@ export function useDocumentLineDimensions<T extends FieldValues>({
     t,
     tErr,
     tField,
-    masters: dimensionMasters.data,
     readOnly,
   });
   useEffect(() => {
@@ -271,7 +265,6 @@ export function useDocumentLineDimensions<T extends FieldValues>({
       t,
       tErr,
       tField,
-      masters: dimensionMasters.data,
       readOnly,
     };
   });
@@ -290,10 +283,8 @@ export function useDocumentLineDimensions<T extends FieldValues>({
     setRevealRequest((prev) => ({ id: (prev?.id ?? 0) + 1, indexes }));
   };
 
-  const validateBeforeSubmit = (options?: {
-    lockedStep?: boolean;
-  }): boolean => {
-    const { byKey, rules, enabled, enterEdit, t, masters } = latest.current;
+  const validateBeforeSubmit = (): boolean => {
+    const { byKey, rules, enabled, enterEdit, t } = latest.current;
     if (!enabled) return true;
     if (rules.isPending) {
       toast.warning(t("rulesPending"));
@@ -319,20 +310,6 @@ export function useDocumentLineDimensions<T extends FieldValues>({
       return key && entries.has(key) ? [index] : [];
     });
     markInvalid(entries, indexes);
-    if (options?.lockedStep) {
-      // ผู้ใช้ขั้นนี้แก้ dimension ไม่ได้ — บอกบรรทัด + dimension แรกที่ผิด และให้ส่งกลับผู้ขอ
-      const first = violations[0];
-      const row = items.findIndex((item) => keyOf(item) === first.key) + 1;
-      const master = masters?.find((d) => d.id === first.dimension_id);
-      toast.error(
-        t("blockedLockedStep", {
-          row,
-          dimension: master?.name ?? master?.code ?? first.dimension_id,
-          count: entries.size,
-        }),
-      );
-      return false;
-    }
     toast.warning(t("blockedSubmit", { count: entries.size }));
     enterEdit?.();
     return false;

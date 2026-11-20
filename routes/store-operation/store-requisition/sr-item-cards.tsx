@@ -4,9 +4,9 @@ import type { ReactNode } from "react";
 import {
   flexRender,
   type Cell,
-  type Row,
   type Table,
 } from "@tanstack/react-table";
+import { footerOf } from "@/components/dimension/footer-of-row";
 import { cn } from "@/lib/utils";
 import type { SrItemField } from "./use-sr-item-table";
 
@@ -60,12 +60,6 @@ function Field({
  * (select โผล่เฉพาะโหมดแก้) จึงไม่ต้องยกช่อง select-all ขึ้นมาเหนือการ์ด ·
  * ตารางนี้ไม่มีแถวกางออก · แถบชิป dimension ท้ายการ์ดมาจาก `footerContent` ของตาราง (มีเฉพาะเมื่อเปิดใช้)
  */
-const footerOf = (row: Row<SrItemField>) =>
-  row
-    .getVisibleCells()
-    .find((cell) => cell.column.columnDef.meta?.footerContent)?.column.columnDef
-    .meta?.footerContent;
-
 export function SrItemCards({
   table,
   emptyMessage,

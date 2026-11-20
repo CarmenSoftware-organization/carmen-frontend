@@ -4,10 +4,10 @@ import type { ReactNode } from "react";
 import {
   flexRender,
   type Cell,
-  type Row,
   type Table,
 } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
+import { footerOf } from "@/components/dimension/footer-of-row";
 import { cn } from "@/lib/utils";
 import type { GrnItemField } from "./use-grn-item-table";
 
@@ -59,12 +59,6 @@ function Field({
     </div>
   );
 }
-
-const footerOf = (row: Row<GrnItemField>) =>
-  row
-    .getVisibleCells()
-    .find((cell) => cell.column.columnDef.meta?.footerContent)?.column.columnDef
-    .meta?.footerContent;
 
 /**
  * รายการของ GRN โหมดดูแบบการ์ดแถวละใบ — ใช้เมื่อกล่องแคบ (มือถือ / tablet)

@@ -72,7 +72,7 @@ type PendingDatePattern = {
 };
 
 interface UseSrFormActionsParams {
-  /** ตัวตรวจ dimension ต่อบรรทัด — เรียกก่อน Submit และก่อนขั้นอนุมัติ/จ่าย (ห้ามตอน Save ร่าง) */
+  /** ตัวตรวจ dimension ต่อบรรทัด — เรียกก่อน Submit เท่านั้น (อนุมัติ/จ่ายพึ่ง backend 422 · ห้ามตอน Save ร่าง) */
   lineDimensions: DocumentLineDimensions;
   form: UseFormReturn<SrFormValues>;
   storeRequisition?: StoreRequisition;
