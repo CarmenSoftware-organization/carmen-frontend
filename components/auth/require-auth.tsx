@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from "react";
 import { Navigate, useLocation } from "react-router";
+import { authReachabilityStore } from "@/lib/auth/auth-reachability-store";
 import { tokenStore } from "@/lib/auth/token-store";
+import { ServerUnreachableScreen } from "./server-unreachable-screen";
 import { loginPathFor } from "@/lib/auth/resolve-next-path";
 
 /**
@@ -16,7 +18,15 @@ export function RequireAuth({
   readonly children: React.ReactNode;
 }) {
   const token = useSyncExternalStore(tokenStore.subscribe, tokenStore.get);
+  const isUnreachable = useSyncExternalStore(
+    authReachabilityStore.subscribe,
+    authReachabilityStore.get,
+  );
   const location = useLocation();
+
+  // ไม่มี token เพราะ refresh ติดต่อ server ไม่ได้ ≠ session หมดอายุ — refresh token ยังอยู่
+  // แสดงหน้าลองใหม่แทนการพาไป login (หน้านั้นจะ render children เองเมื่อ server กลับมา)
+  if (!token && isUnreachable) return <ServerUnreachableScreen />;
 
   if (!token) {
     return (

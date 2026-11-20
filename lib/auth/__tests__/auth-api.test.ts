@@ -80,7 +80,7 @@ describe("auth-api", () => {
   it("refreshTokens returns false without stored refresh token (no network call)", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
-    expect(await refreshTokens()).toBe(false);
+    expect(await refreshTokens()).toBe("rejected");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -98,7 +98,7 @@ describe("auth-api", () => {
         }),
       ),
     );
-    expect(await refreshTokens()).toBe(true);
+    expect(await refreshTokens()).toBe("ok");
     expect(tokenStore.get()).toBe("at-2");
     expect(refreshTokenStorage.get()).toBe("rt-2");
   });
@@ -110,7 +110,7 @@ describe("auth-api", () => {
       "fetch",
       vi.fn().mockResolvedValue(new Response("{}", { status: 401 })),
     );
-    expect(await refreshTokens()).toBe(false);
+    expect(await refreshTokens()).toBe("rejected");
     expect(tokenStore.get()).toBeNull();
     expect(refreshTokenStorage.get()).toBeNull();
   });
@@ -122,7 +122,7 @@ describe("auth-api", () => {
       "fetch",
       vi.fn().mockRejectedValue(new TypeError("fetch failed")),
     );
-    expect(await refreshTokens()).toBe(false);
+    expect(await refreshTokens()).toBe("unreachable");
     expect(tokenStore.get()).toBe("at-1");
     expect(refreshTokenStorage.get()).toBe("rt-1");
   });
@@ -136,8 +136,8 @@ describe("auth-api", () => {
       );
     vi.stubGlobal("fetch", fetchMock);
     const [a, b] = await Promise.all([refreshTokens(), refreshTokens()]);
-    expect(a).toBe(true);
-    expect(b).toBe(true);
+    expect(a).toBe("ok");
+    expect(b).toBe("ok");
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 

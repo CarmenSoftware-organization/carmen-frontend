@@ -1,5 +1,6 @@
 import { ApiError, ERROR_CODES } from "@/lib/api-error";
 import { getRuntimeConfig } from "@/lib/runtime-config";
+import { authReachabilityStore } from "./auth-reachability-store";
 import { refreshTokenStorage } from "./refresh-token-storage";
 import { tokenStore } from "./token-store";
 
@@ -304,10 +305,19 @@ export async function resetPasswordWithToken(
   throw await toAuthApiError(res, "Could not reset the password");
 }
 
-// Mutex — concurrent 401s แชร์ refresh request เดียวกัน (พฤติกรรมเดิมจาก http-client)
-let refreshPromise: Promise<boolean> | null = null;
+/**
+ * ผลของการ refresh — แยก "ติดต่อ server ไม่ได้" ออกจาก "token ถูกปฏิเสธ" เพราะมีแค่อย่างหลัง
+ * ที่ต้องล้าง session และพาไป login ส่วนอย่างแรก session ยังดีอยู่ แค่รอ server กลับมา
+ * - `ok` — ได้ access token ใหม่แล้ว
+ * - `rejected` — ไม่มี refresh token หรือ backend ตอบ 4xx (ยกเว้น 408/429) → session ถูกล้าง
+ * - `unreachable` — network/timeout/5xx/408/429 → เก็บ session ไว้ทั้งหมด ตั้ง authReachabilityStore
+ */
+export type RefreshResult = "ok" | "rejected" | "unreachable";
 
-export function refreshTokens(): Promise<boolean> {
+// Mutex — concurrent 401s แชร์ refresh request เดียวกัน (พฤติกรรมเดิมจาก http-client)
+let refreshPromise: Promise<RefreshResult> | null = null;
+
+export function refreshTokens(): Promise<RefreshResult> {
   if (refreshPromise) return refreshPromise;
   refreshPromise = doRefresh().finally(() => {
     refreshPromise = null;
@@ -315,9 +325,12 @@ export function refreshTokens(): Promise<boolean> {
   return refreshPromise;
 }
 
-async function doRefresh(): Promise<boolean> {
+async function doRefresh(): Promise<RefreshResult> {
   const refresh_token = refreshTokenStorage.get();
-  if (!refresh_token) return false;
+  if (!refresh_token) {
+    authReachabilityStore.set(false);
+    return "rejected";
+  }
 
   const { BACKEND_URL } = getRuntimeConfig();
   let res: Response;
@@ -329,28 +342,37 @@ async function doRefresh(): Promise<boolean> {
       signal: AbortSignal.timeout(10_000),
     });
   } catch {
-    return false; // network/timeout — อย่าเคลียร์ session (อาจ offline ชั่วคราว)
+    // network/timeout — อย่าเคลียร์ session (อาจ offline หรือ server ล่มชั่วคราว)
+    authReachabilityStore.set(true);
+    return "unreachable";
   }
 
   if (!res.ok) {
-    // ล้าง session เฉพาะตอน refresh token ถูกปฏิเสธจริง (400/401/403) — 5xx/429/อื่น ๆ
-    // เป็นปัญหาชั่วคราวฝั่ง server เหมือน network error: คืน false แต่เก็บ session ไว้
-    if (res.status === 400 || res.status === 401 || res.status === 403) {
+    // ล้าง session เฉพาะตอน refresh token ถูกปฏิเสธจริง (4xx) — 5xx/408/429
+    // เป็นปัญหาชั่วคราวฝั่ง server เหมือน network error: เก็บ session ไว้แล้วรอลองใหม่
+    // (backend ตอบ 5xx เมื่อ Keycloak ล่ม — เดิมตอบ 401 ทำให้ผู้ใช้โดนเตะออกทั้งระบบ)
+    // 4xx อื่น (422 จาก DTO validation ฯลฯ) ก็นับเป็นถูกปฏิเสธ — ถ้านับเป็น unreachable ผู้ใช้ที่ token
+    // เสียจะค้างหน้า "ติดต่อเซิร์ฟเวอร์ไม่ได้" ตลอดไป ยกเว้น 408/429 ที่เป็นเรื่องชั่วคราว
+    if (res.status >= 400 && res.status < 500 && res.status !== 408 && res.status !== 429) {
       clearSession();
+      return "rejected";
     }
-    return false;
+    authReachabilityStore.set(true);
+    return "unreachable";
   }
 
   const json = await res.json().catch(() => null);
   const tokens = json?.data;
   if (!tokens?.access_token) {
     clearSession();
-    return false;
+    return "rejected";
   }
 
+  // ล้าง flag ก่อนใส่ token — RequireAuth จะ render หน้าเดิมทันทีที่ token เข้า store
+  authReachabilityStore.set(false);
   tokenStore.set(tokens.access_token);
   if (tokens.refresh_token) refreshTokenStorage.set(tokens.refresh_token);
-  return true;
+  return "ok";
 }
 
 export async function logout(): Promise<void> {
@@ -379,6 +401,9 @@ export async function logout(): Promise<void> {
 }
 
 function clearSession(): void {
+  // ล้าง flag ก่อน token — flag ค้าง true (server เคยล่มแล้วกลับมา) จะทำให้ logout ไปค้างหน้า
+  // "ติดต่อเซิร์ฟเวอร์ไม่ได้" แทนหน้า login
+  authReachabilityStore.set(false);
   tokenStore.clear();
   refreshTokenStorage.clear();
 }

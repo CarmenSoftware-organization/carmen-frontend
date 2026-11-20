@@ -249,11 +249,16 @@ const handleClientErrors = async (
     // ก็ยังถูกปฏิเสธ — ค่อยไปตัดสินด้านล่าง ไม่ refresh วนซ้ำ (กัน loop)
     if (!isRetry) {
       const refreshed = await refreshTokens();
-      if (refreshed) {
+      if (refreshed === "ok") {
         // ส่ง retry response กลับเข้า handler อีกรอบ (isRetry=true) เพื่อให้
         // 401/403/429 รอบสองถูกจัดการแทนที่จะคืน response ดิบ
         const retried = await safeFetch(url, init);
         return handleClientErrors(retried, url, init, true, silentForbidden);
+      }
+      if (refreshed === "unreachable") {
+        // server ล่ม ไม่ใช่ session หมดอายุ — ห้ามล้าง token (จะเตะผู้ใช้ไปหน้า login)
+        // ให้ request นี้ error แบบ server ไม่พร้อม ผู้ใช้อยู่หน้าเดิม 401 ครั้งถัดไปลอง refresh ใหม่เอง
+        throw new ApiError(ERROR_CODES.BACKEND_UNAVAILABLE, "Server unreachable", 503, true);
       }
     }
 

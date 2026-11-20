@@ -2190,6 +2190,11 @@
       "wrongAccount": "This invitation was sent to a different account. Sign out and try again.",
       "actionFailed": "Something went wrong. Please try again.",
       "addressConflict": "This address is already used as the username of another account, so it cannot be signed up here. The person who invited you has been notified and can fix it."
+    },
+    "serverUnreachable": {
+      "title": "Can't reach the server",
+      "description": "Retrying automatically…",
+      "retry": "Retry"
     }
   },
   "toast": {
