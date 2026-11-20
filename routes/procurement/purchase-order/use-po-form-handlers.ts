@@ -59,7 +59,7 @@ export function usePoFormHandlers({
   const tv = useTranslations("validation");
   const tfl = useTranslations("field");
   const buCode = useBuCode();
-  const dimensionsEnabled = useLineDimensionsEnabled();
+  const dimensionsEnabled = useLineDimensionsEnabled("po");
 
   const createPo = useCreatePurchaseOrder();
   const updatePo = useUpdatePurchaseOrder();

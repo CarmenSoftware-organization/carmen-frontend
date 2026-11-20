@@ -180,6 +180,8 @@
       "siDesc": "Stock In settings for this business unit.",
       "po": "PO",
       "poDesc": "Purchase Order settings for this business unit.",
+      "dimension": "Dimensions",
+      "dimensionDesc": "Which documents show dimensions on each line for this business unit.",
       "printForm": "Print Forms",
       "printFormDesc": "Report form used when printing each document type.",
       "documents": "Document behavior",
@@ -194,6 +196,18 @@
         "lastCost": "Last cost"
       },
       "poGroupByPrComment": "Group by PR comment",
+      "dimensionStartFrom": "Show line dimensions from",
+      "dimensionStartFromDesc": "Dimensions appear on this document and every later one in the purchasing chain (PR, PO, GRN).",
+      "dimensionStartFromOptions": {
+        "none": "Off",
+        "pr": "From PR",
+        "po": "From PO",
+        "grn": "From GRN"
+      },
+      "dimensionSrEnabled": "Line dimensions on Store Requisition",
+      "dimensionSrEnabledDesc": "Show dimensions on each Store Requisition line.",
+      "dimensionIaEnabled": "Line dimensions on Inventory Adjustment",
+      "dimensionIaEnabledDesc": "Show dimensions on each Inventory Adjustment line.",
       "printFormPr": "Purchase Request",
       "printFormPo": "Purchase Order",
       "printFormGrn": "Good Received Note",

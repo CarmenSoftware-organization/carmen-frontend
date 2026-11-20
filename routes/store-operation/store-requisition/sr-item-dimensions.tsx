@@ -6,7 +6,7 @@ import type { SrFormValues } from "./sr-form-schema";
  * ปุ่ม popover dimension ของบรรทัด SR/transfer (คอลัมน์ "Dim") — แก้แล้ว
  * ตั้ง `dimensions_dirty` เพื่อให้ payload ส่ง dimensions ในบรรทัด update
  *
- * ผู้เรียกต้องเช็ค `useLineDimensionsEnabled()` เอง และไม่ใส่คอลัมน์นี้เมื่อปิด
+ * ผู้เรียกต้องเช็ค `useLineDimensionsEnabled("sr")` เอง และไม่ใส่คอลัมน์นี้เมื่อปิด
  */
 export function SrItemDimensions({
   form,

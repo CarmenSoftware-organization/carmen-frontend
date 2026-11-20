@@ -100,7 +100,7 @@ export function InventoryAdjustmentForm({
 
   const { currentPeriod, dateFormat } = useProfile();
   const buCode = useBuCode();
-  const dimensionsEnabled = useLineDimensionsEnabled();
+  const dimensionsEnabled = useLineDimensionsEnabled("ia");
   const adjTypeFilter =
     adjustmentType === "stock-in"
       ? ADJUSTMENT_TYPE.STOCK_IN

@@ -65,7 +65,7 @@ export function useGrnFormActions({
   const t = useTranslations("procurement.goodsReceiveNote");
   const tt = useTranslations("toast");
 
-  const dimensionsEnabled = useLineDimensionsEnabled();
+  const dimensionsEnabled = useLineDimensionsEnabled("grn");
   const isEdit = mode === "edit";
   const isAdd = mode === "add";
 

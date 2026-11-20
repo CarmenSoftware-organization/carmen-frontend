@@ -7,7 +7,7 @@ import type { GrnFormValues } from "../grn-form-schema";
  * หรือจาก response แก้แล้วตั้ง `dimensions_dirty` เพื่อให้ payload ส่ง dimensions
  * ใน good_received_note_detail.update
  *
- * ผู้เรียกต้องเช็ค `useLineDimensionsEnabled()` เอง และไม่ใส่คอลัมน์นี้เมื่อปิด
+ * ผู้เรียกต้องเช็ค `useLineDimensionsEnabled("grn")` เอง และไม่ใส่คอลัมน์นี้เมื่อปิด
  */
 export function GrnItemDimensions({
   form,

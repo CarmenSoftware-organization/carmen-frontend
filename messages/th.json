@@ -180,6 +180,8 @@
       "siDesc": "การตั้งค่าการรับสินค้าเข้าของหน่วยธุรกิจนี้",
       "po": "PO",
       "poDesc": "การตั้งค่าใบสั่งซื้อของหน่วยธุรกิจนี้",
+      "dimension": "มิติ (Dimension)",
+      "dimensionDesc": "เลือกว่าเอกสารใดแสดง dimension ในแต่ละบรรทัดสำหรับหน่วยธุรกิจนี้",
       "printForm": "แบบฟอร์มการพิมพ์",
       "printFormDesc": "แบบฟอร์มรายงานที่ใช้พิมพ์สำหรับเอกสารแต่ละประเภท",
       "documents": "การทำงานของเอกสาร",
@@ -194,6 +196,18 @@
         "lastCost": "ต้นทุนล่าสุด"
       },
       "poGroupByPrComment": "เพิ่มการจัดกลุ่มตามหมายเหตุของใบขอซื้อ",
+      "dimensionStartFrom": "แสดง dimension ในบรรทัดตั้งแต่",
+      "dimensionStartFromDesc": "dimension จะแสดงที่เอกสารที่เลือกและเอกสารถัดไปในสายงานจัดซื้อ (PR, PO, GRN)",
+      "dimensionStartFromOptions": {
+        "none": "ปิด",
+        "pr": "ตั้งแต่ PR",
+        "po": "ตั้งแต่ PO",
+        "grn": "ตั้งแต่ GRN"
+      },
+      "dimensionSrEnabled": "dimension ในบรรทัดใบเบิกสินค้า (SR)",
+      "dimensionSrEnabledDesc": "แสดง dimension ในแต่ละบรรทัดของใบเบิกสินค้า",
+      "dimensionIaEnabled": "dimension ในบรรทัดปรับปรุงสต๊อก (IA)",
+      "dimensionIaEnabledDesc": "แสดง dimension ในแต่ละบรรทัดของใบปรับปรุงสต๊อก",
       "printFormPr": "ใบขอซื้อ",
       "printFormPo": "ใบสั่งซื้อ",
       "printFormGrn": "ใบรับสินค้า",

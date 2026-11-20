@@ -6,7 +6,7 @@ import type { AdjFormValues } from "./ia-form-schema";
  * ปุ่ม popover dimension ของบรรทัด stock-in/stock-out (คอลัมน์ "Dim") — แก้แล้ว
  * ตั้ง `dimensions_dirty` เพื่อให้ payload ส่ง dimensions ในบรรทัด update
  *
- * ผู้เรียกต้องเช็ค `useLineDimensionsEnabled()` เอง และไม่ใส่คอลัมน์นี้เมื่อปิด
+ * ผู้เรียกต้องเช็ค `useLineDimensionsEnabled("ia")` เอง และไม่ใส่คอลัมน์นี้เมื่อปิด
  */
 export function IaItemDimensions({
   form,

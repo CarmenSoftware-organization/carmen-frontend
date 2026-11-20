@@ -69,7 +69,7 @@ export function usePrFormActions({
     "/procurement/purchase-request",
   );
   const buCode = useBuCode();
-  const dimensionsEnabled = useLineDimensionsEnabled();
+  const dimensionsEnabled = useLineDimensionsEnabled("pr");
   const { defaultBu } = useProfile();
 
   // GET PR สดจาก DB ก่อนยิง workflow event — กัน 409 optimistic lock จาก

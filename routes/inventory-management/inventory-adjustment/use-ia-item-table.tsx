@@ -488,7 +488,7 @@ export function useAdjItemTable({
 }: UseAdjItemTableOptions) {
   "use no memo";
   const tfl = useTranslations("field");
-  const dimensionsEnabled = useLineDimensionsEnabled();
+  const dimensionsEnabled = useLineDimensionsEnabled("ia");
   const allColumns = useMemo<ColumnDef<AdjItemField>[]>(() => {
     const recalcTotal = (
       index: number,

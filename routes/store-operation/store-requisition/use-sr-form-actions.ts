@@ -162,7 +162,7 @@ export function useSrFormActions({
 
   const currentRole = storeRequisition?.role ?? STAGE_ROLE.CREATE;
   const buCode = useBuCode();
-  const dimensionsEnabled = useLineDimensionsEnabled();
+  const dimensionsEnabled = useLineDimensionsEnabled("sr");
   const { currentPeriod } = useProfile();
   // ส่งใบแล้ว backend ลงวันนี้ ถ้าวันนี้อยู่นอกงวด active (งวดที่ profile ส่งมา) มันจะตีกลับ
   // SR_DATE_PATTERN_REQUIRED แน่ ๆ — รู้ล่วงหน้าได้ จึงถามในกล่องส่งใบเลย

@@ -19,7 +19,7 @@ export function PoItemDimensions({
   /** เยื้องซ้าย (px) ให้ตรงช่องหมายเหตุ */
   readonly offset: number;
 }) {
-  const enabled = useLineDimensionsEnabled();
+  const enabled = useLineDimensionsEnabled("po");
   const value = useWatch({
     control: form.control,
     name: `items.${index}.dimensions`,

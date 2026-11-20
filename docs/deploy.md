@@ -197,8 +197,7 @@ backend ไม่งั้นได้ 401 แล้วเด้งออกห�
     "WS_URL": "wss://<backend-host>/ws",
     "LICENSE_ENFORCEMENT": true,
     "OTEL_ENABLED": true,
-    "OTEL_ENVIRONMENT": "prod",
-    "LINE_DIMENSIONS_ENABLED": false
+    "OTEL_ENVIRONMENT": "prod"
   }
   ```
   `BACKEND_URL` + `X_APP_ID` บังคับ ที่เหลือ optional · **`LICENSE_ENFORCEMENT`,
@@ -206,9 +205,9 @@ backend ไม่งั้นได้ 401 แล้วเด้งออกห�
   environment** (ไฟล์พวกนี้ถูก gitignore) และ **Docker entrypoint
   (`docker/40-render-config-json.sh`) render ให้แค่ 3 คีย์แรก** — ปลายทาง Docker
   จึงเปิด license enforcement / telemetry จาก env ไม่ได้
-  · **`LINE_DIMENSIONS_ENABLED`** เปิดช่อง dimension รายบรรทัดใน PR/PO/GRN/SR/IA —
-  ฟีเจอร์ยังไม่พร้อมให้ลูกค้าใช้ จึง **ไม่ตั้ง = ปิด** ตั้ง `true` เฉพาะ local/dev
-  (UAT/prod/Vercel ห้ามเปิดจนกว่าจะประกาศใช้)
+  · การเปิดช่อง dimension รายบรรทัด (เดิมคือ `LINE_DIMENSIONS_ENABLED`) **ย้ายไปอยู่ที่ config
+  ของ BU แล้ว** — ตั้งที่ `/system-admin/default-setting` section Dimensions
+  (`dimension.start-from`, `dimension.sr.enabled`, `dimension.ia.enabled`) ไม่ต้องแก้ไฟล์ config
 - **Backend prerequisite for S3/GCS (see spec §4)** — CORS: allow the CDN/bucket origin,
   methods GET/POST/PUT/PATCH/DELETE, headers `Authorization`, `Content-Type`,
   `x-app-id`. (The Docker target is exempt — its nginx proxies `/api/*` same-origin.)

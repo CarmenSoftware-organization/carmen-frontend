@@ -448,7 +448,7 @@ export function useSrItemTable({
   const lockNonIssued = isApproverOnly || isViewOnly;
   const lockApproved = isIssuerOnly || isViewOnly;
   const lockIssued = isViewOnly;
-  const dimensionsEnabled = useLineDimensionsEnabled();
+  const dimensionsEnabled = useLineDimensionsEnabled("sr");
 
   const allColumns = useMemo<ColumnDef<SrItemField>[]>(() => {
     const indexColumn: ColumnDef<SrItemField> = {

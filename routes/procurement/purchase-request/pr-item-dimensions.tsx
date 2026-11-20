@@ -17,7 +17,7 @@ export function PrItemDimensions({
   readonly index: number;
   readonly disabled: boolean;
 }) {
-  const enabled = useLineDimensionsEnabled();
+  const enabled = useLineDimensionsEnabled("pr");
   const value = useWatch({
     control: form.control,
     name: `items.${Math.max(index, 0)}.dimensions`,

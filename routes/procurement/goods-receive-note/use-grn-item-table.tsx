@@ -71,7 +71,7 @@ export function useGrnItemTable({
   lockedLines,
 }: UseGrnItemTableOptions) {
   "use no memo";
-  const dimensionsEnabled = useLineDimensionsEnabled();
+  const dimensionsEnabled = useLineDimensionsEnabled("grn");
   const tfl = useTranslations("field");
   const t = useTranslations("procurement.goodsReceiveNote");
   const [sorting, setSorting] = useState<SortingState>([]);
