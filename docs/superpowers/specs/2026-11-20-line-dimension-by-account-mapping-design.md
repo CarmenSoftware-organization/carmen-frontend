@@ -131,7 +131,7 @@ resolver เดิม `resolveAccountMapping()` (`micro-business/src/master/acco
   - BE รองรับอยู่แล้ว: `update()` ของใบ saved ผ่าน `planLineDimensions` ได้
   - ใบ committed แก้ได้แค่หัวใบตามเดิม
 - เมื่อ commit ไม่ผ่านเพราะ dimension ให้ FE เปิดโหมดแก้ไขค้างไว้และทำชิปที่ผิดเป็นสีแดง ผู้ใช้แก้ กด Save แล้วกด commit ใหม่ได้ในหน้าเดิม ไม่ต้องย้อนไปแก้ PO
-- SR ที่ approve ไม่ผ่านใช้กติกาเดียวกัน: ผู้อนุมัติขั้นนั้นต้องแก้ dimension ได้ (builder ตรวจว่าใน workflow ขั้นนั้นแก้บรรทัดได้หรือไม่ ถ้าแก้ไม่ได้ ให้กลับมาถาม user)
+- SR ที่ approve ขั้นลงบัญชีไม่ผ่าน: ผู้อนุมัติแก้ dimension ในขั้นนั้นไม่ได้ (payload ของ approve/issue รับแค่จำนวนและสถานะ `store-requisition.detail.dto.ts:41-67`) **user เลือก 2026-11-20 ให้ส่งกลับหรือ reject ให้ผู้ขอแก้แล้ว submit ใหม่** ไม่ขยาย payload ของ approve
 
 ## การออกแบบ BE
 
