@@ -101,7 +101,7 @@ Finished pages to open as examples, one per kind (all under `routes/`):
 | groups as columns | `system-admin/interface/` (list) |
 | grid of cards, view mode as text | `vendor-management/vendor/` |
 | view-only page | `profile/` |
-| `DataGrid` with few columns | `system-admin/inventory-period/`, `system-admin/role/` |
+| `DataGrid` with few columns | `system-admin/role/` |
 | `DataGrid` picking columns by box width | `system-admin/document/`, `system-admin/user/` |
 | plain `<table>` that stacks | `system-admin/email-profile/`, `system-admin/email-template/` |
 | editor and preview split by card width | `system-admin/notification-template/` |
