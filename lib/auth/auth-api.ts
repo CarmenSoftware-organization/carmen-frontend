@@ -353,7 +353,6 @@ async function doRefresh(): Promise<RefreshResult> {
     // (backend ตอบ 5xx เมื่อ Keycloak ล่ม — เดิมตอบ 401 ทำให้ผู้ใช้โดนเตะออกทั้งระบบ)
     if (res.status === 400 || res.status === 401 || res.status === 403) {
       clearSession();
-      authReachabilityStore.set(false);
       return "rejected";
     }
     authReachabilityStore.set(true);
@@ -364,7 +363,6 @@ async function doRefresh(): Promise<RefreshResult> {
   const tokens = json?.data;
   if (!tokens?.access_token) {
     clearSession();
-    authReachabilityStore.set(false);
     return "rejected";
   }
 
@@ -401,6 +399,9 @@ export async function logout(): Promise<void> {
 }
 
 function clearSession(): void {
+  // ล้าง flag ก่อน token — flag ค้าง true (server เคยล่มแล้วกลับมา) จะทำให้ logout ไปค้างหน้า
+  // "ติดต่อเซิร์ฟเวอร์ไม่ได้" แทนหน้า login
+  authReachabilityStore.set(false);
   tokenStore.clear();
   refreshTokenStorage.clear();
 }
