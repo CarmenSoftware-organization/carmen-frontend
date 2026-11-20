@@ -1,189 +1,86 @@
-# Dimension ของบรรทัด PR · PO · GRN ตามบัญชีจากผังการผูกบัญชี
+# Dimension ของบรรทัด PR · PO · GRN · SR · IA ตามบัญชีจากผังการผูกบัญชี (Post to GL mapping)
 
 สถานะ: ออกแบบแล้ว รออนุมัติ · 2026-11-20
-แทนที่ backlog `2026-11-17-line-dimension-by-product-account-design.md` (ตอบคำถามที่เปิดค้างไว้ในนั้นสำหรับ PR/PO/GRN; SR/IA ยังอยู่ใน backlog)
+แทนที่ backlog `2026-11-17-line-dimension-by-product-account-design.md` (ตอบคำถามที่ค้างไว้ครบทั้ง PR/PO/GRN/SR/IA)
+และ**ยกเลิก** env `LINE_DIMENSIONS_ENABLED` จาก `2026-11-17-hide-line-dimensions-design.md` (user สั่ง 2026-11-20)
 รีโป: `carmen-turborepo-backend` (micro-business + backend-gateway) และ `carmen-frontend`
 
 ## เจตนา
 
-ตอนนี้บรรทัดของ PR, PO และ GRN แสดง dimension ที่ active **ทุกตัว** ของ BU (`components/dimension/line-dimension-fields.tsx`)
-ผู้ใช้จึงเห็นช่องที่ไม่เกี่ยวกับบัญชีของบรรทัดนั้น และไม่รู้ว่าต้องกรอกช่องไหนบ้าง ส่วนตอนลงบัญชี (JV หรือ AP ที่สร้างจาก GRN) ระบบตรวจตามกฎผังบัญชี
-ทำให้ข้อมูลที่ขาดเพิ่งมาเจอปัญหาตอนท้ายสาย
+ตอนนี้บรรทัดของ PR, PO, GRN, SR และ IA แสดง dimension ที่ active **ทุกตัว** ของ BU (`components/dimension/line-dimension-fields.tsx` / popover)
+ผู้ใช้จึงเห็นช่องที่ไม่เกี่ยวกับบัญชีของบรรทัดนั้น และไม่รู้ว่าต้องกรอกช่องไหน ส่วนตอนลงบัญชี (JV/AP) ระบบตรวจตามกฎผังบัญชี
+ข้อมูลที่ขาดจึงเพิ่งมาเจอปัญหาตอนท้ายสาย
 
-สิ่งที่ต้องการคือ:
-1. ทุกบรรทัดแสดงเฉพาะ dimension ที่**บัญชีของบรรทัดนั้น**อนุญาตตามกฎ (`tb_gl_account_dimension_rule`: แสดง mandatory และ optional, ไม่แสดง prohibited) แบบเดียวกับที่ AR, AP และ JV ทำอยู่
-2. ใบ draft กด Save ได้เสมอแม้ dimension ยังไม่ครบ
-3. ตอนเอกสารออกจาก draft ต้องตรวจว่า dimension ที่บัญชีบังคับมีครบ และไม่มี dimension ที่บัญชีห้ามใช้ ตรวจทั้ง FE และ BE
+สิ่งที่ต้องการ:
+1. แต่ละบรรทัดแสดงเฉพาะ dimension ที่**บัญชีของบรรทัดนั้น**อนุญาตตามกฎ (`tb_gl_account_dimension_rule`: แสดง mandatory และ optional, ไม่แสดง prohibited) แบบเดียวกับที่ AR, AP และ JV ทำอยู่
+2. บัญชีของบรรทัดได้มาจาก**ผังการผูกบัญชีฝั่ง GL (Post to GL mapping)** ซึ่งรวม mapping ตาม adjustment type ด้วย
+3. ใบ draft กด Save ได้เสมอแม้ dimension ยังไม่ครบ
+4. ตอนเอกสารพ้น draft และก่อนลงบัญชี ต้องตรวจว่า dimension ที่บัญชีบังคับมีครบ และไม่มี dimension ที่บัญชีห้ามใช้ ตรวจทั้ง FE และ BE
+5. แต่ละ BU เลือกเองว่าจะเริ่มใช้ dimension ที่เอกสารไหน
+6. หน้าตาของช่อง dimension เหมือนกับใน JV
 
 ## เป้าหมาย / ไม่ใช่เป้าหมาย / ต่อต้าน
 
-**เป้าหมาย**
-- บัญชีของบรรทัดหามาจาก**ผังการผูกบัญชี movement `grn` ฝั่ง GL** (location × item group ของสินค้า) ใช้ตัวเดียวกันทั้ง PR, PO และ GRN (user เลือก) dimension ที่กรอกตั้งแต่ PR จึงตรงกับที่ GRN จะลงบัญชีจริง
-- ใช้จุดตรวจ 3 จุด (user เลือก):
-  - PR `submit()` รวมทั้งการ submit ซ้ำหลังถูกส่งกลับ (in_progress + last_action = reviewed)
-  - PO `submit()`
-  - GRN ตอนเปลี่ยนสถานะจาก draft เป็น saved ผ่าน `GoodReceivedNoteLogic.save()` (จังหวะที่ใบได้เลขจริง)
-  - ครอบคลุมทั้งเอกสารที่มาจากต้นทาง (PR → PO → GRN) และเอกสารที่สร้างเอง (PO manual, GRN manual) user ย้ำว่าต้องตรวจทั้งสองแบบ ดู §ทางออกจาก draft
-- FE กับ BE ใช้กติกาจากที่เดียวกัน: endpoint ใหม่ของ BE กับตัวตรวจตอน submit เรียกฟังก์ชันกลางตัวเดียว
+**เป้าหมาย**: ข้อ 1–6 ข้างบน ครบ 5 ชนิดเอกสาร คือ PR, PO, GRN, SR และ IA (stock-in / stock-out)
 
 **ไม่ใช่เป้าหมาย**
-- SR และ IA (stock-in/out) ยังไม่ทำในรอบนี้
 - ไม่บันทึกบัญชีที่หาได้ลงในบรรทัด คำนวณสดทุกครั้ง
-- ไม่เปลี่ยนสวิตช์ `LINE_DIMENSIONS_ENABLED` เมื่อสวิตช์ปิด FE ไม่แสดงอะไรเหมือนเดิม (ดูเรื่อง BE ใน §ข้อจำกัด)
-- ไม่แก้หน้า AR, AP และ JV
+- ไม่เปลี่ยนกติกาของ JV/AP/AR ตอนลงบัญชี (ส่วน JV แก้แค่ UI ให้ใช้ component กลาง)
+- ไม่แก้ปัญหาที่ BU ตั้ง config เป็นปิด แต่บัญชีบังคับ dimension แล้วไปติดที่ JV (เป็นพฤติกรรมเดิม)
 
 **ต่อต้าน (ถ้าเกิดข้อใดข้อหนึ่งถือว่าล้มเหลว แม้ระบบจะทำงานได้)**
 - Save ใบ draft ไม่ผ่านเพราะ dimension
 - FE บอกว่าครบ แต่ BE ตอบว่าขาด หรือกลับกัน (กติกาเพี้ยนกันสองที่)
 - บรรทัดที่หาบัญชีไม่ได้ทำให้ submit ไม่ผ่าน (ปัญหา mapping ไม่ครบเป็นของฝ่ายตั้งค่า ไม่ใช่ของคนเปิดเอกสาร)
 - ค่าที่ผู้ใช้กรอกไว้หายไปเงียบ ๆ เมื่อเปลี่ยนสินค้าหรือ location
-
-## ระบบตอนนี้ (ที่ต้องแตะ)
-
-- **FE แสดงผล**: `routes/procurement/purchase-request/pr-item-dimensions.tsx` · `routes/procurement/purchase-order/po-item-cells/item-dimensions.tsx` · `routes/procurement/goods-receive-note/grn-item-cells/item-dimensions.tsx` ทั้งสามไฟล์ใช้ `LineDimensionFields` หรือ `LineDimensionPopover` ซึ่งแสดงทุกตัว และถูกครอบด้วย `useLineDimensionsEnabled()`
-- **FE helper ที่ใช้ซ้ำได้**: `visibleLineDimensions()` ใน `routes/accounting/documents/journal-line-dimensions.ts` (ไฟล์นี้อยู่ใต้ `routes/accounting/` ถ้าจะใช้จาก `routes/procurement/` ต้องย้ายไป `lib/` หรือ `components/dimension/` เพราะติดกฎ module boundary ของ ESLint)
-- **BE resolver ของบัญชี**: `resolveAccountMapping()` ใน `micro-business/src/master/account-mapping/account-mapping.resolver.ts` เป็นฟังก์ชันล้วน ลำดับการหาคือ ค่าที่แก้ทับ → item group → sub-category → category โดยเลือก inventory หรือ direct ตาม `location_type` ส่วน consignment ระบบจะ `skip`
-- **BE ตัวตรวจ**: `validateLineDimensions()` ใน `gl/gl-dimension/gl-dimension.validator.ts` ซึ่ง JV, facade และ AP ใช้ร่วมกัน (คืน violation แรก) และ `applyMandatoryDimensionDefaults()` ใน `gl-dimension.defaults.ts` ซึ่งเติม default ของกฎ mandatory
-- **BE จุดตรวจ**: `PurchaseRequestService.submit()` (`procurement/purchase-request/purchase-request.service.ts`) · `PurchaseOrderService.submit()` (`procurement/purchase-order/purchase-order.service.ts`) · `GoodReceivedNoteLogic.save()` / `commit()` / `approve()` (`inventory/good-received-note/good-received-note.logic.ts`) · `PurchaseOrderService.confirmPrToPo()`
+- deploy แล้ว BU ที่ไม่ได้เปิด config เห็นช่อง dimension หรือโดนบังคับ
 
 ## แนวทางที่พิจารณา
 
 1. **Endpoint ใหม่ของ BE + ฟังก์ชันกลาง** ← **เลือกทางนี้** (user เลือก)
-   BE หาบัญชีและกฎให้ทั้ง FE และตัวตรวจตอน submit กติกาจึงอยู่ที่เดียว
+   BE หาบัญชีและกฎให้ทั้ง FE และตัวตรวจ กติกาจึงอยู่ที่เดียว
    ข้อเสีย: ต้องมี endpoint ใหม่ และต้องเพิ่ม allowlist ใน gateway
 2. **FE คำนวณบัญชีเอง** — ตัดทิ้ง
-   resolver จะมีสองชุดที่ต้องดูแลให้ตรงกัน และ FE ต้องรู้ลำดับชั้นหมวดหมู่ของทุกสินค้า ซึ่งขัดกับต่อต้านข้อ "กติกาเพี้ยนกันสองที่"
+   resolver จะมีสองชุดที่ต้องดูแลให้ตรงกัน และ FE ต้องรู้ลำดับชั้นหมวดหมู่ของสินค้าทุกตัว
 3. **แนบกฎมากับ response ของ detail** — ตัดทิ้ง
-   ใช้ได้กับบรรทัดที่บันทึกแล้วเท่านั้น บรรทัดใหม่ยังต้องถามแยก สุดท้ายจึงต้องมีทางที่ 1 อยู่ดี
+   บรรทัดใหม่หรือบรรทัดที่เปลี่ยนสินค้ายังต้องถามแยก สุดท้ายจึงต้องมีทางที่ 1 อยู่ดี
 
-## การออกแบบ
+UI: แยกแถบชิปของ JV ออกมาเป็น component กลาง แล้วให้ทุกเอกสารรวมถึง JV ใช้ร่วมกัน (user เลือก) ไม่ลอกแบบไปทำแยกในแต่ละโมดูล
 
-### BE: ฟังก์ชันกลาง `resolveLineDimensionRules`
+## บัญชีของบรรทัด (mapping ฝั่ง GL)
 
-วางไว้ข้าง resolver หรือใน `master/dimension/line-dimension/` (ให้ builder เลือก)
-- รับ: รายการ `{ key, location_id, product_id }` และ prisma client หรือ tx
-- คืนต่อบรรทัด:
-  ```ts
-  {
-    key: string;
-    status: "resolved" | "no_account" | "skipped";   // skipped = consignment
-    chart_of_accounts_id: string | null;
-    account_code: string | null;
-    rules: { dimension_id: string; requirement: "mandatory" | "optional" | "prohibited";
-             default_value: IDimensionRef | null }[];
-  }
-  ```
-- วิธีทำ: อ่าน location (type, cost center) กับสินค้า (item group → sub-category → category) และแถว `tb_account_mapping` ที่ mapping_type = GL, movement = grn ถ้ามี แล้วเรียก `resolveAccountMapping()` จากนั้นแปลงรหัสบัญชีเป็น id ของผังบัญชี แล้วอ่านกฎของบัญชีนั้น
-- อ่านเป็นชุด (batch) ห้ามยิง query ทีละบรรทัด
-- บรรทัดที่ไม่มี location หรือสินค้า หรือมีแต่ resolver หาบัญชีไม่ได้ (`issue` ไม่เป็น null) หรือรหัสบัญชีไม่มีในผังบัญชี → `no_account`
+resolver เดิม `resolveAccountMapping()` (`micro-business/src/master/account-mapping/account-mapping.resolver.ts`) เป็นฟังก์ชันล้วน
+- movement `grn` / `sr_in` / `sr_out`: ใช้ค่าที่แก้ทับ → item group → sub-category → category โดยเลือก inventory หรือ direct ตาม `location_type`
+- movement `adjustment`: ใช้บัญชีในแถว mapping (location × item group × adjustment type) อย่างเดียว ไม่ย้อนไปหาบัญชีตามหมวดสินค้า และบัญชีที่ได้เป็นบัญชีฝั่งตรงข้ามกับสต๊อก ถ้าแถวไม่มีค่าจะได้ `missing_adjustment_account`
+- consignment → `skip`
 
-### BE: endpoint สำหรับ FE
-
-`POST /api/:bu_code/line-dimension-rules`
-- body: `{ lines: { key, location_id, product_id }[] }`
-- ตอบ: `{ data: <ผลของฟังก์ชันกลาง>[] }`
-- เป็นการอ่านอย่างเดียว ใช้ POST เพราะส่งได้หลายบรรทัด
-- **ต้องเพิ่ม api_name นี้ใน allowlist ของทุก app id ที่ไม่ allow_all ก่อน deploy FE** มิฉะนั้น user จะโดน 401 แล้วเด้งออกจากระบบ (เคยเกิดมาแล้ว)
-- สิทธิ์: user ที่เปิดเอกสาร PR/PO/GRN ได้ ต้องเรียก endpoint นี้ได้ ไม่ต้องใช้สิทธิ์ config
-
-### BE: ตรวจที่ 3 จุด
-
-ทำใน transaction เดียวกับการเปลี่ยนสถานะ ตามลำดับนี้:
-1. เรียกฟังก์ชันกลางกับทุกบรรทัดที่ยังมีชีวิต (`deleted_at` เป็น null)
-2. บรรทัด `no_account` / `skipped` → ข้าม ไม่ตรวจ
-3. บรรทัด `resolved` → **เติม default ก่อน** ด้วย `applyMandatoryDimensionDefaults()` แล้วบันทึกค่าที่เติมลง `*_dimension` ของบรรทัด จากนั้นตรวจด้วย `validateLineDimensions()` (ใช้วันที่ของเอกสารเป็น `onDate`)
-4. ไม่ผ่าน → rollback แล้วตอบ **422** ด้วย error catalog ใหม่ (เช่น `LINE_DIMENSION_REQUIRED` / `LINE_DIMENSION_PROHIBITED`) โดยบอกให้รู้ว่าเป็นบรรทัดไหน (sequence_no หรือ detail id) และ dimension ไหน ต้องเพิ่ม key แปลใน FE error catalog ด้วย
-
-- จุดตรวจทั้งสามใช้**กฎปัจจุบัน**เสมอ PO ที่มาจาก PR ซึ่งผ่านแล้วอาจไม่ผ่านถ้ากฎหรือ mapping ถูกแก้ระหว่างทาง (user ยอมรับ เพราะสุดท้ายต้องลงบัญชีตามกฎปัจจุบัน)
-- ห้ามตรวจตอน save draft และห้ามตรวจตอน update ที่ไม่ได้เปลี่ยนสถานะ
-
-### FE: แสดงผล
-
-- hook ใหม่ `useLineDimensionRules(lines)` เรียก endpoint ข้างบนด้วย TanStack Query โดย query key มาจากคู่ (location_id, product_id) ที่ไม่ซ้ำกัน
-  - ยิงเฉพาะเมื่อ `useLineDimensionsEnabled()` เป็น true
-  - เปลี่ยนสินค้าหรือ location แล้วต้องดึงกฎใหม่
-  - hook นี้ใช้ทั้ง PR, PO และ GRN ซึ่งเป็นโมดูลเดียวกัน (procurement) จึงวางไว้ที่ `routes/procurement/shared/`
-- ช่อง dimension ของบรรทัด:
-  - `resolved` → แสดงตาม `visibleLineDimensions()` ช่อง mandatory ติด `*` และค่าที่บันทึกไว้แล้วยังแสดงอยู่แม้กฎจะเปลี่ยน (พฤติกรรมเดิมของ helper)
-  - `no_account` / `skipped` → ไม่แสดงช่อง dimension ยกเว้นบรรทัดที่มีค่าบันทึกไว้แล้ว ให้แสดงค่าเหล่านั้นต่อ
-  - ระหว่างโหลด หรือโหลดไม่สำเร็จ → ทำแบบเดียวกับ `ArLineDimensions` (ข้อความ error พร้อมปุ่มลองใหม่ ไม่ล้างค่า)
-- **ค่า default**: เมื่อกฎของบรรทัดมาถึงและช่อง mandatory ยังว่าง FE เติม default ให้เห็นและแก้ได้ ถ้ามีการเติม ต้องตั้ง `dimensions_dirty` เพื่อให้ payload ส่งค่าไปด้วย (*การตัดสินใจของผม* — BE เติมซ้ำตอน submit อยู่แล้ว ฝั่ง FE จึงทำเพื่อให้ผู้ใช้เห็นค่าก่อนเท่านั้น)
-
-### FE: หน้าตา = แบบเดียวกับ JV (user สั่ง 2026-11-20)
-
-แยกแถบชิป dimension ของ JV (`routes/accounting/documents/accounting-document-detail.tsx` แถวย่อย `colSpan` ใต้แต่ละบรรทัด) ออกมาเป็น component กลาง `components/dimension/line-dimension-strip.tsx` แล้วให้ **PR, PO, GRN และ JV ใช้ตัวเดียวกัน** (user เลือกทางนี้แทนการลอกแบบไปทำใน procurement เพื่อให้หน้าตาไม่เพี้ยนจากกัน)
-
-```
-│ 1 │ น้ำดื่ม 600ml · ห้องอาหาร │ 24 ขวด │ ...          │
-│   │ [DEPT*: F&B ▾] [PRJ*: WED-01 ▾] [EVT: 2026-11-30 📅]  ⧉ │
-```
-
-- **แก้ไขได้**: dimension แบบ lookup เป็น `Select` ขนาด xs มีป้าย `CODE:` นำหน้า และตัวเลือกแรกเป็น "ล้างค่า" ส่วนแบบ typed ใช้ `DimensionValueInput` ขนาด xs (เหมือน JV ทุกอย่าง)
-- **ดูอย่างเดียว**: เป็นชิป `CODE: ค่า` กดแล้วเปิด dialog "All Dimensions" (`รหัส — ชื่อ`) ให้ย้าย dialog นี้เข้าไปใน component กลางด้วย
-- **ของที่เพิ่มใหม่** (JV ได้ไปด้วย): ช่อง mandatory ติด `*` และเมื่อตรวจไม่ผ่านชิปนั้นเป็นสีแดง (`aria-invalid`)
-- props ขั้นต่ำ: รายการ dimension ที่มองเห็น (มาจาก `visibleLineDimensions()`), ชุด id ของ dimension ที่บังคับ, ชุด id ที่ผิด, `value`, `onChange`, `readOnly`
-- ใช้แถวย่อยใต้บรรทัดเหมือนกันทั้ง 3 เอกสาร GRN **เลิกใช้ popover** (`LineDimensionPopover`) ส่วน `LineDimensionFields` กับ popover ให้ลบทิ้งเมื่อไม่มีผู้เรียกเหลือแล้ว
-- PR บนมือถือ (wizard แบบการ์ด): แถบชิปขึ้นบรรทัดใหม่ได้ (`flex-wrap`) วางไว้ท้ายการ์ด
-- ข้อความยังเป็นภาษาอังกฤษตายตัวใน JV บางจุด (เช่น description ของ sheet) ให้ย้ายเข้า i18n ตอนแยก component
-- `accounting-jv-edit-lines.test.tsx` ต้องผ่านเหมือนเดิมหลังให้ JV เปลี่ยนมาใช้ component กลาง
-
-### FE: ตรวจก่อนส่ง
-
-- ตอนกด Submit (PR/PO) และกด Save ที่ทำให้ GRN ออกจาก draft:
-  - ตรวจทุกบรรทัด `resolved` ว่าช่อง mandatory ที่**ไม่มี default** มีค่า และไม่มีค่าของ dimension ที่ prohibited
-  - ไม่ผ่าน → ไม่ส่ง request, ไฮไลต์บรรทัดที่ผิด (ขยายแถวและทำให้ช่องเป็นสีแดง) และแสดง toast บอกจำนวนบรรทัดที่ผิด
-- ถ้า BE ตอบ 422 ด้วย error catalog ใหม่ ให้แสดงข้อความแปลที่ระบุบรรทัดและ dimension ไว้ด้วย (ใช้กันกรณีกฎเปลี่ยนระหว่างที่หน้าเปิดค้างอยู่)
-- Save ของใบ draft ไม่เรียกตัวตรวจนี้
-  ระวัง: Save ของ PO draft ใช้ `draftSaveHandler` ซึ่งไม่ผ่าน zod อยู่แล้ว ห้ามเอาการตรวจนี้ไปใส่ใน zod schema หลัก ไม่อย่างนั้น Save draft จะโดนตรวจไปด้วย
-
-## ข้อจำกัด / ลำดับ deploy
-
-- ลำดับ: BE (micro-business + gateway) → allowlist api_name ใหม่ → FE
-  ถ้า FE ขึ้นก่อน BE จะได้ 404 หรือ 401 ซึ่งอาจทำให้ user โดน logout
-- **การตรวจฝั่ง BE ต้องปิดได้ด้วย**: ตอนนี้ dimension ของบรรทัดยังซ่อนจากลูกค้าอยู่ (`LINE_DIMENSIONS_ENABLED` ปิด) ถ้า BE บังคับ mandatory ทั้งที่ลูกค้ามองไม่เห็นช่องให้กรอก ลูกค้าจะ submit ไม่ได้เลยหากบัญชีมีกฎ mandatory ที่ไม่มี default
-  → ใช้ config ระดับ BU `dimension.start-from` (default `none`) แทนสวิตช์ BE ดู §Config ระดับ BU
-- dev DB เป็นของกลาง ทดสอบ submit จริงแล้วต้อง void ใบทดสอบทิ้ง
-
-## ข้อสรุปหลัง builder check (การตัดสินใจของผม เว้นแต่จะระบุไว้)
-
-- **location ของบรรทัด**
-  - PR: ใช้ `tb_purchase_request_detail.location_id` (ค่า null ได้ ถ้าเป็น null ถือเป็น `no_account`)
-  - GRN: ใช้ `location_id` ของบรรทัด (มีค่าเสมอ)
-  - PO: ตัวบรรทัดไม่มี location เก็บอยู่ใน junction `tb_purchase_order_detail_tb_purchase_request_detail` ทั้ง PO ที่มาจาก PR และ PO ที่สร้างเอง (`buildJunctionLocation`)
-    - user ยืนยันว่า PO แยกตามลำดับ vendor → currency → delivery date → product → location → dimension ตรงกับโค้ด: `buildPoGroupKey` (แยกใบ) และ `buildPoLineMergeKey` (แยกบรรทัดตาม product, location, … และ `buildDimensionSignature`)
-    - **บรรทัด PO หนึ่งบรรทัดจึงมี location เดียวและ dimension ชุดเดียว** ให้ใช้ location ของแถว junction นั้น
-    - การแยกตาม dimension **นับค่า (value) ด้วย** (user ย้ำ: ห้องอาหารสั่งน้ำให้ project งานแต่งกับ project งานบวช ต้องเป็นคนละบรรทัด)
-      - โค้ดทำอยู่แล้ว: `buildDimensionSignature()` สร้างคีย์จาก `dimension_id=v:<dimension_value_id>` (ค่าแบบ typed ใช้รหัสที่ normalize แล้ว) และ GRN คัด dimension จากบรรทัด PO มาทีละบรรทัด
-      - **ห้ามทำให้พัง**: default ต้องถูกเติมและบันทึกลงบรรทัด PR ตอน submit (§ตรวจที่ 3 จุด ข้อ 3) ก่อนจะแปลงเป็น PO มิฉะนั้นบรรทัดที่ว่างกับบรรทัดที่ได้ค่า default ซึ่งเป็นค่าเดียวกัน จะได้คีย์ต่างกันและแยกเป็นคนละบรรทัดโดยไม่ตั้งใจ
-    - ข้อมูลเก่าที่บังเอิญมีหลาย location ในบรรทัดเดียว (*การตัดสินใจของผม*): ให้ resolve ทุก location แล้วรวมกฎ คือแสดงถ้ามีบัญชีใดอนุญาต, บังคับถ้ามีบัญชีใดบังคับ, ห้ามใช้เฉพาะเมื่อทุกบัญชีห้าม
-- **สวิตช์ฝั่ง BE**: ใน BE ไม่มี `DIMENSION_LICENSE_FEATURE` (เป็นค่าคงที่ฝั่ง FE `"configuration.dimension"`) จึงไม่อ่าน license ข้าม service ถ้า BU ไม่มี license ก็ไม่มี dimension active ให้บังคับอยู่แล้ว ส่วนการเปิดหรือปิดใช้ config ระดับ BU (§Config ระดับ BU)
-- **จุดตรวจ**
-  - ตรวจทุกครั้งที่เรียก `submit()` ของ PR/PO รวมถึงการ submit ซ้ำหลังถูกส่งกลับ
-  - ดู §ทางออกจาก draft (ฉบับก่อนเขียนผิดว่า PO จาก PR เริ่มที่ draft และ GRN ออกจาก draft ทาง `update()` แก้แล้ว)
-- **ป้อนข้อมูลให้ตัวตรวจ**: แปลงบรรทัดเป็น `IDimensionLine` โดยใช้ `chart_of_accounts_id` จากฟังก์ชันกลาง และใช้ sequence_no หรือ detail id เป็น key
-  - BE คืนแค่ violation แรกเหมือน JV/AP (FE เป็นฝ่ายนับจำนวนบรรทัดที่ผิดเองก่อนส่ง ส่วน 422 ใช้กันเฉพาะกรณีที่หลุดมาถึง BE)
-  - ค่า typed ใช้ตามที่ตัวตรวจรองรับอยู่แล้ว
-  - ช่อง mandatory ที่ไม่มีทั้ง default และค่า → 422
-- **onDate**: PR = `pr_date` · PO = `po_date` · GRN = `grn_date`
-- **endpoint**: วางที่ gateway ฝั่ง procurement และใช้ api_name กับ guard แบบเดียวกับ endpoint lookup ของ PR (อ่านได้ถ้าเข้าโมดูล procurement ได้) แล้วส่ง RPC ไป micro-business
-
-## ทางออกจาก draft (ตรวจในโค้ด 2026-11-20)
-
-ทุกทางที่ทำให้เอกสารพ้น draft ต้องเรียกตัวตรวจ:
-
-| เอกสาร | ทาง | สถานะ | ตรวจ |
+| เอกสาร | location | movement | บัญชีที่ใช้ |
 |---|---|---|---|
-| PO manual | `create()` → draft → `submit()` → in_progress | | ที่ `submit()` |
-| PO จาก PR | `confirmPrToPo()` สร้างใบเป็น **in_progress ทันที** ไม่ผ่าน `submit()` | | **ต้องตรวจใน `confirmPrToPo()` ด้วย** (กฎอาจเปลี่ยนหลัง PR ผ่าน) ไม่ผ่าน = ไม่สร้าง PO ใดเลยทั้งชุด (transaction เดียว) |
-| GRN manual และ GRN จาก PO | `create()` → draft → `save()` → saved | ได้เลขจริง | ที่ `save()` |
-| GRN | saved → `commit()` / `approve()` → committed | ลงสต๊อก ออก JV และ AP อัตโนมัติ (`postReceipt`) | **ตรวจซ้ำ** (user เลือก 2026-11-20) ทั้ง FE ตอนกดปุ่ม commit/approve และ BE ใน transaction เดียวกับ `postReceipt` ก่อนลงสต๊อก เพราะใบ saved ยังแก้บรรทัดได้ และกฎอาจเปลี่ยนก่อน commit ถ้าไม่ตรวจ ข้อมูลที่ผิดจะไปพังตอนลงบัญชี |
+| PR | `tb_purchase_request_detail.location_id` (null ได้) | `grn` | บัญชีที่ GRN จะลงจริง (user เลือก) ค่าที่กรอกตั้งแต่ PR จึงตรงกับตอนลงบัญชี |
+| PO | location ของแถว junction `tb_purchase_order_detail_tb_purchase_request_detail` (ทั้ง PO จาก PR และ PO manual) | `grn` | เหมือน PR |
+| GRN | `location_id` ของบรรทัด | `grn` | |
+| IA stock-in / stock-out | `location_id` ของหัวใบ + `adjustment_type_id` ของหัวใบ | `adjustment` | user สั่งให้ใช้ mapping ตาม adjustment type |
+| SR | `from_location_id` (`sr_out`) **และ** `to_location_id` (`sr_in`) ของหัวใบ | `sr_out` + `sr_in` | **รวมกฎของสองบัญชี** (user เลือก) ดูข้างล่าง |
 
-- PO manual และ GRN manual ไม่มีต้นทาง จึงกรอก dimension ครั้งแรกที่ตัวเอกสารนั้นเลย FE ต้องกรองช่องและติด `*` แบบเดียวกับ PR
-- GRN ที่รับจาก PO คัด dimension จากบรรทัด PO มา ถ้ากฎเปลี่ยนตั้งแต่ตอน PO ระบบจะจับได้ที่ `save()` หรือ `commit()`
+**การรวมกฎหลายบัญชี** (ใช้กับ SR และ PO เก่าที่บังเอิญมีหลาย location ในบรรทัดเดียว):
+- แสดงถ้ามีบัญชีใดอนุญาต
+- บังคับถ้ามีบัญชีใดบังคับ
+- ห้ามใช้ถ้ามีบัญชีใดห้าม
+- ถ้าบัญชีหนึ่งบังคับแต่อีกบัญชีห้ามใช้ ถือว่า**ตั้งค่าขัดกัน** ให้ส่ง `status: "conflict"` แล้ว FE แสดงข้อความว่า mapping หรือกฎขัดกัน ส่วน BE ตอบ 422 เป็น error ของการตั้งค่า (ใช้ค่าใดก็ผ่าน JV ไม่ได้)
+- เหตุผลที่ SR ต้องรวม: SR ออก JV สองฝั่งด้วย dimension ชุดเดียวกัน ทั้งสองฝั่งจึงต้องผ่านตัวตรวจ
 
-## Config ระดับ BU: เริ่มใช้ dimension ที่เอกสารไหน (user สั่ง 2026-11-20)
+**PO แยกบรรทัดตามค่าของ dimension ด้วย** (user ย้ำ: ห้องอาหารสั่งน้ำให้ project งานแต่งกับ project งานบวช ต้องเป็นคนละบรรทัด)
+- PO แยกตามลำดับ vendor → currency → delivery date → product → location → dimension
+- โค้ดทำอยู่แล้ว: `buildPoGroupKey` แยกใบ และ `buildPoLineMergeKey` แยกบรรทัด + `buildDimensionSignature()` ใช้คีย์ `dimension_id=v:<dimension_value_id>` (ค่าแบบ typed ใช้รหัสที่ normalize แล้ว)
+- บรรทัด PO หนึ่งบรรทัดจึงมี location เดียวและ dimension ชุดเดียว และ GRN คัด dimension จากบรรทัด PO มาทีละบรรทัด
+- **ห้ามทำให้พัง**: default ต้องถูกเติมและบันทึกลงบรรทัด PR ตอน submit ก่อนแปลงเป็น PO มิฉะนั้นบรรทัดที่ว่างกับบรรทัดที่ได้ default ซึ่งเป็นค่าเดียวกัน จะแยกเป็นคนละบรรทัด
 
-key ใหม่ `dimension.start-from` แบบ enum เก็บใน `config` ของ business unit เพิ่มในหน้า `/system-admin/default-setting` ด้วย skill `add-business-setting-config` (ทำ registry กับ i18n ไม่ต้องแก้ component) ฝั่ง BE อ่าน key นี้แบบเดียวกับ `po.group-by-pr-comment` (`PO_GROUP_BY_PR_COMMENT_KEY` ใน `purchase-order.service.ts`)
+## Config ระดับ BU (user สั่ง 2026-11-20)
+
+เก็บใน `config` ของ business unit และเพิ่มในหน้า `/system-admin/default-setting` ด้วย skill `add-business-setting-config` (แก้ registry กับ i18n ไม่ต้องแก้ component)
+ฝั่ง BE อ่านแบบเดียวกับ `po.group-by-pr-comment` (`PO_GROUP_BY_PR_COMMENT_KEY` ใน `purchase-order.service.ts`)
+
+**`dimension.start-from`** (enum) ใช้กับสายซื้อ
 
 | ค่า | PR | PO | GRN |
 |---|---|---|---|
@@ -192,24 +89,149 @@ key ใหม่ `dimension.start-from` แบบ enum เก็บใน `confi
 | `po` | – | ✓ | ✓ |
 | `grn` | – | – | ✓ |
 
-✓ = แสดงแถบชิปและตรวจที่จุดตรวจของเอกสารนั้น · – = ไม่แสดงและไม่ตรวจ (endpoint กฎก็ไม่ต้องเรียก)
+**`dimension.sr.enabled`** และ **`dimension.ia.enabled`** (boolean, default `false`) เพราะ SR และ IA เป็นเอกสารที่เริ่มต้นเอง ไม่อยู่ในสายซื้อ
 
-- **key นี้ใช้แทนสวิตช์ BE** ที่เคยวางไว้ เพราะ default `none` ทำให้ไม่มี BU ไหนถูกบังคับจนกว่าจะเปิดเอง
-- `LINE_DIMENSIONS_ENABLED` (env ฝั่ง FE) ยังเป็นประตูชั้นนอกสุดจนกว่าจะปล่อยฟีเจอร์ ถ้าปิด FE จะทำงานเหมือน `none` ทุก BU
-  - ระวัง: env นี้ไม่มีผลกับ BE ถ้า env ปิดแต่ BU ตั้ง `pr`/`po`/`grn` ไว้ BE จะยังตรวจ ทั้งที่ FE ไม่แสดงช่อง ให้ตั้ง BU key หลังเปิด env เท่านั้น และเขียนข้อนี้ไว้ในคู่มือ deploy
-- **ระดับที่ปิดไม่ส่ง dimension ต่อ**: `confirmPrToPo()` คัด dimension ของ PR และใช้เป็นส่วนหนึ่งของ merge key ก็ต่อเมื่อ PR เปิดอยู่ (`pr`) ส่วน GRN คัดจาก PO ก็ต่อเมื่อ PO เปิดอยู่ (`pr`/`po`) ถ้าคัดค่าที่ค้างอยู่ไป บรรทัด PO จะถูกแยกด้วยค่าที่ผู้ใช้มองไม่เห็น
-- **เปลี่ยนค่ากลางทาง**: ใช้ค่า ณ ตอนที่ถึงจุดตรวจเสมอ
-- **JV/AP ไม่ขึ้นกับ key นี้**: ยังตรวจตามกฎผังบัญชีเหมือนเดิม ถ้าตั้ง `none` แต่บัญชีบังคับ dimension ที่ไม่มี default การลงบัญชีจาก GRN จะติดที่ JV เหมือนตอนนี้ (พฤติกรรมเดิม งานนี้ไม่ได้แก้)
+✓ / true = แสดงแถบชิปและตรวจที่จุดตรวจของเอกสารนั้น · – / false = ไม่แสดง ไม่ตรวจ และไม่เรียก endpoint กฎ
 
-## GRN ด่านสุดท้ายก่อนลง JV (user สั่ง 2026-11-20)
+- **ลบ env `LINE_DIMENSIONS_ENABLED` ทิ้ง** (user สั่ง) config ระดับ BU เป็นสวิตช์เดียว ทั้ง FE และ BE ใช้ค่าเดียวกัน
+  - แก้ `lib/runtime-config.ts`, `hooks/use-line-dimensions-enabled.ts`, `public/config.sample.json` และ `docs/deploy.md`
+  - เดิม env ตัวนี้ซ่อน dimension ของทั้ง 5 เอกสาร ตอนนี้ทั้ง 5 ใช้ config ของ BU แทน ค่า default ปิดทั้งหมด จึงไม่มี BU ไหนเห็นอะไรเปลี่ยนหลัง deploy
+  - `useLineDimensionsEnabled()` เปลี่ยนเป็นรับชนิดเอกสาร (`pr|po|grn|sr|ia`) แล้วดูจาก license (`configuration.dimension`) + config ของ BU + มี dimension active อย่างน้อยหนึ่งตัว
+  - BE ไม่ต้องอ่าน license เพราะถ้า BU ไม่มี license ก็ไม่มี dimension active ให้บังคับอยู่แล้ว
+  - learning เรื่องซ่อน dimension ด้วย env (2026-11-17) จะล้าสมัย ให้บันทึก learning ใหม่แทนตอนทำงานจริง
+- **ระดับที่ปิดไม่ส่ง dimension ต่อ**:
+  - `confirmPrToPo()` คัด dimension ของ PR และใช้ใน merge key เฉพาะเมื่อตั้งเป็น `pr`
+  - GRN คัดจาก PO เฉพาะเมื่อตั้งเป็น `pr` หรือ `po`
+  - เหตุผล: ถ้าคัดค่าที่ค้างอยู่ไปด้วย บรรทัดจะถูกแยกด้วยค่าที่ผู้ใช้มองไม่เห็น
+- **เปลี่ยนค่ากลางทาง**: ใช้ค่า ณ ตอนที่ถึงจุดตรวจเสมอ เหมือนกฎผังบัญชี
 
-- ตอน `commit()` / `approve()` ตรวจ dimension ของทุกบรรทัดกับ**กฎปัจจุบัน**ของบัญชีปัจจุบัน (หา account ใหม่จาก mapping ปัจจุบัน ห้ามใช้ผลที่ได้ตอน `save()`) ใน transaction เดียวกัน**ก่อน** `postReceipt` ไม่ผ่าน = ไม่ลงสต๊อก ไม่ออก JV ไม่สร้าง AP
-- **คนบันทึก GRN แก้ dimension ได้เสมอ**ตราบที่ใบยังไม่ committed ทั้งใบ draft และใบ saved แม้ค่าจะคัดมาจาก PO ก็ไม่ล็อก (BE รองรับอยู่แล้ว: `update()` ของใบ saved ผ่าน `planLineDimensions` ได้) ใบ committed แก้ได้แค่หัวใบตามเดิม
-- เมื่อ commit ไม่ผ่านเพราะ dimension ให้ FE เปิดโหมดแก้ไขของใบนั้นค้างไว้ ชิปที่ผิดเป็นสีแดง ผู้ใช้แก้ กด Save แล้วกด commit ใหม่ได้ในหน้าเดิม โดยไม่ต้องย้อนไปแก้ PO
-- ด่านนี้ใช้เมื่อ `dimension.start-from` ไม่ใช่ `none` (ทุกค่าที่ไม่ใช่ `none` เปิด GRN อยู่แล้ว)
+## จุดตรวจ (ตรวจในโค้ด 2026-11-20)
+
+ทุกทางที่ทำให้เอกสารพ้น draft และทุกจุดที่ลงบัญชีต้องเรียกตัวตรวจ (เมื่อ config ของเอกสารนั้นเปิดอยู่):
+
+| เอกสาร | ทาง | ตรวจที่ |
+|---|---|---|
+| PR | draft → `submit()` รวมการ submit ซ้ำหลังถูกส่งกลับ (in_progress + last_action = reviewed) | `PurchaseRequestService.submit()` |
+| PO manual | `create()` → draft → `submit()` | `PurchaseOrderService.submit()` |
+| PO จาก PR | `confirmPrToPo()` สร้างใบเป็น **in_progress ทันที** ไม่ผ่าน `submit()` | `confirmPrToPo()` ถ้าไม่ผ่าน ไม่สร้าง PO ใดเลยทั้งชุด |
+| GRN (manual และจาก PO) | `create()` → draft → `save()` → saved (ได้เลขจริง) | `GoodReceivedNoteLogic.save()` |
+| GRN | saved → `commit()` / `approve()` → committed (ลงสต๊อก ออก JV และ AP ผ่าน `postReceipt`) | **ตรวจซ้ำ** (user เลือก) ดู §GRN ด่านสุดท้าย |
+| SR | draft → `submit()` | `StoreRequisitionService.submit()` |
+| SR | `approve()` ขั้นที่ตัดสต๊อกและลงบัญชี | **ตรวจซ้ำ** ก่อนตัดสต๊อก (builder หาให้แน่ว่า approve ขั้นไหนเป็นขั้นที่ลงบัญชี) |
+| IA stock-in / stock-out | draft → `commit()` (ลงสต๊อกและออก JV) | `StockInService.commit()` / `StockOutService.commit()` |
+
+- PO manual, GRN manual, SR และ IA ไม่มีเอกสารต้นทาง ผู้ใช้จึงกรอก dimension ครั้งแรกที่ตัวเอกสารนั้นเลย
+- จุดตรวจทุกจุดใช้**กฎปัจจุบันและ mapping ปัจจุบัน** PO ที่มาจาก PR ซึ่งผ่านแล้วอาจไม่ผ่าน ถ้ากฎถูกแก้ระหว่างทาง (user ยอมรับ)
+- ห้ามตรวจตอน save draft และห้ามตรวจตอน update ที่ไม่ได้เปลี่ยนสถานะ
+
+### GRN ด่านสุดท้ายก่อนลง JV (user สั่ง 2026-11-20)
+
+- ตอน `commit()` / `approve()` หาบัญชีใหม่จาก mapping ปัจจุบัน แล้วตรวจกับกฎปัจจุบัน ห้ามใช้ผลที่ได้ตอน `save()` ทำใน transaction เดียวกันก่อน `postReceipt` ถ้าไม่ผ่าน จะไม่ลงสต๊อก ไม่ออก JV และไม่สร้าง AP
+- **คนบันทึก GRN แก้ dimension ได้เสมอ**ตราบที่ใบยังไม่ committed ทั้งใบ draft และใบ saved แม้ค่าจะคัดมาจาก PO ก็ไม่ล็อก
+  - BE รองรับอยู่แล้ว: `update()` ของใบ saved ผ่าน `planLineDimensions` ได้
+  - ใบ committed แก้ได้แค่หัวใบตามเดิม
+- เมื่อ commit ไม่ผ่านเพราะ dimension ให้ FE เปิดโหมดแก้ไขค้างไว้และทำชิปที่ผิดเป็นสีแดง ผู้ใช้แก้ กด Save แล้วกด commit ใหม่ได้ในหน้าเดิม ไม่ต้องย้อนไปแก้ PO
+- SR ที่ approve ไม่ผ่านใช้กติกาเดียวกัน: ผู้อนุมัติขั้นนั้นต้องแก้ dimension ได้ (builder ตรวจว่าใน workflow ขั้นนั้นแก้บรรทัดได้หรือไม่ ถ้าแก้ไม่ได้ ให้กลับมาถาม user)
+
+## การออกแบบ BE
+
+### ฟังก์ชันกลาง `resolveLineDimensionRules`
+
+วางข้าง resolver หรือใน `master/dimension/line-dimension/` (builder เลือก)
+- รับรายการบรรทัด `{ key, doc_type: "pr"|"po"|"grn"|"sr"|"ia", product_id, location_id?, to_location_id?, adjustment_type_id? }` และ prisma client หรือ tx
+  - SR ส่ง `location_id` = from และ `to_location_id` = to
+  - IA ส่ง `adjustment_type_id`
+- คืนต่อบรรทัด:
+  ```ts
+  {
+    key: string;
+    status: "resolved" | "no_account" | "skipped" | "conflict";
+    accounts: { chart_of_accounts_id: string; account_code: string; movement: string }[];
+    rules: { dimension_id: string; requirement: "mandatory" | "optional" | "prohibited";
+             default_value: IDimensionRef | null }[];   // รวมแล้วตาม §การรวมกฎหลายบัญชี
+  }
+  ```
+- อ่าน location, สินค้า (item group → sub-category → category) และแถว `tb_account_mapping` (mapping_type = GL ตาม movement และ adjustment type) เป็นชุด ห้ามยิง query ทีละบรรทัด แล้วเรียก `resolveAccountMapping()` แปลงรหัสบัญชีเป็น id ของผังบัญชี และอ่านกฎของบัญชีนั้น
+- ไม่มี location หรือสินค้า, resolver มี `issue`, หรือรหัสบัญชีไม่มีในผังบัญชี → `no_account`
+- consignment → `skipped`
+- SR ที่ฝั่งหนึ่งหาบัญชีได้แต่อีกฝั่งหาไม่ได้: ใช้เฉพาะฝั่งที่หาได้
+
+### endpoint สำหรับ FE
+
+`POST /api/:bu_code/line-dimension-rules`
+- body: `{ lines: [...] }` (รูปเดียวกับ input ของฟังก์ชันกลาง) ตอบ `{ data: [...] }`
+- เป็นการอ่านอย่างเดียว ใช้ POST เพราะส่งได้หลายบรรทัด
+- ต้องเพิ่ม api_name ใหม่ใน **allowlist** ของทุก app id ที่ไม่ allow_all **ก่อน deploy FE** มิฉะนั้น user จะโดน 401 แล้วเด้งออกจากระบบ (เคยเกิดมาแล้ว)
+- สิทธิ์: user ที่เปิดเอกสารชนิดนั้นได้ต้องเรียก endpoint นี้ได้ ไม่ต้องใช้สิทธิ์ config วางที่ gateway แล้วส่ง RPC ไป micro-business (builder เลือก guard ที่เหมาะกับการใช้ข้ามโมดูล)
+
+### ลำดับการตรวจในจุดตรวจ
+
+ทำใน transaction เดียวกับการเปลี่ยนสถานะหรือการลงบัญชี:
+1. ถ้า config ของเอกสารนั้นปิด → ข้ามทั้งหมด
+2. เรียกฟังก์ชันกลางกับทุกบรรทัดที่ยังมีชีวิต (`deleted_at` เป็น null)
+3. บรรทัด `no_account` / `skipped` → ข้าม · `conflict` → 422 error การตั้งค่า
+4. บรรทัด `resolved`:
+   - **เติม default ก่อน** ด้วย `applyMandatoryDimensionDefaults()` แล้วบันทึกลง `*_dimension` ของบรรทัด
+   - จากนั้นตรวจด้วย `validateLineDimensions()` ทีละบัญชีของบรรทัด (SR มี 2 บัญชี)
+   - `onDate`: PR = `pr_date` · PO = `po_date` · GRN = `grn_date` · SR / IA = วันที่เอกสารของตัวเอง
+5. ไม่ผ่าน → rollback แล้วตอบ **422** ด้วย error catalog ใหม่ (`Result.errorFromCatalog` เช่น `LINE_DIMENSION_REQUIRED` / `LINE_DIMENSION_PROHIBITED` / `LINE_DIMENSION_RULE_CONFLICT`) พร้อมบอกบรรทัด (sequence_no หรือ detail id) และ dimension และเติม `errors.byCode.<CODE>` ใน messages ของ FE
+   - คืน violation แรกเหมือน JV/AP (FE นับบรรทัดที่ผิดเองก่อนส่ง)
+   - ช่อง mandatory ที่ไม่มีทั้งค่าและ default → 422
+
+## การออกแบบ FE
+
+### ข้อมูล
+
+- hook `useLineDimensionRules(docType, lines)` เรียก endpoint ด้วย TanStack Query
+  - query key มาจากชุด input ของบรรทัดที่ไม่ซ้ำกัน
+  - เปลี่ยนสินค้า, location หรือ adjustment type แล้วต้องดึงกฎใหม่
+  - ใช้ข้าม 3 โมดูล (procurement, store-operation, inventory-management) จึงวางใน `hooks/`
+- ย้าย `visibleLineDimensions()` จาก `routes/accounting/documents/journal-line-dimensions.ts` ไป `lib/` (ติดกฎ module boundary ของ ESLint) แล้วเพิ่ม overload ที่รับ `rules` ที่ BE รวมมาแล้ว
+- ช่องของบรรทัด:
+  - `resolved` → แสดงตาม `visibleLineDimensions()` และค่าที่บันทึกไว้แล้วยังแสดงอยู่แม้กฎจะเปลี่ยน
+  - `no_account` / `skipped` → ไม่แสดง ยกเว้นบรรทัดที่มีค่าบันทึกไว้แล้ว
+  - `conflict` → ข้อความว่าการตั้งค่าบัญชีขัดกัน
+  - โหลดไม่สำเร็จ → ข้อความ error พร้อมปุ่มลองใหม่ ไม่ล้างค่า
+- **ค่า default**: เมื่อกฎมาถึงและช่อง mandatory ยังว่าง FE เติม default ให้เห็นและแก้ได้ แล้วตั้ง `dimensions_dirty` ให้ payload ส่งค่าไป (*การตัดสินใจของผม*: BE เติมซ้ำตอนตรวจอยู่แล้ว ฝั่ง FE ทำเพื่อให้ผู้ใช้เห็นค่าก่อน)
+
+### หน้าตา = แบบเดียวกับ JV (user สั่ง)
+
+แยกแถบชิป dimension ของ JV (`routes/accounting/documents/accounting-document-detail.tsx` แถวย่อย `colSpan` ใต้แต่ละบรรทัด) ออกมาเป็น `components/dimension/line-dimension-strip.tsx` แล้วให้ **PR, PO, GRN, SR, IA และ JV ใช้ตัวเดียวกัน**
+
+```
+│ 1 │ น้ำดื่ม 600ml · ห้องอาหาร │ 24 ขวด │ ...          │
+│   │ [DEPT*: F&B ▾] [PRJ*: WED-01 ▾] [EVT: 2026-11-30 📅]  ⧉ │
+```
+
+- **แก้ไขได้**: แบบ lookup เป็น `Select` ขนาด xs มีป้าย `CODE:` นำหน้า ตัวเลือกแรกคือ "ล้างค่า" ส่วนแบบ typed ใช้ `DimensionValueInput` ขนาด xs
+- **ดูอย่างเดียว**: ชิป `CODE: ค่า` กดแล้วเปิด dialog "All Dimensions" (`รหัส — ชื่อ`) ย้าย dialog นี้เข้าไปใน component กลางด้วย
+- **ของที่เพิ่มใหม่** (JV ได้ไปด้วย): ช่อง mandatory ติด `*` และชิปที่ตรวจไม่ผ่านเป็นสีแดง (`aria-invalid`)
+- props ขั้นต่ำ: dimension ที่มองเห็น, ชุด id ที่บังคับ, ชุด id ที่ผิด, `value`, `onChange`, `readOnly`
+- ทุกเอกสารใช้แถวย่อยใต้บรรทัด GRN เลิกใช้ `LineDimensionPopover` และลบ `LineDimensionFields` กับ popover ทิ้งเมื่อไม่มีผู้เรียกเหลือ
+- จอมือถือที่เป็นการ์ด (เช่น PR wizard): แถบชิปขึ้นบรรทัดใหม่ได้ (`flex-wrap`) และอยู่ท้ายการ์ด
+- ข้อความภาษาอังกฤษที่ฝังไว้ใน JV (เช่น description ของ sheet) ให้ย้ายเข้า i18n ตอนแยก component
+- `accounting-jv-edit-lines.test.tsx` ต้องผ่านเหมือนเดิม
+- ต้องอ่านออกทั้ง light และ dark theme
+
+### ตรวจก่อนส่ง
+
+- ปุ่มที่พาเอกสารผ่านจุดตรวจ (Submit ของ PR/PO/SR, Save ที่ทำให้ GRN ออกจาก draft, commit/approve ของ GRN, approve ขั้นลงบัญชีของ SR, commit ของ IA) ต้องตรวจทุกบรรทัด `resolved` ก่อนส่ง:
+  - ช่อง mandatory ที่**ไม่มี default** ต้องมีค่า
+  - ต้องไม่มีค่าของ dimension ที่ prohibited
+  - ไม่ผ่าน → ไม่ส่ง request, ขยายแถวและทำให้ชิปที่ผิดเป็นสีแดง แล้ว toast บอกจำนวนบรรทัดที่ผิด
+- ถ้า BE ตอบ 422 ด้วย catalog ใหม่ ให้แสดงข้อความแปลที่ระบุบรรทัดและ dimension (กันกรณีกฎเปลี่ยนระหว่างที่หน้าเปิดค้างอยู่)
+- Save ใบ draft ไม่เรียกตัวตรวจ
+  - ระวัง: Save ของ PO draft ใช้ `draftSaveHandler` ซึ่งไม่ผ่าน zod ห้ามใส่การตรวจนี้ใน zod schema หลัก
+
+## ลำดับ deploy / ข้อจำกัด
+
+- ลำดับ: BE (micro-business + gateway) → allowlist api_name ใหม่ → FE → ตั้ง config ระดับ BU ที่ต้องการเปิด
+  - FE ขึ้นก่อน BE = ได้ 404/401 และ user อาจโดน logout
+- หลังลบ env แล้ว dimension ของทุกเอกสารจะปิดจนกว่าจะตั้ง config ของ BU รวมถึง BU บน dev ที่เคยเปิด env ไว้ทดสอบ ต้องตั้ง config ใหม่
+- dev DB เป็นของกลาง ทดสอบ submit/commit จริงแล้วต้อง void ใบทดสอบทิ้ง
 
 ## สิ่งที่ปล่อยให้ builder ตัดสิน
 
-- ตำแหน่งไฟล์ของฟังก์ชันกลางฝั่ง BE และชื่อ error catalog
-- จะย้าย `visibleLineDimensions()` ไป `lib/` หรือ `components/dimension/`
-- UI ไฮไลต์บรรทัดที่ผิดในแต่ละเอกสาร ให้ใช้ของที่แต่ละหน้ามีอยู่ (PR เป็น card หรือแถวกาง, PO เป็นแถวกาง, GRN เป็น popover)
+- ตำแหน่งไฟล์ของฟังก์ชันกลางฝั่ง BE, ชื่อ error catalog และ guard ของ endpoint
+- รูปแบบการไฮไลต์บรรทัดที่ผิดในแต่ละหน้า (ใช้ของที่แต่ละหน้ามีอยู่)
+- การแบ่งงานเป็นหลาย PR (แนะนำ: BE ฟังก์ชันกลาง + endpoint → FE component กลาง + JV → สายซื้อ → SR/IA)
