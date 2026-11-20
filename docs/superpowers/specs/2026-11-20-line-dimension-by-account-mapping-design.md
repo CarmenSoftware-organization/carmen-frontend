@@ -141,7 +141,7 @@
 - ลำดับ: BE (micro-business + gateway) → allowlist api_name ใหม่ → FE
   ถ้า FE ขึ้นก่อน BE จะได้ 404 หรือ 401 ซึ่งอาจทำให้ user โดน logout
 - **การตรวจฝั่ง BE ต้องปิดได้ด้วย**: ตอนนี้ dimension ของบรรทัดยังซ่อนจากลูกค้าอยู่ (`LINE_DIMENSIONS_ENABLED` ปิด) ถ้า BE บังคับ mandatory ทั้งที่ลูกค้ามองไม่เห็นช่องให้กรอก ลูกค้าจะ submit ไม่ได้เลยหากบัญชีมีกฎ mandatory ที่ไม่มี default
-  → BE ตรวจเฉพาะเมื่อ BU มี license dimension (ใช้ `DIMENSION_LICENSE_FEATURE` เดียวกับที่ FE ใช้) และเปิดสวิตช์ระดับ BE (env หรือ platform config ให้ builder เลือกตามแบบที่ backend ใช้อยู่) โดย **default ปิด** แล้วค่อยเปิดพร้อม FE ในแต่ละ env
+  → ใช้ config ระดับ BU `dimension.start-from` (default `none`) แทนสวิตช์ BE ดู §Config ระดับ BU
 - dev DB เป็นของกลาง ทดสอบ submit จริงแล้วต้อง void ใบทดสอบทิ้ง
 
 ## ข้อสรุปหลัง builder check (การตัดสินใจของผม เว้นแต่จะระบุไว้)
@@ -156,7 +156,7 @@
       - โค้ดทำอยู่แล้ว: `buildDimensionSignature()` สร้างคีย์จาก `dimension_id=v:<dimension_value_id>` (ค่าแบบ typed ใช้รหัสที่ normalize แล้ว) และ GRN คัด dimension จากบรรทัด PO มาทีละบรรทัด
       - **ห้ามทำให้พัง**: default ต้องถูกเติมและบันทึกลงบรรทัด PR ตอน submit (§ตรวจที่ 3 จุด ข้อ 3) ก่อนจะแปลงเป็น PO มิฉะนั้นบรรทัดที่ว่างกับบรรทัดที่ได้ค่า default ซึ่งเป็นค่าเดียวกัน จะได้คีย์ต่างกันและแยกเป็นคนละบรรทัดโดยไม่ตั้งใจ
     - ข้อมูลเก่าที่บังเอิญมีหลาย location ในบรรทัดเดียว (*การตัดสินใจของผม*): ให้ resolve ทุก location แล้วรวมกฎ คือแสดงถ้ามีบัญชีใดอนุญาต, บังคับถ้ามีบัญชีใดบังคับ, ห้ามใช้เฉพาะเมื่อทุกบัญชีห้าม
-- **สวิตช์ฝั่ง BE**: ใน BE ไม่มี `DIMENSION_LICENSE_FEATURE` (เป็นค่าคงที่ฝั่ง FE `"configuration.dimension"`) จึงใช้สวิตช์ของ BE ตัวเดียว (env หรือ platform config, default ปิด) ไม่ต้องอ่าน license ข้าม service ถ้า BU ไม่มี license ก็ไม่มี dimension active ให้บังคับอยู่แล้ว
+- **สวิตช์ฝั่ง BE**: ใน BE ไม่มี `DIMENSION_LICENSE_FEATURE` (เป็นค่าคงที่ฝั่ง FE `"configuration.dimension"`) จึงไม่อ่าน license ข้าม service ถ้า BU ไม่มี license ก็ไม่มี dimension active ให้บังคับอยู่แล้ว ส่วนการเปิดหรือปิดใช้ config ระดับ BU (§Config ระดับ BU)
 - **จุดตรวจ**
   - ตรวจทุกครั้งที่เรียก `submit()` ของ PR/PO รวมถึงการ submit ซ้ำหลังถูกส่งกลับ
   - ดู §ทางออกจาก draft (ฉบับก่อนเขียนผิดว่า PO จาก PR เริ่มที่ draft และ GRN ออกจาก draft ทาง `update()` แก้แล้ว)
@@ -181,9 +181,35 @@
 - PO manual และ GRN manual ไม่มีต้นทาง จึงกรอก dimension ครั้งแรกที่ตัวเอกสารนั้นเลย FE ต้องกรองช่องและติด `*` แบบเดียวกับ PR
 - GRN ที่รับจาก PO คัด dimension จากบรรทัด PO มา ถ้ากฎเปลี่ยนตั้งแต่ตอน PO ระบบจะจับได้ที่ `save()` หรือ `commit()`
 
+## Config ระดับ BU: เริ่มใช้ dimension ที่เอกสารไหน (user สั่ง 2026-11-20)
+
+key ใหม่ `dimension.start-from` แบบ enum เก็บใน `config` ของ business unit เพิ่มในหน้า `/system-admin/default-setting` ด้วย skill `add-business-setting-config` (ทำ registry กับ i18n ไม่ต้องแก้ component) ฝั่ง BE อ่าน key นี้แบบเดียวกับ `po.group-by-pr-comment` (`PO_GROUP_BY_PR_COMMENT_KEY` ใน `purchase-order.service.ts`)
+
+| ค่า | PR | PO | GRN |
+|---|---|---|---|
+| `none` (default เมื่อไม่ได้ตั้ง) | – | – | – |
+| `pr` (ทั้งหมด) | ✓ | ✓ | ✓ |
+| `po` | – | ✓ | ✓ |
+| `grn` | – | – | ✓ |
+
+✓ = แสดงแถบชิปและตรวจที่จุดตรวจของเอกสารนั้น · – = ไม่แสดงและไม่ตรวจ (endpoint กฎก็ไม่ต้องเรียก)
+
+- **key นี้ใช้แทนสวิตช์ BE** ที่เคยวางไว้ เพราะ default `none` ทำให้ไม่มี BU ไหนถูกบังคับจนกว่าจะเปิดเอง
+- `LINE_DIMENSIONS_ENABLED` (env ฝั่ง FE) ยังเป็นประตูชั้นนอกสุดจนกว่าจะปล่อยฟีเจอร์ ถ้าปิด FE จะทำงานเหมือน `none` ทุก BU
+  - ระวัง: env นี้ไม่มีผลกับ BE ถ้า env ปิดแต่ BU ตั้ง `pr`/`po`/`grn` ไว้ BE จะยังตรวจ ทั้งที่ FE ไม่แสดงช่อง ให้ตั้ง BU key หลังเปิด env เท่านั้น และเขียนข้อนี้ไว้ในคู่มือ deploy
+- **ระดับที่ปิดไม่ส่ง dimension ต่อ**: `confirmPrToPo()` คัด dimension ของ PR และใช้เป็นส่วนหนึ่งของ merge key ก็ต่อเมื่อ PR เปิดอยู่ (`pr`) ส่วน GRN คัดจาก PO ก็ต่อเมื่อ PO เปิดอยู่ (`pr`/`po`) ถ้าคัดค่าที่ค้างอยู่ไป บรรทัด PO จะถูกแยกด้วยค่าที่ผู้ใช้มองไม่เห็น
+- **เปลี่ยนค่ากลางทาง**: ใช้ค่า ณ ตอนที่ถึงจุดตรวจเสมอ
+- **JV/AP ไม่ขึ้นกับ key นี้**: ยังตรวจตามกฎผังบัญชีเหมือนเดิม ถ้าตั้ง `none` แต่บัญชีบังคับ dimension ที่ไม่มี default การลงบัญชีจาก GRN จะติดที่ JV เหมือนตอนนี้ (พฤติกรรมเดิม งานนี้ไม่ได้แก้)
+
+## GRN ด่านสุดท้ายก่อนลง JV (user สั่ง 2026-11-20)
+
+- ตอน `commit()` / `approve()` ตรวจ dimension ของทุกบรรทัดกับ**กฎปัจจุบัน**ของบัญชีปัจจุบัน (หา account ใหม่จาก mapping ปัจจุบัน ห้ามใช้ผลที่ได้ตอน `save()`) ใน transaction เดียวกัน**ก่อน** `postReceipt` ไม่ผ่าน = ไม่ลงสต๊อก ไม่ออก JV ไม่สร้าง AP
+- **คนบันทึก GRN แก้ dimension ได้เสมอ**ตราบที่ใบยังไม่ committed ทั้งใบ draft และใบ saved แม้ค่าจะคัดมาจาก PO ก็ไม่ล็อก (BE รองรับอยู่แล้ว: `update()` ของใบ saved ผ่าน `planLineDimensions` ได้) ใบ committed แก้ได้แค่หัวใบตามเดิม
+- เมื่อ commit ไม่ผ่านเพราะ dimension ให้ FE เปิดโหมดแก้ไขของใบนั้นค้างไว้ ชิปที่ผิดเป็นสีแดง ผู้ใช้แก้ กด Save แล้วกด commit ใหม่ได้ในหน้าเดิม โดยไม่ต้องย้อนไปแก้ PO
+- ด่านนี้ใช้เมื่อ `dimension.start-from` ไม่ใช่ `none` (ทุกค่าที่ไม่ใช่ `none` เปิด GRN อยู่แล้ว)
+
 ## สิ่งที่ปล่อยให้ builder ตัดสิน
 
 - ตำแหน่งไฟล์ของฟังก์ชันกลางฝั่ง BE และชื่อ error catalog
-- รูปแบบสวิตช์ BE (env หรือ platform config)
 - จะย้าย `visibleLineDimensions()` ไป `lib/` หรือ `components/dimension/`
 - UI ไฮไลต์บรรทัดที่ผิดในแต่ละเอกสาร ให้ใช้ของที่แต่ละหน้ามีอยู่ (PR เป็น card หรือแถวกาง, PO เป็นแถวกาง, GRN เป็น popover)
