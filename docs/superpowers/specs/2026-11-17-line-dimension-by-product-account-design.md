@@ -1,6 +1,6 @@
 # (Backlog) Dimension ในเอกสารซื้อ/คลังตามกฎผังบัญชีของบรรทัด
 
-สถานะ: **backlog ยังไม่ได้ออกแบบ** บันทึกไว้เมื่อ 2026-11-17 ตอนซ่อน dimension รายบรรทัด
+สถานะ: **PR/PO/GRN ออกแบบแล้วใน `2026-11-20-line-dimension-by-account-mapping-design.md`** (SR/IA ยังเป็น backlog) · บันทึกไว้เมื่อ 2026-11-17 ตอนซ่อน dimension รายบรรทัด
 (`2026-11-17-hide-line-dimensions-design.md`)
 
 ## ความต้องการ
