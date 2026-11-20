@@ -109,6 +109,24 @@
   - ระหว่างโหลด หรือโหลดไม่สำเร็จ → ทำแบบเดียวกับ `ArLineDimensions` (ข้อความ error พร้อมปุ่มลองใหม่ ไม่ล้างค่า)
 - **ค่า default**: เมื่อกฎของบรรทัดมาถึงและช่อง mandatory ยังว่าง FE เติม default ให้เห็นและแก้ได้ ถ้ามีการเติม ต้องตั้ง `dimensions_dirty` เพื่อให้ payload ส่งค่าไปด้วย (*การตัดสินใจของผม* — BE เติมซ้ำตอน submit อยู่แล้ว ฝั่ง FE จึงทำเพื่อให้ผู้ใช้เห็นค่าก่อนเท่านั้น)
 
+### FE: หน้าตา = แบบเดียวกับ JV (user สั่ง 2026-11-20)
+
+แยกแถบชิป dimension ของ JV (`routes/accounting/documents/accounting-document-detail.tsx` แถวย่อย `colSpan` ใต้แต่ละบรรทัด) ออกมาเป็น component กลาง `components/dimension/line-dimension-strip.tsx` แล้วให้ **PR, PO, GRN และ JV ใช้ตัวเดียวกัน** (user เลือกทางนี้แทนการลอกแบบไปทำใน procurement เพื่อให้หน้าตาไม่เพี้ยนจากกัน)
+
+```
+│ 1 │ น้ำดื่ม 600ml · ห้องอาหาร │ 24 ขวด │ ...          │
+│   │ [DEPT*: F&B ▾] [PRJ*: WED-01 ▾] [EVT: 2026-11-30 📅]  ⧉ │
+```
+
+- **แก้ไขได้**: dimension แบบ lookup เป็น `Select` ขนาด xs มีป้าย `CODE:` นำหน้า และตัวเลือกแรกเป็น "ล้างค่า" ส่วนแบบ typed ใช้ `DimensionValueInput` ขนาด xs (เหมือน JV ทุกอย่าง)
+- **ดูอย่างเดียว**: เป็นชิป `CODE: ค่า` กดแล้วเปิด dialog "All Dimensions" (`รหัส — ชื่อ`) ให้ย้าย dialog นี้เข้าไปใน component กลางด้วย
+- **ของที่เพิ่มใหม่** (JV ได้ไปด้วย): ช่อง mandatory ติด `*` และเมื่อตรวจไม่ผ่านชิปนั้นเป็นสีแดง (`aria-invalid`)
+- props ขั้นต่ำ: รายการ dimension ที่มองเห็น (มาจาก `visibleLineDimensions()`), ชุด id ของ dimension ที่บังคับ, ชุด id ที่ผิด, `value`, `onChange`, `readOnly`
+- ใช้แถวย่อยใต้บรรทัดเหมือนกันทั้ง 3 เอกสาร GRN **เลิกใช้ popover** (`LineDimensionPopover`) ส่วน `LineDimensionFields` กับ popover ให้ลบทิ้งเมื่อไม่มีผู้เรียกเหลือแล้ว
+- PR บนมือถือ (wizard แบบการ์ด): แถบชิปขึ้นบรรทัดใหม่ได้ (`flex-wrap`) วางไว้ท้ายการ์ด
+- ข้อความยังเป็นภาษาอังกฤษตายตัวใน JV บางจุด (เช่น description ของ sheet) ให้ย้ายเข้า i18n ตอนแยก component
+- `accounting-jv-edit-lines.test.tsx` ต้องผ่านเหมือนเดิมหลังให้ JV เปลี่ยนมาใช้ component กลาง
+
 ### FE: ตรวจก่อนส่ง
 
 - ตอนกด Submit (PR/PO) และกด Save ที่ทำให้ GRN ออกจาก draft:
