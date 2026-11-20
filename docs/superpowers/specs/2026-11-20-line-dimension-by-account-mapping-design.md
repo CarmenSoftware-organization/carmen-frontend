@@ -158,7 +158,7 @@
 | PO manual | `create()` → draft → `submit()` → in_progress | | ที่ `submit()` |
 | PO จาก PR | `confirmPrToPo()` สร้างใบเป็น **in_progress ทันที** ไม่ผ่าน `submit()` | | **ต้องตรวจใน `confirmPrToPo()` ด้วย** (กฎอาจเปลี่ยนหลัง PR ผ่าน) ไม่ผ่าน = ไม่สร้าง PO ใดเลยทั้งชุด (transaction เดียว) |
 | GRN manual และ GRN จาก PO | `create()` → draft → `save()` → saved | ได้เลขจริง | ที่ `save()` |
-| GRN | saved → `commit()` / `approve()` → committed | ลงสต๊อก ออก JV และ AP อัตโนมัติ (`postReceipt`) | **ตรวจซ้ำ** (*ข้อเสนอของผม*) เพราะใบ saved ยังแก้บรรทัดได้ และกฎอาจเปลี่ยนก่อน commit ถ้าไม่ตรวจ ข้อมูลที่ผิดจะไปพังตอนลงบัญชี |
+| GRN | saved → `commit()` / `approve()` → committed | ลงสต๊อก ออก JV และ AP อัตโนมัติ (`postReceipt`) | **ตรวจซ้ำ** (user เลือก 2026-11-20) ทั้ง FE ตอนกดปุ่ม commit/approve และ BE ใน transaction เดียวกับ `postReceipt` ก่อนลงสต๊อก เพราะใบ saved ยังแก้บรรทัดได้ และกฎอาจเปลี่ยนก่อน commit ถ้าไม่ตรวจ ข้อมูลที่ผิดจะไปพังตอนลงบัญชี |
 
 - PO manual และ GRN manual ไม่มีต้นทาง จึงกรอก dimension ครั้งแรกที่ตัวเอกสารนั้นเลย FE ต้องกรองช่องและติด `*` แบบเดียวกับ PR
 - GRN ที่รับจาก PO คัด dimension จากบรรทัด PO มา ถ้ากฎเปลี่ยนตั้งแต่ตอน PO ระบบจะจับได้ที่ `save()` หรือ `commit()`
