@@ -500,6 +500,8 @@ export default function AccountingDocumentDetail() {
   const dimensionRules = dimensionRuleQueries.flatMap(
     (query) => query.data ?? [],
   );
+  // ชิป dimension เป็นสีแดงหลังกด Submit เท่านั้น (ไม่แดงบนบรรทัดใหม่)
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [lineDetailSection, setLineDetailSection] =
     useState<LineDetailSection>("tax");
 
@@ -899,6 +901,7 @@ export default function AccountingDocumentDetail() {
             ),
         )
       ) {
+        setSubmitAttempted(true);
         toast.error("กรุณาระบุ Dimension ที่บังคับก่อน Submit");
         return;
       }
@@ -1003,6 +1006,7 @@ export default function AccountingDocumentDetail() {
     }
     setDocumentStatus(intent === "draft" ? "Draft" : "Pending");
     setMode("view");
+    setSubmitAttempted(false);
     toast.success(intent === "draft" ? t("draftSaved") : t("submitted"));
   };
 
