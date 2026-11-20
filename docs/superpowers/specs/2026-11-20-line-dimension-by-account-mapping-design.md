@@ -22,7 +22,8 @@
 - ใช้จุดตรวจ 3 จุด (user เลือก):
   - PR `submit()` รวมทั้งการ submit ซ้ำหลังถูกส่งกลับ (in_progress + last_action = reviewed)
   - PO `submit()`
-  - GRN ตอนเปลี่ยนสถานะจาก draft เป็น saved ผ่าน `update()` ซึ่งเป็นจังหวะที่ลงสต๊อก ออก JV และสร้าง AP อัตโนมัติ
+  - GRN ตอนเปลี่ยนสถานะจาก draft เป็น saved ผ่าน `GoodReceivedNoteLogic.save()` (จังหวะที่ใบได้เลขจริง)
+  - ครอบคลุมทั้งเอกสารที่มาจากต้นทาง (PR → PO → GRN) และเอกสารที่สร้างเอง (PO manual, GRN manual) user ย้ำว่าต้องตรวจทั้งสองแบบ ดู §ทางออกจาก draft
 - FE กับ BE ใช้กติกาจากที่เดียวกัน: endpoint ใหม่ของ BE กับตัวตรวจตอน submit เรียกฟังก์ชันกลางตัวเดียว
 
 **ไม่ใช่เป้าหมาย**
@@ -43,7 +44,7 @@
 - **FE helper ที่ใช้ซ้ำได้**: `visibleLineDimensions()` ใน `routes/accounting/documents/journal-line-dimensions.ts` (ไฟล์นี้อยู่ใต้ `routes/accounting/` ถ้าจะใช้จาก `routes/procurement/` ต้องย้ายไป `lib/` หรือ `components/dimension/` เพราะติดกฎ module boundary ของ ESLint)
 - **BE resolver ของบัญชี**: `resolveAccountMapping()` ใน `micro-business/src/master/account-mapping/account-mapping.resolver.ts` เป็นฟังก์ชันล้วน ลำดับการหาคือ ค่าที่แก้ทับ → item group → sub-category → category โดยเลือก inventory หรือ direct ตาม `location_type` ส่วน consignment ระบบจะ `skip`
 - **BE ตัวตรวจ**: `validateLineDimensions()` ใน `gl/gl-dimension/gl-dimension.validator.ts` ซึ่ง JV, facade และ AP ใช้ร่วมกัน (คืน violation แรก) และ `applyMandatoryDimensionDefaults()` ใน `gl-dimension.defaults.ts` ซึ่งเติม default ของกฎ mandatory
-- **BE จุดตรวจ**: `PurchaseRequestService.submit()` (`procurement/purchase-request/purchase-request.service.ts`) · `PurchaseOrderService.submit()` (`procurement/purchase-order/purchase-order.service.ts`) · `GoodReceivedNoteService.update()` ช่วงที่เปลี่ยนสถานะเป็น saved (`inventory/good-received-note/good-received-note.service.ts`)
+- **BE จุดตรวจ**: `PurchaseRequestService.submit()` (`procurement/purchase-request/purchase-request.service.ts`) · `PurchaseOrderService.submit()` (`procurement/purchase-order/purchase-order.service.ts`) · `GoodReceivedNoteLogic.save()` / `commit()` / `approve()` (`inventory/good-received-note/good-received-note.logic.ts`) · `PurchaseOrderService.confirmPrToPo()`
 
 ## แนวทางที่พิจารณา
 
@@ -140,14 +141,27 @@
 - **สวิตช์ฝั่ง BE**: ใน BE ไม่มี `DIMENSION_LICENSE_FEATURE` (เป็นค่าคงที่ฝั่ง FE `"configuration.dimension"`) จึงใช้สวิตช์ของ BE ตัวเดียว (env หรือ platform config, default ปิด) ไม่ต้องอ่าน license ข้าม service ถ้า BU ไม่มี license ก็ไม่มี dimension active ให้บังคับอยู่แล้ว
 - **จุดตรวจ**
   - ตรวจทุกครั้งที่เรียก `submit()` ของ PR/PO รวมถึงการ submit ซ้ำหลังถูกส่งกลับ
-  - PO ที่สร้างจาก PR (`confirmPrToPo`) และ GRN ที่สร้างใหม่ (`create()`) เริ่มที่ draft เสมอ จึงไม่ต้องตรวจตอนสร้าง (ตรวจในโค้ดแล้ว: GRN `create()` ตั้ง `doc_status: draft` · PO ตั้ง `po_status: draft`)
-  - builder ต้องยืนยันว่า GRN มีทางเปลี่ยนจาก draft เป็น saved ทาง `update()` ทางเดียว
+  - ดู §ทางออกจาก draft (ฉบับก่อนเขียนผิดว่า PO จาก PR เริ่มที่ draft และ GRN ออกจาก draft ทาง `update()` แก้แล้ว)
 - **ป้อนข้อมูลให้ตัวตรวจ**: แปลงบรรทัดเป็น `IDimensionLine` โดยใช้ `chart_of_accounts_id` จากฟังก์ชันกลาง และใช้ sequence_no หรือ detail id เป็น key
   - BE คืนแค่ violation แรกเหมือน JV/AP (FE เป็นฝ่ายนับจำนวนบรรทัดที่ผิดเองก่อนส่ง ส่วน 422 ใช้กันเฉพาะกรณีที่หลุดมาถึง BE)
   - ค่า typed ใช้ตามที่ตัวตรวจรองรับอยู่แล้ว
   - ช่อง mandatory ที่ไม่มีทั้ง default และค่า → 422
 - **onDate**: PR = `pr_date` · PO = `po_date` · GRN = `grn_date`
 - **endpoint**: วางที่ gateway ฝั่ง procurement และใช้ api_name กับ guard แบบเดียวกับ endpoint lookup ของ PR (อ่านได้ถ้าเข้าโมดูล procurement ได้) แล้วส่ง RPC ไป micro-business
+
+## ทางออกจาก draft (ตรวจในโค้ด 2026-11-20)
+
+ทุกทางที่ทำให้เอกสารพ้น draft ต้องเรียกตัวตรวจ:
+
+| เอกสาร | ทาง | สถานะ | ตรวจ |
+|---|---|---|---|
+| PO manual | `create()` → draft → `submit()` → in_progress | | ที่ `submit()` |
+| PO จาก PR | `confirmPrToPo()` สร้างใบเป็น **in_progress ทันที** ไม่ผ่าน `submit()` | | **ต้องตรวจใน `confirmPrToPo()` ด้วย** (กฎอาจเปลี่ยนหลัง PR ผ่าน) ไม่ผ่าน = ไม่สร้าง PO ใดเลยทั้งชุด (transaction เดียว) |
+| GRN manual และ GRN จาก PO | `create()` → draft → `save()` → saved | ได้เลขจริง | ที่ `save()` |
+| GRN | saved → `commit()` / `approve()` → committed | ลงสต๊อก ออก JV และ AP อัตโนมัติ (`postReceipt`) | **ตรวจซ้ำ** (*ข้อเสนอของผม*) เพราะใบ saved ยังแก้บรรทัดได้ และกฎอาจเปลี่ยนก่อน commit ถ้าไม่ตรวจ ข้อมูลที่ผิดจะไปพังตอนลงบัญชี |
+
+- PO manual และ GRN manual ไม่มีต้นทาง จึงกรอก dimension ครั้งแรกที่ตัวเอกสารนั้นเลย FE ต้องกรองช่องและติด `*` แบบเดียวกับ PR
+- GRN ที่รับจาก PO คัด dimension จากบรรทัด PO มา ถ้ากฎเปลี่ยนตั้งแต่ตอน PO ระบบจะจับได้ที่ `save()` หรือ `commit()`
 
 ## สิ่งที่ปล่อยให้ builder ตัดสิน
 
