@@ -2546,7 +2546,9 @@ export default function AccountingDocumentDetail() {
                                   }
                                   requiredIds={requiredIds}
                                   invalidIds={
-                                    isLineView ? undefined : invalidIds
+                                    submitAttempted && !isLineView
+                                      ? invalidIds
+                                      : undefined
                                   }
                                   rowLabel={String(lineIndex + 1)}
                                   message={
