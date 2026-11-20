@@ -133,6 +133,9 @@
   - PO: ตัวบรรทัดไม่มี location เก็บอยู่ใน junction `tb_purchase_order_detail_tb_purchase_request_detail` ทั้ง PO ที่มาจาก PR และ PO ที่สร้างเอง (`buildJunctionLocation`)
     - user ยืนยันว่า PO แยกตามลำดับ vendor → currency → delivery date → product → location → dimension ตรงกับโค้ด: `buildPoGroupKey` (แยกใบ) และ `buildPoLineMergeKey` (แยกบรรทัดตาม product, location, … และ `buildDimensionSignature`)
     - **บรรทัด PO หนึ่งบรรทัดจึงมี location เดียวและ dimension ชุดเดียว** ให้ใช้ location ของแถว junction นั้น
+    - การแยกตาม dimension **นับค่า (value) ด้วย** (user ย้ำ: ห้องอาหารสั่งน้ำให้ project งานแต่งกับ project งานบวช ต้องเป็นคนละบรรทัด)
+      - โค้ดทำอยู่แล้ว: `buildDimensionSignature()` สร้างคีย์จาก `dimension_id=v:<dimension_value_id>` (ค่าแบบ typed ใช้รหัสที่ normalize แล้ว) และ GRN คัด dimension จากบรรทัด PO มาทีละบรรทัด
+      - **ห้ามทำให้พัง**: default ต้องถูกเติมและบันทึกลงบรรทัด PR ตอน submit (§ตรวจที่ 3 จุด ข้อ 3) ก่อนจะแปลงเป็น PO มิฉะนั้นบรรทัดที่ว่างกับบรรทัดที่ได้ค่า default ซึ่งเป็นค่าเดียวกัน จะได้คีย์ต่างกันและแยกเป็นคนละบรรทัดโดยไม่ตั้งใจ
     - ข้อมูลเก่าที่บังเอิญมีหลาย location ในบรรทัดเดียว (*การตัดสินใจของผม*): ให้ resolve ทุก location แล้วรวมกฎ คือแสดงถ้ามีบัญชีใดอนุญาต, บังคับถ้ามีบัญชีใดบังคับ, ห้ามใช้เฉพาะเมื่อทุกบัญชีห้าม
 - **สวิตช์ฝั่ง BE**: ใน BE ไม่มี `DIMENSION_LICENSE_FEATURE` (เป็นค่าคงที่ฝั่ง FE `"configuration.dimension"`) จึงใช้สวิตช์ของ BE ตัวเดียว (env หรือ platform config, default ปิด) ไม่ต้องอ่าน license ข้าม service ถ้า BU ไม่มี license ก็ไม่มี dimension active ให้บังคับอยู่แล้ว
 - **จุดตรวจ**
