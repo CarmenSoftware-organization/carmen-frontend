@@ -11,12 +11,12 @@ import { useGlDimensions } from "@/hooks/use-gl-dimensions";
 import { visibleDimensionsForRules } from "@/lib/line-dimension-rules";
 import { cn } from "@/lib/utils";
 import type { DimensionRef } from "@/types/gl-dimension";
-import { useProcurementLineDimensionsContext } from "./use-procurement-line-dimensions";
+import { useDocumentLineDimensionsContext } from "@/hooks/use-document-line-dimensions";
 
 const NO_DIMENSIONS: DimensionRef[] = [];
 
 /**
- * แถวย่อยแถบชิป dimension ใต้บรรทัด PR / PO / GRN (แบบเดียวกับ JV)
+ * แถวย่อยแถบชิป dimension ใต้บรรทัด PR / PO / GRN / SR / IA (แบบเดียวกับ JV)
  *
  * - ชิปที่โชว์ = dimension ที่กฎของบัญชีบรรทัดนี้ไม่ห้าม + ที่มีค่าบันทึกไว้แล้ว
  * - `no_account` / `skipped` ไม่มีแถบ ยกเว้นบรรทัดมีค่าบันทึกไว้แล้ว · `conflict` โชว์ข้อความ
@@ -27,7 +27,7 @@ const NO_DIMENSIONS: DimensionRef[] = [];
  * @param className - ระยะห่าง/เส้นคั่นของแถว (ค่าเริ่มต้น `mt-2`)
  * @param disabled - ปิดชั่วคราวระหว่างบันทึก (ไม่ใช่โหมดดู — โหมดดูมาจากตัว hook)
  */
-export function ProcurementLineDimensionRow<T extends FieldValues>({
+export function DocumentLineDimensionRow<T extends FieldValues>({
   form,
   index,
   disabled = false,
@@ -39,7 +39,7 @@ export function ProcurementLineDimensionRow<T extends FieldValues>({
   readonly className?: string;
 }) {
   const t = useTranslations("lineDimension");
-  const dims = useProcurementLineDimensionsContext();
+  const dims = useDocumentLineDimensionsContext();
   const dimensions = useGlDimensions(!!dims?.enabled);
   // ติดตามทั้ง id และ row_key — บรรทัดใหม่ได้ row_key หลัง mount
   const watchedIndex = Math.max(index, 0);

@@ -28,9 +28,9 @@ import { GrnFormDialogs } from "./grn-form-dialogs";
 import { GrnExpiredItemsDialog } from "./grn-expired-items-dialog";
 import { useGrnFormActions } from "./use-grn-form-actions";
 import {
-  ProcurementLineDimensionsContext,
-  useProcurementLineDimensions,
-} from "../shared/use-procurement-line-dimensions";
+  DocumentLineDimensionsContext,
+  useDocumentLineDimensions,
+} from "@/hooks/use-document-line-dimensions";
 import { useProfile } from "@/hooks/use-profile";
 import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 import { FormPageShell } from "@/components/share/form-page-shell";
@@ -145,7 +145,7 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
 
   // dimension ต่อบรรทัด: กฎตามบัญชี · default · ตรวจก่อนออกจาก draft/commit · รับ 422
   // ใบ committed ล็อกบรรทัด (แก้ได้แค่หัวใบ) · commit ไม่ผ่านให้เข้าโหมดแก้ ไม่ reset ฟอร์ม
-  const lineDimensions = useProcurementLineDimensions({
+  const lineDimensions = useDocumentLineDimensions({
     docType: "grn",
     form,
     readOnly: isView || isCommitted,
@@ -221,7 +221,7 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
   }, []);
 
   return (
-    <ProcurementLineDimensionsContext.Provider value={lineDimensions}>
+    <DocumentLineDimensionsContext.Provider value={lineDimensions}>
       <FormPageShell
         width="wide"
         header={
@@ -370,6 +370,6 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
           />
         )}
       </FormPageShell>
-    </ProcurementLineDimensionsContext.Provider>
+    </DocumentLineDimensionsContext.Provider>
   );
 }

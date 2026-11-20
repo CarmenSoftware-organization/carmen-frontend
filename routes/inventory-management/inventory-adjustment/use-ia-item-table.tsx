@@ -39,7 +39,7 @@ import { cn } from "@/lib/utils";
 import type { InventoryAdjustmentType } from "@/types/inventory-adjustment";
 import type { AdjFormValues } from "./ia-form-schema";
 import { IaItemDimensions } from "./ia-item-dimensions";
-import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
+import { useDocumentLineDimensionsContext } from "@/hooks/use-document-line-dimensions";
 
 const ProductInventoryDialog = memo(function ProductInventoryDialog({
   control,
@@ -488,7 +488,7 @@ export function useAdjItemTable({
 }: UseAdjItemTableOptions) {
   "use no memo";
   const tfl = useTranslations("field");
-  const dimensionsEnabled = useLineDimensionsEnabled("ia");
+  const dimensionsEnabled = !!useDocumentLineDimensionsContext()?.enabled;
   const allColumns = useMemo<ColumnDef<AdjItemField>[]>(() => {
     const recalcTotal = (
       index: number,
@@ -660,25 +660,6 @@ export function useAdjItemTable({
         size: 100,
         meta: { headerClassName: "text-right" },
       },
-      // ปุ่ม popover dimension ต่อบรรทัด — ใส่เฉพาะเมื่อเปิดใช้ และไม่ถูกกรองออกตอน view
-      // (disabled แค่ทำให้ช่องข้างในอ่านอย่างเดียว ปุ่มยังเปิดดูได้)
-      ...(dimensionsEnabled
-        ? [
-            {
-              id: "dimensions",
-              header: "Dim",
-              size: 90,
-              enableSorting: false,
-              cell: ({ row }) => (
-                <IaItemDimensions
-                  form={form}
-                  index={row.index}
-                  disabled={disabled}
-                />
-              ),
-            } satisfies ColumnDef<AdjItemField>,
-          ]
-        : []),
     ];
 
     const actionColumn: ColumnDef<AdjItemField> = {
@@ -710,11 +691,30 @@ export function useAdjItemTable({
         ? dataColumns.filter((c) => c.id !== "cost_per_unit")
         : dataColumns;
 
-    return [
+    const baseCols = [
       indexColumn,
       ...visibleDataColumns,
       ...(disabled ? [] : [actionColumn]),
     ];
+    // แถวย่อยแถบ dimension ใต้บรรทัด — ฝากไว้ที่คอลัมน์แรกแล้วกินทุกคอลัมน์ (ตารางโชว์ตอนกล่องกว้าง ·
+    // การ์ดอ่านจาก meta เดียวกัน) · เฉพาะเมื่อเอกสารนี้เปิด dimension ไม่งั้น DataGrid วาด <tr> ว่างทุกบรรทัด
+    if (dimensionsEnabled)
+      baseCols[0] = {
+        ...baseCols[0],
+        meta: {
+          ...baseCols[0].meta,
+          footerColSpan: baseCols.length,
+          footerContent: (item: AdjItemField) => (
+            <IaItemDimensions
+              form={form}
+              itemFields={itemFields}
+              item={item}
+              disabled={disabled}
+            />
+          ),
+        },
+      };
+    return baseCols;
   }, [
     form,
     disabled,
@@ -724,6 +724,7 @@ export function useAdjItemTable({
     autoOpenFirst,
     onProductPicked,
     dimensionsEnabled,
+    itemFields,
   ]);
 
   const table = useReactTable({

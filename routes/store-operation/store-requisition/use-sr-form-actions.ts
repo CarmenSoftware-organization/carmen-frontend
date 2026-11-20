@@ -43,6 +43,7 @@ import { STAGE_ROLE } from "@/types/stage-role";
 import type { SrFormValues } from "./sr-form-schema";
 import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 import { clearDimensionsDirty } from "@/lib/dimension-payload";
+import type { DocumentLineDimensions } from "@/hooks/use-document-line-dimensions";
 import { mapSrItemToPayload } from "./sr-form-helpers";
 import { withFreshDetailVersions } from "@/lib/doc-version";
 
@@ -71,6 +72,8 @@ type PendingDatePattern = {
 };
 
 interface UseSrFormActionsParams {
+  /** ตัวตรวจ dimension ต่อบรรทัด — เรียกก่อน Submit และก่อนขั้นอนุมัติ/จ่าย (ห้ามตอน Save ร่าง) */
+  lineDimensions: DocumentLineDimensions;
   form: UseFormReturn<SrFormValues>;
   storeRequisition?: StoreRequisition;
   defaultValues: SrFormValues;
@@ -79,6 +82,7 @@ interface UseSrFormActionsParams {
 }
 
 export function useSrFormActions({
+  lineDimensions,
   form,
   storeRequisition,
   defaultValues,
@@ -443,6 +447,8 @@ export function useSrFormActions({
   // ล้างคำตอบเรื่องวันที่ทุกครั้งที่เปิด ให้ผู้ใช้เลือกใหม่ ไม่พาค่ารอบก่อนมาเงียบ ๆ
   const openSubmitDialog = () =>
     form.handleSubmit(() => {
+      // ด่านที่ใบพ้น draft — ไม่ผ่านไม่เปิด dialog (hook ทำ toast/ชิปแดง/เข้าโหมดแก้ให้)
+      if (!lineDimensions.validateBeforeSubmit()) return;
       setSubmitDatePattern(null);
       setShowSubmit(true);
     }, revealInvalid)();
@@ -451,6 +457,9 @@ export function useSrFormActions({
 
   const handleApprove = () => {
     if (!storeRequisition) return;
+    // ผู้อนุมัติแก้ dimension ไม่ได้ — ไม่ผ่านแล้วค้างหน้านี้พร้อม toast บอกบรรทัด/dimension ให้ส่งกลับผู้ขอ
+    // (FE รู้ไม่ได้ว่าขั้นนี้คือขั้นลงบัญชีหรือไม่ จึงตรวจทุกครั้งที่อนุมัติ · backend ยังเป็นด่านจริง)
+    if (!lineDimensions.validateBeforeSubmit({ lockedStep: true })) return;
     const details: SrStageDetail[] = form
       .getValues("items")
       .filter((item) => !!item.id)
@@ -469,6 +478,8 @@ export function useSrFormActions({
 
   const handleIssue = () => {
     if (!storeRequisition) return;
+    // ขั้นจ่ายตัดสต๊อกและลงบัญชี — ผู้จ่ายแก้ dimension ไม่ได้ ไม่ผ่านต้องส่งกลับผู้ขอ
+    if (!lineDimensions.validateBeforeSubmit({ lockedStep: true })) return;
     const details: SrStageDetail[] = form
       .getValues("items")
       .filter((item) => !!item.id)

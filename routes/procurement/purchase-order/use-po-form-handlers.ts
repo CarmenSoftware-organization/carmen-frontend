@@ -24,7 +24,7 @@ import type { PurchaseOrder } from "@/types/purchase-order";
 import { PO_TYPE } from "@/types/purchase-order";
 import type { FormMode } from "@/types/form";
 import { clearDimensionsDirty } from "@/lib/dimension-payload";
-import type { ProcurementLineDimensions } from "../shared/use-procurement-line-dimensions";
+import type { DocumentLineDimensions } from "@/hooks/use-document-line-dimensions";
 import { pickDocVersion } from "@/lib/doc-version";
 import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 import { buildPoPayload } from "./build-po-payload";
@@ -32,7 +32,7 @@ import type { PoFormValues } from "./po-form-schema";
 
 interface UsePoFormHandlersOptions {
   /** ตัวตรวจ dimension ต่อบรรทัด — เรียกเฉพาะก่อน Submit (ห้ามตอน Save ร่าง: draftSaveHandler ไม่ผ่าน zod) */
-  lineDimensions: ProcurementLineDimensions;
+  lineDimensions: DocumentLineDimensions;
   purchaseOrder: PurchaseOrder | undefined;
   form: UseFormReturn<PoFormValues>;
   defaultValues: PoFormValues;

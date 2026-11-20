@@ -74,7 +74,7 @@ export function createPoDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     delivery_point_name: z.string(),
     comment: z.string(),
     /** dimension ระดับบรรทัด — โหลดจาก response แก้ได้ */
-    /** key ฝั่ง client ของบรรทัดใหม่ (ยังไม่มี id) — `useProcurementLineDimensions` ใส่ให้ ไม่ส่งไป API */
+    /** key ฝั่ง client ของบรรทัดใหม่ (ยังไม่มี id) — `useDocumentLineDimensions` ใส่ให้ ไม่ส่งไป API */
     row_key: z.string().optional(),
     dimensions: z.array(dimensionRefSchema).optional(),
     /** ผู้ใช้แก้ช่อง dimension ของบรรทัดนี้แล้ว — คุมว่าจะส่งใน details.update ไหม */

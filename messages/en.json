@@ -8553,6 +8553,7 @@
     "clearLineDimension": "Clear dimension",
     "selectForJournalLine": "Select accounting dimensions for this journal line.",
     "rulesPending": "Still checking dimension rules for these lines. Please try again in a moment.",
+    "blockedLockedStep": "Line {row} is missing a required dimension or has a disallowed one ({dimension}), so this document cannot continue. Send it back to the requester to fix the dimensions.",
     "blockedSubmit": "{count, plural, one {# line has} other {# lines have}} a missing or disallowed dimension. Fix the red chips and try again.",
     "conflict": "The accounts on this line disagree on a dimension, so it cannot be submitted. Ask accounting to fix the account mapping.",
     "ruleLoadError": "Unable to load the dimension rules for this line",

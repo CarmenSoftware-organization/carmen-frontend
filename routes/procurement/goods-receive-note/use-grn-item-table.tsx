@@ -31,7 +31,7 @@ import {
   UnitPriceCell,
 } from "./grn-item-cells";
 import { GrnItemDimensions } from "./grn-item-cells/item-dimensions";
-import { useProcurementLineDimensionsContext } from "../shared/use-procurement-line-dimensions";
+import { useDocumentLineDimensionsContext } from "@/hooks/use-document-line-dimensions";
 
 export type GrnItemField = FieldArrayWithId<GrnFormValues, "items", "id">;
 
@@ -71,7 +71,7 @@ export function useGrnItemTable({
   lockedLines,
 }: UseGrnItemTableOptions) {
   "use no memo";
-  const dimensionsEnabled = !!useProcurementLineDimensionsContext()?.enabled;
+  const dimensionsEnabled = !!useDocumentLineDimensionsContext()?.enabled;
   const tfl = useTranslations("field");
   const t = useTranslations("procurement.goodsReceiveNote");
   const [sorting, setSorting] = useState<SortingState>([]);

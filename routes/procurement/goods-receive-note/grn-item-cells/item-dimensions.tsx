@@ -1,5 +1,5 @@
 import type { FieldArrayWithId, UseFormReturn } from "react-hook-form";
-import { ProcurementLineDimensionRow } from "../../shared/procurement-line-dimension-row";
+import { DocumentLineDimensionRow } from "@/components/dimension/document-line-dimension-row";
 import type { GrnFormValues } from "../grn-form-schema";
 
 /**
@@ -22,7 +22,7 @@ export function GrnItemDimensions({
 }) {
   const index = itemFields.findIndex((field) => field.id === item.id);
   return (
-    <ProcurementLineDimensionRow
+    <DocumentLineDimensionRow
       form={form}
       index={index}
       disabled={disabled}

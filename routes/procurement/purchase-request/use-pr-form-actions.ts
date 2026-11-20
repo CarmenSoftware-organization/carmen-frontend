@@ -31,7 +31,7 @@ import type {
 import { PR_ITEM_STAGE_STATUS } from "@/types/purchase-request";
 import { STAGE_ROLE } from "@/types/stage-role";
 import { type FormMode } from "@/types/form";
-import type { ProcurementLineDimensions } from "../shared/use-procurement-line-dimensions";
+import type { DocumentLineDimensions } from "@/hooks/use-document-line-dimensions";
 import {
   type PrFormValues,
   findRowsMissingQty,
@@ -47,7 +47,7 @@ export type ActionDialogState = {
 
 interface UsePrFormActionsParams {
   /** ตัวตรวจ dimension ต่อบรรทัด — เรียกเฉพาะก่อน Submit (ห้ามตอน Save ร่าง) */
-  lineDimensions: ProcurementLineDimensions;
+  lineDimensions: DocumentLineDimensions;
   form: UseFormReturn<PrFormValues>;
   purchaseRequest?: PurchaseRequest;
   defaultValues: PrFormValues;

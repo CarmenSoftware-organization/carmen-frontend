@@ -21,7 +21,7 @@ import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column
 import { cn } from "@/lib/utils";
 import type { PrFormValues } from "./pr-form-schema";
 import { PrItemExpand } from "./pr-item-expand";
-import { useProcurementLineDimensionsContext } from "../shared/use-procurement-line-dimensions";
+import { useDocumentLineDimensionsContext } from "@/hooks/use-document-line-dimensions";
 import { PrPricelistCompare } from "./pr-pricelist-compare";
 import { ItemHistorySheet } from "@/components/share/item-history-sheet";
 import {} from "@/constant/purchase-request";
@@ -609,7 +609,7 @@ export function usePrItemTable({
   }, [submitCount]);
 
   // กดส่งไม่ผ่านเพราะ dimension → กางแถวที่ชิปแดง (ชิปอยู่ในส่วนที่กางออก)
-  const dimensionReveal = useProcurementLineDimensionsContext()?.revealRequest;
+  const dimensionReveal = useDocumentLineDimensionsContext()?.revealRequest;
   useEffect(() => {
     if (!dimensionReveal) return;
     table.setExpanded((prev) => ({

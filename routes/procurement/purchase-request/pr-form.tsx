@@ -35,9 +35,9 @@ import { usePrPreviousStages } from "./use-purchase-request";
 import { formatDate } from "@/lib/date-utils";
 import { PrHeader } from "./pr-header";
 import {
-  ProcurementLineDimensionsContext,
-  useProcurementLineDimensions,
-} from "../shared/use-procurement-line-dimensions";
+  DocumentLineDimensionsContext,
+  useDocumentLineDimensions,
+} from "@/hooks/use-document-line-dimensions";
 
 interface PurchaseRequestFormProps {
   readonly purchaseRequest?: PurchaseRequest;
@@ -136,7 +136,7 @@ export function PurchaseRequestForm({
 
   // dimension ต่อบรรทัด: กฎตามบัญชี · default · ตรวจก่อน Submit · รับ 422 — แจกให้แถวผ่าน context
   // ชิปแก้ได้เฉพาะ stage create (เหมือนสินค้า/คลัง) · ตรวจไม่ผ่านในโหมดดูให้เข้าโหมดแก้
-  const lineDimensions = useProcurementLineDimensions({
+  const lineDimensions = useDocumentLineDimensions({
     docType: "pr",
     form,
     readOnly: isView || role !== STAGE_ROLE.CREATE,
@@ -267,7 +267,7 @@ export function PurchaseRequestForm({
   }, []);
 
   return (
-    <ProcurementLineDimensionsContext.Provider value={lineDimensions}>
+    <DocumentLineDimensionsContext.Provider value={lineDimensions}>
       <FormPageShell
         width="wide"
         header={
@@ -385,6 +385,6 @@ export function PurchaseRequestForm({
           onActionConfirm={actions.handleActionConfirm}
         />
       </FormPageShell>
-    </ProcurementLineDimensionsContext.Provider>
+    </DocumentLineDimensionsContext.Provider>
   );
 }

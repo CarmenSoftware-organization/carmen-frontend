@@ -8,6 +8,10 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfile } from "@/hooks/use-profile";
 import {
+  DocumentLineDimensionsContext,
+  useDocumentLineDimensions,
+} from "@/hooks/use-document-line-dimensions";
+import {
   SR_TYPE,
   type StoreRequisition,
   type StoreRequisitionType,
@@ -109,7 +113,33 @@ export function StoreRequisitionForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- ครั้งเดียวตอน mount
   }, []);
 
+  const fromLocationId = useWatch({
+    control: form.control,
+    name: "from_location_id",
+  });
+  const toLocationId = useWatch({
+    control: form.control,
+    name: "to_location_id",
+  });
+  const role = storeRequisition?.role ?? STAGE_ROLE.CREATE;
+
+  // dimension ต่อบรรทัด: กฎรวมของบัญชี sr_out + sr_in จากหัวใบ · default · ตรวจก่อน Submit/ขั้นจ่าย · รับ 422
+  // เฉพาะผู้ขอ (role create) แก้ dimension ได้ — ผู้อนุมัติ/ผู้จ่ายอ่านอย่างเดียวและไม่เข้าโหมดแก้
+  // (payload ของ approve/issue ไม่รับ dimensions) ถ้าไม่ผ่านต้องส่งกลับผู้ขอ
+  const lineDimensions = useDocumentLineDimensions({
+    docType: "sr",
+    form,
+    readOnly: isView || role !== STAGE_ROLE.CREATE,
+    enterEdit:
+      role === STAGE_ROLE.CREATE && isView ? () => setMode("edit") : undefined,
+    headerInput: {
+      location_id: fromLocationId || null,
+      to_location_id: toLocationId || null,
+    },
+  });
+
   const actions = useSrFormActions({
+    lineDimensions,
     form,
     storeRequisition,
     defaultValues,
@@ -129,14 +159,6 @@ export function StoreRequisitionForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- ยิงครั้งเดียวต่อการกด submit
   }, [submitCount]);
 
-  const fromLocationId = useWatch({
-    control: form.control,
-    name: "from_location_id",
-  });
-  const toLocationId = useWatch({
-    control: form.control,
-    name: "to_location_id",
-  });
   const srDate = useWatch({ control: form.control, name: "sr_date" });
   const workflowId = useWatch({ control: form.control, name: "workflow_id" });
   const items = useWatch({ control: form.control, name: "items" }) ?? [];
@@ -199,7 +221,6 @@ export function StoreRequisitionForm({
   // แต่ต้องเป็นคนที่ backend ให้ role = create เท่านั้น (เจ้าของใบ/คนที่ถูก send back
   // กลับมา) — คนอื่นที่เปิดดูได้ role เป็น view_only ซึ่งเดิมหลุดมาเห็นปุ่มทั้งที่
   // ปุ่ม Edit ซ่อนไปแล้ว กดแล้วก็โดน backend ปัด; ใบใหม่ยังไม่มี role ถือเป็น create
-  const role = storeRequisition?.role ?? STAGE_ROLE.CREATE;
   const canSubmit =
     role === STAGE_ROLE.CREATE &&
     (isAdd ||
@@ -234,108 +255,110 @@ export function StoreRequisitionForm({
   };
 
   return (
-    <FormPageShell
-      width="wide"
-      header={
-        <SrHeader
-          ribbon={
-            <SrRequestDetails
-              form={form}
-              readOnly={isView}
-              disabled={actions.isPending}
-              onToLocInfoChange={setToLocInfo}
-              savedFromLocation={storeRequisition?.from_location}
-              savedToLocation={storeRequisition?.to_location}
-              workflowName={
-                storeRequisition?.workflow?.name ??
-                storeRequisition?.workflow_name
-              }
-              role={storeRequisition?.role ?? STAGE_ROLE.CREATE}
-              isDraft={
-                !storeRequisition?.doc_status ||
-                storeRequisition.doc_status === "draft"
-              }
-              isAdd={isAdd}
-            />
-          }
-          storeRequisition={storeRequisition}
-          srType={derivedSrType}
-          mode={mode}
-          isPending={actions.isPending}
-          hasDepartment={!!departmentId}
-          isDeletePending={actions.deleteIsPending}
-          srDate={srDate}
-          dateFormat={dateFormat}
-          requesterName={reqName}
-          requesterAvatar={
-            storeRequisition ? storeRequisition.requestor_avatar : avatarUrl
-          }
-          departmentName={departmentName}
-          departmentCode={departmentCode}
-          isLoading={!profile}
-          onBack={actions.handleBack}
-          onEdit={() => setMode("edit")}
-          onCancel={actions.handleCancel}
-          onDelete={() => actions.setShowDelete(true)}
-          onComment={() => actions.setShowComment(true)}
-        />
-      }
-      footer={
-        <SrFooter
-          canSubmit={!!canSubmit}
-          isPending={actions.isPending}
-          role={storeRequisition?.role}
-          action={computeSrAction(items.map((i) => i.stage_status ?? ""))}
-          grandTotal={srGrandTotal(items)}
-          hasItems={items.length > 0}
-          activeTab={tab === "stock" ? "stock" : "items"}
-          srId={storeRequisition?.id}
-          docStatus={storeRequisition?.doc_status}
-          stageActions={stageActions}
-          onSubmit={actions.openSubmitDialog}
-          onApprove={() => actions.setActionDialog("approve")}
-          onIssue={() => actions.setActionDialog("issue")}
-          onReject={() => actions.setActionDialog("reject")}
-          onSendBack={() => actions.setActionDialog("review")}
-        />
-      }
-    >
-      <form
-        id="store-requisition-form"
-        onSubmit={draftSaveHandler(form, actions.onSubmit)}
-        className="space-y-4"
+    <DocumentLineDimensionsContext.Provider value={lineDimensions}>
+      <FormPageShell
+        width="wide"
+        header={
+          <SrHeader
+            ribbon={
+              <SrRequestDetails
+                form={form}
+                readOnly={isView}
+                disabled={actions.isPending}
+                onToLocInfoChange={setToLocInfo}
+                savedFromLocation={storeRequisition?.from_location}
+                savedToLocation={storeRequisition?.to_location}
+                workflowName={
+                  storeRequisition?.workflow?.name ??
+                  storeRequisition?.workflow_name
+                }
+                role={storeRequisition?.role ?? STAGE_ROLE.CREATE}
+                isDraft={
+                  !storeRequisition?.doc_status ||
+                  storeRequisition.doc_status === "draft"
+                }
+                isAdd={isAdd}
+              />
+            }
+            storeRequisition={storeRequisition}
+            srType={derivedSrType}
+            mode={mode}
+            isPending={actions.isPending}
+            hasDepartment={!!departmentId}
+            isDeletePending={actions.deleteIsPending}
+            srDate={srDate}
+            dateFormat={dateFormat}
+            requesterName={reqName}
+            requesterAvatar={
+              storeRequisition ? storeRequisition.requestor_avatar : avatarUrl
+            }
+            departmentName={departmentName}
+            departmentCode={departmentCode}
+            isLoading={!profile}
+            onBack={actions.handleBack}
+            onEdit={() => setMode("edit")}
+            onCancel={actions.handleCancel}
+            onDelete={() => actions.setShowDelete(true)}
+            onComment={() => actions.setShowComment(true)}
+          />
+        }
+        footer={
+          <SrFooter
+            canSubmit={!!canSubmit}
+            isPending={actions.isPending}
+            role={storeRequisition?.role}
+            action={computeSrAction(items.map((i) => i.stage_status ?? ""))}
+            grandTotal={srGrandTotal(items)}
+            hasItems={items.length > 0}
+            activeTab={tab === "stock" ? "stock" : "items"}
+            srId={storeRequisition?.id}
+            docStatus={storeRequisition?.doc_status}
+            stageActions={stageActions}
+            onSubmit={actions.openSubmitDialog}
+            onApprove={() => actions.setActionDialog("approve")}
+            onIssue={() => actions.setActionDialog("issue")}
+            onReject={() => actions.setActionDialog("reject")}
+            onSendBack={() => actions.setActionDialog("review")}
+          />
+        }
       >
-        <Tabs value={tab} onValueChange={setTab}>
-          <TabsList variant="line">
-            <TabsTrigger value="items">{t("tabItems")}</TabsTrigger>
-            <TabsTrigger value="stock">{t("tabStock")}</TabsTrigger>
-          </TabsList>
+        <form
+          id="store-requisition-form"
+          onSubmit={draftSaveHandler(form, actions.onSubmit)}
+          className="space-y-4"
+        >
+          <Tabs value={tab} onValueChange={setTab}>
+            <TabsList variant="line">
+              <TabsTrigger value="items">{t("tabItems")}</TabsTrigger>
+              <TabsTrigger value="stock">{t("tabStock")}</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="items" className="space-y-4">
-            {form.formState.errors.items?.message && (
-              <p className="text-destructive text-xs" role="alert">
-                {form.formState.errors.items.message}
-              </p>
-            )}
-            <SrItemFields {...itemFieldsProps} />
-          </TabsContent>
+            <TabsContent value="items" className="space-y-4">
+              {form.formState.errors.items?.message && (
+                <p className="text-destructive text-xs" role="alert">
+                  {form.formState.errors.items.message}
+                </p>
+              )}
+              <SrItemFields {...itemFieldsProps} />
+            </TabsContent>
 
-          <TabsContent value="stock">
-            <SrStockTable
-              srId={storeRequisition?.id}
-              srNo={storeRequisition?.sr_no}
-              docStatus={storeRequisition?.doc_status}
-            />
-          </TabsContent>
-        </Tabs>
-      </form>
+            <TabsContent value="stock">
+              <SrStockTable
+                srId={storeRequisition?.id}
+                srNo={storeRequisition?.sr_no}
+                docStatus={storeRequisition?.doc_status}
+              />
+            </TabsContent>
+          </Tabs>
+        </form>
 
-      <SrFormDialogs
-        storeRequisition={storeRequisition}
-        form={form}
-        items={items}
-        actions={actions}
-      />
-    </FormPageShell>
+        <SrFormDialogs
+          storeRequisition={storeRequisition}
+          form={form}
+          items={items}
+          actions={actions}
+        />
+      </FormPageShell>
+    </DocumentLineDimensionsContext.Provider>
   );
 }

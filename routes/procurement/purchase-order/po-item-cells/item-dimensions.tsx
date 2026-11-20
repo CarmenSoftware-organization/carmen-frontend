@@ -1,10 +1,10 @@
 import type { UseFormReturn } from "react-hook-form";
-import { ProcurementLineDimensionRow } from "../../shared/procurement-line-dimension-row";
+import { DocumentLineDimensionRow } from "@/components/dimension/document-line-dimension-row";
 import type { PoFormValues } from "../po-form-schema";
 
 /**
  * แถบชิป dimension ของบรรทัด PO (แถวย่อยใต้หมายเหตุ) — ซ่อนเมื่อ BU ปิด dimension ของ PO
- * ชิปที่โชว์ตามกฎของบัญชีบรรทัดนั้น (ดู `ProcurementLineDimensionRow`)
+ * ชิปที่โชว์ตามกฎของบัญชีบรรทัดนั้น (ดู `DocumentLineDimensionRow`)
  */
 export function PoItemDimensions({
   form,
@@ -20,7 +20,7 @@ export function PoItemDimensions({
 }) {
   return (
     <div style={{ paddingLeft: offset }}>
-      <ProcurementLineDimensionRow
+      <DocumentLineDimensionRow
         form={form}
         index={index}
         disabled={disabled}

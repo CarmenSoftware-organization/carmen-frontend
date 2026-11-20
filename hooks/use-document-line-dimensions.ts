@@ -24,6 +24,8 @@ import {
   type LineDimensionRuleResult,
 } from "@/lib/line-dimension-rules";
 import { registerFieldErrorClaim } from "@/lib/server-field-errors";
+import { useGlDimensions } from "@/hooks/use-gl-dimensions";
+import type { LineDimensionDocType } from "@/lib/line-dimension-scope";
 import type { DimensionRef } from "@/types/gl-dimension";
 
 /** รหัส error ของ backend ที่ hook นี้รับไปแสดงที่ชิปเอง (toast กลางจะไม่ขึ้นซ้ำ) */
@@ -36,7 +38,7 @@ const LINE_DIMENSION_ERROR_CODES: ReadonlySet<string> = new Set([
 const EMPTY_SET: ReadonlySet<string> = new Set();
 const EMPTY_INVALID: ReadonlyMap<string, ReadonlySet<string>> = new Map();
 
-/** รูปบรรทัดที่ hook อ่านจากฟอร์ม — PR/PO/GRN ใช้ชื่อฟิลด์ตรงกันหมด */
+/** รูปบรรทัดที่ hook อ่านจากฟอร์ม — ทุกเอกสารใช้ชื่อฟิลด์ตรงกันหมด */
 interface LineItem {
   id?: string | null;
   /** key ฝั่ง client ของบรรทัดใหม่ (ยังไม่มี id) — hook ใส่ให้เอง */
@@ -56,7 +58,7 @@ export interface DimensionRevealRequest {
   readonly indexes: readonly number[];
 }
 
-export interface ProcurementLineDimensions {
+export interface DocumentLineDimensions {
   /** เอกสารชนิดนี้เปิด dimension ต่อบรรทัดหรือไม่ */
   readonly enabled: boolean;
   /** โหมดดู (หรือใบที่ล็อกบรรทัด) — ชิปเป็นปุ่ม outline ไม่ใช่ช่องกรอก */
@@ -74,22 +76,35 @@ export interface ProcurementLineDimensions {
   readonly isRulesError: boolean;
   refetchRules: () => void;
   readonly revealRequest: DimensionRevealRequest | null;
-  /** false = บล็อกแล้ว (toast + ชิปแดง + กางแถว + เข้าโหมดแก้) ห้ามเรียกตอน Save ใบ draft */
-  validateBeforeSubmit: () => boolean;
+  /**
+   * false = บล็อกแล้ว (toast + ชิปแดง + กางแถว + เข้าโหมดแก้ถ้ามี `enterEdit`) ห้ามเรียกตอน Save ใบ draft
+   *
+   * `lockedStep` = ขั้นที่ผู้ใช้แก้ dimension ไม่ได้ (เช่น ผู้อนุมัติ SR) → toast ระบุบรรทัด/dimension
+   * และให้ส่งกลับผู้ขอแก้ แทนข้อความ "แก้ชิปสีแดง" โดยไม่เข้าโหมดแก้
+   */
+  validateBeforeSubmit: (options?: { lockedStep?: boolean }) => boolean;
   /** true = เป็น 422 ของ dimension และจัดการแล้ว (toast ของเราเอง) */
   applyServerError: (err: ApiError) => boolean;
 }
 
-export const ProcurementLineDimensionsContext =
-  createContext<ProcurementLineDimensions | null>(null);
+export const DocumentLineDimensionsContext =
+  createContext<DocumentLineDimensions | null>(null);
 
 /** อ่าน dimension ของบรรทัดที่ฟอร์มเอกสารแจกไว้ (null = ไม่ได้อยู่ใต้ฟอร์มที่เปิดใช้) */
-export function useProcurementLineDimensionsContext() {
-  return useContext(ProcurementLineDimensionsContext);
+export function useDocumentLineDimensionsContext() {
+  return useContext(DocumentLineDimensionsContext);
 }
 
+/** ค่าจากหัวใบที่ใช้กับทุกบรรทัด (SR: from/to location · IA: location + adjustment type) */
+export type LineDimensionHeaderInput = Partial<
+  Pick<
+    LineDimensionRuleInput,
+    "location_id" | "to_location_id" | "adjustment_type_id"
+  >
+>;
+
 interface Args<T extends FieldValues> {
-  docType: "pr" | "po" | "grn";
+  docType: LineDimensionDocType;
   form: UseFormReturn<T>;
   /**
    * โหมดดู — ไม่เติมค่า default ลงฟอร์ม (setValue ทำให้ฟอร์มโหมดดู dirty แล้วเด้ง discard dialog)
@@ -98,6 +113,11 @@ interface Args<T extends FieldValues> {
   readOnly: boolean;
   /** ตรวจไม่ผ่าน / BE ตอบ 422 ของ dimension → พาหน้าเข้าโหมดแก้ไขให้แก้ต่อได้ */
   enterEdit?: () => void;
+  /**
+   * ค่าจากหัวใบที่ทับค่าระดับบรรทัด — เปลี่ยนแล้วดึงกฎใหม่ทุกบรรทัด
+   * (ส่งเป็น object ใหม่ทุก render ได้ hook เทียบด้วยค่า)
+   */
+  headerInput?: LineDimensionHeaderInput;
   /** ถ้าชื่อฟิลด์สินค้า/คลังของฟอร์มไม่ใช่ `product_id` / `location_id` */
   toInput?: (
     item: LineItem,
@@ -113,7 +133,7 @@ const keyOf = (item: LineItem | undefined): string | null =>
   item?.id || item?.row_key || null;
 
 /**
- * dimension ต่อบรรทัดของ PR / PO / GRN: ดึงกฎตามบัญชี · เติม default · ตรวจก่อนส่ง · รับ 422
+ * dimension ต่อบรรทัดของ PR / PO / GRN / SR / IA: ดึงกฎตามบัญชี · เติม default · ตรวจก่อนส่ง · รับ 422
  *
  * จุดที่ต้องรู้:
  * - บรรทัดใหม่ไม่มี id จึงได้ `row_key` (uuid) เป็น key คงที่ — ใช้ index ไม่ได้เพราะแถวถูกเพิ่ม/ลบ/ดันลงได้
@@ -125,18 +145,26 @@ const keyOf = (item: LineItem | undefined): string | null =>
  *
  * @param args - ดู `Args`
  */
-export function useProcurementLineDimensions<T extends FieldValues>({
+export function useDocumentLineDimensions<T extends FieldValues>({
   docType,
   form,
   readOnly,
   enterEdit,
+  headerInput,
   toInput = defaultToInput,
-}: Args<T>): ProcurementLineDimensions {
+}: Args<T>): DocumentLineDimensions {
   const t = useTranslations("lineDimension");
   const tErr = useTranslations("errors");
   const tField = useTranslations("field");
   const enabled = useLineDimensionsEnabled(docType);
   const lineForm = form as unknown as UseFormReturn<LineForm>;
+  const dimensionMasters = useGlDimensions(enabled);
+  // เทียบด้วยค่า — หัวใบเปลี่ยนแล้ว `lines` ต้องสร้างใหม่ (ดึงกฎใหม่ทุกบรรทัด)
+  const headerKey = JSON.stringify([
+    headerInput?.location_id ?? null,
+    headerInput?.to_location_id ?? null,
+    headerInput?.adjustment_type_id ?? null,
+  ]);
 
   // useWatch ด้วย compute: re-render เฉพาะเมื่อ key/สินค้า/คลังของบรรทัดเปลี่ยน ไม่ใช่ทุกครั้งที่พิมพ์
   // ในช่องอื่นของตาราง (watch ทั้ง items จะลาก form ทั้งใบ re-render ทุกตัวอักษร)
@@ -176,10 +204,26 @@ export function useProcurementLineDimensions<T extends FieldValues>({
     return items.flatMap((item) => {
       const key = keyOf(item);
       if (!item || !key) return [];
-      return [{ key, doc_type: docType, ...toInput(item) }];
+      return [
+        {
+          key,
+          doc_type: docType,
+          ...toInput(item),
+          // หัวใบทับเฉพาะค่าที่ระบุมา (undefined = ใช้ค่าของบรรทัด)
+          ...(headerInput?.location_id !== undefined && {
+            location_id: headerInput.location_id,
+          }),
+          ...(headerInput?.to_location_id !== undefined && {
+            to_location_id: headerInput.to_location_id,
+          }),
+          ...(headerInput?.adjustment_type_id !== undefined && {
+            adjustment_type_id: headerInput.adjustment_type_id,
+          }),
+        },
+      ];
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- signature คือเนื้อหาที่ใช้จริง
-  }, [enabled, docType, signature]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- signature + headerKey คือเนื้อหาที่ใช้จริง
+  }, [enabled, docType, signature, headerKey]);
 
   const rules = useLineDimensionRules(docType, lines);
   const { byKey } = rules;
@@ -207,9 +251,27 @@ export function useProcurementLineDimensions<T extends FieldValues>({
     useState<DimensionRevealRequest | null>(null);
 
   // ค่าล่าสุดสำหรับ callback ที่ถูกเรียกนอก render (ปุ่มกดแบบ async, claim ของ 422)
-  const latest = useRef({ byKey, rules, enabled, enterEdit, t, tErr, tField });
+  const latest = useRef({
+    byKey,
+    rules,
+    enabled,
+    enterEdit,
+    t,
+    tErr,
+    tField,
+    masters: dimensionMasters.data,
+  });
   useEffect(() => {
-    latest.current = { byKey, rules, enabled, enterEdit, t, tErr, tField };
+    latest.current = {
+      byKey,
+      rules,
+      enabled,
+      enterEdit,
+      t,
+      tErr,
+      tField,
+      masters: dimensionMasters.data,
+    };
   });
 
   const markInvalid = (
@@ -226,8 +288,8 @@ export function useProcurementLineDimensions<T extends FieldValues>({
     setRevealRequest((prev) => ({ id: (prev?.id ?? 0) + 1, indexes }));
   };
 
-  const validateBeforeSubmit = (): boolean => {
-    const { byKey, rules, enabled, enterEdit, t } = latest.current;
+  const validateBeforeSubmit = (options?: { lockedStep?: boolean }): boolean => {
+    const { byKey, rules, enabled, enterEdit, t, masters } = latest.current;
     if (!enabled) return true;
     if (rules.isPending) {
       toast.warning(t("rulesPending"));
@@ -253,6 +315,20 @@ export function useProcurementLineDimensions<T extends FieldValues>({
       return key && entries.has(key) ? [index] : [];
     });
     markInvalid(entries, indexes);
+    if (options?.lockedStep) {
+      // ผู้ใช้ขั้นนี้แก้ dimension ไม่ได้ — บอกบรรทัด + dimension แรกที่ผิด และให้ส่งกลับผู้ขอ
+      const first = violations[0];
+      const row = items.findIndex((item) => keyOf(item) === first.key) + 1;
+      const master = masters?.find((d) => d.id === first.dimension_id);
+      toast.error(
+        t("blockedLockedStep", {
+          row,
+          dimension: master?.name ?? master?.code ?? first.dimension_id,
+          count: entries.size,
+        }),
+      );
+      return false;
+    }
     toast.warning(t("blockedSubmit", { count: entries.size }));
     enterEdit?.();
     return false;

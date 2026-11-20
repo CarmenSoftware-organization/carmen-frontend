@@ -40,11 +40,11 @@ import {
   type GrnFormValues,
 } from "./grn-form-schema";
 import { findExpiredLines } from "./grn-expiry";
-import type { ProcurementLineDimensions } from "../shared/use-procurement-line-dimensions";
+import type { DocumentLineDimensions } from "@/hooks/use-document-line-dimensions";
 
 interface UseGrnFormActionsParams {
   /** ตัวตรวจ dimension ต่อบรรทัด — เรียกเฉพาะตอน Save ที่พาใบออกจาก draft และก่อน commit */
-  lineDimensions: ProcurementLineDimensions;
+  lineDimensions: DocumentLineDimensions;
   form: UseFormReturn<GrnFormValues>;
   goodsReceiveNote?: GoodsReceiveNote;
   defaultValues: GrnFormValues;

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState, useEffect } from "react";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
 import { useListReturn } from "@/hooks/use-list-return";
@@ -25,6 +25,10 @@ import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
+import {
+  DocumentLineDimensionsContext,
+  useDocumentLineDimensions,
+} from "@/hooks/use-document-line-dimensions";
 import { clearDimensionsDirty } from "@/lib/dimension-payload";
 import { pickDocVersion, withFreshDetailVersions } from "@/lib/doc-version";
 import { httpClient } from "@/lib/http-client";
@@ -121,6 +125,24 @@ export function InventoryAdjustmentForm({
     defaultValues,
   });
 
+  // dimension ต่อบรรทัด: กฎตามบัญชีที่ mapping ของ adjustment type + คลังจากหัวใบ · default · ตรวจก่อน Commit · รับ 422
+  // หัวใบเปลี่ยนแล้วดึงกฎใหม่ทุกบรรทัด · ไม่ผ่านค้างโหมดแก้ให้แก้ต่อ (Commit จากโหมดดูก็เข้าโหมดแก้)
+  const locationId = useWatch({ control: form.control, name: "location_id" });
+  const adjustmentTypeId = useWatch({
+    control: form.control,
+    name: "adjustment_type_id",
+  });
+  const lineDimensions = useDocumentLineDimensions({
+    docType: "ia",
+    form,
+    readOnly: isView,
+    enterEdit: isView ? () => setMode("edit") : undefined,
+    headerInput: {
+      location_id: locationId || null,
+      adjustment_type_id: adjustmentTypeId || null,
+    },
+  });
+
   // guard สองตัวต้องอ่าน dirty ค่าเดียวกัน ไม่งั้นปุ่ม Back ถามแต่เมนู sidebar เงียบ
   const isFormDirty = form.formState.isDirty;
 
@@ -160,6 +182,12 @@ export function InventoryAdjustmentForm({
 
   const errorToast = useErrorToast();
   const handleMutationError = (err: unknown) => {
+    // 422 ของ dimension (กฎเปลี่ยนระหว่างที่หน้าเปิดค้าง) — mutation ปิด toast กลางไว้ จึงต้องรับเอง
+    // hook ทำ toast + ชิปแดง + เข้าโหมดแก้ให้
+    if (err instanceof ApiError && lineDimensions.applyServerError(err)) {
+      setIsSubmitting(false);
+      return;
+    }
     // backend คืน business error (เช่น "Insufficient stock. Requested: 3,
     // Available: 1") เป็น HTTP 500 → INTERNAL_ERROR ซึ่ง errorToast จะกลบเป็น
     // ข้อความ generic — กรณีนี้แสดง message จาก server ตรง ๆ
@@ -318,7 +346,11 @@ export function InventoryAdjustmentForm({
   // เอา doc_status ไปตั้งตอนยืนยันจริง ถ้ายกเลิกฟอร์มจะไม่ค้างสถานะ completed
   const openCommitDialog = () =>
     form.handleSubmit(
-      () => setShowCommit(true),
+      () => {
+        // ด่านลงสต๊อกและออก JV — ไม่ผ่านไม่เปิด dialog (ห้ามตรวจตอน Save ร่าง)
+        if (!lineDimensions.validateBeforeSubmit()) return;
+        setShowCommit(true);
+      },
       () => scrollToFirstInvalidField(),
     )();
 
@@ -409,169 +441,171 @@ export function InventoryAdjustmentForm({
   return (
     // footer = แถบสรุป (mt-auto) — FormPageShell ยืดเต็มจอให้มันติดก้นจอเมื่อเนื้อสั้น
     // เต็มจอแบบเดียวกับ PO/PR/SR/GRN/CN — ตารางรายการได้ความกว้างเต็มที่
-    <FormPageShell
-      width="wide"
-      header={
-        <IaFormHero
-          adjustmentType={adjustmentType}
-          inventoryAdjustment={inventoryAdjustment}
-          form={form}
-          typeLabel={typeLabel}
-          mode={mode}
-          isReadOnly={isReadOnly}
-          isPending={isPending}
-          deleteIsPending={deleteAdj.isPending}
-          formId="inventory-adjustment-form"
-          onBack={handleBack}
-          onCancel={handleCancel}
-          onEdit={() => setMode("edit")}
-          onDelete={() => setShowDelete(true)}
-          onComment={() => setShowComment(true)}
-          ribbon={
-            <DocumentInfo
-              form={form}
-              isView={isView}
-              isDisabled={isDisabled}
-              adjustmentKind={adjTypeFilter}
-              inventoryAdjustment={inventoryAdjustment}
-              currentPeriodStart={currentPeriod?.start_at}
-              currentPeriodEnd={currentPeriod?.end_at}
-              dateFormat={dateFormat}
-              tc={tc}
-              tfl={tfl}
-            />
-          }
-        />
-      }
-      footer={
-        <AdjSummaryFooter
-          form={form}
-          adjustmentType={adjustmentType}
-          formatter={formatter}
-          t={t}
-          canVoid={isEdit && !!inventoryAdjustment && !isReadOnly}
-          canCommit={!isView}
-          isPending={isPending}
-          voidIsPending={voidAdj.isPending}
-          onVoid={() => setShowVoid(true)}
-          onCommit={openCommitDialog}
-        />
-      }
-    >
-      <form
-        id="inventory-adjustment-form"
-        onSubmit={form.handleSubmit(onSubmit, () =>
-          scrollToFirstInvalidField(),
-        )}
-        // คอลัมน์เดียว — ยอดรวมย้ายลง footer bar แล้ว ตารางรายการจึงได้ 20rem
-        // ที่ sidebar เคยกินคืนไป (DESIGN.md: an ERP table wants the pixels)
-        className="min-w-0"
-      >
-        {/* ── Line items ── */}
-        <AdjItemFields
-          form={form}
-          disabled={isDisabled}
-          adjustmentType={adjustmentType}
-        />
-      </form>
-
-      <DiscardDialog {...discard.dialogProps} variant="warning" />
-
-      <DiscardDialog
-        open={navGuard.isOpen}
-        onOpenChange={(o) => {
-          if (!o) navGuard.cancel();
-        }}
-        onConfirm={navGuard.confirm}
-        onCancel={navGuard.cancel}
-        variant="warning"
-      />
-
-      {inventoryAdjustment && (
-        <Suspense fallback={null}>
-          <EntityCommentSheet
-            key={adjustmentType}
-            crud={
-              adjustmentType === "stock-in"
-                ? stockInCommentCrud
-                : stockOutCommentCrud
+    <DocumentLineDimensionsContext.Provider value={lineDimensions}>
+      <FormPageShell
+        width="wide"
+        header={
+          <IaFormHero
+            adjustmentType={adjustmentType}
+            inventoryAdjustment={inventoryAdjustment}
+            form={form}
+            typeLabel={typeLabel}
+            mode={mode}
+            isReadOnly={isReadOnly}
+            isPending={isPending}
+            deleteIsPending={deleteAdj.isPending}
+            formId="inventory-adjustment-form"
+            onBack={handleBack}
+            onCancel={handleCancel}
+            onEdit={() => setMode("edit")}
+            onDelete={() => setShowDelete(true)}
+            onComment={() => setShowComment(true)}
+            ribbon={
+              <DocumentInfo
+                form={form}
+                isView={isView}
+                isDisabled={isDisabled}
+                adjustmentKind={adjTypeFilter}
+                inventoryAdjustment={inventoryAdjustment}
+                currentPeriodStart={currentPeriod?.start_at}
+                currentPeriodEnd={currentPeriod?.end_at}
+                dateFormat={dateFormat}
+                tc={tc}
+                tfl={tfl}
+              />
             }
-            entityId={inventoryAdjustment.id}
-            open={showComment}
-            onOpenChange={setShowComment}
           />
-        </Suspense>
-      )}
+        }
+        footer={
+          <AdjSummaryFooter
+            form={form}
+            adjustmentType={adjustmentType}
+            formatter={formatter}
+            t={t}
+            canVoid={isEdit && !!inventoryAdjustment && !isReadOnly}
+            canCommit={!isView}
+            isPending={isPending}
+            voidIsPending={voidAdj.isPending}
+            onVoid={() => setShowVoid(true)}
+            onCommit={openCommitDialog}
+          />
+        }
+      >
+        <form
+          id="inventory-adjustment-form"
+          onSubmit={form.handleSubmit(onSubmit, () =>
+            scrollToFirstInvalidField(),
+          )}
+          // คอลัมน์เดียว — ยอดรวมย้ายลง footer bar แล้ว ตารางรายการจึงได้ 20rem
+          // ที่ sidebar เคยกินคืนไป (DESIGN.md: an ERP table wants the pixels)
+          className="min-w-0"
+        >
+          {/* ── Line items ── */}
+          <AdjItemFields
+            form={form}
+            disabled={isDisabled}
+            adjustmentType={adjustmentType}
+          />
+        </form>
 
-      {inventoryAdjustment && (
-        <DeleteDialog
-          open={showDelete}
-          onOpenChange={(open) =>
-            !open && !deleteAdj.isPending && setShowDelete(false)
-          }
-          title={t("deleteTitle")}
-          description={t("deleteConfirm", {
-            documentNo:
-              inventoryAdjustment.si_no ?? inventoryAdjustment.so_no ?? "",
-          })}
-          isPending={deleteAdj.isPending}
-          onConfirm={() => {
-            deleteAdj.mutate(
-              { id: inventoryAdjustment.id, type: adjustmentType },
-              {
-                onSuccess: () => {
-                  toast.success(tt("deleteSuccess", { entity: t("entity") }));
-                  toList();
-                },
-                onError: errorToast,
-              },
-            );
+        <DiscardDialog {...discard.dialogProps} variant="warning" />
+
+        <DiscardDialog
+          open={navGuard.isOpen}
+          onOpenChange={(o) => {
+            if (!o) navGuard.cancel();
           }}
+          onConfirm={navGuard.confirm}
+          onCancel={navGuard.cancel}
+          variant="warning"
         />
-      )}
 
-      {inventoryAdjustment && (
-        <VoidDialog
-          open={showVoid}
-          onOpenChange={(open) =>
-            !open && !voidAdj.isPending && setShowVoid(false)
-          }
-          title={t("voidTitle")}
-          description={t("voidConfirm", {
-            documentNo:
-              inventoryAdjustment.si_no ?? inventoryAdjustment.so_no ?? "",
-          })}
-          isPending={voidAdj.isPending}
-          onConfirm={(voidReason) => {
-            voidAdj.mutate(
-              {
-                id: inventoryAdjustment.id,
-                type: adjustmentType,
-                void_reason: voidReason,
-                doc_version: inventoryAdjustment.doc_version,
-              },
-              {
-                onSuccess: () => {
-                  toast.success(tt("voidSuccess", { entity: t("entity") }));
-                  toList();
+        {inventoryAdjustment && (
+          <Suspense fallback={null}>
+            <EntityCommentSheet
+              key={adjustmentType}
+              crud={
+                adjustmentType === "stock-in"
+                  ? stockInCommentCrud
+                  : stockOutCommentCrud
+              }
+              entityId={inventoryAdjustment.id}
+              open={showComment}
+              onOpenChange={setShowComment}
+            />
+          </Suspense>
+        )}
+
+        {inventoryAdjustment && (
+          <DeleteDialog
+            open={showDelete}
+            onOpenChange={(open) =>
+              !open && !deleteAdj.isPending && setShowDelete(false)
+            }
+            title={t("deleteTitle")}
+            description={t("deleteConfirm", {
+              documentNo:
+                inventoryAdjustment.si_no ?? inventoryAdjustment.so_no ?? "",
+            })}
+            isPending={deleteAdj.isPending}
+            onConfirm={() => {
+              deleteAdj.mutate(
+                { id: inventoryAdjustment.id, type: adjustmentType },
+                {
+                  onSuccess: () => {
+                    toast.success(tt("deleteSuccess", { entity: t("entity") }));
+                    toList();
+                  },
+                  onError: errorToast,
                 },
-                onError: errorToast,
-              },
-            );
-          }}
-        />
-      )}
+              );
+            }}
+          />
+        )}
 
-      <ConfirmDialog
-        open={showCommit}
-        onOpenChange={(open) => !open && setShowCommit(false)}
-        title={t("commitTitle")}
-        description={t("commitConfirm")}
-        confirmText={t("commit")}
-        confirmIcon={<Check />}
-        isPending={isPending}
-        onConfirm={confirmCommit}
-      />
-    </FormPageShell>
+        {inventoryAdjustment && (
+          <VoidDialog
+            open={showVoid}
+            onOpenChange={(open) =>
+              !open && !voidAdj.isPending && setShowVoid(false)
+            }
+            title={t("voidTitle")}
+            description={t("voidConfirm", {
+              documentNo:
+                inventoryAdjustment.si_no ?? inventoryAdjustment.so_no ?? "",
+            })}
+            isPending={voidAdj.isPending}
+            onConfirm={(voidReason) => {
+              voidAdj.mutate(
+                {
+                  id: inventoryAdjustment.id,
+                  type: adjustmentType,
+                  void_reason: voidReason,
+                  doc_version: inventoryAdjustment.doc_version,
+                },
+                {
+                  onSuccess: () => {
+                    toast.success(tt("voidSuccess", { entity: t("entity") }));
+                    toList();
+                  },
+                  onError: errorToast,
+                },
+              );
+            }}
+          />
+        )}
+
+        <ConfirmDialog
+          open={showCommit}
+          onOpenChange={(open) => !open && setShowCommit(false)}
+          title={t("commitTitle")}
+          description={t("commitConfirm")}
+          confirmText={t("commit")}
+          confirmIcon={<Check />}
+          isPending={isPending}
+          onConfirm={confirmCommit}
+        />
+      </FormPageShell>
+    </DocumentLineDimensionsContext.Provider>
   );
 }

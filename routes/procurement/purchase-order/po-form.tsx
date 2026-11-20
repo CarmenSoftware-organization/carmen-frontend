@@ -43,9 +43,9 @@ import { usePoDialogState } from "./use-po-dialog-state";
 import { usePoProfileSync } from "./use-po-profile-sync";
 import { usePoFormHandlers } from "./use-po-form-handlers";
 import {
-  ProcurementLineDimensionsContext,
-  useProcurementLineDimensions,
-} from "../shared/use-procurement-line-dimensions";
+  DocumentLineDimensionsContext,
+  useDocumentLineDimensions,
+} from "@/hooks/use-document-line-dimensions";
 // action ของ workflow ใช้คำชุดเดียวกับ PR (workflow engine ตัวเดียวกัน)
 import { PR_WORKFLOW_ACTION_CONFIG } from "@/constant/purchase-request";
 
@@ -167,7 +167,7 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
   };
 
   // dimension ต่อบรรทัด: กฎตามบัญชี · default · ตรวจก่อน Submit · รับ 422 — แจกให้แถวผ่าน context
-  const lineDimensions = useProcurementLineDimensions({
+  const lineDimensions = useDocumentLineDimensions({
     docType: "po",
     form,
     readOnly: isView,
@@ -245,7 +245,7 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
   );
 
   return (
-    <ProcurementLineDimensionsContext.Provider value={lineDimensions}>
+    <DocumentLineDimensionsContext.Provider value={lineDimensions}>
       <FormPageShell
         width="wide"
         header={
@@ -412,6 +412,6 @@ export default function PoForm({ purchaseOrder }: PoFormProps) {
           </>
         )}
       </FormPageShell>
-    </ProcurementLineDimensionsContext.Provider>
+    </DocumentLineDimensionsContext.Provider>
   );
 }
