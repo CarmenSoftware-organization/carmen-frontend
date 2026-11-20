@@ -374,6 +374,7 @@ export function ConfigField({
   options,
   disabled,
   emptyIsDefault,
+  suffix,
 }: {
   readonly editing: boolean;
   readonly form: Form;
@@ -387,10 +388,14 @@ export function ConfigField({
   readonly options?: readonly { value: string; label: string }[];
   readonly disabled?: boolean;
   readonly emptyIsDefault?: boolean;
+  /** datatype "number": หน่วยท้ายค่า เช่น "%" */
+  readonly suffix?: string;
 }) {
   const isBool = item.datatype === "boolean";
   const isEnum = item.datatype === "enum" && options != null;
+  const isNumber = item.datatype === "number";
   const name = `config.${index}.value` as FormName;
+  const error = form.formState.errors.config?.[index]?.value?.message;
   const displayLabel = label ?? item.label;
 
   let control: React.ReactNode;
@@ -405,6 +410,8 @@ export function ConfigField({
       displayValue =
         options.find((o) => o.value === lookupValue)?.label ?? item.value;
       muted = !!emptyIsDefault && item.value === "";
+    } else if (isNumber && item.value !== "") {
+      displayValue = `${item.value}${suffix ?? ""}`;
     } else {
       displayValue = item.value;
     }
@@ -468,6 +475,28 @@ export function ConfigField({
         }}
       />
     );
+  } else if (isNumber) {
+    control = (
+      <div className="relative">
+        <Input
+          id={name}
+          type="number"
+          inputMode="decimal"
+          step="any"
+          aria-invalid={error ? true : undefined}
+          {...form.register(name)}
+          className={cn("h-8 tabular-nums", suffix && "pr-8")}
+        />
+        {suffix && (
+          <span
+            aria-hidden
+            className="text-muted-foreground pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm"
+          >
+            {suffix}
+          </span>
+        )}
+      </div>
+    );
   } else {
     control = <Input id={name} {...form.register(name)} className="h-8" />;
   }
@@ -496,6 +525,11 @@ export function ConfigField({
       <div className={cn("max-w-sm", editing ? "mt-1" : "mt-0.5")}>
         {control}
       </div>
+      {editing && error && (
+        <p className="text-destructive mt-1 text-xs" role="alert">
+          {error}
+        </p>
+      )}
       {description && (
         <p className="text-muted-foreground/80 text-micro mt-1 leading-snug">
           {description}

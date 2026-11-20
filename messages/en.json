@@ -172,6 +172,8 @@
     "yes": "Yes",
     "no": "No",
     "sections": {
+      "general": "General",
+      "generalDesc": "Business-wide defaults for this business unit.",
       "pr": "PR",
       "prDesc": "Purchase Request settings for this business unit.",
       "si": "SI",
@@ -213,7 +215,11 @@
       "prAllowDuplicateProductDesc": "Let one purchase request list the same product on more than one line.",
       "siCostFromDesc": "Unit cost filled in when a line is added to a stock-in.",
       "poGroupByPrCommentDesc": "When purchase requests become a purchase order, group lines by their PR comment.",
-      "printFormCustomCount": "{n} of {total} customised"
+      "printFormCustomCount": "{n} of {total} customised",
+      "generalDefaultVatRate": "Default VAT (%)",
+      "generalDefaultVatRateDesc": "VAT rate suggested for this business unit. Document VAT still comes from the tax profile.",
+      "generalDefaultServiceRate": "Default service charge (%)",
+      "generalDefaultServiceRateDesc": "Service charge rate suggested for this business unit."
     }
   },
   "accounting": {
@@ -2439,7 +2445,8 @@
     "filesRejected": "{count} files skipped — {first}",
     "maxCnAmount": "Cannot credit more than the net amount received",
     "maxFoodCostBelowTarget": "Max food cost must be at least the target",
-    "youtubeLink": "Must be a YouTube video link, e.g. https://www.youtube.com/watch?v=… or https://youtu.be/…"
+    "youtubeLink": "Must be a YouTube video link, e.g. https://www.youtube.com/watch?v=… or https://youtu.be/…",
+    "numberRange": "Enter a number from {min} to {max}"
   },
   "field": {
     "chequeForm": "Cheque form",

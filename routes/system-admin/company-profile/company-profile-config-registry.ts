@@ -28,6 +28,11 @@ export interface SeededConfigItem {
    * ค่าคือ `report_group` ที่ใช้กรอง เช่น "PR" — ใช้พร้อม `options` ไม่ได้
    */
   optionsGroup?: string;
+  /** สำหรับ datatype "number": ขอบเขตค่าที่รับได้ (รวมปลาย) — ตรวจใน form schema */
+  min?: number;
+  max?: number;
+  /** สำหรับ datatype "number": หน่วยท้ายค่า เช่น "%" (ไม่แปล) */
+  suffix?: string;
 }
 
 export interface ConfigSection {
@@ -130,6 +135,37 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
       optionsGroup: type,
     })),
   },
+  {
+    // ค่าตั้งต้นทั่วไปของ BU (หน้า Default Setting แสดงการ์ดนี้บนสุด — ลำดับใน array ไม่มีผล) — ตอนนี้แค่เก็บค่า ยังไม่มี flow ไหนอ่าน
+    // (VAT ของเอกสารยังมาจาก Tax Profile ที่ผูกกับสินค้า/หมวด)
+    id: "general",
+    titleKey: "sections.general",
+    descKey: "sections.generalDesc",
+    items: [
+      {
+        key: "general.default-vat-rate",
+        datatype: "number",
+        defaultValue: "7",
+        label: "Default VAT (%)",
+        labelKey: "config.generalDefaultVatRate",
+        descKey: "config.generalDefaultVatRateDesc",
+        min: 0,
+        max: 100,
+        suffix: "%",
+      },
+      {
+        key: "general.default-service-rate",
+        datatype: "number",
+        defaultValue: "0",
+        label: "Default service charge (%)",
+        labelKey: "config.generalDefaultServiceRate",
+        descKey: "config.generalDefaultServiceRateDesc",
+        min: 0,
+        max: 100,
+        suffix: "%",
+      },
+    ],
+  },
 ];
 
 export const SEEDED_ITEMS: readonly SeededConfigItem[] =
@@ -147,6 +183,7 @@ export interface ConfigSectionEntry {
   code?: string;
   options?: ConfigOption[];
   optionsGroup?: string;
+  suffix?: string;
 }
 
 export interface ConfigOtherEntry {
@@ -192,6 +229,7 @@ export function groupConfigForRender(
           code: seeded.code,
           options: seeded.options,
           optionsGroup: seeded.optionsGroup,
+          suffix: seeded.suffix,
         });
       }
     }
