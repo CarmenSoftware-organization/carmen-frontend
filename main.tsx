@@ -43,7 +43,9 @@ async function boot() {
     const runtimeConfig = await loadRuntimeConfig();
 
     const { refreshTokens } = await import("@/lib/auth/auth-api");
-    await refreshTokens(); // ล้มเหลว = ไม่ logged-in → RequireAuth พาไป /login เอง
+    // rejected = ไม่ logged-in → RequireAuth พาไป /login เอง · unreachable (server ล่ม) →
+    // RequireAuth แสดงหน้า "ติดต่อเซิร์ฟเวอร์ไม่ได้" ที่ลองใหม่เอง โดยไม่ลบ refresh token
+    await refreshTokens();
 
     // Telemetry — import แบบ dynamic โดยตั้งใจ: environment ที่ไม่เปิดจะไม่โหลด
     // OTel SDK (~60-80 KB) ลงเครื่องผู้ใช้เลย ต้องอยู่หลัง refreshTokens เพราะ

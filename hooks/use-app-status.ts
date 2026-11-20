@@ -73,7 +73,7 @@ export function useAppStatus(): {
         const key = `${snapshot.status}|${snapshot.until ?? ""}`;
         if (retriedFor.current !== key) {
           retriedFor.current = key;
-          if (await refreshTokens()) snapshot = await probe();
+          if ((await refreshTokens()) === "ok") snapshot = await probe();
         }
       } else {
         retriedFor.current = null;

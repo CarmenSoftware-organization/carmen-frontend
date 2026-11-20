@@ -304,7 +304,7 @@ describe("403 handling — license vs permission (C5)", () => {
 describe("401 retry handling", () => {
   it("clears session and throws when the retried request is also 401", async () => {
     const { refreshTokens } = await import("@/lib/auth/auth-api");
-    (refreshTokens as ReturnType<typeof vi.fn>).mockResolvedValueOnce(true);
+    (refreshTokens as ReturnType<typeof vi.fn>).mockResolvedValueOnce("ok");
     tokenStore.set("at-stale");
     // ครั้งแรก 401 → refresh สำเร็จ → retry → 401 อีกครั้ง
     const fetchMock = vi
@@ -331,7 +331,7 @@ describe("401 retry handling", () => {
     const { refreshTokens } = await import("@/lib/auth/auth-api");
     // mock ระดับโมดูล — นับสะสมข้ามเทส ต้องล้างก่อนถึงจะเช็คจำนวนครั้งได้
     (refreshTokens as ReturnType<typeof vi.fn>).mockClear();
-    (refreshTokens as ReturnType<typeof vi.fn>).mockResolvedValueOnce(true);
+    (refreshTokens as ReturnType<typeof vi.fn>).mockResolvedValueOnce("ok");
     tokenStore.set("at-stale");
     const body = {
       message:
@@ -356,7 +356,7 @@ describe("401 retry handling", () => {
   it("keeps the session on a permission 401 that survives the retry", async () => {
     const { refreshTokens } = await import("@/lib/auth/auth-api");
     (refreshTokens as ReturnType<typeof vi.fn>).mockClear();
-    (refreshTokens as ReturnType<typeof vi.fn>).mockResolvedValueOnce(true);
+    (refreshTokens as ReturnType<typeof vi.fn>).mockResolvedValueOnce("ok");
     tokenStore.set("at-fresh");
     const body = {
       message:
@@ -557,7 +557,7 @@ describe("SPA URL rewrite + auth", () => {
     const { refreshTokens } = await import("@/lib/auth/auth-api");
     vi.mocked(refreshTokens).mockImplementation(async () => {
       tokenStore.set("fresh");
-      return true;
+      return "ok";
     });
     const fetchMock = vi
       .fn()
@@ -576,7 +576,7 @@ describe("SPA URL rewrite + auth", () => {
   it("clears the token store when refresh fails after 401", async () => {
     tokenStore.set("expired");
     const { refreshTokens } = await import("@/lib/auth/auth-api");
-    vi.mocked(refreshTokens).mockResolvedValue(false);
+    vi.mocked(refreshTokens).mockResolvedValue("rejected");
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(new Response("{}", { status: 401 })),

@@ -222,7 +222,8 @@ export function useNotificationRealtime(userId: string | undefined) {
       }
       const current = tokenStore.get();
       const isRefreshed =
-        (current !== null && current !== sentToken) || (await refreshTokens());
+        (current !== null && current !== sentToken) ||
+        (await refreshTokens()) === "ok";
       if (unmounted) return;
       if (isRefreshed) {
         reconnectAttempt.current = 0;
