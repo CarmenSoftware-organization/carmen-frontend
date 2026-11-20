@@ -260,6 +260,7 @@ export function useDocumentLineDimensions<T extends FieldValues>({
     tErr,
     tField,
     masters: dimensionMasters.data,
+    readOnly,
   });
   useEffect(() => {
     latest.current = {
@@ -271,6 +272,7 @@ export function useDocumentLineDimensions<T extends FieldValues>({
       tErr,
       tField,
       masters: dimensionMasters.data,
+      readOnly,
     };
   });
 
@@ -288,7 +290,9 @@ export function useDocumentLineDimensions<T extends FieldValues>({
     setRevealRequest((prev) => ({ id: (prev?.id ?? 0) + 1, indexes }));
   };
 
-  const validateBeforeSubmit = (options?: { lockedStep?: boolean }): boolean => {
+  const validateBeforeSubmit = (options?: {
+    lockedStep?: boolean;
+  }): boolean => {
     const { byKey, rules, enabled, enterEdit, t, masters } = latest.current;
     if (!enabled) return true;
     if (rules.isPending) {
@@ -335,7 +339,7 @@ export function useDocumentLineDimensions<T extends FieldValues>({
   };
 
   const applyServerError = (err: ApiError): boolean => {
-    const { enabled, enterEdit, tErr, tField } = latest.current;
+    const { enabled, enterEdit, tErr, tField, readOnly } = latest.current;
     if (!enabled) return false;
     const details = (err.details ?? {}) as {
       sequence_no?: number;
@@ -364,7 +368,13 @@ export function useDocumentLineDimensions<T extends FieldValues>({
     );
     enterEdit?.();
     if (!isLineError) return false;
-    toast.error(getUserErrorMessage(err, tErr, tField));
+    const message = getUserErrorMessage(err, tErr, tField);
+    // อ่านอย่างเดียวและไม่มี enterEdit = ขั้นที่ผู้ใช้แก้ dimension ไม่ได้ (เช่น อนุมัติ/จ่าย SR) → บอกให้ส่งกลับผู้ขอ
+    toast.error(
+      readOnly && !enterEdit
+        ? `${message} ${latest.current.t("lockedStepHint")}`
+        : message,
+    );
     return true;
   };
 

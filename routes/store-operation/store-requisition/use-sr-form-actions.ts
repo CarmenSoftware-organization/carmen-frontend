@@ -457,9 +457,6 @@ export function useSrFormActions({
 
   const handleApprove = () => {
     if (!storeRequisition) return;
-    // ผู้อนุมัติแก้ dimension ไม่ได้ — ไม่ผ่านแล้วค้างหน้านี้พร้อม toast บอกบรรทัด/dimension ให้ส่งกลับผู้ขอ
-    // (FE รู้ไม่ได้ว่าขั้นนี้คือขั้นลงบัญชีหรือไม่ จึงตรวจทุกครั้งที่อนุมัติ · backend ยังเป็นด่านจริง)
-    if (!lineDimensions.validateBeforeSubmit({ lockedStep: true })) return;
     const details: SrStageDetail[] = form
       .getValues("items")
       .filter((item) => !!item.id)
@@ -478,8 +475,6 @@ export function useSrFormActions({
 
   const handleIssue = () => {
     if (!storeRequisition) return;
-    // ขั้นจ่ายตัดสต๊อกและลงบัญชี — ผู้จ่ายแก้ dimension ไม่ได้ ไม่ผ่านต้องส่งกลับผู้ขอ
-    if (!lineDimensions.validateBeforeSubmit({ lockedStep: true })) return;
     const details: SrStageDetail[] = form
       .getValues("items")
       .filter((item) => !!item.id)
