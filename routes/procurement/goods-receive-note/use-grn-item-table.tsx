@@ -31,6 +31,7 @@ import {
   UnitPriceCell,
 } from "./grn-item-cells";
 import { GrnItemDimensions } from "./grn-item-cells/item-dimensions";
+import { useProcurementLineDimensionsContext } from "../shared/use-procurement-line-dimensions";
 
 export type GrnItemField = FieldArrayWithId<GrnFormValues, "items", "id">;
 
@@ -70,6 +71,7 @@ export function useGrnItemTable({
   lockedLines,
 }: UseGrnItemTableOptions) {
   "use no memo";
+  const dimensionsEnabled = !!useProcurementLineDimensionsContext()?.enabled;
   const tfl = useTranslations("field");
   const t = useTranslations("procurement.goodsReceiveNote");
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -377,7 +379,8 @@ export function useGrnItemTable({
     // แถวย่อยแถบ dimension ใต้บรรทัด — ฝากไว้ที่คอลัมน์แรกแล้วกินทุกคอลัมน์
     // (ตารางโชว์ตอนกล่องกว้าง · การ์ดอ่านจาก meta เดียวกัน) · แก้ได้เสมอตราบใบยังไม่ committed
     // ไม่ผูกกับ isLocked: การล็อกบรรทัดคือเรื่องสต๊อก ไม่เกี่ยวกับ dimension
-    baseCols[0] = {
+    // เฉพาะเมื่อเอกสารนี้เปิด dimension — ไม่งั้น DataGrid วาด <tr> ว่างทุกบรรทัด
+    if (dimensionsEnabled) baseCols[0] = {
       ...indexColumn,
       meta: {
         ...indexColumn.meta,
@@ -418,6 +421,7 @@ export function useGrnItemTable({
     qtyRefFor,
     lockedLines,
     itemFields,
+    dimensionsEnabled,
     tfl,
     t,
   ]);

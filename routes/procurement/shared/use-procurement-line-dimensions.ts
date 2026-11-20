@@ -274,20 +274,18 @@ export function useProcurementLineDimensions<T extends FieldValues>({
       return false;
 
     const items = lineForm.getValues("items") ?? [];
-    let index = details.detail_id
+    // จับคู่ด้วย detail_id เท่านั้น — sequence_no ของ BE ไม่ตรงกับลำดับในฟอร์มเสมอไป
+    const index = details.detail_id
       ? items.findIndex((item) => item?.id === details.detail_id)
       : -1;
-    // บรรทัดที่ยังไม่มี id ใน BE → sequence_no นับจาก 1 ตามลำดับที่ส่งไป
-    if (index < 0 && details.sequence_no) index = details.sequence_no - 1;
     const key = keyOf(items[index]);
-    if (key) {
-      markInvalid(
-        new Map([
-          [key, new Set(details.dimension_id ? [details.dimension_id] : [])],
-        ]),
-        [index],
-      );
-    }
+    if (!key) return false;
+    markInvalid(
+      new Map([
+        [key, new Set(details.dimension_id ? [details.dimension_id] : [])],
+      ]),
+      [index],
+    );
     enterEdit?.();
     if (!isLineError) return false;
     toast.error(getUserErrorMessage(err, tErr, tField));

@@ -1,7 +1,12 @@
 "use no memo"; // TanStack table เป็น ref คงที่แต่ mutate ข้างใน — ดู routes/CLAUDE.md
 
 import type { ReactNode } from "react";
-import { flexRender, type Cell, type Table } from "@tanstack/react-table";
+import {
+  flexRender,
+  type Cell,
+  type Row,
+  type Table,
+} from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { cn } from "@/lib/utils";
 import type { GrnItemField } from "./use-grn-item-table";
@@ -61,6 +66,12 @@ function Field({
  * วาด cell เดิมของตารางด้วย cell function ตัวเดิม (ค่าเดียวกับตารางทุกช่อง) · หัวการ์ด =
  * ลำดับ + สินค้า + ปุ่มเอกสารอ้างอิง · ที่เหลือเป็นกริดมีป้าย · GRN ไม่มีแถวกางออก
  */
+const footerOf = (row: Row<GrnItemField>) =>
+  row
+    .getVisibleCells()
+    .find((cell) => cell.column.columnDef.meta?.footerContent)?.column.columnDef
+    .meta?.footerContent;
+
 export function GrnItemCards({
   table,
   emptyMessage,
@@ -129,16 +140,8 @@ export function GrnItemCards({
                 );
               })}
             </dl>
-            {/* แถบ dimension ท้ายการ์ด — footerContent เดียวกับแถวย่อยของตาราง */}
-            {(() => {
-              const footer = row
-                .getVisibleCells()
-                .find((cell) => cell.column.columnDef.meta?.footerContent)
-                ?.column.columnDef.meta?.footerContent;
-              return footer ? (
-                <div className="px-3">{footer(row.original)}</div>
-              ) : null;
-            })()}
+            {/* แถบ dimension ท้ายการ์ด — มีเฉพาะเมื่อเปิดใช้ (footerContent ถูกใส่เมื่อ enabled เท่านั้น) */}
+            {footerOf(row)?.(row.original)}
           </li>
         );
       })}
