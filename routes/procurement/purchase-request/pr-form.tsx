@@ -34,6 +34,10 @@ import { canDeletePr } from "./pr-ownership";
 import { usePrPreviousStages } from "./use-purchase-request";
 import { formatDate } from "@/lib/date-utils";
 import { PrHeader } from "./pr-header";
+import {
+  DocumentLineDimensionsContext,
+  useDocumentLineDimensions,
+} from "@/hooks/use-document-line-dimensions";
 
 interface PurchaseRequestFormProps {
   readonly purchaseRequest?: PurchaseRequest;
@@ -130,7 +134,19 @@ export function PurchaseRequestForm({
 
   useUnsavedChanges(form.formState.isDirty);
 
+  // dimension ต่อบรรทัด: กฎตามบัญชี · default · ตรวจก่อน Submit · รับ 422 — แจกให้แถวผ่าน context
+  // ชิปแก้ได้เฉพาะ stage create (เหมือนสินค้า/คลัง) · ตรวจไม่ผ่านในโหมดดูให้เข้าโหมดแก้
+  const lineDimensions = useDocumentLineDimensions({
+    docType: "pr",
+    form,
+    readOnly: isView || role !== STAGE_ROLE.CREATE,
+    enterEdit: () => {
+      if (isView) setMode("edit");
+    },
+  });
+
   const actions = usePrFormActions({
+    lineDimensions,
     form,
     purchaseRequest,
     defaultValues,
@@ -251,122 +267,124 @@ export function PurchaseRequestForm({
   }, []);
 
   return (
-    <FormPageShell
-      width="wide"
-      header={
-        <PrHeader
-          purchaseRequest={purchaseRequest}
-          mode={mode}
-          role={role}
-          isPending={actions.isPending}
-          isDeletePending={actions.deletePr.isPending}
-          onBack={actions.handleBack}
-          onEdit={() => setMode("edit")}
-          onCancel={actions.handleCancel}
-          onDelete={handleDeleteClick}
-          onComment={() => actions.setShowComment(true)}
-          reqName={reqName}
-          reqAvatar={
-            purchaseRequest ? purchaseRequest.requestor_avatar : avatarUrl
-          }
-          departmentName={departmentName ?? ""}
-          prDateDisplay={prDateDisplay}
-          description={descriptionReadOnly ? watchedDescription : undefined}
-          workflowName={
-            purchaseRequest?.workflow?.name ??
-            template?.workflow?.name ??
-            undefined
-          }
-          workflowField={
-            workflowEditable ? (
-              <PrWorkflowField
-                form={form}
-                disabled={actions.isPending}
-                isAdd={isAdd}
-              />
-            ) : undefined
-          }
-          descriptionField={
-            descriptionReadOnly ? undefined : (
-              <PrDescriptionField
-                form={form}
-                disabled={actions.isPending}
-                className="@md:col-span-2"
-              />
-            )
-          }
-          hasHistory={hasHistory}
-          onShowHistory={() => actions.setShowHistory(true)}
-        />
-      }
-      footer={
-        <PrFooterAction
-          role={role}
-          prStatus={purchaseRequest?.pr_status}
-          isPending={actions.isPending}
-          hasRecord={!!purchaseRequest}
-          control={form.control}
-          currencyCode={defaultBu?.config?.default_currency?.code ?? ""}
-          previousStages={previousStages}
-          stagesLoading={stagesLoading}
-          onSubmitPr={actions.handleSubmitPr}
-          onValidateSubmit={actions.validateSubmitPr}
-          onApprove={actions.handleApprove}
-          onReject={actions.handleReject}
-          onReview={actions.handleReview}
-          stageActions={stageActions}
-          hiddenFields={purchaseRequest?.hidden_fields}
-          onPurchaseApprove={actions.handlePurchaseApprove}
-          onValidatePurchase={validatePurchase}
-        />
-      }
-    >
-      <form
-        id="purchase-request-form"
-        onSubmit={(e) => {
-          actions.fillKnownItemDefaults();
-          draftSaveHandler(form, actions.onSubmit)(e);
-        }}
-        className="space-y-4"
+    <DocumentLineDimensionsContext.Provider value={lineDimensions}>
+      <FormPageShell
+        width="wide"
+        header={
+          <PrHeader
+            purchaseRequest={purchaseRequest}
+            mode={mode}
+            role={role}
+            isPending={actions.isPending}
+            isDeletePending={actions.deletePr.isPending}
+            onBack={actions.handleBack}
+            onEdit={() => setMode("edit")}
+            onCancel={actions.handleCancel}
+            onDelete={handleDeleteClick}
+            onComment={() => actions.setShowComment(true)}
+            reqName={reqName}
+            reqAvatar={
+              purchaseRequest ? purchaseRequest.requestor_avatar : avatarUrl
+            }
+            departmentName={departmentName ?? ""}
+            prDateDisplay={prDateDisplay}
+            description={descriptionReadOnly ? watchedDescription : undefined}
+            workflowName={
+              purchaseRequest?.workflow?.name ??
+              template?.workflow?.name ??
+              undefined
+            }
+            workflowField={
+              workflowEditable ? (
+                <PrWorkflowField
+                  form={form}
+                  disabled={actions.isPending}
+                  isAdd={isAdd}
+                />
+              ) : undefined
+            }
+            descriptionField={
+              descriptionReadOnly ? undefined : (
+                <PrDescriptionField
+                  form={form}
+                  disabled={actions.isPending}
+                  className="@md:col-span-2"
+                />
+              )
+            }
+            hasHistory={hasHistory}
+            onShowHistory={() => actions.setShowHistory(true)}
+          />
+        }
+        footer={
+          <PrFooterAction
+            role={role}
+            prStatus={purchaseRequest?.pr_status}
+            isPending={actions.isPending}
+            hasRecord={!!purchaseRequest}
+            control={form.control}
+            currencyCode={defaultBu?.config?.default_currency?.code ?? ""}
+            previousStages={previousStages}
+            stagesLoading={stagesLoading}
+            onSubmitPr={actions.handleSubmitPr}
+            onValidateSubmit={actions.validateSubmitPr}
+            onApprove={actions.handleApprove}
+            onReject={actions.handleReject}
+            onReview={actions.handleReview}
+            stageActions={stageActions}
+            hiddenFields={purchaseRequest?.hidden_fields}
+            onPurchaseApprove={actions.handlePurchaseApprove}
+            onValidatePurchase={validatePurchase}
+          />
+        }
       >
-        <PrItemFields
-          form={form}
-          isDisabled={isDisabled}
-          role={role}
-          prId={purchaseRequest?.id}
-          prStatus={purchaseRequest?.pr_status}
-          buCode={buCode}
-          defaultBu={defaultBu}
-          dateFormat={dateFormat}
-          onSplit={actions.handleSplit}
-          previousStages={previousStages}
-          stagesLoading={stagesLoading}
-          stageActions={stageActions}
-          hiddenFields={purchaseRequest?.hidden_fields}
-          onBulkReview={actions.handleBulkReview}
-        />
-      </form>
+        <form
+          id="purchase-request-form"
+          onSubmit={(e) => {
+            actions.fillKnownItemDefaults();
+            draftSaveHandler(form, actions.onSubmit)(e);
+          }}
+          className="space-y-4"
+        >
+          <PrItemFields
+            form={form}
+            isDisabled={isDisabled}
+            role={role}
+            prId={purchaseRequest?.id}
+            prStatus={purchaseRequest?.pr_status}
+            buCode={buCode}
+            defaultBu={defaultBu}
+            dateFormat={dateFormat}
+            onSplit={actions.handleSplit}
+            previousStages={previousStages}
+            stagesLoading={stagesLoading}
+            stageActions={stageActions}
+            hiddenFields={purchaseRequest?.hidden_fields}
+            onBulkReview={actions.handleBulkReview}
+          />
+        </form>
 
-      <PrFormDialogs
-        purchaseRequest={purchaseRequest}
-        showDelete={actions.showDelete}
-        setShowDelete={actions.setShowDelete}
-        deletePr={actions.deletePr}
-        showComment={actions.showComment}
-        setShowComment={actions.setShowComment}
-        showHistory={actions.showHistory}
-        setShowHistory={actions.setShowHistory}
-        workflowHistory={purchaseRequest?.workflow_history}
-        requestorName={purchaseRequest?.requestor?.name ?? undefined}
-        createdAt={purchaseRequest?.audit?.created?.at}
-        showNoDepartment={showNoDepartment}
-        discardDialogProps={actions.discardDialogProps}
-        navDiscardDialogProps={actions.navDiscardDialogProps}
-        actionDialog={actions.actionDialog}
-        setActionDialog={actions.setActionDialog}
-        isPending={actions.isPending}
-        onActionConfirm={actions.handleActionConfirm}
-      />
-    </FormPageShell>
+        <PrFormDialogs
+          purchaseRequest={purchaseRequest}
+          showDelete={actions.showDelete}
+          setShowDelete={actions.setShowDelete}
+          deletePr={actions.deletePr}
+          showComment={actions.showComment}
+          setShowComment={actions.setShowComment}
+          showHistory={actions.showHistory}
+          setShowHistory={actions.setShowHistory}
+          workflowHistory={purchaseRequest?.workflow_history}
+          requestorName={purchaseRequest?.requestor?.name ?? undefined}
+          createdAt={purchaseRequest?.audit?.created?.at}
+          showNoDepartment={showNoDepartment}
+          discardDialogProps={actions.discardDialogProps}
+          navDiscardDialogProps={actions.navDiscardDialogProps}
+          actionDialog={actions.actionDialog}
+          setActionDialog={actions.setActionDialog}
+          isPending={actions.isPending}
+          onActionConfirm={actions.handleActionConfirm}
+        />
+      </FormPageShell>
+    </DocumentLineDimensionsContext.Provider>
   );
 }

@@ -5,6 +5,5 @@
   "LICENSE_ENFORCEMENT": true,
   "OTEL_ENABLED": true,
   "OTEL_ENVIRONMENT": "prod (ชื่อ environment ที่ติดไปกับ trace/error — ไม่ตั้ง = dev)",
-  "LINE_DIMENSIONS_ENABLED": false,
   "APP_ENV": "prod (local | dev | uat | prod — dev/local โชว์ของสำหรับทีม เช่น config key; ไม่ตั้ง = ไม่โชว์)"
 }

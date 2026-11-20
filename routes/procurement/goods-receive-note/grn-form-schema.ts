@@ -77,6 +77,8 @@ function createGrnDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     // แต่ไม่บล็อก) · optional ด้วยเพราะแถวจาก wizard ที่ค้างใน session รุ่นก่อนไม่มีฟิลด์นี้
     expired_at: z.string().nullable().optional(),
     /** dimension ระดับบรรทัด — optional เพราะ wizard ที่ค้างใน session รุ่นก่อนไม่มีฟิลด์นี้ */
+    /** key ฝั่ง client ของบรรทัดใหม่ (ยังไม่มี id) — `useDocumentLineDimensions` ใส่ให้ ไม่ส่งไป API */
+    row_key: z.string().optional(),
     dimensions: z.array(dimensionRefSchema).optional(),
     /** ผู้ใช้แก้ช่อง dimension ของบรรทัดนี้แล้ว — คุมว่าจะส่งใน good_received_note_detail.update ไหม */
     dimensions_dirty: z.boolean().optional(),

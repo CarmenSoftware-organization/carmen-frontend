@@ -24,7 +24,7 @@ import type { ApInvoiceLine } from "@/types/accounts-payable";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useChartOfAccountById } from "@/hooks/use-chart-of-account";
 import { coaRulesKey, readCoaRules } from "@/lib/coa-dimension-rules";
-import { visibleLineDimensions } from "../../documents/journal-line-dimensions";
+import { visibleLineDimensions } from "@/lib/visible-line-dimensions";
 import { useTranslations } from "use-intl";
 import { LookupChartOfAccountById } from "@/components/lookup/lookup-chart-of-account-by-id";
 import { LookupCostCenter } from "@/components/lookup/lookup-cost-center";

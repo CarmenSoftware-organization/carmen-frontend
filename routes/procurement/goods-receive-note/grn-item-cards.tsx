@@ -1,8 +1,13 @@
 "use no memo"; // TanStack table เป็น ref คงที่แต่ mutate ข้างใน — ดู routes/CLAUDE.md
 
 import type { ReactNode } from "react";
-import { flexRender, type Cell, type Table } from "@tanstack/react-table";
+import {
+  flexRender,
+  type Cell,
+  type Table,
+} from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
+import { footerOf } from "@/components/dimension/footer-of-row";
 import { cn } from "@/lib/utils";
 import type { GrnItemField } from "./use-grn-item-table";
 
@@ -129,6 +134,12 @@ export function GrnItemCards({
                 );
               })}
             </dl>
+            {/* แถบ dimension ท้ายการ์ด — มีเฉพาะเมื่อเปิดใช้ (footerContent ถูกใส่เมื่อ enabled เท่านั้น) */}
+            {footerOf(row) && (
+              <div className="px-3 empty:hidden">
+                {footerOf(row)?.(row.original)}
+              </div>
+            )}
           </li>
         );
       })}

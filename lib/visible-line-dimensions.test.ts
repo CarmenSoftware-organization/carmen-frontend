@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { visibleLineDimensions } from "./journal-line-dimensions";
+import { visibleLineDimensions } from "./visible-line-dimensions";
 import type { ChartOfAccount } from "@/types/chart-of-accounts";
 import type { DimensionMaster } from "@/types/accounting-master";
 import type { CoaDimensionRule } from "@/lib/coa-dimension-rules";

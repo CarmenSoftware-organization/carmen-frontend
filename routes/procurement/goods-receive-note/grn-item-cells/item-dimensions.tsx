@@ -1,37 +1,32 @@
-import { useWatch, type UseFormReturn } from "react-hook-form";
-import { LineDimensionPopover } from "@/components/dimension/line-dimension-popover";
+import type { FieldArrayWithId, UseFormReturn } from "react-hook-form";
+import { DocumentLineDimensionRow } from "@/components/dimension/document-line-dimension-row";
 import type { GrnFormValues } from "../grn-form-schema";
 
 /**
- * ปุ่ม popover dimension ของบรรทัด GRN (คอลัมน์ "Dim") — ค่าเริ่มต้นมาจากบรรทัด PO
- * หรือจาก response แก้แล้วตั้ง `dimensions_dirty` เพื่อให้ payload ส่ง dimensions
- * ใน good_received_note_detail.update
+ * แถวย่อยแถบชิป dimension ใต้บรรทัด GRN (แทนปุ่ม popover เดิม) — ค่าเริ่มต้นมาจากบรรทัด PO
+ * แก้ได้เสมอตราบที่ใบยังไม่ committed แม้บรรทัดถูกล็อกเรื่องสต๊อก (กฎเรื่อง dimension ไม่ผูกกับสต๊อก)
  *
- * ผู้เรียกต้องเช็ค `useLineDimensionsEnabled()` เอง และไม่ใส่คอลัมน์นี้เมื่อปิด
+ * ใช้เป็น `footerContent` ของตาราง และท้ายการ์ดตอนกล่องแคบ — index หาจาก field array
+ * เพราะแถวส่งมาเป็น snapshot ของ useFieldArray
  */
 export function GrnItemDimensions({
   form,
-  index,
+  itemFields,
+  item,
   disabled,
 }: {
   readonly form: UseFormReturn<GrnFormValues>;
-  readonly index: number;
+  readonly itemFields: FieldArrayWithId<GrnFormValues, "items", "id">[];
+  readonly item: FieldArrayWithId<GrnFormValues, "items", "id">;
   readonly disabled: boolean;
 }) {
-  const value = useWatch({
-    control: form.control,
-    name: `items.${index}.dimensions`,
-  });
+  const index = itemFields.findIndex((field) => field.id === item.id);
   return (
-    <LineDimensionPopover
-      value={value ?? []}
+    <DocumentLineDimensionRow
+      form={form}
+      index={index}
       disabled={disabled}
-      onChange={(next) => {
-        form.setValue(`items.${index}.dimensions`, next, {
-          shouldDirty: true,
-        });
-        form.setValue(`items.${index}.dimensions_dirty`, true);
-      }}
+      className="pb-2"
     />
   );
 }

@@ -35,7 +35,7 @@ import {
   CHART_OF_ACCOUNT_TYPE,
   type ChartOfAccount,
 } from "@/types/chart-of-accounts";
-import { visibleLineDimensions } from "../documents/journal-line-dimensions";
+import { visibleLineDimensions } from "@/lib/visible-line-dimensions";
 import { arLineAmounts, type ArDraftLine } from "./ar-invoice-draft-model";
 
 const GRID = "grid min-w-0 gap-x-4 gap-y-3 @md:grid-cols-2 @3xl:grid-cols-3";

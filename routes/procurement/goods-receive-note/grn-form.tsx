@@ -27,6 +27,10 @@ import { GrnItemTable } from "./grn-item-table";
 import { GrnFormDialogs } from "./grn-form-dialogs";
 import { GrnExpiredItemsDialog } from "./grn-expired-items-dialog";
 import { useGrnFormActions } from "./use-grn-form-actions";
+import {
+  DocumentLineDimensionsContext,
+  useDocumentLineDimensions,
+} from "@/hooks/use-document-line-dimensions";
 import { useProfile } from "@/hooks/use-profile";
 import { useServerFieldErrors } from "@/hooks/use-server-field-errors";
 import { FormPageShell } from "@/components/share/form-page-shell";
@@ -139,7 +143,19 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
     scrollToFirstInvalidField();
   };
 
+  // dimension ต่อบรรทัด: กฎตามบัญชี · default · ตรวจก่อนออกจาก draft/commit · รับ 422
+  // ใบ committed ล็อกบรรทัด (แก้ได้แค่หัวใบ) · commit ไม่ผ่านให้เข้าโหมดแก้ ไม่ reset ฟอร์ม
+  const lineDimensions = useDocumentLineDimensions({
+    docType: "grn",
+    form,
+    readOnly: isView || isCommitted,
+    enterEdit: () => {
+      if (isView) setMode("edit");
+    },
+  });
+
   const actions = useGrnFormActions({
+    lineDimensions,
     form,
     goodsReceiveNote,
     defaultValues,
@@ -205,151 +221,155 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
   }, []);
 
   return (
-    <FormPageShell
-      width="wide"
-      header={
-        <GrnHeader
-          ribbon={
-            <GrnFormHeader
-              form={form}
-              disabled={isDisabled || isView}
-              isView={isView}
-              fromWizard={fromWizard}
-              lockIdentity={
-                goodsReceiveNote?.doc_status === "saved" || isCommitted
-              }
-              lockCommercial={isCommitted || hasStockLock}
-            />
-          }
-          goodsReceiveNote={goodsReceiveNote}
-          mode={mode}
-          isPending={actions.isPending}
-          isCommitted={isCommitted}
-          isVoid={isVoid}
-          deleteIsPending={actions.deleteGrn.isPending}
-          receivedByName={receivedByName}
-          receivedByAvatar={
-            goodsReceiveNote?.received_by
-              ? goodsReceiveNote.received_by_avatar
-              : avatarUrl
-          }
-          departmentName={departmentName}
-          onBack={actions.handleBack}
-          onEnterEdit={() => setMode("edit")}
-          onCancel={actions.handleCancel}
-          onShowComment={() => actions.setShowComment(true)}
-          onShowDelete={() => actions.setShowDelete(true)}
-          onSaveDraft={() => actions.handleSubmitWithStatus("draft")}
-          // ใบ committed ต้องส่งสถานะเดิม — ส่ง "saved" จะทำให้ doc_status นับเป็นค่าที่เปลี่ยน
-          // แล้วหลังบ้านปฏิเสธด้วย GRN_COMMITTED_HEADER_ONLY
-          onSave={() =>
-            actions.handleSubmitWithStatus(isCommitted ? "committed" : "saved")
-          }
-        />
-      }
-      footer={
-        <GrnSummaryFooter
-          form={form}
-          isActionPending={actions.isActionPending}
-          hasRecord={!!goodsReceiveNote}
-          isView={mode === "view"}
-          isCommitted={isCommitted}
-          isVoid={isVoid}
-          onCommit={actions.requestCommit}
-          onVoid={() => actions.setShowVoid(true)}
-        />
-      }
-    >
-      <form
-        id="grn-form"
-        onSubmit={draftSaveHandler(form, actions.onSubmit)}
-        className="space-y-3"
+    <DocumentLineDimensionsContext.Provider value={lineDimensions}>
+      <FormPageShell
+        width="wide"
+        header={
+          <GrnHeader
+            ribbon={
+              <GrnFormHeader
+                form={form}
+                disabled={isDisabled || isView}
+                isView={isView}
+                fromWizard={fromWizard}
+                lockIdentity={
+                  goodsReceiveNote?.doc_status === "saved" || isCommitted
+                }
+                lockCommercial={isCommitted || hasStockLock}
+              />
+            }
+            goodsReceiveNote={goodsReceiveNote}
+            mode={mode}
+            isPending={actions.isPending}
+            isCommitted={isCommitted}
+            isVoid={isVoid}
+            deleteIsPending={actions.deleteGrn.isPending}
+            receivedByName={receivedByName}
+            receivedByAvatar={
+              goodsReceiveNote?.received_by
+                ? goodsReceiveNote.received_by_avatar
+                : avatarUrl
+            }
+            departmentName={departmentName}
+            onBack={actions.handleBack}
+            onEnterEdit={() => setMode("edit")}
+            onCancel={actions.handleCancel}
+            onShowComment={() => actions.setShowComment(true)}
+            onShowDelete={() => actions.setShowDelete(true)}
+            onSaveDraft={() => actions.handleSubmitWithStatus("draft")}
+            // ใบ committed ต้องส่งสถานะเดิม — ส่ง "saved" จะทำให้ doc_status นับเป็นค่าที่เปลี่ยน
+            // แล้วหลังบ้านปฏิเสธด้วย GRN_COMMITTED_HEADER_ONLY
+            onSave={() =>
+              actions.handleSubmitWithStatus(
+                isCommitted ? "committed" : "saved",
+              )
+            }
+          />
+        }
+        footer={
+          <GrnSummaryFooter
+            form={form}
+            isActionPending={actions.isActionPending}
+            hasRecord={!!goodsReceiveNote}
+            isView={mode === "view"}
+            isCommitted={isCommitted}
+            isVoid={isVoid}
+            onCommit={actions.requestCommit}
+            onVoid={() => actions.setShowVoid(true)}
+          />
+        }
       >
-        <Tabs defaultValue="general">
-          {/* มือถือ 4 แท็บกว้างเกินกล่อง (~370 > 334px) → เลื่อนแนวนอนในแถบแทนล้นจอ ·
+        <form
+          id="grn-form"
+          onSubmit={draftSaveHandler(form, actions.onSubmit)}
+          className="space-y-3"
+        >
+          <Tabs defaultValue="general">
+            {/* มือถือ 4 แท็บกว้างเกินกล่อง (~370 > 334px) → เลื่อนแนวนอนในแถบแทนล้นจอ ·
               pb-1.5 เผื่อเส้นใต้แท็บที่เลือก (after:bottom-[-5px]) ไม่ให้ overflow ตัดทิ้ง */}
-          <div className="-mb-1.5 overflow-x-auto overflow-y-hidden pb-1.5">
-            <TabsList variant="line" className="w-max justify-start">
-              <TabsTrigger value="general">{t("tabItems")}</TabsTrigger>
-              <TabsTrigger value="extra-cost">
-                {t("tabExtraCost")}
-                {extraCostCount > 0 && (
-                  <Badge
-                    variant="secondary"
-                    size="xs"
-                    className="ml-1.5 tabular-nums"
-                  >
-                    {extraCostCount}
-                  </Badge>
+            <div className="-mb-1.5 overflow-x-auto overflow-y-hidden pb-1.5">
+              <TabsList variant="line" className="w-max justify-start">
+                <TabsTrigger value="general">{t("tabItems")}</TabsTrigger>
+                <TabsTrigger value="extra-cost">
+                  {t("tabExtraCost")}
+                  {extraCostCount > 0 && (
+                    <Badge
+                      variant="secondary"
+                      size="xs"
+                      className="ml-1.5 tabular-nums"
+                    >
+                      {extraCostCount}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="stock">{t("tabStock")}</TabsTrigger>
+                {goodsReceiveNote && (
+                  <TabsTrigger value="journal">{t("tabJournal")}</TabsTrigger>
                 )}
-              </TabsTrigger>
-              <TabsTrigger value="stock">{t("tabStock")}</TabsTrigger>
-              {goodsReceiveNote && (
-                <TabsTrigger value="journal">{t("tabJournal")}</TabsTrigger>
-              )}
-            </TabsList>
-          </div>
-          <TabsContent value="general">
-            <GrnItemTable
-              form={form}
-              disabled={isDisabled || isCommitted}
-              lockedLines={lockedLines}
-            />
-          </TabsContent>
-          <TabsContent value="extra-cost">
-            {hasStockLock && !isView && !isCommitted && (
-              <p className="text-muted-foreground pt-2 text-xs">
-                {t("extraCostStockLocked")}
-              </p>
-            )}
-            <GrnExtraCostFields
-              form={form}
-              disabled={isDisabled || isCommitted || hasStockLock}
-              readOnly={isView || isCommitted || hasStockLock}
-            />
-          </TabsContent>
-          <TabsContent value="stock">
-            <GrnStockTable
-              grnId={goodsReceiveNote?.id}
-              docStatus={goodsReceiveNote?.doc_status}
-            />
-          </TabsContent>
-          {goodsReceiveNote && (
-            <TabsContent value="journal">
-              <GrnJournalTab goodsReceiveNote={goodsReceiveNote} />
+              </TabsList>
+            </div>
+            <TabsContent value="general">
+              <GrnItemTable
+                form={form}
+                disabled={isDisabled || isCommitted}
+                lockedLines={lockedLines}
+              />
             </TabsContent>
-          )}
-        </Tabs>
-      </form>
+            <TabsContent value="extra-cost">
+              {hasStockLock && !isView && !isCommitted && (
+                <p className="text-muted-foreground pt-2 text-xs">
+                  {t("extraCostStockLocked")}
+                </p>
+              )}
+              <GrnExtraCostFields
+                form={form}
+                disabled={isDisabled || isCommitted || hasStockLock}
+                readOnly={isView || isCommitted || hasStockLock}
+              />
+            </TabsContent>
+            <TabsContent value="stock">
+              <GrnStockTable
+                grnId={goodsReceiveNote?.id}
+                docStatus={goodsReceiveNote?.doc_status}
+              />
+            </TabsContent>
+            {goodsReceiveNote && (
+              <TabsContent value="journal">
+                <GrnJournalTab goodsReceiveNote={goodsReceiveNote} />
+              </TabsContent>
+            )}
+          </Tabs>
+        </form>
 
-      <DiscardDialog {...actions.discardDialogProps} variant="warning" />
-      <DiscardDialog {...actions.navDiscardDialogProps} variant="warning" />
-      {/* อยู่นอก GrnFormDialogs เพราะต้องขึ้นตอนสร้างใบใหม่ด้วย (ยังไม่มี goodsReceiveNote) */}
-      <GrnExpiredItemsDialog {...actions.expiryDialogProps} />
+        <DiscardDialog {...actions.discardDialogProps} variant="warning" />
+        <DiscardDialog {...actions.navDiscardDialogProps} variant="warning" />
+        {/* อยู่นอก GrnFormDialogs เพราะต้องขึ้นตอนสร้างใบใหม่ด้วย (ยังไม่มี goodsReceiveNote) */}
+        <GrnExpiredItemsDialog {...actions.expiryDialogProps} />
 
-      {goodsReceiveNote && (
-        <GrnFormDialogs
-          goodsReceiveNote={goodsReceiveNote}
-          showDelete={actions.showDelete}
-          setShowDelete={actions.setShowDelete}
-          isDeletePending={actions.deleteGrn.isPending}
-          onConfirmDelete={actions.handleConfirmDelete}
-          showCommit={actions.showCommit}
-          setShowCommit={actions.setShowCommit}
-          isCommitPending={actions.isActionPending}
-          isDraft={goodsReceiveNote?.doc_status === "draft"}
-          grnDate={form.getValues("grn_date")}
-          periodDateChoice={actions.periodDateChoice}
-          onPeriodDateChoiceChange={actions.setPeriodDateChoice}
-          onConfirmCommit={actions.handleConfirmCommit}
-          showVoid={actions.showVoid}
-          setShowVoid={actions.setShowVoid}
-          isVoidPending={actions.voidGrn.isPending}
-          onConfirmVoid={actions.handleConfirmVoid}
-          showComment={actions.showComment}
-          setShowComment={actions.setShowComment}
-        />
-      )}
-    </FormPageShell>
+        {goodsReceiveNote && (
+          <GrnFormDialogs
+            goodsReceiveNote={goodsReceiveNote}
+            showDelete={actions.showDelete}
+            setShowDelete={actions.setShowDelete}
+            isDeletePending={actions.deleteGrn.isPending}
+            onConfirmDelete={actions.handleConfirmDelete}
+            showCommit={actions.showCommit}
+            setShowCommit={actions.setShowCommit}
+            isCommitPending={actions.isActionPending}
+            isDraft={goodsReceiveNote?.doc_status === "draft"}
+            grnDate={form.getValues("grn_date")}
+            periodDateChoice={actions.periodDateChoice}
+            onPeriodDateChoiceChange={actions.setPeriodDateChoice}
+            onConfirmCommit={actions.handleConfirmCommit}
+            showVoid={actions.showVoid}
+            setShowVoid={actions.setShowVoid}
+            isVoidPending={actions.voidGrn.isPending}
+            onConfirmVoid={actions.handleConfirmVoid}
+            showComment={actions.showComment}
+            setShowComment={actions.setShowComment}
+          />
+        )}
+      </FormPageShell>
+    </DocumentLineDimensionsContext.Provider>
   );
 }

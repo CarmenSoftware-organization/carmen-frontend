@@ -40,7 +40,7 @@ import {
 } from "@/components/ui/input/input-suffix";
 import { coerceNumberInput } from "@/lib/form-helpers";
 import { SrItemDimensions } from "./sr-item-dimensions";
-import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
+import { useDocumentLineDimensionsContext } from "@/hooks/use-document-line-dimensions";
 
 const ProductCell = memo(function ProductCell({
   control,
@@ -448,7 +448,7 @@ export function useSrItemTable({
   const lockNonIssued = isApproverOnly || isViewOnly;
   const lockApproved = isIssuerOnly || isViewOnly;
   const lockIssued = isViewOnly;
-  const dimensionsEnabled = useLineDimensionsEnabled();
+  const dimensionsEnabled = !!useDocumentLineDimensionsContext()?.enabled;
 
   const allColumns = useMemo<ColumnDef<SrItemField>[]>(() => {
     const indexColumn: ColumnDef<SrItemField> = {
@@ -650,31 +650,32 @@ export function useSrItemTable({
 
     // ระยะในเซลล์เท่ากับ PO/GRN/CN — ของกลางให้มาแค่ `py-1` ซึ่งแน่นกว่าตารางรายการ
     // โมดูลอื่นอยู่จุดเดียวในแอป อ่านสลับหน้ากันแล้วรู้สึกเหมือนคนละระบบ
-    return [
+    const baseCols = [
       ...(showSelect ? [srSelectColumn] : []),
       indexColumn,
       ...dataColumns,
-      // ปุ่ม popover dimension ต่อบรรทัด — อยู่นอกเงื่อนไข action column จึงยังเห็นตอน view/approve
-      // (lock แค่ทำให้ช่องข้างในอ่านอย่างเดียว ปุ่มยังเปิดดูได้) · ใช้ lock ฝั่งผู้ขอเหมือนช่อง product
-      ...(dimensionsEnabled
-        ? [
-            {
-              id: "dimensions",
-              header: "Dim",
-              size: 90,
-              enableSorting: false,
-              cell: ({ row }) => (
-                <SrItemDimensions
-                  form={form}
-                  index={row.index}
-                  disabled={disabled || lockNonApproved}
-                />
-              ),
-            } satisfies ColumnDef<SrItemField>,
-          ]
-        : []),
       ...(canDelete || hasAnyHistory ? [actionColumn] : []),
-    ].map((col) => ({
+    ];
+    // แถวย่อยแถบ dimension ใต้บรรทัด — ฝากไว้ที่คอลัมน์แรกแล้วกินทุกคอลัมน์ (ตารางโชว์ตอนกล่องกว้าง ·
+    // การ์ดอ่านจาก meta เดียวกัน) · เฉพาะเมื่อเอกสารนี้เปิด dimension ไม่งั้น DataGrid วาด <tr> ว่างทุกบรรทัด
+    // ใช้ lock ฝั่งผู้ขอเหมือนช่อง product (ผู้อนุมัติ/ผู้จ่ายอ่านอย่างเดียว)
+    if (dimensionsEnabled)
+      baseCols[0] = {
+        ...baseCols[0],
+        meta: {
+          ...baseCols[0].meta,
+          footerColSpan: baseCols.length,
+          footerContent: (item: SrItemField) => (
+            <SrItemDimensions
+              form={form}
+              itemFields={itemFields}
+              item={item}
+              disabled={disabled || lockNonApproved}
+            />
+          ),
+        },
+      };
+    return baseCols.map((col) => ({
       ...col,
       meta: {
         ...col.meta,

@@ -43,6 +43,7 @@ import { STAGE_ROLE } from "@/types/stage-role";
 import type { SrFormValues } from "./sr-form-schema";
 import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
 import { clearDimensionsDirty } from "@/lib/dimension-payload";
+import type { DocumentLineDimensions } from "@/hooks/use-document-line-dimensions";
 import { mapSrItemToPayload } from "./sr-form-helpers";
 import { withFreshDetailVersions } from "@/lib/doc-version";
 
@@ -71,6 +72,8 @@ type PendingDatePattern = {
 };
 
 interface UseSrFormActionsParams {
+  /** ตัวตรวจ dimension ต่อบรรทัด — เรียกก่อน Submit เท่านั้น (อนุมัติ/จ่ายพึ่ง backend 422 · ห้ามตอน Save ร่าง) */
+  lineDimensions: DocumentLineDimensions;
   form: UseFormReturn<SrFormValues>;
   storeRequisition?: StoreRequisition;
   defaultValues: SrFormValues;
@@ -79,6 +82,7 @@ interface UseSrFormActionsParams {
 }
 
 export function useSrFormActions({
+  lineDimensions,
   form,
   storeRequisition,
   defaultValues,
@@ -162,7 +166,7 @@ export function useSrFormActions({
 
   const currentRole = storeRequisition?.role ?? STAGE_ROLE.CREATE;
   const buCode = useBuCode();
-  const dimensionsEnabled = useLineDimensionsEnabled();
+  const dimensionsEnabled = useLineDimensionsEnabled("sr");
   const { currentPeriod } = useProfile();
   // ส่งใบแล้ว backend ลงวันนี้ ถ้าวันนี้อยู่นอกงวด active (งวดที่ profile ส่งมา) มันจะตีกลับ
   // SR_DATE_PATTERN_REQUIRED แน่ ๆ — รู้ล่วงหน้าได้ จึงถามในกล่องส่งใบเลย
@@ -443,6 +447,8 @@ export function useSrFormActions({
   // ล้างคำตอบเรื่องวันที่ทุกครั้งที่เปิด ให้ผู้ใช้เลือกใหม่ ไม่พาค่ารอบก่อนมาเงียบ ๆ
   const openSubmitDialog = () =>
     form.handleSubmit(() => {
+      // ด่านที่ใบพ้น draft — ไม่ผ่านไม่เปิด dialog (hook ทำ toast/ชิปแดง/เข้าโหมดแก้ให้)
+      if (!lineDimensions.validateBeforeSubmit()) return;
       setSubmitDatePattern(null);
       setShowSubmit(true);
     }, revealInvalid)();

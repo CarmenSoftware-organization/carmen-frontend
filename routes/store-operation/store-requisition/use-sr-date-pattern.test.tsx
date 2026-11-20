@@ -129,6 +129,8 @@ function renderActions() {
         } as unknown as SrFormValues,
       });
       return useSrFormActions({
+        // dimension ปิดอยู่ — ตัวตรวจผ่านเสมอ
+        lineDimensions: { validateBeforeSubmit: () => true } as never,
         form,
         storeRequisition,
         defaultValues: { items: [] } as unknown as SrFormValues,

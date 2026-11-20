@@ -13,7 +13,8 @@ const OWN_SLOTS = new Set(["index", "product_id", "action"]);
  *
  * เรนเดอร์ cell ของ `table` ตัวเดียวกับตาราง (ProductCell · ช่องกรอก Qty/ต้นทุน · ยอดรวม · Dim)
  * logic ของช่องจึงอยู่ที่เดียว · คอลัมน์ที่ตารางซ่อน (เช่นต้นทุนของใบจ่ายออกตอนแก้) การ์ดก็ไม่มี
- * ตัวเลขในการ์ดชิดซ้ายตามป้าย (ในตารางชิดขวาตามคอลัมน์)
+ * ตัวเลขในการ์ดชิดซ้ายตามป้าย (ในตารางชิดขวาตามคอลัมน์) · แถบชิป dimension ท้ายการ์ดมาจาก
+ * `footerContent` ของตาราง (มีเฉพาะเมื่อเปิดใช้)
  */
 export function IaItemCards<T>({
   table,
@@ -37,6 +38,8 @@ export function IaItemCards<T>({
         const cells = row.getVisibleCells();
         const product = cells.find((c) => c.column.id === "product_id");
         const rest = cells.filter((c) => !OWN_SLOTS.has(c.column.id));
+        const footer = cells.find((c) => c.column.columnDef.meta?.footerContent)
+          ?.column.columnDef.meta?.footerContent;
         return (
           <li
             key={row.id}
@@ -85,6 +88,9 @@ export function IaItemCards<T>({
                 );
               })}
             </dl>
+            {footer && (
+              <div className="empty:hidden">{footer(row.original)}</div>
+            )}
           </li>
         );
       })}

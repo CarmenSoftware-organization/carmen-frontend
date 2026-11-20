@@ -180,6 +180,8 @@
       "siDesc": "การตั้งค่าการรับสินค้าเข้าของหน่วยธุรกิจนี้",
       "po": "PO",
       "poDesc": "การตั้งค่าใบสั่งซื้อของหน่วยธุรกิจนี้",
+      "dimension": "มิติ (Dimension)",
+      "dimensionDesc": "เลือกว่าเอกสารใดแสดง dimension ในแต่ละบรรทัดสำหรับหน่วยธุรกิจนี้",
       "printForm": "แบบฟอร์มการพิมพ์",
       "printFormDesc": "แบบฟอร์มรายงานที่ใช้พิมพ์สำหรับเอกสารแต่ละประเภท",
       "documents": "การทำงานของเอกสาร",
@@ -194,6 +196,18 @@
         "lastCost": "ต้นทุนล่าสุด"
       },
       "poGroupByPrComment": "เพิ่มการจัดกลุ่มตามหมายเหตุของใบขอซื้อ",
+      "dimensionStartFrom": "แสดง dimension ในบรรทัดตั้งแต่",
+      "dimensionStartFromDesc": "dimension จะแสดงที่เอกสารที่เลือกและเอกสารถัดไปในสายงานจัดซื้อ (PR, PO, GRN)",
+      "dimensionStartFromOptions": {
+        "none": "ปิด",
+        "pr": "ตั้งแต่ PR",
+        "po": "ตั้งแต่ PO",
+        "grn": "ตั้งแต่ GRN"
+      },
+      "dimensionSrEnabled": "dimension ในบรรทัดใบเบิกสินค้า (SR)",
+      "dimensionSrEnabledDesc": "แสดง dimension ในแต่ละบรรทัดของใบเบิกสินค้า",
+      "dimensionIaEnabled": "dimension ในบรรทัดปรับปรุงสต๊อก (IA)",
+      "dimensionIaEnabledDesc": "แสดง dimension ในแต่ละบรรทัดของใบปรับปรุงสต๊อก",
       "printFormPr": "ใบขอซื้อ",
       "printFormPo": "ใบสั่งซื้อ",
       "printFormGrn": "ใบรับสินค้า",
@@ -2396,7 +2410,10 @@
       "AP_PAYMENT_OVER_ALLOCATED": "ยอดจ่ายเกินยอดค้างจ่ายของ {doc_no} บรรทัดที่ {sequence_no} กรุณาลดยอดลง",
       "AP_PAYMENT_EMPTY": "ยอดจ่ายรวมต้องมากกว่าศูนย์",
       "AP_PAYMENT_BANK_CURRENCY_MISMATCH": "สกุลเงินของบัญชีธนาคารต้องตรงกับสกุลเงินของใบจ่ายเงินหรือสกุลเงินฐาน",
-      "AP_PAYMENT_INVOICE_NOT_POSTED": "เอกสาร {doc_no} ยังไม่ได้ลงบัญชี จึงจ่ายเงินไม่ได้"
+      "AP_PAYMENT_INVOICE_NOT_POSTED": "เอกสาร {doc_no} ยังไม่ได้ลงบัญชี จึงจ่ายเงินไม่ได้",
+      "LINE_DIMENSION_REQUIRED": "บรรทัดที่ {sequence_no}: บัญชี {account_code} ต้องระบุ dimension {dimension_code} กรุณากรอกแล้วลองใหม่",
+      "LINE_DIMENSION_PROHIBITED": "บรรทัดที่ {sequence_no}: บัญชี {account_code} ห้ามระบุ dimension {dimension_code} กรุณาล้างค่าแล้วลองใหม่",
+      "LINE_DIMENSION_RULE_CONFLICT": "บรรทัดที่ {sequence_no}: บัญชีของบรรทัดนี้ขัดกันเรื่อง dimension (บัญชีหนึ่งบังคับ อีกบัญชีห้าม) ให้ฝ่ายบัญชีแก้การผูกบัญชีก่อน"
     }
   },
   "validation": {
@@ -8527,5 +8544,19 @@
     "toastImportedSkipped": "นำเข้า {applied} รายการ ข้าม {skipped} แถว และบันทึกเป็นฉบับร่างแล้ว",
     "toastImportSaveFailed": "บันทึกข้อมูลที่นำเข้าไม่สำเร็จ",
     "loading": "กำลังโหลดคำขอเสนอราคา"
+  },
+  "lineDimension": {
+    "allDimensions": "มิติข้อมูลทั้งหมด",
+    "dialogDescription": "ค่ามิติข้อมูลของบรรทัดนี้",
+    "loadError": "โหลด Dimension ไม่สำเร็จ",
+    "lineDimensionLabel": "{name} บรรทัดที่ {row}",
+    "clearLineDimension": "ล้างค่ามิติข้อมูล",
+    "selectForJournalLine": "เลือกมิติข้อมูลทางบัญชีของบรรทัดบันทึกบัญชีนี้",
+    "rulesPending": "ยังตรวจกฎมิติข้อมูลของบรรทัดอยู่ กรุณาลองใหม่อีกครั้งในอีกสักครู่",
+    "lockedStepHint": "ขั้นตอนนี้แก้มิติข้อมูลไม่ได้ ให้ส่งกลับผู้ขอเพื่อแก้ไข",
+    "blockedSubmit": "{count} บรรทัดขาดมิติข้อมูลที่บังคับหรือมีมิติข้อมูลที่ห้ามระบุ กรุณาแก้ชิปสีแดงหรือข้อความที่แสดงที่บรรทัดนั้นแล้วลองใหม่",
+    "conflict": "บัญชีของบรรทัดนี้ขัดกันเรื่องมิติข้อมูล จึงส่งไม่ได้ ให้ฝ่ายบัญชีแก้การผูกบัญชีก่อน",
+    "ruleLoadError": "โหลดกฎมิติข้อมูลของบรรทัดนี้ไม่สำเร็จ",
+    "retry": "ลองใหม่"
   }
 }

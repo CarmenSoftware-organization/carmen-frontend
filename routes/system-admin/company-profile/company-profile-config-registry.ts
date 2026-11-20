@@ -104,6 +104,43 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
     ],
   },
   {
+    id: "dimension",
+    titleKey: "sections.dimension",
+    descKey: "sections.dimensionDesc",
+    items: [
+      {
+        key: "dimension.start-from",
+        datatype: "enum",
+        defaultValue: "none",
+        label: "Show line dimensions from",
+        labelKey: "config.dimensionStartFrom",
+        descKey: "config.dimensionStartFromDesc",
+        options: [
+          { value: "none", labelKey: "config.dimensionStartFromOptions.none" },
+          { value: "pr", labelKey: "config.dimensionStartFromOptions.pr" },
+          { value: "po", labelKey: "config.dimensionStartFromOptions.po" },
+          { value: "grn", labelKey: "config.dimensionStartFromOptions.grn" },
+        ],
+      },
+      {
+        key: "dimension.sr.enabled",
+        datatype: "boolean",
+        defaultValue: "false",
+        label: "Line dimensions on Store Requisition",
+        labelKey: "config.dimensionSrEnabled",
+        descKey: "config.dimensionSrEnabledDesc",
+      },
+      {
+        key: "dimension.ia.enabled",
+        datatype: "boolean",
+        defaultValue: "false",
+        label: "Line dimensions on Inventory Adjustment",
+        labelKey: "config.dimensionIaEnabled",
+        descKey: "config.dimensionIaEnabledDesc",
+      },
+    ],
+  },
+  {
     id: "printForm",
     titleKey: "sections.printForm",
     descKey: "sections.printFormDesc",

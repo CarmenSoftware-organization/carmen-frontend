@@ -1,11 +1,10 @@
-import { useWatch, type UseFormReturn } from "react-hook-form";
-import { LineDimensionFields } from "@/components/dimension/line-dimension-fields";
-import { useLineDimensionsEnabled } from "@/hooks/use-line-dimensions-enabled";
+import type { UseFormReturn } from "react-hook-form";
+import { DocumentLineDimensionRow } from "@/components/dimension/document-line-dimension-row";
 import type { PoFormValues } from "../po-form-schema";
 
 /**
- * ช่อง dimension ของบรรทัด PO — ซ่อนเมื่อ BU ไม่มี license / ไม่มี dimension active
- * แก้แล้วตั้ง `dimensions_dirty` เพื่อให้ payload ส่ง dimensions ใน details.update
+ * แถบชิป dimension ของบรรทัด PO (แถวย่อยใต้หมายเหตุ) — ซ่อนเมื่อ BU ปิด dimension ของ PO
+ * ชิปที่โชว์ตามกฎของบัญชีบรรทัดนั้น (ดู `DocumentLineDimensionRow`)
  */
 export function PoItemDimensions({
   form,
@@ -19,23 +18,12 @@ export function PoItemDimensions({
   /** เยื้องซ้าย (px) ให้ตรงช่องหมายเหตุ */
   readonly offset: number;
 }) {
-  const enabled = useLineDimensionsEnabled();
-  const value = useWatch({
-    control: form.control,
-    name: `items.${index}.dimensions`,
-  });
-  if (!enabled) return null;
   return (
-    <div className="mt-2" style={{ paddingLeft: offset }}>
-      <LineDimensionFields
-        value={value ?? []}
+    <div style={{ paddingLeft: offset }}>
+      <DocumentLineDimensionRow
+        form={form}
+        index={index}
         disabled={disabled}
-        onChange={(next) => {
-          form.setValue(`items.${index}.dimensions`, next, {
-            shouldDirty: true,
-          });
-          form.setValue(`items.${index}.dimensions_dirty`, true);
-        }}
       />
     </div>
   );

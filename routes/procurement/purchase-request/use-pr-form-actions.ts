@@ -31,6 +31,7 @@ import type {
 import { PR_ITEM_STAGE_STATUS } from "@/types/purchase-request";
 import { STAGE_ROLE } from "@/types/stage-role";
 import { type FormMode } from "@/types/form";
+import type { DocumentLineDimensions } from "@/hooks/use-document-line-dimensions";
 import {
   type PrFormValues,
   findRowsMissingQty,
@@ -45,6 +46,8 @@ export type ActionDialogState = {
 };
 
 interface UsePrFormActionsParams {
+  /** ตัวตรวจ dimension ต่อบรรทัด — เรียกเฉพาะก่อน Submit (ห้ามตอน Save ร่าง) */
+  lineDimensions: DocumentLineDimensions;
   form: UseFormReturn<PrFormValues>;
   purchaseRequest?: PurchaseRequest;
   defaultValues: PrFormValues;
@@ -54,6 +57,7 @@ interface UsePrFormActionsParams {
 }
 
 export function usePrFormActions({
+  lineDimensions,
   form,
   purchaseRequest,
   defaultValues,
@@ -69,7 +73,7 @@ export function usePrFormActions({
     "/procurement/purchase-request",
   );
   const buCode = useBuCode();
-  const dimensionsEnabled = useLineDimensionsEnabled();
+  const dimensionsEnabled = useLineDimensionsEnabled("pr");
   const { defaultBu } = useProfile();
 
   // GET PR สดจาก DB ก่อนยิง workflow event — กัน 409 optimistic lock จาก
@@ -532,6 +536,7 @@ export function usePrFormActions({
   const validateSubmitPr = async (): Promise<boolean> => {
     fillKnownItemDefaults();
     if (blockOnMissingQty()) return false;
+    if (!lineDimensions.validateBeforeSubmit()) return false;
     return new Promise<boolean>((resolve) => {
       form.handleSubmit(
         () => resolve(true),
@@ -546,6 +551,7 @@ export function usePrFormActions({
   const handleSubmitPr = () => {
     fillKnownItemDefaults();
     if (blockOnMissingQty()) return;
+    if (!lineDimensions.validateBeforeSubmit()) return;
     if (purchaseRequest) {
       form.handleSubmit(doSaveAndSubmitPr, revealInvalid)();
       return;

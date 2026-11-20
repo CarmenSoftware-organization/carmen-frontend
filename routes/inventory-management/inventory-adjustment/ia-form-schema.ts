@@ -31,6 +31,8 @@ function createDetailSchema(tv: TranslationFn, tf: TranslationFn) {
     description: z
       .string()
       .max(256, tv("maxLength", { field: tf("description"), max: 256 })),
+    /** key ฝั่ง client ของบรรทัดใหม่ (ยังไม่มี id) — `useDocumentLineDimensions` ใส่ให้ ไม่ส่งไป API */
+    row_key: z.string().optional(),
     dimensions: z.array(dimensionRefSchema).optional(),
     // ผู้ใช้แก้ช่อง dimension ของบรรทัดนี้ — ไม่ตั้งธงนี้ payload จะไม่ส่ง dimensions
     dimensions_dirty: z.boolean().optional(),
