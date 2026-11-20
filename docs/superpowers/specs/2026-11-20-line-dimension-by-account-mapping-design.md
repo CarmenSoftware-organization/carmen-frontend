@@ -146,7 +146,10 @@ resolver เดิม `resolveAccountMapping()` (`micro-business/src/master/acco
   {
     key: string;
     status: "resolved" | "no_account" | "skipped" | "conflict";
-    accounts: { chart_of_accounts_id: string; account_code: string; movement: string }[];
+    accounts: { chart_of_accounts_id: string | null; account_code: string | null; movement: string;
+                source: string | null; issue: string | null; location_id: string;
+                item_group_id: string | null; adjustment_type_id: string | null;
+                account_mapping_id: string | null }[];   // ใช้กับ chip ที่มาของบัญชีบน dev ด้วย
     rules: { dimension_id: string; requirement: "mandatory" | "optional" | "prohibited";
              default_value: IDimensionRef | null }[];   // รวมแล้วตาม §การรวมกฎหลายบัญชี
   }
@@ -207,6 +210,13 @@ resolver เดิม `resolveAccountMapping()` (`micro-business/src/master/acco
 - **ดูอย่างเดียว**: ชิป `CODE: ค่า` กดแล้วเปิด dialog "All Dimensions" (`รหัส — ชื่อ`) ย้าย dialog นี้เข้าไปใน component กลางด้วย
 - **ของที่เพิ่มใหม่** (JV ได้ไปด้วย): ช่อง mandatory ติด `*` และชิปที่ตรวจไม่ผ่านเป็นสีแดง (`aria-invalid`)
 - props ขั้นต่ำ: dimension ที่มองเห็น, ชุด id ที่บังคับ, ชุด id ที่ผิด, `value`, `onChange`, `readOnly`
+- **chip บอกที่มาของบัญชี เฉพาะ `APP_ENV = dev`** (user สั่ง 2026-11-20, ใช้ `isDevAppEnv()` ใน `lib/runtime-config.ts` ถ้าไม่ได้ตั้งถือว่าไม่ใช่ dev production จึงไม่เห็น)
+  - อยู่ต้นแถบชิป หน้าตาต่างจากชิป dimension ชัดเจน (เช่น outline สีจาง ฟอนต์ mono) และไม่รับ focus ตอนกรอก
+  - `resolved`: แสดง `GL <movement>: <account_code> · <source>` เช่น `GL grn: 5101-01 · item_group` (SR แสดงสองชิป `sr_out` และ `sr_in`, IA ต่อท้ายด้วยรหัส adjustment type)
+  - `no_account` / `skipped` / `conflict`: แสดงสถานะกับ `issue` เช่น `GL grn: — · missing_direct_account` หรือ `consignment`
+  - กดชิปแล้วเปิดหน้า `/config/chart-of-account-mapping` ที่กรองไว้แล้วตาม location, item group, movement และ adjustment type ของบรรทัด (แท็บ GL) เพื่อให้ไปแก้ mapping ได้ทันที
+  - ข้อความในชิปเป็นค่าดิบ ไม่ผ่าน i18n (เป็นเครื่องมือ dev แบบเดียวกับการโชว์ config key ใต้ป้ายในหน้า Default Setting)
+  - ต้องขยาย response ของฟังก์ชันกลาง/endpoint: แต่ละรายการใน `accounts` เพิ่ม `source` (`override` | `item_group` | `sub_category` | `category`), `issue`, `location_id`, `item_group_id`, `adjustment_type_id` และ `account_mapping_id` (ถ้ามีแถว) BE ส่งเสมอไม่ขึ้นกับ env เพราะเป็นข้อมูลที่ไม่ลับ และหน้า mapping ก็เปิดให้ดูอยู่แล้ว
 - ทุกเอกสารใช้แถวย่อยใต้บรรทัด GRN เลิกใช้ `LineDimensionPopover` และลบ `LineDimensionFields` กับ popover ทิ้งเมื่อไม่มีผู้เรียกเหลือ
 - จอมือถือที่เป็นการ์ด (เช่น PR wizard): แถบชิปขึ้นบรรทัดใหม่ได้ (`flex-wrap`) และอยู่ท้ายการ์ด
 - ข้อความภาษาอังกฤษที่ฝังไว้ใน JV (เช่น description ของ sheet) ให้ย้ายเข้า i18n ตอนแยก component
