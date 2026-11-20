@@ -309,8 +309,8 @@ export async function resetPasswordWithToken(
  * ผลของการ refresh — แยก "ติดต่อ server ไม่ได้" ออกจาก "token ถูกปฏิเสธ" เพราะมีแค่อย่างหลัง
  * ที่ต้องล้าง session และพาไป login ส่วนอย่างแรก session ยังดีอยู่ แค่รอ server กลับมา
  * - `ok` — ได้ access token ใหม่แล้ว
- * - `rejected` — ไม่มี refresh token หรือ backend ปฏิเสธ (400/401/403) → session ถูกล้าง
- * - `unreachable` — network/timeout/5xx/429 → เก็บ session ไว้ทั้งหมด ตั้ง authReachabilityStore
+ * - `rejected` — ไม่มี refresh token หรือ backend ตอบ 4xx (ยกเว้น 408/429) → session ถูกล้าง
+ * - `unreachable` — network/timeout/5xx/408/429 → เก็บ session ไว้ทั้งหมด ตั้ง authReachabilityStore
  */
 export type RefreshResult = "ok" | "rejected" | "unreachable";
 
@@ -348,10 +348,12 @@ async function doRefresh(): Promise<RefreshResult> {
   }
 
   if (!res.ok) {
-    // ล้าง session เฉพาะตอน refresh token ถูกปฏิเสธจริง (400/401/403) — 5xx/429/อื่น ๆ
+    // ล้าง session เฉพาะตอน refresh token ถูกปฏิเสธจริง (4xx) — 5xx/408/429
     // เป็นปัญหาชั่วคราวฝั่ง server เหมือน network error: เก็บ session ไว้แล้วรอลองใหม่
     // (backend ตอบ 5xx เมื่อ Keycloak ล่ม — เดิมตอบ 401 ทำให้ผู้ใช้โดนเตะออกทั้งระบบ)
-    if (res.status === 400 || res.status === 401 || res.status === 403) {
+    // 4xx อื่น (422 จาก DTO validation ฯลฯ) ก็นับเป็นถูกปฏิเสธ — ถ้านับเป็น unreachable ผู้ใช้ที่ token
+    // เสียจะค้างหน้า "ติดต่อเซิร์ฟเวอร์ไม่ได้" ตลอดไป ยกเว้น 408/429 ที่เป็นเรื่องชั่วคราว
+    if (res.status >= 400 && res.status < 500 && res.status !== 408 && res.status !== 429) {
       clearSession();
       return "rejected";
     }
