@@ -374,6 +374,8 @@ export function ConfigField({
   options,
   disabled,
   emptyIsDefault,
+  suffix,
+  showKey,
 }: {
   readonly editing: boolean;
   readonly form: Form;
@@ -387,10 +389,16 @@ export function ConfigField({
   readonly options?: readonly { value: string; label: string }[];
   readonly disabled?: boolean;
   readonly emptyIsDefault?: boolean;
+  /** datatype "number": หน่วยท้ายค่า เช่น "%" */
+  readonly suffix?: string;
+  /** โชว์ `item.key` ใต้ป้าย (เปิดเฉพาะ env dev/local ให้ทีมอ้างอิง key ได้ทันที) */
+  readonly showKey?: boolean;
 }) {
   const isBool = item.datatype === "boolean";
   const isEnum = item.datatype === "enum" && options != null;
+  const isNumber = item.datatype === "number";
   const name = `config.${index}.value` as FormName;
+  const error = form.formState.errors.config?.[index]?.value?.message;
   const displayLabel = label ?? item.label;
 
   let control: React.ReactNode;
@@ -405,6 +413,10 @@ export function ConfigField({
       displayValue =
         options.find((o) => o.value === lookupValue)?.label ?? item.value;
       muted = !!emptyIsDefault && item.value === "";
+    } else if (isNumber && item.value !== "") {
+      displayValue = `${item.value}${suffix ?? ""}`;
+      // 0 = ไม่มี (เช่น ไม่เก็บค่าบริการ) — จางแบบเดียวกับ boolean "No" ให้ค่าที่ตั้งจริงเด่นกว่า
+      muted = Number(item.value) === 0;
     } else {
       displayValue = item.value;
     }
@@ -468,6 +480,28 @@ export function ConfigField({
         }}
       />
     );
+  } else if (isNumber) {
+    control = (
+      <div className="relative">
+        <Input
+          id={name}
+          type="number"
+          inputMode="decimal"
+          step="any"
+          aria-invalid={error ? true : undefined}
+          {...form.register(name)}
+          className={cn("h-8 tabular-nums", suffix && "pr-8")}
+        />
+        {suffix && (
+          <span
+            aria-hidden
+            className="text-muted-foreground pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm"
+          >
+            {suffix}
+          </span>
+        )}
+      </div>
+    );
   } else {
     control = <Input id={name} {...form.register(name)} className="h-8" />;
   }
@@ -491,11 +525,21 @@ export function ConfigField({
           {displayLabel}
         </Label>
       </div>
+      {showKey && (
+        <code className="text-muted-foreground text-micro block font-mono break-all">
+          {item.key}
+        </code>
+      )}
       {/* max-w-sm: ช่องในกริด auto-fit ที่มีไม่กี่รายการกว้างได้หลายร้อย px — คอนโทรลต้องไม่ยืดตาม
           (จอกว้างขึ้น = คอลัมน์เพิ่ม ไม่ใช่ช่องกรอกกว้างขึ้น) ใน `FieldGrid` ปกติช่องแคบกว่านี้อยู่แล้ว */}
       <div className={cn("max-w-sm", editing ? "mt-1" : "mt-0.5")}>
         {control}
       </div>
+      {editing && error && (
+        <p className="text-destructive mt-1 text-xs" role="alert">
+          {error}
+        </p>
+      )}
       {description && (
         <p className="text-muted-foreground/80 text-micro mt-1 leading-snug">
           {description}

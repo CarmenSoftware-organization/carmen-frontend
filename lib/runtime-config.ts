@@ -56,6 +56,16 @@ export interface RuntimeConfig {
    * ลืมเติม = ฟีเจอร์ซ่อนเงียบ ๆ โดยไม่มี error (ด้านที่ปลอดภัย)
    */
   LINE_DIMENSIONS_ENABLED?: boolean;
+  /**
+   * ชื่อ environment ของ deployment นี้ (`local` | `dev` | `uat` | `prod`) — ใช้เปิดของสำหรับทีม
+   * เช่นโชว์ config key ใต้ป้ายในหน้า Default Setting (ดู `isDevAppEnv`)
+   *
+   * แยกจาก `OTEL_ENVIRONMENT` เพราะตัวนั้นมีผลเฉพาะตอนเปิด telemetry และไม่ตั้ง = `"dev"`
+   * ซึ่งผิดทางสำหรับการเปิดของทีม: ตัวนี้ **ไม่ตั้ง = ไม่ใช่ dev** (ด้านที่ปลอดภัยสำหรับ prod)
+   *
+   * ⚠️ `public/config*.json` ถูก gitignore — ต้องเติมคีย์นี้ **ด้วยมือ** ใน env ที่จะเปิด
+   */
+  APP_ENV?: string;
 }
 
 let config: RuntimeConfig | null = null;
@@ -88,6 +98,9 @@ export async function loadRuntimeConfig(): Promise<RuntimeConfig> {
     ...(typeof json.LINE_DIMENSIONS_ENABLED === "boolean"
       ? { LINE_DIMENSIONS_ENABLED: json.LINE_DIMENSIONS_ENABLED }
       : {}),
+    ...(typeof json.APP_ENV === "string" && json.APP_ENV
+      ? { APP_ENV: json.APP_ENV.trim().toLowerCase() }
+      : {}),
   };
   return config;
 }
@@ -99,6 +112,12 @@ export function getRuntimeConfig(): RuntimeConfig {
     );
   }
   return config;
+}
+
+/** `APP_ENV` เป็น `dev` หรือ `local` — ไม่ตั้ง / ยังไม่โหลด config = `false` */
+export function isDevAppEnv(): boolean {
+  const env = config?.APP_ENV;
+  return env === "dev" || env === "local";
 }
 
 export function setRuntimeConfigForTests(value: RuntimeConfig | null): void {

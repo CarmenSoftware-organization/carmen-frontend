@@ -243,3 +243,27 @@ describe("Recipe print form", () => {
     expect(SEEDED_KEYS.has("recipe.print-content")).toBe(false);
   });
 });
+
+describe("General config registry", () => {
+  it.each([
+    ["general.default-vat-rate", "7", "config.generalDefaultVatRate"],
+    ["general.default-service-rate", "0", "config.generalDefaultServiceRate"],
+  ])("registers %s as a 0–100 %% number", (key, defaultValue, labelKey) => {
+    const general = CONFIG_SECTIONS.find((s) => s.id === "general");
+    const item = general?.items.find((i) => i.key === key);
+    expect(item).toBeDefined();
+    expect(item?.datatype).toBe("number");
+    expect(item?.defaultValue).toBe(defaultValue);
+    expect(item?.labelKey).toBe(labelKey);
+    expect(item?.min).toBe(0);
+    expect(item?.max).toBe(100);
+    expect(item?.suffix).toBe("%");
+    expect(item?.options).toBeUndefined();
+  });
+
+  it("passes the suffix through groupConfigForRender", () => {
+    const groups = groupConfigForRender(mergeSeededConfig([]));
+    const general = groups.sections.find((s) => s.id === "general");
+    expect(general?.entries.every((e) => e.suffix === "%")).toBe(true);
+  });
+});

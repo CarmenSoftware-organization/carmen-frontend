@@ -10,6 +10,7 @@ import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useProfile } from "@/hooks/use-profile";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
+import { isDevAppEnv } from "@/lib/runtime-config";
 import {
   useBusinessUnit,
   useUpdateBusinessUnit,
@@ -105,6 +106,8 @@ export default function DefaultSettingComponent() {
   const update = useUpdateBusinessUnit(buId);
   const formTemplates = useReportFormTemplates();
   const [editing, setEditing] = useState(false);
+  // env dev/local: โชว์ config key ใต้ป้าย ให้ทีมอ้างอิง key ที่เก็บใน BU config ได้ทันที
+  const showKey = isDevAppEnv();
 
   const form = useForm<BusinessSettingFormValues>({
     resolver: zodResolver(
@@ -116,7 +119,11 @@ export default function DefaultSettingComponent() {
   const configGroups = data
     ? groupConfigForRender(mergeSeededConfig(normalizeConfig(data.config)))
     : { sections: [], other: [] };
-  const docSections = configGroups.sections.filter((s) => s.id !== "printForm");
+  // "general" (VAT% / Service%) เป็นค่าของทั้ง BU ไม่ใช่ของเอกสารใบไหน — แยกการ์ดของตัวเอง
+  const generalSection = configGroups.sections.find((s) => s.id === "general");
+  const docSections = configGroups.sections.filter(
+    (s) => s.id !== "printForm" && s.id !== "general",
+  );
   const printSection = configGroups.sections.find((s) => s.id === "printForm");
   const isBusy = !isProfileReady || isLoading;
   // โหมดดู: ช่องเต็มเฉพาะแบบฟอร์มที่ตั้งเอง ที่เหลือ (ค่า "" = ใช้ค่าระบบ) รวมเป็นรายชื่อ
@@ -195,9 +202,35 @@ export default function DefaultSettingComponent() {
           {/* PR / SI / PO มีหมวดละ 1–2 ค่า — เดิมกินการ์ดใหญ่หมวดละใบ รวมเป็นรายการเดียว
               แล้วใช้รหัสเอกสารหน้าป้ายบอกว่าค่านั้นเป็นของเอกสารไหน
               layout เต็มความกว้างจอ หลายคอลัมน์ตามความกว้างการ์ด — skill carmen-blue-ui-design */}
-          {docSections.length > 0 && (
+          {generalSection && (
             <CompactSection
               first
+              title={t(generalSection.titleKey)}
+              description={t(generalSection.descKey)}
+            >
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,15rem),1fr))] gap-x-5 gap-y-3">
+                {generalSection.entries.map((entry) => (
+                  <ConfigField
+                    showKey={showKey}
+                    key={entry.item.key}
+                    editing={editing}
+                    form={form}
+                    index={entry.index}
+                    item={entry.item}
+                    label={t(entry.labelKey)}
+                    description={entry.descKey ? t(entry.descKey) : undefined}
+                    yesLabel={t("yes")}
+                    noLabel={t("no")}
+                    suffix={entry.suffix}
+                  />
+                ))}
+              </div>
+            </CompactSection>
+          )}
+
+          {docSections.length > 0 && (
+            <CompactSection
+              first={!generalSection}
               title={t("sections.documents")}
               description={t("sections.documentsDesc")}
             >
@@ -207,6 +240,7 @@ export default function DefaultSettingComponent() {
                 {docSections.flatMap((section) =>
                   section.entries.map((entry) => (
                     <ConfigField
+                      showKey={showKey}
                       key={entry.item.key}
                       editing={editing}
                       form={form}
@@ -238,7 +272,7 @@ export default function DefaultSettingComponent() {
 
           {printSection && (
             <CompactSection
-              first={docSections.length === 0}
+              first={!generalSection && docSections.length === 0}
               title={t(printSection.titleKey)}
               description={t(printSection.descKey)}
               action={
@@ -261,6 +295,7 @@ export default function DefaultSettingComponent() {
                 <FieldGrid>
                   {printShown.map((entry) => (
                     <ConfigField
+                      showKey={showKey}
                       key={entry.item.key}
                       editing={editing}
                       form={form}

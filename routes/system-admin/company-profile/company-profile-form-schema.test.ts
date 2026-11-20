@@ -9,6 +9,7 @@ import {
   mergeSeededConfig,
   normalizeConfig,
   toPatchPayload,
+  createBusinessSettingSchema,
 } from "./company-profile-form-schema";
 
 const baseData: BusinessUnitDetail = {
@@ -226,5 +227,40 @@ describe("toPatchPayload", () => {
       id: "bu-loaded",
       doc_version: 7,
     });
+  });
+});
+
+describe("config number validation", () => {
+  const tv = ((key: string) => key) as Parameters<
+    typeof createBusinessSettingSchema
+  >[0];
+  const schema = createBusinessSettingSchema(tv, tv);
+  const withVat = (value: string) => {
+    const values = toFormValues(baseData);
+    return {
+      ...values,
+      config: values.config.map((c) =>
+        c.key === "general.default-vat-rate" ? { ...c, value } : c,
+      ),
+    };
+  };
+  const vatIssue = (value: string) => {
+    const r = schema.safeParse(withVat(value));
+    if (r.success) return undefined;
+    const values = withVat(value);
+    const idx = values.config.findIndex(
+      (c) => c.key === "general.default-vat-rate",
+    );
+    return r.error.issues.find(
+      (i) => i.path.join(".") === `config.${idx}.value`,
+    );
+  };
+
+  it.each(["0", "7", "7.5", "100"])("accepts %s", (v) => {
+    expect(vatIssue(v)).toBeUndefined();
+  });
+
+  it.each(["", "-1", "100.01", "abc"])("rejects %s", (v) => {
+    expect(vatIssue(v)?.message).toBe("numberRange");
   });
 });

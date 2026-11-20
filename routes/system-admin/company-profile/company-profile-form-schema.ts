@@ -81,7 +81,27 @@ export function createBusinessSettingSchema(
     quantity_format: numberFormatSchema,
     recipe_format: numberFormatSchema,
 
-    config: z.array(configItemSchema),
+    config: z.array(configItemSchema).superRefine((items, ctx) => {
+      // datatype "number" ของ registry: ต้องเป็นตัวเลขและอยู่ใน min/max ของรายการนั้น
+      items.forEach((item, index) => {
+        if (item.datatype !== "number") return;
+        const seeded = SEEDED_ITEMS.find((s) => s.key === item.key);
+        const min = seeded?.min ?? Number.NEGATIVE_INFINITY;
+        const max = seeded?.max ?? Number.POSITIVE_INFINITY;
+        const raw = item.value.trim();
+        const n = Number(raw);
+        if (raw === "" || !Number.isFinite(n) || n < min || n > max) {
+          ctx.addIssue({
+            code: "custom",
+            path: [index, "value"],
+            message:
+              Number.isFinite(min) && Number.isFinite(max)
+                ? tv("numberRange", { min, max })
+                : tv("invalidFormat", { field: item.label }),
+          });
+        }
+      });
+    }),
   });
 }
 

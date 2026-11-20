@@ -172,6 +172,8 @@
     "yes": "ใช่",
     "no": "ไม่",
     "sections": {
+      "general": "ทั่วไป",
+      "generalDesc": "ค่าตั้งต้นทั่วไปของหน่วยธุรกิจนี้",
       "pr": "PR",
       "prDesc": "การตั้งค่าใบขอซื้อของหน่วยธุรกิจนี้",
       "si": "SI",
@@ -213,7 +215,10 @@
       "prAllowDuplicateProductDesc": "ให้ใบขอซื้อหนึ่งใบมีสินค้าตัวเดียวกันได้มากกว่าหนึ่งบรรทัด",
       "siCostFromDesc": "ต้นทุนต่อหน่วยที่เติมให้เมื่อเพิ่มบรรทัดในใบรับเข้า",
       "poGroupByPrCommentDesc": "ตอนสร้างใบสั่งซื้อจากใบขอซื้อ จัดกลุ่มบรรทัดตามหมายเหตุของใบขอซื้อ",
-      "printFormCustomCount": "ตั้งเอง {n} จาก {total}"
+      "printFormCustomCount": "ตั้งเอง {n} จาก {total}",
+      "generalDefaultVatRate": "VAT ตั้งต้น (%)",
+      "generalDefaultVatRateDesc": "VAT ในเอกสารยังมาจาก Tax Profile",
+      "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)"
     }
   },
   "accounting": {
@@ -2439,7 +2444,8 @@
     "filesRejected": "ข้ามไป {count} ไฟล์ — {first}",
     "maxCnAmount": "ลดหนี้ได้ไม่เกินยอดสุทธิที่รับมา",
     "maxFoodCostBelowTarget": "เพดานต้นทุนอาหารต้องไม่ต่ำกว่าเป้า",
-    "youtubeLink": "ต้องเป็นลิงก์วิดีโอ YouTube เช่น https://www.youtube.com/watch?v=… หรือ https://youtu.be/…"
+    "youtubeLink": "ต้องเป็นลิงก์วิดีโอ YouTube เช่น https://www.youtube.com/watch?v=… หรือ https://youtu.be/…",
+    "numberRange": "กรอกตัวเลขตั้งแต่ {min} ถึง {max}"
   },
   "field": {
     "chequeForm": "แบบพิมพ์เช็ค",
