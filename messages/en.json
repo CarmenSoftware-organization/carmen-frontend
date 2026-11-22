@@ -7101,7 +7101,9 @@
       "lineExpired": "Expired",
       "expiredItemsTitle": "Expired items",
       "expiredItemsConfirm": "You entered items that have already expired. Do you want to continue?",
-      "expiredItemLine": "{product} — expired {date}"
+      "expiredItemLine": "{product} — expired {date}",
+      "futureReceiveDateTitle": "Receive date not reached yet",
+      "futureReceiveDateConfirm": "The receive date {date} has not arrived yet (today is {today}). Do you want to continue?"
     },
     "approval": {
       "entity": "Approval",
