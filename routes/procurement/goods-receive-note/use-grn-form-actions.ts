@@ -40,6 +40,7 @@ import {
   type GrnFormValues,
 } from "./grn-form-schema";
 import { findExpiredLines } from "./grn-expiry";
+import { isFutureReceiveDate } from "./grn-future-date";
 import type { DocumentLineDimensions } from "@/hooks/use-document-line-dimensions";
 
 interface UseGrnFormActionsParams {
@@ -128,6 +129,13 @@ export function useGrnFormActions({
   // ไม่บล็อก (เก็บทางไปต่อของแต่ละปุ่มไว้ เพราะสองปุ่มไปต่อคนละทาง)
   const [expiryPrompt, setExpiryPrompt] = useState<{
     lines: GrnFormValues["items"];
+    onYes: () => void;
+    onNo: () => void;
+  } | null>(null);
+  // วันที่รับสินค้ายังมาไม่ถึง → ถามก่อน Save / ก่อน Commit · ตอบใช่ก็ทำต่อ ไม่บล็อก
+  // (หลังบ้านรับใบที่ลงวันที่งวดถัดไปได้ตามแบบ — ดู isFutureReceiveDate)
+  const [futureDatePrompt, setFutureDatePrompt] = useState<{
+    grnDate: string;
     onYes: () => void;
     onNo: () => void;
   } | null>(null);
@@ -517,6 +525,16 @@ export function useGrnFormActions({
         finishAction();
         return;
       }
+      // ปุ่ม Save: วันที่รับยังมาไม่ถึง → ถามก่อน (หลังผ่าน validation แล้ว เหตุผลเดียวกับคำถาม
+      // สินค้าหมดอายุ) · ปุ่ม Commit ของใบร่างยืมทางนี้มาพร้อม onSaved และถามไปแล้วที่ requestCommit
+      if (!onSaved && isFutureReceiveDate(values.grn_date)) {
+        setFutureDatePrompt({
+          grnDate: values.grn_date,
+          onYes: () => void onSubmit(values, onSaved),
+          onNo: finishAction,
+        });
+        return;
+      }
       return onSubmit(values, onSaved);
     }, (errs) => {
       finishAction(); // validation ไม่ผ่าน → guard กลับมาเฝ้า + ปิด dialog ยืนยัน
@@ -629,21 +647,45 @@ export function useGrnFormActions({
   };
 
   /**
-   * ปุ่ม Commit — มีบรรทัดที่หมดอายุแล้วถามก่อน ตอบใช่จึงเปิด dialog ยืนยัน commit เดิม
+   * ปุ่ม Commit — วันที่รับยังมาไม่ถึง / มีบรรทัดที่หมดอายุแล้ว ถามก่อนทีละข้อ ตอบใช่ครบ
+   * จึงเปิด dialog ยืนยัน commit เดิม
    *
    * อ่านจากฟอร์ม ไม่ใช่จากใบที่โหลดมา: ใบร่างกด Commit แล้ว PATCH ค่าในฟอร์มขึ้นไปก่อน
    */
   const requestCommit = () => {
-    const expiredLines = findExpiredLines(form.getValues("items"));
-    if (expiredLines.length === 0) {
-      setShowCommit(true);
+    const askExpiry = () => {
+      const expiredLines = findExpiredLines(form.getValues("items"));
+      if (expiredLines.length === 0) {
+        setShowCommit(true);
+        return;
+      }
+      setExpiryPrompt({
+        lines: expiredLines,
+        onYes: () => setShowCommit(true),
+        onNo: () => {},
+      });
+    };
+    const grnDate = form.getValues("grn_date");
+    if (isFutureReceiveDate(grnDate)) {
+      setFutureDatePrompt({ grnDate, onYes: askExpiry, onNo: () => {} });
       return;
     }
-    setExpiryPrompt({
-      lines: expiredLines,
-      onYes: () => setShowCommit(true),
-      onNo: () => {},
-    });
+    askExpiry();
+  };
+
+  const futureDateDialogProps = {
+    open: !!futureDatePrompt,
+    grnDate: futureDatePrompt?.grnDate ?? "",
+    onConfirm: () => {
+      const prompt = futureDatePrompt;
+      setFutureDatePrompt(null);
+      prompt?.onYes();
+    },
+    onCancel: () => {
+      const prompt = futureDatePrompt;
+      setFutureDatePrompt(null);
+      prompt?.onNo();
+    },
   };
 
   const expiryDialogProps = {
@@ -697,6 +739,7 @@ export function useGrnFormActions({
     requestCommit,
     handleConfirmVoid,
     expiryDialogProps,
+    futureDateDialogProps,
     discardDialogProps: discard.dialogProps,
     navDiscardDialogProps,
   };

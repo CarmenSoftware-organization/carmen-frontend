@@ -7101,7 +7101,9 @@
       "lineExpired": "หมดอายุแล้ว",
       "expiredItemsTitle": "พบสินค้าหมดอายุ",
       "expiredItemsConfirm": "คุณกรอกสินค้าที่หมดอายุไปแล้ว ต้องการดำเนินการต่อไหม ?",
-      "expiredItemLine": "{product} — หมดอายุ {date}"
+      "expiredItemLine": "{product} — หมดอายุ {date}",
+      "futureReceiveDateTitle": "วันที่รับสินค้ายังมาไม่ถึง",
+      "futureReceiveDateConfirm": "วันที่รับสินค้า {date} ยังมาไม่ถึง (วันนี้ {today}) ต้องการดำเนินการต่อไหม ?"
     },
     "approval": {
       "entity": "การอนุมัติ",

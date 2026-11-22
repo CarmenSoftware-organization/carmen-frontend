@@ -26,6 +26,7 @@ import { getSessionItem, removeSessionItem } from "@/lib/safe-storage";
 import { GrnItemTable } from "./grn-item-table";
 import { GrnFormDialogs } from "./grn-form-dialogs";
 import { GrnExpiredItemsDialog } from "./grn-expired-items-dialog";
+import { GrnFutureDateDialog } from "./grn-future-date-dialog";
 import { useGrnFormActions } from "./use-grn-form-actions";
 import {
   DocumentLineDimensionsContext,
@@ -345,6 +346,7 @@ export function GrnForm({ goodsReceiveNote }: GrnFormProps) {
         <DiscardDialog {...actions.navDiscardDialogProps} variant="warning" />
         {/* อยู่นอก GrnFormDialogs เพราะต้องขึ้นตอนสร้างใบใหม่ด้วย (ยังไม่มี goodsReceiveNote) */}
         <GrnExpiredItemsDialog {...actions.expiryDialogProps} />
+        <GrnFutureDateDialog {...actions.futureDateDialogProps} />
 
         {goodsReceiveNote && (
           <GrnFormDialogs
