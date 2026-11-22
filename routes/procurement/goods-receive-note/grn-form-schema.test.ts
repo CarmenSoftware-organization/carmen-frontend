@@ -3,6 +3,7 @@ import {
   EMPTY_DETAIL,
   EMPTY_EXTRA_COST,
   createGrnSchema,
+  GRN_INVOICE_NO_MAX,
   getDefaultValues,
   mapDetailToPayload,
   pickTouchedLineUpdates,
@@ -49,6 +50,16 @@ describe("createGrnSchema — หัวใบ", () => {
     expect(paths({ ...valid(), invoice_date: null })).toContain("invoice_date");
     expect(paths({ ...valid(), vendor_id: null })).toContain("vendor_id");
     expect(paths({ ...valid(), currency_id: "" })).toContain("currency_id");
+  });
+
+  it("เลขที่ใบแจ้งหนี้ยาวได้ไม่เกิน 50 ตัวอักษร", () => {
+    expect(GRN_INVOICE_NO_MAX).toBe(50);
+    expect(
+      paths({ ...valid(), invoice_no: "I".repeat(GRN_INVOICE_NO_MAX) }),
+    ).not.toContain("invoice_no");
+    expect(
+      paths({ ...valid(), invoice_no: "I".repeat(GRN_INVOICE_NO_MAX + 1) }),
+    ).toContain("invoice_no");
   });
 
   it("ใบที่ไม่มีรายการเลย บันทึกไม่ได้", () => {

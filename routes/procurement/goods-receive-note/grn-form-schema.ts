@@ -116,11 +116,20 @@ function createExtraCostDetailSchema(tv: TranslationFn, tf: TranslationFn) {
   });
 }
 
+/** เลขที่ใบแจ้งหนี้ของผู้ขายยาวได้ไม่เกินนี้ — ตรงกับ backend (GRN_INVOICE_NO_MAX) เผื่อเลขของผู้ขายต่างประเทศ */
+export const GRN_INVOICE_NO_MAX = 50;
+
 export function createGrnSchema(tv: TranslationFn, tf: TranslationFn) {
   return z.object({
     doc_version: z.coerce.number().optional(),
     grn_date: z.string().min(1, tv("required", { field: tf("grnDate") })),
-    invoice_no: z.string().min(1, tv("required", { field: tf("invoiceNo") })),
+    invoice_no: z
+      .string()
+      .min(1, tv("required", { field: tf("invoiceNo") }))
+      .max(
+        GRN_INVOICE_NO_MAX,
+        tv("maxLength", { field: tf("invoiceNo"), max: GRN_INVOICE_NO_MAX }),
+      ),
     invoice_date: z
       .string()
       .nullable()
