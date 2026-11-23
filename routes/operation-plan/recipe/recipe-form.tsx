@@ -340,6 +340,7 @@ export function RecipeForm({ recipe }: RecipeFormProps) {
             isDisabled={isDisabled}
             computed={computed}
             gallery={gallery}
+            categoryDefaults={categoryDefaults}
           />
         </div>
         <Tabs
