@@ -160,3 +160,25 @@ export function computeRecipeCost(input: {
     belowMinPrice,
   };
 }
+
+/**
+ * food cost % ของสูตรที่โหลดมาจาก server คิดสดจากต้นทุนกับราคาขายที่เก็บไว้ (สมการเดียวกับหน้าสูตร)
+ * ไม่อ่าน actual_food_cost_percentage ที่บันทึกไว้ — ค่านั้นค้างตามสูตรที่ใช้ตอนกด Save ครั้งล่าสุด
+ */
+export function liveFoodCostPct(recipe: {
+  total_ingredient_cost: CostInput;
+  labor_cost: CostInput;
+  overhead_cost: CostInput;
+  base_yield: CostInput;
+  selling_price: CostInput;
+}): number | null {
+  return computeRecipeCost({
+    ingredientCost: recipe.total_ingredient_cost,
+    laborCost: recipe.labor_cost,
+    overheadCost: recipe.overhead_cost,
+    baseYield: recipe.base_yield,
+    sellingPrice: recipe.selling_price,
+    targetFoodCostPct: null,
+    maxFoodCostPct: null,
+  }).actualFoodCostPct;
+}

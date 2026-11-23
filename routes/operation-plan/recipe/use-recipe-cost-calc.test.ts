@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeRecipeCost } from "./use-recipe-cost-calc";
+import { computeRecipeCost, liveFoodCostPct } from "./use-recipe-cost-calc";
 
 // ทุกตัวเลขคิดทั้งสูตร: ต้นทุนทั้งสูตรเทียบราคาขายทั้งสูตร — จำนวน portion ใช้แค่ต้นทุนต่อ portion
 describe("computeRecipeCost — whole recipe", () => {
@@ -49,5 +49,30 @@ describe("computeRecipeCost — whole recipe", () => {
     expect(c.grossMargin).toBeNull();
     expect(c.costPerPortion).toBe(0);
     expect(c.suggestedPrice).toBe(492.6);
+  });
+});
+
+describe("liveFoodCostPct", () => {
+  it("recomputes from the stored costs, not the stored ratio", () => {
+    const stale = {
+      total_ingredient_cost: 172.41,
+      labor_cost: 60,
+      overhead_cost: 25,
+      base_yield: 2,
+      selling_price: 690,
+      actual_food_cost_percentage: 12.49, // saved under the old per-portion formula
+    };
+    expect(liveFoodCostPct(stale)).toBe(24.99);
+  });
+  it("no selling price gives null (the list shows —)", () => {
+    expect(
+      liveFoodCostPct({
+        total_ingredient_cost: 10,
+        labor_cost: 0,
+        overhead_cost: 0,
+        base_yield: 1,
+        selling_price: null,
+      }),
+    ).toBeNull();
   });
 });

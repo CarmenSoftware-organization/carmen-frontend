@@ -14,6 +14,7 @@ import {
   RecipeFoodCostCell,
   RecipeStatusBadge,
 } from "./recipe-list-cells";
+import { liveFoodCostPct } from "./use-recipe-cost-calc";
 
 interface RecipeCardProps {
   /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
@@ -134,7 +135,7 @@ export default function RecipeCard({
           </dt>
           <dd>
             <RecipeFoodCostCell
-              actual={item.actual_food_cost_percentage}
+              actual={liveFoodCostPct(item)}
               target={item.target_food_cost_percentage}
               showBar={false}
             />
