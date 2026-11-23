@@ -45,7 +45,7 @@ interface UseVendorTableOptions {
  * จุดเปลี่ยนขั้นตั้งสูงกว่าผลรวม 35–40px โดยตั้งใจ — คอลัมน์รองกลับมาเมื่อชื่อได้ที่ ~215px แล้ว
  * เท่านั้น ไม่งั้นพอข้ามขั้นชื่อจะหดเหลือขั้นต่ำ 180px
  * ผู้ติดต่ออยู่ถึงขั้นสุดท้าย (จัดซื้อเปิดหน้านี้เพื่อหาว่าจะโทรหาใคร) · ของที่ซ่อนยังดูได้จาก
- * มุมมองการ์ดและหน้ารายละเอียด · คอลัมน์ที่ผู้ใช้เปิดเพิ่มเอง (credit term, created, updated)
+ * มุมมองการ์ดและหน้ารายละเอียด · คอลัมน์ที่ผู้ใช้เปิดเพิ่มเอง (created, updated)
  * ไม่ได้นับในงบนี้ — เปิดแล้วเกินกล่อง ตารางเลื่อนแนวนอนในกรอบของมันเอง
  */
 function columnTier(width: number | undefined) {
@@ -179,26 +179,6 @@ export function useVendorTable({
       meta: { headerTitle: tfl("contact"), skeleton: columnSkeletons.text },
     },
     {
-      // ซ่อนเป็นค่าเริ่มต้น เปิดได้จากเมนูคอลัมน์ — ไม่เรียงเพราะเป็นชื่อจาก relation
-      id: "credit_term",
-      accessorFn: (row) => row.credit_term_name ?? "",
-      header: tfl("creditTerm"),
-      cell: ({ row }) => {
-        const { credit_term_name: name, credit_term_days: days } = row.original;
-        if (!name && days == null) {
-          return <span className="text-muted-foreground">—</span>;
-        }
-        return (
-          <span className="block truncate whitespace-nowrap tabular-nums">
-            {name || days}
-          </span>
-        );
-      },
-      size: 130,
-      enableSorting: false,
-      meta: { headerTitle: tfl("creditTerm"), skeleton: columnSkeletons.text },
-    },
-    {
       // เรียงฝั่ง server ได้ (tb_vendor.rating เป็น scalar) — null = ยังไม่ประเมิน
       accessorKey: "rating",
       header: ({ column }) => (
@@ -243,7 +223,6 @@ export function useVendorTable({
     // คอลัมน์ audit ซ่อนเป็น default (เปิดได้จากเมนู Toggle Columns)
     initialState: {
       columnVisibility: {
-        credit_term: false,
         created_at: false,
         updated_at: false,
       },
