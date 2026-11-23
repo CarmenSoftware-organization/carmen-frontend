@@ -19,6 +19,7 @@ import {
   RecipeStatusBadge,
   RecipeThumb,
 } from "./recipe-list-cells";
+import { liveFoodCostPct } from "./use-recipe-cost-calc";
 
 interface UseRecipeTableOptions {
   recipes: Recipe[];
@@ -406,7 +407,7 @@ export function useRecipeTable({
       ),
       cell: ({ row }) => (
         <RecipeFoodCostCell
-          actual={row.original.actual_food_cost_percentage}
+          actual={liveFoodCostPct(row.original)}
           target={row.original.target_food_cost_percentage}
           showBar={roomy}
         />

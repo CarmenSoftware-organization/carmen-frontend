@@ -13,14 +13,14 @@ export interface RecipeComputed {
   suggestedPrice: number | null;
   /** ราคาต่ำสุดที่ food cost ยังไม่เกินเพดาน — ฐานเดียวกับ suggestedPrice */
   minPrice: number | null;
-  /** ราคาขาย ÷ ต้นทุนเต็มต่อจาน */
+  /** ราคาขายทั้งสูตร ÷ ต้นทุนเต็มทั้งสูตร */
   markup: number | null;
   /** ตั้งราคาต่ำกว่าราคาขั้นต่ำ — ใช้เตือนเท่านั้น ไม่บล็อกการบันทึก */
   belowMinPrice: boolean;
 }
 
 export interface RecipeCostCalc extends RecipeComputed {
-  /** กำไรต่อจานถ้าขายที่ราคานี้ (หักต้นทุนเต็มรวมแรง/โสหุ้ย) */
+  /** กำไรทั้งสูตรถ้าขายที่ราคานี้ (หักต้นทุนเต็มรวมแรง/โสหุ้ย) */
   profitAt: (price: number | null) => number | null;
 }
 
@@ -57,12 +57,15 @@ export function useRecipeCostCalc(
     targetFoodCostPct,
     maxFoodCostPct,
   });
-  const { costPerPortion } = computed;
+  const totalCost =
+    (Number(ingredientCost) || 0) +
+    (Number(laborCost) || 0) +
+    (Number(overheadCost) || 0);
 
   const profitAt = useCallback(
     (price: number | null) =>
-      price == null ? null : round2(price - costPerPortion),
-    [costPerPortion],
+      price == null ? null : round2(price - totalCost),
+    [totalCost],
   );
 
   useEffect(() => {
@@ -119,34 +122,29 @@ export function computeRecipeCost(input: {
   const targetPct = Number(input.targetFoodCostPct) || 0;
   const maxPct = Number(input.maxFoodCostPct) || 0;
 
-  // ต้นทุนทุกตัวที่กรอกเป็นของ "ทั้งชุด" (base_yield จาน) ส่วนราคาขายเป็น "ต่อจาน"
-  // อัตราส่วนเทียบราคาขายจึงต้องหารด้วย yield ก่อนเสมอ — เดิมเอายอดทั้งชุดไปหาร
-  // ราคาต่อจานตรง ๆ ทำให้สูตรที่ได้ 2 จานขึ้น food cost สูงเกินจริงสองเท่า
-  const perPortion = (n: number) => (yld > 0 ? n / yld : 0);
+  // ทุกตัวเลขคิด "ทั้งสูตร": ต้นทุนที่กรอกเป็นของทั้งสูตร (base_yield portion) และราคาขาย
+  // ก็เป็นราคาของทั้งสูตร (ผู้ใช้กำหนด 2026-11-23 — เดิมราคาขายเป็นต่อ portion แล้วหาร
+  // ต้นทุนด้วยจำนวน portion ก่อนเทียบ) · จำนวน portion ใช้แค่หาต้นทุนต่อ portion
   const pctOfPrice = (n: number) =>
-    sell > 0 && yld > 0 ? round2((perPortion(n) / sell) * 100) : null;
+    sell > 0 ? round2((n / sell) * 100) : null;
 
   const totalCost = ing + lab + ovh;
   const costPerPortion = yld > 0 ? round2(totalCost / yld) : 0;
-  const grossMargin = sell > 0 ? round2(sell - costPerPortion) : null;
+  const grossMargin = sell > 0 ? round2(sell - totalCost) : null;
   const grossMarginPct =
     sell > 0 && grossMargin != null ? round2((grossMargin / sell) * 100) : null;
   const actualFoodCostPct = pctOfPrice(ing);
   const laborCostPct = pctOfPrice(lab);
   const overheadPct = pctOfPrice(ovh);
-  // ราคาที่ทำให้ food cost (วัตถุดิบต่อจาน ÷ ราคา) เท่ากับเป้าพอดี — ฐานเดียวกับ
-  // actualFoodCostPct · เดิมใช้ costPerPortion ÷ (1 − เป้า) ซึ่งเป็นสูตรของเป้ากำไร
-  // (เป้า 30% ได้ราคาที่กำไรแค่ 30% ไม่ใช่ food cost 30%) และปนค่าแรง/โสหุ้ยเข้ามา
+  // ราคา (ทั้งสูตร) ที่ทำให้ food cost (วัตถุดิบ ÷ ราคา) เท่ากับเป้าพอดี — ฐานเดียวกับ
+  // actualFoodCostPct ไม่ปนค่าแรง/โสหุ้ย
   const priceAtFoodCost = (pct: number) =>
-    pct > 0 && pct <= 100 && yld > 0 && ing > 0
-      ? round2(perPortion(ing) / (pct / 100))
-      : null;
+    pct > 0 && pct <= 100 && ing > 0 ? round2(ing / (pct / 100)) : null;
   const suggestedPrice = priceAtFoodCost(targetPct);
   // เพดานต่ำกว่าเป้าคือค่าที่ schema ปัดตก — ไม่โชว์ราคาขั้นต่ำที่สูงกว่าราคาที่เป้า
   const minPrice =
     targetPct > 0 && maxPct < targetPct ? null : priceAtFoodCost(maxPct);
-  const markup =
-    sell > 0 && costPerPortion > 0 ? round2(sell / costPerPortion) : null;
+  const markup = sell > 0 && totalCost > 0 ? round2(sell / totalCost) : null;
   const belowMinPrice = minPrice != null && sell > 0 && sell < minPrice;
 
   return {
@@ -161,4 +159,26 @@ export function computeRecipeCost(input: {
     markup,
     belowMinPrice,
   };
+}
+
+/**
+ * food cost % ของสูตรที่โหลดมาจาก server คิดสดจากต้นทุนกับราคาขายที่เก็บไว้ (สมการเดียวกับหน้าสูตร)
+ * ไม่อ่าน actual_food_cost_percentage ที่บันทึกไว้ — ค่านั้นค้างตามสูตรที่ใช้ตอนกด Save ครั้งล่าสุด
+ */
+export function liveFoodCostPct(recipe: {
+  total_ingredient_cost: CostInput;
+  labor_cost: CostInput;
+  overhead_cost: CostInput;
+  base_yield: CostInput;
+  selling_price: CostInput;
+}): number | null {
+  return computeRecipeCost({
+    ingredientCost: recipe.total_ingredient_cost,
+    laborCost: recipe.labor_cost,
+    overheadCost: recipe.overhead_cost,
+    baseYield: recipe.base_yield,
+    sellingPrice: recipe.selling_price,
+    targetFoodCostPct: null,
+    maxFoodCostPct: null,
+  }).actualFoodCostPct;
 }
