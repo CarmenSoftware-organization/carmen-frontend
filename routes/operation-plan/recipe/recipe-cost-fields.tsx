@@ -11,7 +11,7 @@ import {
   numberInput,
   type RecipeFormValues,
 } from "./recipe-form-schema";
-import type { RecipeComputed, RecipeCostCalc } from "./use-recipe-cost-calc";
+import type { RecipeCostCalc } from "./use-recipe-cost-calc";
 import { RecipePriceRecommendations } from "./recipe-price-recommendations";
 import type { RecipeCategoryDefaults } from "../shared/recipe-category-defaults";
 
@@ -281,21 +281,6 @@ export function RecipeCostFields({
               isDisabled={isDisabled}
             />
 
-            {/* 4 · ผลลัพธ์ — food cost เทียบเป้า + กำไรขั้นต้น */}
-            <div className="mt-4 border-t pt-4">
-              {hasPrice ? (
-                <RecipeCostVerdict
-                  computed={computed}
-                  targetPct={targetPct}
-                  categoryDefaults={categoryDefaults}
-                />
-              ) : (
-                <p className="text-muted-foreground text-xs">
-                  {t("noPriceYet")}
-                </p>
-              )}
-            </div>
-
             {/* ท้ายใบ — ตัวเลขประกอบ */}
             <div className="text-muted-foreground mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 border-t pt-3 text-xs">
               {hasPrice && (
@@ -346,103 +331,6 @@ export function RecipeCostFields({
   );
 }
 
-/**
- * food cost % ของจริงบนแถบ 0–100% ที่มีขีดเป้า (ภาษาเดียวกับคอลัมน์ในหน้ารายการ)
- * + กำไรขั้นต้น · เกินเป้าหรือขายต่ำกว่าทุนเท่านั้นที่ขึ้นสี
- */
-function RecipeCostVerdict({
-  computed,
-  targetPct,
-  categoryDefaults,
-}: {
-  readonly computed: RecipeComputed;
-  readonly targetPct: number;
-  readonly categoryDefaults: RecipeCategoryDefaults | null;
-}) {
-  const t = useTranslations("operationPlan.recipe");
-  const food = computed.actualFoodCostPct ?? 0;
-  const margin = computed.grossMargin ?? 0;
-  const marginPct = computed.grossMarginPct ?? 0;
-  const hasTarget = targetPct > 0;
-  const over = hasTarget && food > targetPct;
-  const clamp = (n: number) => Math.min(Math.max(n, 0), 100);
-
-  return (
-    <div className="grid gap-4 @md:grid-cols-[minmax(0,1fr)_auto]">
-      <div className="min-w-0">
-        <div className="flex items-baseline justify-between gap-2">
-          <EyeBrow>{t("foodCost")}</EyeBrow>
-          <span
-            className={cn(
-              "text-lg font-semibold tracking-tight tabular-nums",
-              over && "text-destructive",
-            )}
-          >
-            {food.toFixed(1)}%
-          </span>
-        </div>
-        <div
-          className="bg-muted relative mt-1.5 h-2 rounded-full"
-          aria-hidden="true"
-        >
-          <div
-            className={cn(
-              "absolute inset-y-0 left-0 rounded-full transition-[width]",
-              over ? "bg-destructive" : "bg-muted-foreground/50",
-            )}
-            style={{ width: `${clamp(food)}%` }}
-          />
-          {hasTarget && (
-            <div
-              className="bg-foreground absolute -inset-y-1 w-0.5 rounded-full"
-              style={{ left: `${clamp(targetPct)}%` }}
-            />
-          )}
-        </div>
-        <p
-          className={cn(
-            "mt-2 text-xs",
-            over ? "text-destructive font-semibold" : "text-muted-foreground",
-          )}
-        >
-          {!hasTarget
-            ? t("noTargetYet")
-            : over
-              ? t("aboveTargetMessage", { pts: (food - targetPct).toFixed(1) })
-              : t("withinTargetMessage", { pct: formatPct(targetPct) })}
-        </p>
-      </div>
-
-      <div className="@md:border-l @md:pl-4 @md:text-right">
-        <EyeBrow>{t("grossMargin")}</EyeBrow>
-        <div
-          className={cn(
-            "mt-0.5 text-lg font-semibold tracking-tight tabular-nums",
-            margin < 0 && "text-destructive",
-          )}
-        >
-          ฿{formatCurrency(margin)}
-        </div>
-        <div
-          className={cn(
-            "text-micro tabular-nums",
-            margin < 0 ? "text-destructive" : "text-muted-foreground",
-          )}
-        >
-          {margin < 0 ? t("belowCost") : `${marginPct.toFixed(1)}%`}
-        </div>
-        {categoryDefaults && margin >= 0 && (
-          <CategoryMarginNote
-            marginPct={marginPct}
-            min={categoryDefaults.marginMin}
-            target={categoryDefaults.marginTarget}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
 /** เป้า food cost ของหมวด ใต้ช่องเป้า — กดใช้ได้เมื่อค่าในช่องไม่ตรงกับหมวด */
 function CategoryFoodCostHint({
   value,
@@ -482,39 +370,6 @@ function CategoryRatio({ value }: { readonly value?: number | null }) {
     <span className="ml-1 tabular-nums">
       {t("categoryRatio", { pct: formatPct(value) })}
     </span>
-  );
-}
-
-/** กำไรขั้นต้นจริงเทียบขั้นต่ำ/เป้าของหมวด — ต่ำกว่าขั้นต่ำเท่านั้นที่ขึ้นสีเตือน */
-function CategoryMarginNote({
-  marginPct,
-  min,
-  target,
-}: {
-  readonly marginPct: number;
-  readonly min: number | null;
-  readonly target: number | null;
-}) {
-  const t = useTranslations("operationPlan.recipe");
-  if (min != null && marginPct < min)
-    return (
-      <div className="text-warning-ink text-micro mt-0.5 font-semibold">
-        {t("marginBelowCategoryMin", { pct: formatPct(min) })}
-      </div>
-    );
-  if (target == null) return null;
-  const meets = marginPct >= target;
-  return (
-    <div
-      className={cn(
-        "text-micro mt-0.5",
-        meets ? "text-success-ink" : "text-muted-foreground",
-      )}
-    >
-      {t(meets ? "marginMeetsCategoryTarget" : "marginCategoryTarget", {
-        pct: formatPct(target),
-      })}
-    </div>
   );
 }
 

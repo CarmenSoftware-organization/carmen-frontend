@@ -24,12 +24,16 @@ import { RECIPE_DIFFICULTY_OPTIONS } from "@/constant/recipe";
 import type { RecipeFormValues } from "./recipe-form-schema";
 import type { RecipeComputed } from "./recipe-form";
 import type { RecipeGalleryController } from "./use-recipe-gallery";
+import { RecipeCostVerdict } from "./recipe-cost-verdict";
+import type { RecipeCategoryDefaults } from "../shared/recipe-category-defaults";
 
 interface RecipeHeroFieldsProps {
   readonly form: UseFormReturn<RecipeFormValues>;
   readonly isDisabled: boolean;
   readonly computed: RecipeComputed;
   readonly gallery: RecipeGalleryController;
+  /** ค่าตั้งต้นของหมวดที่เลือก — เกจกำไรขั้นต้นใช้เทียบเป้าของหมวด (null = ยังไม่เลือก/ยังโหลด) */
+  readonly categoryDefaults: RecipeCategoryDefaults | null;
 }
 
 export function RecipeHeroFields({
@@ -37,6 +41,7 @@ export function RecipeHeroFields({
   isDisabled,
   computed,
   gallery,
+  categoryDefaults,
 }: RecipeHeroFieldsProps) {
   const t = useTranslations("operationPlan.recipe");
   const tfl = useTranslations("field");
@@ -57,12 +62,12 @@ export function RecipeHeroFields({
     control: form.control,
     name: "target_food_cost_percentage",
   });
+  const sell = useWatch({ control: form.control, name: "selling_price" });
   const { data: yieldUnit } = useUnitById(yieldUnitId || undefined);
 
   const totalTime = (Number(prepTime) || 0) + (Number(cookTime) || 0);
   const targetPct = Number(target) || 0;
-  const foodPct = computed.actualFoodCostPct;
-  const overTarget = foodPct != null && targetPct > 0 && foodPct > targetPct;
+  const hasPrice = (Number(sell) || 0) > 0;
 
   return (
     <section className="@container">
@@ -189,9 +194,8 @@ export function RecipeHeroFields({
             {description || tfl("description")}
           </p>
 
-          {/* Quick stats — ตัวเลขชุดเดียวกับคอลัมน์หน้ารายการ: เวลา · ผลผลิต ·
-            ต้นทุนต่อเสิร์ฟ · food cost เทียบเป้า (ช่องกรอกจริงอยู่ใน section ข้างล่าง) */}
-          <div className="grid grid-cols-2 gap-3 border-t pt-3 @md:grid-cols-4">
+          {/* Quick stats — เวลา · ผลผลิต · ต้นทุนต่อเสิร์ฟ (ช่องกรอกจริงอยู่ในแท็บข้างล่าง) */}
+          <div className="grid grid-cols-3 gap-3 border-t pt-3">
             <QuickStat
               label={t("total")}
               value={`${totalTime} ${t("minShort")}`}
@@ -206,16 +210,19 @@ export function RecipeHeroFields({
               label={t("costPerPortion")}
               value={`฿${formatCurrency(computed.costPerPortion)}`}
             />
-            <QuickStat
-              label={t("foodCost")}
-              value={foodPct != null ? `${foodPct.toFixed(1)}%` : "—"}
-              sub={
-                targetPct > 0
-                  ? `${t("targetFoodCost")} ${targetPct}%`
-                  : undefined
-              }
-              tone={overTarget ? "destructive" : undefined}
-            />
+          </div>
+
+          {/* เกจผลลัพธ์ — ซ้าย food cost จริงเทียบเป้า · ขวา กำไรขั้นต้น (เห็นจากทุกแท็บ) */}
+          <div className="border-t pt-3">
+            {hasPrice ? (
+              <RecipeCostVerdict
+                computed={computed}
+                targetPct={targetPct}
+                categoryDefaults={categoryDefaults}
+              />
+            ) : (
+              <p className="text-muted-foreground text-xs">{t("noPriceYet")}</p>
+            )}
           </div>
         </div>
       </div>
