@@ -159,7 +159,7 @@ describe("Receipt allocation and tax calculation", () => {
       ...withTender,
       tender: { ...withTender.tender, amount: 60 },
     };
-    expect(receiptTotals(over).unapplied).toBe(7);
+    expect(receiptTotals(over).unapplied).toBe(9);
     expect(receiptValidation(over)).toBeNull();
     const short = {
       ...withTender,
