@@ -239,7 +239,8 @@
       "generalDefaultServiceRate": "Default service charge (%)",
       "apInvoiceAllowCreatorApprove": "Allow the creator to approve their own AP invoice",
       "apPaymentAllowCreatorApprove": "Allow the creator to approve their own AP payment",
-      "arInvoiceAllowCreatorApprove": "Allow the creator to approve their own AR invoice"
+      "arInvoiceAllowCreatorApprove": "Allow the creator to approve their own AR invoice",
+      "arReceiptAllowCreatorApprove": "Allow the creator to approve their own AR receipt"
     }
   },
   "accounting": {

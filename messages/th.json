@@ -239,7 +239,8 @@
       "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)",
       "apInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AP Invoice ของตัวเอง",
       "apPaymentAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติใบจ่ายเงิน AP ของตัวเอง",
-      "arInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AR Invoice ของตัวเอง"
+      "arInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AR Invoice ของตัวเอง",
+      "arReceiptAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติใบรับเงิน AR ของตัวเอง"
     }
   },
   "accounting": {

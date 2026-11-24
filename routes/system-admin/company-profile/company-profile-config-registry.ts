@@ -242,6 +242,13 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
         label: "Allow the creator to approve their own AR invoice",
         labelKey: "config.arInvoiceAllowCreatorApprove",
       },
+      {
+        key: "ar.receipt.allow-creator-approve",
+        datatype: "boolean",
+        defaultValue: "false",
+        label: "Allow the creator to approve their own AR receipt",
+        labelKey: "config.arReceiptAllowCreatorApprove",
+      },
     ],
   },
 ];
