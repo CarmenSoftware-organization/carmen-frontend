@@ -16,6 +16,19 @@ export const AR_RECEIPT_STATUS = [
 ] as const;
 export type ArReceiptStatus = (typeof AR_RECEIPT_STATUS)[number];
 export type ArReceiptSource = "manual" | "copy" | "interface";
+export const AR_RECEIPT_METHODS = [
+  "bank_transfer",
+  "cheque",
+  "cash",
+  "credit_card",
+  "promptpay",
+] as const;
+export type ArReceiptMethod = (typeof AR_RECEIPT_METHODS)[number];
+export type ArInvoiceDocType =
+  | "invoice"
+  | "credit_note"
+  | "debit_note"
+  | "deposit";
 export type ArReceiptWorkflowAction = "approve" | "reject" | "sendback";
 
 const QUERY_KEY = "ar-receipt";
@@ -30,6 +43,9 @@ export interface ArReceiptRow {
   customer_code?: string;
   customer_name: string;
   currency_code?: string;
+  bank_account_code?: string;
+  bank_account_name?: string;
+  receipt_method?: ArReceiptMethod;
   net_received_amount: ArAmount;
   total_applied_amount?: ArAmount;
   total_unapplied_amount?: ArAmount;
@@ -37,58 +53,59 @@ export interface ArReceiptRow {
 }
 
 export interface ArReceiptDetailRecord {
-  id?: string;
-  ar_invoice_id?: string;
-  ar_invoice_detail_id?: string;
-  ar_invoice_no?: string | null;
-  sequence_no?: number;
+  id: string;
+  ar_invoice_id: string;
+  ar_invoice_detail_id: string;
+  doc_type: ArInvoiceDocType;
+  /** negative for credit-note lines */
   applied_amount: ArAmount;
-  base_applied_amount?: ArAmount;
-  base_applied_at_invoice_rate?: ArAmount;
-  realized_fx_amount?: ArAmount;
+  invoice_exchange_rate: ArAmount;
+  base_applied_at_invoice_rate: ArAmount;
+  base_applied_at_receipt_rate: ArAmount;
+  realized_fx_amount: ArAmount;
 }
 
 export interface ArReceiptWhtRecord {
-  id?: string;
-  wht_tax_profile_id: string;
+  id: string;
+  wht_tax_profile_id: string | null;
+  wht_tax_profile_name?: string | null;
+  pnd_form?: string | null;
+  income_type?: string | null;
   base_amount: ArAmount;
-  wht_rate?: ArAmount;
+  wht_rate: ArAmount;
   wht_amount: ArAmount;
-  certificate_no?: string | null;
-  certificate_date?: string | null;
+  is_override: boolean;
+  wht_certificate_no?: string | null;
+  wht_certificate_date?: string | null;
 }
 
 export interface ArReceiptTaxInvoice {
+  id: string;
   tax_invoice_no: string;
-  tax_invoice_date: string;
-  tax_status?: string;
-  status?: string;
-  customer_registered_name?: string;
-  customer_tax_no?: string | null;
-  customer_branch_no?: string | null;
-  base_amount?: ArAmount;
-  vat_rate?: ArAmount;
-  vat_amount?: ArAmount;
-  total_amount?: ArAmount;
+  tax_status: string;
 }
 
 export interface ArReceiptDocument extends ArReceiptRow {
   doc_version?: number | null;
   customer_id: string;
   received_date?: string | null;
-  currency_id?: string;
+  currency_id: string;
+  base_currency_id?: string;
   base_currency_code?: string;
-  exchange_rate?: ArAmount;
-  bank_account_id?: string | null;
-  receipt_method?: string | null;
+  exchange_rate: ArAmount;
+  bank_account_id: string;
+  receipt_method: ArReceiptMethod;
   cheque_no?: string | null;
   cheque_date?: string | null;
   reference_no?: string | null;
   payer_name?: string | null;
   description?: string | null;
   is_tax_invoice?: boolean;
-  charge_amount?: ArAmount;
+  total_charge_amount?: ArAmount;
   total_wht_amount?: ArAmount;
+  base_total_applied_amount?: ArAmount;
+  base_total_wht_amount?: ArAmount;
+  base_total_charge_amount?: ArAmount;
   base_net_received_amount?: ArAmount;
   base_total_unapplied_amount?: ArAmount;
   realized_fx_amount?: ArAmount;
@@ -98,6 +115,9 @@ export interface ArReceiptDocument extends ArReceiptRow {
   gl_jv_id?: string | null;
   gl_jv_no?: string | null;
   void_reason?: string | null;
+  void_gl_jv_id?: string | null;
+  posted_at?: string | null;
+  void_at?: string | null;
   workflow_id?: string | null;
   workflow_name?: string | null;
   workflow_current_stage?: string | null;
@@ -113,13 +133,17 @@ export interface ArReceiptDocument extends ArReceiptRow {
 
 /** Matches the gateway request DTO (invoice-level allocations; backend splits per line). */
 export interface ArReceiptPayload {
+  /** required on update (optimistic lock); the backend rejects a stale version */
+  doc_version?: number;
   customer_id: string;
   receipt_date: string;
   received_date?: string | null;
-  currency_id?: string;
-  exchange_rate?: number;
-  bank_account_id?: string | null;
-  receipt_method?: string | null;
+  bank_account_id: string;
+  receipt_method?: ArReceiptMethod;
+  /** `interface` is set by POS/PMS only, never by a client */
+  doc_source?: "manual" | "copy";
+  currency_id?: string | null;
+  exchange_rate?: number | null;
   cheque_no?: string | null;
   cheque_date?: string | null;
   reference_no?: string | null;
@@ -129,12 +153,14 @@ export interface ArReceiptPayload {
   source_doc_ref?: string | null;
   net_received_amount: number;
   charge_amount: number;
+  /** max 3 rows */
   wht: {
-    wht_tax_profile_id: string;
+    wht_tax_profile_id?: string | null;
     base_amount: number;
-    wht_amount?: number;
-    certificate_no?: string | null;
-    certificate_date?: string | null;
+    wht_amount?: number | null;
+    wht_certificate_no?: string | null;
+    wht_certificate_date?: string | null;
+    pnd_form?: string | null;
   }[];
   allocations: { ar_invoice_id: string; applied_amount: number }[];
   info?: Record<string, unknown>;
@@ -144,24 +170,26 @@ export interface OutstandingInvoiceLine {
   ar_invoice_detail_id: string;
   sequence_no?: number;
   unpaid_amount: ArAmount;
+  /** held by other draft/in_review receipts */
+  reserved_amount: ArAmount;
   /** unpaid minus reservations by other draft/in_review receipts */
   available_amount: ArAmount;
 }
 
 export interface OutstandingInvoice {
-  id: string;
+  ar_invoice_id: string;
   doc_no: string;
-  doc_type: "invoice" | "credit_note" | "debit_note" | "deposit";
+  doc_type: ArInvoiceDocType;
   doc_date: string;
-  due_date?: string | null;
-  customer_id: string;
-  currency_id?: string;
+  currency_id: string;
   currency_code: string;
-  exchange_rate?: ArAmount;
+  exchange_rate: ArAmount;
+  net_amount: ArAmount;
+  vat_amount: ArAmount;
   total_amount: ArAmount;
   outstanding_amount: ArAmount;
   available_amount: ArAmount;
-  lines?: OutstandingInvoiceLine[];
+  lines: OutstandingInvoiceLine[];
 }
 
 async function readReceipt(url: string) {
@@ -265,16 +293,26 @@ export function useArReceiptAction() {
 export function useArOutstandingInvoices(
   customerId?: string,
   currencyId?: string,
+  /** the receipt being edited, so its own reservations are not counted */
+  excludeReceiptId?: string,
 ) {
   const bu = useBuCode();
   return useQuery({
-    queryKey: [QUERY_KEY, bu, "outstanding-invoices", customerId, currencyId],
+    queryKey: [
+      QUERY_KEY,
+      bu,
+      "outstanding-invoices",
+      customerId,
+      currencyId,
+      excludeReceiptId,
+    ],
     enabled: !!bu && !!customerId,
     queryFn: async (): Promise<OutstandingInvoice[]> => {
       const body = await readReceipt(
         buildUrl(API_ENDPOINTS.AR_RECEIPT_OUTSTANDING_INVOICES(bu!), {
           customer_id: customerId,
           ...(currencyId ? { currency_id: currencyId } : {}),
+          ...(excludeReceiptId ? { exclude_receipt_id: excludeReceiptId } : {}),
         } as ParamsDto),
       );
       if (!Array.isArray(body.data))
