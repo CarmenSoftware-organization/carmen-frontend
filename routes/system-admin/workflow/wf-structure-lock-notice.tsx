@@ -51,6 +51,11 @@ const DOCUMENT_LIST: Record<
     status: "doc_status",
     value: "in_review",
   },
+  [WORKFLOW_TYPE.AR_RECEIPT]: {
+    path: "/accounting/accounts-receivable/receipt",
+    status: "doc_status",
+    value: "in_review",
+  },
 };
 
 /**

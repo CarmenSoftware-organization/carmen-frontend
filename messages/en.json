@@ -3838,6 +3838,7 @@
       "titleApInvoice": "AP Invoice Workflow",
       "titleApPayment": "AP Payment Workflow",
       "titleArInvoice": "AR Invoice Workflow",
+      "titleArReceipt": "AR Receipt Workflow",
       "desc": "Who approves what, and in which order, before a document can go through.",
       "add": "New Workflow",
       "edit": "Edit Workflow",
@@ -3922,9 +3923,11 @@
       "typeApInvoice": "AP Invoice",
       "typeApPayment": "AP Payment",
       "typeArInvoice": "AR Invoice",
+      "typeArReceipt": "AR Receipt",
       "apInvoiceSingleActiveHint": "This business unit already has an active AP Invoice workflow. Only one can be active at a time — deactivate it first, or edit it instead.",
       "apPaymentSingleActiveHint": "This business unit already has an active AP Payment workflow. Only one can be active at a time — deactivate it first, or edit it instead.",
       "arInvoiceSingleActiveHint": "This business unit already has an active AR Invoice workflow. Only one can be active at a time — deactivate it first, or edit it instead.",
+      "arReceiptSingleActiveHint": "This business unit already has an active AR Receipt workflow. Only one can be active at a time — deactivate it first, or edit it instead.",
       "listJvPrefixCount": "{count, plural, =0 {All prefixes} one {# prefix} other {# prefixes}}",
       "listJvSourceCount": "{count, plural, =0 {all sources} one {# source} other {# sources}}",
       "jvScopeTab": "Scope",
@@ -4111,6 +4114,7 @@
           "workflowApInvoice": "Approval steps before an AP invoice is posted.",
           "workflowApPayment": "Approval steps before an AP payment is posted.",
           "workflowArInvoice": "Approval steps before an AR invoice, debit note or credit note is posted.",
+          "workflowArReceipt": "Approval steps before an AR receipt is posted.",
           "notificationTemplate": "Wording of the notifications these workflows send."
         }
       }
@@ -7977,6 +7981,7 @@
     "workflowApInvoice": "AP Invoice",
     "workflowApPayment": "AP Payment",
     "workflowArInvoice": "AR Invoice",
+    "workflowArReceipt": "AR Receipt",
     "interface": "Interfaces",
     "emailProfile": "Email Profiles",
     "emailTemplate": "Email Messages",

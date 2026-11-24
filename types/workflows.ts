@@ -6,6 +6,7 @@ export enum WORKFLOW_TYPE {
   AP_INVOICE = "ap_invoice",
   AP_PAYMENT = "ap_payment",
   AR_INVOICE = "ar_invoice",
+  AR_RECEIPT = "ar_receipt",
 }
 
 enum enum_sla_unit {

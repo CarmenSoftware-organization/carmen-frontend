@@ -20,6 +20,7 @@ export const WORKFLOW_DOC_TYPES = [
   "ap-invoice",
   "ap-payment",
   "ar-invoice",
+  "ar-receipt",
 ] as const;
 
 export type WorkflowDocType = (typeof WORKFLOW_DOC_TYPES)[number];
@@ -35,6 +36,7 @@ export const WORKFLOW_TYPE_BY_DOC_TYPE: Record<WorkflowDocType, WORKFLOW_TYPE> =
     "ap-invoice": WORKFLOW_TYPE.AP_INVOICE,
     "ap-payment": WORKFLOW_TYPE.AP_PAYMENT,
     "ar-invoice": WORKFLOW_TYPE.AR_INVOICE,
+    "ar-receipt": WORKFLOW_TYPE.AR_RECEIPT,
   };
 
 /**
@@ -109,6 +111,11 @@ export const useArInvoiceWorkflows = (
   options?: { enabled?: boolean },
 ) => useWorkflowsByDocType("ar-invoice", params, options);
 
+export const useArReceiptWorkflows = (
+  params?: ParamsDto,
+  options?: { enabled?: boolean },
+) => useWorkflowsByDocType("ar-receipt", params, options);
+
 export const WORKFLOW_LIST_HOOKS: Record<
   WorkflowDocType,
   typeof usePurchaseRequestWorkflows
@@ -120,6 +127,7 @@ export const WORKFLOW_LIST_HOOKS: Record<
   "ap-invoice": useApInvoiceWorkflows,
   "ap-payment": useApPaymentWorkflows,
   "ar-invoice": useArInvoiceWorkflows,
+  "ar-receipt": useArReceiptWorkflows,
 };
 
 /**
