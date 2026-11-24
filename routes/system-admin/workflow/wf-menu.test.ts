@@ -25,7 +25,7 @@ describe("เมนูย่อยของ workflow", () => {
     (s) => !s.path.startsWith("/system-admin/workflow/"),
   );
 
-  it("มีเมนูชนิดเอกสารครบหกใบ", () => {
+  it("มีเมนูชนิดเอกสารครบเจ็ดใบ", () => {
     expect(docTypeChildren.map((s) => s.name)).toEqual([
       "workflowPurchaseRequest",
       "workflowPurchaseOrder",
