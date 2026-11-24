@@ -33,6 +33,8 @@ import {
 } from "@/hooks/use-accounting-master";
 import { useVendorById } from "@/hooks/use-vendor";
 import { useProfile } from "@/hooks/use-profile";
+import { useCan } from "@/hooks/use-can";
+import { PERMISSIONS } from "@/constant/permissions";
 import { ApiError } from "@/lib/api-error";
 import { getUserErrorMessage } from "@/lib/error-message";
 import { formatDate } from "@/lib/date-utils";
@@ -158,7 +160,13 @@ function ApPaymentEditor({
   const [calculating, setCalculating] = useState(false);
 
   const editable = editing && (isNew || (!!loaded && apCanEdit(loaded)));
-  const actions = loaded ? apPaymentActions(loaded, userId) : [];
+  const { can } = useCan();
+  // ตัด action ที่ gateway จะตอบ 403: submit ต้อง accounting.ap.view, void ต้อง accounting.ap.void
+  const actions = (loaded ? apPaymentActions(loaded, userId) : []).filter(
+    (a) =>
+      (a !== "submit" || can(PERMISSIONS.accounting.ap.view)) &&
+      (a !== "void" || can(PERMISSIONS.accounting.ap.void)),
+  );
   // ผู้สร้างเป็นผู้ดำเนินการใน stage (มี reject/sendback) แต่ approve ไม่ได้ → บอกเหตุผล
   const showCreatorHint =
     !!loaded &&
@@ -206,7 +214,9 @@ function ApPaymentEditor({
       appliedDefaults.current === vendor.id ||
       (vendor.payment_type_id && !defaultPaymentType.data) ||
       (vendor.wht_service_type_id && !defaultService.data) ||
-      (vendor.wht_service_type_id && !vendor.wht_form_id && defaultForms.isPending)
+      (vendor.wht_service_type_id &&
+        !vendor.wht_form_id &&
+        defaultForms.isPending)
     )
       return;
     appliedDefaults.current = vendor.id;

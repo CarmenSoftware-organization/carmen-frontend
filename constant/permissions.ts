@@ -197,6 +197,11 @@ export const PERMISSIONS = {
     history: viewOnly("report.history"),
   },
   accounting: {
+    // gateway ap-invoice / ap-payment: submit needs view, void needs void (resource `accounting.ap`)
+    ap: {
+      view: "accounting.ap.view",
+      void: "accounting.ap.void",
+    },
     // gateway ar-invoice / ar-receipt: submit needs view, void needs void (resource `accounting.ar`)
     ar: {
       view: "accounting.ar.view",
