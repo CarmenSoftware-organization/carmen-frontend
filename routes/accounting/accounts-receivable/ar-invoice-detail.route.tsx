@@ -29,7 +29,11 @@ import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { ApDetailGrid } from "../accounts-payable/shared/ap-detail-grid";
 import { ApSendBackFields } from "../accounts-payable/shared/ap-send-back-fields";
-import { arDocActions, type ArUiAction } from "./ar-doc-actions";
+import {
+  arActionsAllowed,
+  arDocActions,
+  type ArUiAction,
+} from "./ar-doc-actions";
 import { ArInvoiceTaxLines } from "./ar-invoice-tax-lines";
 import { ArInvoiceLines } from "./ar-invoice-lines";
 import {
@@ -41,6 +45,7 @@ import {
   readInvoiceSupplement,
 } from "./ar-invoice-supplement-model";
 import { AR_RECEIPT_PATH } from "./ar-receipt-model";
+import { InvoiceReceipts } from "./ar-invoice-receipts";
 import { InvoiceJournal } from "./ar-invoice-journal";
 import { draftLineFromRecord } from "./ar-invoice-draft-model";
 import { ArInvoiceDraftForm } from "./ar-invoice-draft-form";
@@ -78,7 +83,7 @@ function NewInvoice() {
 
 function RegisterDetail({ id }: { readonly id?: string }) {
   const t = useTranslations("accounting.arRegister");
-  const { canWrite } = useCan();
+  const { canWrite, can } = useCan();
   const { toList } = useListReturn(AR_REGISTER_PATH);
   const [editDocument, setEditDocument] = useState<ArRegisterDocument | null>(
     null,
@@ -126,7 +131,9 @@ function RegisterDetail({ id }: { readonly id?: string }) {
     );
   const row = doc.data;
   const draft = row.doc_status === "draft";
-  const actions: ArUiAction[] = canWrite ? arDocActions(row) : [];
+  const actions: ArUiAction[] = canWrite
+    ? arActionsAllowed(arDocActions(row), can)
+    : [];
   const needsReason = confirmation === "void" || confirmation === "reject";
   const editable =
     draft &&
@@ -550,6 +557,7 @@ function InvoiceView({
                 </Button>
               )}
           </div>
+          <InvoiceReceipts invoiceId={row.id} currency={row.currency_code} />
         </TabsContent>
         <TabsContent value="journal">
           <InvoiceJournal document={row} />

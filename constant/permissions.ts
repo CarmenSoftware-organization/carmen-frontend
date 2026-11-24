@@ -197,6 +197,11 @@ export const PERMISSIONS = {
     history: viewOnly("report.history"),
   },
   accounting: {
+    // gateway ar-invoice / ar-receipt: submit needs view, void needs void (resource `accounting.ar`)
+    ar: {
+      view: "accounting.ar.view",
+      void: "accounting.ar.void",
+    },
     gl_jv_template: {
       ...crud("accounting.gl.jv_template"),
       generate: "accounting.gl.jv_template.generate",

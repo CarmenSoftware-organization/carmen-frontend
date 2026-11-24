@@ -72,14 +72,14 @@ export function ReceiptInvoiceDialog({
     [query.data, currency, selectedIds],
   );
   const pickedRows = rows.filter((row) => row.ar_invoice_id in picked);
-  const valid = pickedRows.every((row) => {
+  const hasEmptyAmount = pickedRows.some((row) => {
     const amount = picked[row.ar_invoice_id];
-    return (
-      Number.isFinite(amount) &&
-      amount > 0 &&
-      amount <= Number(row.available_amount)
-    );
+    return !Number.isFinite(amount) || amount <= 0;
   });
+  const hasOverAmount = pickedRows.some(
+    (row) => picked[row.ar_invoice_id] > Number(row.available_amount),
+  );
+  const valid = !hasEmptyAmount && !hasOverAmount;
   const toggle = (row: OutstandingInvoice, checked: boolean) =>
     setPicked((previous) => {
       const next = { ...previous };
@@ -96,7 +96,9 @@ export function ReceiptInvoiceDialog({
           <Checkbox
             aria-label={row.original.doc_no}
             checked={row.original.ar_invoice_id in picked}
-            onCheckedChange={(checked) => toggle(row.original, checked === true)}
+            onCheckedChange={(checked) =>
+              toggle(row.original, checked === true)
+            }
           />
         ),
       },
@@ -189,7 +191,9 @@ export function ReceiptInvoiceDialog({
         )}
         {!valid && (
           <p role="alert" className="text-destructive text-xs">
-            {t("allocationExceedsOutstanding")}
+            {hasEmptyAmount
+              ? t("allocationAmountRequired")
+              : t("allocationExceedsOutstanding")}
           </p>
         )}
         <DialogFooter>

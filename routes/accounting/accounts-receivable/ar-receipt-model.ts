@@ -569,3 +569,26 @@ export function receiptFromDocument(
     allocations,
   };
 }
+
+/**
+ * Copy of a posted/void receipt: the stored cap (= the old applied amount) is stale, so take the cap
+ * from the live outstanding lookup. Invoices with nothing left to apply are dropped; amounts above the
+ * live availability are clamped.
+ */
+export function refreshCopyAllocations(
+  receipt: ArReceipt,
+  outstanding: OutstandingInvoice[],
+): ArReceipt {
+  const allocations: ReceiptAllocation[] = [];
+  for (const line of receipt.allocations) {
+    const open = outstanding.find((row) => row.ar_invoice_id === line.id);
+    const available = open ? Number(open.available_amount) : 0;
+    if (available <= 0) continue;
+    allocations.push({
+      ...line,
+      outstanding: available,
+      amount: Math.min(line.amount, available),
+    });
+  }
+  return { ...receipt, allocations };
+}

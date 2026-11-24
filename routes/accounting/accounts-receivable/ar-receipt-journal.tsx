@@ -11,10 +11,13 @@ import { useJournalVoucher } from "../journal-voucher/use-journal-voucher";
 export function ReceiptJournal({
   jvId,
   jvNo,
+  voidJvId,
   currency,
 }: {
   readonly jvId?: string | null;
   readonly jvNo?: string | null;
+  /** reversing journal of a voided posted receipt */
+  readonly voidJvId?: string | null;
   readonly currency: string;
 }) {
   const t = useTranslations("accounting.arRegister");
@@ -38,11 +41,20 @@ export function ReceiptJournal({
   return (
     <div className="space-y-3">
       {jvId ? (
-        <Button asChild variant="outline" size="sm">
-          <Link to={`/accounting/journal-voucher/${jvId}`}>
-            {jvNo || t("journal")}
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link to={`/accounting/journal-voucher/${jvId}`}>
+              {jvNo || t("journal")}
+            </Link>
+          </Button>
+          {voidJvId && (
+            <Button asChild variant="outline" size="sm">
+              <Link to={`/accounting/journal-voucher/${voidJvId}`}>
+                {tr("voidJournal")}
+              </Link>
+            </Button>
+          )}
+        </div>
       ) : (
         <p className="text-muted-foreground text-xs">{tr("journalHint")}</p>
       )}

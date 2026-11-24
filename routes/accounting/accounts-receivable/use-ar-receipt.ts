@@ -231,6 +231,20 @@ export function useArReceipts(
   });
 }
 
+/** Receipts (any status) that apply to one invoice — `?ar_invoice_id=` filter on the list endpoint. */
+export function useArReceiptsByInvoice(invoiceId?: string) {
+  const bu = useBuCode();
+  return useQuery({
+    queryKey: [QUERY_KEY, bu, "by-invoice", invoiceId],
+    enabled: !!bu && !!invoiceId,
+    queryFn: () =>
+      fetchArReceipts(bu!, {
+        ar_invoice_id: invoiceId,
+        perpage: 100,
+      } as ParamsDto),
+  });
+}
+
 export function useExportArReceipts() {
   const bu = useBuCode();
   const { exportToXlsx, isExporting } = useXlsxExport();

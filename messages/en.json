@@ -449,6 +449,10 @@
       "receipt": "Receipt",
       "receiptAfterSave": "Save the invoice before creating a receipt.",
       "receiptHistory": "Receipt history",
+      "receiptNo": "Receipt no.",
+      "receiptDate": "Date",
+      "receiptsLoadError": "Unable to load receipts for this invoice.",
+      "noReceipts": "No receipts have been applied to this invoice yet.",
       "receivable": "Accounts receivable",
       "referenceInfo": "Reference",
       "referenceRules": "Apply a posted credit note for the same customer, currency and exchange rate.",
@@ -963,11 +967,7 @@
       "deleteDraftOnly": "Only a draft journal voucher can be deleted"
     },
     "accountsPayable": {
-      "master": {
-        "payment": "Payment Type",
-        "form": "WHT Form",
-        "service": "WHT Service Type"
-      },
+      "master": {"payment": "Payment Type", "form": "WHT Form", "service": "WHT Service Type"},
       "invoice": {
         "title": "AP Invoice Directory",
         "desc": "Supplier invoices, debit and credit notes, and what is still owed.",
@@ -1339,11 +1339,7 @@
         "paymentAmount": "Payment amount",
         "postingSide": "Debit / Credit",
         "whtCondition": "Condition",
-        "whtConditions": {
-          "withholding": "1: Withholding tax",
-          "paid_permanently": "2: Paid permanently",
-          "paid_once": "3: Paid once"
-        },
+        "whtConditions": {"withholding": "1: Withholding tax", "paid_permanently": "2: Paid permanently", "paid_once": "3: Paid once"},
         "paymentType": "Payment Type",
         "whtServiceType": "WHT Service Type",
         "docNo": "Doc No.",
@@ -1776,6 +1772,8 @@
       "voidDraftHint": "The receipt keeps its document number and is marked void.",
       "voidPostedHint": "The receipt journal is reversed and the invoice balances are restored.",
       "voidReason": "Reason",
+      "voidJournal": "Void journal",
+      "allocationAmountRequired": "Enter an applied amount greater than 0 for each selected invoice.",
       "whtProfileRequired": "Select the WHT profile.",
       "whtAmountRequired": "WHT amount must be greater than 0.",
       "outstandingLoadError": "Could not load the invoice balances. Invoice numbers and limits may be incomplete; reload before editing.",
@@ -2350,6 +2348,11 @@
       "AR_CUSTOMER_CURRENCY_MISMATCH": "All invoices must belong to the same customer and currency",
       "AR_TAX_INVOICE_NO_CONFLICT": "The tax invoice number conflicts with an existing one. Try again.",
       "GL_SETTING_ACCOUNT_MISSING": "A required GL account is not set in the accounting settings",
+      "BANK_ACCOUNT_NOT_FOUND": "Bank account not found",
+      "CUSTOMER_NOT_FOUND": "Customer not found",
+      "CUSTOMER_INACTIVE": "Customer {code} is inactive",
+      "CUSTOMER_TAX_NO_INVALID": "Tax ID must be 13 digits and branch no 5 digits",
+      "AR_INVOICE_LINE_INVALID": "Line {sequence_no}: {reason}",
       "WORKFLOW_SENDBACK_STAGE_INVALID": "Cannot send back to the stage {stage}. Pick one of the earlier stages.",
       "WORKFLOW_SINGLE_ACTIVE_EXISTS": "AP Invoice already has an active workflow ({workflow}). Only one can be active per business unit.",
       "APP_READ_ONLY": "The system is in read-only mode — this action isn't available right now.",

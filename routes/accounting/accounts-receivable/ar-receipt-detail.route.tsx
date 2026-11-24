@@ -32,6 +32,7 @@ import { StatusChip } from "@/components/ui/status-chip";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { PERMISSIONS } from "@/constant/permissions";
 import { useBankAccounts } from "@/hooks/use-accounting-master";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useCan } from "@/hooks/use-can";
@@ -43,7 +44,7 @@ import { formatDate, isoToDateInput } from "@/lib/date-utils";
 import { isDraftDocNo } from "@/lib/draft-doc-no";
 import { ApDetailGrid } from "../accounts-payable/shared/ap-detail-grid";
 import { ApSendBackFields } from "../accounts-payable/shared/ap-send-back-fields";
-import { arDocActions } from "./ar-doc-actions";
+import { arActionsAllowed, arDocActions } from "./ar-doc-actions";
 import { ArCustomerLookup } from "./ar-customer-lookup";
 import { ReceiptInvoiceDialog } from "./ar-receipt-dialogs";
 import { ReceiptJournal } from "./ar-receipt-journal";
@@ -53,6 +54,7 @@ import {
   newReceiptFromInvoice,
   receiptAllocationTax,
   receiptFromDocument,
+  refreshCopyAllocations,
   receiptProfileDefaults,
   receiptTaxEntityFromCustomer,
   receiptTotals,
@@ -102,31 +104,47 @@ function ReceiptDetail({ id }: { readonly id: string }) {
     // balances only matter while the receipt can still change; after that they would show today's figures
     doc.data?.doc_status === "draft",
   );
+  const state = (isNew ? location.state : null) as {
+    receiptInvoice?: ArRegisterDocument;
+    receiptCopy?: ArReceipt;
+  } | null;
+  const copySource = state?.receiptCopy;
+  // a copy takes its caps from the live balances, not from the original applied amounts
+  const copyOutstanding = useArOutstandingInvoices(
+    copySource?.customerId,
+    copySource?.currencyId,
+    undefined,
+    !!copySource && copySource.allocations.length > 0,
+  );
   if (isNew) {
-    const state = location.state as {
-      receiptInvoice?: ArRegisterDocument;
-      receiptCopy?: ArReceipt;
-    } | null;
+    if (
+      copySource &&
+      copySource.allocations.length > 0 &&
+      copyOutstanding.isLoading
+    )
+      return <Skeleton className="h-40 w-full" />;
     const source = state?.receiptInvoice;
     const today = isoToDateInput(new Date().toISOString());
     const currencyId = (code: string) =>
       currencies.data?.find((row) => row.code === code)?.id ?? "";
-    const receipt =
-      state?.receiptCopy ??
-      (source
+    const receipt = copySource
+      ? copyOutstanding.data
+        ? refreshCopyAllocations(copySource, copyOutstanding.data)
+        : { ...copySource, allocations: [] }
+      : source
         ? newReceiptFromInvoice(source, today)
         : newReceipt(
             today,
             defaultCurrencyCode,
             currencyId(defaultCurrencyCode),
-          ));
+          );
     return (
       <ReceiptForm
         key={`new:${receipt.currencyId}`}
         initial={receipt}
         isNew
         document={undefined}
-        outstandingFailed={false}
+        outstandingFailed={!!copySource && copyOutstanding.isError}
       />
     );
   }
@@ -170,7 +188,7 @@ function ReceiptForm({
   const money = useAmountFormatter();
   const navigate = useNavigate();
   const { dateFormat, defaultCurrencyCode, userId } = useProfile();
-  const { canWrite } = useCan();
+  const { canWrite, can } = useCan();
   const currencies = useCurrencyAll();
   const bankAccounts = useBankAccounts().data ?? [];
   const create = useCreateArReceipt();
@@ -216,7 +234,12 @@ function ReceiptForm({
     action.isPending;
   const dirty = editing && JSON.stringify(receipt) !== JSON.stringify(baseline);
   useUnsavedChanges(dirty);
-  const canSubmit = !isNew && isDraft && !editing && canWrite;
+  const canSubmit =
+    !isNew &&
+    isDraft &&
+    !editing &&
+    canWrite &&
+    can(PERMISSIONS.accounting.ar.view);
   useClaimFormPrimary(canSubmit);
   const set = <K extends keyof ArReceipt>(key: K, value: ArReceipt[K]) =>
     setReceipt((previous) => ({ ...previous, [key]: value }));
@@ -432,11 +455,14 @@ function ReceiptForm({
   // in_review → backend allowed_actions only (no void/delete); everything ANDed with canWrite
   const actions =
     !isNew && canWrite && !editing && document
-      ? arDocActions({
-          doc_status: receipt.status,
-          doc_no: receipt.number,
-          allowed_actions: document.allowed_actions,
-        })
+      ? arActionsAllowed(
+          arDocActions({
+            doc_status: receipt.status,
+            doc_no: receipt.number,
+            allowed_actions: document.allowed_actions,
+          }),
+          can,
+        )
       : [];
   const canVoid = actions.includes("void");
   const canDelete = actions.includes("delete");
@@ -1026,6 +1052,7 @@ function ReceiptForm({
             <ReceiptJournal
               jvId={document?.gl_jv_id}
               jvNo={document?.gl_jv_no}
+              voidJvId={document?.void_gl_jv_id}
               currency={receipt.currency}
             />
           </TabsContent>
