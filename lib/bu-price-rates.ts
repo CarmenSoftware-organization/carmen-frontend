@@ -48,3 +48,30 @@ export function computeGrossPrice(net: number, rates: PriceRates): GrossPrice {
   const vat = round2(((net + service) * rates.vat) / 100);
   return { net, service, vat, gross: round2(net + service + vat) };
 }
+
+/**
+ * คิดย้อน gross → net (ราคาขายที่บันทึก) สำหรับช่อง gross ที่ผู้ใช้พิมพ์เอง
+ *
+ * net ต้องเป็นสตางค์เต็ม และ computeGrossPrice ปัดค่าบริการกับ VAT ทีละส่วน — หารตรง ๆ
+ * (gross ÷ (1+service)(1+VAT)) แล้วปัดจึงอาจได้ gross ที่คลาดไป 1 สตางค์ จึงลอง net รอบ ๆ
+ * ค่าที่หารได้ (±2 สตางค์) แล้วเลือกตัวที่ป้อนกลับเข้า computeGrossPrice ได้ gross ตรงกับที่พิมพ์
+ * ไม่มีตัวไหนตรง (gross บางค่าเป็นไปไม่ได้เมื่อ net ขยับทีละสตางค์แล้ว gross ขยับมากกว่า 1 สตางค์)
+ * = เลือกตัวที่ได้ gross ใกล้สุด — ผู้เรียกเทียบ `gross` ที่คืนกับค่าที่พิมพ์เพื่อบอกผู้ใช้เอง
+ *
+ * @returns ชุดราคาของ net ที่เลือก (`gross` คือค่าที่ได้จริง อาจต่างจากที่พิมพ์ 1 สตางค์)
+ */
+export function solveNetForGross(gross: number, rates: PriceRates): GrossPrice {
+  const target = round2(gross);
+  const factor = (1 + rates.service / 100) * (1 + rates.vat / 100);
+  const base = Math.round((target / factor) * 100);
+  let best: GrossPrice | null = null;
+  // ใกล้ค่าที่หารได้ก่อน — gross เท่ากันหลายตัว (เกิดได้เมื่อ factor < 1 สตางค์ต่อสตางค์) เลือกตัวแรก
+  for (const cents of [base, base - 1, base + 1, base - 2, base + 2]) {
+    if (cents < 0) continue;
+    const p = computeGrossPrice(cents / 100, rates);
+    if (p.gross === target) return p;
+    if (!best || Math.abs(p.gross - target) < Math.abs(best.gross - target))
+      best = p;
+  }
+  return best ?? computeGrossPrice(0, rates);
+}
