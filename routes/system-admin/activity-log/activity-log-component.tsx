@@ -88,7 +88,7 @@ const ENTITY_TYPE_OPTIONS = [
   { label: "Location", value: "location" },
   { label: "Department", value: "department" },
   { label: "Currency", value: "currency" },
-  { label: "Period", value: "period" },
+  { label: "Period", value: "inventory_period" },
   { label: "Auth", value: "auth" },
 ];
 
