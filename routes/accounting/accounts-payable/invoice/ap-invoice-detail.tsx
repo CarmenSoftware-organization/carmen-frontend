@@ -37,6 +37,14 @@ import {
   InvoicePaymentsPanel,
 } from "./ap-invoice-panels";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useProfile } from "@/hooks/use-profile";
 import { ApiError } from "@/lib/api-error";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
@@ -46,7 +54,12 @@ import type {
   ApUiAction,
 } from "@/types/accounts-payable";
 import { apDocumentPage } from "./ap-document-page";
-import { apActions, apCanEdit, apIsAutoFromGrn } from "../shared/ap-status";
+import {
+  apCanEdit,
+  apInvoiceActions,
+  apIsAutoFromGrn,
+} from "../shared/ap-status";
+import { useApInvoicePreviousStages } from "../shared/use-ap-invoice-previous-stages";
 import {
   useApInvoice,
   useApInvoiceAction,
@@ -109,7 +122,7 @@ export default function ApInvoiceDetail() {
   );
 }
 
-type ReasonAction = Extract<ApUiAction, "void" | "reject" | "return">;
+type ReasonAction = Extract<ApUiAction, "void" | "reject" | "sendback">;
 
 function ApInvoiceEditor({
   loaded,
@@ -147,10 +160,21 @@ function ApInvoiceEditor({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [reasonAction, setReasonAction] = useState<ReasonAction | null>(null);
   const [reason, setReason] = useState("");
+  const [stage, setStage] = useState("");
 
   const locked = loaded ? apIsAutoFromGrn(loaded) : false;
   const editable = editing && (isNew || (!!loaded && apCanEdit(loaded)));
-  const actions = loaded ? apActions(loaded, userId) : [];
+  const actions = loaded ? apInvoiceActions(loaded, userId) : [];
+  // ผู้สร้างเป็นผู้ดำเนินการใน stage (มี reject/sendback) แต่ approve ไม่ได้ → บอกเหตุผล
+  const showCreatorHint =
+    !!loaded &&
+    !!userId &&
+    loaded.doc_status === "in_review" &&
+    !!loaded.allowed_actions &&
+    !loaded.allowed_actions.includes("approve") &&
+    (loaded.allowed_actions.includes("reject") ||
+      loaded.allowed_actions.includes("sendback")) &&
+    loaded.created_by_id === userId;
   const errors = showErrors
     ? validateInvoiceForm(form, isNew ? "create" : "update")
     : NO_ERRORS;
@@ -247,6 +271,7 @@ function ApInvoiceEditor({
   const runAction = async (
     action: Exclude<ApUiAction, "delete">,
     actionReason?: string,
+    actionStage?: string,
   ) => {
     if (!loaded) return;
     if (loaded.doc_version == null) {
@@ -259,10 +284,12 @@ function ApInvoiceEditor({
         action,
         docVersion: loaded.doc_version,
         reason: actionReason,
+        stage: actionStage,
       });
       toast.success(td(`done.${action}`));
       setReasonAction(null);
       setReason("");
+      setStage("");
     } catch (error) {
       onFailure(error);
     }
@@ -333,7 +360,15 @@ function ApInvoiceEditor({
   const grnLine = loaded?.lines?.find((l) => l.sources[0]);
   const grnId = grnLine?.sources[0]?.good_received_note_id;
   const primaryIsSubmit = !!loaded && !editing && actions.includes("submit");
-  const needsReason = reasonAction === "void";
+  const needsReason = reasonAction === "void" || reasonAction === "reject";
+  const sendingBack = reasonAction === "sendback";
+  const stagesQuery = useApInvoicePreviousStages(loaded?.id, sendingBack);
+  const stages = stagesQuery.data ?? [];
+  const closeReasonDialog = () => {
+    setReasonAction(null);
+    setReason("");
+    setStage("");
+  };
 
   return (
     <div
@@ -422,15 +457,15 @@ function ApInvoiceEditor({
                 {td("actions.approve")}
               </Button>
             )}
-            {!editing && actions.includes("return") && (
+            {!editing && actions.includes("sendback") && (
               <Button
                 size="sm"
                 variant="outline"
                 disabled={busy}
-                onClick={() => setReasonAction("return")}
+                onClick={() => setReasonAction("sendback")}
               >
                 <Undo2 className="size-4" />
-                {td("actions.return")}
+                {td("actions.sendback")}
               </Button>
             )}
             {!editing && actions.includes("reject") && (
@@ -443,6 +478,11 @@ function ApInvoiceEditor({
                 <X className="size-4" />
                 {td("actions.reject")}
               </Button>
+            )}
+            {!editing && showCreatorHint && (
+              <span className="text-muted-foreground text-xs">
+                {td("creatorCannotApproveHint")}
+              </span>
             )}
             {!editing && actions.includes("void") && (
               <Button
@@ -722,10 +762,7 @@ function ApInvoiceEditor({
       <Dialog
         open={reasonAction !== null}
         onOpenChange={(open) => {
-          if (!open && !actionMutation.isPending) {
-            setReasonAction(null);
-            setReason("");
-          }
+          if (!open && !actionMutation.isPending) closeReasonDialog();
         }}
       >
         <DialogContent>
@@ -734,11 +771,47 @@ function ApInvoiceEditor({
               {reasonAction ? td(`reasonDialog.${reasonAction}.title`) : ""}
             </DialogTitle>
             <DialogDescription>
-              {needsReason
-                ? td("reasonDialog.required")
-                : td("reasonDialog.optional")}
+              {reasonAction === "reject"
+                ? td("reasonDialog.reject.required")
+                : needsReason
+                  ? td("reasonDialog.required")
+                  : td("reasonDialog.optional")}
             </DialogDescription>
           </DialogHeader>
+          {sendingBack && (
+            <div className="space-y-1.5">
+              <Label>{td("reasonDialog.sendback.stage")}</Label>
+              <Select value={stage} onValueChange={setStage}>
+                <SelectTrigger
+                  aria-label={td("reasonDialog.sendback.stage")}
+                  disabled={stagesQuery.isLoading}
+                >
+                  <SelectValue
+                    placeholder={td("reasonDialog.sendback.stagePlaceholder")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {stages.map((s) => (
+                    <SelectItem key={s.key} value={s.name}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {stagesQuery.isError && (
+                <p className="text-destructive text-xs" role="alert">
+                  {td("reasonDialog.sendback.stagesError")}
+                </p>
+              )}
+              {!stagesQuery.isLoading &&
+                !stagesQuery.isError &&
+                stages.length === 0 && (
+                  <p className="text-warning-ink text-xs">
+                    {td("reasonDialog.sendback.noStages")}
+                  </p>
+                )}
+            </div>
+          )}
           <Textarea
             rows={3}
             value={reason}
@@ -749,21 +822,28 @@ function ApInvoiceEditor({
             <Button
               variant="outline"
               disabled={actionMutation.isPending}
-              onClick={() => {
-                setReasonAction(null);
-                setReason("");
-              }}
+              onClick={closeReasonDialog}
             >
               {td("cancel")}
             </Button>
             <Button
-              variant={reasonAction === "void" ? "destructive" : "default"}
+              variant={
+                reasonAction === "void" || reasonAction === "reject"
+                  ? "destructive"
+                  : "default"
+              }
               disabled={
-                actionMutation.isPending || (needsReason && !reason.trim())
+                actionMutation.isPending ||
+                (needsReason && !reason.trim()) ||
+                (sendingBack && !stage)
               }
               onClick={() =>
                 reasonAction &&
-                void runAction(reasonAction, reason.trim() || undefined)
+                void runAction(
+                  reasonAction,
+                  reason.trim() || undefined,
+                  sendingBack ? stage : undefined,
+                )
               }
             >
               {reasonAction ? td(`actions.${reasonAction}`) : ""}

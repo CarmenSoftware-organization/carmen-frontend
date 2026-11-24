@@ -22,11 +22,11 @@ export type ApPaymentMethod =
 export type ApTaxStatus =
   "pending" | "on_review" | "unclaim" | "confirmed" | "submitted" | "void";
 
-/** คำสั่ง workflow ที่ backend รับ (UI "return" = `review`) */
+/** คำสั่ง workflow ที่ backend รับ (UI "sendback" = `review`) */
 export type ApCommand = "submit" | "approve" | "review" | "reject" | "void";
 /** ชื่อ action ฝั่ง UI */
 export type ApUiAction =
-  "submit" | "approve" | "return" | "reject" | "void" | "delete";
+  "submit" | "approve" | "sendback" | "reject" | "void" | "delete";
 
 export type ApListParams = ParamsDto;
 
@@ -50,6 +50,8 @@ export interface ApWorkflowFields {
   workflow_history?: unknown;
   /** `{ execute: [{ user_id, ... }] }` — ผู้ที่ลงมือที่ขั้นปัจจุบันได้ */
   user_action?: { execute?: { user_id: string }[] } | null;
+  /** action ที่ backend อนุญาตให้ผู้ใช้นี้ทำที่ขั้นปัจจุบัน (ไม่ส่ง = backend เก่า) */
+  allowed_actions?: ("approve" | "reject" | "sendback")[];
   last_action?: string | null;
   last_action_at_date?: string | null;
   last_action_by_id?: string | null;

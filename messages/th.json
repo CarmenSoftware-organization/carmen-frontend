@@ -185,7 +185,9 @@
       "printForm": "แบบฟอร์มการพิมพ์",
       "printFormDesc": "แบบฟอร์มรายงานที่ใช้พิมพ์สำหรับเอกสารแต่ละประเภท",
       "documents": "การทำงานของเอกสาร",
-      "documentsDesc": "ค่าตั้งต้นที่ใช้ตอนสร้างเอกสารจัดซื้อและเอกสารคลัง"
+      "documentsDesc": "ค่าตั้งต้นที่ใช้ตอนสร้างเอกสารจัดซื้อและเอกสารคลัง",
+      "ap": "AP",
+      "apDesc": "การตั้งค่า Accounts Payable ของหน่วยธุรกิจนี้"
     },
     "config": {
       "prAllowDuplicateProduct": "อนุญาตให้เลือกสินค้าซ้ำกันได้",
@@ -232,7 +234,8 @@
       "printFormCustomCount": "ตั้งเอง {n} จาก {total}",
       "generalDefaultVatRate": "VAT ตั้งต้น (%)",
       "generalDefaultVatRateDesc": "VAT ในเอกสารยังมาจาก Tax Profile",
-      "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)"
+      "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)",
+      "apInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AP Invoice ของตัวเอง"
     }
   },
   "accounting": {
@@ -972,6 +975,7 @@
           "paid": "จ่ายครบ"
         },
         "detail": {
+          "creatorCannotApproveHint": "คุณเป็นผู้สร้างใบแจ้งหนี้นี้ จึงอนุมัติเองไม่ได้ ให้ผู้อนุมัติคนอื่นทำแทน",
           "newTitle": "สร้างใบแจ้งหนี้เจ้าหนี้",
           "subtitle": "ใบแจ้งหนี้ผู้ขาย",
           "back": "กลับไปรายการใบแจ้งหนี้เจ้าหนี้",
@@ -1020,7 +1024,7 @@
           "actions": {
             "submit": "ส่งตรวจ",
             "approve": "อนุมัติ",
-            "return": "ส่งกลับ",
+            "sendback": "ส่งกลับ",
             "reject": "ปฏิเสธ",
             "void": "ยกเลิกเอกสาร",
             "delete": "ลบ"
@@ -1028,7 +1032,7 @@
           "done": {
             "submit": "ส่งใบแจ้งหนี้แล้ว",
             "approve": "อนุมัติใบแจ้งหนี้แล้ว",
-            "return": "ส่งใบแจ้งหนี้กลับแล้ว",
+            "sendback": "ส่งใบแจ้งหนี้กลับแล้ว",
             "reject": "ปฏิเสธใบแจ้งหนี้แล้ว",
             "void": "ยกเลิกใบแจ้งหนี้แล้ว",
             "delete": "ลบใบแจ้งหนี้แล้ว"
@@ -1045,10 +1049,15 @@
               "title": "ยกเลิกใบแจ้งหนี้"
             },
             "reject": {
-              "title": "ปฏิเสธใบแจ้งหนี้"
+              "title": "ปฏิเสธและยกเลิกใบแจ้งหนี้",
+              "required": "ต้องระบุเหตุผล การปฏิเสธจะยกเลิกใบแจ้งหนี้นี้และเปิดใหม่ไม่ได้"
             },
-            "return": {
-              "title": "ส่งใบแจ้งหนี้กลับ"
+            "sendback": {
+              "title": "ส่งใบแจ้งหนี้กลับ",
+              "stage": "ส่งกลับไปที่ขั้น",
+              "stagePlaceholder": "เลือกขั้นตอน",
+              "stagesError": "โหลดขั้นก่อนหน้าไม่สำเร็จ ปิดหน้าต่างนี้แล้วลองใหม่",
+              "noStages": "ไม่มีขั้นก่อนหน้าให้ส่งใบแจ้งหนี้กลับไป"
             }
           },
           "summary": {
@@ -1249,7 +1258,7 @@
           "actions": {
             "submit": "ส่งตรวจ",
             "approve": "อนุมัติ",
-            "return": "ส่งกลับ",
+            "sendback": "ส่งกลับ",
             "reject": "ปฏิเสธ",
             "void": "ยกเลิกเอกสาร",
             "delete": "ลบ"
@@ -1257,7 +1266,7 @@
           "done": {
             "submit": "ส่งการจ่ายเงินแล้ว",
             "approve": "อนุมัติการจ่ายเงินแล้ว",
-            "return": "ส่งการจ่ายเงินกลับแล้ว",
+            "sendback": "ส่งการจ่ายเงินกลับแล้ว",
             "reject": "ปฏิเสธการจ่ายเงินแล้ว",
             "void": "ยกเลิกการจ่ายเงินแล้ว",
             "delete": "ลบการจ่ายเงินแล้ว"
@@ -1276,7 +1285,7 @@
             "reject": {
               "title": "ปฏิเสธการจ่ายเงิน"
             },
-            "return": {
+            "sendback": {
               "title": "ส่งการจ่ายเงินกลับ"
             }
           },
@@ -2243,6 +2252,11 @@
     "checkFields": "ตรวจช่องนี้อีกที: {fields}",
     "srDateOutsideOpenPeriod": "วันที่เบิกอยู่นอกงวดบัญชีที่เปิดอยู่ แก้วันที่ใหม่ หรือให้ฝ่ายบัญชีเปิดงวดนั้นก่อน",
     "byCode": {
+      "WORKFLOW_CREATOR_CANNOT_APPROVE": "คุณเป็นผู้สร้างเอกสารนี้ จึงอนุมัติเองไม่ได้ ให้ผู้อนุมัติคนอื่นทำแทน",
+      "AP_INVOICE_REJECT_REASON_REQUIRED": "ระบุเหตุผลก่อนปฏิเสธใบแจ้งหนี้นี้",
+      "AP_INVOICE_NUMBERED_VOID_ONLY": "ใบแจ้งหนี้นี้มีเลขที่เอกสารแล้ว จึงลบไม่ได้ ให้ยกเลิก (void) แทน",
+      "WORKFLOW_SENDBACK_STAGE_INVALID": "ส่งกลับไปขั้น {stage} ไม่ได้ เลือกจากขั้นก่อนหน้าเท่านั้น",
+      "WORKFLOW_SINGLE_ACTIVE_EXISTS": "ใบแจ้งหนี้เจ้าหนี้มี workflow ที่เปิดใช้อยู่แล้ว ({workflow}) เปิดใช้ได้เส้นเดียวต่อหน่วยธุรกิจ",
       "APP_READ_ONLY": "ระบบอยู่ในโหมดอ่านอย่างเดียว — ยังทำรายการนี้ไม่ได้ในขณะนี้",
       "APP_MAINTENANCE": "ระบบกำลังปิดปรับปรุง กรุณาลองใหม่ภายหลัง",
       "APP_DISABLED": "แอปนี้ถูกปิดใช้งาน",
@@ -3748,6 +3762,7 @@
       "titlePurchaseOrder": "ลำดับขั้นอนุมัติใบสั่งซื้อ",
       "titleStoreRequisition": "ลำดับขั้นอนุมัติใบเบิกของ",
       "titleJournalVoucher": "ลำดับขั้นอนุมัติใบสำคัญรายวัน",
+      "titleApInvoice": "ลำดับขั้นอนุมัติใบแจ้งหนี้เจ้าหนี้",
       "desc": "ใครอนุมัติอะไร เรียงก่อนหลังยังไง กว่าเอกสารจะผ่าน",
       "add": "สร้างลำดับขั้นใหม่",
       "edit": "แก้ไขเวิร์กโฟลว์",
@@ -3829,6 +3844,8 @@
       "typePurchaseRequest": "ใบขอซื้อ",
       "typeStoreRequisition": "ใบเบิกสินค้า",
       "typeJournalVoucher": "ใบสำคัญรายวัน",
+      "typeApInvoice": "ใบแจ้งหนี้เจ้าหนี้",
+      "apInvoiceSingleActiveHint": "หน่วยธุรกิจนี้มี workflow ของใบแจ้งหนี้เจ้าหนี้ที่เปิดใช้อยู่แล้ว เปิดใช้ได้ครั้งละเส้นเดียว — ปิดเส้นเดิมก่อน หรือแก้เส้นเดิมแทน",
       "listJvPrefixCount": "{count, plural, =0 {ทุก prefix} other {prefix {count} รายการ}}",
       "listJvSourceCount": "{count, plural, =0 {ทุกที่มา} other {ที่มา {count} แบบ}}",
       "jvScopeTab": "ขอบเขต",
@@ -4012,6 +4029,7 @@
           "workflowPurchaseOrder": "ขั้นอนุมัติก่อนส่งใบสั่งซื้อให้ผู้ขาย",
           "workflowStoreRequisition": "ขั้นอนุมัติก่อนจ่ายของตามใบเบิก",
           "workflowJournalVoucher": "ขั้นอนุมัติก่อนลงบัญชีใบสำคัญรายวัน",
+          "workflowApInvoice": "ขั้นอนุมัติก่อนลงบัญชีใบแจ้งหนี้เจ้าหนี้",
           "notificationTemplate": "ข้อความแจ้งเตือนที่ลำดับขั้นเหล่านี้ส่งออกไป"
         }
       }
@@ -7875,6 +7893,7 @@
     "workflowPurchaseOrder": "ใบสั่งซื้อ",
     "workflowStoreRequisition": "ใบเบิกของ",
     "workflowJournalVoucher": "ใบสำคัญรายวัน",
+    "workflowApInvoice": "ใบแจ้งหนี้เจ้าหนี้",
     "interface": "การเชื่อมต่อระบบภายนอก",
     "emailProfile": "โปรไฟล์อีเมล",
     "emailTemplate": "ข้อความอีเมล",

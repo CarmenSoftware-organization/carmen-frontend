@@ -160,6 +160,7 @@ export const QUERY_KEYS = {
   SPOT_CHECK_DETAIL_COMMENTS: "spot-check-detail-comments",
   STOCK_REPLENISHMENT: "stock-replenishment",
   STORE_REQUISITIONS: "store-requisitions",
+  AP_INVOICE_PREVIOUS_STAGES: "ap-invoice-previous-stages",
   STORE_REQUISITION_PREVIOUS_STAGES: "store-requisition-previous-stages",
   STORE_REQUISITION_STOCK_MOVEMENTS: "store-requisition-stock-movements",
   STORE_REQUISITION_WORKFLOW_STAGES: "store-requisition-workflow-stages",

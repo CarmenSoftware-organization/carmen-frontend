@@ -22,6 +22,7 @@ import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { toast } from "sonner";
+import { useApInvoiceWorkflows } from "@/hooks/use-workflow";
 import { useCreateWorkflow } from "./use-wf-mutations";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { getWorkflowTypeLabels, workflowTypeField } from "@/constant/workflow";
@@ -80,6 +81,23 @@ export default function WorkflowNewForm({
     type: typeLabels[watchedType] ?? typeLabels[WORKFLOW_TYPE.PR],
   });
 
+  // AP Invoice มี workflow ที่เปิดใช้ได้เส้นเดียวต่อ BU — ถ้ามีอยู่แล้วห้ามสร้างเพิ่ม
+  // (backend ตอบ WORKFLOW_SINGLE_ACTIVE_EXISTS เป็นด่านสุดท้าย)
+  // perpage ชัดเจนเพื่อให้เห็นเส้นที่เปิดอยู่แม้เกินหน้าแรก (ไม่ใช้ -1)
+  // ยิงเฉพาะเมื่อฟอร์มนี้เป็น AP ได้ — ฟอร์มชนิดอื่นไม่ยิง (env ที่ยังไม่ allowlist
+  // workflow.findAllApInvoice จะ 401 แล้วผู้ใช้โดน logout)
+  const apQueryEnabled = !lockedType || lockedType === WORKFLOW_TYPE.AP_INVOICE;
+  const { data: apWorkflows, isPending: apPending } = useApInvoiceWorkflows(
+    { perpage: 100 },
+    { enabled: apQueryEnabled },
+  );
+  const apLoading = apQueryEnabled && apPending;
+  const apActiveExists =
+    apQueryEnabled && !!apWorkflows?.data?.some((w) => w.is_active);
+  const isApType = watchedType === WORKFLOW_TYPE.AP_INVOICE;
+  // ระหว่างโหลดรายการ ถือว่า AP ถูกบล็อกไว้ก่อน จนรู้ว่าไม่มีเส้นที่เปิดอยู่
+  const apBlocked = isApType && (apLoading || apActiveExists);
+
   const discard = useDiscardConfirm({
     isDirty: form.formState.isDirty,
     isPending,
@@ -92,6 +110,7 @@ export default function WorkflowNewForm({
   const handleLeave = () => discard.confirm(backToList);
 
   const onSubmit = (values: WorkflowFormValues) => {
+    if (apBlocked) return;
     const payload = mapToPayload(values);
     payload.data.stages = fillSeededTemplateIds(payload.data.stages, seededIds);
 
@@ -117,7 +136,7 @@ export default function WorkflowNewForm({
           entity={t("entity")}
           mode="add"
           formId="new-workflow-form"
-          isPending={isPending}
+          isPending={isPending || apBlocked}
           submitLabel={t("createWorkflow")}
           onBack={handleLeave}
           onCancel={handleLeave}
@@ -182,7 +201,14 @@ export default function WorkflowNewForm({
                     </SelectTrigger>
                     <SelectContent>
                       {workflowTypeField.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
+                        <SelectItem
+                          key={opt.value}
+                          value={opt.value}
+                          disabled={
+                            opt.value === WORKFLOW_TYPE.AP_INVOICE &&
+                            apActiveExists
+                          }
+                        >
                           {opt.label}
                         </SelectItem>
                       ))}
@@ -193,7 +219,20 @@ export default function WorkflowNewForm({
               <FieldError>
                 {form.formState.errors.workflow_type?.message}
               </FieldError>
+              {isApType && apActiveExists && (
+                <p className="text-muted-foreground text-xs">
+                  {t("apInvoiceSingleActiveHint")}
+                </p>
+              )}
             </Field>
+          )}
+          {lockedType === WORKFLOW_TYPE.AP_INVOICE && apActiveExists && (
+            <p
+              role="alert"
+              className="text-warning-ink text-sm sm:col-span-2"
+            >
+              {t("apInvoiceSingleActiveHint")}
+            </p>
           )}
 
           <Field className="sm:col-span-2">

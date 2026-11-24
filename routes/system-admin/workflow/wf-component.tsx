@@ -43,6 +43,7 @@ const TITLE_KEY: Record<WorkflowDocType, string> = {
   "purchase-order": "titlePurchaseOrder",
   "store-requisition": "titleStoreRequisition",
   "journal-voucher": "titleJournalVoucher",
+  "ap-invoice": "titleApInvoice",
 };
 
 export default function WorkflowComponent({ docType }: WorkflowComponentProps) {

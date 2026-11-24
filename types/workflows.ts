@@ -3,6 +3,7 @@ export enum WORKFLOW_TYPE {
   PO = "purchase_order",
   SR = "store_requisition",
   JV = "gl_jv",
+  AP_INVOICE = "ap_invoice",
 }
 
 enum enum_sla_unit {

@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { WORKFLOW_TYPE } from "@/types/workflows";
+import { getWorkflowCaps } from "@/constant/workflow";
 import { useDepartment } from "@/hooks/use-department";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { PagedChecklist } from "@/components/lookup/paged-checklist";
@@ -375,10 +375,10 @@ function RuleDetail({
   const t = useTranslations("systemAdmin.workflow");
   const tfl = useTranslations("field");
   const tl = useTranslations("lookup");
-  // JV มีแค่ยอดรวม — ไม่มี department/category ให้ตัดสินใจ (mapper ส่ง department เป็น null)
-  const isJv =
-    useWatch({ control: form.control, name: "workflow_type" }) ===
-    WORKFLOW_TYPE.JV;
+  // JV และ AP Invoice มีแค่ยอดรวม — ไม่มี department/category ให้ตัดสินใจ (mapper ส่ง department เป็น null)
+  const isJv = getWorkflowCaps(
+    useWatch({ control: form.control, name: "workflow_type" }),
+  ).totalOnlyRouting;
 
   const rule = useWatch({
     control: form.control,

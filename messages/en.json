@@ -185,7 +185,9 @@
       "printForm": "Print Forms",
       "printFormDesc": "Report form used when printing each document type.",
       "documents": "Document behavior",
-      "documentsDesc": "Defaults applied when staff create purchasing and stock documents."
+      "documentsDesc": "Defaults applied when staff create purchasing and stock documents.",
+      "ap": "AP",
+      "apDesc": "Accounts Payable settings for this business unit."
     },
     "config": {
       "prAllowDuplicateProduct": "Allow selecting duplicate products",
@@ -232,7 +234,8 @@
       "printFormCustomCount": "{n} of {total} customised",
       "generalDefaultVatRate": "Default VAT (%)",
       "generalDefaultVatRateDesc": "Documents still take VAT from the tax profile.",
-      "generalDefaultServiceRate": "Default service charge (%)"
+      "generalDefaultServiceRate": "Default service charge (%)",
+      "apInvoiceAllowCreatorApprove": "Allow the creator to approve their own AP invoice"
     }
   },
   "accounting": {
@@ -972,6 +975,7 @@
           "paid": "Paid"
         },
         "detail": {
+          "creatorCannotApproveHint": "You created this invoice, so you cannot approve it. Ask another approver.",
           "newTitle": "New AP Invoice",
           "subtitle": "Supplier invoice",
           "back": "Back to AP Invoice Directory",
@@ -1020,7 +1024,7 @@
           "actions": {
             "submit": "Submit",
             "approve": "Approve",
-            "return": "Return",
+            "sendback": "Send back",
             "reject": "Reject",
             "void": "Void",
             "delete": "Delete"
@@ -1028,8 +1032,8 @@
           "done": {
             "submit": "Invoice submitted",
             "approve": "Invoice approved",
-            "return": "Invoice returned",
-            "reject": "Invoice rejected",
+            "sendback": "Invoice sent back",
+            "reject": "Invoice rejected and voided",
             "void": "Invoice voided",
             "delete": "Invoice deleted"
           },
@@ -1045,10 +1049,15 @@
               "title": "Void invoice"
             },
             "reject": {
-              "title": "Reject invoice"
+              "title": "Reject and void invoice",
+              "required": "A reason is required. Rejecting voids this invoice and it cannot be reopened."
             },
-            "return": {
-              "title": "Return invoice"
+            "sendback": {
+              "title": "Send invoice back",
+              "stage": "Send back to stage",
+              "stagePlaceholder": "Select a stage",
+              "stagesError": "Could not load the earlier stages. Close this dialog and try again.",
+              "noStages": "There is no earlier stage to send this invoice back to."
             }
           },
           "summary": {
@@ -1249,7 +1258,7 @@
           "actions": {
             "submit": "Submit",
             "approve": "Approve",
-            "return": "Return",
+            "sendback": "Return",
             "reject": "Reject",
             "void": "Void",
             "delete": "Delete"
@@ -1257,7 +1266,7 @@
           "done": {
             "submit": "Payment submitted",
             "approve": "Payment approved",
-            "return": "Payment returned",
+            "sendback": "Payment returned",
             "reject": "Payment rejected",
             "void": "Payment voided",
             "delete": "Payment deleted"
@@ -1276,7 +1285,7 @@
             "reject": {
               "title": "Reject payment"
             },
-            "return": {
+            "sendback": {
               "title": "Return payment"
             }
           },
@@ -2243,6 +2252,11 @@
     "checkFields": "Check these fields again: {fields}",
     "srDateOutsideOpenPeriod": "The requisition date is outside every open accounting period. Change the date, or ask accounting to open that period.",
     "byCode": {
+      "WORKFLOW_CREATOR_CANNOT_APPROVE": "You created this document, so you cannot approve it. Ask another approver.",
+      "AP_INVOICE_REJECT_REASON_REQUIRED": "Enter a reason before rejecting this invoice.",
+      "AP_INVOICE_NUMBERED_VOID_ONLY": "This invoice already has a document number, so it cannot be deleted. Void it instead.",
+      "WORKFLOW_SENDBACK_STAGE_INVALID": "Cannot send back to the stage {stage}. Pick one of the earlier stages.",
+      "WORKFLOW_SINGLE_ACTIVE_EXISTS": "AP Invoice already has an active workflow ({workflow}). Only one can be active per business unit.",
       "APP_READ_ONLY": "The system is in read-only mode — this action isn't available right now.",
       "APP_MAINTENANCE": "The system is under maintenance. Please try again later.",
       "APP_DISABLED": "This application has been disabled.",
@@ -3748,6 +3762,7 @@
       "titlePurchaseOrder": "Purchase Order Workflow",
       "titleStoreRequisition": "Store Requisition Workflow",
       "titleJournalVoucher": "Journal Voucher Workflow",
+      "titleApInvoice": "AP Invoice Workflow",
       "desc": "Who approves what, and in which order, before a document can go through.",
       "add": "New Workflow",
       "edit": "Edit Workflow",
@@ -3829,6 +3844,8 @@
       "typePurchaseRequest": "Purchase Request",
       "typeStoreRequisition": "Store Requisition",
       "typeJournalVoucher": "Journal Voucher",
+      "typeApInvoice": "AP Invoice",
+      "apInvoiceSingleActiveHint": "This business unit already has an active AP Invoice workflow. Only one can be active at a time — deactivate it first, or edit it instead.",
       "listJvPrefixCount": "{count, plural, =0 {All prefixes} one {# prefix} other {# prefixes}}",
       "listJvSourceCount": "{count, plural, =0 {all sources} one {# source} other {# sources}}",
       "jvScopeTab": "Scope",
@@ -4012,6 +4029,7 @@
           "workflowPurchaseOrder": "Approval steps before a purchase order goes to the vendor.",
           "workflowStoreRequisition": "Approval steps before stock is issued against a store requisition.",
           "workflowJournalVoucher": "Approval steps before a journal voucher is posted.",
+          "workflowApInvoice": "Approval steps before an AP invoice is posted.",
           "notificationTemplate": "Wording of the notifications these workflows send."
         }
       }
@@ -7875,6 +7893,7 @@
     "workflowPurchaseOrder": "Purchase Order",
     "workflowStoreRequisition": "Store Requisition",
     "workflowJournalVoucher": "Journal Voucher",
+    "workflowApInvoice": "AP Invoice",
     "interface": "Interfaces",
     "emailProfile": "Email Profiles",
     "emailTemplate": "Email Messages",

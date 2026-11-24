@@ -209,6 +209,20 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
       },
     ],
   },
+  {
+    id: "ap",
+    titleKey: "sections.ap",
+    descKey: "sections.apDesc",
+    items: [
+      {
+        key: "ap.invoice.allow-creator-approve",
+        datatype: "boolean",
+        defaultValue: "false",
+        label: "Allow the creator to approve their own AP invoice",
+        labelKey: "config.apInvoiceAllowCreatorApprove",
+      },
+    ],
+  },
 ];
 
 export const SEEDED_ITEMS: readonly SeededConfigItem[] =

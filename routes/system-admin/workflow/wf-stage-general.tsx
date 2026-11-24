@@ -24,7 +24,8 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
-import { WORKFLOW_TYPE, type Role } from "@/types/workflows";
+import type { Role } from "@/types/workflows";
+import { getWorkflowCaps } from "@/constant/workflow";
 import type { WorkflowCreateModel } from "./wf-form-schema";
 import { getAllowedRoles } from "./wf-role-colors";
 import { ACTION_ROWS } from "./wf-action-meta";
@@ -78,8 +79,7 @@ export function WfStageGeneral({
 
   // ฟีเจอร์ซ่อนราคาไม่มีผลกับใบเบิก (SR ไม่มียอด) และ stage create/purchase (ไม่ถูกซ่อนเสมอ)
   const hideFieldsApplicable =
-    workflowType !== WORKFLOW_TYPE.SR &&
-    workflowType !== WORKFLOW_TYPE.JV &&
+    getWorkflowCaps(workflowType).canHidePrice &&
     currentRole !== "create" &&
     currentRole !== "purchase";
 

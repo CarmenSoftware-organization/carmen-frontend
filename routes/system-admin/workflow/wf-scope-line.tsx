@@ -1,6 +1,6 @@
 import { useTranslations } from "use-intl";
 import type { WorkflowDto } from "@/types/workflows";
-import { WORKFLOW_TYPE } from "@/types/workflows";
+import { getWorkflowCaps } from "@/constant/workflow";
 import { cn } from "@/lib/utils";
 
 interface WfScopeLineProps {
@@ -20,7 +20,7 @@ export default function WfScopeLine({ workflow, className }: WfScopeLineProps) {
   const t = useTranslations("systemAdmin.workflow");
   const products = workflow.data?.products?.length ?? 0;
   const rules = workflow.data?.routing_rules?.length ?? 0;
-  const isJv = workflow.workflow_type === WORKFLOW_TYPE.JV;
+  const caps = getWorkflowCaps(workflow.workflow_type);
   const jvScope = workflow.data?.jv_scope;
 
   return (
@@ -30,18 +30,20 @@ export default function WfScopeLine({ workflow, className }: WfScopeLineProps) {
         className,
       )}
     >
-      {isJv ? (
+      {caps.hasJvScope ? (
         <>
           {t("listJvPrefixCount", { count: jvScope?.prefix_ids?.length ?? 0 })}
           <span aria-hidden="true"> · </span>
           {t("listJvSourceCount", { count: jvScope?.sources?.length ?? 0 })}
         </>
       ) : (
-        t("listProductCount", { count: products })
+        caps.hasProducts && t("listProductCount", { count: products })
       )}
       {rules > 0 && (
         <>
-          <span aria-hidden="true"> · </span>
+          {(caps.hasJvScope || caps.hasProducts) && (
+            <span aria-hidden="true"> · </span>
+          )}
           {t("listRuleCount", { count: rules })}
         </>
       )}

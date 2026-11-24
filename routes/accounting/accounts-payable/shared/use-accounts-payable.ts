@@ -31,9 +31,9 @@ export const AP_QUERY_KEYS = {
     [...AP_QUERY_KEYS.root(bu), "outstanding", vendorId] as const,
 };
 
-/** UI "return" = คำสั่ง `review` ของ backend */
+/** UI "sendback" = คำสั่ง `review` ของ backend */
 export function toApCommand(action: Exclude<ApUiAction, "delete">): ApCommand {
-  return action === "return" ? "review" : action;
+  return action === "sendback" ? "review" : action;
 }
 
 function useBu() {
