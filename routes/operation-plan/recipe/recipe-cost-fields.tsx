@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { FieldInput } from "@/components/ui/field";
 import { CompactSection } from "@/components/share/compact-section";
 import { EyeBrow } from "@/components/ui/eye-brow";
-import { formatCurrency } from "@/lib/currency-utils";
+import { formatCurrency, round2 } from "@/lib/currency-utils";
 import { useUnitById } from "@/hooks/use-unit";
 import {
   nullableNumberInput,
@@ -32,20 +32,33 @@ const COST_LINES: readonly {
   key: CostKey;
   label: "ingredientCost" | "laborCost" | "overheadCost";
   swatch: string;
+  /** อัตราของหมวด (% ของราคาขาย) ที่แสดงต่อท้ายชื่อบรรทัด — วัตถุดิบไม่มี (เทียบกับเป้า food cost แทน) */
+  categoryRate?: "labor" | "overhead";
 }[] = [
   {
     key: "total_ingredient_cost",
     label: "ingredientCost",
     swatch: "bg-foreground",
   },
-  { key: "labor_cost", label: "laborCost", swatch: "bg-foreground/55" },
-  { key: "overhead_cost", label: "overheadCost", swatch: "bg-foreground/25" },
+  {
+    key: "labor_cost",
+    label: "laborCost",
+    swatch: "bg-foreground/55",
+    categoryRate: "labor",
+  },
+  {
+    key: "overhead_cost",
+    label: "overheadCost",
+    swatch: "bg-foreground/25",
+    categoryRate: "overhead",
+  },
 ];
 
 /**
  * แท็บ Costing — สามส่วนเรียงตามลำดับคิด (ทุกตัวเลขของทั้งสูตร)
  *
  * 1 ต้นทุน: วัตถุดิบ + แรงงาน + โสหุ้ย = ต้นทุนรวม ÷ จำนวน Portion = ต้นทุนต่อ Portion
+ *   ค่าแรง/โสหุ้ยมีอัตราของหมวดต่อท้ายชื่อ กดใช้แล้วช่องได้ ราคาขาย × อัตรา
  * 2 ราคาขาย: ราคาขายทั้งสูตร + เป้า food cost + ราคาแนะนำ
  * 3 กำไรขั้นต้น: ราคาขาย − ต้นทุนแต่ละตัว = กำไร พร้อม % ของราคาขายทุกบรรทัด
  */
@@ -93,7 +106,8 @@ export function RecipeCostFields({
   const share = (n: number) => (batchTotal > 0 ? (n / batchTotal) * 100 : 0);
   const yld = Number(baseYield) || 0;
   const targetPct = Number(target) || 0;
-  const hasPrice = (Number(sell) || 0) > 0;
+  const sellingPrice = Number(sell) || 0;
+  const hasPrice = sellingPrice > 0;
   const priceRates = useRecipePriceRates();
 
   return (
@@ -121,49 +135,77 @@ export function RecipeCostFields({
                 />
               ))}
             </div>
-            <div className="space-y-1.5">
-              {COST_LINES.map((line) => (
-                <div
-                  key={line.key}
-                  className="grid grid-cols-[0.5rem_minmax(0,1fr)_2.5rem_7rem] items-center gap-2"
-                >
-                  <span
-                    className={cn("size-2 rounded-sm", line.swatch)}
-                    aria-hidden="true"
-                  />
-                  <label
-                    htmlFor={`recipe-${line.key}`}
-                    className="text-foreground truncate text-xs"
+            {/* @container: ตำแหน่งอัตราหมวดขึ้นกับความกว้างการ์ด ไม่ใช่จอ (การ์ดครึ่งจอบน Full HD ก็กว้างพอ) */}
+            <div className="@container space-y-1.5">
+              {COST_LINES.map((line) => {
+                const rate = line.categoryRate
+                  ? categoryDefaults?.[line.categoryRate]
+                  : null;
+                return (
+                  // อัตราของหมวดต่อท้ายชื่อ (เดิมอยู่ในส่วนกำไรขั้นต้น ไกลจากช่องที่ต้องแก้)
+                  // การ์ดกว้าง ≥ 32rem: คอลัมน์ของตัวเองถัดจากชื่อ · แคบกว่านั้น: บรรทัดที่สองใต้ชื่อ
+                  // กินถึงขอบช่องกรอก — อยู่ในคอลัมน์ชื่อตรง ๆ บนมือถือแล้วแตกเป็นสามบรรทัด
+                  <div
+                    key={line.key}
+                    className="grid grid-cols-[0.5rem_minmax(0,1fr)_2.5rem_7rem] items-center gap-x-2 gap-y-0.5 @lg:grid-cols-[0.5rem_auto_minmax(0,1fr)_2.5rem_7rem]"
                   >
-                    {t(line.label)}
-                  </label>
-                  <span className="text-muted-foreground text-micro text-right tabular-nums">
-                    {share(amounts[line.key]).toFixed(0)}%
-                  </span>
-                  {line.key === "total_ingredient_cost" && ingredientLocked ? (
-                    <output
-                      id={`recipe-${line.key}`}
-                      title={t("ingredientCostFromLines")}
-                      className="bg-muted text-foreground flex h-8 items-center justify-end rounded-md px-3 text-xs tabular-nums"
-                    >
-                      ฿{formatCurrency(amounts.total_ingredient_cost)}
-                    </output>
-                  ) : (
-                    <FieldInput
-                      id={`recipe-${line.key}`}
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      disabled={isDisabled}
-                      size="sm"
-                      className="text-right text-xs tabular-nums"
-                      error={errors[line.key]?.message}
-                      errorIconAlign="left"
-                      {...form.register(line.key, numberInput)}
+                    <span
+                      className={cn("size-2 rounded-sm", line.swatch)}
+                      aria-hidden="true"
                     />
-                  )}
-                </div>
-              ))}
+                    <label
+                      htmlFor={`recipe-${line.key}`}
+                      className="text-foreground min-w-0 text-xs"
+                    >
+                      {t(line.label)}
+                    </label>
+                    {rate != null && (
+                      <CategoryRateHint
+                        className="col-span-3 col-start-2 row-start-2 @lg:col-span-1 @lg:col-start-3 @lg:row-start-1"
+                        label={t(line.label)}
+                        pct={rate}
+                        sellingPrice={sellingPrice}
+                        current={amounts[line.key]}
+                        isDisabled={isDisabled}
+                        onApply={(v) =>
+                          form.setValue(line.key, v, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          })
+                        }
+                      />
+                    )}
+                    <span className="text-muted-foreground text-micro text-right tabular-nums @lg:col-start-4">
+                      {share(amounts[line.key]).toFixed(0)}%
+                    </span>
+                    <div className="@lg:col-start-5">
+                      {line.key === "total_ingredient_cost" &&
+                      ingredientLocked ? (
+                        <output
+                          id={`recipe-${line.key}`}
+                          title={t("ingredientCostFromLines")}
+                          className="bg-muted text-foreground flex h-8 items-center justify-end rounded-md px-3 text-xs tabular-nums"
+                        >
+                          ฿{formatCurrency(amounts.total_ingredient_cost)}
+                        </output>
+                      ) : (
+                        <FieldInput
+                          id={`recipe-${line.key}`}
+                          type="number"
+                          inputMode="decimal"
+                          step="0.01"
+                          disabled={isDisabled}
+                          size="sm"
+                          className="text-right text-xs tabular-nums"
+                          error={errors[line.key]?.message}
+                          errorIconAlign="left"
+                          {...form.register(line.key, numberInput)}
+                        />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             <div className="mt-4 space-y-1.5 border-t pt-3">
               <div className="flex items-baseline justify-between gap-4">
@@ -316,7 +358,7 @@ export function RecipeCostFields({
               </div>
             </div>
             <RecipePriceBuildup
-              sellingPrice={Number(sell) || 0}
+              sellingPrice={sellingPrice}
               ingredientCost={amounts.total_ingredient_cost}
               rates={priceRates}
             />
@@ -341,7 +383,7 @@ export function RecipeCostFields({
               labor: amounts.labor_cost,
               overhead: amounts.overhead_cost,
             }}
-            sellingPrice={Number(sell) || 0}
+            sellingPrice={sellingPrice}
             targetPct={targetPct}
             categoryDefaults={categoryDefaults}
           />
@@ -381,6 +423,64 @@ function CategoryFoodCostHint({
         </button>
       )}
     </p>
+  );
+}
+
+/**
+ * อัตราค่าแรง/โสหุ้ยของหมวดต่อท้ายชื่อบรรทัดต้นทุน — อัตราของหมวดเป็น % ของราคาขาย
+ * (หน้า Category) ปุ่มใช้ค่าจึงเติม ราคาขาย × อัตรา ลงช่อง และบอกยอดนั้นไว้ก่อนกด
+ * ยังไม่มีราคาขาย = แสดงอัตราเฉย ๆ ไม่มีปุ่ม (ไม่มีฐานให้คูณ) · ช่องตรงกับยอดนั้นอยู่แล้ว = ไม่มีปุ่ม
+ * เติมครั้งเดียวตอนกด — เปลี่ยนราคาขายทีหลัง ช่องไม่ตามเอง ปุ่มกลับมาให้กดใหม่
+ */
+function CategoryRateHint({
+  className,
+  label,
+  pct,
+  sellingPrice,
+  current,
+  isDisabled,
+  onApply,
+}: {
+  readonly className?: string;
+  readonly label: string;
+  readonly pct: number;
+  readonly sellingPrice: number;
+  readonly current: number;
+  readonly isDisabled: boolean;
+  readonly onApply: (value: number) => void;
+}) {
+  const t = useTranslations("operationPlan.recipe");
+  const amount = sellingPrice > 0 ? round2((sellingPrice * pct) / 100) : null;
+  return (
+    <span
+      className={cn(
+        "text-muted-foreground text-micro flex min-w-0 flex-wrap items-baseline gap-x-1.5",
+        className,
+      )}
+    >
+      <span className="whitespace-nowrap tabular-nums">
+        {amount == null
+          ? t("categoryRateOfPrice", { pct: formatPct(pct) })
+          : t("categoryRateAmount", {
+              pct: formatPct(pct),
+              amount: formatCurrency(amount),
+            })}
+      </span>
+      {!isDisabled && amount != null && current !== amount && (
+        <button
+          type="button"
+          className="text-primary font-medium hover:underline"
+          aria-label={t("applyCategoryRateAria", {
+            label,
+            pct: formatPct(pct),
+            amount: formatCurrency(amount),
+          })}
+          onClick={() => onApply(amount)}
+        >
+          {t("applyCategoryDefault")}
+        </button>
+      )}
+    </span>
   );
 }
 
