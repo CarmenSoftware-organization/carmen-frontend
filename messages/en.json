@@ -187,7 +187,9 @@
       "documents": "Document behavior",
       "documentsDesc": "Defaults applied when staff create purchasing and stock documents.",
       "ap": "AP",
-      "apDesc": "Accounts Payable settings for this business unit."
+      "apDesc": "Accounts Payable settings for this business unit.",
+      "ar": "AR",
+      "arDesc": "Accounts Receivable settings for this business unit."
     },
     "config": {
       "prAllowDuplicateProduct": "Allow selecting duplicate products",
@@ -236,7 +238,8 @@
       "generalDefaultVatRateDesc": "Documents still take VAT from the tax profile.",
       "generalDefaultServiceRate": "Default service charge (%)",
       "apInvoiceAllowCreatorApprove": "Allow the creator to approve their own AP invoice",
-      "apPaymentAllowCreatorApprove": "Allow the creator to approve their own AP payment"
+      "apPaymentAllowCreatorApprove": "Allow the creator to approve their own AP payment",
+      "arInvoiceAllowCreatorApprove": "Allow the creator to approve their own AR invoice"
     }
   },
   "accounting": {
@@ -476,6 +479,21 @@
       "void": "Void",
       "voidTitle": "Void invoice?",
       "voidConfirm": "Void {number}? Posted documents will be reversed in GL.",
+      "approve": "Approve",
+      "approveTitle": "Approve invoice?",
+      "approveConfirm": "Approve {number} and move it to the next step?",
+      "sendBack": "Send back",
+      "sendBackTitle": "Send back invoice",
+      "sendBackStage": "Send back to stage",
+      "sendBackStagePlaceholder": "Select a stage",
+      "sendBackNoStages": "There is no earlier stage to send back to.",
+      "sendBackStagesError": "Could not load the earlier stages. Try again.",
+      "sendBackNote": "Note (optional)",
+      "reject": "Reject",
+      "rejectTitle": "Reject invoice?",
+      "rejectConfirm": "Reject {number}? The document will be voided and cannot be reopened.",
+      "rejectReasonRequired": "Enter a reason before rejecting.",
+      "stageLabel": "Stage: {stage}",
       "whtAmount": "WHT amount",
       "registeredName": "Registered name",
       "taxId": "Tax ID",
@@ -2265,6 +2283,8 @@
       "AP_INVOICE_NUMBERED_VOID_ONLY": "This invoice already has a document number, so it cannot be deleted. Void it instead.",
       "AP_PAYMENT_REJECT_REASON_REQUIRED": "Enter a reason before rejecting this payment.",
       "AP_PAYMENT_NUMBERED_VOID_ONLY": "This payment already has a document number, so it cannot be deleted. Void it instead.",
+      "AR_INVOICE_REJECT_REASON_REQUIRED": "Enter a reason before rejecting this invoice.",
+      "AR_INVOICE_NUMBERED_VOID_ONLY": "This invoice already has a document number, so it cannot be deleted. Void it instead.",
       "WORKFLOW_SENDBACK_STAGE_INVALID": "Cannot send back to the stage {stage}. Pick one of the earlier stages.",
       "WORKFLOW_SINGLE_ACTIVE_EXISTS": "AP Invoice already has an active workflow ({workflow}). Only one can be active per business unit.",
       "APP_READ_ONLY": "The system is in read-only mode — this action isn't available right now.",
@@ -3774,6 +3794,7 @@
       "titleJournalVoucher": "Journal Voucher Workflow",
       "titleApInvoice": "AP Invoice Workflow",
       "titleApPayment": "AP Payment Workflow",
+      "titleArInvoice": "AR Invoice Workflow",
       "desc": "Who approves what, and in which order, before a document can go through.",
       "add": "New Workflow",
       "edit": "Edit Workflow",
@@ -3857,8 +3878,10 @@
       "typeJournalVoucher": "Journal Voucher",
       "typeApInvoice": "AP Invoice",
       "typeApPayment": "AP Payment",
+      "typeArInvoice": "AR Invoice",
       "apInvoiceSingleActiveHint": "This business unit already has an active AP Invoice workflow. Only one can be active at a time — deactivate it first, or edit it instead.",
       "apPaymentSingleActiveHint": "This business unit already has an active AP Payment workflow. Only one can be active at a time — deactivate it first, or edit it instead.",
+      "arInvoiceSingleActiveHint": "This business unit already has an active AR Invoice workflow. Only one can be active at a time — deactivate it first, or edit it instead.",
       "listJvPrefixCount": "{count, plural, =0 {All prefixes} one {# prefix} other {# prefixes}}",
       "listJvSourceCount": "{count, plural, =0 {all sources} one {# source} other {# sources}}",
       "jvScopeTab": "Scope",
@@ -4044,6 +4067,7 @@
           "workflowJournalVoucher": "Approval steps before a journal voucher is posted.",
           "workflowApInvoice": "Approval steps before an AP invoice is posted.",
           "workflowApPayment": "Approval steps before an AP payment is posted.",
+          "workflowArInvoice": "Approval steps before an AR invoice, debit note or credit note is posted.",
           "notificationTemplate": "Wording of the notifications these workflows send."
         }
       }
@@ -7909,6 +7933,7 @@
     "workflowJournalVoucher": "Journal Voucher",
     "workflowApInvoice": "AP Invoice",
     "workflowApPayment": "AP Payment",
+    "workflowArInvoice": "AR Invoice",
     "interface": "Interfaces",
     "emailProfile": "Email Profiles",
     "emailTemplate": "Email Messages",

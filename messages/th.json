@@ -187,7 +187,9 @@
       "documents": "การทำงานของเอกสาร",
       "documentsDesc": "ค่าตั้งต้นที่ใช้ตอนสร้างเอกสารจัดซื้อและเอกสารคลัง",
       "ap": "AP",
-      "apDesc": "การตั้งค่า Accounts Payable ของหน่วยธุรกิจนี้"
+      "apDesc": "การตั้งค่า Accounts Payable ของหน่วยธุรกิจนี้",
+      "ar": "AR",
+      "arDesc": "การตั้งค่า Accounts Receivable ของหน่วยธุรกิจนี้"
     },
     "config": {
       "prAllowDuplicateProduct": "อนุญาตให้เลือกสินค้าซ้ำกันได้",
@@ -236,7 +238,8 @@
       "generalDefaultVatRateDesc": "VAT ในเอกสารยังมาจาก Tax Profile",
       "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)",
       "apInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AP Invoice ของตัวเอง",
-      "apPaymentAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติใบจ่ายเงิน AP ของตัวเอง"
+      "apPaymentAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติใบจ่ายเงิน AP ของตัวเอง",
+      "arInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AR Invoice ของตัวเอง"
     }
   },
   "accounting": {
@@ -476,6 +479,21 @@
       "void": "ยกเลิกเอกสาร",
       "voidTitle": "ยกเลิกใบแจ้งหนี้?",
       "voidConfirm": "ยกเลิก {number}? เอกสารที่ผ่านรายการแล้วจะกลับรายการใน GL",
+      "approve": "อนุมัติ",
+      "approveTitle": "อนุมัติใบแจ้งหนี้?",
+      "approveConfirm": "อนุมัติ {number} และส่งต่อขั้นถัดไป?",
+      "sendBack": "ส่งกลับ",
+      "sendBackTitle": "ส่งใบแจ้งหนี้กลับ",
+      "sendBackStage": "ส่งกลับไปขั้น",
+      "sendBackStagePlaceholder": "เลือกขั้นตอน",
+      "sendBackNoStages": "ไม่มีขั้นก่อนหน้าให้ส่งกลับ",
+      "sendBackStagesError": "โหลดขั้นก่อนหน้าไม่สำเร็จ ลองใหม่อีกครั้ง",
+      "sendBackNote": "หมายเหตุ (ไม่บังคับ)",
+      "reject": "ปฏิเสธ",
+      "rejectTitle": "ปฏิเสธใบแจ้งหนี้?",
+      "rejectConfirm": "ปฏิเสธ {number}? เอกสารจะถูกยกเลิก (void) และเปิดกลับมาไม่ได้",
+      "rejectReasonRequired": "ระบุเหตุผลก่อนปฏิเสธ",
+      "stageLabel": "ขั้น: {stage}",
       "whtAmount": "ภาษีหัก ณ ที่จ่าย",
       "registeredName": "ชื่อจดทะเบียน",
       "taxId": "เลขผู้เสียภาษี",
@@ -2265,6 +2283,8 @@
       "AP_INVOICE_NUMBERED_VOID_ONLY": "ใบแจ้งหนี้นี้มีเลขที่เอกสารแล้ว จึงลบไม่ได้ ให้ยกเลิก (void) แทน",
       "AP_PAYMENT_REJECT_REASON_REQUIRED": "ระบุเหตุผลก่อนปฏิเสธใบจ่ายเงินนี้",
       "AP_PAYMENT_NUMBERED_VOID_ONLY": "ใบจ่ายเงินนี้มีเลขที่เอกสารแล้ว จึงลบไม่ได้ ให้ยกเลิก (void) แทน",
+      "AR_INVOICE_REJECT_REASON_REQUIRED": "ระบุเหตุผลก่อนปฏิเสธใบแจ้งหนี้นี้",
+      "AR_INVOICE_NUMBERED_VOID_ONLY": "ใบแจ้งหนี้นี้มีเลขที่เอกสารแล้ว จึงลบไม่ได้ ให้ยกเลิก (void) แทน",
       "WORKFLOW_SENDBACK_STAGE_INVALID": "ส่งกลับไปขั้น {stage} ไม่ได้ เลือกจากขั้นก่อนหน้าเท่านั้น",
       "WORKFLOW_SINGLE_ACTIVE_EXISTS": "ใบแจ้งหนี้เจ้าหนี้มี workflow ที่เปิดใช้อยู่แล้ว ({workflow}) เปิดใช้ได้เส้นเดียวต่อหน่วยธุรกิจ",
       "APP_READ_ONLY": "ระบบอยู่ในโหมดอ่านอย่างเดียว — ยังทำรายการนี้ไม่ได้ในขณะนี้",
@@ -3774,6 +3794,7 @@
       "titleJournalVoucher": "ลำดับขั้นอนุมัติใบสำคัญรายวัน",
       "titleApInvoice": "ลำดับขั้นอนุมัติใบแจ้งหนี้เจ้าหนี้",
       "titleApPayment": "ลำดับขั้นอนุมัติการจ่ายเงินเจ้าหนี้",
+      "titleArInvoice": "ลำดับขั้นอนุมัติใบแจ้งหนี้ลูกหนี้",
       "desc": "ใครอนุมัติอะไร เรียงก่อนหลังยังไง กว่าเอกสารจะผ่าน",
       "add": "สร้างลำดับขั้นใหม่",
       "edit": "แก้ไขเวิร์กโฟลว์",
@@ -3857,8 +3878,10 @@
       "typeJournalVoucher": "ใบสำคัญรายวัน",
       "typeApInvoice": "ใบแจ้งหนี้เจ้าหนี้",
       "typeApPayment": "การจ่ายเงินเจ้าหนี้",
+      "typeArInvoice": "ใบแจ้งหนี้ลูกหนี้",
       "apInvoiceSingleActiveHint": "หน่วยธุรกิจนี้มี workflow ของใบแจ้งหนี้เจ้าหนี้ที่เปิดใช้อยู่แล้ว เปิดใช้ได้ครั้งละเส้นเดียว — ปิดเส้นเดิมก่อน หรือแก้เส้นเดิมแทน",
       "apPaymentSingleActiveHint": "หน่วยธุรกิจนี้มี workflow ของการจ่ายเงินเจ้าหนี้ที่เปิดใช้อยู่แล้ว เปิดใช้ได้ครั้งละเส้นเดียว — ปิดเส้นเดิมก่อน หรือแก้เส้นเดิมแทน",
+      "arInvoiceSingleActiveHint": "หน่วยธุรกิจนี้มี workflow ของใบแจ้งหนี้ลูกหนี้ที่เปิดใช้อยู่แล้ว เปิดใช้ได้ครั้งละเส้นเดียว — ปิดเส้นเดิมก่อน หรือแก้เส้นเดิมแทน",
       "listJvPrefixCount": "{count, plural, =0 {ทุก prefix} other {prefix {count} รายการ}}",
       "listJvSourceCount": "{count, plural, =0 {ทุกที่มา} other {ที่มา {count} แบบ}}",
       "jvScopeTab": "ขอบเขต",
@@ -4044,6 +4067,7 @@
           "workflowJournalVoucher": "ขั้นอนุมัติก่อนลงบัญชีใบสำคัญรายวัน",
           "workflowApInvoice": "ขั้นอนุมัติก่อนลงบัญชีใบแจ้งหนี้เจ้าหนี้",
           "workflowApPayment": "ขั้นอนุมัติก่อนลงบัญชีการจ่ายเงินเจ้าหนี้",
+          "workflowArInvoice": "ขั้นอนุมัติก่อนลงบัญชีใบแจ้งหนี้ ใบเพิ่มหนี้ และใบลดหนี้ลูกหนี้",
           "notificationTemplate": "ข้อความแจ้งเตือนที่ลำดับขั้นเหล่านี้ส่งออกไป"
         }
       }
@@ -7909,6 +7933,7 @@
     "workflowJournalVoucher": "ใบสำคัญรายวัน",
     "workflowApInvoice": "ใบแจ้งหนี้เจ้าหนี้",
     "workflowApPayment": "การจ่ายเงินเจ้าหนี้",
+    "workflowArInvoice": "ใบแจ้งหนี้ลูกหนี้",
     "interface": "การเชื่อมต่อระบบภายนอก",
     "emailProfile": "โปรไฟล์อีเมล",
     "emailTemplate": "ข้อความอีเมล",

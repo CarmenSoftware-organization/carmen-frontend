@@ -30,6 +30,7 @@ export const ROLES_BY_WORKFLOW_TYPE: Record<WORKFLOW_TYPE, readonly Role[]> = {
   [WORKFLOW_TYPE.JV]: ["create", "approve"],
   [WORKFLOW_TYPE.AP_INVOICE]: ["create", "approve"],
   [WORKFLOW_TYPE.AP_PAYMENT]: ["create", "approve"],
+  [WORKFLOW_TYPE.AR_INVOICE]: ["create", "approve"],
 };
 
 const ALL_ROLES: readonly Role[] = ["create", "approve", "purchase", "issue"];

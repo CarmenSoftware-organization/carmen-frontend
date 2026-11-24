@@ -45,6 +45,12 @@ const DOCUMENT_LIST: Record<
     status: "doc_status",
     value: "in_review",
   },
+  // AR Invoice (รวมใบเพิ่มหนี้/ลดหนี้) ใช้ doc_status = in_review เช่นเดียวกัน
+  [WORKFLOW_TYPE.AR_INVOICE]: {
+    path: "/accounting/accounts-receivable/invoice",
+    status: "doc_status",
+    value: "in_review",
+  },
 };
 
 /**
