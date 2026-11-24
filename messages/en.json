@@ -975,6 +975,7 @@
           "paid": "Paid"
         },
         "detail": {
+          "creatorCannotApproveHint": "You created this invoice, so you cannot approve it. Ask another approver.",
           "newTitle": "New AP Invoice",
           "subtitle": "Supplier invoice",
           "back": "Back to AP Invoice Directory",

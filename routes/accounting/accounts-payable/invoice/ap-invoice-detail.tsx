@@ -165,6 +165,16 @@ function ApInvoiceEditor({
   const locked = loaded ? apIsAutoFromGrn(loaded) : false;
   const editable = editing && (isNew || (!!loaded && apCanEdit(loaded)));
   const actions = loaded ? apInvoiceActions(loaded, userId) : [];
+  // ผู้สร้างเป็นผู้ดำเนินการใน stage (มี reject/sendback) แต่ approve ไม่ได้ → บอกเหตุผล
+  const showCreatorHint =
+    !!loaded &&
+    !!userId &&
+    loaded.doc_status === "in_review" &&
+    !!loaded.allowed_actions &&
+    !loaded.allowed_actions.includes("approve") &&
+    (loaded.allowed_actions.includes("reject") ||
+      loaded.allowed_actions.includes("sendback")) &&
+    loaded.created_by_id === userId;
   const errors = showErrors
     ? validateInvoiceForm(form, isNew ? "create" : "update")
     : NO_ERRORS;
@@ -468,6 +478,11 @@ function ApInvoiceEditor({
                 <X className="size-4" />
                 {td("actions.reject")}
               </Button>
+            )}
+            {!editing && showCreatorHint && (
+              <span className="text-muted-foreground text-xs">
+                {td("creatorCannotApproveHint")}
+              </span>
             )}
             {!editing && actions.includes("void") && (
               <Button

@@ -84,10 +84,16 @@ export default function WorkflowNewForm({
   // AP Invoice มี workflow ที่เปิดใช้ได้เส้นเดียวต่อ BU — ถ้ามีอยู่แล้วห้ามสร้างเพิ่ม
   // (backend ตอบ WORKFLOW_SINGLE_ACTIVE_EXISTS เป็นด่านสุดท้าย)
   // perpage ชัดเจนเพื่อให้เห็นเส้นที่เปิดอยู่แม้เกินหน้าแรก (ไม่ใช้ -1)
-  const { data: apWorkflows, isPending: apLoading } = useApInvoiceWorkflows({
-    perpage: 100,
-  });
-  const apActiveExists = !!apWorkflows?.data?.some((w) => w.is_active);
+  // ยิงเฉพาะเมื่อฟอร์มนี้เป็น AP ได้ — ฟอร์มชนิดอื่นไม่ยิง (env ที่ยังไม่ allowlist
+  // workflow.findAllApInvoice จะ 401 แล้วผู้ใช้โดน logout)
+  const apQueryEnabled = !lockedType || lockedType === WORKFLOW_TYPE.AP_INVOICE;
+  const { data: apWorkflows, isPending: apPending } = useApInvoiceWorkflows(
+    { perpage: 100 },
+    { enabled: apQueryEnabled },
+  );
+  const apLoading = apQueryEnabled && apPending;
+  const apActiveExists =
+    apQueryEnabled && !!apWorkflows?.data?.some((w) => w.is_active);
   const isApType = watchedType === WORKFLOW_TYPE.AP_INVOICE;
   // ระหว่างโหลดรายการ ถือว่า AP ถูกบล็อกไว้ก่อน จนรู้ว่าไม่มีเส้นที่เปิดอยู่
   const apBlocked = isApType && (apLoading || apActiveExists);
