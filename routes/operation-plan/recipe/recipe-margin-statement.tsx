@@ -12,7 +12,8 @@ function formatPct(n: number): string {
 
 /**
  * กำไรขั้นต้นแบบงบย่อ — ราคาขาย ลบต้นทุนทีละตัว เท่ากับกำไร (ทุกตัวเลขของทั้งสูตร)
- * แต่ละบรรทัดบอกเป็น % ของราคาขาย และเทียบเป้า/หมวดของตัวเองในคอลัมน์สุดท้าย
+ * แต่ละบรรทัดบอกเป็น % ของราคาขาย · วัตถุดิบเทียบเป้า food cost ในคอลัมน์สุดท้าย
+ * ส่วนอัตราค่าแรง/โสหุ้ยของหมวดย้ายไปต่อท้ายชื่อในส่วนต้นทุนแล้ว (กดใช้ค่าได้ที่นั่น — ผู้ใช้สั่ง 24/11)
  * แยกออกมาจากส่วนกรอกต้นทุนกับส่วนตั้งราคา เพื่อให้เห็นที่มาของกำไรในที่เดียว
  */
 export function RecipeMarginStatement({
@@ -69,20 +70,12 @@ export function RecipeMarginStatement({
       label: t("laborCost"),
       amount: amounts.labor,
       pct: computed.laborCostPct,
-      note:
-        categoryDefaults?.labor != null
-          ? t("categoryRatio", { pct: formatPct(categoryDefaults.labor) })
-          : undefined,
     },
     {
       key: "overhead",
       label: t("overheadCost"),
       amount: amounts.overhead,
       pct: computed.overheadPct,
-      note:
-        categoryDefaults?.overhead != null
-          ? t("categoryRatio", { pct: formatPct(categoryDefaults.overhead) })
-          : undefined,
     },
   ];
 

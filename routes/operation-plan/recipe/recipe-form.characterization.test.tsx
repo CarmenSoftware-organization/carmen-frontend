@@ -84,6 +84,13 @@ vi.mock("@/hooks/use-can", () => ({
   }),
 }));
 
+// หมวดของสูตร — ค่าเริ่มต้นไม่มี (query จริงไม่ resolve ในเทสต์) · ชุดอัตราหมวดตั้งเองต่อเทสต์
+let loadedCategory: Record<string, unknown> | undefined;
+vi.mock("@/hooks/use-recipe-category", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/hooks/use-recipe-category")>()),
+  useRecipeCategoryById: () => ({ data: loadedCategory }),
+}));
+
 const { RecipeForm } = await import("./recipe-form");
 
 // ฟิลด์ครบชุดของ Recipe ยาวกว่า 30 ตัวและไม่มีผลกับเส้นทางหลัง save —
@@ -126,6 +133,7 @@ const RECIPE = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  loadedCategory = undefined;
 });
 
 /**
@@ -490,5 +498,63 @@ describe("RecipeForm — Update price จากใบราคา", () => {
       recipeId: "rec-1",
       recalculate: true,
     });
+  });
+});
+
+// อัตราค่าแรง/โสหุ้ยของหมวดอยู่ต่อท้ายชื่อบรรทัดในส่วนต้นทุน (ผู้ใช้สั่ง 2026-11-24)
+// อัตราเป็น % ของราคาขาย — กดใช้ค่าแล้วช่องได้ ราคาขาย × อัตรา
+describe("RecipeForm — ใช้อัตราค่าแรง/โสหุ้ยของหมวด", () => {
+  const R = en.operationPlan.recipe;
+  const CATEGORY = {
+    id: "cat-1",
+    default_cost_settings: {
+      target_food_cost_percentage: 35,
+      labor_cost_percentage: 30,
+      overhead_percentage: 20,
+    },
+    default_margins: null,
+  };
+  // ปุ่มเขียนว่า "Apply" เหมือนกันทุกบรรทัด — ชื่อที่อ่านออกเสียงบอกว่าตั้งช่องไหนเป็นเท่าไร
+  const applyButton = (label: string) =>
+    screen.queryByRole("button", { name: new RegExp(`^Set ${label} to `) });
+
+  it("มีราคาขาย → บอกยอดของหมวด กดแล้วช่องได้ ราคาขาย × อัตรา และส่งตอน Save", async () => {
+    loadedCategory = CATEGORY;
+    renderForm(<RecipeForm recipe={{ ...RECIPE, selling_price: 690 }} />);
+
+    expect(screen.getByText("category 30% = ฿207.00")).toBeInTheDocument();
+    expect(screen.getByText("category 20% = ฿138.00")).toBeInTheDocument();
+    fireEvent.click(applyButton(R.laborCost)!);
+    fireEvent.click(applyButton(R.overheadCost)!);
+
+    expect(document.getElementById("recipe-labor_cost")).toHaveValue(207);
+    expect(document.getElementById("recipe-overhead_cost")).toHaveValue(138);
+    // ช่องตรงกับยอดของหมวดแล้ว → ปุ่มหาย
+    expect(applyButton(R.laborCost)).toBeNull();
+    expect(applyButton(R.overheadCost)).toBeNull();
+
+    await act(async () => submitForm("recipe-form"));
+    expect(firstPayload(updateMut)).toMatchObject({
+      labor_cost: 207,
+      overhead_cost: 138,
+    });
+  });
+
+  it("ยังไม่มีราคาขาย → แสดงอัตราเฉย ๆ ไม่มีปุ่ม (ไม่มีฐานให้คูณ)", () => {
+    loadedCategory = CATEGORY;
+    renderForm(<RecipeForm recipe={RECIPE} />);
+
+    expect(screen.getByText("category 30% of price")).toBeInTheDocument();
+    expect(applyButton(R.laborCost)).toBeNull();
+  });
+
+  it("ส่วนกำไรขั้นต้นไม่มีอัตราหมวดของค่าแรง/โสหุ้ยซ้ำแล้ว", () => {
+    loadedCategory = CATEGORY;
+    renderForm(<RecipeForm recipe={{ ...RECIPE, selling_price: 690 }} />);
+
+    const statement = document.querySelector("[data-recipe-margin-statement]");
+    expect(statement).not.toBeNull();
+    expect(statement).not.toHaveTextContent("category 30%");
+    expect(statement).not.toHaveTextContent("category 20%");
   });
 });
