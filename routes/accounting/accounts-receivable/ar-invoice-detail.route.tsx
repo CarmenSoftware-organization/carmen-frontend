@@ -40,11 +40,7 @@ import {
   invoiceTaxEntity,
   readInvoiceSupplement,
 } from "./ar-invoice-supplement-model";
-import {
-  AR_RECEIPT_PATH,
-  readReceipts,
-  receiptTotals,
-} from "./ar-receipt-model";
+import { AR_RECEIPT_PATH } from "./ar-receipt-model";
 import { InvoiceJournal } from "./ar-invoice-journal";
 import { draftLineFromRecord } from "./ar-invoice-draft-model";
 import { ArInvoiceDraftForm } from "./ar-invoice-draft-form";
@@ -324,11 +320,6 @@ function InvoiceView({
   const money = useAmountFormatter();
   const navigate = useNavigate();
   const supplement = bu ? readInvoiceSupplement(bu, row.id) : undefined;
-  const receipts = bu
-    ? readReceipts(bu).filter((receipt) =>
-        receipt.allocations.some((line) => line.id === row.id),
-      )
-    : [];
   const fields = [
     [t("type"), t(`types.${row.doc_type}`)],
     [t("date"), formatDate(row.doc_date, dateFormat)],
@@ -558,67 +549,6 @@ function InvoiceView({
                 </Button>
               )}
           </div>
-          <p className="text-muted-foreground mb-2 text-xs">
-            {t("receiptMock")}
-          </p>
-          <ApDetailGrid
-            rows={receipts}
-            empty={t("noRecords")}
-            columns={[
-              {
-                accessorKey: "number",
-                header: t("number"),
-                cell: ({ row: item }) => (
-                  <Button asChild variant="link" size="sm">
-                    <Link to={`${AR_RECEIPT_PATH}/${item.original.id}`}>
-                      {item.original.number}
-                    </Link>
-                  </Button>
-                ),
-              },
-              { accessorKey: "date", header: t("date") },
-              {
-                id: "payType",
-                header: t("payType"),
-                cell: ({ row: item }) =>
-                  item.original.payments
-                    .map((payment) => payment.type)
-                    .join(", ") || "—",
-              },
-              {
-                id: "paid",
-                header: t("paidAmount"),
-                cell: ({ row: item }) =>
-                  money(
-                    item.original.allocations
-                      .filter((line) => line.id === row.id)
-                      .reduce((sum, line) => sum + line.amount, 0),
-                  ),
-              },
-              {
-                id: "wht",
-                header: t("whtAmount"),
-                cell: ({ row: item }) =>
-                  money(receiptTotals(item.original).wht),
-              },
-              {
-                id: "received",
-                header: t("netReceived"),
-                cell: ({ row: item }) =>
-                  money(receiptTotals(item.original).received),
-              },
-              {
-                accessorKey: "status",
-                header: t("status"),
-                cell: ({ row: item }) => (
-                  <StatusChip
-                    status={item.original.status}
-                    label={t(`statuses.${item.original.status}`)}
-                  />
-                ),
-              },
-            ]}
-          />
         </TabsContent>
         <TabsContent value="journal">
           <InvoiceJournal document={row} />

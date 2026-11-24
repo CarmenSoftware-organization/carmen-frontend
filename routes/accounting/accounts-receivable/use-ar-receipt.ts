@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useApiMutation } from "@/hooks/use-api-mutation";
+import { useXlsxExport, type XlsxColumn } from "@/hooks/use-xlsx-export";
+import { fetchAllPages } from "@/lib/fetch-all-pages";
 import { ApiError } from "@/lib/api-error";
 import { buildUrl } from "@/lib/build-query-string";
 import { httpClient } from "@/lib/http-client";
@@ -25,10 +27,7 @@ export const AR_RECEIPT_METHODS = [
 ] as const;
 export type ArReceiptMethod = (typeof AR_RECEIPT_METHODS)[number];
 export type ArInvoiceDocType =
-  | "invoice"
-  | "credit_note"
-  | "debit_note"
-  | "deposit";
+  "invoice" | "credit_note" | "debit_note" | "deposit";
 export type ArReceiptWorkflowAction = "approve" | "reject" | "sendback";
 
 const QUERY_KEY = "ar-receipt";
@@ -199,6 +198,18 @@ async function readReceipt(url: string) {
   return response.json();
 }
 
+async function fetchArReceipts(
+  bu: string,
+  params: ParamsDto,
+): Promise<PaginatedResponse<ArReceiptRow>> {
+  const body = await readReceipt(
+    buildUrl(API_ENDPOINTS.AR_RECEIPT_LIST(bu), params),
+  );
+  if (!Array.isArray(body.data) || typeof body.paginate?.total !== "number")
+    throw new Error("Invalid AR receipt list response");
+  return body;
+}
+
 export function useArReceipts(
   params: ParamsDto,
   options?: { enabled?: boolean },
@@ -207,15 +218,26 @@ export function useArReceipts(
   return useQuery({
     queryKey: [QUERY_KEY, bu, "list", params],
     enabled: !!bu && options?.enabled !== false,
-    queryFn: async (): Promise<PaginatedResponse<ArReceiptRow>> => {
-      const body = await readReceipt(
-        buildUrl(API_ENDPOINTS.AR_RECEIPT_LIST(bu!), params),
-      );
-      if (!Array.isArray(body.data) || typeof body.paginate?.total !== "number")
-        throw new Error("Invalid AR receipt list response");
-      return body;
-    },
+    queryFn: () => fetchArReceipts(bu!, params),
   });
+}
+
+export function useExportArReceipts() {
+  const bu = useBuCode();
+  const { exportToXlsx, isExporting } = useXlsxExport();
+  return {
+    isExporting,
+    exportReceipts: (params: ParamsDto, columns: XlsxColumn<ArReceiptRow>[]) =>
+      exportToXlsx({
+        fetch: () =>
+          fetchAllPages((page, perpage) =>
+            fetchArReceipts(bu!, { ...params, page, perpage }),
+          ),
+        columns,
+        sheetName: "AR Receipts",
+        fileNamePrefix: "ar-receipt",
+      }),
+  };
 }
 
 export function useArReceiptDocument(id?: string) {

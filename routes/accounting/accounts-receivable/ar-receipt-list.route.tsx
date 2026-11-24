@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
+import { RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
@@ -14,8 +8,14 @@ import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { DocumentListActions } from "@/components/share/document-list-actions";
 import { ListPageShell } from "@/components/share/list-page-shell";
-import { ListCard, ListCardRow } from "@/components/share/list-card";
+import {
+  ListCard,
+  ListCardRow,
+  ListCardSkeleton,
+  ListCardStatusRow,
+} from "@/components/share/list-card";
 import { listGridMaxH } from "@/components/share/list-grid-max-h";
+import { Button } from "@/components/ui/button";
 import { CellAction } from "@/components/ui/cell-action";
 import {
   DataGrid,
@@ -25,235 +25,190 @@ import {
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
+import { useConfigTable } from "@/components/ui/data-grid/use-config-table";
 import { ErrorState } from "@/components/ui/error-state";
 import { StatusChip } from "@/components/ui/status-chip";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
-import { useBuCode } from "@/hooks/use-bu-code";
 import { useCan } from "@/hooks/use-can";
 import { useDataGridState } from "@/hooks/use-data-grid-state";
 import { useListFilters } from "@/hooks/use-list-filters";
+import { listReturnState } from "@/hooks/use-list-return";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
-import { useXlsxExport } from "@/hooks/use-xlsx-export";
 import { useExportErrorToast } from "@/hooks/use-export-error-toast";
 import { formatDate } from "@/lib/date-utils";
+import { rowNumber } from "@/lib/row-number";
 import type { FilterFieldDef } from "@/types/list-filter";
+import type { ColumnDef } from "@tanstack/react-table";
+import { AR_RECEIPT_PATH } from "./ar-receipt-model";
 import {
-  AR_RECEIPT_PATH,
-  readReceipts,
-  receiptTotals,
-  type ArReceipt,
-} from "./ar-receipt-model";
-import { pageParamsOf, rowNumber } from "@/lib/row-number";
-import { indexColumn } from "@/components/ui/data-grid/columns";
+  AR_RECEIPT_STATUS,
+  useArReceipts,
+  useExportArReceipts,
+  type ArReceiptRow,
+} from "./use-ar-receipt";
 
 const fields: FilterFieldDef[] = [
   {
     key: "date",
     labelKey: "accounting.arReceipt.inputDate",
     control: "date-range",
-    fieldKey: "date",
+    fieldKey: "receipt_date",
   },
   {
     key: "status",
     labelKey: "common.status",
-    control: "status",
-    options: ["draft", "void"].map((value) => ({
+    control: "multi-select",
+    options: AR_RECEIPT_STATUS.map((value) => ({
       value,
       labelKey: `accounting.arReceipt.statuses.${value}`,
     })),
+    toClause: (value) => `doc_status|string:${value}`,
   },
 ];
 
 export function Component() {
-  const bu = useBuCode();
-  return bu ? <ReceiptList key={bu} bu={bu} /> : null;
-}
-
-function ReceiptList({ bu }: { readonly bu: string }) {
   "use no memo";
   const t = useTranslations("accounting.arReceipt");
   const tc = useTranslations("common");
+  const exportErrorToast = useExportErrorToast();
+  const { exportReceipts, isExporting } = useExportArReceipts();
   const navigate = useNavigate();
   const { canWrite } = useCan();
+  const mobile = useIsMobile();
   const { dateFormat } = useProfile();
   const money = useAmountFormatter();
-  const { exportToXlsx, isExporting } = useXlsxExport();
-  const exportErrorToast = useExportErrorToast();
-  const mobile = useIsMobile();
   const [display, setDisplay] = useState<"list" | "grid">("list");
   const [saveView, setSaveView] = useState(false);
-  const [loaded] = useState(() => {
-    try {
-      return { rows: readReceipts(bu), error: false };
-    } catch {
-      return { rows: [] as ArReceipt[], error: true };
-    }
-  });
-  const { search, setSearch, tableConfig } = useDataGridState({
-    defaultSort: "date:desc",
+  const { params, search, setSearch, tableConfig } = useDataGridState({
+    defaultSort: "receipt_date:desc",
   });
   const lf = useListFilters({ pageKey: LIST_PAGE_KEYS.AR_RECEIPT, fields });
-  const [from, to] = (lf.values.date?.split(":").at(-1) ?? "").split(",");
-  const rows = loaded.rows.filter(
-    (row) =>
-      (!lf.values.status || row.status === lf.values.status) &&
-      (!from || row.date >= from) &&
-      (!to || row.date <= to) &&
-      [
-        row.number,
-        row.customerCode,
-        row.customerName,
-        row.description,
-        row.sourceDoc,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(search.trim().toLowerCase()),
-  );
-  const open = (row: ArReceipt) => navigate(`${AR_RECEIPT_PATH}/${row.id}`);
-  const amount = (value: number, receipt: ArReceipt) =>
-    `${money(value)} ${receipt.currency}`;
+  const query = useArReceipts({ ...params, filter: lf.filterParam });
+  const rows = query.data?.data ?? [];
+  const total = query.data?.paginate.total ?? 0;
+  const open = (row: ArReceiptRow) =>
+    navigate(`${AR_RECEIPT_PATH}/${row.id}`, listReturnState());
+  const amount = (value: string | number | undefined, row: ArReceiptRow) =>
+    `${money(Number(value ?? 0))} ${row.currency_code ?? ""}`.trim();
   const column = (
-    key: keyof ArReceipt,
+    id: keyof ArReceiptRow,
     label: string,
-  ): ColumnDef<ArReceipt> => ({
-    accessorKey: key,
+  ): ColumnDef<ArReceiptRow> => ({
+    accessorKey: id,
     header: ({ column }) => (
       <DataGridColumnHeader column={column} title={label} />
     ),
     meta: { headerTitle: label },
   });
-  const columns: ColumnDef<ArReceipt>[] = [
-    indexColumn<ArReceipt>(),
+  const amountColumn = (
+    id:
+      "net_received_amount" | "total_applied_amount" | "total_unapplied_amount",
+    label: string,
+  ): ColumnDef<ArReceiptRow> => ({
+    ...column(id, label),
+    meta: {
+      headerTitle: label,
+      headerClassName: "text-right",
+      cellClassName: "text-right tabular-nums",
+    },
+    cell: ({ row }) => amount(row.original[id], row.original),
+  });
+  const columns: ColumnDef<ArReceiptRow>[] = [
     {
-      ...column("number", t("number")),
+      ...column("doc_no", t("number")),
       cell: ({ row }) => (
         <CellAction onClick={() => open(row.original)}>
-          {row.original.number}
+          {row.original.doc_no}
         </CellAction>
       ),
     },
     {
-      ...column("date", t("inputDate")),
-      cell: ({ row }) => formatDate(row.original.date, dateFormat),
+      ...column("receipt_date", t("inputDate")),
+      cell: ({ row }) => formatDate(row.original.receipt_date, dateFormat),
     },
     {
-      ...column("customerName", t("customer")),
+      ...column("customer_name", t("customer")),
       cell: ({ row }) => (
         <span
           className="block max-w-64 min-w-40 truncate"
-          title={row.original.customerName}
+          title={row.original.customer_name}
         >
-          {row.original.customerCode} · {row.original.customerName}
+          {[row.original.customer_code, row.original.customer_name]
+            .filter(Boolean)
+            .join(" · ")}
         </span>
       ),
     },
-    column("sourceDoc", t("sourceDoc")),
+    amountColumn("net_received_amount", t("receivedAmount")),
+    amountColumn("total_applied_amount", t("appliedAmount")),
+    amountColumn("total_unapplied_amount", t("unapplied")),
     {
-      id: "received",
-      header: t("receivedAmount"),
-      meta: {
-        headerTitle: t("receivedAmount"),
-        headerClassName: "text-right",
-        cellClassName: "text-right tabular-nums",
-      },
-      cell: ({ row }) =>
-        amount(receiptTotals(row.original).received, row.original),
-    },
-    {
-      id: "wht",
-      header: t("whtAmount"),
-      meta: {
-        headerTitle: t("whtAmount"),
-        headerClassName: "text-right",
-        cellClassName: "text-right tabular-nums",
-      },
-      cell: ({ row }) => amount(receiptTotals(row.original).wht, row.original),
-    },
-    {
-      id: "allocated",
-      header: t("appliedAmount"),
-      meta: {
-        headerTitle: t("appliedAmount"),
-        headerClassName: "text-right",
-        cellClassName: "text-right tabular-nums",
-      },
-      cell: ({ row }) =>
-        amount(receiptTotals(row.original).allocated, row.original),
-    },
-    {
-      ...column("status", tc("status")),
+      ...column("doc_status", tc("status")),
       cell: ({ row }) => (
         <StatusChip
-          status={row.original.status}
-          label={t(`statuses.${row.original.status}`)}
+          status={row.original.doc_status}
+          label={t(`statuses.${row.original.doc_status}`)}
         />
       ),
     },
   ];
-  // This component opts out of React Compiler; TanStack owns the mutable table instance.
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
-    ...tableConfig,
+  const table = useConfigTable({
     data: rows,
     columns,
-    getRowId: (row) => row.id,
-    manualPagination: false,
-    manualSorting: false,
-    pageCount: Math.max(
-      1,
-      Math.ceil(rows.length / tableConfig.state.pagination.pageSize),
-    ),
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    totalRecords: total,
+    params,
+    tableConfig,
+    hideStatus: true,
   });
-  const cards = mobile || display === "grid";
-  async function exportRows() {
+  async function handleExport() {
     try {
-      const count = await exportToXlsx({
-        fetch: async () => rows,
-        sheetName: "AR Receipts",
-        fileNamePrefix: "ar-receipt-mock",
-        columns: [
-          { header: t("number"), value: (row) => row.number },
-          { header: t("inputDate"), value: (row) => row.date },
-          { header: t("customer"), value: (row) => row.customerName },
-          { header: t("currency"), value: (row) => row.currency },
+      const count = await exportReceipts(
+        { ...params, filter: lf.filterParam },
+        [
+          { header: t("number"), value: (row) => row.doc_no },
+          { header: t("inputDate"), value: (row) => row.receipt_date },
+          { header: t("customer"), value: (row) => row.customer_name },
+          { header: t("currency"), value: (row) => row.currency_code ?? "" },
           {
             header: t("receivedAmount"),
-            value: (row) => receiptTotals(row).received,
+            value: (row) => row.net_received_amount,
           },
           {
             header: t("appliedAmount"),
-            value: (row) => receiptTotals(row).allocated,
+            value: (row) => row.total_applied_amount ?? "",
           },
-          { header: t("whtAmount"), value: (row) => receiptTotals(row).wht },
-          { header: tc("status"), value: (row) => t(`statuses.${row.status}`) },
+          {
+            header: t("unapplied"),
+            value: (row) => row.total_unapplied_amount ?? "",
+          },
+          {
+            header: tc("status"),
+            value: (row) => t(`statuses.${row.doc_status}`),
+          },
         ],
-      });
-      if (count) toast.success(tc("exportSuccess", { count }));
-      else toast.warning(tc("exportNoData"));
+      );
+      if (!count) toast.warning(tc("exportNoData"));
+      else toast.success(tc("exportSuccess", { count }));
     } catch (error) {
       exportErrorToast(error);
     }
   }
+  const cards = mobile || display === "grid";
   return (
     <ListPageShell
       title={t("title")}
       description={t("descriptionText")}
-      count={rows.length}
-      mock
+      count={query.data && total}
       actions={
         <DocumentListActions
           onAdd={() => {
-            if (canWrite) navigate(`${AR_RECEIPT_PATH}/new`);
+            if (canWrite) navigate(`${AR_RECEIPT_PATH}/new`, listReturnState());
           }}
           addLabel={t("newReceipt")}
           addDisabled={!canWrite}
-          onExport={() => void exportRows()}
+          onExport={() => void handleExport()}
           isExporting={isExporting}
         />
       }
@@ -267,60 +222,72 @@ function ReceiptList({ bu }: { readonly bu: string }) {
           onSaveViewClick={() => setSaveView(true)}
           displayMode={display}
           onDisplayModeChange={setDisplay}
+          trailing={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => void query.refetch()}
+              aria-label={tc("refresh")}
+            >
+              <RefreshCw className="size-4" />
+            </Button>
+          }
         />
       }
     >
-      <p role="note" className="text-muted-foreground text-xs">
-        {t("mockNotice")}
-      </p>
-      {loaded.error ? (
-        <ErrorState message={t("storageError")} />
+      {query.error ? (
+        <ErrorState
+          error={query.error}
+          message={t("loadError")}
+          onRetry={() => query.refetch()}
+        />
       ) : (
         <DataGrid
           table={table}
-          recordCount={rows.length}
+          recordCount={total}
+          isLoading={query.isPending}
           emptyMessage={<EmptyComponent />}
-          tableLayout={{ width: "auto" }}
+          tableLayout={{ headerSticky: true }}
         >
           <DataGridContainer
-            className={listGridMaxH(lf.activeFilters.length > 0)}
+            className={
+              cards ? undefined : listGridMaxH(lf.activeFilters.length > 0)
+            }
           >
             {cards ? (
-              <DataGridScrollArea>
-                {!rows.length && <EmptyComponent />}
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {table.getRowModel().rows.map(({ original: row }, i) => (
+              query.isPending ? (
+                <ListCardSkeleton />
+              ) : rows.length === 0 ? (
+                <EmptyComponent />
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {rows.map((row, i) => (
                     <ListCard
-                      rowNo={rowNumber(
-                        pageParamsOf(table.getState().pagination),
-                        i,
-                      )}
+                      rowNo={rowNumber(params, i)}
                       key={row.id}
-                      title={row.number}
-                      badge={
-                        <StatusChip
-                          status={row.status}
-                          label={t(`statuses.${row.status}`)}
-                        />
-                      }
+                      title={row.doc_no}
                       onOpen={() => open(row)}
                     >
+                      <ListCardStatusRow
+                        status={row.doc_status}
+                        label={t(`statuses.${row.doc_status}`)}
+                      />
                       <ListCardRow label={t("customer")}>
-                        {row.customerName}
+                        {row.customer_name}
                       </ListCardRow>
                       <ListCardRow label={t("inputDate")}>
-                        {formatDate(row.date, dateFormat)}
+                        {formatDate(row.receipt_date, dateFormat)}
                       </ListCardRow>
                       <ListCardRow label={t("receivedAmount")}>
-                        {amount(receiptTotals(row).received, row)}
+                        {amount(row.net_received_amount, row)}
                       </ListCardRow>
                       <ListCardRow label={t("appliedAmount")}>
-                        {amount(receiptTotals(row).allocated, row)}
+                        {amount(row.total_applied_amount, row)}
                       </ListCardRow>
                     </ListCard>
                   ))}
                 </div>
-              </DataGridScrollArea>
+              )
             ) : (
               <DataGridScrollArea>
                 <DataGridTable />
