@@ -558,3 +558,54 @@ describe("RecipeForm — ใช้อัตราค่าแรง/โสหุ
     expect(statement).not.toHaveTextContent("category 20%");
   });
 });
+
+// ราคาขายคิดได้สองทาง (ผู้ใช้สั่ง 2026-11-24): กรอก net → gross หรือกรอก gross → คิดย้อนเป็น net
+// ที่บันทึกคือ net อย่างเดียว · BU ในเทสต์ไม่ได้ตั้ง % → ค่าตั้งต้น ค่าบริการ 0% · VAT 7%
+describe("RecipeForm — ราคา Net ⇄ Gross", () => {
+  const net = () => document.getElementById("recipe-selling-price")!;
+  const gross = () => document.getElementById("recipe-gross-price")!;
+
+  it("ยังไม่มีราคา → ช่อง gross ว่าง (กรอก gross ก่อนได้)", () => {
+    renderForm(<RecipeForm recipe={RECIPE} />);
+    expect(gross()).toHaveValue(null);
+  });
+
+  it("กรอก net 100 → gross 107.00", () => {
+    renderForm(<RecipeForm recipe={RECIPE} />);
+    fireEvent.change(net(), { target: { value: "100" } });
+    expect(gross()).toHaveValue(107);
+  });
+
+  it("กรอก gross 107 → net 100 และบันทึก selling_price = net", async () => {
+    renderForm(<RecipeForm recipe={RECIPE} />);
+    fireEvent.change(gross(), { target: { value: "107" } });
+    expect(net()).toHaveValue(100);
+    fireEvent.blur(gross());
+    expect(gross()).toHaveValue(107);
+
+    await act(async () => submitForm("recipe-form"));
+    expect(firstPayload(updateMut)).toMatchObject({ selling_price: 100 });
+  });
+
+  it("gross ที่ net สตางค์เต็มทำไม่ได้ (100.04 ที่ VAT 7%) → บอกค่าใกล้สุด แล้วช่องเป็นค่านั้นตอนออก", () => {
+    renderForm(<RecipeForm recipe={RECIPE} />);
+    fireEvent.change(gross(), { target: { value: "100.04" } });
+    expect(net()).toHaveValue(93.5);
+    expect(
+      screen.getByText(
+        "Closest possible: ฿100.05 (net ฿93.50, rounded to the satang)",
+      ),
+    ).toBeInTheDocument();
+    fireEvent.blur(gross());
+    expect(gross()).toHaveValue(100.05);
+    expect(screen.queryByText(/Closest possible/)).toBeNull();
+  });
+
+  it("ลบ gross จนว่าง → ราคาขายว่าง (null)", async () => {
+    renderForm(<RecipeForm recipe={{ ...RECIPE, selling_price: 690 }} />);
+    expect(gross()).toHaveValue(738.3);
+    fireEvent.change(gross(), { target: { value: "" } });
+    await act(async () => submitForm("recipe-form"));
+    expect(firstPayload(updateMut)).toMatchObject({ selling_price: null });
+  });
+});

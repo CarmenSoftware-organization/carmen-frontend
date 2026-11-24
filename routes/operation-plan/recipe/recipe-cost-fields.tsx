@@ -258,31 +258,15 @@ export function RecipeCostFields({
             title={`2 · ${t("priceSection")}`}
             description={t("priceSectionDesc")}
           >
-            <div className="grid gap-3 @md:grid-cols-2">
-              <div>
-                <EyeBrow className="mb-1">
-                  <label htmlFor="recipe-selling-price">
-                    {t("sellingPrice")}
-                  </label>
-                </EyeBrow>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-muted-foreground text-sm">฿</span>
-                  <FieldInput
-                    id="recipe-selling-price"
-                    type="number"
-                    inputMode="decimal"
-                    step="0.01"
-                    disabled={isDisabled}
-                    size="sm"
-                    className="w-32 text-sm font-semibold tabular-nums"
-                    placeholder="0.00"
-                    error={errors.selling_price?.message}
-                    errorIconAlign="left"
-                    {...form.register("selling_price", nullableNumberInput)}
-                  />
-                </div>
-              </div>
-
+            {/* ราคาก่อน (กรอก net หรือ gross ก็ได้ อีกฝั่งคิดตาม) แล้วเป้า food cost คู่กับราคาแนะนำที่คิดจากเป้า */}
+            <RecipePriceBuildup
+              form={form}
+              isDisabled={isDisabled}
+              error={errors.selling_price?.message}
+              ingredientCost={amounts.total_ingredient_cost}
+              rates={priceRates}
+            />
+            <div className="mt-4 border-t pt-3">
               <div className="flex flex-wrap gap-4">
                 <div>
                   <EyeBrow className="mb-1">
@@ -357,11 +341,6 @@ export function RecipeCostFields({
                 </div>
               </div>
             </div>
-            <RecipePriceBuildup
-              sellingPrice={sellingPrice}
-              ingredientCost={amounts.total_ingredient_cost}
-              rates={priceRates}
-            />
             <RecipePriceRecommendations
               form={form}
               computed={computed}
