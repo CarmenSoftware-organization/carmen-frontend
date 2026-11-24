@@ -156,7 +156,6 @@ export function ReceiptInvoiceDialog({
         },
       },
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- toggle only touches setPicked
     [picked, t, money, dateFormat],
   );
   return (
