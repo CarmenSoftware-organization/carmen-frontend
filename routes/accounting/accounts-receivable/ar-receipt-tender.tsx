@@ -35,6 +35,7 @@ export function ReceiptTenderSection({
   readonly patch: (patch: Partial<ReceiptTender>) => void;
 }) {
   const t = useTranslations("accounting.arReceipt");
+  const money = useAmountFormatter();
   const tender = receipt.tender;
   const accounts = useBankAccounts().data ?? [];
   const banks = accounts.filter(
@@ -55,7 +56,9 @@ export function ReceiptTenderSection({
         {label} ({receipt.currency})
       </FieldLabel>
       {readonly ? (
-        <FieldPlainText className="tabular-nums">{tender[key]}</FieldPlainText>
+        <FieldPlainText className="tabular-nums">
+          {money(tender[key])}
+        </FieldPlainText>
       ) : (
         <FieldInput
           id={`receipt-${key}`}

@@ -120,6 +120,7 @@ function ReceiptDetail({ id }: { readonly id: string }) {
         initial={receipt}
         isNew
         document={undefined}
+        outstandingFailed={false}
       />
     );
   }
@@ -140,6 +141,7 @@ function ReceiptDetail({ id }: { readonly id: string }) {
       initial={receiptFromDocument(doc.data, outstanding.data)}
       isNew={false}
       document={doc.data}
+      outstandingFailed={outstanding.isError}
     />
   );
 }
@@ -148,10 +150,13 @@ function ReceiptForm({
   initial,
   isNew,
   document,
+  outstandingFailed,
 }: {
   readonly initial: ArReceipt;
   readonly isNew: boolean;
   readonly document: ArReceiptDocument | undefined;
+  /** outstanding list failed to load: caps fall back to the applied amount */
+  readonly outstandingFailed: boolean;
 }) {
   const bu = useBuCode() ?? "";
   const t = useTranslations("accounting.arReceipt");
@@ -575,6 +580,11 @@ function ReceiptForm({
             )}
           </Field>
         </div>
+        {outstandingFailed && (
+          <p role="alert" className="text-warning-ink text-xs">
+            {t("outstandingLoadError")}
+          </p>
+        )}
         {error && (
           <p role="alert" className="text-destructive text-xs">
             {error}

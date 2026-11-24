@@ -119,6 +119,7 @@ export type ReceiptValidationError =
   | "allocationExceedsOutstanding"
   | "duplicateInvoice"
   | "whtExceedsAllocation"
+  | "whtProfileRequired"
   | "overAllocated"
   | "emptyReceipt"
   | "invalidTaxId"
@@ -299,6 +300,7 @@ export function receiptValidation(
     if (ids.has(line.id)) return "duplicateInvoice";
     ids.add(line.id);
   }
+  if (receipt.whtEnabled && !receipt.whtProfileId) return "whtProfileRequired";
   const totals = receiptTotals(receipt);
   if (
     receipt.whtEnabled &&

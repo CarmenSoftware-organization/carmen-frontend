@@ -1679,13 +1679,14 @@
       "statuses": {
         "draft": "Draft",
         "void": "Void",
-        "inReview": "In review",
+        "in_review": "In review",
         "posted": "Posted"
       },
       "sources": {
         "manual": "Manual",
         "copy": "Copy",
-        "invoice": "AR Invoice"
+        "invoice": "AR Invoice",
+        "interface": "Interface"
       },
       "tabs": {
         "items": "Item Details",
@@ -1776,6 +1777,8 @@
       "voidDraftHint": "The receipt keeps its document number and is marked void.",
       "voidPostedHint": "The receipt journal is reversed and the invoice balances are restored.",
       "voidReason": "Reason",
+      "whtProfileRequired": "Select the WHT profile.",
+      "outstandingLoadError": "Could not load the invoice balances. Invoice numbers and limits may be incomplete; reload before editing.",
       "emptyReceipt": "Enter a received amount, or select invoices to settle.",
       "bankAccountRequired": "Select the bank account the money goes into.",
       "overAllocated": "Applied amount exceeds what was received (net received + WHT + charge).",
