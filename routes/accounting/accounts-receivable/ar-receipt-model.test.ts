@@ -261,7 +261,6 @@ describe("Receipt API mapping", () => {
     const receipt: ArReceipt = {
       ...base,
       whtEnabled: true,
-      whtProfileId: "wht-3",
       whtProfileId: "wht-1",
       whtAmount: 3,
       whtCertificate: "C-1",
@@ -398,7 +397,6 @@ describe("Receipt API mapping", () => {
       date: "2026-11-17",
       taxInvoiceNo: "TXRC2611-0001",
       whtEnabled: true,
-      whtProfileId: "wht-3",
       whtAmount: 3,
       tender: {
         method: "promptpay",
