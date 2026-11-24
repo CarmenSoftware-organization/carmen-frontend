@@ -3763,6 +3763,7 @@
       "titleStoreRequisition": "ลำดับขั้นอนุมัติใบเบิกของ",
       "titleJournalVoucher": "ลำดับขั้นอนุมัติใบสำคัญรายวัน",
       "titleApInvoice": "ลำดับขั้นอนุมัติใบแจ้งหนี้เจ้าหนี้",
+      "titleApPayment": "ลำดับขั้นอนุมัติการจ่ายเงินเจ้าหนี้",
       "desc": "ใครอนุมัติอะไร เรียงก่อนหลังยังไง กว่าเอกสารจะผ่าน",
       "add": "สร้างลำดับขั้นใหม่",
       "edit": "แก้ไขเวิร์กโฟลว์",
@@ -3845,7 +3846,9 @@
       "typeStoreRequisition": "ใบเบิกสินค้า",
       "typeJournalVoucher": "ใบสำคัญรายวัน",
       "typeApInvoice": "ใบแจ้งหนี้เจ้าหนี้",
+      "typeApPayment": "การจ่ายเงินเจ้าหนี้",
       "apInvoiceSingleActiveHint": "หน่วยธุรกิจนี้มี workflow ของใบแจ้งหนี้เจ้าหนี้ที่เปิดใช้อยู่แล้ว เปิดใช้ได้ครั้งละเส้นเดียว — ปิดเส้นเดิมก่อน หรือแก้เส้นเดิมแทน",
+      "apPaymentSingleActiveHint": "หน่วยธุรกิจนี้มี workflow ของการจ่ายเงินเจ้าหนี้ที่เปิดใช้อยู่แล้ว เปิดใช้ได้ครั้งละเส้นเดียว — ปิดเส้นเดิมก่อน หรือแก้เส้นเดิมแทน",
       "listJvPrefixCount": "{count, plural, =0 {ทุก prefix} other {prefix {count} รายการ}}",
       "listJvSourceCount": "{count, plural, =0 {ทุกที่มา} other {ที่มา {count} แบบ}}",
       "jvScopeTab": "ขอบเขต",
@@ -4030,6 +4033,7 @@
           "workflowStoreRequisition": "ขั้นอนุมัติก่อนจ่ายของตามใบเบิก",
           "workflowJournalVoucher": "ขั้นอนุมัติก่อนลงบัญชีใบสำคัญรายวัน",
           "workflowApInvoice": "ขั้นอนุมัติก่อนลงบัญชีใบแจ้งหนี้เจ้าหนี้",
+          "workflowApPayment": "ขั้นอนุมัติก่อนลงบัญชีการจ่ายเงินเจ้าหนี้",
           "notificationTemplate": "ข้อความแจ้งเตือนที่ลำดับขั้นเหล่านี้ส่งออกไป"
         }
       }
@@ -7891,6 +7895,7 @@
     "workflowStoreRequisition": "ใบเบิกของ",
     "workflowJournalVoucher": "ใบสำคัญรายวัน",
     "workflowApInvoice": "ใบแจ้งหนี้เจ้าหนี้",
+    "workflowApPayment": "การจ่ายเงินเจ้าหนี้",
     "interface": "การเชื่อมต่อระบบภายนอก",
     "emailProfile": "โปรไฟล์อีเมล",
     "emailTemplate": "ข้อความอีเมล",

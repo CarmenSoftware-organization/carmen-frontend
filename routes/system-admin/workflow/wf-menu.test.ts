@@ -32,6 +32,7 @@ describe("เมนูย่อยของ workflow", () => {
       "workflowStoreRequisition",
       "workflowJournalVoucher",
       "workflowApInvoice",
+      "workflowApPayment",
     ]);
   });
 
@@ -58,6 +59,7 @@ describe("เมนูย่อยของ workflow", () => {
       "system_admin.workflow.purchase_order.view",
       "system_admin.workflow.store_requisition.view",
       // JV ยังไม่มีคีย์ลูกของตัวเอง — ใช้คีย์แม่ (ที่มีอยู่จริงใน DB) จนกว่า backend จะเพิ่มคีย์ลูก
+      "system_admin.workflow.view",
       "system_admin.workflow.view",
       "system_admin.workflow.view",
     ]);
