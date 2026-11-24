@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
+import { QUERY_KEYS } from "@/constant/query-keys";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { useXlsxExport, type XlsxColumn } from "@/hooks/use-xlsx-export";
@@ -14,6 +15,7 @@ import type {
   ArInvoiceLineRecord,
   ArInvoiceUpdateInput,
 } from "./ar-invoice-draft-model";
+import type { ApPreviousStage } from "../accounts-payable/shared/use-ap-previous-stages";
 
 export const AR_STATUS = ["draft", "in_review", "posted", "void"] as const;
 export const AR_TYPES = [
@@ -41,6 +43,8 @@ export interface ArRegisterRow {
   reference_applied_amount?: ArAmount;
 }
 
+export type ArWorkflowAction = "approve" | "reject" | "sendback";
+
 export interface ArRegisterDocument extends ArRegisterRow {
   doc_version?: number | null;
   customer_id: string;
@@ -60,6 +64,9 @@ export interface ArRegisterDocument extends ArRegisterRow {
   is_wht_recorded?: boolean;
   wht_amount?: ArAmount;
   workflow_current_stage?: string | null;
+  workflow_name?: string | null;
+  allowed_actions?: ArWorkflowAction[];
+  user_action?: { execute?: boolean } | null;
   net_amount: ArAmount;
   vat_amount: ArAmount;
   gl_jv_id?: string | null;
@@ -210,5 +217,28 @@ export function useArInvoiceAction() {
     invalidateKeys: [QUERY_KEY, "ar-receipt"],
     errorMessage: "Unable to update AR invoice status",
     meta: { preferServerMessage: true },
+  });
+}
+
+/** ขั้นก่อนหน้าที่ส่งกลับได้ — โหลดเมื่อเปิด dialog ส่งกลับเท่านั้น */
+export function useArInvoicePreviousStages(
+  id: string | undefined,
+  enabled: boolean,
+) {
+  const bu = useBuCode();
+  return useQuery<ApPreviousStage[]>({
+    queryKey: [QUERY_KEYS.AR_INVOICE_PREVIOUS_STAGES, bu, id],
+    queryFn: async () => {
+      const res = await httpClient.get(
+        API_ENDPOINTS.AR_INVOICE_PREVIOUS_STAGES(bu!, id!),
+      );
+      if (!res.ok) throw new Error("Failed to fetch previous stages");
+      const json = await res.json();
+      return Object.entries(json.data ?? {}).map(([key, name]) => ({
+        key,
+        name: name as string,
+      }));
+    },
+    enabled: !!bu && !!id && enabled,
   });
 }

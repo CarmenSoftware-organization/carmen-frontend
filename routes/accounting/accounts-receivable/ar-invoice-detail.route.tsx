@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
-import { Ban, Send } from "lucide-react";
+import { Ban, Check, Send, Undo2, X } from "lucide-react";
 import { FormToolbar, ToolbarLabel } from "@/components/share/form-toolbar";
 import { Field, FieldLabel, FieldPlainText } from "@/components/ui/field";
 import {
@@ -28,6 +28,8 @@ import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { ApDetailGrid } from "../accounts-payable/shared/ap-detail-grid";
+import { ApSendBackFields } from "../accounts-payable/shared/ap-send-back-fields";
+import { arInvoiceActions, type ArUiAction } from "./ar-invoice-actions";
 import { ArInvoiceTaxLines } from "./ar-invoice-tax-lines";
 import { ArInvoiceLines } from "./ar-invoice-lines";
 import {
@@ -51,6 +53,7 @@ import {
   useArRegisterDocument,
   useDeleteArInvoice,
   useArInvoiceAction,
+  useArInvoicePreviousStages,
   type ArRegisterDocument,
 } from "./use-ar-register";
 
@@ -85,14 +88,23 @@ function RegisterDetail({ id }: { readonly id?: string }) {
     null,
   );
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [confirmation, setConfirmation] = useState<"submit" | "void" | null>(
-    null,
-  );
+  const [confirmation, setConfirmation] = useState<
+    "submit" | "void" | "approve" | "sendback" | "reject" | null
+  >(null);
   const [reason, setReason] = useState("");
+  const [stage, setStage] = useState("");
   const action = useArInvoiceAction();
   const tc = useTranslations("common");
   const doc = useArRegisterDocument(id);
   const remove = useDeleteArInvoice();
+  const sendingBack = confirmation === "sendback";
+  const stagesQuery = useArInvoicePreviousStages(doc.data?.id, sendingBack);
+  const stages = stagesQuery.data ?? [];
+  const closeConfirmation = () => {
+    setConfirmation(null);
+    setReason("");
+    setStage("");
+  };
 
   if (editDocument) {
     return (
@@ -118,6 +130,8 @@ function RegisterDetail({ id }: { readonly id?: string }) {
     );
   const row = doc.data;
   const draft = row.doc_status === "draft";
+  const actions: ArUiAction[] = canWrite ? arInvoiceActions(row) : [];
+  const needsReason = confirmation === "void" || confirmation === "reject";
   const editable =
     draft &&
     row.doc_version != null &&
@@ -130,50 +144,82 @@ function RegisterDetail({ id }: { readonly id?: string }) {
         row={row}
         back={remove.isPending ? undefined : () => toList()}
         edit={editable ? () => setEditDocument(row) : undefined}
-        remove={draft ? () => setDeleteOpen(true) : undefined}
+        remove={
+          actions.includes("delete") ? () => setDeleteOpen(true) : undefined
+        }
         deleting={remove.isPending || action.isPending}
         submit={
-          draft && canWrite && row.doc_version != null
+          actions.includes("submit") && row.doc_version != null
             ? () => setConfirmation("submit")
             : undefined
         }
         voidDocument={
-          row.doc_status !== "void" && canWrite
-            ? () => setConfirmation("void")
+          actions.includes("void") ? () => setConfirmation("void") : undefined
+        }
+        approve={
+          actions.includes("approve")
+            ? () => setConfirmation("approve")
+            : undefined
+        }
+        sendBack={
+          actions.includes("sendback")
+            ? () => setConfirmation("sendback")
+            : undefined
+        }
+        reject={
+          actions.includes("reject")
+            ? () => setConfirmation("reject")
             : undefined
         }
       />
       <Dialog
         open={confirmation !== null}
         onOpenChange={(open) => {
-          if (!open && !action.isPending) {
-            setConfirmation(null);
-            setReason("");
-          }
+          if (!open && !action.isPending) closeConfirmation();
         }}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {t(confirmation === "void" ? "voidTitle" : "submitTitle")}
+              {confirmation ? t(`${confirmation}Title`) : ""}
             </DialogTitle>
             <DialogDescription>
-              {t(confirmation === "void" ? "voidConfirm" : "submitConfirm", {
-                number: row.doc_no,
-              })}
+              {confirmation && confirmation !== "sendback"
+                ? t(`${confirmation}Confirm`, { number: row.doc_no })
+                : ""}
             </DialogDescription>
           </DialogHeader>
-          {confirmation === "void" && (
+          {sendingBack && (
+            <ApSendBackFields
+              labels={{
+                stage: t("sendBackStage"),
+                stagePlaceholder: t("sendBackStagePlaceholder"),
+                stagesError: t("sendBackStagesError"),
+                noStages: t("sendBackNoStages"),
+              }}
+              stage={stage}
+              onStageChange={setStage}
+              stages={stages}
+              isLoading={stagesQuery.isLoading}
+              isError={stagesQuery.isError}
+            />
+          )}
+          {(needsReason || sendingBack) && (
             <Field>
-              <FieldLabel htmlFor="ar-void-reason" required>
-                {t("reason")}
+              <FieldLabel htmlFor="ar-action-reason" required={needsReason}>
+                {sendingBack ? t("sendBackNote") : t("reason")}
               </FieldLabel>
               <Textarea
-                id="ar-void-reason"
+                id="ar-action-reason"
                 value={reason}
                 maxLength={255}
                 onChange={(event) => setReason(event.target.value)}
               />
+              {confirmation === "reject" && !reason.trim() && (
+                <p className="text-muted-foreground text-xs">
+                  {t("rejectReasonRequired")}
+                </p>
+              )}
             </Field>
           )}
           <DialogFooter>
@@ -181,39 +227,49 @@ function RegisterDetail({ id }: { readonly id?: string }) {
               type="button"
               variant="outline"
               disabled={action.isPending}
-              onClick={() => {
-                setConfirmation(null);
-                setReason("");
-              }}
+              onClick={closeConfirmation}
             >
               {tc("cancel")}
             </Button>
             <Button
               type="button"
-              variant={confirmation === "void" ? "destructive" : "default"}
+              variant={
+                confirmation === "void" || confirmation === "reject"
+                  ? "destructive"
+                  : "default"
+              }
               disabled={
-                action.isPending || (confirmation === "void" && !reason.trim())
+                action.isPending ||
+                (needsReason && !reason.trim()) ||
+                (sendingBack && !stage)
               }
               onClick={() => {
                 if (!confirmation || !canWrite) return;
                 action.mutate(
                   {
                     id: row.id,
-                    action: confirmation,
+                    action: sendingBack ? "review" : confirmation,
                     doc_version: row.doc_version ?? undefined,
-                    ...(confirmation === "void" && { reason: reason.trim() }),
+                    ...(needsReason && { reason: reason.trim() }),
+                    ...(sendingBack && {
+                      stage,
+                      ...(reason.trim() && { reason: reason.trim() }),
+                    }),
                   },
                   {
                     onSuccess: () => {
-                      setConfirmation(null);
-                      setReason("");
+                      closeConfirmation();
                       void doc.refetch();
                     },
                   },
                 );
               }}
             >
-              {t(confirmation === "void" ? "void" : "submit")}
+              {t(
+                confirmation === "sendback"
+                  ? "sendBack"
+                  : (confirmation ?? "submit"),
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -225,7 +281,8 @@ function RegisterDetail({ id }: { readonly id?: string }) {
         isPending={remove.isPending}
         onOpenChange={setDeleteOpen}
         onConfirm={() => {
-          if (!canWrite || !draft || remove.isPending) return;
+          if (!canWrite || !actions.includes("delete") || remove.isPending)
+            return;
           remove.mutate(row.id, {
             onSuccess: () => {
               toast.success(t("deleted"));
@@ -246,6 +303,9 @@ function InvoiceView({
   deleting,
   submit,
   voidDocument,
+  approve,
+  sendBack,
+  reject,
 }: {
   readonly row: ArRegisterDocument;
   readonly back?: () => void;
@@ -254,6 +314,9 @@ function InvoiceView({
   readonly deleting: boolean;
   readonly submit?: () => void;
   readonly voidDocument?: () => void;
+  readonly approve?: () => void;
+  readonly sendBack?: () => void;
+  readonly reject?: () => void;
 }) {
   const t = useTranslations("accounting.arRegister");
   const { dateFormat, defaultCurrencyCode } = useProfile();
@@ -303,12 +366,58 @@ function InvoiceView({
         deleteIsPending={deleting}
         flush={false}
         badges={
-          <StatusChip
-            status={row.doc_status}
-            label={t(`statuses.${row.doc_status}`)}
-          />
+          <>
+            <StatusChip
+              status={row.doc_status}
+              label={t(`statuses.${row.doc_status}`)}
+            />
+            {row.doc_status === "in_review" && row.workflow_current_stage && (
+              <span className="text-muted-foreground text-xs">
+                {t("stageLabel", { stage: row.workflow_current_stage })}
+              </span>
+            )}
+          </>
         }
       >
+        {approve && (
+          <Button
+            type="button"
+            size="sm"
+            title={t("approve")}
+            disabled={deleting}
+            onClick={approve}
+          >
+            <Check />
+            <ToolbarLabel>{t("approve")}</ToolbarLabel>
+          </Button>
+        )}
+        {sendBack && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            title={t("sendBack")}
+            disabled={deleting}
+            onClick={sendBack}
+          >
+            <Undo2 />
+            <ToolbarLabel>{t("sendBack")}</ToolbarLabel>
+          </Button>
+        )}
+        {reject && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            title={t("reject")}
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            disabled={deleting}
+            onClick={reject}
+          >
+            <X />
+            <ToolbarLabel>{t("reject")}</ToolbarLabel>
+          </Button>
+        )}
         {voidDocument && (
           <Button
             type="button"

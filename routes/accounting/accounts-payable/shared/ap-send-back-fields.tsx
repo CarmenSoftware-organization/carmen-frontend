@@ -10,24 +10,35 @@ import {
 import type { ApPreviousStage } from "./use-ap-previous-stages";
 
 /** ช่องเลือกขั้นที่จะส่งกลับ (บังคับเลือก) ใน dialog ส่งกลับของใบแจ้งหนี้/ใบจ่ายเงิน */
+export interface SendBackLabels {
+  readonly stage: string;
+  readonly stagePlaceholder: string;
+  readonly stagesError: string;
+  readonly noStages: string;
+}
+
 export function ApSendBackFields({
-  kind,
+  kind = "invoice",
+  labels,
   stage,
   onStageChange,
   stages,
   isLoading,
   isError,
 }: {
-  readonly kind: "invoice" | "payment";
+  readonly kind?: "invoice" | "payment";
+  /** ข้อความเอง (เช่น AR Invoice) — ไม่ส่งจะอ่านจาก namespace ของ AP ตาม kind */
+  readonly labels?: SendBackLabels;
   readonly stage: string;
   readonly onStageChange: (stage: string) => void;
   readonly stages: ApPreviousStage[];
   readonly isLoading: boolean;
   readonly isError: boolean;
 }) {
-  const t = useTranslations(
+  const tAp = useTranslations(
     `accounting.accountsPayable.${kind}.detail.reasonDialog.sendback`,
   );
+  const t = (key: keyof SendBackLabels) => labels?.[key] ?? tAp(key);
   return (
     <div className="space-y-1.5">
       <Label>{t("stage")}</Label>
