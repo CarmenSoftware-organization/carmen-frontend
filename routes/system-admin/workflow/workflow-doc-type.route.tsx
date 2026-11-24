@@ -3,8 +3,8 @@ import WorkflowComponent from "./wf-component";
 import { WORKFLOW_DOC_TYPES, type WorkflowDocType } from "@/hooks/use-workflow";
 
 /**
- * หน้ารายการ workflow ของชนิดเอกสารเดียว — ใช้ไฟล์เดียวกับทั้งสาม path
- * (`/system-admin/workflow/purchase-request` · `.../purchase-order` ·
+ * หน้ารายการ workflow ของชนิดเอกสารเดียว — ใช้ไฟล์เดียวกับทุก path ของชนิดเอกสาร
+ * (เช่น `/system-admin/workflow/purchase-request` · `.../purchase-order` ·
  * `.../store-requisition`) แล้วอ่านชนิดจาก segment สุดท้ายของ URL
  *
  * ทำเป็น route จริงแทน query เพราะแต่ละชนิดยิงคนละ endpoint

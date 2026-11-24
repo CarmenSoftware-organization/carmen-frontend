@@ -235,7 +235,8 @@
       "generalDefaultVatRate": "VAT ตั้งต้น (%)",
       "generalDefaultVatRateDesc": "VAT ในเอกสารยังมาจาก Tax Profile",
       "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)",
-      "apInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AP Invoice ของตัวเอง"
+      "apInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AP Invoice ของตัวเอง",
+      "apPaymentAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติใบจ่ายเงิน AP ของตัวเอง"
     }
   },
   "accounting": {
@@ -1132,6 +1133,7 @@
         "approvalConfirm": "อนุมัติใบจ่ายชำระต่อไปนี้: {documents}?",
         "approvalCompleted": "อนุมัติใบจ่ายชำระแล้ว {count} รายการ",
         "approvalPartial": "อนุมัติแล้ว {count} จาก {total} รายการ กรุณาตรวจรายการที่เหลือแล้วลองใหม่",
+        "approvalPartialWithReason": "อนุมัติแล้ว {count} จาก {total} รายการ บางใบถูกปฏิเสธ: {reason}",
         "desc": "การจ่ายเงินผู้ขายและใบแจ้งหนี้ที่ชำระ",
         "add": "สร้างการจ่ายเงิน",
         "docNo": "เลขที่ PV",
@@ -1156,6 +1158,7 @@
           "promptpay": "พร้อมเพย์"
         },
         "detail": {
+          "creatorCannotApproveHint": "คุณเป็นผู้สร้างใบจ่ายเงินนี้ จึงอนุมัติเองไม่ได้ ให้ผู้อนุมัติคนอื่นทำแทน หรือเปิดการตั้งค่า ap.payment.allow-creator-approve ที่ Default Setting",
           "newTitle": "สร้างการจ่ายเงิน AP",
           "subtitle": "การจ่ายเงินผู้ขาย",
           "back": "กลับไปรายการ AP Payment",
@@ -1267,7 +1270,7 @@
             "submit": "ส่งการจ่ายเงินแล้ว",
             "approve": "อนุมัติการจ่ายเงินแล้ว",
             "sendback": "ส่งการจ่ายเงินกลับแล้ว",
-            "reject": "ปฏิเสธการจ่ายเงินแล้ว",
+            "reject": "ปฏิเสธและยกเลิกการจ่ายเงินแล้ว",
             "void": "ยกเลิกการจ่ายเงินแล้ว",
             "delete": "ลบการจ่ายเงินแล้ว"
           },
@@ -1283,10 +1286,15 @@
               "title": "ยกเลิกการจ่ายเงิน"
             },
             "reject": {
-              "title": "ปฏิเสธการจ่ายเงิน"
+              "title": "ปฏิเสธและยกเลิกการจ่ายเงิน",
+              "required": "ต้องระบุเหตุผล การปฏิเสธจะยกเลิกใบจ่ายเงินนี้และเปิดใหม่ไม่ได้"
             },
             "sendback": {
-              "title": "ส่งการจ่ายเงินกลับ"
+              "title": "ส่งการจ่ายเงินกลับ",
+              "stage": "ส่งกลับไปที่ขั้น",
+              "stagePlaceholder": "เลือกขั้นตอน",
+              "stagesError": "โหลดขั้นก่อนหน้าไม่สำเร็จ ปิดหน้าต่างนี้แล้วลองใหม่",
+              "noStages": "ไม่มีขั้นก่อนหน้าให้ส่งการจ่ายเงินกลับไป"
             }
           },
           "errors": {
@@ -2255,6 +2263,8 @@
       "WORKFLOW_CREATOR_CANNOT_APPROVE": "คุณเป็นผู้สร้างเอกสารนี้ จึงอนุมัติเองไม่ได้ ให้ผู้อนุมัติคนอื่นทำแทน",
       "AP_INVOICE_REJECT_REASON_REQUIRED": "ระบุเหตุผลก่อนปฏิเสธใบแจ้งหนี้นี้",
       "AP_INVOICE_NUMBERED_VOID_ONLY": "ใบแจ้งหนี้นี้มีเลขที่เอกสารแล้ว จึงลบไม่ได้ ให้ยกเลิก (void) แทน",
+      "AP_PAYMENT_REJECT_REASON_REQUIRED": "ระบุเหตุผลก่อนปฏิเสธใบจ่ายเงินนี้",
+      "AP_PAYMENT_NUMBERED_VOID_ONLY": "ใบจ่ายเงินนี้มีเลขที่เอกสารแล้ว จึงลบไม่ได้ ให้ยกเลิก (void) แทน",
       "WORKFLOW_SENDBACK_STAGE_INVALID": "ส่งกลับไปขั้น {stage} ไม่ได้ เลือกจากขั้นก่อนหน้าเท่านั้น",
       "WORKFLOW_SINGLE_ACTIVE_EXISTS": "ใบแจ้งหนี้เจ้าหนี้มี workflow ที่เปิดใช้อยู่แล้ว ({workflow}) เปิดใช้ได้เส้นเดียวต่อหน่วยธุรกิจ",
       "APP_READ_ONLY": "ระบบอยู่ในโหมดอ่านอย่างเดียว — ยังทำรายการนี้ไม่ได้ในขณะนี้",
@@ -3763,6 +3773,7 @@
       "titleStoreRequisition": "ลำดับขั้นอนุมัติใบเบิกของ",
       "titleJournalVoucher": "ลำดับขั้นอนุมัติใบสำคัญรายวัน",
       "titleApInvoice": "ลำดับขั้นอนุมัติใบแจ้งหนี้เจ้าหนี้",
+      "titleApPayment": "ลำดับขั้นอนุมัติการจ่ายเงินเจ้าหนี้",
       "desc": "ใครอนุมัติอะไร เรียงก่อนหลังยังไง กว่าเอกสารจะผ่าน",
       "add": "สร้างลำดับขั้นใหม่",
       "edit": "แก้ไขเวิร์กโฟลว์",
@@ -3845,7 +3856,9 @@
       "typeStoreRequisition": "ใบเบิกสินค้า",
       "typeJournalVoucher": "ใบสำคัญรายวัน",
       "typeApInvoice": "ใบแจ้งหนี้เจ้าหนี้",
+      "typeApPayment": "การจ่ายเงินเจ้าหนี้",
       "apInvoiceSingleActiveHint": "หน่วยธุรกิจนี้มี workflow ของใบแจ้งหนี้เจ้าหนี้ที่เปิดใช้อยู่แล้ว เปิดใช้ได้ครั้งละเส้นเดียว — ปิดเส้นเดิมก่อน หรือแก้เส้นเดิมแทน",
+      "apPaymentSingleActiveHint": "หน่วยธุรกิจนี้มี workflow ของการจ่ายเงินเจ้าหนี้ที่เปิดใช้อยู่แล้ว เปิดใช้ได้ครั้งละเส้นเดียว — ปิดเส้นเดิมก่อน หรือแก้เส้นเดิมแทน",
       "listJvPrefixCount": "{count, plural, =0 {ทุก prefix} other {prefix {count} รายการ}}",
       "listJvSourceCount": "{count, plural, =0 {ทุกที่มา} other {ที่มา {count} แบบ}}",
       "jvScopeTab": "ขอบเขต",
@@ -4030,6 +4043,7 @@
           "workflowStoreRequisition": "ขั้นอนุมัติก่อนจ่ายของตามใบเบิก",
           "workflowJournalVoucher": "ขั้นอนุมัติก่อนลงบัญชีใบสำคัญรายวัน",
           "workflowApInvoice": "ขั้นอนุมัติก่อนลงบัญชีใบแจ้งหนี้เจ้าหนี้",
+          "workflowApPayment": "ขั้นอนุมัติก่อนลงบัญชีการจ่ายเงินเจ้าหนี้",
           "notificationTemplate": "ข้อความแจ้งเตือนที่ลำดับขั้นเหล่านี้ส่งออกไป"
         }
       }
@@ -7894,6 +7908,7 @@
     "workflowStoreRequisition": "ใบเบิกของ",
     "workflowJournalVoucher": "ใบสำคัญรายวัน",
     "workflowApInvoice": "ใบแจ้งหนี้เจ้าหนี้",
+    "workflowApPayment": "การจ่ายเงินเจ้าหนี้",
     "interface": "การเชื่อมต่อระบบภายนอก",
     "emailProfile": "โปรไฟล์อีเมล",
     "emailTemplate": "ข้อความอีเมล",

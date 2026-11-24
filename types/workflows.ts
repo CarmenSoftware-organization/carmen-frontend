@@ -4,6 +4,7 @@ export enum WORKFLOW_TYPE {
   SR = "store_requisition",
   JV = "gl_jv",
   AP_INVOICE = "ap_invoice",
+  AP_PAYMENT = "ap_payment",
 }
 
 enum enum_sla_unit {

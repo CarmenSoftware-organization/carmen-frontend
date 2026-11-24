@@ -22,7 +22,10 @@ import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { toast } from "sonner";
-import { useApInvoiceWorkflows } from "@/hooks/use-workflow";
+import {
+  useApInvoiceWorkflows,
+  useApPaymentWorkflows,
+} from "@/hooks/use-workflow";
 import { useCreateWorkflow } from "./use-wf-mutations";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { getWorkflowTypeLabels, workflowTypeField } from "@/constant/workflow";
@@ -81,22 +84,31 @@ export default function WorkflowNewForm({
     type: typeLabels[watchedType] ?? typeLabels[WORKFLOW_TYPE.PR],
   });
 
-  // AP Invoice มี workflow ที่เปิดใช้ได้เส้นเดียวต่อ BU — ถ้ามีอยู่แล้วห้ามสร้างเพิ่ม
+  // AP Invoice / AP Payment มี workflow ที่เปิดใช้ได้เส้นเดียวต่อ BU — ถ้ามีอยู่แล้วห้ามสร้างเพิ่ม
   // (backend ตอบ WORKFLOW_SINGLE_ACTIVE_EXISTS เป็นด่านสุดท้าย)
   // perpage ชัดเจนเพื่อให้เห็นเส้นที่เปิดอยู่แม้เกินหน้าแรก (ไม่ใช้ -1)
-  // ยิงเฉพาะเมื่อฟอร์มนี้เป็น AP ได้ — ฟอร์มชนิดอื่นไม่ยิง (env ที่ยังไม่ allowlist
-  // workflow.findAllApInvoice จะ 401 แล้วผู้ใช้โดน logout)
-  const apQueryEnabled = !lockedType || lockedType === WORKFLOW_TYPE.AP_INVOICE;
-  const { data: apWorkflows, isPending: apPending } = useApInvoiceWorkflows(
-    { perpage: 100 },
-    { enabled: apQueryEnabled },
-  );
-  const apLoading = apQueryEnabled && apPending;
-  const apActiveExists =
-    apQueryEnabled && !!apWorkflows?.data?.some((w) => w.is_active);
-  const isApType = watchedType === WORKFLOW_TYPE.AP_INVOICE;
-  // ระหว่างโหลดรายการ ถือว่า AP ถูกบล็อกไว้ก่อน จนรู้ว่าไม่มีเส้นที่เปิดอยู่
-  const apBlocked = isApType && (apLoading || apActiveExists);
+  // ยิงเฉพาะเมื่อฟอร์มนี้เป็นชนิดนั้นได้ — ฟอร์มชนิดอื่นไม่ยิง (env ที่ยังไม่ allowlist
+  // workflow.findAllApInvoice / findAllApPayment จะ 401 แล้วผู้ใช้โดน logout)
+  const apInvoiceQueryEnabled =
+    !lockedType || lockedType === WORKFLOW_TYPE.AP_INVOICE;
+  const { data: apInvoiceWorkflows, isPending: apInvoicePending } =
+    useApInvoiceWorkflows({ perpage: 100 }, { enabled: apInvoiceQueryEnabled });
+  const apPaymentQueryEnabled =
+    !lockedType || lockedType === WORKFLOW_TYPE.AP_PAYMENT;
+  const { data: apPaymentWorkflows, isPending: apPaymentPending } =
+    useApPaymentWorkflows({ perpage: 100 }, { enabled: apPaymentQueryEnabled });
+  const apInvoiceActiveExists =
+    apInvoiceQueryEnabled &&
+    !!apInvoiceWorkflows?.data?.some((w) => w.is_active);
+  const apPaymentActiveExists =
+    apPaymentQueryEnabled &&
+    !!apPaymentWorkflows?.data?.some((w) => w.is_active);
+  // ระหว่างโหลดรายการ ถือว่าชนิดนั้นถูกบล็อกไว้ก่อน จนรู้ว่าไม่มีเส้นที่เปิดอยู่
+  const apBlocked =
+    (watchedType === WORKFLOW_TYPE.AP_INVOICE &&
+      ((apInvoiceQueryEnabled && apInvoicePending) || apInvoiceActiveExists)) ||
+    (watchedType === WORKFLOW_TYPE.AP_PAYMENT &&
+      ((apPaymentQueryEnabled && apPaymentPending) || apPaymentActiveExists));
 
   const discard = useDiscardConfirm({
     isDirty: form.formState.isDirty,
@@ -205,8 +217,10 @@ export default function WorkflowNewForm({
                           key={opt.value}
                           value={opt.value}
                           disabled={
-                            opt.value === WORKFLOW_TYPE.AP_INVOICE &&
-                            apActiveExists
+                            (opt.value === WORKFLOW_TYPE.AP_INVOICE &&
+                              apInvoiceActiveExists) ||
+                            (opt.value === WORKFLOW_TYPE.AP_PAYMENT &&
+                              apPaymentActiveExists)
                           }
                         >
                           {opt.label}
@@ -219,19 +233,28 @@ export default function WorkflowNewForm({
               <FieldError>
                 {form.formState.errors.workflow_type?.message}
               </FieldError>
-              {isApType && apActiveExists && (
-                <p className="text-muted-foreground text-xs">
-                  {t("apInvoiceSingleActiveHint")}
-                </p>
-              )}
+              {watchedType === WORKFLOW_TYPE.AP_INVOICE &&
+                apInvoiceActiveExists && (
+                  <p className="text-muted-foreground text-xs">
+                    {t("apInvoiceSingleActiveHint")}
+                  </p>
+                )}
+              {watchedType === WORKFLOW_TYPE.AP_PAYMENT &&
+                apPaymentActiveExists && (
+                  <p className="text-muted-foreground text-xs">
+                    {t("apPaymentSingleActiveHint")}
+                  </p>
+                )}
             </Field>
           )}
-          {lockedType === WORKFLOW_TYPE.AP_INVOICE && apActiveExists && (
-            <p
-              role="alert"
-              className="text-warning-ink text-sm sm:col-span-2"
-            >
+          {lockedType === WORKFLOW_TYPE.AP_INVOICE && apInvoiceActiveExists && (
+            <p role="alert" className="text-warning-ink text-sm sm:col-span-2">
               {t("apInvoiceSingleActiveHint")}
+            </p>
+          )}
+          {lockedType === WORKFLOW_TYPE.AP_PAYMENT && apPaymentActiveExists && (
+            <p role="alert" className="text-warning-ink text-sm sm:col-span-2">
+              {t("apPaymentSingleActiveHint")}
             </p>
           )}
 

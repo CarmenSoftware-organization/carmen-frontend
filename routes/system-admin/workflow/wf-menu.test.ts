@@ -25,13 +25,14 @@ describe("เมนูย่อยของ workflow", () => {
     (s) => !s.path.startsWith("/system-admin/workflow/"),
   );
 
-  it("มีเมนูชนิดเอกสารครบห้าใบ", () => {
+  it("มีเมนูชนิดเอกสารครบหกใบ", () => {
     expect(docTypeChildren.map((s) => s.name)).toEqual([
       "workflowPurchaseRequest",
       "workflowPurchaseOrder",
       "workflowStoreRequisition",
       "workflowJournalVoucher",
       "workflowApInvoice",
+      "workflowApPayment",
     ]);
   });
 
@@ -43,7 +44,7 @@ describe("เมนูย่อยของ workflow", () => {
     expect(slugs).toEqual([...WORKFLOW_DOC_TYPES]);
   });
 
-  // permission กับ licenseFeature ของสามใบนี้ **ไม่เท่ากัน** โดยตั้งใจ:
+  // permission กับ licenseFeature ของชนิดเอกสารทั้งหกใบ **ไม่เท่ากัน** โดยตั้งใจ:
   //
   // - permission เป็นคีย์ของประเภทตัวเอง เพราะ `SUB_PATH_RESOURCE_MAP['config:workflows']`
   //   ฝั่ง backend แตก `GET /workflows/<type>` เป็น `system_admin.workflow.<type>` จริง
@@ -58,6 +59,7 @@ describe("เมนูย่อยของ workflow", () => {
       "system_admin.workflow.purchase_order.view",
       "system_admin.workflow.store_requisition.view",
       // JV ยังไม่มีคีย์ลูกของตัวเอง — ใช้คีย์แม่ (ที่มีอยู่จริงใน DB) จนกว่า backend จะเพิ่มคีย์ลูก
+      "system_admin.workflow.view",
       "system_admin.workflow.view",
       "system_admin.workflow.view",
     ]);

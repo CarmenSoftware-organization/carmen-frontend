@@ -18,6 +18,7 @@ export const WORKFLOW_DOC_TYPES = [
   "store-requisition",
   "journal-voucher",
   "ap-invoice",
+  "ap-payment",
 ] as const;
 
 export type WorkflowDocType = (typeof WORKFLOW_DOC_TYPES)[number];
@@ -31,6 +32,7 @@ export const WORKFLOW_TYPE_BY_DOC_TYPE: Record<WorkflowDocType, WORKFLOW_TYPE> =
     "store-requisition": WORKFLOW_TYPE.SR,
     "journal-voucher": WORKFLOW_TYPE.JV,
     "ap-invoice": WORKFLOW_TYPE.AP_INVOICE,
+    "ap-payment": WORKFLOW_TYPE.AP_PAYMENT,
   };
 
 /**
@@ -95,6 +97,11 @@ export const useApInvoiceWorkflows = (
   options?: { enabled?: boolean },
 ) => useWorkflowsByDocType("ap-invoice", params, options);
 
+export const useApPaymentWorkflows = (
+  params?: ParamsDto,
+  options?: { enabled?: boolean },
+) => useWorkflowsByDocType("ap-payment", params, options);
+
 export const WORKFLOW_LIST_HOOKS: Record<
   WorkflowDocType,
   typeof usePurchaseRequestWorkflows
@@ -104,6 +111,7 @@ export const WORKFLOW_LIST_HOOKS: Record<
   "store-requisition": useStoreRequisitionWorkflows,
   "journal-voucher": useJournalVoucherWorkflows,
   "ap-invoice": useApInvoiceWorkflows,
+  "ap-payment": useApPaymentWorkflows,
 };
 
 /**

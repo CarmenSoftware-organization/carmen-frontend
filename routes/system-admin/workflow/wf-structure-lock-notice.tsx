@@ -39,6 +39,12 @@ const DOCUMENT_LIST: Record<
     status: "doc_status",
     value: "in_review",
   },
+  // AP Payment ใช้ doc_status = in_review เช่นเดียวกับ AP Invoice
+  [WORKFLOW_TYPE.AP_PAYMENT]: {
+    path: "/accounting/accounts-payable/payment",
+    status: "doc_status",
+    value: "in_review",
+  },
 };
 
 /**
