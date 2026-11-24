@@ -279,4 +279,15 @@ describe("AP config registry", () => {
     expect(item?.options).toBeUndefined();
     expect(SEEDED_KEYS.has("ap.invoice.allow-creator-approve")).toBe(true);
   });
+
+  it("registers ap.payment.allow-creator-approve as a boolean defaulting to false", () => {
+    const ap = CONFIG_SECTIONS.find((s) => s.id === "ap");
+    const item = ap?.items.find((i) => i.key === "ap.payment.allow-creator-approve");
+    expect(item).toBeDefined();
+    expect(item?.datatype).toBe("boolean");
+    expect(item?.defaultValue).toBe("false");
+    expect(item?.labelKey).toBe("config.apPaymentAllowCreatorApprove");
+    expect(item?.options).toBeUndefined();
+    expect(SEEDED_KEYS.has("ap.payment.allow-creator-approve")).toBe(true);
+  });
 });

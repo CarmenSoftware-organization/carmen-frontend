@@ -235,7 +235,8 @@
       "generalDefaultVatRate": "Default VAT (%)",
       "generalDefaultVatRateDesc": "Documents still take VAT from the tax profile.",
       "generalDefaultServiceRate": "Default service charge (%)",
-      "apInvoiceAllowCreatorApprove": "Allow the creator to approve their own AP invoice"
+      "apInvoiceAllowCreatorApprove": "Allow the creator to approve their own AP invoice",
+      "apPaymentAllowCreatorApprove": "Allow the creator to approve their own AP payment"
     }
   },
   "accounting": {

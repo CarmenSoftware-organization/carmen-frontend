@@ -235,7 +235,8 @@
       "generalDefaultVatRate": "VAT ตั้งต้น (%)",
       "generalDefaultVatRateDesc": "VAT ในเอกสารยังมาจาก Tax Profile",
       "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)",
-      "apInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AP Invoice ของตัวเอง"
+      "apInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AP Invoice ของตัวเอง",
+      "apPaymentAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติใบจ่ายเงิน AP ของตัวเอง"
     }
   },
   "accounting": {

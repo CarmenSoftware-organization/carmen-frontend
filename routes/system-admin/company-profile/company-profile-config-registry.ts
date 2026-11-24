@@ -221,6 +221,13 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
         label: "Allow the creator to approve their own AP invoice",
         labelKey: "config.apInvoiceAllowCreatorApprove",
       },
+      {
+        key: "ap.payment.allow-creator-approve",
+        datatype: "boolean",
+        defaultValue: "false",
+        label: "Allow the creator to approve their own AP payment",
+        labelKey: "config.apPaymentAllowCreatorApprove",
+      },
     ],
   },
 ];
