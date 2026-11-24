@@ -10,17 +10,26 @@ export interface ApPreviousStage {
 }
 
 /** ขั้นก่อนหน้าที่ส่งกลับไปได้ — โหลดเมื่อเปิด dialog ส่งกลับเท่านั้น */
-export function useApInvoicePreviousStages(
+export function useApPreviousStages(
+  kind: "invoice" | "payment",
   id: string | undefined,
   enabled: boolean,
 ) {
   const buCode = useBuCode();
   return useQuery<ApPreviousStage[]>({
-    queryKey: [QUERY_KEYS.AP_INVOICE_PREVIOUS_STAGES, buCode, id],
+    queryKey: [
+      kind === "invoice"
+        ? QUERY_KEYS.AP_INVOICE_PREVIOUS_STAGES
+        : QUERY_KEYS.AP_PAYMENT_PREVIOUS_STAGES,
+      buCode,
+      id,
+    ],
     queryFn: async () => {
-      const res = await httpClient.get(
-        API_ENDPOINTS.AP_INVOICE_PREVIOUS_STAGES(buCode!, id!),
-      );
+      const url =
+        kind === "invoice"
+          ? API_ENDPOINTS.AP_INVOICE_PREVIOUS_STAGES(buCode!, id!)
+          : API_ENDPOINTS.AP_PAYMENT_PREVIOUS_STAGES(buCode!, id!);
+      const res = await httpClient.get(url);
       if (!res.ok) throw new Error("Failed to fetch previous stages");
       const json = await res.json();
       return Object.entries(json.data ?? {}).map(([key, name]) => ({

@@ -278,6 +278,9 @@ export function mapPayment(raw: Raw): ApPayment {
     created_at: iso(raw.created_at),
     updated_at: iso(raw.updated_at),
     ...workflowFields(raw),
+    allowed_actions: Array.isArray(raw.allowed_actions)
+      ? (raw.allowed_actions as ApPayment["allowed_actions"])
+      : [],
     allocations: Array.isArray(raw.tb_ap_payment_detail)
       ? arr(raw.tb_ap_payment_detail).map(
           (d): ApPaymentAllocation => ({

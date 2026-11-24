@@ -42,7 +42,9 @@ import type {
   DecimalString,
 } from "@/types/accounts-payable";
 import { compareDecimal, multiplyDecimal } from "../shared/ap-decimal";
-import { apActions, apCanEdit } from "../shared/ap-status";
+import { apCanEdit, apPaymentActions } from "../shared/ap-status";
+import { ApSendBackFields } from "../shared/ap-send-back-fields";
+import { useApPreviousStages } from "../shared/use-ap-previous-stages";
 import {
   useApOutstandingDocuments,
   useApPayment,
@@ -152,10 +154,11 @@ function ApPaymentEditor({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [reasonAction, setReasonAction] = useState<ReasonAction | null>(null);
   const [reason, setReason] = useState("");
+  const [stage, setStage] = useState("");
   const [calculating, setCalculating] = useState(false);
 
   const editable = editing && (isNew || (!!loaded && apCanEdit(loaded)));
-  const actions = loaded ? apActions(loaded, userId) : [];
+  const actions = loaded ? apPaymentActions(loaded, userId) : [];
   const busy =
     attachmentState.uploading ||
     saveMutation.isPending ||
@@ -503,6 +506,7 @@ function ApPaymentEditor({
   const runAction = async (
     action: Exclude<ApUiAction, "delete">,
     actionReason?: string,
+    actionStage?: string,
   ) => {
     if (!loaded) return;
     if (loaded.doc_version == null) {
@@ -515,10 +519,12 @@ function ApPaymentEditor({
         action,
         docVersion: loaded.doc_version,
         reason: actionReason,
+        stage: actionStage,
       });
       toast.success(td(`done.${action}`));
       setReasonAction(null);
       setReason("");
+      setStage("");
     } catch (error) {
       onFailure(error);
     }
@@ -574,7 +580,15 @@ function ApPaymentEditor({
         )}
     </span>
   );
-  const needsReason = reasonAction === "void";
+  const needsReason = reasonAction === "void" || reasonAction === "reject";
+  const sendingBack = reasonAction === "sendback";
+  const stagesQuery = useApPreviousStages("payment", loaded?.id, sendingBack);
+  const stages = stagesQuery.data ?? [];
+  const closeReasonDialog = () => {
+    setReasonAction(null);
+    setReason("");
+    setStage("");
+  };
 
   return (
     <div
@@ -1048,10 +1062,7 @@ function ApPaymentEditor({
       <Dialog
         open={reasonAction !== null}
         onOpenChange={(open) => {
-          if (!open && !actionMutation.isPending) {
-            setReasonAction(null);
-            setReason("");
-          }
+          if (!open && !actionMutation.isPending) closeReasonDialog();
         }}
       >
         <DialogContent>
@@ -1060,11 +1071,23 @@ function ApPaymentEditor({
               {reasonAction ? td(`reasonDialog.${reasonAction}.title`) : ""}
             </DialogTitle>
             <DialogDescription>
-              {needsReason
-                ? td("reasonDialog.required")
-                : td("reasonDialog.optional")}
+              {reasonAction === "reject"
+                ? td("reasonDialog.reject.required")
+                : needsReason
+                  ? td("reasonDialog.required")
+                  : td("reasonDialog.optional")}
             </DialogDescription>
           </DialogHeader>
+          {sendingBack && (
+            <ApSendBackFields
+              kind="payment"
+              stage={stage}
+              onStageChange={setStage}
+              stages={stages}
+              isLoading={stagesQuery.isLoading}
+              isError={stagesQuery.isError}
+            />
+          )}
           <Textarea
             rows={3}
             value={reason}
@@ -1075,20 +1098,23 @@ function ApPaymentEditor({
             <Button
               variant="outline"
               disabled={actionMutation.isPending}
-              onClick={() => {
-                setReasonAction(null);
-                setReason("");
-              }}
+              onClick={closeReasonDialog}
             >
               {td("cancel")}
             </Button>
             <Button
               disabled={
-                actionMutation.isPending || (needsReason && !reason.trim())
+                actionMutation.isPending ||
+                (needsReason && !reason.trim()) ||
+                (sendingBack && !stage)
               }
               onClick={() =>
                 reasonAction &&
-                void runAction(reasonAction, reason.trim() || undefined)
+                void runAction(
+                  reasonAction,
+                  reason.trim() || undefined,
+                  sendingBack ? stage : undefined,
+                )
               }
             >
               {reasonAction ? td(`actions.${reasonAction}`) : ""}

@@ -44,8 +44,8 @@ function userCanExecute(doc: ApDoc, currentUserId?: string | null): boolean {
 }
 
 /**
- * action ที่เสนอบน UI ของใบจ่ายเงิน — draft → submit/delete · in_review → approve/sendback/reject
- * (เฉพาะผู้ที่ user_action.execute มีชื่อ) · posted → void
+ * action พื้นฐานที่ใช้ร่วมกัน (fallback ของ `apInvoiceActions` เมื่อ backend ไม่ส่ง `allowed_actions`)
+ * draft → submit/delete · in_review → approve/sendback/reject (เฉพาะผู้ที่ user_action.execute มีชื่อ) · posted → void
  */
 export function apActions(
   doc: ApDoc,
@@ -69,6 +69,23 @@ export function apActions(
  */
 export function apInvoiceActions(
   doc: ApDoc & Pick<ApInvoice, "doc_no" | "allowed_actions">,
+  currentUserId?: string | null,
+): ApUiAction[] {
+  if (apIsAutoFromGrn(doc)) return [];
+  if (doc.doc_status === "draft")
+    return isDraftDocNo(doc.doc_no) ? ["submit", "delete"] : ["submit", "void"];
+  if (doc.doc_status === "in_review" && doc.allowed_actions)
+    return doc.allowed_actions;
+  return apActions(doc, currentUserId);
+}
+
+/**
+ * action ที่เสนอบน UI ของใบจ่ายเงิน — ใบ grn_auto ไม่มีเลย
+ * draft → submit + ลบได้เฉพาะเลข DRAFT- (ได้เลขจริงแล้วเหลือ void) · in_review → ตาม `allowed_actions` ของ backend
+ * (ไม่ส่งฟิลด์ → ดูจาก user_action.execute) · posted → void
+ */
+export function apPaymentActions(
+  doc: ApDoc & Pick<ApPayment, "doc_no" | "allowed_actions">,
   currentUserId?: string | null,
 ): ApUiAction[] {
   if (apIsAutoFromGrn(doc)) return [];

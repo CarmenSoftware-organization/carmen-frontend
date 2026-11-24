@@ -1133,6 +1133,7 @@
         "approvalConfirm": "Approve these payment vouchers: {documents}?",
         "approvalCompleted": "Approved {count} payment vouchers.",
         "approvalPartial": "Approved {count} of {total}. Review the remaining vouchers and try again.",
+        "approvalPartialWithReason": "Approved {count} of {total}. Some vouchers were refused: {reason}",
         "desc": "Supplier payments and the invoices they settle.",
         "add": "New Payment",
         "docNo": "PV No.",
@@ -1259,7 +1260,7 @@
           "actions": {
             "submit": "Submit",
             "approve": "Approve",
-            "sendback": "Return",
+            "sendback": "Send back",
             "reject": "Reject",
             "void": "Void",
             "delete": "Delete"
@@ -1267,8 +1268,8 @@
           "done": {
             "submit": "Payment submitted",
             "approve": "Payment approved",
-            "sendback": "Payment returned",
-            "reject": "Payment rejected",
+            "sendback": "Payment sent back",
+            "reject": "Payment rejected and voided",
             "void": "Payment voided",
             "delete": "Payment deleted"
           },
@@ -1284,10 +1285,15 @@
               "title": "Void payment"
             },
             "reject": {
-              "title": "Reject payment"
+              "title": "Reject and void payment",
+              "required": "A reason is required. Rejecting voids this payment and it cannot be reopened."
             },
             "sendback": {
-              "title": "Return payment"
+              "title": "Send payment back",
+              "stage": "Send back to stage",
+              "stagePlaceholder": "Select a stage",
+              "stagesError": "Could not load the earlier stages. Close this dialog and try again.",
+              "noStages": "There is no earlier stage to send this payment back to."
             }
           },
           "errors": {
@@ -2256,6 +2262,8 @@
       "WORKFLOW_CREATOR_CANNOT_APPROVE": "You created this document, so you cannot approve it. Ask another approver.",
       "AP_INVOICE_REJECT_REASON_REQUIRED": "Enter a reason before rejecting this invoice.",
       "AP_INVOICE_NUMBERED_VOID_ONLY": "This invoice already has a document number, so it cannot be deleted. Void it instead.",
+      "AP_PAYMENT_REJECT_REASON_REQUIRED": "Enter a reason before rejecting this payment.",
+      "AP_PAYMENT_NUMBERED_VOID_ONLY": "This payment already has a document number, so it cannot be deleted. Void it instead.",
       "WORKFLOW_SENDBACK_STAGE_INVALID": "Cannot send back to the stage {stage}. Pick one of the earlier stages.",
       "WORKFLOW_SINGLE_ACTIVE_EXISTS": "AP Invoice already has an active workflow ({workflow}). Only one can be active per business unit.",
       "APP_READ_ONLY": "The system is in read-only mode — this action isn't available right now.",

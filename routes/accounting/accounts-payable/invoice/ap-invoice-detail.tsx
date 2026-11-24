@@ -37,14 +37,6 @@ import {
   InvoicePaymentsPanel,
 } from "./ap-invoice-panels";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useProfile } from "@/hooks/use-profile";
 import { ApiError } from "@/lib/api-error";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
@@ -59,7 +51,8 @@ import {
   apInvoiceActions,
   apIsAutoFromGrn,
 } from "../shared/ap-status";
-import { useApInvoicePreviousStages } from "../shared/use-ap-invoice-previous-stages";
+import { ApSendBackFields } from "../shared/ap-send-back-fields";
+import { useApPreviousStages } from "../shared/use-ap-previous-stages";
 import {
   useApInvoice,
   useApInvoiceAction,
@@ -362,7 +355,7 @@ function ApInvoiceEditor({
   const primaryIsSubmit = !!loaded && !editing && actions.includes("submit");
   const needsReason = reasonAction === "void" || reasonAction === "reject";
   const sendingBack = reasonAction === "sendback";
-  const stagesQuery = useApInvoicePreviousStages(loaded?.id, sendingBack);
+  const stagesQuery = useApPreviousStages("invoice", loaded?.id, sendingBack);
   const stages = stagesQuery.data ?? [];
   const closeReasonDialog = () => {
     setReasonAction(null);
@@ -779,38 +772,14 @@ function ApInvoiceEditor({
             </DialogDescription>
           </DialogHeader>
           {sendingBack && (
-            <div className="space-y-1.5">
-              <Label>{td("reasonDialog.sendback.stage")}</Label>
-              <Select value={stage} onValueChange={setStage}>
-                <SelectTrigger
-                  aria-label={td("reasonDialog.sendback.stage")}
-                  disabled={stagesQuery.isLoading}
-                >
-                  <SelectValue
-                    placeholder={td("reasonDialog.sendback.stagePlaceholder")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {stages.map((s) => (
-                    <SelectItem key={s.key} value={s.name}>
-                      {s.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {stagesQuery.isError && (
-                <p className="text-destructive text-xs" role="alert">
-                  {td("reasonDialog.sendback.stagesError")}
-                </p>
-              )}
-              {!stagesQuery.isLoading &&
-                !stagesQuery.isError &&
-                stages.length === 0 && (
-                  <p className="text-warning-ink text-xs">
-                    {td("reasonDialog.sendback.noStages")}
-                  </p>
-                )}
-            </div>
+            <ApSendBackFields
+              kind="invoice"
+              stage={stage}
+              onStageChange={setStage}
+              stages={stages}
+              isLoading={stagesQuery.isLoading}
+              isError={stagesQuery.isError}
+            />
           )}
           <Textarea
             rows={3}

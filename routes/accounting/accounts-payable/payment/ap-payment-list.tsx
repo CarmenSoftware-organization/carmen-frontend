@@ -39,6 +39,7 @@ import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
 import { VENDOR_ENTITY } from "@/components/filter/entity-sources";
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import { formatDate } from "@/lib/date-utils";
+import { getUserErrorMessage } from "@/lib/error-message";
 import { cn } from "@/lib/utils";
 import type { FilterFieldDef } from "@/types/list-filter";
 import type {
@@ -84,6 +85,7 @@ export default function ApPaymentList({
   const tc = useTranslations("common");
   const tfl = useTranslations("field");
   const ui = useTranslations("accounting.accountsPayable.ui");
+  const tErr = useTranslations("errors");
   const exportErrorToast = useExportErrorToast();
   const { exportPayments, isExporting } = useExportApPayments();
   const navigate = useNavigate();
@@ -251,6 +253,7 @@ export default function ApPaymentList({
   const approveBatch = async () => {
     setApproving(true);
     let succeeded = 0;
+    let firstError: string | undefined;
     try {
       for (const payment of approvalBatch) {
         if (!canApprove(payment)) continue;
@@ -261,18 +264,25 @@ export default function ApPaymentList({
             docVersion: payment.doc_version,
           });
           succeeded++;
-        } catch {
-          // Other selected documents can still be approved.
+        } catch (error) {
+          // รายการอื่นที่เลือกไว้ยังอนุมัติต่อได้ — จำเหตุผลของใบแรกที่ถูกปฏิเสธไว้แจ้งผู้ใช้
+          firstError ??= getUserErrorMessage(error, tErr, tfl);
         }
       }
       if (succeeded === approvalBatch.length)
         toast.success(t("approvalCompleted", { count: succeeded }));
       else
         toast.error(
-          t("approvalPartial", {
-            count: succeeded,
-            total: approvalBatch.length,
-          }),
+          firstError
+            ? t("approvalPartialWithReason", {
+                count: succeeded,
+                total: approvalBatch.length,
+                reason: firstError,
+              })
+            : t("approvalPartial", {
+                count: succeeded,
+                total: approvalBatch.length,
+              }),
         );
     } finally {
       table.resetRowSelection();
