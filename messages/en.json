@@ -1023,7 +1023,7 @@
           "actions": {
             "submit": "Submit",
             "approve": "Approve",
-            "return": "Return",
+            "sendback": "Send back",
             "reject": "Reject",
             "void": "Void",
             "delete": "Delete"
@@ -1031,8 +1031,8 @@
           "done": {
             "submit": "Invoice submitted",
             "approve": "Invoice approved",
-            "return": "Invoice returned",
-            "reject": "Invoice rejected",
+            "sendback": "Invoice sent back",
+            "reject": "Invoice rejected and voided",
             "void": "Invoice voided",
             "delete": "Invoice deleted"
           },
@@ -1048,10 +1048,14 @@
               "title": "Void invoice"
             },
             "reject": {
-              "title": "Reject invoice"
+              "title": "Reject and void invoice",
+              "required": "A reason is required. Rejecting voids this invoice and it cannot be reopened."
             },
-            "return": {
-              "title": "Return invoice"
+            "sendback": {
+              "title": "Send invoice back",
+              "stage": "Send back to stage",
+              "stagePlaceholder": "Select a stage",
+              "noStages": "There is no earlier stage to send this invoice back to."
             }
           },
           "summary": {
@@ -1252,7 +1256,7 @@
           "actions": {
             "submit": "Submit",
             "approve": "Approve",
-            "return": "Return",
+            "sendback": "Return",
             "reject": "Reject",
             "void": "Void",
             "delete": "Delete"
@@ -1260,7 +1264,7 @@
           "done": {
             "submit": "Payment submitted",
             "approve": "Payment approved",
-            "return": "Payment returned",
+            "sendback": "Payment returned",
             "reject": "Payment rejected",
             "void": "Payment voided",
             "delete": "Payment deleted"
@@ -1279,7 +1283,7 @@
             "reject": {
               "title": "Reject payment"
             },
-            "return": {
+            "sendback": {
               "title": "Return payment"
             }
           },
@@ -2246,6 +2250,10 @@
     "checkFields": "Check these fields again: {fields}",
     "srDateOutsideOpenPeriod": "The requisition date is outside every open accounting period. Change the date, or ask accounting to open that period.",
     "byCode": {
+      "WORKFLOW_CREATOR_CANNOT_APPROVE": "You created this document, so you cannot approve it. Ask another approver.",
+      "AP_INVOICE_REJECT_REASON_REQUIRED": "Enter a reason before rejecting this invoice.",
+      "AP_INVOICE_NUMBERED_VOID_ONLY": "This invoice already has a document number, so it cannot be deleted. Void it instead.",
+      "WORKFLOW_SENDBACK_STAGE_INVALID": "Cannot send back to the stage {stage}. Pick one of the earlier stages.",
       "WORKFLOW_SINGLE_ACTIVE_EXISTS": "AP Invoice already has an active workflow ({workflow}). Only one can be active per business unit.",
       "APP_READ_ONLY": "The system is in read-only mode — this action isn't available right now.",
       "APP_MAINTENANCE": "The system is under maintenance. Please try again later.",

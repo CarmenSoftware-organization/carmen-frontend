@@ -142,6 +142,9 @@ function workflowFields(raw: Raw) {
     workflow_next_stage: str(raw.workflow_next_stage),
     workflow_history: raw.workflow_history,
     user_action: (raw.user_action ?? null) as ApInvoice["user_action"],
+    allowed_actions: Array.isArray(raw.allowed_actions)
+      ? (raw.allowed_actions as ApInvoice["allowed_actions"])
+      : undefined,
     last_action: str(raw.last_action),
     last_action_at_date: iso(raw.last_action_at_date),
     last_action_by_id: str(raw.last_action_by_id),

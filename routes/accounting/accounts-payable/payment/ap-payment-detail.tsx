@@ -108,7 +108,7 @@ export default function ApPaymentDetail() {
   );
 }
 
-type ReasonAction = Extract<ApUiAction, "void" | "reject" | "return">;
+type ReasonAction = Extract<ApUiAction, "void" | "reject" | "sendback">;
 
 function sortedSignature(
   inputs: readonly { ap_invoice_detail_id: string; applied_amount: string }[],
@@ -650,12 +650,12 @@ function ApPaymentEditor({
                 {td("actions.approve")}
               </Button>
             )}
-            {!editing && actions.includes("return") && (
+            {!editing && actions.includes("sendback") && (
               <Button
                 size="sm"
                 variant="outline"
                 disabled={busy}
-                onClick={() => setReasonAction("return")}
+                onClick={() => setReasonAction("sendback")}
               >
                 <Undo2 className="size-4" />
                 {td("actions.return")}

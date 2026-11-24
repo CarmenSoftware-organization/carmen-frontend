@@ -163,6 +163,8 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/ap-invoice/${toSafePathSegment(id)}`,
   AP_INVOICE_ACTION: (buCode: string, id: string, command: string) =>
     `/api/proxy/api/${buCode}/ap-invoice/${toSafePathSegment(id)}/${toSafePathSegment(command)}`,
+  AP_INVOICE_PREVIOUS_STAGES: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/ap-invoice/${toSafePathSegment(id)}/previous-stages`,
   AP_PAYMENT_LIST: (buCode: string) => `/api/proxy/api/${buCode}/ap-payment`,
   AR_INVOICE_LIST: (buCode: string) => `/api/proxy/api/${buCode}/ar-invoice`,
   AP_PAYMENT_DETAIL: (buCode: string, id: string) =>
