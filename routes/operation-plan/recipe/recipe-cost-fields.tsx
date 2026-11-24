@@ -13,6 +13,9 @@ import {
 } from "./recipe-form-schema";
 import type { RecipeCostCalc } from "./use-recipe-cost-calc";
 import { RecipePriceRecommendations } from "./recipe-price-recommendations";
+import { RecipeMarginStatement } from "./recipe-margin-statement";
+import { RecipePriceBuildup } from "./recipe-price-buildup";
+import { useRecipePriceRates } from "./use-recipe-price-rates";
 import type { RecipeCategoryDefaults } from "../shared/recipe-category-defaults";
 
 interface RecipeCostFieldsProps {
@@ -40,13 +43,11 @@ const COST_LINES: readonly {
 ];
 
 /**
- * ใบคิดต้นทุนของสูตร — section เดียว อ่านเป็นสมการจากบนลงล่าง
+ * แท็บ Costing — สามส่วนเรียงตามลำดับคิด (ทุกตัวเลขของทั้งสูตร)
  *
- * ต้นทุนทั้งชุด (วัตถุดิบ + แรงงาน + โสหุ้ย) ÷ จำนวนที่ได้ = ต้นทุนต่อเสิร์ฟ
- * → ราคาขาย → food cost เทียบเป้า + กำไรขั้นต้น
- *
- * เดิมแยกเป็น 4 section (ต้นทุน & ราคา / breakdown / margins / ตัวชี้วัดอื่น)
- * ทำให้ต้องเลื่อนผ่านสี่การ์ดกว่าจะเห็นว่าจานนี้ได้กำไรตามเป้าไหม
+ * 1 ต้นทุน: วัตถุดิบ + แรงงาน + โสหุ้ย = ต้นทุนรวม ÷ จำนวน Portion = ต้นทุนต่อ Portion
+ * 2 ราคาขาย: ราคาขายทั้งสูตร + เป้า food cost + ราคาแนะนำ
+ * 3 กำไรขั้นต้น: ราคาขาย − ต้นทุนแต่ละตัว = กำไร พร้อม % ของราคาขายทุกบรรทัด
  */
 export function RecipeCostFields({
   form,
@@ -93,14 +94,20 @@ export function RecipeCostFields({
   const yld = Number(baseYield) || 0;
   const targetPct = Number(target) || 0;
   const hasPrice = (Number(sell) || 0) > 0;
+  const priceRates = useRecipePriceRates();
 
   return (
-    <CompactSection first title={t("costing")} description={t("costingDesc")}>
-      {/* การ์ดกว้าง (64rem+) = ต้นทุน (1–2) ซ้าย · ราคาและผลลัพธ์ (3–4) ขวา — แคบกว่านั้นอ่านจากบนลงล่าง */}
+    <>
+      {/* สามส่วนแยกกัน อ่านทีละขั้น: 1 ต้นทุน (กรอก) · 2 ราคาขาย (กรอก + ราคาแนะนำ) · 3 กำไรขั้นต้น (ผลลัพธ์)
+          เดิมรวมในการ์ดเดียว ต้นทุน ราคา markup กำไร และสัดส่วนค่าแรงปนกันจนอ่านยาก (feedback 23/11)
+          กล่องกว้างตั้งแต่ 64rem = 1 | 2 เคียงกัน สูงเท่ากัน · แคบกว่านั้นเรียงลงมา */}
       <div className="@container">
-        <div className="grid gap-x-10 @5xl:grid-cols-2 @5xl:items-start">
-          <div className="min-w-0">
-            {/* 1 · ต้นทุนทั้งชุด */}
+        <div className="grid gap-5 @5xl:grid-cols-2">
+          <CompactSection
+            first
+            title={`1 · ${t("costSection")}`}
+            description={t("costSectionDesc")}
+          >
             <EyeBrow className="mb-2">{t("batchCost")}</EyeBrow>
             <div
               className="bg-muted mb-3 flex h-1.5 overflow-hidden rounded-full"
@@ -158,24 +165,58 @@ export function RecipeCostFields({
                 </div>
               ))}
             </div>
-
-            {/* 2 · สมการต้นทุนต่อเสิร์ฟ — แสดงที่มาของตัวเลข ไม่ใช่แค่ผลลัพธ์ */}
-            <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t pt-3">
-              <span className="text-muted-foreground text-xs tabular-nums">
-                ฿{formatCurrency(batchTotal)} ÷ {yld}
-                {yieldUnit?.name ? ` ${yieldUnit.name}` : ""}
-              </span>
-              <span className="flex items-baseline gap-2">
-                <EyeBrow>{t("costPerPortion")}</EyeBrow>
-                <span className="text-foreground text-2xl font-semibold tracking-tight tabular-nums">
-                  ฿{formatCurrency(computed.costPerPortion)}
+            <div className="mt-4 space-y-1.5 border-t pt-3">
+              <div className="flex items-baseline justify-between gap-4">
+                <EyeBrow>{t("totalCost")}</EyeBrow>
+                <span className="text-foreground text-sm font-semibold tabular-nums">
+                  ฿{formatCurrency(batchTotal)}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <span className="text-muted-foreground text-xs tabular-nums">
+                  ÷ {yld}
+                  {yieldUnit?.name ? ` ${yieldUnit.name}` : ""}
+                </span>
+                <span className="flex items-baseline gap-2">
+                  <EyeBrow>{t("costPerPortion")}</EyeBrow>
+                  <span className="text-foreground text-2xl font-semibold tracking-tight tabular-nums">
+                    ฿{formatCurrency(computed.costPerPortion)}
+                  </span>
+                </span>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end border-t pt-3">
+              <span className="text-muted-foreground flex items-center gap-2 text-xs">
+                <label htmlFor="recipe-carbon-footprint">
+                  {t("carbonFootprint")}
+                </label>
+                <span className="relative w-32">
+                  <FieldInput
+                    id="recipe-carbon-footprint"
+                    type="number"
+                    inputMode="decimal"
+                    step="0.01"
+                    disabled={isDisabled}
+                    size="sm"
+                    className="pr-14 text-right text-xs tabular-nums"
+                    error={errors.carbon_footprint?.message}
+                    errorIconAlign="left"
+                    {...form.register("carbon_footprint", nullableNumberInput)}
+                  />
+                  <span className="text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
+                    {t("kgCo2e")}
+                  </span>
                 </span>
               </span>
             </div>
-          </div>
-          <div className="min-w-0">
-            {/* 3 · ราคาขาย + ราคาแนะนำตามเป้า */}
-            <div className="mt-4 grid gap-3 border-t pt-4 @md:grid-cols-2 @5xl:mt-0 @5xl:border-t-0 @5xl:pt-0">
+          </CompactSection>
+
+          <CompactSection
+            first
+            title={`2 · ${t("priceSection")}`}
+            description={t("priceSectionDesc")}
+          >
+            <div className="grid gap-3 @md:grid-cols-2">
               <div>
                 <EyeBrow className="mb-1">
                   <label htmlFor="recipe-selling-price">
@@ -274,60 +315,41 @@ export function RecipeCostFields({
                 </div>
               </div>
             </div>
-
+            <RecipePriceBuildup
+              sellingPrice={Number(sell) || 0}
+              ingredientCost={amounts.total_ingredient_cost}
+              rates={priceRates}
+            />
             <RecipePriceRecommendations
               form={form}
               computed={computed}
               isDisabled={isDisabled}
             />
-
-            {/* ท้ายใบ — ตัวเลขประกอบ */}
-            <div className="text-muted-foreground mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 border-t pt-3 text-xs">
-              {hasPrice && (
-                <>
-                  <span>
-                    {t("laborCostRatio")}{" "}
-                    <span className="text-foreground font-semibold tabular-nums">
-                      {computed.laborCostPct?.toFixed(1) ?? "—"}%
-                    </span>
-                    <CategoryRatio value={categoryDefaults?.labor} />
-                  </span>
-                  <span>
-                    {t("overhead")}{" "}
-                    <span className="text-foreground font-semibold tabular-nums">
-                      {computed.overheadPct?.toFixed(1) ?? "—"}%
-                    </span>
-                    <CategoryRatio value={categoryDefaults?.overhead} />
-                  </span>
-                </>
-              )}
-              <span className="ml-auto flex items-center gap-2">
-                <label htmlFor="recipe-carbon-footprint">
-                  {t("carbonFootprint")}
-                </label>
-                <span className="relative w-32">
-                  <FieldInput
-                    id="recipe-carbon-footprint"
-                    type="number"
-                    inputMode="decimal"
-                    step="0.01"
-                    disabled={isDisabled}
-                    size="sm"
-                    className="pr-14 text-right text-xs tabular-nums"
-                    error={errors.carbon_footprint?.message}
-                    errorIconAlign="left"
-                    {...form.register("carbon_footprint", nullableNumberInput)}
-                  />
-                  <span className="text-micro pointer-events-none absolute top-1/2 right-2 -translate-y-1/2">
-                    {t("kgCo2e")}
-                  </span>
-                </span>
-              </span>
-            </div>
-          </div>
+          </CompactSection>
         </div>
       </div>
-    </CompactSection>
+
+      <CompactSection
+        title={`3 · ${t("grossMargin")}`}
+        description={t("grossMarginDesc")}
+      >
+        {hasPrice ? (
+          <RecipeMarginStatement
+            computed={computed}
+            amounts={{
+              ingredient: amounts.total_ingredient_cost,
+              labor: amounts.labor_cost,
+              overhead: amounts.overhead_cost,
+            }}
+            sellingPrice={Number(sell) || 0}
+            targetPct={targetPct}
+            categoryDefaults={categoryDefaults}
+          />
+        ) : (
+          <p className="text-muted-foreground text-xs">{t("noPriceYet")}</p>
+        )}
+      </CompactSection>
+    </>
   );
 }
 
@@ -359,17 +381,6 @@ function CategoryFoodCostHint({
         </button>
       )}
     </p>
-  );
-}
-
-/** "(หมวด 25%)" ต่อท้ายสัดส่วนค่าแรง/โสหุ้ย — ไม่ตั้งในหมวด = ไม่แสดง */
-function CategoryRatio({ value }: { readonly value?: number | null }) {
-  const t = useTranslations("operationPlan.recipe");
-  if (value == null) return null;
-  return (
-    <span className="ml-1 tabular-nums">
-      {t("categoryRatio", { pct: formatPct(value) })}
-    </span>
   );
 }
 

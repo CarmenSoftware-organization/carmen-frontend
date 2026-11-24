@@ -1,6 +1,12 @@
 import { printFormConfigKey } from "@/lib/print-form-config";
 import type { PrintDocumentType } from "@/lib/print-document";
 import type { BusinessUnitConfigItem } from "@/types/business-unit";
+import {
+  BU_DEFAULT_SERVICE_RATE,
+  BU_DEFAULT_SERVICE_RATE_KEY,
+  BU_DEFAULT_VAT_RATE,
+  BU_DEFAULT_VAT_RATE_KEY,
+} from "@/lib/bu-price-rates";
 
 export interface ConfigOption {
   value: string;
@@ -173,16 +179,17 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
     })),
   },
   {
-    // ค่าตั้งต้นทั่วไปของ BU (หน้า Default Setting แสดงการ์ดนี้บนสุด — ลำดับใน array ไม่มีผล) — ตอนนี้แค่เก็บค่า ยังไม่มี flow ไหนอ่าน
-    // (VAT ของเอกสารยังมาจาก Tax Profile ที่ผูกกับสินค้า/หมวด)
+    // ค่าตั้งต้นทั่วไปของ BU (หน้า Default Setting แสดงการ์ดนี้บนสุด — ลำดับใน array ไม่มีผล)
+    // VAT/ค่าบริการ: หน้า Costing ของสูตรใช้บวกจากราคา net เป็น gross (lib/bu-price-rates.ts)
+    // (VAT ของเอกสารจัดซื้อยังมาจาก Tax Profile ที่ผูกกับสินค้า/หมวด)
     id: "general",
     titleKey: "sections.general",
     descKey: "sections.generalDesc",
     items: [
       {
-        key: "general.default-vat-rate",
+        key: BU_DEFAULT_VAT_RATE_KEY,
         datatype: "number",
-        defaultValue: "7",
+        defaultValue: String(BU_DEFAULT_VAT_RATE),
         label: "Default VAT (%)",
         labelKey: "config.generalDefaultVatRate",
         descKey: "config.generalDefaultVatRateDesc",
@@ -191,9 +198,9 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
         suffix: "%",
       },
       {
-        key: "general.default-service-rate",
+        key: BU_DEFAULT_SERVICE_RATE_KEY,
         datatype: "number",
-        defaultValue: "0",
+        defaultValue: String(BU_DEFAULT_SERVICE_RATE),
         label: "Default service charge (%)",
         labelKey: "config.generalDefaultServiceRate",
         min: 0,
