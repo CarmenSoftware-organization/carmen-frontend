@@ -3,13 +3,20 @@ import { Ban, Copy, Plus, Send, Trash2 } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
-import EmptyComponent from "@/components/empty-component";
 import { FormToolbar, ToolbarLabel } from "@/components/share/form-toolbar";
-import { MockBadge } from "@/components/ui/mock-badge";
+import { useClaimFormPrimary } from "@/components/share/form-primary-action";
 import { Button } from "@/components/ui/button";
 import { CellAction } from "@/components/ui/cell-action";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import {
   Field,
@@ -20,44 +27,51 @@ import {
   FieldSelect,
 } from "@/components/ui/field";
 import { SelectContent, SelectItem } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StatusChip } from "@/components/ui/status-chip";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useCan } from "@/hooks/use-can";
 import { useCurrencyAll } from "@/hooks/use-currency";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
-import { addDays, formatDate, isoToDateInput } from "@/lib/date-utils";
+import { formatDate, isoToDateInput } from "@/lib/date-utils";
+import { isDraftDocNo } from "@/lib/draft-doc-no";
 import { ApDetailGrid } from "../accounts-payable/shared/ap-detail-grid";
 import { ArCustomerLookup } from "./ar-customer-lookup";
-import {
-  ReceiptInvoiceDialog,
-  ReceiptPaymentDialog,
-} from "./ar-receipt-dialogs";
+import { ReceiptInvoiceDialog } from "./ar-receipt-dialogs";
+import { ReceiptJournal } from "./ar-receipt-journal";
 import {
   AR_RECEIPT_PATH,
-  deleteReceipt,
   newReceipt,
   newReceiptFromInvoice,
-  newReceiptPayment,
-  readReceipts,
   receiptAllocationTax,
+  receiptFromDocument,
   receiptProfileDefaults,
   receiptTaxEntityFromCustomer,
   receiptTotals,
   receiptValidation,
-  saveReceipt,
-  suggestedReceiptWht,
-  voidReceipt,
+  toArReceiptPayload,
   type ArReceipt,
-  type ReceiptPayment,
   type ReceiptTaxEntity,
+  type ReceiptTender,
 } from "./ar-receipt-model";
-import { useArCustomer, type ArCustomer } from "./use-ar-customer";
-import type { ArRegisterDocument } from "./use-ar-register";
+import { ReceiptTenderSection, ReceiptWhtSection } from "./ar-receipt-tender";
 import { readProfileExtension } from "./ar-profile-model";
+import { useArCustomer, type ArCustomer } from "./use-ar-customer";
+import {
+  useArOutstandingInvoices,
+  useArReceiptAction,
+  useArReceiptDocument,
+  useCreateArReceipt,
+  useDeleteArReceipt,
+  useUpdateArReceipt,
+  type ArReceiptDocument,
+} from "./use-ar-receipt";
+import type { ArRegisterDocument } from "./use-ar-register";
 
 const FORM_ID = "ar-receipt-form";
 const DESTRUCTIVE_ACTION =
@@ -66,82 +80,96 @@ const DESTRUCTIVE_ACTION =
 export function Component() {
   const bu = useBuCode();
   const { id = "new" } = useParams();
-  return bu ? <ReceiptDetail key={`${bu}:${id}`} bu={bu} id={id} /> : null;
+  return bu ? <ReceiptDetail key={`${bu}:${id}`} id={id} /> : null;
 }
 
-function ReceiptDetail({
-  bu,
-  id,
-}: {
-  readonly bu: string;
-  readonly id: string;
-}) {
+function ReceiptDetail({ id }: { readonly id: string }) {
   const t = useTranslations("accounting.arReceipt");
   const location = useLocation();
   const { defaultCurrencyCode } = useProfile();
-  const [loaded] = useState(() => {
-    try {
-      const state = location.state as {
-        receiptInvoice?: ArRegisterDocument;
-        receiptCopy?: ArReceipt;
-      } | null;
-      const source = state?.receiptInvoice;
-      const today = isoToDateInput(new Date().toISOString());
-      return {
-        receipt:
-          id === "new"
-            ? (state?.receiptCopy ??
-              (source
-                ? {
-                    ...newReceiptFromInvoice(source, today),
-                    ...receiptProfileDefaults(
-                      readProfileExtension(bu, source.customer_id),
-                    ),
-                  }
-                : newReceipt(today, defaultCurrencyCode)))
-            : readReceipts(bu).find((row) => row.id === id),
-        error: false,
-      };
-    } catch {
-      return { receipt: undefined, error: true };
-    }
-  });
-  if (loaded.error)
-    return <ErrorState message={t("storageError")} backTo={AR_RECEIPT_PATH} />;
-  if (!loaded.receipt)
+  const currencies = useCurrencyAll();
+  const isNew = id === "new";
+  const doc = useArReceiptDocument(isNew ? undefined : id);
+  // the receipt's own reservations are excluded so the cap and invoice numbers are restorable
+  const outstanding = useArOutstandingInvoices(
+    doc.data?.customer_id,
+    doc.data?.currency_id,
+    isNew ? undefined : id,
+  );
+  if (isNew) {
+    const state = location.state as {
+      receiptInvoice?: ArRegisterDocument;
+      receiptCopy?: ArReceipt;
+    } | null;
+    const source = state?.receiptInvoice;
+    const today = isoToDateInput(new Date().toISOString());
+    const currencyId = (code: string) =>
+      currencies.data?.find((row) => row.code === code)?.id ?? "";
+    const receipt =
+      state?.receiptCopy ??
+      (source
+        ? newReceiptFromInvoice(source, today)
+        : newReceipt(
+            today,
+            defaultCurrencyCode,
+            currencyId(defaultCurrencyCode),
+          ));
     return (
-      <ErrorState
-        notFoundMessage={t("receiptNotFound")}
-        backTo={AR_RECEIPT_PATH}
+      <ReceiptForm
+        key={`new:${receipt.currencyId}`}
+        initial={receipt}
+        isNew
+        document={undefined}
       />
     );
-  return <ReceiptForm bu={bu} initial={loaded.receipt} isNew={id === "new"} />;
+  }
+  if (doc.isPending || (doc.data && outstanding.isLoading))
+    return <Skeleton className="h-40 w-full" />;
+  if (doc.error || !doc.data)
+    return (
+      <ErrorState
+        error={doc.error}
+        notFoundMessage={t("receiptNotFound")}
+        backTo={AR_RECEIPT_PATH}
+        onRetry={() => doc.refetch()}
+      />
+    );
+  return (
+    <ReceiptForm
+      key={`${doc.data.id}:${doc.data.doc_version}:${doc.data.doc_status}`}
+      initial={receiptFromDocument(doc.data, outstanding.data)}
+      isNew={false}
+      document={doc.data}
+    />
+  );
 }
 
 function ReceiptForm({
-  bu,
   initial,
   isNew,
+  document,
 }: {
-  readonly bu: string;
   readonly initial: ArReceipt;
   readonly isNew: boolean;
+  readonly document: ArReceiptDocument | undefined;
 }) {
+  const bu = useBuCode() ?? "";
   const t = useTranslations("accounting.arReceipt");
-  const tp = useTranslations("accounting.arProfile");
   const tc = useTranslations("common");
   const money = useAmountFormatter();
   const navigate = useNavigate();
-  const { dateFormat } = useProfile();
+  const { dateFormat, defaultCurrencyCode } = useProfile();
   const { canWrite } = useCan();
   const currencies = useCurrencyAll();
+  const create = useCreateArReceipt();
+  const update = useUpdateArReceipt();
+  const remove = useDeleteArReceipt();
+  const action = useArReceiptAction();
   const [receiptDraft, setReceipt] = useState(initial);
   const [defaultsCustomerId, setDefaultsCustomerId] = useState(
-    isNew && !initial.customerId.startsWith("sample-")
-      ? initial.customerId || undefined
-      : undefined,
+    isNew ? initial.customerId || undefined : undefined,
   );
-  const [taxEdited, setTaxEdited] = useState(false);
+  const [taxEdited, setTaxEdited] = useState(!isNew);
   const customerDefaults = useArCustomer(defaultsCustomerId);
   const receipt =
     !taxEdited && customerDefaults.data?.id === receiptDraft.customerId
@@ -153,18 +181,34 @@ function ReceiptForm({
   const [baseline, setBaseline] = useState(initial);
   const [editing, setEditing] = useState(isNew);
   const [invoicePicker, setInvoicePicker] = useState(false);
-  const [paymentEditor, setPaymentEditor] = useState<ReceiptPayment>();
   const [confirmation, setConfirmation] = useState<
-    "delete" | "void" | "cancel" | null
+    "delete" | "submit" | "cancel" | null
   >(null);
+  const [voidOpen, setVoidOpen] = useState(false);
+  const [reason, setReason] = useState("");
   const [pendingCustomer, setPendingCustomer] = useState<ArCustomer>();
   const [error, setError] = useState("");
   const totals = receiptTotals(receipt);
+  const isDraft = receipt.status === "draft";
   const readonly = !editing || !canWrite;
+  const busy =
+    create.isPending ||
+    update.isPending ||
+    remove.isPending ||
+    action.isPending;
   const dirty = editing && JSON.stringify(receipt) !== JSON.stringify(baseline);
   useUnsavedChanges(dirty);
+  const canSubmit = !isNew && isDraft && !editing && canWrite;
+  useClaimFormPrimary(canSubmit);
   const set = <K extends keyof ArReceipt>(key: K, value: ArReceipt[K]) =>
     setReceipt((previous) => ({ ...previous, [key]: value }));
+  const patchReceipt = (patch: Partial<ArReceipt>) =>
+    setReceipt((previous) => ({ ...previous, ...patch }));
+  const patchTender = (patch: Partial<ReceiptTender>) =>
+    setReceipt((previous) => ({
+      ...previous,
+      tender: { ...previous.tender, ...patch },
+    }));
   const changeTax = (key: keyof ReceiptTaxEntity, value: string) => {
     setTaxEdited(true);
     setReceipt((previous) => ({
@@ -179,23 +223,33 @@ function ReceiptForm({
         name: receipt.customerName,
       }
     : undefined;
+  const currencyIdOf = (code: string) =>
+    currencies.data?.find((row) => row.code === code)?.id ?? "";
 
   function applyCustomer(value: ArCustomer) {
+    const code = value.default_currency_code ?? receipt.currency;
     setReceipt((previous) => ({
       ...previous,
-      ...receiptProfileDefaults(readProfileExtension(bu, value.id)),
       customerId: value.id,
       customerCode: value.code,
       customerName: value.name,
-      currency: value.default_currency_code ?? previous.currency,
-      creditDays: value.credit_term_days ?? 0,
+      currency: code,
+      currencyId: currencyIdOf(code) || previous.currencyId,
+      rate: code === defaultCurrencyCode ? 1 : previous.rate,
       allocations: [],
-      payments: [],
       whtAmount: 0,
+      whtBase: 0,
       whtCertificate: "",
       source: "manual",
       sourceDoc: "",
       taxEntity: receiptTaxEntityFromCustomer(value),
+      tender: {
+        ...previous.tender,
+        method: receiptProfileDefaults(readProfileExtension(bu, value.id))
+          .defaultPaymentType,
+        amount: 0,
+        charge: 0,
+      },
     }));
     setTaxEdited(false);
     setDefaultsCustomerId(value.id);
@@ -203,31 +257,40 @@ function ReceiptForm({
   }
   function changeCustomer(value?: ArCustomer) {
     if (!value || value.id === receipt.customerId) return;
-    if (receipt.allocations.length || receipt.payments.length)
+    if (receipt.allocations.length || receipt.tender.amount > 0)
       setPendingCustomer(value);
     else applyCustomer(value);
   }
   function save(event: FormEvent) {
     event.preventDefault();
-    if (!canWrite || !editing || (!taxEdited && customerDefaults.isLoading))
-      return;
+    if (!canWrite || !editing || busy) return;
+    if (!taxEdited && customerDefaults.isLoading) return;
     const invalid = receiptValidation(receipt);
     if (invalid) {
       setError(t(invalid));
       return;
     }
-    try {
-      const saved = saveReceipt(bu, receipt);
-      setReceipt(saved);
-      setTaxEdited(true);
-      setBaseline(saved);
-      setEditing(false);
-      setError("");
-      toast.success(t("saved"));
-      navigate(`${AR_RECEIPT_PATH}/${saved.id}`, { replace: true });
-    } catch {
-      setError(t("storageError"));
-    }
+    setError("");
+    const payload = toArReceiptPayload(receipt);
+    if (isNew)
+      create.mutate(payload, {
+        onSuccess: (response) => {
+          setEditing(false);
+          setBaseline(receipt);
+          toast.success(t("saved"));
+          navigate(`${AR_RECEIPT_PATH}/${response.data.id}`, { replace: true });
+        },
+      });
+    else
+      update.mutate(
+        { id: receipt.id, ...payload },
+        {
+          onSuccess: () => {
+            setEditing(false);
+            toast.success(t("saved"));
+          },
+        },
+      );
   }
   function cancel() {
     if (isNew) navigate(AR_RECEIPT_PATH);
@@ -240,33 +303,62 @@ function ReceiptForm({
     setConfirmation(null);
   }
   function confirmAction() {
-    try {
-      if (confirmation === "delete") {
-        deleteReceipt(bu, receipt.id);
-        toast.success(t("deleted"));
-        navigate(AR_RECEIPT_PATH);
-      } else if (confirmation === "void") {
-        const saved = voidReceipt(bu, receipt.id);
-        setReceipt(saved);
-        setBaseline(saved);
-        toast.success(t("voided"));
-      } else cancel();
-      setConfirmation(null);
-    } catch {
-      setError(t("storageError"));
-    }
+    if (confirmation === "delete")
+      remove.mutate(receipt.id, {
+        onSuccess: () => {
+          toast.success(t("deleted"));
+          navigate(AR_RECEIPT_PATH);
+        },
+      });
+    else if (confirmation === "submit")
+      action.mutate(
+        {
+          id: receipt.id,
+          action: "submit",
+          doc_version: receipt.version ?? undefined,
+        },
+        {
+          onSuccess: () => {
+            toast.success(t("submitted"));
+            setConfirmation(null);
+          },
+          onError: () => setConfirmation(null),
+        },
+      );
+    else cancel();
+  }
+  function voidReceipt() {
+    action.mutate(
+      {
+        id: receipt.id,
+        action: "void",
+        doc_version: receipt.version ?? undefined,
+        reason: reason.trim(),
+      },
+      {
+        onSuccess: () => {
+          toast.success(t("voided"));
+          setVoidOpen(false);
+          setReason("");
+        },
+      },
+    );
   }
   function copy() {
-    const next = {
-      ...receipt,
-      id: crypto.randomUUID(),
-      number: "",
-      status: "draft" as const,
-      source: "copy" as const,
-      sourceDoc: receipt.number,
-      taxInvoiceNo: "",
-    };
-    navigate(`${AR_RECEIPT_PATH}/new`, { state: { receiptCopy: next } });
+    navigate(`${AR_RECEIPT_PATH}/new`, {
+      state: {
+        receiptCopy: {
+          ...receipt,
+          id: crypto.randomUUID(),
+          number: "",
+          version: null,
+          status: "draft" as const,
+          source: "copy" as const,
+          sourceDoc: receipt.number,
+          taxInvoiceNo: "",
+        },
+      },
+    });
   }
   const dates = (value: string) =>
     value ? formatDate(value, dateFormat) : "—";
@@ -278,6 +370,13 @@ function ReceiptForm({
         .map((currency) => currency.code),
     ]),
   ];
+  const canVoid =
+    !isNew &&
+    canWrite &&
+    !editing &&
+    ((isDraft && !isDraftDocNo(receipt.number)) || receipt.status === "posted");
+  const canDelete = !isNew && isDraft && isDraftDocNo(receipt.number);
+  const sameAsBase = receipt.currency === defaultCurrencyCode;
 
   return (
     <div className="@container/receipt flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 px-4">
@@ -285,7 +384,7 @@ function ReceiptForm({
         title={receipt.number || t("newReceipt")}
         mode={editing ? (isNew ? "add" : "edit") : "view"}
         formId={FORM_ID}
-        isPending={false}
+        isPending={create.isPending || update.isPending}
         writeDisabledReason={
           editing && !taxEdited && customerDefaults.isLoading
             ? tc("loading")
@@ -293,72 +392,65 @@ function ReceiptForm({
         }
         flush
         badges={
-          <>
-            <MockBadge />
-            <StatusChip
-              status={receipt.status}
-              label={t(`statuses.${receipt.status}`)}
-            />
-          </>
+          <StatusChip
+            status={receipt.status}
+            label={t(`statuses.${receipt.status}`)}
+          />
         }
         onBack={() =>
           dirty ? setConfirmation("cancel") : navigate(AR_RECEIPT_PATH)
         }
         onCancel={() => (dirty ? setConfirmation("cancel") : cancel())}
         onEdit={
-          !editing && receipt.status === "draft"
-            ? () => setEditing(true)
-            : undefined
+          !editing && isDraft && !isNew ? () => setEditing(true) : undefined
         }
         onDelete={
-          !editing && receipt.status === "draft"
-            ? () => setConfirmation("delete")
-            : undefined
+          !editing && canDelete ? () => setConfirmation("delete") : undefined
         }
+        deleteIsPending={remove.isPending}
         submitLabel={tc("saveDraft")}
       >
-        {!editing && (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={copy}
-              disabled={!canWrite}
-              title={t("copy")}
-            >
-              <Copy />
-              <ToolbarLabel>{t("copy")}</ToolbarLabel>
-            </Button>
-            {receipt.status === "draft" && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className={DESTRUCTIVE_ACTION}
-                onClick={() => setConfirmation("void")}
-                disabled={!canWrite}
-                title={t("void")}
-              >
-                <Ban />
-                <ToolbarLabel>{t("void")}</ToolbarLabel>
-              </Button>
-            )}
-          </>
+        {!editing && !isNew && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={copy}
+            disabled={!canWrite}
+            title={t("copy")}
+          >
+            <Copy />
+            <ToolbarLabel>{t("copy")}</ToolbarLabel>
+          </Button>
+        )}
+        {canVoid && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className={DESTRUCTIVE_ACTION}
+            onClick={() => setVoidOpen(true)}
+            title={t("void")}
+          >
+            <Ban />
+            <ToolbarLabel>{t("void")}</ToolbarLabel>
+          </Button>
         )}
       </FormToolbar>
-      <p role="note" className="text-muted-foreground text-xs">
-        {t("mockNotice")}
-      </p>
       <form
         id={FORM_ID}
         onSubmit={save}
         className="flex min-h-0 min-w-0 flex-1 flex-col gap-4"
       >
         <div className="grid grid-cols-1 gap-x-4 gap-y-3 border-b pb-4 @xl/receipt:grid-cols-4 @4xl/receipt:grid-cols-8">
-          <Field>
+          <Field className="@xl/receipt:col-span-2">
             <FieldLabel>{t("number")}</FieldLabel>
             <FieldPlainText>{receipt.number || t("autoNumber")}</FieldPlainText>
+            {isDraftDocNo(receipt.number) && (
+              <p className="text-muted-foreground text-xs">
+                {t("draftNumberHint")}
+              </p>
+            )}
           </Field>
           <Field>
             <FieldLabel required>{t("inputDate")}</FieldLabel>
@@ -387,10 +479,14 @@ function ReceiptForm({
             ) : (
               <FieldSelect
                 value={receipt.currency}
-                disabled={
-                  receipt.allocations.length > 0 || receipt.payments.length > 0
+                disabled={receipt.allocations.length > 0}
+                onValueChange={(value) =>
+                  patchReceipt({
+                    currency: value,
+                    currencyId: currencyIdOf(value),
+                    rate: value === defaultCurrencyCode ? 1 : receipt.rate,
+                  })
                 }
-                onValueChange={(value) => set("currency", value)}
               >
                 <SelectContent>
                   {currencyOptions.map((code) => (
@@ -406,8 +502,10 @@ function ReceiptForm({
             <FieldLabel htmlFor="receipt-rate" required>
               {t("exchangeRate")}
             </FieldLabel>
-            {readonly ? (
-              <FieldPlainText>{receipt.rate.toFixed(5)}</FieldPlainText>
+            {readonly || sameAsBase ? (
+              <FieldPlainText className="tabular-nums">
+                {receipt.rate.toFixed(5)}
+              </FieldPlainText>
             ) : (
               <FieldInput
                 id="receipt-rate"
@@ -418,6 +516,11 @@ function ReceiptForm({
                 required
                 onChange={(event) => set("rate", Number(event.target.value))}
               />
+            )}
+            {sameAsBase && !readonly && (
+              <p className="text-muted-foreground text-xs">
+                {t("rateReadOnlyHint")}
+              </p>
             )}
           </Field>
           <Field>
@@ -454,31 +557,7 @@ function ReceiptForm({
                 (receipt.taxInvoice ? t("taxNumberOnSubmit") : "—")}
             </FieldPlainText>
           </Field>
-          <Field>
-            <FieldLabel htmlFor="receipt-credit">{t("creditDays")}</FieldLabel>
-            {readonly ? (
-              <FieldPlainText>{receipt.creditDays}</FieldPlainText>
-            ) : (
-              <FieldInput
-                id="receipt-credit"
-                type="number"
-                min="0"
-                max="3650"
-                step="1"
-                value={receipt.creditDays}
-                onChange={(event) =>
-                  set("creditDays", Number(event.target.value))
-                }
-              />
-            )}
-          </Field>
-          <Field>
-            <FieldLabel>{t("dueDate")}</FieldLabel>
-            <FieldPlainText>
-              {dates(addDays(receipt.date, receipt.creditDays))}
-            </FieldPlainText>
-          </Field>
-          <Field className="min-w-0 @xl/receipt:col-span-2">
+          <Field className="min-w-0 @xl/receipt:col-span-4">
             <FieldLabel htmlFor="receipt-description">
               {t("description")}
             </FieldLabel>
@@ -495,42 +574,6 @@ function ReceiptForm({
               />
             )}
           </Field>
-          <Field className="@xl/receipt:col-span-2">
-            <FieldLabel htmlFor="receipt-wht-toggle">
-              <Checkbox
-                id="receipt-wht-toggle"
-                checked={receipt.whtEnabled}
-                disabled={readonly}
-                onCheckedChange={(value) =>
-                  setReceipt((previous) => ({
-                    ...previous,
-                    whtEnabled: value === true,
-                    whtAmount:
-                      value === true
-                        ? previous.whtAmount || suggestedReceiptWht(previous)
-                        : 0,
-                  }))
-                }
-              />
-              {t("whtAmount")}
-            </FieldLabel>
-            {readonly ? (
-              <FieldPlainText>{money(totals.wht)}</FieldPlainText>
-            ) : (
-              <FieldInput
-                type="number"
-                min="0"
-                step="0.01"
-                aria-label={t("whtAmount")}
-                value={receipt.whtAmount}
-                disabled={!receipt.whtEnabled}
-                onChange={(event) =>
-                  set("whtAmount", Number(event.target.value))
-                }
-                className="text-right tabular-nums"
-              />
-            )}
-          </Field>
         </div>
         {error && (
           <p role="alert" className="text-destructive text-xs">
@@ -541,11 +584,8 @@ function ReceiptForm({
           <div className="min-w-0 shrink-0 overflow-x-auto overflow-y-hidden pb-1">
             <TabsList variant="line">
               <TabsTrigger value="items">{t("tabs.items")}</TabsTrigger>
-              <TabsTrigger value="tax">{t("tabs.tax")}</TabsTrigger>
-              <TabsTrigger value="reference" disabled>
-                {t("tabs.reference")}
-              </TabsTrigger>
               <TabsTrigger value="receipt">{t("tabs.receipt")}</TabsTrigger>
+              <TabsTrigger value="tax">{t("tabs.tax")}</TabsTrigger>
               <TabsTrigger value="journal">{t("tabs.journal")}</TabsTrigger>
             </TabsList>
           </div>
@@ -578,20 +618,17 @@ function ReceiptForm({
                 {
                   accessorKey: "number",
                   header: t("invoiceNo"),
-                  cell: ({ row }) =>
-                    row.original.id.startsWith("sample-") ? (
-                      row.original.number
-                    ) : (
-                      <CellAction
-                        onClick={() =>
-                          navigate(
-                            `/accounting/accounts-receivable/invoice/${row.original.id}`,
-                          )
-                        }
-                      >
-                        {row.original.number}
-                      </CellAction>
-                    ),
+                  cell: ({ row }) => (
+                    <CellAction
+                      onClick={() =>
+                        navigate(
+                          `/accounting/accounts-receivable/invoice/${row.original.id}`,
+                        )
+                      }
+                    >
+                      {row.original.number || "—"}
+                    </CellAction>
+                  ),
                 },
                 {
                   accessorKey: "date",
@@ -688,6 +725,25 @@ function ReceiptForm({
             <p className="text-muted-foreground text-xs">
               {t("allocationHint")}
             </p>
+          </TabsContent>
+          <TabsContent value="receipt" className="min-w-0 space-y-5">
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold">{t("tender")}</h2>
+              <ReceiptTenderSection
+                receipt={receipt}
+                readonly={readonly}
+                baseCurrency={defaultCurrencyCode}
+                patch={patchTender}
+              />
+            </section>
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold">{t("whtSection")}</h2>
+              <ReceiptWhtSection
+                receipt={receipt}
+                readonly={readonly}
+                set={patchReceipt}
+              />
+            </section>
           </TabsContent>
           <TabsContent value="tax" className="min-w-0 space-y-4">
             <div className="grid grid-cols-1 gap-4 @xl/receipt:grid-cols-4">
@@ -818,170 +874,26 @@ function ReceiptForm({
             />
             <p className="text-muted-foreground text-xs">{t("taxHint")}</p>
           </TabsContent>
-          <TabsContent value="receipt" className="min-w-0 space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold">{t("paymentLines")}</h2>
-              {!readonly && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setPaymentEditor(
-                      newReceiptPayment(
-                        receipt.date,
-                        receipt.defaultPaymentType,
-                      ),
-                    )
-                  }
-                >
-                  <Plus />
-                  {t("addPayment")}
-                </Button>
-              )}
-            </div>
-            <ApDetailGrid
-              rows={receipt.payments}
-              empty={t("noPayments")}
-              columns={[
-                {
-                  id: "sequence",
-                  header: "#",
-                  cell: ({ row }) => row.index + 1,
-                },
-                {
-                  accessorKey: "type",
-                  header: t("payType"),
-                  cell: ({ row }) =>
-                    readonly ? (
-                      t(`payTypes.${row.original.type}`)
-                    ) : (
-                      <CellAction
-                        onClick={() => setPaymentEditor(row.original)}
-                      >
-                        {t(`payTypes.${row.original.type}`)}
-                      </CellAction>
-                    ),
-                },
-                {
-                  accessorKey: "date",
-                  header: t("paymentDate"),
-                  cell: ({ row }) => dates(row.original.date),
-                },
-                { accessorKey: "reference", header: t("reference") },
-                { accessorKey: "bank", header: t("bank") },
-                { accessorKey: "chequeNo", header: t("chequeNo") },
-                { accessorKey: "accountLabel", header: t("cashBankAccount") },
-                {
-                  accessorKey: "amount",
-                  header: t("receivedAmount"),
-                  meta: {
-                    cellClassName: "text-right tabular-nums",
-                    headerClassName: "text-right",
-                  },
-                  cell: ({ row }) => money(row.original.amount),
-                },
-                ...(!readonly
-                  ? [
-                      {
-                        id: "remove",
-                        size: 45,
-                        cell: ({
-                          row,
-                        }: {
-                          row: { original: ReceiptPayment };
-                        }) => (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            className={DESTRUCTIVE_ACTION}
-                            aria-label={t("removePayment")}
-                            onClick={() =>
-                              set(
-                                "payments",
-                                receipt.payments.filter(
-                                  (line) => line.id !== row.original.id,
-                                ),
-                              )
-                            }
-                          >
-                            <Trash2 />
-                          </Button>
-                        ),
-                      },
-                    ]
-                  : []),
-              ]}
-            />
-            <div className="grid grid-cols-1 gap-4 @xl/receipt:grid-cols-4">
-              <Field>
-                <FieldLabel>{tp("whtService")}</FieldLabel>
-                {readonly ? (
-                  <FieldPlainText>
-                    {tp(`wht${receipt.whtService}`)}
-                  </FieldPlainText>
-                ) : (
-                  <FieldSelect
-                    value={receipt.whtService}
-                    onValueChange={(value) =>
-                      setReceipt((previous) => {
-                        const next = { ...previous, whtService: value };
-                        return {
-                          ...next,
-                          whtAmount: previous.whtEnabled
-                            ? suggestedReceiptWht(next)
-                            : 0,
-                        };
-                      })
-                    }
-                  >
-                    <SelectContent>
-                      {["NONE", "01", "02", "03", "04", "05"].map((value) => (
-                        <SelectItem key={value} value={value}>
-                          {tp(`wht${value}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </FieldSelect>
-                )}
-              </Field>
-              <Field className="@xl/receipt:col-span-2">
-                <FieldLabel htmlFor="receipt-wht-certificate">
-                  {t("whtCertificate")}
-                </FieldLabel>
-                {readonly ? (
-                  <FieldPlainText>
-                    {receipt.whtCertificate || "—"}
-                  </FieldPlainText>
-                ) : (
-                  <FieldInput
-                    id="receipt-wht-certificate"
-                    value={receipt.whtCertificate}
-                    maxLength={100}
-                    disabled={!receipt.whtEnabled}
-                    onChange={(event) =>
-                      set("whtCertificate", event.target.value)
-                    }
-                  />
-                )}
-              </Field>
-            </div>
-          </TabsContent>
           <TabsContent value="journal" className="min-w-0">
-            <EmptyComponent
-              title={t("journalUnavailable")}
-              description={t("journalHint")}
+            <ReceiptJournal
+              jvId={document?.gl_jv_id}
+              jvNo={document?.gl_jv_no}
+              currency={receipt.currency}
             />
           </TabsContent>
         </Tabs>
+        {totals.unapplied > 0 && (
+          <p role="status" className="text-warning-ink text-xs">
+            {t("unappliedHint")}
+          </p>
+        )}
         <SummaryFooterBar
           hasRecord
           items={[
             {
-              key: "allocated",
+              key: "applied",
               label: t("appliedAmount"),
-              value: money(totals.allocated),
+              value: money(totals.applied),
               suffix: receipt.currency,
             },
             {
@@ -989,7 +901,6 @@ function ReceiptForm({
               label: t("receivedAmount"),
               value: money(totals.received),
               suffix: receipt.currency,
-              emphasis: true,
             },
             {
               key: "wht",
@@ -998,30 +909,33 @@ function ReceiptForm({
               suffix: receipt.currency,
             },
             {
-              key: "difference",
+              key: "charge",
+              label: t("bankCharge"),
+              value: money(totals.charge),
+              suffix: receipt.currency,
+            },
+            {
+              key: "unapplied",
               label: t("unapplied"),
               value: money(totals.unapplied),
               suffix: receipt.currency,
+              emphasis: true,
               valueClassName:
                 totals.unapplied < 0 ? "text-destructive" : undefined,
             },
-            {
-              key: "base",
-              label: t("baseReceived"),
-              value: money(totals.baseReceived),
-              suffix: "THB",
-            },
           ]}
         >
-          <Button
-            type="button"
-            size="sm"
-            disabled
-            title={t("submitUnavailable")}
-          >
-            <Send />
-            {tc("submit")}
-          </Button>
+          {canSubmit && (
+            <Button
+              type="button"
+              size="sm"
+              disabled={busy || receipt.version === null}
+              onClick={() => setConfirmation("submit")}
+            >
+              <Send />
+              {tc("submit")}
+            </Button>
+          )}
         </SummaryFooterBar>
       </form>
       {invoicePicker && (
@@ -1034,37 +948,74 @@ function ReceiptForm({
           }}
         />
       )}
-      {paymentEditor && (
-        <ReceiptPaymentDialog
-          key={paymentEditor.id}
-          payment={paymentEditor}
-          currency={receipt.currency}
-          close={() => setPaymentEditor(undefined)}
-          save={(payment) => {
-            set(
-              "payments",
-              receipt.payments.some((line) => line.id === payment.id)
-                ? receipt.payments.map((line) =>
-                    line.id === payment.id ? payment : line,
-                  )
-                : [...receipt.payments, payment],
-            );
-            setPaymentEditor(undefined);
-          }}
-        />
-      )}
       <ConfirmDialog
         open={confirmation !== null}
         onOpenChange={(open) => {
-          if (!open) setConfirmation(null);
+          if (!open && !busy) setConfirmation(null);
         }}
         title={t(`${confirmation ?? "cancel"}Confirm`)}
         description={
-          confirmation === "cancel" ? t("discardHint") : t("mockActionHint")
+          confirmation === "cancel"
+            ? t("discardHint")
+            : confirmation === "submit"
+              ? t("submitHint")
+              : t("deleteHint")
         }
-        variant={confirmation === "cancel" ? "default" : "destructive"}
+        variant={confirmation === "delete" ? "destructive" : "default"}
         onConfirm={confirmAction}
       />
+      <Dialog
+        open={voidOpen}
+        onOpenChange={(open) => {
+          if (!open && !action.isPending) {
+            setVoidOpen(false);
+            setReason("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("voidConfirm")}</DialogTitle>
+            <DialogDescription>
+              {receipt.status === "posted"
+                ? t("voidPostedHint")
+                : t("voidDraftHint")}
+            </DialogDescription>
+          </DialogHeader>
+          <Field>
+            <FieldLabel htmlFor="receipt-void-reason" required>
+              {t("voidReason")}
+            </FieldLabel>
+            <Textarea
+              id="receipt-void-reason"
+              value={reason}
+              maxLength={255}
+              onChange={(event) => setReason(event.target.value)}
+            />
+          </Field>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={action.isPending}
+              onClick={() => {
+                setVoidOpen(false);
+                setReason("");
+              }}
+            >
+              {tc("cancel")}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={action.isPending || !reason.trim()}
+              onClick={voidReceipt}
+            >
+              {t("void")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <ConfirmDialog
         open={Boolean(pendingCustomer)}
         onOpenChange={(open) => {

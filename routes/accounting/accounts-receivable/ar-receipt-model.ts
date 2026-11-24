@@ -77,6 +77,8 @@ const receiptSchema = z.object({
   whtEnabled: z.boolean(),
   whtProfileId: z.string(),
   whtAmount: amount,
+  /** stored WHT base: kept when the invoice is not in the outstanding list so a re-save does not send 0 */
+  whtBase: amount,
   whtCertificate: z.string().max(100),
   whtCertificateDate: z.string(),
   tender: tenderSchema,
@@ -177,6 +179,7 @@ export function newReceipt(
     whtEnabled: false,
     whtProfileId: "",
     whtAmount: 0,
+    whtBase: 0,
     whtCertificate: "",
     whtCertificateDate: "",
     tender: newReceiptTender(date),
@@ -310,7 +313,11 @@ export function receiptValidation(
   )
     return "whtExceedsAllocation";
   if (totals.unapplied < 0 || totals.applied < 0) return "overAllocated";
-  if (receipt.allocations.length === 0 && totals.settlement === 0)
+  // the payload drops lines with amount <= 0, so only those count (BE AR_RECEIPT_EMPTY)
+  if (
+    receipt.allocations.every((line) => line.amount <= 0) &&
+    totals.settlement === 0
+  )
     return "emptyReceipt";
   if (
     receipt.taxInvoice &&
@@ -430,7 +437,7 @@ export function toArReceiptPayload(receipt: ArReceipt): ArReceiptPayload {
       ? [
           {
             wht_tax_profile_id: receipt.whtProfileId || null,
-            base_amount: receiptWhtBase(receipt),
+            base_amount: receiptWhtBase(receipt) || round2(receipt.whtBase),
             wht_amount: round2(receipt.whtAmount),
             wht_certificate_no: orNull(receipt.whtCertificate),
             wht_certificate_date: orNull(receipt.whtCertificateDate),
@@ -530,6 +537,9 @@ export function receiptFromDocument(
     whtProfileId: whtRows[0]?.wht_tax_profile_id ?? "",
     whtAmount: round2(
       whtRows.reduce((sum, row) => sum + Number(row.wht_amount), 0),
+    ),
+    whtBase: round2(
+      whtRows.reduce((sum, row) => sum + Number(row.base_amount), 0),
     ),
     whtCertificate: whtRows[0]?.wht_certificate_no ?? "",
     whtCertificateDate: whtRows[0]?.wht_certificate_date?.slice(0, 10) ?? "",
