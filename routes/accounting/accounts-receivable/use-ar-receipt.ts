@@ -1,0 +1,285 @@
+import { useQuery } from "@tanstack/react-query";
+import { API_ENDPOINTS } from "@/constant/api-endpoints";
+import { useBuCode } from "@/hooks/use-bu-code";
+import { useApiMutation } from "@/hooks/use-api-mutation";
+import { ApiError } from "@/lib/api-error";
+import { buildUrl } from "@/lib/build-query-string";
+import { httpClient } from "@/lib/http-client";
+import type { PaginatedResponse, ParamsDto } from "@/types/params";
+import type { ArAmount } from "./ar-invoice-draft-model";
+
+export const AR_RECEIPT_STATUS = [
+  "draft",
+  "in_review",
+  "posted",
+  "void",
+] as const;
+export type ArReceiptStatus = (typeof AR_RECEIPT_STATUS)[number];
+export type ArReceiptSource = "manual" | "copy" | "interface";
+export type ArReceiptWorkflowAction = "approve" | "reject" | "sendback";
+
+const QUERY_KEY = "ar-receipt";
+const INVOICE_QUERY_KEY = "ar-invoice";
+
+export interface ArReceiptRow {
+  id: string;
+  doc_no: string;
+  doc_status: ArReceiptStatus;
+  receipt_date: string;
+  customer_id?: string;
+  customer_code?: string;
+  customer_name: string;
+  currency_code?: string;
+  net_received_amount: ArAmount;
+  total_applied_amount?: ArAmount;
+  total_unapplied_amount?: ArAmount;
+  doc_source?: ArReceiptSource;
+}
+
+export interface ArReceiptDetailRecord {
+  id?: string;
+  ar_invoice_id?: string;
+  ar_invoice_detail_id?: string;
+  ar_invoice_no?: string | null;
+  sequence_no?: number;
+  applied_amount: ArAmount;
+  base_applied_amount?: ArAmount;
+  base_applied_at_invoice_rate?: ArAmount;
+  realized_fx_amount?: ArAmount;
+}
+
+export interface ArReceiptWhtRecord {
+  id?: string;
+  wht_tax_profile_id: string;
+  base_amount: ArAmount;
+  wht_rate?: ArAmount;
+  wht_amount: ArAmount;
+  certificate_no?: string | null;
+  certificate_date?: string | null;
+}
+
+export interface ArReceiptTaxInvoice {
+  tax_invoice_no: string;
+  tax_invoice_date: string;
+  tax_status?: string;
+  status?: string;
+  customer_registered_name?: string;
+  customer_tax_no?: string | null;
+  customer_branch_no?: string | null;
+  base_amount?: ArAmount;
+  vat_rate?: ArAmount;
+  vat_amount?: ArAmount;
+  total_amount?: ArAmount;
+}
+
+export interface ArReceiptDocument extends ArReceiptRow {
+  doc_version?: number | null;
+  customer_id: string;
+  received_date?: string | null;
+  currency_id?: string;
+  base_currency_code?: string;
+  exchange_rate?: ArAmount;
+  bank_account_id?: string | null;
+  receipt_method?: string | null;
+  cheque_no?: string | null;
+  cheque_date?: string | null;
+  reference_no?: string | null;
+  payer_name?: string | null;
+  description?: string | null;
+  is_tax_invoice?: boolean;
+  charge_amount?: ArAmount;
+  total_wht_amount?: ArAmount;
+  base_net_received_amount?: ArAmount;
+  base_total_unapplied_amount?: ArAmount;
+  realized_fx_amount?: ArAmount;
+  doc_source: ArReceiptSource;
+  source_doc_ref?: string | null;
+  info?: Record<string, unknown> | null;
+  gl_jv_id?: string | null;
+  gl_jv_no?: string | null;
+  void_reason?: string | null;
+  workflow_id?: string | null;
+  workflow_name?: string | null;
+  workflow_current_stage?: string | null;
+  workflow_previous_stage?: string | null;
+  workflow_next_stage?: string | null;
+  /** optional until Phase B (workflow) */
+  allowed_actions?: ArReceiptWorkflowAction[];
+  total_unapplied_amount: ArAmount;
+  tb_ar_receipt_detail?: ArReceiptDetailRecord[];
+  tb_ar_receipt_wht?: ArReceiptWhtRecord[];
+  tb_ar_tax_invoice?: ArReceiptTaxInvoice | null;
+}
+
+/** Matches the gateway request DTO (invoice-level allocations; backend splits per line). */
+export interface ArReceiptPayload {
+  customer_id: string;
+  receipt_date: string;
+  received_date?: string | null;
+  currency_id?: string;
+  exchange_rate?: number;
+  bank_account_id?: string | null;
+  receipt_method?: string | null;
+  cheque_no?: string | null;
+  cheque_date?: string | null;
+  reference_no?: string | null;
+  payer_name?: string | null;
+  description?: string | null;
+  is_tax_invoice?: boolean;
+  source_doc_ref?: string | null;
+  net_received_amount: number;
+  charge_amount: number;
+  wht: {
+    wht_tax_profile_id: string;
+    base_amount: number;
+    wht_amount?: number;
+    certificate_no?: string | null;
+    certificate_date?: string | null;
+  }[];
+  allocations: { ar_invoice_id: string; applied_amount: number }[];
+  info?: Record<string, unknown>;
+}
+
+export interface OutstandingInvoiceLine {
+  ar_invoice_detail_id: string;
+  sequence_no?: number;
+  unpaid_amount: ArAmount;
+  /** unpaid minus reservations by other draft/in_review receipts */
+  available_amount: ArAmount;
+}
+
+export interface OutstandingInvoice {
+  id: string;
+  doc_no: string;
+  doc_type: "invoice" | "credit_note" | "debit_note" | "deposit";
+  doc_date: string;
+  due_date?: string | null;
+  customer_id: string;
+  currency_id?: string;
+  currency_code: string;
+  exchange_rate?: ArAmount;
+  total_amount: ArAmount;
+  outstanding_amount: ArAmount;
+  available_amount: ArAmount;
+  lines?: OutstandingInvoiceLine[];
+}
+
+async function readReceipt(url: string) {
+  const response = await httpClient.get(url);
+  if (!response.ok)
+    throw await ApiError.from(response, "Unable to load AR receipts");
+  return response.json();
+}
+
+export function useArReceipts(
+  params: ParamsDto,
+  options?: { enabled?: boolean },
+) {
+  const bu = useBuCode();
+  return useQuery({
+    queryKey: [QUERY_KEY, bu, "list", params],
+    enabled: !!bu && options?.enabled !== false,
+    queryFn: async (): Promise<PaginatedResponse<ArReceiptRow>> => {
+      const body = await readReceipt(
+        buildUrl(API_ENDPOINTS.AR_RECEIPT_LIST(bu!), params),
+      );
+      if (!Array.isArray(body.data) || typeof body.paginate?.total !== "number")
+        throw new Error("Invalid AR receipt list response");
+      return body;
+    },
+  });
+}
+
+export function useArReceiptDocument(id?: string) {
+  const bu = useBuCode();
+  return useQuery({
+    queryKey: [QUERY_KEY, bu, "document", id],
+    enabled: !!bu && !!id,
+    queryFn: async (): Promise<ArReceiptDocument> => {
+      const body = await readReceipt(
+        `${API_ENDPOINTS.AR_RECEIPT_LIST(bu!)}/${encodeURIComponent(id!)}`,
+      );
+      if (body.data?.id !== id) throw new Error("Invalid AR receipt response");
+      return body.data;
+    },
+  });
+}
+
+export function useCreateArReceipt() {
+  return useApiMutation<ArReceiptPayload, { data: { id: string } }>({
+    mutationFn: (body, bu) =>
+      httpClient.post(API_ENDPOINTS.AR_RECEIPT_LIST(bu), body),
+    invalidateKeys: [QUERY_KEY],
+    errorMessage: "Unable to create AR receipt",
+    meta: { preferServerMessage: true },
+  });
+}
+
+export function useUpdateArReceipt() {
+  return useApiMutation<ArReceiptPayload & { id: string }>({
+    mutationFn: ({ id, ...body }, bu) =>
+      httpClient.put(
+        `${API_ENDPOINTS.AR_RECEIPT_LIST(bu)}/${encodeURIComponent(id)}`,
+        body,
+      ),
+    invalidateKeys: [QUERY_KEY],
+    errorMessage: "Unable to update AR receipt",
+    meta: { preferServerMessage: true },
+  });
+}
+
+export function useDeleteArReceipt() {
+  return useApiMutation<string>({
+    mutationFn: (id, bu) =>
+      httpClient.delete(
+        `${API_ENDPOINTS.AR_RECEIPT_LIST(bu)}/${encodeURIComponent(id)}`,
+      ),
+    invalidateKeys: [QUERY_KEY],
+    errorMessage: "Unable to delete AR receipt",
+    meta: { preferServerMessage: true },
+  });
+}
+
+/** Phase B adds approve | review | reject. */
+export type ArReceiptAction = "submit" | "void";
+
+export function useArReceiptAction() {
+  return useApiMutation<{
+    id: string;
+    action: ArReceiptAction;
+    doc_version?: number;
+    reason?: string;
+  }>({
+    mutationFn: ({ id, action, ...body }, bu) =>
+      httpClient.post(
+        `${API_ENDPOINTS.AR_RECEIPT_LIST(bu)}/${encodeURIComponent(id)}/${action}`,
+        body,
+      ),
+    // submit/void change invoice outstanding, so refresh invoice queries too
+    invalidateKeys: [QUERY_KEY, INVOICE_QUERY_KEY],
+    errorMessage: "Unable to update AR receipt status",
+    meta: { preferServerMessage: true },
+  });
+}
+
+export function useArOutstandingInvoices(
+  customerId?: string,
+  currencyId?: string,
+) {
+  const bu = useBuCode();
+  return useQuery({
+    queryKey: [QUERY_KEY, bu, "outstanding-invoices", customerId, currencyId],
+    enabled: !!bu && !!customerId,
+    queryFn: async (): Promise<OutstandingInvoice[]> => {
+      const body = await readReceipt(
+        buildUrl(API_ENDPOINTS.AR_RECEIPT_OUTSTANDING_INVOICES(bu!), {
+          customer_id: customerId,
+          ...(currencyId ? { currency_id: currencyId } : {}),
+        } as ParamsDto),
+      );
+      if (!Array.isArray(body.data))
+        throw new Error("Invalid outstanding invoices response");
+      return body.data;
+    },
+  });
+}

@@ -179,6 +179,9 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/ap-payment/outstanding-documents`,
   AP_PAYMENT_WHT_PREVIEW: (buCode: string) =>
     `/api/proxy/api/${buCode}/ap-payment/wht-preview`,
+  AR_RECEIPT_LIST: (buCode: string) => `/api/proxy/api/${buCode}/ar-receipt`,
+  AR_RECEIPT_OUTSTANDING_INVOICES: (buCode: string) =>
+    `/api/proxy/api/${buCode}/ar-receipt/outstanding-invoices`,
   GL_JV_LIST: (buCode: string) => `/api/proxy/api/${buCode}/gl-jv`,
   GL_JV_DETAIL: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/gl-jv/${toSafePathSegment(id)}`,
