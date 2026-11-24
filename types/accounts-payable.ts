@@ -49,9 +49,9 @@ export interface ApWorkflowFields {
   workflow_next_stage?: string | null;
   workflow_history?: unknown;
   /** `{ execute: [{ user_id, ... }] }` — ผู้ที่ลงมือที่ขั้นปัจจุบันได้ */
+  user_action?: { execute?: { user_id: string }[] } | null;
   /** action ที่ backend อนุญาตให้ผู้ใช้นี้ทำที่ขั้นปัจจุบัน (ไม่ส่ง = backend เก่า) */
   allowed_actions?: ("approve" | "reject" | "sendback")[];
-  user_action?: { execute?: { user_id: string }[] } | null;
   last_action?: string | null;
   last_action_at_date?: string | null;
   last_action_by_id?: string | null;

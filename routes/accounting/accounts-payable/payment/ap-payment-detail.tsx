@@ -658,7 +658,7 @@ function ApPaymentEditor({
                 onClick={() => setReasonAction("sendback")}
               >
                 <Undo2 className="size-4" />
-                {td("actions.return")}
+                {td("actions.sendback")}
               </Button>
             )}
             {!editing && actions.includes("reject") && (

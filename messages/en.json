@@ -1055,6 +1055,7 @@
               "title": "Send invoice back",
               "stage": "Send back to stage",
               "stagePlaceholder": "Select a stage",
+              "stagesError": "Could not load the earlier stages. Close this dialog and try again.",
               "noStages": "There is no earlier stage to send this invoice back to."
             }
           },

@@ -783,11 +783,18 @@ function ApInvoiceEditor({
                   ))}
                 </SelectContent>
               </Select>
-              {!stagesQuery.isLoading && stages.length === 0 && (
-                <p className="text-warning-ink text-xs">
-                  {td("reasonDialog.sendback.noStages")}
+              {stagesQuery.isError && (
+                <p className="text-destructive text-xs" role="alert">
+                  {td("reasonDialog.sendback.stagesError")}
                 </p>
               )}
+              {!stagesQuery.isLoading &&
+                !stagesQuery.isError &&
+                stages.length === 0 && (
+                  <p className="text-warning-ink text-xs">
+                    {td("reasonDialog.sendback.noStages")}
+                  </p>
+                )}
             </div>
           )}
           <Textarea
