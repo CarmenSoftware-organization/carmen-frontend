@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import {
   useApInvoiceWorkflows,
   useApPaymentWorkflows,
+  useArInvoiceWorkflows,
 } from "@/hooks/use-workflow";
 import { useCreateWorkflow } from "./use-wf-mutations";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
@@ -97,18 +98,27 @@ export default function WorkflowNewForm({
     !lockedType || lockedType === WORKFLOW_TYPE.AP_PAYMENT;
   const { data: apPaymentWorkflows, isPending: apPaymentPending } =
     useApPaymentWorkflows({ perpage: 100 }, { enabled: apPaymentQueryEnabled });
+  const arInvoiceQueryEnabled =
+    !lockedType || lockedType === WORKFLOW_TYPE.AR_INVOICE;
+  const { data: arInvoiceWorkflows, isPending: arInvoicePending } =
+    useArInvoiceWorkflows({ perpage: 100 }, { enabled: arInvoiceQueryEnabled });
   const apInvoiceActiveExists =
     apInvoiceQueryEnabled &&
     !!apInvoiceWorkflows?.data?.some((w) => w.is_active);
   const apPaymentActiveExists =
     apPaymentQueryEnabled &&
     !!apPaymentWorkflows?.data?.some((w) => w.is_active);
+  const arInvoiceActiveExists =
+    arInvoiceQueryEnabled &&
+    !!arInvoiceWorkflows?.data?.some((w) => w.is_active);
   // ระหว่างโหลดรายการ ถือว่าชนิดนั้นถูกบล็อกไว้ก่อน จนรู้ว่าไม่มีเส้นที่เปิดอยู่
   const apBlocked =
     (watchedType === WORKFLOW_TYPE.AP_INVOICE &&
       ((apInvoiceQueryEnabled && apInvoicePending) || apInvoiceActiveExists)) ||
     (watchedType === WORKFLOW_TYPE.AP_PAYMENT &&
-      ((apPaymentQueryEnabled && apPaymentPending) || apPaymentActiveExists));
+      ((apPaymentQueryEnabled && apPaymentPending) || apPaymentActiveExists)) ||
+    (watchedType === WORKFLOW_TYPE.AR_INVOICE &&
+      ((arInvoiceQueryEnabled && arInvoicePending) || arInvoiceActiveExists));
 
   const discard = useDiscardConfirm({
     isDirty: form.formState.isDirty,
@@ -220,7 +230,9 @@ export default function WorkflowNewForm({
                             (opt.value === WORKFLOW_TYPE.AP_INVOICE &&
                               apInvoiceActiveExists) ||
                             (opt.value === WORKFLOW_TYPE.AP_PAYMENT &&
-                              apPaymentActiveExists)
+                              apPaymentActiveExists) ||
+                            (opt.value === WORKFLOW_TYPE.AR_INVOICE &&
+                              arInvoiceActiveExists)
                           }
                         >
                           {opt.label}
@@ -245,6 +257,12 @@ export default function WorkflowNewForm({
                     {t("apPaymentSingleActiveHint")}
                   </p>
                 )}
+              {watchedType === WORKFLOW_TYPE.AR_INVOICE &&
+                arInvoiceActiveExists && (
+                  <p className="text-muted-foreground text-xs">
+                    {t("arInvoiceSingleActiveHint")}
+                  </p>
+                )}
             </Field>
           )}
           {lockedType === WORKFLOW_TYPE.AP_INVOICE && apInvoiceActiveExists && (
@@ -255,6 +273,11 @@ export default function WorkflowNewForm({
           {lockedType === WORKFLOW_TYPE.AP_PAYMENT && apPaymentActiveExists && (
             <p role="alert" className="text-warning-ink text-sm sm:col-span-2">
               {t("apPaymentSingleActiveHint")}
+            </p>
+          )}
+          {lockedType === WORKFLOW_TYPE.AR_INVOICE && arInvoiceActiveExists && (
+            <p role="alert" className="text-warning-ink text-sm sm:col-span-2">
+              {t("arInvoiceSingleActiveHint")}
             </p>
           )}
 

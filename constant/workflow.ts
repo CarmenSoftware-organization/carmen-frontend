@@ -7,6 +7,7 @@ export const workflowTypeField = [
   { label: "Journal Voucher", value: WORKFLOW_TYPE.JV },
   { label: "AP Invoice", value: WORKFLOW_TYPE.AP_INVOICE },
   { label: "AP Payment", value: WORKFLOW_TYPE.AP_PAYMENT },
+  { label: "AR Invoice", value: WORKFLOW_TYPE.AR_INVOICE },
 ];
 
 export const WF_ROW_TYPE = {
@@ -16,6 +17,7 @@ export const WF_ROW_TYPE = {
   JV: "gl_jv",
   AP_INVOICE: "ap_invoice",
   AP_PAYMENT: "ap_payment",
+  AR_INVOICE: "ar_invoice",
 } as const;
 
 /** ที่มาของ JV ที่ใช้กำหนดขอบเขต workflow (`data.jv_scope.sources`) */
@@ -82,6 +84,12 @@ export const WORKFLOW_CAPS: Record<
     totalOnlyRouting: true,
     canHidePrice: false,
   },
+  [WORKFLOW_TYPE.AR_INVOICE]: {
+    hasProducts: false,
+    hasJvScope: false,
+    totalOnlyRouting: true,
+    canHidePrice: false,
+  },
 };
 
 /** caps ของชนิดที่ไม่รู้จัก = เหมือน PR (พฤติกรรมเดิมก่อนมี caps — ไม่ซ่อน/ไม่ตัดอะไรของเก่าที่อ่านไม่ออก) */
@@ -98,6 +106,7 @@ export const WORKFLOW_TYPES = [
   { value: WORKFLOW_TYPE.JV, i18nKey: "typeJournalVoucher" },
   { value: WORKFLOW_TYPE.AP_INVOICE, i18nKey: "typeApInvoice" },
   { value: WORKFLOW_TYPE.AP_PAYMENT, i18nKey: "typeApPayment" },
+  { value: WORKFLOW_TYPE.AR_INVOICE, i18nKey: "typeArInvoice" },
 ] as const;
 
 export function getWorkflowTypeOptions(t: WfI18nFn) {
@@ -114,6 +123,7 @@ const WF_TYPE_I18N_KEY: Record<string, string> = {
   [WF_ROW_TYPE.JV]: "typeJournalVoucher",
   [WF_ROW_TYPE.AP_INVOICE]: "typeApInvoice",
   [WF_ROW_TYPE.AP_PAYMENT]: "typeApPayment",
+  [WF_ROW_TYPE.AR_INVOICE]: "typeArInvoice",
 };
 
 export function getWorkflowTypeLabels(t: WfI18nFn): Record<string, string> {

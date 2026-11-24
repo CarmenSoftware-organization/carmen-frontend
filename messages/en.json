@@ -3774,6 +3774,7 @@
       "titleJournalVoucher": "Journal Voucher Workflow",
       "titleApInvoice": "AP Invoice Workflow",
       "titleApPayment": "AP Payment Workflow",
+      "titleArInvoice": "AR Invoice Workflow",
       "desc": "Who approves what, and in which order, before a document can go through.",
       "add": "New Workflow",
       "edit": "Edit Workflow",
@@ -3857,8 +3858,10 @@
       "typeJournalVoucher": "Journal Voucher",
       "typeApInvoice": "AP Invoice",
       "typeApPayment": "AP Payment",
+      "typeArInvoice": "AR Invoice",
       "apInvoiceSingleActiveHint": "This business unit already has an active AP Invoice workflow. Only one can be active at a time — deactivate it first, or edit it instead.",
       "apPaymentSingleActiveHint": "This business unit already has an active AP Payment workflow. Only one can be active at a time — deactivate it first, or edit it instead.",
+      "arInvoiceSingleActiveHint": "This business unit already has an active AR Invoice workflow. Only one can be active at a time — deactivate it first, or edit it instead.",
       "listJvPrefixCount": "{count, plural, =0 {All prefixes} one {# prefix} other {# prefixes}}",
       "listJvSourceCount": "{count, plural, =0 {all sources} one {# source} other {# sources}}",
       "jvScopeTab": "Scope",
@@ -4044,6 +4047,7 @@
           "workflowJournalVoucher": "Approval steps before a journal voucher is posted.",
           "workflowApInvoice": "Approval steps before an AP invoice is posted.",
           "workflowApPayment": "Approval steps before an AP payment is posted.",
+          "workflowArInvoice": "Approval steps before an AR invoice, debit note or credit note is posted.",
           "notificationTemplate": "Wording of the notifications these workflows send."
         }
       }
@@ -7906,6 +7910,7 @@
     "workflowJournalVoucher": "Journal Voucher",
     "workflowApInvoice": "AP Invoice",
     "workflowApPayment": "AP Payment",
+    "workflowArInvoice": "AR Invoice",
     "interface": "Interfaces",
     "emailProfile": "Email Profiles",
     "emailTemplate": "Email Messages",
