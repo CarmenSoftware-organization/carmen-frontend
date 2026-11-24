@@ -963,7 +963,11 @@
       "deleteDraftOnly": "Only a draft journal voucher can be deleted"
     },
     "accountsPayable": {
-      "master": {"payment": "Payment Type", "form": "WHT Form", "service": "WHT Service Type"},
+      "master": {
+        "payment": "Payment Type",
+        "form": "WHT Form",
+        "service": "WHT Service Type"
+      },
       "invoice": {
         "title": "AP Invoice Directory",
         "desc": "Supplier invoices, debit and credit notes, and what is still owed.",
@@ -1335,7 +1339,11 @@
         "paymentAmount": "Payment amount",
         "postingSide": "Debit / Credit",
         "whtCondition": "Condition",
-        "whtConditions": {"withholding": "1: Withholding tax", "paid_permanently": "2: Paid permanently", "paid_once": "3: Paid once"},
+        "whtConditions": {
+          "withholding": "1: Withholding tax",
+          "paid_permanently": "2: Paid permanently",
+          "paid_once": "3: Paid once"
+        },
         "paymentType": "Payment Type",
         "whtServiceType": "WHT Service Type",
         "docNo": "Doc No.",
@@ -1702,7 +1710,7 @@
       "invalidBranchNo": "Branch No. must contain 5 digits.",
       "allocationLines": "Invoice Settlement",
       "selectInvoices": "Select Invoices",
-      "invoicePickerHint": "Posted, unpaid invoices for {customer} in {currency}.",
+      "invoicePickerHint": "Posted invoices with an open balance for {customer} in {currency}.",
       "noEligibleInvoices": "No eligible invoices on this page.",
       "invoiceNo": "Invoice No.",
       "outstanding": "Outstanding",
@@ -1725,10 +1733,6 @@
       "taxAmountTHB": "Tax Amount (THB)",
       "totalTHB": "Total (THB)",
       "taxHint": "VAT is shown proportionally from each selected invoice. This preview does not issue a new tax invoice.",
-      "paymentLines": "Payment Details",
-      "addPayment": "Add Payment",
-      "paymentDetail": "Payment Detail",
-      "paymentDetailHint": "Enter the payment evidence and cash or bank account for this draft.",
       "payType": "Pay Type",
       "payTypes": {
         "bank_transfer": "Bank Transfer",
@@ -1737,20 +1741,11 @@
         "credit_card": "Credit Card",
         "promptpay": "PromptPay"
       },
-      "paymentDate": "Payment Date",
       "receivedAmount": "Net Received",
       "reference": "Reference",
-      "bank": "Bank",
-      "bankBranch": "Bank Branch",
-      "bankAccount": "Bank Account No.",
       "chequeNo": "Cheque No.",
       "chequeDate": "Cheque Date",
-      "cardLast4": "Card Last 4 Digits",
-      "cashBankAccount": "Cash / Bank GL Account",
       "costCenter": "Cost Center",
-      "paymentInvalid": "Enter a positive amount, payment date and the required cheque details. Card reference must contain only the last 4 digits.",
-      "noPayments": "Add the cash, bank transfer, cheque or card payment details.",
-      "removePayment": "Remove payment",
       "whtCertificate": "WHT Certificate No.",
       "journalHint": "The receipt journal appears here after the receipt is submitted.",
       "unapplied": "Unapplied (customer advance)",
@@ -1783,7 +1778,16 @@
       "voidReason": "Reason",
       "emptyReceipt": "Enter a received amount, or select invoices to settle.",
       "bankAccountRequired": "Select the bank account the money goes into.",
-      "overAllocated": "Applied amount exceeds what was received (net received + WHT + charge)."
+      "overAllocated": "Applied amount exceeds what was received (net received + WHT + charge).",
+      "invoiceType": "Type",
+      "availableAmount": "Available",
+      "addSelected": "Add selected ({count})",
+      "invoiceTypes": {
+        "invoice": "Invoice",
+        "debit_note": "Debit Note",
+        "credit_note": "Credit Note",
+        "deposit": "Deposit"
+      }
     }
   },
   "dashboardWidget": {

@@ -940,10 +940,15 @@ function ReceiptForm({
       </form>
       {invoicePicker && (
         <ReceiptInvoiceDialog
-          receipt={receipt}
+          customerId={receipt.customerId}
+          customerName={receipt.customerName}
+          currency={receipt.currency}
+          currencyId={receipt.currencyId}
+          receiptId={isNew ? undefined : receipt.id}
+          selectedIds={receipt.allocations.map((line) => line.id)}
           close={() => setInvoicePicker(false)}
-          add={(allocation) => {
-            set("allocations", [...receipt.allocations, allocation]);
+          onAdd={(allocations) => {
+            set("allocations", [...receipt.allocations, ...allocations]);
             setInvoicePicker(false);
           }}
         />
