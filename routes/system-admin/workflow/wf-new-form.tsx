@@ -83,9 +83,14 @@ export default function WorkflowNewForm({
 
   // AP Invoice มี workflow ที่เปิดใช้ได้เส้นเดียวต่อ BU — ถ้ามีอยู่แล้วห้ามสร้างเพิ่ม
   // (backend ตอบ WORKFLOW_SINGLE_ACTIVE_EXISTS เป็นด่านสุดท้าย)
-  const { data: apWorkflows } = useApInvoiceWorkflows();
+  // perpage ชัดเจนเพื่อให้เห็นเส้นที่เปิดอยู่แม้เกินหน้าแรก (ไม่ใช้ -1)
+  const { data: apWorkflows, isPending: apLoading } = useApInvoiceWorkflows({
+    perpage: 100,
+  });
   const apActiveExists = !!apWorkflows?.data?.some((w) => w.is_active);
-  const apBlocked = watchedType === WORKFLOW_TYPE.AP_INVOICE && apActiveExists;
+  const isApType = watchedType === WORKFLOW_TYPE.AP_INVOICE;
+  // ระหว่างโหลดรายการ ถือว่า AP ถูกบล็อกไว้ก่อน จนรู้ว่าไม่มีเส้นที่เปิดอยู่
+  const apBlocked = isApType && (apLoading || apActiveExists);
 
   const discard = useDiscardConfirm({
     isDirty: form.formState.isDirty,
@@ -208,7 +213,7 @@ export default function WorkflowNewForm({
               <FieldError>
                 {form.formState.errors.workflow_type?.message}
               </FieldError>
-              {apActiveExists && (
+              {isApType && apActiveExists && (
                 <p className="text-muted-foreground text-xs">
                   {t("apInvoiceSingleActiveHint")}
                 </p>
