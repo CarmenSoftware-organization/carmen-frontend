@@ -2243,6 +2243,7 @@
     "checkFields": "ตรวจช่องนี้อีกที: {fields}",
     "srDateOutsideOpenPeriod": "วันที่เบิกอยู่นอกงวดบัญชีที่เปิดอยู่ แก้วันที่ใหม่ หรือให้ฝ่ายบัญชีเปิดงวดนั้นก่อน",
     "byCode": {
+      "WORKFLOW_SINGLE_ACTIVE_EXISTS": "ใบแจ้งหนี้เจ้าหนี้มี workflow ที่เปิดใช้อยู่แล้ว ({workflow}) เปิดใช้ได้เส้นเดียวต่อหน่วยธุรกิจ",
       "APP_READ_ONLY": "ระบบอยู่ในโหมดอ่านอย่างเดียว — ยังทำรายการนี้ไม่ได้ในขณะนี้",
       "APP_MAINTENANCE": "ระบบกำลังปิดปรับปรุง กรุณาลองใหม่ภายหลัง",
       "APP_DISABLED": "แอปนี้ถูกปิดใช้งาน",
@@ -3748,6 +3749,7 @@
       "titlePurchaseOrder": "ลำดับขั้นอนุมัติใบสั่งซื้อ",
       "titleStoreRequisition": "ลำดับขั้นอนุมัติใบเบิกของ",
       "titleJournalVoucher": "ลำดับขั้นอนุมัติใบสำคัญรายวัน",
+      "titleApInvoice": "ลำดับขั้นอนุมัติใบแจ้งหนี้เจ้าหนี้",
       "desc": "ใครอนุมัติอะไร เรียงก่อนหลังยังไง กว่าเอกสารจะผ่าน",
       "add": "สร้างลำดับขั้นใหม่",
       "edit": "แก้ไขเวิร์กโฟลว์",
@@ -3829,6 +3831,8 @@
       "typePurchaseRequest": "ใบขอซื้อ",
       "typeStoreRequisition": "ใบเบิกสินค้า",
       "typeJournalVoucher": "ใบสำคัญรายวัน",
+      "typeApInvoice": "ใบแจ้งหนี้เจ้าหนี้",
+      "apInvoiceSingleActiveHint": "หน่วยธุรกิจนี้มี workflow ของใบแจ้งหนี้เจ้าหนี้ที่เปิดใช้อยู่แล้ว เปิดใช้ได้ครั้งละเส้นเดียว — ปิดเส้นเดิมก่อน หรือแก้เส้นเดิมแทน",
       "listJvPrefixCount": "{count, plural, =0 {ทุก prefix} other {prefix {count} รายการ}}",
       "listJvSourceCount": "{count, plural, =0 {ทุกที่มา} other {ที่มา {count} แบบ}}",
       "jvScopeTab": "ขอบเขต",
@@ -4012,6 +4016,7 @@
           "workflowPurchaseOrder": "ขั้นอนุมัติก่อนส่งใบสั่งซื้อให้ผู้ขาย",
           "workflowStoreRequisition": "ขั้นอนุมัติก่อนจ่ายของตามใบเบิก",
           "workflowJournalVoucher": "ขั้นอนุมัติก่อนลงบัญชีใบสำคัญรายวัน",
+          "workflowApInvoice": "ขั้นอนุมัติก่อนลงบัญชีใบแจ้งหนี้เจ้าหนี้",
           "notificationTemplate": "ข้อความแจ้งเตือนที่ลำดับขั้นเหล่านี้ส่งออกไป"
         }
       }
@@ -7872,6 +7877,7 @@
     "workflowPurchaseOrder": "ใบสั่งซื้อ",
     "workflowStoreRequisition": "ใบเบิกของ",
     "workflowJournalVoucher": "ใบสำคัญรายวัน",
+    "workflowApInvoice": "ใบแจ้งหนี้เจ้าหนี้",
     "interface": "การเชื่อมต่อระบบภายนอก",
     "emailProfile": "โปรไฟล์อีเมล",
     "emailTemplate": "ข้อความอีเมล",

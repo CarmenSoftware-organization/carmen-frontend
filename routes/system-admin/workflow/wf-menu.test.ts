@@ -25,12 +25,13 @@ describe("เมนูย่อยของ workflow", () => {
     (s) => !s.path.startsWith("/system-admin/workflow/"),
   );
 
-  it("มีเมนูชนิดเอกสารครบสี่ใบ", () => {
+  it("มีเมนูชนิดเอกสารครบห้าใบ", () => {
     expect(docTypeChildren.map((s) => s.name)).toEqual([
       "workflowPurchaseRequest",
       "workflowPurchaseOrder",
       "workflowStoreRequisition",
       "workflowJournalVoucher",
+      "workflowApInvoice",
     ]);
   });
 
@@ -57,6 +58,7 @@ describe("เมนูย่อยของ workflow", () => {
       "system_admin.workflow.purchase_order.view",
       "system_admin.workflow.store_requisition.view",
       // JV ยังไม่มีคีย์ลูกของตัวเอง — ใช้คีย์แม่ (ที่มีอยู่จริงใน DB) จนกว่า backend จะเพิ่มคีย์ลูก
+      "system_admin.workflow.view",
       "system_admin.workflow.view",
     ]);
     for (const s of docTypeChildren) {

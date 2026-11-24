@@ -1,5 +1,5 @@
+import { getWorkflowCaps } from "@/constant/workflow";
 import {
-  WORKFLOW_TYPE,
   type Role,
   type Stage,
   type SlaUnit,
@@ -87,8 +87,7 @@ export function computeWorkflowInsights(
   const stageRows: StageRow[] = middle.map((stage, index) => {
     // stage create/purchase ไม่ถูกซ่อนราคาเสมอ และ SR ไม่มียอด — ค่าเก่าที่ค้างอยู่ไม่มีผล
     const canHide =
-      workflowType !== WORKFLOW_TYPE.SR &&
-      workflowType !== WORKFLOW_TYPE.JV &&
+      getWorkflowCaps(workflowType).canHidePrice &&
       stage.role !== "create" &&
       stage.role !== "purchase";
     const actions = Object.fromEntries(

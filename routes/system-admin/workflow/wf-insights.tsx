@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "use-intl";
 import type { Stage } from "@/types/workflows";
-import { getWorkflowTypeLabels } from "@/constant/workflow";
+import { getWorkflowCaps, getWorkflowTypeLabels } from "@/constant/workflow";
 import { WORKFLOW_TYPE } from "@/types/workflows";
 import { cn } from "@/lib/utils";
 import type { WorkflowCreateModel } from "./wf-form-schema";
@@ -116,7 +116,7 @@ export default function WfInsights({
         },
       ];
     }),
-    ...(productCount === 0 && workflowType !== WORKFLOW_TYPE.JV
+    ...(productCount === 0 && getWorkflowCaps(workflowType).hasProducts
       ? [
           {
             key: "products",
@@ -154,12 +154,12 @@ export default function WfInsights({
     [t("statHod"), insights.stats.hodStages.toLocaleString()],
     [t("statTotalUsers"), insights.stats.totalUsers.toLocaleString()],
     [t("statRoutingRules"), routingRules.length.toLocaleString()],
-    ...(workflowType === WORKFLOW_TYPE.JV
-      ? []
-      : ([[t("statProducts"), productCount.toLocaleString()]] as [
+    ...(getWorkflowCaps(workflowType).hasProducts
+      ? ([[t("statProducts"), productCount.toLocaleString()]] as [
           string,
           string,
-        ][])),
+        ][])
+      : []),
     ...(workflowType === WORKFLOW_TYPE.PO
       ? ([
           [

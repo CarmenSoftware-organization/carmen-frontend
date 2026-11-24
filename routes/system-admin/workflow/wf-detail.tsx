@@ -17,8 +17,8 @@ import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
 import { cn } from "@/lib/utils";
+import { getWorkflowCaps } from "@/constant/workflow";
 import {
-  WORKFLOW_TYPE,
   type Workflow,
   type User,
   type Product,
@@ -145,7 +145,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
     name: "data.routing_rules",
   });
 
-  const isJv = watchedType === WORKFLOW_TYPE.JV;
+  const caps = getWorkflowCaps(watchedType);
   const watchedJvScope = useWatch({
     control: form.control,
     name: "data.jv_scope",
@@ -276,7 +276,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                       <div className="bg-destructive absolute top-2 right-0 size-2 rounded-full" />
                     )}
                   </TabsTrigger>
-                  {isJv ? (
+                  {caps.hasJvScope ? (
                     <TabsTrigger value="scope" className="py-2.5">
                       {t("jvScopeTab")}
                       {jvScopeCount > 0 && (
@@ -289,7 +289,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                         </Badge>
                       )}
                     </TabsTrigger>
-                  ) : (
+                  ) : caps.hasProducts ? (
                     <TabsTrigger value="products" className="py-2.5">
                       {t("products")}
                       {watchedProducts && watchedProducts.length > 0 && (
@@ -302,7 +302,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                         </Badge>
                       )}
                     </TabsTrigger>
-                  )}
+                  ) : null}
                 </TabsList>
               </div>
 
@@ -352,11 +352,11 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                   />
                 </TabsContent>
 
-                {isJv ? (
+                {caps.hasJvScope ? (
                   <TabsContent value="scope" className="mt-0 outline-none">
                     <WfJvScope form={form} isDisabled={isDisabled} />
                   </TabsContent>
-                ) : (
+                ) : caps.hasProducts ? (
                   <TabsContent value="products" className="mt-0 outline-none">
                     <WfProducts
                       form={form}
@@ -365,7 +365,7 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                       readOnly={!isEditing}
                     />
                   </TabsContent>
-                )}
+                ) : null}
               </div>
             </Tabs>
           </form>

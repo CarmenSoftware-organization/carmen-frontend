@@ -33,6 +33,12 @@ const DOCUMENT_LIST: Record<
     status: "jv_status",
     value: "in_review",
   },
+  // AP Invoice ใช้ doc_status = in_review สำหรับใบที่อยู่ระหว่าง workflow
+  [WORKFLOW_TYPE.AP_INVOICE]: {
+    path: "/accounting/accounts-payable/invoice",
+    status: "doc_status",
+    value: "in_review",
+  },
 };
 
 /**
