@@ -32,6 +32,7 @@ import { StatusChip } from "@/components/ui/status-chip";
 import { SummaryFooterBar } from "@/components/ui/summary-bar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { useBankAccounts } from "@/hooks/use-accounting-master";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useCan } from "@/hooks/use-can";
 import { useCurrencyAll } from "@/hooks/use-currency";
@@ -98,6 +99,8 @@ function ReceiptDetail({ id }: { readonly id: string }) {
     doc.data?.customer_id,
     doc.data?.currency_id,
     isNew ? undefined : id,
+    // balances only matter while the receipt can still change; after that they would show today's figures
+    doc.data?.doc_status === "draft",
   );
   if (isNew) {
     const state = location.state as {
@@ -169,6 +172,7 @@ function ReceiptForm({
   const { dateFormat, defaultCurrencyCode, userId } = useProfile();
   const { canWrite } = useCan();
   const currencies = useCurrencyAll();
+  const bankAccounts = useBankAccounts().data ?? [];
   const create = useCreateArReceipt();
   const update = useUpdateArReceipt();
   const remove = useDeleteArReceipt();
@@ -218,6 +222,15 @@ function ReceiptForm({
     setReceipt((previous) => ({ ...previous, [key]: value }));
   const patchReceipt = (patch: Partial<ArReceipt>) =>
     setReceipt((previous) => ({ ...previous, ...patch }));
+  // a bank account only fits the receipt currency or the base currency
+  const tenderForCurrency = (tender: ReceiptTender, code: string) => {
+    const bank = bankAccounts.find((row) => row.id === tender.bankAccountId);
+    return !bank?.currency_code ||
+      bank.currency_code === code ||
+      bank.currency_code === defaultCurrencyCode
+      ? tender
+      : { ...tender, bankAccountId: "", bankAccountLabel: "" };
+  };
   const patchTender = (patch: Partial<ReceiptTender>) =>
     setReceipt((previous) => ({
       ...previous,
@@ -258,7 +271,7 @@ function ReceiptForm({
       sourceDoc: "",
       taxEntity: receiptTaxEntityFromCustomer(value),
       tender: {
-        ...previous.tender,
+        ...tenderForCurrency(previous.tender, code),
         method: receiptProfileDefaults(readProfileExtension(bu, value.id))
           .defaultPaymentType,
         amount: 0,
@@ -593,11 +606,13 @@ function ReceiptForm({
                 value={receipt.currency}
                 disabled={receipt.allocations.length > 0}
                 onValueChange={(value) =>
-                  patchReceipt({
+                  setReceipt((previous) => ({
+                    ...previous,
                     currency: value,
                     currencyId: currencyIdOf(value),
-                    rate: value === defaultCurrencyCode ? 1 : receipt.rate,
-                  })
+                    rate: value === defaultCurrencyCode ? 1 : previous.rate,
+                    tender: tenderForCurrency(previous.tender, value),
+                  }))
                 }
               >
                 <SelectContent>
@@ -752,15 +767,23 @@ function ReceiptForm({
                   header: t("date"),
                   cell: ({ row }) => dates(row.original.date),
                 },
-                {
-                  accessorKey: "outstanding",
-                  header: t("outstanding"),
-                  meta: {
-                    cellClassName: "text-right tabular-nums",
-                    headerClassName: "text-right",
-                  },
-                  cell: ({ row }) => money(row.original.outstanding),
-                },
+                ...(isDraft
+                  ? [
+                      {
+                        accessorKey: "outstanding",
+                        header: t("outstanding"),
+                        meta: {
+                          cellClassName: "text-right tabular-nums",
+                          headerClassName: "text-right",
+                        },
+                        cell: ({
+                          row,
+                        }: {
+                          row: { original: ArReceipt["allocations"][number] };
+                        }) => money(row.original.outstanding),
+                      },
+                    ]
+                  : []),
                 {
                   accessorKey: "amount",
                   header: t("appliedAmount"),
@@ -797,13 +820,21 @@ function ReceiptForm({
                       />
                     ),
                 },
-                {
-                  id: "remaining",
-                  header: t("remaining"),
-                  meta: { cellClassName: "text-right tabular-nums" },
-                  cell: ({ row }) =>
-                    money(row.original.outstanding - row.original.amount),
-                },
+                ...(isDraft
+                  ? [
+                      {
+                        id: "remaining",
+                        header: t("remaining"),
+                        meta: { cellClassName: "text-right tabular-nums" },
+                        cell: ({
+                          row,
+                        }: {
+                          row: { original: ArReceipt["allocations"][number] };
+                        }) =>
+                          money(row.original.outstanding - row.original.amount),
+                      },
+                    ]
+                  : []),
                 ...(!readonly
                   ? [
                       {

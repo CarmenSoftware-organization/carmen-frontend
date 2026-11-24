@@ -63,6 +63,13 @@ export interface ArReceiptDetailRecord {
   base_applied_at_invoice_rate: ArAmount;
   base_applied_at_receipt_rate: ArAmount;
   realized_fx_amount: ArAmount;
+  /** invoice header snapshot joined by findOne (absent on older backends) */
+  ar_invoice_doc_no?: string;
+  ar_invoice_doc_type?: ArInvoiceDocType;
+  ar_invoice_doc_date?: string;
+  ar_invoice_net_amount?: ArAmount;
+  ar_invoice_vat_amount?: ArAmount;
+  ar_invoice_total_amount?: ArAmount;
 }
 
 export interface ArReceiptWhtRecord {
@@ -321,6 +328,7 @@ export function useArOutstandingInvoices(
   currencyId?: string,
   /** the receipt being edited, so its own reservations are not counted */
   excludeReceiptId?: string,
+  enabled = true,
 ) {
   const bu = useBuCode();
   return useQuery({
@@ -332,7 +340,7 @@ export function useArOutstandingInvoices(
       currencyId,
       excludeReceiptId,
     ],
-    enabled: !!bu && !!customerId,
+    enabled: enabled && !!bu && !!customerId,
     queryFn: async (): Promise<OutstandingInvoice[]> => {
       const body = await readReceipt(
         buildUrl(API_ENDPOINTS.AR_RECEIPT_OUTSTANDING_INVOICES(bu!), {

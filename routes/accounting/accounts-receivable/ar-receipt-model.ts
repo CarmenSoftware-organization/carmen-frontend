@@ -120,6 +120,7 @@ export type ReceiptValidationError =
   | "duplicateInvoice"
   | "whtExceedsAllocation"
   | "whtProfileRequired"
+  | "whtAmountRequired"
   | "overAllocated"
   | "emptyReceipt"
   | "invalidTaxId"
@@ -301,6 +302,7 @@ export function receiptValidation(
     ids.add(line.id);
   }
   if (receipt.whtEnabled && !receipt.whtProfileId) return "whtProfileRequired";
+  if (receipt.whtEnabled && receipt.whtAmount <= 0) return "whtAmountRequired";
   const totals = receiptTotals(receipt);
   if (
     receipt.whtEnabled &&
@@ -423,7 +425,9 @@ export function toArReceiptPayload(receipt: ArReceipt): ArReceiptPayload {
     received_date: tender.date || null,
     bank_account_id: tender.bankAccountId,
     receipt_method: tender.method,
-    doc_source: receipt.source === "copy" ? "copy" : "manual",
+    ...(receipt.source === "interface"
+      ? {}
+      : { doc_source: receipt.source === "copy" ? "copy" : "manual" }),
     source_doc_ref: orNull(receipt.sourceDoc),
     currency_id: receipt.currencyId || null,
     exchange_rate: receipt.rate,
@@ -459,9 +463,9 @@ export function toArReceiptPayload(receipt: ArReceipt): ArReceiptPayload {
 const text = (value: unknown) => (typeof value === "string" ? value : "");
 
 /**
- * API document -> form. The detail rows carry no invoice number or cap, so pass the outstanding
- * list fetched with `exclude_receipt_id` to restore them; without it the cap falls back to the
- * applied amount.
+ * API document -> form. Invoice number / date / net / VAT / total come from the detail rows
+ * (joined by the backend); the outstanding list fetched with `exclude_receipt_id` is only used for
+ * the cap of a draft; without it the cap falls back to the applied amount.
  */
 export function receiptFromDocument(
   doc: ArReceiptDocument,
@@ -491,18 +495,21 @@ export function receiptFromDocument(
         ),
       );
       const open = outstanding.find((row) => row.ar_invoice_id === invoiceId);
+      const first = lines![0];
       return {
         id: invoiceId,
-        number: open?.doc_no ?? "",
-        docType: lines![0].doc_type,
-        date: open?.doc_date.slice(0, 10) ?? "",
+        number: first.ar_invoice_doc_no ?? open?.doc_no ?? "",
+        docType: first.ar_invoice_doc_type ?? first.doc_type,
+        date: (first.ar_invoice_doc_date ?? open?.doc_date ?? "").slice(0, 10),
         customerId: doc.customer_id,
         currency: doc.currency_code ?? "",
         outstanding: open ? Number(open.available_amount) : applied,
         amount: applied,
-        netAmount: Number(open?.net_amount ?? 0),
-        vatAmount: Number(open?.vat_amount ?? 0),
-        totalAmount: Number(open?.total_amount ?? 0),
+        netAmount: Number(first.ar_invoice_net_amount ?? open?.net_amount ?? 0),
+        vatAmount: Number(first.ar_invoice_vat_amount ?? open?.vat_amount ?? 0),
+        totalAmount: Number(
+          first.ar_invoice_total_amount ?? open?.total_amount ?? 0,
+        ),
       };
     },
   );

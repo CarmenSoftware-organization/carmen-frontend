@@ -534,7 +534,8 @@ function InvoiceView({
           <div className="mb-3 flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold">{t("receiptHistory")}</h2>
             {Number(row.outstanding_amount) > 0 &&
-              row.doc_status === "posted" && (
+              row.doc_status === "posted" &&
+              row.doc_type !== "credit_note" && (
                 <Button
                   type="button"
                   variant="outline"

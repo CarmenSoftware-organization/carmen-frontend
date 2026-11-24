@@ -1777,6 +1777,7 @@
       "voidPostedHint": "The receipt journal is reversed and the invoice balances are restored.",
       "voidReason": "Reason",
       "whtProfileRequired": "Select the WHT profile.",
+      "whtAmountRequired": "WHT amount must be greater than 0.",
       "outstandingLoadError": "Could not load the invoice balances. Invoice numbers and limits may be incomplete; reload before editing.",
       "emptyReceipt": "Enter a received amount, or select invoices to settle.",
       "bankAccountRequired": "Select the bank account the money goes into.",
