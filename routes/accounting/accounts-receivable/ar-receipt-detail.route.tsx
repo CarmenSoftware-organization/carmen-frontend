@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Ban, Copy, Plus, Send, Trash2 } from "lucide-react";
+import { Ban, Check, Copy, Plus, Send, Trash2, Undo2, X } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useTranslations } from "use-intl";
 import { toast } from "sonner";
@@ -41,6 +41,8 @@ import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { formatDate, isoToDateInput } from "@/lib/date-utils";
 import { isDraftDocNo } from "@/lib/draft-doc-no";
 import { ApDetailGrid } from "../accounts-payable/shared/ap-detail-grid";
+import { ApSendBackFields } from "../accounts-payable/shared/ap-send-back-fields";
+import { arDocActions } from "./ar-doc-actions";
 import { ArCustomerLookup } from "./ar-customer-lookup";
 import { ReceiptInvoiceDialog } from "./ar-receipt-dialogs";
 import { ReceiptJournal } from "./ar-receipt-journal";
@@ -65,6 +67,7 @@ import { useArCustomer, type ArCustomer } from "./use-ar-customer";
 import {
   useArOutstandingInvoices,
   useArReceiptAction,
+  useArReceiptPreviousStages,
   useArReceiptDocument,
   useCreateArReceipt,
   useDeleteArReceipt,
@@ -163,7 +166,7 @@ function ReceiptForm({
   const tc = useTranslations("common");
   const money = useAmountFormatter();
   const navigate = useNavigate();
-  const { dateFormat, defaultCurrencyCode } = useProfile();
+  const { dateFormat, defaultCurrencyCode, userId } = useProfile();
   const { canWrite } = useCan();
   const currencies = useCurrencyAll();
   const create = useCreateArReceipt();
@@ -190,7 +193,13 @@ function ReceiptForm({
     "delete" | "submit" | "cancel" | null
   >(null);
   const [voidOpen, setVoidOpen] = useState(false);
+  const [workflowDialog, setWorkflowDialog] = useState<
+    "approve" | "sendback" | "reject" | null
+  >(null);
   const [reason, setReason] = useState("");
+  const [stage, setStage] = useState("");
+  const sendingBack = workflowDialog === "sendback";
+  const stagesQuery = useArReceiptPreviousStages(document?.id, sendingBack);
   const [pendingCustomer, setPendingCustomer] = useState<ArCustomer>();
   const [error, setError] = useState("");
   const totals = receiptTotals(receipt);
@@ -349,6 +358,38 @@ function ReceiptForm({
       },
     );
   }
+  function closeWorkflowDialog() {
+    setWorkflowDialog(null);
+    setReason("");
+    setStage("");
+  }
+  function workflowAction() {
+    if (!workflowDialog || !canWrite) return;
+    const note = reason.trim();
+    action.mutate(
+      {
+        id: receipt.id,
+        action: sendingBack ? "review" : workflowDialog,
+        doc_version: receipt.version ?? undefined,
+        ...(workflowDialog === "reject" && { reason: note }),
+        ...(sendingBack && { stage, ...(note && { reason: note }) }),
+      },
+      {
+        onSuccess: () => {
+          toast.success(
+            t(
+              workflowDialog === "approve"
+                ? "approved"
+                : sendingBack
+                  ? "sentBack"
+                  : "rejected",
+            ),
+          );
+          closeWorkflowDialog();
+        },
+      },
+    );
+  }
   function copy() {
     navigate(`${AR_RECEIPT_PATH}/new`, {
       state: {
@@ -375,12 +416,27 @@ function ReceiptForm({
         .map((currency) => currency.code),
     ]),
   ];
-  const canVoid =
-    !isNew &&
-    canWrite &&
+  // in_review → backend allowed_actions only (no void/delete); everything ANDed with canWrite
+  const actions =
+    !isNew && canWrite && !editing && document
+      ? arDocActions({
+          doc_status: receipt.status,
+          doc_no: receipt.number,
+          allowed_actions: document.allowed_actions,
+        })
+      : [];
+  const canVoid = actions.includes("void");
+  const canDelete = actions.includes("delete");
+  const inReview = receipt.status === "in_review";
+  // creator is a stage actor (can reject / send back) but cannot approve → say why
+  const showCreatorHint =
+    inReview &&
     !editing &&
-    ((isDraft && !isDraftDocNo(receipt.number)) || receipt.status === "posted");
-  const canDelete = !isNew && isDraft && isDraftDocNo(receipt.number);
+    !!userId &&
+    !!document &&
+    document.created_by_id === userId &&
+    !document.allowed_actions.includes("approve") &&
+    document.allowed_actions.length > 0;
   const sameAsBase = receipt.currency === defaultCurrencyCode;
 
   return (
@@ -397,10 +453,17 @@ function ReceiptForm({
         }
         flush
         badges={
-          <StatusChip
-            status={receipt.status}
-            label={t(`statuses.${receipt.status}`)}
-          />
+          <>
+            <StatusChip
+              status={receipt.status}
+              label={t(`statuses.${receipt.status}`)}
+            />
+            {inReview && document?.workflow_current_stage && (
+              <span className="text-muted-foreground text-xs">
+                {t("stageLabel", { stage: document.workflow_current_stage })}
+              </span>
+            )}
+          </>
         }
         onBack={() =>
           dirty ? setConfirmation("cancel") : navigate(AR_RECEIPT_PATH)
@@ -427,6 +490,50 @@ function ReceiptForm({
             <Copy />
             <ToolbarLabel>{t("copy")}</ToolbarLabel>
           </Button>
+        )}
+        {actions.includes("approve") && (
+          <Button
+            type="button"
+            size="sm"
+            disabled={busy}
+            onClick={() => setWorkflowDialog("approve")}
+            title={t("approve")}
+          >
+            <Check />
+            <ToolbarLabel>{t("approve")}</ToolbarLabel>
+          </Button>
+        )}
+        {actions.includes("sendback") && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={() => setWorkflowDialog("sendback")}
+            title={t("sendBack")}
+          >
+            <Undo2 />
+            <ToolbarLabel>{t("sendBack")}</ToolbarLabel>
+          </Button>
+        )}
+        {actions.includes("reject") && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className={DESTRUCTIVE_ACTION}
+            disabled={busy}
+            onClick={() => setWorkflowDialog("reject")}
+            title={t("reject")}
+          >
+            <X />
+            <ToolbarLabel>{t("reject")}</ToolbarLabel>
+          </Button>
+        )}
+        {showCreatorHint && (
+          <span className="text-muted-foreground text-xs">
+            {t("creatorCannotApproveHint")}
+          </span>
         )}
         {canVoid && (
           <Button
@@ -1027,6 +1134,85 @@ function ReceiptForm({
               onClick={voidReceipt}
             >
               {t("void")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={workflowDialog !== null}
+        onOpenChange={(open) => {
+          if (!open && !action.isPending) closeWorkflowDialog();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {workflowDialog ? t(`${workflowDialog}Title`) : ""}
+            </DialogTitle>
+            <DialogDescription>
+              {workflowDialog === "approve" || workflowDialog === "reject"
+                ? t(`${workflowDialog}Confirm`, { number: receipt.number })
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          {sendingBack && (
+            <ApSendBackFields
+              labels={{
+                stage: t("sendBackStage"),
+                stagePlaceholder: t("sendBackStagePlaceholder"),
+                stagesError: t("sendBackStagesError"),
+                noStages: t("sendBackNoStages"),
+              }}
+              stage={stage}
+              onStageChange={setStage}
+              stages={stagesQuery.data ?? []}
+              isLoading={stagesQuery.isLoading}
+              isError={stagesQuery.isError}
+            />
+          )}
+          {(workflowDialog === "reject" || sendingBack) && (
+            <Field>
+              <FieldLabel
+                htmlFor="receipt-workflow-reason"
+                required={workflowDialog === "reject"}
+              >
+                {sendingBack ? t("sendBackNote") : t("voidReason")}
+              </FieldLabel>
+              <Textarea
+                id="receipt-workflow-reason"
+                value={reason}
+                maxLength={255}
+                onChange={(event) => setReason(event.target.value)}
+              />
+              {workflowDialog === "reject" && !reason.trim() && (
+                <p className="text-muted-foreground text-xs">
+                  {t("rejectReasonRequired")}
+                </p>
+              )}
+            </Field>
+          )}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={action.isPending}
+              onClick={closeWorkflowDialog}
+            >
+              {tc("cancel")}
+            </Button>
+            <Button
+              type="button"
+              variant={workflowDialog === "reject" ? "destructive" : "default"}
+              disabled={
+                action.isPending ||
+                (workflowDialog === "reject" && !reason.trim()) ||
+                (sendingBack && !stage)
+              }
+              onClick={workflowAction}
+            >
+              {workflowDialog
+                ? t(sendingBack ? "sendBack" : workflowDialog)
+                : ""}
             </Button>
           </DialogFooter>
         </DialogContent>

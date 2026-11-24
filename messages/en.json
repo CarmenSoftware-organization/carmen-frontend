@@ -1789,7 +1789,26 @@
         "debit_note": "Debit Note",
         "credit_note": "Credit Note",
         "deposit": "Deposit"
-      }
+      },
+      "approve": "Approve",
+      "approveTitle": "Approve receipt?",
+      "approveConfirm": "Approve {number} and move it to the next step?",
+      "approved": "Receipt approved",
+      "sendBack": "Send back",
+      "sendBackTitle": "Send receipt back",
+      "sendBackStage": "Send back to stage",
+      "sendBackStagePlaceholder": "Select a stage",
+      "sendBackNote": "Note (optional)",
+      "sendBackNoStages": "There is no earlier stage to send back to.",
+      "sendBackStagesError": "Could not load the earlier stages. Try again.",
+      "sentBack": "Receipt sent back",
+      "reject": "Reject",
+      "rejectTitle": "Reject receipt?",
+      "rejectConfirm": "Reject {number}? The receipt will be voided and cannot be reopened.",
+      "rejectReasonRequired": "Enter a reason before rejecting.",
+      "rejected": "Receipt rejected and voided",
+      "stageLabel": "Stage: {stage}",
+      "creatorCannotApproveHint": "You created this receipt, so you cannot approve it. Ask another approver, or turn on ar.receipt.allow-creator-approve in Default Setting."
     }
   },
   "dashboardWidget": {
@@ -2506,7 +2525,8 @@
       "AP_PAYMENT_INVOICE_NOT_POSTED": "Invoice {doc_no} is not posted yet, so it cannot be paid.",
       "LINE_DIMENSION_REQUIRED": "Line {sequence_no}: account {account_code} requires dimension {dimension_code}. Fill it in and try again.",
       "LINE_DIMENSION_PROHIBITED": "Line {sequence_no}: account {account_code} does not allow dimension {dimension_code}. Clear it and try again.",
-      "LINE_DIMENSION_RULE_CONFLICT": "Line {sequence_no}: the accounts on this line disagree on a dimension (one requires it, another forbids it). Ask accounting to fix the account mapping."
+      "LINE_DIMENSION_RULE_CONFLICT": "Line {sequence_no}: the accounts on this line disagree on a dimension (one requires it, another forbids it). Ask accounting to fix the account mapping.",
+      "AR_RECEIPT_REJECT_REASON_REQUIRED": "A reason is required to reject this document"
     }
   },
   "validation": {

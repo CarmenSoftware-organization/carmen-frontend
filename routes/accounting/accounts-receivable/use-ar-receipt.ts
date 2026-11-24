@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
+import { QUERY_KEYS } from "@/constant/query-keys";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { useXlsxExport, type XlsxColumn } from "@/hooks/use-xlsx-export";
@@ -122,8 +123,9 @@ export interface ArReceiptDocument extends ArReceiptRow {
   workflow_current_stage?: string | null;
   workflow_previous_stage?: string | null;
   workflow_next_stage?: string | null;
-  /** optional until Phase B (workflow) */
-  allowed_actions?: ArReceiptWorkflowAction[];
+  created_by_id?: string | null;
+  /** backend-computed approve / reject / sendback for the current user while in_review */
+  allowed_actions: ArReceiptWorkflowAction[];
   total_unapplied_amount: ArAmount;
   tb_ar_receipt_detail?: ArReceiptDetailRecord[];
   tb_ar_receipt_wht?: ArReceiptWhtRecord[];
@@ -290,8 +292,8 @@ export function useDeleteArReceipt() {
   });
 }
 
-/** Phase B adds approve | review | reject. */
-export type ArReceiptAction = "submit" | "void";
+export type ArReceiptAction =
+  "submit" | "void" | "approve" | "review" | "reject";
 
 export function useArReceiptAction() {
   return useApiMutation<{
@@ -299,6 +301,8 @@ export function useArReceiptAction() {
     action: ArReceiptAction;
     doc_version?: number;
     reason?: string;
+    /** review (send back) only: target workflow stage name */
+    stage?: string;
   }>({
     mutationFn: ({ id, action, ...body }, bu) =>
       httpClient.post(
@@ -341,5 +345,31 @@ export function useArOutstandingInvoices(
         throw new Error("Invalid outstanding invoices response");
       return body.data;
     },
+  });
+}
+
+export interface ArReceiptPreviousStage {
+  key: string;
+  name: string;
+}
+
+/** Stages a receipt can be sent back to — loaded only while the send-back dialog is open. */
+export function useArReceiptPreviousStages(
+  id: string | undefined,
+  enabled: boolean,
+) {
+  const bu = useBuCode();
+  return useQuery<ArReceiptPreviousStage[]>({
+    queryKey: [QUERY_KEYS.AR_RECEIPT_PREVIOUS_STAGES, bu, id],
+    queryFn: async () => {
+      const body = await readReceipt(
+        API_ENDPOINTS.AR_RECEIPT_PREVIOUS_STAGES(bu!, id!),
+      );
+      return Object.entries(body.data ?? {}).map(([key, name]) => ({
+        key,
+        name: name as string,
+      }));
+    },
+    enabled: !!bu && !!id && enabled,
   });
 }

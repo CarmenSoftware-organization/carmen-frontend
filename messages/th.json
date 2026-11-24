@@ -1789,7 +1789,26 @@
         "debit_note": "ใบเพิ่มหนี้",
         "credit_note": "ใบลดหนี้",
         "deposit": "เงินมัดจำ"
-      }
+      },
+      "approve": "อนุมัติ",
+      "approveTitle": "อนุมัติใบรับเงิน?",
+      "approveConfirm": "อนุมัติ {number} และส่งต่อขั้นถัดไป?",
+      "approved": "อนุมัติใบรับเงินแล้ว",
+      "sendBack": "ส่งกลับ",
+      "sendBackTitle": "ส่งใบรับเงินกลับ",
+      "sendBackStage": "ส่งกลับไปขั้น",
+      "sendBackStagePlaceholder": "เลือกขั้นตอน",
+      "sendBackNote": "หมายเหตุ (ไม่บังคับ)",
+      "sendBackNoStages": "ไม่มีขั้นก่อนหน้าให้ส่งกลับ",
+      "sendBackStagesError": "โหลดขั้นก่อนหน้าไม่สำเร็จ ลองใหม่อีกครั้ง",
+      "sentBack": "ส่งใบรับเงินกลับแล้ว",
+      "reject": "ปฏิเสธ",
+      "rejectTitle": "ปฏิเสธใบรับเงิน?",
+      "rejectConfirm": "ปฏิเสธ {number}? ใบรับเงินจะถูกยกเลิก (void) และเปิดกลับมาไม่ได้",
+      "rejectReasonRequired": "ระบุเหตุผลก่อนปฏิเสธ",
+      "rejected": "ปฏิเสธและยกเลิกใบรับเงินแล้ว",
+      "stageLabel": "ขั้น: {stage}",
+      "creatorCannotApproveHint": "คุณเป็นผู้สร้างใบรับเงินนี้ จึงอนุมัติเองไม่ได้ ให้ผู้อนุมัติคนอื่นทำแทน หรือเปิด ar.receipt.allow-creator-approve ในการตั้งค่าเริ่มต้น"
     }
   },
   "dashboardWidget": {
@@ -2506,7 +2525,8 @@
       "AP_PAYMENT_INVOICE_NOT_POSTED": "เอกสาร {doc_no} ยังไม่ได้ลงบัญชี จึงจ่ายเงินไม่ได้",
       "LINE_DIMENSION_REQUIRED": "บรรทัดที่ {sequence_no}: บัญชี {account_code} ต้องระบุ dimension {dimension_code} กรุณากรอกแล้วลองใหม่",
       "LINE_DIMENSION_PROHIBITED": "บรรทัดที่ {sequence_no}: บัญชี {account_code} ห้ามระบุ dimension {dimension_code} กรุณาล้างค่าแล้วลองใหม่",
-      "LINE_DIMENSION_RULE_CONFLICT": "บรรทัดที่ {sequence_no}: บัญชีของบรรทัดนี้ขัดกันเรื่อง dimension (บัญชีหนึ่งบังคับ อีกบัญชีห้าม) ให้ฝ่ายบัญชีแก้การผูกบัญชีก่อน"
+      "LINE_DIMENSION_RULE_CONFLICT": "บรรทัดที่ {sequence_no}: บัญชีของบรรทัดนี้ขัดกันเรื่อง dimension (บัญชีหนึ่งบังคับ อีกบัญชีห้าม) ให้ฝ่ายบัญชีแก้การผูกบัญชีก่อน",
+      "AR_RECEIPT_REJECT_REASON_REQUIRED": "ต้องระบุเหตุผลในการปฏิเสธเอกสารนี้"
     }
   },
   "validation": {

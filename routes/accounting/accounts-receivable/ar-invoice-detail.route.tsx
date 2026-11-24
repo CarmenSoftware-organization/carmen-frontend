@@ -29,7 +29,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { ApDetailGrid } from "../accounts-payable/shared/ap-detail-grid";
 import { ApSendBackFields } from "../accounts-payable/shared/ap-send-back-fields";
-import { arInvoiceActions, type ArUiAction } from "./ar-invoice-actions";
+import { arDocActions, type ArUiAction } from "./ar-doc-actions";
 import { ArInvoiceTaxLines } from "./ar-invoice-tax-lines";
 import { ArInvoiceLines } from "./ar-invoice-lines";
 import {
@@ -126,7 +126,7 @@ function RegisterDetail({ id }: { readonly id?: string }) {
     );
   const row = doc.data;
   const draft = row.doc_status === "draft";
-  const actions: ArUiAction[] = canWrite ? arInvoiceActions(row) : [];
+  const actions: ArUiAction[] = canWrite ? arDocActions(row) : [];
   const needsReason = confirmation === "void" || confirmation === "reject";
   const editable =
     draft &&

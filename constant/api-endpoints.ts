@@ -182,6 +182,8 @@ export const API_ENDPOINTS = {
   AR_RECEIPT_LIST: (buCode: string) => `/api/proxy/api/${buCode}/ar-receipt`,
   AR_RECEIPT_OUTSTANDING_INVOICES: (buCode: string) =>
     `/api/proxy/api/${buCode}/ar-receipt/outstanding-invoices`,
+  AR_RECEIPT_PREVIOUS_STAGES: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/ar-receipt/${toSafePathSegment(id)}/previous-stages`,
   GL_JV_LIST: (buCode: string) => `/api/proxy/api/${buCode}/gl-jv`,
   GL_JV_DETAIL: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/gl-jv/${toSafePathSegment(id)}`,
