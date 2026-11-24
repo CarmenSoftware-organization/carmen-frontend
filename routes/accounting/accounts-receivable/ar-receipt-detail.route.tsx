@@ -1147,13 +1147,15 @@ function ReceiptForm({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {workflowDialog ? t(`${workflowDialog}Title`) : ""}
-            </DialogTitle>
-            <DialogDescription>
-              {workflowDialog === "approve" || workflowDialog === "reject"
-                ? t(`${workflowDialog}Confirm`, { number: receipt.number })
+              {workflowDialog
+                ? t(sendingBack ? "sendBackTitle" : `${workflowDialog}Title`)
                 : ""}
-            </DialogDescription>
+            </DialogTitle>
+            {!sendingBack && workflowDialog && (
+              <DialogDescription>
+                {t(`${workflowDialog}Confirm`, { number: receipt.number })}
+              </DialogDescription>
+            )}
           </DialogHeader>
           {sendingBack && (
             <ApSendBackFields
@@ -1176,7 +1178,7 @@ function ReceiptForm({
                 htmlFor="receipt-workflow-reason"
                 required={workflowDialog === "reject"}
               >
-                {sendingBack ? t("sendBackNote") : t("voidReason")}
+                {sendingBack ? t("sendBackNote") : t("rejectReason")}
               </FieldLabel>
               <Textarea
                 id="receipt-workflow-reason"

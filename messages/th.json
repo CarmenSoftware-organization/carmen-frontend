@@ -1808,7 +1808,8 @@
       "rejectReasonRequired": "ระบุเหตุผลก่อนปฏิเสธ",
       "rejected": "ปฏิเสธและยกเลิกใบรับเงินแล้ว",
       "stageLabel": "ขั้น: {stage}",
-      "creatorCannotApproveHint": "คุณเป็นผู้สร้างใบรับเงินนี้ จึงอนุมัติเองไม่ได้ ให้ผู้อนุมัติคนอื่นทำแทน หรือเปิด ar.receipt.allow-creator-approve ในการตั้งค่าเริ่มต้น"
+      "creatorCannotApproveHint": "คุณเป็นผู้สร้างใบรับเงินนี้ จึงอนุมัติเองไม่ได้ ให้ผู้อนุมัติคนอื่นทำแทน หรือเปิด ar.receipt.allow-creator-approve ในการตั้งค่าเริ่มต้น",
+      "rejectReason": "เหตุผลที่ปฏิเสธ"
     }
   },
   "dashboardWidget": {

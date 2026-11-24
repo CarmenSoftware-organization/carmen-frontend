@@ -1808,7 +1808,8 @@
       "rejectReasonRequired": "Enter a reason before rejecting.",
       "rejected": "Receipt rejected and voided",
       "stageLabel": "Stage: {stage}",
-      "creatorCannotApproveHint": "You created this receipt, so you cannot approve it. Ask another approver, or turn on ar.receipt.allow-creator-approve in Default Setting."
+      "creatorCannotApproveHint": "You created this receipt, so you cannot approve it. Ask another approver, or turn on ar.receipt.allow-creator-approve in Default Setting.",
+      "rejectReason": "Reason for rejecting"
     }
   },
   "dashboardWidget": {
