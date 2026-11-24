@@ -185,7 +185,9 @@
       "printForm": "Print Forms",
       "printFormDesc": "Report form used when printing each document type.",
       "documents": "Document behavior",
-      "documentsDesc": "Defaults applied when staff create purchasing and stock documents."
+      "documentsDesc": "Defaults applied when staff create purchasing and stock documents.",
+      "ap": "AP",
+      "apDesc": "Accounts Payable settings for this business unit."
     },
     "config": {
       "prAllowDuplicateProduct": "Allow selecting duplicate products",
@@ -232,7 +234,8 @@
       "printFormCustomCount": "{n} of {total} customised",
       "generalDefaultVatRate": "Default VAT (%)",
       "generalDefaultVatRateDesc": "Documents still take VAT from the tax profile.",
-      "generalDefaultServiceRate": "Default service charge (%)"
+      "generalDefaultServiceRate": "Default service charge (%)",
+      "apInvoiceAllowCreatorApprove": "Allow the creator to approve their own AP invoice"
     }
   },
   "accounting": {

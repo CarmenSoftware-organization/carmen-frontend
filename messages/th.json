@@ -185,7 +185,9 @@
       "printForm": "แบบฟอร์มการพิมพ์",
       "printFormDesc": "แบบฟอร์มรายงานที่ใช้พิมพ์สำหรับเอกสารแต่ละประเภท",
       "documents": "การทำงานของเอกสาร",
-      "documentsDesc": "ค่าตั้งต้นที่ใช้ตอนสร้างเอกสารจัดซื้อและเอกสารคลัง"
+      "documentsDesc": "ค่าตั้งต้นที่ใช้ตอนสร้างเอกสารจัดซื้อและเอกสารคลัง",
+      "ap": "AP",
+      "apDesc": "การตั้งค่า Accounts Payable ของหน่วยธุรกิจนี้"
     },
     "config": {
       "prAllowDuplicateProduct": "อนุญาตให้เลือกสินค้าซ้ำกันได้",
@@ -232,7 +234,8 @@
       "printFormCustomCount": "ตั้งเอง {n} จาก {total}",
       "generalDefaultVatRate": "VAT ตั้งต้น (%)",
       "generalDefaultVatRateDesc": "VAT ในเอกสารยังมาจาก Tax Profile",
-      "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)"
+      "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)",
+      "apInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AP Invoice ของตัวเอง"
     }
   },
   "accounting": {

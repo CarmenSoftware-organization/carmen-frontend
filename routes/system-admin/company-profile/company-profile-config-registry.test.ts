@@ -267,3 +267,16 @@ describe("General config registry", () => {
     expect(general?.entries.every((e) => e.suffix === "%")).toBe(true);
   });
 });
+
+describe("AP config registry", () => {
+  it("registers ap.invoice.allow-creator-approve as a boolean defaulting to false", () => {
+    const ap = CONFIG_SECTIONS.find((s) => s.id === "ap");
+    const item = ap?.items.find((i) => i.key === "ap.invoice.allow-creator-approve");
+    expect(item).toBeDefined();
+    expect(item?.datatype).toBe("boolean");
+    expect(item?.defaultValue).toBe("false");
+    expect(item?.labelKey).toBe("config.apInvoiceAllowCreatorApprove");
+    expect(item?.options).toBeUndefined();
+    expect(SEEDED_KEYS.has("ap.invoice.allow-creator-approve")).toBe(true);
+  });
+});
