@@ -830,6 +830,9 @@
         "apJvPrefix": "prefix ใบสำคัญเจ้าหนี้",
         "arControlAccount": "บัญชีคุมลูกหนี้",
         "outputVatAccount": "บัญชีภาษีขาย",
+        "whtReceivableAccount": "บัญชีภาษีหัก ณ ที่จ่ายรอเครดิต",
+        "bankChargeAccount": "บัญชีค่าธรรมเนียมธนาคาร",
+        "customerAdvanceAccount": "บัญชีเงินรับล่วงหน้าจากลูกค้า",
         "arJvPrefix": "prefix ใบสำคัญลูกหนี้"
       },
       "hints": {

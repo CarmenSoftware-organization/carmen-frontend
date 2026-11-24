@@ -2,7 +2,7 @@
 export const GL_SETTING_KEY = "gl_setting";
 
 /**
- * ฟิลด์ uuid ทั้ง 13 ตัวของ `gl_setting` — ตรงกับ zod ฝั่ง micro-business
+ * ฟิลด์ uuid ทั้ง 16 ตัวของ `gl_setting` — ตรงกับ zod ฝั่ง micro-business
  * (`app-config.service.ts`) ซึ่งเป็น `.uuid().optional()` ทุกตัว **ไม่รับ null**
  * ล้างค่า = ตัด key ออกจากก้อน (ดู {@link toGlSettingValue})
  */
@@ -20,6 +20,9 @@ export const GL_UUID_FIELDS = [
   "ar_control_account_id",
   "output_vat_account_id",
   "ar_jv_prefix_id",
+  "wht_receivable_account_id",
+  "bank_charge_account_id",
+  "customer_advance_account_id",
 ] as const;
 
 export type GlUuidField = (typeof GL_UUID_FIELDS)[number];

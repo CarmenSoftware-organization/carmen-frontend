@@ -830,6 +830,9 @@
         "apJvPrefix": "AP JV prefix",
         "arControlAccount": "AR control account",
         "outputVatAccount": "Output VAT account",
+        "whtReceivableAccount": "WHT receivable account",
+        "bankChargeAccount": "Bank charge account",
+        "customerAdvanceAccount": "Customer advance account",
         "arJvPrefix": "AR JV prefix"
       },
       "hints": {

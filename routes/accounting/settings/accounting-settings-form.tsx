@@ -501,6 +501,24 @@ export function AccountingSettingsForm() {
               label={t("fields.outputVatAccount")}
               editing={editing}
             />
+            <AccountField
+              control={control}
+              name="wht_receivable_account_id"
+              label={t("fields.whtReceivableAccount")}
+              editing={editing}
+            />
+            <AccountField
+              control={control}
+              name="bank_charge_account_id"
+              label={t("fields.bankChargeAccount")}
+              editing={editing}
+            />
+            <AccountField
+              control={control}
+              name="customer_advance_account_id"
+              label={t("fields.customerAdvanceAccount")}
+              editing={editing}
+            />
             <PrefixField
               control={control}
               name="ar_jv_prefix_id"
