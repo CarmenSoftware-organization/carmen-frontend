@@ -44,7 +44,7 @@ describe("เมนูย่อยของ workflow", () => {
     expect(slugs).toEqual([...WORKFLOW_DOC_TYPES]);
   });
 
-  // permission กับ licenseFeature ของสามใบนี้ **ไม่เท่ากัน** โดยตั้งใจ:
+  // permission กับ licenseFeature ของชนิดเอกสารทั้งหกใบ **ไม่เท่ากัน** โดยตั้งใจ:
   //
   // - permission เป็นคีย์ของประเภทตัวเอง เพราะ `SUB_PATH_RESOURCE_MAP['config:workflows']`
   //   ฝั่ง backend แตก `GET /workflows/<type>` เป็น `system_admin.workflow.<type>` จริง
