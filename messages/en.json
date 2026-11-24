@@ -1158,6 +1158,7 @@
           "promptpay": "PromptPay"
         },
         "detail": {
+          "creatorCannotApproveHint": "You created this payment, so you cannot approve it. Ask another approver, or turn on ap.payment.allow-creator-approve in Default Setting.",
           "newTitle": "New AP Payment",
           "subtitle": "Supplier payment",
           "back": "Back to AP Payment Directory",

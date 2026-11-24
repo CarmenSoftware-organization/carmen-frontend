@@ -1158,6 +1158,7 @@
           "promptpay": "พร้อมเพย์"
         },
         "detail": {
+          "creatorCannotApproveHint": "คุณเป็นผู้สร้างใบจ่ายเงินนี้ จึงอนุมัติเองไม่ได้ ให้ผู้อนุมัติคนอื่นทำแทน หรือเปิดการตั้งค่า ap.payment.allow-creator-approve ที่ Default Setting",
           "newTitle": "สร้างการจ่ายเงิน AP",
           "subtitle": "การจ่ายเงินผู้ขาย",
           "back": "กลับไปรายการ AP Payment",

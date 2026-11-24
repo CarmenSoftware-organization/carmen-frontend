@@ -275,6 +275,7 @@ export function mapPayment(raw: Raw): ApPayment {
     void_reason: str(raw.void_reason),
     void_gl_jv_id: str(raw.void_gl_jv_id),
     attachments: attachments(raw.attachments),
+    created_by_id: str(raw.created_by_id),
     created_at: iso(raw.created_at),
     updated_at: iso(raw.updated_at),
     ...workflowFields(raw),

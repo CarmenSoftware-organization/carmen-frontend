@@ -300,6 +300,7 @@ export interface ApPaymentMasterSnapshots {
 
 export interface ApPayment extends ApWorkflowFields {
   id: string;
+  created_by_id?: string | null;
   doc_version: number | null;
   doc_no: string;
   doc_status: ApDocStatus;
