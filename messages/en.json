@@ -187,7 +187,9 @@
       "documents": "Document behavior",
       "documentsDesc": "Defaults applied when staff create purchasing and stock documents.",
       "ap": "AP",
-      "apDesc": "Accounts Payable settings for this business unit."
+      "apDesc": "Accounts Payable settings for this business unit.",
+      "ar": "AR",
+      "arDesc": "Accounts Receivable settings for this business unit."
     },
     "config": {
       "prAllowDuplicateProduct": "Allow selecting duplicate products",
@@ -236,7 +238,8 @@
       "generalDefaultVatRateDesc": "Documents still take VAT from the tax profile.",
       "generalDefaultServiceRate": "Default service charge (%)",
       "apInvoiceAllowCreatorApprove": "Allow the creator to approve their own AP invoice",
-      "apPaymentAllowCreatorApprove": "Allow the creator to approve their own AP payment"
+      "apPaymentAllowCreatorApprove": "Allow the creator to approve their own AP payment",
+      "arInvoiceAllowCreatorApprove": "Allow the creator to approve their own AR invoice"
     }
   },
   "accounting": {

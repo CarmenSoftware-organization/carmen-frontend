@@ -230,6 +230,20 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
       },
     ],
   },
+  {
+    id: "ar",
+    titleKey: "sections.ar",
+    descKey: "sections.arDesc",
+    items: [
+      {
+        key: "ar.invoice.allow-creator-approve",
+        datatype: "boolean",
+        defaultValue: "false",
+        label: "Allow the creator to approve their own AR invoice",
+        labelKey: "config.arInvoiceAllowCreatorApprove",
+      },
+    ],
+  },
 ];
 
 export const SEEDED_ITEMS: readonly SeededConfigItem[] =

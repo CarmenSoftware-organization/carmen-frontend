@@ -187,7 +187,9 @@
       "documents": "การทำงานของเอกสาร",
       "documentsDesc": "ค่าตั้งต้นที่ใช้ตอนสร้างเอกสารจัดซื้อและเอกสารคลัง",
       "ap": "AP",
-      "apDesc": "การตั้งค่า Accounts Payable ของหน่วยธุรกิจนี้"
+      "apDesc": "การตั้งค่า Accounts Payable ของหน่วยธุรกิจนี้",
+      "ar": "AR",
+      "arDesc": "การตั้งค่า Accounts Receivable ของหน่วยธุรกิจนี้"
     },
     "config": {
       "prAllowDuplicateProduct": "อนุญาตให้เลือกสินค้าซ้ำกันได้",
@@ -236,7 +238,8 @@
       "generalDefaultVatRateDesc": "VAT ในเอกสารยังมาจาก Tax Profile",
       "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)",
       "apInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AP Invoice ของตัวเอง",
-      "apPaymentAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติใบจ่ายเงิน AP ของตัวเอง"
+      "apPaymentAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติใบจ่ายเงิน AP ของตัวเอง",
+      "arInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AR Invoice ของตัวเอง"
     }
   },
   "accounting": {

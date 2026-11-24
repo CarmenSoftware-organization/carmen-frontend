@@ -291,3 +291,16 @@ describe("AP config registry", () => {
     expect(SEEDED_KEYS.has("ap.payment.allow-creator-approve")).toBe(true);
   });
 });
+
+describe("AR config registry", () => {
+  it("registers ar.invoice.allow-creator-approve as a boolean defaulting to false", () => {
+    const ar = CONFIG_SECTIONS.find((s) => s.id === "ar");
+    const item = ar?.items.find((i) => i.key === "ar.invoice.allow-creator-approve");
+    expect(item).toBeDefined();
+    expect(item?.datatype).toBe("boolean");
+    expect(item?.defaultValue).toBe("false");
+    expect(item?.labelKey).toBe("config.arInvoiceAllowCreatorApprove");
+    expect(item?.options).toBeUndefined();
+    expect(SEEDED_KEYS.has("ar.invoice.allow-creator-approve")).toBe(true);
+  });
+});
