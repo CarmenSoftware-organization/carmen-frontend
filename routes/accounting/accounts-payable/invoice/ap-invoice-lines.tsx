@@ -1,5 +1,6 @@
 "use no memo";
 
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import { LookupAccountingMaster } from "@/components/lookup/lookup-accounting-master";
 
 import { DimensionValueInput } from "@/components/dimension/dimension-value-input";
@@ -484,7 +485,7 @@ export function InvoiceLines({
           }
           className="text-success-ink"
         />
-        <span className="text-micro text-muted-foreground">
+        <span className={CELL_SUB_CLASS}>
           {t("wht")}{" "}
           {!editable
             ? (savedById.get(row.original.key)?.wht_estimate_amount ??

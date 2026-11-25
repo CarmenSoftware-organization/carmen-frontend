@@ -1,3 +1,4 @@
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import { useCallback, useMemo, useState } from "react";
 import { useWatch, useFormState, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
@@ -373,7 +374,7 @@ export function StepSelectItems({ form }: StepSelectItemsProps) {
             <span className="font-semibold">
               {row.original.detail.product?.name}
             </span>
-            <span className="text-muted-foreground text-micro-legal">
+            <span className={CELL_SUB_CLASS}>
               {row.original.detail.product?.local_name}
             </span>
           </div>
@@ -409,7 +410,7 @@ export function StepSelectItems({ form }: StepSelectItemsProps) {
           >
             <span>
               {row.original.detail.price.toLocaleString()}{" "}
-              <span className="text-muted-foreground text-micro">
+              <span className={CELL_SUB_CLASS}>
                 {row.original.currency?.code}
               </span>
             </span>

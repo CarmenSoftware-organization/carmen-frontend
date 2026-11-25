@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import { ExternalLink, Pencil, RotateCcw, TriangleAlert } from "lucide-react";
 import { Link } from "react-router";
 import { useTranslations } from "use-intl";
@@ -281,7 +283,7 @@ function ValueLayout({
       </div>
       {name && (
         <p
-          className="text-muted-foreground text-micro-legal truncate py-0.5 leading-[normal]"
+          className={cn(CELL_SUB_CLASS, "truncate py-0.5 leading-[normal]")}
           title={name}
         >
           {name}

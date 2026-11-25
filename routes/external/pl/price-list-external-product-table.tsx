@@ -1,3 +1,4 @@
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import { useMemo, useState } from "react";
 import {
   Controller,
@@ -312,7 +313,7 @@ export default function PriceListExternalProductTable({
               {row.original.product_name}
             </span>
             {row.original.product_code && (
-              <span className="text-muted-foreground text-micro">
+              <span className={CELL_SUB_CLASS}>
                 {row.original.product_code}
               </span>
             )}
@@ -361,7 +362,7 @@ export default function PriceListExternalProductTable({
               inputMode="decimal"
               min={0}
               placeholder="0"
-              className="border-border/60 h-9 w-full rounded-md text-right text-sm tabular-nums"
+              className="border-border/60 h-9 w-full rounded-md text-right tabular-nums"
               {...form.register(`tb_pricelist_detail.${fieldIndex}.moq_qty`, {
                 valueAsNumber: true,
               })}
@@ -394,7 +395,7 @@ export default function PriceListExternalProductTable({
                 inputMode="decimal"
                 min={0}
                 placeholder="0.00"
-                className="border-border/60 h-9 w-full rounded-md text-right text-sm tabular-nums"
+                className="border-border/60 h-9 w-full rounded-md text-right tabular-nums"
                 {...form.register(`tb_pricelist_detail.${fieldIndex}.price`, {
                   valueAsNumber: true,
                 })}
@@ -510,7 +511,7 @@ export default function PriceListExternalProductTable({
               inputMode="numeric"
               min={0}
               placeholder="0"
-              className="border-border/60 h-9 w-full rounded-md text-right text-sm tabular-nums"
+              className="border-border/60 h-9 w-full rounded-md text-right tabular-nums"
               {...form.register(
                 `tb_pricelist_detail.${fieldIndex}.lead_time_days`,
                 { valueAsNumber: true },
@@ -526,11 +527,7 @@ export default function PriceListExternalProductTable({
       },
       {
         id: "actions",
-        header: () => (
-          <span className="text-muted-foreground text-micro">
-            {t("colTiers")}
-          </span>
-        ),
+        header: () => <span className={CELL_SUB_CLASS}>{t("colTiers")}</span>,
         cell: ({ row }) => {
           const itemIndex = fields.findIndex((f) => f.id === row.original.id);
           return (

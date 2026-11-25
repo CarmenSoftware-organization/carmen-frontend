@@ -23,48 +23,16 @@ const SIZE =
 
 /** ไฟล์ที่ยังตั้งขนาดเองได้ — ต้องมีเหตุผลทุกรายการ */
 const ALLOWLIST: Record<string, string> = {
-  "components/share/audit-cell.tsx": "pending migration",
-  "routes/accounting/accounts-payable/invoice/ap-invoice-lines.tsx":
-    "pending migration",
-  "routes/config/chart-of-account-mapping/coam-cells.tsx": "pending migration",
-  "routes/external/pl/price-list-external-product-table.tsx":
-    "pending migration",
-  "routes/inventory-management/period-end/pe-documents-dialog.tsx":
-    "pending migration",
-  "routes/inventory-management/spot-check/use-sc-history-table.tsx":
-    "pending migration",
-  "routes/operation-plan/sales-consumption/sc-sales-lines.tsx":
-    "pending migration",
-  "routes/procurement/goods-receive-note/grn-item-cells/discount-tax-cell.tsx":
-    "pending migration",
-  "routes/procurement/goods-receive-note/grn-item-cells/qty-cell.tsx":
-    "pending migration",
-  "routes/procurement/purchase-order/from-price-list/step-select-items.tsx":
-    "pending migration",
   "routes/procurement/purchase-order/po-item-cells/pr-source-button.tsx":
-    "pending migration",
-  "routes/procurement/purchase-order/po-item-cells/qty-cell.tsx":
-    "pending migration",
-  "routes/procurement/purchase-order/po-item-cells/row-pricing-cells.tsx":
-    "pending migration",
-  "routes/procurement/purchase-request/pr-item-cells/amount-cell.tsx":
-    "pending migration",
+    "popover content opened from the cell, not a cell line (uppercase section eyebrow)",
   "routes/procurement/purchase-request/pr-item-cells/location-cell.tsx":
-    "pending migration",
+    "popover content opened from the cell (location detail card), not a cell line",
   "routes/procurement/purchase-request/pr-item-cells/product-cell.tsx":
-    "pending migration",
+    "popover content opened from the cell (product detail card), not a cell line",
   "routes/procurement/purchase-request/pr-pricelist-dialog.tsx":
-    "pending migration",
-  "routes/store-operation/wastage-reporting/use-wr-table.tsx":
-    "pending migration",
-  "routes/system-admin/activity-log/use-activity-log-table.tsx":
-    "pending migration",
-  "routes/system-admin/user-activity/use-user-activity-table.tsx":
-    "pending migration",
-  "routes/system-admin/workflow/use-wf-table.tsx": "pending migration",
-  "routes/vendor-management/price-list/pl-period-cell.tsx": "pending migration",
-  "routes/vendor-management/request-price-list/rfp-vendor-cells.tsx":
-    "pending migration",
+    "Badge chips inside cells — chip size, not cell text",
+  "routes/vendor-management/price-list/pl-period-cell.tsx":
+    "validity status pill — chip size, not cell text",
 };
 
 function tsxFiles(dir: string): string[] {
@@ -127,6 +95,13 @@ describe("table cells use the two role sizes only", () => {
     expect(Object.keys(ALLOWLIST).filter((f) => !live.has(f))).toEqual([]);
   });
 
+  it("has no pending-migration entries", () => {
+    expect(
+      Object.entries(ALLOWLIST)
+        .filter(([, why]) => why === "pending migration")
+        .map(([f]) => f),
+    ).toEqual([]);
+  });
 
   it("detects the pattern it guards", () => {
     const flag = (src: string) => columnBodies(src).some(hasOwnSize);

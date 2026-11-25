@@ -177,7 +177,7 @@ export function PeDocumentsDialog({
         accessorKey: "no",
         header: () => tfl("documentNo"),
         cell: ({ row }) => {
-          const label = <span className="text-micro">{row.original.no}</span>;
+          const label = <span>{row.original.no}</span>;
           if (!moduleKey) return label;
           return (
             <Link

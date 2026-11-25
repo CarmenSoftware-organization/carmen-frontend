@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import type { ColumnDef } from "@tanstack/react-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
@@ -199,7 +201,9 @@ export function useScHistoryTable({
             </CellAction>
             {renderStatus(sc, "ml-auto shrink-0")}
           </div>
-          <div className="text-muted-foreground text-micro flex min-w-0 items-center gap-1.5">
+          <div
+            className={cn(CELL_SUB_CLASS, "flex min-w-0 items-center gap-1.5")}
+          >
             <span className="min-w-0 truncate">{sc.location_name}</span>
             <span aria-hidden="true">·</span>
             <span className="shrink-0">

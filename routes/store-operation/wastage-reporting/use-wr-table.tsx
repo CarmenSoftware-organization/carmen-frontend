@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import type { ColumnDef } from "@tanstack/react-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
@@ -253,7 +255,9 @@ export function useWastageReportTable({
               {it.remaining_qty} {it.inventory_unit.name}
             </span>
           </div>
-          <div className="text-muted-foreground text-micro flex min-w-0 items-center gap-1.5">
+          <div
+            className={cn(CELL_SUB_CLASS, "flex min-w-0 items-center gap-1.5")}
+          >
             <span className="min-w-0 truncate">
               {it.location_name} · {it.lot_no}
             </span>
