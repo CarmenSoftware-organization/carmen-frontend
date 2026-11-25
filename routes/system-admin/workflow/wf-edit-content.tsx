@@ -3,7 +3,7 @@ import { useWorkflowById } from "@/hooks/use-workflow";
 import { useUserAll } from "@/hooks/use-user";
 import { useProductAll } from "@/hooks/use-product";
 import { ErrorState } from "@/components/ui/error-state";
-import { FormPageSkeleton } from "@/components/loader/form-page-skeleton";
+import { WfDetailSkeleton } from "./wf-detail-skeleton";
 import { parseWorkflowData } from "./wf-form-schema";
 import { WfDetail } from "./wf-detail";
 
@@ -48,7 +48,7 @@ export function WfEditContent({ id }: { id: string }) {
     },
   }));
 
-  if (isLoading) return <FormPageSkeleton width="wide" />;
+  if (isLoading) return <WfDetailSkeleton />;
   if (wfError || !workflow)
     return (
       <ErrorState
