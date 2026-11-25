@@ -114,6 +114,7 @@ describe("dataset names", () => {
     "procurement.top-purchasing-vendors",
     "procurement.purchasing-value.vs-period",
     "procurement.purchasing-by-category",
+    "procurement.purchasing-by-department",
     "document.sr-top-products",
     ...["pr", "po", "sr", "grn"].flatMap((d) => [
       `document.${d}-by-status.by-period`,
