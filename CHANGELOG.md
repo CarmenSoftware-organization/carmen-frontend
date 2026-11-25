@@ -4,6 +4,104 @@
 แก้ที่ `changelog.json` หรือแก้ตัว generator (`scripts/changelog.ts`) แล้วรัน
 `bun scripts/changelog-cli.ts` เพื่อ render ใหม่
 
+## [2.9.0] - 2026-11-25
+
+### Added
+- **design:** ตัวอักษรใน badge เล็กลงหนึ่งขั้น (default/sm 11px, xs 10px, lg 12px) ให้เล็กกว่าข้อความในเซลล์ (#739) — Thammanoon Semapru `789d1d78`
+- **design-system:** แสดงตารางหน้าที่ของตัวอักษร ปัดขนาดนอก ladder และบันทึกผลวัดหลังแก้ (#739) — Thammanoon Semapru `ac4b344d`
+- **data-grid:** เพิ่ม CellText/CellSub และเทสต์ดักขนาดในเซลล์ (#739) — Thammanoon Semapru `310d6308`
+- **design:** รายการใน menu, command, popover และ sidebar ใช้ 12px (#739) — Thammanoon Semapru `f1208e5f`
+- **design:** หัวและข้อความใต้หัวใช้ขนาดตามหน้าที่ (title 14 / description 12 / h1 18 / ค่าในหัวเอกสาร 12) (#739) — Thammanoon Semapru `7a1a8b6d`
+- **design:** ลดขนาดตั้งต้นของ body เป็น 12px ตาม ladder และเพิ่มตารางหน้าที่ใน DESIGN.md (#739) — Thammanoon Semapru `b770e97d`
+- **dashboard:** ชื่อ dataset ยอดสั่งซื้อเทียบงวด + แยกตามหมวดสินค้า (#738) — Khafang `4eac1167`
+- **workflow:** แสดงระดับขอบเขตของ workflow JV (#737) — Thammanoon Semapru `b5efd719`
+- **jv:** ปุ่มส่งกลับ ปฏิเสธ=void และ void ใบร่างที่มีเลขแล้ว (#737) — Thammanoon Semapru `a328a702`
+- **jv:** ใช้ allowed_actions จาก backend และรองรับเลข DRAFT- (#737) — Thammanoon Semapru `a8c6ca1d`
+- **default-setting:** เพิ่มสวิตช์ให้ผู้สร้างอนุมัติ JV ของตัวเอง (#737) — Thammanoon Semapru `fc56e6c2`
+- **dimension:** เปลี่ยนชื่อ Dimension Name (EN) เป็น Caption และเพิ่มคอลัมน์ลำดับแถวกับ checkbox เลือกทั้งหมดในตารางค่าย่อย (#736) — Thammanoon Semapru `d6962086`
+- **dimension:** เพิ่มช่อง Description (ไม่บังคับ) ให้ค่าย่อยของ dimension อธิบายความหมายของ label (#734) — Thammanoon Semapru `56fa39aa`
+- **dimension:** ซ่อนชื่อภาษาไทยของ dimension ทั้งใน dialog และตาราง list และยกเลิกการลบค่าย่อยที่ค้างเมื่อเปลี่ยนชนิดออกจาก lookup (#734) — Thammanoon Semapru `01778d6c`
+- **dimension:** ตารางค่าย่อยเปลี่ยนหัวเป็น Value/Label และซ่อน Name (TH) ไว้ก่อนจนกว่าจะทำหลายภาษา (#734) — Thammanoon Semapru `3126b7b3`
+- **dimension:** ปุ่มจำนวนค่าย่อยเปิด dialog แก้ dimension ตัวเดียวกัน และตัด dialog รายการค่าย่อยเดิม (#734) — Thammanoon Semapru `32779ebd`
+- **dimension:** dialog แบบสองคอลัมน์ ตารางค่าย่อยแก้ในแถว มีคอลัมน์ Active และสีสถานะแถว (#734) — Thammanoon Semapru `dad0a5de`
+- **recipe:** ช่องเลือกวัตถุดิบแสดงเฉพาะสินค้าที่ติ๊ก "ใช้ทำสูตรได้" (#730) — Khafang `2556bca7`
+- **recipe:** กรอก % ต้นทุน (Net/Gross) เพื่อคิดราคาขายได้ — บันทึกแค่ราคา (#728) — Khafang `01076378`
+- **ar-receipt:** ปุ่มตาม allowed_actions, approve / send back เลือก stage / reject = void และลบได้เฉพาะใบ DRAFT (#727) — Thammanoon Semapru `00b4e868`
+- **default-setting:** ตั้งให้ผู้สร้างอนุมัติใบรับเงิน AR ของตัวเองได้ (#727) — Thammanoon Semapru `cf55bd68`
+- **workflow:** ตั้ง workflow ของใบรับเงิน AR ได้ (เส้นเดียวต่อ BU) (#727) — Thammanoon Semapru `74b6055e`
+- **ar-receipt:** หน้ารายการใบรับเงินดึงจาก backend พร้อมสถานะ in_review/posted (#727) — Thammanoon Semapru `42c62d7f`
+- **ar-receipt:** เลือก invoice ที่ค้างรับจาก backend และเอา dialog payment หลายรายการออก (#727) — Thammanoon Semapru `c628af88`
+- **ar-receipt:** หน้าใบรับเงินใช้ API จริง — tender เดียว, WHT จาก tax profile, ค่าธรรมเนียม, ยอดเกิน (#727) — Thammanoon Semapru `b56b4de1`
+- **ar-receipt:** hook เรียก API ใบรับเงินจริง (#727) — Thammanoon Semapru `3680d255`
+- **accounting-settings:** ตั้งบัญชี WHT receivable, ค่าธรรมเนียมธนาคาร และเงินรับล่วงหน้าลูกค้า (#727) — Thammanoon Semapru `3b6653bf`
+- **ar-invoice:** ปุ่มตาม allowed_actions, approve / send back เลือก stage / reject = void และลบได้เฉพาะใบ DRAFT (#725) — Thammanoon Semapru `782ed73c`
+- **default-setting:** หมวด AR ตั้งค่าให้ผู้สร้างอนุมัติ AR Invoice ของตัวเองได้ (#725) — Thammanoon Semapru `f5c0ea89`
+- **workflow:** ตั้ง workflow ของ AR Invoice ได้ (เส้นเดียวต่อ BU) (#725) — Thammanoon Semapru `f0299f9a`
+- **ap-payment:** ปุ่มตาม allowed_actions, send back เลือก stage, reject = void, ลบได้เฉพาะใบ DRAFT และ batch approve แจ้งเหตุผลที่ถูกปฏิเสธ (#724) — Thammanoon Semapru `a3878f69`
+- **default-setting:** ตั้งค่าให้ผู้สร้างอนุมัติใบจ่ายเงิน AP ของตัวเองได้ (#724) — Thammanoon Semapru `bebc2ca4`
+- **workflow:** ตั้ง workflow ของ AP Payment ได้ (เส้นเดียวต่อ BU) (#724) — Thammanoon Semapru `ff0f4329`
+- **ap-invoice:** ปุ่มตาม allowed_actions, send back เลือก stage, reject = void และลบได้เฉพาะใบ DRAFT (#723) — Thammanoon Semapru `afb9e019`
+- **default-setting:** หมวด AP ตั้งค่าให้ผู้สร้างอนุมัติ AP Invoice ของตัวเองได้ (#723) — Thammanoon Semapru `098ff815`
+- **workflow:** ตั้ง workflow ของ AP Invoice ได้ (เส้นเดียวต่อ BU) (#723) — Thammanoon Semapru `f4e58868`
+- **recipe:** ราคาขายคิดได้สองทาง — กรอก Net ได้ Gross หรือกรอก Gross คิดย้อนเป็น Net (#722) — Khafang `f7087c7b`
+- **recipe:** อัตราค่าแรง/โสหุ้ยของหมวดย้ายมาต่อท้ายชื่อในส่วนต้นทุน + ปุ่มใช้ค่าของหมวด (#720) — Khafang `72532f3a`
+- **recipe:** แท็บ Costing แยก 3 ส่วน (ต้นทุน · ราคาขาย · กำไรขั้นต้น) + บวก Service/VAT จากราคา Net (#718) — Khafang `2fdc9fc4`
+- **recipe:** หน้ารายการสูตรคิด food cost % สด ไม่อ่านค่าที่บันทึกไว้ (#717) — Khafang `79d7af64`
+- **recipe:** หน้า Cost คิดทั้งสูตร — ราคาขายเป็นของทั้งสูตร · เปลี่ยนคำ yield เป็น portion (#717) — Khafang `000c97c4`
+- **recipe:** ย้ายเกจต้นทุนขึ้นส่วนหัวของสูตร — ซ้าย Actual Food Cost ขวา Gross Margin (#715) — Khafang `a845a48e`
+- **grn:** เตือนก่อน Save / Commit เมื่อวันที่รับสินค้ายังมาไม่ถึง (#713) — Khafang `4086d38e`
+- **auth:** หน้าติดต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่เองแทนการเด้งไป login (#711) — Thammanoon Semapru `fb163b1c`
+- **inventory:** แถบ dimension ตามบัญชีใน SR และ IA ลบ component dimension แบบเก่า (#710) — Thammanoon Semapru `b5627954`
+- **procurement:** แถบ dimension แบบ JV กรองตามบัญชีและตรวจก่อนส่งใน PR/PO/GRN (#710) — Thammanoon Semapru `ca2a6606`
+- **dimension:** hook และตัวตรวจกฎ dimension ของบรรทัดฝั่งหน้าเว็บ (#710) — Thammanoon Semapru `c985036d`
+- **dimension:** เปิดปิด dimension รายเอกสารด้วย config ของ BU แทน env LINE_DIMENSIONS_ENABLED (#710) — Thammanoon Semapru `e2e2bf1f`
+- **inventory-period:** เปลี่ยนตารางแบ่งหน้าเป็นกระดานรายปีบัญชี แสดงทุกงวดที่เปิดอยู่ในหน้าเดียว (#708) — Thammanoon Semapru `0795033a`
+- **default-setting:** โชว์ config key ใต้ป้ายเมื่อ APP_ENV เป็น dev/local + ปรับการแสดงค่า % (#707) — Thammanoon Semapru `a1be56f6`
+- **default-setting:** เพิ่ม Default VAT% และ Default Service% ในการ์ด General (#707) — Thammanoon Semapru `a248de1f`
+
+### Fixed
+- **design:** ข้อความเนื้อหาใน dialog และ section ที่ยังเป็น text-sm (14px) ลงเป็น 12px ตาม role — หัวข้อ/ตัวหนา/ปุ่มคง 14 (#739) — Thammanoon Semapru `fb076fad`
+- **design:** ยกความสว่างของ --muted-foreground ในธีมมืดเป็น 0.70 ให้ตัวจาง 11px ผ่าน AA บนแถว hover และแถวที่เลือก (#739) — Thammanoon Semapru `43f98e16`
+- **design:** เลิกใช้ leading-none กับข้อความที่อาจเป็นภาษาไทย (Label, Badge xs/sm, CardTitle, Stepper) และ CardTitle มีขนาด 14px ของตัวเอง (#739) — Thammanoon Semapru `070e56a9`
+- **design:** หัวข้อใน dialog สร้าง JV ทั้งหมด และการ์ด SFTP ใหญ่กว่าเนื้อหาตามหน้าที่ (#739) — Thammanoon Semapru `41c54c64`
+- **jv:** แปล error ผ่าน errorToast เฉพาะที่มีข้อความ catalog จริง และหยุด refetch ใบที่กำลังลบ (#737) — Thammanoon Semapru `20ae3f46`
+- **jv:** คงข้อความ server ของ error ที่ไม่มีรหัส catalog, ล้างฟอร์ม dialog ตอนเปิดใหม่, ไม่ให้ 404 วาบหลังลบร่าง (#737) — Thammanoon Semapru `0b51cbff`
+- **default-setting:** รวมสวิตช์ JV เข้าการ์ดผู้สร้างอนุมัติเอง (#737) — Thammanoon Semapru `32b13e8c`
+- **dimension:** legend ของตารางค่าย่อยแยก Will be deleted (ขีดฆ่า) กับ Failed (พื้นแดง) ให้ตรงกับที่แถวแสดงจริง (#734) — Thammanoon Semapru `d881b453`
+- **workflow:** หน้าแก้ workflow เปิดทันทีไม่รอสินค้าครบ — เฉพาะแท็บ Products/Routing ที่รอ (#733) — Thammanoon Semapru `9ae9fe9a`
+- **workflow:** skeleton หน้าแก้ workflow ใช้โครงเดียวกับหน้าจริง (ราง stage + การ์ดแท็บ) (#732) — Thammanoon Semapru `66ebd59d`
+- **default-setting:** แยกค่าของเอกสารเป็นการ์ดตามเรื่อง อ่านไม่ปนกัน (#731) — Thammanoon Semapru `4866f544`
+- **workflow:** สวิตช์สถานะในหน้าสร้างเป็นช่องธรรมดา ไม่ซ้อนกล่องในการ์ด (#729) — Thammanoon Semapru `22d62c19`
+- **workflow:** จัดหน้าสร้าง workflow ให้เต็มจอและกะทัดรัด (#729) — Thammanoon Semapru `b33f9c61`
+- **ap:** ซ่อนปุ่ม submit / void ของ AP ตามสิทธิ์ accounting.ap (#727) — Thammanoon Semapru `c00182e9`
+- **ar-receipt:** แก้ผลรีวิวฝั่ง frontend รอบติดตาม (FE1–FE7) (#727) — Thammanoon Semapru `2ac9ccd7`
+- **ar-receipt:** แก้ผล final review ฝั่ง frontend (#727) — Thammanoon Semapru `e59595a4`
+- **ar-receipt:** หัวข้อ dialog ส่งกลับใช้คีย์ sendBackTitle, ซ่อนคำอธิบายว่าง และแยกป้ายเหตุผลปฏิเสธ (#727) — Thammanoon Semapru `effe91dc`
+- **ar-receipt:** คีย์สถานะ in_review, source interface, บังคับเลือกโปรไฟล์ WHT, แจ้งเมื่อโหลดยอดคงเหลือไม่สำเร็จ (#727) — Thammanoon Semapru `b39fde78`
+- **ar-receipt:** hook ใบรับเงินตรงกับ API จริง (#727) — Thammanoon Semapru `6b3a39f9`
+- **ap-payment:** บอกเหตุผลเมื่อผู้สร้างอนุมัติเองไม่ได้ และแก้คอมเมนต์ apActions/apPaymentActions ให้ตรงพฤติกรรม (#724) — Thammanoon Semapru `71f1693a`
+- **workflow:** ลงทะเบียนเส้นทาง ap-invoice / ap-payment ก่อน workflow/:id (#724) — Thammanoon Semapru `ca27fda0`
+- **ap-invoice:** ไม่ยิงรายการ workflow AP จากฟอร์มชนิดอื่น และบอกเหตุผลเมื่อผู้สร้างอนุมัติเองไม่ได้ (#723) — Thammanoon Semapru `5979cf1c`
+- **ap:** ป้าย Send back ของหน้า payment และสถานะโหลด stage ล้ม (#723) — Thammanoon Semapru `8ffd620e`
+- **workflow:** ลบไฟล์ว่างที่หลุดเข้ามา และปรับตัวกัน AP workflow ในหน้าสร้าง (#723) — Thammanoon Semapru `0eaa19d6`
+- **activity-log:** ตัวกรอง Record Type = Period ส่ง entity_type=inventory_period ตามที่ backend บันทึกจริง (เดิมส่ง period ซึ่งไม่มีแถวเลย กรองแล้วว่างเสมอ) (#719) — Thammanoon Semapru `35426052`
+- **grn:** เลขที่ใบแจ้งหนี้ของ GRN ยาวได้ไม่เกิน 50 ตัวอักษร (#712) — Khafang `585a764c`
+- **auth:** refresh ตอบ 4xx อื่นนับเป็นถูกปฏิเสธ ไม่ค้างหน้า outage (#711) — Thammanoon Semapru `793b4c41`
+- **auth:** logout ล้าง flag ติดต่อ server ไม่ได้ ไม่ให้ค้างหน้า outage (#711) — Thammanoon Semapru `55da7146`
+- **auth:** refresh ล้มเพราะ server ล่มไม่ล้าง session อีกต่อไป (#711) — Thammanoon Semapru `741e8db1`
+- **store-requisition:** ไม่ตรวจ dimension ฝั่งหน้าเว็บตอน approve ให้ backend ตัดสินขั้นตัดสต๊อก (#710) — Thammanoon Semapru `2d2689ab`
+- **procurement:** ไม่เพิ่มแถวว่างเมื่อไม่มี dimension และให้ข้อความ error ตรงกับ params ของ backend (#710) — Thammanoon Semapru `0217083b`
+- **dimension:** ส่ง invalidIds ตามสถานะ submitAttempted (#710) — Thammanoon Semapru `4270908f`
+- **dimension:** ชิป dimension เป็นสีแดงหลังกด Submit เท่านั้น (#710) — Thammanoon Semapru `95fb5d0f`
+- **dashboard:** pop up แก้ widget เลื่อนได้และปุ่มบันทึกตรึงอยู่ล่างเสมอ (#705) — Khafang `2f84a94e`
+
+### Changed
+- เซลล์ตารางทุกโมดูลใช้ขนาดตามหน้าที่ (บรรทัดหลัก 12 / บรรทัดรอง 11 ผ่าน CELL_SUB_CLASS) (#739) — Thammanoon Semapru `0c6b18dd`
+- **dimension:** แยก DimensionDialog ออกจากหน้า list และเก็บ error การบันทึกค่าย่อยรายแถว (#734) — Thammanoon Semapru `8686f22d`
+- **dimension:** เลิกใช้ date_format ของ dimension ใช้รูปแบบวันที่จากโปรไฟล์แทน (#734) — Thammanoon Semapru `4cc4a765`
+- **ar-receipt:** model ใบรับเงินเลิกใช้ localStorage และหลาย payment, แปลง payload ↔ API (#727) — Thammanoon Semapru `ca3e0ac2`
+- **dimension:** แยกแถบชิป dimension ของ JV เป็น component กลาง เพิ่มเครื่องหมายบังคับและ chip ที่มาของบัญชีบน dev (#710) — Thammanoon Semapru `e9b1df77`
+
 ## [2.8.0] - 2026-11-19
 
 ### Added
