@@ -120,13 +120,13 @@ export function JvTemplateGenerateAllDialog({
 
         {!result ? (
           <div className="space-y-2">
-            <span className="text-sm font-medium">{t("period")}</span>
+            <span className="text-xs font-medium">{t("period")}</span>
             {periodsError ? (
-              <p role="alert" className="text-destructive text-sm">
+              <p role="alert" className="text-destructive text-xs">
                 {t("errors.UNKNOWN")}
               </p>
             ) : !isLoading && periods.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs">
                 {t("noOpenPeriod")}
               </p>
             ) : (
@@ -144,15 +144,15 @@ export function JvTemplateGenerateAllDialog({
               </Select>
             )}
             {errorText && (
-              <p role="alert" className="text-destructive text-sm">
+              <p role="alert" className="text-destructive text-xs">
                 {errorText}
               </p>
             )}
           </div>
         ) : (
-          <div className="max-h-[60vh] space-y-4 overflow-y-auto text-sm">
+          <div className="max-h-[60vh] space-y-4 overflow-y-auto text-xs">
             <section>
-              <h3 className="font-medium">
+              <h3 className="text-sm font-semibold">
                 {t("resultCreated")} ({result.generated.length})
               </h3>
               <ul className="mt-1 space-y-1">
@@ -174,7 +174,7 @@ export function JvTemplateGenerateAllDialog({
               </ul>
             </section>
             <section>
-              <h3 className="font-medium">
+              <h3 className="text-sm font-semibold">
                 {t("resultSkipped")} ({result.skipped.length})
               </h3>
               <ul className="mt-1 space-y-1">
@@ -192,7 +192,7 @@ export function JvTemplateGenerateAllDialog({
               </ul>
             </section>
             <section>
-              <h3 className="font-medium">
+              <h3 className="text-sm font-semibold">
                 {t("resultFailed")} ({result.failed.length})
               </h3>
               <ul className="mt-1 space-y-1">

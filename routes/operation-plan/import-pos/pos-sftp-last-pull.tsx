@@ -63,9 +63,9 @@ export function PosSftpLastPull({ enabled }: { enabled: boolean }) {
   return (
     <section
       aria-label={t("title")}
-      className="bg-card mt-6 rounded-lg border p-4 text-sm"
+      className="bg-card mt-6 rounded-lg border p-4 text-xs"
     >
-      <h3 className="font-medium">{t("title")}</h3>
+      <h3 className="text-sm font-semibold">{t("title")}</h3>
       {body ??
         (data ? (
           <div className="mt-2 space-y-1">
