@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-/** ช่องเลือกขั้นที่จะส่งกลับ (บังคับเลือก) ใน dialog ส่งกลับของใบแจ้งหนี้/ใบจ่ายเงิน */
+/** ช่องเลือกขั้นที่จะส่งกลับ (บังคับเลือก) ใน dialog ส่งกลับของ AP Invoice / AP Payment / AR / JV */
 export interface PreviousStage {
   key: string;
   name: string;

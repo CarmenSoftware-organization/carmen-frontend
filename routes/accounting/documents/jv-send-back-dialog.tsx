@@ -36,6 +36,15 @@ export function JvSendBackDialog({
   const tc = useTranslations("common");
   const [stage, setStage] = useState("");
   const [reason, setReason] = useState("");
+  // parent ปิดเองเมื่อสำเร็จ (ข้าม handleOpenChange) — ล้างค่าตอนเปิดใหม่ ด้วยการปรับ state ระหว่าง render
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setStage("");
+      setReason("");
+    }
+  }
   const stagesQuery = useJvPreviousStages(journalId, open);
 
   const handleOpenChange = (value: boolean) => {

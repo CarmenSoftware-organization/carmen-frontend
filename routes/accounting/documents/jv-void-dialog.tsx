@@ -35,6 +35,15 @@ export function JvVoidDialog({
   const tc = useTranslations("common");
   const [reason, setReason] = useState("");
 
+  // parent ปิดเองเมื่อสำเร็จ (ข้าม handleOpenChange) — ล้างค่าตอนเปิดใหม่ ด้วยการปรับ state ระหว่าง render
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setReason("");
+    }
+  }
+
   const handleOpenChange = (value: boolean) => {
     if (isPending) return;
     onOpenChange(value);
@@ -46,7 +55,9 @@ export function JvVoidDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t(draft ? "voidDraftTitle" : "voidTitle")}</DialogTitle>
-          <DialogDescription>{t(draft ? "voidDraftDescription" : "voidDescription")}</DialogDescription>
+          <DialogDescription>
+            {t(draft ? "voidDraftDescription" : "voidDescription")}
+          </DialogDescription>
         </DialogHeader>
         <Field>
           <FieldLabel htmlFor="jv-void-reason" required>

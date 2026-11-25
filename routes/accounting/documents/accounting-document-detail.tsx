@@ -76,7 +76,7 @@ import { useDepartment } from "@/hooks/use-department";
 import { useCostCenter } from "@/hooks/use-cost-center";
 import { useGlPeriods } from "@/hooks/use-accounting-master";
 import { useBuCode } from "@/hooks/use-bu-code";
-import { ApiError, isAppStatusErrorCode } from "@/lib/api-error";
+import { ApiError } from "@/lib/api-error";
 import { useErrorToast } from "@/hooks/use-error-toast";
 import { readCoaRules, coaRulesKey } from "@/lib/coa-dimension-rules";
 import {
@@ -258,6 +258,11 @@ const optionLabel = (
   }
   return value;
 };
+
+/** error จาก backend ที่มีรหัส catalog — ต้องแปลผ่าน errorToast */
+function hasCatalogCode(error: unknown): error is ApiError {
+  return error instanceof ApiError && !!error.appCode;
+}
 
 export default function AccountingDocumentDetail() {
   "use no memo";
@@ -994,7 +999,7 @@ export default function AccountingDocumentDetail() {
         );
         navigate(`${config.path}/${targetId}`, { replace: true });
       } catch (error) {
-        if (error instanceof ApiError && isAppStatusErrorCode(error.appCode)) {
+        if (hasCatalogCode(error)) {
           errorToast(error);
           return;
         }
@@ -1025,7 +1030,7 @@ export default function AccountingDocumentDetail() {
         navigate(`${config.path}/${copied.id}`);
         toast.success(t("copiedToNew"));
       } catch (error) {
-        if (error instanceof ApiError && isAppStatusErrorCode(error.appCode)) {
+        if (hasCatalogCode(error)) {
           errorToast(error);
           return;
         }
@@ -1185,12 +1190,10 @@ export default function AccountingDocumentDetail() {
   const jvCanSendBack =
     isJournalVoucher && isView && !!journalCapabilities?.can_send_back;
 
-  // ApiError ทุกตัวผ่าน errorToast เพื่อแปลรหัส catalog (เช่น WORKFLOW_CREATOR_CANNOT_APPROVE,
-  // GL_JV_NUMBERED_DRAFT_NOT_DELETABLE) ไม่ใช่แค่รหัสสถานะแอป
+  // รหัส catalog (เช่น WORKFLOW_CREATOR_CANNOT_APPROVE, GL_JV_NUMBERED_DRAFT_NOT_DELETABLE)
+  // แปลผ่าน errorToast · error อื่นคงข้อความจาก server ไว้ (version conflict ฯลฯ)
   const onJournalActionError = (error: Error) =>
-    error instanceof ApiError
-      ? errorToast(error)
-      : toast.error(error.message);
+    hasCatalogCode(error) ? errorToast(error) : toast.error(error.message);
 
   function handleJournalApprove() {
     if (!journal) return;
