@@ -54,7 +54,7 @@ describe("Dimension with sub-values", () => {
     fireEvent.change(screen.getByLabelText(/Dimension Code/), {
       target: { value: "project" },
     });
-    fireEvent.change(screen.getByLabelText(/Dimension Name \(EN\)/), {
+    fireEvent.change(screen.getByLabelText(/^Caption/), {
       target: { value: "Project" },
     });
     await userEvent.click(screen.getByRole("combobox", { name: /Data Type/ }));
