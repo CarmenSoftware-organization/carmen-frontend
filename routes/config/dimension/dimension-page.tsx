@@ -72,7 +72,7 @@ export default function DimensionPage() {
     () =>
       dimensions
         .filter((item) =>
-          `${item.code} ${item.name} ${item.name_local ?? ""}`
+          `${item.code} ${item.name}`
             .toLowerCase()
             .includes(search.toLowerCase()),
         )
@@ -128,17 +128,6 @@ export default function DimensionPage() {
           >
             {row.original.name}
           </CellAction>
-        ),
-      },
-      {
-        accessorKey: "name_local",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Dimension Name (TH)" />
-        ),
-        cell: ({ row }) => (
-          <span className="text-muted-foreground">
-            {row.original.name_local || "—"}
-          </span>
         ),
       },
       {
@@ -202,13 +191,12 @@ export default function DimensionPage() {
       index: 60,
       code: 100,
       name: 180,
-      name_local: 180,
       data_type: 120,
       values_count: 150,
       is_active: 100,
       actions: 60,
     },
-    secondary: ["name_local", "data_type", "index"],
+    secondary: ["data_type", "index"],
   });
 
   const table = useReactTable({
@@ -250,7 +238,6 @@ export default function DimensionPage() {
         labels={{
           code: "Code",
           name: "Dimension Name (EN)",
-          name_local: "Dimension Name (TH)",
           data_type: "Data Type",
           values_count: "List Master Items",
           is_active: "Status",

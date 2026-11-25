@@ -67,7 +67,6 @@ export function DimensionDialog({
   const initial = getDimensionFormDefaults(item);
   const [code, setCode] = useState(initial.code);
   const [name, setName] = useState(initial.name);
-  const [nameLocal, setNameLocal] = useState(initial.name_local);
   const [active, setActive] = useState(initial.is_active);
   const [dataType, setDataType] = useState<DimensionDataType>(
     initial.data_type,
@@ -152,22 +151,21 @@ export function DimensionDialog({
                 onChange={(e) => setName(e.target.value)}
               />
             </Field>
-            <Field>
-              <FieldLabel htmlFor="dim-name-local">
-                Dimension Name (TH)
-              </FieldLabel>
-              <FieldInput
-                id="dim-name-local"
-                value={nameLocal}
-                maxLength={100}
-                placeholder="e.g. กลุ่มตลาด"
-                onChange={(e) => setNameLocal(e.target.value)}
-              />
-            </Field>
             <DimensionTypeFields
               dataType={dataType}
               disabled={readOnly || saving}
-              onDataTypeChange={setDataType}
+              onDataTypeChange={(next) => {
+                setDataType(next);
+                // ตารางซ่อนเมื่อไม่ใช่ lookup — ยกเลิกการลบ/error ที่ค้าง จะได้ไม่มีอะไรถูกส่งโดยมองไม่เห็น
+                if (next !== "lookup")
+                  setSubValues((current) =>
+                    current.map((row) => ({
+                      ...row,
+                      deleted: false,
+                      error: undefined,
+                    })),
+                  );
+              }}
             />
             <StatusSwitch
               id="dim-active"
@@ -218,7 +216,7 @@ export function DimensionDialog({
                     values: {
                       code: code.trim(),
                       name: name.trim(),
-                      name_local: nameLocal.trim() || null,
+                      name_local: initial.name_local || null,
                       is_active: active,
                       data_type: dataType,
                     },
