@@ -182,7 +182,7 @@ export function PeCloseTrack({ review }: PeCloseTrackProps) {
             <div className="min-w-0">
               <p
                 className={cn(
-                  "text-sm leading-5 font-medium",
+                  "text-xs leading-5 font-medium",
                   step.state === "pending"
                     ? "text-muted-foreground"
                     : "text-foreground",

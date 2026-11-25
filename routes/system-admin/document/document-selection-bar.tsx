@@ -43,7 +43,7 @@ export function DocumentSelectionBar({
   return (
     <div
       role="status"
-      className="bg-muted/60 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border px-3 py-2 text-sm"
+      className="bg-muted/60 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border px-3 py-2 text-xs"
     >
       <span className="font-medium">
         {allMatching

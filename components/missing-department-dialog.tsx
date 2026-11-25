@@ -49,7 +49,7 @@ export function MissingDepartmentDialog() {
         </AlertDialogHeader>
 
         {details.length > 0 && (
-          <dl className="bg-muted grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-md px-4 py-3 text-sm">
+          <dl className="bg-muted grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-md px-4 py-3 text-xs">
             {details.map((d) => (
               <div key={d.label} className="contents">
                 <dt className="text-muted-foreground">{d.label}</dt>
@@ -62,7 +62,7 @@ export function MissingDepartmentDialog() {
         )}
 
         {/* จัดตามหัว dialog: กลางบนมือถือ ชิดซ้ายตั้งแต่ sm (AlertDialogHeader ทำแบบเดียวกัน) */}
-        <p className="text-center text-sm font-medium sm:text-left">
+        <p className="text-center text-xs font-medium sm:text-left">
           {t("missingDepartmentAction")}
         </p>
 

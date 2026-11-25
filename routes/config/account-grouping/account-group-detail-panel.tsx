@@ -52,7 +52,7 @@ export function AccountGroupDetailPanel({
     return (
       <div className="text-muted-foreground @container flex h-full min-w-0 flex-col items-center justify-center p-8 text-center">
         <FolderTree className="mb-3 size-12 opacity-30" />
-        <p className="text-sm font-medium">{t("noGroupSelected")}</p>
+        <p className="text-xs font-medium">{t("noGroupSelected")}</p>
       </div>
     );
   }

@@ -114,7 +114,7 @@ function AskAiForm() {
             count={items.length}
           >
             {items.length === 0 ? (
-              <p className="text-muted-foreground text-sm">{t("empty")}</p>
+              <p className="text-muted-foreground text-xs">{t("empty")}</p>
             ) : (
               // เต็มความกว้างจอ: provider เป็นช่องในกริด แถวที่ขยายกินเต็มแถวของตัวเอง
               // (skill carmen-blue-ui-design) — ยังขยายได้ทีละตัวเหมือนเดิม

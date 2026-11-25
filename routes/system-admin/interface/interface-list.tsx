@@ -201,7 +201,7 @@ export default function InterfaceList() {
       )}
 
       {!isError && !isLoading && groups.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t("empty")}</p>
+        <p className="text-muted-foreground text-xs">{t("empty")}</p>
       )}
 
       {!isError && !isLoading && groups.length > 0 && (
@@ -280,7 +280,7 @@ export default function InterfaceList() {
                           <StatusDot state={state} />
                           <span className="flex min-w-0 flex-col">
                             <span className="flex min-w-0 items-center gap-2">
-                              <span className="truncate text-sm font-medium">
+                              <span className="truncate text-xs font-medium">
                                 {t(`${category.key}.brand.${brand.key}`)}
                               </span>
                               {entitlement === "expired" && (

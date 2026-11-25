@@ -19,7 +19,7 @@ export function ScHistory({ sc }: { readonly sc: ScDetail }) {
   const { dateTimeFormat } = useProfile();
 
   if (sc.history.length === 0) {
-    return <p className="text-muted-foreground text-sm">{t("empty")}</p>;
+    return <p className="text-muted-foreground text-xs">{t("empty")}</p>;
   }
 
   const detailOf = (h: ScHistoryEntry): string | null => {
@@ -48,14 +48,14 @@ export function ScHistory({ sc }: { readonly sc: ScDetail }) {
             key={`${h.at}-${h.action}-${i}`}
             className="border-border border-l-2 pl-3"
           >
-            <div className="text-sm font-medium">
+            <div className="text-xs font-medium">
               {t(`actions.${h.action}`, {
                 sc_no: String(h.text_params.sc_no ?? ""),
                 file_name: String(h.text_params.file_name ?? ""),
               })}
             </div>
             {detail && (
-              <div className="text-muted-foreground text-sm">{detail}</div>
+              <div className="text-muted-foreground text-xs">{detail}</div>
             )}
             <div className="text-muted-foreground text-xs">
               {formatDate(h.at, dateTimeFormat)}

@@ -35,11 +35,11 @@ export function DepartmentsSection({
     >
       {isDisabled ? (
         departmentName ? (
-          <FieldPlainText className="block min-h-0 text-sm">
+          <FieldPlainText className="block min-h-0 text-xs">
             {departmentName}
           </FieldPlainText>
         ) : (
-          <span className="text-muted-foreground/60 text-sm">—</span>
+          <span className="text-muted-foreground/60 text-xs">—</span>
         )
       ) : (
         <Controller

@@ -195,7 +195,7 @@ export function HistoryTimelineItem({
           ผิดปกติเท่านั้น — แถวส่วนใหญ่จึงมีแค่หัวข้อ ไม่แย่งที่กัน */}
       {(title || badge) && (
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          {title && <span className="block text-sm font-medium">{title}</span>}
+          {title && <span className="block text-xs font-medium">{title}</span>}
           {badge}
         </div>
       )}

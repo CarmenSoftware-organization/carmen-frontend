@@ -187,7 +187,7 @@ export function RecipeHeroFields({
           {/* Description preview */}
           <p
             className={cn(
-              "text-sm leading-relaxed",
+              "text-xs leading-relaxed",
               description ? "text-foreground" : "text-muted-foreground italic",
             )}
           >

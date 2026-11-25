@@ -186,7 +186,7 @@ export default function PeReview() {
               className="bg-card overflow-hidden rounded-xl border"
             >
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 md:px-5">
-                <p className="text-foreground flex items-center gap-2 text-sm font-medium tabular-nums">
+                <p className="text-foreground flex items-center gap-2 text-xs font-medium tabular-nums">
                   <CalendarRange
                     className="text-muted-foreground size-4"
                     aria-hidden="true"

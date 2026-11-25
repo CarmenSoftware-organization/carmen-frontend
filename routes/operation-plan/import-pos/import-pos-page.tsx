@@ -26,7 +26,9 @@ export function ImportPosPage() {
   const [importId] = useURL("import");
 
   const writable = (b: "simphony" | "micros3700") =>
-    enabledBrands.includes(b) && canWrite && entitlementOf("pos", b) !== "expired";
+    enabledBrands.includes(b) &&
+    canWrite &&
+    entitlementOf("pos", b) !== "expired";
 
   return (
     <ListPageShell
@@ -42,7 +44,7 @@ export function ImportPosPage() {
       {enabledBrands.includes("simphony") && (
         <div>
           <PosSftpLastPull enabled />
-          <p className="text-muted-foreground mt-2 text-sm">
+          <p className="text-muted-foreground mt-2 text-xs">
             <Link
               to="/system-admin/interface/pos/simphony"
               className="text-primary hover:underline"

@@ -140,7 +140,7 @@ export function EditableField({
           maxLength={resolvedMaxLength}
           {...form.register(name, { valueAsNumber: type === "number" })}
           aria-invalid={!!error}
-          className={cn("h-8 text-sm", mono && "font-mono text-xs")}
+          className={cn("h-8 text-xs", mono && "font-mono text-xs")}
         />
       )}
       {error && <p className="text-destructive text-xs">{error}</p>}
@@ -187,7 +187,7 @@ function SelectControl({
               {merged.map((o) => {
                 const ex = exampleOf?.(o);
                 return (
-                  <SelectItem key={o} value={o} className="text-sm">
+                  <SelectItem key={o} value={o} className="text-xs">
                     {o}
                     {/* ตัวอย่างโชว์เฉพาะในรายการ — ใน trigger มันโดนตัดครึ่ง
                         (Radix คัดลอก ItemText ทั้งก้อนไปแสดงที่ trigger) */}
@@ -423,7 +423,7 @@ export function ConfigField({
     control = (
       <span
         className={cn(
-          "inline-flex items-center gap-2 text-sm",
+          "inline-flex items-center gap-2 text-xs",
           muted ? "text-muted-foreground" : "text-foreground font-medium",
         )}
       >
@@ -470,7 +470,7 @@ export function ConfigField({
               </SelectTrigger>
               <SelectContent>
                 {options.map((o) => (
-                  <SelectItem key={o.value} value={o.value} className="text-sm">
+                  <SelectItem key={o.value} value={o.value} className="text-xs">
                     {o.label}
                   </SelectItem>
                 ))}
@@ -495,7 +495,7 @@ export function ConfigField({
         {suffix && (
           <span
             aria-hidden
-            className="text-muted-foreground pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm"
+            className="text-muted-foreground pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs"
           >
             {suffix}
           </span>

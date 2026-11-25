@@ -322,12 +322,12 @@ export function PeDocumentsDialog({
                 <DataGridTable />
                 <div ref={sentinelRef} aria-hidden="true" className="h-px" />
                 {isFetchingNextPage && (
-                  <div className="text-muted-foreground flex items-center justify-center gap-2 py-3 text-sm">
+                  <div className="text-muted-foreground flex items-center justify-center gap-2 py-3 text-xs">
                     <Loader2 className="size-4 animate-spin" />
                   </div>
                 )}
                 {loadMoreFailed && (
-                  <div className="flex items-center justify-center gap-3 py-3 text-sm">
+                  <div className="flex items-center justify-center gap-3 py-3 text-xs">
                     <span className="text-muted-foreground">
                       {t("loadMoreFailed")}
                     </span>

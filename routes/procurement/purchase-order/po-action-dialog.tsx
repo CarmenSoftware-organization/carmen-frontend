@@ -267,7 +267,7 @@ export function PoActionDialog({
                   </span>
                 </div>
                 <Textarea
-                  className="resize-none text-sm"
+                  className="resize-none text-xs"
                   placeholder={tfl("reason")}
                   maxLength={256}
                   rows={3}

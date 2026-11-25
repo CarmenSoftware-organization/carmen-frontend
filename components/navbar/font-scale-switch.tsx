@@ -89,7 +89,7 @@ export function FontScaleSwitch() {
             <DropdownMenuItem
               key={option}
               onClick={() => select(option)}
-              className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm"
+              className="cursor-pointer gap-2 rounded-md px-2 py-2 text-xs"
               // menuitem ไม่รองรับ aria-checked — ตัวเลือกแบบเลือกได้หนึ่งเดียวต้องเป็น menuitemradio
               role="menuitemradio"
               aria-checked={isActive}

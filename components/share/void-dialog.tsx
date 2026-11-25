@@ -69,7 +69,7 @@ export function VoidDialog({
                 </DialogDescription>
               )}
               {description && !isStringDescription && (
-                <div className="text-muted-foreground mt-1 text-sm">
+                <div className="text-muted-foreground mt-1 text-xs">
                   {description}
                 </div>
               )}
@@ -86,7 +86,7 @@ export function VoidDialog({
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder={tfl("voidReasonPlaceholder")}
-            className="resize-none text-sm"
+            className="resize-none text-xs"
             rows={3}
             maxLength={REASON_MAX}
             disabled={isPending}

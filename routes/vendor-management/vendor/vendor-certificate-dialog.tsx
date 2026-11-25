@@ -192,7 +192,7 @@ export function VendorCertificateDialog({
                       }
                       disabled={isPending}
                       placeholder={t("selectCertificate")}
-                      className="h-8 w-full text-sm"
+                      className="h-8 w-full text-xs"
                       error={
                         form.formState.errors.master_certificate_id?.message
                       }

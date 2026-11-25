@@ -225,7 +225,12 @@ export function PoSendEmailDialog({
     );
 
   const bodyFrom = (template?: EmailTemplate) =>
-    fillTemplate(template?.body_template ?? "", placeholderValues, "html", "po");
+    fillTemplate(
+      template?.body_template ?? "",
+      placeholderValues,
+      "html",
+      "po",
+    );
 
   // เติมค่าตั้งต้นครั้งเดียวต่อการเปิด dialog หนึ่งรอบ — รอทั้งโปรไฟล์และผู้ขายโหลด
   // เสร็จก่อน (ไม่งั้น "To" จะว่างเพราะยังไม่รู้อีเมลผู้ขาย) ปิดแล้วเปิดใหม่ = เริ่มนับหนึ่งใหม่
@@ -376,11 +381,13 @@ export function PoSendEmailDialog({
                 className="text-muted-foreground size-8"
                 aria-hidden="true"
               />
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs">
                 {profilesError ? t("loadError") : t("noProfiles")}
               </p>
               <Button asChild size="sm" variant="outline">
-                <Link to="/system-admin/email-profile">{t("goToSettings")}</Link>
+                <Link to="/system-admin/email-profile">
+                  {t("goToSettings")}
+                </Link>
               </Button>
             </div>
           )}
@@ -407,8 +414,13 @@ export function PoSendEmailDialog({
 
               {poTemplates.length > 0 && (
                 <Field>
-                  <FieldLabel htmlFor="pse-template">{t("template")}</FieldLabel>
-                  <Select value={templateId} onValueChange={handleTemplateChange}>
+                  <FieldLabel htmlFor="pse-template">
+                    {t("template")}
+                  </FieldLabel>
+                  <Select
+                    value={templateId}
+                    onValueChange={handleTemplateChange}
+                  >
                     <SelectTrigger id="pse-template" className="w-full">
                       <SelectValue placeholder={t("templatePlaceholder")} />
                     </SelectTrigger>
@@ -461,12 +473,15 @@ export function PoSendEmailDialog({
                   onChange={(e) => {
                     isSubjectDirtyRef.current = true;
                     setSubject(e.target.value);
-                    if (e.target.value.trim().length > 0) setSubjectError(false);
+                    if (e.target.value.trim().length > 0)
+                      setSubjectError(false);
                   }}
                   aria-invalid={subjectError}
                   disabled={sendEmail.isPending}
                 />
-                {subjectError && <FieldError>{t("subjectRequired")}</FieldError>}
+                {subjectError && (
+                  <FieldError>{t("subjectRequired")}</FieldError>
+                )}
               </Field>
 
               <Field data-invalid={bodyError}>
@@ -496,7 +511,9 @@ export function PoSendEmailDialog({
                   onCheckedChange={(v) => setAttachPdf(v === true)}
                   disabled={sendEmail.isPending}
                 />
-                <FieldLabel htmlFor="pse-attach-pdf">{t("attachPdf")}</FieldLabel>
+                <FieldLabel htmlFor="pse-attach-pdf">
+                  {t("attachPdf")}
+                </FieldLabel>
               </Field>
             </div>
           )}

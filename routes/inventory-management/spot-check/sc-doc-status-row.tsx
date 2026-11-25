@@ -52,7 +52,7 @@ export function ScDocStatusRow({
         <span
           className={cn(
             "text-foreground truncate font-semibold tracking-wider",
-            isSm ? "text-xs" : "text-sm",
+            isSm ? "text-xs" : "text-xs",
           )}
         >
           {docNo}

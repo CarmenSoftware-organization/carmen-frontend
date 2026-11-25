@@ -218,7 +218,7 @@ export function EntryNotesDialog({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder={t("notesPlaceholder")}
-              className="border-border/40 focus-visible:border-primary bg-card min-h-20 rounded-lg border text-sm shadow-none focus-visible:ring-0"
+              className="border-border/40 focus-visible:border-primary bg-card min-h-20 rounded-lg border text-xs shadow-none focus-visible:ring-0"
               maxLength={256}
             />
           </div>

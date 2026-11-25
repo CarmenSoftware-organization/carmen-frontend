@@ -81,7 +81,7 @@ function RowTaxRate({
     ],
   });
   return (
-    <span className="text-muted-foreground text-sm tabular-nums">
+    <span className="text-muted-foreground text-xs tabular-nums">
       {formatTaxRate(rate, !!profileId)}
     </span>
   );
@@ -117,7 +117,7 @@ function TaxProfileCell({
             );
           }}
           placeholder="—"
-          className="h-9 w-full text-sm"
+          className="h-9 w-full text-xs"
         >
           <SelectContent>
             {taxProfiles.map((tp) => (
@@ -183,7 +183,7 @@ function RowTaxAmount({
 }) {
   const { taxAmt } = useRowTaxParts(form, index);
   return (
-    <span className="text-foreground text-sm tabular-nums">
+    <span className="text-foreground text-xs tabular-nums">
       {fmtMoney(taxAmt)}
     </span>
   );
@@ -198,7 +198,7 @@ function RowTotal({
 }) {
   const { total } = useRowTaxParts(form, index);
   return (
-    <span className="text-foreground text-sm font-medium tabular-nums">
+    <span className="text-foreground text-xs font-medium tabular-nums">
       {fmtMoney(total)}
     </span>
   );

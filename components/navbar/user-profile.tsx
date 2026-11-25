@@ -70,7 +70,7 @@ function UserAvatar({
         aria-hidden="true"
         className={cn(
           "bg-primary text-primary-foreground font-semibold",
-          isLarge ? "text-sm" : "text-micro-legal",
+          isLarge ? "text-xs" : "text-micro-legal",
         )}
       >
         {fallbackText}

@@ -316,7 +316,7 @@ export function WfStageList({
             {filteredFields.length === 0 ? (
               <li className="animate-in fade-in zoom-in-95 flex flex-col items-center justify-center py-10 text-center duration-200">
                 <Waypoints className="text-muted-foreground/30 mb-3 size-10" />
-                <p className="text-foreground text-sm font-medium">
+                <p className="text-foreground text-xs font-medium">
                   {tc("noData") || "No stages found"}
                 </p>
                 {!searchQuery && (
@@ -369,7 +369,7 @@ export function WfStageList({
 
         <DragOverlay>
           {activeDragIndex >= 0 ? (
-            <div className="bg-background ring-border flex scale-[1.02] items-center gap-3 rounded-lg border px-3 py-2 text-sm opacity-90 shadow-xl ring-1">
+            <div className="bg-background ring-border flex scale-[1.02] items-center gap-3 rounded-lg border px-3 py-2 text-xs opacity-90 shadow-xl ring-1">
               <GripVertical className="text-muted-foreground/50 size-4" />
               <span className="font-medium">
                 {watchedStages?.[activeDragIndex]?.name ??

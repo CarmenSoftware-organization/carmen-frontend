@@ -263,7 +263,7 @@ export function Component() {
       {isConflict ? (
         // ไม่มีปุ่มใด ๆ โดยเจตนา ทุกทางที่กดได้จากตรงนี้พาไปตัน — เข้าสู่ระบบก็ไม่ได้เพราะบัญชีที่ชน
         // เป็นของคนอื่น สมัครก็ได้ 409 การให้ปุ่มที่กดแล้วล้มเหลวแย่กว่าการบอกตรง ๆ ว่าต้องรอผู้ดูแล
-        <p className="text-muted-foreground mt-4 text-sm">
+        <p className="text-muted-foreground mt-4 text-xs">
           {t("invitation.addressConflict")}
         </p>
       ) : (
@@ -290,7 +290,9 @@ export function Component() {
           )}
           {/* Google signs the invitee in (creating the account if the address is new) and brings them back here,
               signed in: they then press Accept themselves, and the backend checks the address matches. */}
-          <GoogleSignInButton next={`/invitations/${encodeURIComponent(token)}`} />
+          <GoogleSignInButton
+            next={`/invitations/${encodeURIComponent(token)}`}
+          />
         </div>
       )}
     </AuthSplitShell>

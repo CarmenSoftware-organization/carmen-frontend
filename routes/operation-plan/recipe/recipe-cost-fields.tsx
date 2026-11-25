@@ -296,7 +296,7 @@ export function RecipeCostFields({
                       max={100}
                       disabled={isDisabled}
                       size="sm"
-                      className="pr-6 text-right text-sm tabular-nums"
+                      className="pr-6 text-right text-xs tabular-nums"
                       error={errors.target_food_cost_percentage?.message}
                       errorIconAlign="left"
                       {...form.register("target_food_cost_percentage", {
@@ -338,7 +338,7 @@ export function RecipeCostFields({
                       max={100}
                       disabled={isDisabled}
                       size="sm"
-                      className="pr-6 text-right text-sm tabular-nums"
+                      className="pr-6 text-right text-xs tabular-nums"
                       error={errors.max_food_cost_percentage?.message}
                       errorIconAlign="left"
                       {...form.register(

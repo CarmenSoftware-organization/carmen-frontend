@@ -374,7 +374,7 @@ function MultiLookupControl({
         {options.map(({ item, value }) => (
           <label
             key={value}
-            className="flex cursor-pointer items-center gap-1.5 text-sm"
+            className="flex cursor-pointer items-center gap-1.5 text-xs"
           >
             <Checkbox
               checked={selected.includes(value)}
@@ -639,8 +639,11 @@ function ReportField({
 }
 
 const cellKey = (cell: DialogCell): string => {
-  if (cell.kind === "group") return `group-${cell.fields[0]?.control.name ?? ""}`;
-  return cell.kind === "range" ? `${cell.from.name}-${cell.to.name}` : cell.control.name;
+  if (cell.kind === "group")
+    return `group-${cell.fields[0]?.control.name ?? ""}`;
+  return cell.kind === "range"
+    ? `${cell.from.name}-${cell.to.name}`
+    : cell.control.name;
 };
 
 function collectDataSources(fields: FormField[]): string[] {
@@ -764,9 +767,10 @@ export function ReportParamDialog({
     cell.kind === "group"
       ? {
           ...cell,
-          fields: cell.fields.map(
-            (f): SingleField => ({ ...f, control: injectLookup(f.control) }),
-          ),
+          fields: cell.fields.map((f): SingleField => ({
+            ...f,
+            control: injectLookup(f.control),
+          })),
         }
       : enrichField(cell),
   );
@@ -790,7 +794,8 @@ export function ReportParamDialog({
   };
 
   // ช่องที่มีเงื่อนไข (TextBox ตัวเลข) ต้องผ่านก่อน — browser ชี้ช่องที่ผิดให้เอง
-  const formIsValid = () => !formRef.current || formRef.current.reportValidity();
+  const formIsValid = () =>
+    !formRef.current || formRef.current.reportValidity();
 
   const handleSubmit = () => {
     if (!report || !onRun || !formIsValid()) return;
@@ -839,18 +844,26 @@ export function ReportParamDialog({
                 </p>
               ) : (
                 <FieldGroup
-                  className={cn("grid grid-cols-1 gap-3", GRID_COLS[parsed.cols])}
+                  className={cn(
+                    "grid grid-cols-1 gap-3",
+                    GRID_COLS[parsed.cols],
+                  )}
                 >
                   {enrichedCells.map((cell) =>
                     cell.kind === "group" ? (
                       <div
                         key={cellKey(cell)}
                         role={cell.label ? "group" : undefined}
-                        aria-labelledby={cell.label ? `${cellKey(cell)}-heading` : undefined}
+                        aria-labelledby={
+                          cell.label ? `${cellKey(cell)}-heading` : undefined
+                        }
                         className={cn("space-y-2", COL_SPAN[cell.colSpan])}
                       >
                         {cell.label && (
-                          <p id={`${cellKey(cell)}-heading`} className="text-sm font-medium">
+                          <p
+                            id={`${cellKey(cell)}-heading`}
+                            className="text-xs font-medium"
+                          >
                             {cell.label}
                           </p>
                         )}
@@ -861,7 +874,11 @@ export function ReportParamDialog({
                           )}
                         >
                           {cell.fields.map((f) => (
-                            <ReportField key={f.control.name} field={f} periods={periods} />
+                            <ReportField
+                              key={f.control.name}
+                              field={f}
+                              periods={periods}
+                            />
                           ))}
                         </div>
                       </div>

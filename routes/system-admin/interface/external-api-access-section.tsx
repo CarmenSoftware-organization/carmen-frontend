@@ -170,7 +170,7 @@ export function ExternalApiAccessSection() {
     body = <Skeleton className="h-24 w-full" />;
   } else if (!readable) {
     // query ถูกปิด (ใบ INF อ่านไม่ได้) — ห้ามบอกว่า "ยังไม่มี key" เพราะเราไม่รู้
-    body = <p className="text-muted-foreground text-sm">{t("unavailable")}</p>;
+    body = <p className="text-muted-foreground text-xs">{t("unavailable")}</p>;
   } else if (query.isError) {
     body = (
       <ErrorState error={query.error} onRetry={() => void query.refetch()} />
@@ -178,7 +178,7 @@ export function ExternalApiAccessSection() {
   } else if (!info?.exists) {
     body = (
       <div className="space-y-3">
-        <p className="text-muted-foreground text-sm">{t("noKey")}</p>
+        <p className="text-muted-foreground text-xs">{t("noKey")}</p>
         {canEdit && (
           <Button type="button" size="sm" onClick={onCreate} disabled={busy}>
             <KeyRound aria-hidden="true" />

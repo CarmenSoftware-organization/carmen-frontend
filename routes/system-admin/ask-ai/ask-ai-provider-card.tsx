@@ -90,7 +90,7 @@ export function AskAiProviderCard({
               <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 <span
                   className={cn(
-                    "text-sm font-medium",
+                    "text-xs font-medium",
                     !draft.enabled && "text-muted-foreground",
                   )}
                 >

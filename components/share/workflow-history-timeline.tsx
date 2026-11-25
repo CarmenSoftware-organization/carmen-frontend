@@ -91,7 +91,7 @@ export function WorkflowHistoryTimeline({
   const { dateFormat } = useProfile();
 
   if (!history || history.length === 0) {
-    return <p className="text-muted-foreground text-sm">{emptyLabel}</p>;
+    return <p className="text-muted-foreground text-xs">{emptyLabel}</p>;
   }
 
   // Reverse เพื่อให้ล่าสุดขึ้นบนสุด

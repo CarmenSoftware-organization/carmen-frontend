@@ -205,7 +205,7 @@ function PaymentAllocationOptions({
   const { dateFormat } = useProfile();
 
   if (docs.length === 0)
-    return <p className="text-muted-foreground text-sm">{t("empty")}</p>;
+    return <p className="text-muted-foreground text-xs">{t("empty")}</p>;
 
   return (
     <div className="flex flex-col gap-4">
@@ -371,7 +371,7 @@ export function PaymentAllocationsReadOnly({
     return [...map.entries()];
   }, [allocations]);
   if (groups.length === 0)
-    return <p className="text-muted-foreground text-sm">{t("emptyRead")}</p>;
+    return <p className="text-muted-foreground text-xs">{t("emptyRead")}</p>;
   return (
     <div className="flex flex-col gap-4">
       {groups.map(([invoiceId, rows]) => (

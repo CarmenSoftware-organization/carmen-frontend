@@ -486,7 +486,7 @@ export function ContractDialog({
               }
             />
             {error && (
-              <p role="alert" className="text-destructive text-sm">
+              <p role="alert" className="text-destructive text-xs">
                 {error}
               </p>
             )}

@@ -96,7 +96,7 @@ export function StageRailSummary({
   return (
     <>
       <span className="flex items-center gap-1.5">
-        <span className="text-foreground truncate text-sm font-medium">
+        <span className="text-foreground truncate text-xs font-medium">
           {name}
         </span>
         {isHod && !isLast && (

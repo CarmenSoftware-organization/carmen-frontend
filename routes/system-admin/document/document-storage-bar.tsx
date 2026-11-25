@@ -30,7 +30,7 @@ function QuotaBar({ usage }: { readonly usage: StorageKindUsage }) {
   return (
     <div className="min-w-0 space-y-1">
       {/* ชื่อกับยอดใช้อยู่ติดกันชิดซ้าย — justify-between บนจอกว้างทำให้ห่างกันทั้งความกว้างช่อง */}
-      <div className="flex flex-wrap items-baseline gap-x-2 text-sm">
+      <div className="flex flex-wrap items-baseline gap-x-2 text-xs">
         <span className="font-medium capitalize">
           {t(`kind.${usage.kind}`)}
         </span>

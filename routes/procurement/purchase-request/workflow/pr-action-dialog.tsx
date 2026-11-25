@@ -257,7 +257,7 @@ export function PrActionDialog({
                   </span>
                 </div>
                 <Textarea
-                  className="resize-none text-sm"
+                  className="resize-none text-xs"
                   placeholder={t("reasonPlaceholder")}
                   maxLength={256}
                   rows={3}

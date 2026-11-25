@@ -24,7 +24,7 @@ export function PlVoidBanner({ priceList }: PlVoidBannerProps) {
   return (
     <div
       role="status"
-      className="bg-muted mb-4 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm"
+      className="bg-muted mb-4 flex items-start gap-3 rounded-lg border px-4 py-3 text-xs"
     >
       <Ban className="text-destructive mt-0.5 size-4 shrink-0" aria-hidden />
       <div className="min-w-0 space-y-1">

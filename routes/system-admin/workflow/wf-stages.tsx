@@ -48,7 +48,7 @@ export function WfStages({
     <div className="pt-4">
       <div className="@container min-w-0">
         {fields.length === 0 ? (
-          <p className="text-muted-foreground py-10 text-center text-sm">
+          <p className="text-muted-foreground py-10 text-center text-xs">
             {t("noStages")}
           </p>
         ) : (

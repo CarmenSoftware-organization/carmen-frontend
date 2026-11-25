@@ -151,7 +151,9 @@ export function ScDetailPage({ id }: ScDetailPageProps) {
       <Tabs
         value={tab}
         onValueChange={(v) =>
-          setURLParams({ tab: v === (isVoided ? "ingredients" : "sales") ? "" : v })
+          setURLParams({
+            tab: v === (isVoided ? "ingredients" : "sales") ? "" : v,
+          })
         }
       >
         <TabsList>
@@ -163,7 +165,7 @@ export function ScDetailPage({ id }: ScDetailPageProps) {
         </TabsList>
         <TabsContent value="sales" className="mt-4">
           {isVoided ? (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-xs">
               {sc.replaced_by ? (
                 <>
                   {t("hint.salesMovedPrefix")}{" "}

@@ -185,7 +185,7 @@ export function NotificationItemContent({
             >
               <p
                 className={cn(
-                  "group-hover:text-primary text-sm leading-tight transition-colors duration-300",
+                  "group-hover:text-primary text-xs leading-tight transition-colors duration-300",
                   clampMessage ? "line-clamp-2 break-words" : "truncate",
                   isUnread
                     ? "text-foreground font-semibold"

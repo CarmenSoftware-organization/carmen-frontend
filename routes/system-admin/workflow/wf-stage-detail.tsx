@@ -47,7 +47,7 @@ export function WfStageDetail({
       <div className="flex flex-col items-center justify-center py-6 text-center">
         <CheckCircle2 className="text-success-foreground mb-2 size-8" />
         <p className="text-sm font-semibold">{t("completedStage")}</p>
-        <p className="text-muted-foreground mt-0.5 text-sm">
+        <p className="text-muted-foreground mt-0.5 text-xs">
           {t("completedStageDesc")}
         </p>
       </div>

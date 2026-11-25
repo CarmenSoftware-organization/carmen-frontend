@@ -54,7 +54,7 @@ export function JvRejectDialog({
             value={reason}
             maxLength={REASON_MAX}
             rows={3}
-            className="resize-none text-sm"
+            className="resize-none text-xs"
             placeholder={t("rejectReasonPlaceholder")}
             onChange={(e) => setReason(e.target.value)}
           />

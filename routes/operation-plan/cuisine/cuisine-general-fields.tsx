@@ -46,7 +46,7 @@ export function CuisineGeneralFields({
         {/* region มีจุดสีนำหน้า (CuisineRegionLabel) — ทรงเดียวกับ SettingField แต่ค่าเป็น node */}
         <div className="min-w-0">
           <div className="text-muted-foreground text-xs">{tfl("region")}</div>
-          <div className="mt-0.5 text-sm">
+          <div className="mt-0.5 text-xs">
             {region ? (
               <CuisineRegionLabel region={region} />
             ) : (

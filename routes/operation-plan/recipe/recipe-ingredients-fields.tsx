@@ -358,7 +358,7 @@ export function RecipeIngredientsFields({
       }
     >
       {isNew ? (
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-xs">
           {t("ingredientsAfterSave")}
         </p>
       ) : fields.length === 0 ? (
@@ -721,7 +721,7 @@ function IngredientRow({
           <span className={CARD_LABEL}>{tfl("unit")}</span>
           {isRecipe ? (
             <div
-              className="text-muted-foreground flex h-8 items-center truncate px-2 text-sm"
+              className="text-muted-foreground flex h-8 items-center truncate px-2 text-xs"
               aria-label={tfl("unit")}
             >
               {recipeUnit?.name ?? savedUnit?.name ?? "—"}
@@ -997,7 +997,7 @@ function LineCostValue({
         </span>
       );
     default:
-      return <span className="text-muted-foreground text-sm">—</span>;
+      return <span className="text-muted-foreground text-xs">—</span>;
   }
 }
 

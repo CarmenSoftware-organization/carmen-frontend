@@ -144,7 +144,7 @@ export function ArInvoiceReferences({
       {references.map((reference) => (
         <div
           key={reference.ref_ar_invoice_id}
-          className="flex min-w-0 items-center gap-3 border-b py-2 text-sm"
+          className="flex min-w-0 items-center gap-3 border-b py-2 text-xs"
         >
           <span className="min-w-0 flex-1 truncate">
             {query.data?.data.find(

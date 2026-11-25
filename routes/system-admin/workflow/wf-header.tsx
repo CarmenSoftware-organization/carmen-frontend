@@ -128,7 +128,7 @@ export function WfHeader({
         {quietCounts.map((c) => (
           <span
             key={c.key}
-            className="text-muted-foreground text-sm whitespace-nowrap tabular-nums @max-xl/doc-header:text-xs"
+            className="text-muted-foreground text-xs whitespace-nowrap tabular-nums @max-xl/doc-header:text-xs"
           >
             {c.label}: {c.count}
           </span>
@@ -146,7 +146,7 @@ export function WfHeader({
         orientation="vertical"
         className="mx-0.5 h-3.5 @max-xl/doc-header:hidden"
       />
-      <span className="text-muted-foreground text-sm whitespace-nowrap @max-xl/doc-header:text-xs">
+      <span className="text-muted-foreground text-xs whitespace-nowrap @max-xl/doc-header:text-xs">
         {typeLabels[workflow.workflow_type] ?? workflow.workflow_type}
       </span>
       {docBadges}

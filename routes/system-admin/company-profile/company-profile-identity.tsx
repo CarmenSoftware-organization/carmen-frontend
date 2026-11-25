@@ -88,7 +88,7 @@ export function IdentityCard({
                 <TooltipContent>{t("identity.lockedHint")}</TooltipContent>
               </Tooltip>
             </dt>
-            <dd className="mt-0.5 truncate text-sm font-medium">
+            <dd className="mt-0.5 truncate text-xs font-medium">
               {f.value ?? <span className="text-muted-foreground">—</span>}
             </dd>
           </div>

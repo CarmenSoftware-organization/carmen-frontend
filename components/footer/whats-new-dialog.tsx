@@ -47,7 +47,7 @@ function ChangeList({
       {items.map((item) => (
         <li
           key={item.hash}
-          className="flex items-start gap-3 text-sm leading-relaxed"
+          className="flex items-start gap-3 text-xs leading-relaxed"
         >
           <div
             className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${dotClass}`}
@@ -84,7 +84,7 @@ function VersionBlock({ entry }: { readonly entry: VersionEntry }) {
         </span>
       </div>
       {sections.length === 0 ? (
-        <p className="text-muted-foreground text-sm italic">
+        <p className="text-muted-foreground text-xs italic">
           {entry.note === "init" ? "Initial release." : "No notable changes."}
         </p>
       ) : (

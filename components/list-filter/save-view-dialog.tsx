@@ -128,7 +128,7 @@ export function SaveViewDialog({
                 <RadioGroupItem value="user" id="save-view-scope-user" />
                 <Label
                   htmlFor="save-view-scope-user"
-                  className="cursor-pointer text-sm font-normal"
+                  className="cursor-pointer text-xs font-normal"
                 >
                   {tv("scopeUser")}
                 </Label>
@@ -138,7 +138,7 @@ export function SaveViewDialog({
                   <RadioGroupItem value="bu" id="save-view-scope-bu" />
                   <Label
                     htmlFor="save-view-scope-bu"
-                    className="cursor-pointer text-sm font-normal"
+                    className="cursor-pointer text-xs font-normal"
                   >
                     {tv("scopeBu")}
                   </Label>

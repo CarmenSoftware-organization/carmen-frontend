@@ -265,7 +265,7 @@ function PlViewFields({
         <div className="text-muted-foreground text-xs">
           {tfl("effectivePeriod")}
         </div>
-        <div className="text-foreground mt-0.5 text-sm font-medium">
+        <div className="text-foreground mt-0.5 text-xs font-medium">
           {from && to ? (
             <PlPeriodCell period={`${from} - ${to}`} detail />
           ) : (

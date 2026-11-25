@@ -93,10 +93,10 @@ export function WfJvScope({ form, isDisabled = false }: WfJvScopeProps) {
         </h3>
         <div className="max-h-56 space-y-1.5 overflow-y-auto rounded-md border p-3">
           {isLoading && (
-            <p className="text-muted-foreground text-sm">{tc("loading")}</p>
+            <p className="text-muted-foreground text-xs">{tc("loading")}</p>
           )}
           {!isLoading && visible.length === 0 && unknownIds.length === 0 && (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-xs">
               {t("jvScopeNoPrefix")}
             </p>
           )}
@@ -114,7 +114,7 @@ export function WfJvScope({ form, isDisabled = false }: WfJvScopeProps) {
                     })
                   }
                 />
-                <Label htmlFor={id} className="text-sm font-normal">
+                <Label htmlFor={id} className="text-xs font-normal">
                   {o.label}
                 </Label>
                 {!o.isActive && (
@@ -137,7 +137,7 @@ export function WfJvScope({ form, isDisabled = false }: WfJvScopeProps) {
               />
               <Label
                 htmlFor={`${uid}-p-${pid}`}
-                className="text-muted-foreground text-sm font-normal"
+                className="text-muted-foreground text-xs font-normal"
               >
                 {t("jvScopePrefixMissing")}
               </Label>
@@ -166,7 +166,7 @@ export function WfJvScope({ form, isDisabled = false }: WfJvScopeProps) {
                     update({ sources: toggle(sources, s, c === true) })
                   }
                 />
-                <Label htmlFor={id} className="text-sm font-normal">
+                <Label htmlFor={id} className="text-xs font-normal">
                   {t(SOURCE_LABEL_KEY[s])}
                 </Label>
               </div>
@@ -178,12 +178,12 @@ export function WfJvScope({ form, isDisabled = false }: WfJvScopeProps) {
         </p>
       </section>
 
-      <p className="bg-muted/40 rounded-md border px-3 py-2 text-sm">
+      <p className="bg-muted/40 rounded-md border px-3 py-2 text-xs">
         {t("jvScopeSummary", { prefix: prefixSummary, source: sourceSummary })}
       </p>
 
       <div className="space-y-1">
-        <p className="text-sm font-medium">{t(TIER_LABEL_KEY[tier])}</p>
+        <p className="text-xs font-medium">{t(TIER_LABEL_KEY[tier])}</p>
         <p className="text-muted-foreground text-xs">{t("jvScopeTierHint")}</p>
       </div>
     </div>

@@ -153,7 +153,7 @@ export function PosImportLines({ importId }: { importId: string }) {
         <h2 className="text-base font-medium">
           {t("title")}
           {data && (
-            <span className="text-muted-foreground ml-2 text-sm font-normal">
+            <span className="text-muted-foreground ml-2 text-xs font-normal">
               {data.file_name}
             </span>
           )}

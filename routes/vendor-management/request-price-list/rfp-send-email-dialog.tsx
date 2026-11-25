@@ -345,7 +345,7 @@ export function RfpSendEmailDialog({
                 className="text-muted-foreground size-8"
                 aria-hidden="true"
               />
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs">
                 {isError ? t("loadError") : t("noProfiles")}
               </p>
               <Button asChild size="sm" variant="outline">

@@ -817,7 +817,7 @@ function ApPaymentEditor({
                   allocations={loaded?.allocations ?? []}
                 />
               ) : !form.vendor_id ? (
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-xs">
                   {td("allocations.selectVendor")}
                 </p>
               ) : outstanding.isLoading ? (

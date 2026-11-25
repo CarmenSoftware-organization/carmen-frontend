@@ -296,7 +296,7 @@ export function ScSalesLines({ sc, canWrite }: ScSalesLinesProps) {
 
 function NotCounted({ t }: { readonly t: (key: string) => string }) {
   return (
-    <span className="text-muted-foreground text-sm">{t("notCounted")}</span>
+    <span className="text-muted-foreground text-xs">{t("notCounted")}</span>
   );
 }
 

@@ -17,7 +17,7 @@ function Meta({ label, value }: { label: string; value: string }) {
       <dt className="text-micro text-muted-foreground font-semibold tracking-wider uppercase">
         {label}
       </dt>
-      <dd className="text-foreground text-sm font-medium">{value}</dd>
+      <dd className="text-foreground text-xs font-medium">{value}</dd>
     </div>
   );
 }
@@ -46,7 +46,7 @@ export default function PriceListExternalHeader({
             {data.hotel?.name ?? "—"}
           </h1>
           {data.hotel?.address && (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-xs">
               {data.hotel.address}
             </p>
           )}

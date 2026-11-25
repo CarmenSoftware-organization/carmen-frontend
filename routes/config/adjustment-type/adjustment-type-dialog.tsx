@@ -138,7 +138,7 @@ export function AdjustmentTypeDialog({
                   disabled={disabled}
                   error={form.formState.errors.type?.message}
                   placeholder={tfl("selectType")}
-                  className="h-8 text-sm"
+                  className="h-8 text-xs"
                 >
                   <SelectContent>
                     {ADJUSTMENT_TYPE_OPTIONS.map((opt) => (

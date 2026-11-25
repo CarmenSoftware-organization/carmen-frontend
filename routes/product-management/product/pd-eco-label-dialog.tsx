@@ -186,7 +186,7 @@ export function ProductEcoLabelDialog({
                       }
                       disabled={isPending}
                       placeholder={t("selectEcoLabel")}
-                      className="h-8 w-full text-sm"
+                      className="h-8 w-full text-xs"
                       error={form.formState.errors.master_eco_label_id?.message}
                       modal
                     />

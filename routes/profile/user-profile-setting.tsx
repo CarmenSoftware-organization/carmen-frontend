@@ -559,7 +559,7 @@ export default function UserProfileSetting() {
                   aria-hidden="true"
                 />
               </span>
-              <span className="text-muted-foreground text-sm font-medium">
+              <span className="text-muted-foreground text-xs font-medium">
                 {t("signatureEmptyHint")}
               </span>
             </button>

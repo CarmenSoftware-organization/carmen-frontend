@@ -96,7 +96,7 @@ interface ListCardProps {
 export function ListCardRowNo({ rowNo }: { readonly rowNo?: number }) {
   if (rowNo === undefined) return null;
   return (
-    <span className="text-muted-foreground shrink-0 text-sm font-normal tabular-nums">
+    <span className="text-muted-foreground shrink-0 text-xs font-normal tabular-nums">
       #{rowNo}
     </span>
   );

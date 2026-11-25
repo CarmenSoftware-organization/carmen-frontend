@@ -61,7 +61,7 @@ export function EqMaintenanceSection({
                   onValueChange={field.onChange}
                   disabled={isDisabled}
                   placeholder={tfl("pickDate")}
-                  className="h-8 w-full text-sm"
+                  className="h-8 w-full text-xs"
                   error={errors.last_maintenance_date?.message}
                 />
               )}
@@ -79,7 +79,7 @@ export function EqMaintenanceSection({
                   onValueChange={field.onChange}
                   disabled={isDisabled}
                   placeholder={tfl("pickDate")}
-                  className="h-8 w-full text-sm"
+                  className="h-8 w-full text-xs"
                   error={errors.next_maintenance_date?.message}
                 />
               )}

@@ -132,7 +132,7 @@ export function EmailProfileOAuthDialog({
         </DialogHeader>
 
         {phase.kind === "starting" && (
-          <div className="flex items-center gap-2 py-6 text-sm">
+          <div className="flex items-center gap-2 py-6 text-xs">
             <Loader2 className="size-4 animate-spin" aria-hidden="true" />
             {t("starting")}
           </div>
@@ -140,7 +140,7 @@ export function EmailProfileOAuthDialog({
 
         {phase.kind === "waiting" && (
           <div className="space-y-4 py-2">
-            <ol className="text-muted-foreground list-decimal space-y-1 pl-5 text-sm">
+            <ol className="text-muted-foreground list-decimal space-y-1 pl-5 text-xs">
               <li>{t("step1")}</li>
               <li>{t("step2")}</li>
               <li>{t("step3", { mailbox: profile.smtp.username })}</li>
@@ -184,13 +184,13 @@ export function EmailProfileOAuthDialog({
         )}
 
         {phase.kind === "connected" && (
-          <p className="text-success-ink py-6 text-sm" role="status">
+          <p className="text-success-ink py-6 text-xs" role="status">
             {t("connected", { account: phase.account })}
           </p>
         )}
 
         {phase.kind === "failed" && (
-          <p className="text-destructive py-6 text-sm" role="alert">
+          <p className="text-destructive py-6 text-xs" role="alert">
             {phase.message}
           </p>
         )}
