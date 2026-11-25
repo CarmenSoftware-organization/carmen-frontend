@@ -26,12 +26,25 @@ export function DimensionValuesTable({
 }) {
   const [selected, setSelected] = useState<string[]>([]);
   const selectedKeys = new Set(selected);
+  // แถวที่กดลบแล้วแสดงปุ่ม Undo แทน checkbox จึงไม่นับเป็นแถวที่เลือกได้
+  const selectableKeys = subValues
+    .filter((value) => !value.deleted)
+    .map((value) => value.key);
+  const selectedCount = selectableKeys.filter((key) =>
+    selectedKeys.has(key),
+  ).length;
+  const allState =
+    selectableKeys.length > 0 && selectedCount === selectableKeys.length
+      ? true
+      : selectedCount > 0
+        ? "indeterminate"
+        : false;
   const liveCount = subValues.filter((value) => !value.deleted).length;
   const hasEdited = subValues.some((v) => v.id && v.dirty && !v.deleted);
   const hasNew = subValues.some((v) => !v.id);
   const hasDeleted = subValues.some((v) => v.deleted);
   const hasFailed = subValues.some((v) => v.error);
-  const columnCount = readOnly ? 4 : 5;
+  const columnCount = readOnly ? 5 : 6;
 
   const patchRow = (key: string, patch: Partial<DimensionValueDraft>) =>
     setSubValues((current) =>
@@ -103,7 +116,19 @@ export function DimensionValuesTable({
         <table className="w-full text-xs">
           <thead className="bg-muted sticky top-0 z-10">
             <tr className="text-muted-foreground text-left">
-              {!readOnly && <th className="w-8 p-2" aria-label="Select" />}
+              {!readOnly && (
+                <th className="w-8 p-2">
+                  <Checkbox
+                    aria-label="Select all sub-values"
+                    checked={allState}
+                    disabled={!selectableKeys.length}
+                    onCheckedChange={() =>
+                      setSelected(allState === true ? [] : selectableKeys)
+                    }
+                  />
+                </th>
+              )}
+              <th className="w-10 p-2 text-right font-medium">#</th>
               <th className="w-28 p-2 font-medium">Value *</th>
               <th className="p-2 font-medium">Label *</th>
               <th className="p-2 font-medium">Description</th>
@@ -171,6 +196,9 @@ export function DimensionValuesTable({
                       )}
                     </td>
                   )}
+                  <td className="text-muted-foreground p-2 text-right leading-8 tabular-nums">
+                    {index + 1}
+                  </td>
                   <td className="p-2 font-mono">
                     {editable ? (
                       <FieldInput

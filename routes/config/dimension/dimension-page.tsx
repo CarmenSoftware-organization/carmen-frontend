@@ -117,7 +117,7 @@ export default function DimensionPage() {
       {
         accessorKey: "name",
         header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Dimension Name (EN)" />
+          <DataGridColumnHeader column={column} title="Caption" />
         ),
         cell: ({ row }) => (
           <CellAction
@@ -237,7 +237,7 @@ export default function DimensionPage() {
         gridWidth={gridWidth}
         labels={{
           code: "Code",
-          name: "Dimension Name (EN)",
+          name: "Caption",
           data_type: "Data Type",
           values_count: "List Master Items",
           is_active: "Status",

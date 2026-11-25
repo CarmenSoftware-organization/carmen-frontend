@@ -141,7 +141,7 @@ export function DimensionDialog({
             </Field>
             <Field>
               <FieldLabel htmlFor="dim-name" required>
-                Dimension Name (EN)
+                Caption
               </FieldLabel>
               <FieldInput
                 id="dim-name"
