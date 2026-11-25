@@ -62,7 +62,7 @@ export function AccountGroupAssignDialog({
               <Link className="size-4 text-primary" />
               <span>{t("assign.title", { code: targetGroup.code })}</span>
             </DialogTitle>
-            <Badge variant="secondary" size="sm" className="font-mono text-micro-legal capitalize">
+            <Badge variant="secondary" size="sm" className="font-mono capitalize">
               {targetGroup.category}
             </Badge>
           </div>

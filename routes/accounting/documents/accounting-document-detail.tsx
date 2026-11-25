@@ -2086,7 +2086,7 @@ export default function AccountingDocumentDetail() {
                   </CardTitle>
                 )}
                 {isPeriodLocked && (
-                  <Badge variant="destructive" className="gap-1 text-xs">
+                  <Badge variant="destructive" className="gap-1">
                     🔒 งวดบัญชี {currentPeriod?.fiscal_year}-P
                     {currentPeriod?.period_number} ปิดแล้ว (
                     {currentPeriod?.status})

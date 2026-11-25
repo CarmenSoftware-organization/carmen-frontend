@@ -211,6 +211,7 @@ typography-roles:
   cell-secondary:    { token: text-micro, color: muted }         # CellSub / CELL_SUB_CLASS — one step, app-wide
   meta:              { token: text-micro-legal }                 # timestamps, counters, captions
   eyebrow:           { token: text-micro-eyebrow, weight: 600 }
+  badge:             { token: text-micro }                        # Badge default/sm and status chips (xs = text-micro-legal, lg = text-xs)
   control-item:      { token: text-xs }                          # menu/select/command/popover/sidebar/tabs/breadcrumb
   body-default:      { token: "0.75rem (= text-xs)" }
   # Out of scope (keep their own sizes): buttons, toast, auth split shell,

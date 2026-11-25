@@ -620,7 +620,7 @@ export default function PriceListExternalProductTable({
         </DataGridContainer>
         <div className="flex items-center justify-end gap-2">
           {hasPendingChanges && (
-            <Badge variant="warning" className="text-xs">
+            <Badge variant="warning">
               {t("unsavedChanges")}
             </Badge>
           )}
