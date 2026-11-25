@@ -7501,6 +7501,11 @@
         "pr-count__vs-period": "Purchase Request count vs period",
         "pr-created-series__by-period": "Purchase Request per day — by period",
         "pr-by-status__by-period": "Purchase Request by status — by period",
+        "sr-awaiting-approval": "Store Requisitions awaiting approval",
+        "pr-count__fiscal-ytd": "Purchase Request count — fiscal year to date",
+        "po-count__fiscal-ytd": "Purchase Order count — fiscal year to date",
+        "sr-count__fiscal-ytd": "Store Requisition count — fiscal year to date",
+        "grn-count__fiscal-ytd": "Good Received Note count — fiscal year to date",
         "sr-top-products": "Top requested products (Store Requisition)",
         "grn-by-status": "Good Received Note by status",
         "grn-count": "Good Received Note count",
@@ -7532,6 +7537,9 @@
         "total-active": "Active equipment"
       },
       "inventory": {
+        "movement-by-location__vs-ytd": "Movement by location — period vs year to date",
+        "physical-count-by-location": "Physical count status by location",
+        "physical-count-completed-locations": "Locations with physical count completed",
         "movement-by-location-period": "Movement by location — by period",
         "issue-by-priority__by-period": "Issues by priority — by period",
         "stock-out-by-status__by-period": "Stock Out by status — by period",
@@ -7574,6 +7582,9 @@
       "procurement": {
         "pr-by-department__by-period": "PR by department — by period",
         "pr-by-status__by-period": "PR by status — by period",
+        "purchasing-by-category__vs-ytd": "Purchasing value by category — period vs year to date",
+        "po-due-count": "POs due for delivery",
+        "pr-awaiting-po": "Approved PRs awaiting a purchase order",
         "top-purchasing-vendors": "Top purchasing vendors",
         "top-purchased-products": "Top purchased products",
         "purchasing-value__vs-period": "Purchasing value vs period",

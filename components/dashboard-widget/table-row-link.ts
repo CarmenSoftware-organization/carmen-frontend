@@ -24,6 +24,11 @@ const DOC_ROUTES: Record<string, string> = {
   "procurement.po-overdue": "/procurement/purchase-order",
   "procurement.po-partially-received": "/procurement/purchase-order",
   "procurement.po-over-received": "/procurement/purchase-order",
+  // คิวงาน — PR ที่รอออก PO · ใบเบิกที่ค้างอนุมัติ · ใบนับล่าสุดของแต่ละคลัง
+  "procurement.pr-awaiting-po": "/procurement/purchase-request",
+  "document.sr-awaiting-approval": "/store-operation/store-requisition",
+  "inventory.physical-count-by-location":
+    "/inventory-management/physical-count",
 };
 
 /** คีย์ของคอลัมน์ที่ถือ id (type `id`) — ไม่มี = แถวนี้ลิงก์ไม่ได้ */

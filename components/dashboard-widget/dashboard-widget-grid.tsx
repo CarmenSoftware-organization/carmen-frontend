@@ -1401,7 +1401,12 @@ export function TableCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
           accessorFn: (row: TableRow) => row[col.key],
           header: col.label,
           cell: ({ getValue, row }) => {
-            const content = renderTableCell(getValue(), col.type, col.unit);
+            const value = getValue();
+            // รหัสสถานะ → ชื่อสถานะตาม locale (เหมือนแกนสถานะของกราฟ)
+            const content =
+              col.type === "status" && typeof value === "string"
+                ? labels.category("status", value)
+                : renderTableCell(value, col.type, col.unit);
             const href = col.link ? cellDocHref(row.original, col.link) : null;
             if (!col.link || !href) return content;
             const title = col.link.title
@@ -1425,7 +1430,7 @@ export function TableCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
               }
             : undefined,
         })),
-    [data?.columns],
+    [data?.columns, labels],
   );
 
   const rows = useMemo<TableRow[]>(() => [...(data?.rows ?? [])], [data?.rows]);

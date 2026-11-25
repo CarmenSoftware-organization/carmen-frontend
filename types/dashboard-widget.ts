@@ -133,7 +133,15 @@ export interface MatrixData {
  * `id` ไม่ใช่คอลัมน์ที่โชว์ — เป็นค่าที่ client เอาไปทำลิงก์ไปหาเอกสารของแถวนั้น
  * (label ของมันว่างเสมอ) ตารางต้องข้ามไม่เอาไปวาดเป็นคอลัมน์
  */
-type TableColumnType = "text" | "number" | "currency" | "date" | "icon" | "id";
+type TableColumnType =
+  | "text"
+  | "number"
+  | "currency"
+  | "date"
+  | "icon"
+  | "id"
+  /** รหัสสถานะของเอกสาร (เช่น `in_progress`) — ตารางแปลเป็นชื่อสถานะตาม locale */
+  | "status";
 
 /**
  * ช่องที่เป็นลิงก์ไปหาเอกสารของแถว — ค่าในนี้เป็น "คีย์ของคอลัมน์" ในแถวเดียวกัน ไม่ใช่ค่า

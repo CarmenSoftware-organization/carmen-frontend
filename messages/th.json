@@ -7501,6 +7501,11 @@
         "pr-count__vs-period": "จำนวนใบขอซื้อ — เทียบกับงวดอื่น",
         "pr-created-series__by-period": "ใบขอซื้อรายวัน — เทียบงวด",
         "pr-by-status__by-period": "ใบขอซื้อแยกตามสถานะ — เทียบงวด",
+        "sr-awaiting-approval": "ใบเบิกสินค้าที่ค้างอนุมัติ",
+        "pr-count__fiscal-ytd": "จำนวนใบขอซื้อ — ต้นปีบัญชีถึงปัจจุบัน",
+        "po-count__fiscal-ytd": "จำนวนใบสั่งซื้อ — ต้นปีบัญชีถึงปัจจุบัน",
+        "sr-count__fiscal-ytd": "จำนวนใบเบิกสินค้า — ต้นปีบัญชีถึงปัจจุบัน",
+        "grn-count__fiscal-ytd": "จำนวนใบรับสินค้า — ต้นปีบัญชีถึงปัจจุบัน",
         "sr-top-products": "สินค้าที่ขอเบิกมากสุด",
         "grn-by-status": "ใบรับสินค้าแยกตามสถานะ",
         "grn-count": "จำนวนใบรับสินค้า",
@@ -7532,6 +7537,9 @@
         "total-active": "อุปกรณ์ที่ใช้งาน"
       },
       "inventory": {
+        "movement-by-location__vs-ytd": "ยอดเคลื่อนไหวตามคลัง — งวดปัจจุบันเทียบทั้งปีบัญชี",
+        "physical-count-by-location": "สถานะตรวจนับสินค้ารายคลัง",
+        "physical-count-completed-locations": "คลังที่ตรวจนับเสร็จแล้ว",
         "movement-by-location-period": "ยอดเคลื่อนไหวตามคลัง — เทียบงวด",
         "issue-by-priority__by-period": "ปัญหาแยกตามความสำคัญ — เทียบงวด",
         "stock-out-by-status__by-period": "Stock Out แยกตามสถานะ — เทียบงวด",
@@ -7574,6 +7582,9 @@
       "procurement": {
         "pr-by-department__by-period": "ใบขอซื้อแยกตามแผนก — เทียบงวด",
         "pr-by-status__by-period": "ใบขอซื้อแยกตามสถานะ — เทียบงวด",
+        "purchasing-by-category__vs-ytd": "ยอดสั่งซื้อแยกตามหมวดสินค้า — งวดปัจจุบันเทียบทั้งปีบัญชี",
+        "po-due-count": "จำนวนใบสั่งซื้อที่ถึงกำหนดส่ง",
+        "pr-awaiting-po": "ใบขอซื้อที่อนุมัติแล้วรอออกใบสั่งซื้อ",
         "top-purchasing-vendors": "ผู้ขายที่สั่งซื้อมากสุด",
         "top-purchased-products": "สินค้าที่สั่งซื้อมากสุด",
         "purchasing-value__vs-period": "ยอดสั่งซื้อ — เทียบกับงวดอื่น",
