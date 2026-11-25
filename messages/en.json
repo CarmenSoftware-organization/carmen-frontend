@@ -191,7 +191,9 @@
       "ap": "AP",
       "apDesc": "Accounts Payable settings for this business unit.",
       "ar": "AR",
-      "arDesc": "Accounts Receivable settings for this business unit."
+      "arDesc": "Accounts Receivable settings for this business unit.",
+      "gl": "GL",
+      "glDesc": "General Ledger settings for this business unit."
     },
     "config": {
       "prAllowDuplicateProduct": "Allow selecting duplicate products",
@@ -242,7 +244,8 @@
       "apInvoiceAllowCreatorApprove": "AP Invoice",
       "apPaymentAllowCreatorApprove": "AP Payment",
       "arInvoiceAllowCreatorApprove": "AR Invoice",
-      "arReceiptAllowCreatorApprove": "AR Receipt"
+      "arReceiptAllowCreatorApprove": "AR Receipt",
+      "glJvAllowCreatorApprove": "Journal Voucher (JV)"
     }
   },
   "accounting": {

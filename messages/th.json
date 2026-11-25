@@ -191,7 +191,9 @@
       "ap": "AP",
       "apDesc": "การตั้งค่า Accounts Payable ของหน่วยธุรกิจนี้",
       "ar": "AR",
-      "arDesc": "การตั้งค่า Accounts Receivable ของหน่วยธุรกิจนี้"
+      "arDesc": "การตั้งค่า Accounts Receivable ของหน่วยธุรกิจนี้",
+      "gl": "บัญชีแยกประเภท (GL)",
+      "glDesc": "การตั้งค่า General Ledger ของหน่วยธุรกิจนี้"
     },
     "config": {
       "prAllowDuplicateProduct": "อนุญาตให้เลือกสินค้าซ้ำกันได้",
@@ -242,7 +244,8 @@
       "apInvoiceAllowCreatorApprove": "ใบแจ้งหนี้เจ้าหนี้ (AP Invoice)",
       "apPaymentAllowCreatorApprove": "ใบจ่ายเงินเจ้าหนี้ (AP Payment)",
       "arInvoiceAllowCreatorApprove": "ใบแจ้งหนี้ลูกหนี้ (AR Invoice)",
-      "arReceiptAllowCreatorApprove": "ใบรับเงินลูกหนี้ (AR Receipt)"
+      "arReceiptAllowCreatorApprove": "ใบรับเงินลูกหนี้ (AR Receipt)",
+      "glJvAllowCreatorApprove": "ใบสำคัญ (JV)"
     }
   },
   "accounting": {
