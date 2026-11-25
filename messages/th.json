@@ -7572,6 +7572,8 @@
         "pr-by-status__by-period": "ใบขอซื้อแยกตามสถานะ — เทียบงวด",
         "top-purchasing-vendors": "ผู้ขายที่สั่งซื้อมากสุด",
         "top-purchased-products": "สินค้าที่สั่งซื้อมากสุด",
+        "purchasing-value__vs-period": "ยอดสั่งซื้อ — เทียบกับงวดอื่น",
+        "purchasing-by-category": "ยอดสั่งซื้อแยกตามหมวดสินค้า",
         "po-by-vendor-top": "Vendor ที่มียอดสั่งซื้อสูงสุด",
         "pr-by-department": "ใบขอซื้อแยกตามแผนก",
         "pr-by-status": "ใบขอซื้อแยกตามสถานะ",

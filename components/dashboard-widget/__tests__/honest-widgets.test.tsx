@@ -101,6 +101,8 @@ describe("dataset names", () => {
     "inventory.slow-moving",
     "procurement.top-purchased-products",
     "procurement.top-purchasing-vendors",
+    "procurement.purchasing-value.vs-period",
+    "procurement.purchasing-by-category",
     "document.sr-top-products",
     ...["pr", "po", "sr", "grn"].flatMap((d) => [
       `document.${d}-by-status.by-period`,
