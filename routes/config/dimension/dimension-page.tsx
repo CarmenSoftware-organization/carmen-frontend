@@ -27,25 +27,13 @@ import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-acti
 import { CellAction } from "@/components/ui/cell-action";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Field, FieldInput, FieldLabel } from "@/components/ui/field";
 import { WarningDialog } from "@/components/ui/warning-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { ApiError } from "@/lib/api-error";
 import { httpClient } from "@/lib/http-client";
-import type {
-  DimensionMaster,
-  DimensionValueMaster,
-} from "@/types/accounting-master";
+import type { DimensionMaster } from "@/types/accounting-master";
 
 import { saveDimensionRecord } from "./save-dimension-record";
 import { DimensionDialog } from "./dimension-dialog";
@@ -75,35 +63,10 @@ export default function DimensionPage() {
   const activeFilter = activeFromFilter(lf.values.filter);
   const canEdit = useAccountingConfigEdit("configuration.dimension");
   const [editing, setEditing] = useState<DimensionMaster | null | undefined>();
-  const [viewingValuesId, setViewingValuesId] = useState<string | null>(null);
-  const viewingValues =
-    dimensions.find((dimension) => dimension.id === viewingValuesId) ?? null;
+  /** เปิดจากปุ่มจำนวนค่าย่อย → dialog focus ที่ตารางค่าย่อย */
+  const [focusValues, setFocusValues] = useState(false);
   const [deleting, setDeleting] = useState<DimensionMaster | null>(null);
   const [warning, setWarning] = useState("");
-
-  const mutateValue = async (
-    request: () => Promise<Response>,
-    success: string,
-  ) => {
-    try {
-      if (!buCode) throw new Error("Select a business unit first");
-      const res = await request();
-      if (!res.ok)
-        throw await ApiError.from(res, "Unable to save dimension value");
-      await queryClient.invalidateQueries({
-        queryKey: ["accounting-master", "dimension-values", buCode],
-      });
-      toast.success(success);
-      return true;
-    } catch (error) {
-      setWarning(
-        error instanceof Error
-          ? error.message
-          : "Unable to save dimension value",
-      );
-      return false;
-    }
-  };
 
   const rows = useMemo(
     () =>
@@ -143,6 +106,7 @@ export default function DimensionPage() {
         cell: ({ row }) => (
           <CellAction
             onClick={() => {
+              setFocusValues(false);
               setEditing(row.original);
             }}
           >
@@ -158,6 +122,7 @@ export default function DimensionPage() {
         cell: ({ row }) => (
           <CellAction
             onClick={() => {
+              setFocusValues(false);
               setEditing(row.original);
             }}
           >
@@ -201,7 +166,10 @@ export default function DimensionPage() {
               size="sm"
               variant="outline"
               className="h-7 text-xs"
-              onClick={() => setViewingValuesId(row.original.id)}
+              onClick={() => {
+                setFocusValues(true);
+                setEditing(row.original);
+              }}
             >
               <ListTree className="mr-1 size-3.5" />
               {(row.original.values ?? []).length} values
@@ -267,6 +235,7 @@ export default function DimensionPage() {
         <Button
           size="sm"
           onClick={() => {
+            setFocusValues(false);
             setEditing(null);
           }}
         >
@@ -302,6 +271,7 @@ export default function DimensionPage() {
       {editing !== undefined && (
         <DimensionDialog
           readOnly={!!editing && !canEdit}
+          focusValues={focusValues}
           key={editing?.id ?? "new"}
           open={editing !== undefined}
           item={editing ?? null}
@@ -319,56 +289,6 @@ export default function DimensionPage() {
               current,
             );
             return { ...value, ...saved };
-          }}
-        />
-      )}
-      {viewingValues && (
-        <DimensionValuesDialog
-          open={!!viewingValues}
-          dimension={viewingValues}
-          onOpenChange={(open) => !open && setViewingValuesId(null)}
-          onAddValue={async (val) => {
-            const currentVals = viewingValues.values ?? [];
-            if (
-              currentVals.some(
-                (v) => v.code.toUpperCase() === val.code.toUpperCase(),
-              )
-            ) {
-              toast.error(`Value ${val.code} already exists.`);
-              return false;
-            }
-            return mutateValue(
-              () =>
-                httpClient.post(API_ENDPOINTS.DIMENSION_VALUES(buCode!), {
-                  dimension_id: viewingValues.id,
-                  ...val,
-                }),
-              "Dimension value added",
-            );
-          }}
-          onUpdateValue={(val) => {
-            return mutateValue(
-              () =>
-                httpClient.put(
-                  `${API_ENDPOINTS.DIMENSION_VALUES(buCode!)}/${val.id}`,
-                  {
-                    name: val.name,
-                    name_local: val.name_local,
-                    is_active: val.is_active,
-                    doc_version: val.doc_version,
-                  },
-                ),
-              "Dimension value updated",
-            );
-          }}
-          onDeleteValue={(id) => {
-            return mutateValue(
-              () =>
-                httpClient.delete(
-                  `${API_ENDPOINTS.DIMENSION_VALUES(buCode!)}/${id}`,
-                ),
-              "Dimension value removed",
-            );
           }}
         />
       )}
@@ -417,279 +337,5 @@ export default function DimensionPage() {
         onSave={lf.view.saveOrUpdate}
       />
     </ListPageShell>
-  );
-}
-
-function DimensionValuesDialog({
-  open,
-  dimension,
-  onOpenChange,
-  onAddValue,
-  onUpdateValue,
-  onDeleteValue,
-}: {
-  open: boolean;
-  dimension: DimensionMaster;
-  onOpenChange: (open: boolean) => void;
-  onAddValue: (
-    val: Omit<DimensionValueMaster, "id" | "dimension_id" | "doc_version">,
-  ) => Promise<boolean>;
-  onUpdateValue: (val: DimensionValueMaster) => Promise<boolean>;
-  onDeleteValue: (id: string) => Promise<boolean>;
-}) {
-  const canEdit = useAccountingConfigEdit("configuration.dimension");
-  const [valCode, setValCode] = useState("");
-  const [valName, setValName] = useState("");
-  const [valNameLocal, setValNameLocal] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [deletingValue, setDeletingValue] =
-    useState<DimensionValueMaster | null>(null);
-  const [editCode, setEditCode] = useState("");
-  const [editName, setEditName] = useState("");
-  const [editNameLocal, setEditNameLocal] = useState("");
-  const values = dimension.values ?? [];
-
-  const startEdit = (v: DimensionValueMaster) => {
-    setEditingId(v.id);
-    setEditCode(v.code);
-    setEditName(v.name);
-    setEditNameLocal(v.name_local ?? "");
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-  };
-
-  const saveEdit = async (original: DimensionValueMaster) => {
-    if (!editCode.trim() || !editName.trim()) {
-      toast.error("Code and Name (EN) are required");
-      return;
-    }
-    const saved = await onUpdateValue({
-      ...original,
-      code: editCode.trim().toUpperCase(),
-      name: editName.trim(),
-      name_local: editNameLocal.trim() || null,
-    });
-    if (saved) setEditingId(null);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="@container max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            List Master Items for {dimension.name} ({dimension.code})
-          </DialogTitle>
-          <DialogDescription>
-            Manage allowed values for this dimension.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
-          {/* Add form */}
-          {canEdit && (
-            <div className="bg-muted/30 grid grid-cols-1 items-end gap-2 rounded-md p-3 @xl:grid-cols-4">
-              <Field>
-                <FieldLabel className="text-xs" required>
-                  Code
-                </FieldLabel>
-                <FieldInput
-                  value={valCode}
-                  placeholder="e.g. CORP"
-                  className="h-8 text-xs"
-                  onChange={(e) => setValCode(e.target.value.toUpperCase())}
-                />
-              </Field>
-              <Field>
-                <FieldLabel className="text-xs" required>
-                  Name (EN)
-                </FieldLabel>
-                <FieldInput
-                  value={valName}
-                  placeholder="e.g. Corporate"
-                  className="h-8 text-xs"
-                  onChange={(e) => setValName(e.target.value)}
-                />
-              </Field>
-              <Field>
-                <FieldLabel className="text-xs">Name (TH)</FieldLabel>
-                <FieldInput
-                  value={valNameLocal}
-                  placeholder="e.g. องค์กร"
-                  className="h-8 text-xs"
-                  onChange={(e) => setValNameLocal(e.target.value)}
-                />
-              </Field>
-              <Button
-                size="sm"
-                className="h-8"
-                disabled={!valCode.trim() || !valName.trim()}
-                onClick={async () => {
-                  const saved = await onAddValue({
-                    code: valCode.trim().toUpperCase(),
-                    name: valName.trim(),
-                    name_local: valNameLocal.trim() || null,
-                    is_active: true,
-                  });
-                  if (saved) {
-                    setValCode("");
-                    setValName("");
-                    setValNameLocal("");
-                  }
-                }}
-              >
-                <Plus className="mr-1 size-3.5" /> Add Value
-              </Button>
-            </div>
-          )}
-
-          {/* Table */}
-          <div className="max-h-60 overflow-hidden overflow-y-auto rounded-md border">
-            <table className="block w-full text-xs @xl:table">
-              <thead className="bg-muted/50 sr-only border-b @xl:not-sr-only @xl:table-header-group">
-                <tr>
-                  <th className="p-2 text-left">Code</th>
-                  <th className="p-2 text-left">Name (EN)</th>
-                  <th className="p-2 text-left">Name (TH)</th>
-                  <th className="p-2 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="block divide-y @xl:table-row-group">
-                {values.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="text-muted-foreground p-4 text-center"
-                    >
-                      No list master items defined yet.
-                    </td>
-                  </tr>
-                ) : (
-                  values.map((v) => {
-                    const isEditing = editingId === v.id;
-                    return (
-                      <tr
-                        key={v.id}
-                        className={`block space-y-2 p-3 @xl:table-row @xl:space-y-0 @xl:p-0 ${isEditing ? "bg-muted/40" : ""}`}
-                      >
-                        {isEditing ? (
-                          <>
-                            <td className="block p-2 @xl:table-cell">
-                              <FieldInput
-                                value={editCode}
-                                disabled
-                                className="h-7 font-mono text-xs font-medium"
-                                onChange={(e) =>
-                                  setEditCode(e.target.value.toUpperCase())
-                                }
-                              />
-                            </td>
-                            <td className="block p-2 @xl:table-cell">
-                              <FieldInput
-                                value={editName}
-                                className="h-7 text-xs"
-                                onChange={(e) => setEditName(e.target.value)}
-                              />
-                            </td>
-                            <td className="block p-2 @xl:table-cell">
-                              <FieldInput
-                                value={editNameLocal}
-                                placeholder="TH (optional)"
-                                className="h-7 text-xs"
-                                onChange={(e) =>
-                                  setEditNameLocal(e.target.value)
-                                }
-                              />
-                            </td>
-
-                            <td className="block p-2 text-right @xl:table-cell">
-                              <div className="flex items-center justify-end gap-1">
-                                <Button
-                                  size="sm"
-                                  className="h-8 px-2 text-xs"
-                                  onClick={() => void saveEdit(v)}
-                                >
-                                  Save
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-8 px-2 text-xs"
-                                  onClick={cancelEdit}
-                                >
-                                  Cancel
-                                </Button>
-                              </div>
-                            </td>
-                          </>
-                        ) : (
-                          <>
-                            <td
-                              data-label="Code"
-                              className="before:text-muted-foreground block p-2 font-mono font-medium before:mr-2 before:content-[attr(data-label)] @xl:table-cell @xl:before:hidden"
-                            >
-                              {canEdit ? (
-                                <CellAction onClick={() => startEdit(v)}>
-                                  {v.code}
-                                </CellAction>
-                              ) : (
-                                v.code
-                              )}
-                            </td>
-                            <td className="block p-2 @xl:table-cell">
-                              {canEdit ? (
-                                <CellAction onClick={() => startEdit(v)}>
-                                  {v.name}
-                                </CellAction>
-                              ) : (
-                                v.name
-                              )}
-                            </td>
-                            <td
-                              data-label="Name (TH)"
-                              className="text-muted-foreground block p-2 before:mr-2 before:content-[attr(data-label)] @xl:table-cell @xl:before:hidden"
-                            >
-                              {v.name_local || "—"}
-                            </td>
-
-                            <td className="block p-2 text-right @xl:table-cell">
-                              <DataGridRowActions
-                                activity={{ id: v.id, label: v.code }}
-                                onDelete={
-                                  canEdit
-                                    ? () => setDeletingValue(v)
-                                    : undefined
-                                }
-                              />
-                            </td>
-                          </>
-                        )}
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button onClick={() => onOpenChange(false)}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
-      <DeleteDialog
-        open={!!deletingValue}
-        onOpenChange={(open) => !open && setDeletingValue(null)}
-        title="Delete dimension value?"
-        description={
-          deletingValue
-            ? `Delete ${deletingValue.code} — ${deletingValue.name}?`
-            : undefined
-        }
-        onConfirm={async () => {
-          if (deletingValue && (await onDeleteValue(deletingValue.id)))
-            setDeletingValue(null);
-        }}
-      />
-    </Dialog>
   );
 }

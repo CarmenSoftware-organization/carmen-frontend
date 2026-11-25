@@ -35,7 +35,7 @@ import {
 export function DimensionDialog({
   open,
   readOnly = false,
-  focusValues: _focusValues = false,
+  focusValues = false,
   item,
   onOpenChange,
   onSave,
@@ -83,6 +83,15 @@ export function DimensionDialog({
       }}
     >
       <DialogContent
+        onOpenAutoFocus={(event) => {
+          if (!focusValues || !tableRef.current) return;
+          event.preventDefault();
+          const target = tableRef.current.querySelector<HTMLElement>(
+            "input:not([disabled]), button:not([disabled])",
+          );
+          if (target) target.focus();
+          else tableRef.current.scrollIntoView({ block: "nearest" });
+        }}
         className={cn(
           "@container max-h-[90dvh] overflow-y-auto",
           isLookup ? "sm:max-w-5xl" : "sm:max-w-xl",
