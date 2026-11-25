@@ -97,13 +97,13 @@ export function VarianceGrid<T extends VarianceGridItem>({
                   <td className="text-foreground/80 px-3 py-2 text-right align-middle text-xs tabular-nums">
                     {getSystemQty(item)}
                   </td>
-                  <td className="text-foreground px-3 py-2 text-right align-middle text-sm font-semibold tabular-nums">
+                  <td className="text-foreground px-3 py-2 text-right align-middle text-xs font-semibold tabular-nums">
                     {actual ?? "—"}
                   </td>
                   <td className="px-3 py-2 text-right align-middle">
                     <span
                       className={cn(
-                        "text-sm font-semibold tabular-nums",
+                        "text-xs font-semibold tabular-nums",
                         variance > 0 && "text-success-ink",
                         variance < 0 && "text-destructive",
                       )}

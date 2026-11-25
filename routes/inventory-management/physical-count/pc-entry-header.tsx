@@ -66,7 +66,7 @@ export function PcEntryHeader({
           </div>
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-foreground mt-1 text-sm font-semibold tabular-nums">
+          <p className="text-foreground mt-1 text-xs font-semibold tabular-nums">
             {countedCount}{" "}
             <span className="text-muted-foreground text-xs">
               / {totalItems}

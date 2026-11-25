@@ -71,7 +71,7 @@ export function RecipePriceRecommendations({
               <div className="text-foreground min-w-0 truncate text-xs">
                 {row.label}
               </div>
-              <span className="text-foreground text-sm font-semibold tabular-nums">
+              <span className="text-foreground text-xs font-semibold tabular-nums">
                 ฿{formatCurrency(row.price)}
               </span>
               <Button

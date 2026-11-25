@@ -174,7 +174,7 @@ export default function ApprovalComponent() {
                         {card.label}
                       </span>
                     </span>
-                    <span className="text-sm font-semibold tabular-nums">
+                    <span className="text-xs font-semibold tabular-nums">
                       {summary?.[card.key] ?? 0}
                     </span>
                   </button>
@@ -212,7 +212,7 @@ export default function ApprovalComponent() {
                 </span>
                 <span
                   className={cn(
-                    "text-sm font-semibold tabular-nums",
+                    "text-xs font-semibold tabular-nums",
                     sendBackCount > 0 && "text-destructive",
                   )}
                 >

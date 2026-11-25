@@ -966,7 +966,7 @@ function LineCostValue({
     case "ok":
       return (
         <span
-          className="text-foreground text-sm font-semibold tabular-nums"
+          className="text-foreground text-xs font-semibold tabular-nums"
           aria-label={t("lineCost")}
         >
           ฿{formatCurrency(cost.line_cost)}

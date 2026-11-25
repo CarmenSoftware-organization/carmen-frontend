@@ -83,7 +83,7 @@ export function ScEntryHeader({
               {ts(docStatus)}
             </Badge>
           )}
-          <p className="text-foreground mt-1 text-sm font-semibold tabular-nums">
+          <p className="text-foreground mt-1 text-xs font-semibold tabular-nums">
             {countedCount}{" "}
             <span className="text-muted-foreground text-xs">
               / {totalItems}

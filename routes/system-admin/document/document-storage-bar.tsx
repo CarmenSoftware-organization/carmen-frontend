@@ -125,7 +125,7 @@ export default function DocumentStorageBar({
           {hasSummary && (
             <>
               <div className="flex shrink-0 items-baseline gap-2">
-                <span className="text-sm font-semibold tabular-nums">
+                <span className="text-xs font-semibold tabular-nums">
                   {formatFileSize(summary.total_size)}
                 </span>
                 <span className="text-muted-foreground text-xs tabular-nums">
