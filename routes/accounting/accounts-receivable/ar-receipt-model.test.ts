@@ -1,88 +1,29 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  deleteReceipt,
   newReceipt,
   newReceiptFromInvoice,
-  readReceipts,
   receiptAllocationTax,
+  receiptFromDocument,
   receiptProfileDefaults,
   receiptTaxEntityFromCustomer,
   receiptTotals,
   receiptValidation,
-  saveReceipt,
   suggestedReceiptWht,
-  voidReceipt,
+  toArReceiptPayload,
   type ArReceipt,
 } from "./ar-receipt-model";
+import type { ArReceiptDocument } from "./use-ar-receipt";
 import type { ArRegisterDocument } from "./use-ar-register";
 
-beforeEach(() => sessionStorage.clear());
-
 function draft(): ArReceipt {
-  return {
+  const receipt = {
     ...newReceipt("2026-11-17"),
     customerId: "customer-a",
     customerCode: "AR001",
     customerName: "Customer A",
   };
+  return { ...receipt, tender: { ...receipt.tender, bankAccountId: "bank-1" } };
 }
-
-describe("AR receipt preview CRUD", () => {
-  it("creates, reads, edits and deletes complete BU-scoped drafts without replacing their document number", () => {
-    const source = readReceipts("A")[0];
-    const saved = saveReceipt("A", {
-      ...source,
-      id: "new-receipt",
-      number: "",
-    });
-    expect(saved.number).toBe("ARRC-MOCK-NEW-RECE");
-    expect(readReceipts("A").find((row) => row.id === saved.id)).toEqual(saved);
-    const updated = saveReceipt("A", {
-      ...saved,
-      number: "trying-to-replace-number",
-      description: "Changed draft",
-      payments: saved.payments.map((line) => ({
-        ...line,
-        reference: "BANK-123",
-        chequeNo: "CHQ-123",
-        cardLast4: "1234",
-      })),
-      taxEntity: {
-        ...saved.taxEntity,
-        registeredName: "Registered Co.",
-        address1: "Address one",
-        address2: "Address two",
-        province: "Bangkok",
-        postalCode: "10110",
-      },
-    });
-    expect(updated.number).toBe(saved.number);
-    expect(readReceipts("A")[0]).toEqual(updated);
-    expect(readReceipts("B").some((row) => row.id === saved.id)).toBe(false);
-    deleteReceipt("A", saved.id);
-    expect(readReceipts("A").some((row) => row.id === saved.id)).toBe(false);
-    expect(() => deleteReceipt("A", saved.id)).toThrow("receiptNotFound");
-  });
-
-  it("persists Void and blocks a stale edit from restoring the draft", () => {
-    const saved = saveReceipt("A", draft());
-    const voided = voidReceipt("A", saved.id);
-    expect(voided.status).toBe("void");
-    expect(readReceipts("A")[0].status).toBe("void");
-    expect(() =>
-      saveReceipt("A", { ...saved, description: "Stale edit" }),
-    ).toThrow("receiptVoided");
-  });
-
-  it("does not silently overwrite corrupt browser storage with sample records", () => {
-    sessionStorage.setItem("carmen.ar.receipt-mock.v1.A", "broken-json");
-    expect(() => readReceipts("A")).toThrow();
-    expect(() => saveReceipt("A", draft())).toThrow();
-    expect(sessionStorage.getItem("carmen.ar.receipt-mock.v1.A")).toBe(
-      "broken-json",
-    );
-  });
-});
 
 describe("Receipt allocation and tax calculation", () => {
   it("prefers an active registered tax address and preserves the RD address components, with a billing fallback", () => {
@@ -145,90 +86,127 @@ describe("Receipt allocation and tax calculation", () => {
     outstanding_amount: "53.50",
   };
 
+  function withBank(receipt: ArReceipt): ArReceipt {
+    return {
+      ...receipt,
+      tender: { ...receipt.tender, bankAccountId: "bank-1" },
+    };
+  }
+
   it("carries customer, currency and only the remaining balance from Get Receipt", () => {
     const receipt = newReceiptFromInvoice(invoice, "2026-11-17");
     expect(receipt.customerId).toBe(invoice.customer_id);
     expect(receipt.currency).toBe("USD");
+    expect(receipt.source).toBe("manual");
     expect(receipt.sourceDoc).toBe(invoice.doc_no);
     expect(receipt.allocations[0].amount).toBe(53.5);
-    expect(receiptValidation(receipt)).toBeNull();
     expect(invoice.outstanding_amount).toBe("53.50");
   });
 
-  it("validates invoice ownership, currency, unpaid cap and duplicate invoices before changing storage", () => {
-    const receipt = newReceiptFromInvoice(invoice, "2026-11-17");
+  it("validates ownership, currency, cap, duplicates, bank and empty receipts", () => {
+    const receipt = withBank(newReceiptFromInvoice(invoice, "2026-11-17"));
     const line = receipt.allocations[0];
+    const paid = {
+      ...receipt,
+      tender: { ...receipt.tender, amount: 53.5 },
+    };
+    expect(receiptValidation(paid)).toBeNull();
     expect(
       receiptValidation({
-        ...receipt,
+        ...paid,
         allocations: [{ ...line, customerId: "other" }],
       }),
     ).toBe("invoiceMismatch");
     expect(
       receiptValidation({
-        ...receipt,
+        ...paid,
         allocations: [{ ...line, currency: "THB" }],
       }),
     ).toBe("invoiceMismatch");
     expect(
-      receiptValidation({ ...receipt, allocations: [{ ...line, amount: 54 }] }),
+      receiptValidation({ ...paid, allocations: [{ ...line, amount: 54 }] }),
     ).toBe("allocationExceedsOutstanding");
-    expect(receiptValidation({ ...receipt, allocations: [line, line] })).toBe(
+    expect(receiptValidation({ ...paid, allocations: [line, line] })).toBe(
       "duplicateInvoice",
     );
-    expect(() =>
-      saveReceipt("A", { ...receipt, allocations: [{ ...line, amount: 54 }] }),
-    ).toThrow("allocationExceedsOutstanding");
-    expect(readReceipts("A")).toHaveLength(2);
+    expect(
+      receiptValidation(newReceiptFromInvoice(invoice, "2026-11-17")),
+    ).toBe("bankAccountRequired");
+    expect(receiptValidation({ ...draft(), allocations: [] })).toBe(
+      "emptyReceipt",
+    );
   });
 
-  it("combines net cash with actual WHT and shows proportional invoice VAT in THB", () => {
-    const receipt = newReceiptFromInvoice(invoice, "2026-11-17");
-    const sourcePayment = readReceipts("A")[0].payments[0];
-    const withPayment = {
+  it("settles net cash + WHT + charge against applied and keeps the excess as unapplied", () => {
+    const receipt = withBank(newReceiptFromInvoice(invoice, "2026-11-17"));
+    const withTender = {
       ...receipt,
       rate: 35,
       whtEnabled: true,
+      whtProfileId: "wht-3",
       whtAmount: 1.5,
-      payments: [{ ...sourcePayment, amount: 52 }],
+      tender: { ...receipt.tender, amount: 51, charge: 1 },
     };
-    expect(receiptTotals(withPayment)).toEqual({
-      allocated: 53.5,
-      received: 52,
+    expect(receiptTotals(withTender)).toEqual({
+      applied: 53.5,
       wht: 1.5,
+      charge: 1,
       settlement: 53.5,
+      received: 51,
       unapplied: 0,
-      baseReceived: 1820,
     });
+    expect(receiptValidation(withTender)).toBeNull();
+    const over = {
+      ...withTender,
+      tender: { ...withTender.tender, amount: 60 },
+    };
+    expect(receiptTotals(over).unapplied).toBe(9);
+    expect(receiptValidation(over)).toBeNull();
+    const short = {
+      ...withTender,
+      tender: { ...withTender.tender, amount: 40 },
+    };
+    expect(receiptValidation(short)).toBe("overAllocated");
+    expect(receiptValidation({ ...withTender, whtAmount: 54 })).toBe(
+      "whtExceedsAllocation",
+    );
+    expect(receiptTotals({ ...withTender, whtEnabled: false }).wht).toBe(0);
     expect(receiptAllocationTax(receipt.allocations[0], 35)).toEqual({
       base: 1750,
       tax: 122.5,
       total: 1872.5,
       rate: 7,
     });
-    expect(receiptValidation({ ...withPayment, whtAmount: 54 })).toBe(
-      "whtExceedsAllocation",
-    );
-    expect(receiptTotals({ ...withPayment, whtEnabled: false }).wht).toBe(0);
   });
 
-  it("uses profile payment and WHT defaults and calculates WHT from allocated value before VAT", () => {
-    const defaults = receiptProfileDefaults({
-      paymentType: "CHQ",
-      whtService: "01",
-    });
-    expect(defaults).toEqual({
-      defaultPaymentType: "cheque",
-      whtService: "01",
-    });
-    const receipt = {
-      ...newReceiptFromInvoice(invoice, "2026-11-17"),
-      ...defaults,
+  it("counts credit-note lines negative in the totals", () => {
+    const receipt = withBank(newReceiptFromInvoice(invoice, "2026-11-17"));
+    const credit = {
+      ...receipt.allocations[0],
+      id: "cn-1",
+      docType: "credit_note" as const,
+      amount: 3.5,
+      outstanding: 3.5,
     };
-    expect(suggestedReceiptWht(receipt)).toBe(1.5);
-    expect(suggestedReceiptWht({ ...receipt, whtService: "02" })).toBe(2.5);
-    expect(suggestedReceiptWht({ ...receipt, whtService: "NONE" })).toBe(0);
+    const mixed = {
+      ...receipt,
+      allocations: [{ ...receipt.allocations[0], amount: 50 }, credit],
+      tender: { ...receipt.tender, amount: 46.5 },
+    };
+    expect(receiptTotals(mixed).applied).toBe(46.5);
+    expect(receiptTotals(mixed).unapplied).toBe(0);
+    expect(receiptValidation(mixed)).toBeNull();
+  });
+
+  it("maps the customer profile payment type and computes WHT from the profile rate over pre-VAT value", () => {
+    expect(receiptProfileDefaults({ paymentType: "CHQ" })).toEqual({
+      defaultPaymentType: "cheque",
+    });
     expect(receiptProfileDefaults({}).defaultPaymentType).toBe("bank_transfer");
+    const receipt = newReceiptFromInvoice(invoice, "2026-11-17");
+    expect(suggestedReceiptWht(3, receipt)).toBe(1.5);
+    expect(suggestedReceiptWht(5, receipt)).toBe(2.5);
+    expect(suggestedReceiptWht(0, receipt)).toBe(0);
   });
 
   it("rejects invalid dates, non-finite amounts and invalid tax identities", () => {
@@ -243,6 +221,7 @@ describe("Receipt allocation and tax calculation", () => {
     expect(
       receiptValidation({
         ...receipt,
+        tender: { ...receipt.tender, amount: 10 },
         taxInvoice: true,
         taxEntity: { ...receipt.taxEntity, taxId: "123" },
       }),
@@ -250,9 +229,194 @@ describe("Receipt allocation and tax calculation", () => {
     expect(
       receiptValidation({
         ...receipt,
+        tender: { ...receipt.tender, amount: 10 },
         taxInvoice: true,
         taxEntity: { ...receipt.taxEntity, branchNo: "HQ" },
       }),
     ).toBe("invalidBranchNo");
+  });
+});
+
+describe("Receipt API mapping", () => {
+  const invoice: ArRegisterDocument = {
+    id: "invoice-a",
+    doc_no: "ARIV26110001",
+    doc_type: "invoice",
+    doc_status: "posted",
+    doc_date: "2026-11-01",
+    due_date: "2026-11-30",
+    customer_id: "customer-a",
+    customer_code: "AR001",
+    customer_name: "Customer A",
+    currency_code: "THB",
+    currency_id: "cur-thb",
+    net_amount: "100",
+    vat_amount: "7",
+    total_amount: "107",
+    outstanding_amount: "107",
+  };
+
+  it("builds an invoice-level payload with one tender, one WHT row and no TXRC info unless requested", () => {
+    const base = newReceiptFromInvoice(invoice, "2026-11-17");
+    const receipt: ArReceipt = {
+      ...base,
+      whtEnabled: true,
+      whtProfileId: "wht-1",
+      whtAmount: 3,
+      whtCertificate: "C-1",
+      tender: {
+        ...base.tender,
+        bankAccountId: "bank-1",
+        method: "cheque",
+        amount: 103,
+        charge: 1,
+        chequeNo: "CHQ-9",
+      },
+    };
+    const payload = toArReceiptPayload(receipt);
+    expect(payload).toMatchObject({
+      customer_id: "customer-a",
+      bank_account_id: "bank-1",
+      receipt_method: "cheque",
+      doc_source: "manual",
+      source_doc_ref: "ARIV26110001",
+      currency_id: "cur-thb",
+      net_received_amount: 103,
+      charge_amount: 1,
+      cheque_no: "CHQ-9",
+      is_tax_invoice: false,
+      allocations: [{ ar_invoice_id: "invoice-a", applied_amount: 107 }],
+      wht: [
+        {
+          wht_tax_profile_id: "wht-1",
+          base_amount: 100,
+          wht_amount: 3,
+          wht_certificate_no: "C-1",
+        },
+      ],
+      info: {},
+    });
+    expect(payload).not.toHaveProperty("doc_version");
+    const tax = toArReceiptPayload({
+      ...receipt,
+      version: 4,
+      taxInvoice: true,
+      taxEntity: {
+        ...receipt.taxEntity,
+        registeredName: "Co",
+        taxId: "1234567890123",
+      },
+    });
+    expect(tax.doc_version).toBe(4);
+    expect(tax.info).toMatchObject({
+      tax_entity: { name: "Co", tax_id: "1234567890123", branch: "00000" },
+      tax_date: "2026-11-17",
+    });
+    expect(toArReceiptPayload({ ...receipt, whtEnabled: false }).wht).toEqual(
+      [],
+    );
+  });
+
+  it("restores the form from a document, using the outstanding list for numbers and caps", () => {
+    const doc = {
+      id: "r1",
+      doc_no: "ARRC26110001",
+      doc_status: "draft",
+      doc_version: 2,
+      receipt_date: "2026-11-17T00:00:00.000Z",
+      received_date: "2026-11-18T00:00:00.000Z",
+      customer_id: "customer-a",
+      customer_code: "AR001",
+      customer_name: "Customer A",
+      currency_id: "cur-thb",
+      currency_code: "THB",
+      exchange_rate: 1,
+      bank_account_id: "bank-1",
+      bank_account_code: "KB1",
+      bank_account_name: "Kbank",
+      receipt_method: "promptpay",
+      net_received_amount: 100,
+      total_charge_amount: 1,
+      total_unapplied_amount: 0,
+      is_tax_invoice: true,
+      doc_source: "manual",
+      info: {
+        tax_entity: { name: "Co", tax_id: "1234567890123", branch: "00001" },
+      },
+      tb_ar_receipt_wht: [
+        {
+          id: "w",
+          wht_tax_profile_id: "wht-1",
+          base_amount: 100,
+          wht_rate: 3,
+          wht_amount: 3,
+          is_override: false,
+        },
+      ],
+      tb_ar_tax_invoice: {
+        id: "t",
+        tax_invoice_no: "TXRC2611-0001",
+        tax_status: "active",
+      },
+      tb_ar_receipt_detail: [
+        {
+          id: "d1",
+          ar_invoice_id: "invoice-a",
+          ar_invoice_detail_id: "l1",
+          doc_type: "invoice",
+          applied_amount: 60,
+        },
+        {
+          id: "d2",
+          ar_invoice_id: "invoice-a",
+          ar_invoice_detail_id: "l2",
+          doc_type: "invoice",
+          applied_amount: 44,
+        },
+      ],
+    } as unknown as ArReceiptDocument;
+    const receipt = receiptFromDocument(doc, [
+      {
+        ar_invoice_id: "invoice-a",
+        doc_no: "ARIV26110001",
+        doc_type: "invoice",
+        doc_date: "2026-11-01",
+        currency_id: "cur-thb",
+        currency_code: "THB",
+        exchange_rate: 1,
+        net_amount: 100,
+        vat_amount: 7,
+        total_amount: 107,
+        outstanding_amount: 107,
+        available_amount: 107,
+        lines: [],
+      },
+    ]);
+    expect(receipt).toMatchObject({
+      version: 2,
+      date: "2026-11-17",
+      taxInvoiceNo: "TXRC2611-0001",
+      whtEnabled: true,
+      whtAmount: 3,
+      tender: {
+        method: "promptpay",
+        date: "2026-11-18",
+        amount: 100,
+        charge: 1,
+        bankAccountLabel: "KB1 · Kbank",
+      },
+      taxEntity: {
+        registeredName: "Co",
+        taxId: "1234567890123",
+        branchNo: "00001",
+      },
+    });
+    expect(receipt.allocations).toHaveLength(1);
+    expect(receipt.allocations[0]).toMatchObject({
+      number: "ARIV26110001",
+      amount: 104,
+      outstanding: 107,
+    });
+    expect(receiptTotals(receipt).unapplied).toBe(0);
   });
 });

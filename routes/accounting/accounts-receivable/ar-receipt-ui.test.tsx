@@ -1,22 +1,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { IntlProvider } from "use-intl";
 import { beforeEach, expect, it, vi } from "vitest";
 import messages from "@/messages/en.json";
 import { setURLParams } from "@/hooks/use-url";
-import { downloadXlsx } from "@/lib/xlsx-utils";
 import { Component as ReceiptList } from "./ar-receipt-list.route";
 import { Component as ReceiptDetail } from "./ar-receipt-detail.route";
-import { AR_RECEIPT_PATH, readReceipts } from "./ar-receipt-model";
+import { AR_RECEIPT_PATH } from "./ar-receipt-model";
+import type { ArReceiptRow } from "./use-ar-receipt";
 
 const customer = vi.hoisted(() => ({
   id: "real-customer",
@@ -39,9 +32,17 @@ const customer = vi.hoisted(() => ({
     },
   ],
 }));
-vi.mock("@/lib/xlsx-utils", () => ({
-  downloadXlsx: vi.fn(),
-  buildXlsxFileName: (prefix: string) => prefix,
+const api = vi.hoisted(() => ({
+  useArReceipts: vi.fn(),
+  exportReceipts: vi.fn(),
+}));
+vi.mock("./use-ar-receipt", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./use-ar-receipt")>()),
+  useArReceipts: api.useArReceipts,
+  useExportArReceipts: () => ({
+    isExporting: false,
+    exportReceipts: api.exportReceipts,
+  }),
 }));
 vi.mock("@/hooks/use-bu-code", () => ({ useBuCode: () => "TEST" }));
 vi.mock("@/hooks/use-can", () => ({
@@ -97,12 +98,45 @@ vi.mock("./ar-customer-lookup", () => ({
   ),
 }));
 
+const row = (
+  doc_no: string,
+  doc_status: ArReceiptRow["doc_status"],
+  customer_name: string,
+): ArReceiptRow => ({
+  id: doc_no,
+  doc_no,
+  doc_status,
+  receipt_date: "2026-11-16",
+  customer_code: "AR001",
+  customer_name,
+  currency_code: "THB",
+  net_received_amount: "1000",
+  total_applied_amount: "900",
+  total_unapplied_amount: "100",
+});
+const ROWS = [
+  row("DRAFT-00000001", "draft", "Draft Customer"),
+  row("ARRC26110001", "in_review", "Review Customer"),
+  row("ARRC26110002", "posted", "Posted Customer"),
+  row("ARRC26110003", "void", "Void Customer"),
+];
+
 beforeEach(() => {
   window.history.replaceState({}, "", AR_RECEIPT_PATH);
   vi.clearAllMocks();
+  api.exportReceipts.mockResolvedValue(4);
+  api.useArReceipts.mockReturnValue({
+    data: {
+      data: ROWS,
+      paginate: { total: 4, page: 1, perpage: 10, pages: 1 },
+    },
+    isPending: false,
+    error: null,
+    refetch: vi.fn(),
+  });
 });
 
-it("runs the actual Receipt routes through filtered export, print, create, tax defaults, edit and delete", async () => {
+it("lists receipts from the backend with all four status chips, passes filters to the query and export, and opens the new form", async () => {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -121,79 +155,43 @@ it("runs the actual Receipt routes through filtered export, print, create, tax d
       </QueryClientProvider>
     </IntlProvider>,
   );
-  const print = vi.spyOn(window, "print").mockImplementation(() => {});
-  await userEvent.click(screen.getByRole("button", { name: "Print" }));
-  expect(print).toHaveBeenCalledOnce();
+  const table = screen.getByRole("table");
+  for (const no of ROWS.map((r) => r.doc_no))
+    expect(within(table).getByText(no)).toBeVisible();
+  const statuses = messages.accounting.arReceipt.statuses;
+  for (const label of Object.values(statuses))
+    expect(within(table).getByText(label)).toBeVisible();
   act(() =>
     setURLParams({
       status: "draft",
-      date: "date|date_range:2026-11-15,2026-11-17",
+      date: "receipt_date|date_range:2026-11-15,2026-11-17",
     }),
   );
-  const table = screen.getByRole("table");
-  expect(within(table).getByText("ARRC-SAMPLE-002")).toBeVisible();
-  expect(within(table).queryByText("ARRC-SAMPLE-001")).not.toBeInTheDocument();
-  await userEvent.click(screen.getByRole("button", { name: "Export" }));
   await waitFor(() =>
-    expect(downloadXlsx).toHaveBeenCalledWith(
+    expect(api.useArReceipts).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        rows: [expect.objectContaining({ number: "ARRC-SAMPLE-002" })],
+        filter: expect.stringContaining("doc_status|string:draft"),
       }),
     ),
   );
+  expect(api.useArReceipts).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      filter: expect.stringContaining("receipt_date|date_range:2026-11-15"),
+    }),
+  );
+  await userEvent.click(screen.getByRole("button", { name: "Export" }));
+  await waitFor(() => expect(api.exportReceipts).toHaveBeenCalledOnce());
+  const [params, columns] = api.exportReceipts.mock.calls[0];
+  expect(params.filter).toContain("doc_status|string:draft");
+  expect(columns[0].value(ROWS[0])).toBe("DRAFT-00000001");
+  expect(columns.at(-1).value(ROWS[1])).toBe(statuses.in_review);
   act(() => setURLParams({ status: "", date: "" }));
   await userEvent.click(
     screen.getByRole("button", {
       name: messages.accounting.arReceipt.newReceipt,
     }),
   );
-  await userEvent.click(
-    screen.getByRole("button", { name: "Select API customer" }),
-  );
-  const dateField = screen
-    .getByText("Input Date")
-    .closest<HTMLElement>("[data-slot=field]")!;
-  await userEvent.click(within(dateField).getByRole("button"));
-  const calendar = screen.getByRole("grid");
-  await userEvent.click(
-    within(calendar)
-      .getAllByRole("button")
-      .find((button) => !(button as HTMLButtonElement).disabled)!,
-  );
-  await userEvent.click(screen.getByRole("tab", { name: "Tax Invoice" }));
-  expect(screen.getByLabelText("Address Line 1")).toHaveValue(
-    "Registered Road",
-  );
-  expect(screen.getByLabelText("Address Line 2")).toHaveValue(
-    "Floor 2 Subdistrict District",
-  );
-  expect(screen.getByLabelText("Province")).toHaveValue("Bangkok");
-  fireEvent.change(screen.getByLabelText("Description"), {
-    target: { value: "Created through receipt form" },
-  });
-  fireEvent.submit(document.getElementById("ar-receipt-form")!);
-  const saved = readReceipts("TEST").find(
-    (row) => row.customerId === customer.id,
-  )!;
-  expect(saved.taxEntity.postalCode).toBe("10110");
-  expect(saved.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-  await userEvent.click(await screen.findByRole("button", { name: "Edit" }));
-  fireEvent.change(screen.getByLabelText("Description"), {
-    target: { value: "Edited through receipt form" },
-  });
-  fireEvent.submit(document.getElementById("ar-receipt-form")!);
   expect(
-    readReceipts("TEST").find((row) => row.id === saved.id)?.description,
-  ).toBe("Edited through receipt form");
-  await userEvent.click(await screen.findByRole("button", { name: "Delete" }));
-  await userEvent.click(
-    within(screen.getByRole("alertdialog")).getByRole("button", {
-      name: "Confirm",
-    }),
-  );
-  await screen.findByRole("button", {
-    name: messages.accounting.arReceipt.newReceipt,
-  });
-  expect(readReceipts("TEST").some((row) => row.id === saved.id)).toBe(false);
-  print.mockRestore();
+    await screen.findByRole("button", { name: "Select API customer" }),
+  ).toBeVisible();
 });

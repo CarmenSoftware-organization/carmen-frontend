@@ -26,6 +26,7 @@ import {
   useApInvoiceWorkflows,
   useApPaymentWorkflows,
   useArInvoiceWorkflows,
+  useArReceiptWorkflows,
 } from "@/hooks/use-workflow";
 import { useCreateWorkflow } from "./use-wf-mutations";
 import { scrollToFirstInvalidField } from "@/lib/form-helpers";
@@ -102,6 +103,10 @@ export default function WorkflowNewForm({
     !lockedType || lockedType === WORKFLOW_TYPE.AR_INVOICE;
   const { data: arInvoiceWorkflows, isPending: arInvoicePending } =
     useArInvoiceWorkflows({ perpage: 100 }, { enabled: arInvoiceQueryEnabled });
+  const arReceiptQueryEnabled =
+    !lockedType || lockedType === WORKFLOW_TYPE.AR_RECEIPT;
+  const { data: arReceiptWorkflows, isPending: arReceiptPending } =
+    useArReceiptWorkflows({ perpage: 100 }, { enabled: arReceiptQueryEnabled });
   const apInvoiceActiveExists =
     apInvoiceQueryEnabled &&
     !!apInvoiceWorkflows?.data?.some((w) => w.is_active);
@@ -111,6 +116,9 @@ export default function WorkflowNewForm({
   const arInvoiceActiveExists =
     arInvoiceQueryEnabled &&
     !!arInvoiceWorkflows?.data?.some((w) => w.is_active);
+  const arReceiptActiveExists =
+    arReceiptQueryEnabled &&
+    !!arReceiptWorkflows?.data?.some((w) => w.is_active);
   // ระหว่างโหลดรายการ ถือว่าชนิดนั้นถูกบล็อกไว้ก่อน จนรู้ว่าไม่มีเส้นที่เปิดอยู่
   const apBlocked =
     (watchedType === WORKFLOW_TYPE.AP_INVOICE &&
@@ -118,7 +126,9 @@ export default function WorkflowNewForm({
     (watchedType === WORKFLOW_TYPE.AP_PAYMENT &&
       ((apPaymentQueryEnabled && apPaymentPending) || apPaymentActiveExists)) ||
     (watchedType === WORKFLOW_TYPE.AR_INVOICE &&
-      ((arInvoiceQueryEnabled && arInvoicePending) || arInvoiceActiveExists));
+      ((arInvoiceQueryEnabled && arInvoicePending) || arInvoiceActiveExists)) ||
+    (watchedType === WORKFLOW_TYPE.AR_RECEIPT &&
+      ((arReceiptQueryEnabled && arReceiptPending) || arReceiptActiveExists));
 
   const discard = useDiscardConfirm({
     isDirty: form.formState.isDirty,
@@ -232,7 +242,9 @@ export default function WorkflowNewForm({
                             (opt.value === WORKFLOW_TYPE.AP_PAYMENT &&
                               apPaymentActiveExists) ||
                             (opt.value === WORKFLOW_TYPE.AR_INVOICE &&
-                              arInvoiceActiveExists)
+                              arInvoiceActiveExists) ||
+                            (opt.value === WORKFLOW_TYPE.AR_RECEIPT &&
+                              arReceiptActiveExists)
                           }
                         >
                           {opt.label}
@@ -263,6 +275,12 @@ export default function WorkflowNewForm({
                     {t("arInvoiceSingleActiveHint")}
                   </p>
                 )}
+              {watchedType === WORKFLOW_TYPE.AR_RECEIPT &&
+                arReceiptActiveExists && (
+                  <p className="text-muted-foreground text-xs">
+                    {t("arReceiptSingleActiveHint")}
+                  </p>
+                )}
             </Field>
           )}
           {lockedType === WORKFLOW_TYPE.AP_INVOICE && apInvoiceActiveExists && (
@@ -278,6 +296,11 @@ export default function WorkflowNewForm({
           {lockedType === WORKFLOW_TYPE.AR_INVOICE && arInvoiceActiveExists && (
             <p role="alert" className="text-warning-ink text-sm sm:col-span-2">
               {t("arInvoiceSingleActiveHint")}
+            </p>
+          )}
+          {lockedType === WORKFLOW_TYPE.AR_RECEIPT && arReceiptActiveExists && (
+            <p role="alert" className="text-warning-ink text-sm sm:col-span-2">
+              {t("arReceiptSingleActiveHint")}
             </p>
           )}
 

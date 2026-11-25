@@ -36,6 +36,11 @@ const state = vi.hoisted(() => ({
   preview: vi.fn(),
 }));
 vi.mock("@/hooks/use-bu-code", () => ({ useBuCode: () => "BU" }));
+// ปุ่ม submit / void ถูกซ่อนตามสิทธิ์ accounting.ap — ให้ผู้ใช้ในเทสต์มีสิทธิ์ทุกตัว
+vi.mock("@/hooks/use-can", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/hooks/use-can")>();
+  return { ...actual, useCan: () => ({ ...actual.useCan(), can: () => true }) };
+});
 vi.mock("@/hooks/use-attachment-policy", () => ({
   useAttachmentPolicy: () => DEFAULT_ATTACHMENT_POLICY,
 }));
@@ -930,7 +935,9 @@ it.each([
         baseDisbursedAmount={stored}
       />,
     );
-    expect(screen.getByText(`Base Amount (THB): ${expected}`)).toBeInTheDocument();
+    expect(
+      screen.getByText(`Base Amount (THB): ${expected}`),
+    ).toBeInTheDocument();
   },
 );
 
@@ -1001,9 +1008,13 @@ it("edits an existing expense in a dialog without applying cancelled changes", a
   expect(
     screen.getByRole("heading", { name: "Edit expense" }),
   ).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText("Amount"), { target: { value: "-10" } });
+  fireEvent.change(screen.getByLabelText("Amount"), {
+    target: { value: "-10" },
+  });
   expect(screen.getByLabelText("Amount")).toHaveValue("10");
-  await userEvent.click(within(screen.getByRole("dialog")).getByRole("combobox"));
+  await userEvent.click(
+    within(screen.getByRole("dialog")).getByRole("combobox"),
+  );
   await userEvent.click(screen.getByRole("option", { name: "Credit" }));
   fireEvent.change(screen.getByLabelText("Description"), {
     target: { value: "Updated fee" },
@@ -1015,7 +1026,11 @@ it("edits an existing expense in a dialog without applying cancelled changes", a
   );
   expect(changed).toHaveBeenCalledWith(
     "expense",
-    expect.objectContaining({ description: "Updated fee", amount: "10", is_credit: true }),
+    expect.objectContaining({
+      description: "Updated fee",
+      amount: "10",
+      is_credit: true,
+    }),
   );
   changed.mockClear();
   await userEvent.click(screen.getByRole("button", { name: "Edit expense" }));

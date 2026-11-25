@@ -928,6 +928,13 @@ export const moduleList: ModuleDto[] = [
             permission: PERMISSIONS.system_admin.workflow.view,
           },
           {
+            name: "workflowArReceipt",
+            path: "/system-admin/workflow/ar-receipt",
+            licenseFeature: "system_admin.workflow",
+            icon: Receipt,
+            permission: PERMISSIONS.system_admin.workflow.view,
+          },
+          {
             name: "notificationTemplate",
             path: "/system-admin/notification-template",
             licenseFeature: "configuration.notification_template", // config:notification-templates

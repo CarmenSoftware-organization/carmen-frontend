@@ -29,7 +29,11 @@ import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { ApDetailGrid } from "../accounts-payable/shared/ap-detail-grid";
 import { ApSendBackFields } from "../accounts-payable/shared/ap-send-back-fields";
-import { arInvoiceActions, type ArUiAction } from "./ar-invoice-actions";
+import {
+  arActionsAllowed,
+  arDocActions,
+  type ArUiAction,
+} from "./ar-doc-actions";
 import { ArInvoiceTaxLines } from "./ar-invoice-tax-lines";
 import { ArInvoiceLines } from "./ar-invoice-lines";
 import {
@@ -40,11 +44,8 @@ import {
   invoiceTaxEntity,
   readInvoiceSupplement,
 } from "./ar-invoice-supplement-model";
-import {
-  AR_RECEIPT_PATH,
-  readReceipts,
-  receiptTotals,
-} from "./ar-receipt-model";
+import { AR_RECEIPT_PATH } from "./ar-receipt-model";
+import { InvoiceReceipts } from "./ar-invoice-receipts";
 import { InvoiceJournal } from "./ar-invoice-journal";
 import { draftLineFromRecord } from "./ar-invoice-draft-model";
 import { ArInvoiceDraftForm } from "./ar-invoice-draft-form";
@@ -82,7 +83,7 @@ function NewInvoice() {
 
 function RegisterDetail({ id }: { readonly id?: string }) {
   const t = useTranslations("accounting.arRegister");
-  const { canWrite } = useCan();
+  const { canWrite, can } = useCan();
   const { toList } = useListReturn(AR_REGISTER_PATH);
   const [editDocument, setEditDocument] = useState<ArRegisterDocument | null>(
     null,
@@ -130,7 +131,9 @@ function RegisterDetail({ id }: { readonly id?: string }) {
     );
   const row = doc.data;
   const draft = row.doc_status === "draft";
-  const actions: ArUiAction[] = canWrite ? arInvoiceActions(row) : [];
+  const actions: ArUiAction[] = canWrite
+    ? arActionsAllowed(arDocActions(row), can)
+    : [];
   const needsReason = confirmation === "void" || confirmation === "reject";
   const editable =
     draft &&
@@ -324,11 +327,6 @@ function InvoiceView({
   const money = useAmountFormatter();
   const navigate = useNavigate();
   const supplement = bu ? readInvoiceSupplement(bu, row.id) : undefined;
-  const receipts = bu
-    ? readReceipts(bu).filter((receipt) =>
-        receipt.allocations.some((line) => line.id === row.id),
-      )
-    : [];
   const fields = [
     [t("type"), t(`types.${row.doc_type}`)],
     [t("date"), formatDate(row.doc_date, dateFormat)],
@@ -543,7 +541,8 @@ function InvoiceView({
           <div className="mb-3 flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold">{t("receiptHistory")}</h2>
             {Number(row.outstanding_amount) > 0 &&
-              row.doc_status === "posted" && (
+              row.doc_status === "posted" &&
+              row.doc_type !== "credit_note" && (
                 <Button
                   type="button"
                   variant="outline"
@@ -558,67 +557,7 @@ function InvoiceView({
                 </Button>
               )}
           </div>
-          <p className="text-muted-foreground mb-2 text-xs">
-            {t("receiptMock")}
-          </p>
-          <ApDetailGrid
-            rows={receipts}
-            empty={t("noRecords")}
-            columns={[
-              {
-                accessorKey: "number",
-                header: t("number"),
-                cell: ({ row: item }) => (
-                  <Button asChild variant="link" size="sm">
-                    <Link to={`${AR_RECEIPT_PATH}/${item.original.id}`}>
-                      {item.original.number}
-                    </Link>
-                  </Button>
-                ),
-              },
-              { accessorKey: "date", header: t("date") },
-              {
-                id: "payType",
-                header: t("payType"),
-                cell: ({ row: item }) =>
-                  item.original.payments
-                    .map((payment) => payment.type)
-                    .join(", ") || "—",
-              },
-              {
-                id: "paid",
-                header: t("paidAmount"),
-                cell: ({ row: item }) =>
-                  money(
-                    item.original.allocations
-                      .filter((line) => line.id === row.id)
-                      .reduce((sum, line) => sum + line.amount, 0),
-                  ),
-              },
-              {
-                id: "wht",
-                header: t("whtAmount"),
-                cell: ({ row: item }) =>
-                  money(receiptTotals(item.original).wht),
-              },
-              {
-                id: "received",
-                header: t("netReceived"),
-                cell: ({ row: item }) =>
-                  money(receiptTotals(item.original).received),
-              },
-              {
-                accessorKey: "status",
-                header: t("status"),
-                cell: ({ row: item }) => (
-                  <StatusChip
-                    status={item.original.status}
-                    label={t(`statuses.${item.original.status}`)}
-                  />
-                ),
-              },
-            ]}
-          />
+          <InvoiceReceipts invoiceId={row.id} currency={row.currency_code} />
         </TabsContent>
         <TabsContent value="journal">
           <InvoiceJournal document={row} />

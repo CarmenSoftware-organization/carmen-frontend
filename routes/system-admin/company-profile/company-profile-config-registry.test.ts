@@ -303,4 +303,15 @@ describe("AR config registry", () => {
     expect(item?.options).toBeUndefined();
     expect(SEEDED_KEYS.has("ar.invoice.allow-creator-approve")).toBe(true);
   });
+
+  it("registers ar.receipt.allow-creator-approve as a boolean defaulting to false", () => {
+    const ar = CONFIG_SECTIONS.find((s) => s.id === "ar");
+    const item = ar?.items.find((i) => i.key === "ar.receipt.allow-creator-approve");
+    expect(item).toBeDefined();
+    expect(item?.datatype).toBe("boolean");
+    expect(item?.defaultValue).toBe("false");
+    expect(item?.labelKey).toBe("config.arReceiptAllowCreatorApprove");
+    expect(item?.options).toBeUndefined();
+    expect(SEEDED_KEYS.has("ar.receipt.allow-creator-approve")).toBe(true);
+  });
 });

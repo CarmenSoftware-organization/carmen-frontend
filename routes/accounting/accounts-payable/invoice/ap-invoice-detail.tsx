@@ -38,6 +38,8 @@ import {
 } from "./ap-invoice-panels";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-profile";
+import { useCan } from "@/hooks/use-can";
+import { PERMISSIONS } from "@/constant/permissions";
 import { ApiError } from "@/lib/api-error";
 import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import type {
@@ -157,7 +159,13 @@ function ApInvoiceEditor({
 
   const locked = loaded ? apIsAutoFromGrn(loaded) : false;
   const editable = editing && (isNew || (!!loaded && apCanEdit(loaded)));
-  const actions = loaded ? apInvoiceActions(loaded, userId) : [];
+  const { can } = useCan();
+  // ตัด action ที่ gateway จะตอบ 403: submit ต้อง accounting.ap.view, void ต้อง accounting.ap.void
+  const actions = (loaded ? apInvoiceActions(loaded, userId) : []).filter(
+    (a) =>
+      (a !== "submit" || can(PERMISSIONS.accounting.ap.view)) &&
+      (a !== "void" || can(PERMISSIONS.accounting.ap.void)),
+  );
   // ผู้สร้างเป็นผู้ดำเนินการใน stage (มี reject/sendback) แต่ approve ไม่ได้ → บอกเหตุผล
   const showCreatorHint =
     !!loaded &&
