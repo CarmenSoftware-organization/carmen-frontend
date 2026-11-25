@@ -4053,7 +4053,6 @@
       "generalDesc": "Name, type and description for this workflow.",
       "generalDescLocked": "Name and description for this workflow.",
       "status": "Status",
-      "statusDesc": "Set whether this workflow is active on creation.",
       "notFound": "Approval flow not found",
       "documents": {
         "draft": "Draft",

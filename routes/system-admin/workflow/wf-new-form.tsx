@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
-import { SettingSection } from "@/components/ui/setting-section";
+import { CompactSection, FieldGrid } from "@/components/share/compact-section";
 import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
@@ -163,6 +163,7 @@ export default function WorkflowNewForm({
 
   return (
     <FormPageShell
+      width="wide"
       header={
         <FormToolbar
           entity={t("entity")}
@@ -192,158 +193,167 @@ export default function WorkflowNewForm({
         )}
       >
         {/* General */}
-        <SettingSection
+        <CompactSection
           first
           title={t("general")}
           description={t(lockedType ? "generalDescLocked" : "generalDesc")}
         >
-          <Field
-            data-invalid={!!form.formState.errors.name}
-            className={lockedType ? "sm:col-span-2" : undefined}
-          >
-            <FieldLabel htmlFor="wf-name" required>
-              {t("workflowName")}
-            </FieldLabel>
-            <Input
-              id="wf-name"
-              placeholder={namePlaceholder}
-              disabled={isPending}
-              maxLength={100}
-              {...form.register("name")}
-            />
-            <FieldError>{form.formState.errors.name?.message}</FieldError>
-          </Field>
-
-          {!lockedType && (
-            <Field data-invalid={!!form.formState.errors.workflow_type}>
-              <FieldLabel htmlFor="wf-type" required>
-                {t("workflowType")}
+          <FieldGrid>
+            <Field data-invalid={!!form.formState.errors.name}>
+              <FieldLabel htmlFor="wf-name" required>
+                {t("workflowName")}
               </FieldLabel>
-              <Controller
-                control={form.control}
-                name="workflow_type"
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={isPending || !!lockedType}
-                  >
-                    <SelectTrigger id="wf-type">
-                      <SelectValue placeholder={t("selectType")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {workflowTypeField.map((opt) => (
-                        <SelectItem
-                          key={opt.value}
-                          value={opt.value}
-                          disabled={
-                            (opt.value === WORKFLOW_TYPE.AP_INVOICE &&
-                              apInvoiceActiveExists) ||
-                            (opt.value === WORKFLOW_TYPE.AP_PAYMENT &&
-                              apPaymentActiveExists) ||
-                            (opt.value === WORKFLOW_TYPE.AR_INVOICE &&
-                              arInvoiceActiveExists) ||
-                            (opt.value === WORKFLOW_TYPE.AR_RECEIPT &&
-                              arReceiptActiveExists)
-                          }
-                        >
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+              <Input
+                id="wf-name"
+                placeholder={namePlaceholder}
+                disabled={isPending}
+                maxLength={100}
+                {...form.register("name")}
               />
-              <FieldError>
-                {form.formState.errors.workflow_type?.message}
-              </FieldError>
-              {watchedType === WORKFLOW_TYPE.AP_INVOICE &&
-                apInvoiceActiveExists && (
-                  <p className="text-muted-foreground text-xs">
-                    {t("apInvoiceSingleActiveHint")}
-                  </p>
-                )}
-              {watchedType === WORKFLOW_TYPE.AP_PAYMENT &&
-                apPaymentActiveExists && (
-                  <p className="text-muted-foreground text-xs">
-                    {t("apPaymentSingleActiveHint")}
-                  </p>
-                )}
-              {watchedType === WORKFLOW_TYPE.AR_INVOICE &&
-                arInvoiceActiveExists && (
-                  <p className="text-muted-foreground text-xs">
-                    {t("arInvoiceSingleActiveHint")}
-                  </p>
-                )}
-              {watchedType === WORKFLOW_TYPE.AR_RECEIPT &&
-                arReceiptActiveExists && (
-                  <p className="text-muted-foreground text-xs">
-                    {t("arReceiptSingleActiveHint")}
-                  </p>
-                )}
+              <FieldError>{form.formState.errors.name?.message}</FieldError>
             </Field>
-          )}
-          {lockedType === WORKFLOW_TYPE.AP_INVOICE && apInvoiceActiveExists && (
-            <p role="alert" className="text-warning-ink text-sm sm:col-span-2">
-              {t("apInvoiceSingleActiveHint")}
-            </p>
-          )}
-          {lockedType === WORKFLOW_TYPE.AP_PAYMENT && apPaymentActiveExists && (
-            <p role="alert" className="text-warning-ink text-sm sm:col-span-2">
-              {t("apPaymentSingleActiveHint")}
-            </p>
-          )}
-          {lockedType === WORKFLOW_TYPE.AR_INVOICE && arInvoiceActiveExists && (
-            <p role="alert" className="text-warning-ink text-sm sm:col-span-2">
-              {t("arInvoiceSingleActiveHint")}
-            </p>
-          )}
-          {lockedType === WORKFLOW_TYPE.AR_RECEIPT && arReceiptActiveExists && (
-            <p role="alert" className="text-warning-ink text-sm sm:col-span-2">
-              {t("arReceiptSingleActiveHint")}
-            </p>
-          )}
 
-          <Field className="sm:col-span-2">
-            <FieldLabel htmlFor="wf-description">
-              {tfl("description")}
-            </FieldLabel>
-            <Textarea
-              id="wf-description"
-              placeholder={t("optionalDescription")}
-              className="min-h-15 text-sm"
-              disabled={isPending}
-              maxLength={256}
-              {...form.register("description")}
-            />
-          </Field>
-        </SettingSection>
+            {!lockedType && (
+              <Field data-invalid={!!form.formState.errors.workflow_type}>
+                <FieldLabel htmlFor="wf-type" required>
+                  {t("workflowType")}
+                </FieldLabel>
+                <Controller
+                  control={form.control}
+                  name="workflow_type"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isPending || !!lockedType}
+                    >
+                      <SelectTrigger id="wf-type">
+                        <SelectValue placeholder={t("selectType")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {workflowTypeField.map((opt) => (
+                          <SelectItem
+                            key={opt.value}
+                            value={opt.value}
+                            disabled={
+                              (opt.value === WORKFLOW_TYPE.AP_INVOICE &&
+                                apInvoiceActiveExists) ||
+                              (opt.value === WORKFLOW_TYPE.AP_PAYMENT &&
+                                apPaymentActiveExists) ||
+                              (opt.value === WORKFLOW_TYPE.AR_INVOICE &&
+                                arInvoiceActiveExists) ||
+                              (opt.value === WORKFLOW_TYPE.AR_RECEIPT &&
+                                arReceiptActiveExists)
+                            }
+                          >
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <FieldError>
+                  {form.formState.errors.workflow_type?.message}
+                </FieldError>
+                {watchedType === WORKFLOW_TYPE.AP_INVOICE &&
+                  apInvoiceActiveExists && (
+                    <p className="text-muted-foreground text-xs">
+                      {t("apInvoiceSingleActiveHint")}
+                    </p>
+                  )}
+                {watchedType === WORKFLOW_TYPE.AP_PAYMENT &&
+                  apPaymentActiveExists && (
+                    <p className="text-muted-foreground text-xs">
+                      {t("apPaymentSingleActiveHint")}
+                    </p>
+                  )}
+                {watchedType === WORKFLOW_TYPE.AR_INVOICE &&
+                  arInvoiceActiveExists && (
+                    <p className="text-muted-foreground text-xs">
+                      {t("arInvoiceSingleActiveHint")}
+                    </p>
+                  )}
+                {watchedType === WORKFLOW_TYPE.AR_RECEIPT &&
+                  arReceiptActiveExists && (
+                    <p className="text-muted-foreground text-xs">
+                      {t("arReceiptSingleActiveHint")}
+                    </p>
+                  )}
+              </Field>
+            )}
+            {lockedType === WORKFLOW_TYPE.AP_INVOICE &&
+              apInvoiceActiveExists && (
+                <p
+                  role="alert"
+                  className="text-warning-ink col-span-full text-sm"
+                >
+                  {t("apInvoiceSingleActiveHint")}
+                </p>
+              )}
+            {lockedType === WORKFLOW_TYPE.AP_PAYMENT &&
+              apPaymentActiveExists && (
+                <p
+                  role="alert"
+                  className="text-warning-ink col-span-full text-sm"
+                >
+                  {t("apPaymentSingleActiveHint")}
+                </p>
+              )}
+            {lockedType === WORKFLOW_TYPE.AR_INVOICE &&
+              arInvoiceActiveExists && (
+                <p
+                  role="alert"
+                  className="text-warning-ink col-span-full text-sm"
+                >
+                  {t("arInvoiceSingleActiveHint")}
+                </p>
+              )}
+            {lockedType === WORKFLOW_TYPE.AR_RECEIPT &&
+              arReceiptActiveExists && (
+                <p
+                  role="alert"
+                  className="text-warning-ink col-span-full text-sm"
+                >
+                  {t("arReceiptSingleActiveHint")}
+                </p>
+              )}
 
-        {/* Stages — พรีวิวรางเดียวกับหน้ารายละเอียด ให้เห็นก่อนสร้างว่าจะได้อะไร */}
-        <SettingSection title={t("stages")} description={t("newStagesDesc")}>
-          <WfStageRailPreview
-            stages={buildDefaultStages()}
-            className="sm:col-span-2"
-          />
-        </SettingSection>
-
-        {/* Status */}
-        <SettingSection title={t("status")} description={t("statusDesc")}>
-          <div className="space-y-3 sm:col-span-2">
+            {/* สถานะเป็นช่องหนึ่งของ General (เหมือนหน้าแก้ใน wf-general) ไม่ใช่การ์ดแยกที่มีสวิตช์ตัวเดียว */}
             <Controller
               control={form.control}
               name="is_active"
               render={({ field }) => (
                 <StatusSwitch
                   id="wf-is-active"
+                  hideBadge
                   checked={field.value}
                   onCheckedChange={field.onChange}
                   disabled={isPending}
                 />
               )}
             />
-          </div>
-        </SettingSection>
+
+            <Field className="@md:col-span-2">
+              <FieldLabel htmlFor="wf-description">
+                {tfl("description")}
+              </FieldLabel>
+              <Textarea
+                id="wf-description"
+                placeholder={t("optionalDescription")}
+                className="min-h-15 text-sm"
+                disabled={isPending}
+                maxLength={256}
+                {...form.register("description")}
+              />
+            </Field>
+          </FieldGrid>
+        </CompactSection>
+
+        {/* Stages — พรีวิวรางเดียวกับหน้ารายละเอียด ให้เห็นก่อนสร้างว่าจะได้อะไร */}
+        <CompactSection title={t("stages")} description={t("newStagesDesc")}>
+          <WfStageRailPreview stages={buildDefaultStages()} />
+        </CompactSection>
       </form>
 
       <DiscardDialog {...discard.dialogProps} variant="warning" />
