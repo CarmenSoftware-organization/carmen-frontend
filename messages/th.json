@@ -7552,6 +7552,8 @@
         "slow-moving": "สินค้าเคลื่อนไหวช้า",
         "below-par-by-location": "สินค้าต่ำกว่า par แยกตามสถานที่",
         "below-par-count": "สินค้าที่ต่ำกว่า par",
+        "expiring-items-count": "สินค้าใกล้หมดอายุ",
+        "expired-items": "สินค้าหมดอายุที่ยังเหลือในสต๊อก",
         "below-par-items": "รายการที่ต้องเติมสต๊อก",
         "issue-by-priority": "ปัญหาแยกตามความสำคัญ",
         "issue-open": "ปัญหาที่ยังเปิดอยู่",

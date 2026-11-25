@@ -7552,6 +7552,8 @@
         "slow-moving": "Slow moving items",
         "below-par-by-location": "Below par by location",
         "below-par-count": "Items below par",
+        "expiring-items-count": "Items expiring soon",
+        "expired-items": "Expired items on hand",
         "below-par-items": "Replenishment list",
         "issue-by-priority": "Issues by priority",
         "issue-open": "Open issues",
