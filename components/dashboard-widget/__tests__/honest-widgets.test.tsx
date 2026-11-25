@@ -129,7 +129,10 @@ describe("dataset names", () => {
     "inventory.physical-count-by-location",
     "inventory.physical-count-completed-locations",
     "inventory.movement-by-location.vs-ytd",
+    "inventory.expiring-items-count",
+    "inventory.expired-items",
     ...["pr", "po", "sr", "grn"].map((d) => `document.${d}-count.fiscal-ytd`),
+    ...["pr", "po", "sr"].map((d) => `document.${d}-rejected-count`),
     ...["pr", "po", "sr", "grn"].flatMap((d) => [
       `document.${d}-by-status.by-period`,
       `document.${d}-created-series.by-period`,
