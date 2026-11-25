@@ -116,6 +116,8 @@ import { jvSourceLabel, jvStatusLabel } from "../journal-voucher/jv-status";
 import { JvRejectDialog } from "./jv-reject-dialog";
 import { JvReverseDialog } from "./jv-reverse-dialog";
 import { JvVoidDialog } from "./jv-void-dialog";
+import { JvSendBackDialog } from "./jv-send-back-dialog";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
 import { DocActions } from "@/components/share/doc-actions";
 import { DocFormHeader } from "@/components/share/doc-form-header";
 import {
@@ -130,6 +132,7 @@ import { useJournalVoucher } from "../journal-voucher/use-journal-voucher";
 import {
   useCopyJournalVoucher,
   useCreateJournalVoucher,
+  useDeleteJournalVoucher,
   useJournalVoucherAction,
   useUpdateJournalVoucher,
 } from "../journal-voucher/use-journal-voucher";
@@ -288,7 +291,12 @@ export default function AccountingDocumentDetail() {
   const reverseJournal = useJournalVoucherAction("reverse");
   const approveJournal = useJournalVoucherAction("approve");
   const rejectJournal = useJournalVoucherAction("reject");
+  const sendBackJournal = useJournalVoucherAction("review");
+  const voidDraftJournal = useJournalVoucherAction("void-draft");
+  const deleteJournal = useDeleteJournalVoucher();
   const [rejectOpen, setRejectOpen] = useState(false);
+  const [sendBackOpen, setSendBackOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const copyJournal = useCopyJournalVoucher();
   const journal = journalQuery.data;
@@ -390,7 +398,7 @@ export default function AccountingDocumentDetail() {
   );
   const [utilityPanel, setUtilityPanel] = useState<UtilityPanel | null>(null);
   const [journalConfirmation, setJournalConfirmation] = useState<
-    "void" | "reverse" | null
+    "void" | "void-draft" | "reverse" | null
   >(null);
   const [comments, setComments] = useState<string[]>([
     "Generated from the AP posting source.",
@@ -1174,9 +1182,13 @@ export default function AccountingDocumentDetail() {
     isJournalVoucher && isView && !!journalCapabilities?.can_approve;
   const jvCanReject =
     isJournalVoucher && isView && !!journalCapabilities?.can_reject;
+  const jvCanSendBack =
+    isJournalVoucher && isView && !!journalCapabilities?.can_send_back;
 
+  // ApiError ทุกตัวผ่าน errorToast เพื่อแปลรหัส catalog (เช่น WORKFLOW_CREATOR_CANNOT_APPROVE,
+  // GL_JV_NUMBERED_DRAFT_NOT_DELETABLE) ไม่ใช่แค่รหัสสถานะแอป
   const onJournalActionError = (error: Error) =>
-    error instanceof ApiError && isAppStatusErrorCode(error.appCode)
+    error instanceof ApiError
       ? errorToast(error)
       : toast.error(error.message);
 
@@ -1205,7 +1217,7 @@ export default function AccountingDocumentDetail() {
       {
         id: journal.id,
         doc_version: journal.doc_version,
-        reason: reason || undefined,
+        reason,
       },
       {
         onSuccess: () => {
@@ -1215,6 +1227,40 @@ export default function AccountingDocumentDetail() {
         onError: onJournalActionError,
       },
     );
+  }
+
+  function handleJournalSendBack(stage: string, reason: string) {
+    if (!journal) return;
+    sendBackJournal.mutate(
+      {
+        id: journal.id,
+        doc_version: journal.doc_version,
+        destination_stage: stage,
+        reason,
+      },
+      {
+        onSuccess: () => {
+          setSendBackOpen(false);
+          toast.success(t("sentBack"));
+        },
+        onError: onJournalActionError,
+      },
+    );
+  }
+
+  function handleJournalDelete() {
+    if (!journal) return;
+    deleteJournal.mutate(journal.id, {
+      onSuccess: () => {
+        setDeleteOpen(false);
+        toast.success(t("deleted"));
+        navigate(config.path);
+      },
+      onError: (error) => {
+        setDeleteOpen(false);
+        onJournalActionError(error);
+      },
+    });
   }
 
   if (isJournalVoucher && journalQuery.isLoading) {
@@ -1270,7 +1316,9 @@ export default function AccountingDocumentDetail() {
                     size="sm"
                     // ปุ่มหลักตัวเดียวต่อหน้า — ถ้า footer มีปุ่มตัดสิน Edit ถอยเป็น outline
                     variant={
-                      jvCanApprove || jvCanReject ? "outline" : "default"
+                      jvCanApprove || jvCanReject || jvCanSendBack
+                        ? "outline"
+                        : "default"
                     }
                     disabled={documentStatus === "Voided"}
                     onClick={startEdit}
@@ -1290,6 +1338,29 @@ export default function AccountingDocumentDetail() {
                   >
                     <Ban aria-hidden="true" />
                     {t("void")}
+                  </Button>
+                )}
+                {isJournalVoucher && journalCapabilities?.can_void_draft && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setJournalConfirmation("void-draft")}
+                  >
+                    <Ban aria-hidden="true" />
+                    {t("void")}
+                  </Button>
+                )}
+                {isJournalVoucher && journalCapabilities?.can_delete && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => setDeleteOpen(true)}
+                  >
+                    <Trash2 aria-hidden="true" />
+                    {tc("delete")}
                   </Button>
                 )}
                 {isJournalVoucher && journalCapabilities?.can_reverse && (
@@ -2696,7 +2767,7 @@ export default function AccountingDocumentDetail() {
                       </Button>
                     </div>
                   )}
-                  {(jvCanApprove || jvCanReject) && (
+                  {(jvCanApprove || jvCanReject || jvCanSendBack) && (
                     <div className="flex shrink-0 gap-2">
                       {jvCanApprove && (
                         <Button
@@ -2708,6 +2779,18 @@ export default function AccountingDocumentDetail() {
                         >
                           <Check aria-hidden="true" />
                           {tc("approve")}
+                        </Button>
+                      )}
+                      {jvCanSendBack && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={sendBackJournal.isPending}
+                          onClick={() => setSendBackOpen(true)}
+                        >
+                          <Undo2 aria-hidden="true" />
+                          {t("sendBack")}
                         </Button>
                       )}
                       {jvCanReject && (
@@ -2837,6 +2920,40 @@ export default function AccountingDocumentDetail() {
           </SheetContent>
         </Sheet>
       )}
+      <JvVoidDialog
+        draft
+        open={journalConfirmation === "void-draft"}
+        onOpenChange={(open) => !open && setJournalConfirmation(null)}
+        isPending={voidDraftJournal.isPending}
+        onConfirm={(reason) => {
+          if (!journal) return;
+          voidDraftJournal.mutate(
+            { id: journal.id, doc_version: journal.doc_version, reason },
+            {
+              onSuccess: () => {
+                setJournalConfirmation(null);
+                toast.success(t("voided"));
+              },
+              onError: onJournalActionError,
+            },
+          );
+        }}
+      />
+      <JvSendBackDialog
+        open={sendBackOpen}
+        onOpenChange={setSendBackOpen}
+        journalId={journal?.id}
+        isPending={sendBackJournal.isPending}
+        onConfirm={handleJournalSendBack}
+      />
+      <DeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={t("deleteTitle")}
+        description={t("deleteDescription")}
+        isPending={deleteJournal.isPending}
+        onConfirm={handleJournalDelete}
+      />
       <JvRejectDialog
         open={rejectOpen}
         onOpenChange={setRejectOpen}

@@ -43,7 +43,7 @@ import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { formatDate, isoToDateInput } from "@/lib/date-utils";
 import { isDraftDocNo } from "@/lib/draft-doc-no";
 import { ApDetailGrid } from "../accounts-payable/shared/ap-detail-grid";
-import { ApSendBackFields } from "../accounts-payable/shared/ap-send-back-fields";
+import { SendBackFields } from "../shared/send-back-fields";
 import { arActionsAllowed, arDocActions } from "./ar-doc-actions";
 import { ArCustomerLookup } from "./ar-customer-lookup";
 import { ReceiptInvoiceDialog } from "./ar-receipt-dialogs";
@@ -1216,7 +1216,7 @@ function ReceiptForm({
             )}
           </DialogHeader>
           {sendingBack && (
-            <ApSendBackFields
+            <SendBackFields
               labels={{
                 stage: t("sendBackStage"),
                 stagePlaceholder: t("sendBackStagePlaceholder"),

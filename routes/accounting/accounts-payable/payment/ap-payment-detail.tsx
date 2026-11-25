@@ -45,7 +45,7 @@ import type {
 } from "@/types/accounts-payable";
 import { compareDecimal, multiplyDecimal } from "../shared/ap-decimal";
 import { apCanEdit, apPaymentActions } from "../shared/ap-status";
-import { ApSendBackFields } from "../shared/ap-send-back-fields";
+import { SendBackFields } from "../../shared/send-back-fields";
 import { useApPreviousStages } from "../shared/use-ap-previous-stages";
 import {
   useApOutstandingDocuments,
@@ -1104,7 +1104,7 @@ function ApPaymentEditor({
             </DialogDescription>
           </DialogHeader>
           {sendingBack && (
-            <ApSendBackFields
+            <SendBackFields
               kind="payment"
               stage={stage}
               onStageChange={setStage}

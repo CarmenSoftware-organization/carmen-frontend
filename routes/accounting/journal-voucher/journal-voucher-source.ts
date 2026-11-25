@@ -101,6 +101,8 @@ export function journalVoucherCapabilities(
   // ปุ่มของผู้อนุมัติมาจาก backend ล้วน ๆ (`allowed_actions` ว่างเมื่อไม่ใช่ in_review)
   const allowed = generated ? [] : (journal.allowed_actions ?? []);
   const isDraft = journal.jv_status === "draft";
+  // ไม่มี jv_no (ใบที่เพิ่งสร้าง) ถือเป็นเลขร่าง — ลบได้ ยังไม่ต้อง void
+  const hasRealNo = !!journal.jv_no && !isDraftDocNo(journal.jv_no);
   return {
     can_edit_accounting_fields:
       !generated && editableStatuses.has(journal.jv_status),
@@ -108,8 +110,8 @@ export function journalVoucherCapabilities(
     can_approve: allowed.includes("approve"),
     can_reject: allowed.includes("reject"),
     can_send_back: allowed.includes("sendback"),
-    can_delete: !generated && isDraft && isDraftDocNo(journal.jv_no),
-    can_void_draft: !generated && isDraft && !isDraftDocNo(journal.jv_no),
+    can_delete: !generated && isDraft && !hasRealNo,
+    can_void_draft: !generated && isDraft && hasRealNo,
     // backend voidJv รับเฉพาะใบ posted ที่ยังไม่ถูกกลับรายการ
     can_void:
       !generated && journal.jv_status === "posted" && !journal.reversed_by_jv_id,

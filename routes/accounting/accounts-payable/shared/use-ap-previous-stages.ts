@@ -3,11 +3,8 @@ import { useBuCode } from "@/hooks/use-bu-code";
 import { httpClient } from "@/lib/http-client";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { QUERY_KEYS } from "@/constant/query-keys";
+import type { PreviousStage } from "@/routes/accounting/shared/send-back-fields";
 
-export interface ApPreviousStage {
-  key: string;
-  name: string;
-}
 
 /** ขั้นก่อนหน้าที่ส่งกลับไปได้ — โหลดเมื่อเปิด dialog ส่งกลับเท่านั้น */
 export function useApPreviousStages(
@@ -16,7 +13,7 @@ export function useApPreviousStages(
   enabled: boolean,
 ) {
   const buCode = useBuCode();
-  return useQuery<ApPreviousStage[]>({
+  return useQuery<PreviousStage[]>({
     queryKey: [
       kind === "invoice"
         ? QUERY_KEYS.AP_INVOICE_PREVIOUS_STAGES
