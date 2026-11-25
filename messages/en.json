@@ -7575,6 +7575,8 @@
         "purchasing-value__vs-period": "Purchasing value vs period",
         "purchasing-by-category": "Purchasing value by category",
         "purchasing-by-department": "Purchasing value by department",
+        "pr-pending-by-stage": "PRs waiting by approval stage",
+        "po-awaiting-delivery": "POs awaiting delivery",
         "po-by-vendor-top": "Top vendors by PO spend",
         "pr-by-department": "PR by department",
         "pr-by-status": "PR by status",
