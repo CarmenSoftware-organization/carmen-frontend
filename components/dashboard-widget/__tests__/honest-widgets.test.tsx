@@ -76,6 +76,17 @@ describe("KPI delta line says what prev really is", () => {
     expect(screen.getByText("vs. the range before")).toBeInTheDocument();
   });
 
+  it("shows money and its delta to two decimals", () => {
+    // ยอดสั่งซื้อเทียบงวด: เดิมผลต่างขึ้น "-50,809.343"
+    kpi(
+      { shape: "scalar_delta", unit: "currency", delta_kind: "compare_period" },
+      { value: 404.55, prev: 51213.8927558 },
+    );
+    expect(screen.getByText("404.55")).toBeInTheDocument();
+    expect(screen.getByText(/-50,809\.34 \(-99%\)/)).toBeInTheDocument();
+    expect(screen.queryByText(/50,809\.343/)).toBeNull();
+  });
+
   it("keeps the old caption for a backend that sends no kind", () => {
     kpi({ shape: "scalar_delta", unit: "items" }, { value: 12, prev: 8 });
     expect(

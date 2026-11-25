@@ -94,6 +94,7 @@ import {
   type TableColumn,
   type TableData,
   type TimeSeriesPoint,
+  type WidgetDisplay,
   type WidgetParams,
 } from "@/types/dashboard-widget";
 
@@ -502,7 +503,14 @@ export function KpiCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
   const labels = useWidgetLabels();
   if (!isScalarDeltaData(widget.data)) return null;
   const { value: raw, prev } = widget.data;
-  const value = applyDecimals(raw, widget.display);
+  // ยอดเงินที่ยังไม่ได้ตั้งทศนิยม = 2 ตำแหน่ง: ยอดจาก backend เป็นเลขทศนิยมยาว
+  // (51213.8927558) และ toLocaleString ตัดที่ 3 ตำแหน่ง ซึ่งไม่ใช่รูปแบบยอดเงิน
+  // ค่าที่ผู้ใช้ตั้งเองยังชนะเสมอ
+  const display =
+    isCurrencyUnit(widget.meta.unit) && widget.display?.decimals == null
+      ? { ...widget.display, decimals: 2 }
+      : widget.display;
+  const value = applyDecimals(raw, display);
   const hasDelta = widget.meta.shape === "scalar_delta" && prev !== undefined;
   const suffix = labels.unitSuffix(widget.meta.unit);
 
@@ -530,6 +538,7 @@ export function KpiCard({ widget, moduleName, subTileFor }: WidgetCardProps) {
             prev={prev}
             kind={widget.meta.delta_kind}
             params={widget.params}
+            display={display}
           />
         )}
       </CardContent>
@@ -1609,11 +1618,14 @@ function DeltaIndicator({
   prev,
   kind,
   params,
+  display,
 }: {
   readonly value: number;
   readonly prev: number;
   readonly kind?: string;
   readonly params?: WidgetParams | null;
+  /** ทศนิยมชุดเดียวกับตัวเลขหลักของการ์ด — ผลต่างต้องปัดเท่ากัน */
+  readonly display?: WidgetDisplay | null;
 }) {
   const t = useTranslations("dashboardWidget");
   const tRange = useTranslations("dashboard.savedWidget.timeRange");
@@ -1661,7 +1673,7 @@ function DeltaIndicator({
       <Icon className="size-3 shrink-0" aria-hidden="true" />
       <span className="tabular-nums">
         {sign}
-        {diff.toLocaleString()}
+        {applyDecimals(diff, display).toLocaleString()}
         {pct !== null && ` (${sign}${pct}%)`}
       </span>
       <span className="text-muted-foreground">{caption}</span>
