@@ -74,19 +74,28 @@ export function RecipeCostFields({
   // และ error ของช่องที่แก้ถูกแล้วค้างอยู่
   const { errors } = useFormState({ control: form.control });
 
-  const [ingredient, labor, overhead, baseYield, yieldUnitId, target, sell] =
-    useWatch({
-      control: form.control,
-      name: [
-        "total_ingredient_cost",
-        "labor_cost",
-        "overhead_cost",
-        "base_yield",
-        "base_yield_unit",
-        "target_food_cost_percentage",
-        "selling_price",
-      ],
-    });
+  const [
+    ingredient,
+    labor,
+    overhead,
+    baseYield,
+    yieldUnitId,
+    target,
+    max,
+    sell,
+  ] = useWatch({
+    control: form.control,
+    name: [
+      "total_ingredient_cost",
+      "labor_cost",
+      "overhead_cost",
+      "base_yield",
+      "base_yield_unit",
+      "target_food_cost_percentage",
+      "max_food_cost_percentage",
+      "selling_price",
+    ],
+  });
   // มีวัตถุดิบ = ยอดวัตถุดิบมาจากบรรทัด (server คำนวณ) แก้มือไม่ได้ · ไม่มี = กรอกมือเหมือนเดิม
   const ingredientLines = useWatch({
     control: form.control,
@@ -106,6 +115,9 @@ export function RecipeCostFields({
   const share = (n: number) => (batchTotal > 0 ? (n / batchTotal) * 100 : 0);
   const yld = Number(baseYield) || 0;
   const targetPct = Number(target) || 0;
+  const maxPct = Number(max) || 0;
+  // กฎเดียวกับ superRefine ของ schema — แต่ error นั้นขึ้นหลังกด Save เท่านั้น
+  const maxBelowTarget = targetPct > 0 && maxPct > 0 && maxPct < targetPct;
   const sellingPrice = Number(sell) || 0;
   const hasPrice = sellingPrice > 0;
   const priceRates = useRecipePriceRates();
@@ -338,6 +350,32 @@ export function RecipeCostFields({
                       %
                     </span>
                   </div>
+                  {/* ราคาที่ food cost เท่าเพดานพอดี — ตัวเดียวกับแถวราคาขั้นต่ำในการ์ดราคาแนะนำ
+                      เห็นผลทันทีที่พิมพ์ · ขายต่ำกว่านี้ = ตัวแดง
+                      เพดานต่ำกว่าเป้า = ไม่มีราคาให้โชว์ บอกเหตุผลแทน (จนกว่า error ของ schema จะขึ้นตอน Save) */}
+                  {computed.minPrice != null ? (
+                    <p
+                      className={cn(
+                        "text-micro mt-1 tabular-nums",
+                        computed.belowMinPrice
+                          ? "text-destructive font-semibold"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {t("minPriceHint", {
+                        price: `฿${formatCurrency(computed.minPrice)}`,
+                      })}
+                    </p>
+                  ) : (
+                    maxBelowTarget &&
+                    !errors.max_food_cost_percentage && (
+                      <p className="text-destructive text-micro mt-1">
+                        {t("maxBelowTargetHint", {
+                          pct: formatPct(targetPct),
+                        })}
+                      </p>
+                    )
+                  )}
                 </div>
               </div>
             </div>

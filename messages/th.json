@@ -5780,6 +5780,8 @@
       "priceRecommendations": "ราคาแนะนำ",
       "priceAtTarget": "ราคาที่เป้า ({pct}%)",
       "priceAtMin": "ราคาขั้นต่ำ (เพดาน {pct}%)",
+      "minPriceHint": "ราคาขั้นต่ำ: {price}",
+      "maxBelowTargetHint": "ต้องไม่ต่ำกว่าเป้า {pct}%",
       "profitPerPortion": "กำไร / สูตร",
       "useThisPrice": "ใช้ราคานี้",
       "markup": "Markup",
