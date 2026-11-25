@@ -22,6 +22,7 @@ import { DiscardDialog } from "@/components/ui/discard-dialog";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { toast } from "sonner";
+import { findSaveBlockingIssue } from "./wf-validate";
 import {
   useApInvoiceWorkflows,
   useApPaymentWorkflows,
@@ -144,6 +145,15 @@ export default function WorkflowNewForm({
   const onSubmit = (values: WorkflowFormValues) => {
     if (apBlocked) return;
     const payload = mapToPayload(values);
+    // backend ปฏิเสธ workflow ที่เอกสารจะค้างอยู่แล้ว — กันไว้ก่อนให้เห็นเหตุผลเป็นภาษาของหน้า
+    const blocking = findSaveBlockingIssue(
+      payload.data.stages,
+      values.workflow_type,
+    );
+    if (blocking) {
+      toast.error(t(blocking.translationKey, blocking.translationValues));
+      return;
+    }
     payload.data.stages = fillSeededTemplateIds(payload.data.stages, seededIds);
 
     setIsSubmitting(true);

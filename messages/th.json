@@ -4017,6 +4017,7 @@
       "issueErrorLabel": "ข้อผิดพลาด",
       "issueWarningLabel": "คำเตือน",
       "issueNoUsers": "ขั้นตอน \"{stage}\" ยังไม่มีผู้ใช้ที่กำหนด",
+      "issueNoApprovalStage": "workflow นี้ต้องมีขั้นอนุมัติอย่างน้อย 1 ขั้นระหว่างขั้นแรกกับขั้นสุดท้าย ไม่งั้นเอกสารที่ส่งแล้วจะค้างที่ขั้นสุดท้ายโดยไม่มีใครอนุมัติ",
       "issueNoActions": "ขั้นตอน \"{stage}\" ไม่ได้เปิดการกระทำใดๆ (Submit/Approve/Reject/Send Back)",
       "issueDuplicateName": "ชื่อขั้นตอนซ้ำ: \"{name}\"",
       "issueFirstNotCreate": "ขั้นตอนแรกต้องเป็น role \"Create\"",

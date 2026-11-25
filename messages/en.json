@@ -4017,6 +4017,7 @@
       "issueErrorLabel": "errors",
       "issueWarningLabel": "warnings",
       "issueNoUsers": "Stage \"{stage}\" has no users assigned",
+      "issueNoApprovalStage": "This workflow needs at least one approval stage between the first and the last stage — otherwise submitted documents wait at the last stage with nobody to approve them",
       "issueNoActions": "Stage \"{stage}\" has no actions enabled (Submit/Approve/Reject/Send Back)",
       "issueDuplicateName": "Duplicate stage name: \"{name}\"",
       "issueFirstNotCreate": "First stage must have role \"Create\"",

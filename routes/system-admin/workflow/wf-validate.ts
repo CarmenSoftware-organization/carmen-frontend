@@ -1,10 +1,11 @@
-import type { Stage } from "@/types/workflows";
+import { type Stage, WORKFLOW_TYPE } from "@/types/workflows";
 import { getAllowedRoles } from "./wf-role-colors";
 
 export type IssueSeverity = "error" | "warning" | "info";
 
 export type IssueCode =
   | "no_users_assigned"
+  | "no_approval_stage"
   | "no_actions_enabled"
   | "duplicate_name"
   | "missing_create_role"
@@ -29,6 +30,41 @@ interface ValidationSummary {
   readonly warningCount: number;
   readonly infoCount: number;
   readonly isReady: boolean;
+}
+
+/**
+ * ชนิดที่ submit แล้วเอกสารเป็น in_progress เสมอ — ไม่มีขั้นอนุมัติ = ค้างที่ขั้นสุดท้ายตลอดไป
+ * (ชนิดบัญชี post ตอน submit ได้ เพราะ backend จบ workflow ให้เอง) ต้องตรงกับ
+ * `workflow-stage-rules.helper.ts` ฝั่ง backend
+ */
+const NEEDS_APPROVAL_STAGE: ReadonlySet<string> = new Set([
+  WORKFLOW_TYPE.PR,
+  WORKFLOW_TYPE.PO,
+  WORKFLOW_TYPE.SR,
+]);
+
+/**
+ * ปัญหาที่ทำให้เอกสารค้างจริง — backend ปฏิเสธการบันทึกด้วยกฎเดียวกัน ฟอร์มจึงกัน Save
+ * ด้วยสองตัวนี้เท่านั้น error ตัวอื่นในแผงยังเป็นคำแนะนำ
+ */
+export const SAVE_BLOCKING_CODES: ReadonlySet<IssueCode> = new Set([
+  "no_users_assigned",
+  "no_approval_stage",
+]);
+
+/**
+ * ปัญหาแรกที่ทำให้บันทึกไม่ได้ หรือ undefined
+ *
+ * รับ stage แบบหลวม เพราะ payload ของฟอร์มสร้าง (zod) มี `sla_unit` เป็น string ไม่ใช่ union
+ * กฎที่ใช้อ่านแค่ชื่อ/ผู้ใช้/HOD/ขั้นของผู้ขอ จึงไม่กระทบ
+ */
+export function findSaveBlockingIssue(
+  stages: readonly unknown[] | undefined,
+  workflowType?: string,
+): ValidationIssue | undefined {
+  return validateWorkflow((stages ?? []) as Stage[], workflowType).issues.find(
+    (i) => SAVE_BLOCKING_CODES.has(i.code),
+  );
 }
 
 const isAnyActionActive = (stage: Stage): boolean => {
@@ -65,7 +101,9 @@ export function validateWorkflow(
   stages.forEach((stage, index) => {
     const isFirst = index === 0;
     const isLast = index === lastIndex;
-    const isHod = stage.is_hod ?? false;
+    // ขั้นที่ผู้ขอทำเอง (only_creator) มีคนทำ action อยู่แล้ว แม้ไม่มี assigned_users
+    const isHod =
+      (stage.is_hod ?? false) || stage.creator_access === "only_creator";
     const userCount = stage.assigned_users?.length ?? 0;
     const trimmedName = (stage.name ?? "").trim();
 
@@ -131,6 +169,18 @@ export function validateWorkflow(
       }
     }
   });
+
+  if (
+    workflowType &&
+    NEEDS_APPROVAL_STAGE.has(workflowType) &&
+    stages.length < 3
+  ) {
+    issues.push({
+      code: "no_approval_stage",
+      severity: "error",
+      translationKey: "issueNoApprovalStage",
+    });
+  }
 
   if (stages[0]?.role !== "create") {
     issues.push({
