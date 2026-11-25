@@ -4,7 +4,7 @@ import en from "@/messages/en.json";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
-import { DimensionDialog } from "./dimension-page";
+import { DimensionDialog } from "./dimension-dialog";
 import { httpClient } from "@/lib/http-client";
 
 vi.mock("@/hooks/use-bu-code", () => ({ useBuCode: () => "BU" }));
