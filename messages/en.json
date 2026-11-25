@@ -7344,6 +7344,12 @@
         "current_period": "Current period",
         "previous_period": "Last period"
       },
+      "horizon": {
+        "7days": "Within 7 days",
+        "14days": "Within 14 days",
+        "30days": "Within 30 days",
+        "90days": "Within 90 days"
+      },
       "lookupAll": "All",
       "lookupPicked": "{count} of {max} selected",
       "option": {

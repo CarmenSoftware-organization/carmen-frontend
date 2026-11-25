@@ -34,6 +34,7 @@ export function WidgetParamFields({
   const t = useTranslations("dashboard.savedWidget");
   const tStatus = useTranslations("status");
   const tRange = useTranslations("dashboard.savedWidget.timeRange");
+  const tHorizon = useTranslations("dashboard.savedWidget.horizon");
   const tOption = useTranslations("dashboard.savedWidget.option");
 
   /**
@@ -43,11 +44,15 @@ export function WidgetParamFields({
    * ค่าที่มีคำแปลใน `option` (เช่น metric ของ movement: consumption→"Consumption");
    * ที่เหลือถือเป็น enum สถานะ (in_progress→"In Progress") fallback เป็นค่าดิบถ้าไม่มีคำแปล
    */
-  const optionLabel = (value: string): string => {
+  const optionLabel = (value: string, paramName: string): string => {
     const scope = OWNER_SCOPE_LABEL.get(value);
     if (scope) return t(scope);
     if (value.startsWith("@")) {
       const key = value.slice(1);
+      // param ที่ลงท้าย _within มองไปข้างหน้า (expiry_within, starts_within) —
+      // token เดียวกับ time_range แต่ "30 วันล่าสุด" จะกลับความหมาย
+      if (paramName.endsWith("_within") && tHorizon.has(key))
+        return tHorizon(key);
       return tRange.has(key) ? tRange(key) : value;
     }
     if (tOption.has(value)) return tOption(value);
@@ -101,7 +106,7 @@ export function WidgetParamFields({
                   )}
                   {p.options.map((opt) => (
                     <SelectItem key={opt} value={opt}>
-                      {optionLabel(opt)}
+                      {optionLabel(opt, p.name)}
                     </SelectItem>
                   ))}
                 </SelectContent>
