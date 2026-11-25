@@ -1,9 +1,7 @@
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -22,12 +20,13 @@ import {
 } from "@/components/ui/select";
 import { StatusSwitch } from "@/components/ui/status-switch";
 import { useBuCode } from "@/hooks/use-bu-code";
+import { cn } from "@/lib/utils";
 import type {
   DimensionDataType,
   DimensionMaster,
-  DimensionValueMaster,
 } from "@/types/accounting-master";
 import { DIMENSION_DATA_TYPES } from "./dimension-data-types";
+import { DimensionValuesTable } from "./dimension-values-table";
 import {
   saveDimensionWithValues,
   type DimensionValueDraft,
@@ -73,6 +72,8 @@ export function DimensionDialog({
   const [dataType, setDataType] = useState<DimensionDataType>(
     initial.data_type,
   );
+  const isLookup = dataType === "lookup";
+  const tableRef = useRef<HTMLDivElement>(null);
 
   return (
     <Dialog
@@ -81,7 +82,12 @@ export function DimensionDialog({
         if (!saving) onOpenChange(next);
       }}
     >
-      <DialogContent className="@container max-h-[85dvh] overflow-y-auto sm:max-w-3xl">
+      <DialogContent
+        className={cn(
+          "@container max-h-[90dvh] overflow-y-auto",
+          isLookup ? "sm:max-w-5xl" : "sm:max-w-xl",
+        )}
+      >
         <DialogHeader>
           <DialogTitle>
             {readOnly
@@ -95,68 +101,83 @@ export function DimensionDialog({
             project).
           </DialogDescription>
         </DialogHeader>
-        <fieldset
-          disabled={readOnly || saving}
-          className="grid gap-4 py-2 @md:grid-cols-2"
+        <div
+          className={cn(
+            "grid gap-4 py-2",
+            isLookup && "@3xl:grid-cols-[16rem_minmax(0,1fr)]",
+          )}
         >
-          <Field>
-            <FieldLabel htmlFor="dim-code" required>
-              Dimension Code (lowercase/underscore)
-            </FieldLabel>
-            <FieldInput
-              id="dim-code"
-              value={code}
-              disabled={!!savedItem}
-              maxLength={20}
-              placeholder="e.g. market, project, event"
-              onChange={(e) =>
-                setCode(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))
-              }
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="dim-name" required>
-              Dimension Name (EN)
-            </FieldLabel>
-            <FieldInput
-              id="dim-name"
-              value={name}
-              maxLength={100}
-              placeholder="e.g. Market Segment"
-              onChange={(e) => setName(e.target.value)}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="dim-name-local">
-              Dimension Name (TH)
-            </FieldLabel>
-            <FieldInput
-              id="dim-name-local"
-              value={nameLocal}
-              maxLength={100}
-              placeholder="e.g. กลุ่มตลาด"
-              onChange={(e) => setNameLocal(e.target.value)}
-            />
-          </Field>
-          <DimensionTypeFields
-            dataType={dataType}
+          <fieldset
             disabled={readOnly || saving}
-            onDataTypeChange={setDataType}
-          />
-          <StatusSwitch
-            id="dim-active"
-            checked={active}
-            onCheckedChange={setActive}
-          />
-        </fieldset>
-        {dataType === "lookup" && (
-          <DimensionSubValues
-            readOnly={readOnly || saving}
-            savedId={savedItem?.id}
-            subValues={subValues}
-            setSubValues={setSubValues}
-          />
-        )}
+            className={cn(
+              "grid content-start gap-4",
+              !isLookup && "@md:grid-cols-2",
+            )}
+          >
+            <Field>
+              <FieldLabel htmlFor="dim-code" required>
+                Dimension Code (lowercase/underscore)
+              </FieldLabel>
+              <FieldInput
+                id="dim-code"
+                value={code}
+                disabled={!!savedItem}
+                maxLength={20}
+                placeholder="e.g. market, project, event"
+                onChange={(e) =>
+                  setCode(
+                    e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+                  )
+                }
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="dim-name" required>
+                Dimension Name (EN)
+              </FieldLabel>
+              <FieldInput
+                id="dim-name"
+                value={name}
+                maxLength={100}
+                placeholder="e.g. Market Segment"
+                onChange={(e) => setName(e.target.value)}
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="dim-name-local">
+                Dimension Name (TH)
+              </FieldLabel>
+              <FieldInput
+                id="dim-name-local"
+                value={nameLocal}
+                maxLength={100}
+                placeholder="e.g. กลุ่มตลาด"
+                onChange={(e) => setNameLocal(e.target.value)}
+              />
+            </Field>
+            <DimensionTypeFields
+              dataType={dataType}
+              disabled={readOnly || saving}
+              onDataTypeChange={setDataType}
+            />
+            <StatusSwitch
+              id="dim-active"
+              checked={active}
+              onCheckedChange={setActive}
+            />
+          </fieldset>
+          {isLookup && (
+            <fieldset disabled={saving} className="min-w-0">
+              <DimensionValuesTable
+                readOnly={readOnly}
+                savedId={savedItem?.id}
+                subValues={subValues}
+                setSubValues={setSubValues}
+                tableRef={tableRef}
+              />
+            </fieldset>
+          )}
+        </div>
         {failedSummary && (
           <p aria-live="polite" className="text-destructive text-xs">
             {failedSummary}
@@ -238,160 +259,6 @@ export function DimensionDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function DimensionSubValues({
-  readOnly,
-  savedId,
-  subValues,
-  setSubValues,
-}: {
-  readOnly: boolean;
-  savedId?: string;
-  subValues: DimensionValueDraft[];
-  setSubValues: Dispatch<SetStateAction<DimensionValueDraft[]>>;
-}) {
-  const [selected, setSelected] = useState<string[]>([]);
-  const selectedKeys = new Set(selected);
-  const visibleValues = subValues.filter((value) => !value.deleted);
-  return (
-    <fieldset disabled={readOnly} className="space-y-3 border-t pt-4">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold">List Master Items</h3>
-        {!readOnly && (
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setSubValues((current) => [
-                  ...current,
-                  {
-                    key: crypto.randomUUID(),
-                    id: "",
-                    dimension_id: savedId ?? "",
-                    doc_version: 0,
-                    code: "",
-                    name: "",
-                    name_local: "",
-                    is_active: true,
-                    dirty: true,
-                  },
-                ])
-              }
-            >
-              <Plus className="size-4" /> Add Value
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              disabled={!selected.length}
-              onClick={() => {
-                setSubValues((current) =>
-                  current.flatMap((row) =>
-                    !selectedKeys.has(row.key)
-                      ? [row]
-                      : row.id
-                        ? [{ ...row, deleted: true }]
-                        : [],
-                  ),
-                );
-                setSelected([]);
-              }}
-            >
-              <Trash2 className="size-4" /> Delete
-              {selected.length ? ` (${selected.length})` : ""}
-            </Button>
-          </div>
-        )}
-      </div>
-      <p className="text-muted-foreground text-xs">
-        Manage the values available for this dimension in Journal Vouchers.
-      </p>
-      {subValues.some((value) => value.deleted) && (
-        <p className="text-muted-foreground text-xs">
-          Selected items will be deleted when you save.
-        </p>
-      )}
-      {!visibleValues.length && (
-        <p className="text-muted-foreground text-xs">
-          No list master items defined yet.
-        </p>
-      )}
-      {visibleValues.map((value, index) => {
-        const update = (patch: Partial<DimensionValueMaster>) =>
-          setSubValues((current) =>
-            current.map((row) =>
-              row.key === value.key
-                ? { ...row, ...patch, dirty: true, error: undefined }
-                : row,
-            ),
-          );
-        return (
-          <div
-            key={value.key}
-            className={`grid gap-3 border-b pb-4 ${readOnly ? "@xl:grid-cols-3" : "@xl:grid-cols-[auto_1fr_1fr_1fr]"}`}
-          >
-            {!readOnly && (
-              <Checkbox
-                className="mb-2 self-end"
-                aria-label={`Select sub-value ${index + 1}`}
-                checked={selectedKeys.has(value.key)}
-                onCheckedChange={(checked) =>
-                  setSelected((current) =>
-                    checked === true
-                      ? [...current, value.key]
-                      : current.filter((key) => key !== value.key),
-                  )
-                }
-              />
-            )}
-            <Field>
-              <FieldLabel htmlFor={`sub-code-${value.key}`} required>
-                Code
-              </FieldLabel>
-              <FieldInput
-                id={`sub-code-${value.key}`}
-                value={value.code}
-                disabled={!!value.id}
-                maxLength={10}
-                onChange={(e) => update({ code: e.target.value.toUpperCase() })}
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor={`sub-name-${value.key}`} required>
-                Name (EN)
-              </FieldLabel>
-              <FieldInput
-                id={`sub-name-${value.key}`}
-                value={value.name}
-                maxLength={50}
-                onChange={(e) => update({ name: e.target.value })}
-              />
-              {value.error && (
-                <p role="alert" className="text-destructive text-xs">
-                  {value.error}
-                </p>
-              )}
-            </Field>
-            <Field>
-              <FieldLabel htmlFor={`sub-local-${value.key}`}>
-                Name (TH)
-              </FieldLabel>
-              <FieldInput
-                id={`sub-local-${value.key}`}
-                value={value.name_local ?? ""}
-                maxLength={100}
-                onChange={(e) => update({ name_local: e.target.value })}
-              />
-            </Field>
-          </div>
-        );
-      })}
-    </fieldset>
   );
 }
 
