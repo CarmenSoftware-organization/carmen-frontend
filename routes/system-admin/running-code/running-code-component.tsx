@@ -8,7 +8,6 @@ import {
   DataGridScrollArea,
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
-import { DataGridPagination } from "@/components/ui/data-grid/data-grid-pagination";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -41,7 +40,27 @@ import { listGridMaxH } from "@/components/share/list-grid-max-h";
 import { cn } from "@/lib/utils";
 import { rowNumber } from "@/lib/row-number";
 
+/**
+ * ทุกขนาดจอใช้ lazy load — หน้านี้ไม่แบ่งหน้า เลื่อนถึงท้ายแล้วโหลดชุดถัดไป
+ *
+ * หลังเพิ่ม/แก้/ลบ/init ต้อง remount รายการ (`key`): `useGridPagination` refetch แค่ชุดที่
+ * เปิดอยู่แล้วต่อท้าย แถวที่ลบไปจึงค้างในแถวที่สะสมไว้ · ใช้ resetKey ของ hook ไม่ได้ —
+ * ถ้าอยู่ชุดแรกอยู่แล้ว มันล้างแถวทิ้งแต่ page ไม่เปลี่ยน refetch ที่ได้ข้อมูลเดิม
+ * (reference เดิม) จะไม่เติมแถวกลับ ตารางว่างค้าง
+ */
 export default function RunningCodeComponent() {
+  const [listKey, setListKey] = useState(0);
+  return (
+    <RunningCodeList
+      key={listKey}
+      onChanged={() => setListKey((k) => k + 1)}
+    />
+  );
+}
+
+function RunningCodeList({ onChanged }: { readonly onChanged: () => void }) {
+  // แถวมาจาก state ที่ lazy load สะสมไว้ — กันคอมไพเลอร์แช่ JSX ของตาราง (routes/CLAUDE.md)
+  "use no memo";
   const [deleteTarget, setDeleteTarget] = useState<RunningCode | null>(null);
   const deleteRunningCode = useDeleteRunningCode();
   const initRunningCode = useInitRunningCode();
@@ -52,15 +71,10 @@ export default function RunningCodeComponent() {
     null,
   );
   const { params, search, setSearch, tableConfig } = useDataGridState();
-  const useInfiniteScroll = !!isMobile;
-  const { data, isLoading, error, refetch } = useRunningCode(params, {
-    enabled: !useInfiniteScroll,
-  });
-
   const grid = useGridPagination<RunningCode>({
     useListHook: useRunningCode,
     params,
-    enabled: useInfiniteScroll,
+    enabled: true,
   });
   const t = useTranslations("systemAdmin.runningCode");
   const tc = useTranslations("common");
@@ -92,15 +106,14 @@ export default function RunningCodeComponent() {
     }
   };
 
-  const runningCodes = useInfiniteScroll ? grid.items : (data?.data ?? []);
-  const totalRecords = useInfiniteScroll
-    ? grid.totalRecords
-    : (data?.paginate?.total ?? 0);
+  const runningCodes = grid.items;
+  const totalRecords = grid.totalRecords;
 
   const table = useRunningCodeTable({
     runningCodes,
     totalRecords,
-    params,
+    // เลขลำดับนับต่อเนื่อง 1..N ข้ามชุดที่ lazy load
+    params: { ...params, page: 1 },
     tableConfig,
     onEdit: (runningCode) => {
       setEditRunningCode(runningCode);
@@ -109,7 +122,8 @@ export default function RunningCodeComponent() {
     onDelete: setDeleteTarget,
   });
 
-  if (error) return <ErrorState error={error} onRetry={() => refetch()} />;
+  if (grid.error)
+    return <ErrorState error={grid.error} onRetry={() => grid.refetch?.()} />;
 
   return (
     <ListPageShell
@@ -146,7 +160,10 @@ export default function RunningCodeComponent() {
             variant="outline"
             onClick={() =>
               initRunningCode.mutate(undefined, {
-                onSuccess: () => toast.success(t("initSuccess")),
+                onSuccess: () => {
+                  toast.success(t("initSuccess"));
+                  onChanged();
+                },
               })
             }
             disabled={initRunningCode.isPending}
@@ -181,7 +198,10 @@ export default function RunningCodeComponent() {
                 disabled={initRunningCode.isPending}
                 onSelect={() =>
                   initRunningCode.mutate(undefined, {
-                    onSuccess: () => toast.success(t("initSuccess")),
+                    onSuccess: () => {
+                      toast.success(t("initSuccess"));
+                      onChanged();
+                    },
                   })
                 }
               >
@@ -215,17 +235,12 @@ export default function RunningCodeComponent() {
       {isMobile ? (
         grid.isLoading ? (
           <CardSkeletonGrid />
-        ) : grid.error ? (
-          <ErrorState
-            message={grid.error.message}
-            onRetry={() => grid.refetch?.()}
-          />
         ) : runningCodes.length > 0 ? (
           <>
             <div className="grid grid-cols-1 gap-3">
               {runningCodes.map((rc, i) => (
                 <RunningCodeCard
-                  rowNo={rowNumber(useInfiniteScroll ? undefined : params, i)}
+                  rowNo={rowNumber(undefined, i)}
                   key={rc.id}
                   item={rc}
                   onEdit={(item) => {
@@ -251,7 +266,7 @@ export default function RunningCodeComponent() {
         <DataGrid
           table={table}
           recordCount={totalRecords}
-          isLoading={isLoading}
+          isLoading={grid.isLoading}
           tableLayout={{ headerSticky: true }}
           emptyMessage={<EmptyComponent />}
         >
@@ -260,8 +275,17 @@ export default function RunningCodeComponent() {
           >
             <DataGridScrollArea>
               <DataGridTable />
+              {grid.hasMore && (
+                <div
+                  ref={grid.sentinelRef}
+                  className="flex justify-center py-4"
+                >
+                  {grid.isLoadingMore && (
+                    <Loader2 className="text-muted-foreground size-5 animate-spin" />
+                  )}
+                </div>
+              )}
             </DataGridScrollArea>
-            <DataGridPagination />
           </DataGridContainer>
         </DataGrid>
       )}
@@ -270,6 +294,7 @@ export default function RunningCodeComponent() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         runningCode={editRunningCode}
+        onSaved={onChanged}
       />
 
       <DeleteDialog
@@ -286,6 +311,7 @@ export default function RunningCodeComponent() {
             onSuccess: () => {
               toast.success(tt("deleteSuccess", { entity: t("entity") }));
               setDeleteTarget(null);
+              onChanged();
             },
           });
         }}

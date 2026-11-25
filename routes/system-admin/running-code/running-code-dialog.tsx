@@ -40,12 +40,15 @@ interface RunningCodeDialogProps {
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
   readonly runningCode?: RunningCode | null;
+  /** เรียกหลังบันทึกสำเร็จ — หน้า list ใช้รีเซ็ตแถวที่ lazy load สะสมไว้ */
+  readonly onSaved?: () => void;
 }
 
 export function RunningCodeDialog({
   open,
   onOpenChange,
   runningCode,
+  onSaved,
 }: RunningCodeDialogProps) {
   const isEdit = !!runningCode;
   const createRunningCode = useCreateRunningCode();
@@ -133,6 +136,7 @@ export function RunningCodeDialog({
         {
           onSuccess: () => {
             toast.success(tt("updateSuccess", { entity: t("entity") }));
+            onSaved?.();
             onOpenChange(false);
           },
         },
@@ -141,6 +145,7 @@ export function RunningCodeDialog({
       createRunningCode.mutate(payload, {
         onSuccess: () => {
           toast.success(tt("createSuccess", { entity: t("entity") }));
+            onSaved?.();
           onOpenChange(false);
         },
       });
