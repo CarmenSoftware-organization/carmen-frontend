@@ -43,7 +43,8 @@ export function useRunningCodeTable({
       ),
       // กว้างคงที่ (Note เป็นตัว grow) — ถ้าปล่อยแบ่งตามสัดส่วน บนจอ 4K Type กับ Note
       // ห่างกันราว 1,450px (skill carmen-blue-ui-design ข้อ 2)
-      size: 190,
+      // ยาวสุด "PRODUCT-ITEM-GROUP" 151px + padding 24 = 175 (วัด 2026-11-25)
+      size: 180,
       meta: { skeleton: columnSkeletons.text },
     },
     {
@@ -60,7 +61,8 @@ export function useRunningCodeTable({
           <span className="text-muted-foreground/60">—</span>
         );
       },
-      size: 180,
+      // ยาวสุด "‹PRODUCT-ITEM-GROUP›0001" 172px + padding 24 = 196 — ที่ 180 ตัดสองบรรทัด
+      size: 210,
       meta: { headerTitle: t("example"), skeleton: columnSkeletons.text },
     },
     {
@@ -81,8 +83,8 @@ export function useRunningCodeTable({
       // คอลัมน์ข้อความยาวตัวเดียวของตาราง รับความกว้างที่เหลือ — ตัดด้วย truncate ตาม
       // ความกว้างจริง ไม่ใช่ที่ 24rem ตายตัวทั้งที่จอมีที่ · `size` คือความกว้างขั้นต่ำ:
       // ผลรวม size ต้องไม่เกินกล่องที่ tablet (662px) และ `getTotalSize()` นับคอลัมน์
-      // select (55) ที่ไม่ได้เรนเดอร์ด้วย → 55+60+190+180+115+60 = 660
-      size: 115,
+      // select (55) ที่ไม่ได้เรนเดอร์ด้วย → 55+60+180+210+95+60 = 660
+      size: 95,
       meta: {
         headerTitle: tfl("note"),
         skeleton: columnSkeletons.text,
