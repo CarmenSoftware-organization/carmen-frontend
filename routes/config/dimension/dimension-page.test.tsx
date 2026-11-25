@@ -65,8 +65,8 @@ describe("Dimension with sub-values", () => {
     );
     for (const code of ["A", "B"]) {
       fireEvent.click(screen.getByRole("button", { name: "Add Value" }));
-      const codes = screen.getAllByLabelText(/^Code/);
-      const names = screen.getAllByLabelText(/^Name \(EN\)/);
+      const codes = screen.getAllByLabelText(/^Value$/);
+      const names = screen.getAllByLabelText(/^Label$/);
       fireEvent.change(codes[codes.length - 1], { target: { value: code } });
       fireEvent.change(names[names.length - 1], { target: { value: code } });
     }

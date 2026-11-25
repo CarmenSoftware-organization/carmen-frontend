@@ -45,10 +45,10 @@ export async function saveDimensionWithValues({
   const visibleValues = subValues.filter((value) => !value.deleted);
   const codes = subValues.map((value) => value.code.trim().toUpperCase());
   if (visibleValues.some((value) => !value.code.trim() || !value.name.trim())) {
-    throw new Error("Sub-value Code and Name (EN) are required.");
+    throw new Error("Value and Label are required for every list item.");
   }
   if (new Set(codes).size !== codes.length) {
-    throw new Error("Sub-value codes must be unique.");
+    throw new Error("List item values must be unique.");
   }
   if (!buCode) {
     throw new Error("Select a business unit first");

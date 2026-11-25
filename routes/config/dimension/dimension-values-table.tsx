@@ -30,7 +30,7 @@ export function DimensionValuesTable({
   const hasEdited = subValues.some((v) => v.id && v.dirty && !v.deleted);
   const hasNew = subValues.some((v) => !v.id);
   const hasRemoved = subValues.some((v) => v.deleted || v.error);
-  const columnCount = readOnly ? 4 : 5;
+  const columnCount = readOnly ? 3 : 4;
 
   const patchRow = (key: string, patch: Partial<DimensionValueDraft>) =>
     setSubValues((current) =>
@@ -102,9 +102,8 @@ export function DimensionValuesTable({
           <thead className="bg-muted sticky top-0 z-10">
             <tr className="text-muted-foreground text-left">
               {!readOnly && <th className="w-8 p-2" aria-label="Select" />}
-              <th className="w-28 p-2 font-medium">Code</th>
-              <th className="p-2 font-medium">Name (EN) *</th>
-              <th className="p-2 font-medium">Name (TH)</th>
+              <th className="w-40 p-2 font-medium">Value *</th>
+              <th className="p-2 font-medium">Label *</th>
               <th className="w-14 p-2 text-center font-medium">Active</th>
             </tr>
           </thead>
@@ -172,7 +171,7 @@ export function DimensionValuesTable({
                   <td className="p-2 font-mono">
                     {editable ? (
                       <FieldInput
-                        aria-label="Code"
+                        aria-label="Value"
                         value={value.code}
                         disabled={!!value.id}
                         maxLength={10}
@@ -197,7 +196,7 @@ export function DimensionValuesTable({
                   <td className="p-2">
                     {editable ? (
                       <FieldInput
-                        aria-label="Name (EN)"
+                        aria-label="Label"
                         value={value.name}
                         maxLength={50}
                         onChange={(e) =>
@@ -218,27 +217,6 @@ export function DimensionValuesTable({
                       <p role="alert" className="text-destructive mt-1 text-xs">
                         {value.error}
                       </p>
-                    )}
-                  </td>
-                  <td className="p-2">
-                    {editable ? (
-                      <FieldInput
-                        aria-label="Name (TH)"
-                        value={value.name_local ?? ""}
-                        maxLength={100}
-                        onChange={(e) =>
-                          edit(value.key, { name_local: e.target.value })
-                        }
-                      />
-                    ) : (
-                      <span
-                        className={cn(
-                          "block py-1.5",
-                          value.deleted && "line-through",
-                        )}
-                      >
-                        {value.name_local || "—"}
-                      </span>
                     )}
                   </td>
                   <td className="p-2 text-center">
