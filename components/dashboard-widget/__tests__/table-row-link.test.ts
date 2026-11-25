@@ -72,6 +72,19 @@ describe("docHref", () => {
     }
   });
 
+  // คิวงาน — แถวคือเอกสารของตัวเอง (PR / ใบเบิก / ใบนับ)
+  it("links the queue tables to their own document", () => {
+    expect(docHref("procurement.pr-awaiting-po", { id: "pr-9" }, "id")).toBe(
+      "/procurement/purchase-request/pr-9",
+    );
+    expect(docHref("document.sr-awaiting-approval", { id: "sr-9" }, "id")).toBe(
+      "/store-operation/store-requisition/sr-9",
+    );
+    expect(
+      docHref("inventory.physical-count-by-location", { id: "pc-9" }, "id"),
+    ).toBe("/inventory-management/physical-count/pc-9");
+  });
+
   // ranked ที่ไม่ใช่เอกสาร (สินค้า/ผู้ขาย) ยังไม่มีหน้าปลายทาง ต้องไม่กดได้
   it("leaves non-document ranked datasets alone", () => {
     expect(
