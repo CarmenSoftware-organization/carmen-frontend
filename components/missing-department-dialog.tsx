@@ -40,7 +40,7 @@ export function MissingDepartmentDialog() {
           <AlertDialogMedia>
             <Building2 className="text-destructive" />
           </AlertDialogMedia>
-          <AlertDialogTitle className="text-base">
+          <AlertDialogTitle className="text-sm">
             {t("missingDepartmentTitle")}
           </AlertDialogTitle>
           <AlertDialogDescription>

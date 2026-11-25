@@ -355,7 +355,7 @@ export default function ExchangeRateComponent() {
                 <RefreshCw className="size-4.5" />
               </div>
               <div className="min-w-0 flex-1">
-                <AlertDialogTitle className="text-base">
+                <AlertDialogTitle className="text-sm">
                   {t("update")}
                 </AlertDialogTitle>
                 <AlertDialogDescription className="mt-1">

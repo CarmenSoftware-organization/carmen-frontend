@@ -406,7 +406,7 @@ export function PrPricelistDialog({
       <DialogContent className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-5xl">
         <div className="space-y-4 px-6 pt-6 pb-4">
           <DialogHeader>
-            <DialogTitle className="text-base">
+            <DialogTitle className="text-sm">
               {t("priceListComparison")}
             </DialogTitle>
             <DialogDescription className="truncate">

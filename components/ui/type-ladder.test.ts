@@ -123,7 +123,6 @@ const ALLOWED_OFF_LADDER: Record<string, number> = {
   // share. The auth screens are the one surface that is intentionally not dense —
   // DESIGN.md's display end is deliberately loose.
   "components/auth/auth-split-shell.tsx": 4,
-  "routes/dashboard/dashboard-component.tsx": 2, // 16px + 32px stat display
   "routes/inventory-management/spot-check/sc-form.tsx": 1, // 28px count display
 };
 

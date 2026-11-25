@@ -322,10 +322,10 @@ export function PosImportHistory({
         onOpenChange={(o) => !cancel.isPending && !o && setCancelTarget(null)}
       >
         <AlertDialogContent className="sm:max-w-md">
-          <AlertDialogTitle className="text-base">
+          <AlertDialogTitle className="text-sm">
             {t("cancelDialog.title")}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-sm leading-relaxed">
+          <AlertDialogDescription className="text-xs leading-relaxed">
             {t("cancelDialog.desc")}
           </AlertDialogDescription>
           <AlertDialogFooter>

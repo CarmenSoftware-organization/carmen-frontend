@@ -51,7 +51,7 @@ export function CreatePODialog({ open, onOpenChange }: CreatePODialogProps) {
       <DialogContent className="overflow-hidden p-0 sm:max-w-2xl">
         <div className="space-y-5 p-6">
           <DialogHeader>
-            <DialogTitle className="text-base">{t("createTitle")}</DialogTitle>
+            <DialogTitle className="text-sm">{t("createTitle")}</DialogTitle>
             <DialogDescription className="mt-1">
               {t("createDesc")}
             </DialogDescription>

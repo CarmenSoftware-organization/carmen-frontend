@@ -95,7 +95,7 @@ export function CoaTreeSelectorModal({
               <FolderTree className="size-4.5" />
             </div>
             <div>
-              <DialogTitle className="text-base font-semibold">
+              <DialogTitle className="text-sm font-semibold">
                 {t("sections.grouping")}
               </DialogTitle>
               <DialogDescription className="mt-0.5 text-xs text-muted-foreground">

@@ -695,7 +695,7 @@ export function PrItemFields({
                   <AlertTriangle className="size-4.5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <AlertDialogTitle className="text-warning-ink text-base">
+                  <AlertDialogTitle className="text-warning-ink text-sm">
                     {t("overQtyWarningTitle")}
                   </AlertDialogTitle>
                   <AlertDialogDescription className="mt-1">

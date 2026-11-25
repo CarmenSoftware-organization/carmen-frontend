@@ -56,7 +56,7 @@ export function MockEntityDialog({
                   <Icon className="h-6 w-6" />
                 </div>
                 <div className="flex flex-col">
-                  <DialogTitle className="text-foreground text-xl font-bold tracking-tight">
+                  <DialogTitle className="text-foreground text-sm font-semibold tracking-tight">
                     {readOnly ? title.replace(/^Edit /, "") : title}
                   </DialogTitle>
                   {subtitle && (

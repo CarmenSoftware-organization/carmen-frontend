@@ -201,7 +201,7 @@ export function EmailProfileDialog({
     <Dialog open={open} onOpenChange={isSaving ? undefined : onOpenChange}>
       <DialogContent className="flex max-h-[90dvh] flex-col gap-0 p-0 sm:max-w-2xl">
         <DialogHeader className="shrink-0 gap-1 px-5 pt-5 pr-12 pb-4">
-          <DialogTitle className="text-base">
+          <DialogTitle className="text-sm">
             {isEdit
               ? tf("editTitle", { entity: t("entity") })
               : tf("addTitle", { entity: t("entity") })}

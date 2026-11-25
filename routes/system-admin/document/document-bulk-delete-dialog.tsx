@@ -57,10 +57,10 @@ export function DocumentBulkDeleteDialog({
               <Trash2 className="size-4.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <AlertDialogTitle className="text-base">
+              <AlertDialogTitle className="text-sm">
                 {t("bulkDeleteTitle", { count })}
               </AlertDialogTitle>
-              <AlertDialogDescription className="mt-1 text-sm leading-relaxed">
+              <AlertDialogDescription className="mt-1 text-xs leading-relaxed">
                 <span className="text-foreground block font-medium">
                   {t("bulkDeleteSummary", {
                     count,

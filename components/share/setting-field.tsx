@@ -49,12 +49,12 @@ export function SettingField({
     >
       <div className="text-muted-foreground text-xs">{label}</div>
       {isEmpty ? (
-        <div className="text-muted-foreground/60 mt-0.5 text-sm">—</div>
+        <div className="text-muted-foreground/60 mt-0.5 text-xs">—</div>
       ) : (
         <>
           <FieldPlainText
             className={cn(
-              "mt-0.5 block min-h-0 text-sm break-words tabular-nums",
+              "mt-0.5 block min-h-0 text-xs break-words tabular-nums",
               leadMono && "font-mono text-xs",
             )}
           >
@@ -78,7 +78,7 @@ export function SettingField({
           {caption && (
             <div
               className={cn(
-                "text-muted-foreground mt-0.5 text-xs break-words tabular-nums",
+                "text-muted-foreground text-micro mt-0.5 break-words tabular-nums",
                 captionMono && "font-mono",
               )}
             >

@@ -122,10 +122,10 @@ export function CostCenterImportCarmenGlButton() {
         onOpenChange={(o) => !importMutation.isPending && setOpen(o)}
       >
         <AlertDialogContent className="sm:max-w-md">
-          <AlertDialogTitle className="text-base">
+          <AlertDialogTitle className="text-sm">
             {t("confirmTitle")}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-sm leading-relaxed">
+          <AlertDialogDescription className="text-xs leading-relaxed">
             {t("confirmDesc")}
           </AlertDialogDescription>
           <AlertDialogFooter>

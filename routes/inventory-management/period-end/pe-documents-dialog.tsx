@@ -262,7 +262,7 @@ export function PeDocumentsDialog({
                 >
                   {t("documents")}
                 </div>
-                <DialogTitle className="text-base">{moduleLabel}</DialogTitle>
+                <DialogTitle className="text-sm">{moduleLabel}</DialogTitle>
                 <DialogDescription className="mt-1">
                   {t("documentsSummary", {
                     draft: counts?.draft ?? 0,

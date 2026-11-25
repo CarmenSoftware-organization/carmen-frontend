@@ -203,7 +203,7 @@ export function OnOrderDialog({ open, onOpenChange, productId }: Props) {
           <DialogHeader>
             <div className="flex items-start gap-3">
               <div className="min-w-0 flex-1">
-                <DialogTitle className="text-base">{t("onOrder")}</DialogTitle>
+                <DialogTitle className="text-sm">{t("onOrder")}</DialogTitle>
                 <DialogDescription asChild>
                   <div className="mt-1 space-y-0.5">
                     <span className="text-foreground text-sm font-semibold">

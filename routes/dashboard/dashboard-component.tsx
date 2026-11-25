@@ -130,7 +130,7 @@ export default function DashboardComponent() {
           <EyeBrow className="mb-2">
             {t("brief")} · {dayLabel}
           </EyeBrow>
-          <h1 className="text-foreground text-[1rem] leading-[1.1] font-bold tracking-[-0.05625rem] sm:text-[2rem]">
+          <h1 className="text-foreground text-lg font-semibold tracking-tight">
             {greeting}, {fullName}
           </h1>
         </Reveal>

@@ -158,7 +158,7 @@ export function ProductEcoLabelDialog({
             {/* หัวกล่องเหลือแค่ชื่อเรื่อง — ไอคอนในกล่องสีเป็น chrome ตกแต่งที่ยิง
                 accent ซ้ำบนพื้นกลาง (ข้อสรุปเดียวกับ audit ของ GRN/PO dialog) */}
             <div className="flex items-center gap-3">
-              <DialogTitle className="text-base">
+              <DialogTitle className="text-sm">
                 {isEdit
                   ? tf("editTitle", { entity: tfl("ecoLabel") })
                   : tf("addTitle", { entity: tfl("ecoLabel") })}

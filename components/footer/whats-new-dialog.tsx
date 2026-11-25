@@ -121,7 +121,7 @@ export function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
                 <Sparkles className="h-6 w-6" />
               </div>
               <div className="flex flex-col text-left">
-                <DialogTitle className="text-foreground text-xl font-bold tracking-tight">
+                <DialogTitle className="text-foreground text-sm font-semibold tracking-tight">
                   What&apos;s New
                 </DialogTitle>
                 <div className="text-muted-foreground mt-1 text-sm font-semibold">

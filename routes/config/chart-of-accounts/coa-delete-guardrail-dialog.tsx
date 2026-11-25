@@ -46,7 +46,7 @@ export function CoaDeleteGuardrailDialog({
             <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
               <AlertTriangle className="size-6" />
             </div>
-            <AlertDialogTitle className="text-center text-base font-semibold">
+            <AlertDialogTitle className="text-center text-sm font-semibold">
               {t("rules.deleteGuardrailTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-center text-xs leading-relaxed text-muted-foreground">

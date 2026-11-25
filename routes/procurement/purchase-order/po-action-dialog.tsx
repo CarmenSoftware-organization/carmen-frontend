@@ -152,7 +152,7 @@ export function PoActionDialog({
               <Icon className="size-4.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <AlertDialogTitle className={`text-base ${tone.titleColor}`}>
+              <AlertDialogTitle className={`text-sm ${tone.titleColor}`}>
                 {title}
               </AlertDialogTitle>
               {description && (

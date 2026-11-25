@@ -62,7 +62,7 @@ export function VoidDialog({
               <Ban className="size-4.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <DialogTitle className="text-base">{title}</DialogTitle>
+              <DialogTitle className="text-sm">{title}</DialogTitle>
               {description && isStringDescription && (
                 <DialogDescription className="mt-1">
                   {description}

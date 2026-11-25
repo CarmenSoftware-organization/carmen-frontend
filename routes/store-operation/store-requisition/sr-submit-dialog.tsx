@@ -60,7 +60,7 @@ export function SrSubmitDialog({
               <SendHorizontal className="size-4.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <AlertDialogTitle className="text-base">
+              <AlertDialogTitle className="text-sm">
                 {t("submitTitle")}
               </AlertDialogTitle>
               <AlertDialogDescription className="mt-1">

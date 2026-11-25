@@ -112,7 +112,7 @@ export function EmailTemplateDialog({
         {/* หัว/ท้ายอยู่กับที่ เลื่อนเฉพาะฟอร์มตรงกลาง — ตัวแก้ไขเนื้อหาสูงจน
             ปุ่มบันทึกเลื่อนหายถ้าปล่อยให้ทั้งกล่องเลื่อนด้วยกัน */}
         <DialogHeader className="shrink-0 gap-1 px-5 pt-5 pr-12 pb-4">
-          <DialogTitle className="text-base">
+          <DialogTitle className="text-sm">
             {isEdit
               ? tf("editTitle", { entity: t("entity") })
               : tf("addTitle", { entity: t("entity") })}

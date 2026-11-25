@@ -141,7 +141,7 @@ export function CalculatorDialog({
                 <Calculator className="size-4.5" aria-hidden="true" />
               </div>
               <div className="min-w-0 flex-1 space-y-0.5">
-                <DialogTitle className="text-foreground text-base leading-tight font-semibold tracking-tight">
+                <DialogTitle className="text-foreground text-sm leading-tight font-semibold tracking-tight">
                   {productName}
                 </DialogTitle>
                 <DialogDescription className="text-muted-foreground text-micro leading-relaxed">

@@ -480,7 +480,7 @@ export function CommentSheet({
           <div className="flex items-center gap-2">
             <MessageCircle className="text-primary size-4.5" />
             <div className="min-w-0 flex-1">
-              <SheetTitle className="text-base">
+              <SheetTitle className="text-sm">
                 {t("title", { count: total ?? comments.length })}
               </SheetTitle>
             </div>

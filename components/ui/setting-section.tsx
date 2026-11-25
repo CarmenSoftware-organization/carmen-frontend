@@ -56,7 +56,7 @@ export function SettingSection({
   const heading = (
     <>
       <div className="flex items-baseline gap-2">
-        <h2 className="text-base font-semibold tracking-tight">{title}</h2>
+        <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
         {count !== undefined && (
           <span className="text-muted-foreground text-xs font-semibold tabular-nums">
             {count}
