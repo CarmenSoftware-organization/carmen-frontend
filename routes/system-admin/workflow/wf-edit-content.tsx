@@ -20,7 +20,9 @@ export function WfEditContent({ id }: { id: string }) {
   const { data: userData, isLoading: userLoading } = useUserAll();
   const { data: productData, isLoading: productLoading } = useProductAll();
 
-  const isLoading = wfLoading || userLoading || productLoading;
+  // สินค้าดึงทีละ 100 เรียงหน้า (หลักพันรายการ = หลายวินาที) แต่ใช้แค่แท็บ Products / Routing —
+  // ไม่รอสินค้าก่อนเปิดหน้า สองแท็บนั้นรอเองผ่าน productsLoading
+  const isLoading = wfLoading || userLoading;
 
   const users = userData ?? [];
   const products = (productData ?? []).map((p) => ({
@@ -67,5 +69,12 @@ export function WfEditContent({ id }: { id: string }) {
       />
     );
 
-  return <WfDetail workflow={workflow} users={users} products={products} />;
+  return (
+    <WfDetail
+      workflow={workflow}
+      users={users}
+      products={products}
+      productsLoading={productLoading}
+    />
+  );
 }
