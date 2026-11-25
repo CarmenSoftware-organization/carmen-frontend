@@ -38,7 +38,7 @@ import { WfStages } from "./wf-stages";
 import { WfRouting } from "./wf-routing";
 import { WfProducts } from "./wf-products";
 import { WfJvScope } from "./wf-jv-scope";
-import { validateWorkflow } from "./wf-validate";
+import { SAVE_BLOCKING_CODES, validateWorkflow } from "./wf-validate";
 import WfInsights from "./wf-insights";
 import { WfTabBodySkeleton } from "./wf-detail-skeleton";
 import { WfStageList } from "./wf-stage-list";
@@ -176,6 +176,14 @@ export function WfDetail({
   const hasRoutingErrors = !!form.formState.errors.data?.routing_rules;
 
   const onSubmit = (formValues: WorkflowCreateModel) => {
+    // backend ปฏิเสธ workflow ที่เอกสารจะค้างอยู่แล้ว — กันไว้ก่อนให้เห็นเหตุผลเป็นภาษาของหน้า
+    const blocking = validationIssues.find((i) =>
+      SAVE_BLOCKING_CODES.has(i.code),
+    );
+    if (blocking) {
+      toast.error(t(blocking.translationKey, blocking.translationValues));
+      return;
+    }
     const values = {
       ...formValues,
       data: syncRecipientChannels(formValues.data),
