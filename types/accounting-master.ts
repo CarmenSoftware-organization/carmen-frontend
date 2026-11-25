@@ -43,6 +43,8 @@ export interface DimensionValueMaster {
   code: string;
   name: string;
   name_local?: string | null;
+  /** อธิบายความหมายของ label (ไม่บังคับ) */
+  description?: string | null;
   effective_from?: string | null;
   effective_to?: string | null;
   is_active: boolean;

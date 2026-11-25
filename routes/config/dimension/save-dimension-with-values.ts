@@ -78,6 +78,7 @@ export async function saveDimensionWithValues({
       const changes = {
         name: value.name.trim(),
         name_local: value.name_local?.trim() || null,
+        description: value.description?.trim() || null,
         is_active: value.is_active,
       };
       const saved = await saveDimensionRecord(

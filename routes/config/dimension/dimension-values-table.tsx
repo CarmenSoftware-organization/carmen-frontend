@@ -31,7 +31,7 @@ export function DimensionValuesTable({
   const hasNew = subValues.some((v) => !v.id);
   const hasDeleted = subValues.some((v) => v.deleted);
   const hasFailed = subValues.some((v) => v.error);
-  const columnCount = readOnly ? 3 : 4;
+  const columnCount = readOnly ? 4 : 5;
 
   const patchRow = (key: string, patch: Partial<DimensionValueDraft>) =>
     setSubValues((current) =>
@@ -84,6 +84,7 @@ export function DimensionValuesTable({
                     code: "",
                     name: "",
                     name_local: "",
+                    description: "",
                     is_active: true,
                     dirty: true,
                   },
@@ -103,8 +104,9 @@ export function DimensionValuesTable({
           <thead className="bg-muted sticky top-0 z-10">
             <tr className="text-muted-foreground text-left">
               {!readOnly && <th className="w-8 p-2" aria-label="Select" />}
-              <th className="w-40 p-2 font-medium">Value *</th>
+              <th className="w-28 p-2 font-medium">Value *</th>
               <th className="p-2 font-medium">Label *</th>
+              <th className="p-2 font-medium">Description</th>
               <th className="w-14 p-2 text-center font-medium">Active</th>
             </tr>
           </thead>
@@ -218,6 +220,28 @@ export function DimensionValuesTable({
                       <p role="alert" className="text-destructive mt-1 text-xs">
                         {value.error}
                       </p>
+                    )}
+                  </td>
+                  <td className="p-2">
+                    {editable ? (
+                      <FieldInput
+                        aria-label="Description"
+                        value={value.description ?? ""}
+                        maxLength={500}
+                        placeholder="Optional"
+                        onChange={(e) =>
+                          edit(value.key, { description: e.target.value })
+                        }
+                      />
+                    ) : (
+                      <span
+                        className={cn(
+                          "text-muted-foreground block py-1.5",
+                          value.deleted && "line-through",
+                        )}
+                      >
+                        {value.description || "—"}
+                      </span>
                     )}
                   </td>
                   <td className="p-2 text-center">
