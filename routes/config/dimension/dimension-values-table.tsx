@@ -29,7 +29,8 @@ export function DimensionValuesTable({
   const liveCount = subValues.filter((value) => !value.deleted).length;
   const hasEdited = subValues.some((v) => v.id && v.dirty && !v.deleted);
   const hasNew = subValues.some((v) => !v.id);
-  const hasRemoved = subValues.some((v) => v.deleted || v.error);
+  const hasDeleted = subValues.some((v) => v.deleted);
+  const hasFailed = subValues.some((v) => v.error);
   const columnCount = readOnly ? 3 : 4;
 
   const patchRow = (key: string, patch: Partial<DimensionValueDraft>) =>
@@ -236,7 +237,7 @@ export function DimensionValuesTable({
           </tbody>
         </table>
       </div>
-      {(hasEdited || hasNew || hasRemoved) && (
+      {(hasEdited || hasNew || hasDeleted || hasFailed) && (
         <div className="text-muted-foreground flex flex-wrap gap-3 text-xs">
           {hasEdited && (
             <span className="flex items-center gap-1">
@@ -250,10 +251,16 @@ export function DimensionValuesTable({
               New
             </span>
           )}
-          {hasRemoved && (
+          {hasDeleted && (
+            <span className="flex items-center gap-1">
+              <span className="line-through">abc</span>
+              Will be deleted
+            </span>
+          )}
+          {hasFailed && (
             <span className="flex items-center gap-1">
               <span className="bg-destructive/10 border-destructive/40 inline-block size-3 rounded-sm border" />
-              Will be deleted / Failed
+              Failed
             </span>
           )}
         </div>
