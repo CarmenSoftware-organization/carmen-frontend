@@ -135,7 +135,7 @@ describe("Dimension with sub-values", () => {
       expect.stringMatching(/\/saved-value$/),
     );
   });
-  it("shows list items only for List, and date format only for Date", async () => {
+  it("shows list items only for List, and never a date format field", async () => {
     const onSave = vi.fn();
     render(
       <QueryClientProvider client={new QueryClient()}>
@@ -153,7 +153,7 @@ describe("Dimension with sub-values", () => {
     expect(screen.queryByRole("combobox", { name: /Date Format/ })).toBeNull();
     await userEvent.click(screen.getByRole("combobox", { name: /Data Type/ }));
     await userEvent.click(screen.getByRole("option", { name: "Date" }));
-    expect(screen.getByRole("combobox", { name: /Date Format/ })).toBeDefined();
+    expect(screen.queryByRole("combobox", { name: /Date Format/ })).toBeNull();
     expect(screen.queryByRole("button", { name: "Add Value" })).toBeNull();
     await userEvent.click(screen.getByRole("combobox", { name: /Data Type/ }));
     await userEvent.click(

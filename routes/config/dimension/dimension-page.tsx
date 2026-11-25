@@ -12,10 +12,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import {
-  DIMENSION_DATA_TYPES,
-  DIMENSION_DATE_FORMATS,
-} from "./dimension-data-types";
+import { DIMENSION_DATA_TYPES } from "./dimension-data-types";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -58,7 +55,6 @@ import type {
   DimensionMaster,
   DimensionValueMaster,
   DimensionDataType,
-  DimensionDateFormat,
 } from "@/types/accounting-master";
 
 import { saveDimensionRecord } from "./save-dimension-record";
@@ -469,9 +465,6 @@ export function DimensionDialog({
   const [dataType, setDataType] = useState<DimensionDataType>(
     initial.data_type,
   );
-  const [dateFormat, setDateFormat] = useState<DimensionDateFormat>(
-    initial.date_format,
-  );
 
   return (
     <Dialog
@@ -539,10 +532,8 @@ export function DimensionDialog({
           </Field>
           <DimensionTypeFields
             dataType={dataType}
-            dateFormat={dateFormat}
             disabled={readOnly || saving}
             onDataTypeChange={setDataType}
-            onDateFormatChange={setDateFormat}
           />
           <StatusSwitch
             id="dim-active"
@@ -586,9 +577,6 @@ export function DimensionDialog({
                       name_local: nameLocal.trim() || null,
                       is_active: active,
                       data_type: dataType,
-                      ...(dataType === "date"
-                        ? { date_format: dateFormat }
-                        : {}),
                     },
                     savedItem,
                     subValues:
@@ -1144,68 +1132,35 @@ async function saveDimensionWithValues({
 
 function DimensionTypeFields({
   dataType,
-  dateFormat,
   disabled,
   onDataTypeChange,
-  onDateFormatChange,
 }: {
   dataType: DimensionDataType;
-  dateFormat: DimensionDateFormat;
   disabled: boolean;
   onDataTypeChange: (value: DimensionDataType) => void;
-  onDateFormatChange: (value: DimensionDateFormat) => void;
 }) {
   return (
-    <>
-      <Field>
-        <FieldLabel htmlFor="dim-data-type" required>
-          Data Type
-        </FieldLabel>
-        <Select
-          value={dataType}
-          disabled={disabled}
-          onValueChange={(value) =>
-            onDataTypeChange(value as DimensionDataType)
-          }
-        >
-          <SelectTrigger id="dim-data-type">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {DIMENSION_DATA_TYPES.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
-      {dataType === "date" && (
-        <Field>
-          <FieldLabel htmlFor="dim-date-format" required>
-            Date Format
-          </FieldLabel>
-          <Select
-            value={dateFormat}
-            disabled={disabled}
-            onValueChange={(value) =>
-              onDateFormatChange(value as DimensionDateFormat)
-            }
-          >
-            <SelectTrigger id="dim-date-format">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {DIMENSION_DATE_FORMATS.map((format) => (
-                <SelectItem key={format} value={format}>
-                  {format}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-      )}
-    </>
+    <Field>
+      <FieldLabel htmlFor="dim-data-type" required>
+        Data Type
+      </FieldLabel>
+      <Select
+        value={dataType}
+        disabled={disabled}
+        onValueChange={(value) => onDataTypeChange(value as DimensionDataType)}
+      >
+        <SelectTrigger id="dim-data-type">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {DIMENSION_DATA_TYPES.map((type) => (
+            <SelectItem key={type.value} value={type.value}>
+              {type.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </Field>
   );
 }
 
@@ -1216,6 +1171,5 @@ function getDimensionFormDefaults(item: DimensionMaster | null) {
     name_local: item?.name_local ?? "",
     is_active: item?.is_active ?? true,
     data_type: item ? (item.data_type ?? "lookup") : "string",
-    date_format: item?.date_format ?? "DD/MM/YYYY",
   } as const;
 }

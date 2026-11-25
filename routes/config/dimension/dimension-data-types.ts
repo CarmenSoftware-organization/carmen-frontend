@@ -1,7 +1,4 @@
-import type {
-  DimensionDataType,
-  DimensionDateFormat,
-} from "@/types/accounting-master";
+import type { DimensionDataType } from "@/types/accounting-master";
 
 export const DIMENSION_DATA_TYPES: {
   value: DimensionDataType;
@@ -18,10 +15,4 @@ export const DIMENSION_DATA_TYPES: {
     short: "List",
   },
   { value: "boolean", label: "Boolean (True / False)", short: "Boolean" },
-];
-
-export const DIMENSION_DATE_FORMATS: DimensionDateFormat[] = [
-  "DD/MM/YYYY",
-  "YYYY-MM-DD",
-  "DD-MMM-YYYY",
 ];

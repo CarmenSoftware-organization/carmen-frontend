@@ -51,11 +51,9 @@ export interface DimensionValueMaster {
 
 export type DimensionDataType =
   "string" | "number" | "date" | "lookup" | "boolean";
-export type DimensionDateFormat = "DD/MM/YYYY" | "YYYY-MM-DD" | "DD-MMM-YYYY";
 
 export interface DimensionMaster {
   data_type?: DimensionDataType;
-  date_format?: DimensionDateFormat;
   id: string;
   code: string;
   name: string;
