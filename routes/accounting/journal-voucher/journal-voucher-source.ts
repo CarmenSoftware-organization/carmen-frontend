@@ -3,8 +3,7 @@ import type {
   JournalVoucherCapabilities,
   JournalVoucherSourceLink,
 } from "@/types/journal-voucher";
-import { getStageActionFlags } from "@/lib/workflow-stage-actions";
-import { STAGE_ROLE } from "@/types/stage-role";
+import { isDraftDocNo } from "@/lib/draft-doc-no";
 import {
   CHART_OF_ACCOUNT_TYPE,
   type ChartOfAccount,
@@ -99,22 +98,32 @@ export function journalVoucherCapabilities(
 ): JournalVoucherCapabilities {
   if (journal.capabilities) return journal.capabilities;
   const generated = isSourceGenerated(journal);
-  // อนุมัติ/ตีกลับได้ต่อเมื่อ backend บอกว่าผู้ใช้ลงมือที่ขั้นนี้ได้ (role) และขั้นนั้นเปิดปุ่ม
-  const canAct =
-    !generated &&
-    journal.jv_status === "in_review" &&
-    journal.role === STAGE_ROLE.APPROVE;
-  const flags = getStageActionFlags(journal.stage_actions);
+  // ปุ่มของผู้อนุมัติมาจาก backend ล้วน ๆ (`allowed_actions` ว่างเมื่อไม่ใช่ in_review)
+  const allowed = generated ? [] : (journal.allowed_actions ?? []);
+  const isDraft = journal.jv_status === "draft";
   return {
     can_edit_accounting_fields:
       !generated && editableStatuses.has(journal.jv_status),
     can_submit: !generated && journal.jv_status === "draft",
-    can_approve: canAct && flags.approve,
-    can_reject: canAct && flags.reject,
+    can_approve: allowed.includes("approve"),
+    can_reject: allowed.includes("reject"),
+    can_send_back: allowed.includes("sendback"),
+    can_delete: !generated && isDraft && isDraftDocNo(journal.jv_no),
+    can_void_draft: !generated && isDraft && !isDraftDocNo(journal.jv_no),
     // backend voidJv รับเฉพาะใบ posted ที่ยังไม่ถูกกลับรายการ
     can_void:
       !generated && journal.jv_status === "posted" && !journal.reversed_by_jv_id,
     can_reverse: !generated && journal.jv_status === "posted",
     can_open_source: sourceLinksForJournal(journal).some((link) => link.href),
   };
+}
+
+/**
+ * เลขที่ JV สำหรับแสดงผล — เลขร่าง `DRAFT-########` แสดงตามที่เก็บ (ไม่มี prefix)
+ * ส่วนเลขจริงต่อ prefix ของใบ (ถ้า jv_no ขึ้นต้นด้วย prefix อยู่แล้วไม่ต่อซ้ำ)
+ */
+export function formatJvNo(prefix: string | null, jvNo: string): string {
+  if (isDraftDocNo(jvNo)) return jvNo;
+  if (!prefix) return jvNo;
+  return jvNo.startsWith(prefix) ? jvNo : `${prefix}-${jvNo}`;
 }

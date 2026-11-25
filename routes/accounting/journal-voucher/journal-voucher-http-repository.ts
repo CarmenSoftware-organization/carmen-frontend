@@ -20,6 +20,7 @@ import type {
 } from "./journal-voucher-repository";
 import { journalVoucherMockRepository } from "./journal-voucher-mock-repository";
 import {
+  formatJvNo,
   isSubledgerJournal,
   journalVoucherCapabilities,
 } from "./journal-voucher-source";
@@ -251,12 +252,8 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
       const shortId = rawId ? rawId.slice(0, 8) : "";
 
       let displayNo = "";
-      if (rawPrefix && rawJvNo) {
-        displayNo = rawJvNo.startsWith(rawPrefix)
-          ? rawJvNo
-          : `${rawPrefix}-${rawJvNo}`;
-      } else if (rawJvNo) {
-        displayNo = rawJvNo;
+      if (rawJvNo) {
+        displayNo = formatJvNo(rawPrefix, rawJvNo);
       } else if (rawDraftRef) {
         displayNo = rawDraftRef;
       } else if (typeof raw.display_no === "string" && raw.display_no.trim()) {
@@ -393,7 +390,9 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
     const doc: JournalVoucher = {
       id: raw.id,
       doc_version: raw.doc_version ?? 0,
-      display_no: raw.jv_no ?? raw.display_no ?? "JV-DRAFT",
+      display_no: raw.jv_no
+        ? formatJvNo(raw.prefix_code ?? null, raw.jv_no)
+        : (raw.display_no ?? "JV-DRAFT"),
       jv_no: raw.jv_no ?? null,
       draft_reference: raw.draft_reference ?? raw.jv_no ?? "DRAFT",
       jv_status: raw.jv_status ?? "draft",
@@ -412,6 +411,9 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
       total_credit: String(raw.total_credit ?? 0),
       role: typeof raw.role === "string" ? raw.role : undefined,
       stage_actions: raw.stage_actions ?? null,
+      allowed_actions: Array.isArray(raw.allowed_actions)
+        ? raw.allowed_actions
+        : [],
       workflow_id: raw.workflow_id ?? null,
       workflow_name: raw.workflow_name ?? null,
       workflow_current_stage: raw.workflow_current_stage ?? null,
@@ -621,6 +623,8 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
       endpoint = API_ENDPOINTS.GL_JV_APPROVE(buCode, id);
     else if (action === "reject")
       endpoint = API_ENDPOINTS.GL_JV_REJECT(buCode, id);
+    else if (action === "review" || action === "void-draft")
+      endpoint = API_ENDPOINTS.JOURNAL_VOUCHER_ACTION(buCode, id, action);
     else if (action === "void")
       endpoint = API_ENDPOINTS.GL_POSTING_VOID(buCode, id);
     else if (action === "reverse")
@@ -633,8 +637,10 @@ export const httpJournalVoucherRepository: JournalVoucherRepository = {
           ? { post_at: input.post_at }
           : action === "reject"
             ? { reason: input.reason }
-            : action === "void"
+            : action === "void" || action === "void-draft"
               ? { reason: input.reason }
+              : action === "review"
+                ? { stage: input.destination_stage, reason: input.reason ?? null }
               : input;
       const res = await httpClient.post(endpoint, body);
       if (!res.ok) {

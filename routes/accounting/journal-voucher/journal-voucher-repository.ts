@@ -11,7 +11,9 @@ export type JournalVoucherCommand =
   | "reject"
   | "reschedule"
   | "reverse"
-  | "void";
+  | "void"
+  | "review"
+  | "void-draft";
 
 export interface JournalVoucherRepository {
   list(
