@@ -1223,12 +1223,24 @@ function isNumericColumn(type?: TableColumn["type"]): boolean {
   return type === "number" || type === "currency";
 }
 
+/**
+ * คอลัมน์ยอดเงินของตาราง (backend ประกาศ type `currency`) — 2 ตำแหน่งเท่ากันทุกแถว
+ * เดิมใช้ `toLocaleString()` คอลัมน์เดียวกันจึงขึ้นทั้ง "9,994" และ "4,719.513"
+ */
+const MONEY_CELL = new Intl.NumberFormat(undefined, {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 function formatTableCell(
   value: unknown,
   type?: TableColumn["type"],
   unit?: string,
 ): string {
   if (value === null || value === undefined || value === "") return "—";
+  if (type === "currency" && typeof value === "number") {
+    return MONEY_CELL.format(value);
+  }
   if (isNumericColumn(type) && typeof value === "number") {
     const n = unit ? formatMetric(value, unit) : value.toLocaleString();
     // สกุลเงินอยู่ที่หัวคอลัมน์ — เป็นสกุลหลักของ BU ไม่ใช่บาทเสมอไป
