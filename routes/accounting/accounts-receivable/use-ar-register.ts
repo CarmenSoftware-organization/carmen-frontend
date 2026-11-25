@@ -15,7 +15,7 @@ import type {
   ArInvoiceLineRecord,
   ArInvoiceUpdateInput,
 } from "./ar-invoice-draft-model";
-import type { ApPreviousStage } from "../accounts-payable/shared/use-ap-previous-stages";
+import type { PreviousStage } from "../shared/send-back-fields";
 
 export const AR_STATUS = ["draft", "in_review", "posted", "void"] as const;
 export const AR_TYPES = [
@@ -226,7 +226,7 @@ export function useArInvoicePreviousStages(
   enabled: boolean,
 ) {
   const bu = useBuCode();
-  return useQuery<ApPreviousStage[]>({
+  return useQuery<PreviousStage[]>({
     queryKey: [QUERY_KEYS.AR_INVOICE_PREVIOUS_STAGES, bu, id],
     queryFn: async () => {
       const res = await httpClient.get(

@@ -28,7 +28,7 @@ import { useAmountFormatter } from "@/hooks/use-number-formatter";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { ApDetailGrid } from "../accounts-payable/shared/ap-detail-grid";
-import { ApSendBackFields } from "../accounts-payable/shared/ap-send-back-fields";
+import { SendBackFields } from "../shared/send-back-fields";
 import {
   arActionsAllowed,
   arDocActions,
@@ -193,7 +193,7 @@ function RegisterDetail({ id }: { readonly id?: string }) {
             </DialogDescription>
           </DialogHeader>
           {sendingBack && (
-            <ApSendBackFields
+            <SendBackFields
               labels={{
                 stage: t("sendBackStage"),
                 stagePlaceholder: t("sendBackStagePlaceholder"),

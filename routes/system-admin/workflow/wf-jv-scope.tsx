@@ -9,12 +9,20 @@ import {
   JV_WORKFLOW_SOURCES,
   type JvWorkflowSource,
 } from "@/constant/workflow";
+import { jvScopeTier } from "./jv-scope-tier";
 import type { WorkflowCreateModel } from "./wf-form-schema";
 
 interface WfJvScopeProps {
   readonly form: UseFormReturn<WorkflowCreateModel>;
   readonly isDisabled?: boolean;
 }
+
+const TIER_LABEL_KEY = {
+  1: "jvScopeTier1",
+  2: "jvScopeTier2",
+  3: "jvScopeTier3",
+  4: "jvScopeTier4",
+} as const;
 
 const SOURCE_LABEL_KEY: Record<JvWorkflowSource, string> = {
   manual: "jvSourceManual",
@@ -74,6 +82,8 @@ export function WfJvScope({ form, isDisabled = false }: WfJvScopeProps) {
     sources.length === 0
       ? t("jvScopeAllSources")
       : t("jvScopeSomeSources", { count: sources.length });
+
+  const tier = jvScopeTier({ prefix_ids: prefixIds, sources });
 
   return (
     <div className="space-y-6">
@@ -171,6 +181,11 @@ export function WfJvScope({ form, isDisabled = false }: WfJvScopeProps) {
       <p className="bg-muted/40 rounded-md border px-3 py-2 text-sm">
         {t("jvScopeSummary", { prefix: prefixSummary, source: sourceSummary })}
       </p>
+
+      <div className="space-y-1">
+        <p className="text-sm font-medium">{t(TIER_LABEL_KEY[tier])}</p>
+        <p className="text-muted-foreground text-xs">{t("jvScopeTierHint")}</p>
+      </div>
     </div>
   );
 }

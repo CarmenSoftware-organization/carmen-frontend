@@ -91,6 +91,7 @@ vi.mock("../journal-voucher/use-journal-voucher", () => ({
     isPending: false,
   }),
   useCreateJournalVoucher: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteJournalVoucher: () => ({ mutate: vi.fn(), isPending: false }),
   useCopyJournalVoucher: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useJournalVoucherAction: () => ({
     mutateAsync: vi.fn(),

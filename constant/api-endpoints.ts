@@ -193,6 +193,8 @@ export const API_ENDPOINTS = {
     `/api/proxy/api/${buCode}/gl-jv/${toSafePathSegment(id)}/approve`,
   GL_JV_REJECT: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/gl-jv/${toSafePathSegment(id)}/reject`,
+  GL_JV_PREVIOUS_STAGES: (buCode: string, id: string) =>
+    `/api/proxy/api/${buCode}/gl-jv/${toSafePathSegment(id)}/previous-stages`,
   GL_POSTING_POST: (buCode: string, id: string) =>
     `/api/proxy/api/${buCode}/gl-posting/${toSafePathSegment(id)}/post`,
   GL_POSTING_VOID: (buCode: string, id: string) =>

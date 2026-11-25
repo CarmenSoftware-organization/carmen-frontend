@@ -101,7 +101,7 @@ export function buildPrintFormOptions({
 /**
  * หมวดของ registry → การ์ดบนหน้า (หมวดที่ไม่อยู่ในนี้ = การ์ดของตัวเอง)
  * PR/SI/PO มีหมวดละค่าเดียว รวมเป็นการ์ด "จัดซื้อและคลัง" ใช้รหัสเอกสารเป็นป้ายแยก ·
- * AP/AR ทุกค่าเป็นคำถามเดียวกัน (ผู้สร้างอนุมัติเองได้ไหม) รวมเป็นการ์ดเดียว ถามครั้งเดียวที่หัวการ์ด
+ * AP/AR/GL(JV) ทุกค่าเป็นคำถามเดียวกัน (ผู้สร้างอนุมัติเองได้ไหม) รวมเป็นการ์ดเดียว ถามครั้งเดียวที่หัวการ์ด
  */
 const DOC_CARD_OF_SECTION: Readonly<
   Record<
@@ -134,6 +134,12 @@ const DOC_CARD_OF_SECTION: Readonly<
     showCode: false,
   },
   ar: {
+    id: "selfApprove",
+    titleKey: "sections.selfApprove",
+    descKey: "sections.selfApproveDesc",
+    showCode: false,
+  },
+  gl: {
     id: "selfApprove",
     titleKey: "sections.selfApprove",
     descKey: "sections.selfApproveDesc",

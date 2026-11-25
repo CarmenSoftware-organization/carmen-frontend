@@ -53,7 +53,7 @@ import {
   apInvoiceActions,
   apIsAutoFromGrn,
 } from "../shared/ap-status";
-import { ApSendBackFields } from "../shared/ap-send-back-fields";
+import { SendBackFields } from "../../shared/send-back-fields";
 import { useApPreviousStages } from "../shared/use-ap-previous-stages";
 import {
   useApInvoice,
@@ -780,7 +780,7 @@ function ApInvoiceEditor({
             </DialogDescription>
           </DialogHeader>
           {sendingBack && (
-            <ApSendBackFields
+            <SendBackFields
               kind="invoice"
               stage={stage}
               onStageChange={setStage}

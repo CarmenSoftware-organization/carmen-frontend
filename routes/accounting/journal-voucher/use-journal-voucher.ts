@@ -46,7 +46,13 @@ export function useDeleteJournalVoucher() {
   const context = useMutationContext();
   return useMutation({
     mutationFn: (id: string) => context.repository.remove(context.buCode, id),
-    onSuccess: context.invalidate,
+    onSuccess: (_data, id) => {
+      // ถอด detail ของใบที่ลบก่อน invalidate — ไม่งั้นหน้า detail refetch แล้วเจอ 404 วาบ
+      context.queryClient.removeQueries({
+        queryKey: JOURNAL_VOUCHER_QUERY_KEYS.detail(context.buCode, id),
+      });
+      return context.invalidate();
+    },
   });
 }
 
@@ -71,12 +77,17 @@ export function useExportJournalVoucher() {
   return { exportJournalVoucher, isExporting };
 }
 
-export function useJournalVoucher(id?: string) {
+export function useJournalVoucher(
+  id?: string,
+  options?: { readonly enabled?: boolean },
+) {
   const context = useRepositoryContext();
   return useQuery({
     queryKey: JOURNAL_VOUCHER_QUERY_KEYS.detail(context.buCode, id),
     queryFn: () => context.repository.get(context.buCode, id!),
-    enabled: Boolean(id && id !== "new" && id !== "undefined"),
+    enabled:
+      Boolean(id && id !== "new" && id !== "undefined") &&
+      (options?.enabled ?? true),
   });
 }
 
@@ -85,6 +96,7 @@ function useMutationContext() {
   const queryClient = useQueryClient();
   return {
     ...context,
+    queryClient,
     invalidate: () =>
       queryClient.invalidateQueries({
         queryKey: JOURNAL_VOUCHER_QUERY_KEYS.root(context.buCode),

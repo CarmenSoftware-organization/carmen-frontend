@@ -18,6 +18,8 @@ interface JvVoidDialogProps {
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
   readonly isPending?: boolean;
+  /** ใบร่างที่ได้เลขจริงแล้ว (void-draft) — ใช้ข้อความของใบร่าง */
+  readonly draft?: boolean;
   readonly onConfirm: (reason: string) => void;
 }
 
@@ -26,11 +28,21 @@ export function JvVoidDialog({
   open,
   onOpenChange,
   isPending,
+  draft = false,
   onConfirm,
 }: JvVoidDialogProps) {
   const t = useTranslations("accounting.documents");
   const tc = useTranslations("common");
   const [reason, setReason] = useState("");
+
+  // parent ปิดเองเมื่อสำเร็จ (ข้าม handleOpenChange) — ล้างค่าตอนเปิดใหม่ ด้วยการปรับ state ระหว่าง render
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setReason("");
+    }
+  }
 
   const handleOpenChange = (value: boolean) => {
     if (isPending) return;
@@ -42,8 +54,10 @@ export function JvVoidDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t("voidTitle")}</DialogTitle>
-          <DialogDescription>{t("voidDescription")}</DialogDescription>
+          <DialogTitle>{t(draft ? "voidDraftTitle" : "voidTitle")}</DialogTitle>
+          <DialogDescription>
+            {t(draft ? "voidDraftDescription" : "voidDescription")}
+          </DialogDescription>
         </DialogHeader>
         <Field>
           <FieldLabel htmlFor="jv-void-reason" required>

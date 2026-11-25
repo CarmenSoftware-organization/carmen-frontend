@@ -21,7 +21,7 @@ interface JvRejectDialogProps {
   readonly onConfirm: (reason: string) => void;
 }
 
-/** Dialog ตีกลับ JV เป็นฉบับร่าง — เหตุผลไม่บังคับ (backend รับ `reason?`) */
+/** Dialog ปฏิเสธ JV — ปฏิเสธแล้วใบถูก void ไม่กลับมาแก้ได้ จึงบังคับกรอกเหตุผล */
 export function JvRejectDialog({
   open,
   onOpenChange,
@@ -46,7 +46,7 @@ export function JvRejectDialog({
           <DialogDescription>{t("rejectDescription")}</DialogDescription>
         </DialogHeader>
         <Field>
-          <FieldLabel htmlFor="jv-reject-reason">
+          <FieldLabel htmlFor="jv-reject-reason" required>
             {t("rejectReasonLabel")}
           </FieldLabel>
           <Textarea
@@ -72,7 +72,8 @@ export function JvRejectDialog({
           <Button
             type="button"
             size="sm"
-            disabled={isPending}
+            variant="destructive"
+            disabled={isPending || reason.trim() === ""}
             onClick={() => onConfirm(reason.trim())}
           >
             {tc("reject")}

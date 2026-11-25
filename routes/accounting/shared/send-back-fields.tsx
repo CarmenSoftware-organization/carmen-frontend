@@ -7,9 +7,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ApPreviousStage } from "./use-ap-previous-stages";
 
-/** ช่องเลือกขั้นที่จะส่งกลับ (บังคับเลือก) ใน dialog ส่งกลับของใบแจ้งหนี้/ใบจ่ายเงิน */
+/** ช่องเลือกขั้นที่จะส่งกลับ (บังคับเลือก) ใน dialog ส่งกลับของ AP Invoice / AP Payment / AR / JV */
+export interface PreviousStage {
+  key: string;
+  name: string;
+}
+
 export interface SendBackLabels {
   readonly stage: string;
   readonly stagePlaceholder: string;
@@ -17,7 +21,7 @@ export interface SendBackLabels {
   readonly noStages: string;
 }
 
-export function ApSendBackFields({
+export function SendBackFields({
   kind = "invoice",
   labels,
   stage,
@@ -31,7 +35,7 @@ export function ApSendBackFields({
   readonly labels?: SendBackLabels;
   readonly stage: string;
   readonly onStageChange: (stage: string) => void;
-  readonly stages: ApPreviousStage[];
+  readonly stages: PreviousStage[];
   readonly isLoading: boolean;
   readonly isError: boolean;
 }) {

@@ -251,6 +251,20 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
       },
     ],
   },
+  {
+    id: "gl",
+    titleKey: "sections.gl",
+    descKey: "sections.glDesc",
+    items: [
+      {
+        key: "gl.jv.allow-creator-approve",
+        datatype: "boolean",
+        defaultValue: "false",
+        label: "Allow the creator to approve their own journal voucher",
+        labelKey: "config.glJvAllowCreatorApprove",
+      },
+    ],
+  },
 ];
 
 export const SEEDED_ITEMS: readonly SeededConfigItem[] =

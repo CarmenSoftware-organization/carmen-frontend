@@ -30,6 +30,11 @@ export interface JournalVoucherCapabilities {
   can_submit: boolean;
   can_approve: boolean;
   can_reject: boolean;
+  can_send_back: boolean;
+  /** ลบ draft ที่ยังเป็นเลขชั่วคราว DRAFT- */
+  can_delete: boolean;
+  /** void ใบ draft ที่ได้เลขจริงแล้ว (ลบไม่ได้) */
+  can_void_draft: boolean;
   can_void: boolean;
   can_reverse: boolean;
   can_open_source: boolean;
@@ -101,6 +106,8 @@ export interface JournalVoucher extends JournalVoucherInput {
   /** จาก workflow orchestrator — "approve" เมื่อผู้ใช้ลงมือได้ที่ขั้นปัจจุบัน */
   role?: string;
   stage_actions?: StageActionFlags | null;
+  /** backend ตัดสินแล้วว่าผู้ใช้ทำอะไรได้ที่ขั้นนี้ — `[]` เมื่อไม่ใช่ in_review */
+  allowed_actions?: ("approve" | "reject" | "sendback")[];
   workflow_id?: string | null;
   workflow_name?: string | null;
   workflow_current_stage?: string | null;
