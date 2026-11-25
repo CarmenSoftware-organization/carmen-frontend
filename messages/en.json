@@ -5780,6 +5780,8 @@
       "priceRecommendations": "Price Recommendations",
       "priceAtTarget": "Price at target ({pct}%)",
       "priceAtMin": "Minimum price ({pct}% cap)",
+      "minPriceHint": "Minimum price: {price}",
+      "maxBelowTargetHint": "Must be at least the {pct}% target",
       "profitPerPortion": "Profit / recipe",
       "useThisPrice": "Use this price",
       "markup": "Markup",

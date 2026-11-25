@@ -609,3 +609,39 @@ describe("RecipeForm — ราคา Net ⇄ Gross", () => {
     expect(firstPayload(updateMut)).toMatchObject({ selling_price: null });
   });
 });
+
+// ใต้ช่องเพดาน food cost บอกราคาขั้นต่ำทันทีที่พิมพ์ (ผู้ใช้สั่ง 2026-11-25 — เดิมใต้ช่องว่าง
+// ราคาขั้นต่ำมีแค่ในการ์ดราคาแนะนำ) · ต้นทุนวัตถุดิบ 350 ÷ เพดาน 35% = 1,000
+describe("RecipeForm — ราคาขั้นต่ำใต้ช่องเพดาน food cost", () => {
+  const max = () => document.getElementById("recipe-max-food-cost")!;
+  const target = () => document.getElementById("recipe-target-food-cost")!;
+  const RECIPE_350 = { ...RECIPE, total_ingredient_cost: 350 };
+
+  it("กรอกเพดาน 35% → ใต้ช่องขึ้นราคาขั้นต่ำ ฿1,000.00", () => {
+    renderForm(<RecipeForm recipe={RECIPE_350} />);
+    expect(screen.queryByText(/^Minimum price: /)).toBeNull();
+
+    fireEvent.change(max(), { target: { value: "35" } });
+    const hint = screen.getByText("Minimum price: ฿1,000.00");
+    expect(hint).not.toHaveClass("text-destructive");
+  });
+
+  it("ราคาขายต่ำกว่าขั้นต่ำ → ราคาขั้นต่ำเป็นตัวแดง", () => {
+    renderForm(<RecipeForm recipe={{ ...RECIPE_350, selling_price: 900 }} />);
+    fireEvent.change(max(), { target: { value: "35" } });
+    expect(screen.getByText("Minimum price: ฿1,000.00")).toHaveClass(
+      "text-destructive",
+    );
+  });
+
+  it("เพดานต่ำกว่าเป้า → ไม่มีราคา บอกว่าต้องไม่ต่ำกว่าเป้าแทน (ก่อนกด Save)", () => {
+    renderForm(<RecipeForm recipe={RECIPE_350} />);
+    fireEvent.change(target(), { target: { value: "30" } });
+    fireEvent.change(max(), { target: { value: "25" } });
+
+    expect(screen.queryByText(/^Minimum price: /)).toBeNull();
+    expect(
+      screen.getByText("Must be at least the 30% target"),
+    ).toBeInTheDocument();
+  });
+});
