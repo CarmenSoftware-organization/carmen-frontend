@@ -153,7 +153,7 @@
   --secondary: oklch(0.27 0 0);
   --secondary-foreground: oklch(0.92 0 0);
   --muted: oklch(0.25 0 0);
-  --muted-foreground: oklch(0.64 0 0);
+  --muted-foreground: oklch(0.7 0 0); /* 0.64 ตก AA บนแถว hover (--row-hover 0.31 → 3.9:1) และแถวที่เลือก (4.1:1) ที่ตัว 11px · 0.70 = 4.9 / 5.2 / 5.3 บน hover / selected / accent */
   --accent: oklch(0.29 0 0);
   --accent-foreground: oklch(0.93 0 0);
   --destructive: oklch(0.666 0.2013 24.11);
