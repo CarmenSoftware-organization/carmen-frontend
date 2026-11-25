@@ -21,18 +21,54 @@ const ROOT = join(import.meta.dirname, "../../..");
 const SIZE =
   /(?<![\w-])text-(?:sm|base|lg|xl|[2-9]xl|micro-legal|micro-floor|micro|\[[^\]\s]+\])(?![\w-])/;
 
-/** ไฟล์ที่ยังตั้งขนาดเองได้ — ต้องมีเหตุผลทุกรายการ */
-const ALLOWLIST: Record<string, string> = {
-  "routes/procurement/purchase-order/po-item-cells/pr-source-button.tsx":
-    "popover content opened from the cell, not a cell line (uppercase section eyebrow)",
-  "routes/procurement/purchase-request/pr-item-cells/location-cell.tsx":
-    "popover content opened from the cell (location detail card), not a cell line",
-  "routes/procurement/purchase-request/pr-item-cells/product-cell.tsx":
-    "popover content opened from the cell (product detail card), not a cell line",
-  "routes/procurement/purchase-request/pr-pricelist-dialog.tsx":
-    "Badge chips inside cells — chip size, not cell text",
-  "routes/vendor-management/price-list/pl-period-cell.tsx":
-    "validity status pill — chip size, not cell text",
+/**
+ * บรรทัดที่ยังตั้งขนาดเองได้ — ยกเว้น **ทีละบรรทัด** ไม่ใช่ทั้งไฟล์: `line` คือข้อความส่วนหนึ่ง
+ * ของบรรทัดนั้น (หลังตัดช่องว่างหน้า) บรรทัดใหม่ในไฟล์เดียวกันที่ตั้งขนาดเองจึงยังถูกดัก
+ */
+const ALLOWLIST: Record<string, { line: string; why: string }[]> = {
+  "routes/procurement/purchase-order/po-item-cells/pr-source-button.tsx": [
+    {
+      line: '<p className="text-muted-foreground text-micro-legal px-2 py-1 font-semibold tracking-wider uppercase">',
+      why: "popover section eyebrow (uppercase) opened from the cell, not a cell line",
+    },
+  ],
+  "routes/procurement/purchase-request/pr-item-cells/location-cell.tsx": [
+    {
+      line: '<p className="text-foreground/60 text-micro font-semibold">',
+      why: "popover detail-card heading opened from the cell",
+    },
+    {
+      line: '<div className="text-micro mt-2 flex items-center gap-2 border-t pt-2">',
+      why: "popover detail-card footer opened from the cell",
+    },
+    {
+      line: 'className="text-micro-legal h-4 px-1.5"',
+      why: "badge chip inside the popover",
+    },
+  ],
+  "routes/procurement/purchase-request/pr-item-cells/product-cell.tsx": [
+    {
+      line: '<p className="text-foreground/60 text-micro font-semibold">',
+      why: "popover detail-card heading opened from the cell",
+    },
+    {
+      line: '<div className="text-foreground/60 text-micro mt-2 flex items-center gap-2 border-t pt-2">',
+      why: "popover detail-card footer opened from the cell",
+    },
+  ],
+  "routes/procurement/purchase-request/pr-pricelist-dialog.tsx": [
+    {
+      line: 'className="text-micro-legal gap-1"',
+      why: "Badge chip inside a cell",
+    },
+    { line: 'className="text-micro-legal"', why: "Badge chip inside a cell" },
+  ],
+  "routes/vendor-management/price-list/pl-period-cell.tsx": [
+    {
+      line: '"text-micro shrink-0 rounded-full border px-2 py-0.5 font-medium whitespace-nowrap",',
+      why: "validity status pill — chip size, not cell text",
+    },
+  ],
 };
 
 function tsxFiles(dir: string): string[] {
@@ -74,33 +110,69 @@ export function hasOwnSize(body: string): boolean {
 /** ไฟล์ที่เป็น cell component ทั้งไฟล์ */
 export const CELL_FILE = /(?:-cells\/[^/]+|-cells?)\.tsx$/;
 
-const offenders = (): string[] =>
-  ["routes", "components"]
-    .flatMap(tsxFiles)
-    .filter((file) => !file.endsWith("data-grid/cell-text.tsx"))
-    .filter((file) => {
-      const src = readFileSync(join(ROOT, file), "utf-8");
-      return CELL_FILE.test(file)
-        ? hasOwnSize(src)
-        : columnBodies(src).some(hasOwnSize);
-    });
+/** บรรทัด (ตัดช่องว่างหน้า) ที่ตั้งขนาดเองในส่วนที่สแกน */
+export function sizedLines(file: string, src: string): string[] {
+  const scopes = CELL_FILE.test(file) ? [src] : columnBodies(src);
+  return [
+    ...new Set(
+      scopes.flatMap((body) =>
+        body
+          .split("\n")
+          .filter(hasOwnSize)
+          .map((l) => l.trim()),
+      ),
+    ),
+  ];
+}
+
+const scanned = (): Record<string, string[]> =>
+  Object.fromEntries(
+    ["routes", "components"]
+      .flatMap(tsxFiles)
+      .filter((file) => !file.endsWith("data-grid/cell-text.tsx"))
+      .map((file) => [
+        file,
+        sizedLines(file, readFileSync(join(ROOT, file), "utf-8")),
+      ])
+      .filter(([, lines]) => lines.length > 0),
+  );
+
+const exempt = (file: string, line: string) =>
+  (ALLOWLIST[file] ?? []).some((e) => line.includes(e.line));
 
 describe("table cells use the two role sizes only", () => {
   it("no cell:/header: sets its own font size outside the allowlist", () => {
-    expect(offenders().filter((f) => !(f in ALLOWLIST))).toEqual([]);
+    const found = Object.entries(scanned()).flatMap(([file, lines]) =>
+      lines.filter((l) => !exempt(file, l)).map((l) => `${file}: ${l}`),
+    );
+    expect(found).toEqual([]);
   });
 
   it("allowlist has no stale entries", () => {
-    const live = new Set(offenders());
-    expect(Object.keys(ALLOWLIST).filter((f) => !live.has(f))).toEqual([]);
+    const live = scanned();
+    const stale = Object.entries(ALLOWLIST).flatMap(([file, entries]) =>
+      entries
+        .filter((e) => !(live[file] ?? []).some((l) => l.includes(e.line)))
+        .map((e) => `${file}: ${e.line}`),
+    );
+    expect(stale).toEqual([]);
   });
 
-  it("has no pending-migration entries", () => {
-    expect(
-      Object.entries(ALLOWLIST)
-        .filter(([, why]) => why === "pending migration")
-        .map(([f]) => f),
-    ).toEqual([]);
+  it("every allowlist entry has a real reason", () => {
+    const vague = Object.entries(ALLOWLIST).flatMap(([file, entries]) =>
+      entries
+        .filter(
+          (e) => e.why.trim().length < 10 || e.why === "pending migration",
+        )
+        .map((e) => `${file}: ${e.line}`),
+    );
+    expect(vague).toEqual([]);
+  });
+
+  it("exempts per line, not per file", () => {
+    const file = "routes/procurement/purchase-request/pr-pricelist-dialog.tsx";
+    expect(exempt(file, 'className="text-micro-legal"')).toBe(true);
+    expect(exempt(file, '<span className="text-sm">x</span>')).toBe(false);
   });
 
   it("detects the pattern it guards", () => {
