@@ -4,7 +4,7 @@ import en from "@/messages/en.json";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
-import { DimensionDialog } from "./dimension-page";
+import { DimensionDialog } from "./dimension-dialog";
 import { httpClient } from "@/lib/http-client";
 
 vi.mock("@/hooks/use-bu-code", () => ({ useBuCode: () => "BU" }));
@@ -65,8 +65,8 @@ describe("Dimension with sub-values", () => {
     );
     for (const code of ["A", "B"]) {
       fireEvent.click(screen.getByRole("button", { name: "Add Value" }));
-      const codes = screen.getAllByLabelText(/^Code/);
-      const names = screen.getAllByLabelText(/^Name \(EN\)/);
+      const codes = screen.getAllByLabelText(/^Value$/);
+      const names = screen.getAllByLabelText(/^Label$/);
       fireEvent.change(codes[codes.length - 1], { target: { value: code } });
       fireEvent.change(names[names.length - 1], { target: { value: code } });
     }
@@ -135,7 +135,7 @@ describe("Dimension with sub-values", () => {
       expect.stringMatching(/\/saved-value$/),
     );
   });
-  it("shows list items only for List, and date format only for Date", async () => {
+  it("shows list items only for List, and never a date format field", async () => {
     const onSave = vi.fn();
     render(
       <QueryClientProvider client={new QueryClient()}>
@@ -153,7 +153,7 @@ describe("Dimension with sub-values", () => {
     expect(screen.queryByRole("combobox", { name: /Date Format/ })).toBeNull();
     await userEvent.click(screen.getByRole("combobox", { name: /Data Type/ }));
     await userEvent.click(screen.getByRole("option", { name: "Date" }));
-    expect(screen.getByRole("combobox", { name: /Date Format/ })).toBeDefined();
+    expect(screen.queryByRole("combobox", { name: /Date Format/ })).toBeNull();
     expect(screen.queryByRole("button", { name: "Add Value" })).toBeNull();
     await userEvent.click(screen.getByRole("combobox", { name: /Data Type/ }));
     await userEvent.click(

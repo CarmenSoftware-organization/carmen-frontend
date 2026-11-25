@@ -41,7 +41,6 @@ vi.mock("@/hooks/use-gl-dimensions", () => ({
         id: "date",
         name: "Date dimension",
         data_type: "date",
-        date_format: "DD/MM/YYYY",
       },
       { id: "lookup", name: "Lookup dimension", data_type: "lookup" },
     ],

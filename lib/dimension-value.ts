@@ -6,6 +6,8 @@ export interface DimensionValueLabels {
   no: string;
   /** จัดรูปแบบตัวเลข (ไม่ส่งมา = แสดงตามที่เก็บ) */
   formatNumber?: (value: string) => string;
+  /** จัดรูปแบบวันที่ `YYYY-MM-DD` (ไม่ส่งมา = แสดงตามที่เก็บ) */
+  formatDate?: (ymd: string) => string;
 }
 
 function isEmpty(v: unknown): boolean {
@@ -43,34 +45,15 @@ export function localDateToYmd(d: Date): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
-/** `YYYY-MM-DD` ตาม `date_format` ของ dimension */
-export function formatYmd(
-  ymd: string,
-  dateFormat: DimensionMaster["date_format"] = "YYYY-MM-DD",
-): string {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(ymd);
-  if (!m) return ymd;
-  const [, y, mo, d] = m;
-  if (dateFormat === "DD/MM/YYYY") return `${d}/${mo}/${y}`;
-  if (dateFormat === "DD-MMM-YYYY")
-    return `${d}-${MONTHS[Number(mo) - 1] ?? mo}-${y}`;
-  return `${y}-${mo}-${d}`;
-}
-
 /**
  * ข้อความแสดงค่า dimension ตามชนิด
- * lookup = รหัสค่า (`value_code`) · number = จัดรูปแบบตัวเลข · date = ตาม `date_format`
+ * lookup = รหัสค่า (`value_code`) · number = จัดรูปแบบตัวเลข · date = ตามรูปแบบวันที่ของโปรไฟล์
  * · boolean = Yes/No · text = ตามที่กรอก
  * ชนิดดูจาก master ก่อน (ถ้ามี) — ref เก่าที่ยังเก็บ value id คงแสดง `value_code` เดิม
  */
 export function formatDimensionValue(
   ref: DimensionRef,
-  dimension?: Pick<DimensionMaster, "data_type" | "date_format">,
+  dimension?: Pick<DimensionMaster, "data_type">,
   labels: DimensionValueLabels = { yes: "Yes", no: "No" },
 ): string {
   if (!isEmpty(ref.dimension_value_id) && isEmpty(ref.value))
@@ -86,6 +69,9 @@ export function formatDimensionValue(
     const text = String(value);
     return labels.formatNumber ? labels.formatNumber(text) : text;
   }
-  if (type === "date") return formatYmd(String(value), dimension?.date_format);
+  if (type === "date") {
+    const ymd = String(value);
+    return labels.formatDate ? labels.formatDate(ymd) : ymd;
+  }
   return String(value);
 }

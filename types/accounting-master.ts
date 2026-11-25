@@ -43,6 +43,8 @@ export interface DimensionValueMaster {
   code: string;
   name: string;
   name_local?: string | null;
+  /** อธิบายความหมายของ label (ไม่บังคับ) */
+  description?: string | null;
   effective_from?: string | null;
   effective_to?: string | null;
   is_active: boolean;
@@ -51,11 +53,9 @@ export interface DimensionValueMaster {
 
 export type DimensionDataType =
   "string" | "number" | "date" | "lookup" | "boolean";
-export type DimensionDateFormat = "DD/MM/YYYY" | "YYYY-MM-DD" | "DD-MMM-YYYY";
 
 export interface DimensionMaster {
   data_type?: DimensionDataType;
-  date_format?: DimensionDateFormat;
   id: string;
   code: string;
   name: string;

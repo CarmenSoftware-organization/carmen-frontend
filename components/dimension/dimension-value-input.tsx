@@ -35,7 +35,7 @@ const NUMBER_COMPLETE = /^-?\d+(\.\d{1,5})?$/;
 /**
  * ช่องกรอกค่า dimension ตามชนิดของ **master** (`dimension.data_type`):
  * lookup = Select ค่าใน master · string = Input (สูงสุด 20) · number = ตัวเลข (ติดลบได้ ทศนิยมไม่เกิน 5)
- * · date = DatePicker ตาม `date_format` (เก็บ `YYYY-MM-DD`) · boolean = Select Yes/No
+ * · date = DatePicker ตามรูปแบบวันที่ของโปรไฟล์ (เก็บ `YYYY-MM-DD`) · boolean = Select Yes/No
  *
  * แถวเก่าที่เก็บ `dimension_value_id` ไว้แต่ master ถูกเปลี่ยนชนิดแล้ว: แสดง `value_code` เดิมเป็นค่าปัจจุบัน
  * (placeholder) และคง ref เดิมไว้จนกว่าผู้ใช้จะแก้ — payload builder จึงส่ง value id เดิมกลับตามเดิม
@@ -93,7 +93,6 @@ export function DimensionValueInput({
     return (
       <DateInput
         ymd={stored === null ? "" : String(stored)}
-        format={dimension.date_format ?? "YYYY-MM-DD"}
         placeholder={legacyCode}
         disabled={disabled}
         size={size}
@@ -193,14 +192,12 @@ function BooleanInput({
 
 function DateInput({
   ymd,
-  format,
   placeholder,
   disabled,
   size,
   onPick,
 }: {
   readonly ymd: string;
-  readonly format: string;
   readonly placeholder?: string;
   readonly disabled: boolean;
   readonly size: "xs" | "sm";
@@ -214,7 +211,6 @@ function DateInput({
     <DatePicker
       size={size}
       value={local?.toISOString()}
-      displayFormat={format}
       placeholder={placeholder ?? t("pickDate")}
       disabled={disabled}
       onValueChange={(iso) => onPick(iso ? localDateToYmd(new Date(iso)) : "")}

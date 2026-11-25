@@ -5,23 +5,13 @@ import {
   useGlDimensions,
   useGlDimensionValues,
 } from "@/hooks/use-gl-dimensions";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import {
-  DIMENSION_DATA_TYPES,
-  DIMENSION_DATE_FORMATS,
-} from "./dimension-data-types";
+import { DIMENSION_DATA_TYPES } from "./dimension-data-types";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { Plus, ListTree, Trash2 } from "lucide-react";
+import { Plus, ListTree } from "lucide-react";
 import { toast } from "sonner";
 import { ListToolbar } from "@/components/list-filter/list-toolbar";
 import { SaveViewDialog } from "@/components/list-filter/save-view-dialog";
@@ -33,35 +23,20 @@ import {
 } from "../shared/status-list-filter";
 import { ListPageShell } from "@/components/share/list-page-shell";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { DataGridRowActions } from "@/components/ui/data-grid/data-grid-row-actions";
 import { CellAction } from "@/components/ui/cell-action";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { DeleteDialog } from "@/components/ui/delete-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Field, FieldInput, FieldLabel } from "@/components/ui/field";
-import { StatusSwitch } from "@/components/ui/status-switch";
 import { WarningDialog } from "@/components/ui/warning-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import { useBuCode } from "@/hooks/use-bu-code";
 import { API_ENDPOINTS } from "@/constant/api-endpoints";
 import { ApiError } from "@/lib/api-error";
 import { httpClient } from "@/lib/http-client";
-import type {
-  DimensionMaster,
-  DimensionValueMaster,
-  DimensionDataType,
-  DimensionDateFormat,
-} from "@/types/accounting-master";
+import type { DimensionMaster } from "@/types/accounting-master";
 
 import { saveDimensionRecord } from "./save-dimension-record";
+import { DimensionDialog } from "./dimension-dialog";
 
 export default function DimensionPage() {
   "use no memo";
@@ -88,41 +63,16 @@ export default function DimensionPage() {
   const activeFilter = activeFromFilter(lf.values.filter);
   const canEdit = useAccountingConfigEdit("configuration.dimension");
   const [editing, setEditing] = useState<DimensionMaster | null | undefined>();
-  const [viewingValuesId, setViewingValuesId] = useState<string | null>(null);
-  const viewingValues =
-    dimensions.find((dimension) => dimension.id === viewingValuesId) ?? null;
+  /** เปิดจากปุ่มจำนวนค่าย่อย → dialog focus ที่ตารางค่าย่อย */
+  const [focusValues, setFocusValues] = useState(false);
   const [deleting, setDeleting] = useState<DimensionMaster | null>(null);
   const [warning, setWarning] = useState("");
-
-  const mutateValue = async (
-    request: () => Promise<Response>,
-    success: string,
-  ) => {
-    try {
-      if (!buCode) throw new Error("Select a business unit first");
-      const res = await request();
-      if (!res.ok)
-        throw await ApiError.from(res, "Unable to save dimension value");
-      await queryClient.invalidateQueries({
-        queryKey: ["accounting-master", "dimension-values", buCode],
-      });
-      toast.success(success);
-      return true;
-    } catch (error) {
-      setWarning(
-        error instanceof Error
-          ? error.message
-          : "Unable to save dimension value",
-      );
-      return false;
-    }
-  };
 
   const rows = useMemo(
     () =>
       dimensions
         .filter((item) =>
-          `${item.code} ${item.name} ${item.name_local ?? ""}`
+          `${item.code} ${item.name}`
             .toLowerCase()
             .includes(search.toLowerCase()),
         )
@@ -156,6 +106,7 @@ export default function DimensionPage() {
         cell: ({ row }) => (
           <CellAction
             onClick={() => {
+              setFocusValues(false);
               setEditing(row.original);
             }}
           >
@@ -171,22 +122,12 @@ export default function DimensionPage() {
         cell: ({ row }) => (
           <CellAction
             onClick={() => {
+              setFocusValues(false);
               setEditing(row.original);
             }}
           >
             {row.original.name}
           </CellAction>
-        ),
-      },
-      {
-        accessorKey: "name_local",
-        header: ({ column }) => (
-          <DataGridColumnHeader column={column} title="Dimension Name (TH)" />
-        ),
-        cell: ({ row }) => (
-          <span className="text-muted-foreground">
-            {row.original.name_local || "—"}
-          </span>
         ),
       },
       {
@@ -214,7 +155,10 @@ export default function DimensionPage() {
               size="sm"
               variant="outline"
               className="h-7 text-xs"
-              onClick={() => setViewingValuesId(row.original.id)}
+              onClick={() => {
+                setFocusValues(true);
+                setEditing(row.original);
+              }}
             >
               <ListTree className="mr-1 size-3.5" />
               {(row.original.values ?? []).length} values
@@ -247,13 +191,12 @@ export default function DimensionPage() {
       index: 60,
       code: 100,
       name: 180,
-      name_local: 180,
       data_type: 120,
       values_count: 150,
       is_active: 100,
       actions: 60,
     },
-    secondary: ["name_local", "data_type", "index"],
+    secondary: ["data_type", "index"],
   });
 
   const table = useReactTable({
@@ -280,6 +223,7 @@ export default function DimensionPage() {
         <Button
           size="sm"
           onClick={() => {
+            setFocusValues(false);
             setEditing(null);
           }}
         >
@@ -294,7 +238,6 @@ export default function DimensionPage() {
         labels={{
           code: "Code",
           name: "Dimension Name (EN)",
-          name_local: "Dimension Name (TH)",
           data_type: "Data Type",
           values_count: "List Master Items",
           is_active: "Status",
@@ -315,6 +258,7 @@ export default function DimensionPage() {
       {editing !== undefined && (
         <DimensionDialog
           readOnly={!!editing && !canEdit}
+          focusValues={focusValues}
           key={editing?.id ?? "new"}
           open={editing !== undefined}
           item={editing ?? null}
@@ -332,56 +276,6 @@ export default function DimensionPage() {
               current,
             );
             return { ...value, ...saved };
-          }}
-        />
-      )}
-      {viewingValues && (
-        <DimensionValuesDialog
-          open={!!viewingValues}
-          dimension={viewingValues}
-          onOpenChange={(open) => !open && setViewingValuesId(null)}
-          onAddValue={async (val) => {
-            const currentVals = viewingValues.values ?? [];
-            if (
-              currentVals.some(
-                (v) => v.code.toUpperCase() === val.code.toUpperCase(),
-              )
-            ) {
-              toast.error(`Value ${val.code} already exists.`);
-              return false;
-            }
-            return mutateValue(
-              () =>
-                httpClient.post(API_ENDPOINTS.DIMENSION_VALUES(buCode!), {
-                  dimension_id: viewingValues.id,
-                  ...val,
-                }),
-              "Dimension value added",
-            );
-          }}
-          onUpdateValue={(val) => {
-            return mutateValue(
-              () =>
-                httpClient.put(
-                  `${API_ENDPOINTS.DIMENSION_VALUES(buCode!)}/${val.id}`,
-                  {
-                    name: val.name,
-                    name_local: val.name_local,
-                    is_active: val.is_active,
-                    doc_version: val.doc_version,
-                  },
-                ),
-              "Dimension value updated",
-            );
-          }}
-          onDeleteValue={(id) => {
-            return mutateValue(
-              () =>
-                httpClient.delete(
-                  `${API_ENDPOINTS.DIMENSION_VALUES(buCode!)}/${id}`,
-                ),
-              "Dimension value removed",
-            );
           }}
         />
       )}
@@ -431,791 +325,4 @@ export default function DimensionPage() {
       />
     </ListPageShell>
   );
-}
-
-export function DimensionDialog({
-  open,
-  readOnly = false,
-  item,
-  onOpenChange,
-  onSave,
-}: {
-  open: boolean;
-  readOnly?: boolean;
-  item: DimensionMaster | null;
-  onOpenChange: (open: boolean) => void;
-  onSave: (
-    value: Omit<DimensionMaster, "id" | "doc_version" | "values">,
-    current: DimensionMaster | null,
-  ) => Promise<DimensionMaster>;
-}) {
-  const buCode = useBuCode();
-  const queryClient = useQueryClient();
-  const [savedItem, setSavedItem] = useState(item);
-  const [subValues, setSubValues] = useState<DimensionValueDraft[]>(() =>
-    (item?.values ?? []).map((value) => ({
-      ...value,
-      key: value.id,
-      dirty: false,
-    })),
-  );
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
-  const initial = getDimensionFormDefaults(item);
-  const [code, setCode] = useState(initial.code);
-  const [name, setName] = useState(initial.name);
-  const [nameLocal, setNameLocal] = useState(initial.name_local);
-  const [active, setActive] = useState(initial.is_active);
-  const [dataType, setDataType] = useState<DimensionDataType>(
-    initial.data_type,
-  );
-  const [dateFormat, setDateFormat] = useState<DimensionDateFormat>(
-    initial.date_format,
-  );
-
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        if (!saving) onOpenChange(next);
-      }}
-    >
-      <DialogContent className="@container max-h-[85dvh] overflow-y-auto sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>
-            {readOnly
-              ? "Dimension Detail"
-              : item
-                ? "Edit Dimension"
-                : "Add Dimension"}
-          </DialogTitle>
-          <DialogDescription>
-            Defines a category of analytical tags (e.g., market segment,
-            project).
-          </DialogDescription>
-        </DialogHeader>
-        <fieldset
-          disabled={readOnly || saving}
-          className="grid gap-4 py-2 @md:grid-cols-2"
-        >
-          <Field>
-            <FieldLabel htmlFor="dim-code" required>
-              Dimension Code (lowercase/underscore)
-            </FieldLabel>
-            <FieldInput
-              id="dim-code"
-              value={code}
-              disabled={!!savedItem}
-              maxLength={20}
-              placeholder="e.g. market, project, event"
-              onChange={(e) =>
-                setCode(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))
-              }
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="dim-name" required>
-              Dimension Name (EN)
-            </FieldLabel>
-            <FieldInput
-              id="dim-name"
-              value={name}
-              maxLength={100}
-              placeholder="e.g. Market Segment"
-              onChange={(e) => setName(e.target.value)}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="dim-name-local">
-              Dimension Name (TH)
-            </FieldLabel>
-            <FieldInput
-              id="dim-name-local"
-              value={nameLocal}
-              maxLength={100}
-              placeholder="e.g. กลุ่มตลาด"
-              onChange={(e) => setNameLocal(e.target.value)}
-            />
-          </Field>
-          <DimensionTypeFields
-            dataType={dataType}
-            dateFormat={dateFormat}
-            disabled={readOnly || saving}
-            onDataTypeChange={setDataType}
-            onDateFormatChange={setDateFormat}
-          />
-          <StatusSwitch
-            id="dim-active"
-            checked={active}
-            onCheckedChange={setActive}
-          />
-        </fieldset>
-        {dataType === "lookup" && (
-          <DimensionSubValues
-            readOnly={readOnly || saving}
-            savedId={savedItem?.id}
-            subValues={subValues}
-            setSubValues={setSubValues}
-          />
-        )}
-        {saveError && (
-          <p role="alert" className="text-destructive text-xs">
-            {saveError}
-          </p>
-        )}
-        <DialogFooter>
-          <Button
-            variant="outline"
-            disabled={saving}
-            onClick={() => onOpenChange(false)}
-          >
-            {readOnly ? "Close" : "Cancel"}
-          </Button>
-          {!readOnly && (
-            <Button
-              disabled={saving || !code.trim() || !name.trim()}
-              onClick={async () => {
-                setSaving(true);
-                setSaveError("");
-                try {
-                  await saveDimensionWithValues({
-                    buCode,
-                    values: {
-                      code: code.trim(),
-                      name: name.trim(),
-                      name_local: nameLocal.trim() || null,
-                      is_active: active,
-                      data_type: dataType,
-                      ...(dataType === "date"
-                        ? { date_format: dateFormat }
-                        : {}),
-                    },
-                    savedItem,
-                    subValues:
-                      dataType === "lookup"
-                        ? subValues
-                        : subValues.filter((value) => value.deleted),
-                    onSave,
-                    setSavedItem,
-                    setSubValues,
-                  });
-                  toast.success("Dimension and sub-values saved");
-                  onOpenChange(false);
-                } catch (error) {
-                  setSaveError(
-                    error instanceof Error
-                      ? error.message
-                      : "Unable to save dimension. Retry Save.",
-                  );
-                } finally {
-                  await Promise.all([
-                    queryClient.invalidateQueries({
-                      queryKey: ["accounting-master", "dimensions", buCode],
-                    }),
-                    queryClient.invalidateQueries({
-                      queryKey: [
-                        "accounting-master",
-                        "dimension-values",
-                        buCode,
-                      ],
-                    }),
-                  ]);
-                  setSaving(false);
-                }
-              }}
-            >
-              {saving ? "Saving…" : savedItem ? "Save" : "Create"}
-            </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function DimensionValuesDialog({
-  open,
-  dimension,
-  onOpenChange,
-  onAddValue,
-  onUpdateValue,
-  onDeleteValue,
-}: {
-  open: boolean;
-  dimension: DimensionMaster;
-  onOpenChange: (open: boolean) => void;
-  onAddValue: (
-    val: Omit<DimensionValueMaster, "id" | "dimension_id" | "doc_version">,
-  ) => Promise<boolean>;
-  onUpdateValue: (val: DimensionValueMaster) => Promise<boolean>;
-  onDeleteValue: (id: string) => Promise<boolean>;
-}) {
-  const canEdit = useAccountingConfigEdit("configuration.dimension");
-  const [valCode, setValCode] = useState("");
-  const [valName, setValName] = useState("");
-  const [valNameLocal, setValNameLocal] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [deletingValue, setDeletingValue] =
-    useState<DimensionValueMaster | null>(null);
-  const [editCode, setEditCode] = useState("");
-  const [editName, setEditName] = useState("");
-  const [editNameLocal, setEditNameLocal] = useState("");
-  const values = dimension.values ?? [];
-
-  const startEdit = (v: DimensionValueMaster) => {
-    setEditingId(v.id);
-    setEditCode(v.code);
-    setEditName(v.name);
-    setEditNameLocal(v.name_local ?? "");
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-  };
-
-  const saveEdit = async (original: DimensionValueMaster) => {
-    if (!editCode.trim() || !editName.trim()) {
-      toast.error("Code and Name (EN) are required");
-      return;
-    }
-    const saved = await onUpdateValue({
-      ...original,
-      code: editCode.trim().toUpperCase(),
-      name: editName.trim(),
-      name_local: editNameLocal.trim() || null,
-    });
-    if (saved) setEditingId(null);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="@container max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            List Master Items for {dimension.name} ({dimension.code})
-          </DialogTitle>
-          <DialogDescription>
-            Manage allowed values for this dimension.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
-          {/* Add form */}
-          {canEdit && (
-            <div className="bg-muted/30 grid grid-cols-1 items-end gap-2 rounded-md p-3 @xl:grid-cols-4">
-              <Field>
-                <FieldLabel className="text-xs" required>
-                  Code
-                </FieldLabel>
-                <FieldInput
-                  value={valCode}
-                  placeholder="e.g. CORP"
-                  className="h-8 text-xs"
-                  onChange={(e) => setValCode(e.target.value.toUpperCase())}
-                />
-              </Field>
-              <Field>
-                <FieldLabel className="text-xs" required>
-                  Name (EN)
-                </FieldLabel>
-                <FieldInput
-                  value={valName}
-                  placeholder="e.g. Corporate"
-                  className="h-8 text-xs"
-                  onChange={(e) => setValName(e.target.value)}
-                />
-              </Field>
-              <Field>
-                <FieldLabel className="text-xs">Name (TH)</FieldLabel>
-                <FieldInput
-                  value={valNameLocal}
-                  placeholder="e.g. องค์กร"
-                  className="h-8 text-xs"
-                  onChange={(e) => setValNameLocal(e.target.value)}
-                />
-              </Field>
-              <Button
-                size="sm"
-                className="h-8"
-                disabled={!valCode.trim() || !valName.trim()}
-                onClick={async () => {
-                  const saved = await onAddValue({
-                    code: valCode.trim().toUpperCase(),
-                    name: valName.trim(),
-                    name_local: valNameLocal.trim() || null,
-                    is_active: true,
-                  });
-                  if (saved) {
-                    setValCode("");
-                    setValName("");
-                    setValNameLocal("");
-                  }
-                }}
-              >
-                <Plus className="mr-1 size-3.5" /> Add Value
-              </Button>
-            </div>
-          )}
-
-          {/* Table */}
-          <div className="max-h-60 overflow-hidden overflow-y-auto rounded-md border">
-            <table className="block w-full text-xs @xl:table">
-              <thead className="bg-muted/50 sr-only border-b @xl:not-sr-only @xl:table-header-group">
-                <tr>
-                  <th className="p-2 text-left">Code</th>
-                  <th className="p-2 text-left">Name (EN)</th>
-                  <th className="p-2 text-left">Name (TH)</th>
-                  <th className="p-2 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="block divide-y @xl:table-row-group">
-                {values.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="text-muted-foreground p-4 text-center"
-                    >
-                      No list master items defined yet.
-                    </td>
-                  </tr>
-                ) : (
-                  values.map((v) => {
-                    const isEditing = editingId === v.id;
-                    return (
-                      <tr
-                        key={v.id}
-                        className={`block space-y-2 p-3 @xl:table-row @xl:space-y-0 @xl:p-0 ${isEditing ? "bg-muted/40" : ""}`}
-                      >
-                        {isEditing ? (
-                          <>
-                            <td className="block p-2 @xl:table-cell">
-                              <FieldInput
-                                value={editCode}
-                                disabled
-                                className="h-7 font-mono text-xs font-medium"
-                                onChange={(e) =>
-                                  setEditCode(e.target.value.toUpperCase())
-                                }
-                              />
-                            </td>
-                            <td className="block p-2 @xl:table-cell">
-                              <FieldInput
-                                value={editName}
-                                className="h-7 text-xs"
-                                onChange={(e) => setEditName(e.target.value)}
-                              />
-                            </td>
-                            <td className="block p-2 @xl:table-cell">
-                              <FieldInput
-                                value={editNameLocal}
-                                placeholder="TH (optional)"
-                                className="h-7 text-xs"
-                                onChange={(e) =>
-                                  setEditNameLocal(e.target.value)
-                                }
-                              />
-                            </td>
-
-                            <td className="block p-2 text-right @xl:table-cell">
-                              <div className="flex items-center justify-end gap-1">
-                                <Button
-                                  size="sm"
-                                  className="h-8 px-2 text-xs"
-                                  onClick={() => void saveEdit(v)}
-                                >
-                                  Save
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-8 px-2 text-xs"
-                                  onClick={cancelEdit}
-                                >
-                                  Cancel
-                                </Button>
-                              </div>
-                            </td>
-                          </>
-                        ) : (
-                          <>
-                            <td
-                              data-label="Code"
-                              className="before:text-muted-foreground block p-2 font-mono font-medium before:mr-2 before:content-[attr(data-label)] @xl:table-cell @xl:before:hidden"
-                            >
-                              {canEdit ? (
-                                <CellAction onClick={() => startEdit(v)}>
-                                  {v.code}
-                                </CellAction>
-                              ) : (
-                                v.code
-                              )}
-                            </td>
-                            <td className="block p-2 @xl:table-cell">
-                              {canEdit ? (
-                                <CellAction onClick={() => startEdit(v)}>
-                                  {v.name}
-                                </CellAction>
-                              ) : (
-                                v.name
-                              )}
-                            </td>
-                            <td
-                              data-label="Name (TH)"
-                              className="text-muted-foreground block p-2 before:mr-2 before:content-[attr(data-label)] @xl:table-cell @xl:before:hidden"
-                            >
-                              {v.name_local || "—"}
-                            </td>
-
-                            <td className="block p-2 text-right @xl:table-cell">
-                              <DataGridRowActions
-                                activity={{ id: v.id, label: v.code }}
-                                onDelete={
-                                  canEdit
-                                    ? () => setDeletingValue(v)
-                                    : undefined
-                                }
-                              />
-                            </td>
-                          </>
-                        )}
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button onClick={() => onOpenChange(false)}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
-      <DeleteDialog
-        open={!!deletingValue}
-        onOpenChange={(open) => !open && setDeletingValue(null)}
-        title="Delete dimension value?"
-        description={
-          deletingValue
-            ? `Delete ${deletingValue.code} — ${deletingValue.name}?`
-            : undefined
-        }
-        onConfirm={async () => {
-          if (deletingValue && (await onDeleteValue(deletingValue.id)))
-            setDeletingValue(null);
-        }}
-      />
-    </Dialog>
-  );
-}
-
-interface DimensionValueDraft extends DimensionValueMaster {
-  key: string;
-  dirty: boolean;
-  deleted?: boolean;
-}
-function DimensionSubValues({
-  readOnly,
-  savedId,
-  subValues,
-  setSubValues,
-}: {
-  readOnly: boolean;
-  savedId?: string;
-  subValues: DimensionValueDraft[];
-  setSubValues: React.Dispatch<React.SetStateAction<DimensionValueDraft[]>>;
-}) {
-  const [selected, setSelected] = useState<string[]>([]);
-  const selectedKeys = new Set(selected);
-  const visibleValues = subValues.filter((value) => !value.deleted);
-  return (
-    <fieldset disabled={readOnly} className="space-y-3 border-t pt-4">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold">List Master Items</h3>
-        {!readOnly && (
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setSubValues((current) => [
-                  ...current,
-                  {
-                    key: crypto.randomUUID(),
-                    id: "",
-                    dimension_id: savedId ?? "",
-                    doc_version: 0,
-                    code: "",
-                    name: "",
-                    name_local: "",
-                    is_active: true,
-                    dirty: true,
-                  },
-                ])
-              }
-            >
-              <Plus className="size-4" /> Add Value
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              disabled={!selected.length}
-              onClick={() => {
-                setSubValues((current) =>
-                  current.flatMap((row) =>
-                    !selectedKeys.has(row.key)
-                      ? [row]
-                      : row.id
-                        ? [{ ...row, deleted: true }]
-                        : [],
-                  ),
-                );
-                setSelected([]);
-              }}
-            >
-              <Trash2 className="size-4" /> Delete
-              {selected.length ? ` (${selected.length})` : ""}
-            </Button>
-          </div>
-        )}
-      </div>
-      <p className="text-muted-foreground text-xs">
-        Manage the values available for this dimension in Journal Vouchers.
-      </p>
-      {subValues.some((value) => value.deleted) && (
-        <p className="text-muted-foreground text-xs">
-          Selected items will be deleted when you save.
-        </p>
-      )}
-      {!visibleValues.length && (
-        <p className="text-muted-foreground text-xs">
-          No list master items defined yet.
-        </p>
-      )}
-      {visibleValues.map((value, index) => {
-        const update = (patch: Partial<DimensionValueMaster>) =>
-          setSubValues((current) =>
-            current.map((row) =>
-              row.key === value.key ? { ...row, ...patch, dirty: true } : row,
-            ),
-          );
-        return (
-          <div
-            key={value.key}
-            className={`grid gap-3 border-b pb-4 ${readOnly ? "@xl:grid-cols-3" : "@xl:grid-cols-[auto_1fr_1fr_1fr]"}`}
-          >
-            {!readOnly && (
-              <Checkbox
-                className="mb-2 self-end"
-                aria-label={`Select sub-value ${index + 1}`}
-                checked={selectedKeys.has(value.key)}
-                onCheckedChange={(checked) =>
-                  setSelected((current) =>
-                    checked === true
-                      ? [...current, value.key]
-                      : current.filter((key) => key !== value.key),
-                  )
-                }
-              />
-            )}
-            <Field>
-              <FieldLabel htmlFor={`sub-code-${value.key}`} required>
-                Code
-              </FieldLabel>
-              <FieldInput
-                id={`sub-code-${value.key}`}
-                value={value.code}
-                disabled={!!value.id}
-                maxLength={10}
-                onChange={(e) => update({ code: e.target.value.toUpperCase() })}
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor={`sub-name-${value.key}`} required>
-                Name (EN)
-              </FieldLabel>
-              <FieldInput
-                id={`sub-name-${value.key}`}
-                value={value.name}
-                maxLength={50}
-                onChange={(e) => update({ name: e.target.value })}
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor={`sub-local-${value.key}`}>
-                Name (TH)
-              </FieldLabel>
-              <FieldInput
-                id={`sub-local-${value.key}`}
-                value={value.name_local ?? ""}
-                maxLength={100}
-                onChange={(e) => update({ name_local: e.target.value })}
-              />
-            </Field>
-          </div>
-        );
-      })}
-    </fieldset>
-  );
-}
-
-async function saveDimensionWithValues({
-  buCode,
-  values,
-  savedItem,
-  subValues,
-  onSave,
-  setSavedItem,
-  setSubValues,
-}: {
-  buCode: string | undefined;
-  values: Omit<DimensionMaster, "id" | "doc_version" | "values">;
-  savedItem: DimensionMaster | null;
-  subValues: DimensionValueDraft[];
-  onSave: (
-    value: Omit<DimensionMaster, "id" | "doc_version" | "values">,
-    current: DimensionMaster | null,
-  ) => Promise<DimensionMaster>;
-  setSavedItem: (value: DimensionMaster) => void;
-  setSubValues: React.Dispatch<React.SetStateAction<DimensionValueDraft[]>>;
-}) {
-  const visibleValues = subValues.filter((value) => !value.deleted);
-  const codes = subValues.map((value) => value.code.trim().toUpperCase());
-  if (visibleValues.some((value) => !value.code.trim() || !value.name.trim())) {
-    throw new Error("Sub-value Code and Name (EN) are required.");
-  }
-  if (new Set(codes).size !== codes.length) {
-    throw new Error("Sub-value codes must be unique.");
-  }
-  if (!buCode) {
-    throw new Error("Select a business unit first");
-  }
-  const master = await onSave(values, savedItem);
-  setSavedItem(master);
-  const results = await Promise.allSettled(
-    subValues
-      .filter((row) => row.dirty || row.deleted)
-      .map(async (value) => {
-        if (value.deleted) {
-          const response = await httpClient.delete(
-            `${API_ENDPOINTS.DIMENSION_VALUES(buCode)}/${value.id}`,
-          );
-          if (!response.ok)
-            throw await ApiError.from(
-              response,
-              "Unable to delete dimension value",
-            );
-          const body = await response.json().catch(() => null);
-          if (body?.success === false)
-            throw new Error(body.message || "Unable to delete dimension value");
-          setSubValues((current) =>
-            current.filter((row) => row.key !== value.key),
-          );
-          return;
-        }
-        const changes = {
-          name: value.name.trim(),
-          name_local: value.name_local?.trim() || null,
-          is_active: value.is_active,
-        };
-        const saved = await saveDimensionRecord(
-          API_ENDPOINTS.DIMENSION_VALUES(buCode),
-          value.id
-            ? changes
-            : {
-                ...changes,
-                code: value.code.trim().toUpperCase(),
-                dimension_id: master.id,
-              },
-          value.id ? value : null,
-        );
-        setSubValues((current) =>
-          current.map((row) =>
-            row.key === value.key
-              ? { ...row, ...saved, dimension_id: master.id, dirty: false }
-              : row,
-          ),
-        );
-      }),
-  );
-  const failed = results.find((result) => result.status === "rejected");
-  if (failed?.status === "rejected") throw failed.reason;
-}
-
-function DimensionTypeFields({
-  dataType,
-  dateFormat,
-  disabled,
-  onDataTypeChange,
-  onDateFormatChange,
-}: {
-  dataType: DimensionDataType;
-  dateFormat: DimensionDateFormat;
-  disabled: boolean;
-  onDataTypeChange: (value: DimensionDataType) => void;
-  onDateFormatChange: (value: DimensionDateFormat) => void;
-}) {
-  return (
-    <>
-      <Field>
-        <FieldLabel htmlFor="dim-data-type" required>
-          Data Type
-        </FieldLabel>
-        <Select
-          value={dataType}
-          disabled={disabled}
-          onValueChange={(value) =>
-            onDataTypeChange(value as DimensionDataType)
-          }
-        >
-          <SelectTrigger id="dim-data-type">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {DIMENSION_DATA_TYPES.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
-      {dataType === "date" && (
-        <Field>
-          <FieldLabel htmlFor="dim-date-format" required>
-            Date Format
-          </FieldLabel>
-          <Select
-            value={dateFormat}
-            disabled={disabled}
-            onValueChange={(value) =>
-              onDateFormatChange(value as DimensionDateFormat)
-            }
-          >
-            <SelectTrigger id="dim-date-format">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {DIMENSION_DATE_FORMATS.map((format) => (
-                <SelectItem key={format} value={format}>
-                  {format}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-      )}
-    </>
-  );
-}
-
-function getDimensionFormDefaults(item: DimensionMaster | null) {
-  return {
-    code: item?.code ?? "",
-    name: item?.name ?? "",
-    name_local: item?.name_local ?? "",
-    is_active: item?.is_active ?? true,
-    data_type: item ? (item.data_type ?? "lookup") : "string",
-    date_format: item?.date_format ?? "DD/MM/YYYY",
-  } as const;
 }

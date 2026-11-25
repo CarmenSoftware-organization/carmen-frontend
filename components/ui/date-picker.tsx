@@ -25,7 +25,7 @@ interface DatePickerProps {
   readonly hideClear?: boolean;
   readonly invalid?: boolean;
   readonly readOnly?: boolean;
-  /** ใช้รูปแบบวันที่นี้แทนรูปแบบของโปรไฟล์ (เช่น `date_format` ของ dimension) */
+  /** ใช้รูปแบบวันที่นี้แทนรูปแบบของโปรไฟล์ */
   readonly displayFormat?: string;
 }
 
