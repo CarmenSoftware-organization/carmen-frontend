@@ -463,8 +463,10 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* Apple reading pace: 17px body + faintly tight tracking */
-    font-size: 1.0625rem;
+    /* 12px = ขั้น text-xs ของ ladder: ข้อความที่ไม่ใส่ class ขนาดคือ "เนื้อหา" และต้องเท่ากับ
+       ค่าในฟิลด์/เซลล์ตาราง (เดิม 17px ทำให้ description ใหญ่กว่าหัวกลุ่ม) — ตารางหน้าที่อยู่ใน
+       docs/DESIGN.md §typography.roles · tracking เป็น em เพื่อขยายตาม font scale */
+    font-size: 0.75rem;
     letter-spacing: -0.01em;
   }
 

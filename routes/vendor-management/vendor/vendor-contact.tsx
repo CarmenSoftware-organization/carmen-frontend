@@ -163,7 +163,7 @@ function ContactCard({
       <div className="flex items-start gap-3">
         {/* Avatar */}
         <div className="relative shrink-0">
-          <div className="text-primary-foreground bg-primary flex size-9 items-center justify-center rounded-lg font-serif text-base font-semibold">
+          <div className="text-primary-foreground bg-primary flex size-9 items-center justify-center rounded-lg font-sans text-base font-semibold">
             {initial}
           </div>
           {isPrimary && (
