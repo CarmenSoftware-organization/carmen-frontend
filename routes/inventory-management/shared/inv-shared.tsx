@@ -143,7 +143,7 @@ export function StripMetric({
   return (
     <div className="text-muted-foreground flex items-baseline gap-1.5 text-xs">
       <span>{label}</span>
-      <span className="text-foreground text-sm font-semibold tabular-nums">
+      <span className="text-foreground text-xs font-semibold tabular-nums">
         {done.toLocaleString()}
       </span>
       <span className="tabular-nums">

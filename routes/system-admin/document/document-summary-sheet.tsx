@@ -51,7 +51,7 @@ export default function DocumentSummarySheet({
 
         <div className="space-y-4 px-4 pb-6">
           <p className="flex items-baseline gap-2">
-            <span className="text-sm font-semibold tabular-nums">
+            <span className="text-xs font-semibold tabular-nums">
               {formatFileSize(summary.total_size)}
             </span>
             <span className="text-muted-foreground text-xs tabular-nums">

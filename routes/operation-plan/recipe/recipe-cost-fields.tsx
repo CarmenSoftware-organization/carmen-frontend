@@ -222,7 +222,7 @@ export function RecipeCostFields({
             <div className="mt-4 space-y-1.5 border-t pt-3">
               <div className="flex items-baseline justify-between gap-4">
                 <EyeBrow>{t("totalCost")}</EyeBrow>
-                <span className="text-foreground text-sm font-semibold tabular-nums">
+                <span className="text-foreground text-xs font-semibold tabular-nums">
                   ฿{formatCurrency(batchTotal)}
                 </span>
               </div>

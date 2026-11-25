@@ -115,7 +115,7 @@ export default function RecipeCard({
           <dt className="text-muted-foreground leading-tight">
             {t("sellingPrice")}
           </dt>
-          <dd className="text-sm font-semibold tabular-nums">
+          <dd className="text-xs font-semibold tabular-nums">
             {item.selling_price ? formatAmount(item.selling_price) : "—"}
           </dd>
         </div>

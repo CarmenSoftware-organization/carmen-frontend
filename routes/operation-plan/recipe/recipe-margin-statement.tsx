@@ -98,7 +98,7 @@ export function RecipeMarginStatement({
         <span className="text-foreground text-sm font-semibold">
           {t("sellingPrice")}
         </span>
-        <span className="text-foreground text-right text-sm font-semibold tabular-nums">
+        <span className="text-foreground text-right text-xs font-semibold tabular-nums">
           ฿{formatCurrency(sellingPrice)}
         </span>
         <span className="text-muted-foreground text-right text-xs tabular-nums">
@@ -154,7 +154,7 @@ export function RecipeMarginStatement({
         </span>
         <span
           className={cn(
-            "text-right text-sm font-semibold tabular-nums",
+            "text-right text-xs font-semibold tabular-nums",
             margin < 0 ? "text-destructive" : "text-foreground",
           )}
         >

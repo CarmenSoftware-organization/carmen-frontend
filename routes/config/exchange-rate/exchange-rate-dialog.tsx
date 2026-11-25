@@ -222,7 +222,7 @@ function EditForm({
             </div>
           </div>
           <div className="text-right">
-            <p className="text-sm font-bold tabular-nums">
+            <p className="text-xs font-bold tabular-nums">
               {hasChange && isIncrease && "+"}
               {formatExchangeRate(delta)}
             </p>

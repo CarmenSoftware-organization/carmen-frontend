@@ -75,7 +75,7 @@ function InventoryStat({
       )}
       <p
         className={cn(
-          "text-sm font-semibold tabular-nums",
+          "text-xs font-semibold tabular-nums",
           alert && "text-destructive",
         )}
       >
