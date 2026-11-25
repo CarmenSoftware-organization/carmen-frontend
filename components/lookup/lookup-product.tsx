@@ -22,6 +22,11 @@ interface LookupProductProps {
    * สินค้าที่อยู่หลังหน้าแรกหรือถูกปิดใช้งานไปแล้วจะหาชื่อไม่เจอ แล้วขึ้น placeholder
    */
   readonly defaultLabel?: string;
+  /**
+   * true = เฉพาะสินค้าที่ติ๊ก "ใช้ทำสูตรได้" (`tb_product.is_used_in_recipe`) — กรองที่ server
+   * ค่าที่เลือกอยู่ดึงตาม id จึงยังขึ้นชื่อแม้สินค้านั้นถูกเอาติ๊กออกทีหลัง
+   */
+  readonly usedInRecipe?: boolean;
 }
 
 /**
@@ -29,6 +34,7 @@ interface LookupProductProps {
  *
  * ดึงข้อมูลผ่าน Lookup API (`useLookupResource`) พร้อม server-side search และ infinite scroll (perpage 30)
  * endpoint กรองสินค้า active ให้เอง รองรับ `excludeIds` กัน duplicate ใน item list
+ * `usedInRecipe` = เฉพาะสินค้าที่ใช้ทำสูตรได้ (ช่องวัตถุดิบของสูตร)
  * onValueChange ส่ง id และแถว lookup (`LookupItem` — id/code/name/description/status เท่านั้น)
  *
  * @param value - product id ที่เลือกอยู่
@@ -53,6 +59,7 @@ export function LookupProduct({
   defaultOpen,
   nextFocusRef,
   defaultLabel,
+  usedInRecipe,
 }: LookupProductProps) {
   const tl = useTranslations("lookup");
   const tfl = useTranslations("field");
@@ -74,6 +81,7 @@ export function LookupProduct({
     enabled: hasOpened || !!defaultOpen,
     selectedIds: value ? [value] : [],
     filter: excludedSet ? (p) => !excludedSet.has(p.id) : undefined,
+    serverFilter: usedInRecipe ? { is_used_in_recipe: "true" } : undefined,
   });
 
   return (

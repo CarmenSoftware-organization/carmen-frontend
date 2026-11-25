@@ -670,6 +670,7 @@ function IngredientRow({
             <LookupProduct
               value={productId}
               defaultLabel={productLabel || undefined}
+              usedInRecipe
               size="sm"
               // ปุ่ม combobox กว้างตามชื่อสินค้า (shrink-0) — ชื่อยาวล้นทับช่องหน่วย
               className={cn("w-full min-w-0", CELL_INPUT)}
