@@ -7516,12 +7516,14 @@
         "po-created-series": "Purchase Order created (series)",
         "po-pending": "Purchase Order pending",
         "po-rejected": "Rejected POs",
+        "po-rejected-count": "Purchase Order rejected (count)",
         "po-sent-back": "Sent Back POs",
         "pr-by-status": "Purchase Request by status",
         "pr-count": "Purchase Request count",
         "pr-created-series": "Purchase Request created (series)",
         "pr-pending": "Purchase Request pending",
         "pr-rejected": "Rejected PRs",
+        "pr-rejected-count": "Purchase Request rejected (count)",
         "pr-sent-back": "Sent Back PRs",
         "pr-table": "Purchase Request table",
         "sr-by-status": "Store Requisition by status",
@@ -7530,6 +7532,7 @@
         "sr-issued": "Store Requisition issued",
         "sr-pending": "Store Requisition pending",
         "sr-rejected": "Rejected SRs",
+        "sr-rejected-count": "Store Requisition rejected (count)",
         "sr-sent-back": "Sent Back SRs"
       },
       "equipment": {
