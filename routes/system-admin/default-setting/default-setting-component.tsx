@@ -11,6 +11,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useDiscardConfirm } from "@/hooks/use-discard-confirm";
 import { useNavigationGuard } from "@/hooks/use-navigation-guard";
 import { isDevAppEnv } from "@/lib/runtime-config";
+import { cn } from "@/lib/utils";
 import {
   useBusinessUnit,
   useUpdateBusinessUnit,
@@ -37,6 +38,8 @@ import {
 import {
   groupConfigForRender,
   resolveConfigOptions,
+  type ConfigRenderSection,
+  type ConfigSectionEntry,
 } from "../company-profile/company-profile-config-registry";
 import {
   useReportFormTemplates,
@@ -95,6 +98,78 @@ export function buildPrintFormOptions({
   return [systemDefault, { value: current, label }, ...base];
 }
 
+/**
+ * หมวดของ registry → การ์ดบนหน้า (หมวดที่ไม่อยู่ในนี้ = การ์ดของตัวเอง)
+ * PR/SI/PO มีหมวดละค่าเดียว รวมเป็นการ์ด "จัดซื้อและคลัง" ใช้รหัสเอกสารเป็นป้ายแยก ·
+ * AP/AR ทุกค่าเป็นคำถามเดียวกัน (ผู้สร้างอนุมัติเองได้ไหม) รวมเป็นการ์ดเดียว ถามครั้งเดียวที่หัวการ์ด
+ */
+const DOC_CARD_OF_SECTION: Readonly<
+  Record<
+    string,
+    { id: string; titleKey: string; descKey: string; showCode: boolean }
+  >
+> = {
+  pr: {
+    id: "purchasing",
+    titleKey: "sections.purchasing",
+    descKey: "sections.purchasingDesc",
+    showCode: true,
+  },
+  si: {
+    id: "purchasing",
+    titleKey: "sections.purchasing",
+    descKey: "sections.purchasingDesc",
+    showCode: true,
+  },
+  po: {
+    id: "purchasing",
+    titleKey: "sections.purchasing",
+    descKey: "sections.purchasingDesc",
+    showCode: true,
+  },
+  ap: {
+    id: "selfApprove",
+    titleKey: "sections.selfApprove",
+    descKey: "sections.selfApproveDesc",
+    showCode: false,
+  },
+  ar: {
+    id: "selfApprove",
+    titleKey: "sections.selfApprove",
+    descKey: "sections.selfApproveDesc",
+    showCode: false,
+  },
+};
+
+interface DocCard {
+  id: string;
+  titleKey: string;
+  descKey: string;
+  /** true = ค่าในการ์ดมาจากหลายเอกสาร ต้องมีป้ายรหัสบอก */
+  showCode: boolean;
+  entries: { entry: ConfigSectionEntry; section: ConfigRenderSection }[];
+}
+
+/** จัดหมวดเอกสารของ registry เป็นการ์ดตามเรื่อง — ลำดับการ์ดตามหมวดแรกที่เจอใน registry */
+function groupDocSections(sections: readonly ConfigRenderSection[]): DocCard[] {
+  const cards = new Map<string, DocCard>();
+  for (const section of sections) {
+    const meta = DOC_CARD_OF_SECTION[section.id] ?? {
+      id: section.id,
+      titleKey: section.titleKey,
+      descKey: section.descKey,
+      showCode: false,
+    };
+    let card = cards.get(meta.id);
+    if (!card) {
+      card = { ...meta, entries: [] };
+      cards.set(meta.id, card);
+    }
+    card.entries.push(...section.entries.map((entry) => ({ entry, section })));
+  }
+  return [...cards.values()];
+}
+
 export default function DefaultSettingComponent() {
   const tm = useTranslations("modules");
   const t = useTranslations("defaultSetting");
@@ -124,6 +199,8 @@ export default function DefaultSettingComponent() {
   const docSections = configGroups.sections.filter(
     (s) => s.id !== "printForm" && s.id !== "general",
   );
+  // หมวดเอกสาร → การ์ดตามเรื่อง (ดู DOC_CARD_OF_SECTION)
+  const docCards = groupDocSections(docSections);
   const printSection = configGroups.sections.find((s) => s.id === "printForm");
   const isBusy = !isProfileReady || isLoading;
   // โหมดดู: ช่องเต็มเฉพาะแบบฟอร์มที่ตั้งเอง ที่เหลือ (ค่า "" = ใช้ค่าระบบ) รวมเป็นรายชื่อ
@@ -228,17 +305,28 @@ export default function DefaultSettingComponent() {
             </CompactSection>
           )}
 
-          {docSections.length > 0 && (
+          {/* การ์ดละเรื่อง (จัดซื้อและคลัง / มิติ / ผู้สร้างอนุมัติเอง) — เดิมรวมเป็นการ์ด "การทำงานของ
+              เอกสาร" ใบเดียว 10 ค่าจาก 6 หมวด ผู้ใช้อ่านแล้วปนกัน แม้แบ่งกลุ่มด้วยหัวตัวเล็กแล้วก็ยังปน
+              ค่าในการ์ดแบ่งเต็มแถวด้วย auto-fit · คอนโทรลไม่ยืดตาม (max-w ใน ConfigField) */}
+          {docCards.map((card, i) => (
             <CompactSection
-              first={!generalSection}
-              title={t("sections.documents")}
-              description={t("sections.documentsDesc")}
+              key={card.id}
+              first={!generalSection && i === 0}
+              title={t(card.titleKey)}
+              description={t(card.descKey)}
             >
-              {/* auto-fit ไม่ใช่ `FieldGrid`: หมวดนี้มีไม่กี่ค่า (3 ตอนนี้) กริดคอลัมน์ตายตัวเหลือ
-                  ครึ่งการ์ดว่างบนจอกว้าง — ให้ค่าที่มีแบ่งเต็มแถว ส่วนคอนโทรลไม่ยืดตาม (max-w ใน ConfigField) */}
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,15rem),1fr))] gap-x-5 gap-y-3">
-                {docSections.flatMap((section) =>
-                  section.entries.map((entry) => (
+              {/* การ์ดอนุมัติมี 4 สวิตช์ชื่อสั้น — auto-fit ที่ 1366 ได้ 3+1 (AR Receipt ตกบรรทัดเดียว)
+                  จึงแบ่งตายตัว 4 / 2 / 1 ตามความกว้างการ์ด ไม่ให้เหลือตัวเดียวค้างแถว */}
+              <div className="@container">
+                <div
+                  className={cn(
+                    "grid gap-x-5 gap-y-3",
+                    card.id === "selfApprove"
+                      ? "grid-cols-1 @sm:grid-cols-2 @3xl:grid-cols-4"
+                      : "grid-cols-[repeat(auto-fit,minmax(min(100%,15rem),1fr))]",
+                  )}
+                >
+                  {card.entries.map(({ entry, section }) => (
                     <ConfigField
                       showKey={showKey}
                       key={entry.item.key}
@@ -246,7 +334,11 @@ export default function DefaultSettingComponent() {
                       form={form}
                       index={entry.index}
                       item={entry.item}
-                      code={entry.code ?? t(section.titleKey)}
+                      code={
+                        card.showCode
+                          ? (entry.code ?? t(section.titleKey))
+                          : undefined
+                      }
                       label={t(entry.labelKey)}
                       description={entry.descKey ? t(entry.descKey) : undefined}
                       yesLabel={t("yes")}
@@ -264,11 +356,11 @@ export default function DefaultSettingComponent() {
                           : undefined
                       }
                     />
-                  )),
-                )}
+                  ))}
+                </div>
               </div>
             </CompactSection>
-          )}
+          ))}
 
           {printSection && (
             <CompactSection

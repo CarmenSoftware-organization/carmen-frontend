@@ -184,8 +184,10 @@
       "dimensionDesc": "เลือกว่าเอกสารใดแสดง dimension ในแต่ละบรรทัดสำหรับหน่วยธุรกิจนี้",
       "printForm": "แบบฟอร์มการพิมพ์",
       "printFormDesc": "แบบฟอร์มรายงานที่ใช้พิมพ์สำหรับเอกสารแต่ละประเภท",
-      "documents": "การทำงานของเอกสาร",
-      "documentsDesc": "ค่าตั้งต้นที่ใช้ตอนสร้างเอกสารจัดซื้อและเอกสารคลัง",
+      "purchasing": "จัดซื้อและคลัง",
+      "purchasingDesc": "ค่าตั้งต้นที่ใช้ตอนสร้างเอกสารจัดซื้อและเอกสารคลัง",
+      "selfApprove": "ผู้สร้างอนุมัติเอกสารของตัวเองได้",
+      "selfApproveDesc": "เปิดแล้วผู้สร้างกดอนุมัติใบของตัวเองได้ ไม่ต้องรอผู้อนุมัติคนอื่น",
       "ap": "AP",
       "apDesc": "การตั้งค่า Accounts Payable ของหน่วยธุรกิจนี้",
       "ar": "AR",
@@ -200,7 +202,7 @@
         "lastCost": "ต้นทุนล่าสุด"
       },
       "poGroupByPrComment": "เพิ่มการจัดกลุ่มตามหมายเหตุของใบขอซื้อ",
-      "dimensionStartFrom": "แสดง dimension ในบรรทัดตั้งแต่",
+      "dimensionStartFrom": "เริ่มแสดงในบรรทัดตั้งแต่",
       "dimensionStartFromDesc": "dimension จะแสดงที่เอกสารที่เลือกและเอกสารถัดไปในสายงานจัดซื้อ (PR, PO, GRN)",
       "dimensionStartFromOptions": {
         "none": "ปิด",
@@ -208,9 +210,9 @@
         "po": "ตั้งแต่ PO",
         "grn": "ตั้งแต่ GRN"
       },
-      "dimensionSrEnabled": "dimension ในบรรทัดใบเบิกสินค้า (SR)",
+      "dimensionSrEnabled": "ใบเบิกสินค้า (SR)",
       "dimensionSrEnabledDesc": "แสดง dimension ในแต่ละบรรทัดของใบเบิกสินค้า",
-      "dimensionIaEnabled": "dimension ในบรรทัดปรับปรุงสต๊อก (IA)",
+      "dimensionIaEnabled": "ใบปรับปรุงสต๊อก (IA)",
       "dimensionIaEnabledDesc": "แสดง dimension ในแต่ละบรรทัดของใบปรับปรุงสต๊อก",
       "printFormPr": "ใบขอซื้อ",
       "printFormPo": "ใบสั่งซื้อ",
@@ -237,10 +239,10 @@
       "generalDefaultVatRate": "VAT ตั้งต้น (%)",
       "generalDefaultVatRateDesc": "VAT ในเอกสารยังมาจาก Tax Profile",
       "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)",
-      "apInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AP Invoice ของตัวเอง",
-      "apPaymentAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติใบจ่ายเงิน AP ของตัวเอง",
-      "arInvoiceAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติ AR Invoice ของตัวเอง",
-      "arReceiptAllowCreatorApprove": "อนุญาตให้ผู้สร้างอนุมัติใบรับเงิน AR ของตัวเอง"
+      "apInvoiceAllowCreatorApprove": "ใบแจ้งหนี้เจ้าหนี้ (AP Invoice)",
+      "apPaymentAllowCreatorApprove": "ใบจ่ายเงินเจ้าหนี้ (AP Payment)",
+      "arInvoiceAllowCreatorApprove": "ใบแจ้งหนี้ลูกหนี้ (AR Invoice)",
+      "arReceiptAllowCreatorApprove": "ใบรับเงินลูกหนี้ (AR Receipt)"
     }
   },
   "accounting": {
