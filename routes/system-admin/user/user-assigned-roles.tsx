@@ -47,7 +47,7 @@ function RoleToggleCard({
       <div className="min-w-0 flex-1">
         <p
           className={cn(
-            "truncate text-sm",
+            "truncate text-xs",
             checked ? "text-foreground font-medium" : "text-foreground/90",
           )}
         >
@@ -119,7 +119,7 @@ export function RolesSection({
       <FieldGrid>
         {assignedRoles.map((role) => (
           <div key={role.application_role_id} className="min-w-0">
-            <div className="text-sm font-medium break-words">
+            <div className="text-xs font-medium break-words">
               {role.application_role_name}
             </div>
             {role.application_role_description && (

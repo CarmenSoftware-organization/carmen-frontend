@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import { memo } from "react";
 import {
   Controller,
@@ -195,7 +197,7 @@ export const OverReceiptWarning = memo(function OverReceiptWarning({
   if (!comparable || ordered <= 0 || received <= ordered) return null;
 
   return (
-    <p className="text-micro text-warning-ink mt-0.5 text-right">
+    <p className={cn(CELL_SUB_CLASS, "text-warning-ink mt-0.5 text-right")}>
       {t("overReceiptWarning", { ordered })}
     </p>
   );

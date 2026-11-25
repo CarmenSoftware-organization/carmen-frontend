@@ -150,7 +150,7 @@ export function EnumField<T extends string>({
         </SelectTrigger>
         <SelectContent>
           {options.map((o) => (
-            <SelectItem key={o} value={o} className="text-sm">
+            <SelectItem key={o} value={o} className="text-xs">
               {optionLabel(o)}
             </SelectItem>
           ))}
@@ -184,7 +184,7 @@ export function ToggleField({
             (แบบเดียวกับ ConfigField ของหน้า Default Setting) */}
         <div
           className={cn(
-            "mt-0.5 flex items-center gap-2 text-sm",
+            "mt-0.5 flex items-center gap-2 text-xs",
             checked ? "text-foreground font-medium" : "text-muted-foreground",
           )}
         >

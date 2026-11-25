@@ -221,7 +221,7 @@ const buildColumns = (
         const f = formatDate(from, dateFormat);
         const toDate = formatDate(to, dateFormat);
         return f && toDate ? (
-          <span className="text-micro tabular-nums">
+          <span className="tabular-nums">
             {f} → {toDate}
           </span>
         ) : (
@@ -371,9 +371,7 @@ export function PrPricelistDialog({
 
   const minPrice =
     rows.length > 0
-      ? Math.min(
-          ...rows.map(netPriceOf).filter((p) => p > 0),
-        )
+      ? Math.min(...rows.map(netPriceOf).filter((p) => p > 0))
       : 0;
 
   const pricelistColumns = buildColumns(
@@ -406,7 +404,7 @@ export function PrPricelistDialog({
       <DialogContent className="flex max-h-[90vh] flex-col gap-0 p-0 sm:max-w-5xl">
         <div className="space-y-4 px-6 pt-6 pb-4">
           <DialogHeader>
-            <DialogTitle className="text-base">
+            <DialogTitle className="text-sm">
               {t("priceListComparison")}
             </DialogTitle>
             <DialogDescription className="truncate">

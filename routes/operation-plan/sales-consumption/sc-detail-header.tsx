@@ -44,7 +44,7 @@ function Field({
   return (
     <div className="min-w-0 space-y-0.5">
       <dt className="text-muted-foreground text-xs">{label}</dt>
-      <dd className="truncate text-sm font-medium">{children}</dd>
+      <dd className="truncate text-xs font-medium">{children}</dd>
     </div>
   );
 }
@@ -137,12 +137,12 @@ export function ScDetailHeader({
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {isPending && (
-            <span className="text-muted-foreground text-sm" role="status">
+            <span className="text-muted-foreground text-xs" role="status">
               {statusHint(sc, unresolvedCount, t)}
             </span>
           )}
           {sc.status === "voided" && (
-            <span className="text-muted-foreground text-sm">
+            <span className="text-muted-foreground text-xs">
               {replacement ? (
                 <>
                   {t("header.replacedByPrefix")}{" "}
@@ -206,7 +206,9 @@ export function ScDetailHeader({
           {sc.sales_amount === null ? (
             "—"
           ) : (
-            <span className="tabular-nums">{formatAmount(sc.sales_amount)}</span>
+            <span className="tabular-nums">
+              {formatAmount(sc.sales_amount)}
+            </span>
           )}
         </Field>
         <Field label={t("header.stockOuts")}>
@@ -237,13 +239,13 @@ export function ScDetailHeader({
       </dl>
 
       {sc.status === "posted" && sc.late_lines > 0 && (
-        <p className="text-warning-ink text-sm" role="status">
+        <p className="text-warning-ink text-xs" role="status">
           {t("header.lateLines", { count: sc.late_lines })}
         </p>
       )}
 
       {sc.missing_stores.length > 0 && (
-        <p className="text-warning-ink text-sm" role="status">
+        <p className="text-warning-ink text-xs" role="status">
           {t("header.missingStores", { stores: sc.missing_stores.join(", ") })}
         </p>
       )}

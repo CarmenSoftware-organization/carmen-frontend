@@ -318,7 +318,7 @@ export function RfpSendEmailDialog({
     >
       <DialogContent className="flex max-h-[90dvh] flex-col gap-0 p-0 sm:max-w-xl">
         <DialogHeader className="shrink-0 gap-1 px-5 pt-5 pr-12 pb-4">
-          <DialogTitle className="flex items-center gap-2 text-base">
+          <DialogTitle className="flex items-center gap-2 text-sm">
             <Mail className="size-4" aria-hidden="true" />
             {t("title")}
           </DialogTitle>
@@ -345,7 +345,7 @@ export function RfpSendEmailDialog({
                 className="text-muted-foreground size-8"
                 aria-hidden="true"
               />
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs">
                 {isError ? t("loadError") : t("noProfiles")}
               </p>
               <Button asChild size="sm" variant="outline">

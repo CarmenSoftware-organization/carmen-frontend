@@ -137,7 +137,7 @@ export const EntryItemRow = memo(function EntryItemRow({
       </span>
 
       <div className={ENTRY_COL.name}>
-        <p className="text-foreground truncate text-sm leading-snug font-medium">
+        <p className="text-foreground truncate text-xs leading-snug font-medium">
           {productName}
           {isCounted && <span className="sr-only"> — {t("counted")}</span>}
         </p>
@@ -217,7 +217,7 @@ export const EntryItemRow = memo(function EntryItemRow({
             else (e.target as HTMLInputElement).blur();
           }}
           className={cn(
-            "bg-card h-8 min-w-0 flex-1 rounded-l-md rounded-r-none border pr-2 text-right text-sm tabular-nums shadow-none focus-visible:ring-0",
+            "bg-card h-8 min-w-0 flex-1 rounded-l-md rounded-r-none border pr-2 text-right text-xs tabular-nums shadow-none focus-visible:ring-0",
             isCounted
               ? "border-success/50 focus-visible:border-primary"
               : "border-border focus-visible:border-primary",

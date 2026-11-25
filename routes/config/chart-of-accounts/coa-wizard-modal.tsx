@@ -81,7 +81,7 @@ export function CoaWizardModal({ open, onOpenChange }: CoaWizardModalProps) {
               <Sparkles className="size-4.5" />
             </div>
             <div>
-              <DialogTitle className="text-base font-semibold">
+              <DialogTitle className="text-sm font-semibold">
                 {t("title")}
               </DialogTitle>
               <DialogDescription className="mt-0.5 text-xs text-muted-foreground">

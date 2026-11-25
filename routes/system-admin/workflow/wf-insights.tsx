@@ -80,7 +80,7 @@ export default function WfInsights({
 
   if (!stages || stages.length === 0) {
     return (
-      <p className="text-muted-foreground py-6 text-center text-sm">
+      <p className="text-muted-foreground py-6 text-center text-xs">
         {t("noStages")}
       </p>
     );
@@ -177,7 +177,7 @@ export default function WfInsights({
         {facts.map(([label, value]) => (
           <div key={label} className="min-w-0 space-y-1">
             <dt className="text-muted-foreground truncate text-xs">{label}</dt>
-            <dd className="text-foreground text-sm font-medium tabular-nums">
+            <dd className="text-foreground text-xs font-medium tabular-nums">
               {value}
             </dd>
           </div>
@@ -205,7 +205,7 @@ export default function WfInsights({
           }
         >
           {checks.length === 0 ? (
-            <p className="text-success-ink flex items-center gap-2 text-sm">
+            <p className="text-success-ink flex items-center gap-2 text-xs">
               <CircleCheck className="size-4 shrink-0" />
               {t("insightsNoProblems")}
             </p>
@@ -279,7 +279,7 @@ function CheckRow({
           check.severity === "error" ? "text-destructive" : "text-warning-ink",
         )}
       />
-      <span className="text-foreground min-w-0 flex-1 text-sm">
+      <span className="text-foreground min-w-0 flex-1 text-xs">
         {check.message}
       </span>
       {onNavigate && (

@@ -167,13 +167,13 @@ function AddressView({
         {typeLabels[a.address_type ?? ""] ?? a.address_type}
       </div>
       {lines.length > 0 ? (
-        <div className="mt-1 text-sm break-words">
+        <div className="mt-1 text-xs break-words">
           {lines.map((line, i) => (
             <div key={i}>{line}</div>
           ))}
         </div>
       ) : (
-        <div className="text-muted-foreground/60 mt-1 text-sm">—</div>
+        <div className="text-muted-foreground/60 mt-1 text-xs">—</div>
       )}
     </div>
   );

@@ -295,7 +295,7 @@ export default function EmailProfileComponent() {
       )}
 
       {!isError && !isLoading && profiles.length === 0 && (
-        <p className="text-muted-foreground text-sm">{t("empty")}</p>
+        <p className="text-muted-foreground text-xs">{t("empty")}</p>
       )}
 
       {!isError && !isLoading && profiles.length > 0 && (

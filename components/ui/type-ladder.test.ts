@@ -113,18 +113,10 @@ const TOKENISED: Record<string, string> = {
 };
 
 const ALLOWED_OFF_LADDER: Record<string, number> = {
-  // Badge `default` (13px) and `xl` (15px) size variants — part of the component's
-  // public API, chosen deliberately, and they straddle the 12/14 ladder steps.
-  "components/ui/badge.tsx": 2,
-  // shadcn/react-day-picker upstream default (12.8px) on weekday headers.
-  // Changing it diverges from upstream for 0.8px.
-  "components/ui/calendar.tsx": 2,
   // Auth display sizes: 13/28/36/44px, now in the shell that /login and /register
   // share. The auth screens are the one surface that is intentionally not dense —
   // DESIGN.md's display end is deliberately loose.
   "components/auth/auth-split-shell.tsx": 4,
-  "routes/dashboard/dashboard-component.tsx": 2, // 16px + 32px stat display
-  "routes/inventory-management/spot-check/sc-form.tsx": 1, // 28px count display
 };
 
 describe("arbitrary font sizes do not creep back", () => {

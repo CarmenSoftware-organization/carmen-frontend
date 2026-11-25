@@ -22,11 +22,11 @@ export function EqTextField({
     <div className={cn("min-w-0", wide && "@md:col-span-2")}>
       <div className="text-muted-foreground text-xs">{label}</div>
       {isEmpty ? (
-        <div className="text-muted-foreground/60 mt-0.5 text-sm">—</div>
+        <div className="text-muted-foreground/60 mt-0.5 text-xs">—</div>
       ) : (
         <div
           className={cn(
-            "mt-0.5 text-sm break-words whitespace-pre-wrap",
+            "mt-0.5 text-xs break-words whitespace-pre-wrap",
             numeric && "tabular-nums",
           )}
         >

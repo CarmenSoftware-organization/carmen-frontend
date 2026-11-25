@@ -112,7 +112,7 @@ export function WfStageNotifications({
 
   if (sections.length === 0 && !isMiddle) {
     return (
-      <p className="text-muted-foreground py-3 text-sm">
+      <p className="text-muted-foreground py-3 text-xs">
         {t("noActiveActions")}
       </p>
     );
@@ -143,12 +143,12 @@ export function WfStageNotifications({
         <>
           {sections.length > 0 && <FieldSeparator />}
           <div className="grid grid-cols-1 gap-x-4 gap-y-1 @lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)]">
-            <span className="text-foreground text-sm font-medium">
+            <span className="text-foreground text-xs font-medium">
               {t("slaWarning")}
             </span>
             <span
               className={cn(
-                "text-sm",
+                "text-xs",
                 slaRecipients.length > 0
                   ? "text-foreground"
                   : "text-muted-foreground",
@@ -316,18 +316,18 @@ function RecipientRow({
   if (readOnly) {
     return (
       <div className="grid grid-cols-1 gap-x-4 gap-y-0.5 @lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)]">
-        <span className="text-muted-foreground text-sm">{label}</span>
+        <span className="text-muted-foreground text-xs">{label}</span>
         {!isActive ? (
-          <span className="text-muted-foreground text-sm">
+          <span className="text-muted-foreground text-xs">
             {t("notifyOff")}
           </span>
         ) : missingTemplate ? (
-          <span className="text-warning-ink flex items-center gap-1 text-sm">
+          <span className="text-warning-ink flex items-center gap-1 text-xs">
             <CircleAlert className="size-3.5 shrink-0" aria-hidden="true" />
             {t("templateMissing")}
           </span>
         ) : (
-          <span className="text-foreground min-w-0 text-sm">
+          <span className="text-foreground min-w-0 text-xs">
             {(templateId && templateLabels.get(templateId)) ?? "…"}
           </span>
         )}

@@ -67,7 +67,7 @@ export function CategoryCheckboxList({
       <FieldLabel>{t("categories")}</FieldLabel>
       <div className="max-h-32 space-y-1 overflow-y-auto rounded border p-1.5">
         {categories.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-xs">
             {t("noCategoriesAddProducts")}
           </p>
         ) : (

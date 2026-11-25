@@ -165,7 +165,7 @@ export function PltItemFields({
               <div className="min-w-0">
                 {detailFields.length === 0 ? (
                   <div className="text-muted-foreground flex h-full min-h-40 flex-col items-center justify-center gap-1 rounded-lg border border-dashed p-6 text-center">
-                    <p className="text-sm font-medium">{t("detail.noItems")}</p>
+                    <p className="text-xs font-medium">{t("detail.noItems")}</p>
                     <p className="text-xs">{t("detail.noItemsDesc")}</p>
                   </div>
                 ) : (

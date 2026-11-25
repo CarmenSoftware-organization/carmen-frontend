@@ -317,7 +317,7 @@ export function WfProducts({
       {selectedTotal === 0 && allProducts.length > 0 && (
         <p
           role="status"
-          className="border-warning/40 bg-warning/10 text-warning-ink flex items-start gap-2 rounded-md border px-3 py-2 text-sm"
+          className="border-warning/40 bg-warning/10 text-warning-ink flex items-start gap-2 rounded-md border px-3 py-2 text-xs"
         >
           <TriangleAlert className="mt-0.5 size-4 shrink-0" />
           {t("productsNoneSelectedWarning")}

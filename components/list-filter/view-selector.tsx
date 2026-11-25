@@ -290,7 +290,7 @@ export function ViewSelector({ view, snapshot }: ViewSelectorProps) {
           )}
 
           {!isLoading && error && (
-            <div className="flex items-center justify-between gap-2 px-2 py-1.5 text-sm">
+            <div className="flex items-center justify-between gap-2 px-2 py-1.5 text-xs">
               <span className="text-destructive">{tv("loadError")}</span>
               <Button variant="outline" size="xs" onClick={handleRetry}>
                 {tv("retry")}

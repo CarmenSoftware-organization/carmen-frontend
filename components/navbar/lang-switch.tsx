@@ -21,7 +21,7 @@ export function LangSwitch() {
 
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm">
+      <DropdownMenuSubTrigger className="cursor-pointer gap-2 rounded-md px-2 py-2 text-xs">
         <Globe className="size-4" />
         {t("language")}
       </DropdownMenuSubTrigger>
@@ -33,7 +33,7 @@ export function LangSwitch() {
               key={loc}
               onClick={() => switchLocale(loc)}
               disabled={isPending}
-              className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm"
+              className="cursor-pointer gap-2 rounded-md px-2 py-2 text-xs"
               // menuitem ไม่รองรับ aria-checked — ตัวเลือกแบบเลือกได้หนึ่งเดียวต้องเป็น menuitemradio
               role="menuitemradio"
               aria-checked={isActive}

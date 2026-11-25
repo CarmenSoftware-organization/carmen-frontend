@@ -150,7 +150,7 @@ export default function UserProfileDetails() {
             ))}
           </div>
         ) : (
-          <div className="bg-card text-muted-foreground flex items-center gap-2 rounded-xl border p-4 text-sm shadow-sm">
+          <div className="bg-card text-muted-foreground flex items-center gap-2 rounded-xl border p-4 text-xs shadow-sm">
             <Building2 className="size-4 shrink-0" aria-hidden="true" />
             {t("noBusinessUnits")}
           </div>

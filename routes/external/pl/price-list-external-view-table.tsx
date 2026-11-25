@@ -28,7 +28,7 @@ export default function PriceListExternalViewTable({
   const tc = useTranslations("common");
   return (
     <div className="border-border/60 bg-card w-full overflow-x-auto rounded-lg border">
-      <table className="text-foreground w-full border-collapse text-sm">
+      <table className="text-foreground w-full border-collapse text-xs">
         <thead>
           <tr className="bg-muted/60 text-muted-foreground border-border/60 border-b">
             <Th className="w-12 text-center">#</Th>

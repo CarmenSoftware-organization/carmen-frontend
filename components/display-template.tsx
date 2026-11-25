@@ -28,7 +28,7 @@ export default function DisplayTemplate({
           {mock && <MockBadge />}
         </div>
         {description && (
-          <p className="text-muted-foreground text-sm">{description}</p>
+          <p className="text-muted-foreground text-xs">{description}</p>
         )}
       </div>
 

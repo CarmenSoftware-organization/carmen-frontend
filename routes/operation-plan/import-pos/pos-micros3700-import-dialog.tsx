@@ -29,7 +29,10 @@ import type {
   PosMicros3700OutletCheck,
   PosMicros3700OutletResult,
 } from "@/types/pos-sale";
-import { outletErrorMessage, useImportMicros3700 } from "../shared/use-pos-sale";
+import {
+  outletErrorMessage,
+  useImportMicros3700,
+} from "../shared/use-pos-sale";
 
 /** ข้อความที่อ่านจาก PDF พร้อมข้อมูลไฟล์ — ถือไว้ในหน่วยความจำจน dialog ปิด */
 export interface Micros3700Payload {
@@ -40,7 +43,10 @@ export interface Micros3700Payload {
 }
 
 /** ผล `check` ที่พร้อมนำเข้า */
-export type Micros3700Ready = Extract<PosMicros3700CheckResult, { kind: "ready" }>;
+export type Micros3700Ready = Extract<
+  PosMicros3700CheckResult,
+  { kind: "ready" }
+>;
 
 type Decision = "skip" | "overwrite";
 
@@ -261,7 +267,7 @@ export function PosMicros3700ImportDialog({
     <Dialog open={open} onOpenChange={(o) => !o && close()}>
       <DialogContent className="sm:max-w-3xl">
         {header}
-        <p className="text-success-ink text-sm">
+        <p className="text-success-ink text-xs">
           {t("footingOk", { diff: formatAmount(footingDiff) })}
         </p>
         <div className="max-h-96 overflow-auto rounded-md border">

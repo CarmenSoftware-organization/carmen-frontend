@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import { useTranslations } from "use-intl";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import {
@@ -41,20 +43,19 @@ function useItemLine(form: UseFormReturn<PoFormValues>, itemIndex: number) {
     taxAmt,
     isTaxAdj,
     isTaxIncluded,
-  ] =
-    useWatch({
-      control,
-      name: [
-        `${base}.order_qty`,
-        `${base}.discount_rate`,
-        `${base}.discount_amount`,
-        `${base}.is_discount_adjustment`,
-        `${base}.tax_rate`,
-        `${base}.tax_amount`,
-        `${base}.is_tax_adjustment`,
-        `${base}.is_tax_included`,
-      ] as const,
-    });
+  ] = useWatch({
+    control,
+    name: [
+      `${base}.order_qty`,
+      `${base}.discount_rate`,
+      `${base}.discount_amount`,
+      `${base}.is_discount_adjustment`,
+      `${base}.tax_rate`,
+      `${base}.tax_amount`,
+      `${base}.is_tax_adjustment`,
+      `${base}.is_tax_included`,
+    ] as const,
+  });
   return computeLineAmounts({
     price,
     qty: Number(qty) || 0,
@@ -133,9 +134,7 @@ function RateSubtext({
       <div className="flex w-full flex-col items-end">
         <HiddenValue />
         {rate > 0 && (
-          <p className="text-muted-foreground text-micro-legal py-0.5 tabular-nums">
-            {rate}%
-          </p>
+          <p className={cn(CELL_SUB_CLASS, "py-0.5 tabular-nums")}>{rate}%</p>
         )}
       </div>
     );
@@ -208,9 +207,7 @@ export function ItemDiscountCell({
           เซลล์ และตัวเลข % ไม่หายไปจากสายตาตอน override เปิด (ช่องกลายเป็นยอดเงิน) */}
       <div className="flex items-center justify-end gap-1.5">
         {Number(rate) > 0 && (
-          <span className="text-muted-foreground text-micro-legal tabular-nums">
-            {rate}%
-          </span>
+          <span className={cn(CELL_SUB_CLASS, "tabular-nums")}>{rate}%</span>
         )}
         <OverrideToggle
           checked={isAdj}

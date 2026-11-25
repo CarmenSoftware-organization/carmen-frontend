@@ -297,7 +297,7 @@ export function NotificationDetailDialog({
                 <Bell className="h-6 w-6" />
               </div>
               <div className="flex flex-col text-left">
-                <DialogTitle className="text-foreground text-xl font-bold tracking-tight">
+                <DialogTitle className="text-foreground text-sm font-semibold tracking-tight">
                   {isLoading ? <Skeleton className="h-5 w-3/4" /> : data?.title}
                 </DialogTitle>
                 {data && (
@@ -337,7 +337,7 @@ export function NotificationDetailDialog({
             )}
 
             {data && (
-              <p className="text-foreground/90 text-sm leading-relaxed font-medium whitespace-pre-wrap">
+              <p className="text-foreground/90 text-xs leading-relaxed font-medium whitespace-pre-wrap">
                 {formatMessage(data.message, { linkUrls: true })}
               </p>
             )}

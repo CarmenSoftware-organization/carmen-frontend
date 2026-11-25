@@ -170,7 +170,7 @@ function HeaderItem({
   return (
     <div className="min-w-0">
       <div className="text-muted-foreground text-xs">{label}</div>
-      <div className="mt-0.5 min-w-0 text-sm break-words">{children}</div>
+      <div className="mt-0.5 min-w-0 text-xs break-words">{children}</div>
     </div>
   );
 }

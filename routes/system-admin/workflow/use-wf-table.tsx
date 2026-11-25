@@ -78,7 +78,7 @@ export function useWfTable({
                         aria-label={tfl("inactive")}
                       />
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="text-sm">
+                    <TooltipContent side="top">
                       {tfl("inactive")}
                     </TooltipContent>
                   </Tooltip>
@@ -118,7 +118,7 @@ export function useWfTable({
       cell: ({ row }) => {
         const updated = row.original.audit?.updated;
         if (!updated?.at) {
-          return <span className="text-muted-foreground text-sm">—</span>;
+          return <span className="text-muted-foreground">—</span>;
         }
         const relative = formatRelativeTime(updated.at, locale);
         const absolute = new Date(updated.at).toLocaleString(locale);
@@ -126,7 +126,7 @@ export function useWfTable({
           <Tooltip delayDuration={150}>
             <TooltipTrigger asChild>
               <div className="flex flex-col gap-0">
-                <span className="text-foreground text-sm">{relative}</span>
+                <span className="text-foreground">{relative}</span>
                 {updated.name && (
                   <span className="text-muted-foreground truncate text-xs">
                     {updated.name}
@@ -134,7 +134,7 @@ export function useWfTable({
                 )}
               </div>
             </TooltipTrigger>
-            <TooltipContent side="top" className="text-sm">
+            <TooltipContent side="top">
               {absolute}
               {updated.name && ` · ${updated.name}`}
             </TooltipContent>

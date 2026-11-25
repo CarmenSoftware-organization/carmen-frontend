@@ -146,9 +146,9 @@ function PercentField({
           {label}
         </div>
         {unset ? (
-          <div className="text-muted-foreground/60 mt-0.5 text-sm">—</div>
+          <div className="text-muted-foreground/60 mt-0.5 text-xs">—</div>
         ) : (
-          <div className="mt-0.5 text-sm tabular-nums">{readValue} %</div>
+          <div className="mt-0.5 text-xs tabular-nums">{readValue} %</div>
         )}
       </div>
     );
@@ -174,7 +174,7 @@ function PercentField({
           errorIconAlign="left"
           {...form.register(name)}
         />
-        <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm">
+        <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs">
           %
         </span>
       </div>

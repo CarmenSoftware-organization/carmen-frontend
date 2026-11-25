@@ -108,7 +108,7 @@ export function RecipeMarginStatement({
 
       {lines.map((line) => (
         <div key={line.key} className={cn(row, "gap-y-0.5 py-1.5")}>
-          <span className="text-muted-foreground text-sm" aria-hidden="true">
+          <span className="text-muted-foreground text-xs" aria-hidden="true">
             −
           </span>
           <span className="text-foreground text-xs">{line.label}</span>

@@ -39,7 +39,7 @@ export function LegalPage({
           <p className="text-muted-foreground text-micro-legal mt-2">
             {document.effective}
           </p>
-          <p className="text-muted-foreground mt-5 text-sm leading-relaxed">
+          <p className="text-muted-foreground mt-5 text-xs leading-relaxed">
             {document.intro}
           </p>
 
@@ -56,13 +56,13 @@ export function LegalPage({
                 {section.paragraphs?.map((text) => (
                   <p
                     key={text}
-                    className="text-muted-foreground mt-3 text-sm leading-relaxed"
+                    className="text-muted-foreground mt-3 text-xs leading-relaxed"
                   >
                     {text}
                   </p>
                 ))}
                 {section.bullets && (
-                  <ul className="text-muted-foreground marker:text-muted-foreground/40 mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed">
+                  <ul className="text-muted-foreground marker:text-muted-foreground/40 mt-3 list-disc space-y-2 pl-5 text-xs leading-relaxed">
                     {section.bullets.map((text) => (
                       <li key={text}>{text}</li>
                     ))}

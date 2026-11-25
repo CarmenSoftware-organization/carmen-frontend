@@ -378,7 +378,7 @@ function ApInvoiceEditor({
       aria-busy={busy || undefined}
     >
       {locked && (
-        <div className="bg-info/10 text-info-ink flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+        <div className="bg-info/10 text-info-ink flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-xs">
           <span>{td("fromGrnBanner")}</span>
           {grnId && (
             <Link

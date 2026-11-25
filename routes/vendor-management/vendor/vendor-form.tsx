@@ -324,7 +324,7 @@ export function VendorForm({ vendor }: VendorFormProps) {
               <>
                 {/* โหมดเพิ่ม (ยังไม่มีบรรทัดตัวตน): รหัสที่กำลังพิมพ์โชว์ข้างชื่อ · ใบที่บันทึกแล้วอยู่ในบรรทัดตัวตน */}
                 {!vendor && watchedCode && (
-                  <span className="text-muted-foreground shrink-0 text-sm">
+                  <span className="text-muted-foreground shrink-0 text-xs">
                     · {watchedCode}
                   </span>
                 )}

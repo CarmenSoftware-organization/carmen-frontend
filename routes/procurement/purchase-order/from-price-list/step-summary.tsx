@@ -78,7 +78,7 @@ function DataRow({
   readonly children: ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-[8rem_1fr] items-baseline gap-2 py-1 text-sm">
+    <div className="grid grid-cols-[8rem_1fr] items-baseline gap-2 py-1 text-xs">
       <dt className="text-muted-foreground text-xs">{label}</dt>
       <dd className="text-foreground">{children}</dd>
     </div>
@@ -224,7 +224,7 @@ export function StepSummary({ form, onEditStep }: StepSummaryProps) {
             )}
           </dl>
         ) : (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-xs">
             {t("noVendorSelected")}
           </p>
         )}
@@ -238,7 +238,7 @@ export function StepSummary({ form, onEditStep }: StepSummaryProps) {
         onEdit={() => onEditStep(2)}
       >
         {items.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-xs">
             {t("noProductsSelected")}
           </p>
         ) : (
@@ -342,9 +342,7 @@ export function StepSummary({ form, onEditStep }: StepSummaryProps) {
                           </span>
                         </td>
                         <td className="px-3 py-1.5 text-right tabular-nums">
-                          <PriceWithIncVat
-                            isTaxIncluded={item.is_tax_included}
-                          >
+                          <PriceWithIncVat isTaxIncluded={item.is_tax_included}>
                             <span>
                               {item.price.toLocaleString()}{" "}
                               <span className="text-muted-foreground text-micro">
@@ -365,7 +363,7 @@ export function StepSummary({ form, onEditStep }: StepSummaryProps) {
 
             {/* Grand totals */}
             <div className="border-border/60 mt-2 rounded-md border border-dashed p-3">
-              <dl className="space-y-1 text-sm">
+              <dl className="space-y-1 text-xs">
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">
                     {t("summarySubtotal")}

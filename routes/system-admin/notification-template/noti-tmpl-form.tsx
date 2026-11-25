@@ -262,7 +262,7 @@ export function NotificationTemplateForm({
                     <div className="text-muted-foreground text-xs">
                       {t("colBody")}
                     </div>
-                    <p className="mt-0.5 text-sm break-words whitespace-pre-wrap">
+                    <p className="mt-0.5 text-xs break-words whitespace-pre-wrap">
                       {watchedBody ? (
                         <TemplateText text={watchedBody} wrap />
                       ) : (

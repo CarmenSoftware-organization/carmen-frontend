@@ -486,7 +486,7 @@ function PdTabUnitConversion({
       }
     >
       {!isOrder && !isUsedInRecipe && (
-        <p className="text-muted-foreground text-sm">{t("enableRecipe")}</p>
+        <p className="text-muted-foreground text-xs">{t("enableRecipe")}</p>
       )}
 
       <div ref={setGridBox}>

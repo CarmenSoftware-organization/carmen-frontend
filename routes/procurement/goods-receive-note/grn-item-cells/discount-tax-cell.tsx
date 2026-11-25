@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "use-intl";
 import {
@@ -71,9 +73,7 @@ export function GrnItemDiscountCell({
           ช่องกรอกได้ความกว้างเต็มเซลล์ และ % ไม่หายไปตอน override เปิด */}
       <div className="flex items-center justify-end gap-1.5">
         {Number(rate) > 0 && (
-          <span className="text-muted-foreground text-micro-legal tabular-nums">
-            {rate}%
-          </span>
+          <span className={cn(CELL_SUB_CLASS, "tabular-nums")}>{rate}%</span>
         )}
         <OverrideToggle
           checked={isAdj}

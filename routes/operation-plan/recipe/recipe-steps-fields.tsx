@@ -103,11 +103,11 @@ export function RecipeStepsFields({
       description={t("stepsSectionDesc")}
     >
       {isNew ? (
-        <p className="text-muted-foreground text-sm">{t("stepsAfterSave")}</p>
+        <p className="text-muted-foreground text-xs">{t("stepsAfterSave")}</p>
       ) : (
         <div className="@container space-y-3">
           {fields.length === 0 && (
-            <p className="text-muted-foreground text-sm">{t("noSteps")}</p>
+            <p className="text-muted-foreground text-xs">{t("noSteps")}</p>
           )}
           {/* การ์ดกว้าง (80rem+) = ขั้นตอน 2 คอลัมน์ เรียงซ้ายไปขวาตามเลขขั้น — การ์ดในแถวเดียวกันสูงเท่ากัน
               (ห้าม items-start) · หน้าตาเข้าชุดกับการ์ดขั้นของหน้าดูสูตร (2026-11-17): การ์ดมุมโค้ง xl + ป้าย

@@ -1,3 +1,4 @@
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import { useTranslations } from "use-intl";
 import { useState } from "react";
 import {
@@ -15,9 +16,7 @@ import { cn } from "@/lib/utils";
 import { RfpSendEmailDialog } from "./rfp-send-email-dialog";
 import { NameWithSubtext } from "@/components/share/name-with-sub-text";
 
-const EMPTY = (
-  <span className="text-muted-foreground text-micro italic">—</span>
-);
+const EMPTY = <span className={cn(CELL_SUB_CLASS, "italic")}>—</span>;
 
 export function VendorNameCell({
   name,
@@ -114,7 +113,7 @@ export function PricelistCell({
           "noopener,noreferrer",
         )
       }
-      className="text-micro truncate"
+      className="truncate"
     >
       {pricelist.no}
     </CellAction>

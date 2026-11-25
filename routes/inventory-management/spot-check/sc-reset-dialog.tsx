@@ -39,10 +39,10 @@ export function ScResetDialog({
               <RotateCcw className="size-4.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <AlertDialogTitle className="text-base">
+              <AlertDialogTitle className="text-sm">
                 {t("resetTitle")}
               </AlertDialogTitle>
-              <AlertDialogDescription className="mt-1 text-sm leading-relaxed">
+              <AlertDialogDescription className="mt-1 text-xs leading-relaxed">
                 {t("resetConfirm")}
               </AlertDialogDescription>
             </div>

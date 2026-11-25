@@ -118,9 +118,7 @@ export function ScSalesLines({ sc, canWrite }: ScSalesLinesProps) {
                   )}
                 </div>
               ) : (
-                <div className="text-sm">
-                  {loc ? `${loc.code} · ${loc.name}` : "–"}
-                </div>
+                <div>{loc ? `${loc.code} · ${loc.name}` : "–"}</div>
               )}
               {editable && (
                 <div
@@ -167,9 +165,7 @@ export function ScSalesLines({ sc, canWrite }: ScSalesLinesProps) {
             return line.is_ignored ? (
               <StatusDotBadge tone="neutral">{t("ignored")}</StatusDotBadge>
             ) : (
-              <span className="text-sm">
-                {recipe ? `${recipe.code} · ${recipe.name}` : "–"}
-              </span>
+              <span>{recipe ? `${recipe.code} · ${recipe.name}` : "–"}</span>
             );
           }
           return (
@@ -300,7 +296,7 @@ export function ScSalesLines({ sc, canWrite }: ScSalesLinesProps) {
 
 function NotCounted({ t }: { readonly t: (key: string) => string }) {
   return (
-    <span className="text-muted-foreground text-sm">{t("notCounted")}</span>
+    <span className="text-muted-foreground text-xs">{t("notCounted")}</span>
   );
 }
 

@@ -279,7 +279,7 @@ export function CategoryDetailPanel({
                         <span className="text-muted-foreground text-micro shrink-0 tabular-nums">
                           {child.code}
                         </span>
-                        <span className="min-w-0 truncate text-sm">
+                        <span className="min-w-0 truncate text-xs">
                           {child.name}
                         </span>
                         {child.product_count !== undefined && (
@@ -291,7 +291,7 @@ export function CategoryDetailPanel({
                     ))}
                   </FieldGrid>
                 ) : (
-                  <div className="text-muted-foreground/60 text-sm">—</div>
+                  <div className="text-muted-foreground/60 text-xs">—</div>
                 )}
               </CompactSection>
             </>

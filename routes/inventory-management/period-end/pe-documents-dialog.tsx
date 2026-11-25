@@ -177,7 +177,7 @@ export function PeDocumentsDialog({
         accessorKey: "no",
         header: () => tfl("documentNo"),
         cell: ({ row }) => {
-          const label = <span className="text-micro">{row.original.no}</span>;
+          const label = <span>{row.original.no}</span>;
           if (!moduleKey) return label;
           return (
             <Link
@@ -262,7 +262,7 @@ export function PeDocumentsDialog({
                 >
                   {t("documents")}
                 </div>
-                <DialogTitle className="text-base">{moduleLabel}</DialogTitle>
+                <DialogTitle className="text-sm">{moduleLabel}</DialogTitle>
                 <DialogDescription className="mt-1">
                   {t("documentsSummary", {
                     draft: counts?.draft ?? 0,
@@ -322,12 +322,12 @@ export function PeDocumentsDialog({
                 <DataGridTable />
                 <div ref={sentinelRef} aria-hidden="true" className="h-px" />
                 {isFetchingNextPage && (
-                  <div className="text-muted-foreground flex items-center justify-center gap-2 py-3 text-sm">
+                  <div className="text-muted-foreground flex items-center justify-center gap-2 py-3 text-xs">
                     <Loader2 className="size-4 animate-spin" />
                   </div>
                 )}
                 {loadMoreFailed && (
-                  <div className="flex items-center justify-center gap-3 py-3 text-sm">
+                  <div className="flex items-center justify-center gap-3 py-3 text-xs">
                     <span className="text-muted-foreground">
                       {t("loadMoreFailed")}
                     </span>

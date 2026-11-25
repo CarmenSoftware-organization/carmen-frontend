@@ -160,10 +160,10 @@ export function WfRouting({
           className="text-muted-foreground/40 mb-3 size-10"
           aria-hidden="true"
         />
-        <p className="text-foreground text-sm font-medium">
+        <p className="text-foreground text-xs font-medium">
           {t("routingEmptyTitle")}
         </p>
-        <p className="text-muted-foreground mt-1 max-w-sm text-sm">
+        <p className="text-muted-foreground mt-1 max-w-sm text-xs">
           {t("routingEmptyDesc")}
         </p>
         <WfStructureAddButton
@@ -226,7 +226,7 @@ export function WfRouting({
         )}
 
         {orderedGroups.length === 0 ? (
-          <p className="text-muted-foreground py-6 text-center text-sm">
+          <p className="text-muted-foreground py-6 text-center text-xs">
             {tc("noData")}
           </p>
         ) : (
@@ -277,7 +277,7 @@ export function WfRouting({
                         <span className="flex items-center gap-1.5">
                           <span
                             className={cn(
-                              "text-foreground truncate text-sm",
+                              "text-foreground truncate text-xs",
                               isSelected ? "font-semibold" : "font-medium",
                             )}
                           >
@@ -464,7 +464,7 @@ function RuleDetail({
       <div className="space-y-5 border-t pt-5">
         <SentenceRow label={t("routingWhen")}>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-muted-foreground text-sm">
+            <span className="text-muted-foreground text-xs">
               {t("routingLeaves")}
             </span>
             <Select
@@ -551,7 +551,7 @@ function RuleDetail({
                       disabled={isDisabled}
                       {...form.register(`${path}.condition.min_value`)}
                     />
-                    <span className="text-muted-foreground text-sm">–</span>
+                    <span className="text-muted-foreground text-xs">–</span>
                     <Input
                       type="number"
                       size="sm"
@@ -619,7 +619,7 @@ function RuleDetail({
 
         <SentenceRow label={t("routingThen")}>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-muted-foreground text-sm">
+            <span className="text-muted-foreground text-xs">
               {t("routingGoTo")}
             </span>
             <Select
@@ -656,7 +656,7 @@ function RuleDetail({
       {issue && (
         <p
           role="status"
-          className="border-warning/40 bg-warning/10 text-warning-ink flex items-start gap-2 rounded-md border px-3 py-2 text-sm"
+          className="border-warning/40 bg-warning/10 text-warning-ink flex items-start gap-2 rounded-md border px-3 py-2 text-xs"
         >
           <TriangleAlert className="mt-0.5 size-4 shrink-0" />
           {t(ROUTING_ISSUE_KEY[issue])}

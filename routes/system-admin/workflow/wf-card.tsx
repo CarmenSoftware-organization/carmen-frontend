@@ -105,7 +105,7 @@ export default function WfCard({
         </CardAction>
       </CardHeader>
       <Separator />
-      <CardContent className="space-y-1.5 p-4 text-sm">
+      <CardContent className="space-y-1.5 p-4 text-xs">
         <WfFlowStrip workflow={item} />
         <WfScopeLine workflow={item} className="block" />
         {updatedRelative && (

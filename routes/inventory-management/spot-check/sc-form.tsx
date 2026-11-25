@@ -190,7 +190,7 @@ export function ScForm({
                 {methodConfig.hint}
               </span>
             </div>
-            <h1 className="text-2xl leading-tight font-semibold tracking-tight md:text-[1.75rem]">
+            <h1 className="text-lg leading-tight font-semibold tracking-tight">
               {displayLocationName || t("namePlaceholder")}
             </h1>
 

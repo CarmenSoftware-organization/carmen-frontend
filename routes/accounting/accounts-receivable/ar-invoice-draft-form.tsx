@@ -597,7 +597,7 @@ export function ArInvoiceDraftForm({
             </div>
           </TabsContent>
           <TabsContent value="receipt">
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-xs">
               {t("receiptAfterSave")}
             </p>
           </TabsContent>
@@ -629,7 +629,7 @@ export function ArInvoiceDraftForm({
           </TabsContent>
         </Tabs>
         {error && (
-          <p role="alert" className="text-destructive text-sm">
+          <p role="alert" className="text-destructive text-xs">
             {error}
           </p>
         )}

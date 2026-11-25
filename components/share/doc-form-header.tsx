@@ -114,7 +114,7 @@ export function DocFormHeader({
                 // max-w คุมไม่ให้ชื่อยาวกินทั้งแถวจนดันปุ่มตกบรรทัด — โหมดแก้ไขมี
                 // ปุ่มถึงสี่ตัว ถ้าปล่อยให้ title ยืดตามเนื้อหา ปุ่มจะถูกดันลงไป
                 // เอง (เลขที่เอกสารของโมดูลอื่นสั้นกว่านี้มาก ไม่โดนกระทบ)
-                "max-w-sm min-w-0 truncate text-lg font-semibold tracking-tight sm:text-xl",
+                "max-w-sm min-w-0 truncate text-lg font-semibold tracking-tight",
                 titleMuted && "text-muted-foreground italic",
               )}
               title={title}

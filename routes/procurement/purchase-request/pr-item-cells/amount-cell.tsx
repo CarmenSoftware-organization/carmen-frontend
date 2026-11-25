@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import { useWatch, type Control } from "react-hook-form";
 import { memo, type ReactNode } from "react";
 import { formatCurrency, round2 } from "@/lib/currency-utils";
@@ -52,7 +54,7 @@ export const AmountCell = memo(function AmountCell({
   }
 
   const baseLine = isForeignCurrency && (
-    <span className="text-muted-foreground text-micro tabular-nums">
+    <span className={cn(CELL_SUB_CLASS, "tabular-nums")}>
       {formatCurrency(baseAmount)} {baseCurrencyCode}
     </span>
   );

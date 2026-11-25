@@ -44,7 +44,7 @@ export function ScListPage() {
         {unmappedOutlets > 0 && view !== "mapping" && (
           <div
             role="alert"
-            className="border-warning/40 bg-warning/10 flex flex-wrap items-center gap-3 rounded-md border px-3 py-2 text-sm"
+            className="border-warning/40 bg-warning/10 flex flex-wrap items-center gap-3 rounded-md border px-3 py-2 text-xs"
           >
             <TriangleAlert aria-hidden className="text-warning-ink size-4" />
             <span className="text-warning-ink flex-1">

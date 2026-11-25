@@ -158,7 +158,7 @@ export default function SortableStageItem({
                   {routes.length}
                 </span>
               </TooltipTrigger>
-              <TooltipContent side="right" className="text-sm">
+              <TooltipContent side="right" className="text-xs">
                 <ul className="space-y-0.5">
                   {routes.map((r, i) => (
                     <li key={`${r.name}-${i}`}>

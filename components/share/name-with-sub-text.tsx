@@ -1,3 +1,4 @@
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import { cn } from "@/lib/utils";
 
 interface NameWithSubtextProps {
@@ -37,7 +38,8 @@ export function NameWithSubtext({
       {secondary && (
         <p
           className={cn(
-            "text-muted-foreground text-micro-legal py-0.5 leading-[normal]",
+            CELL_SUB_CLASS,
+            "py-0.5 leading-[normal]",
             fit,
           )}
           title={secondary}

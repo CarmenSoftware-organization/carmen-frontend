@@ -57,7 +57,7 @@ export default function ConfigDashboard() {
           <h1 className="text-lg leading-tight font-semibold tracking-tight">
             {t("title")}
           </h1>
-          <p className="text-muted-foreground text-sm leading-snug">
+          <p className="text-muted-foreground text-xs leading-snug">
             {t("description")}
           </p>
         </div>
@@ -66,7 +66,7 @@ export default function ConfigDashboard() {
       {isError && (
         <div
           role="alert"
-          className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-3 text-sm"
+          className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-3 text-xs"
         >
           {td("loadError", { message: error?.message ?? "Unknown error" })}
         </div>
@@ -85,7 +85,7 @@ export default function ConfigDashboard() {
       )}
 
       {!isLoading && !isError && !hasAny && (
-        <p className="text-muted-foreground bg-muted/30 rounded-lg border border-dashed p-6 text-center text-sm">
+        <p className="text-muted-foreground bg-muted/30 rounded-lg border border-dashed p-6 text-center text-xs">
           {td("empty")}
         </p>
       )}

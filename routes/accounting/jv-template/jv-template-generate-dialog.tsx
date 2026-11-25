@@ -97,13 +97,13 @@ export function JvTemplateGenerateDialog({
         </DialogHeader>
 
         <div className="space-y-2">
-          <span className="text-sm font-medium">{t("period")}</span>
+          <span className="text-xs font-medium">{t("period")}</span>
           {periodsError ? (
-            <p role="alert" className="text-destructive text-sm">
+            <p role="alert" className="text-destructive text-xs">
               {t("errors.UNKNOWN")}
             </p>
           ) : !isLoading && inRange.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{t("noOpenPeriod")}</p>
+            <p className="text-muted-foreground text-xs">{t("noOpenPeriod")}</p>
           ) : (
             <Select value={periodId} onValueChange={setPeriodId}>
               <SelectTrigger className="w-full" disabled={isLoading}>
@@ -119,7 +119,7 @@ export function JvTemplateGenerateDialog({
             </Select>
           )}
           {errorText && (
-            <p role="alert" className="text-destructive text-sm">
+            <p role="alert" className="text-destructive text-xs">
               {errorText}
             </p>
           )}

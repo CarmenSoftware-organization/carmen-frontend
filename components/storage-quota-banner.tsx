@@ -192,7 +192,7 @@ function FullBar({
   return (
     <div
       role="alert"
-      className="bg-destructive text-destructive-foreground flex items-start justify-center gap-2.5 px-4 py-2.5 text-sm sm:items-center"
+      className="bg-destructive text-destructive-foreground flex items-start justify-center gap-2.5 px-4 py-2.5 text-xs sm:items-center"
     >
       <HardDrive className="mt-0.5 size-4 shrink-0 sm:mt-0" aria-hidden />
       <p className="min-w-0">

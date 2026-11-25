@@ -41,10 +41,10 @@ export function DuplicateProductDialog({
               <CopyPlus className="size-4.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <AlertDialogTitle className="text-base">
+              <AlertDialogTitle className="text-sm">
                 {t("title")}
               </AlertDialogTitle>
-              <AlertDialogDescription className="mt-1 text-sm leading-relaxed">
+              <AlertDialogDescription className="mt-1 text-xs leading-relaxed">
                 {productName
                   ? t("descriptionNamed", { name: productName })
                   : t("description")}

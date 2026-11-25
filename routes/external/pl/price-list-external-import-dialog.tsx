@@ -59,7 +59,7 @@ export default function PriceListExternalImportDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-base">
+          <DialogTitle className="flex items-center gap-2 text-sm">
             <Upload className="size-4" aria-hidden="true" />
             {t("importTitle")}
           </DialogTitle>

@@ -19,7 +19,7 @@ export function ScMapping() {
 
   return (
     <div className="space-y-3">
-      <p className="text-muted-foreground text-sm">{t("hint")}</p>
+      <p className="text-muted-foreground text-xs">{t("hint")}</p>
       <Tabs
         value={tab}
         onValueChange={(v) => setURLParams({ map: v, page: "", search: "" })}

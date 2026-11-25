@@ -157,7 +157,7 @@ export function SrActionDialog({
               <Icon className="size-4.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <AlertDialogTitle className={`text-base ${tone.titleColor}`}>
+              <AlertDialogTitle className={`text-sm ${tone.titleColor}`}>
                 {title}
               </AlertDialogTitle>
               {(description || srNo) && (
@@ -275,7 +275,7 @@ export function SrActionDialog({
                   </span>
                 </div>
                 <Textarea
-                  className="resize-none text-sm"
+                  className="resize-none text-xs"
                   placeholder={t("reasonPlaceholder")}
                   maxLength={256}
                   rows={3}

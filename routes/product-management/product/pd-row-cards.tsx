@@ -32,7 +32,7 @@ export function RowCard({
     <li className="border-border/60 bg-card rounded-lg border p-3 text-xs">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-sm font-medium break-words">{title}</div>
+          <div className="text-xs font-medium break-words">{title}</div>
           {subtitle && (
             <div className="text-muted-foreground break-words">{subtitle}</div>
           )}

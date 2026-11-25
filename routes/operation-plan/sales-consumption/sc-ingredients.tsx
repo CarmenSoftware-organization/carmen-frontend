@@ -107,7 +107,7 @@ export function ScIngredients({ sc, verify }: ScIngredientsProps) {
 
   return (
     <div className="space-y-4">
-      {summary && <p className="text-muted-foreground text-sm">{summary}</p>}
+      {summary && <p className="text-muted-foreground text-xs">{summary}</p>}
       {isPending && (
         <p className="text-muted-foreground text-xs">{t("estimateNote")}</p>
       )}
@@ -115,7 +115,7 @@ export function ScIngredients({ sc, verify }: ScIngredientsProps) {
       {sc.ingredient_problems.length > 0 && (
         <div
           role="alert"
-          className="border-warning/40 bg-warning/10 space-y-1 rounded-md border px-3 py-2 text-sm"
+          className="border-warning/40 bg-warning/10 space-y-1 rounded-md border px-3 py-2 text-xs"
         >
           <div className="text-warning-ink flex items-center gap-2 font-medium">
             <TriangleAlert aria-hidden className="size-4" />
@@ -273,7 +273,7 @@ function ScIngredientGroupCard({
         <span className="text-muted-foreground text-xs">
           {t("productCount", { count: group.products.length })}
         </span>
-        <span className="text-sm font-medium tabular-nums">
+        <span className="text-xs font-medium tabular-nums">
           {formatAmount(group.total_cost)}
         </span>
         {isPending &&

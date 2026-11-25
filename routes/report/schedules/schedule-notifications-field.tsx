@@ -91,9 +91,7 @@ export function ScheduleNotificationsField({
               </Badge>
             )}
           </div>
-          <FieldDescription
-            className={cn(isTooClose && "text-warning-ink")}
-          >
+          <FieldDescription className={cn(isTooClose && "text-warning-ink")}>
             {!notifyAt
               ? t("notifyImmediately")
               : isNextDay
@@ -117,7 +115,7 @@ export function ScheduleNotificationsField({
                 onCheckedChange={(v) => field.onChange(v === true)}
                 disabled={disabled}
               />
-              <Label htmlFor="notify-web" className="cursor-pointer text-sm">
+              <Label htmlFor="notify-web" className="cursor-pointer text-xs">
                 {t("notifyWebApplication")}
               </Label>
             </div>
@@ -134,7 +132,7 @@ export function ScheduleNotificationsField({
                 onCheckedChange={(v) => field.onChange(v === true)}
                 disabled={disabled}
               />
-              <Label htmlFor="notify-email" className="cursor-pointer text-sm">
+              <Label htmlFor="notify-email" className="cursor-pointer text-xs">
                 {t("notifyEmail")}
               </Label>
             </div>

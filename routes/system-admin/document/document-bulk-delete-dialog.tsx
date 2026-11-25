@@ -57,10 +57,10 @@ export function DocumentBulkDeleteDialog({
               <Trash2 className="size-4.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <AlertDialogTitle className="text-base">
+              <AlertDialogTitle className="text-sm">
                 {t("bulkDeleteTitle", { count })}
               </AlertDialogTitle>
-              <AlertDialogDescription className="mt-1 text-sm leading-relaxed">
+              <AlertDialogDescription className="mt-1 text-xs leading-relaxed">
                 <span className="text-foreground block font-medium">
                   {t("bulkDeleteSummary", {
                     count,
@@ -70,26 +70,26 @@ export function DocumentBulkDeleteDialog({
                 {t("bulkDeletePermanent")}
               </AlertDialogDescription>
               {inUse === null && (
-                <p className="text-warning-ink mt-2 text-sm">
+                <p className="text-warning-ink mt-2 text-xs">
                   {t("bulkInUseUnknown")}
                 </p>
               )}
               {!!inUse && (
-                <p className="text-warning-ink mt-2 text-sm">
+                <p className="text-warning-ink mt-2 text-xs">
                   {t("bulkInUse", { count: inUse })}
                   <br />
                   {t("deleteInUseWarning")}
                 </p>
               )}
               {!!platformBlocked && (
-                <p className="text-muted-foreground mt-2 text-sm">
+                <p className="text-muted-foreground mt-2 text-xs">
                   {t("bulkPlatformBlocked", { count: platformBlocked })}
                 </p>
               )}
               {error && (
                 <p
                   role="alert"
-                  className="text-destructive mt-3 text-sm font-medium"
+                  className="text-destructive mt-3 text-xs font-medium"
                 >
                   {error}
                 </p>

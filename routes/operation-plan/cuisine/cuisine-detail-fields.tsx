@@ -76,9 +76,9 @@ export function CuisineDetailFields({
           <div className="min-w-0 @md:col-span-2">
             <div className="text-muted-foreground text-xs">{tfl("info")}</div>
             {info.length === 0 ? (
-              <div className="text-muted-foreground/60 mt-0.5 text-sm">—</div>
+              <div className="text-muted-foreground/60 mt-0.5 text-xs">—</div>
             ) : (
-              <dl className="mt-0.5 space-y-0.5 text-sm">
+              <dl className="mt-0.5 space-y-0.5 text-xs">
                 {info.map((row) => (
                   <div key={row._id} className="flex flex-wrap gap-x-2">
                     <dt className="text-muted-foreground">{row.key}</dt>

@@ -75,7 +75,7 @@ export function PrSelectDialog({
       <DialogContent className="overflow-hidden p-0 sm:max-w-2xl">
         <div className="space-y-5 p-6">
           <DialogHeader>
-            <DialogTitle className="text-base">
+            <DialogTitle className="text-sm">
               {t("selectItemsTitle")}
             </DialogTitle>
             <DialogDescription className="mt-1">
@@ -146,7 +146,7 @@ export function PrStatusSelectDialog({
       <DialogContent className="overflow-hidden p-0 sm:max-w-2xl">
         <div className="space-y-5 p-6">
           <DialogHeader>
-            <DialogTitle className="text-base">
+            <DialogTitle className="text-sm">
               {t("selectStatusTitle")}
             </DialogTitle>
             <DialogDescription className="mt-1">

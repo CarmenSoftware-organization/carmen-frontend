@@ -100,7 +100,7 @@ export function GrnPoSelectDialog({
                 <div className="bg-primary/10 text-primary text-micro-legal mb-1 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 font-semibold">
                   {t("entity")}
                 </div>
-                <DialogTitle className="text-base">{t("selectPo")}</DialogTitle>
+                <DialogTitle className="text-sm">{t("selectPo")}</DialogTitle>
                 <DialogDescription className="mt-1">
                   {t("selectPoDesc")}
                 </DialogDescription>

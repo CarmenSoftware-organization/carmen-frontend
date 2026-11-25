@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import {
   useFormState,
   useWatch,
@@ -40,7 +42,7 @@ const ReceivedSubtext = function ReceivedSubtext({
   // โชว์ทุกแถวแม้ยังไม่รับ (0) — บรรทัดที่โผล่บ้างหายบ้างทำให้แยกไม่ออกว่าแถวที่
   // ไม่มีบรรทัดคือ "ยังไม่รับ" หรือ "ใบนี้ไม่มีข้อมูลรับของ"
   return (
-    <p className="text-muted-foreground text-micro-legal text-right tabular-nums">
+    <p className={cn(CELL_SUB_CLASS, "text-right tabular-nums")}>
       {formatQty(Number(received))} {unitName}
     </p>
   );
@@ -67,7 +69,7 @@ const FocReceivedSubtext = function FocReceivedSubtext({
   const formatQty = useQuantityFormatter(decimals);
   // โชว์ทุกแถวแม้ยังไม่รับ (0) — เหตุผลเดียวกับ ReceivedSubtext
   return (
-    <p className="text-muted-foreground text-micro-legal text-right tabular-nums">
+    <p className={cn(CELL_SUB_CLASS, "text-right tabular-nums")}>
       {formatQty(Number(received))} {unitName}
     </p>
   );

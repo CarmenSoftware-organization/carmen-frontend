@@ -177,7 +177,7 @@ export default function WorkflowNewForm({
             lockedTypeLabel ? (
               <>
                 <Separator orientation="vertical" className="mx-0.5 h-3.5" />
-                <span className="text-muted-foreground text-sm">
+                <span className="text-muted-foreground text-xs">
                   {lockedTypeLabel}
                 </span>
               </>
@@ -287,7 +287,7 @@ export default function WorkflowNewForm({
               apInvoiceActiveExists && (
                 <p
                   role="alert"
-                  className="text-warning-ink col-span-full text-sm"
+                  className="text-warning-ink col-span-full text-xs"
                 >
                   {t("apInvoiceSingleActiveHint")}
                 </p>
@@ -296,7 +296,7 @@ export default function WorkflowNewForm({
               apPaymentActiveExists && (
                 <p
                   role="alert"
-                  className="text-warning-ink col-span-full text-sm"
+                  className="text-warning-ink col-span-full text-xs"
                 >
                   {t("apPaymentSingleActiveHint")}
                 </p>
@@ -305,7 +305,7 @@ export default function WorkflowNewForm({
               arInvoiceActiveExists && (
                 <p
                   role="alert"
-                  className="text-warning-ink col-span-full text-sm"
+                  className="text-warning-ink col-span-full text-xs"
                 >
                   {t("arInvoiceSingleActiveHint")}
                 </p>
@@ -314,7 +314,7 @@ export default function WorkflowNewForm({
               arReceiptActiveExists && (
                 <p
                   role="alert"
-                  className="text-warning-ink col-span-full text-sm"
+                  className="text-warning-ink col-span-full text-xs"
                 >
                   {t("arReceiptSingleActiveHint")}
                 </p>
@@ -350,7 +350,7 @@ export default function WorkflowNewForm({
               <Textarea
                 id="wf-description"
                 placeholder={t("optionalDescription")}
-                className="min-h-15 text-sm"
+                className="min-h-15 text-xs"
                 disabled={isPending}
                 maxLength={256}
                 {...form.register("description")}

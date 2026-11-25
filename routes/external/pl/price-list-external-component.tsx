@@ -212,7 +212,7 @@ export default function PriceListExternalComponent({
 
           <div className="border-border space-y-6 border-t pt-6">
             <div className="flex items-center justify-between gap-4">
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs">
                 {isViewMode ? t("introView") : t("introEdit")}
               </p>
               <div className="flex shrink-0 items-center gap-2">

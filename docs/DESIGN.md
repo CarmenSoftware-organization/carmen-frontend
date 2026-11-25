@@ -161,15 +161,12 @@ typography:
     fontWeight: 400
     lineHeight: 1.5
   inherited-base:
-    # 17px — `body { font-size: 1.0625rem }` in globals.css, inherited by any text
-    # with no explicit size. It is a reading-app value ("Apple reading pace") left
-    # over from this document's origin, and it is why ~613 sub-12px literals were
-    # written: the base sat five steps above the size the app actually works at.
-    # Almost every element overrides it, so lowering it to 12px is a small change
-    # in theory and an unreviewed change to every unstyled text node in practice —
-    # it has been left alone deliberately. Listed here because it is real, not
-    # because it is a step anyone should target.
-    fontSize: 17px
+    # 12px — `body { font-size: 0.75rem }` in globals.css, inherited by any text
+    # with no explicit size. Until 2026-11-25 this was 17px (a reading-app value
+    # left over from this document's origin), which made unstyled descriptions
+    # render larger than the section headers above them. Unstyled text is CONTENT,
+    # so it sits on the content step — the same as field values and table cells.
+    fontSize: 12px
     fontWeight: 400
   heading-sm:
     fontSize: 18px    # text-lg — card and section headings
@@ -199,6 +196,26 @@ typography:
     fontSize: 60px    # text-6xl — the 404 numeral, and nothing else
     fontWeight: 700
     lineHeight: 1.05
+
+typography-roles:
+  # ROLES — which step a piece of text MUST use, by what it is (2026-11-25).
+  # The ladder above says which sizes exist; this says which one each role takes.
+  # Weight/colour stay explicit at the call site; only size is fixed here.
+  page-title:        { token: text-lg,  weight: 600 }            # h1 on list and document headers
+  section-title:     { token: text-sm,  weight: 600 }            # group/card/dialog/sheet titles
+  section-desc:      { token: text-xs,  color: muted }           # text under a title (Dialog/Sheet/CardDescription)
+  field-label:       { token: text-xs,  color: muted }
+  field-value:       { token: text-xs }                          # view mode AND input/textarea; descriptions
+  column-header:     { token: text-xs,  weight: 600, color: muted }
+  cell-primary:      { token: text-xs }                          # emphasis by weight, never by size
+  cell-secondary:    { token: text-micro, color: muted }         # CellSub / CELL_SUB_CLASS — one step, app-wide
+  meta:              { token: text-micro-legal }                 # timestamps, counters, captions
+  eyebrow:           { token: text-micro-eyebrow, weight: 600 }
+  badge:             { token: text-micro }                        # Badge default/sm and status chips (xs = text-micro-legal, lg = text-xs)
+  control-item:      { token: text-xs }                          # menu/select/command/popover/sidebar/tabs/breadcrumb
+  body-default:      { token: "0.75rem (= text-xs)" }
+  # Out of scope (keep their own sizes): buttons, toast, auth split shell,
+  # recipe cook mode, dashboard tiles/widgets, landing visuals, print.
 
 rounded:
   # Carmen Blue's real radius grammar, counted from the code. Base `--radius: 0.625rem`

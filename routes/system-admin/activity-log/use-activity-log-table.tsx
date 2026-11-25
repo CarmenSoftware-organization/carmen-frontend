@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "use-intl";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
@@ -85,7 +87,7 @@ export function useActivityLogTable({
         return (
           <div className="leading-tight whitespace-nowrap tabular-nums">
             <p className="text-xs">{date}</p>
-            <p className="text-muted-foreground text-micro">{time}</p>
+            <p className={CELL_SUB_CLASS}>{time}</p>
           </div>
         );
       },
@@ -129,10 +131,7 @@ export function useActivityLogTable({
               {fullName || "—"}
             </p>
             {username && fullName !== username && (
-              <p
-                className="text-muted-foreground text-micro truncate"
-                title={username}
-              >
+              <p className={cn(CELL_SUB_CLASS, "truncate")} title={username}>
                 {username}
               </p>
             )}
@@ -190,7 +189,7 @@ export function useActivityLogTable({
       cell: ({ row }) => {
         const id: string = row.getValue("entity_id") ?? "";
         return (
-          <span className="text-muted-foreground text-micro block truncate">
+          <span className={cn(CELL_SUB_CLASS, "block truncate")}>
             {id ? `${id.slice(0, 8)}…` : "—"}
           </span>
         );
@@ -204,7 +203,7 @@ export function useActivityLogTable({
         <DataGridColumnHeader column={column} title={t("ipAddress")} />
       ),
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-micro">
+        <span className={CELL_SUB_CLASS}>
           {row.getValue("ip_address") || "—"}
         </span>
       ),

@@ -165,7 +165,7 @@ export function OnHandDialog({ open, onOpenChange, productId, atDate }: Props) {
           <DialogHeader>
             <div className="flex items-start gap-3">
               <div className="min-w-0 flex-1">
-                <DialogTitle className="text-base">{t("onHand")}</DialogTitle>
+                <DialogTitle className="text-sm">{t("onHand")}</DialogTitle>
                 {data?.as_of_date && (
                   <p className="text-muted-foreground text-xs">
                     {t("asOfDate", { date: data.as_of_date })}

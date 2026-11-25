@@ -196,7 +196,7 @@ export default function NotificationsContent() {
       </header>
 
       {error && (
-        <p className="text-destructive text-sm">
+        <p className="text-destructive text-xs">
           {error instanceof Error ? error.message : String(error)}
         </p>
       )}

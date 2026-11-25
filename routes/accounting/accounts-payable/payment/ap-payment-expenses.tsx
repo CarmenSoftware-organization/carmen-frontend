@@ -72,7 +72,7 @@ export function PaymentExpensesSection({
       </CardHeader>
       <CardContent className="px-0">
         {rows.length === 0 ? (
-          <p className="text-muted-foreground text-sm">{t("empty")}</p>
+          <p className="text-muted-foreground text-xs">{t("empty")}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[44rem] text-left">

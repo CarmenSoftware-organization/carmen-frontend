@@ -68,7 +68,7 @@ export function JvVoidDialog({
             value={reason}
             maxLength={REASON_MAX}
             rows={3}
-            className="resize-none text-sm"
+            className="resize-none text-xs"
             placeholder={t("voidReasonPlaceholder")}
             onChange={(e) => setReason(e.target.value)}
           />

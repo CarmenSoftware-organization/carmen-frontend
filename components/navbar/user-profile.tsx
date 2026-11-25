@@ -70,7 +70,7 @@ function UserAvatar({
         aria-hidden="true"
         className={cn(
           "bg-primary text-primary-foreground font-semibold",
-          isLarge ? "text-sm" : "text-micro-legal",
+          isLarge ? "text-xs" : "text-micro-legal",
         )}
       >
         {fallbackText}
@@ -127,7 +127,7 @@ export function UserProfile() {
             <FontScaleSwitch />
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer gap-2 rounded-md px-2 py-2 text-sm"
+              className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer gap-2 rounded-md px-2 py-2 text-xs"
               onSelect={(e) => {
                 e.preventDefault();
                 setLogoutOpen(true);
@@ -230,7 +230,7 @@ export function UserProfile() {
         </DropdownMenuLabel>
         <DropdownMenuItem
           asChild
-          className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm"
+          className="cursor-pointer gap-2 rounded-md px-2 py-2 text-xs"
         >
           <Link to="/profile">
             <User className="size-4" />
@@ -238,7 +238,7 @@ export function UserProfile() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem
-          className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm"
+          className="cursor-pointer gap-2 rounded-md px-2 py-2 text-xs"
           onClick={() => setPasswordOpen(true)}
         >
           <KeyRound className="size-4" />
@@ -252,7 +252,7 @@ export function UserProfile() {
         <FontScaleSwitch />
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer gap-2 rounded-md px-2 py-2 text-sm"
+          className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer gap-2 rounded-md px-2 py-2 text-xs"
           onSelect={(e) => {
             e.preventDefault();
             setLogoutOpen(true);
@@ -302,7 +302,7 @@ function LogoutConfirmDialog({
             <LogOut className="size-4.5" />
           </div>
           <div className="min-w-0 flex-1">
-            <AlertDialogTitle className="text-base">
+            <AlertDialogTitle className="text-sm">
               {t("confirmLogoutTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription className="mt-1">

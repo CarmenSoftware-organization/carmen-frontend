@@ -75,18 +75,18 @@ export function AddressView({
         </p>
         {lines.length > 0 ? (
           lines.map((l) => (
-            <p key={l} className="text-muted-foreground text-sm break-words">
+            <p key={l} className="text-muted-foreground text-xs break-words">
               {l}
             </p>
           ))
         ) : (
-          <p className="text-muted-foreground/70 text-sm">
+          <p className="text-muted-foreground/70 text-xs">
             {t("address.noAddress")}
           </p>
         )}
       </div>
       {legal && legal.length > 0 && (
-        <dl className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+        <dl className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
           {legal.map((l) => (
             <div key={l.label} className="flex gap-2">
               <dt className="text-muted-foreground">{l.label}</dt>
@@ -104,7 +104,7 @@ export function AddressView({
         </dl>
       )}
       {hasContact && (
-        <div className="flex flex-wrap gap-x-6 gap-y-1 border-t pt-2 text-sm">
+        <div className="flex flex-wrap gap-x-6 gap-y-1 border-t pt-2 text-xs">
           {present(address.email) && (
             <a
               href={`mailto:${address.email}`}

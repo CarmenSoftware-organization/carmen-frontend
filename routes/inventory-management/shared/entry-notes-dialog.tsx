@@ -191,7 +191,7 @@ export function EntryNotesDialog({
                 <MessageSquarePlus className="size-4.5" aria-hidden="true" />
               </div>
               <div className="min-w-0 flex-1 space-y-0.5">
-                <DialogTitle className="text-foreground text-base leading-tight font-semibold tracking-tight">
+                <DialogTitle className="text-foreground text-sm leading-tight font-semibold tracking-tight">
                   {productName}
                 </DialogTitle>
                 <DialogDescription className="text-muted-foreground text-micro leading-relaxed">
@@ -218,7 +218,7 @@ export function EntryNotesDialog({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder={t("notesPlaceholder")}
-              className="border-border/40 focus-visible:border-primary bg-card min-h-20 rounded-lg border text-sm shadow-none focus-visible:ring-0"
+              className="border-border/40 focus-visible:border-primary bg-card min-h-20 rounded-lg border text-xs shadow-none focus-visible:ring-0"
               maxLength={256}
             />
           </div>

@@ -307,7 +307,7 @@ export default function CompanyProfileComponent() {
                     value={data.default_currency_id}
                     onValueChange={() => {}}
                     readOnly
-                    className="min-h-0 p-0 text-sm font-medium"
+                    className="min-h-0 p-0 text-xs font-medium"
                   />
                 ) : null,
               },

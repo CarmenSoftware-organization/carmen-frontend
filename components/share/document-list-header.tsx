@@ -28,12 +28,12 @@ export function DocumentListHeader({
         <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
         {mock && <MockBadge />}
         {count !== undefined && count > 0 && (
-          <Badge variant="secondary" size="sm" className="text-xs tabular-nums">
+          <Badge variant="secondary" size="sm" className="tabular-nums">
             {count.toLocaleString()}
           </Badge>
         )}
       </div>
-      <p className="text-muted-foreground text-xs sm:text-sm">{description}</p>
+      <p className="text-muted-foreground text-xs">{description}</p>
     </div>
   );
 }

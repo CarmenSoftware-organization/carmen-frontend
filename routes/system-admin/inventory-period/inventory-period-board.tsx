@@ -131,7 +131,7 @@ export function InventoryPeriodBoard({
     <div className="@container space-y-4">
       {/* สรุปบรรทัดเดียว: ช่วงที่เปิดอยู่ + ค้างปิด — ตัวนับค้างปิดนับทุกปี รวมปีที่พับไว้ */}
       <div className="bg-card flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border px-3 py-2">
-        <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
+        <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
           <span className="font-semibold">{t("openTitle")}</span>
           <span className="tabular-nums">{openPeriods.length}</span>
           {first && last ? (
@@ -143,12 +143,12 @@ export function InventoryPeriodBoard({
           )}
         </p>
         {overdueCount > 0 ? (
-          <p className="text-warning-ink flex items-center gap-1.5 text-sm font-medium">
+          <p className="text-warning-ink flex items-center gap-1.5 text-xs font-medium">
             <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
             {t("overdueCount", { count: overdueCount })}
           </p>
         ) : (
-          <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
+          <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
             <CheckCircle2
               className="text-success-ink size-4 shrink-0"
               aria-hidden="true"

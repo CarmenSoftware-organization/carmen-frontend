@@ -105,7 +105,7 @@ export function WfStructureLockNotice({
   return (
     <div
       role="status"
-      className="border-warning/30 bg-warning/5 text-warning-ink flex flex-wrap items-start gap-x-2.5 gap-y-1 rounded-lg border p-3 text-sm"
+      className="border-warning/30 bg-warning/5 text-warning-ink flex flex-wrap items-start gap-x-2.5 gap-y-1 rounded-lg border p-3 text-xs"
     >
       <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       <span className="min-w-0 flex-1">{t("structureLocked", { count })}</span>

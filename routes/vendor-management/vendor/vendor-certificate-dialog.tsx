@@ -164,7 +164,7 @@ export function VendorCertificateDialog({
               <div className="bg-muted text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
                 <Award className="size-4.5" />
               </div>
-              <DialogTitle className="text-base">
+              <DialogTitle className="text-sm">
                 {isEdit
                   ? tf("editTitle", { entity: tfl("certificate") })
                   : tf("addTitle", { entity: tfl("certificate") })}
@@ -192,7 +192,7 @@ export function VendorCertificateDialog({
                       }
                       disabled={isPending}
                       placeholder={t("selectCertificate")}
-                      className="h-8 w-full text-sm"
+                      className="h-8 w-full text-xs"
                       error={
                         form.formState.errors.master_certificate_id?.message
                       }

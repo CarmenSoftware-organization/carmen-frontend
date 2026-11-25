@@ -89,7 +89,7 @@ export default function PeComponent() {
           <h1 className="text-foreground text-xl font-semibold tracking-tight">
             {t("title")}
           </h1>
-          <p className="text-muted-foreground text-sm">{t("desc")}</p>
+          <p className="text-muted-foreground text-xs">{t("desc")}</p>
         </div>
       </section>
 
@@ -98,7 +98,7 @@ export default function PeComponent() {
       {!isLoading && (isError || !data) && (
         <div
           aria-live="polite"
-          className="text-muted-foreground flex items-center gap-2 rounded-xl border border-dashed p-4 text-sm"
+          className="text-muted-foreground flex items-center gap-2 rounded-xl border border-dashed p-4 text-xs"
         >
           <CalendarClock className="size-4" aria-hidden="true" />
           {t("noCurrent")}
@@ -127,7 +127,7 @@ export default function PeComponent() {
                   label={t(`status.${statusKey}`)}
                 />
               </div>
-              <p className="text-muted-foreground text-sm tabular-nums">
+              <p className="text-muted-foreground text-xs tabular-nums">
                 {formatLocalizedDate(data.start_at, locale)} –{" "}
                 {formatLocalizedDate(data.end_at, locale)}
                 <span aria-hidden="true"> · </span>
@@ -136,7 +136,7 @@ export default function PeComponent() {
                 {t("fields.fiscalMonth")} {data.fiscal_month}
               </p>
               {data.note && (
-                <p className="text-foreground max-w-prose pt-1 text-sm">
+                <p className="text-foreground max-w-prose pt-1 text-xs">
                   {data.note}
                 </p>
               )}

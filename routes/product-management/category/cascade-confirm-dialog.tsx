@@ -112,7 +112,7 @@ export function CascadeConfirmDialog({
           <AlertDialogTitle>{t("cascadeTitle")}</AlertDialogTitle>
         </AlertDialogHeader>
 
-        <div className="space-y-4 text-sm">
+        <div className="space-y-4 text-xs">
           <section className="space-y-1.5">
             <p className="text-muted-foreground font-medium">
               {t("cascadeChangedLabel")}

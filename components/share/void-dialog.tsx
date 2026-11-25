@@ -62,14 +62,14 @@ export function VoidDialog({
               <Ban className="size-4.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <DialogTitle className="text-base">{title}</DialogTitle>
+              <DialogTitle className="text-sm">{title}</DialogTitle>
               {description && isStringDescription && (
                 <DialogDescription className="mt-1">
                   {description}
                 </DialogDescription>
               )}
               {description && !isStringDescription && (
-                <div className="text-muted-foreground mt-1 text-sm">
+                <div className="text-muted-foreground mt-1 text-xs">
                   {description}
                 </div>
               )}
@@ -86,7 +86,7 @@ export function VoidDialog({
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder={tfl("voidReasonPlaceholder")}
-            className="resize-none text-sm"
+            className="resize-none text-xs"
             rows={3}
             maxLength={REASON_MAX}
             disabled={isPending}

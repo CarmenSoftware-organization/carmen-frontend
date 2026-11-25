@@ -1711,7 +1711,7 @@ export default function AccountingDocumentDetail() {
         }}
       >
         {isJournalVoucher && !isView && coaData && coaData.length === 0 && (
-          <div className="flex flex-col gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+          <div className="flex flex-col gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
             <div className="flex items-center gap-2">
               <AlertTriangle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
               <span>
@@ -1757,7 +1757,7 @@ export default function AccountingDocumentDetail() {
                   onValueChange={(prefix) =>
                     setValues((current) => ({ ...current, prefix }))
                   }
-                  className="h-8 text-sm"
+                  className="h-8 text-xs"
                 >
                   <SelectContent>
                     <SelectItem value="AJ">AJ - Adjustment Voucher</SelectItem>
@@ -2086,7 +2086,7 @@ export default function AccountingDocumentDetail() {
                   </CardTitle>
                 )}
                 {isPeriodLocked && (
-                  <Badge variant="destructive" className="gap-1 text-xs">
+                  <Badge variant="destructive" className="gap-1">
                     🔒 งวดบัญชี {currentPeriod?.fiscal_year}-P
                     {currentPeriod?.period_number} ปิดแล้ว (
                     {currentPeriod?.status})
@@ -3342,7 +3342,7 @@ export default function AccountingDocumentDetail() {
 
           {utilityPanel === "attachments" ? (
             <div className="grid gap-3 px-4 pb-6">
-              <label className="border-border hover:bg-accent flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed p-6 text-sm font-medium transition-colors">
+              <label className="border-border hover:bg-accent flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed p-6 text-xs font-medium transition-colors">
                 <Paperclip className="size-4" aria-hidden="true" />
                 {t("uploadAttachment")}
                 <input
@@ -3369,7 +3369,7 @@ export default function AccountingDocumentDetail() {
                       className="text-muted-foreground size-4 shrink-0"
                       aria-hidden="true"
                     />
-                    <span className="truncate text-sm">{file}</span>
+                    <span className="truncate text-xs">{file}</span>
                   </div>
                   <Button
                     type="button"
@@ -3391,7 +3391,7 @@ export default function AccountingDocumentDetail() {
                     key={`${comment}-${index}`}
                     className="rounded-lg border p-3"
                   >
-                    <p className="text-sm">{comment}</p>
+                    <p className="text-xs">{comment}</p>
                   </div>
                 ))}
               </div>
@@ -3428,7 +3428,7 @@ export default function AccountingDocumentDetail() {
                     aria-hidden="true"
                   />
                   <div>
-                    <p className="text-sm font-medium">{label}</p>
+                    <p className="text-xs font-medium">{label}</p>
                     <p className="text-muted-foreground text-xs">{time}</p>
                   </div>
                 </li>

@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+import { CELL_SUB_CLASS } from "@/components/ui/data-grid/cell-text";
 import { formatDate } from "@/lib/date-utils";
 import type { AuditEntry } from "@/types/audit";
 
@@ -16,9 +18,7 @@ export function AuditCell({ entry, dateTimeFormat }: AuditCellProps) {
         {formatDate(entry.at, dateTimeFormat)}
       </span>
       {entry.name && (
-        <span className="text-muted-foreground text-micro truncate">
-          {entry.name}
-        </span>
+        <span className={cn(CELL_SUB_CLASS, "truncate")}>{entry.name}</span>
       )}
     </div>
   );

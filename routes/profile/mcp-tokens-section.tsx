@@ -27,7 +27,10 @@ import {
   useRevokeMcpToken,
 } from "./use-mcp-tokens";
 
-const STATUS_VARIANT: Record<McpTokenStatus, "success-light" | "warning-light" | "destructive-light"> = {
+const STATUS_VARIANT: Record<
+  McpTokenStatus,
+  "success-light" | "warning-light" | "destructive-light"
+> = {
   active: "success-light",
   expired: "warning-light",
   revoked: "destructive-light",
@@ -57,7 +60,9 @@ export function McpTokensSection() {
 
   const rows = tokens.data ?? [];
   const activeRows = rows.filter((row) => getMcpTokenStatus(row) === "active");
-  const inactiveRows = rows.filter((row) => getMcpTokenStatus(row) !== "active");
+  const inactiveRows = rows.filter(
+    (row) => getMcpTokenStatus(row) !== "active",
+  );
 
   const handleConfirmRevoke = () => {
     if (!revokeTarget) return;
@@ -118,13 +123,13 @@ export function McpTokensSection() {
           {t("description")}
         </p>
         {tokens.isPending ? (
-          <div className="text-muted-foreground text-sm">{tc("loading")}</div>
+          <div className="text-muted-foreground text-xs">{tc("loading")}</div>
         ) : tokens.isError ? (
           <ErrorState error={tokens.error} onRetry={() => tokens.refetch()} />
         ) : (
           <>
             {activeRows.length === 0 ? (
-              <div className="text-muted-foreground text-sm">
+              <div className="text-muted-foreground text-xs">
                 <p className="font-medium">{t("empty")}</p>
                 <p className="mt-1 text-xs">{t("emptyHint")}</p>
               </div>
@@ -155,7 +160,11 @@ export function McpTokensSection() {
                   </Button>
                 </div>
                 <CollapsibleContent className="pt-1">
-                  <TokenGrid rows={inactiveRows} showStatus onDelete={setDeleteTarget} />
+                  <TokenGrid
+                    rows={inactiveRows}
+                    showStatus
+                    onDelete={setDeleteTarget}
+                  />
                 </CollapsibleContent>
               </Collapsible>
             )}
@@ -166,9 +175,13 @@ export function McpTokensSection() {
       <McpTokenCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
       <ConfirmDialog
         open={revokeTarget !== null}
-        onOpenChange={(open) => { if (!open) setRevokeTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setRevokeTarget(null);
+        }}
         title={t("revokeTitle")}
-        description={revokeTarget ? t("revokeConfirm", { name: revokeTarget.name }) : ""}
+        description={
+          revokeTarget ? t("revokeConfirm", { name: revokeTarget.name }) : ""
+        }
         confirmText={t("revoke")}
         confirmIcon={<Ban className="size-3.5" aria-hidden="true" />}
         variant="destructive"
@@ -177,9 +190,13 @@ export function McpTokensSection() {
       />
       <ConfirmDialog
         open={deleteTarget !== null}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         title={t("deleteTitle")}
-        description={deleteTarget ? t("deleteConfirm", { name: deleteTarget.name }) : ""}
+        description={
+          deleteTarget ? t("deleteConfirm", { name: deleteTarget.name }) : ""
+        }
         confirmText={t("delete")}
         confirmIcon={<Trash2 className="size-3.5" aria-hidden="true" />}
         variant="destructive"
@@ -234,7 +251,8 @@ function TokenGrid({
     expired: t("statusExpired"),
     revoked: t("statusRevoked"),
   };
-  const absolute = (iso: string | null) => (iso ? formatDate(iso, dateTimeFormat) : undefined);
+  const absolute = (iso: string | null) =>
+    iso ? formatDate(iso, dateTimeFormat) : undefined;
 
   const items = rows.map((row) => {
     const status = getMcpTokenStatus(row);
@@ -242,16 +260,21 @@ function TokenGrid({
       row,
       status,
       isMuted: status !== "active",
-      lastUsed: row.last_used_at ? formatRelativeTime(row.last_used_at, locale) : t("never"),
+      lastUsed: row.last_used_at
+        ? formatRelativeTime(row.last_used_at, locale)
+        : t("never"),
       // โทเค็นที่เพิกถอนแล้ว "หมดอายุอีก 3 เดือน" อ่านเหมือนยังใช้ได้
-      expires: status === "revoked" ? "—" : formatRelativeTime(row.expires_at, locale),
+      expires:
+        status === "revoked" ? "—" : formatRelativeTime(row.expires_at, locale),
     };
   });
 
   const renderName = (row: McpToken) => (
     <>
       <div className="font-medium break-words">{row.name}</div>
-      <div className="text-muted-foreground font-mono text-micro whitespace-nowrap">{row.token_prefix}…</div>
+      <div className="text-muted-foreground text-micro font-mono whitespace-nowrap">
+        {row.token_prefix}…
+      </div>
     </>
   );
   const renderScopes = (row: McpToken) =>
@@ -266,7 +289,9 @@ function TokenGrid({
       </Badge>
     ));
   const renderStatus = (status: McpTokenStatus) => (
-    <Badge variant={STATUS_VARIANT[status]} size="xs">{statusLabel[status]}</Badge>
+    <Badge variant={STATUS_VARIANT[status]} size="xs">
+      {statusLabel[status]}
+    </Badge>
   );
   const renderAction = (row: McpToken) => {
     if (onRevoke) {

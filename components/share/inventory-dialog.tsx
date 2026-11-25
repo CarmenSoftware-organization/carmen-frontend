@@ -230,7 +230,7 @@ export const InventoryDialog = memo(function InventoryDialog({
               className="mt-2 h-1"
               indicatorClassName={progressColor}
             />
-            <div className="mt-1 flex items-center justify-between text-sm">
+            <div className="mt-1 flex items-center justify-between text-xs">
               {needsReorder ? (
                 <span className="text-destructive font-semibold">
                   {t("needsReorder")}

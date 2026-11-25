@@ -43,10 +43,10 @@ export function DeleteDialog({
               <Trash2 className="size-4.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <AlertDialogTitle className="text-base">
+              <AlertDialogTitle className="text-sm">
                 {title || td("title")}
               </AlertDialogTitle>
-              <AlertDialogDescription className="mt-1 max-h-48 overflow-y-auto text-sm leading-relaxed wrap-anywhere">
+              <AlertDialogDescription className="mt-1 max-h-48 overflow-y-auto text-xs leading-relaxed wrap-anywhere">
                 {description || td("confirm")}
               </AlertDialogDescription>
             </div>

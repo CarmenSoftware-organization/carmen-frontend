@@ -36,6 +36,7 @@ const NAV = [
       { id: "colors-chart", label: "Colors — charts" },
       { id: "type-ladder", label: "Type — governed" },
       { id: "type-display", label: "Type — display" },
+      { id: "type-roles", label: "Type — roles" },
       { id: "type-font", label: "Font stack" },
       { id: "radius", label: "Radius" },
       { id: "elevation", label: "Elevation" },

@@ -379,7 +379,7 @@ function CertificateCards({
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <div className="text-sm font-medium break-words">
+              <div className="text-xs font-medium break-words">
                 {masterMap.get(item.master_certificate_id)?.name ?? ""}
               </div>
               <div className="text-muted-foreground break-all">

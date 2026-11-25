@@ -21,7 +21,7 @@ export default function PriceListExternalExpired() {
       <h1 className="text-foreground text-xl font-semibold tracking-tight">
         {t("expiredTitle")}
       </h1>
-      <p className="text-muted-foreground mt-2.5 text-sm leading-relaxed">
+      <p className="text-muted-foreground mt-2.5 text-xs leading-relaxed">
         {t("expiredBody")}
       </p>
     </div>

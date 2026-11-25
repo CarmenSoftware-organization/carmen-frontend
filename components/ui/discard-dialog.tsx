@@ -45,10 +45,10 @@ export function DiscardDialog({
                 <AlertTriangle className="size-4.5" aria-hidden="true" />
               </div>
               <div className="min-w-0 flex-1">
-                <AlertDialogTitle className="text-base">
+                <AlertDialogTitle className="text-sm">
                   {titleText}
                 </AlertDialogTitle>
-                <AlertDialogDescription className="mt-1 text-sm leading-relaxed">
+                <AlertDialogDescription className="mt-1 text-xs leading-relaxed">
                   {descText}
                 </AlertDialogDescription>
               </div>

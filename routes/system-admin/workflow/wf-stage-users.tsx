@@ -90,7 +90,7 @@ function WfStageUsersView({
           aria-hidden="true"
         />
         <div className="space-y-0.5">
-          <p className="text-foreground text-sm font-medium">{t("hodRoute")}</p>
+          <p className="text-foreground text-xs font-medium">{t("hodRoute")}</p>
           <p className="text-muted-foreground text-xs">{t("hodRouteHint")}</p>
         </div>
       </div>
@@ -108,7 +108,7 @@ function WfStageUsersView({
     );
 
   if (people.length === 0) {
-    return <p className="text-destructive text-sm">{t("noAssignedUsers")}</p>;
+    return <p className="text-destructive text-xs">{t("noAssignedUsers")}</p>;
   }
 
   return (
@@ -123,7 +123,7 @@ function WfStageUsersView({
             fallbackClassName="bg-muted text-foreground text-micro font-medium"
           />
           <span className="flex min-w-0 flex-col">
-            <span className="text-foreground truncate text-sm leading-tight font-medium">
+            <span className="text-foreground truncate text-xs leading-tight font-medium">
               {user.firstname} {user.lastname}
             </span>
             <span className="text-muted-foreground truncate text-xs leading-tight">
