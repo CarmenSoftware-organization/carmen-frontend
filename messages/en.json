@@ -184,8 +184,10 @@
       "dimensionDesc": "Which documents show dimensions on each line for this business unit.",
       "printForm": "Print Forms",
       "printFormDesc": "Report form used when printing each document type.",
-      "documents": "Document behavior",
-      "documentsDesc": "Defaults applied when staff create purchasing and stock documents.",
+      "purchasing": "Purchasing & stock",
+      "purchasingDesc": "Defaults applied when staff create purchasing and stock documents.",
+      "selfApprove": "Creator can approve their own document",
+      "selfApproveDesc": "When on, the creator can approve their own document without waiting for another approver.",
       "ap": "AP",
       "apDesc": "Accounts Payable settings for this business unit.",
       "ar": "AR",
@@ -200,7 +202,7 @@
         "lastCost": "Last cost"
       },
       "poGroupByPrComment": "Group by PR comment",
-      "dimensionStartFrom": "Show line dimensions from",
+      "dimensionStartFrom": "Show on lines from",
       "dimensionStartFromDesc": "Dimensions appear on this document and every later one in the purchasing chain (PR, PO, GRN).",
       "dimensionStartFromOptions": {
         "none": "Off",
@@ -208,9 +210,9 @@
         "po": "From PO",
         "grn": "From GRN"
       },
-      "dimensionSrEnabled": "Line dimensions on Store Requisition",
+      "dimensionSrEnabled": "Store Requisition (SR)",
       "dimensionSrEnabledDesc": "Show dimensions on each Store Requisition line.",
-      "dimensionIaEnabled": "Line dimensions on Inventory Adjustment",
+      "dimensionIaEnabled": "Inventory Adjustment (IA)",
       "dimensionIaEnabledDesc": "Show dimensions on each Inventory Adjustment line.",
       "printFormPr": "Purchase Request",
       "printFormPo": "Purchase Order",
@@ -237,10 +239,10 @@
       "generalDefaultVatRate": "Default VAT (%)",
       "generalDefaultVatRateDesc": "Documents still take VAT from the tax profile.",
       "generalDefaultServiceRate": "Default service charge (%)",
-      "apInvoiceAllowCreatorApprove": "Allow the creator to approve their own AP invoice",
-      "apPaymentAllowCreatorApprove": "Allow the creator to approve their own AP payment",
-      "arInvoiceAllowCreatorApprove": "Allow the creator to approve their own AR invoice",
-      "arReceiptAllowCreatorApprove": "Allow the creator to approve their own AR receipt"
+      "apInvoiceAllowCreatorApprove": "AP Invoice",
+      "apPaymentAllowCreatorApprove": "AP Payment",
+      "arInvoiceAllowCreatorApprove": "AR Invoice",
+      "arReceiptAllowCreatorApprove": "AR Receipt"
     }
   },
   "accounting": {
