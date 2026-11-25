@@ -7,7 +7,7 @@ import { useTranslations } from "use-intl";
 import { FormPageShell } from "@/components/share/form-page-shell";
 import { FormToolbar } from "@/components/share/form-toolbar";
 import { Input } from "@/components/ui/input";
-import { StatusSwitch } from "@/components/ui/status-switch";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -205,6 +205,7 @@ export default function WorkflowNewForm({
               </FieldLabel>
               <Input
                 id="wf-name"
+                size="sm"
                 placeholder={namePlaceholder}
                 disabled={isPending}
                 maxLength={100}
@@ -319,18 +320,26 @@ export default function WorkflowNewForm({
                 </p>
               )}
 
-            {/* สถานะเป็นช่องหนึ่งของ General (เหมือนหน้าแก้ใน wf-general) ไม่ใช่การ์ดแยกที่มีสวิตช์ตัวเดียว */}
+            {/* สถานะเป็นช่องหนึ่งของ General (เหมือนหน้าแก้ใน wf-general) — ป้าย + สวิตช์สูงเท่าช่องกรอก
+                ไม่ใช้ StatusSwitch เพราะเป็นกล่องมีขอบซ้อนในการ์ด และคำอธิบายแค่ทวนป้าย */}
             <Controller
               control={form.control}
               name="is_active"
               render={({ field }) => (
-                <StatusSwitch
-                  id="wf-is-active"
-                  hideBadge
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isPending}
-                />
+                <Field>
+                  <FieldLabel htmlFor="wf-is-active">{t("status")}</FieldLabel>
+                  <div className="flex min-h-8 items-center gap-2">
+                    <Switch
+                      id="wf-is-active"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isPending}
+                    />
+                    <span className="text-xs">
+                      {tfl(field.value ? "active" : "inactive")}
+                    </span>
+                  </div>
+                </Field>
               )}
             />
 
