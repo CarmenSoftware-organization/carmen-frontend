@@ -7344,6 +7344,12 @@
         "current_period": "งวดปัจจุบัน",
         "previous_period": "งวดที่แล้ว"
       },
+      "horizon": {
+        "7days": "ภายใน 7 วัน",
+        "14days": "ภายใน 14 วัน",
+        "30days": "ภายใน 30 วัน",
+        "90days": "ภายใน 90 วัน"
+      },
       "lookupAll": "ทั้งหมด",
       "lookupPicked": "เลือกแล้ว {count} จาก {max}",
       "option": {
