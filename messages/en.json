@@ -7357,7 +7357,10 @@
         "qty": "Quantity requested",
         "day": "Day",
         "week": "Week",
-        "month": "Month"
+        "month": "Month",
+        "today": "Today",
+        "this_week": "This week",
+        "next_week": "Next week"
       },
       "filterCount": {
         "categories": "{count, plural, one {# category} other {# categories}}",
@@ -7577,6 +7580,10 @@
         "purchasing-by-department": "Purchasing value by department",
         "pr-pending-by-stage": "PRs waiting by approval stage",
         "po-awaiting-delivery": "POs awaiting delivery",
+        "po-expected-deliveries": "POs expected for delivery",
+        "po-overdue": "Overdue purchase orders",
+        "po-partially-received": "Partially received order lines",
+        "po-over-received": "Over-received order lines",
         "po-by-vendor-top": "Top vendors by PO spend",
         "pr-by-department": "PR by department",
         "pr-by-status": "PR by status",

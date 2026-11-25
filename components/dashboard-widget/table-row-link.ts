@@ -19,6 +19,11 @@ const DOC_ROUTES: Record<string, string> = {
   "procurement.slowest-pr-approvals": "/procurement/purchase-request",
   "procurement.slowest-po-approvals": "/procurement/purchase-order",
   "workflow.my-pending-pr": "/procurement/purchase-request",
+  // ตารางหน้ารับของ — แถวคือ PO (หรือบรรทัดของ PO) ส่ง id ของ PO มา
+  "procurement.po-expected-deliveries": "/procurement/purchase-order",
+  "procurement.po-overdue": "/procurement/purchase-order",
+  "procurement.po-partially-received": "/procurement/purchase-order",
+  "procurement.po-over-received": "/procurement/purchase-order",
 };
 
 /** คีย์ของคอลัมน์ที่ถือ id (type `id`) — ไม่มี = แถวนี้ลิงก์ไม่ได้ */
@@ -57,8 +62,10 @@ const INVENTORY_DOC_ROUTES: Record<string, (id: string) => string> = {
   good_received_note: (id) => `/procurement/goods-receive-note/${id}`,
   credit_note: (id) => `/procurement/credit-note/${id}`,
   store_requisition: (id) => `/store-operation/store-requisition/${id}`,
-  stock_in: (id) => `/inventory-management/inventory-adjustment/${id}?type=stock-in`,
-  stock_out: (id) => `/inventory-management/inventory-adjustment/${id}?type=stock-out`,
+  stock_in: (id) =>
+    `/inventory-management/inventory-adjustment/${id}?type=stock-in`,
+  stock_out: (id) =>
+    `/inventory-management/inventory-adjustment/${id}?type=stock-out`,
 };
 
 /**
@@ -74,7 +81,8 @@ export function cellDocHref(
 ): string | null {
   const type = row[link.doc_type];
   const id = row[link.doc_id];
-  const route = typeof type === "string" ? INVENTORY_DOC_ROUTES[type] : undefined;
+  const route =
+    typeof type === "string" ? INVENTORY_DOC_ROUTES[type] : undefined;
   return route && typeof id === "string" && id.length > 0
     ? route(encodeURIComponent(id))
     : null;
