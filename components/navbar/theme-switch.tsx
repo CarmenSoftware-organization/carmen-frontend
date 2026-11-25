@@ -195,7 +195,7 @@ export function ThemeSwitch() {
 
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm">
+      <DropdownMenuSubTrigger className="cursor-pointer gap-2 rounded-md px-2 py-2 text-xs">
         <ThemeIcon mode={current} />
         {t("theme")}
       </DropdownMenuSubTrigger>

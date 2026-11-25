@@ -78,7 +78,7 @@ export function FontScaleSwitch() {
 
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger className="cursor-pointer gap-2 rounded-md px-2 py-2 text-sm">
+      <DropdownMenuSubTrigger className="cursor-pointer gap-2 rounded-md px-2 py-2 text-xs">
         <ALargeSmall className="size-4" />
         {t("fontSize")}
       </DropdownMenuSubTrigger>
