@@ -7357,7 +7357,10 @@
         "qty": "จำนวนที่ขอ",
         "day": "วัน",
         "week": "สัปดาห์",
-        "month": "เดือน"
+        "month": "เดือน",
+        "today": "วันนี้",
+        "this_week": "สัปดาห์นี้",
+        "next_week": "สัปดาห์หน้า"
       },
       "filterCount": {
         "categories": "{count} หมวดหมู่",
@@ -7577,6 +7580,10 @@
         "purchasing-by-department": "ยอดสั่งซื้อแยกตามแผนก",
         "pr-pending-by-stage": "ใบขอซื้อที่ค้างอนุมัติ แยกตามขั้น",
         "po-awaiting-delivery": "ใบสั่งซื้อที่รอรับของ",
+        "po-expected-deliveries": "ใบสั่งซื้อที่ถึงกำหนดส่ง",
+        "po-overdue": "ใบสั่งซื้อที่เลยกำหนดส่ง",
+        "po-partially-received": "รายการสั่งซื้อที่รับไม่ครบ",
+        "po-over-received": "รายการสั่งซื้อที่รับเกิน",
         "po-by-vendor-top": "Vendor ที่มียอดสั่งซื้อสูงสุด",
         "pr-by-department": "ใบขอซื้อแยกตามแผนก",
         "pr-by-status": "ใบขอซื้อแยกตามสถานะ",

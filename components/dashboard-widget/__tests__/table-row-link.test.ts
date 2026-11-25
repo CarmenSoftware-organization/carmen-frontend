@@ -17,13 +17,15 @@ describe("idColumnKey", () => {
         ]),
       ),
     ).toBe("id");
-    expect(
-      idColumnKey(table([{ key: "doc_id", label: "", type: "id" }])),
-    ).toBe("doc_id");
+    expect(idColumnKey(table([{ key: "doc_id", label: "", type: "id" }]))).toBe(
+      "doc_id",
+    );
   });
 
   it("returns null when the dataset carries no id", () => {
-    expect(idColumnKey(table([{ key: "a", label: "A", type: "text" }]))).toBeNull();
+    expect(
+      idColumnKey(table([{ key: "a", label: "A", type: "text" }])),
+    ).toBeNull();
     expect(idColumnKey(null)).toBeNull();
   });
 });
@@ -56,12 +58,28 @@ describe("docHref", () => {
     );
   });
 
+  // ตารางหน้ารับของ — ทุกแถวเปิดหน้า PO ของมัน
+  it("opens the purchase order from the receiving-desk tables", () => {
+    for (const id of [
+      "procurement.po-expected-deliveries",
+      "procurement.po-overdue",
+      "procurement.po-partially-received",
+      "procurement.po-over-received",
+    ]) {
+      expect(docHref(id, { id: "po-3" }, "id")).toBe(
+        "/procurement/purchase-order/po-3",
+      );
+    }
+  });
+
   // ranked ที่ไม่ใช่เอกสาร (สินค้า/ผู้ขาย) ยังไม่มีหน้าปลายทาง ต้องไม่กดได้
   it("leaves non-document ranked datasets alone", () => {
     expect(
       docHref("procurement.top-products-by-quantity", { id: "p-1" }, "id"),
     ).toBeNull();
-    expect(docHref("inventory.most-active-products", { id: "p-1" }, "id")).toBeNull();
+    expect(
+      docHref("inventory.most-active-products", { id: "p-1" }, "id"),
+    ).toBeNull();
   });
 
   // ตารางที่ไม่ได้ชี้ไปเอกสาร (below-par ฯลฯ) ต้องไม่กลายเป็นแถวกดได้ที่กดแล้วเงียบ
@@ -84,15 +102,33 @@ describe("docHref", () => {
 });
 
 describe("cellDocHref", () => {
-  const link = { doc_type: "last_doc_type", doc_id: "last_doc_id", title: "last_doc_no" };
-  const row = (type: unknown, id: unknown) => ({ last_doc_type: type, last_doc_id: id, last_doc_no: "X" });
+  const link = {
+    doc_type: "last_doc_type",
+    doc_id: "last_doc_id",
+    title: "last_doc_no",
+  };
+  const row = (type: unknown, id: unknown) => ({
+    last_doc_type: type,
+    last_doc_id: id,
+    last_doc_no: "X",
+  });
 
   it("routes every inventory document type to its own page", () => {
-    expect(cellDocHref(row("good_received_note", "g1"), link)).toBe("/procurement/goods-receive-note/g1");
-    expect(cellDocHref(row("credit_note", "c1"), link)).toBe("/procurement/credit-note/c1");
-    expect(cellDocHref(row("store_requisition", "r1"), link)).toBe("/store-operation/store-requisition/r1");
-    expect(cellDocHref(row("stock_in", "s1"), link)).toBe("/inventory-management/inventory-adjustment/s1?type=stock-in");
-    expect(cellDocHref(row("stock_out", "o1"), link)).toBe("/inventory-management/inventory-adjustment/o1?type=stock-out");
+    expect(cellDocHref(row("good_received_note", "g1"), link)).toBe(
+      "/procurement/goods-receive-note/g1",
+    );
+    expect(cellDocHref(row("credit_note", "c1"), link)).toBe(
+      "/procurement/credit-note/c1",
+    );
+    expect(cellDocHref(row("store_requisition", "r1"), link)).toBe(
+      "/store-operation/store-requisition/r1",
+    );
+    expect(cellDocHref(row("stock_in", "s1"), link)).toBe(
+      "/inventory-management/inventory-adjustment/s1?type=stock-in",
+    );
+    expect(cellDocHref(row("stock_out", "o1"), link)).toBe(
+      "/inventory-management/inventory-adjustment/o1?type=stock-out",
+    );
   });
 
   it("has no link without a document or for a type with no page", () => {
@@ -103,6 +139,8 @@ describe("cellDocHref", () => {
   });
 
   it("encodes the id", () => {
-    expect(cellDocHref(row("credit_note", "a/b"), link)).toBe("/procurement/credit-note/a%2Fb");
+    expect(cellDocHref(row("credit_note", "a/b"), link)).toBe(
+      "/procurement/credit-note/a%2Fb",
+    );
   });
 });
