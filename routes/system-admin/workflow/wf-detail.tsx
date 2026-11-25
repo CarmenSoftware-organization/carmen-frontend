@@ -40,6 +40,7 @@ import { WfProducts } from "./wf-products";
 import { WfJvScope } from "./wf-jv-scope";
 import { validateWorkflow } from "./wf-validate";
 import WfInsights from "./wf-insights";
+import { WfTabBodySkeleton } from "./wf-detail-skeleton";
 import { WfStageList } from "./wf-stage-list";
 import {
   WfStructureLockNotice,
@@ -51,9 +52,16 @@ interface WfDetailProps {
   readonly workflow: Workflow;
   readonly users: User[];
   readonly products: Product[];
+  /** สินค้ายังดึงไม่ครบ — แท็บ Products / Routing แสดง skeleton แทน (ต้นไม้สินค้าคำนวณตอน mount ครั้งเดียว) */
+  readonly productsLoading?: boolean;
 }
 
-export function WfDetail({ workflow, users, products }: WfDetailProps) {
+export function WfDetail({
+  workflow,
+  users,
+  products,
+  productsLoading = false,
+}: WfDetailProps) {
   "use no memo";
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
@@ -343,13 +351,17 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                 </TabsContent>
 
                 <TabsContent value="routing" className="mt-0 outline-none">
-                  <WfRouting
-                    form={form}
-                    fieldArray={routingFieldArray}
-                    allProducts={products}
-                    isDisabled={isStructureDisabled}
-                    lockedReason={lockedReason}
-                  />
+                  {productsLoading ? (
+                    <WfTabBodySkeleton />
+                  ) : (
+                    <WfRouting
+                      form={form}
+                      fieldArray={routingFieldArray}
+                      allProducts={products}
+                      isDisabled={isStructureDisabled}
+                      lockedReason={lockedReason}
+                    />
+                  )}
                 </TabsContent>
 
                 {caps.hasJvScope ? (
@@ -358,12 +370,16 @@ export function WfDetail({ workflow, users, products }: WfDetailProps) {
                   </TabsContent>
                 ) : caps.hasProducts ? (
                   <TabsContent value="products" className="mt-0 outline-none">
-                    <WfProducts
-                      form={form}
-                      allProducts={products}
-                      isDisabled={isDisabled}
-                      readOnly={!isEditing}
-                    />
+                    {productsLoading ? (
+                      <WfTabBodySkeleton />
+                    ) : (
+                      <WfProducts
+                        form={form}
+                        allProducts={products}
+                        isDisabled={isDisabled}
+                        readOnly={!isEditing}
+                      />
+                    )}
                   </TabsContent>
                 ) : null}
               </div>

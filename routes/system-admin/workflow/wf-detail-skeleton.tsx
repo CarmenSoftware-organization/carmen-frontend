@@ -86,3 +86,24 @@ export function WfDetailSkeleton() {
     </FormPageShell>
   );
 }
+
+/** เนื้อแท็บที่รอสินค้า (Products / Routing) — หัวแถบค้นหา + แถวรายการ */
+export function WfTabBodySkeleton() {
+  return (
+    <div aria-busy="true" className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-8 flex-1 rounded-md" />
+        <Skeleton className="h-8 w-24 rounded-md" />
+      </div>
+      <div className="divide-y rounded-lg border">
+        {Array.from({ length: TABLE_ROWS }, (_, i) => (
+          <div key={i} className="flex items-center gap-3 px-3 py-2.5">
+            <Skeleton className="size-4 rounded-sm" />
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="ml-auto h-4 w-12" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
