@@ -77,12 +77,17 @@ export function useExportJournalVoucher() {
   return { exportJournalVoucher, isExporting };
 }
 
-export function useJournalVoucher(id?: string) {
+export function useJournalVoucher(
+  id?: string,
+  options?: { readonly enabled?: boolean },
+) {
   const context = useRepositoryContext();
   return useQuery({
     queryKey: JOURNAL_VOUCHER_QUERY_KEYS.detail(context.buCode, id),
     queryFn: () => context.repository.get(context.buCode, id!),
-    enabled: Boolean(id && id !== "new" && id !== "undefined"),
+    enabled:
+      Boolean(id && id !== "new" && id !== "undefined") &&
+      (options?.enabled ?? true),
   });
 }
 

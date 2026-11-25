@@ -76,7 +76,7 @@ import { useDepartment } from "@/hooks/use-department";
 import { useCostCenter } from "@/hooks/use-cost-center";
 import { useGlPeriods } from "@/hooks/use-accounting-master";
 import { useBuCode } from "@/hooks/use-bu-code";
-import { ApiError } from "@/lib/api-error";
+import { hasResolvableCatalogMessage } from "@/lib/error-message";
 import { useErrorToast } from "@/hooks/use-error-toast";
 import { readCoaRules, coaRulesKey } from "@/lib/coa-dimension-rules";
 import {
@@ -259,11 +259,6 @@ const optionLabel = (
   return value;
 };
 
-/** error จาก backend ที่มีรหัส catalog — ต้องแปลผ่าน errorToast */
-function hasCatalogCode(error: unknown): error is ApiError {
-  return error instanceof ApiError && !!error.appCode;
-}
-
 export default function AccountingDocumentDetail() {
   "use no memo";
   const pathname = useLocation().pathname;
@@ -273,6 +268,7 @@ export default function AccountingDocumentDetail() {
   const tc = useTranslations("common");
   const tLineDimension = useTranslations("lineDimension");
   const errorToast = useErrorToast();
+  const tErrors = useTranslations("errors");
   const config = accountingDocumentFromPath(pathname);
   const isJournalVoucher = config.kind === "journalVoucher";
   const isGlVoucher = isJournalVoucher;
@@ -286,8 +282,11 @@ export default function AccountingDocumentDetail() {
     config.kind === "assetRegister" ||
     config.kind === "assetDisposal";
   const isValidId = Boolean(id && id !== "new" && id !== "undefined");
+  const deleteJournal = useDeleteJournalVoucher();
+  // หยุด refetch ใบที่กำลัง/เพิ่งลบ — กัน observer ที่ยังติดอยู่สร้าง query ใหม่แล้วเจอ 404 วาบก่อน navigate
   const journalQuery = useJournalVoucher(
     isJournalVoucher && isValidId ? id : undefined,
+    { enabled: !deleteJournal.isPending && !deleteJournal.isSuccess },
   );
   const createJournal = useCreateJournalVoucher();
   const updateJournal = useUpdateJournalVoucher();
@@ -298,7 +297,6 @@ export default function AccountingDocumentDetail() {
   const rejectJournal = useJournalVoucherAction("reject");
   const sendBackJournal = useJournalVoucherAction("review");
   const voidDraftJournal = useJournalVoucherAction("void-draft");
-  const deleteJournal = useDeleteJournalVoucher();
   const [rejectOpen, setRejectOpen] = useState(false);
   const [sendBackOpen, setSendBackOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -999,7 +997,7 @@ export default function AccountingDocumentDetail() {
         );
         navigate(`${config.path}/${targetId}`, { replace: true });
       } catch (error) {
-        if (hasCatalogCode(error)) {
+        if (hasResolvableCatalogMessage(error, tErrors)) {
           errorToast(error);
           return;
         }
@@ -1030,7 +1028,7 @@ export default function AccountingDocumentDetail() {
         navigate(`${config.path}/${copied.id}`);
         toast.success(t("copiedToNew"));
       } catch (error) {
-        if (hasCatalogCode(error)) {
+        if (hasResolvableCatalogMessage(error, tErrors)) {
           errorToast(error);
           return;
         }
@@ -1193,7 +1191,9 @@ export default function AccountingDocumentDetail() {
   // รหัส catalog (เช่น WORKFLOW_CREATOR_CANNOT_APPROVE, GL_JV_NUMBERED_DRAFT_NOT_DELETABLE)
   // แปลผ่าน errorToast · error อื่นคงข้อความจาก server ไว้ (version conflict ฯลฯ)
   const onJournalActionError = (error: Error) =>
-    hasCatalogCode(error) ? errorToast(error) : toast.error(error.message);
+    hasResolvableCatalogMessage(error, tErrors)
+      ? errorToast(error)
+      : toast.error(error.message);
 
   function handleJournalApprove() {
     if (!journal) return;

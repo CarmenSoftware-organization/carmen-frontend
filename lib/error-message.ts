@@ -210,6 +210,21 @@ export function getUserErrorMessage(
   return key ? t(key) : t("unexpected");
 }
 
+/**
+ * error นี้แปลเป็นข้อความเฉพาะเรื่องได้จริงหรือไม่ (ชื่อกลาง / `errors.byCode.<CODE>` /
+ * ข้อความ catalog จาก backend) — false = `getUserErrorMessage` จะตกไปข้อความกลางจาก HTTP status
+ * ผู้เรียกที่อยากโชว์ข้อความ server ของ error แบบนั้นควรใช้ `error.message` แทน
+ */
+export function hasResolvableCatalogMessage(
+  err: unknown,
+  t: TranslationFn,
+): err is ApiError {
+  if (!(err instanceof ApiError) || !err.appCode) return false;
+  if (APP_CODE_TO_KEY[err.appCode]) return true;
+  if (t.has?.(`byCode.${err.appCode}`)) return true;
+  return err.catalogId !== undefined && !!shortServerMessage(err);
+}
+
 /** ยาวกว่านี้ถือว่าไม่ใช่ประโยคที่ตั้งใจเขียนให้คนอ่าน (มักเป็น trace/SQL) */
 const MAX_SERVER_MESSAGE_LENGTH = 160;
 
