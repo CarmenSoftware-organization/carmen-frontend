@@ -10,7 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { findAccountingSection, moduleList } from "@/constant/module-list";
+import { moduleList } from "@/constant/module-list";
 
 function isIdSegment(segment: string) {
   // numeric id
@@ -35,7 +35,9 @@ const SEGMENT_TO_KEY: Record<string, string> = {};
 function addModuleSegments(modules: typeof moduleList) {
   for (const mod of modules) {
     const segment = mod.path.split("/").pop()!;
-    PATH_TO_KEY[mod.path] = mod.name;
+    // โมดูลแม่ชนะ — dashboard ของ GL/AP/AR/Asset ใช้ path เดียวกับโมดูล
+    // breadcrumb ระดับแรกต้องเป็นชื่อโมดูล ไม่ใช่ "Dashboard"
+    PATH_TO_KEY[mod.path] ??= mod.name;
     SEGMENT_TO_KEY[segment] = mod.name;
     if (mod.subModules) {
       addModuleSegments(mod.subModules);
@@ -117,14 +119,9 @@ export default function PathBreadcrumb() {
   const rawSegments = pathname.split("/").filter(Boolean);
   // href ประกอบจาก segment ดิบ ไม่ใช่ segment ที่กรอง id ออกแล้ว — ไม่งั้นชั้นที่
   // อยู่หลัง id (เช่น .../physical-count/<id>/entry) จะได้ลิงก์ที่ไม่มีอยู่จริง
-  const accountingSection =
-    pathname === "/accounting" || pathname.startsWith("/accounting/")
-      ? findAccountingSection(pathname)
-      : undefined;
   const crumbs: Array<{
     segment: string;
     href: string;
-    keyOverride?: string;
     labelOverride?: string;
     /** ชั้นที่ไม่มี route ของตัวเอง — แสดงเป็นข้อความ ไม่ใช่ลิงก์ */
     unroutable?: boolean;
@@ -134,16 +131,6 @@ export default function PathBreadcrumb() {
     if (isIdSegment(segment)) continue;
 
     const href = "/" + rawSegments.slice(0, index + 1).join("/");
-    // Accounting's parent is represented by four independent launcher modules.
-    // Start at the selected module instead of exposing the internal parent.
-    if (
-      accountingSection &&
-      href === "/accounting" &&
-      accountingSection.path !== "/accounting"
-    ) {
-      continue;
-    }
-
     const labelOverride = interfaceLabel(href);
     crumbs.push({
       segment,
@@ -153,10 +140,6 @@ export default function PathBreadcrumb() {
         labelOverride !== undefined &&
         href.split("/").length === INTERFACE_BASE.split("/").length + 1 &&
         index < rawSegments.length - 1,
-      keyOverride:
-        accountingSection && href === accountingSection.path
-          ? accountingSection.name
-          : undefined,
     });
   }
 
@@ -168,66 +151,58 @@ export default function PathBreadcrumb() {
   return (
     <Breadcrumb>
       <BreadcrumbList className="flex-nowrap">
-        {crumbs.map(
-          (
-            { segment, href, keyOverride, labelOverride, unroutable },
-            index,
-          ) => {
-            const key =
-              keyOverride ??
-              PATH_TO_KEY[href] ??
-              EXTRA_PATH_KEY[href] ??
-              SEGMENT_TO_KEY[segment] ??
-              EXTRA_SEGMENT_KEY[segment];
-            const label = labelOverride
-              ? labelOverride
-              : key
-                ? t(key)
-                : segment
-                    .replaceAll("-", " ")
-                    .replaceAll(/\b\w/g, (c) => c.toUpperCase());
+        {crumbs.map(({ segment, href, labelOverride, unroutable }, index) => {
+          const key =
+            PATH_TO_KEY[href] ??
+            EXTRA_PATH_KEY[href] ??
+            SEGMENT_TO_KEY[segment] ??
+            EXTRA_SEGMENT_KEY[segment];
+          const label = labelOverride
+            ? labelOverride
+            : key
+              ? t(key)
+              : segment
+                  .replaceAll("-", " ")
+                  .replaceAll(/\b\w/g, (c) => c.toUpperCase());
 
-            const isCurrentPage = index === crumbs.length - 1 && !onDetailPage;
-            // ตัดสินจากความกว้างของ navbar (`@container/navbar`) — แถบแคบเหลือ
-            // ชั้นสุดท้ายชั้นเดียวให้อยู่บรรทัดเดียว (หน้าเอกสาร ชั้นสุดท้ายคือลิงก์
-            // กลับหน้ารายการ จึงยังกดกลับได้) · @lg ได้ชั้นแม่ · @4xl ได้ครบทุกชั้น
-            const isLast = index === crumbs.length - 1;
-            const itemClass = isLast
-              ? "min-w-0"
-              : index === crumbs.length - 2
-                ? "hidden shrink-0 @lg/navbar:inline-flex"
-                : "hidden shrink-0 @4xl/navbar:inline-flex";
+          const isCurrentPage = index === crumbs.length - 1 && !onDetailPage;
+          // ตัดสินจากความกว้างของ navbar (`@container/navbar`) — แถบแคบเหลือ
+          // ชั้นสุดท้ายชั้นเดียวให้อยู่บรรทัดเดียว (หน้าเอกสาร ชั้นสุดท้ายคือลิงก์
+          // กลับหน้ารายการ จึงยังกดกลับได้) · @lg ได้ชั้นแม่ · @4xl ได้ครบทุกชั้น
+          const isLast = index === crumbs.length - 1;
+          const itemClass = isLast
+            ? "min-w-0"
+            : index === crumbs.length - 2
+              ? "hidden shrink-0 @lg/navbar:inline-flex"
+              : "hidden shrink-0 @4xl/navbar:inline-flex";
 
-            return (
-              <Fragment key={href}>
-                {index > 0 && (
-                  <BreadcrumbSeparator
-                    className={
-                      index < crumbs.length - 1
-                        ? "hidden @4xl/navbar:block"
-                        : "hidden @lg/navbar:block"
-                    }
-                  />
+          return (
+            <Fragment key={href}>
+              {index > 0 && (
+                <BreadcrumbSeparator
+                  className={
+                    index < crumbs.length - 1
+                      ? "hidden @4xl/navbar:block"
+                      : "hidden @lg/navbar:block"
+                  }
+                />
+              )}
+              <BreadcrumbItem className={itemClass}>
+                {isCurrentPage ? (
+                  <BreadcrumbPage className="truncate">{label}</BreadcrumbPage>
+                ) : unroutable ? (
+                  <span className="text-muted-foreground truncate">
+                    {label}
+                  </span>
+                ) : (
+                  <BreadcrumbLink asChild className="truncate">
+                    <Link to={href}>{label}</Link>
+                  </BreadcrumbLink>
                 )}
-                <BreadcrumbItem className={itemClass}>
-                  {isCurrentPage ? (
-                    <BreadcrumbPage className="truncate">
-                      {label}
-                    </BreadcrumbPage>
-                  ) : unroutable ? (
-                    <span className="text-muted-foreground truncate">
-                      {label}
-                    </span>
-                  ) : (
-                    <BreadcrumbLink asChild className="truncate">
-                      <Link to={href}>{label}</Link>
-                    </BreadcrumbLink>
-                  )}
-                </BreadcrumbItem>
-              </Fragment>
-            );
-          },
-        )}
+              </BreadcrumbItem>
+            </Fragment>
+          );
+        })}
       </BreadcrumbList>
     </Breadcrumb>
   );

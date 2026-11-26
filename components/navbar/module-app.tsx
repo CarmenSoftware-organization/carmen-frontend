@@ -9,10 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  useVisibleModules,
-  type ModuleWithAccess,
-} from "@/hooks/use-visible-modules";
+import { useVisibleModules } from "@/hooks/use-visible-modules";
 import { dispatchPermissionDenied } from "@/components/permission-denied-dialog";
 import { cn } from "@/lib/utils";
 import { AppTile, SubTile } from "@/components/icons/tiles";
@@ -24,20 +21,10 @@ export default function ModuleApp() {
   const [open, setOpen] = useState(false);
 
   const visibleModules = useVisibleModules();
-  const launcherModules = visibleModules.flatMap(
-    (
-      mod,
-    ): Array<{
-      module: ModuleWithAccess;
-      tileParentName?: string;
-    }> =>
-      mod.name === "accounting"
-        ? (mod.subModules ?? []).map((section) => ({
-            module: section,
-            tileParentName: "accounting",
-          }))
-        : [{ module: mod }],
-  );
+  const launcherModules = visibleModules.map((mod) => ({
+    module: mod,
+    tileParentName: mod.tileParent,
+  }));
 
   // Modifier symbol for the shortcut hint (⌘ on macOS, Ctrl elsewhere).
   // Computed at render — the tooltip is client-only so the SSR fallback never shows.

@@ -55,23 +55,24 @@ describe("ModuleApp launcher — plain access (neither locked nor denied)", () =
     expect(link).toHaveAttribute("href", "/procurement");
   });
 
-  it("replaces the Accounting tile with its four accounting modules", async () => {
+  it("renders the four accounting modules as their own tiles", async () => {
     visibleModules.mockReturnValue([
-      {
-        ...mod({ name: "accounting", path: "/accounting" }),
-        subModules: [
-          mod({ name: "generalLedger", path: "/accounting" }),
-          mod({
-            name: "accountsPayable",
-            path: "/accounting/accounts-payable",
-          }),
-          mod({
-            name: "accountsReceivable",
-            path: "/accounting/accounts-receivable",
-          }),
-          mod({ name: "asset", path: "/accounting/asset" }),
-        ],
-      },
+      mod({
+        name: "generalLedger",
+        path: "/general-ledger",
+        tileParent: "accounting",
+      }),
+      mod({
+        name: "accountsPayable",
+        path: "/accounts-payable",
+        tileParent: "accounting",
+      }),
+      mod({
+        name: "accountsReceivable",
+        path: "/accounts-receivable",
+        tileParent: "accounting",
+      }),
+      mod({ name: "asset", path: "/asset", tileParent: "accounting" }),
     ]);
 
     await renderAndOpen();
@@ -79,16 +80,16 @@ describe("ModuleApp launcher — plain access (neither locked nor denied)", () =
     expect(screen.queryByRole("link", { name: /^accounting$/i })).toBeNull();
     expect(
       screen.getByRole("link", { name: /generalLedger/i }),
-    ).toHaveAttribute("href", "/accounting");
+    ).toHaveAttribute("href", "/general-ledger");
     expect(
       screen.getByRole("link", { name: /accountsPayable/i }),
-    ).toHaveAttribute("href", "/accounting/accounts-payable");
+    ).toHaveAttribute("href", "/accounts-payable");
     expect(
       screen.getByRole("link", { name: /accountsReceivable/i }),
-    ).toHaveAttribute("href", "/accounting/accounts-receivable");
+    ).toHaveAttribute("href", "/accounts-receivable");
     expect(screen.getByRole("link", { name: /^asset$/i })).toHaveAttribute(
       "href",
-      "/accounting/asset",
+      "/asset",
     );
   });
 });

@@ -1,10 +1,26 @@
 import { describe, expect, it } from "vitest";
 
-import { accountingModuleSections, findAccountingSection } from "./module-list";
+import { findActiveModule, moduleList, type ModuleDto } from "./module-list";
 
-describe("accounting launcher navigation", () => {
-  it("defines the four launcher modules in display order", () => {
-    expect(accountingModuleSections.map((section) => section.name)).toEqual([
+const ACCOUNTING_NAMES = [
+  "generalLedger",
+  "accountsPayable",
+  "accountsReceivable",
+  "asset",
+];
+const accountingModules = moduleList.filter((mod) =>
+  ACCOUNTING_NAMES.includes(mod.name),
+);
+const section = (pathname: string): ModuleDto => {
+  const mod = findActiveModule(pathname);
+  if (!mod) throw new Error(`no module for ${pathname}`);
+  return mod;
+};
+
+describe("accounting top-level modules", () => {
+  it("lists the four accounting modules next to each other in display order", () => {
+    const first = moduleList.findIndex((mod) => mod.name === "generalLedger");
+    expect(moduleList.slice(first, first + 4).map((mod) => mod.name)).toEqual([
       "generalLedger",
       "accountsPayable",
       "accountsReceivable",
@@ -13,22 +29,34 @@ describe("accounting launcher navigation", () => {
   });
 
   it.each([
-    ["/accounting", "generalLedger"],
-    ["/accounting/journal-voucher/jv-1", "generalLedger"],
-    ["/accounting/accounts-payable/invoice/ap-1", "accountsPayable"],
-    ["/accounting/accounts-receivable/receipt/rc-1", "accountsReceivable"],
-    ["/accounting/accounts-receivable/profile", "accountsReceivable"],
-    ["/accounting/accounts-receivable/folio", "accountsReceivable"],
-    ["/accounting/accounts-receivable/contract", "accountsReceivable"],
-    ["/accounting/asset/disposal/fd-1", "asset"],
+    ["/general-ledger", "generalLedger"],
+    ["/general-ledger/journal-voucher/jv-1", "generalLedger"],
+    ["/accounts-payable/invoice/ap-1", "accountsPayable"],
+    ["/accounts-receivable/receipt/rc-1", "accountsReceivable"],
+    ["/accounts-receivable/profile", "accountsReceivable"],
+    ["/accounts-receivable/folio", "accountsReceivable"],
+    ["/accounts-receivable/contract", "accountsReceivable"],
+    ["/asset/disposal/fd-1", "asset"],
   ])("maps %s to %s", (pathname, expected) => {
-    expect(findAccountingSection(pathname).name).toBe(expected);
+    expect(findActiveModule(pathname)?.name).toBe(expected);
+  });
+
+  it("matches module paths on a segment boundary, not a bare prefix", () => {
+    expect(findActiveModule("/assetx")).toBeUndefined();
+    expect(findActiveModule("/asset")?.name).toBe("asset");
+  });
+
+  it("borrows the accounting tile for all four modules", () => {
+    expect(accountingModules.map((mod) => mod.tileParent)).toEqual([
+      "accounting",
+      "accounting",
+      "accounting",
+      "accounting",
+    ]);
   });
 
   it("keeps only the selected module's pages in its sidebar branch", () => {
-    const accountsPayable = findAccountingSection(
-      "/accounting/accounts-payable/invoice",
-    );
+    const accountsPayable = section("/accounts-payable/invoice");
 
     expect(accountsPayable.subModules?.map((item) => item.name)).toEqual([
       "apDashboard",
@@ -42,7 +70,7 @@ describe("accounting launcher navigation", () => {
   });
 
   it("opens AR features directly in document order without a preview hub", () => {
-    const ar = findAccountingSection("/accounting/accounts-receivable/folio");
+    const ar = section("/accounts-receivable/folio");
     expect(ar.subModules?.map(({ name }) => name)).toEqual([
       "arDashboard",
       "arProfile",
@@ -60,18 +88,18 @@ describe("accounting launcher navigation", () => {
 
   it("keeps received-cheque and output VAT governance under AR per FRD v1.1", () => {
     for (const path of [
-      "/accounting/accounts-receivable/cheque-reconciliation",
-      "/accounting/accounts-receivable/output-tax",
+      "/accounts-receivable/cheque-reconciliation",
+      "/accounts-receivable/output-tax",
     ]) {
-      expect(findAccountingSection(path).name).toBe("accountsReceivable");
+      expect(section(path).name).toBe("accountsReceivable");
       expect(
-        findAccountingSection(path).subModules?.some(
+        section(path).subModules?.some(
           (item) =>
             item.path === path && item.licenseFeature === "accounting.ar",
         ),
       ).toBe(true);
       expect(
-        accountingModuleSections[0].subModules?.some(
+        section("/general-ledger").subModules?.some(
           (item) => item.path === path,
         ),
       ).toBe(false);

@@ -34,7 +34,7 @@ function leaves(mods: ModuleDto[] = moduleList): ModuleDto[] {
  * การ map มั่วจึงล็อกหน้าที่ backend ไม่เคยบล็อก ซึ่งแย่กว่าไม่ map
  *
  * **ตอนนี้ว่าง** — เดิมมี 11 รายการ (`/procurement/approval`, `/config/chart-of-accounts`,
- * `/config/chart-of-account-mapping` และ `/accounting/*` ทั้งกลุ่ม) ซึ่งกลายเป็นรูโหว่จริงบนหน้าจอ:
+ * `/config/chart-of-account-mapping` และ สี่โมดูลบัญชีทั้งกลุ่ม) ซึ่งกลายเป็นรูโหว่จริงบนหน้าจอ:
  * leaf ที่ผลิต key ไม่ได้จะ `locked: false` เสมอ และเพราะ parent locked ก็ต่อเมื่อลูก locked
  * หมด ลูกที่หลุดตัวเดียวจึงปลดล็อกหัวข้อทั้งโมดูล — BU ที่ไม่มี license เลยยังเห็น
  * Procurement / Config / Accounting เป็นเมนูใช้งานได้ ทั้งสามจึงถูกผูกคีย์แล้ว โดยใช้
