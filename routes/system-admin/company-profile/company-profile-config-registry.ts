@@ -1,3 +1,7 @@
+import {
+  DOC_AUDIT_SHOW_KEY,
+  DOC_REVISION_SHOW_KEY,
+} from "@/lib/doc-audit-visibility";
 import { printFormConfigKey } from "@/lib/print-form-config";
 import type { PrintDocumentType } from "@/lib/print-document";
 import type { BusinessUnitConfigItem } from "@/types/business-unit";
@@ -206,6 +210,21 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
         min: 0,
         max: 100,
         suffix: "%",
+      },
+      {
+        // ตาราง audit ในการ์ดหัวเอกสาร (components/share/doc-audit-line.tsx)
+        key: DOC_AUDIT_SHOW_KEY,
+        datatype: "boolean",
+        defaultValue: "true",
+        label: "Show created/updated by on documents",
+        labelKey: "config.generalShowDocAudit",
+      },
+      {
+        key: DOC_REVISION_SHOW_KEY,
+        datatype: "boolean",
+        defaultValue: "true",
+        label: "Show revision number (rev.) on documents",
+        labelKey: "config.generalShowDocRevision",
       },
     ],
   },

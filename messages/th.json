@@ -241,6 +241,8 @@
       "generalDefaultVatRate": "VAT ตั้งต้น (%)",
       "generalDefaultVatRateDesc": "VAT ในเอกสารยังมาจาก Tax Profile",
       "generalDefaultServiceRate": "ค่าบริการตั้งต้น (%)",
+      "generalShowDocAudit": "แสดงผู้สร้าง/ผู้แก้ไขล่าสุดในหัวเอกสาร",
+      "generalShowDocRevision": "แสดงเลขรุ่น (rev.) ในหัวเอกสาร",
       "apInvoiceAllowCreatorApprove": "ใบแจ้งหนี้เจ้าหนี้ (AP Invoice)",
       "apPaymentAllowCreatorApprove": "ใบจ่ายเงินเจ้าหนี้ (AP Payment)",
       "arInvoiceAllowCreatorApprove": "ใบแจ้งหนี้ลูกหนี้ (AR Invoice)",

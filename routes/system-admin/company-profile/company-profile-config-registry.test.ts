@@ -264,7 +264,10 @@ describe("General config registry", () => {
   it("passes the suffix through groupConfigForRender", () => {
     const groups = groupConfigForRender(mergeSeededConfig([]));
     const general = groups.sections.find((s) => s.id === "general");
-    expect(general?.entries.every((e) => e.suffix === "%")).toBe(true);
+    // เฉพาะช่อง % — section General มีสวิตช์ boolean (audit/rev.) ปนอยู่ด้วย
+    const rates = general?.entries.filter((e) => e.item.datatype === "number");
+    expect(rates).toHaveLength(2);
+    expect(rates?.every((e) => e.suffix === "%")).toBe(true);
   });
 });
 

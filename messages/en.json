@@ -241,6 +241,8 @@
       "generalDefaultVatRate": "Default VAT (%)",
       "generalDefaultVatRateDesc": "Documents still take VAT from the tax profile.",
       "generalDefaultServiceRate": "Default service charge (%)",
+      "generalShowDocAudit": "Show created/updated by on documents",
+      "generalShowDocRevision": "Show revision number (rev.) on documents",
       "apInvoiceAllowCreatorApprove": "AP Invoice",
       "apPaymentAllowCreatorApprove": "AP Payment",
       "arInvoiceAllowCreatorApprove": "AR Invoice",
