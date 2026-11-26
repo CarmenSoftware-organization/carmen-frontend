@@ -175,7 +175,7 @@ export function FromPoContent() {
         </StepperPanel>
       </Stepper>
 
-      <footer className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 flex items-center justify-between py-3 backdrop-blur">
+      <footer className="glass-bar bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 flex items-center justify-between py-3 backdrop-blur">
         <Button variant="outline" size="sm" onClick={handleCancel}>
           {tc("cancel")}
         </Button>

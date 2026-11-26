@@ -16,7 +16,7 @@ const ROOT = join(import.meta.dirname, "../../..");
  */
 const SIGNATURES = [
   /<DocumentListHeader\b/g,
-  /sticky top-0 z-20 space-y-3 pb-3 sm:static sm:pb-0/g,
+  /sticky top-0 z-20 space-y-3 pb-3 sm:static sm:bg-transparent sm:pb-0/g,
   /<Layout(?:List|Grid)\b/g,
 ];
 
@@ -63,7 +63,7 @@ describe("list pages go through ListPageShell", () => {
     // จะเขียวเพราะไม่ match อะไรเลย ไม่ใช่เพราะย้ายครบ
     const probe = [
       `<DocumentListHeader title="x" description="y" />`,
-      `<div className="sticky top-0 z-20 space-y-3 pb-3 sm:static sm:pb-0">`,
+      `<div className="sticky top-0 z-20 space-y-3 pb-3 sm:static sm:bg-transparent sm:pb-0">`,
       `<LayoutList className="size-4" />`,
       `<LayoutGrid className="size-4" />`,
     ].join("\n");

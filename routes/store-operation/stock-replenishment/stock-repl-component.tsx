@@ -332,7 +332,7 @@ export default function StockReplComponent() {
           {/* แถบ action ติดขอบล่าง — เดิมโผล่เหนือรายการตอนติ๊กแถวแรก แล้วดันทุกอย่าง
               ข้างล่างลงไป ~50px อยู่ท้ายรายการแทนจึงไม่มีอะไรข้างบนขยับ */}
           {hasSelection && (
-            <div className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t py-3 backdrop-blur">
+            <div className="glass-bar bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t py-3 backdrop-blur">
               <span className="text-sm font-semibold tabular-nums">
                 {t("nSelected", { count: totalSelected })}
               </span>

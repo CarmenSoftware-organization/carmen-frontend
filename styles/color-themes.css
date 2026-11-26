@@ -266,3 +266,53 @@ html.dark.theme-blue-glass .space-navbar-gradient {
     -webkit-backdrop-filter: none;
   }
 }
+
+/* ---------- Blue Glass: แถบ sticky ในเนื้อหา (แถบยอดท้ายเอกสาร, footer ของหน้าสร้างจาก PO/PR) ----------
+   แถบพวกนี้ต้องมีพื้นเพราะเนื้อหาเลื่อนลอดใต้มัน แต่พื้นสีเดียวบนพื้นไล่สีจะเห็นเป็นแถบ
+   สี่เหลี่ยมสีเพี้ยน — ใน Blue Glass จึงเป็นกระจกแบบเดียวกับ navbar ธีมอื่นใช้ class เดิม
+   `.glass-bar` = ติดค้างทุกขนาดจอ · `.glass-bar-mobile` = ติดค้างเฉพาะจอ < sm
+   (desktop ของมันเป็น sm:static sm:bg-transparent อยู่แล้ว ห้ามทาพื้นทับ) */
+html.theme-blue-glass .glass-bar {
+  background: oklch(1 0 0 / 0.6);
+  border-color: oklch(1 0 0 / 0.8);
+  box-shadow: 0 -1px 16px oklch(0.47 0.18 259 / 0.06);
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+}
+
+html.dark.theme-blue-glass .glass-bar {
+  background: oklch(0.2 0.04 258 / 0.6);
+  border-color: oklch(1 0 0 / 0.1);
+  box-shadow: 0 -1px 16px oklch(0 0 0 / 0.2);
+}
+
+@media (width < 40rem) {
+  html.theme-blue-glass .glass-bar-mobile {
+    background: oklch(1 0 0 / 0.6);
+    backdrop-filter: blur(16px) saturate(1.6);
+    -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  }
+
+  html.dark.theme-blue-glass .glass-bar-mobile {
+    background: oklch(0.2 0.04 258 / 0.6);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html.theme-blue-glass .glass-bar,
+  html.dark.theme-blue-glass .glass-bar {
+    background: var(--background);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* แยก media ไว้ — ถ้ารวมกับบล็อกบน จะทาพื้นทับ sm:bg-transparent ของหัวบน desktop */
+@media (prefers-reduced-transparency: reduce) and (width < 40rem) {
+  html.theme-blue-glass .glass-bar-mobile,
+  html.dark.theme-blue-glass .glass-bar-mobile {
+    background: var(--background);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
