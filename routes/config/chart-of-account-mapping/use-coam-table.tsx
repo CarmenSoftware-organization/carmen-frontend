@@ -2,6 +2,8 @@
 import { useMemo } from "react";
 import {
   type ColumnDef,
+  type OnChangeFn,
+  type RowSelectionState,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
@@ -121,7 +123,16 @@ const repeatedIn = (col: GroupColumn, { row, table }: CellCtx) =>
 
 interface UseCoamTableOptions {
   data: AccountMappingRow[];
-  tableConfig: ReturnType<typeof useDataGridState>["tableConfig"];
+  /** + rowSelection แบบ controlled — หน้าคุมเองเพื่อโหมด "เลือกทุกแถวที่ตรงตัวกรอง" */
+  tableConfig: Omit<
+    ReturnType<typeof useDataGridState>["tableConfig"],
+    "state"
+  > & {
+    state: ReturnType<typeof useDataGridState>["tableConfig"]["state"] & {
+      rowSelection: RowSelectionState;
+    };
+    onRowSelectionChange: OnChangeFn<RowSelectionState>;
+  };
   tab: MappingType;
   onOpen: (row: AccountMappingRow) => void;
   /** เมนูบนค่า cost center / account */

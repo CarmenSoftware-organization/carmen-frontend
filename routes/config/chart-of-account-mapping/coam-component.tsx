@@ -29,6 +29,7 @@ import type {
   MappingStatus,
   MappingType,
 } from "@/types/chart-of-account-mapping";
+import type { RowSelectionState, Updater } from "@tanstack/react-table";
 import { ApiError } from "@/lib/api-error";
 import { useErrorToast } from "@/hooks/use-error-toast";
 import { useAccountingConfigEdit } from "../shared/use-accounting-config-edit";
@@ -89,8 +90,11 @@ export default function CoamComponent() {
   // snapshot แถวตอนเปิด sheet — refetch เบื้องหลังต้องไม่เปลี่ยน doc_version ใต้มือผู้ใช้
   const [batchRows, setBatchRows] = useState<AccountMappingRow[]>([]);
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
-  // "ทุกแถวที่ตรงตัวกรอง" (เกินกว่าที่โหลดมา) — ใช้ได้กับยืนยันว่าตรวจแล้วเท่านั้น
-  const [allMatching, setAllMatching] = useState(false);
+  // "ทุกแถวที่ตรงตัวกรอง" (เกินกว่าที่โหลดมา) — เก็บจำนวนที่ผู้ใช้เห็นตอนกดเลือกทั้งหมด
+  // เป็น expected_count (ไม่ใช่ total สด ๆ ที่ refetch เบื้องหลังอาจเปลี่ยนไปแล้ว) · null = ไม่อยู่ในโหมดนี้
+  const [matchCount, setMatchCount] = useState<number | null>(null);
+  const allMatching = matchCount !== null;
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const { params, tableConfig, search, setSearch } = useDataGridState();
   // reference คงที่ต่อแท็บ (module-level) — useListFilters ต้องการ fields ที่ไม่เปลี่ยนทุก render
@@ -169,9 +173,30 @@ export default function CoamComponent() {
     [canEdit, resetField, pendingId],
   );
 
+  // โหมดทุกแถว: ทุกแถวที่โหลดมา (รวมที่โหลดเพิ่มทีหลัง) ติ๊กเองโดยไม่ต้องเก็บ state
+  const allRowSelection = useMemo<RowSelectionState>(
+    () => Object.fromEntries(rows.map((r) => [r.id, true])),
+    [rows],
+  );
+  const effectiveSelection = allMatching ? allRowSelection : rowSelection;
+  const countSelected = (sel: RowSelectionState) =>
+    Object.values(sel).filter(Boolean).length;
+  // เอาติ๊กออก (แถวเดียว / หัวตาราง / reset) = ออกจากโหมดทุกแถว — โหลดแถวเพิ่มไม่ทำให้หลุด
+  const onRowSelectionChange = (updater: Updater<RowSelectionState>) => {
+    const next =
+      typeof updater === "function" ? updater(effectiveSelection) : updater;
+    if (allMatching && countSelected(next) < countSelected(effectiveSelection))
+      setMatchCount(null);
+    setRowSelection(next);
+  };
+
   const table = useCoamTable({
     data: rows,
-    tableConfig,
+    tableConfig: {
+      ...tableConfig,
+      state: { ...tableConfig.state, rowSelection: effectiveSelection },
+      onRowSelectionChange,
+    },
     tab,
     onOpen: setEditing,
     menu,
@@ -180,20 +205,15 @@ export default function CoamComponent() {
   // เพื่อไม่ให้ "ยืนยันว่าตรวจแล้ว" ทิ้งแถวที่เลือกไว้นอกหน้าไปเงียบ ๆ
   const scopeKey = JSON.stringify([tab, query.search, query.sort, lf.values]);
   useEffect(() => {
-    // allMatching หลุดเองใน render ถัดไป เพราะไม่มีแถวที่ติ๊กครบแล้ว
+    // reset ผ่าน onRowSelectionChange → ออกจากโหมดทุกแถวไปด้วย
     table.resetRowSelection();
   }, [scopeKey, table]);
   const selectedRows = table.getSelectedRowModel().rows.map((r) => r.original);
   const selectedIds = selectedRows.map((r) => r.id);
   const allLoadedSelected = rows.length > 0 && table.getIsAllRowsSelected();
-  // เอาติ๊กออกแม้แถวเดียว = ออกจากโหมดทุกแถว (ปรับ state ระหว่าง render ตามแบบ derived state ของ React)
-  if (allMatching && !allLoadedSelected) setAllMatching(false);
   const showSelectAllBanner =
-    allLoadedSelected && (allMatching || totalRecords > rows.length);
-  const clearSelection = () => {
-    table.resetRowSelection();
-    setAllMatching(false);
-  };
+    allMatching || (allLoadedSelected && totalRecords > rows.length);
+  const clearSelection = () => table.resetRowSelection();
 
   const switchTab = (next: string) => {
     if (next === tab) return;
@@ -214,11 +234,11 @@ export default function CoamComponent() {
     if (allMatching) {
       const { sort: _sort, ...filters } = query;
       reviewByFilter.mutate(
-        { ...filters, expected_count: totalRecords },
+        { ...filters, expected_count: matchCount },
         {
           onSuccess: (res) => {
             toast.success(
-              t("markReviewedDone", { count: res?.updated ?? totalRecords }),
+              t("markReviewedDone", { count: res?.updated ?? matchCount }),
             );
             clearSelection();
           },
@@ -305,7 +325,7 @@ export default function CoamComponent() {
                 <CheckCheck aria-hidden="true" />
                 {t("markReviewed")}
                 <span className="tabular-nums">
-                  ({allMatching ? totalRecords : selectedIds.length})
+                  ({matchCount ?? selectedIds.length})
                 </span>
               </Button>
             </>
@@ -386,9 +406,9 @@ export default function CoamComponent() {
           {showSelectAllBanner && (
             <CoamSelectAllBanner
               loaded={selectedIds.length}
-              total={totalRecords}
+              total={matchCount ?? totalRecords}
               allMatching={allMatching}
-              onSelectAll={() => setAllMatching(true)}
+              onSelectAll={() => setMatchCount(totalRecords)}
               onClear={clearSelection}
             />
           )}
