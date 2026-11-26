@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HighlightText } from "@/components/ui/highlight-text";
 import { useTranslations } from "use-intl";
 import { useLookupResource } from "@/hooks/use-lookup-resource";
 import { lookupLabel } from "@/types/lookup";
@@ -51,8 +52,10 @@ export function LookupNotificationTemplate({
       }}
       items={items}
       selectedItems={selectedItems}
-      renderItem={(tpl) => (
-        <span className="flex-1 truncate text-left">{lookupLabel(tpl)}</span>
+      renderItem={(tpl, { query }) => (
+        <span className="flex-1 truncate text-left">
+          <HighlightText text={lookupLabel(tpl)} query={query} />
+        </span>
       )}
       getId={(tpl) => tpl.id}
       getLabel={lookupLabel}

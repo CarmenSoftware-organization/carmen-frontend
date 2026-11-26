@@ -110,8 +110,13 @@ describe("ReportParamDialog server-side search", () => {
       expect(searchCall?.searchParams.get("types")).toBe("product");
       expect(searchCall?.searchParams.get("limit")).toBe("50");
     });
+    // คำค้นถูกไฮไลต์ด้วย <mark> → ข้อความแตกเป็นหลาย node จึงเทียบ textContent ของ span แถว
     expect(
-      await screen.findByText("55000209 - Dead Mouth Wrench"),
+      await screen.findByText(
+        (_, el) =>
+          el?.tagName === "SPAN" &&
+          el.textContent === "55000209 - Dead Mouth Wrench",
+      ),
     ).toBeInTheDocument();
   });
 });

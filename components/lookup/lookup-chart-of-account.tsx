@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { HighlightText } from "@/components/ui/highlight-text";
 import { useTranslations } from "use-intl";
 import { useChartOfAccount } from "@/hooks/use-chart-of-account";
 import {
@@ -423,12 +424,14 @@ export function LookupChartOfAccount({
       getSearchValue={(acc) =>
         `${acc.code} ${acc.description_1} ${acc.description_2 ?? ""} ${acc.category}`
       }
-      renderItem={(acc) => (
+      renderItem={(acc, { query }) => (
         <div className="flex w-full items-center justify-between gap-2 text-xs">
           <div className="min-w-0 flex-1 truncate">
-            <span className="font-mono font-semibold">{acc.code}</span>
+            <span className="font-mono font-semibold">
+              <HighlightText text={acc.code} query={query} />
+            </span>
             <span className="text-muted-foreground ml-2">
-              {acc.description_1}
+              <HighlightText text={acc.description_1} query={query} />
             </span>
           </div>
           {/* ข้อมูลจริงจาก API มักไม่มี category — Badge ว่างจะกลายเป็นวงกลมเปล่าท้ายแถว */}

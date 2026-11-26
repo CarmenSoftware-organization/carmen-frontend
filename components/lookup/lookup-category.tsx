@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HighlightText } from "@/components/ui/highlight-text";
 import { useTranslations } from "use-intl";
 import { useLookupResource } from "@/hooks/use-lookup-resource";
 import { lookupLabel, type LookupItem } from "@/types/lookup";
@@ -56,12 +57,14 @@ export function LookupCategory({
       getLabel={(c) => `${c.code ?? ""} — ${lookupLabel(c)}`}
       getSearchValue={(c) => `${c.code ?? ""} ${c.name ?? ""}`}
       size={size}
-      renderItem={(c) => (
+      renderItem={(c, { query }) => (
         <>
           <Badge size="xs" variant="secondary">
-            {c.code}
+            <HighlightText text={c.code ?? ""} query={query} />
           </Badge>
-          <span className="flex-1 truncate text-left text-xs">{c.name}</span>
+          <span className="flex-1 truncate text-left text-xs">
+            <HighlightText text={c.name ?? ""} query={query} />
+          </span>
         </>
       )}
       placeholder={tl("select", { entity: tfl("category") })}

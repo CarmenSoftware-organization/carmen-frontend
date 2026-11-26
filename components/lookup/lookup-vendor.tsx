@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HighlightText } from "@/components/ui/highlight-text";
 import { useTranslations } from "use-intl";
 import { WarehouseIcon } from "lucide-react";
 import { useLookupResource } from "@/hooks/use-lookup-resource";
@@ -70,12 +71,14 @@ export function LookupVendor({
       getId={(v) => v.id}
       getLabel={lookupLabel}
       getSearchValue={(v) => `${v.code ?? ""} ${v.name ?? ""}`}
-      renderItem={(v) => (
+      renderItem={(v, { query }) => (
         <>
           <Badge size="xs" variant="secondary" className="shrink-0">
-            {v.code}
+            <HighlightText text={v.code ?? ""} query={query} />
           </Badge>
-          <span className="flex-1 truncate text-left">{v.name}</span>
+          <span className="flex-1 truncate text-left">
+            <HighlightText text={v.name ?? ""} query={query} />
+          </span>
         </>
       )}
       renderSelected={(v) => `${v.code ?? ""} - ${lookupLabel(v)}`}

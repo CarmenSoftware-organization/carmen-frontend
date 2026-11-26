@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HighlightText } from "@/components/ui/highlight-text";
 import { useTranslations } from "use-intl";
 import { ClipboardList } from "lucide-react";
 import { useGoodsReceiveNoteByVendorForCn } from "@/hooks/use-goods-receive-note";
@@ -78,12 +79,14 @@ export function LookupGrnByVendorForCn({
       getLabel={(g) => g.invoice_no || g.grn_no}
       defaultLabel={defaultLabel}
       getSearchValue={(g) => `${g.grn_no} ${g.invoice_no ?? ""}`}
-      renderItem={(g) => (
+      renderItem={(g, { query }) => (
         <>
           <Badge size="xs" variant="secondary" className="shrink-0">
-            {g.grn_no}
+            <HighlightText text={g.grn_no} query={query} />
           </Badge>
-          <span className="flex-1 truncate text-left">{g.invoice_no}</span>
+          <span className="flex-1 truncate text-left">
+            <HighlightText text={g.invoice_no ?? ""} query={query} />
+          </span>
         </>
       )}
       renderSelected={(g) => g.grn_no}
