@@ -780,7 +780,7 @@ function ReceiptForm({
                     <CellAction
                       onClick={() =>
                         navigate(
-                          `/accounting/accounts-receivable/invoice/${row.original.id}`,
+                          `/accounts-receivable/invoice/${row.original.id}`,
                         )
                       }
                     >

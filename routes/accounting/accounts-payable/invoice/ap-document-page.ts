@@ -1,7 +1,7 @@
 import { LIST_PAGE_KEYS } from "@/constant/list-page-keys";
 import type { ApDocType } from "@/types/accounts-payable";
 
-const base = "/accounting/accounts-payable";
+const base = "/accounts-payable";
 const pages = [
   {
     segment: "deposit",

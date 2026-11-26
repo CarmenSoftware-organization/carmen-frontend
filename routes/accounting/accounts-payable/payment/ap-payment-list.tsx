@@ -194,10 +194,7 @@ export default function ApPaymentList({
   const cardsLoading = useInfiniteScroll ? grid.isLoading : isLoading;
 
   const openPayment = (payment: ApPayment) =>
-    navigate(
-      `/accounting/accounts-payable/payment/${payment.id}`,
-      listReturnState(),
-    );
+    navigate(`/accounts-payable/payment/${payment.id}`, listReturnState());
 
   async function handleExport() {
     try {
@@ -324,10 +321,7 @@ export default function ApPaymentList({
         ) : (
           <DocumentListActions
             onAdd={() =>
-              navigate(
-                "/accounting/accounts-payable/payment/new",
-                listReturnState(),
-              )
+              navigate("/accounts-payable/payment/new", listReturnState())
             }
             addLabel={t("add")}
             onExport={() => void handleExport()}

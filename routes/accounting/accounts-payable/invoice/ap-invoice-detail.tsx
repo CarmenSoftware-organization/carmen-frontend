@@ -518,7 +518,7 @@ function ApInvoiceEditor({
                   size="sm"
                   onClick={() =>
                     navigate(
-                      `/accounting/accounts-payable/payment/new?vendor_id=${encodeURIComponent(loaded.vendor_id)}&invoice_ids=${encodeURIComponent(loaded.id)}`,
+                      `/accounts-payable/payment/new?vendor_id=${encodeURIComponent(loaded.vendor_id)}&invoice_ids=${encodeURIComponent(loaded.id)}`,
                     )
                   }
                 >

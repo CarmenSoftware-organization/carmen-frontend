@@ -35,7 +35,7 @@ export function ApPostingBanner({
               <span className="text-muted-foreground">{td("journal")}</span>
               <Link
                 className="font-medium underline"
-                to={`/accounting/journal-voucher/${jvId}`}
+                to={`/general-ledger/journal-voucher/${jvId}`}
               >
                 {jvNo ?? td("openJournal")}
               </Link>
@@ -48,7 +48,7 @@ export function ApPostingBanner({
               </span>
               <Link
                 className="font-medium underline"
-                to={`/accounting/journal-voucher/${reversalJvId}`}
+                to={`/general-ledger/journal-voucher/${reversalJvId}`}
               >
                 {td("openJournal")}
               </Link>

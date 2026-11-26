@@ -247,9 +247,7 @@ export default function AccountingDocumentList() {
             recordCount={documents.length}
             tableLayout={{
               headerSticky: true,
-              width: pathname.startsWith("/accounting/asset/")
-                ? "auto"
-                : "fixed",
+              width: pathname.startsWith("/asset/") ? "auto" : "fixed",
             }}
             tableClassNames={{ bodyRow: "h-10" }}
             emptyMessage={<EmptyComponent />}

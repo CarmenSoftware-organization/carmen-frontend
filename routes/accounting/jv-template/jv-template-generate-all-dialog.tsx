@@ -163,7 +163,7 @@ export function JvTemplateGenerateAllDialog({
                   >
                     <span className="truncate">{nameOf(r.template_id)}</span>
                     <Link
-                      to={`/accounting/journal-voucher/${r.jv_id}`}
+                      to={`/general-ledger/journal-voucher/${r.jv_id}`}
                       className="text-primary shrink-0 hover:underline"
                       title={t("openJv")}
                     >

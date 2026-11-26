@@ -161,11 +161,11 @@ function setup() {
       >
         <TooltipProvider>
           <MemoryRouter
-            initialEntries={["/accounting/journal-voucher/" + ids.jv]}
+            initialEntries={["/general-ledger/journal-voucher/" + ids.jv]}
           >
             <Routes>
               <Route
-                path="/accounting/journal-voucher/:id"
+                path="/general-ledger/journal-voucher/:id"
                 element={<AccountingDocumentDetail />}
               />
             </Routes>

@@ -41,7 +41,7 @@ export function ApJournalTab({ id }: { readonly id?: string | null }) {
       {id ? (
         <Link
           className="text-primary text-xs underline"
-          to={`/accounting/journal-voucher/${id}`}
+          to={`/general-ledger/journal-voucher/${id}`}
         >
           {query.data?.display_no || t("openJournal")}
         </Link>

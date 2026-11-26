@@ -30,7 +30,7 @@ function ArDashboard({ bu }: { readonly bu: string }) {
   const [folios, setFolios] = useState(() => readFolioSamples(bu));
   const [deposits, setDeposits] = useState(() => readAdvanceDeposits(bu));
   const depositSummary = advanceDepositSummary(deposits);
-  const depositPath = "/accounting/accounts-receivable/advance-deposit";
+  const depositPath = "/accounts-receivable/advance-deposit";
   const depositMetrics = (["received", "applied", "available"] as const).map(
     (key): DashboardMetric => ({
       id: `advance-deposit-${key}`,
@@ -65,7 +65,7 @@ function ArDashboard({ bu }: { readonly bu: string }) {
       },
       count: chequeSamples.length,
       tone: "neutral",
-      href: "/accounting/accounts-receivable/cheque-reconciliation",
+      href: "/accounts-receivable/cheque-reconciliation",
     },
     {
       id: "ar-output-vat-undue",
@@ -75,7 +75,7 @@ function ArDashboard({ bu }: { readonly bu: string }) {
         (row) => row.period === "2026-11" && row.taxPoint === "undue",
       ).length,
       tone: "warning",
-      href: "/accounting/accounts-receivable/output-tax?taxPoint=undue",
+      href: "/accounts-receivable/output-tax?taxPoint=undue",
     },
   ];
   const summary = folioSummary(folios);
@@ -89,7 +89,7 @@ function ArDashboard({ bu }: { readonly bu: string }) {
         value: summary[key],
         format: key === "count" ? "number" : "currency",
         detail: { en: scope, th: scope },
-        href: "/accounting/accounts-receivable/folio?status=all",
+        href: "/accounts-receivable/folio?status=all",
       };
     },
   );

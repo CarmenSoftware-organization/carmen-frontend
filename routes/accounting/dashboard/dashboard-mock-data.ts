@@ -56,7 +56,7 @@ const gl: AccountingDashboardSnapshot = {
         text("8 require review", "8 รายการต้องตรวจสอบ"),
         {
           tone: "warning",
-          href: "/accounting/journal-voucher?status=in_review",
+          href: "/general-ledger/journal-voucher?status=in_review",
         },
       ),
       metric(
@@ -66,7 +66,7 @@ const gl: AccountingDashboardSnapshot = {
         text("Interface balance errors", "ยอดจาก interface ไม่สมดุล"),
         {
           tone: "destructive",
-          href: "/accounting/journal-voucher?status=draft",
+          href: "/general-ledger/journal-voucher?status=draft",
         },
       ),
       metric(
@@ -74,7 +74,10 @@ const gl: AccountingDashboardSnapshot = {
         text("Scheduled today", "กำหนดผ่านรายการวันนี้"),
         7,
         text("Next run 18:00", "รอบถัดไป 18:00"),
-        { tone: "info", href: "/accounting/journal-voucher?status=scheduled" },
+        {
+          tone: "info",
+          href: "/general-ledger/journal-voucher?status=scheduled",
+        },
       ),
       metric(
         "reversal",
@@ -83,7 +86,7 @@ const gl: AccountingDashboardSnapshot = {
         text("Accruals from prior period", "รายการค้างรับค้างจ่ายจากงวดก่อน"),
         {
           tone: "primary",
-          href: "/accounting/journal-voucher?auto_reverse=true",
+          href: "/general-ledger/journal-voucher?auto_reverse=true",
         },
       ),
     ],
@@ -130,7 +133,7 @@ const gl: AccountingDashboardSnapshot = {
         ),
         2,
         "destructive",
-        "/accounting/journal-voucher?status=draft",
+        "/general-ledger/journal-voucher?status=draft",
       ),
       task(
         "accrual",
@@ -141,7 +144,7 @@ const gl: AccountingDashboardSnapshot = {
         ),
         5,
         "warning",
-        "/accounting/recurring-voucher",
+        "/general-ledger/recurring-voucher",
       ),
       task(
         "reverse",
@@ -149,7 +152,7 @@ const gl: AccountingDashboardSnapshot = {
         text("Confirm next period is open", "ยืนยันว่างวดถัดไปเปิดอยู่"),
         3,
         "info",
-        "/accounting/journal-voucher?auto_reverse=true",
+        "/general-ledger/journal-voucher?auto_reverse=true",
       ),
     ],
   },
@@ -236,7 +239,7 @@ const gl: AccountingDashboardSnapshot = {
         ),
         2,
         "warning",
-        "/accounting/financial-reports",
+        "/general-ledger/financial-reports",
       ),
     ],
   },
@@ -433,7 +436,7 @@ const ar: AccountingDashboardSnapshot = {
         text("Review terms before new billing", "ตรวจเงื่อนไขก่อนวางบิลเพิ่ม"),
         4,
         "warning",
-        "/accounting/accounts-receivable/invoice",
+        "/accounts-receivable/invoice",
       ),
     ],
   },
@@ -458,14 +461,14 @@ const asset: AccountingDashboardSnapshot = {
         text("Registered assets", "สินทรัพย์ในทะเบียน"),
         428,
         text("Across 8 asset classes", "ครอบคลุม 8 ประเภทสินทรัพย์"),
-        { tone: "primary", href: "/accounting/asset/register" },
+        { tone: "primary", href: "/asset/register" },
       ),
       metric(
         "capitalize",
         text("Pending capitalization", "รอบันทึกเป็นสินทรัพย์"),
         9,
         text("3 missing supporting documents", "3 รายการขาดเอกสารประกอบ"),
-        { tone: "warning", href: "/accounting/asset/register?status=pending" },
+        { tone: "warning", href: "/asset/register?status=pending" },
       ),
       metric(
         "depreciation",
@@ -474,7 +477,7 @@ const asset: AccountingDashboardSnapshot = {
         text("2 calculation exceptions", "มีข้อยกเว้นการคำนวณ 2 รายการ"),
         {
           tone: "destructive",
-          href: "/accounting/asset/register?depreciation=due",
+          href: "/asset/register?depreciation=due",
         },
       ),
       metric(
@@ -482,7 +485,7 @@ const asset: AccountingDashboardSnapshot = {
         text("Pending disposals", "รอจำหน่าย"),
         6,
         text("Net book value ฿240,000", "มูลค่าตามบัญชี 240,000 บาท"),
-        { tone: "info", href: "/accounting/asset/disposal?status=submitted" },
+        { tone: "info", href: "/asset/disposal?status=submitted" },
       ),
     ],
     analyses: [
@@ -531,7 +534,7 @@ const asset: AccountingDashboardSnapshot = {
         ),
         12,
         "destructive",
-        "/accounting/asset/register?quality=incomplete",
+        "/asset/register?quality=incomplete",
       ),
       task(
         "custodian",
@@ -542,7 +545,7 @@ const asset: AccountingDashboardSnapshot = {
         text("Physical verification follow-up", "ติดตามการตรวจนับสินทรัพย์"),
         9,
         "warning",
-        "/accounting/asset/register?verification=overdue",
+        "/asset/register?verification=overdue",
       ),
     ],
   },
@@ -628,7 +631,7 @@ const asset: AccountingDashboardSnapshot = {
         text("Review replacement plan and budget", "ตรวจแผนทดแทนและงบประมาณ"),
         14,
         "info",
-        "/accounting/asset/register?age=ending",
+        "/asset/register?age=ending",
       ),
     ],
   },
@@ -679,7 +682,7 @@ export function buildApDashboardSnapshot(
           {
             format: "currency",
             tone: "primary",
-            href: "/accounting/accounts-payable/invoice?filter=doc_status%7Cstring%3Aposted",
+            href: "/accounts-payable/invoice?filter=doc_status%7Cstring%3Aposted",
           },
         ),
         metric(
@@ -703,7 +706,7 @@ export function buildApDashboardSnapshot(
           {
             format: "currency",
             tone: "success",
-            href: "/accounting/accounts-payable/payment",
+            href: "/accounts-payable/payment",
           },
         ),
         metric(
@@ -713,7 +716,7 @@ export function buildApDashboardSnapshot(
           text("Prioritize before payment run", "จัดลำดับก่อนรอบจ่าย"),
           {
             tone: "destructive",
-            href: "/accounting/accounts-payable/invoice",
+            href: "/accounts-payable/invoice",
           },
         ),
       ],
@@ -753,7 +756,7 @@ export function buildApDashboardSnapshot(
           text("Assigned workflow queue", "คิวงานตาม workflow"),
           data?.approvals.invoice ?? 5,
           "warning",
-          "/accounting/accounts-payable/invoice?filter=doc_status%7Cstring%3Ain_review",
+          "/accounts-payable/invoice?filter=doc_status%7Cstring%3Ain_review",
         ),
         task(
           "approval-payment",
@@ -761,7 +764,7 @@ export function buildApDashboardSnapshot(
           text("Review before release", "ตรวจสอบก่อนปล่อยจ่าย"),
           data?.approvals.payment ?? 3,
           "warning",
-          "/accounting/accounts-payable/payment-approvals",
+          "/accounts-payable/payment-approvals",
         ),
         task(
           "tax",
@@ -773,7 +776,7 @@ export function buildApDashboardSnapshot(
           (data?.tax.missing_documents ?? 2) +
             (data?.tax.pending_corrections ?? 2),
           "destructive",
-          "/accounting/accounts-payable/invoice",
+          "/accounts-payable/invoice",
         ),
       ],
     },
@@ -856,7 +859,7 @@ export function buildApDashboardSnapshot(
           ),
           3,
           "info",
-          "/accounting/accounts-payable/invoice",
+          "/accounts-payable/invoice",
         ),
       ],
     },

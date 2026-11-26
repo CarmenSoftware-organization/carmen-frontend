@@ -69,9 +69,9 @@ export function sourceDocumentHref(
 ): string | null {
   if (!journal.source_id) return null;
   if (journal.source_type === "ap_invoice")
-    return `/accounting/accounts-payable/invoice/${journal.source_id}`;
+    return `/accounts-payable/invoice/${journal.source_id}`;
   if (journal.source_type === "ap_payment")
-    return `/accounting/accounts-payable/payment/${journal.source_id}`;
+    return `/accounts-payable/payment/${journal.source_id}`;
   return null;
 }
 
@@ -114,7 +114,9 @@ export function journalVoucherCapabilities(
     can_void_draft: !generated && isDraft && hasRealNo,
     // backend voidJv รับเฉพาะใบ posted ที่ยังไม่ถูกกลับรายการ
     can_void:
-      !generated && journal.jv_status === "posted" && !journal.reversed_by_jv_id,
+      !generated &&
+      journal.jv_status === "posted" &&
+      !journal.reversed_by_jv_id,
     can_reverse: !generated && journal.jv_status === "posted",
     can_open_source: sourceLinksForJournal(journal).some((link) => link.href),
   };

@@ -104,7 +104,7 @@ export function InvoiceJournal({
     <div className="space-y-3">
       {document.gl_jv_id ? (
         <Button asChild variant="outline" size="sm">
-          <Link to={`/accounting/journal-voucher/${document.gl_jv_id}`}>
+          <Link to={`/general-ledger/journal-voucher/${document.gl_jv_id}`}>
             {document.gl_jv_no || t("journal")}
           </Link>
         </Button>

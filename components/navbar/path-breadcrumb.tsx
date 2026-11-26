@@ -66,7 +66,7 @@ const EXTRA_SEGMENT_KEY: Record<string, string> = {
  * path ที่ไม่ใช่โมดูลแต่ segment ไปชนชื่อโมดูลอื่น — ดูก่อน `SEGMENT_TO_KEY`
  *
  * `/profile` (โปรไฟล์ผู้ใช้) ไม่อยู่ใน `moduleList` segment `profile` จึงตกไปเจอ
- * `/accounting/accounts-receivable/profile` แล้วขึ้น "AR Profile"
+ * `/accounts-receivable/profile` แล้วขึ้น "AR Profile"
  */
 const EXTRA_PATH_KEY: Record<string, string> = {
   "/profile": "profile",

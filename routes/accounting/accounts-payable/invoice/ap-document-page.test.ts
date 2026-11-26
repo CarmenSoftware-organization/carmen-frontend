@@ -11,9 +11,9 @@ describe("AP document pages", () => {
     (segment, docType) => {
       for (const suffix of ["", "/new", "/invoice-id"]) {
         expect(
-          apDocumentPage(`/accounting/accounts-payable/${segment}${suffix}`),
+          apDocumentPage(`/accounts-payable/${segment}${suffix}`),
         ).toMatchObject({
-          path: `/accounting/accounts-payable/${segment}`,
+          path: `/accounts-payable/${segment}`,
           docType,
         });
       }
@@ -23,11 +23,9 @@ describe("AP document pages", () => {
     },
   );
   it("preserves the existing all-document invoice list", () => {
+    expect(apDocumentPage("/accounts-payable/invoice").docType).toBeUndefined();
     expect(
-      apDocumentPage("/accounting/accounts-payable/invoice").docType,
-    ).toBeUndefined();
-    expect(
-      apDocumentPage("/accounting/accounts-payable/deposit-other").docType,
+      apDocumentPage("/accounts-payable/deposit-other").docType,
     ).toBeUndefined();
     expect(apDocumentFilter(undefined)).toBeUndefined();
     expect(apDocumentFilter("doc_status|string:posted")).toBe(

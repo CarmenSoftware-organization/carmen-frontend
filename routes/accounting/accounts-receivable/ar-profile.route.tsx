@@ -83,9 +83,9 @@ export function Component() {
           value: (row) => ts(row.is_active !== false ? "active" : "inactive"),
         },
       ]}
-      addPath="/accounting/accounts-receivable/profile/new"
+      addPath="/accounts-receivable/profile/new"
       getEditPath={(entity) =>
-        `/accounting/accounts-receivable/profile/${entity.id}?mode=edit`
+        `/accounts-receivable/profile/${entity.id}?mode=edit`
       }
       renderCard={({ item, onDelete, rowNo }) => (
         <ProfileView id={item.id} canWrite={canWrite}>
@@ -187,11 +187,5 @@ function ProfileView({
   readonly children: (open: () => void) => ReactNode;
 }) {
   const navigate = useNavigate();
-  return (
-    <>
-      {children(() =>
-        navigate(`/accounting/accounts-receivable/profile/${id}`),
-      )}
-    </>
-  );
+  return <>{children(() => navigate(`/accounts-receivable/profile/${id}`))}</>;
 }

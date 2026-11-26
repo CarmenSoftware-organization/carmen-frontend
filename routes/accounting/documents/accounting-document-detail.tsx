@@ -1282,7 +1282,7 @@ export default function AccountingDocumentDetail() {
     return (
       <ErrorState
         notFoundMessage="Journal Voucher not found"
-        backTo="/accounting/journal-voucher"
+        backTo="/general-ledger/journal-voucher"
       />
     );
   }
