@@ -12,6 +12,7 @@ const LABEL: Record<ColorTheme, string> = {
   graphite: "Graphite",
   skylearn: "Skylearn",
   "octo-code": "Octo Code",
+  createspace: "CreateSpace",
 };
 
 /**

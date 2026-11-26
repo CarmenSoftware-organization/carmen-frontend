@@ -24,6 +24,7 @@ const LABEL_KEY = {
   graphite: "colorThemeGraphite",
   skylearn: "colorThemeSkylearn",
   "octo-code": "colorThemeOctoCode",
+  createspace: "colorThemeCreateSpace",
 } as const satisfies Record<ColorTheme, string>;
 
 /**
@@ -44,6 +45,8 @@ const SWATCH: Record<ColorTheme, string> = {
     "linear-gradient(135deg, oklch(0.623 0.188 259.8), oklch(0.837 0.164 84.4))",
   "octo-code":
     "linear-gradient(135deg, oklch(0.176 0.014 258.4) 50%, oklch(0.618 0.193 258.3) 50%)",
+  createspace:
+    "linear-gradient(135deg, oklch(0.586 0.222 17.6), oklch(0.546 0.215 262.9) 60%, oklch(0.861 0.173 91.9))",
 };
 
 /**

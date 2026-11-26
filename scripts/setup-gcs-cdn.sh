@@ -60,7 +60,7 @@ if [ "${MODE}" = "setup" ]; then
   # ---- security headers ของ CDN ----
   # hash คือ inline script ใน index.html (font-scale ก่อน paint แรก) —
   # lib/__tests__/security-headers.test.ts ฟ้องเมื่อสคริปต์นั้นเปลี่ยนแล้วลืมแก้ที่นี่
-  SCRIPT_HASH="sha256-YoYlkDAQyvs6a6SPDW5yr68Y//4qVA456KGPkoNhRSw="
+  SCRIPT_HASH="sha256-QzhagrUEfKkTtBAOKMGFzQczashX7MuCvGfXcog8By0="
   CONNECT_SRC="'self' ${BACKEND_URL_VAL}"
   [ -z "${WS_URL_VAL}" ] || CONNECT_SRC="${CONNECT_SRC} ${WS_URL_VAL}"
   CSP="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' '${SCRIPT_HASH}'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src ${CONNECT_SRC}; worker-src 'self' blob:; frame-src 'self' blob: https://www.youtube-nocookie.com"

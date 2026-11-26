@@ -17,6 +17,7 @@ export const COLOR_THEMES = [
   "graphite",
   "skylearn",
   "octo-code",
+  "createspace",
 ] as const;
 
 export type ColorTheme = (typeof COLOR_THEMES)[number];
