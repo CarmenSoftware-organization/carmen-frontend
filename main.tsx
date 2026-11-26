@@ -5,6 +5,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router/dom";
 import { applyScale, readStoredScale } from "@/lib/font-scale";
+import { applyColorTheme, readStoredColorTheme } from "@/lib/color-theme";
 
 // เรียกซ้ำที่นี่แม้ index.html จะมี inline script ทำงานนี้อยู่ก่อนแล้ว (ตั้งใจ
 // ให้ซ้ำซ้อน) — inline script เป็นจุดเดียวที่ apply scale ก่อน React mount ถ้าวันหนึ่ง
@@ -13,6 +14,7 @@ import { applyScale, readStoredScale } from "@/lib/font-scale";
 // ยังโชว์ค่าที่ผู้ใช้เลือกไว้ (อ่านจาก localStorage ไม่ใช่ DOM) บรรทัดนี้จึงทำให้
 // inline script เป็นแค่ FOUC optimisation ไม่ใช่จุดเดียวที่พึ่งได้
 applyScale(readStoredScale());
+applyColorTheme(readStoredColorTheme());
 
 const PRELOAD_RELOAD_KEY = "carmen.preload-reload";
 
