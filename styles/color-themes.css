@@ -235,6 +235,95 @@ html.dark.theme-skylearn,
   --sidebar-ring: oklch(0.714 0.143 254.6);
 }
 
+/* ---------- Octo Code — dark-first สำหรับนักพัฒนา ขอบ 6px แบน ----------
+   ดึงจาก design system "Octo Code" เฉพาะสี ขอบมน และสีกราฟ: ปุ่มเขียว (#238636), แท็บขีดส้ม
+   (#F78166) และฟอนต์ของต้นฉบับไม่ได้ใช้ — สีหลักของแอปคือปุ่ม + ลิงก์ + เมนูที่เลือกพร้อมกัน
+   - โหมดมืด (หลักของต้นฉบับ): พื้น #0D1117 → การ์ด #161B22 → popover #1C2128 แยกชั้นด้วยสี
+     สีหลัก #2F81F7 คู่ตัวหนังสือเข้ม #0D1117 (5.05:1) — ตัวขาวบน #2F81F7 ได้แค่ 3.75 ตก AA
+   - โหมดสว่าง: ต้นฉบับไม่ได้ระบุ ใช้โทนสว่างของตระกูลเดียวกัน สีหลัก #0969DA (ตัวขาว 5.19:1)
+   - ทุกกล่องขอบ 6px ตามต้นฉบับ ("ห้ามเกิน 6px บน UI ใช้งาน") — สเกลของแอปให้การ์ด (xl) =
+     radius + 4px จึงตั้ง --radius 0.5rem (ปุ่ม/ช่องกรอก md = 6px) แล้วบังคับ rounded-lg/xl/2xl
+     ลงมาเป็นค่าเดียวกับ md ในธีมนี้ (กฎด้านล่าง)
+   - สีสถานะ (success/warning/destructive) ไม่แตะ ตามกติกาของธีม */
+html.theme-octo-code,
+.theme-octo-code {
+  --radius: 0.5rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.254 0.011 254);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.254 0.011 254);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.254 0.011 254);
+  --primary: oklch(0.54 0.191 257.5);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.947 0.007 247.9);
+  --secondary-foreground: oklch(0.254 0.011 254);
+  --muted: oklch(0.978 0.003 247.9);
+  --muted-foreground: oklch(0.495 0.022 250.8);
+  --accent: oklch(0.947 0.007 247.9);
+  --accent-foreground: oklch(0.254 0.011 254);
+  --border: oklch(0.881 0.013 244.3);
+  --input: oklch(0.881 0.013 244.3);
+  --field: oklch(1 0 0);
+  --ring: oklch(0.54 0.191 257.5);
+  --chart-1: oklch(0.54 0.191 257.5);
+  --chart-2: oklch(0.695 0.181 145.6);
+  --chart-3: oklch(0.661 0.193 298.1);
+  --chart-4: oklch(0.72 0.14 79.9);
+  --chart-5: oklch(0.73 0.15 34.1);
+  --sidebar: oklch(0.978 0.003 247.9);
+  --sidebar-foreground: oklch(0.254 0.011 254);
+  --sidebar-primary: oklch(0.54 0.191 257.5);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.947 0.007 247.9);
+  --sidebar-accent-foreground: oklch(0.254 0.011 254);
+  --sidebar-border: oklch(0.881 0.013 244.3);
+  --sidebar-ring: oklch(0.54 0.191 257.5);
+}
+
+html.dark.theme-octo-code,
+.dark .theme-octo-code {
+  --background: oklch(0.176 0.014 258.4);
+  --foreground: oklch(0.943 0.011 243.7);
+  --card: oklch(0.22 0.016 256.8);
+  --card-foreground: oklch(0.943 0.011 243.7);
+  --popover: oklch(0.246 0.015 256.8);
+  --popover-foreground: oklch(0.943 0.011 243.7);
+  --primary: oklch(0.618 0.193 258.3);
+  --primary-foreground: oklch(0.176 0.014 258.4);
+  --secondary: oklch(0.267 0.015 256.8);
+  --secondary-foreground: oklch(0.943 0.011 243.7);
+  --muted: oklch(0.22 0.016 256.8);
+  --muted-foreground: oklch(0.662 0.018 250.9);
+  --accent: oklch(0.246 0.015 256.8);
+  --accent-foreground: oklch(0.943 0.011 243.7);
+  --border: oklch(0.33 0.015 252.3);
+  --input: oklch(0.33 0.015 252.3);
+  --field: oklch(0.176 0.014 258.4);
+  --ring: oklch(0.618 0.193 258.3);
+  --chart-1: oklch(0.618 0.193 258.3);
+  --chart-2: oklch(0.695 0.181 145.6);
+  --chart-3: oklch(0.661 0.193 298.1);
+  --chart-4: oklch(0.72 0.14 79.9);
+  --chart-5: oklch(0.73 0.15 34.1);
+  --sidebar: oklch(0.176 0.014 258.4);
+  --sidebar-foreground: oklch(0.943 0.011 243.7);
+  --sidebar-primary: oklch(0.618 0.193 258.3);
+  --sidebar-primary-foreground: oklch(0.176 0.014 258.4);
+  --sidebar-accent: oklch(0.246 0.015 256.8);
+  --sidebar-accent-foreground: oklch(0.943 0.011 243.7);
+  --sidebar-border: oklch(0.267 0.015 256.8);
+  --sidebar-ring: oklch(0.618 0.193 258.3);
+}
+
+/* Octo Code: กล่องทุกชนิดขอบ 6px เท่าปุ่ม — utility ของ Tailwind ใส่ค่า calc ตรง ๆ (@theme inline)
+   override ผ่านตัวแปร --radius-xl ไม่ได้ จึงทับที่ class แทน นอก @layer จึงชนะ utility */
+html.theme-octo-code .rounded-lg,
+html.theme-octo-code .rounded-xl,
+html.theme-octo-code .rounded-2xl {
+  border-radius: calc(var(--radius) - 0.125rem);
+}
+
 /* ---------- Blue Glass: กระจกเฉพาะโครงหน้าจอ ----------
    พื้นไล่สีอยู่ที่ body เพราะ sidebar เป็นคอลัมน์แยกจาก <main> — ถ้าวางไว้ที่ main
    กระจกของ sidebar จะไม่มีอะไรอยู่ข้างหลังให้เบลอ ส่วน main จึงต้องโปร่งตาม

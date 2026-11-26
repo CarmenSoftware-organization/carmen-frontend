@@ -16,6 +16,7 @@ export const COLOR_THEMES = [
   "violet",
   "graphite",
   "skylearn",
+  "octo-code",
 ] as const;
 
 export type ColorTheme = (typeof COLOR_THEMES)[number];
