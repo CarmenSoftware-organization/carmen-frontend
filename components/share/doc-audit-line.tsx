@@ -60,7 +60,7 @@ export function DocAuditLine({
   if (!visibility.showAudit) {
     return (
       <table className={tableClass}>
-        <caption className="sr-only">{tfl("auditInfo")}</caption>
+        <caption className="sr-only">{tfl("revisionInfo")}</caption>
         <tbody>
           <tr>
             <td className="px-1.5 py-0.5 text-center whitespace-nowrap tabular-nums">

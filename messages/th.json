@@ -2876,6 +2876,7 @@
     "requester": "ผู้ขอ",
     "version": "ฉบับที่",
     "revision": "rev.",
+    "revisionInfo": "รุ่นของเอกสาร",
     "addressType": "ประเภทที่อยู่",
     "city": "เมือง",
     "alias": "ชื่อย่อ",

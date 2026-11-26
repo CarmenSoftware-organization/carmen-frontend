@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate, redirect } from "react-router";
 import { RequireAuth } from "@/components/auth/require-auth";
+import { BusinessUnitPrefetch } from "@/components/business-unit-prefetch";
 import LandingRedirect from "./landing-redirect";
 import AppRoot from "./app-root";
 import RootLayout from "./root-layout";
@@ -8,6 +9,7 @@ import { RootErrorBoundary } from "./root-error-boundary";
 
 const ProtectedShell = () => (
   <RequireAuth>
+    <BusinessUnitPrefetch />
     <RootLayout />
   </RequireAuth>
 );
