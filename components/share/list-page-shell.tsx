@@ -75,8 +75,10 @@ export function ListPageShell({
           />
         </div>
       )}
-      {/* Sticky top section on mobile */}
-      <div className="bg-background sticky top-0 z-20 space-y-3 pb-3 sm:static sm:pb-0">
+      {/* Sticky top section on mobile — ต้องมีพื้นทึบเพราะเนื้อหาเลื่อนลอดใต้มัน
+          บน desktop หัวไม่ sticky จึงโปร่ง: ธีม Blue Glass มีพื้นไล่สีอยู่ข้างหลัง
+          ถ้าทึบจะเห็นเป็นแถบสี่เหลี่ยมสีไม่ตรงรอบข้าง (ธีมอื่นพื้นสีเดียวกัน มองไม่เห็นต่าง) */}
+      <div className="bg-background sticky top-0 z-20 space-y-3 pb-3 sm:static sm:bg-transparent sm:pb-0">
         <div
           data-testid="list-page-header"
           className="@container/list-header flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
