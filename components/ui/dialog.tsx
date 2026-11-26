@@ -5,6 +5,26 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
+function DialogCloseX() {
+  return (
+    <DialogPrimitive.Close
+      data-slot="dialog-close"
+      className={"ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 cursor-pointer rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"}
+    >
+      <XIcon />
+      <span className="sr-only">Close</span>
+    </DialogPrimitive.Close>
+  );
+}
+
+// dialog ที่ใช้เลย์เอาต์ปกติ: DialogHeader ปักอยู่บน จึงรับปุ่ม X ไปถือไว้เอง
+// (ปุ่ม absolute ใน DialogContent จะเลื่อนหายไปกับเนื้อหาแล้วโดน header ทับ)
+type HeaderCloseSlot = {
+  enabled: boolean;
+  register: () => () => void;
+};
+const HeaderCloseContext = React.createContext<HeaderCloseSlot | null>(null);
+
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -49,6 +69,7 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onOpenAutoFocus,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
@@ -56,6 +77,18 @@ function DialogContent({
   // dialog ที่กำหนด padding เอง (p-0 + header/body/footer ของตัวเอง) จัดเลย์เอาต์เองอยู่แล้ว
   // — ปักปุ่ม footer ให้เฉพาะ dialog ที่ใช้ padding ปกติ
   const ownsLayout = /(^|\s)(?:[a-z0-9-]+:)*p[xytblr]?-/.test(className ?? "");
+  const [headerCount, setHeaderCount] = React.useState(0);
+  const closeSlot = React.useMemo<HeaderCloseSlot>(
+    () => ({
+      enabled: showCloseButton && !ownsLayout,
+      register: () => {
+        setHeaderCount((n) => n + 1);
+        return () => setHeaderCount((n) => n - 1);
+      },
+    }),
+    [showCloseButton, ownsLayout],
+  );
+  const closeInHeader = closeSlot.enabled && headerCount > 0;
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
@@ -66,34 +99,59 @@ function DialogContent({
         data-layout={ownsLayout ? "custom" : "default"}
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full grid-cols-[minmax(0,1fr)] max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 outline-none sm:max-w-lg",
-          // ยาวเกินจอ → เนื้อหาเลื่อนในกรอบ ส่วน DialogFooter ปักอยู่ล่าง (sticky) ปุ่มเห็นตลอด
+          // ยาวเกินจอ → เนื้อหาเลื่อนในกรอบ ส่วน DialogHeader / DialogFooter ปักบน/ล่าง (sticky)
           "group/dialog max-h-[calc(100dvh-2rem)] overflow-y-auto",
           className,
         )}
+        onOpenAutoFocus={(event) => {
+          onOpenAutoFocus?.(event);
+          if (event.defaultPrevented || ownsLayout) return;
+          // ปุ่ม X อยู่ใน header ซึ่งมาก่อนช่องกรอกใน DOM — focus แรกต้องข้ามไปช่องแรกเหมือนเดิม
+          const content = event.currentTarget as HTMLElement | null;
+          const first = content?.querySelector<HTMLElement>(
+            'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]):not([data-slot="dialog-close"]), [href], [tabindex]:not([tabindex="-1"])',
+          );
+          if (first) {
+            event.preventDefault();
+            first.focus();
+          }
+        }}
         {...props}
       >
-        {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close
-            data-slot="dialog-close"
-            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 cursor-pointer rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-          >
-            <XIcon />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
-        )}
+        <HeaderCloseContext.Provider value={closeSlot}>
+          {children}
+        </HeaderCloseContext.Provider>
+        {showCloseButton && !closeInHeader && <DialogCloseX />}
       </DialogPrimitive.Content>
     </DialogPortal>
   );
 }
 
-function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+function DialogHeader({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"div">) {
+  const closeSlot = React.useContext(HeaderCloseContext);
+  const holdsClose = !!closeSlot?.enabled;
+  const register = closeSlot?.register;
+  React.useLayoutEffect(() => {
+    if (holdsClose && register) return register();
+  }, [holdsClose, register]);
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
+      className={cn(
+        "flex flex-col gap-2 text-center sm:text-left",
+        // -top-6 / -mt-6 / -mx-6: sticky วัดขอบจาก padding ของกรอบ ต้องชดเชย p-6 เหมือน footer
+        "group-data-[layout=default]/dialog:bg-background group-data-[layout=default]/dialog:sticky group-data-[layout=default]/dialog:-top-6 group-data-[layout=default]/dialog:z-10 group-data-[layout=default]/dialog:-mx-6 group-data-[layout=default]/dialog:-mt-6 group-data-[layout=default]/dialog:-mb-4 group-data-[layout=default]/dialog:rounded-t-lg group-data-[layout=default]/dialog:px-6 group-data-[layout=default]/dialog:pt-6 group-data-[layout=default]/dialog:pb-4",
+        className,
+      )}
       {...props}
-    />
+    >
+      {children}
+      {holdsClose && <DialogCloseX />}
+    </div>
   );
 }
 
