@@ -12,6 +12,7 @@ import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Command, CommandInput } from "@/components/ui/command";
 import { FieldPlainText } from "@/components/ui/field";
+import { HighlightText } from "@/components/ui/highlight-text";
 import {
   Popover,
   PopoverContent,
@@ -70,7 +71,11 @@ interface LookupComboboxProps<T> {
   readonly disabled?: boolean;
   readonly isLoading?: boolean;
   readonly getSearchValue?: (item: T) => string;
-  readonly renderItem?: (item: T) => ReactNode;
+  /** `ctx.query` = คำค้นหลัง debounce (ตัวเดียวกับที่ใช้กรอง) — ส่งต่อให้ `HighlightText` */
+  readonly renderItem?: (
+    item: T,
+    ctx: { readonly query: string },
+  ) => ReactNode;
   readonly defaultLabel?: string;
   readonly renderSelected?: (item: T) => string;
   readonly emptyIcon?: LucideIcon;
@@ -455,10 +460,13 @@ export function LookupCombobox<T>({
                     {/* แถวของ VirtualCommandList สูงตายตัว — label ที่ขึ้นบรรทัดใหม่จะทับแถวถัดไป
                         จึงตัดเป็นบรรทัดเดียว (เต็มดูได้จาก title) */}
                     {renderItem ? (
-                      renderItem(item)
+                      renderItem(item, { query: debouncedSearch })
                     ) : (
                       <span className="min-w-0 truncate" title={getLabel(item)}>
-                        {getLabel(item)}
+                        <HighlightText
+                          text={getLabel(item)}
+                          query={debouncedSearch}
+                        />
                       </span>
                     )}
                     <Check
