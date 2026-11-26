@@ -419,7 +419,16 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     ).not.toBeNull();
   });
 
-  it("ขั้นที่มีรูป → รูปอยู่ในการ์ดของขั้น (ขวาของข้อความเมื่อการ์ดกว้าง) กดรูปย่อเปลี่ยนรูปใหญ่", () => {
+  // ผู้ใช้สั่ง 2026-11-26: "รูปใหญ่เอาออกไปก็ได้ เหลือแค่ช่องรูปเล็ก" + iPad ให้รูปขึ้นบนแทนลงล่าง
+  it("ขั้นที่มีรูป → แค่รูปย่อในการ์ดของขั้น (บนข้อความเมื่อการ์ดแคบ ขวาเมื่อกว้าง) กดแล้วเปิด popup", () => {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: false,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+    }));
     stepImagesById = {
       s1: [
         stepImg("a", 0, "https://files.test/s1-a.jpg"),
@@ -435,15 +444,25 @@ describe("RecipeCookView — วิดีโอของสูตร + รูป
     const card = screen.getByRole("article");
     expect(list!.closest("article")).toBe(card);
     expect(card).toHaveTextContent("Step 1 text");
-    // ข้อความซ้าย รูปขวาเมื่อการ์ดกว้าง ≥ 32rem (ผู้ใช้สั่ง 2026-11-16 "ขั้นตอนซ้าย รูปขวา")
+    // ข้อความซ้าย รูปย่อขวาเมื่อการ์ดกว้าง ≥ 32rem (ผู้ใช้สั่ง 2026-11-16 "ขั้นตอนซ้าย รูปขวา")
     expect(
-      card.querySelector('[class*="@lg/steps:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"]'),
+      card.querySelector('[class*="@lg/steps:grid-cols-[minmax(0,1fr)_auto]"]'),
     ).toContainElement(list!);
+    // การ์ดแคบ = รูปย่อขึ้นก่อนข้อความ (order-first) กลับลำดับเดิมเมื่อการ์ดกว้าง
+    const wrapper = list!.parentElement!;
+    expect(wrapper).toHaveClass("order-first", "@lg/steps:order-none");
+    // ไม่มีกรอบรูปใหญ่ของขั้นแล้ว — มีแค่ปุ่มรูปย่อ
+    expect(list!.querySelector("[aria-current]")).toBeNull();
+    expect(
+      card.querySelectorAll('img[src="https://files.test/s1-b.jpg"]'),
+    ).toHaveLength(1);
 
-    const big = () => card.querySelector(".cursor-zoom-in img");
-    expect(big()).toHaveAttribute("src", "https://files.test/s1-a.jpg");
+    expect(screen.queryByRole("dialog")).toBeNull();
     fireEvent.click(list!.querySelectorAll("button")[1]);
-    expect(big()).toHaveAttribute("src", "https://files.test/s1-b.jpg");
+    const dialog = screen.getByRole("dialog");
+    expect(
+      dialog.querySelector('img[src="https://files.test/s1-b.jpg"]'),
+    ).not.toBeNull();
   });
 
   it("ไปขั้นที่ไม่มีรูป → ไม่มีรูปของขั้น การ์ดขั้นเต็มแถว", () => {
@@ -540,9 +559,7 @@ describe("RecipeCookView — ปุ่มเลขขั้นตอน", () => 
 
     fireEvent.click(goTo(4));
     expect(screen.getByText(R.cookLastStep)).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /^Next · / }),
-    ).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Next · / })).toBeNull();
   });
 
   it("กดเลขขั้นไหนก็ได้ → ข้ามไปขั้นนั้นทันที (ไม่ต้องกดถัดไปทีละขั้น)", () => {

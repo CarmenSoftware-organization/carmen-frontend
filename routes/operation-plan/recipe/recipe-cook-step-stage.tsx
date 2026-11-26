@@ -181,8 +181,9 @@ export function RecipeCookStepStage({
           <div
             className={cn(
               "grid gap-5 p-5 @lg/steps:p-6",
+              // การ์ดกว้าง: ข้อความซ้าย รูปย่อขวาในคอลัมน์แคบ (ผู้ใช้สั่ง 2026-11-16 "ขั้นตอนซ้าย รูปขวา")
               hasImages &&
-                "@lg/steps:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @lg/steps:gap-6 @4xl/steps:grid-cols-[minmax(0,1fr)_26rem]",
+                "@lg/steps:grid-cols-[minmax(0,1fr)_auto] @lg/steps:gap-6",
             )}
           >
             <CookStep step={current} n={step + 1} total={total} />
@@ -195,7 +196,10 @@ export function RecipeCookStepStage({
               }
               label={t("cookStepImages", { n: step + 1 })}
               variant="step"
-              className="w-full min-w-0"
+              // แค่รูปย่อ (ผู้ใช้สั่ง 2026-11-26) · การ์ดแคบ (iPad แนวตั้ง/มือถือ) = รูปขึ้นบนข้อความ
+              // ไม่จมใต้ข้อความยาว · การ์ดกว้าง = คอลัมน์ขวา 8rem ใส่รูปย่อ 56px ได้แถวละ 2 รูป
+              thumbnailsOnly
+              className="order-first min-w-0 @lg/steps:order-none @lg/steps:w-32"
             />
           </div>
         </div>
@@ -238,7 +242,7 @@ export function RecipeCookStepStage({
             </Button>
             <div
               ref={rowRef}
-              className="flex min-w-0 flex-1 items-center overflow-x-auto p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className="flex min-w-0 flex-1 [scrollbar-width:none] items-center overflow-x-auto p-1 [&::-webkit-scrollbar]:hidden"
             >
               {steps.map((s, i) => (
                 <Fragment key={s.id}>
