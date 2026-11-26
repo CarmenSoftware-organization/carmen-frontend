@@ -93,11 +93,7 @@ function setup(node: React.ReactNode) {
 }
 
 it("gives AR Receipt the standard actions and exports the combined date and status filters", async () => {
-  window.history.replaceState(
-    {},
-    "",
-    "/accounting/accounts-receivable/receipt",
-  );
+  window.history.replaceState({}, "", "/accounts-receivable/receipt");
   setup(<AccountingList />);
   expect(screen.getByRole("button", { name: "Print" })).toBeVisible();
   expect(screen.getByRole("button", { name: "Filter" })).toBeVisible();
@@ -123,7 +119,7 @@ it("gives AR Receipt the standard actions and exports the combined date and stat
 });
 
 it("uses working client sorting and search for the GL financial report list", () => {
-  window.history.replaceState({}, "", "/accounting/financial-reports");
+  window.history.replaceState({}, "", "/general-ledger/financial-reports");
   setup(<AccountingList />);
   act(() => setURLParams({ search: "Corporate Sales", sort: "date:asc" }));
   const table = screen.getByRole("table");

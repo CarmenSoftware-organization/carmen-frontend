@@ -6,6 +6,7 @@ import AppRoot from "./app-root";
 import RootLayout from "./root-layout";
 import { RouteErrorBoundaryAdapter } from "./module-error-boundary-adapter";
 import { RootErrorBoundary } from "./root-error-boundary";
+import { legacyAccountingPath } from "./accounting/shared/legacy-accounting-path";
 
 const ProtectedShell = () => (
   <RequireAuth>
@@ -913,7 +914,7 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            path: "accounting",
+            path: "general-ledger",
             ErrorBoundary: RouteErrorBoundaryAdapter,
             children: [
               {
@@ -967,194 +968,6 @@ export const router = createBrowserRouter([
                   import("./accounting/settings/accounting-settings.route"),
               },
               {
-                path: "cheque-reconciliation",
-                loader: ({ request }) =>
-                  redirect(
-                    `/accounting/accounts-receivable/cheque-reconciliation${new URL(request.url).search}`,
-                  ),
-              },
-              {
-                path: "accounts-receivable/cheque-reconciliation",
-                lazy: () =>
-                  import("./accounting/operations/cheque-reconciliation.route"),
-              },
-              {
-                path: "output-tax",
-                loader: ({ request }) =>
-                  redirect(
-                    `/accounting/accounts-receivable/output-tax${new URL(request.url).search}`,
-                  ),
-              },
-              {
-                path: "accounts-receivable/output-tax",
-                lazy: () => import("./accounting/operations/output-tax.route"),
-              },
-              {
-                path: "accounts-receivable/advance-deposit",
-                lazy: () =>
-                  import("./accounting/accounts-receivable/ar-advance-deposit.route"),
-              },
-              {
-                path: "accounts-payable/deposit",
-                lazy: () =>
-                  import("./accounting/accounts-payable/invoice/ap-invoice-list.route"),
-              },
-              {
-                path: "accounts-payable/deposit/:id",
-                lazy: () =>
-                  import("./accounting/accounts-payable/invoice/ap-invoice-detail.route"),
-              },
-              {
-                path: "accounts-payable/debit-note",
-                lazy: () =>
-                  import("./accounting/accounts-payable/invoice/ap-invoice-list.route"),
-              },
-              {
-                path: "accounts-payable/debit-note/:id",
-                lazy: () =>
-                  import("./accounting/accounts-payable/invoice/ap-invoice-detail.route"),
-              },
-              {
-                path: "accounts-payable/credit-note",
-                lazy: () =>
-                  import("./accounting/accounts-payable/invoice/ap-invoice-list.route"),
-              },
-              {
-                path: "accounts-payable/credit-note/:id",
-                lazy: () =>
-                  import("./accounting/accounts-payable/invoice/ap-invoice-detail.route"),
-              },
-              {
-                path: "accounts-payable",
-                lazy: () =>
-                  import("./accounting/accounts-payable/ap-dashboard.route"),
-              },
-              {
-                path: "accounts-payable/invoice",
-                lazy: () =>
-                  import("./accounting/accounts-payable/invoice/ap-invoice-list.route"),
-              },
-              {
-                path: "accounts-payable/invoice/:id",
-                lazy: () =>
-                  import("./accounting/accounts-payable/invoice/ap-invoice-detail.route"),
-              },
-              {
-                path: "accounts-payable/payment",
-                lazy: () =>
-                  import("./accounting/accounts-payable/payment/ap-payment-list.route"),
-              },
-              {
-                path: "accounts-payable/payment/:id",
-                lazy: () =>
-                  import("./accounting/accounts-payable/payment/ap-payment-detail.route"),
-              },
-              {
-                path: "accounts-payable/payment-approvals",
-                lazy: () =>
-                  import("./accounting/accounts-payable/payment/ap-payment-approvals.route"),
-              },
-              {
-                path: "accounts-receivable",
-                lazy: () =>
-                  import("./accounting/accounts-receivable/ar-dashboard.route"),
-              },
-              {
-                path: "accounts-receivable/profile",
-                lazy: () =>
-                  import("./accounting/accounts-receivable/ar-profile.route"),
-              },
-              {
-                path: "accounts-receivable/profile/:id",
-                lazy: () =>
-                  import("./accounting/accounts-receivable/ar-profile-detail.route"),
-              },
-              {
-                path: "accounts-receivable/invoice",
-                lazy: () =>
-                  import("./accounting/accounts-receivable/ar-invoice-list.route"),
-              },
-              {
-                path: "accounts-receivable/invoice/:id",
-                lazy: () =>
-                  import("./accounting/accounts-receivable/ar-invoice-detail.route"),
-              },
-              {
-                path: "accounts-receivable/preview",
-                element: (
-                  <Navigate to="/accounting/accounts-receivable" replace />
-                ),
-              },
-              {
-                path: "accounts-receivable/preview/invoice",
-                element: (
-                  <Navigate
-                    to="/accounting/accounts-receivable/invoice"
-                    replace
-                  />
-                ),
-              },
-              {
-                path: "accounts-receivable/preview/invoice/:id",
-                element: (
-                  <Navigate
-                    to="/accounting/accounts-receivable/invoice"
-                    replace
-                  />
-                ),
-              },
-              {
-                path: "accounts-receivable/preview/folio",
-                element: (
-                  <Navigate
-                    to="/accounting/accounts-receivable/folio"
-                    replace
-                  />
-                ),
-              },
-              {
-                path: "accounts-receivable/preview/contracts",
-                element: (
-                  <Navigate
-                    to="/accounting/accounts-receivable/contract"
-                    replace
-                  />
-                ),
-              },
-              {
-                path: "accounts-receivable/preview/profiles",
-                element: (
-                  <Navigate
-                    to="/accounting/accounts-receivable/profile"
-                    replace
-                  />
-                ),
-              },
-              {
-                path: "accounts-receivable/folio",
-                lazy: () =>
-                  import("./accounting/accounts-receivable/ar-folio.route"),
-              },
-              {
-                path: "accounts-receivable/contract",
-                element: (
-                  <Navigate
-                    to="/accounting/accounts-receivable/profile"
-                    replace
-                  />
-                ),
-              },
-              {
-                path: "accounts-receivable/receipt",
-                lazy: () =>
-                  import("./accounting/accounts-receivable/ar-receipt-list.route"),
-              },
-              {
-                path: "accounts-receivable/receipt/:id",
-                lazy: () =>
-                  import("./accounting/accounts-receivable/ar-receipt-detail.route"),
-              },
-              {
                 path: "financial-reports",
                 lazy: () =>
                   import("./accounting/documents/accounting-document-list.route"),
@@ -1164,32 +977,199 @@ export const router = createBrowserRouter([
                 lazy: () =>
                   import("./accounting/documents/accounting-document-detail.route"),
               },
+            ],
+          },
+          {
+            path: "accounts-payable",
+            ErrorBoundary: RouteErrorBoundaryAdapter,
+            children: [
               {
-                path: "asset",
+                index: true,
+                lazy: () =>
+                  import("./accounting/accounts-payable/ap-dashboard.route"),
+              },
+              {
+                path: "deposit",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-list.route"),
+              },
+              {
+                path: "deposit/:id",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-detail.route"),
+              },
+              {
+                path: "debit-note",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-list.route"),
+              },
+              {
+                path: "debit-note/:id",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-detail.route"),
+              },
+              {
+                path: "credit-note",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-list.route"),
+              },
+              {
+                path: "credit-note/:id",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-detail.route"),
+              },
+              {
+                path: "invoice",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-list.route"),
+              },
+              {
+                path: "invoice/:id",
+                lazy: () =>
+                  import("./accounting/accounts-payable/invoice/ap-invoice-detail.route"),
+              },
+              {
+                path: "payment",
+                lazy: () =>
+                  import("./accounting/accounts-payable/payment/ap-payment-list.route"),
+              },
+              {
+                path: "payment/:id",
+                lazy: () =>
+                  import("./accounting/accounts-payable/payment/ap-payment-detail.route"),
+              },
+              {
+                path: "payment-approvals",
+                lazy: () =>
+                  import("./accounting/accounts-payable/payment/ap-payment-approvals.route"),
+              },
+            ],
+          },
+          {
+            path: "accounts-receivable",
+            ErrorBoundary: RouteErrorBoundaryAdapter,
+            children: [
+              {
+                index: true,
+                lazy: () => import("./accounting/accounts-receivable/ar-dashboard.route"),
+              },
+              {
+                path: "cheque-reconciliation",
+                lazy: () =>
+                  import("./accounting/operations/cheque-reconciliation.route"),
+              },
+              {
+                path: "output-tax",
+                lazy: () => import("./accounting/operations/output-tax.route"),
+              },
+              {
+                path: "advance-deposit",
+                lazy: () =>
+                  import("./accounting/accounts-receivable/ar-advance-deposit.route"),
+              },
+              {
+                path: "profile",
+                lazy: () => import("./accounting/accounts-receivable/ar-profile.route"),
+              },
+              {
+                path: "profile/:id",
+                lazy: () =>
+                  import("./accounting/accounts-receivable/ar-profile-detail.route"),
+              },
+              {
+                path: "invoice",
+                lazy: () =>
+                  import("./accounting/accounts-receivable/ar-invoice-list.route"),
+              },
+              {
+                path: "invoice/:id",
+                lazy: () =>
+                  import("./accounting/accounts-receivable/ar-invoice-detail.route"),
+              },
+              {
+                path: "preview",
+                element: <Navigate to="/accounts-receivable" replace />,
+              },
+              {
+                path: "preview/invoice",
+                element: <Navigate to="/accounts-receivable/invoice" replace />,
+              },
+              {
+                path: "preview/invoice/:id",
+                element: <Navigate to="/accounts-receivable/invoice" replace />,
+              },
+              {
+                path: "preview/folio",
+                element: <Navigate to="/accounts-receivable/folio" replace />,
+              },
+              {
+                path: "preview/contracts",
+                element: (
+                  <Navigate to="/accounts-receivable/contract" replace />
+                ),
+              },
+              {
+                path: "preview/profiles",
+                element: <Navigate to="/accounts-receivable/profile" replace />,
+              },
+              {
+                path: "folio",
+                lazy: () => import("./accounting/accounts-receivable/ar-folio.route"),
+              },
+              {
+                path: "contract",
+                element: <Navigate to="/accounts-receivable/profile" replace />,
+              },
+              {
+                path: "receipt",
+                lazy: () =>
+                  import("./accounting/accounts-receivable/ar-receipt-list.route"),
+              },
+              {
+                path: "receipt/:id",
+                lazy: () =>
+                  import("./accounting/accounts-receivable/ar-receipt-detail.route"),
+              },
+            ],
+          },
+          {
+            path: "asset",
+            ErrorBoundary: RouteErrorBoundaryAdapter,
+            children: [
+              {
+                index: true,
                 lazy: () =>
                   import("./accounting/dashboard/accounting-dashboard.route"),
               },
               {
-                path: "asset/register",
+                path: "register",
                 lazy: () =>
                   import("./accounting/documents/accounting-document-list.route"),
               },
               {
-                path: "asset/register/:id",
+                path: "register/:id",
                 lazy: () =>
                   import("./accounting/documents/accounting-document-detail.route"),
               },
               {
-                path: "asset/disposal",
+                path: "disposal",
                 lazy: () =>
                   import("./accounting/documents/accounting-document-list.route"),
               },
               {
-                path: "asset/disposal/:id",
+                path: "disposal/:id",
                 lazy: () =>
                   import("./accounting/documents/accounting-document-detail.route"),
               },
             ],
+          },
+          // URL เดิมก่อนแยกบัญชีเป็นสี่โมดูล — คงไว้ให้ลิงก์/บุ๊กมาร์กเก่าไม่ 404
+          {
+            path: "accounting/*",
+            loader: ({ request }) => {
+              const url = new URL(request.url);
+              return redirect(legacyAccountingPath(url.pathname, url.search));
+            },
           },
           // catch-all อยู่ใน shell: คนที่ล็อกอินอยู่แล้วเปิด URL ผิดยังเห็นเมนูของโมดูลนั้น ส่วนคนที่ยัง
           // ไม่ล็อกอิน RequireAuth พาไป /login?next=… ก่อน (เดิมเป็นหน้าเต็มจอนอก shell)

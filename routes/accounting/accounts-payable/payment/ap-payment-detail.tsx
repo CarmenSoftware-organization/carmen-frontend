@@ -79,11 +79,8 @@ import { ApPostingBanner } from "../shared/ap-posting-banner";
 import { ApAttachmentsPanel } from "../shared/ap-attachments";
 import { useApAttachments } from "../shared/use-ap-attachments";
 
-const LIST_PATH = "/accounting/accounts-payable/payment";
-const RETURN_PATHS = [
-  LIST_PATH,
-  "/accounting/accounts-payable/payment-approvals",
-];
+const LIST_PATH = "/accounts-payable/payment";
+const RETURN_PATHS = [LIST_PATH, "/accounts-payable/payment-approvals"];
 const NO_ERRORS: ReadonlySet<PaymentErrorKey> = new Set();
 
 export default function ApPaymentDetail() {

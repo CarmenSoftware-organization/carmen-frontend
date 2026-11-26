@@ -102,7 +102,7 @@ function InvoiceReferenceRow({
       <span>{invoiceText(`docTypes.${reference.ref_doc_type}`)}</span>
       <Link
         className="text-primary underline"
-        to={`/accounting/accounts-payable/invoice/${reference.ref_ap_invoice_id}`}
+        to={`/accounts-payable/invoice/${reference.ref_ap_invoice_id}`}
       >
         {query.data?.doc_no || t("openDocument")}
       </Link>
@@ -188,10 +188,7 @@ export function InvoicePaymentsPanel({
         </div>
       )}
       <p className="text-muted-foreground">{t("paymentHistoryRegister")}</p>
-      <Link
-        className="text-primary underline"
-        to="/accounting/accounts-payable/payment"
-      >
+      <Link className="text-primary underline" to="/accounts-payable/payment">
         {t("openPaymentRegister")}
       </Link>
     </div>

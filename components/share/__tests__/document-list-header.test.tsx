@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
+import { renderHook } from "@testing-library/react";
+import { useModuleTile } from "@/hooks/use-module-tile";
 import { DocumentListHeader } from "../document-list-header";
 
 // ModuleTileIcon อ่าน pathname ผ่าน useModuleTile → ต้องมี router context
@@ -50,5 +52,22 @@ describe("DocumentListHeader", () => {
       </MemoryRouter>,
     );
     expect(screen.queryByText("0")).not.toBeInTheDocument();
+  });
+});
+
+describe("useModuleTile — accounting modules borrow the accounting tile", () => {
+  it.each([
+    ["/general-ledger/journal-voucher", "generalLedger"],
+    ["/general-ledger", "generalLedger"],
+    ["/accounts-payable/invoice", "accountsPayable"],
+    ["/accounts-receivable/receipt/rc-1", "accountsReceivable"],
+    ["/asset/register", "asset"],
+  ])("%s → %s in the accounting palette", (pathname, name) => {
+    const { result } = renderHook(() => useModuleTile(), {
+      wrapper: ({ children }) => (
+        <MemoryRouter initialEntries={[pathname]}>{children}</MemoryRouter>
+      ),
+    });
+    expect(result.current).toEqual({ name, parentName: "accounting" });
   });
 });

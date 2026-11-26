@@ -73,7 +73,7 @@ export function JvTemplateGenerateDialog({
             action: {
               label: t("openJv"),
               onClick: () =>
-                navigate(`/accounting/journal-voucher/${result.jv_id}`),
+                navigate(`/general-ledger/journal-voucher/${result.jv_id}`),
             },
           });
           onOpenChange(false);

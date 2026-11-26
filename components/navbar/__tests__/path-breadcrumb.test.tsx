@@ -53,7 +53,7 @@ describe("PathBreadcrumb", () => {
   });
 
   it("Accounting dashboard แสดงชื่อโมดูลครั้งเดียว ไม่ซ้ำ Dashboard > Dashboard", () => {
-    renderAt("/accounting/accounts-payable");
+    renderAt("/accounts-payable");
 
     expect(screen.getByText(en.modules.accountsPayable)).toHaveAttribute(
       "aria-current",
@@ -63,11 +63,11 @@ describe("PathBreadcrumb", () => {
   });
 
   it("หน้าภายใน Accounting เริ่ม breadcrumb จากโมดูลที่เลือก", () => {
-    renderAt("/accounting/accounts-receivable/invoice");
+    renderAt("/accounts-receivable/invoice");
 
     expect(
       screen.getByRole("link", { name: en.modules.accountsReceivable }),
-    ).toHaveAttribute("href", "/accounting/accounts-receivable");
+    ).toHaveAttribute("href", "/accounts-receivable");
     expect(screen.getByText(en.modules.arInvoice)).toHaveAttribute(
       "aria-current",
       "page",
@@ -76,11 +76,11 @@ describe("PathBreadcrumb", () => {
   });
 
   it("General Ledger ใช้ชื่อโมดูลเป็น breadcrumb ระดับแรก", () => {
-    renderAt("/accounting/journal-voucher");
+    renderAt("/general-ledger/journal-voucher");
 
     expect(
       screen.getByRole("link", { name: en.modules.generalLedger }),
-    ).toHaveAttribute("href", "/accounting");
+    ).toHaveAttribute("href", "/general-ledger");
     expect(screen.getByText(en.modules.journalVoucher)).toHaveAttribute(
       "aria-current",
       "page",

@@ -43,13 +43,13 @@ export function ReceiptJournal({
       {jvId ? (
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline" size="sm">
-            <Link to={`/accounting/journal-voucher/${jvId}`}>
+            <Link to={`/general-ledger/journal-voucher/${jvId}`}>
               {jvNo || t("journal")}
             </Link>
           </Button>
           {voidJvId && (
             <Button asChild variant="outline" size="sm">
-              <Link to={`/accounting/journal-voucher/${voidJvId}`}>
+              <Link to={`/general-ledger/journal-voucher/${voidJvId}`}>
                 {tr("voidJournal")}
               </Link>
             </Button>

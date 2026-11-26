@@ -64,7 +64,7 @@ import {
   type ArCustomer,
 } from "./use-ar-customer";
 
-const BASE = "/accounting/accounts-receivable/profile";
+const BASE = "/accounts-receivable/profile";
 export function Component() {
   const { id } = useParams();
   const bu = useBuCode() ?? "";

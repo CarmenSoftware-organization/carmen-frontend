@@ -10,10 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  findAccountingSection,
-  findActiveModule,
-} from "@/constant/module-list";
+import { findActiveModule } from "@/constant/module-list";
 import {
   useVisibleModules,
   type ModuleWithAccess,
@@ -74,18 +71,14 @@ export function SideMain() {
   const t = useTranslations("modules");
 
   const activeModule = findActiveModule(pathname);
-  const sidebarModule =
-    activeModule?.name === "accounting"
-      ? findAccountingSection(pathname)
-      : activeModule;
+  const sidebarModule = activeModule;
   const visibleSubs = useVisibleModules(sidebarModule?.subModules ?? []);
   const activeSub = visibleSubs
     .filter(
       (sub) => pathname === sub.path || pathname.startsWith(sub.path + "/"),
     )
     .reduce<ModuleWithAccess | undefined>(
-      (best, sub) =>
-        !best || sub.path.length > best.path.length ? sub : best,
+      (best, sub) => (!best || sub.path.length > best.path.length ? sub : best),
       undefined,
     );
 
@@ -120,11 +113,7 @@ export function SideMain() {
         {/* Module icon — illustrated AppTile (module signature) */}
         <div className="shrink-0">
           <AppTile
-            name={
-              activeModule?.name === "accounting"
-                ? "accounting"
-                : sidebarModule.name
-            }
+            name={sidebarModule.tileParent ?? sidebarModule.name}
             size={34}
           />
         </div>

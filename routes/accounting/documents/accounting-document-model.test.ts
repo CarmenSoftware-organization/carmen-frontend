@@ -8,22 +8,18 @@ import {
 describe("accounting navigation", () => {
   it("maps nested list and detail paths to the same document type", () => {
     expect(
-      accountingDocumentFromPath("/accounting/accounts-receivable/invoice/ar-1")
-        .kind,
+      accountingDocumentFromPath("/accounts-receivable/invoice/ar-1").kind,
     ).toBe("arInvoice");
   });
 
   it("exposes the dedicated AP dashboard and approval queue", () => {
-    const accounting = getModule("/accounting");
     expect(
-      accounting.subModules?.some(
+      getModule("/general-ledger").subModules?.some(
         (item) => item.name === "accountingDashboard",
       ),
     ).toBe(false);
     expect(
-      accounting.subModules
-        ?.find((item) => item.name === "accountsPayable")
-        ?.subModules?.map((item) => item.name),
+      getModule("/accounts-payable").subModules?.map((item) => item.name),
     ).toEqual([
       "apDashboard",
       "apInvoice",

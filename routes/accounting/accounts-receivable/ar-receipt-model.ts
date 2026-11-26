@@ -12,7 +12,7 @@ import {
   type OutstandingInvoice,
 } from "./use-ar-receipt";
 
-export const AR_RECEIPT_PATH = "/accounting/accounts-receivable/receipt";
+export const AR_RECEIPT_PATH = "/accounts-receivable/receipt";
 export const RECEIPT_PAY_TYPES = AR_RECEIPT_METHODS;
 const amount = z.number().finite().nonnegative().max(999999999999);
 const taxEntitySchema = z.object({

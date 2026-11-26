@@ -43,17 +43,19 @@ vi.mock("@/constant/module-list", () => {
       icon: DummyIcon,
       subModules: [],
     },
-    { name: "accounting", path: "/accounting", icon: DummyIcon },
+    {
+      name: "generalLedger",
+      path: "/general-ledger",
+      icon: DummyIcon,
+      tileParent: "accounting",
+    },
   ];
   return {
     moduleList,
     findActiveModule: (pathname: string) =>
-      moduleList.find((mod) => pathname.startsWith(mod.path)),
-    findAccountingSection: () => ({
-      name: "generalLedger",
-      path: "/accounting",
-      icon: DummyIcon,
-    }),
+      moduleList.find(
+        (mod) => pathname === mod.path || pathname.startsWith(mod.path + "/"),
+      ),
   };
 });
 
@@ -218,17 +220,17 @@ describe("SideMain — เมนูย่อยอีกชั้น", () => {
   });
 });
 
-describe("SideMain — Accounting", () => {
+describe("SideMain — General Ledger", () => {
   const accountingSubs = [
-    sub({ name: "glDashboard", path: "/accounting" }),
-    sub({ name: "journalVoucher", path: "/accounting/journal-voucher" }),
-    sub({ name: "templateVoucher", path: "/accounting/template-voucher" }),
+    sub({ name: "glDashboard", path: "/general-ledger" }),
+    sub({ name: "journalVoucher", path: "/general-ledger/journal-voucher" }),
+    sub({ name: "templateVoucher", path: "/general-ledger/template-voucher" }),
   ];
 
   it.each([
-    ["/accounting", "glDashboard"],
-    ["/accounting/journal-voucher", "journalVoucher"],
-    ["/accounting/template-voucher/123", "templateVoucher"],
+    ["/general-ledger", "glDashboard"],
+    ["/general-ledger/journal-voucher", "journalVoucher"],
+    ["/general-ledger/template-voucher/123", "templateVoucher"],
   ])("highlights only %s's menu item", (pathname, expected) => {
     visibleSubs.mockReturnValue(accountingSubs);
     renderSideMain(pathname);

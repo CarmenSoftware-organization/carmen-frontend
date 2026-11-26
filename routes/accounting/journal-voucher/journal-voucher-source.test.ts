@@ -103,11 +103,11 @@ describe("Journal Voucher source policy", () => {
       sourceDocumentHref(
         journal({ source_type: "ap_invoice", source_id: "ap-42" }),
       ),
-    ).toBe("/accounting/accounts-payable/invoice/ap-42");
+    ).toBe("/accounts-payable/invoice/ap-42");
     expect(
       sourceDocumentHref(
         journal({ source_type: "ap_payment", source_id: "pv-7" }),
       ),
-    ).toBe("/accounting/accounts-payable/payment/pv-7");
+    ).toBe("/accounts-payable/payment/pv-7");
   });
 });

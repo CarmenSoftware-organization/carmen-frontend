@@ -295,7 +295,7 @@ describe("AP document layout and persistence contract", () => {
         .filter(
           (link) =>
             link.getAttribute("href") ===
-            "/accounting/journal-voucher/posted-jv",
+            "/general-ledger/journal-voucher/posted-jv",
         ),
     ).toHaveLength(1);
     await userEvent.click(screen.getByRole("button", { name: "Void" }));
@@ -325,8 +325,8 @@ describe("AP document layout and persistence contract", () => {
       screen.getAllByRole("link").map((link) => link.getAttribute("href")),
     ).toEqual(
       expect.arrayContaining([
-        "/accounting/journal-voucher/posted-jv",
-        "/accounting/journal-voucher/reversal-jv",
+        "/general-ledger/journal-voucher/posted-jv",
+        "/general-ledger/journal-voucher/reversal-jv",
       ]),
     );
   });
@@ -338,7 +338,7 @@ describe("AP document layout and persistence contract", () => {
   ])(
     "starts a scoped %s draft with its document type locked",
     (segment, label, title) => {
-      wrap(<ApInvoiceDetail />, `/accounting/accounts-payable/${segment}/new`);
+      wrap(<ApInvoiceDetail />, `/accounts-payable/${segment}/new`);
       expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
       const selector = screen.getByRole("combobox", { name: /^Type/ });
       expect(selector).toBeDisabled();

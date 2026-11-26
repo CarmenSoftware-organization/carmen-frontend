@@ -116,6 +116,11 @@ export interface ModuleDto {
    * backend ยังตอบ 403 ให้ทุกการอ่านข้อมูลของ feature นั้น หน้าจึงต้องไม่ยิงเอง
    */
   viewableWhenExpired?: boolean;
+  /**
+   * ยืมภาพ tile ของโมดูลแม่ (launcher ใช้ `SubTile`, sidebar ใช้ `AppTile` ของชื่อนี้)
+   * สี่โมดูลบัญชี (GL/AP/AR/Asset) ตั้งเป็น `"accounting"` — มีภาพชุดเดียวกัน
+   */
+  tileParent?: string;
 }
 
 export function getModule(path: string): ModuleDto {
@@ -147,54 +152,56 @@ export function findRouteLeaf(pathname: string): ModuleDto | undefined {
 }
 
 /**
- * Accounting is split into four launcher modules. Their children are the
- * contextual sidebar entries shown after a launcher module is selected.
+ * สี่โมดูลบัญชี (GL / AP / AR / Asset) เป็นโมดูลบนสุดของ `moduleList` คนละ URL
+ * (`/general-ledger`, `/accounts-payable`, `/accounts-receivable`, `/asset`) — โค้ดหน้า
+ * ยังอยู่ใต้ `routes/accounting/` ด้วยกันโดยตั้งใจ (dashboard/documents ใช้ร่วม)
  *
  * ทุก leaf ต้องผูก `licenseFeature` — leaf ที่ไม่ผูกจะ `locked: false` เสมอ แล้วปลดล็อก
  * หัวข้อ Accounting ทั้งก้อนให้ BU ที่ไม่ได้ซื้อ (ดู module-list.license-feature.test.ts)
  */
-export const accountingModuleSections: ModuleDto[] = [
+const accountingModuleSections: ModuleDto[] = [
   {
     name: "generalLedger",
-    path: "/accounting",
+    tileParent: "accounting",
+    path: "/general-ledger",
     icon: BookOpen,
     subModules: [
       {
         name: "glDashboard",
-        path: "/accounting",
+        path: "/general-ledger",
         licenseFeature: "accounting.gl",
         icon: LayoutDashboard,
       },
       {
         name: "journalVoucher",
-        path: "/accounting/journal-voucher",
+        path: "/general-ledger/journal-voucher",
         licenseFeature: "accounting.gl",
         icon: FileText,
       },
       {
         name: "templateVoucher",
-        path: "/accounting/template-voucher",
+        path: "/general-ledger/template-voucher",
         permission: PERMISSIONS.accounting.gl_jv_template.view,
         licenseFeature: "accounting.gl.jv_template",
         icon: FileSpreadsheet,
       },
       {
         name: "recurringVoucher",
-        path: "/accounting/recurring-voucher",
+        path: "/general-ledger/recurring-voucher",
         permission: PERMISSIONS.accounting.gl_jv_template.view,
         licenseFeature: "accounting.gl.jv_template",
         icon: Clock,
       },
       {
         name: "allocationVoucher",
-        path: "/accounting/allocation-voucher",
+        path: "/general-ledger/allocation-voucher",
         permission: PERMISSIONS.accounting.gl_jv_template.view,
         licenseFeature: "accounting.gl.jv_template",
         icon: ArrowLeftRight,
       },
       {
         name: "accountingSettings",
-        path: "/accounting/settings",
+        path: "/general-ledger/settings",
         // การอ่าน gl_setting ต้องมี configuration.app_config.view — role Accounting ที่ seed ไว้ไม่มี
         // ถ้าไม่ผูกสิทธิ์ non-admin จะเห็นหน้าที่ขึ้นแต่ error
         permission: PERMISSIONS.configuration.app_config.view,
@@ -205,48 +212,49 @@ export const accountingModuleSections: ModuleDto[] = [
   },
   {
     name: "accountsPayable",
-    path: "/accounting/accounts-payable",
+    tileParent: "accounting",
+    path: "/accounts-payable",
     icon: BadgeDollarSign,
     subModules: [
       {
         name: "apDashboard",
-        path: "/accounting/accounts-payable",
+        path: "/accounts-payable",
         licenseFeature: "accounting.ap",
         icon: LayoutDashboard,
       },
       {
         name: "apInvoice",
-        path: "/accounting/accounts-payable/invoice",
+        path: "/accounts-payable/invoice",
         licenseFeature: "accounting.ap",
         icon: FileInput,
       },
       {
         name: "apDeposit",
-        path: "/accounting/accounts-payable/deposit",
+        path: "/accounts-payable/deposit",
         licenseFeature: "accounting.ap",
         icon: Coins,
       },
       {
         name: "apDebitNote",
-        path: "/accounting/accounts-payable/debit-note",
+        path: "/accounts-payable/debit-note",
         licenseFeature: "accounting.ap",
         icon: FileInput,
       },
       {
         name: "apCreditNote",
-        path: "/accounting/accounts-payable/credit-note",
+        path: "/accounts-payable/credit-note",
         licenseFeature: "accounting.ap",
         icon: FileText,
       },
       {
         name: "apPayment",
-        path: "/accounting/accounts-payable/payment",
+        path: "/accounts-payable/payment",
         licenseFeature: "accounting.ap",
         icon: DollarSign,
       },
       {
         name: "apPaymentApprovals",
-        path: "/accounting/accounts-payable/payment-approvals",
+        path: "/accounts-payable/payment-approvals",
         licenseFeature: "accounting.ap",
         icon: FileInput,
       },
@@ -254,54 +262,55 @@ export const accountingModuleSections: ModuleDto[] = [
   },
   {
     name: "accountsReceivable",
-    path: "/accounting/accounts-receivable",
+    tileParent: "accounting",
+    path: "/accounts-receivable",
     icon: Receipt,
     subModules: [
       {
         name: "arDashboard",
-        path: "/accounting/accounts-receivable",
+        path: "/accounts-receivable",
         licenseFeature: "accounting.ar",
         icon: LayoutDashboard,
       },
       {
         name: "arProfile",
-        path: "/accounting/accounts-receivable/profile",
+        path: "/accounts-receivable/profile",
         licenseFeature: "accounting.ar",
         icon: UserCheck,
       },
       {
         name: "arFolio",
-        path: "/accounting/accounts-receivable/folio",
+        path: "/accounts-receivable/folio",
         licenseFeature: "accounting.ar",
         icon: BookText,
       },
       {
         name: "arInvoice",
-        path: "/accounting/accounts-receivable/invoice",
+        path: "/accounts-receivable/invoice",
         licenseFeature: "accounting.ar",
         icon: FileText,
       },
       {
         name: "arReceipt",
-        path: "/accounting/accounts-receivable/receipt",
+        path: "/accounts-receivable/receipt",
         licenseFeature: "accounting.ar",
         icon: BadgeDollarSign,
       },
       {
         name: "arAdvanceDeposit",
-        path: "/accounting/accounts-receivable/advance-deposit",
+        path: "/accounts-receivable/advance-deposit",
         licenseFeature: "accounting.ar",
         icon: Coins,
       },
       {
         name: "chequeReconciliation",
-        path: "/accounting/accounts-receivable/cheque-reconciliation",
+        path: "/accounts-receivable/cheque-reconciliation",
         licenseFeature: "accounting.ar",
         icon: Landmark,
       },
       {
         name: "outputTax",
-        path: "/accounting/accounts-receivable/output-tax",
+        path: "/accounts-receivable/output-tax",
         licenseFeature: "accounting.ar",
         icon: Percent,
       },
@@ -309,42 +318,31 @@ export const accountingModuleSections: ModuleDto[] = [
   },
   {
     name: "asset",
-    path: "/accounting/asset",
+    tileParent: "accounting",
+    path: "/asset",
     icon: Building2,
     subModules: [
       {
         name: "assetDashboard",
-        path: "/accounting/asset",
+        path: "/asset",
         licenseFeature: "accounting.asset",
         icon: LayoutDashboard,
       },
       {
         name: "assetRegister",
-        path: "/accounting/asset/register",
+        path: "/asset/register",
         licenseFeature: "accounting.asset",
         icon: Boxes,
       },
       {
         name: "assetDisposal",
-        path: "/accounting/asset/disposal",
+        path: "/asset/disposal",
         licenseFeature: "accounting.asset",
         icon: FileInput,
       },
     ],
   },
 ];
-
-/** Specific accounting prefixes win; General Ledger handles the root routes. */
-export function findAccountingSection(pathname: string): ModuleDto {
-  return (
-    accountingModuleSections
-      .slice(1)
-      .find(
-        (section) =>
-          pathname === section.path || pathname.startsWith(section.path + "/"),
-      ) ?? accountingModuleSections[0]
-  );
-}
 
 export const moduleList: ModuleDto[] = [
   {
@@ -636,12 +634,7 @@ export const moduleList: ModuleDto[] = [
       },
     ],
   },
-  {
-    name: "accounting",
-    path: "/accounting",
-    icon: BookOpen,
-    subModules: accountingModuleSections,
-  },
+  ...accountingModuleSections,
   {
     name: "config",
     path: "/config",
@@ -1028,5 +1021,7 @@ export const moduleList: ModuleDto[] = [
  * สองที่ต้องตอบตรงกันเสมอ ไม่งั้นได้ sidebar เปล่าหรือเมนูหาย
  */
 export function findActiveModule(pathname: string): ModuleDto | undefined {
-  return moduleList.find((mod) => pathname.startsWith(mod.path));
+  return moduleList.find(
+    (mod) => pathname === mod.path || pathname.startsWith(mod.path + "/"),
+  );
 }

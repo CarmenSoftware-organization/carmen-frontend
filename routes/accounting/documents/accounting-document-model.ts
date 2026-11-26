@@ -28,32 +28,32 @@ export const ACCOUNTING_DOCUMENTS: Record<
 > = {
   journalVoucher: {
     kind: "journalVoucher",
-    path: "/accounting/journal-voucher",
+    path: "/general-ledger/journal-voucher",
     prefix: "JV",
   },
   financialReports: {
     kind: "financialReports",
-    path: "/accounting/financial-reports",
+    path: "/general-ledger/financial-reports",
     prefix: "FR",
   },
   arInvoice: {
     kind: "arInvoice",
-    path: "/accounting/accounts-receivable/invoice",
+    path: "/accounts-receivable/invoice",
     prefix: "AR",
   },
   arReceipt: {
     kind: "arReceipt",
-    path: "/accounting/accounts-receivable/receipt",
+    path: "/accounts-receivable/receipt",
     prefix: "RC",
   },
   assetRegister: {
     kind: "assetRegister",
-    path: "/accounting/asset/register",
+    path: "/asset/register",
     prefix: "FA",
   },
   assetDisposal: {
     kind: "assetDisposal",
-    path: "/accounting/asset/disposal",
+    path: "/asset/disposal",
     prefix: "FD",
   },
 };

@@ -10,6 +10,11 @@ export function useModuleTile(): {
     (m) => pathname === m.path || pathname.startsWith(m.path + "/"),
   );
   if (!parent) return {};
+  // โมดูลที่ยืมภาพของโมดูลแม่ (GL/AP/AR/Asset → accounting) ใช้ tile ของตัวโมดูลเอง
+  // ในชุดสีของแม่ — palette รู้จักแค่ "accounting" และ leaf ส่วนใหญ่ไม่มีภาพ sub-tile
+  if (parent.tileParent) {
+    return { name: parent.name, parentName: parent.tileParent };
+  }
 
   let best: ModuleDto | undefined;
   for (const sub of parent.subModules ?? []) {

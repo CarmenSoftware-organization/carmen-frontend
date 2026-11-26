@@ -88,7 +88,7 @@ beforeEach(() => {
   window.history.replaceState(
     {},
     "",
-    "/accounting/accounts-receivable/profile/customer-one",
+    "/accounts-receivable/profile/customer-one",
   );
 });
 

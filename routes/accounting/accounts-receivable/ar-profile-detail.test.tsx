@@ -92,11 +92,11 @@ it("keeps the actual form after API create succeeds but mock storage fails, then
   const router = createMemoryRouter(
     [
       {
-        path: "/accounting/accounts-receivable/profile/:id",
+        path: "/accounts-receivable/profile/:id",
         element: <ProfileRoute />,
       },
     ],
-    { initialEntries: ["/accounting/accounts-receivable/profile/new"] },
+    { initialEntries: ["/accounts-receivable/profile/new"] },
   );
   render(
     <IntlProvider locale="en" messages={en} timeZone="Asia/Bangkok">
@@ -137,7 +137,7 @@ it("keeps the actual form after API create succeeds but mock storage fails, then
     expect(screen.getByText(labels.partialSave)).toBeVisible(),
   );
   expect(router.state.location.pathname).toBe(
-    "/accounting/accounts-receivable/profile/new",
+    "/accounts-receivable/profile/new",
   );
   expect(
     screen.getByLabelText(new RegExp(`^${labels.companyName}`, "i")),
@@ -156,7 +156,7 @@ it("keeps the actual form after API create succeeds but mock storage fails, then
   expect(api.create).toHaveBeenCalledTimes(1);
   expect(api.update).not.toHaveBeenCalled();
   expect(router.state.location.pathname).toBe(
-    "/accounting/accounts-receivable/profile/created-profile",
+    "/accounts-receivable/profile/created-profile",
   );
   expect(readProfileExtension("DEV", "created-profile")).toEqual(
     expect.objectContaining({

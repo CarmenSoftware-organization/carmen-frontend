@@ -137,7 +137,10 @@ export default function JournalVoucherList() {
     : (data?.paginate?.total ?? 0);
 
   const openJournal = (journal: JournalVoucher) =>
-    navigate(`/accounting/journal-voucher/${journal.id}`, listReturnState());
+    navigate(
+      `/general-ledger/journal-voucher/${journal.id}`,
+      listReturnState(),
+    );
 
   const handleExport = async () => {
     try {
@@ -199,7 +202,7 @@ export default function JournalVoucherList() {
         <DocumentListActions
           onExport={handleExport}
           isExporting={isExporting}
-          onAdd={() => navigate("/accounting/journal-voucher/new")}
+          onAdd={() => navigate("/general-ledger/journal-voucher/new")}
           addLabel={t("add")}
         />
       }

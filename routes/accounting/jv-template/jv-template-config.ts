@@ -19,21 +19,21 @@ export const JV_TEMPLATE_PAGES: Record<
   }
 > = {
   all: {
-    path: "/accounting/template-voucher",
+    path: "/general-ledger/template-voucher",
     fixedType: null,
     creatableTypes: ["recurring", "allocation", "amortize"],
     listPageKey: LIST_PAGE_KEYS.JV_TEMPLATE,
     titleKey: "titleAll",
   },
   recurring: {
-    path: "/accounting/recurring-voucher",
+    path: "/general-ledger/recurring-voucher",
     fixedType: "recurring",
     creatableTypes: ["recurring"],
     listPageKey: LIST_PAGE_KEYS.JV_TEMPLATE_RECURRING,
     titleKey: "titleRecurring",
   },
   allocation: {
-    path: "/accounting/allocation-voucher",
+    path: "/general-ledger/allocation-voucher",
     fixedType: "allocation",
     creatableTypes: ["allocation"],
     listPageKey: LIST_PAGE_KEYS.JV_TEMPLATE_ALLOCATION,
@@ -59,7 +59,11 @@ export const JV_TEMPLATE_TYPE_OPTIONS = createStatusFilterOptions(
 /** ตัวกรอง active/inactive — รูปแบบ clause boolean เดียวกับ `ACTIVE_ONLY_FILTER` */
 export const JV_TEMPLATE_ACTIVE_OPTIONS = [
   { label: "Active", value: "is_active|boolean:true", statusKey: "active" },
-  { label: "Inactive", value: "is_active|boolean:false", statusKey: "inactive" },
+  {
+    label: "Inactive",
+    value: "is_active|boolean:false",
+    statusKey: "inactive",
+  },
 ];
 
 export function jvTemplateDetailPath(

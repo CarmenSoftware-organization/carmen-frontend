@@ -20,7 +20,7 @@ import ApPaymentList from "../payment/ap-payment-list";
 const { listData } = vi.hoisted(() => ({
   listData: {
     rows: [] as object[],
-    pathname: "/accounting/accounts-payable/invoice",
+    pathname: "/accounts-payable/invoice",
   },
 }));
 
@@ -102,7 +102,7 @@ vi.mock("@/lib/xlsx-utils", () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   listData.rows = [];
-  listData.pathname = "/accounting/accounts-payable/invoice";
+  listData.pathname = "/accounts-payable/invoice";
 });
 
 it("exports every filtered invoice page while preserving decimal values", async () => {
@@ -256,7 +256,7 @@ for (const [segment, docType] of [
   ["credit-note", "credit_note"],
 ]) {
   it(`keeps ${segment} export scoped to its document type`, async () => {
-    listData.pathname = `/accounting/accounts-payable/${segment}`;
+    listData.pathname = `/accounts-payable/${segment}`;
     vi.mocked(httpApRepository.listInvoices).mockResolvedValueOnce({
       data: [],
     } as never);

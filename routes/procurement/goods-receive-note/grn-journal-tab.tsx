@@ -61,7 +61,7 @@ function JvCard({ view }: { readonly view: GrnJvView }) {
     <section className="border-border/60 bg-card @container rounded-lg border p-3 text-xs">
       <header className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
         <Link
-          to={`/accounting/journal-voucher/${jv.id}`}
+          to={`/general-ledger/journal-voucher/${jv.id}`}
           className="text-primary text-sm font-semibold hover:underline"
         >
           {jv.jv_no ?? t("jvNoNumber")}

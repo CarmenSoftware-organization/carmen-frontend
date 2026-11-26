@@ -29,30 +29,30 @@ const DOCUMENT_LIST: Record<
   },
   // JV ใช้ชื่อสถานะ in_review สำหรับใบที่อยู่ระหว่าง workflow (ไม่มี in_progress)
   [WORKFLOW_TYPE.JV]: {
-    path: "/accounting/journal-voucher",
+    path: "/general-ledger/journal-voucher",
     status: "jv_status",
     value: "in_review",
   },
   // AP Invoice ใช้ doc_status = in_review สำหรับใบที่อยู่ระหว่าง workflow
   [WORKFLOW_TYPE.AP_INVOICE]: {
-    path: "/accounting/accounts-payable/invoice",
+    path: "/accounts-payable/invoice",
     status: "doc_status",
     value: "in_review",
   },
   // AP Payment ใช้ doc_status = in_review เช่นเดียวกับ AP Invoice
   [WORKFLOW_TYPE.AP_PAYMENT]: {
-    path: "/accounting/accounts-payable/payment",
+    path: "/accounts-payable/payment",
     status: "doc_status",
     value: "in_review",
   },
   // AR Invoice (รวมใบเพิ่มหนี้/ลดหนี้) ใช้ doc_status = in_review เช่นเดียวกัน
   [WORKFLOW_TYPE.AR_INVOICE]: {
-    path: "/accounting/accounts-receivable/invoice",
+    path: "/accounts-receivable/invoice",
     status: "doc_status",
     value: "in_review",
   },
   [WORKFLOW_TYPE.AR_RECEIPT]: {
-    path: "/accounting/accounts-receivable/receipt",
+    path: "/accounts-receivable/receipt",
     status: "doc_status",
     value: "in_review",
   },

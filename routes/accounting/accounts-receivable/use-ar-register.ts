@@ -24,7 +24,7 @@ export const AR_TYPES = [
   "debit_note",
   "deposit",
 ] as const;
-export const AR_REGISTER_PATH = "/accounting/accounts-receivable/invoice";
+export const AR_REGISTER_PATH = "/accounts-receivable/invoice";
 const QUERY_KEY = "ar-invoice";
 
 export interface ArRegisterRow {

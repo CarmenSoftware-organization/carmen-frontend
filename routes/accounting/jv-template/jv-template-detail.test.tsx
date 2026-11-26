@@ -39,11 +39,11 @@ function openNew(search = "") {
   return render(
     <IntlProvider locale="en" messages={en}>
       <MemoryRouter
-        initialEntries={[`/accounting/template-voucher/new${search}`]}
+        initialEntries={[`/general-ledger/template-voucher/new${search}`]}
       >
         <Routes>
           <Route
-            path="/accounting/template-voucher/:id"
+            path="/general-ledger/template-voucher/:id"
             element={<JvTemplateDetail kind="all" />}
           />
         </Routes>
