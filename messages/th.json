@@ -5881,8 +5881,6 @@
       "updatePriceDone": "อัปเดตจากใบราคา {priced} รายการ · ไม่มีใบราคา (ตั้งเป็น 0) {missing} รายการ",
       "updatePriceFailed": "อัปเดตราคาจากใบราคาไม่สำเร็จ",
       "ingredientsSaveFailed": "บันทึกวัตถุดิบไม่สำเร็จ สูตรจึงยังไม่ถูกบันทึก ข้อมูลที่แก้ยังอยู่ — ตรวจแล้วกดบันทึกอีกครั้ง",
-      "ingredientCostTable": "ต้นทุนรายวัตถุดิบ",
-      "shareOfTotal": "% ของรวม",
       "ingredientCostFromLines": "ยอดรวมของบรรทัดวัตถุดิบ — แก้ที่วัตถุดิบเพื่อเปลี่ยนค่านี้",
       "cookIngredients": "วัตถุดิบ",
       "cookChecked": "เช็กแล้ว {n}/{total}",
