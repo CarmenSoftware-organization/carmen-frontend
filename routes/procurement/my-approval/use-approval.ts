@@ -47,6 +47,8 @@ function normalizeApproval(item: RawApprovalUnified): ApprovalItem {
     bu_code: item.bu_code,
     bu_name: item.bu_name ?? "",
     currency_code: item.currency_code ?? "",
+    sla_minutes: item.sla_minutes ?? null,
+    sla_due_at: item.sla_due_at ?? null,
   };
 }
 
