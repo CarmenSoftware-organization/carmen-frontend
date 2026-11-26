@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HighlightText } from "@/components/ui/highlight-text";
 import { useTranslations } from "use-intl";
 import { cn } from "@/lib/utils";
 import { useLookupResource } from "@/hooks/use-lookup-resource";
@@ -65,11 +66,13 @@ export function LookupCurrency({
       getId={(c) => c.id}
       getLabel={(c) => c.code ?? ""}
       getSearchValue={(c) => `${c.code ?? ""} ${c.name ?? ""}`}
-      renderItem={(c) => (
+      renderItem={(c, { query }) => (
         <>
-          <span className="w-10 shrink-0 font-semibold">{c.code}</span>
+          <span className="w-10 shrink-0 font-semibold">
+            <HighlightText text={c.code ?? ""} query={query} />
+          </span>
           <span className="text-muted-foreground flex-1 truncate text-left">
-            {c.name}
+            <HighlightText text={c.name ?? ""} query={query} />
           </span>
         </>
       )}

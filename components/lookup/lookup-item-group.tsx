@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HighlightText } from "@/components/ui/highlight-text";
 import { useTranslations } from "use-intl";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -71,12 +72,14 @@ export function LookupItemGroup({
       getLabel={(g) => `${g.code} — ${g.name}`}
       getSearchValue={(g) => `${g.code} ${g.name}`}
       size={size}
-      renderItem={(g) => (
+      renderItem={(g, { query }) => (
         <>
           <Badge size="xs" variant="secondary">
-            {g.code}
+            <HighlightText text={g.code} query={query} />
           </Badge>
-          <span className="flex-1 truncate text-left text-xs">{g.name}</span>
+          <span className="flex-1 truncate text-left text-xs">
+            <HighlightText text={g.name} query={query} />
+          </span>
         </>
       )}
       placeholder={placeholder ?? tl("select", { entity: tfl("itemGroup") })}

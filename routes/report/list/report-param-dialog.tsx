@@ -5,6 +5,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { HighlightText } from "@/components/ui/highlight-text";
 import { useTranslations } from "use-intl";
 import {
   Dialog,
@@ -278,8 +279,10 @@ function SearchableLookupSelect({
         // Widen the panel and force single-line rows with ellipsis instead.
         popoverWidth="w-[min(92vw,32rem)]"
         popoverAlign="start"
-        renderItem={(o) => (
-          <span className="min-w-0 flex-1 truncate text-left">{o.label}</span>
+        renderItem={(o, { query }) => (
+          <span className="min-w-0 flex-1 truncate text-left">
+            <HighlightText text={o.label} query={query} />
+          </span>
         )}
         size="sm"
         className="w-full"

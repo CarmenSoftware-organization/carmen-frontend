@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HighlightText } from "@/components/ui/highlight-text";
 import { useTranslations } from "use-intl";
 import { Warehouse } from "lucide-react";
 import { useLocationsByProduct } from "@/hooks/use-locations-by-product";
@@ -96,12 +97,14 @@ export function LookupProductLocation({
       onLoadMore={loadMore}
       hasMore={hasMore}
       isLoadingMore={isLoadingMore}
-      renderItem={(l) => (
+      renderItem={(l, { query }) => (
         <>
           <Badge size="xs" variant="secondary" className="shrink-0">
-            {l.code}
+            <HighlightText text={l.code} query={query} />
           </Badge>
-          <span className="flex-1 truncate text-left">{l.name}</span>
+          <span className="flex-1 truncate text-left">
+            <HighlightText text={l.name} query={query} />
+          </span>
           <LocationTypeLabel type={l.location_type} className="shrink-0" />
         </>
       )}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HighlightText } from "@/components/ui/highlight-text";
 import { useTranslations } from "use-intl";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -63,12 +64,14 @@ export function LookupSubCategory({
       getLabel={lookupCodeName}
       getSearchValue={(s) => `${s.code ?? ""} ${s.name ?? ""}`}
       size={size}
-      renderItem={(s) => (
+      renderItem={(s, { query }) => (
         <>
           <Badge size="xs" variant="secondary">
-            {s.code}
+            <HighlightText text={s.code ?? ""} query={query} />
           </Badge>
-          <span className="flex-1 truncate text-left text-xs">{s.name}</span>
+          <span className="flex-1 truncate text-left text-xs">
+            <HighlightText text={s.name ?? ""} query={query} />
+          </span>
         </>
       )}
       placeholder={placeholder ?? tl("select", { entity: tfl("subCategory") })}

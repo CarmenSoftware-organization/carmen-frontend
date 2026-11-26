@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HighlightText } from "@/components/ui/highlight-text";
 import { useTranslations } from "use-intl";
 import { PackageSearch } from "lucide-react";
 import { useLookupResource } from "@/hooks/use-lookup-resource";
@@ -106,12 +107,14 @@ export function LookupProduct({
       onLoadMore={loadMore}
       hasMore={hasMore}
       isLoadingMore={isLoadingMore}
-      renderItem={(p) => (
+      renderItem={(p, { query }) => (
         <>
           <Badge size="xs" variant="secondary" className="shrink-0">
-            {p.code}
+            <HighlightText text={p.code ?? ""} query={query} />
           </Badge>
-          <span className="flex-1 truncate text-left">{p.name}</span>
+          <span className="flex-1 truncate text-left">
+            <HighlightText text={p.name ?? ""} query={query} />
+          </span>
         </>
       )}
       placeholder={placeholder ?? tl("select", { entity: tfl("product") })}

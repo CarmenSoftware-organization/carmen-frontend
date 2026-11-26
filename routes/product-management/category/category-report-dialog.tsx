@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HighlightText } from "@/components/ui/highlight-text";
 import { useTranslations } from "use-intl";
 import {
   Dialog,
@@ -151,9 +152,9 @@ export function CategoryReportDialog({
                     defaultLabel={tc("all")}
                     popoverWidth="w-[min(92vw,28rem)]"
                     popoverAlign="start"
-                    renderItem={(o) => (
+                    renderItem={(o, { query }) => (
                       <span className="min-w-0 flex-1 truncate text-left">
-                        {o.label}
+                        <HighlightText text={o.label} query={query} />
                       </span>
                     )}
                     size="sm"
