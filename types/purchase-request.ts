@@ -171,6 +171,9 @@ export interface PurchaseRequest {
   workflow_previous_stage: string;
   workflow_history: WorkflowHistoryEntry[];
   last_action?: LastAction | null;
+  /** SLA ของ stage ปัจจุบัน — มีเฉพาะแถวจากแท็บ My pending (`/api/my-pending/*`) */
+  sla_minutes?: number | null;
+  sla_due_at?: string | null;
   // list: flat requestor_id/name, department_id/name (บั๊กเดียวกับ workflow ข้างบน)
   requestor_id?: string;
   requestor_name?: string;

@@ -210,6 +210,9 @@ export interface PurchaseOrder {
   last_action?: LastAction | null;
   workflow_current_stage: string | null;
   workflow_next_stage: string | null;
+  /** SLA ของ stage ปัจจุบัน — มีเฉพาะแถวจากแท็บ My pending (`/api/my-pending/*`) */
+  sla_minutes?: number | null;
+  sla_due_at?: string | null;
   // ส่งมาทั้ง list (`GET /api/{bu}/purchase-orders` — แถวอยู่ที่ `data[]` ตรง ๆ) และ detail · `@CollapseRefs()` กับ `@EnrichAuditUsers()`
   // เดินถึงแถวที่ซ้อนแล้วตั้งแต่ 2026-09-18 จึงเป็น object จริงทั้งคู่ ไม่ใช่คู่ flat
   // `_id`/`_name` อีก (ยืนยันจาก payload จริง 5/5 แถว)

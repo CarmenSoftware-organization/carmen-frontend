@@ -3,6 +3,7 @@ import { useTranslations } from "use-intl";
 import { StatusChip } from "@/components/ui/status-chip";
 import { isSentBack } from "@/constant/last-action";
 import { HiddenValue } from "@/components/share/hidden-value";
+import { SlaStatus } from "@/components/share/sla-status";
 import { isPriceHidden } from "@/types/workflows";
 import {
   ListCard,
@@ -138,6 +139,7 @@ export default function PoCard({
           )}
           {amountNode && <span className="shrink-0">{amountNode}</span>}
         </div>
+        <SlaStatus dueAt={item.sla_due_at} minutes={item.sla_minutes} />
       </ListCard>
     );
   }
@@ -173,6 +175,16 @@ export default function PoCard({
           <span className="tabular-nums">
             {formatDate(item.delivery_date, dateFormat)}
           </span>
+        </ListCardRow>
+      )}
+      {item.workflow_current_stage && (
+        <ListCardRow label={tfl("stage")}>
+          {item.workflow_current_stage}
+          <SlaStatus
+            dueAt={item.sla_due_at}
+            minutes={item.sla_minutes}
+            className="block"
+          />
         </ListCardRow>
       )}
       {amountNode && (

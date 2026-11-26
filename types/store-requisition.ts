@@ -66,6 +66,9 @@ export interface StoreRequisition {
   workflow_previous_stage?: string;
   workflow_next_stage?: string;
   workflow_history: WorkflowHistoryEntry[];
+  /** SLA ของ stage ปัจจุบัน — มีเฉพาะแถวจากแท็บ My pending (`/api/my-pending/*`) */
+  sla_minutes?: number | null;
+  sla_due_at?: string | null;
   last_action?: LastAction | null;
   requestor_name?: string;
   department_name?: string;

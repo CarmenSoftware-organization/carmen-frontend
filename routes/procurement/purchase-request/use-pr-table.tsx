@@ -22,6 +22,7 @@ import { dispatchPermissionDenied } from "@/components/permission-denied-dialog"
 import { useCreatableWorkflows } from "@/hooks/use-workflow";
 import { WORKFLOW_TYPE, isPriceHidden } from "@/types/workflows";
 import { HiddenValue } from "@/components/share/hidden-value";
+import { SlaStatus } from "@/components/share/sla-status";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
 import { CellAction } from "@/components/ui/cell-action";
 import {
@@ -90,6 +91,7 @@ function PrStatusStack({ pr }: { readonly pr: PurchaseRequest }) {
           {stage}
         </span>
       )}
+      <SlaStatus dueAt={pr.sla_due_at} minutes={pr.sla_minutes} />
     </div>
   );
 }
