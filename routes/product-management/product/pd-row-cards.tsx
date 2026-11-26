@@ -29,7 +29,7 @@ export function RowCard({
   readonly children?: React.ReactNode;
 }) {
   return (
-    <li className="border-border/60 bg-card rounded-lg border p-3 text-xs">
+    <li className="border-border/60 bg-card rounded-xl border p-3 text-xs">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-xs font-medium break-words">{title}</div>
@@ -107,7 +107,7 @@ export function RowEditCards<T>({
         return (
           <li
             key={row.id}
-            className="border-border/60 bg-card rounded-lg border p-3 text-xs"
+            className="border-border/60 bg-card rounded-xl border p-3 text-xs"
           >
             <div className="mb-2 flex min-h-6 items-center justify-between gap-2">
               <span className="text-muted-foreground tabular-nums">

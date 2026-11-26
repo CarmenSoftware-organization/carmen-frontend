@@ -46,7 +46,7 @@ interface SectionProps {
 
 function Section({ icon, title, editLabel, onEdit, children }: SectionProps) {
   return (
-    <section className="border-border/60 bg-card overflow-hidden rounded-lg border">
+    <section className="border-border/60 bg-card overflow-hidden rounded-xl border">
       <header className="bg-muted/30 flex items-center justify-between border-b px-4 py-2">
         <div className="text-foreground flex items-center gap-2 text-sm font-semibold">
           <span className="text-muted-foreground" aria-hidden="true">

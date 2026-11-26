@@ -20,7 +20,7 @@ export function ScHeroStat({
   labels,
 }: ScHeroStatProps) {
   return (
-    <div className="bg-card hidden rounded-lg border p-4 lg:block">
+    <div className="bg-card hidden rounded-xl border p-4 lg:block">
       <div className="text-muted-foreground text-micro-eyebrow font-semibold tracking-widest uppercase">
         {labels.productsToCheck}
       </div>

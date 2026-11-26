@@ -339,7 +339,7 @@ export function StockReplPrWizard({
               {tableRows.map((row, index) => (
                 <li
                   key={rowKey(row)}
-                  className="border-border/60 bg-card rounded-lg border p-3 text-xs"
+                  className="border-border/60 bg-card rounded-xl border p-3 text-xs"
                 >
                   <div className="flex items-start gap-2">
                     <span className="text-muted-foreground w-5 shrink-0 pt-px tabular-nums">

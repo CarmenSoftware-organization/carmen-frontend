@@ -42,7 +42,7 @@ function ChoiceCard({
     <button
       type="button"
       onClick={onClick}
-      className="group hover:border-primary/40 bg-card focus-visible:ring-primary/40 flex cursor-pointer flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
+      className="group hover:border-primary/40 bg-card focus-visible:ring-primary/40 flex cursor-pointer flex-col items-start gap-2 rounded-xl border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
     >
       <Icon className={`size-5 ${iconClassName}`} />
       <div className="space-y-0.5">

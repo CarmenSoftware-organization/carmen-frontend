@@ -40,7 +40,7 @@ export function CreatePRDialog({ open, onOpenChange }: CreatePRDialogProps) {
             <button
               type="button"
               onClick={() => go(`${PR_BASE_PATH}/new`)}
-              className="group hover:border-primary/40 bg-card focus-visible:ring-primary/40 flex cursor-pointer flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
+              className="group hover:border-primary/40 bg-card focus-visible:ring-primary/40 flex cursor-pointer flex-col items-start gap-2 rounded-xl border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
             >
               <FileText className="text-foreground size-5" />
               <div className="space-y-0.5">
@@ -56,7 +56,7 @@ export function CreatePRDialog({ open, onOpenChange }: CreatePRDialogProps) {
             <button
               type="button"
               onClick={() => go(`${PR_BASE_PATH}/from-template`)}
-              className="group hover:border-primary/40 bg-card focus-visible:ring-primary/40 flex cursor-pointer flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
+              className="group hover:border-primary/40 bg-card focus-visible:ring-primary/40 flex cursor-pointer flex-col items-start gap-2 rounded-xl border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
             >
               <LayoutTemplate className="text-primary size-5" />
               <div className="space-y-0.5">

@@ -87,7 +87,7 @@ export function AccountGroupAssignDialog({
           </div>
 
           {/* Accounts List */}
-          <div className="rounded-lg border bg-card">
+          <div className="rounded-xl border bg-card">
             <ScrollArea className="h-64">
               {filtered.length > 0 ? (
                 <div className="divide-y divide-border/60">

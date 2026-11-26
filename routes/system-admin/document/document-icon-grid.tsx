@@ -62,7 +62,7 @@ export function DocumentIconGrid({
           <li
             key={row.id}
             className={cn(
-              "group bg-card relative flex flex-col overflow-hidden rounded-lg border transition-colors",
+              "group bg-card relative flex flex-col overflow-hidden rounded-xl border transition-colors",
               selected
                 ? "border-primary ring-primary/30 ring-2"
                 : "hover:border-primary/40",

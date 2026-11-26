@@ -130,7 +130,7 @@ export function InventoryPeriodBoard({
   return (
     <div className="@container space-y-4">
       {/* สรุปบรรทัดเดียว: ช่วงที่เปิดอยู่ + ค้างปิด — ตัวนับค้างปิดนับทุกปี รวมปีที่พับไว้ */}
-      <div className="bg-card flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border px-3 py-2">
+      <div className="bg-card flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-xl border px-3 py-2">
         <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
           <span className="font-semibold">{t("openTitle")}</span>
           <span className="tabular-nums">{openPeriods.length}</span>

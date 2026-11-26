@@ -61,7 +61,7 @@ export function PreviewSummary({
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {items.map(({ label, value }) => (
-        <div key={label} className="bg-card rounded-lg border p-4">
+        <div key={label} className="bg-card rounded-xl border p-4">
           <div className="text-muted-foreground text-xs">{label}</div>
           <div className="mt-2 text-lg font-semibold tabular-nums">{value}</div>
         </div>

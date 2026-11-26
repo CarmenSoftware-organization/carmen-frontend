@@ -247,7 +247,7 @@ export function EntryImportDialog({
           />
 
           {file ? (
-            <div className="border-border/60 bg-card relative flex items-start gap-3 rounded-lg border p-3">
+            <div className="border-border/60 bg-card relative flex items-start gap-3 rounded-xl border p-3">
               <div className="bg-muted text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
                 <FileSpreadsheet className="size-5" aria-hidden="true" />
               </div>

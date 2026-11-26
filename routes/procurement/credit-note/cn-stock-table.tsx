@@ -256,7 +256,7 @@ function CnStockCards({
 
   if (rows.length === 0) {
     return (
-      <div className="border-border/60 bg-card rounded-lg border py-6">
+      <div className="border-border/60 bg-card rounded-xl border py-6">
         {empty}
       </div>
     );
@@ -309,7 +309,7 @@ function CnStockCards({
         return (
           <li
             key={row.id}
-            className="border-border/60 bg-card @container rounded-lg border text-xs"
+            className="border-border/60 bg-card @container rounded-xl border text-xs"
           >
             <div className="flex items-start gap-2 p-3 pb-2">
               <span className="text-muted-foreground shrink-0 pt-0.5 tabular-nums">

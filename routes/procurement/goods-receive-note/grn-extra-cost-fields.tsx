@@ -432,7 +432,7 @@ function ExtraCostEditCards({
 }) {
   if (count === 0) {
     return (
-      <div className="border-border/60 bg-card rounded-lg border py-6">
+      <div className="border-border/60 bg-card rounded-xl border py-6">
         {empty}
       </div>
     );
@@ -443,7 +443,7 @@ function ExtraCostEditCards({
       {ids.map((id, index) => (
         <li
           key={id}
-          className="border-border/60 bg-card space-y-2 rounded-lg border p-3 text-xs"
+          className="border-border/60 bg-card space-y-2 rounded-xl border p-3 text-xs"
         >
           <div className="flex items-center justify-between gap-2">
             <span className="text-muted-foreground tabular-nums">

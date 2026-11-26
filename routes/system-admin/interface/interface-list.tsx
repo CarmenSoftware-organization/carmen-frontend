@@ -231,7 +231,7 @@ export default function InterfaceList() {
                     </span>
                   )}
                 </div>
-                <ul className="bg-card @container divide-y overflow-hidden rounded-lg border">
+                <ul className="bg-card @container divide-y overflow-hidden rounded-xl border">
                   {brands.map((row) => {
                     const { brand, entitlement, readable, target, updated } =
                       row;

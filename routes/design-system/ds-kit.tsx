@@ -40,7 +40,7 @@ export function DsSection({
         </p>
       ) : null}
 
-      <div className="mt-5 rounded-lg border bg-card p-5 shadow-xs">
+      <div className="mt-5 rounded-xl border bg-card p-5 shadow-xs">
         {children}
       </div>
 

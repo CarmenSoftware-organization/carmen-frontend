@@ -78,7 +78,7 @@ export function CnItemCards({
 
   if (rows.length === 0) {
     return (
-      <div className="border-border/60 bg-card rounded-lg border py-6">
+      <div className="border-border/60 bg-card rounded-xl border py-6">
         {emptyMessage}
       </div>
     );
@@ -104,7 +104,7 @@ export function CnItemCards({
         return (
           <li
             key={row.id}
-            className="border-border/60 bg-card @container rounded-lg border text-xs"
+            className="border-border/60 bg-card @container rounded-xl border text-xs"
           >
             <div className="flex items-start gap-2 p-3 pb-2">
               {cells.has("expand") && (

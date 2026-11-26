@@ -61,7 +61,7 @@ export function CreatePODialog({ open, onOpenChange }: CreatePODialogProps) {
             <button
               type="button"
               onClick={handleBlankPO}
-              className="group hover:border-primary/40 bg-card focus-visible:ring-primary/40 flex cursor-pointer flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
+              className="group hover:border-primary/40 bg-card focus-visible:ring-primary/40 flex cursor-pointer flex-col items-start gap-2 rounded-xl border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
             >
               <FileText className="text-foreground size-5" />
               <div className="space-y-0.5">
@@ -77,7 +77,7 @@ export function CreatePODialog({ open, onOpenChange }: CreatePODialogProps) {
             <button
               type="button"
               onClick={handleFromPriceList}
-              className="group hover:border-primary/40 bg-card focus-visible:ring-primary/40 flex cursor-pointer flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
+              className="group hover:border-primary/40 bg-card focus-visible:ring-primary/40 flex cursor-pointer flex-col items-start gap-2 rounded-xl border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
             >
               <ClipboardList className="text-foreground size-5" />
               <div className="space-y-0.5">
@@ -93,7 +93,7 @@ export function CreatePODialog({ open, onOpenChange }: CreatePODialogProps) {
             <button
               type="button"
               onClick={handleFromPR}
-              className="group hover:border-primary/40 bg-card focus-visible:ring-primary/40 flex cursor-pointer flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
+              className="group hover:border-primary/40 bg-card focus-visible:ring-primary/40 flex cursor-pointer flex-col items-start gap-2 rounded-xl border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
             >
               <FileInput className="text-primary size-5" />
               <div className="space-y-0.5">

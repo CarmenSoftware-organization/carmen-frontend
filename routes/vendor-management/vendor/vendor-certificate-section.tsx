@@ -375,7 +375,7 @@ function CertificateCards({
       {items.map((item) => (
         <li
           key={item.id}
-          className="border-border/60 bg-card rounded-lg border p-3 text-xs"
+          className="border-border/60 bg-card rounded-xl border p-3 text-xs"
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">

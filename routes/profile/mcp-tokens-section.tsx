@@ -331,7 +331,7 @@ function TokenGrid({
         <div
           key={row.id}
           className={cn(
-            "bg-card flex min-w-0 flex-col gap-2 rounded-lg border p-3 text-xs",
+            "bg-card flex min-w-0 flex-col gap-2 rounded-xl border p-3 text-xs",
             isMuted && "text-muted-foreground",
           )}
         >

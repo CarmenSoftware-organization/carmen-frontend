@@ -43,7 +43,7 @@ export function IaItemCards<T>({
         return (
           <li
             key={row.id}
-            className="border-border/60 bg-card rounded-lg border p-3 text-xs"
+            className="border-border/60 bg-card rounded-xl border p-3 text-xs"
           >
             <div className="flex items-start gap-2">
               <span className="text-muted-foreground w-5 shrink-0 pt-1 tabular-nums">

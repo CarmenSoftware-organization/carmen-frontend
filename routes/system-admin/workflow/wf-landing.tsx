@@ -61,7 +61,7 @@ function WorkflowLandingCard({ sub }: { readonly sub: ModuleDto }) {
   return (
     <Link
       to={sub.path}
-      className="bg-card border-border hover:border-primary focus-visible:ring-ring group flex flex-col gap-2 rounded-lg border p-3 shadow-sm transition-colors outline-none focus-visible:ring-2"
+      className="bg-card border-border hover:border-primary focus-visible:ring-ring group flex flex-col gap-2 rounded-xl border p-3 shadow-sm transition-colors outline-none focus-visible:ring-2"
     >
       <div className="flex items-center gap-2">
         {Icon && (

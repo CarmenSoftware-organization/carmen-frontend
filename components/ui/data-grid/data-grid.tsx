@@ -298,7 +298,7 @@ function DataGridContainer({
       data-slot="data-grid"
       className={cn(
         "w-full overflow-auto",
-        border && "border-border/60 bg-card rounded-lg border",
+        border && "border-border/60 bg-card rounded-xl border",
         scroll && SCROLLER,
         className,
       )}

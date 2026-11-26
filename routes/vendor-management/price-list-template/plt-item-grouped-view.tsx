@@ -16,7 +16,7 @@ export function PltItemGroupedView({ products }: PltItemGroupedViewProps) {
     // คอลัมน์ข้อมูลกว้างเท่าเนื้อหา (w-px) ให้ MOQ/หน่วยอยู่ติดชื่อสินค้า หมายเหตุรับที่เหลือ —
     // เดิมทุกคอลัมน์แบ่งความกว้างกัน จอกว้างแล้ว MOQ ห่างชื่อสินค้าเกือบเต็มจอ
     // กล่องแคบ (< @3xl = ความกว้างขั้นต่ำของตารางแบบไม่ห่อ ~734px) ชื่อสินค้าห่อบรรทัดได้ ตารางจึงไม่ล้นกรอบ
-    <div className="border-border/60 bg-card @container w-full overflow-x-auto rounded-lg border">
+    <div className="border-border/60 bg-card @container w-full overflow-x-auto rounded-xl border">
       <table className="text-foreground w-full border-collapse text-xs">
         <thead>
           <tr className="bg-muted/60 text-muted-foreground border-border/60 border-b">
