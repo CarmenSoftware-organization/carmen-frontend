@@ -22,7 +22,6 @@ import { cn } from "@/lib/utils";
 import type { PrFormValues } from "./pr-form-schema";
 import { PrItemExpand } from "./pr-item-expand";
 import { PrItemFooterDimensions } from "./pr-item-dimensions";
-import { useDocumentLineDimensionsContext } from "@/hooks/use-document-line-dimensions";
 import { PrPricelistCompare } from "./pr-pricelist-compare";
 import { ItemHistorySheet } from "@/components/share/item-history-sheet";
 import {} from "@/constant/purchase-request";
@@ -136,8 +135,7 @@ export function usePrItemTable({
   const isLockedAfterCreate =
     isDisabled || (!!role && role !== STAGE_ROLE.CREATE);
 
-  // ใบ draft / stage create ไม่มีคอลัมน์ select จึงไม่มีปุ่มกางแถว — แถบ dimension
-  // (ซึ่งแก้ได้เฉพาะ stage create) ต้องย้ายมาอยู่แถวใต้บรรทัดต่อจาก Comment ไม่งั้นไม่มีที่ให้กรอก
+  // ใบ draft / stage create ไม่มีคอลัมน์ select จึงไม่มีปุ่มกางแถว
   const isExpandHidden =
     !prStatus || prStatus === PR_STATUS.DRAFT || role === STAGE_ROLE.CREATE;
 
@@ -242,7 +240,6 @@ export function usePrItemTable({
             baseCurrencyCode={baseCurrencyCode}
             hidePrice={hidePrice}
             hideTotal={hideTotal}
-            isDimensionsDisabled={isLockedAfterCreate}
           />
         ),
       },
@@ -300,14 +297,14 @@ export function usePrItemTable({
                 isDisabled={isDisabled}
                 placeholder={tfl("comment")}
               />
-              {isExpandHidden && (
-                <PrItemFooterDimensions
-                  form={form}
-                  itemFields={itemFields}
-                  item={item}
-                  disabled={isLockedAfterCreate}
-                />
-              )}
+              {/* แถบ dimension ใต้ Comment ทุก stage (ผู้ใช้สั่ง 2026-11-26) — เดิม stage อื่นซ่อนอยู่ในแถวกาง
+                  ต้องกดกางถึงจะเห็น · แก้ได้เฉพาะ stage create stage อื่นเป็นชิปอ่านอย่างเดียว (มาจาก hook ของฟอร์ม) */}
+              <PrItemFooterDimensions
+                form={form}
+                itemFields={itemFields}
+                item={item}
+                disabled={isLockedAfterCreate}
+              />
             </>
           ),
           footerColSpan: 1,
@@ -624,19 +621,6 @@ export function usePrItemTable({
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitCount]);
-
-  // กดส่งไม่ผ่านเพราะ dimension → กางแถวที่ชิปแดง (ชิปอยู่ในส่วนที่กางออก)
-  const dimensionReveal = useDocumentLineDimensionsContext()?.revealRequest;
-  useEffect(() => {
-    if (!dimensionReveal) return;
-    table.setExpanded((prev) => ({
-      ...(typeof prev === "object" ? prev : {}),
-      ...Object.fromEntries(
-        dimensionReveal.indexes.map((i) => [String(i), true]),
-      ),
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- ยิงตามคำขอแต่ละครั้ง
-  }, [dimensionReveal?.id]);
 
   const handleSelectAll = () => {
     table.toggleAllPageRowsSelected(true);
