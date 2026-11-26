@@ -327,6 +327,8 @@ export interface GroupPrProduct {
   price_per_unit: number;
   total: number;
   base_total_price: number;
+  /** dimension ที่บรรทัด PO นี้จะได้ — BU ไม่เปิด dimension ที่ PR = ว่าง (backend รุ่นเก่าไม่ส่งมา) */
+  dimensions?: DimensionRef[];
 }
 
 export interface GroupPrPo {

@@ -13,10 +13,46 @@ import {
   DataGridContainer,
 } from "@/components/ui/data-grid/data-grid";
 import { DataGridTable } from "@/components/ui/data-grid/data-grid-table";
+import { LineDimensionStrip } from "@/components/dimension/line-dimension-strip";
+import { useGlDimensions } from "@/hooks/use-gl-dimensions";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { formatCurrency, round2 } from "@/lib/currency-utils";
+import type { DimensionMaster } from "@/types/accounting-master";
 import type { GroupPrPo, GroupPrProduct } from "@/types/purchase-order";
+
+const noop = () => {};
+
+/**
+ * ชิป dimension แบบดูอย่างเดียวของบรรทัดที่กำลังจะสร้าง — สินค้าเดียวกันถูกแยกบรรทัดตามชุด dimension
+ * ถ้าไม่แสดง ผู้ใช้จะเห็นสินค้าซ้ำหลายบรรทัดโดยไม่รู้ว่าต่างกันตรงไหน
+ */
+function ProductDimensions({
+  product,
+  master,
+  rowLabel,
+}: {
+  product: GroupPrProduct;
+  master: DimensionMaster[];
+  rowLabel: string;
+}) {
+  const value = product.dimensions ?? [];
+  const dimensions = master.filter((d) =>
+    value.some((ref) => ref.dimension_id === d.id),
+  );
+  if (dimensions.length === 0) return null;
+  return (
+    <div className="mt-1">
+      <LineDimensionStrip
+        dimensions={dimensions}
+        value={value}
+        onChange={noop}
+        readOnly
+        rowLabel={rowLabel}
+      />
+    </div>
+  );
+}
 
 function ExpandedProducts({
   products,
@@ -26,6 +62,8 @@ function ExpandedProducts({
   currencyCode: string;
 }) {
   const tfl = useTranslations("field");
+  const hasDimensions = products.some((p) => (p.dimensions?.length ?? 0) > 0);
+  const master = useGlDimensions(hasDimensions).data ?? [];
 
   return (
     <div className="max-w-2xl py-2 pl-16">
@@ -47,8 +85,12 @@ function ExpandedProducts({
           </tr>
         </thead>
         <tbody>
-          {products.map((p) => (
-            <tr key={p.product_id} className="border-b last:border-0">
+          {products.map((p, index) => (
+            // สินค้าเดียวกันอาจมีหลายบรรทัด (แยกตาม location / dimension) — product_id อย่างเดียวซ้ำได้
+            <tr
+              key={`${p.product_id}-${index}`}
+              className="border-b last:border-0"
+            >
               <td className="px-2 py-1">
                 <div className="flex min-w-0 items-center gap-1.5">
                   <Package
@@ -57,6 +99,11 @@ function ExpandedProducts({
                   />
                   <span className="truncate">{p.product_name}</span>
                 </div>
+                <ProductDimensions
+                  product={p}
+                  master={master}
+                  rowLabel={String(index + 1)}
+                />
               </td>
               <td className="px-2 py-1 text-right tabular-nums">{p.qty}</td>
               <td className="text-muted-foreground px-2 py-1 text-right tabular-nums">
