@@ -11,14 +11,22 @@
   (`LICENSE_ENFORCEMENT` เปิดอยู่ = พลาดแล้วหายทุก BU) และระบบ license ยังล็อกได้แค่ระดับหน้า
 
 ## Design
-- **คีย์:** `general.show-doc-audit` · boolean · `defaultValue: "true"` · อยู่ใน section `general`
-  ของ `CONFIG_SECTIONS` (`routes/system-admin/company-profile/company-profile-config-registry.ts`)
-  + i18n en/th (`defaultSetting.config.generalShowDocAudit`)
-- **อ่านค่า:** hook ใหม่ `hooks/use-show-doc-audit.ts` — `useProfile().defaultBu` →
-  `useBusinessUnit(id)` → `resolveBuConfigValue(config, key)` (แบบเดียวกับ `use-recipe-price-rates`)
-  ค่าที่ไม่ใช่ `"false"` (รวมยังไม่โหลด/ไม่ได้ตั้ง) = แสดง
+- **คีย์สองตัว** (boolean · `defaultValue: "true"` ทั้งคู่ · section `general` ของ `CONFIG_SECTIONS`
+  ใน `routes/system-admin/company-profile/company-profile-config-registry.ts` + i18n en/th):
+  - `general.show-doc-audit` — แถว "สร้างโดย / แก้ไขล่าสุดโดย" (`config.generalShowDocAudit`)
+  - `general.show-doc-revision` — ช่อง rev.x (`config.generalShowDocRevision`)
+- **อ่านค่า:** hook ใหม่ `hooks/use-doc-audit-visibility.ts` คืน `{ showAudit, showRevision }` —
+  `useProfile().defaultBu` → `useBusinessUnit(id)` → `resolveBuConfigValue(config, key)`
+  (แบบเดียวกับ `use-recipe-price-rates`) ค่าที่ไม่ใช่ `"false"` (รวมยังไม่โหลด/ไม่ได้ตั้ง) = แสดง
 - **จุดบังคับ:** `DocAuditLine` และ `DocAuditButton` (`components/share/doc-audit-line.tsx`)
-  ปิด = `return null` — ครอบทั้ง 15 หน้าที่ใช้อยู่ โดยไม่แตะ call site
+  ครอบทั้ง 15 หน้าที่ใช้อยู่ โดยไม่แตะ call site
+  | audit | rev | ผล |
+  |---|---|---|
+  | เปิด | เปิด | เหมือนเดิม (แถว audit + ช่อง rev. ทางขวา) |
+  | เปิด | ปิด | แถว audit อย่างเดียว |
+  | ปิด | เปิด | กล่องเล็กช่องเดียว `rev. x` (สไตล์ขอบเดียวกัน) — หน้าที่ไม่ส่ง `docVersion` = ไม่ render |
+  | ปิด | ปิด | ไม่ render · ปุ่ม Info บนมือถือก็หาย |
+  ปุ่ม Info บนมือถือโชว์เมื่อมีอย่างน้อยหนึ่งส่วนให้แสดง
 - ค่าคีย์/ค่าตั้งต้นเป็น constant ใน `lib/` ใช้ร่วมกันระหว่าง registry กับ hook
 
 ## Non-goals
@@ -26,6 +34,7 @@
 - ไม่บังคับฝั่ง backend (ข้อมูล `audit` ยังมากับ API ตามเดิม — นี่คือการซ่อนบนจอ ไม่ใช่ความปลอดภัย)
 
 ## Calls ของผู้ออกแบบ (แก้ได้)
-- rev. (เลขรุ่น) อยู่ในตารางเดียวกัน จึงหายไปพร้อมกัน
+- แยกเป็นสองคีย์ตามที่ผู้ใช้สั่ง (rev. ไม่ผูกกับ audit)
+- กรณีปิด audit แต่เปิด rev. ให้เหลือกล่อง `rev. x` ช่องเดียวในตำแหน่งเดิม
 - ระหว่างโหลด BU config ให้แสดงไว้ก่อน (ค่าเริ่มต้นเปิด) — ไม่กระพริบสำหรับ BU ส่วนใหญ่
-- ชื่อคีย์ `general.show-doc-audit`
+- ชื่อคีย์ `general.show-doc-audit` / `general.show-doc-revision`
