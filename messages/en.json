@@ -193,7 +193,9 @@
       "ar": "AR",
       "arDesc": "Accounts Receivable settings for this business unit.",
       "gl": "GL",
-      "glDesc": "General Ledger settings for this business unit."
+      "glDesc": "General Ledger settings for this business unit.",
+      "asset": "Asset",
+      "assetDesc": "Asset register numbering for this business unit."
     },
     "config": {
       "prAllowDuplicateProduct": "Allow selecting duplicate products",
@@ -247,7 +249,13 @@
       "apPaymentAllowCreatorApprove": "AP Payment",
       "arInvoiceAllowCreatorApprove": "AR Invoice",
       "arReceiptAllowCreatorApprove": "AR Receipt",
-      "glJvAllowCreatorApprove": "Journal Voucher (JV)"
+      "glJvAllowCreatorApprove": "Journal Voucher (JV)",
+      "assetRegisterNumberFormat": "Asset register number format",
+      "assetRegisterNumberFormatDesc": "Auto numbers come from the ASSET-REGISTER running code. Manual lets users type the code.",
+      "assetRegisterNumberFormatOptions": {
+        "auto": "Auto",
+        "manual": "Manual"
+      }
     }
   },
   "accounting": {
