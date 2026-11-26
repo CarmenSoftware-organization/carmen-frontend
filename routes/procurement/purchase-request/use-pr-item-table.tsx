@@ -21,6 +21,7 @@ import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column
 import { cn } from "@/lib/utils";
 import type { PrFormValues } from "./pr-form-schema";
 import { PrItemExpand } from "./pr-item-expand";
+import { PrItemFooterDimensions } from "./pr-item-dimensions";
 import { useDocumentLineDimensionsContext } from "@/hooks/use-document-line-dimensions";
 import { PrPricelistCompare } from "./pr-pricelist-compare";
 import { ItemHistorySheet } from "@/components/share/item-history-sheet";
@@ -134,6 +135,11 @@ export function usePrItemTable({
 
   const isLockedAfterCreate =
     isDisabled || (!!role && role !== STAGE_ROLE.CREATE);
+
+  // ใบ draft / stage create ไม่มีคอลัมน์ select จึงไม่มีปุ่มกางแถว — แถบ dimension
+  // (ซึ่งแก้ได้เฉพาะ stage create) ต้องย้ายมาอยู่แถวใต้บรรทัดต่อจาก Comment ไม่งั้นไม่มีที่ให้กรอก
+  const isExpandHidden =
+    !prStatus || prStatus === PR_STATUS.DRAFT || role === STAGE_ROLE.CREATE;
 
   // boolean ไม่ใช่ตัว array — ใช้เป็น dep ของ useMemo คอลัมน์ได้นิ่ง ๆ
   const hidePrice = isPriceHidden(hiddenFields, "price_per_unit");
@@ -286,13 +292,23 @@ export function usePrItemTable({
         size: 200,
         meta: {
           footerContent: (item: ItemField) => (
-            <CommentFooterRow
-              form={form}
-              itemFields={itemFields}
-              item={item}
-              isDisabled={isDisabled}
-              placeholder={tfl("comment")}
-            />
+            <>
+              <CommentFooterRow
+                form={form}
+                itemFields={itemFields}
+                item={item}
+                isDisabled={isDisabled}
+                placeholder={tfl("comment")}
+              />
+              {isExpandHidden && (
+                <PrItemFooterDimensions
+                  form={form}
+                  itemFields={itemFields}
+                  item={item}
+                  disabled={isLockedAfterCreate}
+                />
+              )}
+            </>
           ),
           footerColSpan: 1,
         },
@@ -500,7 +516,7 @@ export function usePrItemTable({
     const baseCols = [
       // select column ถือทั้ง checkbox + expand chevron — แสดงเมื่อไม่ใช่
       // draft/create (view mode ก็แสดง แต่ SelectCell ซ่อน checkbox เหลือ chevron)
-      ...(isDraft || isCreateRole ? [] : [prSelectColumn]),
+      ...(isExpandHidden ? [] : [prSelectColumn]),
       indexColumn,
       ...visibleDataColumns,
       ...(isDisabled && !hasAnyHistory ? [] : [actionColumn]),
@@ -552,6 +568,7 @@ export function usePrItemTable({
     pendingCount,
     today,
     isLockedAfterCreate,
+    isExpandHidden,
     hidePrice,
     hideTotal,
     anyPriceHidden,
