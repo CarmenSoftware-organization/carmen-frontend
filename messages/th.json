@@ -7337,6 +7337,12 @@
       "details": "รายละเอียด",
       "waiting": "รอมาแล้ว",
       "daysWaiting": "{count, plural, =0 {วันนี้} other {# วัน}}",
+      "slaLeft": "SLA เหลือ {time}",
+      "slaOverdue": "SLA เกิน {time}",
+      "slaDue": "ครบกำหนด SLA {at}",
+      "slaDays": "{n} วัน",
+      "slaHours": "{n} ชม.",
+      "slaMinutes": "{n} นาที",
       "totalShort": "ทั้งหมด"
     }
   },

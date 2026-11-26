@@ -7,6 +7,7 @@ import { Clock } from "lucide-react";
 import { StatusChip } from "@/components/ui/status-chip";
 import { PR_STATUS_CONFIG } from "@/constant/purchase-request";
 import type { ApprovalItem } from "@/types/approval";
+import { SlaStatus } from "./sla-status";
 import { formatDate } from "@/lib/date-utils";
 import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router";
@@ -79,18 +80,34 @@ function ApprovalAmount({ item }: { readonly item: ApprovalItem }) {
   );
 }
 
-/** จำนวนวันที่รอ (สีตามความเร่ง) + วันที่เอกสาร — ใช้ทั้งตารางและการ์ด */
+/**
+ * จำนวนวันที่รอ (สีตามความเร่ง) + วันที่เอกสาร + SLA ของ stage ที่รออยู่ — ใช้ทั้งตารางและการ์ด
+ * SLA อยู่ในช่องนี้เพราะช่อง "รอมาแล้ว" แสดงทุกขนาดกล่อง (คอลัมน์ · ใต้ยอดเมื่อกล่องแคบ · แถวในการ์ด)
+ */
 function WaitingDays({
-  docDate,
+  item,
   dateFormat,
   today,
+  now,
 }: {
-  readonly docDate: string;
+  readonly item: ApprovalItem;
   readonly dateFormat: string;
   readonly today: Date;
+  readonly now: Date;
 }) {
   const t = useTranslations("procurement.approval");
-  if (!docDate) return <span className="text-muted-foreground">—</span>;
+  const docDate = item.doc_date;
+  const sla = (
+    <SlaStatus dueAt={item.sla_due_at} minutes={item.sla_minutes} now={now} />
+  );
+  if (!docDate) {
+    return (
+      <div data-slot="cell-stack" className="flex flex-col items-end">
+        <span className="text-muted-foreground">—</span>
+        {sla}
+      </div>
+    );
+  }
   const days = Math.max(0, differenceInCalendarDays(today, new Date(docDate)));
   return (
     <div data-slot="cell-stack" className="flex flex-col items-end">
@@ -109,6 +126,7 @@ function WaitingDays({
       <span className="text-muted-foreground text-xs whitespace-nowrap tabular-nums">
         {formatDate(docDate, dateFormat)}
       </span>
+      {sla}
     </div>
   );
 }
@@ -177,7 +195,8 @@ export default function ApprovalQueueList({
   // ป้าย BU โชว์เฉพาะเมื่อหน้านี้มีเอกสารจากหลายหน่วยธุรกิจปนกัน — ถ้ามีหน่วยเดียว
   // ป้ายเดียวกันซ้ำทุกแถวไม่ได้บอกอะไร
   const multiBu = new Set(items.map((i) => i.bu_code)).size > 1;
-  const today = startOfDay(new Date());
+  const now = new Date();
+  const today = startOfDay(now);
 
   const columns: ColumnDef<ApprovalItem>[] = [
     indexColumn<ApprovalItem>(params),
@@ -291,9 +310,10 @@ export default function ApprovalQueueList({
           <div data-slot="cell-stack" className="flex flex-col items-end">
             <ApprovalAmount item={row.original} />
             <WaitingDays
-              docDate={row.original.doc_date}
+              item={row.original}
               dateFormat={dateFormat}
               today={today}
+              now={now}
             />
           </div>
         ),
@@ -317,9 +337,10 @@ export default function ApprovalQueueList({
       ),
       cell: ({ row }) => (
         <WaitingDays
-          docDate={row.original.doc_date}
+          item={row.original}
           dateFormat={dateFormat}
           today={today}
+          now={now}
         />
       ),
       size: 110,
@@ -427,9 +448,10 @@ export default function ApprovalQueueList({
                         </ListCardRow>
                         <ListCardRow label={t("waiting")}>
                           <WaitingDays
-                            docDate={item.doc_date}
+                            item={item}
                             dateFormat={dateFormat}
                             today={today}
+                            now={now}
                           />
                         </ListCardRow>
                         <ListCardSendBackRow lastAction={item.last_action} />

@@ -29,6 +29,10 @@ export interface ApprovalItem {
   bu_code: string;
   bu_name: string;
   currency_code: string;
+  /** SLA ของ stage ที่ใบรออยู่ (นาที) — null = stage ไม่ได้ตั้ง */
+  sla_minutes: number | null;
+  /** เวลาครบกำหนด SLA = การดำเนินการล่าสุด + SLA (นับเวลาจริง) — null = ไม่มี SLA / ไม่รู้เวลาเริ่ม */
+  sla_due_at: string | null;
 }
 
 export interface ApprovalPendingSummary {
@@ -75,4 +79,7 @@ export interface RawApprovalUnified {
   bu_code: string;
   bu_name: string | null;
   hidden_fields?: HiddenPriceField[];
+  /** ไม่มีใน backend รุ่นก่อน 2026-11-26 */
+  sla_minutes?: number | null;
+  sla_due_at?: string | null;
 }
