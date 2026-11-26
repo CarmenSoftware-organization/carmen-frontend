@@ -7,7 +7,7 @@ import { Clock } from "lucide-react";
 import { StatusChip } from "@/components/ui/status-chip";
 import { PR_STATUS_CONFIG } from "@/constant/purchase-request";
 import type { ApprovalItem } from "@/types/approval";
-import { SlaStatus } from "./sla-status";
+import { SlaStatus } from "@/components/share/sla-status";
 import { formatDate } from "@/lib/date-utils";
 import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router";
@@ -98,7 +98,12 @@ function WaitingDays({
   const t = useTranslations("procurement.approval");
   const docDate = item.doc_date;
   const sla = (
-    <SlaStatus dueAt={item.sla_due_at} minutes={item.sla_minutes} now={now} />
+    <SlaStatus
+      dueAt={item.sla_due_at}
+      minutes={item.sla_minutes}
+      now={now}
+      className="text-right"
+    />
   );
   if (!docDate) {
     return (

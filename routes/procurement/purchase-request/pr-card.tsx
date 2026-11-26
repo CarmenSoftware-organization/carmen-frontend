@@ -17,6 +17,7 @@ import { PR_STATUS_CONFIG } from "@/constant/purchase-request";
 import type { PurchaseRequest } from "@/types/purchase-request";
 import { PR_STATUS } from "@/types/purchase-request";
 import { HiddenValue } from "@/components/share/hidden-value";
+import { SlaStatus } from "@/components/share/sla-status";
 import { isPriceHidden } from "@/types/workflows";
 
 interface PrCardProps {
@@ -154,6 +155,7 @@ export default function PrCard({
           </span>
           {amount && <span className="shrink-0">{amount}</span>}
         </div>
+        <SlaStatus dueAt={item.sla_due_at} minutes={item.sla_minutes} />
       </ListCard>
     );
   }
@@ -189,6 +191,11 @@ export default function PrCard({
       {item.workflow_current_stage && (
         <ListCardRow label={tfl("stage")}>
           {item.workflow_current_stage}
+          <SlaStatus
+            dueAt={item.sla_due_at}
+            minutes={item.sla_minutes}
+            className="block"
+          />
         </ListCardRow>
       )}
       {amount && <ListCardRow label={tfl("totalAmount")}>{amount}</ListCardRow>}

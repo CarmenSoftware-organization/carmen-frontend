@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslations } from "use-intl";
 import { HiddenValue } from "@/components/share/hidden-value";
+import { SlaStatus } from "@/components/share/sla-status";
 import { isPriceHidden } from "@/types/workflows";
 import type { ColumnDef, VisibilityState } from "@tanstack/react-table";
 import { DataGridColumnHeader } from "@/components/ui/data-grid/data-grid-column-header";
@@ -70,6 +71,7 @@ function PoStatusStack({ po }: { readonly po: PurchaseOrder }) {
           {stage}
         </span>
       )}
+      <SlaStatus dueAt={po.sla_due_at} minutes={po.sla_minutes} />
     </div>
   );
 }

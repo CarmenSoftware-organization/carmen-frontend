@@ -23,6 +23,7 @@ import type {
 import type { ParamsDto } from "@/types/params";
 import type { useDataGridState } from "@/hooks/use-data-grid-state";
 import { StatusChip } from "@/components/ui/status-chip";
+import { SlaStatus } from "@/components/share/sla-status";
 
 interface UseStoreRequisitionTableOptions {
   items: StoreRequisition[];
@@ -99,6 +100,7 @@ export function useStoreRequisitionTable({
             {stage}
           </span>
         )}
+        <SlaStatus dueAt={sr.sla_due_at} minutes={sr.sla_minutes} />
       </div>
     );
   };

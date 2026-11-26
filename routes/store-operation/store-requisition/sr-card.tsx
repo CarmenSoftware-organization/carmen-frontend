@@ -6,6 +6,7 @@ import {
   ListCardStatusRow,
   ListCardSendBackRow,
 } from "@/components/share/list-card";
+import { SlaStatus } from "@/components/share/sla-status";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
 import { StatusIconLabel } from "@/components/ui/status-icon-label";
@@ -70,6 +71,11 @@ export default function SrCard({ item, onEdit, onDelete, rowNo }: SrCardProps) {
       {item.workflow_current_stage && (
         <ListCardRow label={tfl("currentStage")}>
           {item.workflow_current_stage}
+          <SlaStatus
+            dueAt={item.sla_due_at}
+            minutes={item.sla_minutes}
+            className="block"
+          />
         </ListCardRow>
       )}
       <ListCardAuditRows audit={item.audit} />
