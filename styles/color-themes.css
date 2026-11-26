@@ -1,7 +1,7 @@
 /* ธีมสีที่ผู้ใช้เลือกจากเมนูโปรไฟล์ — class `theme-<id>` ตั้งโดย lib/color-theme.ts
    (classic = ค่าใน globals.css ไม่มี class ของตัวเอง)
 
-   ธีมเปลี่ยนเฉพาะ token ของสีหลัก ห้ามแตะ --success / --warning / --destructive /
+   ธีมเปลี่ยนเฉพาะ token ของสีหลัก (และ chart-2/3 ตัวที่ชนกับสีของธีม) ห้ามแตะ --success / --warning / --destructive /
    --info / --status-* เพราะสีสถานะต้องคงความหมายเดิมทุกธีม
 
    selector คู่ต่อธีม: `html.theme-x` ใช้กับทั้งแอป ส่วน `.theme-x` เปล่าใช้ห่อการ์ดตัวอย่าง
@@ -58,6 +58,8 @@ html.theme-emerald,
   --primary-foreground: oklch(0.99 0 0);
   --ring: oklch(0.5 0.12 162);
   --chart-1: oklch(0.5 0.12 162);
+  /* chart-2 (teal 188) ใกล้เขียวของธีมจนแยกไม่ออก — ใช้น้ำเงินของ classic แทน */
+  --chart-2: oklch(0.4714 0.1794 258.7);
   --sidebar-primary: oklch(0.5 0.12 162);
   --sidebar-primary-foreground: oklch(0.99 0 0);
   --sidebar-ring: oklch(0.5 0.12 162);
@@ -69,6 +71,7 @@ html.dark.theme-emerald,
   --primary-foreground: oklch(0.2 0.04 162);
   --ring: oklch(0.74 0.14 162);
   --chart-1: oklch(0.64 0.14 162);
+  --chart-2: oklch(0.5852 0.1706 253.27);
   --sidebar-primary: oklch(0.74 0.14 162);
   --sidebar-primary-foreground: oklch(0.2 0.04 162);
   --sidebar-ring: oklch(0.74 0.14 162);
@@ -81,6 +84,8 @@ html.theme-teal,
   --primary-foreground: oklch(0.99 0 0);
   --ring: oklch(0.5 0.09 200);
   --chart-1: oklch(0.5 0.09 200);
+  /* chart-2 (teal 188) ซ้ำกับสีของธีม — ใช้น้ำเงินของ classic แทน */
+  --chart-2: oklch(0.4714 0.1794 258.7);
   --sidebar-primary: oklch(0.5 0.09 200);
   --sidebar-primary-foreground: oklch(0.99 0 0);
   --sidebar-ring: oklch(0.5 0.09 200);
@@ -92,6 +97,7 @@ html.dark.theme-teal,
   --primary-foreground: oklch(0.2 0.04 200);
   --ring: oklch(0.75 0.11 200);
   --chart-1: oklch(0.65 0.11 200);
+  --chart-2: oklch(0.5852 0.1706 253.27);
   --sidebar-primary: oklch(0.75 0.11 200);
   --sidebar-primary-foreground: oklch(0.2 0.04 200);
   --sidebar-ring: oklch(0.75 0.11 200);
@@ -104,6 +110,8 @@ html.theme-violet,
   --primary-foreground: oklch(0.99 0 0);
   --ring: oklch(0.5 0.2 295);
   --chart-1: oklch(0.5 0.2 295);
+  /* chart-3 (ม่วง 290) ซ้ำกับสีของธีม — ใช้น้ำเงินของ classic แทน */
+  --chart-3: oklch(0.4714 0.1794 258.7);
   --sidebar-primary: oklch(0.5 0.2 295);
   --sidebar-primary-foreground: oklch(0.99 0 0);
   --sidebar-ring: oklch(0.5 0.2 295);
@@ -115,6 +123,7 @@ html.dark.theme-violet,
   --primary-foreground: oklch(0.2 0.05 295);
   --ring: oklch(0.72 0.15 295);
   --chart-1: oklch(0.62 0.15 295);
+  --chart-3: oklch(0.5852 0.1706 253.27);
   --sidebar-primary: oklch(0.72 0.15 295);
   --sidebar-primary-foreground: oklch(0.2 0.05 295);
   --sidebar-ring: oklch(0.72 0.15 295);

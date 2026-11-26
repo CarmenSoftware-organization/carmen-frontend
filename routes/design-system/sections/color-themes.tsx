@@ -71,7 +71,7 @@ export function ColorThemesSection() {
         <>
           <b>ธีมเปลี่ยนเฉพาะสีหลัก</b> (<code>--primary</code>{" "}
           <code>--ring</code> <code>--sidebar-primary</code>{" "}
-          <code>--chart-1</code>) ห้ามแตะสีสถานะ · Blue Glass มีกระจกเฉพาะ
+          <code>--chart-1</code> และ chart-2/3 ตัวที่ชนกับสีธีม) ห้ามแตะสีสถานะ · Blue Glass มีกระจกเฉพาะ
           sidebar/navbar — card ตาราง ฟอร์ม dialog ทึบเสมอ · เพิ่มธีมต้องแก้{" "}
           <code>index.html</code> แล้วอัปเดต CSP hash ทั้ง 4 ไฟล์
         </>
