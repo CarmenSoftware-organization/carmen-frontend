@@ -193,7 +193,9 @@
       "ar": "AR",
       "arDesc": "การตั้งค่า Accounts Receivable ของหน่วยธุรกิจนี้",
       "gl": "บัญชีแยกประเภท (GL)",
-      "glDesc": "การตั้งค่า General Ledger ของหน่วยธุรกิจนี้"
+      "glDesc": "การตั้งค่า General Ledger ของหน่วยธุรกิจนี้",
+      "asset": "สินทรัพย์",
+      "assetDesc": "การออกเลขทะเบียนสินทรัพย์ของหน่วยธุรกิจนี้"
     },
     "config": {
       "prAllowDuplicateProduct": "อนุญาตให้เลือกสินค้าซ้ำกันได้",
@@ -247,7 +249,13 @@
       "apPaymentAllowCreatorApprove": "ใบจ่ายเงินเจ้าหนี้ (AP Payment)",
       "arInvoiceAllowCreatorApprove": "ใบแจ้งหนี้ลูกหนี้ (AR Invoice)",
       "arReceiptAllowCreatorApprove": "ใบรับเงินลูกหนี้ (AR Receipt)",
-      "glJvAllowCreatorApprove": "ใบสำคัญ (JV)"
+      "glJvAllowCreatorApprove": "ใบสำคัญ (JV)",
+      "assetRegisterNumberFormat": "รูปแบบเลขทะเบียนสินทรัพย์",
+      "assetRegisterNumberFormatDesc": "อัตโนมัติ: ออกเลขตาม running code ASSET-REGISTER · กำหนดเอง: ผู้ใช้พิมพ์รหัสเอง",
+      "assetRegisterNumberFormatOptions": {
+        "auto": "อัตโนมัติ",
+        "manual": "กำหนดเอง"
+      }
     }
   },
   "accounting": {

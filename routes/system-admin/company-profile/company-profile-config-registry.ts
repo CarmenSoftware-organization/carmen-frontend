@@ -284,6 +284,26 @@ export const CONFIG_SECTIONS: readonly ConfigSection[] = [
       },
     ],
   },
+  {
+    id: "asset",
+    titleKey: "sections.asset",
+    descKey: "sections.assetDesc",
+    items: [
+      {
+        // Auto = ออกเลขตาม running code ASSET-REGISTER · Manual = ผู้ใช้พิมพ์รหัสเอง (ลูกค้าที่ย้ายจาก Carmen4 ใช้เลขเดิมต่อ)
+        key: "asset.register-number-format",
+        datatype: "enum",
+        defaultValue: "auto",
+        label: "Asset register number format",
+        labelKey: "config.assetRegisterNumberFormat",
+        descKey: "config.assetRegisterNumberFormatDesc",
+        options: [
+          { value: "auto", labelKey: "config.assetRegisterNumberFormatOptions.auto" },
+          { value: "manual", labelKey: "config.assetRegisterNumberFormatOptions.manual" },
+        ],
+      },
+    ],
+  },
 ];
 
 export const SEEDED_ITEMS: readonly SeededConfigItem[] =
