@@ -22,6 +22,7 @@ vi.mock("./use-account-mapping", () => ({
     };
   },
   useReviewAccountMapping: () => ({ mutate: vi.fn(), isPending: false }),
+  useReviewAccountMappingByFilter: () => ({ mutate: vi.fn(), isPending: false }),
   useUpdateAccountMapping: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 vi.mock("../shared/use-accounting-config-edit", () => ({
