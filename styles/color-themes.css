@@ -17,7 +17,7 @@
 html.theme-blue-glass,
 .theme-blue-glass {
   /* ขอบมนแคบกว่า classic (0.625rem) ให้ดูคมแบบกระจก — radius-sm/md/lg/xl คำนวณจากค่านี้
-     ใน @theme inline ของ globals.css จึงตามกันทั้งชุด (Card 14→8 ดูกฎ [data-slot=card] ด้านล่าง · ตาราง/rounded-lg 10→8 · ปุ่ม 8→6 · badge 6→4px) */
+     ใน @theme inline ของ globals.css จึงตามกันทั้งชุด (Card rounded-xl 14→12 · ตาราง/rounded-lg 10→8 · ปุ่ม 8→6 · badge 6→4px) */
   --radius: 0.5rem;
   --background: oklch(0.97 0.012 255);
   --primary: oklch(0.4714 0.1794 258.7);
@@ -216,13 +216,6 @@ html.dark.theme-blue-glass body {
       oklch(0.21 0.05 245) 100%
     );
   background-attachment: fixed;
-}
-
-/* Card ฝัง rounded-xl (= radius + 0.25rem = 12px) ไว้ในตัวเอง ผู้ใช้อยากให้การ์ดคมเท่าการ์ดตาราง
-   (rounded-lg = 8px) จึง override เฉพาะ Card — ข้าม .rounded-none ที่ call site ตั้งไว้ (5 จุด)
-   นอก @layer จึงชนะ utility rounded-xl ของ Card */
-html.theme-blue-glass [data-slot="card"]:not(.rounded-none) {
-  border-radius: var(--radius-lg);
 }
 
 html.theme-blue-glass .space-main-gradient {
