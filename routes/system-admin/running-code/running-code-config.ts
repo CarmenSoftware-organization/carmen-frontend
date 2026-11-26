@@ -139,28 +139,54 @@ export function serializeConfig(
  * @param seq - เลขลำดับที่จะโชว์ในตัวอย่าง (default 1)
  */
 export function previewCode(parts: CodePart[], now: Date, seq = 1): string {
-  return parts
-    .map((part) => {
-      switch (part.kind) {
-        case "running": {
-          const pad = part.pad ?? "0";
-          return String(seq).padStart(part.digits ?? 1, pad || "0");
-        }
-        case "date":
-          try {
-            return formatDate(now, part.pattern ?? "yyMM");
-          } catch {
-            // รูปแบบที่ date-fns ไม่รู้จัก — โชว์ของดิบไว้ ดีกว่าตัวอย่างหายทั้งบรรทัด
-            return part.pattern ?? "";
-          }
-        case "token":
-          // ค่าจริงมาตอนออกเอกสาร ตัวอย่างจึงโชว์ชื่อค่าไว้ให้รู้ว่าตรงนี้จะมีอะไรมาแทน
-          return `‹${part.token ?? ""}›`;
-        default:
-          return part.text ?? "";
-      }
-    })
+  return previewSegments(parts, now, seq)
+    .map((s) => s.text)
     .join("");
+}
+
+/** ชิ้นของเลขตัวอย่างพร้อมชนิด — ตารางใช้แยกสีให้เห็นโครงของเลขในแวบเดียว */
+export interface PreviewSegment {
+  kind: PartKind;
+  text: string;
+}
+
+export function previewSegments(
+  parts: CodePart[],
+  now: Date,
+  seq = 1,
+): PreviewSegment[] {
+  return parts.map((part) => ({ kind: part.kind, text: renderPart(part) }));
+
+  function renderPart(part: CodePart): string {
+    switch (part.kind) {
+      case "running": {
+        const pad = part.pad ?? "0";
+        return String(seq).padStart(part.digits ?? 1, pad || "0");
+      }
+      case "date":
+        try {
+          return formatDate(now, part.pattern ?? "yyMM");
+        } catch {
+          // รูปแบบที่ date-fns ไม่รู้จัก — โชว์ของดิบไว้ ดีกว่าตัวอย่างหายทั้งบรรทัด
+          return part.pattern ?? "";
+        }
+      case "token":
+        // ค่าจริงมาตอนออกเอกสาร ตัวอย่างจึงโชว์ชื่อค่าไว้ให้รู้ว่าตรงนี้จะมีอะไรมาแทน
+        return `‹${part.token ?? ""}›`;
+      default:
+        return part.text ?? "";
+    }
+  }
+}
+
+/** เหมือน `exampleCode` แต่คืนเป็นชิ้น — `null` เมื่ออ่านไม่ออกหรือว่าง */
+export function exampleSegments(
+  config: Record<string, unknown> | undefined | null,
+  now: Date,
+): PreviewSegment[] | null {
+  const parsed = parseConfig(config);
+  if (!parsed || parsed.parts.length === 0) return null;
+  return previewSegments(parsed.parts, now);
 }
 
 /**

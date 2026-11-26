@@ -1,7 +1,13 @@
 import { useTranslations } from "use-intl";
 import { ListCard, ListCardRow } from "@/components/share/list-card";
 import type { RunningCode } from "@/types/running-code";
-import { exampleCode } from "./running-code-config";
+import { exampleSegments } from "./running-code-config";
+import { isDefaultNote } from "./running-code-labels";
+import {
+  RunningCodeExample,
+  RunningCodeTypeText,
+  useRunningCodeTypeLabel,
+} from "./running-code-cells";
 
 interface Props {
   /** เลขลำดับแถว (`rowNumber()`) → `ListCard rowNo` */
@@ -19,21 +25,26 @@ export default function RunningCodeCard({
 }: Props) {
   const tfl = useTranslations("field");
   const t = useTranslations("systemAdmin.runningCode");
-  const example = exampleCode(item.config, new Date());
+  const typeLabel = useRunningCodeTypeLabel();
+  const segments = exampleSegments(item.config, new Date());
 
   return (
     <ListCard
       rowNo={rowNo}
-      title={item.type}
+      title={
+        <RunningCodeTypeText type={item.type} label={typeLabel(item.type)} />
+      }
       onOpen={() => onEdit(item)}
       onDelete={onDelete ? () => onDelete(item) : undefined}
     >
-      {example && (
+      {segments && (
         <ListCardRow label={t("example")}>
-          <span className="font-mono">{example}</span>
+          <RunningCodeExample segments={segments} />
         </ListCardRow>
       )}
-      {item.note && <ListCardRow label={tfl("note")}>{item.note}</ListCardRow>}
+      {item.note && !isDefaultNote(item.note) && (
+        <ListCardRow label={tfl("note")}>{item.note}</ListCardRow>
+      )}
     </ListCard>
   );
 }
