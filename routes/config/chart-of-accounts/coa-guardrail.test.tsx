@@ -3,7 +3,6 @@ import { render, screen } from "@testing-library/react";
 import { IntlProvider } from "use-intl";
 import en from "@/messages/en.json";
 import { CoaDeleteGuardrailDialog } from "./coa-delete-guardrail-dialog";
-import { CoaStatCards } from "./coa-stat-cards";
 import {
   ACCOUNT_NATURE,
   CHART_OF_ACCOUNT_TYPE,
@@ -77,33 +76,5 @@ describe("Delete Guardrail Rule (FRD Section 6.2 Rule 7 / VAL-11 & VAL-12)", () 
     expect(
       screen.getByText(/This account has no recorded transactions/i),
     ).toBeDefined();
-  });
-});
-
-describe("Dashboard KPI StatCards (FRD Section 5.1 / FE-COA-09)", () => {
-  it("นับยอดรวม, Active, Inactive, Req Dept, Req Dim ถูกต้อง", () => {
-    const list: ChartOfAccount[] = [
-      mockUnusedAccount,
-      mockUsedAccount,
-      {
-        ...mockUnusedAccount,
-        id: "acc-3",
-        is_active: false,
-        is_require_cost_center: true,
-      },
-      {
-        ...mockUnusedAccount,
-        id: "acc-4",
-        dimension_required: true,
-      },
-    ];
-
-    renderWithIntl(<CoaStatCards accounts={list} totalRecords={4} />);
-
-    expect(screen.getByText("Total Accounts")).toBeDefined();
-    expect(screen.getByText("Active Accounts")).toBeDefined();
-    expect(screen.getByText("Inactive Accounts")).toBeDefined();
-    expect(screen.getByText("Req. Cost Center")).toBeDefined();
-    expect(screen.getByText("Req. Dimension")).toBeDefined();
   });
 });

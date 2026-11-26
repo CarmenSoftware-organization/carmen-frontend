@@ -3213,6 +3213,10 @@
         "debit": "Debit",
         "credit": "Credit"
       },
+      "natureShort": {
+        "debit": "Dr",
+        "credit": "Cr"
+      },
       "accountType": {
         "header": "Header (not postable)",
         "balance_sheet": "Balance sheet",
@@ -3338,13 +3342,6 @@
         "selectCategory": "Select category",
         "categoryUnset": "Not set",
         "allTypes": "All Types"
-      },
-      "kpi": {
-        "total": "Total Accounts",
-        "active": "Active Accounts",
-        "inactive": "Inactive Accounts",
-        "reqCostCenter": "Req. Cost Center",
-        "reqDim": "Req. Dimension"
       },
       "wizard": {
         "button": "COA Wizard",

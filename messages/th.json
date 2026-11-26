@@ -3213,6 +3213,10 @@
         "debit": "เดบิต",
         "credit": "เครดิต"
       },
+      "natureShort": {
+        "debit": "Dr",
+        "credit": "Cr"
+      },
       "accountType": {
         "header": "Header (หัวข้อ - ไม่ลงรายการ)",
         "balance_sheet": "BS (งบแสดงฐานะการเงิน)",
@@ -3338,13 +3342,6 @@
         "selectCategory": "เลือกหมวดบัญชี",
         "categoryUnset": "ยังไม่ระบุ",
         "allTypes": "-- ทุกประเภท (All Types) --"
-      },
-      "kpi": {
-        "total": "รหัสบัญชีทั้งหมด",
-        "active": "สถานะใช้งาน (Active)",
-        "inactive": "ปิดใช้งาน (Inactive)",
-        "reqCostCenter": "บังคับ Cost Center",
-        "reqDim": "กำหนดให้ระบุ Dim"
       },
       "wizard": {
         "button": "คู่มือ Wizard",

@@ -126,23 +126,26 @@ describe("useCoaTable", () => {
         ? (fn(cell!.getContext()) as string)
         : undefined;
     };
-    expect(render("nature")).toBe("Debit");
     expect(render("type")).toBe("Balance sheet");
   });
 
-  it("shows category, nature and type together without duplicate default columns", () => {
+  it("แยกด้านบัญชี หมวด และประเภทเป็นคอลัมน์ของตัวเอง แสดงไว้ตั้งแต่ต้น", () => {
     const { result } = renderCoaTable();
-    const cell = result.current
-      .getRowModel()
-      .rows[0].getAllCells()
-      .find((c) => c.column.id === "category")!;
-    render(flexRender(cell.column.columnDef.cell, cell.getContext()));
+    const cells = result.current.getRowModel().rows[0].getAllCells();
+    const show = (id: string) => {
+      const cell = cells.find((c) => c.column.id === id)!;
+      return render(flexRender(cell.column.columnDef.cell, cell.getContext()));
+    };
+    show("nature");
+    expect(screen.getByTitle("Debit")).toHaveTextContent("Dr");
+    show("category");
     expect(screen.getByText("Assets")).toBeInTheDocument();
-    expect(screen.getByTitle("Debit")).toHaveTextContent("D");
-    expect(screen.getByText("Balance sheet")).toBeInTheDocument();
-    for (const id of ["description_2", "nature", "type"]) {
-      expect(result.current.getColumn(id)?.getIsVisible()).toBe(false);
+    for (const id of ["nature", "category", "type"]) {
+      expect(result.current.getColumn(id)?.getIsVisible()).toBe(true);
     }
+    expect(result.current.getColumn("description_2")?.getIsVisible()).toBe(
+      false,
+    );
   });
 
   it("ซ่อนคอลัมน์วันที่สร้าง/แก้ไขไว้ก่อน (เปิดเองได้จากเมนูคอลัมน์)", () => {
