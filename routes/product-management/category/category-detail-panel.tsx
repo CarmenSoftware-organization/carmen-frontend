@@ -66,7 +66,7 @@ export function CategoryDetailPanel({
   const parent = ancestors.at(-1);
 
   return (
-    <div className="bg-card flex min-w-0 flex-col rounded-md border">
+    <div className="bg-card flex min-w-0 flex-col rounded-xl border">
       {/* แถบหัว สูงเท่าแถบสถิติของต้นไม้ (h-9) — path ของแถวที่เลือก */}
       <div className="text-muted-foreground flex h-9 min-w-0 items-center gap-1 border-b px-3 text-xs">
         {node ? (

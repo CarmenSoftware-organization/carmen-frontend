@@ -67,7 +67,7 @@ export function ItemCards<T>({
 
   if (rows.length === 0) {
     return (
-      <div className="border-border/60 bg-card rounded-lg border py-6">
+      <div className="border-border/60 bg-card rounded-xl border py-6">
         {emptyMessage}
       </div>
     );
@@ -101,7 +101,7 @@ export function ItemCards<T>({
               key={row.id}
               data-item-card=""
               data-state={row.getIsSelected() ? "selected" : undefined}
-              className="border-border/60 bg-card data-[state=selected]:bg-muted/50 @container rounded-lg border text-xs"
+              className="border-border/60 bg-card data-[state=selected]:bg-muted/50 @container rounded-xl border text-xs"
             >
               <div className="flex items-start gap-2 p-3 pb-2">
                 {cells.has("select") && (

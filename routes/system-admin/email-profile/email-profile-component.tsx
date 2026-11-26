@@ -303,7 +303,7 @@ export default function EmailProfileComponent() {
         <div className="@container">
           {/* กล่องแคบ (มือถือ): ซ้อนเป็นรายการ — ตาราง 4 คอลัมน์กว้างขั้นต่ำ ~610px ต้องเลื่อน
               แนวนอนในกรอบ และปุ่มของแถวหลุดไปนอกจอ */}
-          <ul className="bg-card divide-y rounded-lg border @xl:hidden">
+          <ul className="bg-card divide-y rounded-xl border @xl:hidden">
             {rows.map(({ profile, name, status, actions }) => (
               <li key={profile.id} className="space-y-1.5 p-3 text-xs">
                 {name}

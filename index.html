@@ -22,6 +22,28 @@
       } catch (e) {
         /* storage unavailable — ใช้ขนาด normal */
       }
+      // ธีมสีด้วยเหตุผลเดียวกัน — รายชื่อซ้ำกับ COLOR_THEMES ใน lib/color-theme.ts
+      // (ยกเว้น classic ที่ไม่มี class)
+      try {
+        var t = localStorage.getItem("carmen.color-theme");
+        if (
+          [
+            "blue-glass",
+            "emerald",
+            "teal",
+            "violet",
+            "graphite",
+            "skylearn",
+            "octo-code",
+            "createspace",
+            "complianceone",
+          ].indexOf(t) >= 0
+        ) {
+          document.documentElement.classList.add("theme-" + t);
+        }
+      } catch (e) {
+        /* storage unavailable — ใช้ธีม classic */
+      }
     </script>
   </head>
   <body class="antialiased">

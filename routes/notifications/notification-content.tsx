@@ -206,11 +206,11 @@ export default function NotificationsContent() {
         style={{ viewTransitionName: "notification-list" }}
       >
         {isLoading ? (
-          <div className="bg-card rounded-lg border p-4">
+          <div className="bg-card rounded-xl border p-4">
             <NotificationLoader />
           </div>
         ) : items.length === 0 ? (
-          <div className="bg-card flex items-center justify-center rounded-lg border px-4 py-16">
+          <div className="bg-card flex items-center justify-center rounded-xl border px-4 py-16">
             <EmptyComponent
               icon={BellOff}
               title={
@@ -260,7 +260,7 @@ export default function NotificationsContent() {
             )}
 
             {personal.length > 0 && (
-              <div className="bg-card overflow-clip rounded-lg border">
+              <div className="bg-card overflow-clip rounded-xl border">
                 {groupByDate(personal).map(([bucket, bucketItems]) => (
                   <section
                     key={bucket}
@@ -386,7 +386,7 @@ function NotificationRow({
     "hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary",
     variant === "broadcast" &&
       cn(
-        "bg-card rounded-lg border border-l-4",
+        "bg-card rounded-xl border border-l-4",
         SEVERITY_EDGE[severity] ?? SEVERITY_EDGE.INFO,
       ),
     // เว้นที่ด้านขวาให้ปุ่ม "อ่านแล้ว" ไม่ทับเวลา/ข้อความ — จอเล็กไม่มีปุ่ม

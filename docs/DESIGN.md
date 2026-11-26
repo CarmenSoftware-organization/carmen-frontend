@@ -223,9 +223,12 @@ rounded:
   # A full-pill primary CTA was trialled on Button and intentionally REVERTED —
   # it did not fit dense ERP chrome. Pills are for indicators, not actions.
   full: 9999px      # 208 uses — status dots, avatars, count chips
-  lg: 10px          # 188 uses — cards-in-lists, panels
+  lg: 10px          # small inner surfaces only — NOT for cards (see xl)
   md: 8px           # 180 uses — buttons, badges, inputs (the control radius)
-  xl: 12px          # 105 uses — the Card primitive
+  xl: 14px          # EVERY card / panel / table container — Card, DataGrid wrapper,
+                    # item cards, side panels (unified 2026-11-26: lg and xl cards side by
+                    # side read as two different radii; Blue Glass narrows --radius so
+                    # xl = 12px there, 14px elsewhere)
   sm: 6px           # 60 uses — inline chips, table-cell affordances
   none: 0px         # 25 uses — flush table edges, full-bleed strips
 
@@ -279,6 +282,7 @@ components:
     elevation: none — flat chrome, see Elevation
   data-grid:
     element: components/ui/data-grid/
+    rounded: "{rounded.xl}" — same as Card; a table and a card next to each other must match
     note: the core ERP surface — table, column header/filter/visibility, pagination,
           row actions, and two drag-and-drop table variants. Badges inside it are
           forced to `{typography.micro-floor}` by a rule in globals.css.
@@ -416,7 +420,7 @@ Content is fluid to the viewport rather than locked to a max width — an ERP ta
 
 ## Shapes
 
-See the `rounded` block. The grammar in one line: **`md` for controls, `lg`/`xl` for containers, `full` for indicators, `none` where a table must sit flush.** The full-pill CTA was trialled on Button and reverted — pills read as status here, not as actions, and a pill button in a dense toolbar is louder than the data.
+See the `rounded` block. The grammar in one line: **`md` for controls, `xl` for every card or panel container (never `lg`), `full` for indicators, `none` where a table must sit flush.** Mixing `lg` and `xl` containers on one page reads as a mistake — the user asked for them unified on 2026-11-26. The full-pill CTA was trialled on Button and reverted — pills read as status here, not as actions, and a pill button in a dense toolbar is louder than the data.
 
 ## Components
 

@@ -68,7 +68,7 @@ export function NotiTmplPreview({
           ไม่ใช่การ์ดซ้อนการ์ด (ทั้งบล็อกนี้อยู่ในการ์ดของ section แล้ว) · การ์ดกว้างไม่เกิน
           max-w-md ตามรูปทรงการแจ้งเตือนจริง เวทียืดได้แต่ตัวการ์ดไม่ยืดตามจอ */}
       <div className="bg-muted/50 flex-1 rounded-lg p-3 sm:p-4">
-        <div className="bg-card flex max-w-md gap-2.5 rounded-lg border p-3 shadow-sm">
+        <div className="bg-card flex max-w-md gap-2.5 rounded-xl border p-3 shadow-sm">
           <div className="bg-info/15 text-info-ink flex size-7 shrink-0 items-center justify-center rounded-full text-micro font-bold">
             C
           </div>

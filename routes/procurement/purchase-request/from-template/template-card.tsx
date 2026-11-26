@@ -20,7 +20,7 @@ export default function TemplateCard({ template, onSelect }: Props) {
     <button
       type="button"
       onClick={() => onSelect(template.id)}
-      className="group bg-card hover:border-primary/40 focus-visible:ring-primary/40 flex w-full min-w-0 items-start gap-3 rounded-lg border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
+      className="group bg-card hover:border-primary/40 focus-visible:ring-primary/40 flex w-full min-w-0 items-start gap-3 rounded-xl border p-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2"
     >
       <div className="min-w-0 flex-1 space-y-1.5">
         <div className="flex items-start justify-between gap-2">

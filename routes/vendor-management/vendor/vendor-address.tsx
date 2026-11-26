@@ -161,7 +161,7 @@ function AddressView({
   ].filter((line): line is string => !!line && line.trim() !== "");
 
   return (
-    <div className="border-border/60 bg-card min-w-0 rounded-lg border p-3">
+    <div className="border-border/60 bg-card min-w-0 rounded-xl border p-3">
       <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
         {Icon && <Icon className="size-3.5 shrink-0" aria-hidden="true" />}
         {typeLabels[a.address_type ?? ""] ?? a.address_type}

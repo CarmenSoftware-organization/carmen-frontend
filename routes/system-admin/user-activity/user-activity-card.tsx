@@ -38,7 +38,7 @@ export function UserActivityCard({
           onClick?.();
         }
       }}
-      className="bg-card hover:border-primary/30 focus-visible:ring-ring cursor-pointer space-y-2 rounded-lg border p-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+      className="bg-card hover:border-primary/30 focus-visible:ring-ring cursor-pointer space-y-2 rounded-xl border p-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
     >
       {/* Header: action badge + timestamp */}
       <div className="flex items-center justify-between gap-2">

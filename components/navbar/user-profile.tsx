@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { LangSwitch } from "./lang-switch";
 import { ThemeSwitch } from "./theme-switch";
 import { FontScaleSwitch } from "./font-scale-switch";
+import { ColorThemeSwitch } from "./color-theme-switch";
 
 /** รูปประกอบล้วน — ชื่ออยู่ข้าง ๆ เสมอ (ข้อความ หรือ sr-only) จึง alt="" ไม่ให้อ่านชื่อซ้ำ/อ่านอักษรย่อ */
 function UserAvatar({
@@ -124,6 +125,7 @@ export function UserProfile() {
           >
             <LangSwitch />
             <ThemeSwitch />
+            <ColorThemeSwitch />
             <FontScaleSwitch />
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -249,6 +251,7 @@ export function UserProfile() {
         </DropdownMenuLabel>
         <LangSwitch />
         <ThemeSwitch />
+        <ColorThemeSwitch />
         <FontScaleSwitch />
         <DropdownMenuSeparator />
         <DropdownMenuItem

@@ -59,7 +59,7 @@ function StatCard({
   readonly tone?: "warning";
 }) {
   return (
-    <div className="bg-card rounded-lg border px-4 py-3">
+    <div className="bg-card rounded-xl border px-4 py-3">
       <div className="text-muted-foreground text-xs">{label}</div>
       <div
         className={`text-lg font-semibold tabular-nums ${tone === "warning" ? "text-warning-ink" : ""}`}

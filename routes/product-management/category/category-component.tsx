@@ -389,7 +389,7 @@ export default function CategoryComponent() {
         )}
       >
         {/* Tree — @container: แถบสถิติ หัวตาราง และทุกแถวเลือกสิ่งที่แสดงจากความกว้างการ์ดนี้ */}
-        <div className="bg-card @container min-w-0 rounded-md border">
+        <div className="bg-card @container min-w-0 rounded-xl border">
           {/* Header row — สถิติทั้งต้นไม้ หรือจำนวนที่ค้นเจอระหว่างค้นหา */}
           <div className="text-muted-foreground flex h-9 items-center justify-between gap-2 border-b px-3 text-xs">
             <div className="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap tabular-nums">

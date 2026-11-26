@@ -447,7 +447,7 @@ export default function AccountGroupingPage() {
         {/* Main Workspace Split Grid */}
         <div className="grid grid-cols-1 gap-4 @5xl:grid-cols-2">
           {/* LEFT 7 COLS: TREE VIEW NAVIGATION PANEL */}
-          <div className="bg-card @container flex h-[min(65dvh,40rem)] min-h-80 min-w-0 flex-col overflow-hidden rounded-lg border shadow-xs">
+          <div className="bg-card @container flex h-[min(65dvh,40rem)] min-h-80 min-w-0 flex-col overflow-hidden rounded-xl border shadow-xs">
             {/* Header Row */}
             <div className="bg-muted/40 text-muted-foreground flex min-h-11 flex-wrap items-center justify-between gap-2 border-b px-3 py-1.5 text-xs font-semibold tracking-wider uppercase">
               <div className="flex items-center gap-1.5">
@@ -517,7 +517,7 @@ export default function AccountGroupingPage() {
           </div>
 
           {/* RIGHT 5 COLS: DETAIL & ASSIGNED ACCOUNTS PANEL */}
-          <div className="bg-card @container flex min-h-80 min-w-0 flex-col overflow-hidden rounded-lg border shadow-xs @5xl:h-[min(65dvh,40rem)]">
+          <div className="bg-card @container flex min-h-80 min-w-0 flex-col overflow-hidden rounded-xl border shadow-xs @5xl:h-[min(65dvh,40rem)]">
             <AccountGroupDetailPanel
               selectedNode={selectedNode}
               breadcrumbs={breadcrumbs}

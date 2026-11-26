@@ -65,7 +65,7 @@ export default function HistoryCard({ item, rowNo }: HistoryCardProps) {
           : undefined
       }
       className={cn(
-        "group border-border/60 bg-card relative flex flex-col overflow-hidden rounded-2xl border transition-colors",
+        "group border-border/60 bg-card relative flex flex-col overflow-hidden rounded-xl border transition-colors",
         "focus-visible:ring-primary/40 focus-visible:ring-2 focus-visible:outline-none",
         hasUrl &&
           "hover:border-primary/40 cursor-pointer hover:-translate-y-0.5",

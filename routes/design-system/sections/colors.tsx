@@ -78,7 +78,7 @@ export function ColorsSection() {
             ไอคอน + ชิปพร้อมกัน (อ่านเป็นนีออน)
           </>
         }
-        code={`<div className="bg-card text-card-foreground border rounded-lg p-4">
+        code={`<div className="bg-card text-card-foreground border rounded-xl p-4">
   <p className="text-muted-foreground text-xs">Subtotal</p>
   <p className="text-primary font-semibold">1,240.00</p>
 </div>`}

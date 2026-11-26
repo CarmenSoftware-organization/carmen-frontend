@@ -145,7 +145,7 @@ export function ReviewComponent<T extends VarianceGridItem>({
 
         {/* sticky ไม่ใช่ fixed — fixed ทับแถบสถานะล่างจอ (เวอร์ชัน/งวดบัญชี) และ
             ต้องเผื่อ padding ล่างไว้ให้เนื้อหาไม่จม · mt-auto ดันลงล่างตอนเนื้อสั้น */}
-        <div className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 z-20 -mx-4 mt-auto border-t px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
+        <div className="glass-bar bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 z-20 -mx-4 mt-auto border-t px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Button size="sm" onClick={onSubmit} disabled={isSubmitting}>
               <SendHorizontal aria-hidden="true" />

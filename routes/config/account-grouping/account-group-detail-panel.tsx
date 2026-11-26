@@ -218,7 +218,7 @@ export function AccountGroupDetailPanel({
           )}
 
           {/* Accounts Table Container */}
-          <div className="bg-card overflow-hidden rounded-lg border">
+          <div className="bg-card overflow-hidden rounded-xl border">
             {assignedList.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="block w-full text-left text-xs @2xl:table">

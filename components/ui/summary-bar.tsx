@@ -89,7 +89,7 @@ export function SummaryFooterBar({
   const collapse = collapseOnNarrow && hasRecord && lead.length > 0;
   // แถบเดิม (ไม่ยุบ) คงโครงชั้นเดียวตามเดิมทุกตัวอักษร — หน้าอื่น 11 หน้าใช้อยู่
   const shell =
-    "bg-background sticky bottom-0 z-20 mt-auto border-t p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]";
+    "glass-bar bg-background sticky bottom-0 z-20 mt-auto border-t p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]";
   const row = [
     "flex items-center gap-3 sm:gap-4",
     hasRecord ? "justify-between" : "justify-end",

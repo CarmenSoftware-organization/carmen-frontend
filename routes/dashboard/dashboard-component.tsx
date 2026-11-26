@@ -576,7 +576,7 @@ function EmptyState({
   ];
 
   return (
-    <div className="bg-card rounded-2xl border border-dashed px-6 py-8 text-center sm:px-8">
+    <div className="bg-card rounded-xl border border-dashed px-6 py-8 text-center sm:px-8">
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:gap-5 sm:text-left">
         <AppTile name="dashboard" size={48} />
         <div className="flex min-w-0 flex-col items-center gap-2 sm:items-start">

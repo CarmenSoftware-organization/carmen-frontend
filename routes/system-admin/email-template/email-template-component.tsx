@@ -190,7 +190,7 @@ export default function EmailTemplateComponent() {
         <div className="@container">
           {/* กล่องแคบ (มือถือ): ซ้อนเป็นรายการ — ตาราง 5 คอลัมน์กว้างขั้นต่ำ ~890px ต้องเลื่อนแนวนอนในกรอบ
               และปุ่มของแถวหลุดไปนอกจอ */}
-          <ul className="bg-card divide-y rounded-lg border @4xl:hidden">
+          <ul className="bg-card divide-y rounded-xl border @4xl:hidden">
             {rows.map(({ template, isDefault, subject, status, actions }) => (
               <li key={template.id} className="space-y-1.5 p-3 text-xs">
                 <div className="flex flex-wrap items-center gap-1.5">

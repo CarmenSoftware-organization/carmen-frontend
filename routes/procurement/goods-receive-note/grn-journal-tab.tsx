@@ -58,7 +58,7 @@ function JvCard({ view }: { readonly view: GrnJvView }) {
     "w-px min-w-24 py-1.5 ps-3 text-right whitespace-nowrap tabular-nums";
 
   return (
-    <section className="border-border/60 bg-card @container rounded-lg border p-3 text-xs">
+    <section className="border-border/60 bg-card @container rounded-xl border p-3 text-xs">
       <header className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
         <Link
           to={`/general-ledger/journal-voucher/${jv.id}`}
