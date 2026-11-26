@@ -53,6 +53,9 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
 }) {
+  // dialog ที่กำหนด padding เอง (p-0 + header/body/footer ของตัวเอง) จัดเลย์เอาต์เองอยู่แล้ว
+  // — ปักปุ่ม footer ให้เฉพาะ dialog ที่ใช้ padding ปกติ
+  const ownsLayout = /(^|\s)(?:[a-z0-9-]+:)*p[xytblr]?-/.test(className ?? "");
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
@@ -60,8 +63,11 @@ function DialogContent({
           ชื่อไฟล์ยาวไม่มีช่องว่าง / <pre> โค้ด จึงดันเนื้อหาและปุ่มทะลุกรอบ dialog */}
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        data-layout={ownsLayout ? "custom" : "default"}
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full grid-cols-[minmax(0,1fr)] max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 outline-none sm:max-w-lg",
+          // ยาวเกินจอ → เนื้อหาเลื่อนในกรอบ ส่วน DialogFooter ปักอยู่ล่าง (sticky) ปุ่มเห็นตลอด
+          "group/dialog max-h-[calc(100dvh-2rem)] overflow-y-auto",
           className,
         )}
         {...props}
@@ -104,6 +110,7 @@ function DialogFooter({
       data-slot="dialog-footer"
       className={cn(
         "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+        "group-data-[layout=default]/dialog:bg-background group-data-[layout=default]/dialog:sticky group-data-[layout=default]/dialog:-bottom-6 group-data-[layout=default]/dialog:z-10 group-data-[layout=default]/dialog:-mx-6 group-data-[layout=default]/dialog:-mb-6 group-data-[layout=default]/dialog:rounded-b-lg group-data-[layout=default]/dialog:border-t group-data-[layout=default]/dialog:px-6 group-data-[layout=default]/dialog:py-3",
         className,
       )}
       {...props}

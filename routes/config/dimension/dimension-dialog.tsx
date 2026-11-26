@@ -92,11 +92,12 @@ export function DimensionDialog({
           else tableRef.current.scrollIntoView({ block: "nearest" });
         }}
         className={cn(
-          "@container max-h-[90dvh] overflow-y-auto",
+          // header / body / footer: ปุ่ม Cancel·Save ปักอยู่ล่างเสมอ dialog เองไม่เลื่อน
+          "@container flex max-h-[90dvh] flex-col gap-0 overflow-hidden p-0",
           isLookup ? "sm:max-w-5xl" : "sm:max-w-xl",
         )}
       >
-        <DialogHeader>
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>
             {readOnly
               ? "Dimension Detail"
@@ -111,8 +112,10 @@ export function DimensionDialog({
         </DialogHeader>
         <div
           className={cn(
-            "grid gap-4 py-2",
-            isLookup && "@3xl:grid-cols-[16rem_minmax(0,1fr)]",
+            "grid min-h-0 flex-1 gap-4 overflow-y-auto px-6 pb-4",
+            // สองคอลัมน์: ตารางยืดเต็มความสูงที่เหลือแล้วเลื่อนในตัวเอง — body ไม่ต้องมี scrollbar ซ้อน
+            isLookup &&
+              "@3xl:grid-cols-[16rem_minmax(0,1fr)] @3xl:grid-rows-[minmax(0,1fr)] @3xl:overflow-hidden",
           )}
         >
           <fieldset
@@ -174,7 +177,7 @@ export function DimensionDialog({
             />
           </fieldset>
           {isLookup && (
-            <fieldset disabled={saving} className="min-w-0">
+            <fieldset disabled={saving} className="flex min-h-0 min-w-0 flex-col">
               <DimensionValuesTable
                 readOnly={readOnly}
                 savedId={savedItem?.id}
@@ -185,17 +188,21 @@ export function DimensionDialog({
             </fieldset>
           )}
         </div>
-        {failedSummary && (
-          <p aria-live="polite" className="text-destructive text-xs">
-            {failedSummary}
-          </p>
-        )}
-        {saveError && (
-          <p role="alert" className="text-destructive text-xs">
-            {saveError}
-          </p>
-        )}
-        <DialogFooter>
+        <DialogFooter className="bg-background shrink-0 items-center rounded-b-lg border-t px-6 py-3">
+          {(failedSummary || saveError) && (
+            <div className="order-last min-w-0 text-xs sm:order-first sm:mr-auto">
+              {failedSummary && (
+                <p aria-live="polite" className="text-destructive">
+                  {failedSummary}
+                </p>
+              )}
+              {saveError && (
+                <p role="alert" className="text-destructive">
+                  {saveError}
+                </p>
+              )}
+            </div>
+          )}
           <Button
             variant="outline"
             disabled={saving}
