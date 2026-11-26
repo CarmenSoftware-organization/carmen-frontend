@@ -16,6 +16,9 @@
 /* ---------- Blue Glass — สีแบรนด์ #0154bd · navy #1c4988 · sky #4cabe0 ---------- */
 html.theme-blue-glass,
 .theme-blue-glass {
+  /* ขอบมนแคบกว่า classic (0.625rem) ให้ดูคมแบบกระจก — radius-sm/md/lg/xl คำนวณจากค่านี้
+     ใน @theme inline ของ globals.css จึงตามกันทั้งชุด (Card rounded-xl 14→12 · ตาราง/rounded-lg 10→8 · ปุ่ม 8→6 · badge 6→4px) */
+  --radius: 0.5rem;
   --background: oklch(0.97 0.012 255);
   --primary: oklch(0.4714 0.1794 258.7);
   --primary-foreground: oklch(0.99 0 0);
