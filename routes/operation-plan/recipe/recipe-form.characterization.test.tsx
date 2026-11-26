@@ -417,9 +417,9 @@ describe("RecipeForm — แท็บ", () => {
   });
 });
 
-// ปุ่ม Update price (แทน Recalculate — ผู้ใช้สั่ง 2026-11-16): กดแล้วทับต้นทุนด้วยราคาจากใบราคาทันที
-// ไม่มีใบราคา = 0 (server ตัดสิน) ยังไม่บันทึกจนกด Save ซึ่งส่ง recalculate + price_source "pricelist"
-describe("RecipeForm — Update price จากใบราคา", () => {
+// ปุ่ม Update price (แทน Recalculate — ผู้ใช้สั่ง 2026-11-16): กดแล้วทับต้นทุนด้วยราคารับล่าสุด (GRN ครั้งล่าสุด —
+// ผู้ใช้สั่ง 2026-11-26 แทนใบราคา) ไม่เคยรับ = 0 (server ตัดสิน) ยังไม่บันทึกจนกด Save ซึ่งส่ง recalculate + price_source "last_receiving"
+describe("RecipeForm — Update price จากราคารับล่าสุด", () => {
   const R = en.operationPlan.recipe;
   const P = "prod-1";
   const GRAM = "unit-gram";
@@ -466,7 +466,7 @@ describe("RecipeForm — Update price จากใบราคา", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("กดแล้วขอราคาจากใบราคาทั้งรายการทันที (ไม่มีหน้าต่างยืนยัน) และขึ้นป้ายให้กด Save", () => {
+  it("กดแล้วขอราคารับล่าสุดทั้งรายการทันที (ไม่มีหน้าต่างยืนยัน) และขึ้นป้ายให้กด Save", () => {
     renderForm(<RecipeForm recipe={RECIPE_WITH_INGREDIENT} />);
     openIngredients();
     fireEvent.click(screen.getByRole("button", { name: R.updatePrice }));
@@ -478,10 +478,10 @@ describe("RecipeForm — Update price จากใบราคา", () => {
       items: Record<string, unknown>[];
     };
     expect(vars.recipeId).toBe("rec-1");
-    expect(vars.priceSource).toBe("pricelist");
+    expect(vars.priceSource).toBe("last_receiving");
     expect(vars.items).toHaveLength(1);
     expect(vars.items[0]).toMatchObject({ product_id: P, qty: 400 });
-    // ต้นทุนที่กรอกเองไม่ถูกส่ง — ทุกบรรทัดถูกทับด้วยราคาใบราคา
+    // ต้นทุนที่กรอกเองไม่ถูกส่ง — ทุกบรรทัดถูกทับด้วยราคารับล่าสุด
     expect(vars.items[0]).not.toHaveProperty("line_cost");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByText(R.updatePriceApplied)).toBeInTheDocument();

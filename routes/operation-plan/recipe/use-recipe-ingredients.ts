@@ -9,8 +9,8 @@ import type { IngredientCostResult, IngredientInput } from "@/types/recipe";
 interface PreviewVars {
   recipeId: string;
   items: IngredientInput[];
-  /** "pricelist" = บรรทัดสินค้าใช้ราคาจากใบราคาที่เปิดอยู่ (ไม่มี = 0) · ไม่ส่ง = ต้นทุนคลัง */
-  priceSource?: "pricelist";
+  /** "last_receiving" = บรรทัดสินค้าใช้ราคารับเข้าจาก GRN ครั้งล่าสุด (ไม่เคยรับ = 0) · ไม่ส่ง = ต้นทุนคลัง */
+  priceSource?: "last_receiving";
 }
 
 interface ReplaceVars {
@@ -39,7 +39,7 @@ async function readResult(
 /**
  * ต้นทุนปัจจุบันของวัตถุดิบ — server คำนวณ ไม่เขียน DB
  * ไม่ส่ง priceSource = ต้นทุนเฉลี่ยคลัง → fallback (ตอนเลือกสินค้า/หน่วยใหม่ในฟอร์ม)
- * · "pricelist" = ราคาจากใบราคาที่เปิดอยู่ (ปุ่ม "Update price" และบรรทัดที่เพิ่มหลังกดปุ่มนั้น)
+ * · "last_receiving" = ราคารับเข้า GRN ครั้งล่าสุด (ปุ่ม "Update price" และบรรทัดที่เพิ่มหลังกดปุ่มนั้น)
  */
 export function usePreviewIngredientCosts() {
   const buCode = useBuCode();
@@ -75,7 +75,7 @@ export function useReplaceIngredients() {
           items,
           recalculate,
           // คิดใหม่ทั้งชุดมีทางเดียวคือ Update price = ราคาจากใบราคา
-          ...(recalculate ? { price_source: "pricelist" } : {}),
+          ...(recalculate ? { price_source: "last_receiving" } : {}),
         },
       );
       return readResult(res, "Failed to save ingredients");
