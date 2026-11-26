@@ -74,23 +74,6 @@ export function useCoaTable({
       meta: { headerTitle: tfl("code"), skeleton: columnSkeletons.textShort },
     },
     {
-      // ด้านบัญชีเป็นแกนแนวตั้งถัดจากรหัส แบบสมุดบัญชีแยกประเภท — ตัวย่อ mono ให้ตรงกันทุกแถว
-      accessorKey: "nature",
-      header: ({ column }) => (
-        <DataGridColumnHeader column={column} title={tfl("nature")} />
-      ),
-      cell: ({ row }) => (
-        <span
-          className="text-foreground font-mono font-semibold"
-          title={t(`nature.${row.original.nature}`)}
-        >
-          {t(`natureShort.${row.original.nature}`)}
-        </span>
-      ),
-      size: 120,
-      meta: { headerTitle: tfl("nature"), skeleton: columnSkeletons.textShort },
-    },
-    {
       accessorKey: "description_1",
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={t("accountName")} />
@@ -115,6 +98,23 @@ export function useCoaTable({
       meta: { headerTitle: t("accountName"), skeleton: columnSkeletons.text },
     },
     {
+      // ด้านบัญชีถัดจากชื่อบัญชี (ผู้ใช้เลือก 26 พ.ย.) — ตัวย่อ mono ให้ตรงกันทุกแถว
+      accessorKey: "nature",
+      header: ({ column }) => (
+        <DataGridColumnHeader column={column} title={tfl("nature")} />
+      ),
+      cell: ({ row }) => (
+        <span
+          className="text-foreground font-mono font-semibold"
+          title={t(`nature.${row.original.nature}`)}
+        >
+          {t(`natureShort.${row.original.nature}`)}
+        </span>
+      ),
+      size: 120,
+      meta: { headerTitle: tfl("nature"), skeleton: columnSkeletons.textShort },
+    },
+    {
       accessorKey: "description_2",
       header: ({ column }) => (
         <DataGridColumnHeader column={column} title={tfl("description")} />
@@ -135,7 +135,7 @@ export function useCoaTable({
         ) : (
           <span className="text-warning-ink">{t("labels.categoryUnset")}</span>
         ),
-      size: 140,
+      size: 156,
       meta: { headerTitle: tfl("category"), skeleton: columnSkeletons.text },
     },
     {
@@ -194,10 +194,12 @@ export function useCoaTable({
         code: 100,
         nature: 120,
         description_1: 220,
-        category: 140,
+        category: 156,
         type: 180,
         account_group_id: 180,
       },
+      // ขนาดอิงคำแปลไทยที่ยาวสุด (วัดรวม padding 24): หมวด "ส่วนของเจ้าของ (Equity)" 149 · ประเภท "Header (หัวข้อ - ไม่ลงรายการ)" 180
+      // ผลรวม (รวม # 48 · select 55 · ปุ่ม 60 · status 100): ครบทุกคอลัมน์ 1219 · ไม่มีกลุ่ม 1039 · ไม่มีประเภท 859 · เหลือแกน 703
       // แยกหมวด / ประเภท / กลุ่มเป็นคอลัมน์จริง ชื่อไม่ต้องยืดกินที่ว่างทั้งแถว — กล่องแคบซ่อนจากหัวรายการก่อน
       // (audit ซ่อนไว้ก่อนเหมือนทุกหน้ารายการ — เปิดได้จากเมนูคอลัมน์)
       secondary: [
