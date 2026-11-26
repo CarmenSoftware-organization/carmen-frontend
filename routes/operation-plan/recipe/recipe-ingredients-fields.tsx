@@ -93,7 +93,7 @@ const SOURCE_BADGE: Partial<
         | "costSourceNone"
         | "costSourceRecipe"
         | "costSourceManual"
-        | "costSourcePricelist";
+        | "costSourceLastReceiving";
       variant: "warning-light" | "info-light" | "destructive-light";
     }
   >
@@ -103,7 +103,7 @@ const SOURCE_BADGE: Partial<
   none: { key: "costSourceNone", variant: "destructive-light" },
   recipe: { key: "costSourceRecipe", variant: "info-light" },
   manual: { key: "costSourceManual", variant: "info-light" },
-  pricelist: { key: "costSourcePricelist", variant: "info-light" },
+  last_receiving: { key: "costSourceLastReceiving", variant: "info-light" },
 };
 
 /**
@@ -251,7 +251,7 @@ export function RecipeIngredientsFields({
     previewCosts({
       recipeId,
       items: [parsePairKey(key)],
-      priceSource: recalculate ? "pricelist" : undefined,
+      priceSource: recalculate ? "last_receiving" : undefined,
     })
       .then((res) => {
         const hit = pairCostsFrom(res.items).find(([k]) => k === key);
@@ -292,7 +292,7 @@ export function RecipeIngredientsFields({
 
   // Update price (ผู้ใช้สั่ง 2026-11-16 แทนปุ่ม Recalculate): กดแล้วทับต้นทุนทุกบรรทัดสินค้าทันที
   // ด้วยราคาจากใบราคาที่เปิดอยู่ ไม่มีใบราคา = 0 — ต้นทุนที่กรอกเองก็ถูกทับ (ล้าง line_cost)
-  // บรรทัดสูตรฐานไม่มีในใบราคา คงต้นทุนของสูตรฐาน · ยังไม่บันทึกจนกด Save (ส่ง recalculate + pricelist)
+  // บรรทัดสูตรฐานไม่มีราคารับเข้า คงต้นทุนของสูตรฐาน · ยังไม่บันทึกจนกด Save (ส่ง recalculate + last_receiving)
   const updatePrice = usePreviewIngredientCosts();
   const canUpdatePrice =
     drafts.length > 0 && drafts.every((d) => isDraftComplete(d) && d.qty > 0);
@@ -300,7 +300,7 @@ export function RecipeIngredientsFields({
     if (!recipeId) return;
     const items = drafts.map((d) => draftToInput({ ...d, line_cost: null }));
     updatePrice.mutate(
-      { recipeId, items, priceSource: "pricelist" },
+      { recipeId, items, priceSource: "last_receiving" },
       {
         onSuccess: (res) => {
           drafts.forEach((d, i) => {
@@ -316,7 +316,7 @@ export function RecipeIngredientsFields({
             (l) => l.ingredient_type !== "recipe",
           );
           const missing = products.filter(
-            (l) => l.cost_source !== "pricelist",
+            (l) => l.cost_source !== "last_receiving",
           ).length;
           toast.success(
             t("updatePriceDone", {
