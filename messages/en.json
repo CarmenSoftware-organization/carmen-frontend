@@ -5881,8 +5881,6 @@
       "updatePriceDone": "Updated from price lists: {priced} · no price list (set to 0): {missing}",
       "updatePriceFailed": "Couldn't update prices from price lists",
       "ingredientsSaveFailed": "Ingredients weren't saved, so the recipe wasn't saved either. Your edits are still here — check them and save again.",
-      "ingredientCostTable": "Cost by ingredient",
-      "shareOfTotal": "% of total",
       "ingredientCostFromLines": "Total of the ingredient lines — change the ingredients to change it",
       "cookIngredients": "Ingredients",
       "cookChecked": "{n}/{total} checked",

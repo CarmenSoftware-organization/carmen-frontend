@@ -30,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CompactSection } from "@/components/share/compact-section";
-import { EyeBrow } from "@/components/ui/eye-brow";
 import EmptyComponent from "@/components/empty-component";
 import { LookupProduct } from "@/components/lookup/lookup-product";
 import { LookupRecipe } from "@/components/lookup/lookup-recipe";
@@ -380,88 +379,72 @@ export function RecipeIngredientsFields({
           }
         />
       ) : (
-        // การ์ดกว้าง (80rem+) = บรรทัดวัตถุดิบซ้าย ตารางต้นทุนขวา — ไม่ยืดบรรทัดเต็มจอแล้วต้องเลื่อนลงไปหาตาราง
-        <div className="@container">
-          <div className="grid gap-x-6 gap-y-3 @7xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] @7xl:items-start">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                <p className="text-muted-foreground">
-                  {t("ingredientCount", { count: fields.length })}
-                  {" · "}
-                  <span className="text-foreground font-semibold tabular-nums">
-                    ฿{formatCurrency(total)}
-                  </span>{" "}
-                  {tfl("total")}
-                </p>
-                {recalculate && (
-                  <Badge variant="warning-light">
-                    {t("updatePriceApplied")}
-                  </Badge>
-                )}
-              </div>
-
-              <div className="@container/ing">
-                <div className="bg-card overflow-hidden rounded-md @2xl/ing:border">
-                  <div
-                    className={cn(
-                      ING_GRID,
-                      "bg-muted/60 text-muted-foreground hidden px-2 py-1.5 text-xs font-semibold @2xl/ing:grid",
-                    )}
-                  >
-                    <span className="col-span-2">{t("ingredientName")}</span>
-                    <span className="px-2">{tfl("unit")}</span>
-                    <span className="px-2 text-right">{tfl("qty")}</span>
-                    <span className="px-2 text-right">
-                      {t("inventoryQtyCol")}
-                    </span>
-                    <span className="px-1 text-right">{t("wastagePct")}</span>
-                    <span className="text-right">{t("cost")}</span>
-                    <span />
-                  </div>
-                  <div className="space-y-2 @2xl/ing:space-y-0">
-                    {fields.map((field, i) => (
-                      <IngredientRow
-                        key={field.key}
-                        form={form}
-                        index={i}
-                        cost={rows[i] ?? { state: "incomplete" }}
-                        inventoryDecimals={inventoryDecimals}
-                        costDecimals={costDecimals}
-                        saved={saved}
-                        recipeId={recipeId}
-                        isDisabled={isDisabled}
-                        onRemove={() => remove(i)}
-                        onRetryCost={() => {
-                          const d = drafts[i];
-                          if (d && isDraftComplete(d))
-                            retryPair(pairKey(refOf(d), d.ingredient_unit_id));
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {!isDisabled && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAdd}
-                >
-                  <Plus />
-                  {t("addIngredient")}
-                </Button>
-              )}
-            </div>
-
-            <IngredientCostTable
-              drafts={drafts}
-              rows={rows}
-              saved={saved}
-              total={total}
-            />
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+            <p className="text-muted-foreground">
+              {t("ingredientCount", { count: fields.length })}
+              {" · "}
+              <span className="text-foreground font-semibold tabular-nums">
+                ฿{formatCurrency(total)}
+              </span>{" "}
+              {tfl("total")}
+            </p>
+            {recalculate && (
+              <Badge variant="warning-light">{t("updatePriceApplied")}</Badge>
+            )}
           </div>
+
+          <div className="@container/ing">
+            <div className="bg-card overflow-hidden rounded-md @2xl/ing:border">
+              <div
+                className={cn(
+                  ING_GRID,
+                  "bg-muted/60 text-muted-foreground hidden px-2 py-1.5 text-xs font-semibold @2xl/ing:grid",
+                )}
+              >
+                <span className="col-span-2">{t("ingredientName")}</span>
+                <span className="px-2">{tfl("unit")}</span>
+                <span className="px-2 text-right">{tfl("qty")}</span>
+                <span className="px-2 text-right">{t("inventoryQtyCol")}</span>
+                <span className="px-1 text-right">{t("wastagePct")}</span>
+                <span className="text-right">{t("cost")}</span>
+                <span />
+              </div>
+              <div className="space-y-2 @2xl/ing:space-y-0">
+                {fields.map((field, i) => (
+                  <IngredientRow
+                    key={field.key}
+                    form={form}
+                    index={i}
+                    cost={rows[i] ?? { state: "incomplete" }}
+                    inventoryDecimals={inventoryDecimals}
+                    costDecimals={costDecimals}
+                    saved={saved}
+                    recipeId={recipeId}
+                    isDisabled={isDisabled}
+                    onRemove={() => remove(i)}
+                    onRetryCost={() => {
+                      const d = drafts[i];
+                      if (d && isDraftComplete(d))
+                        retryPair(pairKey(refOf(d), d.ingredient_unit_id));
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {!isDisabled && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAdd}
+            >
+              <Plus />
+              {t("addIngredient")}
+            </Button>
+          )}
         </div>
       )}
     </CompactSection>
@@ -999,117 +982,4 @@ function LineCostValue({
     default:
       return <span className="text-muted-foreground text-xs">—</span>;
   }
-}
-
-/** ตารางต้นทุนรายวัตถุดิบ เรียงแพง → ถูก — ดูว่าอะไรกินต้นทุนจานนี้ */
-function IngredientCostTable({
-  drafts,
-  rows,
-  saved,
-  total,
-}: {
-  readonly drafts: IngredientDraft[];
-  readonly rows: RowCost[];
-  readonly saved: RecipeIngredientLine[];
-  readonly total: number;
-}) {
-  const t = useTranslations("operationPlan.recipe");
-  const tfl = useTranslations("field");
-  const lines = drafts
-    .map((d, i) => ({ d, r: rows[i], i }))
-    .flatMap(({ d, r, i }) =>
-      r?.state === "ok" ? [{ d, cost: r.line_cost, i }] : [],
-    )
-    .sort((a, b) => b.cost - a.cost);
-  if (lines.length === 0) return null;
-  // ทศนิยมของคอลัมน์จำนวนเท่ากันทุกแถว
-  const qtyDecimals = decimalsFor(lines.map(({ d }) => d.qty));
-
-  return (
-    <div className="pt-2 @7xl:pt-0">
-      <EyeBrow className="mb-2">{t("ingredientCostTable")}</EyeBrow>
-      <div className="overflow-x-auto rounded-md border">
-        <table className="w-full text-xs">
-          <thead className="bg-muted/60">
-            <tr className="text-muted-foreground text-left">
-              <th
-                scope="col"
-                className="w-px py-1.5 pr-1 pl-2 text-right font-semibold"
-              >
-                #
-              </th>
-              <th scope="col" className="px-2 py-1.5 font-semibold">
-                {t("ingredientName")}
-              </th>
-              <th scope="col" className="px-2 py-1.5 text-right font-semibold">
-                {tfl("qty")}
-              </th>
-              <th scope="col" className="px-2 py-1.5 text-right font-semibold">
-                {t("cost")}
-              </th>
-              <th scope="col" className="px-2 py-1.5 text-right font-semibold">
-                {t("shareOfTotal")}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {lines.map(({ d, cost, i }, order) => (
-              <tr key={i} className="border-border/60 border-t">
-                {/* ลำดับตามที่แสดง (แพง → ถูก) — ผู้ใช้สั่งใส่เลข 1, 2, 3 … 2026-11-16 */}
-                <td className="text-muted-foreground w-px py-1.5 pr-1 pl-2 text-right tabular-nums">
-                  {order + 1}
-                </td>
-                <td className="px-2 py-1.5">
-                  {d.product_label || "—"}
-                  {d.ingredient_type === "recipe" && (
-                    <Badge variant="info-light" size="xs" className="ml-1.5">
-                      {t("subRecipeBadge")}
-                    </Badge>
-                  )}
-                </td>
-                <td className="px-2 py-1.5 text-right tabular-nums">
-                  {formatQtyFixed(d.qty, qtyDecimals)}{" "}
-                  <UnitName
-                    productId={
-                      d.ingredient_type === "recipe" ? "" : d.product_id
-                    }
-                    unitId={d.ingredient_unit_id}
-                    saved={saved}
-                  />
-                </td>
-                <td className="px-2 py-1.5 text-right tabular-nums">
-                  ฿{formatCurrency(cost)}
-                </td>
-                <td className="text-muted-foreground px-2 py-1.5 text-right tabular-nums">
-                  {total > 0 ? ((cost / total) * 100).toFixed(1) : "0.0"}%
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-/** ชื่อหน่วยสูตร — query เดียวกับ select ของแถว (cache ร่วม) สำรองด้วยชื่อที่บันทึกไว้ */
-function UnitName({
-  productId,
-  unitId,
-  saved,
-}: {
-  readonly productId: string;
-  readonly unitId: string;
-  readonly saved: RecipeIngredientLine[];
-}) {
-  const { data: units } = useProductIngredientUnits(productId || undefined);
-  // แถวสูตรไม่มีรายการหน่วยของสินค้า — ใช้ชื่อหน่วยผลผลิตตาม id
-  const { data: unit } = useUnitById(
-    !productId && unitId && UUID_RE.test(unitId) ? unitId : undefined,
-  );
-  const name =
-    units?.find((u) => u.id === unitId)?.name ??
-    unit?.name ??
-    saved.find((s) => s.ingredient_unit_id === unitId)?.ingredient_unit?.name;
-  return <>{name ?? ""}</>;
 }
