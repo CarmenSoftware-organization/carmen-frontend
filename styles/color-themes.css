@@ -510,6 +510,101 @@ html.dark.theme-createspace .space-sidebar-gradient {
   }
 }
 
+/* ---------- ComplianceOne — เข้ม เรียบ มุมเหลี่ยมทั้งหมด ----------
+   ดึงจาก design system "ComplianceOne" เฉพาะสี มุม และสีกราฟ — ฟอนต์ Zilla Slab/Inter/Fira Code,
+   เส้นขอบ 1.5px และขีดซ้าย 3px ของแถวที่เลือกเป็นระดับ component ไม่ได้ใช้
+   - สีหลัก #1E40AF (ตัวขาว 8.72:1 ผ่าน AAA ตามที่ต้นฉบับต้องการ) · ตัวหนังสือรอง #475569 (7.24:1)
+   - มุม 0px ทุกชิ้น ยกเว้น rounded-full (จุดสถานะ avatar) — สเกลของแอปคำนวณจาก --radius
+     แต่ xl/2xl บวกค่าคงที่ ตั้ง --radius 0 อย่างเดียวการ์ดยังมน 4px จึงทับที่ class (กฎด้านล่าง)
+   - ต้นฉบับมีแดง/เขียวสำหรับ violation/compliant แต่สีสถานะของแอปไม่แตะ ตามกติกาของธีม
+   - ต้นฉบับไม่มีโหมดมืด: ใช้ slate #0F172A/#1E293B สีหลัก #60A5FA ตัวหนังสือเข้ม (7.02:1)
+   - กราฟ: น้ำเงิน / เขียว / ส้ม / slate / ม่วง #7C3AED (ม่วงเติมเอง ต้นฉบับมีสีไม่พอ 5 ลำดับ) */
+html.theme-complianceone,
+.theme-complianceone {
+  --radius: 0rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.208 0.04 265.8);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.208 0.04 265.8);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.208 0.04 265.8);
+  --primary: oklch(0.424 0.181 265.6);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.968 0.007 247.9);
+  --secondary-foreground: oklch(0.208 0.04 265.8);
+  --muted: oklch(0.984 0.003 247.9);
+  --muted-foreground: oklch(0.446 0.037 257.3);
+  --accent: oklch(0.97 0.014 254.6);
+  --accent-foreground: oklch(0.424 0.181 265.6);
+  --border: oklch(0.929 0.013 255.5);
+  --input: oklch(0.869 0.02 252.9);
+  --field: oklch(1 0 0);
+  --ring: oklch(0.424 0.181 265.6);
+  --chart-1: oklch(0.424 0.181 265.6);
+  --chart-2: oklch(0.596 0.127 163.2);
+  --chart-3: oklch(0.666 0.157 58.3);
+  --chart-4: oklch(0.554 0.041 257.4);
+  --chart-5: oklch(0.541 0.247 293);
+  --sidebar: oklch(0.984 0.003 247.9);
+  --sidebar-foreground: oklch(0.208 0.04 265.8);
+  --sidebar-primary: oklch(0.424 0.181 265.6);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.97 0.014 254.6);
+  --sidebar-accent-foreground: oklch(0.424 0.181 265.6);
+  --sidebar-border: oklch(0.929 0.013 255.5);
+  --sidebar-ring: oklch(0.424 0.181 265.6);
+}
+
+html.dark.theme-complianceone,
+.dark .theme-complianceone {
+  --background: oklch(0.208 0.04 265.8);
+  --foreground: oklch(0.968 0.007 247.9);
+  --card: oklch(0.279 0.037 260);
+  --card-foreground: oklch(0.968 0.007 247.9);
+  --popover: oklch(0.279 0.037 260);
+  --popover-foreground: oklch(0.968 0.007 247.9);
+  --primary: oklch(0.714 0.143 254.6);
+  --primary-foreground: oklch(0.208 0.04 265.8);
+  --secondary: oklch(0.279 0.037 260);
+  --secondary-foreground: oklch(0.968 0.007 247.9);
+  --muted: oklch(0.279 0.037 260);
+  --muted-foreground: oklch(0.711 0.035 256.8);
+  --accent: oklch(0.379 0.138 265.5);
+  --accent-foreground: oklch(0.932 0.032 255.6);
+  --border: oklch(0.372 0.039 257.3);
+  --input: oklch(0.372 0.039 257.3);
+  --field: oklch(0.208 0.04 265.8);
+  --ring: oklch(0.714 0.143 254.6);
+  --chart-1: oklch(0.714 0.143 254.6);
+  --chart-2: oklch(0.596 0.127 163.2);
+  --chart-3: oklch(0.666 0.157 58.3);
+  --chart-4: oklch(0.711 0.035 256.8);
+  --chart-5: oklch(0.541 0.247 293);
+  --sidebar: oklch(0.183 0.031 263.4);
+  --sidebar-foreground: oklch(0.968 0.007 247.9);
+  --sidebar-primary: oklch(0.714 0.143 254.6);
+  --sidebar-primary-foreground: oklch(0.208 0.04 265.8);
+  --sidebar-accent: oklch(0.379 0.138 265.5);
+  --sidebar-accent-foreground: oklch(0.932 0.032 255.6);
+  --sidebar-border: oklch(0.279 0.037 260);
+  --sidebar-ring: oklch(0.714 0.143 254.6);
+}
+
+/* ComplianceOne: มุมเหลี่ยมทุกชิ้น ยกเว้น rounded-full — นอก @layer จึงชนะ utility */
+html.theme-complianceone
+  :is(
+    .rounded,
+    .rounded-xs,
+    .rounded-sm,
+    .rounded-md,
+    .rounded-lg,
+    .rounded-xl,
+    .rounded-2xl,
+    .rounded-3xl
+  ) {
+  border-radius: 0;
+}
+
 /* ---------- Blue Glass: กระจกเฉพาะโครงหน้าจอ ----------
    พื้นไล่สีอยู่ที่ body เพราะ sidebar เป็นคอลัมน์แยกจาก <main> — ถ้าวางไว้ที่ main
    กระจกของ sidebar จะไม่มีอะไรอยู่ข้างหลังให้เบลอ ส่วน main จึงต้องโปร่งตาม

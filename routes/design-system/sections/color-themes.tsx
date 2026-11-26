@@ -13,6 +13,7 @@ const LABEL: Record<ColorTheme, string> = {
   skylearn: "Skylearn",
   "octo-code": "Octo Code",
   createspace: "CreateSpace",
+  complianceone: "ComplianceOne",
 };
 
 /**

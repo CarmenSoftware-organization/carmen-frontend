@@ -18,6 +18,7 @@ export const COLOR_THEMES = [
   "skylearn",
   "octo-code",
   "createspace",
+  "complianceone",
 ] as const;
 
 export type ColorTheme = (typeof COLOR_THEMES)[number];
