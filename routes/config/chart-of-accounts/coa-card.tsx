@@ -6,6 +6,7 @@ import {
   ListCardActiveRow,
 } from "@/components/share/list-card";
 import type { ChartOfAccount } from "@/types/chart-of-accounts";
+import { secondaryName } from "./use-coa-table";
 
 interface Props {
   readonly rowNo?: number;
@@ -17,6 +18,7 @@ interface Props {
 export default function CoaCard({ item, onEdit, onDelete, rowNo }: Props) {
   const t = useTranslations("config.chartOfAccounts");
   const tfl = useTranslations("field");
+  const secondary = secondaryName(item);
 
   return (
     <ListCard
@@ -27,10 +29,8 @@ export default function CoaCard({ item, onEdit, onDelete, rowNo }: Props) {
     >
       <ListCardActiveRow active={item.is_active} />
       <ListCardRow label={t("accountName")}>{item.description_1}</ListCardRow>
-      {item.description_2 && (
-        <ListCardRow label={tfl("description")}>
-          {item.description_2}
-        </ListCardRow>
+      {secondary && (
+        <ListCardRow label={tfl("description")}>{secondary}</ListCardRow>
       )}
       <ListCardRow label={tfl("category")}>
         {item.category ? (
@@ -40,14 +40,7 @@ export default function CoaCard({ item, onEdit, onDelete, rowNo }: Props) {
         )}
       </ListCardRow>
       <ListCardRow label={tfl("nature")}>
-        <span className="inline-flex items-center gap-1.5">
-          <span
-            className="inline-flex size-4.5 items-center justify-center rounded bg-muted text-micro-legal font-bold"
-          >
-            {item.nature === "debit" ? "D" : "C"}
-          </span>
-          <span>{t(`nature.${item.nature}`)}</span>
-        </span>
+        {t(`nature.${item.nature}`)}
       </ListCardRow>
       <ListCardRow label={tfl("type")}>
         {t(`accountType.${item.type}`)}
