@@ -1,0 +1,228 @@
+/* ธีมสีที่ผู้ใช้เลือกจากเมนูโปรไฟล์ — class `theme-<id>` ตั้งโดย lib/color-theme.ts
+   (classic = ค่าใน globals.css ไม่มี class ของตัวเอง)
+
+   ธีมเปลี่ยนเฉพาะ token ของสีหลัก ห้ามแตะ --success / --warning / --destructive /
+   --info / --status-* เพราะสีสถานะต้องคงความหมายเดิมทุกธีม
+
+   selector คู่ต่อธีม: `html.theme-x` ใช้กับทั้งแอป ส่วน `.theme-x` เปล่าใช้ห่อการ์ดตัวอย่าง
+   ใน /design-system
+   - `html.theme-x` (0,1,1) ชนะ `:root` (0,1,0) แม้ไฟล์นี้ถูก @import ก่อน
+   - `html.dark.theme-x` (0,2,1) ชนะทั้ง `.dark` และ `html.theme-x`
+   - บน div ที่ซ้อนอยู่ข้างใน ค่าที่ประกาศบน element ชนะค่าที่ inherit มาเสมอ
+
+   contrast ของ --primary กับ --primary-foreground ≥ 4.5:1 ทุกคู่ (คำนวณ 2026-11-26:
+   ต่ำสุดคือ emerald light ที่ 5.4:1) แก้ค่าแล้วต้องคำนวณใหม่ */
+
+/* ---------- Blue Glass — สีแบรนด์ #0154bd · navy #1c4988 · sky #4cabe0 ---------- */
+html.theme-blue-glass,
+.theme-blue-glass {
+  --background: oklch(0.97 0.012 255);
+  --primary: oklch(0.4714 0.1794 258.7);
+  --primary-foreground: oklch(0.99 0 0);
+  --ring: oklch(0.4714 0.1794 258.7);
+  --chart-1: oklch(0.4714 0.1794 258.7);
+  --sidebar: oklch(0.96 0.02 255);
+  --sidebar-primary: oklch(0.4714 0.1794 258.7);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.92 0.035 255);
+  --sidebar-accent-foreground: oklch(0.3 0.09 258);
+  --sidebar-border: oklch(0.88 0.03 255);
+  --sidebar-ring: oklch(0.4714 0.1794 258.7);
+}
+
+html.dark.theme-blue-glass,
+.dark .theme-blue-glass {
+  /* ต้องมีโทน navy ไม่ใช่ดำล้วน — chroma เล็กพอที่ muted-foreground ยังผ่าน AA */
+  --background: oklch(0.2 0.025 258);
+  --card: oklch(0.24 0.03 258);
+  --popover: oklch(0.25 0.03 258);
+  --border: oklch(0.31 0.035 258);
+  --input: oklch(0.29 0.03 258);
+  --primary: oklch(0.72 0.13 240);
+  --primary-foreground: oklch(0.2 0.05 255);
+  --ring: oklch(0.72 0.13 240);
+  --chart-1: oklch(0.64 0.13 240);
+  --sidebar: oklch(0.18 0.035 258);
+  --sidebar-primary: oklch(0.72 0.13 240);
+  --sidebar-primary-foreground: oklch(0.2 0.05 255);
+  --sidebar-accent: oklch(0.29 0.05 255);
+  --sidebar-accent-foreground: oklch(0.95 0.01 250);
+  --sidebar-border: oklch(0.32 0.04 258);
+  --sidebar-ring: oklch(0.72 0.13 240);
+}
+
+/* ---------- Emerald ---------- */
+html.theme-emerald,
+.theme-emerald {
+  --primary: oklch(0.5 0.12 162);
+  --primary-foreground: oklch(0.99 0 0);
+  --ring: oklch(0.5 0.12 162);
+  --chart-1: oklch(0.5 0.12 162);
+  --sidebar-primary: oklch(0.5 0.12 162);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-ring: oklch(0.5 0.12 162);
+}
+
+html.dark.theme-emerald,
+.dark .theme-emerald {
+  --primary: oklch(0.74 0.14 162);
+  --primary-foreground: oklch(0.2 0.04 162);
+  --ring: oklch(0.74 0.14 162);
+  --chart-1: oklch(0.64 0.14 162);
+  --sidebar-primary: oklch(0.74 0.14 162);
+  --sidebar-primary-foreground: oklch(0.2 0.04 162);
+  --sidebar-ring: oklch(0.74 0.14 162);
+}
+
+/* ---------- Teal ---------- */
+html.theme-teal,
+.theme-teal {
+  --primary: oklch(0.5 0.09 200);
+  --primary-foreground: oklch(0.99 0 0);
+  --ring: oklch(0.5 0.09 200);
+  --chart-1: oklch(0.5 0.09 200);
+  --sidebar-primary: oklch(0.5 0.09 200);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-ring: oklch(0.5 0.09 200);
+}
+
+html.dark.theme-teal,
+.dark .theme-teal {
+  --primary: oklch(0.75 0.11 200);
+  --primary-foreground: oklch(0.2 0.04 200);
+  --ring: oklch(0.75 0.11 200);
+  --chart-1: oklch(0.65 0.11 200);
+  --sidebar-primary: oklch(0.75 0.11 200);
+  --sidebar-primary-foreground: oklch(0.2 0.04 200);
+  --sidebar-ring: oklch(0.75 0.11 200);
+}
+
+/* ---------- Violet ---------- */
+html.theme-violet,
+.theme-violet {
+  --primary: oklch(0.5 0.2 295);
+  --primary-foreground: oklch(0.99 0 0);
+  --ring: oklch(0.5 0.2 295);
+  --chart-1: oklch(0.5 0.2 295);
+  --sidebar-primary: oklch(0.5 0.2 295);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-ring: oklch(0.5 0.2 295);
+}
+
+html.dark.theme-violet,
+.dark .theme-violet {
+  --primary: oklch(0.72 0.15 295);
+  --primary-foreground: oklch(0.2 0.05 295);
+  --ring: oklch(0.72 0.15 295);
+  --chart-1: oklch(0.62 0.15 295);
+  --sidebar-primary: oklch(0.72 0.15 295);
+  --sidebar-primary-foreground: oklch(0.2 0.05 295);
+  --sidebar-ring: oklch(0.72 0.15 295);
+}
+
+/* ---------- Graphite — เทาอมน้ำเงิน สำหรับคนที่ไม่อยากได้สีเด่น ---------- */
+html.theme-graphite,
+.theme-graphite {
+  --primary: oklch(0.38 0.02 260);
+  --primary-foreground: oklch(0.99 0 0);
+  --ring: oklch(0.38 0.02 260);
+  --chart-1: oklch(0.38 0.02 260);
+  --sidebar-primary: oklch(0.38 0.02 260);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-ring: oklch(0.38 0.02 260);
+}
+
+html.dark.theme-graphite,
+.dark .theme-graphite {
+  --primary: oklch(0.82 0.02 260);
+  --primary-foreground: oklch(0.2 0.01 260);
+  --ring: oklch(0.82 0.02 260);
+  --chart-1: oklch(0.7 0.02 260);
+  --sidebar-primary: oklch(0.82 0.02 260);
+  --sidebar-primary-foreground: oklch(0.2 0.01 260);
+  --sidebar-ring: oklch(0.82 0.02 260);
+}
+
+/* ---------- Blue Glass: กระจกเฉพาะโครงหน้าจอ ----------
+   พื้นไล่สีอยู่ที่ body เพราะ sidebar เป็นคอลัมน์แยกจาก <main> — ถ้าวางไว้ที่ main
+   กระจกของ sidebar จะไม่มีอะไรอยู่ข้างหลังให้เบลอ ส่วน main จึงต้องโปร่งตาม
+   navbar เป็น sticky ใน main จึงเบลอเนื้อหาที่ scroll ผ่านใต้มันจริง
+
+   card / DataGrid / form / dialog / popover ไม่ถูกแตะ ทุกชิ้นยังทึบ
+   (ตารางยาวที่ต้อง composite blur ใต้ทุกแถวจะกระตุก และ contrast จะไม่แน่นอน)
+
+   ทั้งหมดอยู่นอก @layer เหมือน .space-*-gradient เดิม จึงชนะ utility bg-sidebar /
+   bg-background บน element เดียวกัน */
+html.theme-blue-glass body {
+  background:
+    radial-gradient(
+      60% 50% at 100% 0%,
+      oklch(0.85 0.08 236 / 0.45) 0%,
+      transparent 70%
+    ),
+    linear-gradient(
+      160deg,
+      oklch(0.94 0.035 258) 0%,
+      oklch(0.975 0.012 255) 45%,
+      oklch(0.93 0.04 240) 100%
+    );
+  background-attachment: fixed;
+}
+
+html.dark.theme-blue-glass body {
+  background:
+    radial-gradient(
+      60% 50% at 100% 0%,
+      oklch(0.45 0.12 245 / 0.35) 0%,
+      transparent 70%
+    ),
+    linear-gradient(
+      160deg,
+      oklch(0.25 0.07 258) 0%,
+      oklch(0.18 0.035 258) 55%,
+      oklch(0.21 0.05 245) 100%
+    );
+  background-attachment: fixed;
+}
+
+html.theme-blue-glass .space-main-gradient {
+  background: transparent;
+}
+
+html.theme-blue-glass .space-sidebar-gradient {
+  background: oklch(1 0 0 / 0.55);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+}
+
+html.theme-blue-glass .space-navbar-gradient {
+  background: oklch(1 0 0 / 0.65);
+  border-bottom-color: oklch(1 0 0 / 0.7);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+}
+
+html.dark.theme-blue-glass .space-sidebar-gradient {
+  background: oklch(0.2 0.04 258 / 0.6);
+}
+
+html.dark.theme-blue-glass .space-navbar-gradient {
+  background: oklch(0.2 0.04 258 / 0.65);
+  border-bottom-color: oklch(1 0 0 / 0.08);
+}
+
+/* ผู้ใช้ที่ปิดความโปร่งใสในระบบ — กลับเป็นพื้นทึบ แต่ยังได้สีของธีม */
+@media (prefers-reduced-transparency: reduce) {
+  html.theme-blue-glass .space-sidebar-gradient,
+  html.dark.theme-blue-glass .space-sidebar-gradient {
+    background: var(--sidebar);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  html.theme-blue-glass .space-navbar-gradient,
+  html.dark.theme-blue-glass .space-navbar-gradient {
+    background: var(--background);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}

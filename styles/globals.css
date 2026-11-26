@@ -4,6 +4,7 @@
    และหายทันทีไม่มี transition · reduced-motion ด้านล่างตัดให้เหลือ 0.01ms */
 @import "tw-animate-css";
 @import "./module-colors.css";
+@import "./color-themes.css";
 
 /* เอกสาร/สกิลไม่ใช่ซอร์สรันไทม์ — Tailwind auto-detect กวาด .md ด้วย แล้วเก็บข้อความ
    อย่าง `bg-[var(…)]` ในแผนงานไปเป็น candidate จริง (CSS warning + คลาสขยะในบันเดิล) */
