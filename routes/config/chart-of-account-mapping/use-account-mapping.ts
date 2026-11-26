@@ -157,6 +157,30 @@ export function useReviewAccountMapping() {
   );
 }
 
+export type ReviewAccountMappingByFilterVariables = Omit<
+  AccountMappingListParams,
+  "page" | "perpage" | "sort"
+> & {
+  /** จำนวนแถวที่ผู้ใช้เห็น (paginate.total) — backend นับไม่ตรง = 409 ACCOUNT_MAPPING_SCOPE_CHANGED */
+  expected_count: number;
+};
+
+/** POST review-by-filter — ตรวจทุกแถวที่ตรงตัวกรองในคำขอเดียว; 409 ให้หน้าจัดการเอง */
+export function useReviewAccountMappingByFilter() {
+  return useAccountMappingMutation<
+    ReviewAccountMappingByFilterVariables,
+    { updated: number }
+  >(
+    (body, buCode) =>
+      httpClient.post(
+        `${API_ENDPOINTS.ACCOUNT_MAPPING(buCode)}/review-by-filter`,
+        body,
+      ),
+    "Failed to review account mapping",
+    { skipGlobalErrorToast: true },
+  );
+}
+
 export interface BatchUpdateAccountMappingVariables {
   items: { id: string; doc_version: number }[];
   /** `null` = คืนค่าเริ่มต้น · ไม่ส่ง = ไม่แตะ */

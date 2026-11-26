@@ -29,6 +29,7 @@ import type {
   MappingStatus,
   MappingType,
 } from "@/types/chart-of-account-mapping";
+import type { RowSelectionState, Updater } from "@tanstack/react-table";
 import { ApiError } from "@/lib/api-error";
 import { useErrorToast } from "@/hooks/use-error-toast";
 import { useAccountingConfigEdit } from "../shared/use-accounting-config-edit";
@@ -37,6 +38,7 @@ import {
   EMPTY_COUNTS,
   useAccountMappingInfinite,
   useReviewAccountMapping,
+  useReviewAccountMappingByFilter,
   useUpdateAccountMapping,
   type AccountMappingListParams,
 } from "./use-account-mapping";
@@ -44,6 +46,7 @@ import { useCoamTable } from "./use-coam-table";
 import { CoamEditSheet } from "./coam-edit-sheet";
 import { CoamGenerateDialog } from "./coam-generate-dialog";
 import { CoamBatchEditSheet } from "./coam-batch-edit-sheet";
+import { CoamSelectAllBanner } from "./coam-select-all-banner";
 import type { BatchUpdateAccountMappingResult } from "./use-account-mapping";
 import {
   TAB_SCOPED_FILTER_KEYS,
@@ -87,6 +90,11 @@ export default function CoamComponent() {
   // snapshot แถวตอนเปิด sheet — refetch เบื้องหลังต้องไม่เปลี่ยน doc_version ใต้มือผู้ใช้
   const [batchRows, setBatchRows] = useState<AccountMappingRow[]>([]);
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
+  // "ทุกแถวที่ตรงตัวกรอง" (เกินกว่าที่โหลดมา) — เก็บจำนวนที่ผู้ใช้เห็นตอนกดเลือกทั้งหมด
+  // เป็น expected_count (ไม่ใช่ total สด ๆ ที่ refetch เบื้องหลังอาจเปลี่ยนไปแล้ว) · null = ไม่อยู่ในโหมดนี้
+  const [matchCount, setMatchCount] = useState<number | null>(null);
+  const allMatching = matchCount !== null;
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const { params, tableConfig, search, setSearch } = useDataGridState();
   // reference คงที่ต่อแท็บ (module-level) — useListFilters ต้องการ fields ที่ไม่เปลี่ยนทุก render
@@ -115,6 +123,7 @@ export default function CoamComponent() {
     isFetchingNextPage,
   } = useAccountMappingInfinite(query);
   const review = useReviewAccountMapping();
+  const reviewByFilter = useReviewAccountMappingByFilter();
   const update = useUpdateAccountMapping();
   const errorToast = useErrorToast();
   const canEdit = useAccountingConfigEdit(
@@ -164,9 +173,30 @@ export default function CoamComponent() {
     [canEdit, resetField, pendingId],
   );
 
+  // โหมดทุกแถว: ทุกแถวที่โหลดมา (รวมที่โหลดเพิ่มทีหลัง) ติ๊กเองโดยไม่ต้องเก็บ state
+  const allRowSelection = useMemo<RowSelectionState>(
+    () => Object.fromEntries(rows.map((r) => [r.id, true])),
+    [rows],
+  );
+  const effectiveSelection = allMatching ? allRowSelection : rowSelection;
+  const countSelected = (sel: RowSelectionState) =>
+    Object.values(sel).filter(Boolean).length;
+  // เอาติ๊กออก (แถวเดียว / หัวตาราง / reset) = ออกจากโหมดทุกแถว — โหลดแถวเพิ่มไม่ทำให้หลุด
+  const onRowSelectionChange = (updater: Updater<RowSelectionState>) => {
+    const next =
+      typeof updater === "function" ? updater(effectiveSelection) : updater;
+    if (allMatching && countSelected(next) < countSelected(effectiveSelection))
+      setMatchCount(null);
+    setRowSelection(next);
+  };
+
   const table = useCoamTable({
     data: rows,
-    tableConfig,
+    tableConfig: {
+      ...tableConfig,
+      state: { ...tableConfig.state, rowSelection: effectiveSelection },
+      onRowSelectionChange,
+    },
     tab,
     onOpen: setEditing,
     menu,
@@ -175,14 +205,19 @@ export default function CoamComponent() {
   // เพื่อไม่ให้ "ยืนยันว่าตรวจแล้ว" ทิ้งแถวที่เลือกไว้นอกหน้าไปเงียบ ๆ
   const scopeKey = JSON.stringify([tab, query.search, query.sort, lf.values]);
   useEffect(() => {
+    // reset ผ่าน onRowSelectionChange → ออกจากโหมดทุกแถวไปด้วย
     table.resetRowSelection();
   }, [scopeKey, table]);
   const selectedRows = table.getSelectedRowModel().rows.map((r) => r.original);
   const selectedIds = selectedRows.map((r) => r.id);
+  const allLoadedSelected = rows.length > 0 && table.getIsAllRowsSelected();
+  const showSelectAllBanner =
+    allMatching || (allLoadedSelected && totalRecords > rows.length);
+  const clearSelection = () => table.resetRowSelection();
 
   const switchTab = (next: string) => {
     if (next === tab) return;
-    table.resetRowSelection();
+    clearSelection();
     // movement / adjustment type ของอีกแท็บใช้ไม่ได้ — ล้างทิ้งพร้อมกลับหน้า 1
     setURLParams({
       tab: next === "GL" ? "GL" : "",
@@ -195,7 +230,34 @@ export default function CoamComponent() {
   const toggleStatus = (value: MappingStatus) =>
     lf.setValue("status", query.status === value ? "" : value);
 
-  const markReviewed = () =>
+  const markReviewed = () => {
+    if (allMatching) {
+      const { sort: _sort, ...filters } = query;
+      reviewByFilter.mutate(
+        { ...filters, expected_count: matchCount },
+        {
+          onSuccess: (res) => {
+            toast.success(
+              t("markReviewedDone", { count: res?.updated ?? matchCount }),
+            );
+            clearSelection();
+          },
+          onError: (err) => {
+            if (
+              err instanceof ApiError &&
+              err.appCode === "ACCOUNT_MAPPING_SCOPE_CHANGED"
+            ) {
+              // รายการถูก refetch เองจาก invalidate ของ mutation
+              toast.warning(t("scopeChanged"));
+              clearSelection();
+              return;
+            }
+            errorToast(err);
+          },
+        },
+      );
+      return;
+    }
     review.mutate(
       { ids: selectedIds },
       {
@@ -209,6 +271,7 @@ export default function CoamComponent() {
         },
       },
     );
+  };
 
   // แถวที่บันทึกไม่ได้ยังติ๊กค้างไว้ให้ลองใหม่ — refetch ไม่เปลี่ยน scopeKey จึงไม่ถูกล้าง
   const batchDone = (res: BatchUpdateAccountMappingResult) => {
@@ -238,28 +301,32 @@ export default function CoamComponent() {
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           {selectedIds.length > 0 && (
             <>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setBatchRows(selectedRows);
-                  setBatchSeq((n) => n + 1);
-                  setBatchOpen(true);
-                }}
-              >
-                <Pencil aria-hidden="true" />
-                {t("editSelected")}
-                <span className="tabular-nums">({selectedIds.length})</span>
-              </Button>
+              {!allMatching && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setBatchRows(selectedRows);
+                    setBatchSeq((n) => n + 1);
+                    setBatchOpen(true);
+                  }}
+                >
+                  <Pencil aria-hidden="true" />
+                  {t("editSelected")}
+                  <span className="tabular-nums">({selectedIds.length})</span>
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="outline"
                 onClick={markReviewed}
-                disabled={review.isPending}
+                disabled={review.isPending || reviewByFilter.isPending}
               >
                 <CheckCheck aria-hidden="true" />
                 {t("markReviewed")}
-                <span className="tabular-nums">({selectedIds.length})</span>
+                <span className="tabular-nums">
+                  ({matchCount ?? selectedIds.length})
+                </span>
               </Button>
             </>
           )}
@@ -336,6 +403,15 @@ export default function CoamComponent() {
             onSaveViewClick={() => setSaveViewDialogOpen(true)}
             table={table}
           />
+          {showSelectAllBanner && (
+            <CoamSelectAllBanner
+              loaded={selectedIds.length}
+              total={matchCount ?? totalRecords}
+              allMatching={allMatching}
+              onSelectAll={() => setMatchCount(totalRecords)}
+              onClear={clearSelection}
+            />
+          )}
         </div>
       }
     >
