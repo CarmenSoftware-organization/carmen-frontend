@@ -25,6 +25,97 @@ type HeaderCloseSlot = {
 };
 const HeaderCloseContext = React.createContext<HeaderCloseSlot | null>(null);
 
+// แยก children ของ dialog เลย์เอาต์ปกติเป็น header / body / footer — body เลื่อนในกล่องเดียว
+// scrollbar จึงอยู่แค่ช่วงกลาง รองรับ footer ที่อยู่ใน <form> ชั้นเดียว (ต้องอยู่ใน form เพื่อ submit)
+// โครงที่แยกไม่ได้ (footer ห่อด้วย component อื่น, ฟอร์มหลายตัว ฯลฯ) → คืน null ใช้แบบ sticky แทน
+function flattenChildren(children: React.ReactNode): React.ReactNode[] {
+  return React.Children.toArray(children).flatMap((child) =>
+    React.isValidElement<{ children?: React.ReactNode }>(child) &&
+    child.type === React.Fragment
+      ? flattenChildren(child.props.children)
+      : [child],
+  );
+}
+
+function isSlot(node: React.ReactNode, slot: unknown): boolean {
+  return React.isValidElement(node) && node.type === slot;
+}
+
+type SplitChildren = {
+  header: React.ReactNode[];
+  main: React.ReactNode;
+};
+
+function DialogBody({
+  children,
+  hasFooter,
+}: {
+  children: React.ReactNode;
+  hasFooter: boolean;
+}) {
+  return (
+    <div
+      data-slot="dialog-body"
+      className={cn(
+        // pt-1: กันวง focus ของช่องแถวบนโดนขอบกล่องเลื่อนตัด
+        "grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)] content-start gap-4 overflow-y-auto px-6 pt-1",
+        hasFooter ? "pb-4" : "pb-6",
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+function splitDialogChildren(children: React.ReactNode): SplitChildren | null {
+  const header: React.ReactNode[] = [];
+  const footer: React.ReactNode[] = [];
+  const body: React.ReactNode[] = [];
+  let form: React.ReactElement | null = null;
+  for (const item of flattenChildren(children)) {
+    if (isSlot(item, DialogHeader)) header.push(item);
+    else if (isSlot(item, DialogFooter)) footer.push(item);
+    else if (
+      React.isValidElement<{ children?: React.ReactNode; className?: string }>(
+        item,
+      ) &&
+      item.type === "form" &&
+      flattenChildren(item.props.children).some((c) => isSlot(c, DialogFooter))
+    ) {
+      if (form) return null;
+      const inner = flattenChildren(item.props.children);
+      if (inner.some((c) => React.isValidElement(c) && c.type === "form"))
+        return null;
+      header.push(...inner.filter((c) => isSlot(c, DialogHeader)));
+      const innerFooter = inner.filter((c) => isSlot(c, DialogFooter));
+      const innerBody = inner.filter(
+        (c) => !isSlot(c, DialogHeader) && !isSlot(c, DialogFooter),
+      );
+      form = React.cloneElement(
+        item,
+        { className: cn(item.props.className, "flex min-h-0 flex-1 flex-col") },
+        <DialogBody hasFooter>{innerBody}</DialogBody>,
+        ...innerFooter,
+      );
+    } else body.push(item);
+  }
+  if (form) {
+    // ของหลวมนอก form + form ที่ถือ footer → จัดลำดับให้ถูกไม่ได้ ใช้แบบ sticky
+    if (body.length || footer.length) return null;
+    return { header, main: form };
+  }
+  if (!header.length && !footer.length) return null;
+  return {
+    header,
+    main: (
+      <>
+        <DialogBody hasFooter={footer.length > 0}>{body}</DialogBody>
+        {footer}
+      </>
+    ),
+  };
+}
+
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -89,6 +180,8 @@ function DialogContent({
     [showCloseButton, ownsLayout],
   );
   const closeInHeader = closeSlot.enabled && headerCount > 0;
+  const split = ownsLayout ? null : splitDialogChildren(children);
+  const layout = ownsLayout ? "custom" : split ? "split" : "default";
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
@@ -96,11 +189,13 @@ function DialogContent({
           ชื่อไฟล์ยาวไม่มีช่องว่าง / <pre> โค้ด จึงดันเนื้อหาและปุ่มทะลุกรอบ dialog */}
       <DialogPrimitive.Content
         data-slot="dialog-content"
-        data-layout={ownsLayout ? "custom" : "default"}
+        data-layout={layout}
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full grid-cols-[minmax(0,1fr)] max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 outline-none sm:max-w-lg",
           // ยาวเกินจอ → เนื้อหาเลื่อนในกรอบ ส่วน DialogHeader / DialogFooter ปักบน/ล่าง (sticky)
           "group/dialog max-h-[calc(100dvh-2rem)] overflow-y-auto",
+          // แยก header/body/footer ได้ → กรอบไม่เลื่อนเอง ให้ DialogBody เลื่อนแทน
+          split && "flex flex-col gap-0 overflow-hidden p-0",
           className,
         )}
         onOpenAutoFocus={(event) => {
@@ -119,7 +214,14 @@ function DialogContent({
         {...props}
       >
         <HeaderCloseContext.Provider value={closeSlot}>
-          {children}
+          {split ? (
+            <>
+              {split.header}
+              {split.main}
+            </>
+          ) : (
+            children
+          )}
         </HeaderCloseContext.Provider>
         {showCloseButton && !closeInHeader && <DialogCloseX />}
       </DialogPrimitive.Content>
@@ -145,6 +247,7 @@ function DialogHeader({
         "flex flex-col gap-2 text-center sm:text-left",
         // -top-6 / -mt-6 / -mx-6: sticky วัดขอบจาก padding ของกรอบ ต้องชดเชย p-6 เหมือน footer
         "group-data-[layout=default]/dialog:bg-background group-data-[layout=default]/dialog:sticky group-data-[layout=default]/dialog:-top-6 group-data-[layout=default]/dialog:z-10 group-data-[layout=default]/dialog:-mx-6 group-data-[layout=default]/dialog:-mt-6 group-data-[layout=default]/dialog:-mb-4 group-data-[layout=default]/dialog:rounded-t-lg group-data-[layout=default]/dialog:px-6 group-data-[layout=default]/dialog:pt-6 group-data-[layout=default]/dialog:pb-4",
+        "group-data-[layout=split]/dialog:relative group-data-[layout=split]/dialog:shrink-0 group-data-[layout=split]/dialog:px-6 group-data-[layout=split]/dialog:pt-6 group-data-[layout=split]/dialog:pb-3",
         className,
       )}
       {...props}
@@ -169,6 +272,7 @@ function DialogFooter({
       className={cn(
         "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
         "group-data-[layout=default]/dialog:bg-background group-data-[layout=default]/dialog:sticky group-data-[layout=default]/dialog:-bottom-6 group-data-[layout=default]/dialog:z-10 group-data-[layout=default]/dialog:-mx-6 group-data-[layout=default]/dialog:-mb-6 group-data-[layout=default]/dialog:rounded-b-lg group-data-[layout=default]/dialog:border-t group-data-[layout=default]/dialog:px-6 group-data-[layout=default]/dialog:py-3",
+        "group-data-[layout=split]/dialog:bg-background group-data-[layout=split]/dialog:shrink-0 group-data-[layout=split]/dialog:rounded-b-lg group-data-[layout=split]/dialog:border-t group-data-[layout=split]/dialog:px-6 group-data-[layout=split]/dialog:py-3",
         className,
       )}
       {...props}
