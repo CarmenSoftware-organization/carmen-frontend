@@ -12,6 +12,7 @@ import { FormsSection } from "./sections/forms";
 import { OverlaysSection } from "./sections/overlays";
 import { FeedbackSection } from "./sections/feedback";
 import { StatusPaletteSection } from "./sections/status-palette";
+import { ColorThemesSection } from "./sections/color-themes";
 
 /**
  * /design-system — หน้าอ้างอิงของ design system ที่ **มีอยู่แล้ว**
@@ -65,6 +66,10 @@ const NAV = [
   {
     group: "Status",
     items: [{ id: "status-palette", label: "Document status" }],
+  },
+  {
+    group: "Themes",
+    items: [{ id: "color-themes", label: "Color themes" }],
   },
 ];
 
@@ -143,6 +148,7 @@ export function Component() {
             <OverlaysSection />
             <FeedbackSection />
             <StatusPaletteSection />
+            <ColorThemesSection />
           </main>
         </div>
       </div>
