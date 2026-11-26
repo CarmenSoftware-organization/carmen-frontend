@@ -188,7 +188,7 @@ export function DimensionDialog({
             </fieldset>
           )}
         </div>
-        <DialogFooter className="bg-background shrink-0 items-center rounded-b-lg border-t px-6 py-3">
+        <DialogFooter className="bg-background shrink-0 sm:items-center rounded-b-lg border-t px-6 py-3">
           {(failedSummary || saveError) && (
             <div className="order-last min-w-0 text-xs sm:order-first sm:mr-auto">
               {failedSummary && (
