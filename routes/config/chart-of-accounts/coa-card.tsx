@@ -40,12 +40,7 @@ export default function CoaCard({ item, onEdit, onDelete, rowNo }: Props) {
         )}
       </ListCardRow>
       <ListCardRow label={tfl("nature")}>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="font-mono font-semibold">
-            {t(`natureShort.${item.nature}`)}
-          </span>
-          <span>{t(`nature.${item.nature}`)}</span>
-        </span>
+        {t(`nature.${item.nature}`)}
       </ListCardRow>
       <ListCardRow label={tfl("type")}>
         {t(`accountType.${item.type}`)}

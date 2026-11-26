@@ -12,6 +12,12 @@ export interface ConfigTableLayout {
   widths: Record<string, number>;
   /** Hide in this order when the box cannot fit; all remain available in the detail. */
   secondary?: string[];
+  /**
+   * Off by default, shown in this order only on a box wide enough that the grow column still
+   * keeps `minGrow` px after adding them (rule 2: a much wider box gets more columns, not a
+   * wider name). A column the user toggled in the column menu keeps the user's choice.
+   */
+  extra?: { ids: string[]; minGrow: number };
 }
 
 export function configTableLayout<T>(
@@ -35,9 +41,23 @@ export function configTableLayout<T>(
         sum + (visible[columnId(column)] === false ? 0 : column.size),
       0,
     );
+  // extra columns are off until every required + secondary column has had its turn
+  for (const id of layout.extra?.ids ?? []) {
+    if (!(id in visibility)) visible[id] = false;
+  }
   for (const id of layout.secondary ?? []) {
     if (total() <= width) break;
     visible[id] = false;
+  }
+  const growSize = sized.find((column) => columnId(column) === layout.grow)?.size ?? 0;
+  for (const id of layout.extra?.ids ?? []) {
+    if (id in visibility) continue;
+    if (layout.secondary?.some((other) => visible[other] === false)) break;
+    const size = sized.find((column) => columnId(column) === id)?.size ?? 0;
+    // not measured yet (Infinity) = stay hidden, otherwise they flash in on the first render
+    visible[id] =
+      Number.isFinite(width) &&
+      total() + size - growSize + layout.extra!.minGrow <= width;
   }
   return {
     columns: sized.map((column) => ({

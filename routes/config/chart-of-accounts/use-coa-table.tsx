@@ -201,12 +201,14 @@ export function useCoaTable({
       // ขนาดอิงคำแปลไทยที่ยาวสุด (วัดรวม padding 24): หมวด "ส่วนของเจ้าของ (Equity)" 149 · ประเภท "Header (หัวข้อ - ไม่ลงรายการ)" 180
       // ผลรวม (รวม # 48 · select 55 · ปุ่ม 60 · status 100): ครบทุกคอลัมน์ 1219 · ไม่มีกลุ่ม 1039 · ไม่มีประเภท 859 · เหลือแกน 703
       // แยกหมวด / ประเภท / กลุ่มเป็นคอลัมน์จริง ชื่อไม่ต้องยืดกินที่ว่างทั้งแถว — กล่องแคบซ่อนจากหัวรายการก่อน
-      // (audit ซ่อนไว้ก่อนเหมือนทุกหน้ารายการ — เปิดได้จากเมนูคอลัมน์)
       secondary: [
         "account_group_id",
         "type",
         "category",
       ],
+      // audit ซ่อนไว้ก่อนเหมือนทุกหน้ารายการ แต่กล่องกว้างมาก (≥ 1219 + 320 − 220 + 480 = 1799,
+      // จอ 4K / QHD) ชื่อจะยืดเป็นพัน px — ให้ Created/Updated ขึ้นมาเติมแทน โดยชื่อยังเหลือ ≥ 480
+      extra: { ids: ["created_at", "updated_at"], minGrow: 480 },
     },
     data,
     columns,
@@ -217,8 +219,6 @@ export function useCoaTable({
     initialState: {
       columnVisibility: {
         description_2: false,
-        created_at: false,
-        updated_at: false,
       },
     },
   });
