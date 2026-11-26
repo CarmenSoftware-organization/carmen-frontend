@@ -54,7 +54,7 @@ export function DimensionValuesTable({
     patchRow(key, { ...patch, dirty: true, error: undefined });
 
   return (
-    <section className="flex min-w-0 flex-col gap-2">
+    <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">
           List Master Items · {liveCount}
@@ -111,7 +111,7 @@ export function DimensionValuesTable({
       </div>
       <div
         ref={tableRef}
-        className="max-h-[60dvh] overflow-auto rounded-md border"
+        className="max-h-[60dvh] min-h-0 overflow-auto rounded-md border @3xl:max-h-none @3xl:flex-1"
       >
         <table className="w-full text-xs">
           <thead className="bg-muted sticky top-0 z-10">
