@@ -7,8 +7,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useDocAuditVisibility } from "@/hooks/use-doc-audit-visibility";
 import { useProfile } from "@/hooks/use-profile";
 import { formatDate } from "@/lib/date-utils";
+import type { DocAuditVisibility } from "@/lib/doc-audit-visibility";
 import { cn } from "@/lib/utils";
 import type { Audit, AuditEntry } from "@/types/audit";
 
@@ -25,6 +27,8 @@ import type { Audit, AuditEntry } from "@/types/audit";
  * ไม่ดึงสายตา · ห้ามลดต่ำกว่า 10px (9px line-height 1.2 ตัดสระบนภาษาไทย) ให้ลดที่ padding/สีแทน
  * ใช้ `<table>` จริงให้คอลัมน์ชื่อ/วันเวลาของสองแถวตรงกันเอง · ไม่ใช้ truncate กับชื่อ
  * (overflow-hidden ที่ line-height 1.35 ตัดสระบนภาษาไทย) ชื่อยาวให้ขึ้นบรรทัดใหม่ในช่องแทน
+ * แถว audit กับช่อง rev. ปิดแยกกันได้ราย BU ที่ Default Setting (`general.show-doc-audit` /
+ * `general.show-doc-revision`) — ปิด audit แต่เปิด rev. = เหลือกล่อง `rev. x` ช่องเดียว
  *
  * @param audit - `doc.audit` (ไม่มีทั้ง created และ updated = ไม่ render เช่นโหมดสร้างใบใหม่)
  * @param docVersion - `doc.doc_version` (null/undefined = ไม่มีช่องรุ่น · 0 ยังแสดงเป็น rev. 0)
@@ -42,31 +46,45 @@ export function DocAuditLine({
 }) {
   const tfl = useTranslations("field");
   const { dateTimeFormat } = useProfile();
+  const visibility = useDocAuditVisibility();
 
-  if (!audit?.created?.at && !audit?.updated?.at) return null;
+  if (!audit || !hasDocAuditContent(audit, docVersion, visibility)) return null;
 
-  const rows = [
-    { label: tfl("auditCreatedBy"), entry: audit.created },
-    { label: tfl("auditUpdatedBy"), entry: audit.updated },
-  ].filter(({ entry }) => entry?.at || entry?.name);
+  const showRev = visibility.showRevision && docVersion != null;
+  const tableClass = cn(
+    "text-muted-foreground text-micro border-border/40 w-fit max-w-full border-separate border-spacing-0 overflow-hidden rounded-sm border",
+    className,
+  );
+
+  // ปิดแถว audit แต่เปิด rev. — กล่องช่องเดียวในตำแหน่งเดิม
+  if (!visibility.showAudit) {
+    return (
+      <table className={tableClass}>
+        <caption className="sr-only">{tfl("revisionInfo")}</caption>
+        <tbody>
+          <tr>
+            <td className="px-1.5 py-0.5 text-center whitespace-nowrap tabular-nums">
+              {tfl("revision")} {docVersion}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    );
+  }
+
+  const rows = auditRows(audit, tfl);
   // ช่องรุ่นต่อท้ายแถวแรก สูงเต็มทุกแถว — `!= null` เพราะ doc_version 0 เป็นค่าจริง
-  const revCell =
-    docVersion != null ? (
-      <td
-        rowSpan={rows.length}
-        className="border-border/40 border-s px-1.5 text-center align-middle whitespace-nowrap tabular-nums"
-      >
-        {tfl("revision")} {docVersion}
-      </td>
-    ) : null;
+  const revCell = showRev ? (
+    <td
+      rowSpan={rows.length}
+      className="border-border/40 border-s px-1.5 text-center align-middle whitespace-nowrap tabular-nums"
+    >
+      {tfl("revision")} {docVersion}
+    </td>
+  ) : null;
 
   return (
-    <table
-      className={cn(
-        "text-muted-foreground text-micro border-border/40 w-fit max-w-full border-separate border-spacing-0 overflow-hidden rounded-sm border",
-        className,
-      )}
-    >
+    <table className={tableClass}>
       {/* ตารางไม่มีหัวคอลัมน์ที่มองเห็น — caption ให้ screen reader รู้ว่าตารางนี้คืออะไร */}
       <caption className="sr-only">{tfl("auditInfo")}</caption>
       <tbody>
@@ -82,6 +100,26 @@ export function DocAuditLine({
       </tbody>
     </table>
   );
+}
+
+function auditRows(audit: Audit, tfl: (key: string) => string) {
+  return [
+    { label: tfl("auditCreatedBy"), entry: audit.created },
+    { label: tfl("auditUpdatedBy"), entry: audit.updated },
+  ].filter(({ entry }) => entry?.at || entry?.name);
+}
+
+/**
+ * มีอะไรให้แสดงหลังเคารพสวิตช์ของ BU หรือไม่ — ใช้ร่วมกันให้ตารางกับปุ่ม Info บนมือถือหายพร้อมกัน
+ * ไม่มีทั้ง created และ updated (โหมดสร้างใบใหม่) = ไม่แสดงอะไรเลย แม้เปิด rev. ไว้
+ */
+function hasDocAuditContent(
+  audit: Audit | undefined,
+  docVersion: number | null | undefined,
+  { showAudit, showRevision }: DocAuditVisibility,
+): boolean {
+  if (!audit?.created?.at && !audit?.updated?.at) return false;
+  return showAudit || (showRevision && docVersion != null);
 }
 
 const CELL =
@@ -132,8 +170,9 @@ export function DocAuditButton({
 }) {
   const tfl = useTranslations("field");
   const [open, setOpen] = useState(false);
+  const visibility = useDocAuditVisibility();
 
-  if (!audit?.created?.at && !audit?.updated?.at) return null;
+  if (!hasDocAuditContent(audit, docVersion, visibility)) return null;
 
   // hover เฉพาะเมาส์ — นิ้วแตะยิง pointerenter ก่อน click แล้ว click จะ toggle ปิดทันที
   const onHover = (next: boolean) => (e: React.PointerEvent) => {
