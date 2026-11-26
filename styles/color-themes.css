@@ -155,6 +155,86 @@ html.dark.theme-graphite,
   --sidebar-ring: oklch(0.82 0.02 260);
 }
 
+/* ---------- Skylearn — ฟ้าสว่าง พื้นขาว ขอบมนกว้าง ----------
+   ดึงจาก design system "Skylearn" เฉพาะสีกับขอบมน: ฟอนต์ ขนาดตัวอักษรขั้นต่ำ 16px และปุ่มสูง
+   56px ของต้นฉบับไม่ได้ใช้ เพราะชน type ladder 12px ของแอป ERP (type-ladder.test.ts)
+   - ปุ่มหลักใช้ Sky Deep #1D4ED8 ไม่ใช่ Sky #3B82F6: ตัวขาวบน Sky ได้แค่ 3.68:1 ตก AA
+     (Sky Deep = 6.70:1) ส่วน Sky ไปอยู่ที่ focus ring และกราฟลำดับแรก
+   - พื้นหน้าขาวล้วน การ์ด #F8FAFC ตามต้นฉบับ · ตัวหนังสือ ink #0F172A / muted #475569 (7.2:1)
+   - --radius 1rem → ปุ่ม/ช่องกรอก 14px · การ์ด (xl) 20px ตามต้นฉบับ
+   - ต้นฉบับไม่มีโหมดมืด: ใช้ slate ของชุดเดียวกัน (#0F172A/#1E293B) + Sky Bright #60A5FA
+   - สีกราฟ = sky / leaf / berry / sun / coral ของต้นฉบับ · สีสถานะ (success/destructive) ไม่แตะ */
+html.theme-skylearn,
+.theme-skylearn {
+  --radius: 1rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.208 0.04 265.8);
+  --card: oklch(0.984 0.003 247.9);
+  --card-foreground: oklch(0.208 0.04 265.8);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.208 0.04 265.8);
+  --primary: oklch(0.488 0.217 264.4);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.968 0.007 247.9);
+  --secondary-foreground: oklch(0.208 0.04 265.8);
+  --muted: oklch(0.968 0.007 247.9);
+  --muted-foreground: oklch(0.446 0.037 257.3);
+  --accent: oklch(0.932 0.032 255.6);
+  --accent-foreground: oklch(0.488 0.217 264.4);
+  --border: oklch(0.929 0.013 255.5);
+  --input: oklch(0.929 0.013 255.5);
+  --field: oklch(1 0 0);
+  --ring: oklch(0.623 0.188 259.8);
+  --chart-1: oklch(0.623 0.188 259.8);
+  --chart-2: oklch(0.723 0.192 149.6);
+  --chart-3: oklch(0.627 0.233 303.9);
+  --chart-4: oklch(0.837 0.164 84.4);
+  --chart-5: oklch(0.711 0.166 22.2);
+  --sidebar: oklch(0.984 0.003 247.9);
+  --sidebar-foreground: oklch(0.208 0.04 265.8);
+  --sidebar-primary: oklch(0.488 0.217 264.4);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.932 0.032 255.6);
+  --sidebar-accent-foreground: oklch(0.488 0.217 264.4);
+  --sidebar-border: oklch(0.929 0.013 255.5);
+  --sidebar-ring: oklch(0.623 0.188 259.8);
+}
+
+html.dark.theme-skylearn,
+.dark .theme-skylearn {
+  --background: oklch(0.208 0.04 265.8);
+  --foreground: oklch(0.968 0.007 247.9);
+  --card: oklch(0.279 0.037 260);
+  --card-foreground: oklch(0.968 0.007 247.9);
+  --popover: oklch(0.279 0.037 260);
+  --popover-foreground: oklch(0.968 0.007 247.9);
+  --primary: oklch(0.714 0.143 254.6);
+  --primary-foreground: oklch(0.208 0.04 265.8);
+  --secondary: oklch(0.279 0.037 260);
+  --secondary-foreground: oklch(0.968 0.007 247.9);
+  --muted: oklch(0.279 0.037 260);
+  --muted-foreground: oklch(0.711 0.035 256.8);
+  --accent: oklch(0.379 0.138 265.5);
+  --accent-foreground: oklch(0.968 0.007 247.9);
+  --border: oklch(0.372 0.039 257.3);
+  --input: oklch(0.372 0.039 257.3);
+  --field: oklch(0.208 0.04 265.8);
+  --ring: oklch(0.714 0.143 254.6);
+  --chart-1: oklch(0.623 0.188 259.8);
+  --chart-2: oklch(0.723 0.192 149.6);
+  --chart-3: oklch(0.627 0.233 303.9);
+  --chart-4: oklch(0.837 0.164 84.4);
+  --chart-5: oklch(0.711 0.166 22.2);
+  --sidebar: oklch(0.183 0.031 263.4);
+  --sidebar-foreground: oklch(0.968 0.007 247.9);
+  --sidebar-primary: oklch(0.714 0.143 254.6);
+  --sidebar-primary-foreground: oklch(0.208 0.04 265.8);
+  --sidebar-accent: oklch(0.379 0.138 265.5);
+  --sidebar-accent-foreground: oklch(0.968 0.007 247.9);
+  --sidebar-border: oklch(0.279 0.037 260);
+  --sidebar-ring: oklch(0.714 0.143 254.6);
+}
+
 /* ---------- Blue Glass: กระจกเฉพาะโครงหน้าจอ ----------
    พื้นไล่สีอยู่ที่ body เพราะ sidebar เป็นคอลัมน์แยกจาก <main> — ถ้าวางไว้ที่ main
    กระจกของ sidebar จะไม่มีอะไรอยู่ข้างหลังให้เบลอ ส่วน main จึงต้องโปร่งตาม

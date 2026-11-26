@@ -27,7 +27,14 @@
       try {
         var t = localStorage.getItem("carmen.color-theme");
         if (
-          ["blue-glass", "emerald", "teal", "violet", "graphite"].indexOf(t) >= 0
+          [
+            "blue-glass",
+            "emerald",
+            "teal",
+            "violet",
+            "graphite",
+            "skylearn",
+          ].indexOf(t) >= 0
         ) {
           document.documentElement.classList.add("theme-" + t);
         }

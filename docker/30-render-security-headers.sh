@@ -15,7 +15,7 @@ OUT="${OUT:-/etc/nginx/security-headers.conf}"
 
 # hash ของ inline script ใน index.html (font-scale ก่อน paint แรก)
 # ถ้าแก้สคริปต์นั้นต้องคำนวณใหม่ — lib/__tests__/security-headers.test.ts ฟ้องให้
-SCRIPT_HASH="sha256-zsagN3pI7LaiXXJKxEjPoRCBGbx+e1x/YebJaws+53w="
+SCRIPT_HASH="sha256-iy5mIUA05KKF3Q7ya76K0oZdf4dmvA7y9BPUD9DOQKA="
 
 CONNECT_SRC="'self'"
 [ -z "${WS_URL:-}" ] || CONNECT_SRC="${CONNECT_SRC} ${WS_URL}"

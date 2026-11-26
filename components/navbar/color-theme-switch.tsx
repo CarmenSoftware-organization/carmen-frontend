@@ -22,6 +22,7 @@ const LABEL_KEY = {
   teal: "colorThemeTeal",
   violet: "colorThemeViolet",
   graphite: "colorThemeGraphite",
+  skylearn: "colorThemeSkylearn",
 } as const satisfies Record<ColorTheme, string>;
 
 /**
@@ -38,6 +39,8 @@ const SWATCH: Record<ColorTheme, string> = {
   teal: "oklch(0.5 0.09 200)",
   violet: "oklch(0.5 0.2 295)",
   graphite: "oklch(0.38 0.02 260)",
+  skylearn:
+    "linear-gradient(135deg, oklch(0.623 0.188 259.8), oklch(0.837 0.164 84.4))",
 };
 
 /**

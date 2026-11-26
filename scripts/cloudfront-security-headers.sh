@@ -24,7 +24,7 @@ WS_URL_VAL="$(read_key WS_URL)"
 
 # hash ของ inline script ใน index.html (font-scale ก่อน paint แรก) —
 # lib/__tests__/security-headers.test.ts ฟ้องเมื่อสคริปต์นั้นเปลี่ยนแล้วลืมแก้ที่นี่
-SCRIPT_HASH="sha256-zsagN3pI7LaiXXJKxEjPoRCBGbx+e1x/YebJaws+53w="
+SCRIPT_HASH="sha256-iy5mIUA05KKF3Q7ya76K0oZdf4dmvA7y9BPUD9DOQKA="
 CONNECT_SRC="'self' ${BACKEND_URL_VAL}"
 [ -z "${WS_URL_VAL}" ] || CONNECT_SRC="${CONNECT_SRC} ${WS_URL_VAL}"
 CSP="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' '${SCRIPT_HASH}'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src ${CONNECT_SRC}; worker-src 'self' blob:; frame-src 'self' blob: https://www.youtube-nocookie.com"

@@ -15,6 +15,7 @@ export const COLOR_THEMES = [
   "teal",
   "violet",
   "graphite",
+  "skylearn",
 ] as const;
 
 export type ColorTheme = (typeof COLOR_THEMES)[number];
