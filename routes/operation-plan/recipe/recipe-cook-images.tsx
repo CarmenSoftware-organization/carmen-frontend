@@ -36,6 +36,12 @@ interface RecipeCookImagesProps {
    * `step` = รูปของขั้นในเวทีขั้น กรอบ 16:10 เต็มความกว้างการ์ด รูปย่อ 56px แตะง่ายบนแท็บเล็ตในครัว
    */
   readonly variant?: "menu" | "step";
+  /**
+   * แสดงแค่แถบรูปย่อ ไม่มีกรอบรูปใหญ่ — กดรูปย่อแล้วเปิด popup ที่รูปนั้นเลย (แสดงแม้มีรูปเดียว)
+   * การ์ดขั้นตอนใช้ (ผู้ใช้สั่ง 2026-11-26 "รูปใหญ่เอาออกไปก็ได้ เหลือแค่ช่องรูปเล็ก") ข้อความของขั้นจึงได้พื้นที่
+   * · ไม่รองรับ `videoUrl`
+   */
+  readonly thumbnailsOnly?: boolean;
 }
 
 const FRAME = { menu: "aspect-[4/3]", step: "aspect-[16/10]" } as const;
@@ -69,6 +75,7 @@ export function RecipeCookImages({
   videoUrl,
   videoTitle,
   variant = "menu",
+  thumbnailsOnly = false,
 }: RecipeCookImagesProps) {
   const t = useTranslations("operationPlan.recipe");
   const sorted = [...(images ?? [])].sort(
@@ -95,6 +102,54 @@ export function RecipeCookImages({
     (img, i) => img.alt_text || `${recipeName} (${i + 1}/${total})`,
   );
   const hero = sorted[active];
+  const lightbox = total > 0 && (
+    <ImageLightbox
+      open={lightboxOpen}
+      onClose={() => setLightboxOpen(false)}
+      images={sorted.map((img, i) => ({
+        src: img.url,
+        fileName: names[i],
+      }))}
+      startIndex={active}
+    />
+  );
+
+  if (thumbnailsOnly) {
+    if (total === 0) return null;
+    return (
+      <div className={className ?? "w-full min-w-0"}>
+        <ul
+          aria-label={label ?? t("cookImages")}
+          className="flex flex-wrap gap-2 p-0.5"
+        >
+          {sorted.map((img, i) => (
+            <li key={img.id} className="shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelected(i);
+                  setLightboxOpen(true);
+                }}
+                aria-label={t("cookViewImage", { n: i + 1, total })}
+                className={cn(
+                  "bg-muted focus-visible:ring-ring block cursor-zoom-in overflow-hidden rounded-md border focus-visible:ring-2 focus-visible:outline-none",
+                  THUMB[variant],
+                )}
+              >
+                <img
+                  src={img.url}
+                  alt={names[i]}
+                  loading="lazy"
+                  className="size-full object-cover"
+                />
+              </button>
+            </li>
+          ))}
+        </ul>
+        {lightbox}
+      </div>
+    );
+  }
 
   return (
     <div className={className ?? "w-full min-w-0"}>
@@ -203,17 +258,7 @@ export function RecipeCookImages({
         </ul>
       )}
 
-      {total > 0 && (
-        <ImageLightbox
-          open={lightboxOpen}
-          onClose={() => setLightboxOpen(false)}
-          images={sorted.map((img, i) => ({
-            src: img.url,
-            fileName: names[i],
-          }))}
-          startIndex={active}
-        />
-      )}
+      {lightbox}
     </div>
   );
 }
