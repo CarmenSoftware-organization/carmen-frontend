@@ -16,11 +16,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { LookupChartOfAccount } from "@/components/lookup/lookup-chart-of-account";
 import { LookupCostCenter } from "@/components/lookup/lookup-cost-center";
 import { useErrorToast } from "@/hooks/use-error-toast";
+import { ApiError } from "@/lib/api-error";
 import type { AccountMappingRow } from "@/types/chart-of-account-mapping";
 import {
   useBatchUpdateAccountMapping,
+  useBatchUpdateAccountMappingByFilter,
   type BatchUpdateAccountMappingResult,
   type BatchUpdateAccountMappingVariables,
+  type ReviewAccountMappingByFilterVariables,
 } from "./use-account-mapping";
 import { MOVEMENT_KEY } from "./use-coam-table";
 
@@ -28,9 +31,18 @@ type Mode = "keep" | "set" | "reset";
 
 interface CoamBatchEditSheetProps {
   readonly rows: AccountMappingRow[];
+  /**
+   * โหมด "ทุกแถวที่ตรงตัวกรอง" — มีค่า = ไม่ใช้ `rows` แต่ยิง batch-update-by-filter
+   * ด้วยตัวกรอง + expected_count ที่ snapshot ตอนกดเปิด
+   */
+  readonly filter?: ReviewAccountMappingByFilterVariables | null;
   readonly open: boolean;
   readonly onClose: () => void;
   readonly onDone: (result: BatchUpdateAccountMappingResult) => void;
+  /** โหมดตัวกรอง: บันทึกสำเร็จ */
+  readonly onFilterDone?: (updated: number) => void;
+  /** โหมดตัวกรอง: 409 — จำนวนแถวที่ตรงตัวกรองเปลี่ยนไประหว่างนี้ */
+  readonly onScopeChanged?: () => void;
 }
 
 /** สรุป "A, B, C +2" — กันหัว sheet ยาวเกินเมื่อเลือกหลาย location */
@@ -47,14 +59,20 @@ const summarize = (values: string[]) => {
  */
 export function CoamBatchEditSheet({
   rows,
+  filter = null,
   open,
   onClose,
   onDone,
+  onFilterDone,
+  onScopeChanged,
 }: CoamBatchEditSheetProps) {
   const t = useTranslations("config.chartOfAccountMapping");
   const tc = useTranslations("common");
   const errorToast = useErrorToast();
   const batch = useBatchUpdateAccountMapping();
+  const batchByFilter = useBatchUpdateAccountMappingByFilter();
+  const count = filter ? filter.expected_count : rows.length;
+  const isPending = batch.isPending || batchByFilter.isPending;
   const [ccMode, setCcMode] = useState<Mode>("keep");
   const [cc, setCc] = useState<string | null>(null);
   const [accountMode, setAccountMode] = useState<Mode>("keep");
@@ -63,19 +81,41 @@ export function CoamBatchEditSheet({
   const ccReady = ccMode !== "set" || !!cc;
   const accountReady = accountMode !== "set" || !!account;
   const canSave =
-    rows.length > 0 &&
+    count > 0 &&
     (ccMode !== "keep" || accountMode !== "keep") &&
     ccReady &&
     accountReady &&
-    !batch.isPending;
+    !isPending;
 
   const save = () => {
-    const body: BatchUpdateAccountMappingVariables = {
-      items: rows.map((r) => ({ id: r.id, doc_version: r.doc_version })),
+    const values = {
       ...(ccMode === "set" ? { cost_center_id: cc } : {}),
       ...(ccMode === "reset" ? { cost_center_id: null } : {}),
       ...(accountMode === "set" ? { account_code: account } : {}),
       ...(accountMode === "reset" ? { account_code: null } : {}),
+    };
+    if (filter) {
+      batchByFilter.mutate(
+        { ...filter, ...values },
+        {
+          onSuccess: (res) => onFilterDone?.(res?.updated ?? count),
+          onError: (err) => {
+            if (
+              err instanceof ApiError &&
+              err.appCode === "ACCOUNT_MAPPING_SCOPE_CHANGED"
+            ) {
+              onScopeChanged?.();
+              return;
+            }
+            errorToast(err); // 422 ฯลฯ — ไม่ปิด sheet
+          },
+        },
+      );
+      return;
+    }
+    const body: BatchUpdateAccountMappingVariables = {
+      items: rows.map((r) => ({ id: r.id, doc_version: r.doc_version })),
+      ...values,
     };
     batch.mutate(body, {
       onSuccess: (result) => onDone(result),
@@ -113,14 +153,16 @@ export function CoamBatchEditSheet({
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent className="overflow-y-auto sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>{t("batchEditTitle", { count: rows.length })}</SheetTitle>
+          <SheetTitle>{t("batchEditTitle", { count })}</SheetTitle>
           <SheetDescription>
-            {t("batchEditDesc", {
-              locations: summarize(rows.map((r) => r.location.code)),
-              movements: summarize(
-                rows.map((r) => t(MOVEMENT_KEY[r.movement])),
-              ),
-            })}
+            {filter
+              ? t("batchEditDescAllMatching")
+              : t("batchEditDesc", {
+                  locations: summarize(rows.map((r) => r.location.code)),
+                  movements: summarize(
+                    rows.map((r) => t(MOVEMENT_KEY[r.movement])),
+                  ),
+                })}
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col gap-6 px-4">

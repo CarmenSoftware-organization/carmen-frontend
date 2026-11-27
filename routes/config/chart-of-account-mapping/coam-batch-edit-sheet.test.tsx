@@ -12,6 +12,10 @@ let isPending = false;
 
 vi.mock("./use-account-mapping", () => ({
   useBatchUpdateAccountMapping: () => ({ mutate, isPending }),
+  useBatchUpdateAccountMappingByFilter: () => ({
+    mutate: vi.fn(),
+    isPending: false,
+  }),
 }));
 vi.mock("@/hooks/use-error-toast", () => ({
   useErrorToast: () => errorToast,

@@ -3455,6 +3455,7 @@
       "editSelected": "Edit",
       "batchEditTitle": "Edit {count, plural, one {# row} other {# rows}}",
       "batchEditDesc": "Locations: {locations} · Movements: {movements}",
+      "batchEditDescAllMatching": "All rows matching the current filters. Rows someone else edits in the meantime will be overwritten.",
       "modeKeep": "Don't change",
       "modeSet": "Set to",
       "batchEditDone": "Saved {count, plural, one {# row} other {# rows}}",

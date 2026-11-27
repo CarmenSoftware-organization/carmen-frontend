@@ -47,7 +47,10 @@ import { CoamEditSheet } from "./coam-edit-sheet";
 import { CoamGenerateDialog } from "./coam-generate-dialog";
 import { CoamBatchEditSheet } from "./coam-batch-edit-sheet";
 import { CoamSelectAllBanner } from "./coam-select-all-banner";
-import type { BatchUpdateAccountMappingResult } from "./use-account-mapping";
+import type {
+  BatchUpdateAccountMappingResult,
+  ReviewAccountMappingByFilterVariables,
+} from "./use-account-mapping";
 import {
   TAB_SCOPED_FILTER_KEYS,
   coamFilterFields,
@@ -89,6 +92,9 @@ export default function CoamComponent() {
   const [batchSeq, setBatchSeq] = useState(0);
   // snapshot แถวตอนเปิด sheet — refetch เบื้องหลังต้องไม่เปลี่ยน doc_version ใต้มือผู้ใช้
   const [batchRows, setBatchRows] = useState<AccountMappingRow[]>([]);
+  // โหมดทุกแถว: snapshot ตัวกรอง + expected_count ตอนเปิด sheet · null = โหมดติ๊กเอง
+  const [batchFilter, setBatchFilter] =
+    useState<ReviewAccountMappingByFilterVariables | null>(null);
   const [saveViewDialogOpen, setSaveViewDialogOpen] = useState(false);
   // "ทุกแถวที่ตรงตัวกรอง" (เกินกว่าที่โหลดมา) — เก็บจำนวนที่ผู้ใช้เห็นตอนกดเลือกทั้งหมด
   // เป็น expected_count (ไม่ใช่ total สด ๆ ที่ refetch เบื้องหลังอาจเปลี่ยนไปแล้ว) · null = ไม่อยู่ในโหมดนี้
@@ -230,32 +236,36 @@ export default function CoamComponent() {
   const toggleStatus = (value: MappingStatus) =>
     lf.setValue("status", query.status === value ? "" : value);
 
+  // ตัวกรองของ endpoint *-by-filter — ไม่มี sort (schema backend omit ไว้)
+  const matchFilter = (
+    count: number,
+  ): ReviewAccountMappingByFilterVariables => {
+    const { sort: _sort, ...filters } = query;
+    return { ...filters, expected_count: count };
+  };
+
   const markReviewed = () => {
     if (allMatching) {
-      const { sort: _sort, ...filters } = query;
-      reviewByFilter.mutate(
-        { ...filters, expected_count: matchCount },
-        {
-          onSuccess: (res) => {
-            toast.success(
-              t("markReviewedDone", { count: res?.updated ?? matchCount }),
-            );
-            clearSelection();
-          },
-          onError: (err) => {
-            if (
-              err instanceof ApiError &&
-              err.appCode === "ACCOUNT_MAPPING_SCOPE_CHANGED"
-            ) {
-              // รายการถูก refetch เองจาก invalidate ของ mutation
-              toast.warning(t("scopeChanged"));
-              clearSelection();
-              return;
-            }
-            errorToast(err);
-          },
+      reviewByFilter.mutate(matchFilter(matchCount), {
+        onSuccess: (res) => {
+          toast.success(
+            t("markReviewedDone", { count: res?.updated ?? matchCount }),
+          );
+          clearSelection();
         },
-      );
+        onError: (err) => {
+          if (
+            err instanceof ApiError &&
+            err.appCode === "ACCOUNT_MAPPING_SCOPE_CHANGED"
+          ) {
+            // รายการถูก refetch เองจาก invalidate ของ mutation
+            toast.warning(t("scopeChanged"));
+            clearSelection();
+            return;
+          }
+          errorToast(err);
+        },
+      });
       return;
     }
     review.mutate(
@@ -271,6 +281,26 @@ export default function CoamComponent() {
         },
       },
     );
+  };
+
+  const openBatch = () => {
+    setBatchRows(allMatching ? [] : selectedRows);
+    setBatchFilter(allMatching ? matchFilter(matchCount) : null);
+    setBatchSeq((n) => n + 1);
+    setBatchOpen(true);
+  };
+
+  const batchFilterDone = (updated: number) => {
+    setBatchOpen(false);
+    clearSelection();
+    toast.success(t("batchEditDone", { count: updated }));
+  };
+
+  const batchScopeChanged = () => {
+    // รายการถูก refetch เองจาก invalidate ของ mutation
+    setBatchOpen(false);
+    clearSelection();
+    toast.warning(t("scopeChanged"));
   };
 
   // แถวที่บันทึกไม่ได้ยังติ๊กค้างไว้ให้ลองใหม่ — refetch ไม่เปลี่ยน scopeKey จึงไม่ถูกล้าง
@@ -301,21 +331,13 @@ export default function CoamComponent() {
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           {selectedIds.length > 0 && (
             <>
-              {!allMatching && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setBatchRows(selectedRows);
-                    setBatchSeq((n) => n + 1);
-                    setBatchOpen(true);
-                  }}
-                >
-                  <Pencil aria-hidden="true" />
-                  {t("editSelected")}
-                  <span className="tabular-nums">({selectedIds.length})</span>
-                </Button>
-              )}
+              <Button size="sm" variant="outline" onClick={openBatch}>
+                <Pencil aria-hidden="true" />
+                {t("editSelected")}
+                <span className="tabular-nums">
+                  ({matchCount ?? selectedIds.length})
+                </span>
+              </Button>
               <Button
                 size="sm"
                 variant="outline"
@@ -453,9 +475,12 @@ export default function CoamComponent() {
       <CoamBatchEditSheet
         key={batchSeq}
         rows={batchRows}
+        filter={batchFilter}
         open={batchOpen}
         onClose={() => setBatchOpen(false)}
         onDone={batchDone}
+        onFilterDone={batchFilterDone}
+        onScopeChanged={batchScopeChanged}
       />
       <CoamGenerateDialog
         key={`${tab}-${generateSeq}`}

@@ -3455,6 +3455,7 @@
       "editSelected": "แก้",
       "batchEditTitle": "แก้ {count} แถว",
       "batchEditDesc": "Location: {locations} · Movement: {movements}",
+      "batchEditDescAllMatching": "ทุกแถวที่ตรงตัวกรองปัจจุบัน แถวที่มีคนแก้ระหว่างนี้จะถูกเขียนทับ",
       "modeKeep": "ไม่เปลี่ยน",
       "modeSet": "ตั้งเป็น",
       "batchEditDone": "บันทึก {count} แถวแล้ว",
