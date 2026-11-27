@@ -212,6 +212,32 @@ export function useBatchUpdateAccountMapping() {
   );
 }
 
+export type BatchUpdateAccountMappingByFilterVariables =
+  ReviewAccountMappingByFilterVariables & {
+    /** `null` = คืนค่าเริ่มต้น · ไม่ส่ง = ไม่แตะ */
+    account_code?: string | null;
+    cost_center_id?: string | null;
+  };
+
+/**
+ * POST batch-update-by-filter — แก้ทุกแถวที่ตรงตัวกรองในคำขอเดียว (ไม่เช็ก doc_version รายแถว)
+ * 409 SCOPE_CHANGED / 422 ให้ sheet จัดการเอง
+ */
+export function useBatchUpdateAccountMappingByFilter() {
+  return useAccountMappingMutation<
+    BatchUpdateAccountMappingByFilterVariables,
+    { updated: number }
+  >(
+    (body, buCode) =>
+      httpClient.post(
+        `${API_ENDPOINTS.ACCOUNT_MAPPING(buCode)}/batch-update-by-filter`,
+        body,
+      ),
+    "Failed to batch update account mapping",
+    { skipGlobalErrorToast: true },
+  );
+}
+
 export interface GenerateAccountMappingResult {
   created: Record<MappingType, number>;
   existing: Record<MappingType, number>;
